@@ -31,6 +31,7 @@ const props = defineProps<{
 const COMPONENT_LABEL_KEYS: Record<NetWorthComponentKey, string> = {
   ventures: 'dashboard.widgets.netWorth.components.ventures',
   vehicles: 'dashboard.widgets.netWorth.components.vehicles',
+  properties: 'dashboard.widgets.netWorth.components.properties',
   loans: 'dashboard.widgets.netWorth.components.loans',
 };
 

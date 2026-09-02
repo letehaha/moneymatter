@@ -20,6 +20,7 @@ export * from './goals';
 export * from './subscriptions';
 export * from './loans';
 export * from './vehicles';
+export * from './properties';
 export * from './investments';
 export * from './venture';
 export * from './fire';

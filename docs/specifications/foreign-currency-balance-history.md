@@ -36,7 +36,7 @@ callers can select the incremental path without calling the rebuild first. It re
 true when all three hold:
 
 - `account.type === 'system'` (a manual account the user types into).
-- The account category is not a dedicated-flow category (`loan`, `vehicle`), which own their balance rows through their own projection logic.
+- The account category is not a dedicated-flow category (`loan`, `vehicle`, `property`), which own their balance rows through their own projection logic.
 - `account.currencyCode !== baseCurrencyCode`.
 
 Everything else keeps the incremental cascade that patches later days with the transaction's `refAmount`. Bank-synced accounts (`monobank`, `enable-banking`, `walutomat`) are excluded. Same-currency accounts are excluded because their rate is 1, so the stored conversion equals the live one on every day.

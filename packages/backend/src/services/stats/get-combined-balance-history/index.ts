@@ -13,6 +13,7 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { buildUsdRateLookup } from '@services/stats/build-usd-rate-lookup';
+import { calculatePropertiesBalanceHistory } from '@services/stats/calculate-properties-balance-history';
 import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
 import { getAggregatedBalanceHistory } from '@services/stats/get-balance-history';
@@ -361,6 +362,7 @@ export const getCombinedBalanceHistory = async ({
       accountsBalanceHistory,
       loansBalanceHistory,
       vehicleValuesByDate,
+      propertyValuesByDate,
       portfolioValuesByDate,
       ventureValuesByDate,
       creditLimitSum,
@@ -372,16 +374,19 @@ export const getCombinedBalanceHistory = async ({
         attributes: ['currencyCode'],
       }) as Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
 
-      // Split accounts/vehicles/loans into separate filtered aggregations so each
-      // keeps its own forward-fill partition (otherwise vehicle/loan anchor dates
-      // would forward-fill into the cash-accounts series).
+      // Split accounts/vehicles/properties/loans into separate filtered
+      // aggregations so each keeps its own forward-fill partition (otherwise
+      // vehicle/property/loan anchor dates would forward-fill into the
+      // cash-accounts series).
       return Promise.all([
         getAggregatedBalanceHistory({
           userId,
           accountScope: 'owned',
           from: minDate,
           to: maxDate,
-          categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.loan] },
+          categoryFilter: {
+            exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.property, ACCOUNT_CATEGORIES.loan],
+          },
         }),
         (async () => {
           // Back-fill each loan's pre-anchor days from its opening balance
@@ -406,6 +411,7 @@ export const getCombinedBalanceHistory = async ({
           });
         })(),
         calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise }),
+        calculatePropertiesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise }),
         calculatePortfolioBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
         calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
         includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'owned' }) : Promise.resolve(0),
@@ -416,6 +422,7 @@ export const getCombinedBalanceHistory = async ({
       (!accountsBalanceHistory || accountsBalanceHistory.length === 0) &&
       (!loansBalanceHistory || loansBalanceHistory.length === 0) &&
       (!vehicleValuesByDate || vehicleValuesByDate.size === 0) &&
+      (!propertyValuesByDate || propertyValuesByDate.size === 0) &&
       (!portfolioValuesByDate || portfolioValuesByDate.size === 0) &&
       (!ventureValuesByDate || ventureValuesByDate.size === 0)
     ) {
@@ -436,6 +443,7 @@ export const getCombinedBalanceHistory = async ({
     const combinedHistory: CombinedBalanceHistoryItem[] = uniqueDates.map((dateStr) => {
       const accountsBalance = (accountsBalanceByDate.get(dateStr) ?? 0) - creditLimitSum;
       const vehiclesBalance = vehicleValuesByDate?.get(dateStr) ?? 0;
+      const propertiesBalance = propertyValuesByDate?.get(dateStr) ?? 0;
       const portfoliosBalance = portfolioValuesByDate?.get(dateStr) ?? 0;
       const venturesBalance = ventureValuesByDate?.get(dateStr) ?? 0;
       const loansBalance = loansBalanceByDate.get(dateStr) ?? 0;
@@ -446,8 +454,10 @@ export const getCombinedBalanceHistory = async ({
         portfoliosBalance,
         venturesBalance,
         vehiclesBalance,
+        propertiesBalance,
         loansBalance,
-        totalBalance: accountsBalance + portfoliosBalance + venturesBalance + vehiclesBalance + loansBalance,
+        totalBalance:
+          accountsBalance + portfoliosBalance + venturesBalance + vehiclesBalance + propertiesBalance + loansBalance,
       };
     });
 

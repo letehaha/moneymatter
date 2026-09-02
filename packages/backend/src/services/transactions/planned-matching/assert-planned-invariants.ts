@@ -24,7 +24,7 @@ export const assertAccountCanHoldPlans = async ({
     throw new ValidationError({ message: t({ key: 'transactions.plannedOwnerOnly' }) });
   }
 
-  // Loan and vehicle balances are replayed from their transactions, which would count a
+  // Dedicated-flow balances are replayed from their transactions, which would count a
   // plan as money that already moved.
   if (isDedicatedFlowAccountCategory(account.accountCategory)) {
     throw new ValidationError({ message: t({ key: 'transactions.plannedAccountNotSupported' }) });

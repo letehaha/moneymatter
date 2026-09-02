@@ -134,7 +134,7 @@ export type NetWorthLiabilityKind = (typeof NET_WORTH_LIABILITY_KINDS)[number];
 // `cash` folds every deposit account (regular/savings/cash, plus a positive-balance
 // card or overdraft) into one bucket. The client derives filtered views by toggling
 // kinds, so it never refetches.
-export const NET_WORTH_ASSET_KINDS = ['cash', 'investments', 'vehicles', 'ventures'] as const;
+export const NET_WORTH_ASSET_KINDS = ['cash', 'investments', 'vehicles', 'properties', 'ventures'] as const;
 export type NetWorthAssetKind = (typeof NET_WORTH_ASSET_KINDS)[number];
 
 // Every amount below is a decimal in the user's base currency.

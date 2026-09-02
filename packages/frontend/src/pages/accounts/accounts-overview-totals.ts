@@ -18,7 +18,9 @@ export interface AccountsOverview {
   liabilities: number;
   /** Sum of every vehicle account's base-currency balance. */
   vehicles: number;
-  /** True when any money or vehicle account sits in a non-base currency, so the totals roll up converted figures. */
+  /** Sum of every property account's base-currency balance. */
+  properties: number;
+  /** True when any money, vehicle or property account sits in a non-base currency, so the totals roll up converted figures. */
   isApprox: boolean;
 }
 
@@ -33,23 +35,27 @@ const isConverted = ({
 
 /**
  * Summary numbers for the Accounts page overview card: money-account net worth split
- * into assets and liabilities, plus a separate vehicle total. Every figure is in the
- * user's base currency, and `isApprox` flags when any account was converted from another.
+ * into assets and liabilities, plus separate vehicle and property totals. Every figure
+ * is in the user's base currency, and `isApprox` flags when any account was converted
+ * from another.
  */
 export const computeAccountsOverview = ({
   moneyAccounts,
   vehicleAccounts,
+  propertyAccounts,
   baseCurrencyCode,
   includeCreditLimit,
 }: {
   moneyAccounts: OverviewAccount[];
   vehicleAccounts: OverviewAccount[];
+  propertyAccounts: OverviewAccount[];
   baseCurrencyCode: string | undefined;
   includeCreditLimit: boolean;
 }): AccountsOverview => {
   let assets = 0;
   let liabilities = 0;
   let vehicles = 0;
+  let properties = 0;
   let isApprox = false;
 
   for (const account of moneyAccounts) {
@@ -64,5 +70,10 @@ export const computeAccountsOverview = ({
     if (isConverted({ account, baseCurrencyCode })) isApprox = true;
   }
 
-  return { total: assets + liabilities, assets, liabilities, vehicles, isApprox };
+  for (const account of propertyAccounts) {
+    properties += accountBaseValue({ account, includeCreditLimit });
+    if (isConverted({ account, baseCurrencyCode })) isApprox = true;
+  }
+
+  return { total: assets + liabilities, assets, liabilities, vehicles, properties, isApprox };
 };

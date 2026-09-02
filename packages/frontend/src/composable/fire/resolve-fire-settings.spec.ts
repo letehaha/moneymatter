@@ -34,6 +34,7 @@ describe('resolveFireSettings', () => {
       spendingExcludedCategoryIds: [],
       includeVentures: false,
       includeVehicles: false,
+      includeProperties: false,
       includeLoans: false,
       returnIndicatorId: 'world-stock',
       customReturnPct: null,
@@ -50,6 +51,11 @@ describe('resolveFireSettings', () => {
       returnFallback: null,
       returnPeriodDays: null,
     });
+  });
+
+  it('keeps the include-properties toggle', () => {
+    expect(resolve({ fire: { includeProperties: true } }).includeProperties).toBe(true);
+    expect(resolve({ fire: { includeProperties: false } }).includeProperties).toBe(false);
   });
 
   it('treats out-of-range values as absent', () => {

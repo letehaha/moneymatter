@@ -302,7 +302,7 @@ import { useI18n } from 'vue-i18n';
 import { type AssumptionSection, useAssumptionSections } from '../composables/use-assumption-sections';
 
 export type FireFocusField = 'spending' | 'contribution' | 'counts' | 'return' | 'barista' | 'birthYear' | 'coastAge';
-export type FireToggleSource = 'includeVentures' | 'includeVehicles' | 'includeLoans';
+export type FireToggleSource = 'includeVentures' | 'includeVehicles' | 'includeProperties' | 'includeLoans';
 
 type NumberKey =
   | 'annualSpendingOverride'
@@ -458,6 +458,12 @@ const countRows = computed<{ key: string; label: string; amount: number; setting
       label: t('analytics.fire.assumptions.countsVehicles'),
       amount: buckets.vehicles,
       setting: 'includeVehicles',
+    },
+    {
+      key: 'properties',
+      label: t('analytics.fire.assumptions.countsProperties'),
+      amount: buckets.properties,
+      setting: 'includeProperties',
     },
     {
       key: 'loans',

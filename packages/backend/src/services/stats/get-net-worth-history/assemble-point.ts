@@ -21,9 +21,9 @@ export interface AccountSignSplit {
 /**
  * Group one snapshot's already-split account balances and valued asset classes
  * into the report's asset and liability kinds. Pure: the per-account sign split,
- * loan resolution and portfolio/vehicle/venture valuation all happen upstream, so
- * this owns only the folding rules and the totals — which is where the classifying
- * bugs hide, and why it lives apart from the DB-backed service:
+ * loan resolution and portfolio/vehicle/property/venture valuation all happen
+ * upstream, so this owns only the folding rules and the totals — which is where
+ * the classifying bugs hide, and why it lives apart from the DB-backed service:
  *
  * - an overdrawn deposit account is debt with no liability category of its own, so
  *   its owed balance joins the overdraft kind; `cash` folds only positive balances,
@@ -39,6 +39,7 @@ export const assembleNetWorthPoint = ({
   loanCents,
   portfolioCents,
   vehicleCents,
+  propertyCents,
   ventureCents,
 }: {
   date: string;
@@ -48,6 +49,7 @@ export const assembleNetWorthPoint = ({
   loanCents: Cents;
   portfolioCents: Cents;
   vehicleCents: Cents;
+  propertyCents: Cents;
   ventureCents: Cents;
 }): NetWorthHistoryPointCents => {
   const overdraftOwedCents = asCents(overdraft.owedCents + assetAccounts.owedCents);
@@ -56,6 +58,7 @@ export const assembleNetWorthPoint = ({
     cash: asCents(assetAccounts.surplusCents + creditCard.surplusCents + overdraft.surplusCents),
     investments: portfolioCents,
     vehicles: vehicleCents,
+    properties: propertyCents,
     ventures: ventureCents,
   };
   const assetsTotal = asCents(NET_WORTH_ASSET_KINDS.reduce((sum, kind) => sum + assets[kind], 0));

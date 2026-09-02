@@ -6,6 +6,7 @@ import { removeUndefinedKeys } from '@js/helpers';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
 import { assertAccountUpdateAllowed } from '@services/accounts/assert-account-update-allowed';
+import { refreshStalePropertyValuesForUser } from '@services/properties/refresh-property-value.service';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
@@ -14,10 +15,11 @@ import { createController } from './helpers/controller-factory';
 
 export const getAccounts = createController(z.object({}), async ({ user }) => {
   const { id: userId } = user;
-  // Refresh vehicle balances whose 7-day cache has expired before reading the
-  // accounts list. Errors per-vehicle are swallowed inside so one bad row never
+  // Refresh vehicle and property balances whose cache has expired before reading
+  // the accounts list. Errors per-row are swallowed inside so one bad row never
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
+  await refreshStalePropertyValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
   // Serialize: convert cents to decimal for API response
   return { data: serializeAccounts(accounts) };
@@ -113,7 +115,7 @@ export const updateAccount = createController(
 
     await assertAccountUpdateAllowed({ userId, id, accountCategory, currentBalance });
 
-    // NOTE: the "currentBalance can't be set directly on a vehicle account"
+    // NOTE: the "currentBalance can't be set directly on a managed-value account"
     // guard lives in `accountsService.updateAccount` (not here) so every caller
     // — HTTP, MCP, internal — is covered, not just this controller.
 

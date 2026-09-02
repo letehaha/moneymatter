@@ -53,9 +53,9 @@ export const aggregatePlannedSummary = ({
 };
 
 /**
- * Excludes archived accounts and the derived-balance categories (vehicles, loans). A projection
- * must cover the same accounts as the total it sits beside, or the two figures describe
- * different sets.
+ * Excludes archived accounts and the derived-balance categories (vehicles, properties, loans).
+ * A projection must cover the same accounts as the total it sits beside, or the two figures
+ * describe different sets.
  */
 export const selectProjectedTotalAccounts = ({ accounts }: { accounts: AccountModel[] }): AccountModel[] =>
   accounts.filter(

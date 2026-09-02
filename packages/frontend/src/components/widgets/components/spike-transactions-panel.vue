@@ -127,7 +127,7 @@ const props = defineProps<{
   isPortfolioMode: boolean;
   accountsDelta: number;
   portfoliosDelta: number;
-  selectedBalanceType: 'total' | 'accounts' | 'portfolios' | 'ventures' | 'vehicles' | 'loans';
+  selectedBalanceType: 'total' | 'accounts' | 'portfolios' | 'ventures' | 'vehicles' | 'properties' | 'loans';
   currencyCode?: string;
 }>();
 

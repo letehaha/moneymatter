@@ -12,6 +12,7 @@ import {
   CarIcon,
   ChevronsUpDownIcon,
   HandCoinsIcon,
+  HomeIcon,
   LayersIcon,
   PlusIcon,
   RocketIcon,
@@ -40,16 +41,19 @@ const {
   isLoading,
   accountsWithoutGroups,
   vehicleAccounts,
+  propertyAccounts,
   baseCurrencyCode,
   bankAccountsTotal,
   portfoliosTotal,
   isPortfoliosTotalLoading,
   venturesCount,
   carsTotal,
+  propertiesTotal,
   loansTotal,
   showPortfolios,
   venturesVisible,
   carsVisible,
+  propertiesVisible,
   loansVisible,
 } = useSidebarSectionTotals();
 
@@ -63,19 +67,22 @@ const isBankAccountsOpen = useLocalStorage('sidebar:accounts-bank-open', true);
 const isPortfoliosOpen = useLocalStorage('sidebar:accounts-portfolios-open', true);
 const isVenturesOpen = useLocalStorage('sidebar:accounts-ventures-open', true);
 const isCarsOpen = useLocalStorage('sidebar:accounts-cars-open', true);
+const isPropertiesOpen = useLocalStorage('sidebar:accounts-properties-open', true);
 const isLoansOpen = useLocalStorage('sidebar:accounts-loans-open', true);
 
-type SidebarSection = 'bank' | 'portfolios' | 'ventures' | 'cars' | 'loans';
+type SidebarSection = 'bank' | 'portfolios' | 'ventures' | 'cars' | 'properties' | 'loans';
 
 // Ordered, top-to-bottom section list. `orderedVisibleSections` drops the ones hidden by user
-// prefs or emptiness (zero-count ventures/cars/loans auto-hide); `computeStickyOffsets` turns
-// that order into per-section stacked sticky-header offsets. Bank is always first and rendered
-// with a plain `top-0` and no bottom, so its computed entry is only used to count sections above.
+// prefs or emptiness (zero-count ventures/cars/properties/loans auto-hide); `computeStickyOffsets`
+// turns that order into per-section stacked sticky-header offsets. Bank is always first and
+// rendered with a plain `top-0` and no bottom, so its computed entry is only used to count
+// sections above.
 const SIDEBAR_SECTIONS = [
   'bank',
   'portfolios',
   'ventures',
   'cars',
+  'properties',
   'loans',
 ] as const satisfies readonly SidebarSection[];
 
@@ -86,6 +93,7 @@ const orderedVisibleSections = computed<SidebarSection[]>(() =>
       { key: 'portfolios', visible: showPortfolios.value },
       { key: 'ventures', visible: venturesVisible.value },
       { key: 'cars', visible: carsVisible.value },
+      { key: 'properties', visible: propertiesVisible.value },
       { key: 'loans', visible: loansVisible.value },
     ] as const
   )
@@ -279,6 +287,26 @@ const onSectionExpand = async ({ headerEl, wrapperEl }: { headerEl?: HTMLElement
             />
           </template>
           <AccountsList :accounts="vehicleAccounts" />
+        </SidebarCollapsibleSection>
+
+        <SidebarCollapsibleSection
+          v-if="propertiesVisible"
+          v-model:open="isPropertiesOpen"
+          :icon="HomeIcon"
+          :label="$t('sidebar.accountsView.properties')"
+          :top-class="stickyOffsets.properties.top"
+          :bottom-class="stickyOffsets.properties.bottom"
+          @expand="onSectionExpand"
+        >
+          <template v-if="baseCurrencyCode" #trailing>
+            <GroupTotal
+              :amount="propertiesTotal.total"
+              :currency-code="baseCurrencyCode"
+              :is-approx="propertiesTotal.isApprox"
+              emphasis
+            />
+          </template>
+          <AccountsList :accounts="propertyAccounts" />
         </SidebarCollapsibleSection>
 
         <SidebarCollapsibleSection

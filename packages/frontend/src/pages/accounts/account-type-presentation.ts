@@ -6,6 +6,7 @@ import {
   CreditCardIcon,
   GiftIcon,
   HandCoinsIcon,
+  HomeIcon,
   LandmarkIcon,
   PiggyBankIcon,
   ShieldIcon,
@@ -32,10 +33,11 @@ const ACCOUNT_CATEGORY_ICONS: Record<ACCOUNT_CATEGORIES, Component> = {
   [ACCOUNT_CATEGORIES.investment]: TrendingUpIcon,
   [ACCOUNT_CATEGORIES.crypto]: BitcoinIcon,
   [ACCOUNT_CATEGORIES.vehicle]: CarIcon,
+  [ACCOUNT_CATEGORIES.property]: HomeIcon,
   [ACCOUNT_CATEGORIES.loan]: HandCoinsIcon,
 };
 
-type AccountColor = 'checking' | 'saving' | 'credit' | 'cash' | 'investment' | 'crypto' | 'vehicle';
+type AccountColor = 'checking' | 'saving' | 'credit' | 'cash' | 'investment' | 'crypto' | 'vehicle' | 'property';
 
 const ACCOUNT_CATEGORY_COLORS: Record<ACCOUNT_CATEGORIES, AccountColor> = {
   [ACCOUNT_CATEGORIES.currentAccount]: 'checking',
@@ -49,6 +51,7 @@ const ACCOUNT_CATEGORY_COLORS: Record<ACCOUNT_CATEGORIES, AccountColor> = {
   [ACCOUNT_CATEGORIES.investment]: 'investment',
   [ACCOUNT_CATEGORIES.crypto]: 'crypto',
   [ACCOUNT_CATEGORIES.vehicle]: 'vehicle',
+  [ACCOUNT_CATEGORIES.property]: 'property',
   [ACCOUNT_CATEGORIES.loan]: 'checking',
 };
 
@@ -64,6 +67,7 @@ const TINTED_CHIP_CLASSES: Record<AccountColor, string> = {
   investment: 'bg-account-investment/15 text-account-investment',
   crypto: 'bg-account-crypto/15 text-account-crypto',
   vehicle: 'bg-account-vehicle/15 text-account-vehicle',
+  property: 'bg-account-property/15 text-account-property',
 };
 
 /** Opaque counterpart, for a chip that overlaps other content where the tint would let it show through. */
@@ -75,6 +79,7 @@ const SOLID_CHIP_CLASSES: Record<AccountColor, string> = {
   investment: 'bg-account-investment text-background',
   crypto: 'bg-account-crypto text-background',
   vehicle: 'bg-account-vehicle text-background',
+  property: 'bg-account-property text-background',
 };
 
 const getAccountColor = ({ category }: { category: ACCOUNT_CATEGORIES }): AccountColor =>

@@ -11,14 +11,17 @@ export interface CombinedBalanceHistoryItem {
   date: string;
   /**
    * Sum of all "real" asset account categories (cash, credit card, savings, etc.).
-   * Vehicles and loans are excluded so the line isn't dragged down by depreciation
-   * or liabilities — those get their own `vehiclesBalance`/`loansBalance` fields.
+   * Vehicles, properties and loans are excluded so the line isn't dragged by a
+   * valuation curve or liabilities — those get their own
+   * `vehiclesBalance`/`propertiesBalance`/`loansBalance` fields.
    */
   accountsBalance: number;
   portfoliosBalance: number;
   venturesBalance: number;
   /** Sum of vehicle-account balances. Separated to avoid polluting accountsBalance. */
   vehiclesBalance: number;
+  /** Sum of property-account balances. Separated to avoid polluting accountsBalance. */
+  propertiesBalance: number;
   /** Sum of loan balances (stored negative), so adding it to totalBalance subtracts liabilities. */
   loansBalance: number;
   totalBalance: number;

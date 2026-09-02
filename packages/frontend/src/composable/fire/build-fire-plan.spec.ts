@@ -20,6 +20,7 @@ const point = ({
   cash = 0,
   investments = 0,
   vehicles = 0,
+  properties = 0,
   ventures = 0,
   creditCard = 0,
   overdraft = 0,
@@ -29,21 +30,22 @@ const point = ({
   cash?: number;
   investments?: number;
   vehicles?: number;
+  properties?: number;
   ventures?: number;
   creditCard?: number;
   overdraft?: number;
   loan?: number;
 }): NetWorthHistoryPoint => ({
   date,
-  assets: { cash, investments, vehicles, ventures },
-  assetsTotal: cash + investments + vehicles + ventures,
+  assets: { cash, investments, vehicles, properties, ventures },
+  assetsTotal: cash + investments + vehicles + properties + ventures,
   liabilities: {
     [ACCOUNT_CATEGORIES.creditCard]: creditCard,
     [ACCOUNT_CATEGORIES.overdraft]: overdraft,
     [ACCOUNT_CATEGORIES.loan]: loan,
   },
   liabilitiesTotal: creditCard + overdraft + loan,
-  netWorth: cash + investments + vehicles + ventures + creditCard + overdraft + loan,
+  netWorth: cash + investments + vehicles + properties + ventures + creditCard + overdraft + loan,
 });
 
 const cashFlowPeriods = ({ months, expenses = 3_000 }: { months: number; expenses?: number }): CashFlowPeriodData[] =>
@@ -398,17 +400,20 @@ describe('buildFirePlan balance composition', () => {
       overdraft: -5_000,
       investments: 100_000,
       vehicles: 20_000,
+      properties: 40_000,
       ventures: 5_000,
     }),
   ];
 
-  it('nets cards and overdrafts into accounts and honours the vehicle and venture switches', () => {
-    const plan = build({ fire: { ...READY, includeVehicles: true }, points });
+  it('nets cards and overdrafts into accounts and honours the property, vehicle and venture switches', () => {
+    const plan = build({ fire: { ...READY, includeProperties: true, includeVehicles: true }, points });
     expect(plan.inputs.buckets.accounts).toBe(-5_000);
-    expect(plan.inputs.balance).toBe(115_000);
-    expect(build({ fire: { ...READY, includeVehicles: true, includeVentures: true }, points }).inputs.balance).toBe(
-      120_000,
-    );
+    expect(plan.inputs.balance).toBe(155_000);
+    expect(
+      build({ fire: { ...READY, includeProperties: true, includeVehicles: true, includeVentures: true }, points })
+        .inputs.balance,
+    ).toBe(160_000);
+    expect(build({ fire: { ...READY, includeProperties: true }, points }).inputs.balance).toBe(135_000);
     expect(build({ fire: READY, points }).inputs.balance).toBe(95_000);
   });
 });

@@ -20,6 +20,7 @@ import {
   setupCurrencies,
   setupDashboardSettings,
   setupLoans,
+  setupProperties,
   setupVehicles,
   setupVentures,
 } from './seed-demo-data.service';
@@ -320,6 +321,7 @@ export async function applyDemoTemplate({
 
   await setupDashboardSettings({ userId, categoryMap });
   await setupVehicles({ userId, referenceDate });
+  await setupProperties({ userId, referenceDate });
   await setupLoans({ userId, referenceDate });
   await setupVentures({ userId, referenceDate });
   if (savingsAccountId) {
