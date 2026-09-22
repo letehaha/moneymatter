@@ -1,5 +1,6 @@
 import { HouseholdSharePermission, RecordId, RESOURCE_TYPES } from '@bt/shared/types';
 import * as Accounts from '@models/accounts.model';
+import BudgetPlans from '@models/budget-plans.model';
 import ResourceShares from '@models/resource-shares.model';
 import ShareInvitations from '@models/share-invitations.model';
 import * as Users from '@models/users.model';
@@ -98,6 +99,7 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
     where: { [Op.or]: [{ ownerUserId: user.id }, { inviteeUserId: user.id }] },
   });
 
+  await BudgetPlans.destroy({ where: { userId: user.id }, force: true });
   for (const def of WIPE_ORDER) {
     if (def.scope.strategy !== 'userColumn' || CREATOR_SCOPED_TABLES.has(def.fileName)) continue;
     // force:true so paranoid models hard-delete instead of leaving soft-deleted rows behind their default scope.

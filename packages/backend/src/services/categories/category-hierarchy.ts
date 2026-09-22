@@ -1,5 +1,3 @@
-import { AccessibleCategoryInfo } from './get-accessible-category-map.service';
-
 /**
  * Walks parentId links from a category up to its root, returning the root category id.
  *
@@ -7,12 +5,12 @@ import { AccessibleCategoryInfo } from './get-accessible-category-map.service';
  * a category missing from the map, so a dangling parent link can never yield an undefined walk.
  * A categoryId that is not in the map at all resolves to itself.
  */
-export const getRootCategoryId = ({
+export const getRootCategoryId = <T extends { id: string; parentId: string | null }>({
   categoryId,
   byId,
 }: {
   categoryId: string;
-  byId: Map<string, AccessibleCategoryInfo>;
+  byId: Map<string, T>;
 }): string => {
   let current = byId.get(categoryId);
   if (!current) return categoryId;
@@ -57,10 +55,10 @@ export const getAncestorIds = <T extends { id: string; parentId: string | null }
  * A memoized `getRootCategoryId` bound to one category map. Stats aggregations resolve the same
  * category's root many times per request; the cache turns each repeat into an O(1) lookup.
  */
-export const createRootCategoryResolver = ({
+export const createRootCategoryResolver = <T extends { id: string; parentId: string | null }>({
   byId,
 }: {
-  byId: Map<string, AccessibleCategoryInfo>;
+  byId: Map<string, T>;
 }): ((categoryId: string) => string) => {
   const cache = new Map<string, string>();
   return (categoryId: string): string => {
@@ -78,19 +76,19 @@ export const createRootCategoryResolver = ({
  * kept when itself or any ancestor is in the selected set. The originally selected ids are always
  * present in the result.
  */
-export const expandCategoryIdsWithDescendants = ({
+export const expandCategoryIdsWithDescendants = <T extends { id: string; parentId: string | null }>({
   categoryIds,
   categories,
   byId,
 }: {
   categoryIds: string[];
-  categories: AccessibleCategoryInfo[];
-  byId: Map<string, AccessibleCategoryInfo>;
+  categories: T[];
+  byId: Map<string, T>;
 }): string[] => {
   const expanded = new Set<string>(categoryIds);
 
   for (const cat of categories) {
-    let current: AccessibleCategoryInfo | undefined = byId.get(cat.id);
+    let current: T | undefined = byId.get(cat.id);
     while (current) {
       if (categoryIds.includes(current.id)) {
         expanded.add(cat.id);

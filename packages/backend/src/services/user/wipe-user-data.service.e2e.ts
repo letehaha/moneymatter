@@ -3,6 +3,7 @@ import { API_ERROR_CODES, API_RESPONSE_STATUS } from '@bt/shared/types/api';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
+import BudgetPlans from '@models/budget-plans.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
 import { connection } from '@models/index';
@@ -37,6 +38,9 @@ describe('User data wipe (POST /user/wipe-data)', () => {
       raw: true,
     });
     const budget = await helpers.createCustomBudget({ name: 'Wipe budget', limitAmount: 500, raw: true });
+    // Soft-deleted on purpose: a paranoid row must be hard-deleted by the wipe too.
+    const budgetPlan = await helpers.createBudgetPlan({ raw: true });
+    await helpers.deleteBudgetPlan({ planId: budgetPlan.plan.id });
     await helpers.createPortfolio({ payload: { name: 'Wipe portfolio' }, raw: true });
     const tag = await helpers.createTag({ payload: { name: 'wipe-tag', color: '#123456' }, raw: true });
     const template = await helpers.createTransactionTemplate({
@@ -87,6 +91,7 @@ describe('User data wipe (POST /user/wipe-data)', () => {
         leftovers.push(def.fileName);
     }
     expect(leftovers).toEqual([]);
+    expect(await BudgetPlans.findAll({ where: { userId }, paranoid: false })).toHaveLength(0);
     expect(await TransactionTemplateTags.findAll({ where: { templateId: template.id } })).toHaveLength(0);
     expect(await Budgets.findAll({ where: { id: budget.id } })).toHaveLength(0);
 

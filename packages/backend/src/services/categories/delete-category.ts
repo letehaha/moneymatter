@@ -4,6 +4,7 @@ import { ConflictError, ValidationError } from '@js/errors';
 import * as Categories from '@models/categories.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
+import { mergeLinesOnCategoryDelete } from '@services/budget-plans/merge-lines-on-category-delete';
 import { withTransaction } from '@services/common/with-transaction';
 import { pauseAutomationsReferencing, rewriteAutomationRef } from '@services/transaction-automations/references';
 import { repointSplits } from '@services/transactions/splits/repoint-splits';
@@ -88,6 +89,14 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
       label: category.name,
     });
   }
+
+  // Before the delete: the budget membership FK cascades, so a line's coverage
+  // and its amounts would be gone before the merge could move them.
+  await mergeLinesOnCategoryDelete({
+    userId: payload.userId,
+    categoryId: category.id,
+    replacementCategoryId: replacement?.id ?? null,
+  });
 
   await Categories.deleteCategory(payload);
 });

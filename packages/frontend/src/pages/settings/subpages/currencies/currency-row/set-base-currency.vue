@@ -128,14 +128,16 @@ const { t } = useI18n();
 const showBaseCurrencyDialog = ref(false);
 const showRoundingDetails = ref(false);
 
-const buildLockedMessage = ({ blockers }: { blockers: BaseCurrencyBlocker[] }) => {
-  const segments = blockers.map((b) =>
-    b.type === 'household'
-      ? t('settings.currencies.setBase.errors.lockedHousehold', { count: b.count }, b.count)
-      : t('settings.currencies.setBase.errors.lockedShares', { count: b.count }, b.count),
-  );
-  return segments.join(' ');
+// Exhaustive over the blocker union, so a new blocker type fails the type check
+// instead of silently borrowing another one's wording.
+const LOCKED_MESSAGE_KEYS: Record<BaseCurrencyBlocker['type'], string> = {
+  household: 'settings.currencies.setBase.errors.lockedHousehold',
+  share: 'settings.currencies.setBase.errors.lockedShares',
+  budget_plan: 'settings.currencies.setBase.errors.lockedBudgetPlan',
 };
+
+const buildLockedMessage = ({ blockers }: { blockers: BaseCurrencyBlocker[] }) =>
+  blockers.map((b) => t(LOCKED_MESSAGE_KEYS[b.type], { count: b.count }, b.count)).join(' ');
 
 const makeBaseCurrency = async () => {
   // ResponsiveAlertDialog leaves closing to the parent; close before the async work
@@ -161,7 +163,8 @@ const makeBaseCurrency = async () => {
       }
       if (
         code === API_ERROR_CODES.baseCurrencyLockedByHousehold ||
-        code === API_ERROR_CODES.baseCurrencyLockedByShares
+        code === API_ERROR_CODES.baseCurrencyLockedByShares ||
+        code === API_ERROR_CODES.baseCurrencyLockedByBudgetPlan
       ) {
         const blockers = (details?.blockers as BaseCurrencyBlocker[] | undefined) ?? [];
         addErrorNotification(

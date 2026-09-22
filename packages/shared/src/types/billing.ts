@@ -49,6 +49,7 @@ export const FEATURES = {
   attachments: 'attachments',
   invoice_matching: 'invoice_matching',
   fire_planner: 'fire_planner',
+  budget_plan: 'budget_plan',
 } as const;
 export type Feature = (typeof FEATURES)[keyof typeof FEATURES];
 
@@ -75,6 +76,7 @@ const ESSENTIAL_FEATURES: readonly Feature[] = [
   FEATURES.backup_restore,
   FEATURES.data_export,
   FEATURES.attachments,
+  FEATURES.budget_plan,
 ];
 const PLUS_FEATURES: readonly Feature[] = [
   ...ESSENTIAL_FEATURES,
@@ -83,9 +85,12 @@ const PLUS_FEATURES: readonly Feature[] = [
   FEATURES.invoice_matching,
   FEATURES.fire_planner,
 ];
-/** Plus as of launch (2026-09-15). Deliberately not a reference to PLUS_FEATURES: features added later are paid for early adopters. */
+/** Plus as of launch (2026-09-15), inlined: a feature added to ESSENTIAL_FEATURES later is paid for early adopters. */
 const EARLY_ADOPTER_FEATURES: readonly Feature[] = [
-  ...ESSENTIAL_FEATURES,
+  FEATURES.backup_export,
+  FEATURES.backup_restore,
+  FEATURES.data_export,
+  FEATURES.attachments,
   FEATURES.bank_providers,
   FEATURES.operator_ai,
 ];

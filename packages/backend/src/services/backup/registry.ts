@@ -498,8 +498,11 @@ interface BackupExcludedDef {
   reason: string;
 }
 
+const BUDGET_PLANS_BACKUP_REASON =
+  'Budget plans are not written to the archive, so a restore does not bring them back.';
+
 /**
- * Global tables deliberately left out of the backup. Listed explicitly so the
+ * Tables deliberately left out of the backup. Listed explicitly so the
  * drift-guard unit test forces a backup decision for every registered model —
  * a new model added without one fails that test.
  */
@@ -539,6 +542,12 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     reason:
       'Rows point at files in attachment storage, which the backup archive does not carry — restoring rows alone would list attachments that cannot be opened. Attachments are not part of backup/restore.',
   },
+  { model: models.BudgetPlans, reason: BUDGET_PLANS_BACKUP_REASON },
+  { model: models.BudgetLines, reason: BUDGET_PLANS_BACKUP_REASON },
+  { model: models.BudgetLineCategories, reason: BUDGET_PLANS_BACKUP_REASON },
+  { model: models.BudgetPeriods, reason: BUDGET_PLANS_BACKUP_REASON },
+  { model: models.BudgetAssignments, reason: BUDGET_PLANS_BACKUP_REASON },
+  { model: models.BudgetPlanAccounts, reason: BUDGET_PLANS_BACKUP_REASON },
 ];
 
 const unresolved = [...BACKUP_TABLES, ...REFERENCE_TABLES, ...BACKUP_EXCLUDED].filter((t) => !t.model);

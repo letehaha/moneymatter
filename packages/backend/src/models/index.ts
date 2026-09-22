@@ -10,7 +10,13 @@ import BankDataProviderConnectionsModel from './bank-data-provider-connections.m
 import BillingSubscriptionsModel from './billing-subscriptions.model';
 import BillingWebhookEventsModel from './billing-webhook-events.model';
 import BrandLogosModel from './brand-logos.model';
+import BudgetAssignmentsModel from './budget-assignments.model';
 import BudgetCategoriesModel from './budget-categories.model';
+import BudgetLineCategoriesModel from './budget-line-categories.model';
+import BudgetLinesModel from './budget-lines.model';
+import BudgetPeriodsModel from './budget-periods.model';
+import BudgetPlanAccountsModel from './budget-plan-accounts.model';
+import BudgetPlansModel from './budget-plans.model';
 import BudgetTransactionsModel from './budget-transactions.model';
 import BudgetModel from './budget.model';
 import CategoriesModel from './categories.model';
@@ -151,6 +157,12 @@ const models = [
   TransactionAttachmentsModel,
   ImportBatchesModel,
   ImportBatchAccountEffectsModel,
+  BudgetPlansModel,
+  BudgetLinesModel,
+  BudgetLineCategoriesModel,
+  BudgetPeriodsModel,
+  BudgetAssignmentsModel,
+  BudgetPlanAccountsModel,
 ];
 
 const sequelize = new Sequelize({

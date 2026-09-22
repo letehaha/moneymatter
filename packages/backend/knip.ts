@@ -12,6 +12,8 @@ const config: KnipConfig = {
     // Loaded by sequelize-cli, not imported: entries rather than ignores so their own
     // imports (src/migrations/utils) still get dead-code checked
     'src/migrations/*.ts',
+    // Reached only through a test file's `@jest-environment` docblock
+    'src/services/budget-plans/periods/new-york-timezone-environment.ts',
   ],
   ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'vite', 'tsc'],
   ignore: [
@@ -31,7 +33,10 @@ const config: KnipConfig = {
     'nodemon',
     // Sub-packages bundled with their parent; available at runtime without being listed
     '@jest/globals', // bundled with jest
+    'jest-environment-node', // bundled with jest
     'umzug', // bundled with sequelize-cli
+    // A test's `@jest-environment <rootDir>/...` docblock, read as a package name
+    'vitest-environment-<rootDir>',
   ],
   rules: {
     duplicates: 'off',

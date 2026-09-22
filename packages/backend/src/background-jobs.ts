@@ -5,6 +5,7 @@ import { accountSyncWorker } from '@services/bank-data-providers/sync/account-sy
 import { attachmentsOrphanSweepCron } from './crons/attachments-orphan-sweep';
 import { balanceRevalueSweepCron } from './crons/balance-revalue-sweep';
 import { bankAccountsSyncCron } from './crons/bank-accounts-sync';
+import { budgetPlansPurgeCron } from './crons/budget-plans-purge';
 import { cryptoPricesSyncCron } from './crons/crypto-prices-sync';
 import { demoCleanupCron } from './crons/demo-cleanup';
 import { demoTemplateRefreshCron } from './crons/demo-template-refresh';
@@ -33,6 +34,7 @@ const prodOnlyCrons = [
   shareInvitationsExpireCron,
   shareResourceOrphanCleanupCron,
   purgeDeletedPortfoliosCron,
+  budgetPlansPurgeCron,
   balanceRevalueSweepCron,
   attachmentsOrphanSweepCron,
   bankAccountsSyncCron,

@@ -16,6 +16,7 @@ import { logger } from '@js/utils/logger';
 import { captureException } from '@js/utils/sentry';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
+import BudgetPlans from '@models/budget-plans.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import PortfolioBalances from '@models/investments/portfolio-balances.model';
@@ -106,21 +107,19 @@ type BaseCurrencyChangeProgress = (params: { step: BaseCurrencyChangeStep }) => 
  * Transaction-free pre-checks that gate a base-currency change: no active
  * share/household (both ends of a share must agree on one base currency, or the
  * recipient's aggregated stats silently mix `refAmount`s under different
- * ref-currency assumptions), a base currency already exists, and the target
- * differs from the current base.
+ * ref-currency assumptions), no active budget plan, a base currency already
+ * exists, and the target differs from the current base.
  *
  * Runs at enqueue time — before the lock is taken, so a trivial rejection never
  * holds the 4h lock — and again inside the job, since shares may have changed
  * between enqueue and pickup. Returns the current base so callers skip re-querying.
  */
 export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: ChangeBaseCurrencyParams) {
-  // Two parallel counts so the response can tell the user precisely which kind
-  // of relationship is blocking — household memberships are user-scoped (one
-  // revoke covers many accounts), per-resource shares are resource-scoped (each
-  // must be revoked individually). The frontend renders multi-step guidance off
-  // the `blockers` array. Pending invitations don't lock; they're handled by the
-  // accept-time currency-match check, which surfaces a clean error instead.
-  const [householdBlockingCount, perResourceBlockingCount] = await Promise.all([
+  // Three parallel counts so `blockers` can name each blocking relationship
+  // separately: a household revoke covers many accounts at once, per-resource
+  // shares need one revoke each, a budget plan has to be deleted. Pending
+  // invitations don't lock: the accept-time currency-match check rejects those.
+  const [householdBlockingCount, perResourceBlockingCount, budgetPlanCount] = await Promise.all([
     ResourceShares.count({
       where: {
         [Op.or]: [{ ownerUserId: userId }, { sharedWithUserId: userId }],
@@ -135,16 +134,20 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
         acceptedAt: { [Op.not]: null },
       },
     }),
+    // Budgeted amounts are cents in the plan's stamped currency, so a silent
+    // switch would turn 300 UAH into 300 EUR. A soft-deleted plan (excluded by
+    // the paranoid scope) doesn't lock: restore compares `currencyCode` instead.
+    BudgetPlans.count({ where: { userId } }),
   ]);
 
-  if (householdBlockingCount > 0 || perResourceBlockingCount > 0) {
+  if (householdBlockingCount > 0 || perResourceBlockingCount > 0 || budgetPlanCount > 0) {
     const blockers: BaseCurrencyBlocker[] = [];
     if (householdBlockingCount > 0) blockers.push({ type: 'household', count: householdBlockingCount });
     if (perResourceBlockingCount > 0) blockers.push({ type: 'share', count: perResourceBlockingCount });
+    if (budgetPlanCount > 0) blockers.push({ type: 'budget_plan', count: budgetPlanCount });
 
-    // Household takes the primary code when both block — revoking household is the
-    // higher-impact action, so surface it first; the `blockers` array still tells
-    // the user there's a per-resource step waiting after.
+    // Precedence household > share > budget plan: the primary code names the
+    // highest-impact revoke, and `blockers` carries the remaining steps.
     if (householdBlockingCount > 0) {
       throw new ConflictError({
         code: API_ERROR_CODES.baseCurrencyLockedByHousehold,
@@ -152,9 +155,16 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
         details: { blockers },
       });
     }
+    if (perResourceBlockingCount > 0) {
+      throw new ConflictError({
+        code: API_ERROR_CODES.baseCurrencyLockedByShares,
+        message: t({ key: 'currencies.baseCurrencyLockedByShares' }),
+        details: { blockers },
+      });
+    }
     throw new ConflictError({
-      code: API_ERROR_CODES.baseCurrencyLockedByShares,
-      message: t({ key: 'currencies.baseCurrencyLockedByShares' }),
+      code: API_ERROR_CODES.baseCurrencyLockedByBudgetPlan,
+      message: t({ key: 'currencies.baseCurrencyLockedByBudgetPlan' }),
       details: { blockers },
     });
   }
