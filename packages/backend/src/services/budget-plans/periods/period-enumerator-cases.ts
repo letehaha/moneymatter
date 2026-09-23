@@ -233,6 +233,7 @@ export const runPeriodEnumeratorCases = () => {
           expect(start <= date).toBe(true);
           expect(date < end).toBe(true);
           expect(nextBoundary({ plan, after: start })).toBe(end);
+          expect(nextBoundary({ plan, after: date, steps: 3 })).toBe(sequence({ plan, from: date, count: 3 }).at(-1));
           expect(boundaryAtOrBefore({ plan, date: start })).toBe(start);
         }
       });

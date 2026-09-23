@@ -1,0 +1,159 @@
+{
+  "budgetPlans": {
+    "title": "Budget",
+    "loadError": "Couldn't load your budget.",
+    "defaultName": "Budget",
+    "settings": {
+      "title": "Budget settings",
+      "description": "Changes save and apply immediately.",
+      "nameLabel": "Name",
+      "namePlaceholder": "Name this budget",
+      "periodLabel": "Period",
+      "startsOn": "Starts on {date}",
+      "cadenceLocked": "The cadence can't be changed yet.",
+      "accountsLabel": "Accounts on budget",
+      "accountsPlaceholder": "Select accounts",
+      "accountsRequired": "Keep at least one account",
+      "autoAttachLabel": "Add new accounts automatically",
+      "rolloverLabel": "Rollover default",
+      "rolloverNote": "Each line can override this.",
+      "carryDescription": {
+        "floor": "Money left in a line moves to the next period. Overspending does not.",
+        "signed": "Both leftovers and overspending move to the next period.",
+        "none": "Every line starts at zero, whatever happened before."
+      },
+      "dangerZone": "Danger zone",
+      "delete": "Move to trash",
+      "deleteCaption": "Kept for 30 days, then deleted.",
+      "deleteConfirmTitle": "Move this budget to trash?",
+      "deleteConfirmDescription": "It's kept for 30 days, then deleted. You can restore it until then.",
+      "saved": "Budget settings saved",
+      "error": "Couldn't save the budget settings",
+      "deleted": "Budget moved to trash",
+      "deleteError": "Couldn't move the budget to trash"
+    },
+    "lineCount": "{count} line | {count} lines",
+    "empty": {
+      "title": "Give your money a job",
+      "description": "Set limits per category and see what's left.",
+      "action": "Start budgeting"
+    },
+    "trashed": {
+      "title": "Your budget is in the trash",
+      "description": "Restore it to pick up where you left off.",
+      "restore": "Restore",
+      "restored": "Budget restored",
+      "restoreError": "Could not restore the budget"
+    },
+    "create": {
+      "title": "Start budgeting",
+      "description": "Pick how often your budget resets and which accounts it watches.",
+      "noAccountsTitle": "No accounts to budget yet",
+      "noAccountsDescription": "A budget needs at least one checking, savings, cash or credit card account that you own. Add one on the Accounts page, then come back.",
+      "goToAccounts": "Go to accounts",
+      "cadenceLabel": "Resets",
+      "startsOnLabel": "Starts on",
+      "accountsLabel": "Accounts",
+      "accountsPlaceholder": "Select accounts",
+      "rolloverLabel": "Rollover",
+      "rolloverPlaceholder": "Select a rollover rule",
+      "submit": "Create budget",
+      "success": "Budget created",
+      "error": "Could not create the budget"
+    },
+    "cadence": {
+      "monthly": "Monthly",
+      "semiMonthly": "Semi-monthly",
+      "biweekly": "Biweekly",
+      "weekly": "Weekly",
+      "everyNDays": "Every {n} days",
+      "everyNMonths": "Every {n} months"
+    },
+    "carryPolicy": {
+      "floor": "Carry surplus",
+      "signed": "Carry surplus and deficit",
+      "none": "Start fresh each period"
+    },
+    "period": {
+      "previous": "Previous period",
+      "next": "Next period",
+      "current": "Current",
+      "pickerTitle": "Select period"
+    },
+    "tiles": {
+      "assigned": "Assigned",
+      "spent": "Spent",
+      "available": "Available",
+      "overspent": "Overspent",
+      "overspentLines": "{count} line | {count} lines"
+    },
+    "grid": {
+      "line": "Line",
+      "assigned": "Assigned",
+      "activity": "Activity",
+      "available": "Available",
+      "overrideBadge": "override",
+      "carriesDeficit": "carries deficit",
+      "lineActions": "Line actions",
+      "editLine": "Edit line",
+      "archiveLine": "Archive line",
+      "archiveTitle": "Archive \"{name}\"?",
+      "archiveDescription": "It stops counting from this period on. Past periods keep their numbers. You can restore it later from \"Archived\".",
+      "deleteLine": "Delete line",
+      "deleteTitle": "Delete \"{name}\"?",
+      "deleteDescription": "Its assigned amounts are deleted and its spending will show as outside your lines. This can't be undone.",
+      "deleteHistoryDescription": "It's removed from every period, including past ones, and its assigned amounts are deleted. Its spending will show as outside your lines. This can't be undone.",
+      "deletePermanently": "Delete permanently",
+      "deleteArchiveHint": "We recommend archiving it instead to keep its history. You can restore it later from \"Archived\".",
+      "addLine": "Add line",
+      "noLines": "No lines yet",
+      "noLinesDescription": "Add a line to set a spending limit for a group of categories.",
+      "totalWithLines": "Total · {count} line | Total · {count} lines",
+      "assignAmountFor": "Assigned for {name}: {amount}. Change",
+      "archivedBadge": "archived",
+      "spentAmount": "spent {amount}"
+    },
+    "archivedLines": {
+      "trigger": "Archived {count}",
+      "title": "Archived lines",
+      "description": "A restored line resumes from the current period. Past periods stay as they are.",
+      "archivedFrom": "Archived from {date}",
+      "restore": "Restore",
+      "restoreLine": "Restore {name}",
+      "restored": "Line restored",
+      "restoreError": "Couldn't restore the line"
+    },
+    "line": {
+      "createTitle": "New line",
+      "editTitle": "Edit line",
+      "nameLabel": "Name",
+      "namePlaceholder": "Groceries",
+      "categoriesLabel": "Categories",
+      "categoriesPlaceholder": "Select categories",
+      "created": "Line added",
+      "updated": "Line updated",
+      "error": "Could not save the line",
+      "archived": "Line archived",
+      "archiveError": "Could not archive the line",
+      "deleted": "Line deleted",
+      "deleteError": "Could not delete the line"
+    },
+    "assign": {
+      "amountLabel": "Assigned",
+      "amountPlaceholder": "0",
+      "scopeLabel": "Amount applies to",
+      "scopeThisPeriod": "This period only",
+      "scopeFromNow": "From now on",
+      "rolloverLabel": "Rollover",
+      "rolloverPlaceholder": "Select a rollover rule",
+      "rolloverHint": "Applies from this period on",
+      "enterHint": "Enter to save",
+      "useBaseline": "Use baseline",
+      "saved": "Assignment saved",
+      "error": "Could not save the assignment"
+    },
+    "unbudgeted": {
+      "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories"
+    }
+  }
+}

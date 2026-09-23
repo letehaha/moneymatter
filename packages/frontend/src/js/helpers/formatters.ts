@@ -200,7 +200,8 @@ export function formatUIAmount(
 ): string {
   if (!Number.isFinite(value)) return String(value);
 
-  return toLocalFiatCurrency(value, {
+  // `|| 0` turns -0 into 0 so it doesn't render as "-$0.00".
+  return toLocalFiatCurrency(value || 0, {
     currency,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,

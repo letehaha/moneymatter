@@ -1,4 +1,10 @@
-import { BudgetPlanCadence, BudgetPlanCarryPolicy, BudgetPlanTypeKey, RecordId } from '@bt/shared/types';
+import {
+  BudgetPlanCadence,
+  BudgetPlanCarryPolicy,
+  BudgetPlanModel,
+  BudgetPlanTypeKey,
+  RecordId,
+} from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, HasMany, DataType, Index } from 'sequelize-typescript';
 
@@ -13,7 +19,7 @@ import Users from './users.model';
   paranoid: true,
   freezeTableName: true,
 })
-export default class BudgetPlans extends Model {
+export default class BudgetPlans extends Model implements BudgetPlanModel {
   @Column(IdColumn())
   declare id: RecordId;
 

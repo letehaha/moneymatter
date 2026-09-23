@@ -353,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Виберіть категорії...",
       "searchPlaceholder": "Шукати категорії...",
-      "noCategoriesFound": "Категорій не знайдено"
+      "noCategoriesFound": "Категорій не знайдено",
+      "takenBy": "У «{name}»"
     },
     "payeeMultiSelect": {
       "label": "Всі отримувачі",

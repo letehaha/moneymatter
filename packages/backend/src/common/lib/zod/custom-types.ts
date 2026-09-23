@@ -154,13 +154,6 @@ export const booleanQuery = () =>
 export const dateString = () =>
   z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { message: 'Date must be in YYYY-MM-DD format' });
 
-/**
- * A real calendar day in `YYYY-MM-DD` form. Extends `dateString()` (which only
- * checks the shape) by rejecting regex-matching but non-existent dates such as
- * `2020-13-45` via `Date.parse`.
- */
-const calendarDate = () => dateString().refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid calendar date');
-
 type DateRangePrecision = 'date' | 'datetime';
 
 /**
@@ -177,7 +170,7 @@ export const dateBound = ({
   precision = 'date',
   offset = false,
 }: { precision?: DateRangePrecision; offset?: boolean } = {}): z.ZodType<string> =>
-  precision === 'datetime' ? z.string().datetime({ offset }) : calendarDate();
+  precision === 'datetime' ? z.string().datetime({ offset }) : z.iso.date('Invalid calendar date');
 
 // Compares two bounds as instants, so it is correct for calendar days, UTC
 // datetimes, and offset datetimes alike (each parses to a comparable epoch).

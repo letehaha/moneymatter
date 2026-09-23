@@ -1,3 +1,4 @@
+import { ACCOUNT_CATEGORIES, ACCOUNT_STATUSES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -19,6 +20,40 @@ describe('Budget plan account set', () => {
 
     const emptied = await helpers.setBudgetPlanAccounts({ planId: created.plan.id, accountIds: [], raw: true });
     expect(emptied.accountIds).toEqual([]);
+  });
+
+  it('accepts re-sending an attached account that was archived later', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const created = await helpers.createBudgetPlan({ payload: { accountIds: [account.id] }, raw: true });
+    await helpers.updateAccount({ id: account.id, payload: { status: ACCOUNT_STATUSES.archived }, raw: true });
+
+    const resent = await helpers.setBudgetPlanAccounts({
+      planId: created.plan.id,
+      accountIds: [account.id],
+      raw: true,
+    });
+
+    expect(resent.accountIds).toEqual([account.id]);
+  });
+
+  it('detaches an account moved to a category a plan cannot attach', async () => {
+    const kept = await helpers.createAccount({ raw: true });
+    const moved = await helpers.createAccount({ raw: true });
+    const created = await helpers.createBudgetPlan({ payload: { accountIds: [kept.id, moved.id] }, raw: true });
+
+    await helpers.updateAccount({
+      id: moved.id,
+      payload: { accountCategory: ACCOUNT_CATEGORIES.investment },
+      raw: true,
+    });
+    expect((await helpers.getBudgetPlan({ planId: created.plan.id, raw: true })).accountIds).toEqual([kept.id]);
+
+    const replaced = await helpers.setBudgetPlanAccounts({
+      planId: created.plan.id,
+      accountIds: [kept.id],
+      raw: true,
+    });
+    expect(replaced.accountIds).toEqual([kept.id]);
   });
 
   it('refuses an account the user does not own', async () => {

@@ -1,24 +1,15 @@
-import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
-
-import { resolveAssigned } from './fold/resolve-assigned';
-
-/** Integer cents and plain objects: the merge math needs no database. */
-export interface MergeRow {
-  baselineAmount: number | null;
-  overrideAmount: number | null;
-  carryPolicy: BudgetPlanCarryPolicy | null;
-}
+import { AssignmentAmounts, resolveAssigned } from './resolve-assigned';
 
 export interface MergeLine {
   /** The periods of the line's lifetime, in order. */
   periodIds: string[];
-  rows: Map<string, MergeRow>;
+  rows: Map<string, AssignmentAmounts>;
 }
 
 /** `row: null` means the stored row goes away. */
 export interface MergeWrite {
   periodId: string;
-  row: MergeRow | null;
+  row: AssignmentAmounts | null;
 }
 
 const walk = ({ periodIds, rows }: MergeLine): Map<string, { baseline: number; assigned: number }> => {

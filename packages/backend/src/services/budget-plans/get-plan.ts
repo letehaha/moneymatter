@@ -1,13 +1,15 @@
 import { RecordId } from '@bt/shared/types';
+import { BudgetPlanDetails, BudgetPlanLineEntry } from '@bt/shared/types/budget-plans';
 import { toUtcDateString } from '@common/utils/date';
-import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
-import { t } from '@i18n/index';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { Op } from 'sequelize';
 
+import { covers, toRange } from './date-ranges';
+import { findPlan } from './find-plan';
+import { loadLines } from './periods/ensure-periods';
 import { boundaryAtOrBefore } from './periods/period-enumerator';
 
 /** A line entry as every line endpoint returns it: its categories in `currentStart`'s period. */
@@ -19,7 +21,7 @@ export const toLineEntry = ({
   line: BudgetLines;
   lineCategories: BudgetLineCategories[];
   currentStart: string;
-}) => ({
+}): BudgetPlanLineEntry => ({
   id: line.id,
   name: line.name,
   sortOrder: line.sortOrder,
@@ -29,27 +31,17 @@ export const toLineEntry = ({
     .filter(
       (row) =>
         row.lineId === line.id &&
-        toUtcDateString(row.fromDate) <= currentStart &&
-        (!row.untilDate || toUtcDateString(row.untilDate) > currentStart),
+        covers({ range: toRange({ from: row.fromDate, until: row.untilDate }), start: currentStart }),
     )
     .map((row) => row.categoryId),
 });
 
-export const getPlan = async ({ userId, planId }: { userId: number; planId: RecordId }) => {
-  const plan = await findOrThrowNotFound({
-    query: BudgetPlans.findOne({ where: { id: planId, userId } }),
-    message: t({ key: 'budgetPlans.planNotFound' }),
-  });
+export const getPlan = async ({ userId, planId }: { userId: number; planId: RecordId }): Promise<BudgetPlanDetails> => {
+  const plan = await findPlan({ planId, userId });
 
   const [planAccounts, lines] = await Promise.all([
     BudgetPlanAccounts.findAll({ where: { planId: plan.id }, attributes: ['accountId'] }),
-    BudgetLines.findAll({
-      where: { planId: plan.id },
-      order: [
-        ['sortOrder', 'ASC'],
-        ['id', 'ASC'],
-      ],
-    }),
+    loadLines({ planId: plan.id }),
   ]);
 
   const lineCategories = lines.length

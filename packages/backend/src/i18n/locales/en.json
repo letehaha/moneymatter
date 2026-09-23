@@ -148,10 +148,10 @@
     "accountNotFound": "One of the selected accounts was not found.",
     "lineNotFound": "Budget line not found.",
     "lineAlreadyArchived": "This budget line is already archived.",
-    "activeFromNotPeriodStart": "The start date must be the start of an existing period of this plan.",
-    "effectiveFromOutsideLifetime": "The effective date must be the start of a period inside this line's lifetime.",
+    "lineNotArchived": "This budget line is not archived.",
+    "activeFromNotPeriodStart": "The start date must be the start of a past or current period of this plan.",
+    "effectiveFromOutsideLifetime": "The effective date must be the start of a past or current period inside this line's lifetime.",
     "categoryNotFound": "One of the categories does not exist.",
-    "lineCategoriesRedundant": "A category and one of its subcategories cannot be in the same line.",
     "lineCategoriesOverlap": "Another line of this plan already covers one of these categories in that period.",
     "periodNotFound": "Budget period not found.",
     "periodOutsideLifetime": "This period is outside the budget line's lifetime."

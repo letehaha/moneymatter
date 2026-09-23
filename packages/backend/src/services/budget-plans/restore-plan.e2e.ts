@@ -1,3 +1,4 @@
+import { ACCOUNT_STATUSES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -46,6 +47,36 @@ describe('Budget plan restore', () => {
 
     const restored = await helpers.restoreBudgetPlan({ planId: created.plan.id, raw: true });
     expect(restored.accountIds.toSorted()).toEqual([first.id, second.id].toSorted());
+  });
+
+  it('keeps an account archived after the trashed plan attached it', async () => {
+    const first = await helpers.createAccount({ raw: true });
+    const created = await helpers.createBudgetPlan({
+      payload: { accountIds: [first.id], autoAttachAccounts: true },
+      raw: true,
+    });
+
+    await helpers.deleteBudgetPlan({ planId: created.plan.id });
+    const archived = await helpers.createAccount({ raw: true });
+    await helpers.updateAccount({ id: archived.id, payload: { status: ACCOUNT_STATUSES.archived }, raw: true });
+
+    const restored = await helpers.restoreBudgetPlan({ planId: created.plan.id, raw: true });
+    expect(restored.accountIds.toSorted()).toEqual([first.id, archived.id].toSorted());
+  });
+
+  it('does not re-attach an account the user removed before the delete', async () => {
+    const kept = await helpers.createAccount({ raw: true });
+    const removed = await helpers.createAccount({ raw: true });
+    const created = await helpers.createBudgetPlan({
+      payload: { accountIds: [kept.id, removed.id], autoAttachAccounts: true },
+      raw: true,
+    });
+    await helpers.setBudgetPlanAccounts({ planId: created.plan.id, accountIds: [kept.id], raw: true });
+
+    await helpers.deleteBudgetPlan({ planId: created.plan.id });
+
+    const restored = await helpers.restoreBudgetPlan({ planId: created.plan.id, raw: true });
+    expect(restored.accountIds).toEqual([kept.id]);
   });
 
   it('leaves the account set alone when auto-attach is off', async () => {

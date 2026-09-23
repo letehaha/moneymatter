@@ -118,6 +118,50 @@ describe('Budget plan assignment writes', () => {
       raw: true,
     });
     expect(stopped.lines[0]).toMatchObject({ assigned: 0, assignedSource: 'baseline' });
+    expect(await assignedIn({ planId, periodId: periods[2]!.id })).toMatchObject({
+      assigned: 0,
+      assignedSource: 'baseline',
+    });
+  });
+
+  it('clears only the baseline with a from_here null, keeping the override on the same row', async () => {
+    const { planId, periods, line } = await setup();
+
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[0]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 100 },
+      raw: true,
+    });
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[1]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 300 },
+      raw: true,
+    });
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[1]!.id,
+      lineId: line.id,
+      payload: { scope: 'this_period', amount: 500 },
+      raw: true,
+    });
+
+    const cleared = await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[1]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: null },
+      raw: true,
+    });
+
+    expect(cleared.lines[0]).toMatchObject({ assigned: 500, assignedSource: 'override' });
+    expect(await assignedIn({ planId, periodId: periods[2]!.id })).toMatchObject({
+      assigned: 100,
+      assignedSource: 'baseline',
+    });
   });
 
   it('deletes the row once its last value is cleared', async () => {
@@ -186,6 +230,38 @@ describe('Budget plan assignment writes', () => {
     expect(result.lines[0]).toMatchObject({ assigned: 0, assignedSource: 'none', carryPolicy: 'floor' });
   });
 
+  it('assigns to a future period and runs a current baseline on through the future ones', async () => {
+    const { planId, periods, line } = await setup();
+    const [current, next, future] = periods.slice(periods.findIndex((period) => period.isCurrent));
+
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: current!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 100 },
+      raw: true,
+    });
+    const result = await helpers.setBudgetAssignment({
+      planId,
+      periodId: future!.id,
+      lineId: line.id,
+      payload: { scope: 'this_period', amount: 250 },
+      raw: true,
+    });
+
+    expect(result.period).toMatchObject({ id: future!.id, isCurrent: false });
+    expect(result.lines[0]).toMatchObject({ assigned: 250, assignedSource: 'override' });
+    expect(await assignedIn({ planId, periodId: future!.id })).toMatchObject({ assigned: 250 });
+    expect(await assignedIn({ planId, periodId: next!.id })).toMatchObject({
+      assigned: 100,
+      assignedSource: 'baseline',
+    });
+    expect(await assignedIn({ planId, periodId: periods.at(-1)!.id })).toMatchObject({
+      assigned: 100,
+      assignedSource: 'baseline',
+    });
+  });
+
   it('keeps both fields when two concurrent writes touch different ones', async () => {
     const { planId, periods, line } = await setup();
 
@@ -225,6 +301,18 @@ describe('Budget plan assignment guards', () => {
     expect((await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here' } })).statusCode).toBe(
       ERROR_CODES.ValidationError,
     );
+  });
+
+  it('rejects an amount with more than 2 decimals or above 1e13', async () => {
+    const { planId, periods, line } = await setup();
+    const target = { planId, periodId: periods[0]!.id, lineId: line.id };
+
+    expect(
+      (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1.234 } })).statusCode,
+    ).toBe(ERROR_CODES.ValidationError);
+    expect(
+      (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1e13 + 1 } })).statusCode,
+    ).toBe(ERROR_CODES.ValidationError);
   });
 
   it('404s on an unknown period, an unknown line, and a period of another plan', async () => {
@@ -293,7 +381,18 @@ describe('Budget plan assignment guards', () => {
     ).toBe(ERROR_CODES.ConflictError);
   });
 
-  it('deletes the current row when the line is archived', async () => {
+  it('409s on a period at or after the end of an archived line', async () => {
+    const { planId, periods, line } = await setup();
+    await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+    const write = ({ periodId }: { periodId: string }) =>
+      helpers.setBudgetAssignment({ planId, periodId, lineId: line.id, payload: { scope: 'from_here', amount: 10 } });
+
+    expect((await write({ periodId: periods[1]!.id })).statusCode).toBe(200);
+    expect((await write({ periodId: periods[2]!.id })).statusCode).toBe(ERROR_CODES.ConflictError);
+    expect((await write({ periodId: periods[3]!.id })).statusCode).toBe(ERROR_CODES.ConflictError);
+  });
+
+  it('deletes the current and future rows when the line is archived', async () => {
     const { planId, periods, line } = await setup();
 
     await helpers.setBudgetAssignment({
@@ -311,10 +410,19 @@ describe('Budget plan assignment guards', () => {
       raw: true,
     });
 
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[3]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 50 },
+      raw: true,
+    });
+
     await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
 
     expect((await storedRows({ lineId: line.id })).map((row) => row.periodId)).toEqual([periods[0]!.id]);
     expect((await helpers.getBudgetPlanPeriodView({ planId, periodId: periods[2]!.id, raw: true })).lines).toEqual([]);
+    expect((await helpers.getBudgetPlanPeriodView({ planId, periodId: periods[3]!.id, raw: true })).lines).toEqual([]);
     expect(
       (await helpers.getBudgetPlanPeriodView({ planId, periodId: periods[1]!.id, raw: true })).lines[0],
     ).toMatchObject({ assigned: 100 });

@@ -1,5 +1,5 @@
 <template>
-  <ResponsivePopover :title="$t('settings.ai.modelGuide.trigger')" align="end" popover-class="w-80 p-3.5">
+  <ResponsivePopover :title="$t('settings.ai.modelGuide.trigger')" align="end" content-class="w-80 p-3.5">
     <template #trigger>
       <Button variant="soft-primary" size="sm" class="h-6 gap-1 rounded-full px-2.5 text-xs">
         <LightbulbIcon class="size-3" />

@@ -15,6 +15,11 @@ describe('dateBound', () => {
       expect(schema.safeParse('2025-13-45').success).toBe(false);
     });
 
+    it('rejects a day that would roll over into the next month', () => {
+      expect(schema.safeParse('2026-02-30').success).toBe(false);
+      expect(schema.safeParse('2026-02-28').success).toBe(true);
+    });
+
     it('rejects a full ISO datetime', () => {
       expect(schema.safeParse('2025-01-15T00:00:00.000Z').success).toBe(false);
     });

@@ -2,11 +2,13 @@ import { FEATURES } from '@bt/shared/types';
 import archiveLine from '@controllers/budget-plans/archive-line';
 import createLine from '@controllers/budget-plans/create-line';
 import createPlan from '@controllers/budget-plans/create-plan';
+import deleteLine from '@controllers/budget-plans/delete-line';
 import deletePlan from '@controllers/budget-plans/delete-plan';
 import getPeriodView from '@controllers/budget-plans/get-period-view';
 import getPlan from '@controllers/budget-plans/get-plan';
 import listPeriods from '@controllers/budget-plans/list-periods';
 import listPlans from '@controllers/budget-plans/list-plans';
+import restoreLine from '@controllers/budget-plans/restore-line';
 import restorePlan from '@controllers/budget-plans/restore-plan';
 import setAssignment from '@controllers/budget-plans/set-assignment';
 import setPlanAccounts from '@controllers/budget-plans/set-plan-accounts';
@@ -48,10 +50,10 @@ router.patch(
   validateEndpoint(updatePlan.schema),
   updatePlan.handler,
 );
+// Ungated: an active plan blocks base-currency changes, so a lapsed user must be able to drop it.
 router.delete(
   '/:planId',
   authenticateSession,
-  requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
   validateEndpoint(deletePlan.schema),
   deletePlan.handler,
@@ -93,8 +95,24 @@ router.delete(
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
+  validateEndpoint(deleteLine.schema),
+  deleteLine.handler,
+);
+router.post(
+  '/:planId/lines/:lineId/archive',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
   validateEndpoint(archiveLine.schema),
   archiveLine.handler,
+);
+router.post(
+  '/:planId/lines/:lineId/restore',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(restoreLine.schema),
+  restoreLine.handler,
 );
 router.put(
   '/:planId/periods/:periodId/lines/:lineId/assignment',

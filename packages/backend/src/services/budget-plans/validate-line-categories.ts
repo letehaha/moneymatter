@@ -8,13 +8,13 @@ import Categories from '@models/categories.model';
 import { expandCategoryIdsWithDescendants, getAncestorIds } from '@services/categories/category-hierarchy';
 import { Op } from 'sequelize';
 
-import { DateRange, clipRange, rangesIntersect, toRange } from './date-ranges';
+import { DateRange, clipRange, rangesIntersect, subtractRanges, toRange } from './date-ranges';
 
 /**
  * The plan owner's own categories, not `getAccessibleCategoryMap`: that one also
  * pulls in the trees of people who share accounts with the owner.
  */
-const ownerCategories = async ({ userId }: { userId: number }) => {
+export const ownerCategories = async ({ userId }: { userId: number }) => {
   const categories = await Categories.findAll({
     where: { userId },
     attributes: ['id', 'parentId'],
@@ -25,8 +25,9 @@ const ownerCategories = async ({ userId }: { userId: number }) => {
 };
 
 /**
- * A membership row covers its category plus every descendant, so two rows clash
- * when one category sits on the other's ancestor path.
+ * A membership row covers its category plus every descendant, so a descendant
+ * listed next to its ancestor is dropped, and two lines clash when one category
+ * sits on the other's ancestor path. Returns the ids to store.
  */
 export const validateLineCategories = async ({
   plan,
@@ -38,26 +39,38 @@ export const validateLineCategories = async ({
   lineId: RecordId | null;
   categoryIds: RecordId[];
   range: DateRange;
-}): Promise<void> => {
+}): Promise<RecordId[]> => {
   const { categories, byId } = await ownerCategories({ userId: plan.userId });
 
-  const selected = new Set<string>(categoryIds);
-  for (const categoryId of categoryIds) {
-    if (!byId.has(categoryId)) {
-      throw new ValidationError({ message: t({ key: 'budgetPlans.categoryNotFound' }) });
-    }
-    if (getAncestorIds({ categoryId, byId }).some((ancestorId) => selected.has(ancestorId))) {
-      throw new ValidationError({ message: t({ key: 'budgetPlans.lineCategoriesRedundant' }) });
-    }
+  if (categoryIds.some((categoryId) => !byId.has(categoryId))) {
+    throw new ValidationError({ message: t({ key: 'budgetPlans.categoryNotFound' }) });
   }
 
-  const covered = new Set(expandCategoryIdsWithDescendants({ categoryIds, categories, byId }));
-  const ancestors = new Set(categoryIds.flatMap((categoryId) => getAncestorIds({ categoryId, byId })));
+  const selected = new Set<string>(categoryIds);
+  const topMostIds = categoryIds.filter(
+    (categoryId) => !getAncestorIds({ categoryId, byId }).some((ancestorId) => selected.has(ancestorId)),
+  );
+
+  // A category the line already holds over the whole range skips the clash check:
+  // a category-delete merge or a re-parent can leave it in an ancestor pair across lines.
+  const ownRows = lineId === null ? [] : await BudgetLineCategories.findAll({ where: { lineId } });
+  const addedIds = topMostIds.filter(
+    (categoryId) =>
+      subtractRanges({
+        range,
+        cuts: ownRows
+          .filter((row) => row.categoryId === categoryId)
+          .map((row) => toRange({ from: row.fromDate, until: row.untilDate })),
+      }).length > 0,
+  );
+
+  const covered = new Set(expandCategoryIdsWithDescendants({ categoryIds: addedIds, categories, byId }));
+  const ancestors = new Set(addedIds.flatMap((categoryId) => getAncestorIds({ categoryId, byId })));
 
   const otherLines = await BudgetLines.findAll({
     where: { planId: plan.id, ...(lineId === null ? {} : { id: { [Op.ne]: lineId } }) },
   });
-  if (!otherLines.length) return;
+  if (!otherLines.length) return topMostIds;
 
   // An archived line still owns the periods inside its lifetime.
   const lifetimes = new Map(
@@ -76,4 +89,6 @@ export const validateLineCategories = async ({
       throw new ConflictError({ message: t({ key: 'budgetPlans.lineCategoriesOverlap' }) });
     }
   }
+
+  return topMostIds;
 };

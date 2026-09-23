@@ -8,6 +8,7 @@ import { toUtcDateString } from '@common/utils/date';
  */
 
 export const MAX_BACKDATED_PERIODS = 500;
+export const FUTURE_PERIODS = 12;
 
 export type PeriodCadenceConfig = {
   cadence: BudgetPlanCadence;
@@ -18,9 +19,9 @@ export type PeriodCadenceConfig = {
 
 const DAY_MS = 86_400_000;
 
-const toUtcMs = (date: string): number => {
-  const day = toUtcDateString(date);
-  return Date.UTC(Number(day.slice(0, 4)), Number(day.slice(5, 7)) - 1, Number(day.slice(8, 10)));
+const dateParts = ({ date }: { date: string }) => {
+  const iso = toUtcDateString(date);
+  return { year: Number(iso.slice(0, 4)), month: Number(iso.slice(5, 7)) - 1, day: Number(iso.slice(8, 10)) };
 };
 
 const daysInMonth = ({ year, month }: { year: number; month: number }): number =>
@@ -29,54 +30,54 @@ const daysInMonth = ({ year, month }: { year: number; month: number }): number =
 const dayOfMonthMs = ({ year, month, day }: { year: number; month: number; day: number }): number =>
   Date.UTC(year, month, Math.min(day, daysInMonth({ year, month })));
 
-const anchorParts = ({ plan }: { plan: PeriodCadenceConfig }) => {
-  const anchor = new Date(toUtcMs(plan.anchorDate));
-  return { year: anchor.getUTCFullYear(), month: anchor.getUTCMonth(), day: anchor.getUTCDate() };
-};
-
-const semiMonthlyDays = ({ plan }: { plan: PeriodCadenceConfig }) => {
-  const { day } = anchorParts({ plan });
-  const second = plan.secondAnchorDay ?? day;
-  return { first: Math.min(day, second), second: Math.max(day, second) };
-};
+export const anchorParts = ({ plan }: { plan: Pick<PeriodCadenceConfig, 'anchorDate'> }) =>
+  dateParts({ date: plan.anchorDate });
 
 /** Index 0 is the anchor boundary (`semi_monthly`: the anchor month's earlier day). */
 const boundaryMsAtIndex = ({ plan, index }: { plan: PeriodCadenceConfig; index: number }): number => {
   const { year, month, day } = anchorParts({ plan });
 
-  if (plan.cadence === 'days') return toUtcMs(plan.anchorDate) + index * plan.intervalN * DAY_MS;
+  if (plan.cadence === 'days') return Date.UTC(year, month, day) + index * plan.intervalN * DAY_MS;
   if (plan.cadence === 'months') return dayOfMonthMs({ year, month: month + index * plan.intervalN, day });
 
+  const second = plan.secondAnchorDay ?? day;
   const monthOffset = Math.floor(index / 2);
-  const days = semiMonthlyDays({ plan });
   return dayOfMonthMs({
     year,
     month: month + monthOffset,
-    day: index - monthOffset * 2 === 0 ? days.first : days.second,
+    day: index - monthOffset * 2 === 0 ? Math.min(day, second) : Math.max(day, second),
   });
 };
 
 const indexAtOrBefore = ({ plan, date }: { plan: PeriodCadenceConfig; date: string }): number => {
-  const dateMs = toUtcMs(date);
+  const target = dateParts({ date });
+  const dateMs = Date.UTC(target.year, target.month, target.day);
   const anchor = anchorParts({ plan });
 
   if (plan.cadence === 'days') {
-    return Math.floor((dateMs - toUtcMs(plan.anchorDate)) / DAY_MS / plan.intervalN);
+    return Math.floor((dateMs - Date.UTC(anchor.year, anchor.month, anchor.day)) / DAY_MS / plan.intervalN);
   }
 
-  const target = new Date(dateMs);
-  const monthDiff = (target.getUTCFullYear() - anchor.year) * 12 + (target.getUTCMonth() - anchor.month);
+  const monthDiff = (target.year - anchor.year) * 12 + (target.month - anchor.month);
   let index = plan.cadence === 'months' ? Math.floor(monthDiff / plan.intervalN) : monthDiff * 2 + 1;
   // The candidate lands in the date's own month, so this steps back at most twice.
   while (boundaryMsAtIndex({ plan, index }) > dateMs) index -= 1;
   return index;
 };
 
-export const boundaryAtOrBefore = ({ plan, date }: { plan: PeriodCadenceConfig; date: string }): string =>
-  toUtcDateString(new Date(boundaryMsAtIndex({ plan, index: indexAtOrBefore({ plan, date }) })));
+export const nextBoundary = ({
+  plan,
+  after,
+  steps = 1,
+}: {
+  plan: PeriodCadenceConfig;
+  after: string;
+  steps?: number;
+}): string =>
+  toUtcDateString(new Date(boundaryMsAtIndex({ plan, index: indexAtOrBefore({ plan, date: after }) + steps })));
 
-export const nextBoundary = ({ plan, after }: { plan: PeriodCadenceConfig; after: string }): string =>
-  toUtcDateString(new Date(boundaryMsAtIndex({ plan, index: indexAtOrBefore({ plan, date: after }) + 1 })));
+export const boundaryAtOrBefore = ({ plan, date }: { plan: PeriodCadenceConfig; date: string }): string =>
+  nextBoundary({ plan, after: date, steps: 0 });
 
 /** Boundaries crossed from `from` to `to`; for two period starts, the periods between them. */
 export const countPeriodsBetween = ({

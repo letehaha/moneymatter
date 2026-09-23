@@ -4,20 +4,16 @@ import { RecordId } from './record-id';
 export const BUDGET_PLAN_CADENCES = ['days', 'months', 'semi_monthly'] as const;
 export type BudgetPlanCadence = (typeof BUDGET_PLAN_CADENCES)[number];
 
-export const BUDGET_PLAN_CARRY_POLICIES = ['none', 'floor', 'signed'] as const;
+export const BUDGET_PLAN_CARRY_POLICIES = ['floor', 'signed', 'none'] as const;
 export type BudgetPlanCarryPolicy = (typeof BUDGET_PLAN_CARRY_POLICIES)[number];
 
 export const BUDGET_PLAN_TYPE_KEYS = ['category_caps'] as const;
 export type BudgetPlanTypeKey = (typeof BUDGET_PLAN_TYPE_KEYS)[number];
 
-/** The half of a plan type the frontend needs; the fold-time half lives in the backend registry. */
-export interface BudgetPlanTypeDescriptor {
-  carryDefault: BudgetPlanCarryPolicy;
-}
+export const BUDGET_PLAN_NAME_MAX_LENGTH = 200;
 
-export const BUDGET_PLAN_TYPE_DESCRIPTORS: Record<BudgetPlanTypeKey, BudgetPlanTypeDescriptor> = {
-  category_caps: { carryDefault: 'none' },
-};
+export const BUDGET_ASSIGNMENT_SCOPES = ['from_here', 'this_period'] as const;
+export type BudgetAssignmentScope = (typeof BUDGET_ASSIGNMENT_SCOPES)[number];
 
 /** The account categories a plan may attach. */
 export const BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES: readonly ACCOUNT_CATEGORIES[] = [
@@ -50,4 +46,68 @@ export interface BudgetPlanModel {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
+}
+
+export interface BudgetPlanLineEntry {
+  id: string;
+  name: string;
+  sortOrder: number;
+  activeFrom: string;
+  activeUntil: string | null;
+  categoryIds: string[];
+}
+
+export interface BudgetPlanDetails {
+  plan: BudgetPlanModel;
+  accountIds: string[];
+  lines: BudgetPlanLineEntry[];
+}
+
+export interface BudgetPlanPeriod {
+  id: string;
+  startDate: string;
+  /** Exclusive. */
+  endDate: string;
+  isCurrent: boolean;
+}
+
+export interface BudgetPlanPeriodViewLine {
+  lineId: string;
+  name: string;
+  sortOrder: number;
+  categoryIds: string[];
+  assigned: number;
+  assignedSource: 'override' | 'baseline' | 'none';
+  /** Signed: expenses are negative. */
+  activity: number;
+  carriedIn: number;
+  available: number;
+  carryPolicy: BudgetPlanCarryPolicy;
+}
+
+export interface BudgetPlanPeriodView {
+  period: BudgetPlanPeriod;
+  header: { totalAssigned: number; totalActivity: number; totalAvailable: number };
+  lines: BudgetPlanPeriodViewLine[];
+  unbudgeted: { categoryId: string; activity: number }[];
+}
+
+export interface SetBudgetPlanAssignmentPayload {
+  scope: BudgetAssignmentScope;
+  /** `undefined` leaves the column untouched, `null` clears it. */
+  amount?: number | null;
+  carryPolicy?: BudgetPlanCarryPolicy | null;
+}
+
+export interface CreateBudgetPlanPayload {
+  name: string;
+  type: BudgetPlanTypeKey;
+  cadence: BudgetPlanCadence;
+  intervalN?: number;
+  anchorDate: string;
+  secondAnchorDay?: number;
+  epochDate?: string;
+  accountIds: string[];
+  autoAttachAccounts?: boolean;
+  carryPolicy?: BudgetPlanCarryPolicy;
 }

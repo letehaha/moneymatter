@@ -3,8 +3,8 @@ import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
 import { removeUndefinedKeys } from '@js/helpers';
 import { withTransaction } from '@services/common/with-transaction';
 
+import { findPlan } from './find-plan';
 import { getPlan } from './get-plan';
-import { lockPlan } from './lock-plan';
 
 /**
  * A new plan default reaches every period of every line without its own
@@ -23,7 +23,7 @@ const updatePlanImpl = async ({
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
 }) => {
-  const plan = await lockPlan({ planId, userId });
+  const plan = await findPlan({ planId, userId, lock: true });
   await plan.update(removeUndefinedKeys({ name, autoAttachAccounts, carryPolicy }));
 
   return getPlan({ userId, planId });

@@ -1,4 +1,4 @@
-import { ACCOUNT_CATEGORIES, API_ERROR_CODES, PLANS } from '@bt/shared/types';
+import { ACCOUNT_CATEGORIES, API_ERROR_CODES, PLANS, type RecordId } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { toUtcDateString } from '@common/utils/date';
 import { describe, expect, it } from '@jest/globals';
@@ -157,6 +157,12 @@ describe('Budget plan CRUD', () => {
   it("hides another user's plan behind a 404, reads and writes alike", async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
     const planId = created.plan.id;
+    const [period] = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+    const line = await helpers.createBudgetPlanLine({
+      planId,
+      payload: { name: 'Food', categoryIds: [(await helpers.getCategoriesList())[0]!.id] },
+      raw: true,
+    });
     const other = await helpers.provisionSecondUserWithBaseCurrency();
 
     const statusCodes = await helpers.asUser({
@@ -165,6 +171,15 @@ describe('Budget plan CRUD', () => {
         (await helpers.getBudgetPlan({ planId })).statusCode,
         (await helpers.updateBudgetPlan({ planId, payload: { name: 'Stolen' } })).statusCode,
         (await helpers.setBudgetPlanAccounts({ planId, accountIds: [] })).statusCode,
+        (await helpers.getBudgetPlanPeriodView({ planId, periodId: period!.id })).statusCode,
+        (
+          await helpers.setBudgetAssignment({
+            planId,
+            periodId: period!.id,
+            lineId: line.id,
+            payload: { scope: 'from_here', amount: 10 },
+          })
+        ).statusCode,
         (await helpers.restoreBudgetPlan({ planId })).statusCode,
         (await helpers.deleteBudgetPlan({ planId })).statusCode,
       ],
@@ -180,11 +195,11 @@ describe('Budget plan CRUD', () => {
 
     const updated = await helpers.updateBudgetPlan({
       planId: created.plan.id,
-      payload: { name: 'Renamed', autoAttachAccounts: false, carryPolicy: 'floor' },
+      payload: { name: 'Renamed', autoAttachAccounts: true, carryPolicy: 'floor' },
       raw: true,
     });
     expect(updated.plan.name).toBe('Renamed');
-    expect(updated.plan.autoAttachAccounts).toBe(false);
+    expect(updated.plan.autoAttachAccounts).toBe(true);
     expect(updated.plan.carryPolicy).toBe('floor');
 
     for (const payload of [{ cadence: 'days' }, { epochDate: '2020-01-01' }, { type: 'category_caps' }]) {
@@ -221,7 +236,7 @@ describe('Budget plan CRUD', () => {
 });
 
 describe('Budget plans without the feature', () => {
-  it('keeps reads open and answers writes with 402', async () => {
+  it('keeps reads and delete open and answers other writes with 402', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
 
     await helpers.setUserBilling({ plan: PLANS.early_adopter, trialEndsAt: null });
@@ -234,9 +249,9 @@ describe('Budget plans without the feature', () => {
     expect(write.statusCode).toBe(ERROR_CODES.PaymentRequired);
     expect((write.body.response as unknown as ErrorResponse).code).toBe(API_ERROR_CODES.planRequired);
 
-    expect((await helpers.createBudgetPlan({ payload: { accountIds: created.accountIds } })).statusCode).toBe(
-      ERROR_CODES.PaymentRequired,
-    );
-    expect((await helpers.deleteBudgetPlan({ planId: created.plan.id })).statusCode).toBe(ERROR_CODES.PaymentRequired);
+    expect(
+      (await helpers.createBudgetPlan({ payload: { accountIds: created.accountIds as RecordId[] } })).statusCode,
+    ).toBe(ERROR_CODES.PaymentRequired);
+    expect((await helpers.deleteBudgetPlan({ planId: created.plan.id })).statusCode).toBe(200);
   });
 });

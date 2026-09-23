@@ -1,5 +1,10 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanCadence, BudgetPlanCarryPolicy, BudgetPlanTypeKey } from '@bt/shared/types/budget-plans';
+import {
+  BudgetPlanCadence,
+  BudgetPlanCarryPolicy,
+  BudgetPlanDetails,
+  BudgetPlanTypeKey,
+} from '@bt/shared/types/budget-plans';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
@@ -13,12 +18,27 @@ import { getPlan } from './get-plan';
 import {
   MAX_BACKDATED_PERIODS,
   PeriodCadenceConfig,
+  anchorParts,
   boundaryAtOrBefore,
   countPeriodsBetween,
   validateSemiMonthlyDays,
 } from './periods/period-enumerator';
 import { assertAccountsAttachable } from './set-plan-accounts';
-import { BUDGET_PLAN_TYPES } from './types';
+
+export const requireBaseCurrencyCode = async ({ userId }: { userId: number }): Promise<string> => {
+  const baseCurrency = await getBaseCurrency({ userId });
+  if (!baseCurrency) throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
+  return baseCurrency.currencyCode;
+};
+
+/** The partial unique index is the one-active-plan guard. */
+export const asOnlyActivePlan = <T>({ write }: { write: Promise<T> }): Promise<T> =>
+  write.catch((error) => {
+    if (error instanceof UniqueConstraintError) {
+      throw new ConflictError({ message: t({ key: 'budgetPlans.activePlanExists' }) });
+    }
+    throw error;
+  });
 
 const MAX_INTERVAL_N: Record<BudgetPlanCadence, number> = { days: 366, months: 12, semi_monthly: 1 };
 
@@ -52,7 +72,7 @@ const validateCadence = ({ cadence, intervalN, anchorDate, secondAnchorDay }: Pe
   if (secondAnchorDay === null) {
     throw new ValidationError({ message: t({ key: 'budgetPlans.secondAnchorDayRequired' }) });
   }
-  const anchorDay = Number(toUtcDateString(anchorDate).slice(8, 10));
+  const anchorDay = anchorParts({ plan: { anchorDate } }).day;
   if (!validateSemiMonthlyDays({ anchorDay, secondAnchorDay })) {
     throw new ValidationError({ message: t({ key: 'budgetPlans.semiMonthlyDaysTooClose' }) });
   }
@@ -69,8 +89,8 @@ const createPlanImpl = async ({
   epochDate,
   accountIds,
   autoAttachAccounts = false,
-  carryPolicy,
-}: CreatePlanParams) => {
+  carryPolicy = 'none',
+}: CreatePlanParams): Promise<BudgetPlanDetails> => {
   const cadenceConfig: PeriodCadenceConfig = { cadence, intervalN, anchorDate, secondAnchorDay };
   validateCadence(cadenceConfig);
 
@@ -88,33 +108,22 @@ const createPlanImpl = async ({
 
   await assertAccountsAttachable({ userId, accountIds });
 
-  const baseCurrency = await getBaseCurrency({ userId });
-  if (!baseCurrency) {
-    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
-  }
-
-  let plan: BudgetPlans;
-  try {
-    plan = await BudgetPlans.create({
+  const currencyCode = await requireBaseCurrencyCode({ userId });
+  const plan = await asOnlyActivePlan({
+    write: BudgetPlans.create({
       userId,
       name,
       type,
-      currencyCode: baseCurrency.currencyCode,
+      currencyCode,
       cadence,
       intervalN,
       anchorDate,
       secondAnchorDay,
       epochDate: epoch,
-      carryPolicy: carryPolicy ?? BUDGET_PLAN_TYPES[type].carryDefault,
+      carryPolicy,
       autoAttachAccounts,
-    });
-  } catch (error) {
-    // The partial unique index is the one-active-plan guard.
-    if (error instanceof UniqueConstraintError) {
-      throw new ConflictError({ message: t({ key: 'budgetPlans.activePlanExists' }) });
-    }
-    throw error;
-  }
+    }),
+  });
 
   await BudgetPlanAccounts.bulkCreate(accountIds.map((accountId) => ({ planId: plan.id, accountId })));
 

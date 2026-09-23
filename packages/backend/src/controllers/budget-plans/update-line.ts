@@ -1,3 +1,4 @@
+import { BUDGET_PLAN_NAME_MAX_LENGTH } from '@bt/shared/types/budget-plans';
 import { dateBound, recordId, uniqueRecordIds } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { updateLine } from '@services/budget-plans/update-line';
@@ -8,8 +9,8 @@ const schema = z.object({
   params: z.object({ planId: recordId(), lineId: recordId() }),
   body: z
     .strictObject({
-      name: z.string().trim().min(1).max(200).optional(),
-      sortOrder: z.number().int().optional(),
+      name: z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH).optional(),
+      sortOrder: z.int32().optional(),
       categoryIds: uniqueRecordIds({ min: 1 }).optional(),
       effectiveFrom: dateBound().optional(),
     })

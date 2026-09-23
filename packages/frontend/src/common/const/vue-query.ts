@@ -32,6 +32,8 @@ export const VUE_QUERY_GLOBAL_PREFIXES = Object.freeze({
 const { transactionChange, securityPriceChange, bankConnectionChange, ventureChange, notifications } =
   VUE_QUERY_GLOBAL_PREFIXES;
 
+const budgetPlans = [transactionChange, 'budget-plans'] as const;
+
 export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   // auth
   signupsOpen: ['signups-open'] as const,
@@ -138,6 +140,14 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   budgetsList: ['budgets-list'] as const,
   budgetsListItem: ['budgets-list-item'] as const,
+
+  budgetPlans,
+  budgetPlansList: [...budgetPlans, 'list'] as const,
+  // append the planId (and, for a period view, the periodId) when using
+  budgetPlan: [...budgetPlans, 'plan'] as const,
+  budgetPlanPeriods: [...budgetPlans, 'periods'] as const,
+  budgetPlanPeriodView: [...budgetPlans, 'period-view'] as const,
+
   budgetTransactionList: [transactionChange, 'budget-transaction-list'] as const,
   budgetAddingTransactionList: [transactionChange, 'budget-adding-transaction-list'] as const,
   budgetStats: [transactionChange, 'budget-stats'] as const,

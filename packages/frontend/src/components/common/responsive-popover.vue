@@ -1,22 +1,27 @@
 <script lang="ts" setup>
 import * as Drawer from '@/components/lib/ui/drawer';
-import * as Popover from '@/components/lib/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { createReusableTemplate } from '@vueuse/core';
+import { createReusableTemplate, useVModel } from '@vueuse/core';
 import type { HTMLAttributes } from 'vue';
 
 const [UseTemplate, SlotContent] = createReusableTemplate();
 const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    /** Names the drawer for screen readers; the content carries its own visible heading */
-    title: string;
-    align?: 'start' | 'center' | 'end';
-    popoverClass?: HTMLAttributes['class'];
+    open?: boolean;
+    /** Drawer heading and the popover's accessible name; without one the drawer's title is sr-only. */
+    title?: string;
+    /** Popover variant only; the drawer always spans the screen width. */
+    contentClass?: HTMLAttributes['class'];
   }>(),
-  { align: 'center' },
+  { open: undefined, title: undefined, contentClass: undefined },
 );
+
+const emit = defineEmits<{ 'update:open': [value: boolean] }>();
+
+const isOpen = useVModel(props, 'open', emit, { passive: true });
 </script>
 
 <template>
@@ -24,26 +29,24 @@ withDefaults(
     <slot />
   </UseTemplate>
 
-  <Drawer.Drawer v-if="isMobile">
+  <Drawer.Drawer v-if="isMobile" v-model:open="isOpen">
     <Drawer.DrawerTrigger as-child>
       <slot name="trigger" />
     </Drawer.DrawerTrigger>
-
-    <Drawer.DrawerContent class="px-4 pb-6">
-      <Drawer.DrawerTitle class="sr-only">{{ title }}</Drawer.DrawerTitle>
-      <div class="mt-4">
-        <SlotContent />
-      </div>
+    <Drawer.DrawerContent class="px-4 pb-4">
+      <Drawer.DrawerTitle :class="title ? 'pt-4 pb-2 text-base font-medium' : 'sr-only'">
+        {{ title }}
+      </Drawer.DrawerTitle>
+      <SlotContent />
     </Drawer.DrawerContent>
   </Drawer.Drawer>
 
-  <Popover.Popover v-else>
-    <Popover.PopoverTrigger as-child>
+  <Popover v-else v-model:open="isOpen">
+    <PopoverTrigger as-child>
       <slot name="trigger" />
-    </Popover.PopoverTrigger>
-
-    <Popover.PopoverContent :align="align" :class="popoverClass">
+    </PopoverTrigger>
+    <PopoverContent align="end" :class="contentClass" :aria-label="title">
       <SlotContent />
-    </Popover.PopoverContent>
-  </Popover.Popover>
+    </PopoverContent>
+  </Popover>
 </template>

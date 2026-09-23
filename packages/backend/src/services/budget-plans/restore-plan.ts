@@ -1,37 +1,28 @@
 import { RecordId } from '@bt/shared/types';
+import { BudgetPlanDetails } from '@bt/shared/types/budget-plans';
 import { t } from '@i18n/index';
-import { ConflictError, ValidationError } from '@js/errors';
-import { getBaseCurrency } from '@models/users-currencies.model';
+import { ConflictError } from '@js/errors';
 import { withTransaction } from '@services/common/with-transaction';
-import { UniqueConstraintError } from 'sequelize';
 
-import { attachEligibleAccounts } from './auto-attach-account';
+import { asOnlyActivePlan, requireBaseCurrencyCode } from './create-plan';
+import { findPlan } from './find-plan';
 import { getPlan } from './get-plan';
-import { lockPlan } from './lock-plan';
 
-const restorePlanImpl = async ({ userId, planId }: { userId: number; planId: RecordId }) => {
-  const plan = await lockPlan({ planId, userId, includeDeleted: true });
+const restorePlanImpl = async ({
+  userId,
+  planId,
+}: {
+  userId: number;
+  planId: RecordId;
+}): Promise<BudgetPlanDetails> => {
+  const plan = await findPlan({ planId, userId, lock: true, includeDeleted: true });
   if (!plan.deletedAt) return getPlan({ userId, planId });
 
-  const baseCurrency = await getBaseCurrency({ userId });
-  if (!baseCurrency) {
-    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
-  }
-  if (baseCurrency.currencyCode !== plan.currencyCode) {
+  if ((await requireBaseCurrencyCode({ userId })) !== plan.currencyCode) {
     throw new ConflictError({ message: t({ key: 'budgetPlans.baseCurrencyChanged' }) });
   }
 
-  try {
-    await plan.restore();
-  } catch (error) {
-    // The partial unique index is the one-active-plan guard.
-    if (error instanceof UniqueConstraintError) {
-      throw new ConflictError({ message: t({ key: 'budgetPlans.activePlanExists' }) });
-    }
-    throw error;
-  }
-
-  await attachEligibleAccounts({ userId });
+  await asOnlyActivePlan({ write: plan.restore() });
 
   return getPlan({ userId, planId });
 };

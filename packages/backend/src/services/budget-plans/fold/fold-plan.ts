@@ -1,10 +1,15 @@
-import { BudgetPlanCarryPolicy, BudgetPlanTypeKey } from '@bt/shared/types/budget-plans';
+import {
+  BudgetPlanCarryPolicy,
+  BudgetPlanPeriod,
+  BudgetPlanPeriodView,
+  BudgetPlanPeriodViewLine,
+} from '@bt/shared/types/budget-plans';
+import { toUtcDateString } from '@common/utils/date';
 import { createRootCategoryResolver, getAncestorIds } from '@services/categories/category-hierarchy';
 
-import { BUDGET_PLAN_TYPES, BudgetPlanHeader } from '../types';
-import { resolveAssigned } from './resolve-assigned';
+import { covers, toRange } from '../date-ranges';
+import { AssignmentAmounts, resolveAssigned } from './resolve-assigned';
 
-/** Every amount here is integer cents; `Money` conversion happens at the service edge. */
 export interface FoldCategory {
   id: string;
   parentId: string | null;
@@ -33,12 +38,9 @@ export interface FoldLineCategory {
   untilDate: string | null;
 }
 
-export interface FoldAssignment {
+export interface FoldAssignment extends AssignmentAmounts {
   periodId: string;
   lineId: string;
-  baselineAmount: number | null;
-  overrideAmount: number | null;
-  carryPolicy: BudgetPlanCarryPolicy | null;
 }
 
 export interface FoldActivityRow {
@@ -47,31 +49,21 @@ export interface FoldActivityRow {
   activity: number;
 }
 
-interface PeriodViewLine {
-  lineId: string;
-  name: string;
-  sortOrder: number;
-  /** The categories this line covers in this period. */
-  categoryIds: string[];
-  assigned: number;
-  assignedSource: 'override' | 'baseline' | 'none';
-  activity: number;
-  carriedIn: number;
-  available: number;
-  carryPolicy: BudgetPlanCarryPolicy;
-}
-
-export interface PeriodView {
-  period: { id: string; startDate: string; endDate: string; isCurrent: boolean };
-  header: BudgetPlanHeader;
-  lines: PeriodViewLine[];
-  unbudgeted: { categoryId: string; activity: number }[];
-}
-
 const carriedInto = ({ policy, previous }: { policy: BudgetPlanCarryPolicy; previous: number }): number => {
   if (policy === 'none') return 0;
   if (policy === 'floor') return Math.max(0, previous);
   return previous;
+};
+
+export const toPlanPeriod = ({ period, today }: { period: FoldPeriod; today: string }): BudgetPlanPeriod => {
+  const startDate = toUtcDateString(period.startDate);
+  const endDate = toUtcDateString(period.endDate);
+  return {
+    id: period.id,
+    startDate,
+    endDate,
+    isCurrent: covers({ range: { from: startDate, until: endDate }, start: today }),
+  };
 };
 
 interface LineState {
@@ -81,7 +73,10 @@ interface LineState {
   previousAvailable: number;
 }
 
-/** Pure: the whole plan from the epoch on, one view per stored period. */
+/**
+ * Pure: the whole plan from the epoch on, one view per stored period. Every
+ * amount it returns is integer cents; `Money` conversion happens at the service edge.
+ */
 export const foldPlan = ({
   plan,
   periods,
@@ -92,7 +87,7 @@ export const foldPlan = ({
   categories,
   today,
 }: {
-  plan: { type: BudgetPlanTypeKey; carryPolicy: BudgetPlanCarryPolicy };
+  plan: { carryPolicy: BudgetPlanCarryPolicy };
   periods: FoldPeriod[];
   lines: FoldLine[];
   lineCategories: FoldLineCategory[];
@@ -100,10 +95,9 @@ export const foldPlan = ({
   activityRows: FoldActivityRow[];
   categories: FoldCategory[];
   today: string;
-}): PeriodView[] => {
+}): BudgetPlanPeriodView[] => {
   const byId = new Map(categories.map((category) => [category.id, category]));
   const rootOf = createRootCategoryResolver({ byId });
-  const { deriveHeader } = BUDGET_PLAN_TYPES[plan.type];
 
   const rowByKey = new Map(assignments.map((row) => [`${row.periodId}:${row.lineId}`, row]));
   const activityByPeriod = new Map<string, FoldActivityRow[]>();
@@ -115,16 +109,17 @@ export const foldPlan = ({
 
   const states = new Map<string, LineState>();
 
-  return periods.map((period) => {
+  return periods.map((source) => {
+    const period = toPlanPeriod({ period: source, today });
     const start = period.startDate;
-    const live = lines.filter(
-      (item) => item.activeFrom <= start && (item.activeUntil === null || start < item.activeUntil),
+    const live = lines.filter((item) =>
+      covers({ range: toRange({ from: item.activeFrom, until: item.activeUntil }), start }),
     );
     const liveIds = new Set(live.map((item) => item.id));
 
     const membership = lineCategories.filter(
       (item) =>
-        liveIds.has(item.lineId) && item.fromDate <= start && (item.untilDate === null || start < item.untilDate),
+        liveIds.has(item.lineId) && covers({ range: toRange({ from: item.fromDate, until: item.untilDate }), start }),
     );
 
     // Ties on one membership category go to the smallest line id; nearest
@@ -160,7 +155,7 @@ export const foldPlan = ({
       unbudgetedByRoot.set(rootId, (unbudgetedByRoot.get(rootId) ?? 0) + row.activity);
     }
 
-    const viewLines = live.map((item): PeriodViewLine => {
+    const viewLines = live.map((item): BudgetPlanPeriodViewLine => {
       const state: LineState = states.get(item.id) ?? {
         baseline: 0,
         baselineSet: false,
@@ -196,13 +191,15 @@ export const foldPlan = ({
     });
 
     return {
-      period: {
-        id: period.id,
-        startDate: period.startDate,
-        endDate: period.endDate,
-        isCurrent: period.startDate <= today && today < period.endDate,
-      },
-      header: deriveHeader({ lines: viewLines }),
+      period,
+      header: viewLines.reduce(
+        (totals, line) => ({
+          totalAssigned: totals.totalAssigned + line.assigned,
+          totalActivity: totals.totalActivity + line.activity,
+          totalAvailable: totals.totalAvailable + line.available,
+        }),
+        { totalAssigned: 0, totalActivity: 0, totalAvailable: 0 },
+      ),
       lines: viewLines,
       unbudgeted: [...unbudgetedByRoot.entries()]
         .map(([categoryId, activity]) => ({ categoryId, activity }))

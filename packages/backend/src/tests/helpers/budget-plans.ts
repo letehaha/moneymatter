@@ -4,6 +4,7 @@ import { createPlan as _createPlan } from '@services/budget-plans/create-plan';
 import { getPeriodView as _getPeriodView } from '@services/budget-plans/get-period-view';
 import { getPlan as _getPlan, listPlans as _listPlans } from '@services/budget-plans/get-plan';
 import { listPeriods as _listPeriods } from '@services/budget-plans/list-periods';
+import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line';
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
 import { setAssignment as _setAssignment } from '@services/budget-plans/set-assignment';
 import { setPlanAccounts as _setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
@@ -183,8 +184,40 @@ export function archiveBudgetPlanLine<R extends boolean | undefined = false>({
   raw?: R;
 }) {
   return makeRequest<undefined, R>({
+    method: 'post',
+    url: `/budget-plans/${planId}/lines/${lineId}/archive`,
+    raw,
+  });
+}
+
+export function deleteBudgetPlanLine<R extends boolean | undefined = false>({
+  planId,
+  lineId,
+  raw,
+}: {
+  planId: string;
+  lineId: string;
+  raw?: R;
+}) {
+  return makeRequest<undefined, R>({
     method: 'delete',
     url: `/budget-plans/${planId}/lines/${lineId}`,
+    raw,
+  });
+}
+
+export function restoreBudgetPlanLine<R extends boolean | undefined = false>({
+  planId,
+  lineId,
+  raw,
+}: {
+  planId: string;
+  lineId: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _restoreLine>>, R>({
+    method: 'post',
+    url: `/budget-plans/${planId}/lines/${lineId}/restore`,
     raw,
   });
 }

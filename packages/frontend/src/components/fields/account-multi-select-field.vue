@@ -153,6 +153,8 @@ const props = withDefaults(
     /** Drop dedicated-flow accounts (loans, vehicles) from the list. The Pivot Report
      * opts in so its account filter only offers regular cash-flow accounts. */
     excludeDedicatedFlow?: boolean;
+    /** Extra predicate narrowing the offered accounts, e.g. to the categories a budget plan may attach. */
+    filterAccounts?: (account: AccountModel) => boolean;
   }>(),
   {
     label: undefined,
@@ -160,6 +162,7 @@ const props = withDefaults(
     placeholder: undefined,
     errorMessage: undefined,
     triggerClass: undefined,
+    filterAccounts: undefined,
   },
 );
 
@@ -194,16 +197,28 @@ const selectedLabel = computed(() => {
 const normalizedSearch = computed(() => searchQuery.value.trim().toLowerCase());
 const isSearching = computed(() => normalizedSearch.value.length > 0);
 
+const offeredGroups = computed<GroupedAccountsGroup[]>(() => {
+  const predicate = props.filterAccounts;
+  if (!predicate) return groups.value;
+  return groups.value
+    .map((group) => ({ ...group, accounts: group.accounts.filter(predicate) }))
+    .filter((group) => group.accounts.length > 0);
+});
+
+const offeredUngrouped = computed<AccountModel[]>(() =>
+  props.filterAccounts ? ungroupedAccounts.value.filter(props.filterAccounts) : ungroupedAccounts.value,
+);
+
 const filteredGroups = computed<GroupedAccountsGroup[]>(() =>
-  filterGroupsBySearch({ groups: groups.value, term: normalizedSearch.value }),
+  filterGroupsBySearch({ groups: offeredGroups.value, term: normalizedSearch.value }),
 );
 
 const filteredUngrouped = computed<AccountModel[]>(() =>
-  filterAccountsBySearch({ accounts: ungroupedAccounts.value, term: normalizedSearch.value }),
+  filterAccountsBySearch({ accounts: offeredUngrouped.value, term: normalizedSearch.value }),
 );
 
-/** True when the user has any account groups configured (before search filtering). */
-const accountsAreGrouped = computed(() => groups.value.length > 0);
+/** True when any group keeps an offered account (before search filtering). */
+const accountsAreGrouped = computed(() => offeredGroups.value.length > 0);
 
 const displaySections = computed<DisplaySection[]>(() => {
   const sections: DisplaySection[] = filteredGroups.value.map((group) => ({

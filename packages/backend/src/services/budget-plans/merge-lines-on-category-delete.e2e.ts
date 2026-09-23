@@ -1,8 +1,10 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 import type { RecordId } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import BudgetPeriods from '@models/budget-periods.model';
 import * as helpers from '@tests/helpers';
+import { Op } from 'sequelize';
 
 type Period = { id: string; startDate: string; endDate: string };
 
@@ -21,8 +23,10 @@ const setup = async ({ monthsAgo = 2 }: { monthsAgo?: number } = {}) => {
     raw: true,
   });
   const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+  // Epoch through current: the per-period assertions below list exactly these.
+  const throughCurrent = periods.slice(0, periods.findIndex((period) => period.isCurrent) + 1);
 
-  return { account, food, groceries, restaurants, transport, bills, planId: plan.id, periods };
+  return { account, food, groceries, restaurants, transport, bills, planId: plan.id, periods: throughCurrent };
 };
 
 const addLine = ({
@@ -58,6 +62,28 @@ const assign = ({
     raw: true,
   });
 
+const spend = ({
+  accountId,
+  categoryId,
+  period,
+  amount,
+}: {
+  accountId: RecordId;
+  categoryId: RecordId;
+  period: Period;
+  amount: number;
+}) =>
+  helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId,
+      amount,
+      categoryId,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: `${period.startDate}T12:00:00.000Z`,
+    }),
+    raw: true,
+  });
+
 const deleteCategory = async ({
   categoryId,
   replaceWithCategoryId,
@@ -77,6 +103,9 @@ const headers = ({ planId, periods }: { planId: string; periods: Period[] }) =>
 
 const lineNamed = async ({ planId, period, name }: { planId: string; period: Period; name: string }) =>
   (await view({ planId, period })).lines.find((line) => line.name === name);
+
+const lineByPeriod = ({ planId, periods, name }: { planId: string; periods: Period[]; name: string }) =>
+  Promise.all(periods.map((period) => lineNamed({ planId, period, name })));
 
 describe('Category delete: budget line merge', () => {
   it('drops the membership row and hard-deletes a line that never closed a period', async () => {
@@ -119,18 +148,7 @@ describe('Category delete: budget line merge', () => {
     await addLine({ planId, name: 'Restaurants', categoryIds: [restaurants.id], activeFrom: periods[0]!.startDate });
     await assign({ planId, periodId: periods[0]!.id, lineId: groceriesLine.id, amount: 300 });
 
-    await helpers.createTransaction({
-      payload: {
-        ...helpers.buildTransactionPayload({
-          accountId: account.id,
-          amount: 40,
-          categoryId: restaurants.id,
-          transactionType: TRANSACTION_TYPES.expense,
-        }),
-        time: `${periods[0]!.startDate}T12:00:00.000Z`,
-      },
-      raw: true,
-    });
+    await spend({ accountId: account.id, categoryId: restaurants.id, period: periods[0]!, amount: 40 });
 
     await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: food.id });
 
@@ -143,6 +161,35 @@ describe('Category delete: budget line merge', () => {
       ['Groceries', [food.id], 300, 0],
       ['Restaurants', [restaurants.id], 0, -40],
     ]);
+  });
+
+  it('lets both lines of the swapped ancestor pair be edited, but refuses a newly overlapping category', async () => {
+    const { planId, food, groceries, restaurants, periods } = await setup();
+    const groceriesLine = await addLine({
+      planId,
+      name: 'Groceries',
+      categoryIds: [groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    const restaurantsLine = await addLine({
+      planId,
+      name: 'Restaurants',
+      categoryIds: [restaurants.id],
+      activeFrom: periods[0]!.startDate,
+    });
+
+    await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: food.id });
+
+    const edit = ({ lineId, name, categoryIds }: { lineId: string; name: string; categoryIds: RecordId[] }) =>
+      helpers.updateBudgetPlanLine({ planId, lineId, payload: { name, categoryIds } });
+
+    expect((await edit({ lineId: groceriesLine.id, name: 'Food', categoryIds: [food.id] })).statusCode).toBe(200);
+    expect(
+      (await edit({ lineId: restaurantsLine.id, name: 'Eating out', categoryIds: [restaurants.id] })).statusCode,
+    ).toBe(200);
+    expect((await edit({ lineId: restaurantsLine.id, name: 'Eating out', categoryIds: [food.id] })).statusCode).toBe(
+      ERROR_CODES.ConflictError,
+    );
   });
 
   it('drops the row when the line already covers the replacement, keeping its other categories', async () => {
@@ -163,6 +210,75 @@ describe('Category delete: budget line merge', () => {
     });
   });
 
+  it('collapses a descendant of the replacement inside the same line into the replacement', async () => {
+    const { planId, food, groceries, transport, periods } = await setup();
+    const line = await addLine({
+      planId,
+      name: 'Mixed',
+      categoryIds: [transport.id, groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    await assign({ planId, periodId: periods[0]!.id, lineId: line.id, amount: 120 });
+
+    await deleteCategory({ categoryId: transport.id, replaceWithCategoryId: food.id });
+
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).lines).toEqual([{ ...line, categoryIds: [food.id] }]);
+    expect(await lineNamed({ planId, period: periods[0]!, name: 'Mixed' })).toMatchObject({
+      categoryIds: [food.id],
+      assigned: 120,
+    });
+  });
+
+  it('keeps a descendant on the periods before the replacement joined the line', async () => {
+    const { planId, food, groceries, transport, periods } = await setup();
+    const line = await addLine({
+      planId,
+      name: 'Groceries',
+      categoryIds: [groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    await helpers.updateBudgetPlanLine({
+      planId,
+      lineId: line.id,
+      payload: { categoryIds: [groceries.id, transport.id], effectiveFrom: periods[1]!.startDate },
+      raw: true,
+    });
+
+    await deleteCategory({ categoryId: transport.id, replaceWithCategoryId: food.id });
+
+    const categoryIds = await Promise.all(
+      periods.map(async (period) => (await lineNamed({ planId, period, name: 'Groceries' }))?.categoryIds),
+    );
+    expect(categoryIds).toEqual([[groceries.id], [food.id], [food.id]]);
+  });
+
+  it('swaps the periods before the replacement joined the same line, keeping their spending on it', async () => {
+    const { planId, account, food, transport, periods } = await setup();
+    const line = await addLine({
+      planId,
+      name: 'Mixed',
+      categoryIds: [transport.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    await helpers.updateBudgetPlanLine({
+      planId,
+      lineId: line.id,
+      payload: { categoryIds: [transport.id, food.id], effectiveFrom: periods[1]!.startDate },
+      raw: true,
+    });
+    await spend({ accountId: account.id, categoryId: transport.id, period: periods[0]!, amount: 40 });
+
+    await deleteCategory({ categoryId: transport.id, replaceWithCategoryId: food.id });
+
+    expect(
+      (await lineByPeriod({ planId, periods, name: 'Mixed' })).map((entry) => [entry?.categoryIds, entry?.activity]),
+    ).toEqual([
+      [[food.id], -40],
+      [[food.id], 0],
+      [[food.id], 0],
+    ]);
+  });
+
   it('drops the row when another line holds the replacement, keeping the line and its amounts', async () => {
     const { planId, groceries, transport, bills, periods } = await setup();
     const mixed = await addLine({
@@ -180,6 +296,41 @@ describe('Category delete: budget line merge', () => {
       categoryIds: [transport.id],
       assigned: 180,
     });
+  });
+
+  it('swaps the periods before another line took the replacement and merges the later amounts into it', async () => {
+    const { planId, account, groceries, transport, periods } = await setup();
+    const source = await addLine({
+      planId,
+      name: 'Groceries',
+      categoryIds: [groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    const target = await addLine({
+      planId,
+      name: 'Transport',
+      categoryIds: [transport.id],
+      activeFrom: periods[1]!.startDate,
+    });
+    await assign({ planId, periodId: periods[0]!.id, lineId: source.id, amount: 100 });
+    await assign({ planId, periodId: periods[1]!.id, lineId: target.id, amount: 50 });
+    await spend({ accountId: account.id, categoryId: groceries.id, period: periods[0]!, amount: 40 });
+
+    const before = await headers({ planId, periods });
+
+    await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: transport.id });
+
+    expect(await headers({ planId, periods })).toEqual(before);
+    expect(
+      (await lineByPeriod({ planId, periods, name: 'Groceries' })).map(
+        (entry) => entry && [entry.categoryIds, entry.assigned, entry.activity],
+      ),
+    ).toEqual([[[transport.id], 100, -40], [[], 0, 0], undefined]);
+    expect((await lineByPeriod({ planId, periods, name: 'Transport' })).map((entry) => entry?.assigned)).toEqual([
+      undefined,
+      150,
+      150,
+    ]);
   });
 
   it('merges an emptied line into the line holding the replacement, keeping Σ assigned per period', async () => {
@@ -206,10 +357,46 @@ describe('Category delete: budget line merge', () => {
 
     expect(await headers({ planId, periods })).toEqual(before);
     expect((await helpers.getBudgetPlan({ planId, raw: true })).lines.map((line) => line.name)).toEqual(['Transport']);
-    expect(await Promise.all(periods.map((period) => lineNamed({ planId, period, name: 'Transport' })))).toMatchObject([
+    expect(await lineByPeriod({ planId, periods, name: 'Transport' })).toMatchObject([
       { assigned: 300 },
       { assigned: 350 },
       { assigned: 350 },
+    ]);
+  });
+
+  it('keeps the amounts of a closed middle period on the emptied line it merges', async () => {
+    const { planId, groceries, transport, bills, periods } = await setup();
+    const source = await addLine({
+      planId,
+      name: 'Groceries',
+      categoryIds: [groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    const target = await addLine({
+      planId,
+      name: 'Transport',
+      categoryIds: [transport.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    const edit = ({ categoryIds, effectiveFrom }: { categoryIds: RecordId[]; effectiveFrom?: string }) =>
+      helpers.updateBudgetPlanLine({ planId, lineId: source.id, payload: { categoryIds, effectiveFrom }, raw: true });
+    await edit({ categoryIds: [groceries.id, bills.id], effectiveFrom: periods[1]!.startDate });
+    await edit({ categoryIds: [groceries.id] });
+    await assign({ planId, periodId: periods[0]!.id, lineId: source.id, amount: 100 });
+    await assign({ planId, periodId: periods[0]!.id, lineId: target.id, amount: 50 });
+
+    const before = await headers({ planId, periods });
+
+    await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: transport.id });
+
+    expect(await headers({ planId, periods })).toEqual(before);
+    expect(
+      (await lineByPeriod({ planId, periods, name: 'Groceries' })).map(
+        (entry) => entry && [entry.categoryIds, entry.assigned],
+      ),
+    ).toEqual([[[], 0], [[bills.id], 100], undefined]);
+    expect((await lineByPeriod({ planId, periods, name: 'Transport' })).map((entry) => entry?.assigned)).toEqual([
+      150, 50, 150,
     ]);
   });
 
@@ -236,10 +423,51 @@ describe('Category delete: budget line merge', () => {
     await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: transport.id });
 
     expect(await headers({ planId, periods })).toEqual(before);
-    expect(await Promise.all(periods.map((period) => lineNamed({ planId, period, name: 'Transport' })))).toMatchObject([
+    expect(await lineByPeriod({ planId, periods, name: 'Transport' })).toMatchObject([
       { assigned: 300 },
       { assigned: 300 },
       { assigned: 200 },
+    ]);
+  });
+
+  it('merges an emptied line into an archived and a live line that held the replacement in turn', async () => {
+    const { planId, groceries, transport, periods } = await setup();
+    const source = await addLine({
+      planId,
+      name: 'Groceries',
+      categoryIds: [groceries.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    const archived = await addLine({
+      planId,
+      name: 'Old transport',
+      categoryIds: [transport.id],
+      activeFrom: periods[0]!.startDate,
+    });
+    await assign({ planId, periodId: periods[0]!.id, lineId: source.id, amount: 100 });
+    await assign({ planId, periodId: periods[0]!.id, lineId: archived.id, amount: 200 });
+    await helpers.archiveBudgetPlanLine({ planId, lineId: archived.id });
+    const live = await addLine({ planId, name: 'Transport', categoryIds: [transport.id] });
+    await assign({ planId, periodId: periods[2]!.id, lineId: live.id, amount: 50 });
+
+    const before = await headers({ planId, periods });
+
+    await deleteCategory({ categoryId: groceries.id, replaceWithCategoryId: transport.id });
+
+    expect(await headers({ planId, periods })).toEqual(before);
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).lines.map((line) => line.name).toSorted()).toEqual([
+      'Old transport',
+      'Transport',
+    ]);
+    expect((await lineByPeriod({ planId, periods, name: 'Old transport' })).map((entry) => entry?.assigned)).toEqual([
+      300,
+      300,
+      undefined,
+    ]);
+    expect((await lineByPeriod({ planId, periods, name: 'Transport' })).map((entry) => entry?.assigned)).toEqual([
+      undefined,
+      undefined,
+      150,
     ]);
   });
 
@@ -311,9 +539,9 @@ describe('Category delete: budget line merge', () => {
     await assign({ planId, periodId: periods[1]!.id, lineId: line.id, amount: 120 });
 
     await helpers.deleteBudgetPlan({ planId });
-    // A trashed plan gets no new periods, so dropping the newest stored one puts
-    // today past every stored period, as a boundary crossed in the trash would.
-    await BudgetPeriods.destroy({ where: { id: periods[2]!.id } });
+    // A trashed plan gets no new periods, so dropping the current and later ones
+    // puts today past every stored period, as a long stay in the trash would.
+    await BudgetPeriods.destroy({ where: { planId, startDate: { [Op.gte]: periods[2]!.startDate } } });
 
     await deleteCategory({ categoryId: transport.id });
     await helpers.restoreBudgetPlan({ planId, raw: true });

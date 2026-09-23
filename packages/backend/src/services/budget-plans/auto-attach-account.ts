@@ -24,15 +24,22 @@ export const eligibleAccountIds = async ({
   return accounts.map((account) => account.id);
 };
 
-/** Duplicates are absorbed, so this is safe to run over an already-attached set. */
+/**
+ * Trashed plans are included, so a restored plan already holds accounts created meanwhile;
+ * re-attaching on restore would undo the user's removals.
+ */
 export const attachEligibleAccounts = async ({
   userId,
   accountIds,
 }: {
   userId: number;
-  accountIds?: RecordId[];
+  accountIds: RecordId[];
 }): Promise<void> => {
-  const plans = await BudgetPlans.findAll({ where: { userId, autoAttachAccounts: true }, attributes: ['id'] });
+  const plans = await BudgetPlans.findAll({
+    where: { userId, autoAttachAccounts: true },
+    attributes: ['id'],
+    paranoid: false,
+  });
   if (!plans.length) return;
 
   const eligible = await eligibleAccountIds({ userId, accountIds });

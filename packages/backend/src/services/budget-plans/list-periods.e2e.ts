@@ -5,23 +5,22 @@ import { ERROR_CODES } from '@js/errors';
 import BudgetPeriods from '@models/budget-periods.model';
 import * as helpers from '@tests/helpers';
 
+/** Consecutive monthly starts, oldest first. */
+const monthStarts = ({ monthsAgo, count }: { monthsAgo: number; count: number }): string[] =>
+  Array.from({ length: count }, (_, index) => helpers.budgetPeriodStart({ monthsAgo: monthsAgo - index }));
+
 describe('Budget plan periods', () => {
-  it('lists one current period for a fresh plan', async () => {
+  it('lists the current period and the next 12 for a fresh plan', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
 
     const periods = await helpers.listBudgetPlanPeriods({ planId: created.plan.id, raw: true });
 
-    expect(periods).toEqual([
-      {
-        id: expect.any(String),
-        startDate: helpers.budgetPeriodStart(),
-        endDate: helpers.budgetPeriodStart({ monthsAgo: -1 }),
-        isCurrent: true,
-      },
-    ]);
+    expect(periods.map((period) => period.startDate)).toEqual(monthStarts({ monthsAgo: 0, count: 13 }));
+    expect(periods.map((period) => period.endDate)).toEqual(monthStarts({ monthsAgo: -1, count: 13 }));
+    expect(periods.map((period) => period.isCurrent)).toEqual([true, ...Array<boolean>(12).fill(false)]);
   });
 
-  it('fills every period from a backdated epoch up to today', async () => {
+  it('fills every period from a backdated epoch through 12 periods past today', async () => {
     const created = await helpers.createBudgetPlan({
       payload: { epochDate: helpers.budgetPeriodStart({ monthsAgo: 3 }) },
       raw: true,
@@ -29,10 +28,14 @@ describe('Budget plan periods', () => {
 
     const periods = await helpers.listBudgetPlanPeriods({ planId: created.plan.id, raw: true });
 
-    expect(periods).toHaveLength(4);
-    expect(periods[0]!.startDate).toBe(helpers.budgetPeriodStart({ monthsAgo: 3 }));
-    expect(periods[3]!.startDate).toBe(helpers.budgetPeriodStart());
-    expect(periods.map((period) => period.isCurrent)).toEqual([false, false, false, true]);
+    expect(periods.map((period) => period.startDate)).toEqual(monthStarts({ monthsAgo: 3, count: 16 }));
+    expect(periods.map((period) => period.isCurrent)).toEqual([
+      false,
+      false,
+      false,
+      true,
+      ...Array<boolean>(12).fill(false),
+    ]);
   });
 
   it('creates the period that starts on the requested boundary day', async () => {
@@ -44,9 +47,10 @@ describe('Budget plan periods', () => {
 
     const periods = await helpers.listBudgetPlanPeriods({ planId: created.plan.id, raw: true });
 
-    expect(periods).toHaveLength(1);
+    expect(periods).toHaveLength(13);
     expect(periods[0]!.startDate).toBe(today);
     expect(periods[0]!.isCurrent).toBe(true);
+    expect(periods[12]!.startDate).toBe(toUtcDateString(new Date(Date.parse(today) + 12 * 86_400_000)));
   });
 
   it('survives two concurrent listings with one row per period', async () => {
@@ -66,7 +70,7 @@ describe('Budget plan periods', () => {
     });
     const storedIds = stored.map((period) => period.id);
 
-    expect(storedIds).toHaveLength(3);
+    expect(storedIds).toHaveLength(15);
     for (const response of [first!, second!]) {
       expect(response.statusCode).toBe(200);
       expect(helpers.extractResponse(response).map((period) => period.id)).toEqual(storedIds);

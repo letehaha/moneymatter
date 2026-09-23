@@ -6,8 +6,8 @@ import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
 import { eligibleAccountIds } from './auto-attach-account';
+import { findPlan } from './find-plan';
 import { getPlan } from './get-plan';
-import { lockPlan } from './lock-plan';
 
 /** Every id must be the user's own and of an attachable category; ids are unique per the schema. */
 export const assertAccountsAttachable = async ({
@@ -38,7 +38,7 @@ const setPlanAccountsImpl = async ({
   planId: RecordId;
   accountIds: RecordId[];
 }) => {
-  const plan = await lockPlan({ planId, userId });
+  const plan = await findPlan({ planId, userId, lock: true });
   await assertAccountsAttachable({ userId, accountIds });
 
   // A delta, not a replace: re-locking unchanged rows would invert the lock

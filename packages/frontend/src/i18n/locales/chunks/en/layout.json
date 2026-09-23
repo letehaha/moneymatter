@@ -21,7 +21,8 @@
       "subscriptions": "Recurring Payments",
       "budgets": "Budgets"
     },
-    "venture": "Venture"
+    "venture": "Venture",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",

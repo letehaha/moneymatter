@@ -36,14 +36,12 @@ export const getPlanActivity = async ({
 
   const rows: RawActivityRow[] = await connection.sequelize.query(
     `
-    -- planned-ok: the scope filters planned rows out explicitly, like the stats rules
     WITH scoped AS (
       SELECT t.id, t."time", t."categoryId", t."refAmount", t."transactionType"
-      FROM "Transactions" t
+      FROM real_transactions t
       JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
       JOIN "Accounts" a ON a.id = t."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
-      WHERE t."isPlanned" = false
-        AND t."time" >= :fromUtc AND t."time" < :toUtc
+      WHERE t."time" >= :fromUtc AND t."time" < :toUtc
         AND ( t."transferNature" = 'not_transfer'
            OR (t."transferNature" = 'transfer_to_loan' AND t."transactionType" = 'expense') )
         AND ( t."externalData" IS NULL

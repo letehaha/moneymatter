@@ -24,6 +24,13 @@ export interface SidebarNavChild {
 
 type ToggleableNavChild = SidebarNavChild & { settingKey: keyof SidebarNavConfig };
 
+/** Top-level, ungrouped nav entry for the budget plan screen. */
+export const SIDEBAR_BUDGET_NAV_ITEM: SidebarNavChild = {
+  routeName: ROUTES_NAMES.budget,
+  labelKey: 'navigation.budget',
+  icon: WalletIcon,
+};
+
 /** Sub-links of the collapsible nav groups, rendered by both the full nav and the rail flyouts. */
 export const SIDEBAR_NAV_CHILDREN = {
   accounts: [

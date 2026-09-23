@@ -23,6 +23,18 @@ describe('Budget plan auto-attach of new accounts', () => {
     expect(plan.accountIds).toEqual(created.accountIds);
   });
 
+  it('attaches accounts created after auto-attach is switched on, but not the ones that already existed', async () => {
+    const created = await helpers.createBudgetPlan({ raw: true });
+    const existing = await helpers.createAccount({ raw: true });
+
+    await helpers.updateBudgetPlan({ planId: created.plan.id, payload: { autoAttachAccounts: true }, raw: true });
+    const added = await helpers.createAccount({ raw: true });
+
+    const plan = await helpers.getBudgetPlan({ planId: created.plan.id, raw: true });
+    expect(plan.accountIds.toSorted()).toEqual([...created.accountIds, added.id].toSorted());
+    expect(plan.accountIds).not.toContain(existing.id);
+  });
+
   it('ignores an account category outside the eligible set', async () => {
     const created = await helpers.createBudgetPlan({ payload: { autoAttachAccounts: true }, raw: true });
     await helpers.createAccount({
@@ -70,13 +82,13 @@ describe('Budget plan auto-attach of new accounts', () => {
     expect(plan.accountIds.toSorted()).toEqual([...created.accountIds, syncedAccounts[0]!.id].toSorted());
   });
 
-  it('attaches nothing while the plan sits in the trash', async () => {
+  it('attaches a new account while the plan sits in the trash', async () => {
     const created = await helpers.createBudgetPlan({ payload: { autoAttachAccounts: true }, raw: true });
     await helpers.deleteBudgetPlan({ planId: created.plan.id });
 
     const added = await helpers.createAccount({ raw: true });
 
-    expect(await BudgetPlanAccounts.count({ where: { planId: created.plan.id, accountId: added.id } })).toBe(0);
+    expect(await BudgetPlanAccounts.count({ where: { planId: created.plan.id, accountId: added.id } })).toBe(1);
   });
 });
 

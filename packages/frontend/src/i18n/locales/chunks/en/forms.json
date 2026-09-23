@@ -353,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Select categories...",
       "searchPlaceholder": "Search categories...",
-      "noCategoriesFound": "No categories found"
+      "noCategoriesFound": "No categories found",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "All payees",

@@ -1,15 +1,15 @@
 import { RecordId } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
-import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import BudgetLineCategories from '@models/budget-line-categories.model';
-import BudgetLines from '@models/budget-lines.model';
 import { withTransaction } from '@services/common/with-transaction';
 
+import { closeMembershipAt } from './archive-line';
+import { covers, toRange } from './date-ranges';
+import { findLine, findPlan } from './find-plan';
 import { toLineEntry } from './get-plan';
-import { lockPlan } from './lock-plan';
 import { ensureCurrentPeriods } from './periods/ensure-periods';
 import { validateLineCategories } from './validate-line-categories';
 
@@ -34,10 +34,7 @@ const applyMembership = async ({
   const reaches = (row: BudgetLineCategories) => row.untilDate === null || toUtcDateString(row.untilDate) > from;
 
   for (const row of rows) {
-    if (categoryIds.includes(row.categoryId) || !reaches(row)) continue;
-
-    if (toUtcDateString(row.fromDate) >= from) await row.destroy();
-    else await row.update({ untilDate: from });
+    if (!categoryIds.includes(row.categoryId)) await closeMembershipAt({ row, at: from });
   }
 
   for (const categoryId of categoryIds) {
@@ -52,8 +49,7 @@ const applyMembership = async ({
 
     for (const row of absorbed) await row.destroy();
 
-    const keptFrom = toUtcDateString(kept.fromDate);
-    const keptUntil = kept.untilDate === null ? null : toUtcDateString(kept.untilDate);
+    const { from: keptFrom, until: keptUntil } = toRange({ from: kept.fromDate, until: kept.untilDate });
     const fromDate = keptFrom < from ? keptFrom : from;
 
     if (fromDate !== keptFrom || keptUntil !== until) {
@@ -79,25 +75,26 @@ const updateLineImpl = async ({
   categoryIds?: RecordId[];
   effectiveFrom?: string;
 }) => {
-  const plan = await lockPlan({ planId, userId });
-  const { starts, currentStart } = await ensureCurrentPeriods({ plan });
-
-  const line = await findOrThrowNotFound({
-    query: BudgetLines.findOne({ where: { id: lineId, planId: plan.id } }),
-    message: t({ key: 'budgetPlans.lineNotFound' }),
-  });
+  const plan = await findPlan({ planId, userId, lock: true });
+  const { startsThroughCurrent, currentStart } = await ensureCurrentPeriods({ plan });
+  const line = await findLine({ planId: plan.id, lineId });
 
   if (categoryIds) {
     const from = effectiveFrom ?? currentStart;
-    const activeFrom = toUtcDateString(line.activeFrom);
-    const activeUntil = line.activeUntil === null ? null : toUtcDateString(line.activeUntil);
+    const lifetime = toRange({ from: line.activeFrom, until: line.activeUntil });
 
-    if (!starts.includes(from) || from < activeFrom || (activeUntil !== null && from >= activeUntil)) {
+    if (!startsThroughCurrent.includes(from) || !covers({ range: lifetime, start: from })) {
       throw new ValidationError({ message: t({ key: 'budgetPlans.effectiveFromOutsideLifetime' }) });
     }
 
-    await validateLineCategories({ plan, lineId: line.id, categoryIds, range: { from, until: activeUntil } });
-    await applyMembership({ lineId: line.id, categoryIds, from, until: activeUntil });
+    const topMostIds = await validateLineCategories({
+      plan,
+      lineId: line.id,
+      categoryIds,
+      range: { from, until: lifetime.until },
+    });
+    await applyMembership({ lineId: line.id, categoryIds: topMostIds, from, until: lifetime.until });
+    if (lifetime.until !== null) await line.update({ archivedCategoryIds: topMostIds });
   }
 
   await line.update(removeUndefinedKeys({ name, sortOrder }));

@@ -129,7 +129,8 @@ const showBaseCurrencyDialog = ref(false);
 const showRoundingDetails = ref(false);
 
 // Exhaustive over the blocker union, so a new blocker type fails the type check
-// instead of silently borrowing another one's wording.
+// instead of silently borrowing another one's wording. The fallback covers a server
+// that sends a type this client build predates.
 const LOCKED_MESSAGE_KEYS: Record<BaseCurrencyBlocker['type'], string> = {
   household: 'settings.currencies.setBase.errors.lockedHousehold',
   share: 'settings.currencies.setBase.errors.lockedShares',
@@ -137,7 +138,11 @@ const LOCKED_MESSAGE_KEYS: Record<BaseCurrencyBlocker['type'], string> = {
 };
 
 const buildLockedMessage = ({ blockers }: { blockers: BaseCurrencyBlocker[] }) =>
-  blockers.map((b) => t(LOCKED_MESSAGE_KEYS[b.type], { count: b.count }, b.count)).join(' ');
+  blockers
+    .map((b) =>
+      t(LOCKED_MESSAGE_KEYS[b.type] ?? 'settings.currencies.setBase.errors.changeFailed', { count: b.count }, b.count),
+    )
+    .join(' ');
 
 const makeBaseCurrency = async () => {
   // ResponsiveAlertDialog leaves closing to the parent; close before the async work

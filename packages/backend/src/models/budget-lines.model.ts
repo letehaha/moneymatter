@@ -34,6 +34,13 @@ export default class BudgetLines extends Model {
   @Column({ type: DataType.DATEONLY, allowNull: true })
   activeUntil!: string | null;
 
+  /**
+   * The categories an archived line held at its end, which a restore brings back.
+   * Kept apart from the membership rows: one added in the archive's own period has no range left to store it.
+   */
+  @Column({ type: DataType.ARRAY(DataType.UUID), allowNull: false, defaultValue: [] })
+  archivedCategoryIds!: RecordId[];
+
   declare createdAt: Date;
   declare updatedAt: Date;
 

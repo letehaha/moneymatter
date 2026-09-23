@@ -149,6 +149,12 @@ module.exports = {
             allowNull: true,
             comment: 'A period start, exclusive; NULL = still live',
           },
+          archivedCategoryIds: {
+            type: DataTypes.ARRAY(DataTypes.UUID),
+            allowNull: false,
+            defaultValue: [],
+            comment: 'Categories an archived line held at its end, which a restore brings back',
+          },
           createdAt: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -167,7 +173,7 @@ module.exports = {
 
       await queryInterface.sequelize.query(
         `ALTER TABLE "BudgetLines" ADD CONSTRAINT "BudgetLines_lifetime_check"
-         CHECK ("activeUntil" IS NULL OR "activeUntil" > "activeFrom");`,
+         CHECK ("activeUntil" IS NULL OR "activeUntil" >= "activeFrom");`,
         { transaction },
       );
 

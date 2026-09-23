@@ -1,3 +1,4 @@
+import { BudgetPlanPeriodView } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import {
@@ -7,7 +8,6 @@ import {
   FoldLine,
   FoldLineCategory,
   FoldPeriod,
-  PeriodView,
   foldPlan,
 } from './fold-plan';
 
@@ -47,16 +47,24 @@ const row = (overrides: Partial<FoldAssignment>): FoldAssignment => ({
   ...overrides,
 });
 
-const spent = (periodId: string, amount: number, categoryId = 'food'): FoldActivityRow => ({
+const spent = ({
+  periodId,
+  amount,
+  categoryId = 'food',
+}: {
+  periodId: string;
+  amount: number;
+  categoryId?: string;
+}): FoldActivityRow => ({
   periodId,
   categoryId,
   activity: -amount,
 });
 
 /** Amounts are integer cents inside the fold; the scale is irrelevant to it. */
-const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): PeriodView[] =>
+const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): BudgetPlanPeriodView[] =>
   foldPlan({
-    plan: { type: 'category_caps', carryPolicy: 'none' },
+    plan: { carryPolicy: 'none' },
     periods: PERIODS,
     lines: [line()],
     lineCategories: [covers()],
@@ -67,8 +75,8 @@ const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): PeriodView[]
     ...input,
   });
 
-const amounts = (views: PeriodView[]) => views.map((view) => view.lines.map((entry) => entry.assigned));
-const available = (views: PeriodView[]) => views.map((view) => view.lines.map((entry) => entry.available));
+const amounts = (views: BudgetPlanPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.assigned));
+const available = (views: BudgetPlanPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.available));
 
 describe('foldPlan amounts', () => {
   it('recurs a baseline into later periods with no rows', () => {
@@ -85,6 +93,13 @@ describe('foldPlan amounts', () => {
 
     expect(amounts(views)).toEqual([[100], [150], [100]]);
     expect(views[1]!.lines[0]!.assignedSource).toBe('override');
+  });
+
+  it('applies an override to its own period and the baseline stored on the same row to later ones', () => {
+    const views = fold({ assignments: [row({ periodId: 'aug', baselineAmount: 200, overrideAmount: 150 })] });
+
+    expect(amounts(views)).toEqual([[0], [150], [200]]);
+    expect(views.map((view) => view.lines[0]!.assignedSource)).toEqual(['none', 'override', 'baseline']);
   });
 
   it('reports assigned 0 with source none while no baseline has ever been set', () => {
@@ -113,26 +128,26 @@ describe('foldPlan amounts', () => {
 });
 
 describe('foldPlan rollover', () => {
-  const capped = (policy: 'none' | 'floor' | 'signed', julySpend: number) =>
+  const capped = ({ policy, julySpend }: { policy: 'none' | 'floor' | 'signed'; julySpend: number }) =>
     fold({
       assignments: [row({ baselineAmount: 300, carryPolicy: policy })],
-      activityRows: [spent('jul', julySpend)],
+      activityRows: [spent({ periodId: 'jul', amount: julySpend })],
     });
 
   it('carries nothing, the floor or the signed leftover', () => {
-    expect(available(capped('none', 250))[1]).toEqual([300]);
-    expect(available(capped('floor', 250))[1]).toEqual([350]);
-    expect(available(capped('signed', 250))[1]).toEqual([350]);
+    expect(available(capped({ policy: 'none', julySpend: 250 }))[1]).toEqual([300]);
+    expect(available(capped({ policy: 'floor', julySpend: 250 }))[1]).toEqual([350]);
+    expect(available(capped({ policy: 'signed', julySpend: 250 }))[1]).toEqual([350]);
 
-    expect(available(capped('none', 340))[1]).toEqual([300]);
-    expect(available(capped('floor', 340))[1]).toEqual([300]);
-    expect(available(capped('signed', 340))[1]).toEqual([260]);
+    expect(available(capped({ policy: 'none', julySpend: 340 }))[1]).toEqual([300]);
+    expect(available(capped({ policy: 'floor', julySpend: 340 }))[1]).toEqual([300]);
+    expect(available(capped({ policy: 'signed', julySpend: 340 }))[1]).toEqual([260]);
   });
 
   it('leaves earlier periods alone when rollover is switched off mid-history', () => {
     const views = fold({
       assignments: [row({ baselineAmount: 100, carryPolicy: 'floor' }), row({ periodId: 'sep', carryPolicy: 'none' })],
-      activityRows: [spent('jul', 40)],
+      activityRows: [spent({ periodId: 'jul', amount: 40 })],
     });
 
     expect(available(views)).toEqual([[60], [160], [100]]);
@@ -150,10 +165,10 @@ describe('foldPlan rollover', () => {
 
   it('reaches lines without their own setting when the plan default changes', () => {
     const assignments = [row({ baselineAmount: 100 })];
-    const activityRows = [spent('jul', 140)];
+    const activityRows = [spent({ periodId: 'jul', amount: 140 })];
 
     const none = fold({ assignments, activityRows });
-    const signed = fold({ plan: { type: 'category_caps', carryPolicy: 'signed' }, assignments, activityRows });
+    const signed = fold({ plan: { carryPolicy: 'signed' }, assignments, activityRows });
 
     expect(none.map((view) => view.lines[0]!.carriedIn)).toEqual([0, 0, 0]);
     expect(signed.map((view) => view.lines[0]!.carriedIn)).toEqual([0, -40, 60]);
@@ -181,7 +196,10 @@ describe('foldPlan rollover', () => {
         row({ lineId: 'bills', baselineAmount: 100 }),
       ],
       // July's cap is fully spent, so August starts fresh and its own 250 leaves 50.
-      activityRows: [spent('jul', 100, 'transport'), spent('aug', 250, 'transport')],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 100, categoryId: 'transport' }),
+        spent({ periodId: 'aug', amount: 250, categoryId: 'transport' }),
+      ],
     });
 
     expect(amounts(views)).toEqual([
@@ -203,6 +221,17 @@ describe('foldPlan lifetimes', () => {
 
     expect(amounts(views)).toEqual([[100], [100], []]);
     expect(views[2]!.header).toEqual({ totalAssigned: 0, totalActivity: 0, totalAvailable: 0 });
+  });
+
+  it('never shows a line archived in its first period, leaving its spending unbudgeted', () => {
+    const views = fold({
+      lines: [line({ activeFrom: '2026-09-01', activeUntil: '2026-09-01' })],
+      lineCategories: [],
+      activityRows: [spent({ periodId: 'sep', amount: 40 })],
+    });
+
+    expect(views.map((view) => view.lines)).toEqual([[], [], []]);
+    expect(views[2]!.unbudgeted).toEqual([{ categoryId: 'food', activity: -40 }]);
   });
 
   it('counts an archive and its successors once inside the shared period', () => {
@@ -237,7 +266,11 @@ describe('foldPlan lifetimes', () => {
         covers({ categoryId: 'transport', fromDate: '2026-09-01' }),
       ],
       assignments: [row({ baselineAmount: 100, carryPolicy: 'floor' })],
-      activityRows: [spent('aug', 60), spent('sep', 20), spent('sep', 10, 'transport')],
+      activityRows: [
+        spent({ periodId: 'aug', amount: 60 }),
+        spent({ periodId: 'sep', amount: 20 }),
+        spent({ periodId: 'sep', amount: 10, categoryId: 'transport' }),
+      ],
     });
 
     expect(views.map((view) => view.lines[0]!.categoryIds)).toEqual([['food'], ['food'], ['transport']]);
@@ -248,7 +281,11 @@ describe('foldPlan lifetimes', () => {
   it('honours a category that left a line and came back', () => {
     const views = fold({
       lineCategories: [covers({ untilDate: '2026-08-01' }), covers({ fromDate: '2026-09-01' })],
-      activityRows: [spent('jul', 10), spent('aug', 20), spent('sep', 30)],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 10 }),
+        spent({ periodId: 'aug', amount: 20 }),
+        spent({ periodId: 'sep', amount: 30 }),
+      ],
     });
 
     expect(views.map((view) => view.lines[0]!.activity)).toEqual([-10, 0, -30]);
@@ -262,7 +299,10 @@ describe('foldPlan ownership', () => {
       lines: [line({ id: 'l-food', name: 'Food' }), line({ id: 'l-snacks', name: 'Snacks', sortOrder: 1 })],
       categories: [FOOD, SNACKS],
       lineCategories: [covers({ lineId: 'l-food' }), covers({ lineId: 'l-snacks', categoryId: 'snacks' })],
-      activityRows: [spent('jul', 10, 'snacks'), spent('jul', 40)],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 10, categoryId: 'snacks' }),
+        spent({ periodId: 'jul', amount: 40 }),
+      ],
     });
 
     expect(views[0]!.lines.map((entry) => [entry.lineId, entry.activity])).toEqual([
@@ -276,7 +316,7 @@ describe('foldPlan ownership', () => {
     const views = fold({
       lines: [line({ id: 'b' }), line({ id: 'a', sortOrder: 1 })],
       lineCategories: [covers({ lineId: 'b' }), covers({ lineId: 'a' })],
-      activityRows: [spent('jul', 10)],
+      activityRows: [spent({ periodId: 'jul', amount: 10 })],
     });
 
     expect(views[0]!.lines.map((entry) => [entry.lineId, entry.activity])).toEqual([
@@ -288,7 +328,12 @@ describe('foldPlan ownership', () => {
   it('sums a parent category and its child, on the line and under the unbudgeted root', () => {
     const views = fold({
       categories: [FOOD, SNACKS, { id: 'fun', parentId: null }, { id: 'games', parentId: 'fun' }],
-      activityRows: [spent('jul', 40), spent('jul', 25, 'snacks'), spent('jul', 10, 'fun'), spent('jul', 20, 'games')],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 40 }),
+        spent({ periodId: 'jul', amount: 25, categoryId: 'snacks' }),
+        spent({ periodId: 'jul', amount: 10, categoryId: 'fun' }),
+        spent({ periodId: 'jul', amount: 20, categoryId: 'games' }),
+      ],
     });
 
     expect(views[0]!.lines[0]!.activity).toBe(-65);
@@ -302,7 +347,10 @@ describe('foldPlan unbudgeted and header', () => {
       lines: [],
       lineCategories: [],
       categories: [FOOD, SNACKS, { id: 'restaurants', parentId: 'food' }],
-      activityRows: [spent('jul', 100, 'snacks'), { periodId: 'jul', categoryId: 'restaurants', activity: 300 }],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 100, categoryId: 'snacks' }),
+        { periodId: 'jul', categoryId: 'restaurants', activity: 300 },
+      ],
     });
 
     expect(views[0]!.unbudgeted).toEqual([{ categoryId: 'food', activity: -100 }]);
@@ -314,7 +362,10 @@ describe('foldPlan unbudgeted and header', () => {
       categories: [FOOD, TRANSPORT],
       lineCategories: [covers(), covers({ lineId: 'l2', categoryId: 'transport' })],
       assignments: [row({ baselineAmount: 100 }), row({ lineId: 'l2', baselineAmount: 250 })],
-      activityRows: [spent('jul', 30), spent('jul', 400, 'transport')],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 30 }),
+        spent({ periodId: 'jul', amount: 400, categoryId: 'transport' }),
+      ],
     });
 
     expect(views[0]!.header).toEqual({ totalAssigned: 350, totalActivity: -430, totalAvailable: -80 });

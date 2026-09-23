@@ -5,6 +5,7 @@ import {
   ACCOUNT_TYPES,
   AccountExternalData,
   BANK_PROVIDER_TYPE,
+  BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES,
   TRANSACTION_TRANSFER_NATURE,
   isDedicatedFlowAccountCategory,
 } from '@bt/shared/types';
@@ -16,6 +17,7 @@ import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
+import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import { countTransactions } from '@models/transactions-query';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import Users from '@models/users.model';
@@ -343,6 +345,14 @@ export const updateAccount = withTransaction(
       payload.status === ACCOUNT_STATUSES.archived && accountData.status !== ACCOUNT_STATUSES.archived;
     if (isArchiving) {
       await performArchiveSideEffects({ account: accountData, userId: accountData.userId });
+    }
+
+    if (
+      payload.accountCategory !== undefined &&
+      payload.accountCategory !== accountData.accountCategory &&
+      !BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory)
+    ) {
+      await BudgetPlanAccounts.destroy({ where: { accountId: accountData.id } });
     }
 
     const currentBalanceIsChanging =

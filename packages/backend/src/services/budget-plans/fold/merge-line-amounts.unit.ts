@@ -1,10 +1,11 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { MergeLine, MergeRow, MergeWrite, mergeLineAmounts } from './merge-line-amounts';
+import { MergeLine, MergeWrite, mergeLineAmounts } from './merge-line-amounts';
+import { AssignmentAmounts } from './resolve-assigned';
 
 const PERIODS = ['p0', 'p1', 'p2', 'p3', 'p4'];
 
-const row = (values: Partial<MergeRow> = {}): MergeRow => ({
+const row = (values: Partial<AssignmentAmounts> = {}): AssignmentAmounts => ({
   baselineAmount: null,
   overrideAmount: null,
   carryPolicy: null,
@@ -14,7 +15,7 @@ const row = (values: Partial<MergeRow> = {}): MergeRow => ({
 const line = ({
   periodIds = PERIODS,
   rows = {},
-}: { periodIds?: string[]; rows?: Record<string, Partial<MergeRow>> } = {}): MergeLine => ({
+}: { periodIds?: string[]; rows?: Record<string, Partial<AssignmentAmounts>> } = {}): MergeLine => ({
   periodIds,
   rows: new Map(Object.entries(rows).map(([periodId, values]) => [periodId, row(values)])),
 });

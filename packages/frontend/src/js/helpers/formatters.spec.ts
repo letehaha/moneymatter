@@ -15,6 +15,7 @@ describe('js/helpers/formatters', () => {
       [-1, '-$1.00'],
       [-10_000, '-$10,000.00'],
       [0.0125, '$0.01'],
+      [-0, '$0.00'],
       [NaN, 'NaN'],
       [Infinity, 'Infinity'],
       [-Infinity, '-Infinity'],

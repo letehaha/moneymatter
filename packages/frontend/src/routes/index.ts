@@ -168,6 +168,18 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       {
+        path: '/budget',
+        name: ROUTES_NAMES.budget,
+        component: () => import('@/pages/budget/budget.vue'),
+        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+      },
+      {
+        path: '/budget/:planId',
+        name: ROUTES_NAMES.budgetPlan,
+        component: () => import('@/pages/budget/budget-plan.vue'),
+        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+      },
+      {
         path: '/planned',
         name: ROUTES_NAMES.planned,
         component: () => import('@/pages/planned/index.vue'),
