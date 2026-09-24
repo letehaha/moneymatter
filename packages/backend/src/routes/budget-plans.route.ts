@@ -26,173 +26,127 @@ import updatePlan from '@controllers/budget-plans/update-plan';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature } from '@middlewares/entitlements';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
 // Reads stay ungated: a lapsed user keeps reading their budget, and
 // `enforceReadOnly` stops their writes like everywhere else.
-router.get('/', authenticateSession, validateEndpoint(listPlans.schema), listPlans.handler);
-router.get('/:planId', authenticateSession, validateEndpoint(getPlan.schema), getPlan.handler);
-router.get('/:planId/trends', authenticateSession, validateEndpoint(getTrends.schema), getTrends.handler);
-router.get('/:planId/periods', authenticateSession, validateEndpoint(listPeriods.schema), listPeriods.handler);
-router.get(
-  '/:planId/periods/:periodId',
-  authenticateSession,
-  validateEndpoint(getPeriodView.schema),
-  getPeriodView.handler,
-);
-router.get(
-  '/:planId/periods/:periodId/scheduled',
-  authenticateSession,
-  validateEndpoint(getScheduled.schema),
-  getScheduled.handler,
-);
+router.get('/', authenticateSession, listPlans);
+router.get('/:planId', authenticateSession, getPlan);
+router.get('/:planId/trends', authenticateSession, getTrends);
+router.get('/:planId/periods', authenticateSession, listPeriods);
+router.get('/:planId/periods/:periodId', authenticateSession, getPeriodView);
+router.get('/:planId/periods/:periodId/scheduled', authenticateSession, getScheduled);
 
-router.post(
-  '/',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  validateEndpoint(createPlan.schema),
-  createPlan.handler,
-);
-router.patch(
-  '/:planId',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  validateEndpoint(updatePlan.schema),
-  updatePlan.handler,
-);
+router.post('/', authenticateSession, requireFeature(FEATURES.budget_plan), checkBaseCurrencyLock, createPlan);
+router.patch('/:planId', authenticateSession, requireFeature(FEATURES.budget_plan), checkBaseCurrencyLock, updatePlan);
 // Ungated: an active plan blocks base-currency changes, so a lapsed user must be able to drop it.
-router.delete(
-  '/:planId',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deletePlan.schema),
-  deletePlan.handler,
-);
+router.delete('/:planId', authenticateSession, checkBaseCurrencyLock, deletePlan);
 router.post(
   '/:planId/restore',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(restorePlan.schema),
-  restorePlan.handler,
+  restorePlan,
 );
 router.put(
   '/:planId/accounts',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(setPlanAccounts.schema),
-  setPlanAccounts.handler,
+  setPlanAccounts,
 );
 router.post(
   '/:planId/groups',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(createGroup.schema),
-  createGroup.handler,
+  createGroup,
 );
 router.patch(
   '/:planId/groups/:groupId',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(updateGroup.schema),
-  updateGroup.handler,
+  updateGroup,
 );
 router.delete(
   '/:planId/groups/:groupId',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(deleteGroup.schema),
-  deleteGroup.handler,
+  deleteGroup,
 );
 router.put(
   '/:planId/layout',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(setLayout.schema),
-  setLayout.handler,
+  setLayout,
 );
 router.post(
   '/:planId/lines',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(createLine.schema),
-  createLine.handler,
+  createLine,
 );
 router.patch(
   '/:planId/lines/:lineId',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(updateLine.schema),
-  updateLine.handler,
+  updateLine,
 );
 router.delete(
   '/:planId/lines/:lineId',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(deleteLine.schema),
-  deleteLine.handler,
+  deleteLine,
 );
 router.post(
   '/:planId/lines/:lineId/archive',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(archiveLine.schema),
-  archiveLine.handler,
+  archiveLine,
 );
 router.post(
   '/:planId/lines/:lineId/restore',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(restoreLine.schema),
-  restoreLine.handler,
+  restoreLine,
 );
 router.put(
   '/:planId/lines/:lineId/goal',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(setLineGoal.schema),
-  setLineGoal.handler,
+  setLineGoal,
 );
 router.delete(
   '/:planId/lines/:lineId/goal',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(deleteLineGoal.schema),
-  deleteLineGoal.handler,
+  deleteLineGoal,
 );
 router.post(
   '/:planId/lines/:lineId/goal/snooze',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(snoozeLineGoal.schema),
-  snoozeLineGoal.handler,
+  snoozeLineGoal,
 );
 router.put(
   '/:planId/periods/:periodId/lines/:lineId/assignment',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(setAssignment.schema),
-  setAssignment.handler,
+  setAssignment,
 );
 
 export default router;

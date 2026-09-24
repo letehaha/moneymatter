@@ -1305,6 +1305,223 @@ describe('Data export (POST /user/data-export)', () => {
     });
   });
 
+  describe('Budget plans', () => {
+    type Period = { id: string; startDate: string; endDate: string };
+    type BudgetPlanFiles = {
+      budget_lines: Array<Record<string, unknown>>;
+      budget_periods: Array<Record<string, unknown>>;
+    };
+
+    const exportBudgets = async ({ dateRange }: { dateRange?: { from?: string; to?: string } } = {}) => {
+      const response = await helpers.exportData({ format: 'json', groups: ['budgets'], dateRange });
+      expect(response.statusCode).toBe(200);
+      return helpers.parseExportArchive({ buffer: response.body }).json as BudgetPlanFiles;
+    };
+
+    const dayBefore = ({ date }: { date: string }) =>
+      new Date(Date.parse(`${date}T00:00:00.000Z`) - 86_400_000).toISOString().slice(0, 10);
+
+    it('exports plan lines and per-period numbers that match the period view', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [groceries, household, transport, fun] = await Promise.all([
+        helpers.addCustomCategory({ name: 'Plan groceries', color: '#111111', raw: true }),
+        helpers.addCustomCategory({ name: 'Plan household', color: '#222222', raw: true }),
+        helpers.addCustomCategory({ name: 'Plan transport', color: '#333333', raw: true }),
+        helpers.addCustomCategory({ name: 'Plan fun', color: '#444444', raw: true }),
+      ]);
+
+      const { plan } = await helpers.createBudgetPlan({
+        payload: {
+          name: 'Export plan',
+          accountIds: [account.id],
+          epochDate: helpers.budgetPeriodStart({ monthsAgo: 1 }),
+        },
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+      const [previous, current, next] = [periods[0]!, periods[1]!, periods[2]!];
+
+      const essentials = await helpers.createBudgetLineGroup({ planId: plan.id, name: 'Essentials', raw: true });
+      const transportLine = await helpers.createBudgetPlanLine({
+        planId: plan.id,
+        payload: { name: 'Transport', categoryIds: [transport.id], activeFrom: previous.startDate },
+        raw: true,
+      });
+      const oldLine = await helpers.createBudgetPlanLine({
+        planId: plan.id,
+        payload: { name: 'Old line', categoryIds: [fun.id], activeFrom: previous.startDate },
+        raw: true,
+      });
+      const groceriesLine = await helpers.createBudgetPlanLine({
+        planId: plan.id,
+        payload: {
+          name: 'Groceries',
+          categoryIds: [household.id, groceries.id],
+          groupId: essentials.id,
+          activeFrom: previous.startDate,
+        },
+        raw: true,
+      });
+      await helpers.archiveBudgetPlanLine({ planId: plan.id, lineId: oldLine.id, raw: true });
+      await helpers.setBudgetLineGoal({
+        planId: plan.id,
+        lineId: groceriesLine.id,
+        payload: { frequency: 'every_period', behavior: 'budget_another', amount: 100 },
+        raw: true,
+      });
+
+      const assign = ({ period, lineId, amount }: { period: Period; lineId: string; amount: number }) =>
+        helpers.setBudgetAssignment({
+          planId: plan.id,
+          periodId: period.id,
+          lineId,
+          payload: { scope: 'this_period', amount },
+          raw: true,
+        });
+      await assign({ period: previous, lineId: groceriesLine.id, amount: 200.5 });
+      await assign({ period: current, lineId: groceriesLine.id, amount: 150 });
+      await assign({ period: next, lineId: transportLine.id, amount: 50 });
+
+      await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: account.id,
+            categoryId: groceries.id,
+            amount: 30.25,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          time: `${previous.startDate}T12:00:00.000Z`,
+        },
+        raw: true,
+      });
+
+      const data = await exportBudgets();
+      const currency = global.BASE_CURRENCY_CODE;
+
+      expect(data.budget_lines).toEqual([
+        {
+          plan: 'Export plan',
+          group: '',
+          line: 'Transport',
+          categories: ['Plan transport'],
+          archived: false,
+          goal: '',
+          currency,
+        },
+        {
+          plan: 'Export plan',
+          group: '',
+          line: 'Old line',
+          categories: ['Plan fun'],
+          archived: true,
+          goal: '',
+          currency,
+        },
+        {
+          plan: 'Export plan',
+          group: 'Essentials',
+          line: 'Groceries',
+          categories: ['Plan groceries', 'Plan household'],
+          archived: false,
+          goal: 'Budget another 100.00 every period',
+          currency,
+        },
+      ]);
+
+      const rowsFromView = async ({ period, lines }: { period: Period; lines: string[] }) => {
+        const view = await helpers.getBudgetPlanPeriodView({ planId: plan.id, periodId: period.id, raw: true });
+        return lines.map((name) => {
+          const line = view.lines.find((entry) => entry.name === name)!;
+          return {
+            plan: 'Export plan',
+            periodStart: period.startDate,
+            periodEndInclusive: dayBefore({ date: period.endDate }),
+            line: name,
+            assigned: line.assigned,
+            spent: 0 - line.activity,
+            available: line.available,
+            currency,
+          };
+        });
+      };
+
+      // The archived line only lived in the previous period; periods after `next` carry no assignment.
+      expect(data.budget_periods).toEqual([
+        ...(await rowsFromView({ period: previous, lines: ['Transport', 'Old line', 'Groceries'] })),
+        ...(await rowsFromView({ period: current, lines: ['Transport', 'Groceries'] })),
+        ...(await rowsFromView({ period: next, lines: ['Transport', 'Groceries'] })),
+      ]);
+      expect(data.budget_periods[2]).toMatchObject({
+        line: 'Groceries',
+        periodEndInclusive: dayBefore({ date: current.startDate }),
+        assigned: 200.5,
+        spent: 30.25,
+        available: 170.25,
+      });
+
+      const ranged = await exportBudgets({ dateRange: { from: current.startDate, to: current.startDate } });
+      expect(ranged.budget_periods.map((row) => [row.periodStart, row.line])).toEqual([
+        [current.startDate, 'Transport'],
+        [current.startDate, 'Groceries'],
+      ]);
+      expect(ranged.budget_lines).toHaveLength(3);
+    });
+
+    it('keeps every period through the last future one holding an assignment', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Plan ahead', color: '#666666', raw: true });
+      const { plan } = await helpers.createBudgetPlan({ payload: { name: 'Ahead plan' }, raw: true });
+      const line = await helpers.createBudgetPlanLine({
+        planId: plan.id,
+        payload: { name: 'Ahead line', categoryIds: [category.id] },
+        raw: true,
+      });
+      const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+      await helpers.setBudgetAssignment({
+        planId: plan.id,
+        periodId: periods[3]!.id,
+        lineId: line.id,
+        payload: { scope: 'this_period', amount: 40 },
+        raw: true,
+      });
+
+      const data = await exportBudgets();
+
+      expect(data.budget_periods.map((row) => row.periodStart)).toEqual(
+        periods.slice(0, 4).map((period) => period.startDate),
+      );
+    });
+
+    it('emits empty budget plan files for a user without plans', async () => {
+      const data = await exportBudgets();
+
+      expect(data.budget_lines).toEqual([]);
+      expect(data.budget_periods).toEqual([]);
+    });
+
+    it('leaves out a trashed plan', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Trash cat', color: '#555555', raw: true });
+      const { plan: trashed } = await helpers.createBudgetPlan({ payload: { name: 'Trashed plan' }, raw: true });
+      await helpers.createBudgetPlanLine({
+        planId: trashed.id,
+        payload: { name: 'Trashed line', categoryIds: [category.id] },
+        raw: true,
+      });
+      await helpers.deleteBudgetPlan({ planId: trashed.id, raw: true });
+
+      const { plan: live } = await helpers.createBudgetPlan({ payload: { name: 'Live plan' }, raw: true });
+      await helpers.createBudgetPlanLine({
+        planId: live.id,
+        payload: { name: 'Live line', categoryIds: [category.id] },
+        raw: true,
+      });
+
+      const data = await exportBudgets();
+
+      expect(data.budget_lines.map((row) => [row.plan, row.line])).toEqual([['Live plan', 'Live line']]);
+      expect(data.budget_periods.map((row) => [row.plan, row.line])).toEqual([['Live plan', 'Live line']]);
+    });
+  });
+
   describe('Size limit (ExportTooLargeError → 409)', () => {
     it('responds with 409 + payloadTooLarge when the row count would exceed MAX_EXPORT_ROWS', async () => {
       // The local data-export types module re-exports MAX_EXPORT_ROWS from

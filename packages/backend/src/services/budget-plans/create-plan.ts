@@ -5,6 +5,7 @@ import {
   BudgetPlanDetails,
   BudgetPlanTypeKey,
 } from '@bt/shared/types/budget-plans';
+import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
@@ -16,7 +17,9 @@ import { UniqueConstraintError } from 'sequelize';
 
 import { getPlan } from './get-plan';
 import {
+  FUTURE_PERIODS,
   MAX_BACKDATED_PERIODS,
+  MAX_PLAN_PERIODS,
   PeriodCadenceConfig,
   anchorParts,
   boundaryAtOrBefore,
@@ -77,6 +80,23 @@ const validateCadence = ({ cadence, intervalN, anchorDate, secondAnchorDay }: Pe
   if (!validateSemiMonthlyDays({ anchorDay, secondAnchorDay })) {
     throw new ValidationError({ message: t({ key: 'budgetPlans.semiMonthlyDaysTooClose' }) });
   }
+};
+
+const isDate = ({ value }: { value: unknown }) => dateBound().safeParse(value).success;
+
+/** Restore skips createPlan, so a stored row gets its cadence rules and an epoch bound here. */
+export const isRestorablePlanRow = ({ row }: { row: Record<string, unknown> }): boolean => {
+  const plan = row as unknown as PeriodCadenceConfig & { epochDate: string };
+  if (!isDate({ value: plan.anchorDate }) || !isDate({ value: plan.epochDate })) return false;
+
+  try {
+    validateCadence(plan);
+  } catch {
+    return false;
+  }
+  // Leaves room for the periods ensurePeriods creates ahead of today, which count toward the same ceiling.
+  const periodsToToday = countPeriodsBetween({ plan, from: plan.epochDate, to: toUtcDateString(new Date()) });
+  return periodsToToday + FUTURE_PERIODS + 1 <= MAX_PLAN_PERIODS;
 };
 
 const createPlanImpl = async ({

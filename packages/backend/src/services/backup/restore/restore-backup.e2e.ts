@@ -14,6 +14,7 @@ import {
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
 } from '@bt/shared/types';
+import type { BudgetPlanPeriodView } from '@bt/shared/types/budget-plans';
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
@@ -290,6 +291,116 @@ async function seedBasicData() {
   });
 
   return { accountA, accountB, category, tx: tx! };
+}
+
+/** A trashed plan with one line, then the active plan: a pool over two accounts, a
+ *  group, a grouped and an ungrouped line, a goal, assignments across periods and a
+ *  line archived in its first period, so only `archivedCategoryIds` holds its category. */
+async function seedBudgetPlans() {
+  const oldCategory = await helpers.addCustomCategory({ name: 'Plan old', color: '#101010', raw: true });
+  const trashed = await helpers.createBudgetPlan({ payload: { name: 'Old plan' }, raw: true });
+  await helpers.createBudgetPlanLine({
+    planId: trashed.plan.id,
+    payload: { name: 'Old line', categoryIds: [oldCategory.id] },
+    raw: true,
+  });
+  await helpers.deleteBudgetPlan({ planId: trashed.plan.id, raw: true });
+
+  const checking = await helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Plan checking', initialBalance: 5000 }),
+    raw: true,
+  });
+  const savings = await helpers.createAccount({
+    payload: helpers.buildAccountPayload({ name: 'Plan savings', initialBalance: 2000 }),
+    raw: true,
+  });
+  const food = await helpers.addCustomCategory({ name: 'Plan food', color: '#202020', raw: true });
+  const rent = await helpers.addCustomCategory({ name: 'Plan rent', color: '#303030', raw: true });
+  const fun = await helpers.addCustomCategory({ name: 'Plan fun', color: '#404040', raw: true });
+
+  const { plan } = await helpers.createBudgetPlan({
+    payload: {
+      name: 'Main plan',
+      accountIds: [checking.id, savings.id],
+      epochDate: helpers.budgetPeriodStart({ monthsAgo: 2 }),
+      poolEnabled: true,
+    },
+    raw: true,
+  });
+  const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+  const bills = await helpers.createBudgetLineGroup({ planId: plan.id, name: 'Bills', raw: true });
+
+  const rentLine = await helpers.createBudgetPlanLine({
+    planId: plan.id,
+    payload: { name: 'Rent', categoryIds: [rent.id], groupId: bills.id, activeFrom: periods[0]!.startDate },
+    raw: true,
+  });
+  const foodLine = await helpers.createBudgetPlanLine({
+    planId: plan.id,
+    payload: { name: 'Food', categoryIds: [food.id], activeFrom: periods[0]!.startDate },
+    raw: true,
+  });
+  await helpers.setBudgetAssignment({
+    planId: plan.id,
+    periodId: periods[0]!.id,
+    lineId: rentLine.id,
+    payload: { scope: 'from_here', amount: 500 },
+    raw: true,
+  });
+  await helpers.setBudgetAssignment({
+    planId: plan.id,
+    periodId: periods[0]!.id,
+    lineId: foodLine.id,
+    payload: { scope: 'from_here', amount: 100 },
+    raw: true,
+  });
+  await helpers.setBudgetAssignment({
+    planId: plan.id,
+    periodId: periods[1]!.id,
+    lineId: foodLine.id,
+    payload: { scope: 'this_period', amount: 150 },
+    raw: true,
+  });
+  await helpers.setBudgetLineGoal({
+    planId: plan.id,
+    lineId: foodLine.id,
+    payload: { frequency: 'every_period', behavior: 'budget_another', amount: 120 },
+    raw: true,
+  });
+
+  const funLine = await helpers.createBudgetPlanLine({
+    planId: plan.id,
+    payload: { name: 'Fun', categoryIds: [fun.id] },
+    raw: true,
+  });
+  await helpers.archiveBudgetPlanLine({ planId: plan.id, lineId: funLine.id, raw: true });
+
+  return { planId: plan.id, trashedPlanId: trashed.plan.id, funLineId: funLine.id, funCategoryId: fun.id, oldCategory };
+}
+
+const BUDGET_PLAN_FILES = [
+  'budget-plans',
+  'budget-line-groups',
+  'budget-periods',
+  'budget-plan-accounts',
+  'budget-lines',
+  'budget-line-categories',
+  'budget-line-goals',
+  'budget-assignments',
+];
+
+const foreignReferenceWarnings = (status: Awaited<ReturnType<typeof helpers.waitForRestore>>) =>
+  (status.summary?.warnings ?? []).filter((w) => w.code.startsWith('foreign_reference'));
+
+/** What the plan endpoints serve, with the unordered account set sorted. */
+async function readBudgetPlan({ planId }: { planId: string }) {
+  const details = await helpers.getBudgetPlan({ planId, raw: true });
+  const periods = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+  const views: BudgetPlanPeriodView[] = [];
+  for (const period of periods) {
+    views.push(await helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true }));
+  }
+  return { details: { ...details, accountIds: details.accountIds.toSorted() }, periods, views };
 }
 
 describe('Data backup restore (POST /user/backup/restore)', () => {
@@ -793,6 +904,134 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         totalCount: 1,
       });
     });
+  });
+
+  describe('Budget plans', () => {
+    it('round-trips every plan table, trash included, and the restored plans read the same', async () => {
+      const seeded = await seedBudgetPlans();
+      const before = await readBudgetPlan({ planId: seeded.planId });
+
+      const first = await exportArchive();
+      const firstArchive = helpers.parseBackupArchive({ buffer: first.buffer });
+      const emptyFiles = BUDGET_PLAN_FILES.filter(
+        (name) => (firstArchive.readData({ name }) as unknown[]).length === 0,
+      );
+      expect(emptyFiles).toEqual([]);
+
+      const restore = await helpers.restoreBackup({ fileContent: first.base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      expect(foreignReferenceWarnings(status)).toEqual([]);
+
+      expect(await readBudgetPlan({ planId: seeded.planId })).toEqual(before);
+
+      const secondArchive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      for (const name of BUDGET_PLAN_FILES) {
+        expect({ name, rows: canonicalRows(secondArchive.readData({ name })) }).toEqual({
+          name,
+          rows: canonicalRows(firstArchive.readData({ name })),
+        });
+      }
+
+      const restoredLine = await helpers.restoreBudgetPlanLine({
+        planId: seeded.planId,
+        lineId: seeded.funLineId,
+        raw: true,
+      });
+      expect(restoredLine.categoryIds).toEqual([seeded.funCategoryId]);
+
+      await helpers.deleteBudgetPlan({ planId: seeded.planId, raw: true });
+      const revived = await helpers.restoreBudgetPlan({ planId: seeded.trashedPlanId, raw: true });
+      expect(revived.lines.map(({ name, categoryIds }) => ({ name, categoryIds }))).toEqual([
+        { name: 'Old line', categoryIds: [seeded.oldCategory.id] },
+      ]);
+    }, 30000);
+
+    it('replaces the target plan and re-links every plan row to the reminted ids when the source still holds them', async () => {
+      const seeded = await seedBudgetPlans();
+      const { base64 } = await exportArchive();
+
+      const target = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.asUser({
+        cookies: target.cookies,
+        fn: async () => {
+          await helpers.createBudgetPlan({ payload: { name: 'Target plan' }, raw: true });
+
+          const restore = await helpers.withSelfHost(() => helpers.restoreBackup({ fileContent: base64 }));
+          expect(restore.statusCode).toBe(200);
+          const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+          expect(status.status).toBe('completed');
+          expect(foreignReferenceWarnings(status)).toEqual([]);
+
+          const plans = await helpers.listBudgetPlans({ includeDeleted: true, raw: true });
+          expect(plans.map((p) => p.name).toSorted()).toEqual(['Main plan', 'Old plan']);
+          const main = plans.find((p) => p.name === 'Main plan')!;
+          expect(main.id).not.toBe(seeded.planId);
+
+          const categoryIdByName = new Map((await helpers.getCategoriesList()).map((c) => [c.name, c.id]));
+          const targetAccountIds = new Set<string>((await helpers.getAccounts()).map((a) => a.id));
+
+          const details = await helpers.getBudgetPlan({ planId: main.id, raw: true });
+          expect(details.accountIds).toHaveLength(2);
+          for (const id of details.accountIds) expect(targetAccountIds.has(id)).toBe(true);
+
+          const periods = await helpers.listBudgetPlanPeriods({ planId: main.id, raw: true });
+          const view = await helpers.getBudgetPlanPeriodView({ planId: main.id, periodId: periods[1]!.id, raw: true });
+          expect(view.groups.map((g) => g.name)).toEqual(['Bills']);
+          const lineByName = new Map(view.lines.map((line) => [line.name, line]));
+          expect(lineByName.get('Rent')).toMatchObject({
+            groupId: view.groups[0]!.id,
+            categoryIds: [categoryIdByName.get('Plan rent')],
+            assigned: 500,
+          });
+          expect(lineByName.get('Food')).toMatchObject({
+            groupId: null,
+            categoryIds: [categoryIdByName.get('Plan food')],
+            assigned: 150,
+            assignedSource: 'override',
+          });
+          expect(lineByName.get('Food')!.goal).toMatchObject({ amount: 120 });
+
+          const funLine = details.lines.find((line) => line.name === 'Fun')!;
+          expect(funLine.id).not.toBe(seeded.funLineId);
+          const restoredFun = await helpers.restoreBudgetPlanLine({ planId: main.id, lineId: funLine.id, raw: true });
+          expect(restoredFun.categoryIds).toEqual([categoryIdByName.get('Plan fun')]);
+          expect(restoredFun.categoryIds).not.toEqual([seeded.funCategoryId]);
+        },
+      });
+    }, 30000);
+
+    it.each([
+      ['an interval past the cadence limit', { intervalN: 300000 }],
+      [
+        'an epoch past the period ceiling',
+        { cadence: 'days', intervalN: 1, anchorDate: '1000-01-01', epochDate: '1000-01-01' },
+      ],
+    ])(
+      'drops a plan with %s and the plan endpoints still answer',
+      async (_, forged) => {
+        const { plan } = await helpers.createBudgetPlan({ payload: { name: 'Forged plan' }, raw: true });
+
+        const { buffer } = await exportArchive();
+        const { files } = helpers.parseBackupArchive({ buffer });
+        const plans = readArchiveJson({ files, path: 'data/budget-plans.json' }) as Row[];
+        Object.assign(plans.find((row) => row.id === plan.id)!, forged);
+        writeArchiveJson({ files, path: 'data/budget-plans.json', value: plans });
+
+        const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+        expect(restore.statusCode).toBe(200);
+        const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+        expect(status.status).toBe('completed');
+        expect(status.summary?.warnings).toContainEqual(
+          expect.objectContaining({ code: 'invalid_row_dropped', table: 'budget-plans', count: 1 }),
+        );
+
+        expect(await helpers.listBudgetPlans({ includeDeleted: true, raw: true })).toEqual([]);
+        expect((await helpers.listBudgetPlanPeriods({ planId: plan.id })).statusCode).toBe(404);
+      },
+      30000,
+    );
   });
 
   // Backup files are user-editable (checksums recompute), so a hand-edited archive

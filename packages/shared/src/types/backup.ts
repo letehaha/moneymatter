@@ -73,11 +73,12 @@ export type BackupRestoreWarningCode =
   // hand-edited archive aiming a child row at another user's row); the whole row
   // was dropped rather than attached to foreign data.
   | 'foreign_reference_dropped'
+  // A row broke an app-level rule the DB doesn't enforce (e.g. a budget plan cadence
+  // the period enumerator can't serve); the row was dropped.
+  | 'invalid_row_dropped'
   // A nullable foreign-key column pointed at data outside this backup; the column
   // was reset to null and the row kept.
-  | 'foreign_reference_nulled'
-  // Budget plans are excluded from backups, so the restore wipe removed them for good.
-  | 'budget_plans_removed';
+  | 'foreign_reference_nulled';
 
 export interface BackupRestoreWarning {
   code: BackupRestoreWarningCode;

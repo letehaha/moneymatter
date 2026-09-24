@@ -1,5 +1,6 @@
 import { transformAccounts } from './transformers/accounts-transformer';
 import { transformBalancesHistory } from './transformers/balances-history-transformer';
+import { transformBudgetLines, transformBudgetPeriods } from './transformers/budget-plans-transformer';
 import { transformBudgets } from './transformers/budgets-transformer';
 import { transformCategories } from './transformers/categories-transformer';
 import { transformHoldings } from './transformers/holdings-transformer';
@@ -184,6 +185,35 @@ export const EXPORT_DOMAINS: { readonly [N in ExportFileName]: ExportDomain<N> }
       { header: 'Currency', field: 'currency', kind: 'text' },
       { header: 'Categories', field: 'categories', kind: 'array' },
       { header: 'SpentAmount', field: 'spentAmount', kind: 'money' },
+    ],
+  },
+  budget_lines: {
+    name: 'budget_lines',
+    group: 'budgets',
+    build: ({ userId }) => transformBudgetLines({ userId }),
+    columns: [
+      { header: 'Plan', field: 'plan', kind: 'text' },
+      { header: 'Group', field: 'group', kind: 'text' },
+      { header: 'Line', field: 'line', kind: 'text' },
+      { header: 'Categories', field: 'categories', kind: 'array' },
+      { header: 'Archived', field: 'archived', kind: 'boolean' },
+      { header: 'Goal', field: 'goal', kind: 'text' },
+      { header: 'Currency', field: 'currency', kind: 'text' },
+    ],
+  },
+  budget_periods: {
+    name: 'budget_periods',
+    group: 'budgets',
+    build: ({ userId, dateRange }) => transformBudgetPeriods({ userId, dateRange }),
+    columns: [
+      { header: 'Plan', field: 'plan', kind: 'text' },
+      { header: 'PeriodStart', field: 'periodStart', kind: 'date' },
+      { header: 'PeriodEndInclusive', field: 'periodEndInclusive', kind: 'date' },
+      { header: 'Line', field: 'line', kind: 'text' },
+      { header: 'Assigned', field: 'assigned', kind: 'money' },
+      { header: 'Spent', field: 'spent', kind: 'money' },
+      { header: 'Available', field: 'available', kind: 'money' },
+      { header: 'Currency', field: 'currency', kind: 'text' },
     ],
   },
   subscriptions: {

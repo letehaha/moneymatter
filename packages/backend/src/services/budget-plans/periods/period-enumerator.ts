@@ -9,6 +9,8 @@ import { toUtcDateString } from '@common/utils/date';
 
 export const MAX_BACKDATED_PERIODS = 500;
 export const FUTURE_PERIODS = 12;
+// ponytail: hard ceiling of 10k periods per plan (~27 years daily); raise it if real plans ever approach it.
+export const MAX_PLAN_PERIODS = 10_000;
 
 export type PeriodCadenceConfig = {
   cadence: BudgetPlanCadence;

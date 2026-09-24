@@ -1,7 +1,6 @@
 import type { BackupRestoreProgress, BackupRestoreSummary, BackupRestoreWarning } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import { trackBackupRestored } from '@js/utils/posthog';
-import BudgetPlans from '@models/budget-plans.model';
 import UserSettings, { type SettingsSchema, ZodSettingsSchema } from '@models/user-settings.model';
 import Users from '@models/users.model';
 import { unifyAiConnections } from '@root/migrations/utils/unify-ai-connections';
@@ -180,14 +179,6 @@ export async function restoreUserBackup({
     failureLogCode: 'BACKUP_RESTORE_FAILED',
     failureLogMessage: 'Backup restore failed',
     destroyInTx: async ({ user, transaction }) => {
-      const budgetPlansCount = await BudgetPlans.count({ where: { userId: user.id }, paranoid: false });
-      if (budgetPlansCount > 0) {
-        warnings.push({
-          code: 'budget_plans_removed',
-          message: `${budgetPlansCount} budget plan(s) were removed. Budget plans are not part of backups and cannot be restored.`,
-          count: budgetPlansCount,
-        });
-      }
       await destroyUserOwnedData({ user });
 
       const tableResult = await insertRestoreTables({

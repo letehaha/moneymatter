@@ -25,9 +25,10 @@ export const MAX_EXPORT_ROWS = 250_000;
  * (`YYYY-MM-DD`), interpreted as a closed interval.
  *
  * Only event tables filter on this range – transactions, balance history,
- * investment transactions, portfolio transfers. The range never filters
- * reference tables (accounts, categories, tags, payees, vehicles, portfolios,
- * holdings, budgets, subscriptions), so the filtered CSV columns resolve to
+ * investment transactions, portfolio transfers, and budget periods (kept when
+ * the period overlaps the range). The range never filters reference tables
+ * (accounts, categories, tags, payees, vehicles, portfolios, holdings,
+ * budgets, budget lines, subscriptions), so the filtered CSV columns resolve to
  * readable names regardless of which window the user picked. Narrowing to a
  * subset of accounts is the separate `accountIds` request filter, which
  * constrains transactions, balance history and the accounts file.

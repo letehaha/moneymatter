@@ -1,4 +1,4 @@
-import { ACCOUNT_CATEGORIES } from './enums';
+import { ACCOUNT_CATEGORIES } from './accounts';
 import { RecordId } from './record-id';
 
 export const BUDGET_PLAN_CADENCES = ['days', 'months', 'semi_monthly'] as const;
