@@ -17,7 +17,7 @@ export type PeriodCadenceConfig = {
   secondAnchorDay: number | null;
 };
 
-const DAY_MS = 86_400_000;
+export const DAY_MS = 86_400_000;
 
 const dateParts = ({ date }: { date: string }) => {
   const iso = toUtcDateString(date);
@@ -27,7 +27,7 @@ const dateParts = ({ date }: { date: string }) => {
 const daysInMonth = ({ year, month }: { year: number; month: number }): number =>
   new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
 
-const dayOfMonthMs = ({ year, month, day }: { year: number; month: number; day: number }): number =>
+export const dayOfMonthMs = ({ year, month, day }: { year: number; month: number; day: number }): number =>
   Date.UTC(year, month, Math.min(day, daysInMonth({ year, month })));
 
 export const anchorParts = ({ plan }: { plan: Pick<PeriodCadenceConfig, 'anchorDate'> }) =>

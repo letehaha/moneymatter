@@ -13,6 +13,8 @@ import BrandLogosModel from './brand-logos.model';
 import BudgetAssignmentsModel from './budget-assignments.model';
 import BudgetCategoriesModel from './budget-categories.model';
 import BudgetLineCategoriesModel from './budget-line-categories.model';
+import BudgetLineGoalsModel from './budget-line-goals.model';
+import BudgetLineGroupsModel from './budget-line-groups.model';
 import BudgetLinesModel from './budget-lines.model';
 import BudgetPeriodsModel from './budget-periods.model';
 import BudgetPlanAccountsModel from './budget-plan-accounts.model';
@@ -158,8 +160,10 @@ const models = [
   ImportBatchesModel,
   ImportBatchAccountEffectsModel,
   BudgetPlansModel,
+  BudgetLineGroupsModel,
   BudgetLinesModel,
   BudgetLineCategoriesModel,
+  BudgetLineGoalsModel,
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,

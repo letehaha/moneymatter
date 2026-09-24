@@ -1,7 +1,7 @@
 import { DataTypes, QueryInterface } from 'sequelize';
 
 /**
- * Six tables of the budget-plan ledger. Names carry a `Budget*` prefix without
+ * Eight tables of the budget-plan ledger. Names carry a `Budget*` prefix without
  * colliding with the Trackers feature (`Budgets`, `BudgetCategories`,
  * `BudgetTransactions`).
  */
@@ -72,6 +72,16 @@ module.exports = {
             allowNull: false,
             defaultValue: false,
           },
+          poolFrom: {
+            type: DataTypes.DATEONLY,
+            allowNull: true,
+            comment: 'First Ready-to-Assign pool period start; NULL = no pool',
+          },
+          expectedIncome: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
+            comment: 'Cents per period, user-entered',
+          },
           createdAt: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -103,6 +113,8 @@ module.exports = {
 
       await queryInterface.sequelize.query(
         `ALTER TABLE "BudgetPlans"
+           ADD CONSTRAINT "BudgetPlans_cadence_check"
+             CHECK ("cadence" IN ('days', 'months', 'semi_monthly')),
            ADD CONSTRAINT "BudgetPlans_intervalN_check" CHECK ("intervalN" >= 1),
            ADD CONSTRAINT "BudgetPlans_semiMonthly_interval_check"
              CHECK ("cadence" <> 'semi_monthly' OR "intervalN" = 1),
@@ -114,6 +126,46 @@ module.exports = {
              CHECK ("carryPolicy" IN ('none', 'floor', 'signed'));`,
         { transaction },
       );
+
+      await queryInterface.createTable(
+        'BudgetLineGroups',
+        {
+          id: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            allowNull: false,
+          },
+          planId: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            references: { model: 'BudgetPlans', key: 'id' },
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
+          },
+          name: {
+            type: DataTypes.STRING(200),
+            allowNull: false,
+          },
+          sortOrder: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+          },
+          createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.addIndex('BudgetLineGroups', ['planId'], { transaction });
 
       await queryInterface.createTable(
         'BudgetLines',
@@ -133,6 +185,13 @@ module.exports = {
           name: {
             type: DataTypes.STRING(200),
             allowNull: false,
+          },
+          groupId: {
+            type: DataTypes.UUID,
+            allowNull: true,
+            references: { model: 'BudgetLineGroups', key: 'id' },
+            onUpdate: 'CASCADE',
+            onDelete: 'SET NULL',
           },
           sortOrder: {
             type: DataTypes.INTEGER,
@@ -170,10 +229,129 @@ module.exports = {
       );
 
       await queryInterface.addIndex('BudgetLines', ['planId'], { transaction });
+      await queryInterface.addIndex('BudgetLines', ['groupId'], { transaction });
 
       await queryInterface.sequelize.query(
         `ALTER TABLE "BudgetLines" ADD CONSTRAINT "BudgetLines_lifetime_check"
          CHECK ("activeUntil" IS NULL OR "activeUntil" >= "activeFrom");`,
+        { transaction },
+      );
+
+      await queryInterface.createTable(
+        'BudgetLineGoals',
+        {
+          id: {
+            type: DataTypes.UUID,
+            primaryKey: true,
+            allowNull: false,
+          },
+          lineId: {
+            type: DataTypes.UUID,
+            allowNull: false,
+            unique: true,
+            references: { model: 'BudgetLines', key: 'id' },
+            onUpdate: 'CASCADE',
+            onDelete: 'CASCADE',
+          },
+          frequency: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            comment: 'BudgetLineGoalFrequency: every_period | weekly | biweekly | yearly | by_date | open_ended',
+          },
+          behavior: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            comment: 'BudgetLineGoalBehavior: budget_another | refill_up_to | reach_balance',
+          },
+          amount: {
+            type: DataTypes.BIGINT,
+            allowNull: false,
+            comment: 'Cents',
+          },
+          weekday: {
+            type: DataTypes.SMALLINT,
+            allowNull: true,
+            comment: 'weekly only; 0 is Sunday',
+          },
+          anchorDate: {
+            type: DataTypes.DATEONLY,
+            allowNull: true,
+            comment: 'biweekly: a first occurrence; yearly: the first due date; by_date: the due date',
+          },
+          repeatEvery: {
+            type: DataTypes.SMALLINT,
+            allowNull: true,
+          },
+          repeatUnit: {
+            type: DataTypes.STRING(10),
+            allowNull: true,
+            comment: 'BudgetLineGoalRepeatUnit: months | years',
+          },
+          stopAtBalance: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
+            comment: 'Cents; budget_another only',
+          },
+          fundingCap: {
+            type: DataTypes.BIGINT,
+            allowNull: true,
+            comment: 'Cents per period; refill_up_to only',
+          },
+          startPeriodStart: {
+            type: DataTypes.DATEONLY,
+            allowNull: false,
+            comment: 'Start of the period the goal was created in',
+          },
+          snoozedPeriodStart: {
+            type: DataTypes.DATEONLY,
+            allowNull: true,
+            comment: 'Start of the one period the goal sits out',
+          },
+          createdAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+          updatedAt: {
+            type: DataTypes.DATE,
+            allowNull: false,
+            defaultValue: DataTypes.NOW,
+          },
+        },
+        { transaction },
+      );
+
+      await queryInterface.sequelize.query(
+        `ALTER TABLE "BudgetLineGoals"
+           ADD CONSTRAINT "BudgetLineGoals_behavior_check"
+             CHECK ("behavior" IN ('budget_another', 'refill_up_to', 'reach_balance')),
+           ADD CONSTRAINT "BudgetLineGoals_amount_check" CHECK ("amount" > 0),
+           ADD CONSTRAINT "BudgetLineGoals_frequency_check"
+             CHECK ("frequency" IN ('every_period', 'weekly', 'biweekly', 'yearly', 'by_date', 'open_ended')),
+           ADD CONSTRAINT "BudgetLineGoals_pairing_check"
+             CHECK (CASE "frequency"
+               WHEN 'by_date' THEN TRUE
+               WHEN 'open_ended' THEN "behavior" = 'reach_balance'
+               ELSE "behavior" IN ('budget_another', 'refill_up_to')
+             END),
+           ADD CONSTRAINT "BudgetLineGoals_weekday_check"
+             CHECK (("weekday" IS NOT NULL) = ("frequency" = 'weekly') AND ("weekday" IS NULL OR "weekday" BETWEEN 0 AND 6)),
+           ADD CONSTRAINT "BudgetLineGoals_anchorDate_check"
+             CHECK (("anchorDate" IS NOT NULL) = ("frequency" IN ('biweekly', 'yearly', 'by_date'))),
+           ADD CONSTRAINT "BudgetLineGoals_repeat_check"
+             CHECK (
+               ("repeatEvery" IS NULL AND "repeatUnit" IS NULL)
+               OR ("frequency" = 'by_date'
+                 AND "behavior" IN ('budget_another', 'refill_up_to')
+                 AND (("repeatUnit" = 'months' AND "repeatEvery" BETWEEN 1 AND 11)
+                   OR ("repeatUnit" = 'years' AND "repeatEvery" BETWEEN 1 AND 5)))
+             ),
+           ADD CONSTRAINT "BudgetLineGoals_stopAtBalance_check"
+             CHECK ("stopAtBalance" IS NULL OR ("behavior" = 'budget_another' AND "stopAtBalance" > 0)),
+           ADD CONSTRAINT "BudgetLineGoals_fundingCap_check"
+             CHECK ("fundingCap" IS NULL OR ("behavior" = 'refill_up_to' AND "fundingCap" > 0)),
+           ADD CONSTRAINT "BudgetLineGoals_snooze_check"
+             CHECK ("snoozedPeriodStart" IS NULL OR "frequency" <> 'open_ended');`,
         { transaction },
       );
 
@@ -391,7 +569,9 @@ module.exports = {
       await queryInterface.dropTable('BudgetAssignments', { transaction });
       await queryInterface.dropTable('BudgetPeriods', { transaction });
       await queryInterface.dropTable('BudgetLineCategories', { transaction });
+      await queryInterface.dropTable('BudgetLineGoals', { transaction });
       await queryInterface.dropTable('BudgetLines', { transaction });
+      await queryInterface.dropTable('BudgetLineGroups', { transaction });
       await queryInterface.dropTable('BudgetPlans', { transaction });
     });
   },

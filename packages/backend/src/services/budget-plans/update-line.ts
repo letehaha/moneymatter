@@ -10,6 +10,7 @@ import { closeMembershipAt } from './archive-line';
 import { covers, toRange } from './date-ranges';
 import { findLine, findPlan } from './find-plan';
 import { toLineEntry } from './get-plan';
+import { endOfGroupSortOrder } from './line-groups';
 import { ensureCurrentPeriods } from './periods/ensure-periods';
 import { validateLineCategories } from './validate-line-categories';
 
@@ -31,7 +32,8 @@ const applyMembership = async ({
   until: string | null;
 }): Promise<void> => {
   const rows = await BudgetLineCategories.findAll({ where: { lineId } });
-  const reaches = (row: BudgetLineCategories) => row.untilDate === null || toUtcDateString(row.untilDate) > from;
+  const reaches = ({ row }: { row: BudgetLineCategories }) =>
+    row.untilDate === null || toUtcDateString(row.untilDate) > from;
 
   for (const row of rows) {
     if (!categoryIds.includes(row.categoryId)) await closeMembershipAt({ row, at: from });
@@ -39,7 +41,7 @@ const applyMembership = async ({
 
   for (const categoryId of categoryIds) {
     const [kept, ...absorbed] = rows
-      .filter((row) => row.categoryId === categoryId && reaches(row))
+      .filter((row) => row.categoryId === categoryId && reaches({ row }))
       .toSorted((a, b) => toUtcDateString(a.fromDate).localeCompare(toUtcDateString(b.fromDate)));
 
     if (!kept) {
@@ -64,6 +66,7 @@ const updateLineImpl = async ({
   lineId,
   name,
   sortOrder,
+  groupId,
   categoryIds,
   effectiveFrom,
 }: {
@@ -72,6 +75,8 @@ const updateLineImpl = async ({
   lineId: RecordId;
   name?: string;
   sortOrder?: number;
+  /** `null` ungroups the line; a moved line lands last in its new list unless `sortOrder` says otherwise. */
+  groupId?: RecordId | null;
   categoryIds?: RecordId[];
   effectiveFrom?: string;
 }) => {
@@ -97,7 +102,11 @@ const updateLineImpl = async ({
     if (lifetime.until !== null) await line.update({ archivedCategoryIds: topMostIds });
   }
 
-  await line.update(removeUndefinedKeys({ name, sortOrder }));
+  const regroup = groupId !== undefined && groupId !== line.groupId;
+  const endOfGroup = regroup ? await endOfGroupSortOrder({ planId: plan.id, groupId }) : undefined;
+  await line.update(
+    removeUndefinedKeys({ name, groupId: regroup ? groupId : undefined, sortOrder: sortOrder ?? endOfGroup }),
+  );
 
   const lineCategories = await BudgetLineCategories.findAll({ where: { lineId: line.id } });
   return toLineEntry({ line, lineCategories, currentStart });

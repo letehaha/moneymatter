@@ -12,6 +12,38 @@ export type BudgetPlanTypeKey = (typeof BUDGET_PLAN_TYPE_KEYS)[number];
 
 export const BUDGET_PLAN_NAME_MAX_LENGTH = 200;
 
+export const BUDGET_LINE_GOAL_BEHAVIORS = ['budget_another', 'refill_up_to', 'reach_balance'] as const;
+export type BudgetLineGoalBehavior = (typeof BUDGET_LINE_GOAL_BEHAVIORS)[number];
+
+export const BUDGET_LINE_GOAL_FREQUENCIES = [
+  'every_period',
+  'weekly',
+  'biweekly',
+  'yearly',
+  'by_date',
+  'open_ended',
+] as const;
+export type BudgetLineGoalFrequency = (typeof BUDGET_LINE_GOAL_FREQUENCIES)[number];
+
+export const BUDGET_LINE_GOAL_BEHAVIORS_BY_FREQUENCY: Record<
+  BudgetLineGoalFrequency,
+  readonly BudgetLineGoalBehavior[]
+> = {
+  every_period: ['budget_another', 'refill_up_to'],
+  weekly: ['budget_another', 'refill_up_to'],
+  biweekly: ['budget_another', 'refill_up_to'],
+  yearly: ['budget_another', 'refill_up_to'],
+  by_date: ['budget_another', 'refill_up_to', 'reach_balance'],
+  open_ended: ['reach_balance'],
+};
+
+export const BUDGET_LINE_GOAL_REPEAT_UNITS = ['months', 'years'] as const;
+export type BudgetLineGoalRepeatUnit = (typeof BUDGET_LINE_GOAL_REPEAT_UNITS)[number];
+
+export type BudgetLineGoalStatus = 'snoozed' | 'achieved' | 'funded' | 'underfunded';
+
+export type BudgetPlanCoverageState = 'prepared' | 'left_to_cover' | 'over_committed' | 'nothing_tracked';
+
 export const BUDGET_ASSIGNMENT_SCOPES = ['from_here', 'this_period'] as const;
 export type BudgetAssignmentScope = (typeof BUDGET_ASSIGNMENT_SCOPES)[number];
 
@@ -43,6 +75,9 @@ export interface BudgetPlanModel {
   epochDate: string;
   carryPolicy: BudgetPlanCarryPolicy;
   autoAttachAccounts: boolean;
+  /** 'yyyy-MM-dd', the start of the pool's first period; `null` when the plan isn't funded from a pool. */
+  poolFrom: string | null;
+  expectedIncome: number | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -52,9 +87,17 @@ export interface BudgetPlanLineEntry {
   id: string;
   name: string;
   sortOrder: number;
+  /** `null` = ungrouped. */
+  groupId: string | null;
   activeFrom: string;
   activeUntil: string | null;
   categoryIds: string[];
+}
+
+export interface BudgetPlanLineGroup {
+  id: RecordId;
+  name: string;
+  sortOrder: number;
 }
 
 export interface BudgetPlanDetails {
@@ -75,6 +118,7 @@ export interface BudgetPlanPeriodViewLine {
   lineId: string;
   name: string;
   sortOrder: number;
+  groupId: string | null;
   categoryIds: string[];
   assigned: number;
   assignedSource: 'override' | 'baseline' | 'none';
@@ -83,13 +127,137 @@ export interface BudgetPlanPeriodViewLine {
   carriedIn: number;
   available: number;
   carryPolicy: BudgetPlanCarryPolicy;
+  goal: BudgetPlanPeriodViewLineGoal | null;
+}
+
+export interface BudgetLineGoal {
+  lineId: string;
+  frequency: BudgetLineGoalFrequency;
+  behavior: BudgetLineGoalBehavior;
+  amount: number;
+  /** Weekly only; 0 is Sunday. */
+  weekday: number | null;
+  /** 'yyyy-MM-dd'. Biweekly: a first occurrence. Yearly: the first due date. By date: the due date. */
+  anchorDate: string | null;
+  /** By-date `budget_another` / `refill_up_to` only; both set or both `null`. */
+  repeatEvery: number | null;
+  repeatUnit: BudgetLineGoalRepeatUnit | null;
+  stopAtBalance: number | null;
+  /** Most a `refill_up_to` goal asks per period. */
+  fundingCap: number | null;
+  /** Start of the period the goal was created in. */
+  startPeriodStart: string;
+  /** Start of the one period the goal sits out. */
+  snoozedPeriodStart: string | null;
+}
+
+export interface BudgetLineGoalFundingPlanRow {
+  periodStart: string;
+  amount: number;
+  leftAfter: number;
+}
+
+export interface BudgetPlanPeriodViewLineGoal extends Omit<BudgetLineGoal, 'lineId' | 'snoozedPeriodStart'> {
+  /** Due date of the active cycle (yearly, by date). */
+  dueDate: string | null;
+  /** Still to assign this period. */
+  ask: number;
+  target: number;
+  /** What this period calls for; 0 for open-ended. */
+  periodTarget: number;
+  progress: number;
+  status: BudgetLineGoalStatus;
+  /** What "Budget $X" assigns: the ask plus any overspend; the whole gap for open-ended. */
+  budgetAmount: number;
+  /** Weekly / biweekly occurrence dates inside the period. */
+  occurrences: string[] | null;
+  fundedThrough: string | null;
+  nextNeededDate: string | null;
+  /** Yearly / by date: this period's ask, then the even split up to the due period. */
+  fundingPlan: BudgetLineGoalFundingPlanRow[] | null;
+}
+
+export interface BudgetPlanGoalsSummary {
+  count: number;
+  /** Per-period targets: the amount of every-period goals plus the per-period share of dated ones. */
+  totalTarget: number;
+  stillNeeded: number;
+  underfunded: { lineId: string; ask: number }[];
+  expectedIncome: number | null;
+}
+
+export interface BudgetPlanCoverage {
+  periodId: string;
+  startDate: string;
+  target: number;
+  linedUp: number;
+  percent: number;
+  left: number;
+  state: BudgetPlanCoverageState;
+}
+
+export interface BudgetPlanPool {
+  readyToAssign: number;
+  /** Assigned in later periods out of this period's money. */
+  committedLater: number;
+  /** `outsideSpending` is <= 0. */
+  flow: { leftOver: number; income: number; outsideSpending: number; fromLines: number; assigned: number };
+  balance: { cash: number; inLines: number; drift: number };
 }
 
 export interface BudgetPlanPeriodView {
   period: BudgetPlanPeriod;
-  header: { totalAssigned: number; totalActivity: number; totalAvailable: number };
+  header: { totalAssigned: number; totalActivity: number; totalAvailable: number; totalCarriedIn: number };
+  /** Sorted by `sortOrder`. */
+  groups: BudgetPlanLineGroup[];
   lines: BudgetPlanPeriodViewLine[];
+  /** `null` when the plan isn't funded from a pool. */
+  pool: BudgetPlanPool | null;
   unbudgeted: { categoryId: string; activity: number }[];
+  /** `null` when no line has a goal. */
+  goals: BudgetPlanGoalsSummary | null;
+  /** The next period's readiness; `null` without a pool or a next period. */
+  coverage: BudgetPlanCoverage | null;
+}
+
+export interface BudgetPlanTrendPeriod {
+  periodId: string;
+  startDate: string;
+  /** Exclusive. */
+  endDate: string;
+  assigned: number;
+  activity: number;
+  carriedIn: number;
+  available: number;
+  lines: { lineId: string; assigned: number; activity: number; available: number }[];
+}
+
+export interface BudgetPlanTrends {
+  /** Oldest first. */
+  periods: BudgetPlanTrendPeriod[];
+}
+
+export interface BudgetPlanScheduledItem {
+  source: 'subscription' | 'planned';
+  id: string;
+  name: string;
+  date: string;
+  /** Base currency, signed: outflows are negative. */
+  amount: number;
+  currencyCode: string;
+  nativeAmount: number;
+  categoryId: string | null;
+  lineId: string | null;
+  accountId: string | null;
+}
+
+export interface BudgetPlanScheduled {
+  /** Sorted by date. */
+  items: BudgetPlanScheduledItem[];
+  /** `total` is signed, so outflows total <= 0. */
+  outflows: { total: number; count: number };
+  inflows: { total: number; count: number };
+  nextDate: string | null;
 }
 
 export interface SetBudgetPlanAssignmentPayload {
@@ -97,6 +265,26 @@ export interface SetBudgetPlanAssignmentPayload {
   /** `undefined` leaves the column untouched, `null` clears it. */
   amount?: number | null;
   carryPolicy?: BudgetPlanCarryPolicy | null;
+}
+
+/** Array order is the new `sortOrder`. Lines left out, archived ones say, keep their group and order. */
+export interface SetBudgetPlanLayoutPayload {
+  groups: { id: string; lineIds: string[] }[];
+  ungroupedLineIds: string[];
+}
+
+export interface SetBudgetLineGoalPayload {
+  frequency: BudgetLineGoalFrequency;
+  behavior: BudgetLineGoalBehavior;
+  amount: number;
+  weekday?: number | null;
+  anchorDate?: string | null;
+  repeatEvery?: number | null;
+  repeatUnit?: BudgetLineGoalRepeatUnit | null;
+  stopAtBalance?: number | null;
+  fundingCap?: number | null;
+  /** Sets "Started" on create; ignored on update. Defaults to the current period. */
+  periodId?: string;
 }
 
 export interface CreateBudgetPlanPayload {
@@ -110,4 +298,5 @@ export interface CreateBudgetPlanPayload {
   accountIds: string[];
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
+  poolEnabled?: boolean;
 }

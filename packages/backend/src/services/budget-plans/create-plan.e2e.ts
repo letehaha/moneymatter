@@ -6,7 +6,7 @@ import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
-const DAY_MS = 86_400_000;
+import { DAY_MS } from './periods/period-enumerator';
 
 describe('Budget plan CRUD', () => {
   it('returns an empty list before anything is created', async () => {
@@ -244,6 +244,14 @@ describe('Budget plans without the feature', () => {
     expect((await helpers.listBudgetPlans()).statusCode).toBe(200);
     expect((await helpers.getBudgetPlan({ planId: created.plan.id })).statusCode).toBe(200);
     expect((await helpers.listBudgetPlanPeriods({ planId: created.plan.id })).statusCode).toBe(200);
+    const [period] = await helpers.listBudgetPlanPeriods({ planId: created.plan.id, raw: true });
+    expect((await helpers.getBudgetPlanPeriodView({ planId: created.plan.id, periodId: period!.id })).statusCode).toBe(
+      200,
+    );
+    expect((await helpers.getBudgetPlanScheduled({ planId: created.plan.id, periodId: period!.id })).statusCode).toBe(
+      200,
+    );
+    expect((await helpers.getBudgetPlanTrends({ planId: created.plan.id })).statusCode).toBe(200);
 
     const write = await helpers.updateBudgetPlan({ planId: created.plan.id, payload: { name: 'Nope' } });
     expect(write.statusCode).toBe(ERROR_CODES.PaymentRequired);

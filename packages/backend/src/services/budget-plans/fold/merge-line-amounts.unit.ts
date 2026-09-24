@@ -120,6 +120,16 @@ describe('mergeLineAmounts', () => {
     expect(assignedPerPeriod({ line: source, writes: writes.source })).toEqual([0, 0, 700, 100, 100]);
   });
 
+  it('keeps a baseline the source already stores right after the window', () => {
+    const source = line({ rows: { p0: { baselineAmount: 100 }, p3: { baselineAmount: 500 } } });
+    const target = line({ periodIds: ['p1', 'p2'], rows: { p1: { baselineAmount: 200 } } });
+
+    const writes = mergeLineAmounts({ source, target, sharedPeriodIds: ['p1', 'p2'] });
+
+    expect(writes.source).toEqual([{ periodId: 'p1', row: row({ baselineAmount: 0 }) }]);
+    expect(assignedPerPeriod({ line: source, writes: writes.source })).toEqual([100, 0, 0, 500, 500]);
+  });
+
   it('restores nothing when the source contributes no baseline', () => {
     const source = line();
     const target = line({ rows: { p0: { baselineAmount: 200 } } });

@@ -15,8 +15,9 @@ const props = withDefaults(
     title?: string;
     /** Popover variant only; the drawer always spans the screen width. */
     contentClass?: HTMLAttributes['class'];
+    align?: 'start' | 'center' | 'end';
   }>(),
-  { open: undefined, title: undefined, contentClass: undefined },
+  { open: undefined, title: undefined, contentClass: undefined, align: 'end' },
 );
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
@@ -45,7 +46,7 @@ const isOpen = useVModel(props, 'open', emit, { passive: true });
     <PopoverTrigger as-child>
       <slot name="trigger" />
     </PopoverTrigger>
-    <PopoverContent align="end" :class="contentClass" :aria-label="title">
+    <PopoverContent :align="align" :class="contentClass" :aria-label="title">
       <SlotContent />
     </PopoverContent>
   </Popover>

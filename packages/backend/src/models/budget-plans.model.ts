@@ -6,6 +6,8 @@ import {
   RecordId,
 } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
+import { Money } from '@common/types/money';
+import { MoneyField } from '@common/types/money-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, HasMany, DataType, Index } from 'sequelize-typescript';
 
 import BudgetLines from './budget-lines.model';
@@ -19,7 +21,7 @@ import Users from './users.model';
   paranoid: true,
   freezeTableName: true,
 })
-export default class BudgetPlans extends Model implements BudgetPlanModel {
+export default class BudgetPlans extends Model implements Omit<BudgetPlanModel, 'expectedIncome'> {
   @Column(IdColumn())
   declare id: RecordId;
 
@@ -59,6 +61,13 @@ export default class BudgetPlans extends Model implements BudgetPlanModel {
 
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   autoAttachAccounts!: boolean;
+
+  /** First pool period start; `null` = no pool. */
+  @Column({ type: DataType.DATEONLY, allowNull: true })
+  poolFrom!: string | null;
+
+  @MoneyField({ storage: 'cents', allowNull: true })
+  declare expectedIncome: Money | null;
 
   declare createdAt: Date;
   declare updatedAt: Date;

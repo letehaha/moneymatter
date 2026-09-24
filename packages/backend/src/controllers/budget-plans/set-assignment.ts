@@ -1,5 +1,5 @@
 import { BUDGET_ASSIGNMENT_SCOPES, BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types/budget-plans';
-import { recordId } from '@common/lib/zod/custom-types';
+import { boundedDecimalAmount, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { setAssignment } from '@services/budget-plans/set-assignment';
 import { z } from 'zod';
@@ -11,13 +11,7 @@ const schema = z.object({
   body: z
     .strictObject({
       scope: z.enum(BUDGET_ASSIGNMENT_SCOPES),
-      amount: z
-        .number()
-        .min(0)
-        .max(1e13)
-        .refine((value) => /^\d+(\.\d{1,2})?$/.test(String(value)), 'At most 2 decimal places')
-        .nullable()
-        .optional(),
+      amount: boundedDecimalAmount().nullable().optional(),
       carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES).nullable().optional(),
     })
     .refine((body) => body.amount !== undefined || body.carryPolicy !== undefined, {

@@ -4,35 +4,50 @@ import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
 import InputField from '@/components/fields/input-field.vue';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useCategoriesStore } from '@/stores';
-import { BUDGET_PLAN_NAME_MAX_LENGTH, type BudgetPlanLineEntry } from '@bt/shared/types';
+import { BUDGET_PLAN_NAME_MAX_LENGTH, type BudgetPlanLineEntry, type BudgetPlanLineGroup } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { buildTakenCategories, collapseCategoryIds, expandCategoryIds } from '../line-categories';
 
 const props = defineProps<{
   planId: string;
-  line?: BudgetPlanLineEntry;
+  line?: Pick<BudgetPlanLineEntry, 'id' | 'name' | 'groupId' | 'categoryIds'>;
   lines: BudgetPlanLineEntry[];
   /** The selected past period's lines, given with `activeFrom`: a create is checked against them too. */
   periodLines?: { lineId: string; name: string; categoryIds: string[] }[];
   activeFrom?: string;
+  groups: BudgetPlanLineGroup[];
+  /** Preselected group for a new line. */
+  groupId?: string | null;
 }>();
 const isOpen = defineModel<boolean>('open', { required: true });
 
+const { t } = useI18n();
 const { formattedCategories } = storeToRefs(useCategoriesStore());
+
+const NO_GROUP = 'none';
 
 const name = ref('');
 const categoryIds = ref<string[]>([]);
+const selectedGroupId = ref(NO_GROUP);
+
+const groupOptions = computed(() => [
+  { value: NO_GROUP, label: t('budgetPlans.groups.noGroup') },
+  ...props.groups.map((group) => ({ value: group.id, label: group.name })),
+]);
 
 watch(
   isOpen,
   (open) => {
     if (!open) return;
     name.value = props.line?.name ?? '';
+    selectedGroupId.value = (props.line ? props.line.groupId : props.groupId) ?? NO_GROUP;
     categoryIds.value = expandCategoryIds({
       categoryIds: props.line?.categoryIds ?? [],
       categories: formattedCategories.value,
@@ -91,12 +106,14 @@ const submit = () => {
 
   const { line, planId, activeFrom } = props;
   const ids = collapsedIds.value;
+  const groupId = selectedGroupId.value === NO_GROUP ? null : selectedGroupId.value;
   if (!line) {
-    create.mutate({ planId, payload: { name: name.value.trim(), categoryIds: ids, activeFrom } });
+    create.mutate({ planId, payload: { name: name.value.trim(), categoryIds: ids, activeFrom, groupId } });
     return;
   }
 
-  const payload: { name?: string; categoryIds?: string[] } = {};
+  const payload: { name?: string; categoryIds?: string[]; groupId?: string | null } = {};
+  if (groupId !== line.groupId) payload.groupId = groupId;
   if (name.value.trim() !== line.name) payload.name = name.value.trim();
   const storedIds = new Set(line.categoryIds);
   if (ids.length !== storedIds.size || ids.some((id) => !storedIds.has(id))) {
@@ -122,6 +139,15 @@ const submit = () => {
         :placeholder="$t('budgetPlans.line.namePlaceholder')"
         :maxlength="BUDGET_PLAN_NAME_MAX_LENGTH"
         @update:model-value="(value) => (name = String(value ?? ''))"
+      />
+
+      <SelectField
+        v-if="groups.length"
+        :model-value="groupOptions.find((option) => option.value === selectedGroupId) ?? null"
+        :values="groupOptions"
+        :label="$t('budgetPlans.groups.lineGroupLabel')"
+        :placeholder="$t('budgetPlans.groups.lineGroupPlaceholder')"
+        @update:model-value="(option) => (selectedGroupId = option?.value ?? NO_GROUP)"
       />
 
       <CategoryMultiSelectField

@@ -5,6 +5,13 @@ import { type QueryKey, useMutation, useQueryClient } from '@tanstack/vue-query'
 import { useI18n } from 'vue-i18n';
 
 /**
+ * The API client already logs out on 401 and toasts a 402 with a "See plans" action,
+ * so a second toast would blame the operation for it.
+ */
+export const isHandledByApiClient = (error: unknown) =>
+  isApiErrorWithCode(error, API_ERROR_CODES.unauthorized) || isApiErrorWithCode(error, API_ERROR_CODES.planRequired);
+
+/**
  * A write that refreshes the caches it invalidates before `mutateAsync` resolves, so a caller
  * can close its dialog knowing the list behind it is already fresh.
  *
@@ -47,11 +54,7 @@ export const useInvalidatingMutation = <TData, TVariables>({
       return Promise.all(invalidateKeys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
     },
     onError: (error) => {
-      // The API client already logs the user out and announces an expired session on 401,
-      // so a second toast here would blame this operation for it.
-      if (isApiErrorWithCode(error, API_ERROR_CODES.unauthorized)) return;
-      // The API client already toasted the 402 with a "See plans" action.
-      if (isApiErrorWithCode(error, API_ERROR_CODES.planRequired)) return;
+      if (isHandledByApiClient(error)) return;
       if (silentErrorCodes?.some((code) => isApiErrorWithCode(error, code))) return;
       const text = extractApiErrorMessage(error) || t(errorKey);
       if (!persistentErrorId) return addErrorNotification(text);

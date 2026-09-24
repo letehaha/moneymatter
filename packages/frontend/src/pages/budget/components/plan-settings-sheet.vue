@@ -11,13 +11,12 @@ import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { Separator } from '@/components/lib/ui/separator';
 import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { isHandledByApiClient, useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
+import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
   ACCOUNT_STATUSES,
-  API_ERROR_CODES,
   type AccountModel,
   BUDGET_PLAN_NAME_MAX_LENGTH,
   type BudgetPlanCarryPolicy,
@@ -50,6 +49,7 @@ const submittedName = ref(props.plan.plan.name);
 const selectedAccountIds = ref(props.plan.accountIds);
 const accountsError = ref('');
 const isDeleteOpen = ref(false);
+const isPoolConfirmOpen = ref(false);
 
 watch(isOpen, () => {
   accountsError.value = '';
@@ -81,12 +81,7 @@ const onSaved = ({ details }: { details: BudgetPlanDetails }) => {
 };
 
 const notifySaveError = ({ error }: { error: Error }) => {
-  if (
-    isApiErrorWithCode(error, API_ERROR_CODES.unauthorized) ||
-    isApiErrorWithCode(error, API_ERROR_CODES.planRequired)
-  ) {
-    return;
-  }
+  if (isHandledByApiClient(error)) return;
   addErrorNotification(extractApiErrorMessage(error) || t('budgetPlans.settings.error'));
 };
 
@@ -153,6 +148,16 @@ const submitName = () => {
   if (trimmed === submittedName.value) return;
   submittedName.value = trimmed;
   renamePlan({ planId: planId.value, payload: { name: trimmed } });
+};
+
+const setPoolEnabled = ({ value }: { value: boolean }) => {
+  if (value) isPoolConfirmOpen.value = true;
+  else patchPlan({ planId: planId.value, payload: { poolEnabled: false } });
+};
+
+const enablePool = () => {
+  isPoolConfirmOpen.value = false;
+  patchPlan({ planId: planId.value, payload: { poolEnabled: true } });
 };
 
 const setCarryPolicy = ({ value }: { value: unknown }) =>
@@ -223,6 +228,23 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
 
       <Separator />
 
+      <div class="grid gap-1">
+        <div class="flex items-center justify-between gap-3">
+          <Label for="budget-pool" class="cursor-pointer text-sm font-normal">
+            {{ $t('budgetPlans.pool.settingLabel') }}
+          </Label>
+          <Switch
+            id="budget-pool"
+            :model-value="plan.plan.poolFrom !== null"
+            :disabled="isPatching"
+            @update:model-value="(value) => setPoolEnabled({ value: Boolean(value) })"
+          />
+        </div>
+        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.settingHint') }}</p>
+      </div>
+
+      <Separator />
+
       <div class="grid gap-2">
         <Label>{{ $t('budgetPlans.settings.rolloverLabel') }}</Label>
         <RadioGroup
@@ -256,6 +278,16 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
       </div>
     </div>
   </ResponsiveDialog>
+
+  <ResponsiveAlertDialog
+    v-model:open="isPoolConfirmOpen"
+    :confirm-label="$t('budgetPlans.pool.enableConfirm')"
+    :confirm-disabled="isPatching"
+    @confirm="enablePool"
+  >
+    <template #title>{{ $t('budgetPlans.pool.enableConfirmTitle') }}</template>
+    <template #description>{{ $t('budgetPlans.pool.enableConfirmDescription') }}</template>
+  </ResponsiveAlertDialog>
 
   <ResponsiveAlertDialog
     v-model:open="isDeleteOpen"

@@ -1,25 +1,25 @@
 import { RecordId } from '@bt/shared/types';
-import { toUtcDateString } from '@common/utils/date';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
 import { QueryTypes } from 'sequelize';
 
+import { utcInstant } from '../date-ranges';
 import { FoldActivityRow } from '../fold/fold-plan';
 
 interface RawActivityRow {
   periodId: RecordId;
-  categoryId: RecordId;
+  categoryId: RecordId | null;
   /** Cents. SUM over BIGINT returns numeric, which pg hands back as a string. */
   activity: string;
 }
 
-const utcInstant = ({ date }: { date: string | Date }): Date => new Date(`${toUtcDateString(date)}T00:00:00.000Z`);
-
 /**
  * Signed cents per period x category, on the stats scope rules plus "the
  * account is in this plan". Expense is negative, income positive, so a line's
- * activity is usually <= 0.
+ * activity is usually <= 0. From `poolFrom` on, transfers crossing the plan
+ * boundary and uncategorised money (`categoryId` NULL) count too; before it,
+ * and on a plan without a pool, both stay out.
  *
  * ponytail: live fold from epoch on every read; add per-period closing
  * snapshots only if a plan view measurably gets slow.
@@ -43,7 +43,13 @@ export const getPlanActivity = async ({
       JOIN "Accounts" a ON a.id = t."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       WHERE t."time" >= :fromUtc AND t."time" < :toUtc
         AND ( t."transferNature" = 'not_transfer'
-           OR (t."transferNature" = 'transfer_to_loan' AND t."transactionType" = 'expense') )
+           OR (t."transferNature" = 'transfer_to_loan' AND t."transactionType" = 'expense')
+           OR ( t."time" >= :poolFromUtc AND NOT EXISTS (
+                  SELECT 1 FROM real_transactions o
+                  JOIN "BudgetPlanAccounts" opa ON opa."accountId" = o."accountId" AND opa."planId" = :planId
+                  JOIN "Accounts" oa ON oa.id = o."accountId" AND oa."excludeFromStats" = false
+                  WHERE o."transferId" = t."transferId" AND o.id <> t.id
+                ) ) )
         AND ( t."externalData" IS NULL
            OR NOT (t."externalData" @> '{"balanceAdjustment": true}'::jsonb) )
     ),
@@ -81,7 +87,8 @@ export const getPlanActivity = async ({
       ON p."planId" = :planId
      AND x."time" >= (p."startDate"::timestamp AT TIME ZONE 'UTC')
      AND x."time" <  (p."endDate"::timestamp   AT TIME ZONE 'UTC')
-    WHERE x."categoryId" IS NOT NULL
+    -- A NULL :poolFromUtc makes the comparison NULL, which keeps the row out.
+    WHERE x."categoryId" IS NOT NULL OR x."time" >= :poolFromUtc
     GROUP BY p.id, x."categoryId"
     `,
     {
@@ -91,6 +98,7 @@ export const getPlanActivity = async ({
         ownerId: plan.userId,
         fromUtc: utcInstant({ date: plan.epochDate }),
         toUtc: utcInstant({ date: lastEnd }),
+        poolFromUtc: plan.poolFrom ? utcInstant({ date: plan.poolFrom }) : null,
       },
     },
   );

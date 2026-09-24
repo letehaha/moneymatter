@@ -9,6 +9,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Label } from '@/components/lib/ui/label';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
+import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -39,6 +40,7 @@ const preset = ref<BudgetCadencePreset>('monthly');
 const editedStartsOn = ref<Date>();
 const accountIds = ref<string[]>([]);
 const carryPolicy = ref<BudgetPlanCarryPolicy>('floor');
+const poolEnabled = ref(false);
 
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
@@ -88,13 +90,16 @@ const submit = () => {
   if (isSubmitDisabled.value) return;
   mutate(
     {
-      payload: buildCreatePlanPayload({
-        name: t('budgetPlans.defaultName'),
-        preset: preset.value,
-        startsOn: startsOn.value,
-        accountIds: accountIds.value,
-        carryPolicy: carryPolicy.value,
-      }),
+      payload: {
+        ...buildCreatePlanPayload({
+          name: t('budgetPlans.defaultName'),
+          preset: preset.value,
+          startsOn: startsOn.value,
+          accountIds: accountIds.value,
+          carryPolicy: carryPolicy.value,
+        }),
+        poolEnabled: poolEnabled.value,
+      },
     },
     { onSuccess: ({ plan }) => router.replace({ name: ROUTES_NAMES.budgetPlan, params: { planId: plan.id } }) },
   );
@@ -147,6 +152,16 @@ const submit = () => {
         :placeholder="$t('budgetPlans.create.rolloverPlaceholder')"
         @update:model-value="(option) => option && (carryPolicy = option.value)"
       />
+
+      <div class="grid gap-1">
+        <div class="flex items-center justify-between gap-3">
+          <Label for="budget-create-pool" class="cursor-pointer text-sm font-normal">
+            {{ $t('budgetPlans.pool.settingLabel') }}
+          </Label>
+          <Switch id="budget-create-pool" v-model="poolEnabled" />
+        </div>
+        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.createHint') }}</p>
+      </div>
 
       <Button type="submit" :disabled="isSubmitDisabled">{{ $t('budgetPlans.create.submit') }}</Button>
     </form>

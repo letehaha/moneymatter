@@ -23,6 +23,7 @@ import { getBaseCurrency } from '@models/users-currencies.model';
 import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
 import { applyManualLogoPatch } from '@services/brand-logos';
+import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
@@ -427,6 +428,14 @@ export const updateAccount = withTransaction(
 
     if (!result) {
       throw new UnexpectedError({ message: t({ key: 'accounts.accountUpdateFailed' }) });
+    }
+
+    if (
+      payload.accountCategory !== undefined &&
+      BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory) &&
+      !BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(accountData.accountCategory)
+    ) {
+      await attachEligibleAccounts({ userId: accountData.userId, accountIds: [accountData.id] });
     }
 
     // A foreign-currency opening balance can't be shifted through history as a flat

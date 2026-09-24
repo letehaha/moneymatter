@@ -1,17 +1,26 @@
 import { FEATURES } from '@bt/shared/types';
 import archiveLine from '@controllers/budget-plans/archive-line';
+import createGroup from '@controllers/budget-plans/create-group';
 import createLine from '@controllers/budget-plans/create-line';
 import createPlan from '@controllers/budget-plans/create-plan';
+import deleteGroup from '@controllers/budget-plans/delete-group';
 import deleteLine from '@controllers/budget-plans/delete-line';
+import deleteLineGoal from '@controllers/budget-plans/delete-line-goal';
 import deletePlan from '@controllers/budget-plans/delete-plan';
 import getPeriodView from '@controllers/budget-plans/get-period-view';
 import getPlan from '@controllers/budget-plans/get-plan';
+import getScheduled from '@controllers/budget-plans/get-scheduled';
+import getTrends from '@controllers/budget-plans/get-trends';
 import listPeriods from '@controllers/budget-plans/list-periods';
 import listPlans from '@controllers/budget-plans/list-plans';
 import restoreLine from '@controllers/budget-plans/restore-line';
 import restorePlan from '@controllers/budget-plans/restore-plan';
 import setAssignment from '@controllers/budget-plans/set-assignment';
+import setLayout from '@controllers/budget-plans/set-layout';
+import setLineGoal from '@controllers/budget-plans/set-line-goal';
 import setPlanAccounts from '@controllers/budget-plans/set-plan-accounts';
+import snoozeLineGoal from '@controllers/budget-plans/snooze-line-goal';
+import updateGroup from '@controllers/budget-plans/update-group';
 import updateLine from '@controllers/budget-plans/update-line';
 import updatePlan from '@controllers/budget-plans/update-plan';
 import { authenticateSession } from '@middlewares/better-auth';
@@ -26,12 +35,19 @@ const router = Router({});
 // `enforceReadOnly` stops their writes like everywhere else.
 router.get('/', authenticateSession, validateEndpoint(listPlans.schema), listPlans.handler);
 router.get('/:planId', authenticateSession, validateEndpoint(getPlan.schema), getPlan.handler);
+router.get('/:planId/trends', authenticateSession, validateEndpoint(getTrends.schema), getTrends.handler);
 router.get('/:planId/periods', authenticateSession, validateEndpoint(listPeriods.schema), listPeriods.handler);
 router.get(
   '/:planId/periods/:periodId',
   authenticateSession,
   validateEndpoint(getPeriodView.schema),
   getPeriodView.handler,
+);
+router.get(
+  '/:planId/periods/:periodId/scheduled',
+  authenticateSession,
+  validateEndpoint(getScheduled.schema),
+  getScheduled.handler,
 );
 
 router.post(
@@ -75,6 +91,38 @@ router.put(
   setPlanAccounts.handler,
 );
 router.post(
+  '/:planId/groups',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(createGroup.schema),
+  createGroup.handler,
+);
+router.patch(
+  '/:planId/groups/:groupId',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(updateGroup.schema),
+  updateGroup.handler,
+);
+router.delete(
+  '/:planId/groups/:groupId',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(deleteGroup.schema),
+  deleteGroup.handler,
+);
+router.put(
+  '/:planId/layout',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(setLayout.schema),
+  setLayout.handler,
+);
+router.post(
   '/:planId/lines',
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
@@ -113,6 +161,30 @@ router.post(
   checkBaseCurrencyLock,
   validateEndpoint(restoreLine.schema),
   restoreLine.handler,
+);
+router.put(
+  '/:planId/lines/:lineId/goal',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(setLineGoal.schema),
+  setLineGoal.handler,
+);
+router.delete(
+  '/:planId/lines/:lineId/goal',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(deleteLineGoal.schema),
+  deleteLineGoal.handler,
+);
+router.post(
+  '/:planId/lines/:lineId/goal/snooze',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(snoozeLineGoal.schema),
+  snoozeLineGoal.handler,
 );
 router.put(
   '/:planId/periods/:periodId/lines/:lineId/assignment',

@@ -1,8 +1,13 @@
+import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/shared/types/budget-plans';
 import { toUtcDateString } from '@common/utils/date';
 import { createLine as _createLine } from '@services/budget-plans/create-line';
 import { createPlan as _createPlan } from '@services/budget-plans/create-plan';
 import { getPeriodView as _getPeriodView } from '@services/budget-plans/get-period-view';
 import { getPlan as _getPlan, listPlans as _listPlans } from '@services/budget-plans/get-plan';
+import { getScheduled as _getScheduled } from '@services/budget-plans/get-scheduled';
+import { getTrends as _getTrends } from '@services/budget-plans/get-trends';
+import { setLineGoal as _setLineGoal, snoozeLineGoal as _snoozeLineGoal } from '@services/budget-plans/line-goals';
+import { createGroup as _createGroup, updateGroup as _updateGroup } from '@services/budget-plans/line-groups';
 import { listPeriods as _listPeriods } from '@services/budget-plans/list-periods';
 import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line';
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
@@ -238,6 +243,44 @@ export function getBudgetPlanPeriodView<R extends boolean | undefined = false>({
   });
 }
 
+export function getBudgetPlanTrends<R extends boolean | undefined = false>({
+  planId,
+  until,
+  count,
+  raw,
+}: {
+  planId: string;
+  until?: string;
+  count?: number | string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getTrends>>, R>({
+    method: 'get',
+    url: `/budget-plans/${planId}/trends`,
+    payload: {
+      ...(until !== undefined ? { until } : {}),
+      ...(count !== undefined ? { count: String(count) } : {}),
+    },
+    raw,
+  });
+}
+
+export function getBudgetPlanScheduled<R extends boolean | undefined = false>({
+  planId,
+  periodId,
+  raw,
+}: {
+  planId: string;
+  periodId: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getScheduled>>, R>({
+    method: 'get',
+    url: `/budget-plans/${planId}/periods/${periodId}/scheduled`,
+    raw,
+  });
+}
+
 type SetBudgetAssignmentPayload = Omit<
   Parameters<typeof _setAssignment>[0],
   'userId' | 'planId' | 'periodId' | 'lineId'
@@ -259,6 +302,129 @@ export function setBudgetAssignment<R extends boolean | undefined = false>({
   return makeRequest<Awaited<ReturnType<typeof _setAssignment>>, R>({
     method: 'put',
     url: `/budget-plans/${planId}/periods/${periodId}/lines/${lineId}/assignment`,
+    payload,
+    raw,
+  });
+}
+
+export function setBudgetLineGoal<R extends boolean | undefined = false>({
+  planId,
+  lineId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  lineId: string;
+  payload: SetBudgetLineGoalPayload;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _setLineGoal>>, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/lines/${lineId}/goal`,
+    payload,
+    raw,
+  });
+}
+
+export function deleteBudgetLineGoal<R extends boolean | undefined = false>({
+  planId,
+  lineId,
+  raw,
+}: {
+  planId: string;
+  lineId: string;
+  raw?: R;
+}) {
+  return makeRequest<undefined, R>({
+    method: 'delete',
+    url: `/budget-plans/${planId}/lines/${lineId}/goal`,
+    raw,
+  });
+}
+
+export function snoozeBudgetLineGoal<R extends boolean | undefined = false>({
+  planId,
+  lineId,
+  periodId,
+  raw,
+}: {
+  planId: string;
+  lineId: string;
+  periodId: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _snoozeLineGoal>>, R>({
+    method: 'post',
+    url: `/budget-plans/${planId}/lines/${lineId}/goal/snooze`,
+    payload: { periodId },
+    raw,
+  });
+}
+
+export function createBudgetLineGroup<R extends boolean | undefined = false>({
+  planId,
+  name,
+  raw,
+}: {
+  planId: string;
+  name: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _createGroup>>, R>({
+    method: 'post',
+    url: `/budget-plans/${planId}/groups`,
+    payload: { name },
+    raw,
+  });
+}
+
+export function updateBudgetLineGroup<R extends boolean | undefined = false>({
+  planId,
+  groupId,
+  name,
+  raw,
+}: {
+  planId: string;
+  groupId: string;
+  name: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _updateGroup>>, R>({
+    method: 'patch',
+    url: `/budget-plans/${planId}/groups/${groupId}`,
+    payload: { name },
+    raw,
+  });
+}
+
+export function deleteBudgetLineGroup<R extends boolean | undefined = false>({
+  planId,
+  groupId,
+  raw,
+}: {
+  planId: string;
+  groupId: string;
+  raw?: R;
+}) {
+  return makeRequest<undefined, R>({
+    method: 'delete',
+    url: `/budget-plans/${planId}/groups/${groupId}`,
+    raw,
+  });
+}
+
+export function setBudgetPlanLayout<R extends boolean | undefined = false>({
+  planId,
+  payload,
+  raw,
+}: {
+  planId: string;
+  payload: SetBudgetPlanLayoutPayload;
+  raw?: R;
+}) {
+  return makeRequest<undefined, R>({
+    method: 'put',
+    url: `/budget-plans/${planId}/layout`,
     payload,
     raw,
   });

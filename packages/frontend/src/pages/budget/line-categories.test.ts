@@ -47,6 +47,7 @@ const makeLine = ({ name, categoryIds }: { name: string; categoryIds: string[] }
   id: name,
   name,
   sortOrder: 0,
+  groupId: null,
   activeFrom: '2026-01-01',
   activeUntil: null,
   categoryIds,

@@ -1,4 +1,3 @@
-import { BudgetPlanPeriodView } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import {
@@ -8,6 +7,7 @@ import {
   FoldLine,
   FoldLineCategory,
   FoldPeriod,
+  FoldedPeriodView,
   foldPlan,
 } from './fold-plan';
 
@@ -62,7 +62,7 @@ const spent = ({
 });
 
 /** Amounts are integer cents inside the fold; the scale is irrelevant to it. */
-const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): BudgetPlanPeriodView[] =>
+const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): FoldedPeriodView[] =>
   foldPlan({
     plan: { carryPolicy: 'none' },
     periods: PERIODS,
@@ -75,8 +75,8 @@ const fold = (input: Partial<Parameters<typeof foldPlan>[0]> = {}): BudgetPlanPe
     ...input,
   });
 
-const amounts = (views: BudgetPlanPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.assigned));
-const available = (views: BudgetPlanPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.available));
+const amounts = (views: FoldedPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.assigned));
+const available = (views: FoldedPeriodView[]) => views.map((view) => view.lines.map((entry) => entry.available));
 
 describe('foldPlan amounts', () => {
   it('recurs a baseline into later periods with no rows', () => {
@@ -220,7 +220,7 @@ describe('foldPlan lifetimes', () => {
     });
 
     expect(amounts(views)).toEqual([[100], [100], []]);
-    expect(views[2]!.header).toEqual({ totalAssigned: 0, totalActivity: 0, totalAvailable: 0 });
+    expect(views[2]!.header).toEqual({ totalAssigned: 0, totalActivity: 0, totalAvailable: 0, totalCarriedIn: 0 });
   });
 
   it('never shows a line archived in its first period, leaving its spending unbudgeted', () => {
@@ -368,7 +368,28 @@ describe('foldPlan unbudgeted and header', () => {
       ],
     });
 
-    expect(views[0]!.header).toEqual({ totalAssigned: 350, totalActivity: -430, totalAvailable: -80 });
+    expect(views[0]!.header).toEqual({
+      totalAssigned: 350,
+      totalActivity: -430,
+      totalAvailable: -80,
+      totalCarriedIn: 0,
+    });
+  });
+
+  it('splits what no line covers into uncovered income and spending, uncategorised included', () => {
+    const views = fold({
+      categories: [FOOD, TRANSPORT],
+      activityRows: [
+        spent({ periodId: 'jul', amount: 30 }),
+        spent({ periodId: 'jul', amount: 400, categoryId: 'transport' }),
+        { periodId: 'jul', categoryId: null, activity: -50 },
+        { periodId: 'jul', categoryId: null, activity: 700 },
+      ],
+    });
+
+    expect(views[0]!.uncovered).toEqual({ income: 700, spending: -450 });
+    expect(views[0]!.lines[0]!.activity).toBe(-30);
+    expect(views[0]!.unbudgeted).toEqual([{ categoryId: 'transport', activity: -400 }]);
   });
 
   it('flags the period today falls into', () => {

@@ -7,6 +7,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { findPlan } from './find-plan';
 import { toLineEntry } from './get-plan';
+import { endOfGroupSortOrder } from './line-groups';
 import { ensureCurrentPeriods } from './periods/ensure-periods';
 import { validateLineCategories } from './validate-line-categories';
 
@@ -15,7 +16,8 @@ const createLineImpl = async ({
   planId,
   name,
   categoryIds,
-  sortOrder = 0,
+  sortOrder,
+  groupId = null,
   activeFrom,
 }: {
   userId: number;
@@ -23,6 +25,7 @@ const createLineImpl = async ({
   name: string;
   categoryIds: RecordId[];
   sortOrder?: number;
+  groupId?: RecordId | null;
   activeFrom?: string;
 }) => {
   const plan = await findPlan({ planId, userId, lock: true });
@@ -35,7 +38,14 @@ const createLineImpl = async ({
 
   const topMostIds = await validateLineCategories({ plan, lineId: null, categoryIds, range: { from, until: null } });
 
-  const line = await BudgetLines.create({ planId: plan.id, name, sortOrder, activeFrom: from });
+  const endOfGroup = await endOfGroupSortOrder({ planId: plan.id, groupId });
+  const line = await BudgetLines.create({
+    planId: plan.id,
+    name,
+    groupId,
+    sortOrder: sortOrder ?? endOfGroup,
+    activeFrom: from,
+  });
   const lineCategories = await BudgetLineCategories.bulkCreate(
     topMostIds.map((categoryId) => ({ lineId: line.id, categoryId, fromDate: from, untilDate: null })),
   );

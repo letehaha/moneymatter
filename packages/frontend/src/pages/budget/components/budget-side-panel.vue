@@ -1,0 +1,182 @@
+<script setup lang="ts">
+import { loadBudgetPlanScheduled, loadBudgetPlanTrends } from '@/api/budget-plans';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { Button } from '@/components/lib/ui/button';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { useFormatCurrency } from '@/composable';
+import { useDateLocale } from '@/composable/use-date-locale';
+import { cn } from '@/lib/utils';
+import type { BudgetPlanCadence, BudgetPlanPeriodView, BudgetPlanPeriodViewLine } from '@bt/shared/types';
+import { XIcon } from '@lucide/vue';
+import { useQuery } from '@tanstack/vue-query';
+import { computed } from 'vue';
+
+import {
+  type GoalPeriodUnit,
+  type PanelContext,
+  amountToneClass,
+  formatPeriodLabel,
+  isPastPeriod,
+  scheduledForLine,
+} from '../helpers';
+import PanelBreakdownSection from './panel-breakdown-section.vue';
+import PanelCoverageSection from './panel-coverage-section.vue';
+import PanelGoalSection from './panel-goal-section.vue';
+import PanelGoalsSection from './panel-goals-section.vue';
+import PanelPaceSection from './panel-pace-section.vue';
+import PanelScheduledSection from './panel-scheduled-section.vue';
+import PanelSection from './panel-section.vue';
+import PanelTrendSection from './panel-trend-section.vue';
+
+const TREND_PERIOD_COUNT = 6;
+
+const props = defineProps<{
+  planId: string;
+  cadence: BudgetPlanCadence;
+  unit: GoalPeriodUnit;
+  view: BudgetPlanPeriodView;
+  line?: BudgetPlanPeriodViewLine;
+}>();
+const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
+
+const { formatBaseCurrency } = useFormatCurrency();
+const { locale } = useDateLocale();
+
+const periodLabel = computed(() => formatPeriodLabel({ ...props.view.period, locale: locale.value }));
+const periodId = computed(() => props.view.period.id);
+const isPast = computed(() => isPastPeriod({ period: props.view.period }));
+
+const { data: trends } = useQuery({
+  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanTrends, props.planId, periodId.value]),
+  queryFn: () => loadBudgetPlanTrends({ planId: props.planId, until: periodId.value, count: TREND_PERIOD_COUNT }),
+});
+
+const { data: scheduledData } = useQuery({
+  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanScheduled, props.planId, periodId.value]),
+  queryFn: () => loadBudgetPlanScheduled({ planId: props.planId, periodId: periodId.value }),
+  enabled: computed(() => !isPast.value),
+});
+
+const scheduled = computed(() =>
+  scheduledData.value
+    ? scheduledForLine({ scheduled: scheduledData.value, lineId: props.line?.lineId ?? null })
+    : undefined,
+);
+
+const context = computed<PanelContext>(() => ({
+  planId: props.planId,
+  cadence: props.cadence,
+  unit: props.unit,
+  period: props.view.period,
+  lineId: props.line?.lineId ?? null,
+  figures: props.line ?? {
+    carriedIn: props.view.header.totalCarriedIn,
+    assigned: props.view.header.totalAssigned,
+    activity: props.view.header.totalActivity,
+    available: props.view.header.totalAvailable,
+  },
+  trends: trends.value,
+  scheduled: scheduled.value,
+}));
+
+const sections = computed(() => {
+  const hasTrends = Boolean(trends.value?.periods.length);
+  return [
+    { key: 'breakdown', titleKey: 'budgetPlans.panel.breakdown', component: PanelBreakdownSection },
+    {
+      key: 'coverage',
+      titleKey: 'budgetPlans.panel.nextPeriodCoverage',
+      component: PanelCoverageSection,
+      props: { coverage: props.view.coverage },
+      hidden: Boolean(props.line) || !props.view.coverage,
+    },
+    {
+      key: 'goals',
+      titleKey: 'budgetPlans.panel.goals',
+      component: PanelGoalsSection,
+      props: { goals: props.view.goals, lines: props.view.lines },
+      hidden: Boolean(props.line) || !props.view.goals,
+    },
+    {
+      key: 'scheduled',
+      titleKey: 'budgetPlans.panel.scheduled',
+      component: PanelScheduledSection,
+      hidden: isPast.value || !scheduled.value || Boolean(props.line && !scheduled.value.items.length),
+    },
+    {
+      key: 'budgetingTrend',
+      titleKey: 'budgetPlans.panel.budgetingTrend',
+      component: PanelTrendSection,
+      props: { kind: 'budgeting' },
+      hidden: !hasTrends,
+    },
+    {
+      key: 'spendingTrend',
+      titleKey: 'budgetPlans.panel.spendingTrend',
+      component: PanelTrendSection,
+      props: { kind: 'spending' },
+      hidden: !hasTrends,
+    },
+    {
+      key: 'pace',
+      titleKey: 'budgetPlans.panel.pace',
+      component: PanelPaceSection,
+      hidden: !props.view.period.isCurrent,
+    },
+    {
+      key: 'goal',
+      titleKey: 'budgetPlans.panel.goal',
+      component: PanelGoalSection,
+      props: { line: props.line },
+      hidden: !props.line,
+    },
+  ].filter((section) => !section.hidden);
+});
+</script>
+
+<template>
+  <div class="grid grid-cols-1 gap-4 overflow-x-clip">
+    <div class="flex min-w-0 items-start justify-between gap-2">
+      <div class="min-w-0">
+        <h2 class="truncate font-semibold">{{ line?.name ?? $t('budgetPlans.panel.overview') }}</h2>
+        <p class="text-muted-foreground text-xs">{{ periodLabel }}</p>
+      </div>
+      <DesktopOnlyTooltip v-if="line" :content="$t('budgetPlans.panel.closeLine')">
+        <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
+          <XIcon class="size-4" />
+        </Button>
+      </DesktopOnlyTooltip>
+    </div>
+
+    <div v-if="line" class="border-border bg-muted/40 rounded-lg border p-4">
+      <p class="text-muted-foreground text-xs font-medium uppercase">{{ $t('budgetPlans.grid.available') }}</p>
+      <p :class="cn('text-3xl font-bold tabular-nums', amountToneClass({ amount: line.available }))">
+        {{ formatBaseCurrency(line.available) }}
+      </p>
+    </div>
+
+    <div
+      v-if="line?.goal && line.goal.budgetAmount > 0 && line.goal.status !== 'snoozed'"
+      class="border-warning/40 bg-warning/10 grid gap-0.5 rounded-lg border p-3 text-sm"
+    >
+      <p class="text-warning-text font-medium tabular-nums">
+        {{ $t(`budgetPlans.goals.unit.${unit}.need`, { amount: formatBaseCurrency(line.goal.budgetAmount) }) }}
+      </p>
+      <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.goals.askHint') }}</p>
+    </div>
+
+    <PanelSection
+      v-for="section in sections"
+      :key="section.key"
+      :section-key="section.key"
+      :title="$t(section.titleKey)"
+    >
+      <component
+        :is="section.component"
+        :context="context"
+        v-bind="section.props"
+        @select-line="(lineId: string) => emit('selectLine', lineId)"
+      />
+    </PanelSection>
+  </div>
+</template>

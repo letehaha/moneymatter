@@ -75,7 +75,9 @@ export type BackupRestoreWarningCode =
   | 'foreign_reference_dropped'
   // A nullable foreign-key column pointed at data outside this backup; the column
   // was reset to null and the row kept.
-  | 'foreign_reference_nulled';
+  | 'foreign_reference_nulled'
+  // Budget plans are excluded from backups, so the restore wipe removed them for good.
+  | 'budget_plans_removed';
 
 export interface BackupRestoreWarning {
   code: BackupRestoreWarningCode;

@@ -1,13 +1,19 @@
 import { api } from '@/api/_api';
 import type {
+  BudgetLineGoal,
   BudgetPlanCarryPolicy,
   BudgetPlanDetails,
   BudgetPlanLineEntry,
+  BudgetPlanLineGroup,
   BudgetPlanModel,
   BudgetPlanPeriod,
   BudgetPlanPeriodView,
+  BudgetPlanScheduled,
+  BudgetPlanTrends,
   CreateBudgetPlanPayload,
+  SetBudgetLineGoalPayload,
   SetBudgetPlanAssignmentPayload,
+  SetBudgetPlanLayoutPayload,
 } from '@bt/shared/types';
 
 export const loadBudgetPlans = async (): Promise<BudgetPlanModel[]> =>
@@ -33,12 +39,30 @@ export const loadBudgetPlanPeriodView = async ({
   periodId: string;
 }): Promise<BudgetPlanPeriodView> => api.get(`/budget-plans/${planId}/periods/${periodId}`);
 
+export const loadBudgetPlanTrends = async ({
+  planId,
+  until,
+  count,
+}: {
+  planId: string;
+  until: string;
+  count: number;
+}): Promise<BudgetPlanTrends> => api.get(`/budget-plans/${planId}/trends`, { until, count });
+
+export const loadBudgetPlanScheduled = async ({
+  planId,
+  periodId,
+}: {
+  planId: string;
+  periodId: string;
+}): Promise<BudgetPlanScheduled> => api.get(`/budget-plans/${planId}/periods/${periodId}/scheduled`);
+
 export const createBudgetPlanLine = async ({
   planId,
   payload,
 }: {
   planId: string;
-  payload: { name: string; categoryIds: string[]; activeFrom?: string };
+  payload: { name: string; categoryIds: string[]; activeFrom?: string; groupId?: string | null };
 }): Promise<BudgetPlanLineEntry> => api.post(`/budget-plans/${planId}/lines`, payload);
 
 export const updateBudgetPlanLine = async ({
@@ -48,7 +72,7 @@ export const updateBudgetPlanLine = async ({
 }: {
   planId: string;
   lineId: string;
-  payload: { name?: string; categoryIds?: string[] };
+  payload: { name?: string; categoryIds?: string[]; groupId?: string | null };
 }): Promise<BudgetPlanLineEntry> => api.patch(`/budget-plans/${planId}/lines/${lineId}`, payload);
 
 export const archiveBudgetPlanLine = async ({ planId, lineId }: { planId: string; lineId: string }) =>
@@ -83,7 +107,13 @@ export const updateBudgetPlan = async ({
   payload,
 }: {
   planId: string;
-  payload: { name?: string; autoAttachAccounts?: boolean; carryPolicy?: BudgetPlanCarryPolicy };
+  payload: {
+    name?: string;
+    autoAttachAccounts?: boolean;
+    carryPolicy?: BudgetPlanCarryPolicy;
+    poolEnabled?: boolean;
+    expectedIncome?: number | null;
+  };
 }): Promise<BudgetPlanDetails> => api.patch(`/budget-plans/${planId}`, payload);
 
 export const setBudgetPlanAccounts = async ({
@@ -95,3 +125,56 @@ export const setBudgetPlanAccounts = async ({
 }): Promise<BudgetPlanDetails> => api.put(`/budget-plans/${planId}/accounts`, { accountIds });
 
 export const deleteBudgetPlan = async ({ planId }: { planId: string }) => api.delete(`/budget-plans/${planId}`);
+
+export const setBudgetLineGoal = async ({
+  planId,
+  lineId,
+  payload,
+}: {
+  planId: string;
+  lineId: string;
+  payload: SetBudgetLineGoalPayload;
+}): Promise<BudgetLineGoal> => api.put(`/budget-plans/${planId}/lines/${lineId}/goal`, payload);
+
+export const deleteBudgetLineGoal = async ({ planId, lineId }: { planId: string; lineId: string }) =>
+  api.delete(`/budget-plans/${planId}/lines/${lineId}/goal`);
+
+/** Snoozing the already-snoozed period wakes the goal up again. */
+export const toggleBudgetLineGoalSnooze = async ({
+  planId,
+  lineId,
+  periodId,
+}: {
+  planId: string;
+  lineId: string;
+  periodId: string;
+}): Promise<BudgetLineGoal> => api.post(`/budget-plans/${planId}/lines/${lineId}/goal/snooze`, { periodId });
+
+export const createBudgetLineGroup = async ({
+  planId,
+  name,
+}: {
+  planId: string;
+  name: string;
+}): Promise<BudgetPlanLineGroup> => api.post(`/budget-plans/${planId}/groups`, { name });
+
+export const updateBudgetLineGroup = async ({
+  planId,
+  groupId,
+  name,
+}: {
+  planId: string;
+  groupId: string;
+  name: string;
+}): Promise<BudgetPlanLineGroup> => api.patch(`/budget-plans/${planId}/groups/${groupId}`, { name });
+
+export const deleteBudgetLineGroup = async ({ planId, groupId }: { planId: string; groupId: string }) =>
+  api.delete(`/budget-plans/${planId}/groups/${groupId}`);
+
+export const setBudgetPlanLayout = async ({
+  planId,
+  payload,
+}: {
+  planId: string;
+  payload: SetBudgetPlanLayoutPayload;
+}) => api.put(`/budget-plans/${planId}/layout`, payload);

@@ -1,5 +1,5 @@
-import { BUDGET_PLAN_CARRY_POLICIES, BUDGET_PLAN_NAME_MAX_LENGTH } from '@bt/shared/types/budget-plans';
-import { recordId } from '@common/lib/zod/custom-types';
+import { BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types/budget-plans';
+import { boundedDecimalAmount, budgetPlanName, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { updatePlan } from '@services/budget-plans/update-plan';
 import { z } from 'zod';
@@ -8,9 +8,11 @@ import { z } from 'zod';
 const schema = z.object({
   params: z.object({ planId: recordId() }),
   body: z.strictObject({
-    name: z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH).optional(),
+    name: budgetPlanName().optional(),
     autoAttachAccounts: z.boolean().optional(),
     carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES).optional(),
+    poolEnabled: z.boolean().optional(),
+    expectedIncome: boundedDecimalAmount().nullable().optional(),
   }),
 });
 

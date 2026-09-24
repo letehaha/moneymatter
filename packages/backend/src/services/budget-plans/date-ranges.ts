@@ -1,5 +1,8 @@
 import { toUtcDateString } from '@common/utils/date';
 
+export const utcInstant = ({ date }: { date: string | Date }): Date =>
+  new Date(`${toUtcDateString(date)}T00:00:00.000Z`);
+
 /** Half-open day ranges `[from, until)`, `until: null` = open end. */
 export interface DateRange {
   from: string;

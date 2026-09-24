@@ -4,6 +4,7 @@ import { Table, Column, Model, ForeignKey, BelongsTo, HasMany, DataType, Index }
 
 import BudgetAssignments from './budget-assignments.model';
 import BudgetLineCategories from './budget-line-categories.model';
+import BudgetLineGroups from './budget-line-groups.model';
 import BudgetPlans from './budget-plans.model';
 
 @Table({
@@ -22,6 +23,12 @@ export default class BudgetLines extends Model {
 
   @Column({ type: DataType.STRING(200), allowNull: false })
   name!: string;
+
+  /** NULL = ungrouped. */
+  @ForeignKey(() => BudgetLineGroups)
+  @Index
+  @Column({ type: DataType.UUID, allowNull: true })
+  groupId!: RecordId | null;
 
   @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
   sortOrder!: number;
@@ -46,6 +53,9 @@ export default class BudgetLines extends Model {
 
   @BelongsTo(() => BudgetPlans, { foreignKey: 'planId', onDelete: 'CASCADE' })
   plan?: BudgetPlans;
+
+  @BelongsTo(() => BudgetLineGroups, { foreignKey: 'groupId', onDelete: 'SET NULL' })
+  group?: BudgetLineGroups;
 
   @HasMany(() => BudgetLineCategories, { foreignKey: 'lineId', onDelete: 'CASCADE' })
   lineCategories?: BudgetLineCategories[];

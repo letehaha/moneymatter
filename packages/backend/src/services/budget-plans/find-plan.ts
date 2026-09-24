@@ -1,6 +1,7 @@
 import { RecordId } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
+import BudgetLineGroups from '@models/budget-line-groups.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { namespace } from '@models/connection';
@@ -32,6 +33,12 @@ export const findLine = ({ planId, lineId }: { planId: RecordId; lineId: RecordI
   findOrThrowNotFound({
     query: BudgetLines.findOne({ where: { id: lineId, planId } }),
     message: t({ key: 'budgetPlans.lineNotFound' }),
+  });
+
+export const findGroup = ({ planId, groupId }: { planId: RecordId; groupId: RecordId }): Promise<BudgetLineGroups> =>
+  findOrThrowNotFound({
+    query: BudgetLineGroups.findOne({ where: { id: groupId, planId } }),
+    message: t({ key: 'budgetPlans.groupNotFound' }),
   });
 
 /**

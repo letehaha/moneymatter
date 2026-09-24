@@ -58,6 +58,7 @@ describe('Budget plan line create', () => {
       activeFrom: CURRENT,
       activeUntil: null,
       categoryIds: [food.id],
+      groupId: null,
     });
     expect((await helpers.getBudgetPlan({ planId, raw: true })).lines).toEqual([line]);
   });

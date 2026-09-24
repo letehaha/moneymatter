@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { setBudgetPlanAssignment } from '@/api/budget-plans';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResponsivePopover from '@/components/common/responsive-popover.vue';
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
@@ -8,26 +6,21 @@ import { Button } from '@/components/lib/ui/button';
 import { Label } from '@/components/lib/ui/label';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Separator } from '@/components/lib/ui/separator';
-import { useNotificationCenter } from '@/components/notification-center';
-import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
 import {
-  API_ERROR_CODES,
   type BudgetAssignmentScope,
   type BudgetPlanCarryPolicy,
   type BudgetPlanPeriodViewLine,
   type SetBudgetPlanAssignmentPayload,
 } from '@bt/shared/types';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { useSetAssignment } from '../composables/use-set-assignment';
 import { buildAssignmentPayload, buildCarryOptions, defaultAssignmentScope } from '../helpers';
 
 const props = defineProps<{ planId: string; periodId: string; line: BudgetPlanPeriodViewLine }>();
 
 const { t } = useI18n();
-const queryClient = useQueryClient();
-const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 
 const isOpen = ref(false);
 const contentRef = ref<HTMLElement | null>(null);
@@ -52,18 +45,9 @@ watch(isOpen, async (open) => {
   contentRef.value?.querySelector('input')?.focus();
 });
 
-const { isPending, mutate } = useMutation({
-  mutationFn: setBudgetPlanAssignment,
-  onSuccess: (view, { planId }) => {
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetPlans, refetchType: 'none' });
-    queryClient.setQueryData([...VUE_QUERY_CACHE_KEYS.budgetPlanPeriodView, planId, view.period.id], view);
-    addSuccessNotification(t('budgetPlans.assign.saved'));
+const { isPending, mutate } = useSetAssignment({
+  onSuccess: () => {
     isOpen.value = false;
-  },
-  onError: (error) => {
-    if (isApiErrorWithCode(error, API_ERROR_CODES.unauthorized)) return;
-    if (isApiErrorWithCode(error, API_ERROR_CODES.planRequired)) return;
-    addErrorNotification(extractApiErrorMessage(error) || t('budgetPlans.assign.error'));
   },
 });
 

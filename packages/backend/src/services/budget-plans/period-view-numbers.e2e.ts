@@ -179,6 +179,7 @@ describe('Budget plan period view: activity attribution', () => {
       totalAssigned: 62.34,
       totalActivity: -30.29,
       totalAvailable: 32.05,
+      totalCarriedIn: 0,
     });
   });
 });
@@ -520,9 +521,13 @@ describe('Budget plan period view: line edits', () => {
 
     expect(await helpers.getBudgetPlanPeriodView({ planId: plan.id, periodId: periods[0]!.id, raw: true })).toEqual({
       period: { ...periods[0]!, isCurrent: true },
-      header: { totalAssigned: 0, totalActivity: 0, totalAvailable: 0 },
+      header: { totalAssigned: 0, totalActivity: 0, totalAvailable: 0, totalCarriedIn: 0 },
       lines: [],
+      groups: [],
       unbudgeted: [],
+      pool: null,
+      goals: null,
+      coverage: null,
     });
   });
 });

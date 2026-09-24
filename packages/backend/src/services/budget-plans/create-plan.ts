@@ -54,6 +54,7 @@ interface CreatePlanParams {
   accountIds: RecordId[];
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
+  poolEnabled?: boolean;
 }
 
 /** "Last day of the month" is `anchorDate.day = 31`; the enumerator clamps it. */
@@ -90,6 +91,7 @@ const createPlanImpl = async ({
   accountIds,
   autoAttachAccounts = false,
   carryPolicy = 'none',
+  poolEnabled = false,
 }: CreatePlanParams): Promise<BudgetPlanDetails> => {
   const cadenceConfig: PeriodCadenceConfig = { cadence, intervalN, anchorDate, secondAnchorDay };
   validateCadence(cadenceConfig);
@@ -122,6 +124,7 @@ const createPlanImpl = async ({
       epochDate: epoch,
       carryPolicy,
       autoAttachAccounts,
+      poolFrom: poolEnabled ? epoch : null,
     }),
   });
 
