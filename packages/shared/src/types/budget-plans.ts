@@ -77,6 +77,8 @@ export interface BudgetPlanModel {
   autoAttachAccounts: boolean;
   /** 'yyyy-MM-dd', the start of the pool's first period; `null` when the plan isn't funded from a pool. */
   poolFrom: string | null;
+  /** Keep Ready to Assign at 0. Only `true` while the pool is on. */
+  zeroSum: boolean;
   expectedIncome: number | null;
   createdAt: Date;
   updatedAt: Date;
@@ -121,6 +123,8 @@ export interface BudgetPlanPeriodViewLine {
   groupId: string | null;
   categoryIds: string[];
   assigned: number;
+  /** The part of `assigned` that Ready to Assign counts: 0 for a recurring baseline in a future period. */
+  poolAssigned: number;
   assignedSource: 'override' | 'baseline' | 'none';
   /** Signed: expenses are negative. */
   activity: number;

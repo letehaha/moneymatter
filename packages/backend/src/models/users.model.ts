@@ -80,6 +80,10 @@ export default class Users extends Model {
   /** Cloud only. Null means the user predates trials and resolves as Plus until the grandfather script runs. */
   @Column({ allowNull: true, type: DataType.DATE })
   trialEndsAt!: Date | null;
+
+  /** Early adopter budget trial anchor. Written once, never reset. */
+  @Column({ allowNull: true, type: DataType.DATE })
+  firstBudgetPlanAt!: Date | null;
 }
 
 export const getUserDefaultCategory = async ({ id }: { id: number }) => {

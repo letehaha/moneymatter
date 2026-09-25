@@ -51,7 +51,7 @@ export interface FoldActivityRow {
 }
 
 /** A period view before the pool: `uncovered` is what no line holds, split by sign. */
-export type FoldedPeriodViewLine = Omit<BudgetPlanPeriodViewLine, 'goal' | 'groupId'>;
+export type FoldedPeriodViewLine = Omit<BudgetPlanPeriodViewLine, 'goal' | 'groupId' | 'poolAssigned'>;
 
 export type FoldedPeriodView = Omit<BudgetPlanPeriodView, 'pool' | 'goals' | 'coverage' | 'lines' | 'groups'> & {
   lines: FoldedPeriodViewLine[];

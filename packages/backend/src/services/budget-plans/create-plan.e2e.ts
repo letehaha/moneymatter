@@ -1,4 +1,10 @@
-import { ACCOUNT_CATEGORIES, API_ERROR_CODES, PLANS, type RecordId } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  API_ERROR_CODES,
+  EARLY_ADOPTER_BUDGET_TRIAL_DAYS,
+  PLANS,
+  type RecordId,
+} from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { toUtcDateString } from '@common/utils/date';
 import { describe, expect, it } from '@jest/globals';
@@ -239,7 +245,11 @@ describe('Budget plans without the feature', () => {
   it('keeps reads and delete open and answers other writes with 402', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
 
-    await helpers.setUserBilling({ plan: PLANS.early_adopter, trialEndsAt: null });
+    await helpers.setUserBilling({
+      plan: PLANS.early_adopter,
+      trialEndsAt: null,
+      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * DAY_MS),
+    });
 
     expect((await helpers.listBudgetPlans()).statusCode).toBe(200);
     expect((await helpers.getBudgetPlan({ planId: created.plan.id })).statusCode).toBe(200);

@@ -10,6 +10,7 @@ export const calloutVariants = cva('flex items-start gap-3 rounded-lg border p-3
       destructive: 'bg-destructive/10 border-destructive/20 text-destructive-text',
       success: 'bg-success/10 border-success/20 text-success-text',
       info: 'bg-muted/40 border-border/70 text-muted-foreground',
+      primary: 'bg-primary/10 border-primary/20 text-primary-text',
     },
   },
   defaultVariants: {
@@ -22,6 +23,7 @@ export const calloutIconClass: Record<NonNullable<VariantProps<typeof calloutVar
   destructive: 'text-destructive-text',
   success: 'text-success-text',
   info: 'text-muted-foreground',
+  primary: 'text-primary-text',
 };
 
 export interface CalloutVariantProps extends VariantProps<typeof calloutVariants> {}

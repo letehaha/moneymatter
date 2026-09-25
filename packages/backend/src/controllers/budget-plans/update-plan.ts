@@ -12,6 +12,7 @@ const schema = z.object({
     autoAttachAccounts: z.boolean().optional(),
     carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES).optional(),
     poolEnabled: z.boolean().optional(),
+    zeroSum: z.boolean().optional(),
     expectedIncome: boundedDecimalAmount().nullable().optional(),
   }),
 });

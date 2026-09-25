@@ -116,6 +116,9 @@ export const TRIAL_EXCLUDED_FEATURES: readonly Feature[] = [FEATURES.backup_rest
 
 export const TRIAL_DAYS = 40;
 
+/** How long early adopters get `budget_plan`, counted from their first budget plan. */
+export const EARLY_ADOPTER_BUDGET_TRIAL_DAYS = 40;
+
 export interface ScheduledChange {
   action: 'cancel' | 'resume';
   effectiveAt: string;
@@ -137,6 +140,8 @@ export interface Entitlements {
   /** Non-null means a lifetime grant of that plan. */
   plan: Plan | null;
   trialEndsAt: string | null;
+  /** End of the early adopter budget trial, past or future, once a first plan started it. Null outside that trial. */
+  budgetPlanTrialEndsAt: string | null;
   subscriptions: BillingSubscriptionSummary[];
   /** Tries already spent against `FEATURE_TRIAL_LIMITS`. Absent key means zero. */
   trialUsage: Partial<Record<Feature, number>>;

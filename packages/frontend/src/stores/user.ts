@@ -1,6 +1,7 @@
 import { loadUserData, startFeatureTrial as startFeatureTrialApi } from '@/api';
 import { isBillingEnabled, liveSubscription } from '@/common/const/billing';
 import {
+  FEATURES,
   FEATURE_TRIAL_LIMITS,
   SUBSCRIPTION_STATUSES,
   USER_ROLES,
@@ -69,6 +70,14 @@ export const useUserStore = defineStore('user', () => {
     return Math.max(0, differenceInCalendarDays(new Date(value.trialEndsAt), new Date()));
   });
 
+  const budgetTrial = computed<{ state: 'active'; daysLeft: number } | { state: 'ended' } | null>(() => {
+    const endsAt = entitlements.value?.budgetPlanTrialEndsAt;
+    if (!endsAt) return null;
+    if (isFeatureGated(FEATURES.budget_plan)) return { state: 'ended' };
+    const end = new Date(endsAt);
+    return isFuture(end) ? { state: 'active', daysLeft: Math.max(1, differenceInCalendarDays(end, new Date())) } : null;
+  });
+
   const loadUser = async () => {
     user.value = await loadUserData();
   };
@@ -89,6 +98,7 @@ export const useUserStore = defineStore('user', () => {
     isPastDue,
     hasSubscriptions,
     trialDaysLeft,
+    budgetTrial,
     loadUser,
   };
 });

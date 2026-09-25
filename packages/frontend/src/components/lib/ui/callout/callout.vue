@@ -24,6 +24,7 @@ const DEFAULT_ICONS: Record<NonNullable<CalloutVariantProps['variant']>, LucideI
   destructive: OctagonAlertIcon,
   success: CircleCheckIcon,
   info: InfoIcon,
+  primary: InfoIcon,
 };
 
 const resolvedIcon = computed<LucideIcon | null>(() => {

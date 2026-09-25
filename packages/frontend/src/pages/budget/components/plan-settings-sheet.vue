@@ -228,19 +228,36 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
 
       <Separator />
 
-      <div class="grid gap-1">
-        <div class="flex items-center justify-between gap-3">
-          <Label for="budget-pool" class="cursor-pointer text-sm font-normal">
-            {{ $t('budgetPlans.pool.settingLabel') }}
-          </Label>
-          <Switch
-            id="budget-pool"
-            :model-value="plan.plan.poolFrom !== null"
-            :disabled="isPatching"
-            @update:model-value="(value) => setPoolEnabled({ value: Boolean(value) })"
-          />
+      <div class="grid gap-3">
+        <div class="grid gap-1">
+          <div class="flex items-center justify-between gap-3">
+            <Label for="budget-pool" class="cursor-pointer text-sm font-normal">
+              {{ $t('budgetPlans.pool.settingLabel') }}
+            </Label>
+            <Switch
+              id="budget-pool"
+              :model-value="plan.plan.poolFrom !== null"
+              :disabled="isPatching"
+              @update:model-value="(value) => setPoolEnabled({ value: Boolean(value) })"
+            />
+          </div>
+          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.settingHint') }}</p>
         </div>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.settingHint') }}</p>
+
+        <div v-if="plan.plan.poolFrom !== null" class="grid gap-1">
+          <div class="flex items-center justify-between gap-3">
+            <Label for="budget-zero-sum" class="cursor-pointer text-sm font-normal">
+              {{ $t('budgetPlans.pool.zeroSumLabel') }}
+            </Label>
+            <Switch
+              id="budget-zero-sum"
+              :model-value="plan.plan.zeroSum"
+              :disabled="isPatching"
+              @update:model-value="(value) => patchPlan({ planId, payload: { zeroSum: Boolean(value) } })"
+            />
+          </div>
+          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.zeroSumHint') }}</p>
+        </div>
       </div>
 
       <Separator />

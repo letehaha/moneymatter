@@ -11,10 +11,13 @@ import { fromNodeHeaders } from 'better-auth/node';
 import { NextFunction, Request, Response } from 'express';
 import type { WhereOptions } from 'sequelize';
 
-export type AppUser = Pick<Users, 'username' | 'id' | 'authUserId' | 'role' | 'plan' | 'trialEndsAt'>;
+export type AppUser = Pick<
+  Users,
+  'username' | 'id' | 'authUserId' | 'role' | 'plan' | 'trialEndsAt' | 'firstBudgetPlanAt'
+>;
 
 /** Versioned: entries written with an older `AppUser` shape must not be read after deploy. */
-export const APP_USER_CACHE_KEY_PREFIX = 'auth_user:v2:';
+export const APP_USER_CACHE_KEY_PREFIX = 'auth_user:v3:';
 
 const appUserCache = new CacheClient<AppUser>({
   ttl: 60, // 60 seconds
@@ -24,7 +27,7 @@ const appUserCache = new CacheClient<AppUser>({
 export const findAppUser = ({ where }: { where: WhereOptions<Users> }) =>
   Users.findOne({
     where,
-    attributes: ['username', 'id', 'authUserId', 'role', 'plan', 'trialEndsAt'],
+    attributes: ['username', 'id', 'authUserId', 'role', 'plan', 'trialEndsAt', 'firstBudgetPlanAt'],
     raw: true,
   }) as Promise<AppUser | null>;
 

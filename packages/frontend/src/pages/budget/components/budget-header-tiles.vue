@@ -6,20 +6,31 @@ import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanPeriod, BudgetPlanPeriodView } from '@bt/shared/types';
-import { InfoIcon } from '@lucide/vue';
+import { CircleCheckIcon, InfoIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
-import { amountToneClass, formatPeriodLabel, sumOverspent } from '../helpers';
+import { amountToneClass, formatPeriodLabel, isPastPeriod, sumOverspent } from '../helpers';
 import PoolAssignPopover from './pool-assign-popover.vue';
 import PoolCalculationDialog from './pool-calculation-dialog.vue';
+import PoolFixPopover from './pool-fix-popover.vue';
 
-const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; previousPeriod?: BudgetPlanPeriod }>();
+const props = defineProps<{
+  planId: string;
+  view: BudgetPlanPeriodView;
+  previousPeriod?: BudgetPlanPeriod;
+  zeroSum: boolean;
+}>();
 
 const { formatBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
 
 const isCalculationOpen = ref(false);
 
+const zeroSumNow = computed(() => props.zeroSum && props.view.period.isCurrent);
+// A take-back in a past period rewrites history and leaves the current shortfall as it is.
+const canFixPool = computed(
+  () => (props.view.pool?.readyToAssign ?? 0) < 0 && !isPastPeriod({ period: props.view.period }),
+);
 const overspent = computed(() => sumOverspent({ lines: props.view.lines }));
 
 const periodLabel = computed(() => formatPeriodLabel({ ...props.view.period, locale: locale.value }));
@@ -52,9 +63,22 @@ const previousPeriodLabel = computed(() =>
             </Button>
           </DesktopOnlyTooltip>
         </div>
+        <p v-if="view.pool.readyToAssign < 0" class="text-app-expense-color mt-1 text-xs font-medium">
+          {{ $t('budgetPlans.pool.overAssigned', { amount: formatBaseCurrency(-view.pool.readyToAssign) }) }}
+        </p>
+        <p v-else-if="zeroSumNow && view.pool.readyToAssign > 0" class="text-muted-foreground mt-1 text-xs">
+          {{ $t('budgetPlans.pool.zeroSumNag') }}
+        </p>
+        <p v-else-if="zeroSumNow" class="text-muted-foreground mt-1 flex items-center gap-1 text-xs">
+          <CircleCheckIcon class="text-success-text size-3.5" />
+          {{ $t('budgetPlans.pool.allAssigned') }}
+        </p>
       </div>
 
-      <PoolAssignPopover :plan-id="planId" :view="view" />
+      <div class="flex flex-wrap items-center gap-2">
+        <PoolFixPopover :plan-id="planId" :view="view" :visible="canFixPool" />
+        <PoolAssignPopover :plan-id="planId" :view="view" :prominent="zeroSumNow && view.pool.readyToAssign > 0" />
+      </div>
 
       <PoolCalculationDialog
         v-model:open="isCalculationOpen"

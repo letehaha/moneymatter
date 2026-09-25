@@ -2,6 +2,8 @@ import { RecordId } from '@bt/shared/types';
 import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
+import { t } from '@i18n/index';
+import { ConflictError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { withTransaction } from '@services/common/with-transaction';
 
@@ -21,6 +23,7 @@ const updatePlanImpl = async ({
   autoAttachAccounts,
   carryPolicy,
   poolEnabled,
+  zeroSum,
   expectedIncome,
 }: {
   userId: number;
@@ -29,6 +32,7 @@ const updatePlanImpl = async ({
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
+  zeroSum?: boolean;
   /** Decimal; `null` clears it. */
   expectedIncome?: number | null;
 }) => {
@@ -38,12 +42,16 @@ const updatePlanImpl = async ({
   if (poolEnabled === false) poolFrom = null;
   else if (poolEnabled && !plan.poolFrom) poolFrom = boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
 
+  const poolOn = (poolFrom === undefined ? plan.poolFrom : poolFrom) !== null;
+  if (zeroSum && !poolOn) throw new ConflictError({ message: t({ key: 'budgetPlans.zeroSumNeedsPool' }) });
+
   await plan.update(
     removeUndefinedKeys({
       name,
       autoAttachAccounts,
       carryPolicy,
       poolFrom,
+      zeroSum: poolOn ? zeroSum : false,
       expectedIncome: expectedIncome == null ? expectedIncome : Money.fromDecimal(expectedIncome),
     }),
   );

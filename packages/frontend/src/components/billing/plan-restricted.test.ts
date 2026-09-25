@@ -30,6 +30,7 @@ const buildEntitlements = (features: Feature[]): Entitlements => ({
   seats: 1,
   plan: null,
   trialEndsAt: null,
+  budgetPlanTrialEndsAt: null,
   subscriptions: [],
   trialUsage: {},
   featureTrials: {},

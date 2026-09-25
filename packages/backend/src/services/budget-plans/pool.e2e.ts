@@ -185,6 +185,83 @@ describe('Budget plan pool: switch', () => {
   });
 });
 
+describe('Budget plan pool: zero-sum', () => {
+  it('turns zero-sum on for a pool plan and off with the pool', async () => {
+    const { plan, planId } = await setup();
+    expect(plan.zeroSum).toBe(false);
+
+    const enabled = await helpers.updateBudgetPlan({
+      planId,
+      payload: { zeroSum: true },
+      raw: true,
+    });
+    expect(enabled.plan.zeroSum).toBe(true);
+
+    const renamed = await helpers.updateBudgetPlan({
+      planId,
+      payload: { name: 'Renamed', carryPolicy: 'floor' },
+      raw: true,
+    });
+    expect(renamed.plan.zeroSum).toBe(true);
+
+    const poolOff = await helpers.updateBudgetPlan({
+      planId,
+      payload: { poolEnabled: false },
+      raw: true,
+    });
+    expect(poolOff.plan.poolFrom).toBeNull();
+    expect(poolOff.plan.zeroSum).toBe(false);
+  });
+
+  it('rejects zero-sum on a plan without a pool, or one turned off in the same request', async () => {
+    const { planId } = await setup({ poolEnabled: false });
+
+    const withoutPool = await helpers.updateBudgetPlan({
+      planId,
+      payload: { zeroSum: true },
+    });
+    expect(withoutPool.statusCode).toBe(ERROR_CODES.ConflictError);
+
+    const pooled = await helpers.updateBudgetPlan({
+      planId,
+      payload: { poolEnabled: true },
+      raw: true,
+    });
+    const turningOff = await helpers.updateBudgetPlan({
+      planId,
+      payload: { poolEnabled: false, zeroSum: true },
+    });
+    expect(turningOff.statusCode).toBe(ERROR_CODES.ConflictError);
+
+    const after = await helpers.getBudgetPlan({ planId, raw: true });
+    expect(after.plan.poolFrom).toBe(pooled.plan.poolFrom);
+    expect(after.plan.zeroSum).toBe(false);
+  });
+
+  it('turns the pool and zero-sum on in one request', async () => {
+    const { planId, periods } = await setup({ poolEnabled: false });
+
+    const updated = await helpers.updateBudgetPlan({
+      planId,
+      payload: { poolEnabled: true, zeroSum: true },
+      raw: true,
+    });
+    expect(updated.plan.poolFrom).toBe(periods[2]!.startDate);
+    expect(updated.plan.zeroSum).toBe(true);
+  });
+
+  it('rejects a bad zeroSum and still rejects unknown fields next to it', async () => {
+    const { planId } = await setup();
+
+    expect((await helpers.updateBudgetPlan({ planId, payload: { zeroSum: 'on' } })).statusCode).toBe(
+      ERROR_CODES.ValidationError,
+    );
+    expect((await helpers.updateBudgetPlan({ planId, payload: { zeroSum: true, type: 'zero_sum' } })).statusCode).toBe(
+      ERROR_CODES.ValidationError,
+    );
+  });
+});
+
 describe('Budget plan pool: flow', () => {
   it('does not count spending after poolFrom twice when bootstrapping mid-period', async () => {
     const { planId, periods, account, fun } = await setup({ monthsAgo: 0 });
@@ -349,6 +426,32 @@ describe('Budget plan pool: flow', () => {
       raw: true,
     });
     expect(later.lines[0]!.assigned).toBe(100);
+  });
+
+  it('counts a future from_here baseline as pool-assigned only in the period it is set in', async () => {
+    const { planId, periods, line } = await setup();
+
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[3]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 100 },
+      raw: true,
+    });
+
+    const lineIn = async ({ period }: { period: Period }) =>
+      (await helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true })).lines[0]!;
+
+    expect(await lineIn({ period: periods[3]! })).toMatchObject({
+      assigned: 100,
+      poolAssigned: 100,
+      assignedSource: 'baseline',
+    });
+    expect(await lineIn({ period: periods[4]! })).toMatchObject({
+      assigned: 100,
+      poolAssigned: 0,
+      assignedSource: 'baseline',
+    });
   });
 
   it('deducts a floored overspend from the next period pool exactly once', async () => {

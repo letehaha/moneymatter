@@ -244,6 +244,7 @@ const toApi = ({
   groups,
   groupIds,
   pool,
+  poolAssigned,
   goals,
   asks,
   goalsSummary: summary,
@@ -253,6 +254,8 @@ const toApi = ({
   groups: BudgetPlanLineGroup[];
   groupIds: Map<string, string | null>;
   pool: BudgetPlanPool | null;
+  /** Cents by line id; `null` when the pool doesn't cover the period. */
+  poolAssigned: Map<string, number> | null;
   goals: Map<string, LineGoal>;
   asks: Map<string, GoalEvaluation>;
   goalsSummary: BudgetPlanGoalsSummary | null;
@@ -273,6 +276,7 @@ const toApi = ({
     groupId: groupIds.get(line.lineId) ?? null,
     categoryIds: line.categoryIds,
     assigned: centsToApiDecimal(line.assigned),
+    poolAssigned: centsToApiDecimal(poolAssigned?.get(line.lineId) ?? line.assigned),
     assignedSource: line.assignedSource,
     activity: centsToApiDecimal(line.activity),
     carriedIn: centsToApiDecimal(line.carriedIn),
@@ -379,6 +383,7 @@ export const getPeriodView = async ({
     groups,
     groupIds: new Map(foldInput.lines.map((line) => [line.id, line.groupId])),
     pool: poolResult?.pool ?? null,
+    poolAssigned: poolResult && new Map(explicitViews[index]!.lines.map((line) => [line.lineId, line.assigned])),
     goals,
     asks,
     goalsSummary: goals.size ? goalsSummary({ plan, asks }) : null,

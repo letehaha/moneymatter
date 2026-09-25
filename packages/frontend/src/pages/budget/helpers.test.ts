@@ -14,6 +14,7 @@ import {
   buildLayoutPayload,
   buildGoalPayload,
   buildPoolAssignPayload,
+  buildPoolTakeBackPayload,
   cadenceLabel,
   defaultAssignmentScope,
   formatPeriodLabel,
@@ -32,6 +33,7 @@ import {
   layoutStateFrom,
   lineBarsOf,
   lineIdsWithHistory,
+  pickTakeBackLine,
   scheduledForLine,
   setGoalFrequency,
   spendingPace,
@@ -40,6 +42,7 @@ import {
   trendValues,
   sumLineTotals,
   sumOverspent,
+  takeBackCandidates,
   validateGoalEditor,
 } from './helpers';
 
@@ -328,6 +331,78 @@ describe('buildPoolAssignPayload', () => {
 
   it.each([null, 0, -10])('returns null for amount %s', (amount) => {
     expect(buildPoolAssignPayload({ line: baseline, amount })).toBeNull();
+  });
+});
+
+describe('buildPoolTakeBackPayload', () => {
+  const baseline = {
+    assigned: 100.3,
+    poolAssigned: 100.3,
+    assignedSource: 'baseline' as const,
+    carryPolicy: 'floor' as const,
+  };
+
+  it.each(['baseline', 'override'] as const)(
+    'takes the amount off a %s line for this period only',
+    (assignedSource) => {
+      expect(buildPoolTakeBackPayload({ line: { ...baseline, assignedSource }, amount: 0.2 })).toEqual({
+        scope: 'this_period',
+        amount: 100.1,
+      });
+    },
+  );
+
+  it('takes the whole assigned down to 0', () => {
+    expect(buildPoolTakeBackPayload({ line: baseline, amount: 100.3 })).toEqual({ scope: 'this_period', amount: 0 });
+  });
+
+  it.each([null, 0, -10, 100.31])('returns null for amount %s', (amount) => {
+    expect(buildPoolTakeBackPayload({ line: baseline, amount })).toBeNull();
+  });
+
+  it('returns null when the pool counts none of the assigned', () => {
+    expect(buildPoolTakeBackPayload({ line: { ...baseline, poolAssigned: 0 }, amount: 10 })).toBeNull();
+  });
+});
+
+describe('pickTakeBackLine', () => {
+  it('picks the line that can give back the most, the first one on a tie', () => {
+    const lines = [
+      { lineId: 'small', available: 20, poolAssigned: 50 },
+      { lineId: 'first', available: 80, poolAssigned: 100 },
+      { lineId: 'tie', available: 120, poolAssigned: 80 },
+    ];
+    expect(pickTakeBackLine({ lines })?.lineId).toBe('first');
+  });
+
+  it('ranks by what the pool counts, not by available alone', () => {
+    const lines = [
+      { lineId: 'carried', available: 500, poolAssigned: 20 },
+      { lineId: 'assigned', available: 150, poolAssigned: 150 },
+      { lineId: 'overspent', available: -40, poolAssigned: 300 },
+    ];
+    expect(pickTakeBackLine({ lines })?.lineId).toBe('assigned');
+  });
+
+  it('returns undefined for no lines', () => {
+    expect(pickTakeBackLine({ lines: [] })).toBeUndefined();
+  });
+});
+
+describe('takeBackCandidates', () => {
+  it('keeps the lines whose assigned the pool counts', () => {
+    const lines = [
+      { lineId: 'unassigned', assigned: 0, poolAssigned: 0, assignedSource: 'none' as const },
+      { lineId: 'baseline-set-here', assigned: 100, poolAssigned: 100, assignedSource: 'baseline' as const },
+      { lineId: 'override', assigned: 50, poolAssigned: 50, assignedSource: 'override' as const },
+      { lineId: 'recurring-future', assigned: 100, poolAssigned: 0, assignedSource: 'baseline' as const },
+      { lineId: 'zero-override', assigned: 0, poolAssigned: 0, assignedSource: 'override' as const },
+    ];
+    expect(takeBackCandidates({ lines }).map((line) => line.lineId)).toEqual(['baseline-set-here', 'override']);
+  });
+
+  it('returns nothing when the pool counts no assigned money', () => {
+    expect(takeBackCandidates({ lines: [{ poolAssigned: 0 }] })).toEqual([]);
   });
 });
 

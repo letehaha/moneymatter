@@ -7,8 +7,8 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { useCurrenciesStore } from '@/stores';
-import { FEATURES } from '@bt/shared/types';
+import { useCurrenciesStore, useUserStore } from '@/stores';
+import { FEATURES, PLANS } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { compareDesc } from 'date-fns';
 import { storeToRefs } from 'pinia';
@@ -16,10 +16,12 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import BudgetEmptyState from './components/budget-empty-state.vue';
+import BudgetTrialNotice from './components/budget-trial-notice.vue';
 import CreatePlanDialog from './components/create-plan-dialog.vue';
 
 const router = useRouter();
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
+const { entitlements } = storeToRefs(useUserStore());
 
 const isCreateOpen = ref(false);
 
@@ -78,7 +80,12 @@ const { isPending: isRestoring, mutate: restore } = useInvalidatingMutation({
     </Callout>
 
     <div v-else-if="!activePlan" class="mx-auto grid w-full max-w-lg gap-6">
-      <PlanRestricted :feature="FEATURES.budget_plan">
+      <PlanRestricted
+        :feature="FEATURES.budget_plan"
+        :hint="entitlements?.plan === PLANS.early_adopter ? $t('budgetPlans.trialNotice.offer') : undefined"
+      >
+        <BudgetTrialNotice />
+
         <Callout v-if="trashedPlan" :title="$t('budgetPlans.trashed.title')">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <span>{{ $t('budgetPlans.trashed.description') }}</span>

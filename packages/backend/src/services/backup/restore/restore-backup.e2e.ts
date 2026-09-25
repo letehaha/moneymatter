@@ -327,6 +327,7 @@ async function seedBudgetPlans() {
     },
     raw: true,
   });
+  await helpers.updateBudgetPlan({ planId: plan.id, payload: { zeroSum: true }, raw: true });
   const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
   const bills = await helpers.createBudgetLineGroup({ planId: plan.id, name: 'Bills', raw: true });
 
@@ -1008,6 +1009,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         'an epoch past the period ceiling',
         { cadence: 'days', intervalN: 1, anchorDate: '1000-01-01', epochDate: '1000-01-01' },
       ],
+      ['zeroSum without a pool', { zeroSum: true, poolFrom: null }],
     ])(
       'drops a plan with %s and the plan endpoints still answer',
       async (_, forged) => {

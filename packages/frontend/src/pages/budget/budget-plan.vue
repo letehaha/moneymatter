@@ -45,6 +45,7 @@ import BudgetHeaderTiles from './components/budget-header-tiles.vue';
 import BudgetLinesGrid from './components/budget-lines-grid.vue';
 import BudgetPlanSkeleton from './components/budget-plan-skeleton.vue';
 import BudgetSidePanel from './components/budget-side-panel.vue';
+import BudgetTrialNotice from './components/budget-trial-notice.vue';
 import LineDialog from './components/line-dialog.vue';
 import ManageLayoutDialog from './components/manage-layout-dialog.vue';
 import PeriodPicker from './components/period-picker.vue';
@@ -311,6 +312,8 @@ const openLineDialog = ({ line, groupId = null }: { line?: BudgetPlanPeriodViewL
             </div>
           </div>
 
+          <BudgetTrialNotice />
+
           <Callout v-if="hasLoadError" variant="destructive">
             <p>{{ $t('budgetPlans.loadError') }}</p>
             <Button variant="outline" size="sm" class="mt-3" @click="retryLoad">
@@ -325,7 +328,12 @@ const openLineDialog = ({ line, groupId = null }: { line?: BudgetPlanPeriodViewL
             :inert="isViewPlaceholder"
             :class="cn('grid min-w-0 gap-6 transition-opacity', isViewPlaceholder && 'opacity-60')"
           >
-            <BudgetHeaderTiles :plan-id="planId" :view="view" :previous-period="previousPeriod" />
+            <BudgetHeaderTiles
+              :plan-id="planId"
+              :view="view"
+              :previous-period="previousPeriod"
+              :zero-sum="plan?.plan.zeroSum ?? false"
+            />
 
             <BudgetLinesGrid
               :plan-id="planId"

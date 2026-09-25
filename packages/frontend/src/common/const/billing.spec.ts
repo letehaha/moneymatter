@@ -34,6 +34,7 @@ describe('analyticsPlan', () => {
     seats: 2,
     plan: null,
     trialEndsAt: null,
+    budgetPlanTrialEndsAt: null,
     subscriptions: [],
     trialUsage: {},
     featureTrials: {},

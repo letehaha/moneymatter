@@ -195,6 +195,44 @@ export const buildPoolAssignPayload = ({
   });
 };
 
+/** Takes `amount` off the line's assigned for this period only; `null` unless 0 < amount <= poolAssigned. */
+export const buildPoolTakeBackPayload = ({
+  line,
+  amount,
+}: {
+  line: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'poolAssigned' | 'assignedSource' | 'carryPolicy'>;
+  amount: number | null;
+}): SetBudgetPlanAssignmentPayload | null => {
+  if (!amount || amount <= 0 || amount > line.poolAssigned) return null;
+  return buildAssignmentPayload({
+    line,
+    amount: Math.round((line.assigned - amount) * 100) / 100,
+    scope: 'this_period',
+    carryPolicy: line.carryPolicy,
+  });
+};
+
+/** Lines holding money Ready to Assign counts, so taking it back raises Ready to Assign by the amount. */
+export const takeBackCandidates = <T extends Pick<BudgetPlanPeriodViewLine, 'poolAssigned'>>({
+  lines,
+}: {
+  lines: T[];
+}): T[] => lines.filter((line) => line.poolAssigned > 0);
+
+const takeBackRoom = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'> }) =>
+  Math.min(line.poolAssigned, Math.max(line.available, 0));
+
+/** The line that can give back the most without going overspent, the first one on a tie. */
+export const pickTakeBackLine = <T extends Pick<BudgetPlanPeriodViewLine, 'available' | 'poolAssigned'>>({
+  lines,
+}: {
+  lines: T[];
+}): T | undefined =>
+  lines.reduce<T | undefined>(
+    (best, line) => (best && takeBackRoom({ line: best }) >= takeBackRoom({ line }) ? best : line),
+    undefined,
+  );
+
 export const spentOf = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'activity'> }) => Math.max(0, -line.activity);
 
 const clampedPercent = ({ part, whole }: { part: number; whole: number }) => {

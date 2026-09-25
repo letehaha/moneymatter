@@ -5,28 +5,25 @@ import {
   BudgetPlanDetails,
   BudgetPlanTypeKey,
 } from '@bt/shared/types/budget-plans';
-import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
+import Users from '@models/users.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { UniqueConstraintError } from 'sequelize';
 
 import { getPlan } from './get-plan';
 import {
-  FUTURE_PERIODS,
   MAX_BACKDATED_PERIODS,
-  MAX_PLAN_PERIODS,
   PeriodCadenceConfig,
-  anchorParts,
   boundaryAtOrBefore,
   countPeriodsBetween,
-  validateSemiMonthlyDays,
 } from './periods/period-enumerator';
 import { assertAccountsAttachable } from './set-plan-accounts';
+import { validateCadence } from './validate-cadence';
 
 export const requireBaseCurrencyCode = async ({ userId }: { userId: number }): Promise<string> => {
   const baseCurrency = await getBaseCurrency({ userId });
@@ -43,7 +40,10 @@ export const asOnlyActivePlan = <T>({ write }: { write: Promise<T> }): Promise<T
     throw error;
   });
 
-const MAX_INTERVAL_N: Record<BudgetPlanCadence, number> = { days: 366, months: 12, semi_monthly: 1 };
+/** Starts the early adopter budget trial. Later plans and restores keep the first anchor. */
+export const recordFirstBudgetPlan = async ({ userId }: { userId: number }): Promise<void> => {
+  await Users.update({ firstBudgetPlanAt: new Date() }, { where: { id: userId, firstBudgetPlanAt: null } });
+};
 
 interface CreatePlanParams {
   userId: number;
@@ -59,45 +59,6 @@ interface CreatePlanParams {
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
 }
-
-/** "Last day of the month" is `anchorDate.day = 31`; the enumerator clamps it. */
-const validateCadence = ({ cadence, intervalN, anchorDate, secondAnchorDay }: PeriodCadenceConfig): void => {
-  if (intervalN > MAX_INTERVAL_N[cadence]) {
-    throw new ValidationError({ message: t({ key: 'budgetPlans.intervalOutOfRange' }) });
-  }
-
-  if (cadence !== 'semi_monthly') {
-    if (secondAnchorDay !== null) {
-      throw new ValidationError({ message: t({ key: 'budgetPlans.secondAnchorDayNotAllowed' }) });
-    }
-    return;
-  }
-
-  if (secondAnchorDay === null) {
-    throw new ValidationError({ message: t({ key: 'budgetPlans.secondAnchorDayRequired' }) });
-  }
-  const anchorDay = anchorParts({ plan: { anchorDate } }).day;
-  if (!validateSemiMonthlyDays({ anchorDay, secondAnchorDay })) {
-    throw new ValidationError({ message: t({ key: 'budgetPlans.semiMonthlyDaysTooClose' }) });
-  }
-};
-
-const isDate = ({ value }: { value: unknown }) => dateBound().safeParse(value).success;
-
-/** Restore skips createPlan, so a stored row gets its cadence rules and an epoch bound here. */
-export const isRestorablePlanRow = ({ row }: { row: Record<string, unknown> }): boolean => {
-  const plan = row as unknown as PeriodCadenceConfig & { epochDate: string };
-  if (!isDate({ value: plan.anchorDate }) || !isDate({ value: plan.epochDate })) return false;
-
-  try {
-    validateCadence(plan);
-  } catch {
-    return false;
-  }
-  // Leaves room for the periods ensurePeriods creates ahead of today, which count toward the same ceiling.
-  const periodsToToday = countPeriodsBetween({ plan, from: plan.epochDate, to: toUtcDateString(new Date()) });
-  return periodsToToday + FUTURE_PERIODS + 1 <= MAX_PLAN_PERIODS;
-};
 
 const createPlanImpl = async ({
   userId,
@@ -147,6 +108,7 @@ const createPlanImpl = async ({
       poolFrom: poolEnabled ? epoch : null,
     }),
   });
+  await recordFirstBudgetPlan({ userId });
 
   await BudgetPlanAccounts.bulkCreate(accountIds.map((accountId) => ({ planId: plan.id, accountId })));
 

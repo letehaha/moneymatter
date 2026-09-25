@@ -29,15 +29,18 @@ export async function setUserBilling({
   authUserId = 'test-user-id',
   plan,
   trialEndsAt,
+  firstBudgetPlanAt,
 }: {
   authUserId?: string;
   plan?: Plan | null;
   trialEndsAt?: Date | null;
+  firstBudgetPlanAt?: Date | null;
 }): Promise<void> {
   await Users.update(
     {
       ...(plan !== undefined && { plan }),
       ...(trialEndsAt !== undefined && { trialEndsAt }),
+      ...(firstBudgetPlanAt !== undefined && { firstBudgetPlanAt }),
     },
     { where: { authUserId } },
   );

@@ -12,8 +12,9 @@ import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { useAccountsStore } from '@/stores';
+import { useAccountsStore, useUserStore } from '@/stores';
 import { type BudgetPlanCarryPolicy } from '@bt/shared/types';
 import { isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { storeToRefs } from 'pinia';
@@ -34,6 +35,7 @@ const isOpen = defineModel<boolean>('open', { required: true });
 const { t } = useI18n();
 const router = useRouter();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(useAccountsStore());
+const userStore = useUserStore();
 const { locale } = useDateLocale();
 
 const preset = ref<BudgetCadencePreset>('monthly');
@@ -81,6 +83,8 @@ const { isPending, mutate } = useInvalidatingMutation({
   errorKey: 'budgetPlans.create.error',
   onSuccess: () => {
     isOpen.value = false;
+    // The first plan starts the early adopter budget trial, which the user payload carries.
+    userStore.loadUser().catch((error) => captureException({ error, context: { scope: 'create-plan:user-refresh' } }));
   },
 });
 

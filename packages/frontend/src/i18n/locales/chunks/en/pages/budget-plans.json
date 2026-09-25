@@ -33,6 +33,11 @@
       "deleteError": "Couldn't move the budget to trash"
     },
     "lineCount": "{count} line | {count} lines",
+    "trialNotice": {
+      "active": "Early adopter trial: {count} day of budgeting left | Early adopter trial: {count} days of budgeting left",
+      "ended": "Your budgeting trial has ended, so your budget is read-only.",
+      "offer": "Early adopters get Essential at 50% off."
+    },
     "empty": {
       "title": "Give your money a job",
       "description": "Set limits per category and see what's left.",
@@ -187,7 +192,19 @@
       "createHint": "Income goes into a Ready to Assign pool that you hand out to lines. You can change this later in settings.",
       "enableConfirm": "Turn on",
       "enableConfirmTitle": "Fund this plan from a pool?",
-      "enableConfirmDescription": "The pool starts from the current period. Earlier periods won't show Ready to Assign."
+      "enableConfirmDescription": "The pool starts from the current period. Earlier periods won't show Ready to Assign.",
+      "zeroSumLabel": "Keep Ready to Assign at 0",
+      "zeroSumHint": "The header asks you to assign what's left until Ready to Assign is 0.",
+      "assignAmount": "Assign {amount}",
+      "zeroSumNag": "Assign the rest to keep Ready to Assign at 0",
+      "allAssigned": "All money assigned",
+      "overAssigned": "Over-assigned by {amount}",
+      "fix": "Fix this",
+      "fixTitle": "Reduce over-assigning",
+      "fromLabel": "Take from",
+      "fromPlaceholder": "Select a line",
+      "fixSubmit": "Take back {amount}",
+      "fixNoLines": "There is nothing to take back in this period."
     },
     "panel": {
       "summary": "Summary",

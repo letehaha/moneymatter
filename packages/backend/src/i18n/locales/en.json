@@ -159,7 +159,8 @@
     "groupNotFound": "Line group not found.",
     "groupNotEmpty": "Move or archive the lines in this group before deleting it.",
     "layoutInvalid": "The layout must list every group of the plan once, and each of the plan's lines at most once.",
-    "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed."
+    "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
+    "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool."
   },
   "tags": {
     "tagNotFound": "Tag not found",

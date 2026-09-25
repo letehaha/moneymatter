@@ -158,7 +158,8 @@ describe('Entitlements resolution (GET /user)', () => {
     const entitlements = await getEntitlements();
     expect(entitlements.readOnly).toBe(false);
     expect(entitlements.plan).toBe(PLANS.early_adopter);
-    expect(entitlements.features.toSorted()).toEqual(PLAN_FEATURES.early_adopter.toSorted());
+    // budget_plan comes from the early adopter budget trial, open until a first plan starts it.
+    expect(entitlements.features.toSorted()).toEqual([...PLAN_FEATURES.early_adopter, FEATURES.budget_plan].toSorted());
     expect(entitlements.seats).toBe(SEATS_BY_PLAN.early_adopter);
   });
 

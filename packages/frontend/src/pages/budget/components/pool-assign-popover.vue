@@ -11,7 +11,7 @@ import { computed, ref, watch } from 'vue';
 import { useSetAssignment } from '../composables/use-set-assignment';
 import { buildPoolAssignPayload } from '../helpers';
 
-const props = defineProps<{ planId: string; view: BudgetPlanPeriodView }>();
+const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; prominent?: boolean }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
 
@@ -52,8 +52,11 @@ const submit = () => {
 <template>
   <ResponsivePopover v-model:open="isOpen" :title="$t('budgetPlans.pool.assignTitle')" content-class="w-80">
     <template #trigger>
-      <Button size="sm" :disabled="!view.lines.length">
-        {{ $t('budgetPlans.pool.assign') }}
+      <Button :size="prominent ? 'default' : 'sm'" :disabled="!view.lines.length">
+        <template v-if="prominent">
+          {{ $t('budgetPlans.pool.assignAmount', { amount: formatBaseCurrency(view.pool?.readyToAssign ?? 0) }) }}
+        </template>
+        <template v-else>{{ $t('budgetPlans.pool.assign') }}</template>
         <ChevronDownIcon class="size-4" />
       </Button>
     </template>

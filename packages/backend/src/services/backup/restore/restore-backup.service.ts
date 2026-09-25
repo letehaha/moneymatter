@@ -4,6 +4,7 @@ import { trackBackupRestored } from '@js/utils/posthog';
 import UserSettings, { type SettingsSchema, ZodSettingsSchema } from '@models/user-settings.model';
 import Users from '@models/users.model';
 import { unifyAiConnections } from '@root/migrations/utils/unify-ai-connections';
+import { recordFirstBudgetPlan } from '@services/budget-plans/create-plan';
 import { runUserDestroyLifecycle } from '@services/user/user-destroy-lifecycle';
 import { destroyUserOwnedData } from '@services/user/wipe-user-data.service';
 
@@ -191,6 +192,7 @@ export async function restoreUserBackup({
       });
       Object.assign(insertedByTable, tableResult.insertedByTable);
       warnings.push(...tableResult.warnings);
+      if (tableResult.insertedByTable['budget-plans']) await recordFirstBudgetPlan({ userId: user.id });
 
       const categoriesMap = tableResult.insertedIds.get(USER_ROW_GUARDED_FK.targetTable) ?? new Map<string, string>();
       await restoreUserRow({ archive, user, categoriesMap, warnings });

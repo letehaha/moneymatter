@@ -1,5 +1,6 @@
 import {
   DAY_TRIALABLE_FEATURES,
+  EARLY_ADOPTER_BUDGET_TRIAL_DAYS,
   Entitlements,
   FEATURES,
   Feature,
@@ -17,10 +18,11 @@ import { NotFoundError } from '@js/errors';
 import { captureException } from '@js/utils/sentry';
 import BillingSubscriptions from '@models/billing-subscriptions.model';
 import Users from '@models/users.model';
+import { addDays } from 'date-fns';
 
 import { getFeatureTrials, getTrialUsage, isFeatureTrialActive } from './feature-trial.service';
 
-type EntitlementUser = Pick<Users, 'id' | 'role' | 'plan' | 'trialEndsAt'>;
+type EntitlementUser = Pick<Users, 'id' | 'role' | 'plan' | 'trialEndsAt' | 'firstBudgetPlanAt'>;
 
 const ALL_FEATURES: readonly Feature[] = Object.values(FEATURES);
 const SELF_HOST_SEATS = 10;
@@ -47,13 +49,14 @@ const lookupPlan = ({ key }: { key: string }): { features: readonly Feature[]; s
 };
 
 /**
- * Order: self-host → demo → plan grant ∪ active subscriptions → trial →
- * legacy (pre-trial user) → read-only.
+ * Order: self-host → demo → plan grant ∪ active subscriptions (+ early adopter
+ * budget trial) → trial → legacy (pre-trial user) → read-only.
  */
 export async function resolveEntitlements({ user }: { user: EntitlementUser }): Promise<Entitlements> {
   const base = {
     plan: user.plan ?? null,
     trialEndsAt: toIso(user.trialEndsAt),
+    budgetPlanTrialEndsAt: null as string | null,
     subscriptions: [] as Entitlements['subscriptions'],
   };
   const grant = async (features: readonly Feature[], seats: number): Promise<Entitlements> => {
@@ -111,6 +114,15 @@ export async function resolveEntitlements({ user }: { user: EntitlementUser }): 
   // A granted plan and a paid subscription are separate facts; the user holds the union.
   if (user.plan) own({ key: user.plan });
   for (const s of entitled) own({ key: s.tier });
+
+  // Budgeting stays open until a first plan starts the countdown.
+  if (user.plan === PLANS.early_adopter && !features.has(FEATURES.budget_plan)) {
+    const endsAt = user.firstBudgetPlanAt
+      ? addDays(new Date(user.firstBudgetPlanAt), EARLY_ADOPTER_BUDGET_TRIAL_DAYS)
+      : null;
+    base.budgetPlanTrialEndsAt = toIso(endsAt);
+    if (!endsAt || endsAt.getTime() > now) features.add(FEATURES.budget_plan);
+  }
   if (features.size) return grant([...features], seats);
 
   if (user.trialEndsAt && new Date(user.trialEndsAt).getTime() > now) return grant(TRIAL_FEATURES, SEATS_BY_PLAN.plus);
@@ -133,7 +145,7 @@ export async function resolveEntitlements({ user }: { user: EntitlementUser }): 
 
 export async function getEntitlementsByUserId({ userId }: { userId: number }): Promise<Entitlements> {
   const user = await Users.findByPk(userId, {
-    attributes: ['id', 'role', 'plan', 'trialEndsAt'],
+    attributes: ['id', 'role', 'plan', 'trialEndsAt', 'firstBudgetPlanAt'],
   });
   if (!user) throw new NotFoundError({ message: 'User not found.' });
   return resolveEntitlements({ user });

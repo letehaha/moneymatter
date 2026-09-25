@@ -66,6 +66,10 @@ export default class BudgetPlans extends Model implements Omit<BudgetPlanModel, 
   @Column({ type: DataType.DATEONLY, allowNull: true })
   poolFrom!: string | null;
 
+  /** Keep Ready to Assign at 0. A CHECK requires a pool. */
+  @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
+  zeroSum!: boolean;
+
   @MoneyField({ storage: 'cents', allowNull: true })
   declare expectedIncome: Money | null;
 

@@ -112,6 +112,7 @@ export const updateBudgetPlan = async ({
     autoAttachAccounts?: boolean;
     carryPolicy?: BudgetPlanCarryPolicy;
     poolEnabled?: boolean;
+    zeroSum?: boolean;
     expectedIncome?: number | null;
   };
 }): Promise<BudgetPlanDetails> => api.patch(`/budget-plans/${planId}`, payload);

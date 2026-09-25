@@ -1,4 +1,4 @@
-import { PLANS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { EARLY_ADOPTER_BUDGET_TRIAL_DAYS, PLANS, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { RecordId } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { toUtcDateString } from '@common/utils/date';
@@ -7,6 +7,8 @@ import { ERROR_CODES } from '@js/errors';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import * as helpers from '@tests/helpers';
+
+import { DAY_MS } from './periods/period-enumerator';
 
 const CURRENT = helpers.budgetPeriodStart();
 const PREVIOUS = helpers.budgetPeriodStart({ monthsAgo: 1 });
@@ -936,7 +938,11 @@ describe('Budget plan lines without the feature', () => {
   it('answers a write with 402', async () => {
     const { planId, food } = await setup();
 
-    await helpers.setUserBilling({ plan: PLANS.early_adopter, trialEndsAt: null });
+    await helpers.setUserBilling({
+      plan: PLANS.early_adopter,
+      trialEndsAt: null,
+      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * DAY_MS),
+    });
 
     const response = await helpers.createBudgetPlanLine({ planId, payload: { name: 'X', categoryIds: [food.id] } });
     expect(response.statusCode).toBe(ERROR_CODES.PaymentRequired);

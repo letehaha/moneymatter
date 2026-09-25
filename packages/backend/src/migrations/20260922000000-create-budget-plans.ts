@@ -77,6 +77,12 @@ module.exports = {
             allowNull: true,
             comment: 'First Ready-to-Assign pool period start; NULL = no pool',
           },
+          zeroSum: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+            comment: 'Keep Ready to Assign at 0: the header nags until the pool is fully assigned',
+          },
           expectedIncome: {
             type: DataTypes.BIGINT,
             allowNull: true,
@@ -123,7 +129,17 @@ module.exports = {
            ADD CONSTRAINT "BudgetPlans_secondAnchorDay_range_check"
              CHECK ("secondAnchorDay" BETWEEN 1 AND 31),
            ADD CONSTRAINT "BudgetPlans_carryPolicy_check"
-             CHECK ("carryPolicy" IN ('none', 'floor', 'signed'));`,
+             CHECK ("carryPolicy" IN ('none', 'floor', 'signed')),
+           ADD CONSTRAINT "BudgetPlans_zeroSum_check"
+             CHECK (NOT "zeroSum" OR "poolFrom" IS NOT NULL);`,
+        { transaction },
+      );
+
+      // Anchors the early adopter budgeting trial. Set once, never reset by plan delete, purge, wipe or restore.
+      await queryInterface.addColumn(
+        'Users',
+        'firstBudgetPlanAt',
+        { type: DataTypes.DATE, allowNull: true },
         { transaction },
       );
 
@@ -573,6 +589,7 @@ module.exports = {
       await queryInterface.dropTable('BudgetLines', { transaction });
       await queryInterface.dropTable('BudgetLineGroups', { transaction });
       await queryInterface.dropTable('BudgetPlans', { transaction });
+      await queryInterface.removeColumn('Users', 'firstBudgetPlanAt', { transaction });
     });
   },
 };

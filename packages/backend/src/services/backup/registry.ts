@@ -1,6 +1,6 @@
 import type { BackupReferenceFileName } from '@bt/shared/types';
 import { connection } from '@models/index';
-import { isRestorablePlanRow } from '@services/budget-plans/create-plan';
+import { isRestorablePlanRow } from '@services/budget-plans/validate-cadence';
 import { Model, type ModelStatic } from 'sequelize';
 
 type AnyModel = ModelStatic<Model>;
