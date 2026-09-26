@@ -1,0 +1,141 @@
+---
+title: The side panel
+description: See the breakdown, next period coverage, goals, scheduled payments, trends and spending pace for your whole budget or for one line.
+sidebar:
+  order: 6
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+The side panel next to the budget explains the numbers in the grid. With no line selected it covers the whole period. Click a line and it switches to that line.
+
+## Open the side panel
+
+- **On a wide screen**, the panel is always shown to the right of the grid.
+- **On a narrower screen**, click **Summary** at the top of the budget. The panel slides in from the right.
+
+The panel starts on **Period overview**, with the dates of the period you're viewing. To see one line:
+
+<Steps>
+
+1. Click the line's name in the grid. On a narrow screen, the panel opens with the line's details.
+2. To go back to the overview, click the line again, click the **X** (**Close details**) at the top of the panel, or press Esc.
+
+</Steps>
+
+Every section folds away with a click on its title. The panel remembers which sections you folded, in this browser.
+
+## What each view shows
+
+| Section | Period overview | Line details |
+|---|---|---|
+| [Breakdown](#breakdown) | Yes | Yes |
+| [Next period coverage](#next-period-coverage) | With a pool | No |
+| [Goals](#goals) | When any line has a goal | No |
+| [Scheduled](#scheduled) | Current and later periods | Current and later periods, when the line has something scheduled |
+| [Budgeting trend and spending trend](#budgeting-trend-and-spending-trend) | Yes | Yes |
+| [Spending pace](#spending-pace) | Current period only | Current period only |
+| [Goal](#goal) | No | Yes |
+
+Line details also start with the line's **Available** amount in large type. If the line's goal needs money, a note below it says how much, for example "Need $150.00 this month", with "Assign this amount here to stay on track."
+
+<Screenshot
+  src="/screenshots/budgeting/side-panel-overview.png"
+  alt="The side panel in Period overview with the Breakdown, Next period coverage, Goals and Scheduled sections."
+  hint="On /budget at about 1440 px wide, with Fund from a pool on, two lines with goals (one underfunded), expected income set and one upcoming recurring payment this month. Don't select a line. Crop to the side panel column from 'Period overview' down to the Scheduled section."
+/>
+
+## Breakdown
+
+How the period's **Available** amount is made up: **Carried over** from the last period, plus **Assigned**, plus **Activity**, equals **Available**. In the overview it adds up every line. For a line, it's that line alone.
+
+See [How Available is worked out](/budgeting/assigning-and-rollover/#how-available-is-worked-out).
+
+## Next period coverage
+
+How ready you already are for the next period. It shows only when your budget [funds from a pool](/budgeting/ready-to-assign/).
+
+- **The target** is what the next period will need: what your goals ask for, plus, for each line without a goal, the average it was assigned over the last 3 periods.
+- **Lined up** is the money already assigned in the next period, plus the **Ready to Assign** that will carry over into it. An amount repeating **From now on** from an earlier period doesn't count until that period arrives.
+
+The section shows the percentage prepared, "X of Y", and one of these:
+
+- "X left to cover" the next period, when you're partway there.
+- "Fully prepared for" the next period.
+- "Over-committed": the next period's **Ready to Assign** is already negative.
+- "Nothing tracked" for the next period yet, when there's no target to cover.
+
+## Goals
+
+A summary of every goal in the period, shown when at least one line has a goal.
+
+- **Period targets**: what all your goals call for in this period.
+- **Still needed**: what they still ask for after what you've assigned.
+- A badge says how many goals still need money ("X to fund"), or **All funded**.
+- Below, every goal that still needs money is listed with its amount. Click one to open that line's details.
+
+### Expected income
+
+Click **Add expected income** and enter what you expect to earn in a period. The section then shows **Expected income** next to **Left after targets**, what remains once your goals are funded. It's red when your goals call for more than you earn.
+
+Expected income is for this comparison only. It doesn't change **Ready to Assign** or any line. Click it to change it, or **Clear** it to remove it.
+
+## Scheduled
+
+What's still coming in the period, from today until the period ends:
+
+- Recurring payments, such as subscriptions and bills, that are paid from one of the budget's accounts, or that have no account but whose category is in one of your lines.
+- Planned transactions on the budget's accounts. See [Planned transactions](/stats/how-stats-are-calculated/#planned-transactions).
+
+The section shows the date of the next one and how many there are, totals for **Outflows** and **Inflows**, and the list with each item's date. A repeat icon marks a recurring payment. In line details, it only lists what falls into that line's categories.
+
+Past periods don't show this section, and neither does a line with nothing scheduled.
+
+## Budgeting trend and spending trend
+
+Two small charts over the last 6 periods, up to the one you're viewing:
+
+- **Budgeting trend**: how much was assigned in each period.
+- **Spending trend**: how much was spent in each period.
+
+Under each chart you'll see the viewed period's amount, the change from the period before as a percentage, and the average of up to 5 earlier periods, for example "5-period avg $420.00".
+
+## Spending pace
+
+Shown for the current period only. It compares two bars:
+
+- **Spent**: how much of the money you had this period is gone. That's spending measured against the carried-over money plus **Assigned**. It turns red past 100%.
+- **Period elapsed**: how much of the period has passed. Today counts as passed.
+
+If **Spent** runs well ahead of **Period elapsed**, you're spending faster than the period is going. Below the bars you'll see "X of Y" and how many days are left, for example "9d left".
+
+## Goal
+
+In line details, this section shows the line's goal, or **No goal set** with a **Create goal** button.
+
+With a goal, you'll see:
+
+- the goal and how often it repeats,
+- buttons to snooze the goal for this period, **Edit goal** and **Delete goal**,
+- a progress bar with "X of Y (Z%)", the status, and how much is still to go,
+- **Budget X**, when the goal needs money,
+- **Funding plan**, for **Yearly** and **By date** goals: how much to assign in each period until the due date, and what's left after each one.
+
+See [Goals](/budgeting/goals/).
+
+<Screenshot
+  src="/screenshots/budgeting/side-panel-line.png"
+  alt="The side panel showing details for a Holiday line: the Available amount, the Need this month note, the Breakdown and the Goal section with a By date goal, its progress, the Budget button and the Funding plan expanded."
+  hint="On /budget at about 1440 px wide, give a 'Holiday' line a By date goal of 1,500 due in about 5 months with Budget another, assign part of this month's amount, then click the line's name. Expand Funding plan. Crop to the side panel column from the line name down to the Funding plan rows."
+/>
+
+<Aside type="tip" title="Use it to plan the period">
+Start a period in the overview: **Goals** tells you what your goals need, and **Scheduled** shows the bills still to come. Then click lines one by one to see which ones are running ahead of the period in **Spending pace**.
+</Aside>
+
+## Related
+
+- [Budget lines and groups](/budgeting/lines-and-groups/)
+- [Goals](/budgeting/goals/)
+- [Ready to Assign](/budgeting/ready-to-assign/)

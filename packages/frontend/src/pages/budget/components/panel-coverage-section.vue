@@ -13,7 +13,7 @@ import { computed } from 'vue';
 import { type PanelContext, formatPeriodLabel } from '../helpers';
 
 const STATE_TONES: Record<BudgetPlanCoverageState, { text: string; bar: string }> = {
-  prepared: { text: 'text-success-text', bar: 'bg-success' },
+  prepared: { text: 'text-success-text', bar: 'bg-success-text' },
   left_to_cover: { text: 'text-muted-foreground', bar: 'bg-primary' },
   over_committed: { text: 'text-destructive-text', bar: 'bg-app-expense-color' },
   nothing_tracked: { text: 'text-muted-foreground', bar: 'bg-muted-foreground/40' },

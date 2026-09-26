@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { loadBudgetPlan, loadBudgetPlanPeriodView, loadBudgetPlanPeriods } from '@/api/budget-plans';
+import { config } from '@/common/config';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import {
   DropdownMenu,
@@ -26,6 +27,7 @@ import { ROUTES_NAMES } from '@/routes/constants';
 import { useCategoriesStore } from '@/stores';
 import type { BudgetPlanLineEntry, BudgetPlanPeriodViewLine } from '@bt/shared/types';
 import {
+  BookOpenIcon,
   ChevronDownIcon,
   InfoIcon,
   LayoutListIcon,
@@ -293,6 +295,13 @@ const openLineDialog = ({ line, groupId = null }: { line?: BudgetPlanPeriodViewL
                   <DropdownMenuItem @select="isLayoutOpen = true">
                     <LayoutListIcon class="size-4" />
                     {{ $t('budgetPlans.options.manageLayout') }}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem as-child>
+                    <a :href="`${config.docsUrl}/budgeting/start-budgeting/`" target="_blank" rel="noopener noreferrer">
+                      <BookOpenIcon class="size-4" />
+                      {{ $t('budgetPlans.docs.howItWorks') }}
+                    </a>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

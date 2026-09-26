@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { setBudgetLineGoal } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import InputField from '@/components/fields/input-field.vue';
@@ -212,7 +213,10 @@ const submit = () => {
       </div>
 
       <div class="grid gap-2">
-        <Label>{{ $t('budgetPlans.goals.behaviorLabel') }}</Label>
+        <div class="flex items-center justify-between gap-3">
+          <Label>{{ $t('budgetPlans.goals.behaviorLabel') }}</Label>
+          <DocsLink path="/budgeting/goals/" class="text-xs" />
+        </div>
         <RadioGroup
           :model-value="state.behavior"
           @update:model-value="(value) => patch({ behavior: value as BudgetLineGoalBehavior })"

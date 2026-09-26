@@ -160,7 +160,12 @@
     "groupNotEmpty": "Move or archive the lines in this group before deleting it.",
     "layoutInvalid": "The layout must list every group of the plan once, and each of the plan's lines at most once.",
     "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
-    "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool."
+    "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
+    "suggestedGroups": {
+      "bills": "Bills",
+      "everyday": "Everyday",
+      "life": "Life"
+    }
   },
   "tags": {
     "tagNotFound": "Tag not found",

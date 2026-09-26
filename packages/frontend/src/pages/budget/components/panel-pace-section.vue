@@ -15,7 +15,7 @@ const bars = computed(() => [
   {
     labelKey: 'budgetPlans.panel.spent',
     percent: pace.value.spentPercent,
-    class: pace.value.spentPercent > 100 ? 'bg-app-expense-color' : 'bg-success',
+    class: pace.value.spentPercent > 100 ? 'bg-app-expense-color' : 'bg-success-text',
   },
   { labelKey: 'budgetPlans.panel.elapsed', percent: pace.value.elapsedPercent, class: 'bg-muted-foreground/40' },
 ]);

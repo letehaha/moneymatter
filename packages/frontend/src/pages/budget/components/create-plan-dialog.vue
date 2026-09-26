@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createBudgetPlan } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
@@ -43,6 +44,7 @@ const editedStartsOn = ref<Date>();
 const accountIds = ref<string[]>([]);
 const carryPolicy = ref<BudgetPlanCarryPolicy>('floor');
 const poolEnabled = ref(false);
+const withSuggestedLines = ref(true);
 
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
@@ -101,6 +103,7 @@ const submit = () => {
           startsOn: startsOn.value,
           accountIds: accountIds.value,
           carryPolicy: carryPolicy.value,
+          withSuggestedLines: withSuggestedLines.value,
         }),
         poolEnabled: poolEnabled.value,
       },
@@ -155,7 +158,11 @@ const submit = () => {
         :label="$t('budgetPlans.create.rolloverLabel')"
         :placeholder="$t('budgetPlans.create.rolloverPlaceholder')"
         @update:model-value="(option) => option && (carryPolicy = option.value)"
-      />
+      >
+        <template #label-right>
+          <DocsLink path="/budgeting/assigning-and-rollover/#rollover" class="text-xs" />
+        </template>
+      </SelectField>
 
       <div class="grid gap-1">
         <div class="flex items-center justify-between gap-3">
@@ -165,6 +172,16 @@ const submit = () => {
           <Switch id="budget-create-pool" v-model="poolEnabled" />
         </div>
         <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.createHint') }}</p>
+      </div>
+
+      <div class="grid gap-1">
+        <div class="flex items-center justify-between gap-3">
+          <Label for="budget-create-suggested" class="cursor-pointer text-sm font-normal">
+            {{ $t('budgetPlans.create.suggestedLinesLabel') }}
+          </Label>
+          <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
+        </div>
+        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.create.suggestedLinesHint') }}</p>
       </div>
 
       <Button type="submit" :disabled="isSubmitDisabled">{{ $t('budgetPlans.create.submit') }}</Button>

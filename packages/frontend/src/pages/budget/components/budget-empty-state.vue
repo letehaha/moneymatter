@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DocsLink from '@/components/common/docs-link.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card } from '@/components/lib/ui/card';
 import { WalletIcon } from '@lucide/vue';
@@ -14,5 +15,6 @@ defineEmits<{ start: [] }>();
     <h2 class="text-lg font-semibold">{{ $t('budgetPlans.empty.title') }}</h2>
     <p class="text-muted-foreground text-sm">{{ $t('budgetPlans.empty.description') }}</p>
     <Button class="mt-2" @click="$emit('start')">{{ $t('budgetPlans.empty.action') }}</Button>
+    <DocsLink path="/budgeting/start-budgeting/" class="text-sm">{{ $t('budgetPlans.docs.howItWorks') }}</DocsLink>
   </Card>
 </template>

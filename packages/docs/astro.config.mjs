@@ -38,6 +38,7 @@ export default defineConfig({
         { label: 'Getting started', items: [{ autogenerate: { directory: 'getting-started' } }] },
         { label: 'Accounts', items: [{ autogenerate: { directory: 'accounts' } }] },
         { label: 'Transactions', items: [{ autogenerate: { directory: 'transactions' } }] },
+        { label: 'Budgeting', items: [{ autogenerate: { directory: 'budgeting' } }] },
         { label: 'Transfers & refunds', items: [{ autogenerate: { directory: 'transfers-and-refunds' } }] },
         { label: 'Stats & reports', items: [{ autogenerate: { directory: 'stats' } }] },
         { label: 'Import & bank connections', items: [{ autogenerate: { directory: 'import' } }] },

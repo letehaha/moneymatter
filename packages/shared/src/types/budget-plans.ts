@@ -303,4 +303,9 @@ export interface CreateBudgetPlanPayload {
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
+  withSuggestedLines?: boolean;
+}
+
+export interface AddSuggestedBudgetLinesResponse {
+  created: number;
 }

@@ -1,5 +1,6 @@
 import { api } from '@/api/_api';
 import type {
+  AddSuggestedBudgetLinesResponse,
   BudgetLineGoal,
   BudgetPlanCarryPolicy,
   BudgetPlanDetails,
@@ -64,6 +65,12 @@ export const createBudgetPlanLine = async ({
   planId: string;
   payload: { name: string; categoryIds: string[]; activeFrom?: string; groupId?: string | null };
 }): Promise<BudgetPlanLineEntry> => api.post(`/budget-plans/${planId}/lines`, payload);
+
+export const addSuggestedBudgetLines = async ({
+  planId,
+}: {
+  planId: string;
+}): Promise<AddSuggestedBudgetLinesResponse> => api.post(`/budget-plans/${planId}/suggested-lines`);
 
 export const updateBudgetPlanLine = async ({
   planId,

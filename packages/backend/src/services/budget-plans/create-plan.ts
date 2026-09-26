@@ -23,6 +23,7 @@ import {
   countPeriodsBetween,
 } from './periods/period-enumerator';
 import { assertAccountsAttachable } from './set-plan-accounts';
+import { addSuggestedLines } from './suggested-lines';
 import { validateCadence } from './validate-cadence';
 
 export const requireBaseCurrencyCode = async ({ userId }: { userId: number }): Promise<string> => {
@@ -58,6 +59,7 @@ interface CreatePlanParams {
   autoAttachAccounts?: boolean;
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
+  withSuggestedLines?: boolean;
 }
 
 const createPlanImpl = async ({
@@ -73,6 +75,7 @@ const createPlanImpl = async ({
   autoAttachAccounts = false,
   carryPolicy = 'none',
   poolEnabled = false,
+  withSuggestedLines = false,
 }: CreatePlanParams): Promise<BudgetPlanDetails> => {
   const cadenceConfig: PeriodCadenceConfig = { cadence, intervalN, anchorDate, secondAnchorDay };
   validateCadence(cadenceConfig);
@@ -111,6 +114,7 @@ const createPlanImpl = async ({
   await recordFirstBudgetPlan({ userId });
 
   await BudgetPlanAccounts.bulkCreate(accountIds.map((accountId) => ({ planId: plan.id, accountId })));
+  if (withSuggestedLines) await addSuggestedLines({ userId, planId: plan.id });
 
   return getPlan({ userId, planId: plan.id });
 };

@@ -67,7 +67,7 @@ describe('formatPeriodLabel', () => {
 });
 
 describe('buildCreatePlanPayload', () => {
-  const base = { name: 'Budget', accountIds: ['acc-1'], carryPolicy: 'floor' as const };
+  const base = { name: 'Budget', accountIds: ['acc-1'], carryPolicy: 'floor' as const, withSuggestedLines: true };
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -120,6 +120,12 @@ describe('buildCreatePlanPayload', () => {
       expect(larger - smaller, `day ${day}`).toBeGreaterThanOrEqual(10);
       expect(smaller + 28 - Math.min(larger, 28), `day ${day}`).toBeGreaterThanOrEqual(10);
     }
+  });
+
+  it('passes the suggested lines opt-out through', () => {
+    expect(
+      buildCreatePlanPayload({ ...base, withSuggestedLines: false, preset: 'monthly', startsOn: new Date(2026, 8, 5) }),
+    ).toMatchObject({ withSuggestedLines: false });
   });
 
   it('maps biweekly and weekly to day cadences', () => {

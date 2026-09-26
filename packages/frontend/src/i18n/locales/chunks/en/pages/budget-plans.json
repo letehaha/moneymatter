@@ -64,7 +64,9 @@
       "rolloverPlaceholder": "Select a rollover rule",
       "submit": "Create budget",
       "success": "Budget created",
-      "error": "Could not create the budget"
+      "error": "Could not create the budget",
+      "suggestedLinesLabel": "Start with suggested lines",
+      "suggestedLinesHint": "Adds lines for the categories you spent the most on in the last 3 months, with the average as the amount. With no history, adds a starter set. Change or remove any of them later."
     },
     "cadence": {
       "monthly": "Monthly",
@@ -112,6 +114,9 @@
       "addLine": "Add line",
       "noLines": "No lines yet",
       "noLinesDescription": "Add a line to set a spending limit for a group of categories.",
+      "addSuggested": "Add suggested lines",
+      "suggestedAdded": "Added {count} line | Added {count} lines",
+      "noSuggestions": "Nothing to suggest: the suggested categories already have lines.",
       "totalWithLines": "Total · {count} line | Total · {count} lines",
       "assignAmountFor": "Assigned for {name}: {amount}. Change",
       "archivedBadge": "archived",
@@ -456,6 +461,9 @@
           "nothing_tracked": "Nothing tracked for {period} yet."
         }
       }
+    },
+    "docs": {
+      "howItWorks": "How budgeting works"
     }
   }
 }

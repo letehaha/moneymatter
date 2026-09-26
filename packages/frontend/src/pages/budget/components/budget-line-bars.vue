@@ -33,7 +33,7 @@ const spentClass = computed(() =>
 
     <span
       v-if="showSpending || (showSplit && !isFunded)"
-      :class="cn('relative block h-1 overflow-hidden rounded-full', isFunded ? 'bg-success' : 'bg-foreground/10')"
+      :class="cn('relative block h-1 overflow-hidden rounded-full', isFunded ? 'bg-success-text' : 'bg-foreground/10')"
     >
       <span :class="spentClass" :style="{ width: `${bars.spentPercent}%` }" />
     </span>
@@ -41,14 +41,14 @@ const spentClass = computed(() =>
     <span v-else-if="showSplit" class="flex h-1 gap-0.5">
       <span
         v-if="bars.carried > 0"
-        class="bg-success/50 relative block overflow-hidden rounded-full"
+        class="bg-success-text/50 relative block overflow-hidden rounded-full"
         :style="{ flex: `${bars.carried} 1 0` }"
       >
         <span :class="spentClass" :style="{ width: `${bars.carriedSpentPercent}%` }" />
       </span>
       <span
         v-if="bars.assigned > 0"
-        class="bg-success relative block overflow-hidden rounded-full"
+        class="bg-success-text relative block overflow-hidden rounded-full"
         :style="{ flex: `${bars.assigned} 1 0` }"
       >
         <span :class="spentClass" :style="{ width: `${bars.assignedSpentPercent}%` }" />

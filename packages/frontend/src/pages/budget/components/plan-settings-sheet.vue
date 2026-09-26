@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { deleteBudgetPlan, setBudgetPlanAccounts, updateBudgetPlan } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
@@ -256,7 +257,10 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
               @update:model-value="(value) => patchPlan({ planId, payload: { zeroSum: Boolean(value) } })"
             />
           </div>
-          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.zeroSumHint') }}</p>
+          <p class="text-muted-foreground text-xs">
+            {{ $t('budgetPlans.pool.zeroSumHint') }}
+            <DocsLink path="/budgeting/ready-to-assign/#keep-ready-to-assign-at-0" class="text-xs" />
+          </p>
         </div>
       </div>
 
@@ -279,7 +283,10 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
             </Label>
           </div>
         </RadioGroup>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.rolloverNote') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.settings.rolloverNote') }}
+          <DocsLink path="/budgeting/assigning-and-rollover/#rollover" class="text-xs" />
+        </p>
       </div>
 
       <Separator />

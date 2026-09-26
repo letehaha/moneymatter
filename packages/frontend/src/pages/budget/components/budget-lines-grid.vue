@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { archiveBudgetPlanLine, deleteBudgetLineGroup } from '@/api/budget-plans';
+import { addSuggestedBudgetLines, archiveBudgetPlanLine, deleteBudgetLineGroup } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveMenu from '@/components/common/responsive-menu.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { cn } from '@/lib/utils';
@@ -23,11 +25,13 @@ import {
   ListPlusIcon,
   MoonIcon,
   PlusIcon,
+  SparklesIcon,
   TargetIcon,
 } from '@lucide/vue';
 import { createReusableTemplate } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import { useCollapsedGroups } from '../composables/use-collapsed-groups';
 import type { RowBarMode } from '../composables/use-grid-display-options';
@@ -90,6 +94,8 @@ const [DefineGoalCaption, GoalCaption] = createReusableTemplate<{
   display?: GoalDisplay;
 }>();
 
+const { t } = useI18n();
+const { addSuccessNotification, addInfoNotification } = useNotificationCenter();
 const { formatBaseCurrency } = useFormatCurrency();
 const { goalText } = useGoalText();
 const { categoriesMap } = storeToRefs(useCategoriesStore());
@@ -207,6 +213,25 @@ const pickMenuAction = ({
   targetHasHistory.value = props.historyLineIds.has(line.lineId);
   if (action === 'archive') isArchiveOpen.value = true;
   else isDeleteOpen.value = true;
+};
+
+const { isPending: isAddingSuggested, mutate: addSuggested } = useInvalidatingMutation({
+  mutationFn: addSuggestedBudgetLines,
+  invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
+  errorKey: 'budgetPlans.line.error',
+});
+
+const addSuggestedLines = () => {
+  if (isAddingSuggested.value) return;
+  addSuggested(
+    { planId: props.planId },
+    {
+      onSuccess: ({ created }) =>
+        created
+          ? addSuccessNotification(t('budgetPlans.grid.suggestedAdded', created))
+          : addInfoNotification(t('budgetPlans.grid.noSuggestions')),
+    },
+  );
 };
 
 const archiveTargetLine = () => {
@@ -563,6 +588,16 @@ const archiveTargetLine = () => {
       </div>
       <h2 class="text-lg font-semibold">{{ $t('budgetPlans.grid.noLines') }}</h2>
       <p class="text-muted-foreground max-w-sm text-sm">{{ $t('budgetPlans.grid.noLinesDescription') }}</p>
+      <Button
+        v-if="view.period.isCurrent"
+        variant="soft-primary"
+        :disabled="isAddingSuggested"
+        @click="addSuggestedLines"
+      >
+        <SparklesIcon class="size-4" />
+        {{ $t('budgetPlans.grid.addSuggested') }}
+      </Button>
+      <DocsLink path="/budgeting/start-budgeting/" class="text-sm">{{ $t('budgetPlans.docs.howItWorks') }}</DocsLink>
       <ArchivedTrigger />
     </div>
 

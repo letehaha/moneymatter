@@ -71,6 +71,7 @@ function grantEntitlements(overrides: Partial<Entitlements> = {}): void {
     seats: 5,
     plan: null,
     trialEndsAt: null,
+    budgetPlanTrialEndsAt: null,
     subscriptions: [],
     trialUsage: {},
     featureTrials: {},

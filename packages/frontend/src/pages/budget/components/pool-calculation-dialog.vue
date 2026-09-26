@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
@@ -179,6 +180,8 @@ const changedTitle = computed(() =>
           <ReuseTable :rows="flowRows" />
         </CollapsibleContent>
       </Collapsible>
+
+      <DocsLink path="/budgeting/ready-to-assign/" class="justify-self-start text-xs" />
     </div>
   </ResponsiveDialog>
 </template>

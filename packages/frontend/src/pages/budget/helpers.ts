@@ -69,18 +69,27 @@ export const buildCreatePlanPayload = ({
   startsOn,
   accountIds,
   carryPolicy,
+  withSuggestedLines,
 }: {
   name: string;
   preset: BudgetCadencePreset;
   startsOn: Date;
   accountIds: string[];
   carryPolicy: BudgetPlanCarryPolicy;
+  withSuggestedLines: boolean;
 }): CreateBudgetPlanPayload => {
   const type: BudgetPlanTypeKey = 'category_caps';
   const anchorDate = format(startsOn, 'yyyy-MM-dd');
   // Today is never sent: a client ahead of UTC would trip the backend's epoch-in-future check.
   const isBackdated = anchorDate < format(new Date(), 'yyyy-MM-dd');
-  const base = { name, type, accountIds, carryPolicy, ...(isBackdated && { epochDate: anchorDate }) };
+  const base = {
+    name,
+    type,
+    accountIds,
+    carryPolicy,
+    withSuggestedLines,
+    ...(isBackdated && { epochDate: anchorDate }),
+  };
   const day = getDate(startsOn);
 
   switch (preset) {
@@ -411,8 +420,8 @@ type GoalDisplayKind = 'underfunded' | 'funded' | 'achieved' | 'snoozed' | 'prog
 
 const GOAL_DISPLAY_TONES: Record<GoalDisplayKind, { textClass: string; barClass: string }> = {
   underfunded: { textClass: 'text-warning-text', barClass: 'bg-warning' },
-  funded: { textClass: 'text-success-text', barClass: 'bg-success' },
-  achieved: { textClass: 'text-success-text', barClass: 'bg-success' },
+  funded: { textClass: 'text-success-text', barClass: 'bg-success-text' },
+  achieved: { textClass: 'text-success-text', barClass: 'bg-success-text' },
   progress: { textClass: 'text-primary-text', barClass: 'bg-primary' },
   snoozed: { textClass: 'text-muted-foreground', barClass: 'bg-muted-foreground/40' },
 };

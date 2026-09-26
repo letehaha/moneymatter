@@ -1,0 +1,181 @@
+---
+title: Budget lines and groups
+description: Read the budget grid, add and edit lines, organize them into groups, change how rows look, and archive or delete lines you no longer need.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+Lines are the rows of your budget. Each line covers one or more categories and holds the money you plan to spend on them. Groups are headings that keep related lines together, such as Bills or Everyday.
+
+## Read the grid
+
+Every line shows three amounts for the period you're viewing:
+
+- **Assigned**: what you plan to spend. Click it to change it. See [Assigning and rollover](/budgeting/assigning-and-rollover/).
+- **Activity**: what happened in the line's categories. Spending shows as a negative amount, and money coming back, such as a refund in the same category, adds to it.
+- **Available**: what's left. It's the money carried over from the last period, plus **Assigned**, plus **Activity**. Green means money is left, red means the line is overspent, and grey means exactly 0.
+
+Under the line's name you'll see its categories and "Spent X of Y", where Y is what the line had this period: its carried-over money plus **Assigned**. A line with a goal shows the goal's status there instead. See [Goals](/budgeting/goals/).
+
+The **Total** row at the bottom adds up every line and says how many there are.
+
+<Screenshot
+  src="/screenshots/budgeting/lines-grid.png"
+  alt="The budget grid with a Bills and an Everyday group, their lines with Assigned, Activity and Available amounts, one overspent line in red, row bars under each line name, and the Total row."
+  hint="On the seeded docs user, open /budget with a Monthly budget that has the Bills and Everyday groups and 5-6 lines with assigned amounts. Make one line overspent so its Available is red. Use Options → Row bars → Combined bar. Show the Line group header with its collapse and + buttons, the group rows with totals, the lines and the Total row with the Archived button. Crop to the grid."
+/>
+
+### Badges next to a line's name
+
+- **override**: this period uses a one-off amount instead of the line's usual one. Shown only when the budget doesn't use a pool.
+- **carries deficit**: the line uses **Carry surplus and deficit**, so overspending moves on to the next period.
+- **archived**: you're looking at a past period, and the line has been archived since.
+
+### The totals at the top
+
+Above the grid, four tiles sum up the period: **Assigned**, **Spent**, **Available**, and **Overspent**, which adds up every line that's below 0 and says how many there are. If your budget uses a pool, **Ready to Assign** sits above them. See [Ready to Assign](/budgeting/ready-to-assign/).
+
+On a narrow screen, lines show as cards. Each card has **Available** at the top right and the **Assigned** amount at the bottom.
+
+## Add a line
+
+<Steps>
+
+1. Click **Add line** below the grid. To add it straight into a group, click **+** on the group's row instead.
+2. Enter a **Name**, for example "Groceries".
+3. If your budget has groups, pick a **Group**, or leave **No group**.
+4. Under **Categories**, pick one or more categories.
+5. Click **Save**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/budgeting/new-line-dialog.png"
+  alt="The New line window with the name Eating out, the Everyday group selected, and the categories list open with Restaurant, fast-food and Bar, cafe checked and Groceries marked as taken by another line."
+  hint="On /budget, with a Groceries line that covers Food & Drinks → Groceries, click Add line. Type 'Eating out' as the Name, choose the Everyday group and open Categories. Check 'Restaurant, fast-food' and 'Bar, cafe' so Groceries shows it belongs to another line. Crop to the window with the open list."
+/>
+
+A few rules for categories:
+
+- **Picking a category includes its subcategories.** Pick **Food & Drinks** and the line covers Groceries, Restaurant, fast-food and every other subcategory under it.
+- **A category can only be in one line.** The list shows which line already has a category, and you can't pick it for a second one. This applies to a whole branch too: if one line has Groceries, another can't take all of Food & Drinks.
+- **Spending in categories without a line** shows under [Spending outside your lines](#spending-outside-your-lines).
+
+A new line starts in the current period. If you're looking at a past period when you add it, it starts from that period instead, so you can budget spending you've already done.
+
+## Edit a line
+
+Open the **⋯** menu (**Line actions**) at the end of the line and choose **Edit line**. You can change its **Name**, **Group** and **Categories**, then click **Save**.
+
+- A new name shows in every period, past ones included.
+- Category changes apply from the current period on. Past periods keep the categories the line had then, so their numbers don't change.
+
+## Group your lines
+
+Groups are headings with their own totals. They don't change any amounts.
+
+<Steps>
+
+1. Click **+** (**Add group**) next to **Line group** at the top of the grid.
+2. Enter a **Group name**, for example "Bills".
+3. Click **Save**.
+
+</Steps>
+
+To put lines in the group, edit each line and choose the **Group**, or drag them there in [Manage layout](#arrange-lines-and-groups).
+
+Each group row shows the group's **Assigned**, **Activity** and **Available** totals. Click the arrow on a group row to fold its lines away, or the arrow next to **Line group** to fold or unfold every group at once. Folded groups stay folded next time you open the budget in the same browser.
+
+### Rename or delete a group
+
+Open the **⋯** menu (**Group actions**) on the group row, or right-click the row, and choose:
+
+- **Edit group** to rename it.
+- **Delete group** to remove it. You can only delete a group once none of its lines are active. Until then the option is turned off, with the hint "Move or archive its lines first". Archived lines in the group become ungrouped.
+
+## Arrange lines and groups
+
+<Steps>
+
+1. Click **Options** at the top right of the budget.
+2. Choose **Manage layout**.
+3. Drag lines to reorder them, or into another group. Drag lines into **Ungrouped** to take them out of any group.
+4. Drag a group by its header to move it with all its lines.
+5. Click **Save**.
+
+</Steps>
+
+Archived lines aren't listed and keep their place.
+
+<Screenshot
+  src="/screenshots/budgeting/manage-layout.png"
+  alt="The Manage layout window with an Ungrouped section and the Bills, Everyday and Life groups, each listing its lines with drag handles."
+  hint="On /budget with the suggested Bills, Everyday and Life groups and one ungrouped line, open Options → Manage layout. Crop to the window."
+/>
+
+## Change how rows look
+
+The **Options** menu has two display settings. They're saved in your browser, so they don't change what other devices show.
+
+**Row bars** picks the thin bar under each line's name:
+
+- **Spending bar**: how much of the line's money is spent. It turns red when the line is overspent.
+- **Goal bar**: how far along the line's goal is. Lines without a goal, or with a snoozed one, show no bar.
+- **Combined bar** (the default): both bars.
+- **Split bars**: like **Combined bar**, but the spending bar is split into carried-over money and money assigned this period.
+- **No bar**.
+
+**Compact rows** makes every row shorter, so more lines fit on screen.
+
+## Archive a line
+
+Archive a line you no longer need but whose history you want to keep.
+
+<Steps>
+
+1. Open the **⋯** menu at the end of the line and choose **Archive line**.
+2. Confirm with **Archive line**.
+
+</Steps>
+
+The line stops counting from the current period on. Past periods keep their numbers, and the line shows there with an **archived** badge. Its categories are free right away, so you can archive a "Food" line and create separate "Groceries" and "Eating out" lines in the same period.
+
+### Restore an archived line
+
+<Steps>
+
+1. Click **Archived** at the bottom of the grid. It shows how many lines are archived.
+2. In **Archived lines**, click **Restore** next to the line.
+
+</Steps>
+
+A restored line comes back from the current period with the categories it had. In the periods it spent archived, it shows nothing assigned or spent. If another line has taken one of its categories in the meantime, restoring fails. Remove that category from the other line first.
+
+## Delete a line
+
+Open the **⋯** menu at the end of the line and choose **Delete line**. What the window offers depends on how long the line has existed:
+
+- **A line that started in the current period**: its assigned amounts are deleted and its spending shows as outside your lines. Click **Delete permanently**.
+- **A line that started in an earlier period**: it's removed from every period, past ones included. MoneyMatter suggests archiving it instead to keep its history, with an **Archive line** button. To delete it anyway, click **Delete line**.
+
+Deleting can't be undone.
+
+<Aside type="tip" title="Archive or delete?">
+Archive when the line was real and you want your past periods to stay as they were. Delete when the line was a mistake, for example a line you created a minute ago.
+</Aside>
+
+## Spending outside your lines
+
+When the budget's accounts have spending in categories no line covers, a bar appears below the grid: "Spending outside your lines: X in N categories". Click it to see the amount per top-level category.
+
+It's a to-do list. For each category, either add it to an existing line, add a new line for it, or leave it if you don't want to budget it. With a pool, this spending comes out of **Ready to Assign**. See [What goes in and out](/budgeting/ready-to-assign/#what-goes-in-and-out).
+
+## Related
+
+- [Start budgeting](/budgeting/start-budgeting/)
+- [Assigning and rollover](/budgeting/assigning-and-rollover/)
+- [The side panel](/budgeting/side-panel/): click a line to see its details.
+- [Categories](/transactions/categories/)

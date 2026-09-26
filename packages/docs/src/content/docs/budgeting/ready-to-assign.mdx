@@ -1,0 +1,145 @@
+---
+title: Ready to Assign
+description: Fund your budget from a pool, see what flows into Ready to Assign, hand money out to lines, fix over-assigning, and keep Ready to Assign at 0.
+sidebar:
+  order: 4
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+With **Fund from a pool** turned on, your income doesn't belong to any line when it arrives. It goes into a pool called **Ready to Assign**, and you decide which lines get it. The goal is to give every bit of money a job.
+
+Without a pool, lines simply get the amounts you type in, and nothing checks them against the money you actually have.
+
+## Turn on the pool
+
+- **When you create the budget**, turn on **Fund from a pool**. The pool starts with the budget's first period.
+- **Later**, click **Budget settings**, turn on **Fund from a pool** and confirm with **Turn on**. The pool starts from the current period, so earlier periods don't show **Ready to Assign**.
+
+To stop using the pool, turn **Fund from a pool** off in **Budget settings**. It happens right away, without a confirmation.
+
+With the pool on, **Ready to Assign** sits above the budget's totals:
+
+- **Green**: money is waiting for a job.
+- **0**: every bit of money has one.
+- **Red**: you've assigned more than you have, and it says "Over-assigned by X". See [Over-assigned](#over-assigned).
+
+<Screenshot
+  src="/screenshots/budgeting/ready-to-assign.png"
+  alt="The Ready to Assign tile showing a positive amount with its info button, and the Assign from the pool window open with a line picked under To and the amount filled in."
+  hint="On /budget with Fund from a pool on and some unassigned income this period, click Assign next to Ready to Assign. Pick the Groceries line under To and keep the prefilled Amount. Show the Ready to Assign tile, the header tiles below it and the open 'Assign from the pool' window with its 'Assign …' button. Crop to the tile area and the window."
+/>
+
+## What goes in and out
+
+**Ready to Assign** follows the money in your budget's accounts that no line holds yet.
+
+It goes up with:
+
+- **The starting balance.** When the pool starts, the money already in your budget's accounts goes in, except what lines carry into that period.
+- **Income** on your budget's accounts, when its category isn't in any line.
+- **Money moved in from an account outside your budget**, such as a transfer from savings you didn't add to the budget.
+- **Leftovers that don't roll over**, for lines on **Start fresh each period**.
+
+It goes down with:
+
+- **Money you assign** to lines in this period.
+- **Spending outside your lines**: spending on your budget's accounts in categories no line covers.
+- **Money moved out to an account outside your budget.**
+- **Overspending that doesn't roll over**, for lines on **Carry surplus** or **Start fresh each period**. See [Rollover](/budgeting/assigning-and-rollover/#rollover).
+- **Money you've already assigned in a later period.** See [Assign ahead](#assign-ahead).
+
+Transfers between two accounts that are both in your budget don't change it. Whatever is left at the end of a period moves on to the next one.
+
+## Assign from Ready to Assign
+
+<Steps>
+
+1. Click **Assign** next to **Ready to Assign**.
+2. Under **To**, pick the line. You can type to search.
+3. Check the **Amount**. It starts with everything in **Ready to Assign**.
+4. Click **Assign X**.
+
+</Steps>
+
+The amount is added on top of what the line already has, for this period only. You can also type a new amount in a line's **Assigned** column. **Ready to Assign** goes down by the difference either way.
+
+**Assign** is turned off until your budget has at least one line.
+
+### Assign ahead
+
+You can open a later period and assign money there, for example to prepare next month's rent. Money you've typed into a later period is set aside now, so it comes out of today's **Ready to Assign** as **Committed to later periods**.
+
+An amount you set **From now on** in an earlier period doesn't count here. It becomes real money only when its period arrives.
+
+## Over-assigned
+
+**Ready to Assign** turns red when lines hold more money than you have. It happens when you assign too much, or when income comes in lower than expected. To fix it, take money back from a line:
+
+<Steps>
+
+1. Click **Fix this** next to **Ready to Assign**.
+2. Under **Take from**, pick a line. The list shows each line's **Available** amount, and the line that can give back the most without going overspent is already picked.
+3. Check the **Amount**. It starts with the smaller of the shortfall and what that line was assigned this period.
+4. Click **Take back X**.
+
+</Steps>
+
+The list only includes lines with money assigned in this period. If there are none, you'll see "There is nothing to take back in this period."
+
+**Fix this** only shows in the current period and later ones. Taking money back in a past period would rewrite history and still leave today's shortfall.
+
+<Screenshot
+  src="/screenshots/budgeting/fix-over-assigning.png"
+  alt="Ready to Assign in red with Over-assigned by 120, and the Reduce over-assigning window with a line picked under Take from and 120 as the amount."
+  hint="On /budget with the pool on, assign 120 more than Ready to Assign holds in the current period. Click Fix this. Keep the preselected line under Take from with its Available amount visible, and the prefilled Amount. Show the red Ready to Assign amount, 'Over-assigned by …', and the 'Reduce over-assigning' window with 'Take back …'. Crop to the tile and the window."
+/>
+
+## Keep Ready to Assign at 0
+
+This setting turns the pool into zero-sum budgeting: every bit of money should have a job, so **Ready to Assign** should end at 0.
+
+<Steps>
+
+1. Click **Budget settings**.
+2. Turn on **Keep Ready to Assign at 0**. It appears once **Fund from a pool** is on.
+
+</Steps>
+
+In the current period, the header then nudges you:
+
+- While money is waiting, it says "Assign the rest to keep Ready to Assign at 0", and the **Assign** button shows the full amount, for example **Assign $250.00**.
+- At 0, it says "All money assigned".
+- If you're over-assigned, **Fix this** works as usual.
+
+The setting never blocks anything. You can still leave money unassigned, and past or future periods don't show the nudge.
+
+<Aside type="tip" title="Money left over at the end of the period?">
+Give it a job in the next period instead: open the next period and assign it there. It counts as **Committed to later periods**, so it comes out of today's **Ready to Assign**. See [Assign ahead](#assign-ahead).
+</Aside>
+
+## See how it's calculated
+
+Click the info button next to **Ready to Assign** to open **Budget calculation** for the period you're viewing. The first box shows where today's number comes from:
+
+- **Budgetable money**: cash in the budget's accounts, minus credit limits.
+- **Money in lines**: everything currently in your lines.
+- **Committed to later periods**: money already assigned in a later period.
+- **FX / unreconciled**: rate moves and balances not explained by transactions, such as a balance adjustment or a change in exchange rates on a foreign-currency account.
+
+Click **What changed since** (or **What changed this period** in the pool's first period) to see the period's flow: **Left over from** the previous period (or **Starting balance**), **Income**, **Spending outside your lines**, **From lines (rollover returned / overspending covered)**, **Assigned this period** and **Committed to later periods**.
+
+**Committed to later periods**, **FX / unreconciled**, **Spending outside your lines** and **From lines** only show when they aren't 0.
+
+<Screenshot
+  src="/screenshots/budgeting/budget-calculation.png"
+  alt="The Budget calculation window with Budgetable money, Money in lines and Ready to Assign in the first box, and the What changed since section open with Left over, Income, Spending outside your lines, Assigned this period and Ready to Assign."
+  hint="On /budget with the pool on for at least two periods, some income and some spending outside the lines this period, click the info button next to Ready to Assign. Expand 'What changed since …'. Crop to the window."
+/>
+
+## Related
+
+- [Assigning and rollover](/budgeting/assigning-and-rollover/)
+- [Goals](/budgeting/goals/)
+- [The side panel](/budgeting/side-panel/): see how ready you are for the next period.

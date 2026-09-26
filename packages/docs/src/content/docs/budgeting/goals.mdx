@@ -1,0 +1,127 @@
+---
+title: Goals
+description: Add a goal to a line so it tells you how much to assign each period, whether it's a monthly bill, a yearly payment, a savings target or a balance to keep topped up.
+sidebar:
+  order: 5
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+A goal tells a line how much it needs. The line then shows whether it's on track and how much to assign to get there. Goals don't move money by themselves: you still assign it, or click **Budget X** to assign what the goal asks for.
+
+Each line can have one goal.
+
+## Add a goal
+
+<Steps>
+
+1. Hover over the line and click the dashed target button in front of its name (**Create goal**). On a touch screen, it's always visible. You can also select the line and click **Create goal** in the **Goal** section of the side panel.
+2. Under **Frequency**, choose how often the goal repeats. See [Frequency](#frequency).
+3. Under **How it works**, choose what the goal measures. See [How it works](#how-it-works).
+4. Enter the amount and fill in the fields that appear for your choice.
+5. Check the sentence at the bottom, for example "Budgets $400.00 each month".
+6. Click **Save**.
+
+</Steps>
+
+The goal starts in the period you're viewing.
+
+<Screenshot
+  src="/screenshots/budgeting/goal-editor.png"
+  alt="The Create goal window for a Car insurance line with Yearly selected, Budget another chosen under How it works, 1,200 as the amount each year, a first due date, and the summary sentence at the bottom."
+  hint="On /budget, hover a 'Car insurance' line and click the dashed target button. Choose Yearly, keep Budget another, enter 1200 under 'Amount each year' and set the First due date about five months ahead. Show the six Frequency buttons, both How it works options with their descriptions, the amount with its hint, the First due date with its hint, the summary sentence and the Save button. Crop to the window."
+/>
+
+## Frequency
+
+| Frequency | Use it for | Extra field |
+|---|---|---|
+| **Weekly** | An amount every week, such as a weekly grocery run. | **Repeats on**: the weekday. |
+| **Biweekly** | An amount every two weeks. | **First payment date**. |
+| **Monthly** | An amount every month, such as rent. On a budget that doesn't reset monthly, it's called **Every period** and repeats every period. | None. |
+| **Yearly** | A payment once a year, such as insurance. The amount is spread over the periods before each due date. | **First due date**. It repeats every year on that date. |
+| **By date** | A total you need by a certain day, such as a holiday. The amount is spread over the periods until then. | **Due date**. With **Budget another** or **Refill up to**, also an optional **Repeat**. |
+| **Open-ended** | A balance to build up with no deadline, such as an emergency fund. | None. |
+
+**Weekly** and **Biweekly** goals count how many times the day falls in each period. A goal of 50 every Friday needs 250 in a month with five Fridays, and 200 in a month with four.
+
+A **By date** goal's due date must be after today, unless the goal repeats. With **Budget another** or **Refill up to**, turn on **Repeat** to start a new cycle after each due date, every 1 to 11 months or 1 to 5 years. A **Reach a balance** goal with a due date can't repeat.
+
+## How it works
+
+Every goal measures progress in one of three ways:
+
+- **Budget another** budgets the amount fresh each period. Only what you assign counts, so spending along the way is expected and never changes what the goal asks for. Use it for things you spend as you go, like groceries.
+- **Refill up to** refills the line to the target each period. Whatever is left over from last period counts, so you only assign the gap. Use it for a line that should start every period at the same level.
+- **Reach a balance** tracks the line's **Available** amount itself. Spending sets progress back and raises what the goal asks for right away. Use it for savings. When **Available** reaches the target, the goal shows **Achieved**.
+
+Not every frequency offers every option:
+
+| Frequency | Budget another | Refill up to | Reach a balance |
+|---|---|---|---|
+| **Weekly**, **Biweekly**, **Monthly**, **Yearly** | Yes | Yes | No |
+| **By date** | Yes | Yes | Yes (the default) |
+| **Open-ended** | No | No | Yes (the only one) |
+
+For example, a Groceries line has a 400 monthly goal and 50 left over from last month. With **Budget another**, it asks for 400. With **Refill up to**, it asks for 350.
+
+With **Yearly** and **By date** goals, **Budget another** counts everything you've assigned since the cycle started, and splits what's still missing over the periods left before the due date.
+
+<Aside type="tip" title="Pick the right rollover">
+**Refill up to** and **Reach a balance** build on money that stays in the line, so they work best with a rollover rule that carries leftovers, like **Carry surplus**. See [Rollover](/budgeting/assigning-and-rollover/#rollover).
+</Aside>
+
+## Limits
+
+Two optional switches cap what a goal asks for:
+
+- **Stop at a balance** (**Budget another** only): stop asking once the saved balance, meaning carryover plus assigned, reaches this cap. For example, budget 100 a month for an emergency fund and stop at 3,000.
+- **Monthly funding cap**, or **Funding cap per period** on a budget that doesn't reset monthly (**Refill up to** only): the most the goal asks for in one period, however far below the target the line is.
+
+## See what a goal needs
+
+A line with a goal shows its status under the name:
+
+- **Need X this month** (or **this period**): assign this much to stay on track. The line's **Available** amount is highlighted in amber.
+- **Weekly** and **Biweekly** goals that still need money say how far you're covered instead, for example "Funded through the 14th" or "Need $50.00 by the 21st".
+- **Funded**: nothing more needed this period.
+- **Achieved**: a **Reach a balance** goal hit its target.
+- **Snoozed**: the goal is paused for this period.
+- An **Open-ended** goal never asks for a set amount, so it shows how far along it is, for example "$600.00 / $3,000.00 (20%)".
+
+Click the target button in front of the line's name (**Goal details**) to see more:
+
+- the goal, for example "Budget $400.00" or "Reach $3,000.00", and how often it repeats,
+- a progress bar and the figures behind it, such as **Saved**, **Target**, **Left to save** or **Balance**,
+- **Budget X**, which adds what the goal needs on top of this period's assigned amount, for this period only. If the line is overspent, it usually adds enough to cover that too. For an **Open-ended** goal, it assigns the whole gap to the target,
+- **Snooze** and **Edit goal**.
+
+<Screenshot
+  src="/screenshots/budgeting/goal-details.png"
+  alt="The goal details popover for a Groceries line with the goal Budget $400.00, Monthly, a progress bar, Budgeted this month, Target this month and Need this month, the Underfunded status, and the Budget, Snooze this month and Edit goal buttons."
+  hint="On /budget, give a Groceries line a Monthly Budget another goal of 400 and assign 150 this period. Click the amber target button in front of the line's name. Crop to the popover and the row it opened from."
+/>
+
+**Yearly** and **By date** goals also have a **Funding plan** in the [side panel](/budgeting/side-panel/#goal). It lists how much to assign in each period until the due date, and what's left to fund after each one.
+
+## Snooze a goal
+
+Skipping a month? In **Goal details**, click **Snooze this month** (**Snooze this period** on a budget that doesn't reset monthly). The goal asks for nothing in the period you're viewing and shows **Snoozed**. The next period asks again as usual.
+
+To undo it, click **Resume**. **Open-ended** goals can't be snoozed, because they never ask for a set amount.
+
+## Edit or delete a goal
+
+- **Edit**: in **Goal details**, click **Edit goal**, change anything and click **Save**. **Started** shows the month the goal began.
+- **Delete**: in the edit window, click **Delete goal**, or use the trash button in the side panel's **Goal** section. Confirm with **Delete goal**. Your assigned amounts stay as they are.
+
+## Goals across the budget
+
+The side panel's **Goals** section adds up every goal for the period: the total they call for, what's still needed, and which lines need money. You can also enter your expected income there to see what's left after your goals. See [The side panel](/budgeting/side-panel/#goals).
+
+## Related
+
+- [Assigning and rollover](/budgeting/assigning-and-rollover/)
+- [Ready to Assign](/budgeting/ready-to-assign/)
+- [The side panel](/budgeting/side-panel/)

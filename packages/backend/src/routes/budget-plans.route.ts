@@ -1,4 +1,5 @@
 import { FEATURES } from '@bt/shared/types';
+import addSuggestedLines from '@controllers/budget-plans/add-suggested-lines';
 import archiveLine from '@controllers/budget-plans/archive-line';
 import createGroup from '@controllers/budget-plans/create-group';
 import createLine from '@controllers/budget-plans/create-line';
@@ -91,6 +92,14 @@ router.post(
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
   createLine,
+);
+router.post(
+  '/:planId/suggested-lines',
+  authenticateSession,
+  requireFeature(FEATURES.budget_plan),
+  checkBaseCurrencyLock,
+  validateEndpoint(addSuggestedLines.schema),
+  addSuggestedLines.handler,
 );
 router.patch(
   '/:planId/lines/:lineId',
