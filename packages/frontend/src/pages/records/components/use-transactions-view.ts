@@ -17,6 +17,7 @@ export function useTransactionsView() {
 
   const localMobileView = ref<TransactionsView | null>(null);
   const localDesktopView = ref<TransactionsView | null>(null);
+  const localAlwaysShowLockedCells = ref<boolean | null>(null);
 
   const mobileView = computed<TransactionsView>(
     () => localMobileView.value ?? userSettings.value?.ui?.transactionsTable?.mobileView ?? DEFAULT_MOBILE_VIEW,
@@ -36,5 +37,21 @@ export function useTransactionsView() {
     patchSettings({ ui: { transactionsTable: { desktopView: view } } });
   };
 
-  return { mobileView, setMobileView, desktopView, setDesktopView };
+  const alwaysShowLockedCells = computed(
+    () => localAlwaysShowLockedCells.value ?? userSettings.value?.ui?.transactionsTable?.alwaysShowLockedCells ?? false,
+  );
+
+  const setAlwaysShowLockedCells = (value: boolean) => {
+    localAlwaysShowLockedCells.value = value;
+    patchSettings({ ui: { transactionsTable: { alwaysShowLockedCells: value } } });
+  };
+
+  return {
+    mobileView,
+    setMobileView,
+    desktopView,
+    setDesktopView,
+    alwaysShowLockedCells,
+    setAlwaysShowLockedCells,
+  };
 }

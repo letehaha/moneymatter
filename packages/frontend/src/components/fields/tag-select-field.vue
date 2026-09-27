@@ -28,6 +28,8 @@
                   {{ tag.name }}
                 </span>
               </span>
+              <!-- data-enter-picks marks Enter as taken by the tag pick, so enclosing Enter handlers skip it.
+                   Enter is always prevented to block implicit submit of an enclosing form. -->
               <input
                 ref="inputRef"
                 v-model="searchQuery"
@@ -35,8 +37,9 @@
                 :disabled="disabled"
                 :placeholder="selectedTags.length ? '' : placeholder"
                 class="placeholder:text-muted-foreground min-w-16 flex-1 bg-transparent outline-none disabled:cursor-not-allowed"
+                :data-enter-picks="query ? '' : undefined"
                 @focus="isOpen = true"
-                @keydown.enter.prevent="filteredTags[0] && toggleTag(filteredTags[0])"
+                @keydown.enter.prevent="query && filteredTags[0] && toggleTag(filteredTags[0])"
                 @keydown.backspace="!searchQuery && selectedTags.at(-1) && toggleTag(selectedTags.at(-1)!)"
               />
             </div>
@@ -130,10 +133,11 @@ const inputRef = ref<HTMLInputElement>();
 const searchQuery = ref('');
 watch(isOpen, () => (searchQuery.value = ''));
 
-const filteredTags = computed(() => {
-  const query = searchQuery.value.trim().toLowerCase();
-  return query ? tags.value.filter((tag) => tag.name.toLowerCase().includes(query)) : tags.value;
-});
+const query = computed(() => searchQuery.value.trim().toLowerCase());
+
+const filteredTags = computed(() =>
+  query.value ? tags.value.filter((tag) => tag.name.toLowerCase().includes(query.value)) : tags.value,
+);
 
 const selectedTagIds = computed(() => new Set(props.modelValue ?? []));
 
@@ -143,6 +147,9 @@ const selectedTags = computed(() => {
 });
 
 const placeholder = computed(() => props.placeholder ?? t('fields.tagSelect.placeholder'));
+
+// Focusing the input is what opens the list.
+defineExpose({ open: () => inputRef.value?.focus() });
 
 const isSelected = (tagId: string) => selectedTagIds.value.has(tagId);
 

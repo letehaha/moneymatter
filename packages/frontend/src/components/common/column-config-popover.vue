@@ -37,6 +37,8 @@
                 <ChevronRightIcon class="text-muted-foreground size-4" />
               </Button>
 
+              <slot name="settings" />
+
               <Button variant="outline" size="sm" class="mx-2 my-2" @click="emit('reset')">
                 {{ $t('transactions.table.columnConfig.resetDefaults') }}
               </Button>

@@ -148,6 +148,8 @@ function selectPayee(payee: {
   inputValue.value = '';
 }
 
+defineExpose({ open: () => (isOpen.value = true) });
+
 function clearSelection() {
   emit('update:modelValue', null);
 }

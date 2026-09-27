@@ -38,6 +38,8 @@ interface TransactionsTableSettings {
    * always-visible ones). Unknown ids are dropped client-side on read.
    */
   extraFilters?: string[];
+  /** Shades non-editable cells on every row instead of only the hovered one. */
+  alwaysShowLockedCells?: boolean;
 }
 
 interface TransactionsListSettings {

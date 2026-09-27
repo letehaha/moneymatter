@@ -6,6 +6,21 @@
 @import 'tw-animate-css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+/* Devices without hover (phones, tablets) */
+@custom-variant touch {
+  @media (hover: none) {
+    @slot;
+  }
+}
+/* Transactions table: locked-cell shading shown without hover (touch, or the "always show" table setting) */
+@custom-variant locks-visible {
+  @media (hover: none) {
+    @slot;
+  }
+  &:where([data-always-show-locked-cells] *) {
+    @slot;
+  }
+}
 @reference;
 
 @theme {
@@ -491,6 +506,15 @@
     135deg,
     transparent 0 10px,
     color-mix(in srgb, var(--muted-foreground) 6%, transparent) 10px 11px
+  );
+}
+
+/* Denser pinstripe for small cells (table rows) whose value the user can't change */
+@utility bg-hatched-dense {
+  background-image: repeating-linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--muted-foreground) 20%, transparent) 0 1px,
+    transparent 1px 6px
   );
 }
 

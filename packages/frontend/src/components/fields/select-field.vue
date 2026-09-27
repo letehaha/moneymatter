@@ -71,10 +71,14 @@ const debouncedFilteredValues = ref<T[]>(props.values);
 // via `displayItem`, so the hidden items are dead weight — defer rendering
 // options (and the search header) until the dropdown opens for the first time.
 const hasOpened = ref(false);
+const isOpen = ref(false);
 
 function onOpenChange(open: boolean) {
+  isOpen.value = open;
   if (open) hasOpened.value = true;
 }
+
+defineExpose({ open: () => onOpenChange(true) });
 
 const renderedValues = computed(() => (hasOpened.value ? debouncedFilteredValues.value : []));
 
@@ -167,7 +171,7 @@ watch(
     <!-- SelectRoot renders no DOM element, so with `field-right` content the trigger button
          and the addon become direct flex children and share one joined outline. -->
     <div :class="cn($slots['field-right'] && 'flex items-stretch')">
-      <Select.Select v-model="selectedKey" :disabled="disabled" @update:open="onOpenChange">
+      <Select.Select v-model="selectedKey" :open="isOpen" :disabled="disabled" @update:open="onOpenChange">
         <Select.SelectTrigger
           :class="cn('w-full', $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0')"
           :aria-required="required || undefined"

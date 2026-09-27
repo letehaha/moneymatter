@@ -157,6 +157,8 @@ const ZodTransactionsTableSettingsSchema = z.object({
   desktopView: z.enum(['list', 'table']).optional(),
   /** Filters added on top of the always-visible ones. Plain strings, like column ids. */
   extraFilters: z.array(z.string()).optional(),
+  /** Shades non-editable cells on every row instead of only the hovered one. */
+  alwaysShowLockedCells: z.boolean().optional(),
 });
 
 const ZodInvestmentTransactionsTableSettingsSchema = z.object({
@@ -367,6 +369,7 @@ export const ZodSettingsPatchSchema = z.object({
           mobileView: z.enum(['list', 'table']).optional(),
           desktopView: z.enum(['list', 'table']).optional(),
           extraFilters: z.array(z.string()).optional(),
+          alwaysShowLockedCells: z.boolean().optional(),
         })
         .optional(),
       transactionsList: z

@@ -155,7 +155,11 @@
            mid-scroll by the virtualizer can never widen the table (which used to
            create transient horizontal overflow). min-width preserves the
            horizontal-scroll fallback when columns genuinely don't fit. -->
-      <table class="w-full table-fixed border-separate border-spacing-0" :style="{ minWidth: `${tableMinWidthPx}px` }">
+      <table
+        class="w-full table-fixed border-separate border-spacing-0"
+        :style="{ minWidth: `${tableMinWidthPx}px` }"
+        :data-always-show-locked-cells="alwaysShowLockedCells || undefined"
+      >
         <thead class="sticky top-0 z-2">
           <tr class="text-muted-foreground divide-x text-xs font-medium tracking-wider uppercase">
             <th class="bg-muted sticky left-0 z-1 w-8 border-b">
@@ -188,12 +192,13 @@
                 </template>
               </component>
             </th>
+            <th class="bg-muted sticky right-0 z-1 border-b" :style="{ width: `${DETAILS_COLUMN_WIDTH_PX}px` }" />
           </tr>
         </thead>
 
         <tbody>
           <tr v-if="paddingTop > 0" aria-hidden="true">
-            <td :colspan="visibleColumns.length + 1" :style="{ height: `${paddingTop}px` }" class="p-0" />
+            <td :colspan="columnCount" :style="{ height: `${paddingTop}px` }" class="p-0" />
           </tr>
 
           <template v-for="virtualRow in virtualRows" :key="rowKey(virtualRow.index)">
@@ -206,20 +211,31 @@
               :is-selectable="isTransactionSelectable(displayTransactions[virtualRow.index]!)"
               :unselectable-reason="getUnselectableReason(displayTransactions[virtualRow.index]!)"
               :payee="payeeById.get(displayTransactions[virtualRow.index]!.payeeId ?? '')"
-              @record-click="handleRecordClick"
-              @selection-change="toggleTransaction"
+              :cell-states="cellStates"
+              :editing-column="
+                editTarget?.tx.id === displayTransactions[virtualRow.index]!.id ? editTarget.column : null
+              "
+              @record-click="
+                editTarget = null;
+                handleRecordClick($event);
+              "
+              @selection-change="
+                editTarget = null;
+                toggleTransaction($event);
+              "
+              @cell-click="openCellEditor"
             />
-            <TableLoaderRow v-else :colspan="visibleColumns.length + 1" />
+            <TableLoaderRow v-else :columns="visibleColumns" />
           </template>
 
           <TableLoaderRow
             v-for="index in initialSkeletonRowCount"
             :key="`initial-skeleton-${index}`"
-            :colspan="visibleColumns.length + 1"
+            :columns="visibleColumns"
           />
 
           <tr v-if="paddingBottom > 0" aria-hidden="true">
-            <td :colspan="visibleColumns.length + 1" :style="{ height: `${paddingBottom}px` }" class="p-0" />
+            <td :colspan="columnCount" :style="{ height: `${paddingBottom}px` }" class="p-0" />
           </tr>
         </tbody>
       </table>
@@ -231,6 +247,19 @@
         {{ $t('transactions.list.noMoreData') }}
       </div>
     </ScrollArea>
+
+    <InlineCellEditor
+      v-if="editTarget"
+      :key="inlineCellKey({ txId: editTarget.tx.id, column: editTarget.column })"
+      :tx="editTarget.tx"
+      :column="editTarget.column"
+      :label="editTarget.label"
+      :mode="editTarget.mode"
+      :anchor="editTarget.anchor"
+      @close="closeCellEditor"
+      @save="saveCellEdit"
+      @open-details="openDetailsFromEditor"
+    />
 
     <BulkActionDialogs :actions="bulkActions" />
 
@@ -269,7 +298,9 @@ import { useTransactionsDisplay } from '@/components/transactions-list/use-trans
 import { usePayeeLookup } from '@/composable/data-queries/payees';
 import { useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
 import { SORT_DIRECTIONS, TRANSACTION_SORT_FIELD, TransactionModel } from '@bt/shared/types';
+import type { UpdateTransactionBody } from '@bt/shared/types/endpoints';
 import { useVirtualizer } from '@tanstack/vue-virtual';
+import { useElementSize, useEventListener } from '@vueuse/core';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -281,15 +312,20 @@ import {
   Trash2Icon,
   XIcon,
 } from '@lucide/vue';
-import { type ComputedRef, computed, defineAsyncComponent, ref, watchEffect } from 'vue';
+import type { ReferenceElement } from 'reka-ui';
+import { type ComputedRef, computed, defineAsyncComponent, nextTick, ref, watch, watchEffect } from 'vue';
+import { useI18n } from 'vue-i18n';
 
-import { type ColumnDefinition, type TableSorting } from './columns';
+import type { ColumnDefinition, TableSorting } from './columns';
+import InlineCellEditor from './inline-cell-editor.vue';
+import type { ClaimedCellMode, InlineEditableColumn } from './inline-cell-mode';
 import TableLoaderRow from './table-loader-row.vue';
 import TransactionTableRow from './transaction-table-row.vue';
+import { inlineCellKey, useInlineTransactionEdit } from './use-inline-transaction-edit';
 
 const ROW_HEIGHT_PX = 40;
 const CHECKBOX_COLUMN_WIDTH_PX = 32;
-const INITIAL_SKELETON_ROW_COUNT = 10;
+const DETAILS_COLUMN_WIDTH_PX = 40;
 
 const ManageTransactionDialogContent = defineAsyncComponent(
   () => import('@/components/dialogs/manage-transaction/dialog-content.vue'),
@@ -309,6 +345,7 @@ const props = defineProps<{
    */
   isMobileMode: boolean;
   selectionScopeKey?: string;
+  alwaysShowLockedCells?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -318,7 +355,10 @@ const emit = defineEmits<{
 }>();
 
 const tableMinWidthPx = computed(
-  () => CHECKBOX_COLUMN_WIDTH_PX + props.visibleColumns.reduce((sum, column) => sum + column.widthPx, 0),
+  () =>
+    CHECKBOX_COLUMN_WIDTH_PX +
+    DETAILS_COLUMN_WIDTH_PX +
+    props.visibleColumns.reduce((sum, column) => sum + column.widthPx, 0),
 );
 
 // Table view always flattens groups (one row per record); passing
@@ -329,11 +369,8 @@ const { displayTransactions } = useTransactionsDisplay({
   contentFiltersActive: () => true,
 }) as { displayTransactions: ComputedRef<TransactionModel[]> };
 
-// The virtualizer has nothing to render before the first fetch resolves, which
-// would leave a bare header row over empty space.
-const initialSkeletonRowCount = computed(() =>
-  !props.isFetched && displayTransactions.value.length === 0 ? INITIAL_SKELETON_ROW_COUNT : 0,
-);
+// Checkbox and details columns on top of the configurable ones.
+const columnCount = computed(() => props.visibleColumns.length + 2);
 
 // Payee name + logo: transactions carry only payeeId; resolve from the full
 // payee lookup so any payee resolves, not just the truncated top-50 dropdown list.
@@ -396,6 +433,13 @@ const onHeaderClick = (column: ColumnDefinition) => {
 const scrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
 const getScrollElement = () => scrollAreaRef.value?.viewportRef?.viewportElement ?? null;
 
+// The virtualizer has nothing to render before the first fetch resolves, which
+// would leave a bare header row over empty space; skeleton rows fill the viewport instead.
+const { height: viewportHeight } = useElementSize(() => getScrollElement());
+const initialSkeletonRowCount = computed(() =>
+  !props.isFetched && displayTransactions.value.length === 0 ? Math.ceil(viewportHeight.value / ROW_HEIGHT_PX) : 0,
+);
+
 const virtualizer = useVirtualizer(
   computed(() => ({
     count: displayTransactions.value.length + (props.hasNextPage ? 1 : 0),
@@ -412,6 +456,98 @@ const paddingTop = computed(() => (virtualRows.value.length > 0 ? virtualRows.va
 const paddingBottom = computed(() =>
   virtualRows.value.length > 0 ? totalSize.value - virtualRows.value[virtualRows.value.length - 1]!.end : 0,
 );
+
+// One editor for the whole table, anchored by lookup: saves change updatedAt, which remounts the row's cells.
+const { t } = useI18n();
+const { cellStates, save } = useInlineTransactionEdit();
+
+const editTarget = ref<{
+  tx: TransactionModel;
+  oppositeTx: TransactionModel | undefined;
+  column: InlineEditableColumn;
+  label: string;
+  mode: ClaimedCellMode;
+  anchor: ReferenceElement;
+} | null>(null);
+
+const findCell = ({ key }: { key: string }) => document.querySelector<HTMLElement>(`[data-inline-cell="${key}"]`);
+
+const cellAnchor = ({ key }: { key: string }): ReferenceElement => {
+  let lastRect = new DOMRect();
+  return {
+    getBoundingClientRect: () => {
+      lastRect = findCell({ key })?.getBoundingClientRect() ?? lastRect;
+      return lastRect;
+    },
+  };
+};
+
+// preventScroll: scrolling the table closes the editor.
+const refocusCell = ({ key }: { key: string }) =>
+  nextTick(() => {
+    const active = document.activeElement;
+    if (active && active !== document.body) return;
+    findCell({ key })?.focus({ preventScroll: true });
+  });
+
+const closeCellEditor = () => {
+  if (!editTarget.value) return;
+  const { tx, column } = editTarget.value;
+  editTarget.value = null;
+  refocusCell({ key: inlineCellKey({ txId: tx.id, column }) });
+};
+
+const openCellEditor = ({
+  tx,
+  oppositeTx,
+  column,
+  mode,
+}: {
+  tx: TransactionModel;
+  oppositeTx: TransactionModel | undefined;
+  column: InlineEditableColumn;
+  mode: ClaimedCellMode;
+}) => {
+  if (editTarget.value?.tx.id === tx.id && editTarget.value.column === column) {
+    closeCellEditor();
+    return;
+  }
+  const labelKey = props.visibleColumns.find((item) => item.id === column)?.labelKey;
+  editTarget.value = {
+    tx,
+    oppositeTx,
+    column,
+    label: labelKey ? t(labelKey) : '',
+    mode,
+    anchor: cellAnchor({ key: inlineCellKey({ txId: tx.id, column }) }),
+  };
+};
+
+const saveCellEdit = async (body: UpdateTransactionBody) => {
+  if (!editTarget.value) return;
+  const { tx, column, label } = editTarget.value;
+  const key = inlineCellKey({ txId: tx.id, column });
+  closeCellEditor();
+  const currentTx = displayTransactions.value.find((item) => item.id === tx.id) ?? tx;
+  await save({ tx: currentTx, column, columnLabel: label, body });
+  // The refetch remounts the row, which drops focus.
+  refocusCell({ key });
+};
+
+const openDetailsFromEditor = () => {
+  if (!editTarget.value) return;
+  const { tx, oppositeTx } = editTarget.value;
+  editTarget.value = null;
+  handleRecordClick([tx, oppositeTx]);
+};
+
+// Discards the open edit once the table scrolls: the popover isn't pinned to a row that may virtualize away.
+useEventListener(getScrollElement, 'scroll', () => (editTarget.value = null), { passive: true });
+
+watch(displayTransactions, (list) => {
+  const editedId = editTarget.value?.tx.id;
+  if (editedId && !list.some((item) => item.id === editedId)) editTarget.value = null;
+});
 
 const rowKey = (index: number) => {
   const tx = displayTransactions.value[index];

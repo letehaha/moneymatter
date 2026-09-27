@@ -92,6 +92,17 @@ describe('Patch user settings', () => {
     expect(fetched.ui?.transactionsTable?.extraFilters).toStrictEqual(['note']);
   });
 
+  it('persists ui.transactionsTable.alwaysShowLockedCells', async () => {
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { ui: { transactionsTable: { alwaysShowLockedCells: true } } },
+    });
+    expect(patched.ui?.transactionsTable?.alwaysShowLockedCells).toBe(true);
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.ui?.transactionsTable?.alwaysShowLockedCells).toBe(true);
+  });
+
   it('persists ui.transactionForm.optionalFields, keeps an explicit empty list, rejects unknown fields', async () => {
     const patched = await helpers.patchUserSettings({
       raw: true,

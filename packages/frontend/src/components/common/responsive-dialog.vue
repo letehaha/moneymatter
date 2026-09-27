@@ -40,7 +40,7 @@ const props = withDefaults(
   { dismissible: true },
 );
 
-const emit = defineEmits(['update:open']);
+const emit = defineEmits(['update:open', 'open-auto-focus']);
 
 const isOpen = useVModel(props, 'open', emit, { passive: true });
 
@@ -83,6 +83,7 @@ useCloseDialogWhen({ when: () => !!props.closeWhen, close });
           'px-4 pb-4',
           drawerContentClass,
         ]"
+        @open-auto-focus="(event: Event) => emit('open-auto-focus', event)"
       >
         <template v-if="props.srOnlyHeader">
           <Drawer.DrawerTitle class="sr-only">
@@ -125,6 +126,7 @@ useCloseDialogWhen({ when: () => !!props.closeWhen, close });
           dialogContentClass,
         ]"
         :custom-close="customClose"
+        @open-auto-focus="(event: Event) => emit('open-auto-focus', event)"
       >
         <template v-if="props.srOnlyHeader">
           <Dialog.DialogTitle class="sr-only">

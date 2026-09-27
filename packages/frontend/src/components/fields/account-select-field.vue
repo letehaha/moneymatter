@@ -1,5 +1,6 @@
 <template>
   <SelectField
+    ref="selectFieldRef"
     :model-value="selected"
     :values="visibleAccounts"
     :label-key="getLabel"
@@ -59,7 +60,7 @@ import { getAccountDisplayLabel } from '@/common/utils/account-display';
 import { filterDropdownAccounts, useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
 import { StarIcon } from '@lucide/vue';
 import { AccountModel } from '@bt/shared/types';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 type AccountOption = AccountModel & { _isOutOfWallet?: boolean };
@@ -104,6 +105,9 @@ const { showArchivedInDropdowns, defaultAccountId } = useAccountDropdownPrefs();
 // The mock's `name` is an i18n key, real accounts keep their "(archived)"/"(shared by @owner)" suffixes.
 const getLabel = (account: AccountOption) =>
   account._isOutOfWallet ? t(account.name) : getAccountDisplayLabel(account);
+
+const selectFieldRef = ref<{ open: () => void } | null>(null);
+defineExpose({ open: () => selectFieldRef.value?.open() });
 
 // Widen the selection to the option type so select-field's generic resolves to AccountOption.
 const selected = computed<AccountOption | null>(() => props.modelValue);

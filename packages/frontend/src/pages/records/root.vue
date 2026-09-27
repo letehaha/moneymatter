@@ -1,5 +1,31 @@
 <template>
   <PageWrapper>
+    <DefineTableSettings>
+      <ColumnConfigPopover
+        :configurable-columns="configurableColumns"
+        @toggle="toggleColumn"
+        @reorder="reorderColumns"
+        @reset="resetToDefaults"
+      >
+        <template #settings>
+          <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+            <span class="flex flex-col">
+              <span class="text-sm font-medium">{{
+                $t('transactions.table.columnConfig.alwaysShowLockedCells.label')
+              }}</span>
+              <span class="text-muted-foreground text-xs">
+                {{ $t('transactions.table.columnConfig.alwaysShowLockedCells.description') }}
+              </span>
+            </span>
+            <Switch
+              :model-value="alwaysShowLockedCells"
+              @update:model-value="(value) => setAlwaysShowLockedCells(!!value)"
+            />
+          </div>
+        </template>
+      </ColumnConfigPopover>
+    </DefineTableSettings>
+
     <div
       ref="pageContentRef"
       :class="[
@@ -58,6 +84,7 @@
           </div>
 
           <div class="flex items-center gap-2">
+            <TableSettings v-if="activeView === 'table'" />
             <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
               <Button
                 variant="secondary"
@@ -200,12 +227,7 @@
           </template>
 
           <template #actions>
-            <ColumnConfigPopover
-              :configurable-columns="configurableColumns"
-              @toggle="toggleColumn"
-              @reorder="reorderColumns"
-              @reset="resetToDefaults"
-            />
+            <TableSettings />
             <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.enter')">
               <Button
                 variant="secondary"
@@ -244,12 +266,7 @@
                 @reset-filters="resetFilters"
               >
                 <template #actions>
-                  <ColumnConfigPopover
-                    :configurable-columns="configurableColumns"
-                    @toggle="toggleColumn"
-                    @reorder="reorderColumns"
-                    @reset="resetToDefaults"
-                  />
+                  <TableSettings />
                   <DesktopOnlyTooltip :content="$t('transactions.table.fullscreen.exit')">
                     <Button
                       variant="secondary"
@@ -282,14 +299,17 @@
                 {{ $t('transactions.table.fullscreen.exit') }}
               </Button>
 
-              <FiltersDialog v-model:open="isFiltersDialogOpen" :is-any-filters-applied="isAnyFiltersApplied">
-                <FiltersPanel
-                  v-model:filters="filters"
-                  :is-reset-button-disabled="isResetButtonDisabled"
-                  :is-filters-out-of-sync="false"
-                  @reset-filters="resetFilters"
-                />
-              </FiltersDialog>
+              <div class="flex items-center gap-2">
+                <TableSettings />
+                <FiltersDialog v-model:open="isFiltersDialogOpen" :is-any-filters-applied="isAnyFiltersApplied">
+                  <FiltersPanel
+                    v-model:filters="filters"
+                    :is-reset-button-disabled="isResetButtonDisabled"
+                    :is-filters-out-of-sync="false"
+                    @reset-filters="resetFilters"
+                  />
+                </FiltersDialog>
+              </div>
             </div>
           </template>
 
@@ -314,6 +334,7 @@
               :is-fetched="isFetched"
               :is-mobile-mode="isMobileMode"
               :selection-scope-key="selectionScopeKey"
+              :always-show-locked-cells="alwaysShowLockedCells"
               @update:sorting="onSortingChange"
               @fetch-next-page="fetchNextPage"
               @reset-filters="resetFilters"
@@ -328,6 +349,7 @@
 <script lang="ts" setup>
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
+import { Switch } from '@/components/lib/ui/switch';
 import { Card } from '@/components/lib/ui/card';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
@@ -339,7 +361,7 @@ import { parseStoredFilters, useTransactionsWithFilters } from '@/components/rec
 import { useFiltersFromQuery } from '@/components/records-filters/use-filters-from-query';
 import TransactionsList from '@/components/transactions-list/transactions-list.vue';
 import { ListIcon, Maximize2Icon, Minimize2Icon, Table2Icon } from '@lucide/vue';
-import { useDebounceFn, useElementSize, useEventListener, useMediaQuery } from '@vueuse/core';
+import { createReusableTemplate, useDebounceFn, useElementSize, useEventListener, useMediaQuery } from '@vueuse/core';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -383,7 +405,10 @@ const { width: pageContentWidth } = useElementSize(pageContentRef);
 // so the page doesn't flash the mobile layout on wide screens.
 const isMobileMode = computed(() => pageContentWidth.value > 0 && pageContentWidth.value < MOBILE_MODE_MAX_WIDTH_PX);
 
-const { mobileView, setMobileView, desktopView, setDesktopView } = useTransactionsView();
+const { mobileView, setMobileView, desktopView, setDesktopView, alwaysShowLockedCells, setAlwaysShowLockedCells } =
+  useTransactionsView();
+
+const [DefineTableSettings, TableSettings] = createReusableTemplate();
 
 const { data: userSettings, patch: patchSettings } = useUserSettings();
 
@@ -440,8 +465,14 @@ const enterFullscreen = () => {
 const exitFullscreen = () => {
   isFullscreenMode.value = false;
 };
+// An open reka layer (dialog, popover, select) takes Escape first. This listener is registered before any layer's
+// window listener, so the layer is still open here. Tooltip layers use other data-state values and don't block.
 useEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Escape' && isFullscreenMode.value && !isFiltersDialogOpen.value) {
+  if (
+    event.key === 'Escape' &&
+    isFullscreenMode.value &&
+    !document.querySelector('[data-dismissable-layer][data-state="open"]')
+  ) {
     exitFullscreen();
   }
 });
