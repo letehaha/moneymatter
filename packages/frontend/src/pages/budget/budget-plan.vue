@@ -19,6 +19,7 @@ import { Callout } from '@/components/lib/ui/callout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Sheet, SheetContent, SheetTitle } from '@/components/lib/ui/sheet';
+import { SidePanel } from '@/components/lib/ui/side-panel';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
 import { isResourceMissingError } from '@/js/errors';
@@ -39,13 +40,14 @@ import {
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { onKeyStroke } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { type ComponentPublicInstance, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import BudgetHeaderTiles from './components/budget-header-tiles.vue';
 import BudgetLinesGrid from './components/budget-lines-grid.vue';
 import BudgetPlanSkeleton from './components/budget-plan-skeleton.vue';
+import BudgetSidePanelSkeleton from './components/budget-side-panel-skeleton.vue';
 import BudgetSidePanel from './components/budget-side-panel.vue';
 import BudgetTrialNotice from './components/budget-trial-notice.vue';
 import LineDialog from './components/line-dialog.vue';
@@ -71,7 +73,7 @@ const lineGroupId = ref<string | null>(null);
 const isLayoutOpen = ref(false);
 const isPanelSheetOpen = ref(false);
 const selectedLineId = ref<string | null>(null);
-const panelColumnRef = ref<HTMLElement | null>(null);
+const panelColumnRef = ref<ComponentPublicInstance | null>(null);
 const { rowBars, compactRows } = useGridDisplayOptions();
 
 const ROW_BAR_OPTIONS: { value: RowBarMode; labelKey: string }[] = [
@@ -204,7 +206,7 @@ const selectedLine = computed(() => view.value?.lines.find((line) => line.lineId
 const toggleLine = ({ lineId }: { lineId: string }) => {
   selectedLineId.value = selectedLineId.value === lineId ? null : lineId;
   // The panel column is display:none on narrow containers, so the details open in the sheet instead.
-  if (selectedLineId.value && !panelColumnRef.value?.offsetParent) isPanelSheetOpen.value = true;
+  if (selectedLineId.value && !panelColumnRef.value?.$el.offsetParent) isPanelSheetOpen.value = true;
 };
 
 watch(isPanelSheetOpen, (open) => {
@@ -402,35 +404,30 @@ const openLineDialog = ({ line, groupId = null }: { line?: BudgetPlanPeriodViewL
           </div>
         </div>
 
-        <aside
-          v-if="view && plan"
+        <SidePanel
+          v-if="!hasLoadError"
           ref="panelColumnRef"
           :inert="isViewPlaceholder"
-          :class="
-            cn(
-              'sticky top-(--panel-top) hidden transition-opacity [--panel-top:calc(var(--header-height)+1rem)] @5xl/budget-plan:block',
-              isViewPlaceholder && 'opacity-60',
-            )
-          "
+          :class="cn('hidden transition-opacity @5xl/budget-plan:block', isViewPlaceholder && 'opacity-60')"
         >
-          <ScrollArea viewport-class="max-h-[calc(100dvh-var(--panel-top))]">
-            <BudgetSidePanel
-              :plan-id="planId"
-              :cadence="plan.plan.cadence"
-              :unit="goalUnit"
-              :view="view"
-              :line="selectedLine"
-              @close="selectedLineId = null"
-              @select-line="(lineId) => toggleLine({ lineId })"
-            />
-          </ScrollArea>
-        </aside>
+          <BudgetSidePanel
+            v-if="view && plan"
+            :plan-id="planId"
+            :cadence="plan.plan.cadence"
+            :unit="goalUnit"
+            :view="view"
+            :line="selectedLine"
+            @close="selectedLineId = null"
+            @select-line="(lineId) => toggleLine({ lineId })"
+          />
+          <BudgetSidePanelSkeleton v-else />
+        </SidePanel>
       </div>
 
       <Sheet v-model:open="isPanelSheetOpen">
-        <SheetContent side="right" class="w-80 p-4 pt-16 sm:max-w-80">
+        <SheetContent side="right" class="w-80 px-0 pt-16 pb-4 sm:max-w-80">
           <SheetTitle class="sr-only">{{ $t('budgetPlans.panel.summary') }}</SheetTitle>
-          <ScrollArea viewport-class="max-h-[calc(100dvh-5rem)]">
+          <ScrollArea viewport-class="max-h-[calc(100dvh-5rem)] px-4">
             <BudgetSidePanel
               v-if="view && plan"
               :plan-id="planId"

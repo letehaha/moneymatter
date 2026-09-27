@@ -2,14 +2,29 @@
 import { loadBudgetPlanScheduled, loadBudgetPlanTrends } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Button } from '@/components/lib/ui/button';
+import {
+  SidePanelSection,
+  SidePanelSectionContent,
+  SidePanelSectionTrigger,
+  SidePanelSections,
+} from '@/components/lib/ui/side-panel';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanCadence, BudgetPlanPeriodView, BudgetPlanPeriodViewLine } from '@bt/shared/types';
-import { XIcon } from '@lucide/vue';
+import {
+  CalculatorIcon,
+  CalendarCheckIcon,
+  CalendarClockIcon,
+  ChartColumnIcon,
+  GaugeIcon,
+  TargetIcon,
+  TrendingUpIcon,
+  XIcon,
+} from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { computed } from 'vue';
+import { type Component, computed } from 'vue';
 
 import {
   type GoalPeriodUnit,
@@ -25,10 +40,19 @@ import PanelGoalSection from './panel-goal-section.vue';
 import PanelGoalsSection from './panel-goals-section.vue';
 import PanelPaceSection from './panel-pace-section.vue';
 import PanelScheduledSection from './panel-scheduled-section.vue';
-import PanelSection from './panel-section.vue';
+import { type PanelSection, usePanelSections } from '../composables/use-panel-sections';
 import PanelTrendSection from './panel-trend-section.vue';
 
 const TREND_PERIOD_COUNT = 6;
+
+type SectionEntry = {
+  key: PanelSection;
+  titleKey: string;
+  icon: Component;
+  component: Component;
+  props?: Record<string, unknown>;
+  hidden?: boolean;
+};
 
 const props = defineProps<{
   planId: string;
@@ -41,6 +65,7 @@ const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
+const openSections = usePanelSections();
 
 const periodLabel = computed(() => formatPeriodLabel({ ...props.view.period, locale: locale.value }));
 const periodId = computed(() => props.view.period.id);
@@ -81,10 +106,16 @@ const context = computed<PanelContext>(() => ({
 
 const sections = computed(() => {
   const hasTrends = Boolean(trends.value?.periods.length);
-  return [
-    { key: 'breakdown', titleKey: 'budgetPlans.panel.breakdown', component: PanelBreakdownSection },
+  const all: SectionEntry[] = [
+    {
+      key: 'breakdown',
+      titleKey: 'budgetPlans.panel.breakdown',
+      icon: CalculatorIcon,
+      component: PanelBreakdownSection,
+    },
     {
       key: 'coverage',
+      icon: CalendarCheckIcon,
       titleKey: 'budgetPlans.panel.nextPeriodCoverage',
       component: PanelCoverageSection,
       props: { coverage: props.view.coverage },
@@ -92,6 +123,7 @@ const sections = computed(() => {
     },
     {
       key: 'goals',
+      icon: TargetIcon,
       titleKey: 'budgetPlans.panel.goals',
       component: PanelGoalsSection,
       props: { goals: props.view.goals, lines: props.view.lines },
@@ -99,12 +131,14 @@ const sections = computed(() => {
     },
     {
       key: 'scheduled',
+      icon: CalendarClockIcon,
       titleKey: 'budgetPlans.panel.scheduled',
       component: PanelScheduledSection,
       hidden: isPast.value || !scheduled.value || Boolean(props.line && !scheduled.value.items.length),
     },
     {
       key: 'budgetingTrend',
+      icon: ChartColumnIcon,
       titleKey: 'budgetPlans.panel.budgetingTrend',
       component: PanelTrendSection,
       props: { kind: 'budgeting' },
@@ -112,6 +146,7 @@ const sections = computed(() => {
     },
     {
       key: 'spendingTrend',
+      icon: TrendingUpIcon,
       titleKey: 'budgetPlans.panel.spendingTrend',
       component: PanelTrendSection,
       props: { kind: 'spending' },
@@ -119,23 +154,26 @@ const sections = computed(() => {
     },
     {
       key: 'pace',
+      icon: GaugeIcon,
       titleKey: 'budgetPlans.panel.pace',
       component: PanelPaceSection,
       hidden: !props.view.period.isCurrent,
     },
     {
       key: 'goal',
+      icon: TargetIcon,
       titleKey: 'budgetPlans.panel.goal',
       component: PanelGoalSection,
       props: { line: props.line },
       hidden: !props.line,
     },
-  ].filter((section) => !section.hidden);
+  ];
+  return all.filter((section) => !section.hidden);
 });
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-4 overflow-x-clip">
+  <div class="grid grid-cols-1 gap-4">
     <div class="flex min-w-0 items-start justify-between gap-2">
       <div class="min-w-0">
         <h2 class="truncate font-semibold">{{ line?.name ?? $t('budgetPlans.panel.overview') }}</h2>
@@ -165,18 +203,18 @@ const sections = computed(() => {
       <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.goals.askHint') }}</p>
     </div>
 
-    <PanelSection
-      v-for="section in sections"
-      :key="section.key"
-      :section-key="section.key"
-      :title="$t(section.titleKey)"
-    >
-      <component
-        :is="section.component"
-        :context="context"
-        v-bind="section.props"
-        @select-line="(lineId: string) => emit('selectLine', lineId)"
-      />
-    </PanelSection>
+    <SidePanelSections>
+      <SidePanelSection v-for="section in sections" :key="section.key" v-model:open="openSections[section.key]">
+        <SidePanelSectionTrigger :icon="section.icon">{{ $t(section.titleKey) }}</SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <component
+            :is="section.component"
+            :context="context"
+            v-bind="section.props"
+            @select-line="(lineId: string) => emit('selectLine', lineId)"
+          />
+        </SidePanelSectionContent>
+      </SidePanelSection>
+    </SidePanelSections>
   </div>
 </template>

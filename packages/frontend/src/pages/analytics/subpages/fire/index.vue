@@ -126,7 +126,8 @@
           </template>
         </div>
 
-        <div class="flex flex-col gap-3 @4xl/fire:sticky @4xl/fire:top-[calc(var(--header-height)+1rem)]">
+        <!-- Sticky only moves within the grid area, so side by side the panel itself must be the grid item. -->
+        <div class="flex flex-col gap-3 @4xl/fire:contents">
           <Button
             variant="secondary"
             class="w-full justify-between @4xl/fire:hidden"
@@ -137,21 +138,21 @@
             <ChevronDownIcon :class="cn('size-4 transition-transform', isAssumptionsOpen && 'rotate-180')" />
           </Button>
 
-          <aside
-            :class="cn('border-border bg-card rounded-lg border', !isAssumptionsOpen && 'hidden', '@4xl/fire:block')"
+          <!-- Only the side-by-side layout pins the panel, so only there does it need its own scroll. -->
+          <SidePanel
+            :class="cn(!isAssumptionsOpen && 'hidden', '@4xl/fire:block')"
+            viewport-class="@max-4xl/fire:max-h-none"
           >
-            <ScrollArea :class="STICKY_PANEL_MAX_HEIGHT" :viewport-class="cn('p-4', STICKY_PANEL_MAX_HEIGHT)">
-              <FireAssumptionsSkeleton v-if="isLoading && !hasLoaded" />
-              <FireAssumptions
-                v-else-if="userSettings"
-                ref="assumptions"
-                :model-value="draft"
-                :plan="plan"
-                :settings="settings"
-                @update:model-value="onDraftChange({ next: $event })"
-              />
-            </ScrollArea>
-          </aside>
+            <FireAssumptionsSkeleton v-if="isLoading && !hasLoaded" />
+            <FireAssumptions
+              v-else-if="userSettings"
+              ref="assumptions"
+              :model-value="draft"
+              :plan="plan"
+              :settings="settings"
+              @update:model-value="onDraftChange({ next: $event })"
+            />
+          </SidePanel>
         </div>
       </div>
     </PlanRestricted>
@@ -164,7 +165,7 @@ import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.v
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Checkbox } from '@/components/lib/ui/checkbox';
-import { ScrollArea } from '@/components/lib/ui/scroll-area';
+import { SidePanel } from '@/components/lib/ui/side-panel';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { FIRE_WIDGET_ID, WIDGET_REGISTRY } from '@/components/widgets/widget-registry';
@@ -199,8 +200,6 @@ const PERSIST_DEBOUNCE_MS = 800;
 const SAVE_FAILED_TOAST_ID = 'fire-save-failed';
 const TRIAL_FAILED_TOAST_ID = 'fire-trial-failed';
 const DAYS_PER_YEAR = 365;
-// Only the side-by-side layout pins the panel, so only there does it need its own scroll.
-const STICKY_PANEL_MAX_HEIGHT = '@4xl/fire:max-h-[calc(100dvh-var(--header-height)-2rem)]';
 const INFO_WARNINGS: FireWarning[] = ['history-degraded', 'portfolio-unavailable', 'custom-missing'];
 const PERSISTABLE_CALLOUT: FireWarning = 'history-degraded';
 const WARNING_KEYS: Record<FireWarning, string> = {

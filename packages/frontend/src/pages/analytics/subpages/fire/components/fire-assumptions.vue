@@ -1,258 +1,261 @@
 <template>
   <div ref="panel" class="flex flex-col gap-4">
-    <DefineSection v-slot="{ section, icon, label, summary, $slots }">
-      <Collapsible v-model:open="openSections[section]">
-        <CollapsibleTrigger as-child>
-          <Button variant="ghost" :class="SECTION_TRIGGER_CLASS">
-            <span :class="tileClass({ open: openSections[section] })"><component :is="icon" class="size-4" /></span>
-            <span v-if="summary !== undefined" class="min-w-0">
-              <span class="block">{{ label }}</span>
-              <span class="text-muted-foreground block truncate text-xs font-normal">{{ summary }}</span>
-            </span>
-            <template v-else>{{ label }}</template>
-            <ChevronDownIcon :class="chevronClass({ open: openSections[section] })" />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent :class="SECTION_CONTENT_CLASS">
-          <component :is="$slots.default" />
-        </CollapsibleContent>
-      </Collapsible>
-    </DefineSection>
-
     <h2 class="text-sm font-semibold">{{ $t('analytics.fire.assumptions.title') }}</h2>
 
-    <div class="divide-border flex flex-col divide-y *:py-1">
-      <ReuseSection section="spending" :icon="WalletIcon" :label="$t('analytics.fire.assumptions.spendingLabel')">
-        <div ref="spending" class="flex flex-col gap-2 pt-1">
-          <InputField
-            :model-value="displayValue({ key: 'annualSpendingOverride' })"
-            type="number"
-            only-positive
-            non-label-wrapper
-            min="0"
-            :class="cn(spendingBadge && BADGE_INPUT_CLASS)"
-            trailing-icon-css-class="px-2"
-            :aria-label="$t('analytics.fire.assumptions.spendingLabel')"
-            :placeholder="$t('analytics.fire.assumptions.spendingPlaceholder')"
-            @update:model-value="onNumberInput({ key: 'annualSpendingOverride', value: $event })"
-            @blur="onNumberBlur({ key: 'annualSpendingOverride' })"
-          >
-            <template #iconLeading>
-              <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
-            </template>
-            <template v-if="spendingBadge" #iconTrailing>
-              <ResponsiveTooltip
-                v-if="spendingBadge === 'auto'"
-                :content="
-                  $t('analytics.fire.assumptions.autoSpendingHint', {
-                    n: seed.monthsUsed,
-                    typical: formatBaseCurrency(seed.typicalMonth ?? 0),
-                  })
-                "
-              >
-                <span :class="cn(BADGE_CLASS, 'text-success-text cursor-help')">{{ $t('analytics.fire.auto') }}</span>
-              </ResponsiveTooltip>
-              <span v-else :class="cn(BADGE_CLASS, 'text-warning-text')">
-                {{ $t('analytics.fire.assumptions.requiredBadge') }}
-              </span>
-            </template>
-          </InputField>
+    <SidePanelSections>
+      <SidePanelSection v-model:open="openSections.spending">
+        <SidePanelSectionTrigger :icon="WalletIcon">
+          {{ $t('analytics.fire.assumptions.spendingLabel') }}
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div ref="spending" class="flex flex-col gap-2">
+            <InputField
+              :model-value="displayValue({ key: 'annualSpendingOverride' })"
+              type="number"
+              only-positive
+              non-label-wrapper
+              min="0"
+              :class="cn(spendingBadge && BADGE_INPUT_CLASS)"
+              trailing-icon-css-class="px-2"
+              :aria-label="$t('analytics.fire.assumptions.spendingLabel')"
+              :placeholder="$t('analytics.fire.assumptions.spendingPlaceholder')"
+              @update:model-value="onNumberInput({ key: 'annualSpendingOverride', value: $event })"
+              @blur="onNumberBlur({ key: 'annualSpendingOverride' })"
+            >
+              <template #iconLeading>
+                <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
+              </template>
+              <template v-if="spendingBadge" #iconTrailing>
+                <ResponsiveTooltip
+                  v-if="spendingBadge === 'auto'"
+                  :content="
+                    $t('analytics.fire.assumptions.autoSpendingHint', {
+                      n: seed.monthsUsed,
+                      typical: formatBaseCurrency(seed.typicalMonth ?? 0),
+                    })
+                  "
+                >
+                  <span :class="cn(BADGE_CLASS, 'text-success-text cursor-help')">{{ $t('analytics.fire.auto') }}</span>
+                </ResponsiveTooltip>
+                <span v-else :class="cn(BADGE_CLASS, 'text-warning-text')">
+                  {{ $t('analytics.fire.assumptions.requiredBadge') }}
+                </span>
+              </template>
+            </InputField>
 
-          <Button
-            v-if="!plan.inputs.spendingIsAuto && seed.spending !== null"
-            variant="link"
-            size="sm"
-            class="h-auto self-start p-0 text-xs"
-            @click="update({ patch: { annualSpendingOverride: null } })"
-          >
-            {{ $t('analytics.fire.assumptions.backToAuto', { amount: formatBaseCurrency(seed.spending) }) }}
-          </Button>
+            <Button
+              v-if="!plan.inputs.spendingIsAuto && seed.spending !== null"
+              variant="link"
+              size="sm"
+              class="h-auto self-start p-0 text-xs"
+              @click="update({ patch: { annualSpendingOverride: null } })"
+            >
+              {{ $t('analytics.fire.assumptions.backToAuto', { amount: formatBaseCurrency(seed.spending) }) }}
+            </Button>
 
-          <CategoryMultiSelectField
-            :model-value="settings.spendingExcludedCategoryIds"
-            :label="$t('analytics.fire.assumptions.excludedLabel')"
-            :placeholder="$t('analytics.fire.assumptions.excludedPlaceholder')"
-            @update:model-value="onExcludedChange({ ids: $event })"
-          />
-
-          <i18n-t keypath="analytics.fire.assumptions.savingsNote" tag="p" class="text-muted-foreground text-xs">
-            <template #link>
-              <RouterLink :to="{ name: ROUTES_NAMES.settingsGeneral }" class="text-primary-text hover:underline">
-                {{ $t('analytics.fire.assumptions.savingsNoteLink') }}
-              </RouterLink>
-            </template>
-          </i18n-t>
-        </div>
-      </ReuseSection>
-
-      <ReuseSection
-        section="contribution"
-        :icon="PiggyBankIcon"
-        :label="$t('analytics.fire.assumptions.contributionLabel')"
-      >
-        <div ref="contribution" class="flex flex-col gap-2 pt-1">
-          <InputField
-            :model-value="displayValue({ key: 'monthlyContributionOverride' })"
-            type="number"
-            non-label-wrapper
-            :class="cn(plan.inputs.contributionIsAuto && BADGE_INPUT_CLASS)"
-            trailing-icon-css-class="px-2"
-            :aria-label="$t('analytics.fire.assumptions.contributionLabel')"
-            :placeholder="$t('analytics.fire.assumptions.contributionPlaceholder')"
-            @update:model-value="onNumberInput({ key: 'monthlyContributionOverride', value: $event })"
-            @blur="onNumberBlur({ key: 'monthlyContributionOverride' })"
-          >
-            <template #iconLeading>
-              <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
-            </template>
-            <template v-if="plan.inputs.contributionIsAuto" #iconTrailing>
-              <ResponsiveTooltip
-                :content="$t('analytics.fire.assumptions.autoContributionHint', { n: seed.monthsUsed })"
-              >
-                <span :class="cn(BADGE_CLASS, 'text-success-text cursor-help')">{{ $t('analytics.fire.auto') }}</span>
-              </ResponsiveTooltip>
-            </template>
-          </InputField>
-
-          <Button
-            v-if="!plan.inputs.contributionIsAuto && hasSeedHistory"
-            variant="link"
-            size="sm"
-            class="h-auto self-start p-0 text-xs"
-            @click="update({ patch: { monthlyContributionOverride: null } })"
-          >
-            {{ $t('analytics.fire.assumptions.backToAuto', { amount: formatBaseCurrency(seed.contribution) }) }}
-          </Button>
-
-          <p v-if="seed.savingsRate !== null" class="text-muted-foreground text-xs">
-            {{ $t('analytics.fire.assumptions.savingsRate', { pct: formatPct({ value: seed.savingsRate }) }) }}
-          </p>
-        </div>
-      </ReuseSection>
-
-      <ReuseSection section="counts" :icon="LayersIcon" :label="$t('analytics.fire.assumptions.countsTitle')">
-        <div ref="counts" class="flex flex-col gap-2 pt-1">
-          <div v-for="row in countRows" :key="row.key" class="flex items-center justify-between gap-3 text-sm">
-            <label class="flex items-center gap-2">
-              <Switch
-                :model-value="row.setting === null || settings[row.setting]"
-                :disabled="row.setting === null"
-                @update:model-value="onCountToggle({ setting: row.setting, value: $event })"
-              />
-              {{ row.label }}
-            </label>
-            <span class="text-muted-foreground tabular-nums">{{ formatBaseCurrency(row.amount) }}</span>
-          </div>
-          <p class="text-muted-foreground text-xs">{{ $t('analytics.fire.assumptions.countsHint') }}</p>
-          <i18n-t
-            v-if="archivedHeld.count > 0"
-            keypath="analytics.fire.assumptions.archivedNote"
-            :plural="archivedHeld.count"
-            tag="p"
-            class="text-muted-foreground text-xs"
-          >
-            <template #count>{{ archivedHeld.count }}</template>
-            <template #amount>{{ formatBaseCurrency(archivedHeld.amount) }}</template>
-            <template #link>
-              <RouterLink :to="{ name: ROUTES_NAMES.accounts }" class="text-primary-text hover:underline">
-                {{ $t('analytics.fire.assumptions.archivedNoteLink') }}
-              </RouterLink>
-            </template>
-          </i18n-t>
-        </div>
-      </ReuseSection>
-
-      <ReuseSection section="return" :icon="TrendingUpIcon" :label="$t('analytics.investmentCalculator.annualReturn')">
-        <div ref="return" class="flex flex-col gap-3 pt-1">
-          <AnnualReturnField
-            hide-label
-            :indicator-id="settings.returnIndicatorId"
-            :rate="settings.customReturnPct"
-            :format-preset-label="formatPresetLabel"
-            @update:indicator-id="onIndicatorChange({ id: $event })"
-            @update:rate="onCustomRateChange({ value: $event })"
-          />
-
-          <div v-if="isPresetReturn" class="flex items-center justify-between gap-2 text-sm">
-            <span class="font-medium">{{ $t('analytics.fire.assumptions.inflationLabel') }}</span>
-            <span class="text-muted-foreground flex items-center gap-1.5">
-              {{ $t('analytics.fire.assumptions.inflationBuiltIn', { pct: PRESET_INFLATION_PCT }) }}
-              <HintIcon :content="$t('analytics.fire.assumptions.inflationBuiltInHint')" />
-            </span>
-          </div>
-          <div v-else class="flex flex-col gap-2">
-            <div class="flex items-center justify-between gap-2 text-sm">
-              <span class="font-medium">{{ $t('analytics.fire.assumptions.inflationLabel') }}</span>
-              <span class="text-muted-foreground tabular-nums">{{ settings.inflationPct }}%</span>
-            </div>
-            <Slider
-              :model-value="settings.inflationPct"
-              :min="INFLATION_SLIDER.min"
-              :max="INFLATION_SLIDER.max"
-              :step="INFLATION_SLIDER.step"
-              :aria-label="$t('analytics.fire.assumptions.inflationLabel')"
-              @update:model-value="update({ patch: { inflationPct: $event } })"
+            <CategoryMultiSelectField
+              :model-value="settings.spendingExcludedCategoryIds"
+              :label="$t('analytics.fire.assumptions.excludedLabel')"
+              :placeholder="$t('analytics.fire.assumptions.excludedPlaceholder')"
+              @update:model-value="onExcludedChange({ ids: $event })"
             />
+
+            <i18n-t keypath="analytics.fire.assumptions.savingsNote" tag="p" class="text-muted-foreground text-xs">
+              <template #link>
+                <RouterLink :to="{ name: ROUTES_NAMES.settingsGeneral }" class="text-primary-text hover:underline">
+                  {{ $t('analytics.fire.assumptions.savingsNoteLink') }}
+                </RouterLink>
+              </template>
+            </i18n-t>
           </div>
-        </div>
-      </ReuseSection>
+        </SidePanelSectionContent>
+      </SidePanelSection>
 
-      <ReuseSection section="withdrawal" :icon="PercentIcon" :label="$t('analytics.fire.assumptions.withdrawalLabel')">
-        <div class="flex flex-col gap-2 pt-1">
-          <PillTabs
-            :items="withdrawalItems"
-            :model-value="withdrawalMode"
-            size="sm"
-            full-width
-            class="[&>button]:px-1"
-            @update:model-value="onWithdrawalModeChange({ value: $event })"
-          />
-          <InputField
-            v-if="withdrawalMode === CUSTOM_WITHDRAWAL"
-            :model-value="displayValue({ key: 'withdrawalRatePct' })"
-            type="number"
-            only-positive
-            step="0.1"
-            :aria-label="$t('analytics.fire.assumptions.withdrawalLabel')"
-            :placeholder="$t('analytics.fire.assumptions.withdrawalPlaceholder')"
-            @update:model-value="onNumberInput({ key: 'withdrawalRatePct', value: $event })"
-            @blur="onNumberBlur({ key: 'withdrawalRatePct' })"
-          >
-            <template #iconTrailing>
-              <PercentIcon class="text-muted-foreground size-4" />
-            </template>
-          </InputField>
-          <p class="text-muted-foreground text-xs">{{ $t('analytics.fire.assumptions.withdrawalHint') }}</p>
-        </div>
-      </ReuseSection>
+      <SidePanelSection v-model:open="openSections.contribution">
+        <SidePanelSectionTrigger :icon="PiggyBankIcon">
+          {{ $t('analytics.fire.assumptions.contributionLabel') }}
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div ref="contribution" class="flex flex-col gap-2">
+            <InputField
+              :model-value="displayValue({ key: 'monthlyContributionOverride' })"
+              type="number"
+              non-label-wrapper
+              :class="cn(plan.inputs.contributionIsAuto && BADGE_INPUT_CLASS)"
+              trailing-icon-css-class="px-2"
+              :aria-label="$t('analytics.fire.assumptions.contributionLabel')"
+              :placeholder="$t('analytics.fire.assumptions.contributionPlaceholder')"
+              @update:model-value="onNumberInput({ key: 'monthlyContributionOverride', value: $event })"
+              @blur="onNumberBlur({ key: 'monthlyContributionOverride' })"
+            >
+              <template #iconLeading>
+                <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
+              </template>
+              <template v-if="plan.inputs.contributionIsAuto" #iconTrailing>
+                <ResponsiveTooltip
+                  :content="$t('analytics.fire.assumptions.autoContributionHint', { n: seed.monthsUsed })"
+                >
+                  <span :class="cn(BADGE_CLASS, 'text-success-text cursor-help')">{{ $t('analytics.fire.auto') }}</span>
+                </ResponsiveTooltip>
+              </template>
+            </InputField>
 
-      <ReuseSection
-        section="more"
-        :icon="SlidersHorizontalIcon"
-        :label="$t('analytics.fire.assumptions.more')"
-        :summary="moreSummary"
-      >
-        <div class="flex flex-col gap-4 pt-1">
-          <InputField
-            v-for="field in moreFields"
-            :key="field.key"
-            :ref="(el) => setMoreFieldRef({ key: field.key, el })"
-            :model-value="displayValue({ key: field.key })"
-            type="number"
-            only-positive
-            :step="field.step"
-            :label="field.label"
-            :placeholder="field.placeholder"
-            @update:model-value="onNumberInput({ key: field.key, value: $event })"
-            @blur="onNumberBlur({ key: field.key })"
-          >
-            <template v-if="field.key === 'baristaMonthlyIncome'" #iconLeading>
-              <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
-            </template>
-          </InputField>
-        </div>
-      </ReuseSection>
-    </div>
+            <Button
+              v-if="!plan.inputs.contributionIsAuto && hasSeedHistory"
+              variant="link"
+              size="sm"
+              class="h-auto self-start p-0 text-xs"
+              @click="update({ patch: { monthlyContributionOverride: null } })"
+            >
+              {{ $t('analytics.fire.assumptions.backToAuto', { amount: formatBaseCurrency(seed.contribution) }) }}
+            </Button>
+
+            <p v-if="seed.savingsRate !== null" class="text-muted-foreground text-xs">
+              {{ $t('analytics.fire.assumptions.savingsRate', { pct: formatPct({ value: seed.savingsRate }) }) }}
+            </p>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+
+      <SidePanelSection v-model:open="openSections.counts">
+        <SidePanelSectionTrigger :icon="LayersIcon">
+          {{ $t('analytics.fire.assumptions.countsTitle') }}
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div ref="counts" class="flex flex-col gap-2">
+            <div v-for="row in countRows" :key="row.key" class="flex items-center justify-between gap-3 text-sm">
+              <label class="flex items-center gap-2">
+                <Switch
+                  :model-value="row.setting === null || settings[row.setting]"
+                  :disabled="row.setting === null"
+                  @update:model-value="onCountToggle({ setting: row.setting, value: $event })"
+                />
+                {{ row.label }}
+              </label>
+              <span class="text-muted-foreground tabular-nums">{{ formatBaseCurrency(row.amount) }}</span>
+            </div>
+            <p class="text-muted-foreground text-xs">{{ $t('analytics.fire.assumptions.countsHint') }}</p>
+            <i18n-t
+              v-if="archivedHeld.count > 0"
+              keypath="analytics.fire.assumptions.archivedNote"
+              :plural="archivedHeld.count"
+              tag="p"
+              class="text-muted-foreground text-xs"
+            >
+              <template #count>{{ archivedHeld.count }}</template>
+              <template #amount>{{ formatBaseCurrency(archivedHeld.amount) }}</template>
+              <template #link>
+                <RouterLink :to="{ name: ROUTES_NAMES.accounts }" class="text-primary-text hover:underline">
+                  {{ $t('analytics.fire.assumptions.archivedNoteLink') }}
+                </RouterLink>
+              </template>
+            </i18n-t>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+
+      <SidePanelSection v-model:open="openSections.return">
+        <SidePanelSectionTrigger :icon="TrendingUpIcon">
+          {{ $t('analytics.investmentCalculator.annualReturn') }}
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div ref="return" class="flex flex-col gap-3">
+            <AnnualReturnField
+              hide-label
+              :indicator-id="settings.returnIndicatorId"
+              :rate="settings.customReturnPct"
+              :format-preset-label="formatPresetLabel"
+              @update:indicator-id="onIndicatorChange({ id: $event })"
+              @update:rate="onCustomRateChange({ value: $event })"
+            />
+
+            <div v-if="isPresetReturn" class="flex items-center justify-between gap-2 text-sm">
+              <span class="font-medium">{{ $t('analytics.fire.assumptions.inflationLabel') }}</span>
+              <span class="text-muted-foreground flex items-center gap-1.5">
+                {{ $t('analytics.fire.assumptions.inflationBuiltIn', { pct: PRESET_INFLATION_PCT }) }}
+                <HintIcon :content="$t('analytics.fire.assumptions.inflationBuiltInHint')" />
+              </span>
+            </div>
+            <div v-else class="flex flex-col gap-2">
+              <div class="flex items-center justify-between gap-2 text-sm">
+                <span class="font-medium">{{ $t('analytics.fire.assumptions.inflationLabel') }}</span>
+                <span class="text-muted-foreground tabular-nums">{{ settings.inflationPct }}%</span>
+              </div>
+              <Slider
+                :model-value="settings.inflationPct"
+                :min="INFLATION_SLIDER.min"
+                :max="INFLATION_SLIDER.max"
+                :step="INFLATION_SLIDER.step"
+                :aria-label="$t('analytics.fire.assumptions.inflationLabel')"
+                @update:model-value="update({ patch: { inflationPct: $event } })"
+              />
+            </div>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+
+      <SidePanelSection v-model:open="openSections.withdrawal">
+        <SidePanelSectionTrigger :icon="PercentIcon">
+          {{ $t('analytics.fire.assumptions.withdrawalLabel') }}
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div class="flex flex-col gap-2">
+            <PillTabs
+              :items="withdrawalItems"
+              :model-value="withdrawalMode"
+              size="sm"
+              full-width
+              class="[&>button]:px-1"
+              @update:model-value="onWithdrawalModeChange({ value: $event })"
+            />
+            <InputField
+              v-if="withdrawalMode === CUSTOM_WITHDRAWAL"
+              :model-value="displayValue({ key: 'withdrawalRatePct' })"
+              type="number"
+              only-positive
+              step="0.1"
+              :aria-label="$t('analytics.fire.assumptions.withdrawalLabel')"
+              :placeholder="$t('analytics.fire.assumptions.withdrawalPlaceholder')"
+              @update:model-value="onNumberInput({ key: 'withdrawalRatePct', value: $event })"
+              @blur="onNumberBlur({ key: 'withdrawalRatePct' })"
+            >
+              <template #iconTrailing>
+                <PercentIcon class="text-muted-foreground size-4" />
+              </template>
+            </InputField>
+            <p class="text-muted-foreground text-xs">{{ $t('analytics.fire.assumptions.withdrawalHint') }}</p>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+
+      <SidePanelSection v-model:open="openSections.more">
+        <SidePanelSectionTrigger :icon="SlidersHorizontalIcon">
+          {{ $t('analytics.fire.assumptions.more') }}
+          <template #summary>{{ moreSummary }}</template>
+        </SidePanelSectionTrigger>
+        <SidePanelSectionContent>
+          <div class="flex flex-col gap-4">
+            <InputField
+              v-for="field in moreFields"
+              :key="field.key"
+              :ref="(el) => setMoreFieldRef({ key: field.key, el })"
+              :model-value="displayValue({ key: field.key })"
+              type="number"
+              only-positive
+              :step="field.step"
+              :label="field.label"
+              :placeholder="field.placeholder"
+              @update:model-value="onNumberInput({ key: field.key, value: $event })"
+              @blur="onNumberBlur({ key: field.key })"
+            >
+              <template v-if="field.key === 'baristaMonthlyIncome'" #iconLeading>
+                <span class="text-muted-foreground text-sm">{{ currencySymbol }}</span>
+              </template>
+            </InputField>
+          </div>
+        </SidePanelSectionContent>
+      </SidePanelSection>
+    </SidePanelSections>
   </div>
 </template>
 
@@ -263,8 +266,13 @@ import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
+import {
+  SidePanelSection,
+  SidePanelSectionContent,
+  SidePanelSectionTrigger,
+  SidePanelSections,
+} from '@/components/lib/ui/side-panel';
 import { Slider } from '@/components/lib/ui/slider';
 import { Switch } from '@/components/lib/ui/switch';
 import { useFormatCurrency } from '@/composable';
@@ -286,18 +294,9 @@ import {
   type FireSettings,
   isPortfolioIndicatorId,
 } from '@bt/shared/types';
-import {
-  ChevronDownIcon,
-  LayersIcon,
-  PercentIcon,
-  PiggyBankIcon,
-  SlidersHorizontalIcon,
-  TrendingUpIcon,
-  WalletIcon,
-} from '@lucide/vue';
+import { LayersIcon, PercentIcon, PiggyBankIcon, SlidersHorizontalIcon, TrendingUpIcon, WalletIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
-import { createReusableTemplate } from '@vueuse/core';
-import { type Component, type ComponentPublicInstance, computed, reactive, ref, useTemplateRef, watch } from 'vue';
+import { type ComponentPublicInstance, computed, reactive, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { type AssumptionSection, useAssumptionSections } from '../composables/use-assumption-sections';
@@ -320,11 +319,6 @@ const WITHDRAWAL_PRESETS = [3, 3.5, 4, 4.5];
 const CUSTOM_WITHDRAWAL = 'custom';
 const INFLATION_SLIDER = { min: 0, max: 10, step: 0.5 };
 const INTEGER_KEYS: NumberKey[] = ['birthYear', 'coastTargetAge'];
-// The hover background bleeds past the column while the icon tile stays aligned with the inputs.
-const SECTION_TRIGGER_CLASS =
-  '-mx-2 h-auto min-h-11 w-[calc(100%+1rem)] justify-start gap-3 px-2 py-2 text-left whitespace-normal';
-// Collapsible content clips its overflow; the padding keeps focus rings visible.
-const SECTION_CONTENT_CLASS = '-mx-1 px-1 pb-2';
 const BADGE_CLASS = 'border-border inline-flex h-6 items-center rounded-full border px-2 text-xs whitespace-nowrap';
 // Keeps typed digits clear of the badge, with room for longer translations of it.
 const BADGE_INPUT_CLASS = '[&_input]:pr-24';
@@ -344,12 +338,6 @@ const emit = defineEmits<{ 'update:modelValue': [value: FireSettings] }>();
 
 const { t } = useI18n();
 const { openSections } = useAssumptionSections();
-const [DefineSection, ReuseSection] = createReusableTemplate<{
-  section: AssumptionSection;
-  icon: Component;
-  label: string;
-  summary?: string;
-}>({ inheritAttrs: false });
 const { formatBaseCurrency, getCurrencySymbol } = useFormatCurrency();
 const { accounts } = storeToRefs(useAccountsStore());
 const { formattedCategories } = storeToRefs(useCategoriesStore());
@@ -543,14 +531,6 @@ const onWithdrawalModeChange = ({ value }: { value: string }) => {
   isCustomWithdrawalPicked.value = value === CUSTOM_WITHDRAWAL;
   if (value !== CUSTOM_WITHDRAWAL) update({ patch: { withdrawalRatePct: Number(value) } });
 };
-
-const chevronClass = ({ open }: { open: boolean }) =>
-  cn('ml-auto size-4 shrink-0 transition-transform', open && 'rotate-180');
-const tileClass = ({ open }: { open: boolean }) =>
-  cn(
-    'flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors',
-    open ? 'bg-primary/15 text-primary-text' : 'bg-muted text-muted-foreground',
-  );
 
 const moreSummary = computed(() =>
   t('analytics.fire.assumptions.moreSummary', {
