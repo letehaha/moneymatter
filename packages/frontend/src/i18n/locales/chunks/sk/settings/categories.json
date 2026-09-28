@@ -12,7 +12,7 @@
       "movesQueued": "{n} move queued | {n} moves queued",
       "unqueueMove": "Remove this move",
       "topLevel": "Top level",
-      "saveChanges": "Save changes",
+      "saveChanges": "Ulož zmeny",
       "parentField": {
         "label": "Parent category",
         "placeholder": "Select a parent category",
@@ -24,17 +24,17 @@
         "moveButton": "Move"
       },
       "delete": {
-        "title": "Delete category?",
-        "description": "This will permanently delete \"{name}\". This action cannot be undone.",
-        "deleteButton": "Delete",
-        "cancelButton": "Cancel"
+        "title": "Vymazať kategóriu?",
+        "description": "Týmto sa „{name}“ natrvalo vymaže. Túto akciu nie je možné vrátiť späť.",
+        "deleteButton": "Zmazať",
+        "cancelButton": "Zrušiť"
       },
       "errors": {
         "cannotLoad": "Cannot load categories"
       },
       "notifications": {
-        "deleteSuccess": "Category deleted",
-        "deleteFailed": "Failed to delete category",
+        "deleteSuccess": "Kategória zmazaná",
+        "deleteFailed": "Vymazanie kategórie zlyhalo",
         "checkFailed": "Failed to check category",
         "moveFailed": "Failed to move category.",
         "saveSuccess": "Changes saved.",

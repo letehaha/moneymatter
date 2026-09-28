@@ -1,117 +1,117 @@
 {
   "transactions": {
     "filters": {
-      "filtersLabel": "Filters",
-      "selectFilters": "Select filters",
-      "reset": "Reset",
-      "apply": "Apply",
+      "filtersLabel": "Filtre",
+      "selectFilters": "Vyberte filtre",
+      "reset": "Vynulovať",
+      "apply": "Použiť",
       "dateRange": {
-        "placeholder": "Date or range",
+        "placeholder": "Dátum alebo rozsah",
         "presets": {
-          "thisMonth": "This month",
-          "last3Months": "Last 3 months",
-          "last6Months": "Last 6 months",
-          "last12Months": "Last 12 months"
+          "thisMonth": "Tento mesiac",
+          "last3Months": "Posledné 3 mesiace",
+          "last6Months": "Posledných 6 mesiacov",
+          "last12Months": "Posledných 12 mesiacov"
         }
       },
       "transactionType": {
-        "label": "Transaction type:",
-        "income": "Income",
-        "expense": "Expense",
-        "allTypes": "All types"
+        "label": "Typ transakcie:",
+        "income": "Příjem",
+        "expense": "Výdavok",
+        "allTypes": "Všetky typy"
       },
       "amountRange": {
-        "from": "Amount from (gte)",
-        "to": "To (lte)",
-        "placeholderFrom": ">= than",
-        "placeholderTo": "<= than",
-        "compactFrom": "Min amount",
-        "compactTo": "Max amount"
+        "from": "Suma od (vrátane)",
+        "to": "Do (vrátane)",
+        "placeholderFrom": ">= než",
+        "placeholderTo": "<= než",
+        "compactFrom": "Minimálna suma",
+        "compactTo": "Maximálna suma"
       },
       "refundsFilter": {
-        "label": "Refunds"
+        "label": "Vratky"
       },
       "transferFilter": {
-        "label": "Transfers"
+        "label": "Prevody"
       },
       "plannedFilter": {
-        "label": "Planned"
+        "label": "Naplánované"
       },
       "attachments": {
-        "label": "Attachments"
+        "label": "Prílohy"
       },
       "filterOperation": {
-        "all": "All",
-        "exclude": "Exclude",
-        "only": "Only"
+        "all": "Všetky",
+        "exclude": "Vylúčiť",
+        "only": "Iba"
       },
       "noteIncludes": {
-        "label": "Note includes (comma-separated):",
+        "label": "Poznámka obsahuje (oddelené čiarkami):",
         "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Search in notes"
+        "compactPlaceholder": "Hľadať v poznámkach"
       },
       "tags": {
-        "allTags": "All tags",
-        "tagSingular": "tag",
-        "tagPlural": "tags",
-        "selected": "selected",
-        "searchPlaceholder": "Search tags...",
-        "blankOption": "No tags"
+        "allTags": "Všetky značky",
+        "tagSingular": "štítok",
+        "tagPlural": "značky",
+        "selected": "vybrané",
+        "searchPlaceholder": "Hľadať značky...",
+        "blankOption": "Bez značiek"
       },
       "payees": {
-        "label": "Payees",
-        "selectedOne": "1 Payee selected",
-        "selectedMany": "{n} Payees selected"
+        "label": "Príjemcovia",
+        "selectedOne": "1 vybraný príjemca",
+        "selectedMany": "{n} vybraných príjemcov"
       },
-      "removeFilter": "Remove filter",
+      "removeFilter": "Odstrániť filter",
       "menu": {
-        "type": "Type",
-        "tags": "Tags",
-        "budgets": "Budgets",
-        "amount": "Amount range",
-        "note": "Notes"
+        "type": "Typ",
+        "tags": "Štítky",
+        "budgets": "Rozpočty",
+        "amount": "Rozsah sumy",
+        "note": "Poznámky"
       },
       "transferNature": {
-        "label": "Transfer kinds",
-        "disabledTooltip": "Transfers are excluded by the filter above, so transfer kinds have no effect.",
-        "commonTransfer": "Between accounts",
-        "outOfWallet": "Out of wallet",
-        "toPortfolio": "To portfolio",
-        "toVenture": "To venture",
-        "selectedCount": "{n} selected"
+        "label": "Druhy prevodov",
+        "disabledTooltip": "Prevody sú vylúčené vyššie uvedeným filtrom, takže typy prevodov nemajú žiadny vplyv.",
+        "commonTransfer": "Medzi účtami",
+        "outOfWallet": "Mimo peňaženky",
+        "toPortfolio": "Do portfólia",
+        "toVenture": "Do rizikového kapitálu",
+        "selectedCount": "{n} vybraný"
       }
     },
     "list": {
-      "noMoreData": "No more transactions",
-      "loadingMore": "Loading more...",
-      "detailsTitle": "Transaction details",
+      "noMoreData": "Žiadne ďalšie transakcie",
+      "loadingMore": "Načítavanie ďalších...",
+      "detailsTitle": "Podrobnosti transakcie",
       "detailsDescription": "View and edit transaction"
     },
     "bulkEdit": {
-      "selectAll": "Select all",
-      "cancelSelection": "Cancel selection",
-      "editButton": "Edit",
-      "selectedCount": "{count} selected",
+      "selectAll": "Vybrať všetko",
+      "cancelSelection": "Zrušiť výber",
+      "editButton": "Upraviť",
+      "selectedCount": "Vybraných: {count}",
       "dialogTitle": "Edit {count} transactions",
       "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
-      "categoryLabel": "Category",
-      "categoryPlaceholder": "Select category...",
-      "payeeLabel": "Payee",
-      "payeePlaceholder": "Select payee...",
-      "tagsLabel": "Tags",
-      "tagsPlaceholder": "Select tags...",
-      "noteLabel": "Note",
+      "categoryLabel": "Kategória",
+      "categoryPlaceholder": "Vyberte kategóriu...",
+      "payeeLabel": "Protistrana",
+      "payeePlaceholder": "Vyberte protistranu...",
+      "tagsLabel": "Štítky",
+      "tagsPlaceholder": "Vyberte štítky...",
+      "noteLabel": "Poznámka",
       "notePlaceholder": "Enter note...",
       "applyButton": "Apply changes",
       "applyingButton": "Applying...",
       "confirmTitle": "Confirm changes",
       "confirmDescription": "You are about to update {count} transactions:",
-      "confirmCategoryLabel": "Category",
-      "confirmPayeeLabel": "Payee",
-      "confirmTagsLabel": "Tags",
-      "confirmNoteLabel": "Note",
-      "cancelButton": "Cancel",
-      "confirmApplyButton": "Apply",
+      "confirmCategoryLabel": "Kategória",
+      "confirmPayeeLabel": "Protistrana",
+      "confirmTagsLabel": "Štítky",
+      "confirmNoteLabel": "Poznámka",
+      "cancelButton": "Zrušiť",
+      "confirmApplyButton": "Použiť",
       "successMessage": "Successfully updated {count} transactions",
       "unexpectedError": "An unexpected error occurred",
       "tagModeLabel": "Tag action",
@@ -119,91 +119,95 @@
       "tagModeReplace": "Replace all tags",
       "tagModeRemove": "Remove these tags",
       "totals": {
-        "income": "Income",
-        "expense": "Expense",
-        "net": "Net",
-        "transfers": "Transfers"
+        "income": "Príjmy",
+        "expense": "Výdavky",
+        "net": "Čistý zostatok",
+        "transfers": "Prevody"
       }
     },
     "transactionGroups": {
       "bulkActions": {
-        "createNewGroup": "Create new group",
+        "createNewGroup": "Vytvoriť novú skupinu",
         "addToExistingGroup": "Add to existing group",
-        "groupButton": "Group"
+        "groupButton": "Skupina"
       },
       "addToGroupDialog": {
         "title": "Add to existing group",
         "searchPlaceholder": "Search groups...",
         "noGroupsMessage": "No groups yet. Create one first.",
         "noSearchResultsMessage": "No groups match your search.",
-        "addingText": "Adding...",
-        "buttonLabel": "Add to Group",
-        "cancelButton": "Cancel",
-        "transactionCountLabel": "transactions"
+        "addingText": "Pridávanie...",
+        "buttonLabel": "Pridať do skupiny",
+        "cancelButton": "Zrušiť",
+        "transactionCountLabel": "transakcie"
       },
       "createGroupDialog": {
         "title": "Create Transaction Group",
-        "descriptionPrefix": "Group",
-        "groupNameLabel": "Name",
+        "descriptionPrefix": "Skupina",
+        "groupNameLabel": "Názov",
         "groupNamePlaceholder": "e.g. May salary transfer",
-        "noteLabel": "Note (optional)",
-        "notePlaceholder": "Optional description...",
-        "creatingText": "Creating...",
-        "buttonLabel": "Create Group",
-        "cancelButton": "Cancel"
+        "noteLabel": "Poznámka (voliteľné)",
+        "notePlaceholder": "Voliteľný popis...",
+        "creatingText": "Vytváranie...",
+        "buttonLabel": "Vytvoriť skupinu",
+        "cancelButton": "Zrušiť"
       },
       "groupsPage": {
-        "title": "Transaction Groups",
-        "searchPlaceholder": "Search groups...",
-        "noGroupsMessage": "No transaction groups yet.",
-        "emptyStateHint": "Select transactions on the Transactions page and click \"Create Group\" to get started.",
-        "transactionCountLabel": "transactions",
-        "deleteError": "Failed to delete the group. Please try again."
+        "title": "Skupiny transakcii",
+        "searchPlaceholder": "Prehľadávať skupiny...",
+        "noGroupsMessage": "Zatiaľ neexistujú žiadne skupiny transakcií.",
+        "emptyStateHint": "Na stránke „Transakcie“ vyberte transakcie a kliknite na „Vytvoriť skupinu“, aby ste mohli začať.",
+        "transactionCountLabel": "transakcie",
+        "deleteError": "Vymazanie skupiny zlyhalo. Skúste to znovu, prosím."
       },
       "errors": {
-        "nameRequired": "Group name is required",
-        "minTransactions": "Select at least {min} transactions",
-        "alreadyInGroup": "Some selected transactions already belong to a group",
-        "createFailed": "Failed to create group",
-        "addFailed": "Failed to add transactions to group"
+        "nameRequired": "Názov skupiny je povinný",
+        "minTransactions": "Vyberte aspoň {min} transakcie",
+        "alreadyInGroup": "Niektoré vybrané transakcie už do skupiny patria",
+        "createFailed": "Vytvorenie skupiny zlyhalo",
+        "addFailed": "Pridanie do skupiny transakcií zlyhalo"
       }
     },
     "planned": {
-      "label": "Planned",
-      "confirmedLabel": "Confirmed",
-      "plannedTooltip": "Planned transaction",
-      "expiredTooltip": "Expected {days} days ago, no matching bank transaction",
+      "label": "Naplánované",
+      "confirmedLabel": "Potvrdené",
+      "plannedTooltip": "Naplánovaná transakcia",
+      "expiredTooltip": "Očakávalo sa pred {days} dňami, žiadna zodpovedajúca banková transakcia",
       "mergedTooltip": "Confirmed from planned entry on {date}"
     },
     "pending": {
-      "label": "Pending",
+      "label": "Čaká na vybavenie",
       "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
     },
     "table": {
       "columns": {
-        "date": "Date",
-        "account": "Account",
-        "category": "Category",
-        "payee": "Payee",
-        "amount": "Amount",
+        "date": "Dátum",
+        "account": "Účet",
+        "category": "Kategória",
+        "payee": "Protistrana",
+        "amount": "Suma",
         "refAmount": "Base amount",
-        "originalAmount": "Original amount",
-        "note": "Note",
-        "tags": "Tags",
+        "originalAmount": "Pôvodná suma",
+        "note": "Poznámka",
+        "tags": "Štítky",
         "categorizationSource": "Categorized by",
-        "group": "Group",
-        "refund": "Refund",
-        "split": "Split"
+        "group": "Skupina",
+        "refund": "Vrátenie platby",
+        "split": "Rozdeliť"
       },
-      "outOfWallet": "Out of wallet",
-      "hint": "Click a row to view details. Select rows to bulk edit.",
+      "outOfWallet": "Mimo peňaženky",
+      "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
       "emptyTitle": "No transactions match these filters",
       "emptyDescription": "Try adjusting or resetting the filters.",
       "columnConfig": {
         "title": "Table settings",
-        "columns": "Columns",
+        "columns": "Stĺpce",
         "visibleCount": "{count} visible",
-        "resetDefaults": "Reset to defaults"
+        "resetDefaults": "Obnoviť predvolené",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
       },
       "categorizationSourceValues": {
         "manual": "Manual",
@@ -223,30 +227,40 @@
       }
     },
     "bulkDelete": {
-      "button": "Delete",
+      "button": "Zmazať",
       "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
-      "confirmButton": "Delete",
+      "confirmButton": "Zmazať",
       "confirmTitle": "Delete {count} transactions?",
       "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
       "successMessage": "{count} transactions deleted",
       "unexpectedError": "Failed to delete transactions. Please try again."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Rozumiem",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
     }
   },
   "records": {
     "upcomingSection": {
       "title": "Upcoming",
-      "overdueBadge": "Overdue",
-      "scheduledBadge": "Scheduled",
-      "payAction": "Mark paid",
+      "overdueBadge": "Po splatnosti",
+      "scheduledBadge": "Naplánované",
+      "payAction": "Označiť ako zaplatené",
       "hideToggle": "Hide upcoming payments",
       "expectedBadge": "Expected",
       "unconfirmedBadge": "Unconfirmed",
       "morePlans": "+{count} more planned",
       "morePlansAtLeast": "+{count}+ more planned",
       "deletePlanTitle": "Delete planned transaction?",
-      "deletePlanDescription": "This action cannot be undone.",
+      "deletePlanDescription": "Túto akciu nie je možné vrátiť späť.",
       "plansLoadFailed": "Couldn't load planned transactions",
-      "confirmAction": "Confirm",
+      "confirmAction": "Potvrdiť",
       "confirmTooltip": "The money moved — record it and update the balance",
       "confirmPlanSuccess": "Plan recorded — balance updated",
       "confirmPlanError": "Failed to record the plan"

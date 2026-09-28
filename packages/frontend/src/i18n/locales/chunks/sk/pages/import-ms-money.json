@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Map data",
-            "review": "Review",
+            "review": "Skontrolovať",
             "execute": "Import",
             "done": "Done"
           }
@@ -21,7 +21,7 @@
           "passwordPlaceholder": "Enter the file password",
           "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
           "parsing": "Reading file…",
-          "continue": "Continue",
+          "continue": "Pokračovať",
           "errors": {
             "invalidFormatNamed": "\"{name}\" is not a .mny file.",
             "passwordUnsupportedChars": "This password contains characters we can't send. Try a password without emoji or non-Latin letters."
@@ -33,7 +33,7 @@
         "resolve": {
           "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Účty",
             "currentBalanceLabel": "Current balance",
             "currentBalancePlaceholder": "Leave blank to use the imported total",
             "willCreateHint": "Will be created in {currency}.",
@@ -54,13 +54,13 @@
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Späť",
+            "continue": "Pokračovať"
           }
         },
         "review": {
           "transactions": "Transactions",
-          "transfersDetected": "Transfers",
+          "transfersDetected": "Prevody",
           "outOfWallet": "Out-of-wallet",
           "duplicatesSkipped": "Duplicates skipped",
           "willImport": "Will import",
@@ -85,7 +85,7 @@
           },
           "duplicatesTitle": "{count} possible duplicate(s)",
           "duplicatesHint": "These already look like transactions you have. Check a row to import it anyway; unchecked duplicates are skipped.",
-          "back": "Back",
+          "back": "Späť",
           "importing": "Starting import…",
           "importButton": "Import {count} transactions"
         },

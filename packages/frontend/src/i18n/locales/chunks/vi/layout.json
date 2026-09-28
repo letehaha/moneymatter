@@ -12,6 +12,7 @@
     "optimizations": "Optimizations",
     "automations": "Automations",
     "accountDetails": "Account details",
+    "helpAndDocs": "Help & docs",
     "logout": "Đăng xuất",
     "appVersion": "App version {version}",
     "settings": "Settings",
@@ -57,6 +58,10 @@
   "header": {
     "add": "Add",
     "importData": "Import data",
+    "moreActions": "More ways to add data",
+    "importDataHint": "CSV file or bank statement",
+    "attachInvoice": "Attach invoice",
+    "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "Ngôn ngữ",
     "newTransaction": "Add transaction",
     "settings": "Settings",
@@ -100,6 +105,8 @@
         "featureRequest": "I want a feature",
         "other": "Something else"
       },
+      "docsHint": "Not sure how something works? Check the {link} first.",
+      "docsHintLink": "docs",
       "messageLabel": "Your feedback",
       "messagePlaceholder": "What happened, or what would you like to see?",
       "messageRequired": "Please write a message before sending.",
@@ -299,8 +306,8 @@
             "description": "Explore available AI capabilities"
           },
           "configure-ai": {
-            "title": "Set your own API key",
-            "description": "Use your AI API key for the unlimited and uninterrupted access"
+            "title": "Add your own AI model",
+            "description": "Connect OpenAI, Claude, Gemini or a local model."
           },
           "invite-household-member": {
             "title": "Invite a household member",

@@ -1,0 +1,48 @@
+{
+  "accounts": {
+    "title": "Accounts",
+    "createAccount": "Create account",
+    "createVehicle": "Add vehicle",
+    "actionsMenu": "Account actions",
+    "sections": {
+      "archived": "Archived",
+      "manual": "Manual accounts",
+      "sharedWithMe": "Shared with me",
+      "vehicles": "Vehicles",
+      "bankConnections": "Bank connections"
+    },
+    "empty": {
+      "title": "No Accounts Yet",
+      "description": "Connect your bank or create a manual account to start tracking your finances, balances, and transactions.",
+      "connectBank": "Connect Bank Account",
+      "createManual": "Create Manual Account"
+    },
+    "overview": {
+      "totalBalance": "Total balance",
+      "assets": "Assets",
+      "liabilities": "Liabilities",
+      "vehicles": "Vehicles",
+      "projected": "Projected {amount} · {count} planned entry through {date} | Projected {amount} · {count} planned entries through {date}"
+    },
+    "sharedBy": "Shared by {handle}",
+    "viaHousehold": "Shared via {handle}'s household",
+    "connect": "Connect",
+    "connectBank": "Connect bank",
+    "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
+    "reconnect": "Reconnect",
+    "manageConnection": "Manage connection",
+    "accountsCount": "{count} account | {count} accounts",
+    "inGroupSubtitle": "in {name}",
+    "sort": {
+      "auto": "Auto",
+      "name": "Name",
+      "balance": "Balance",
+      "ariaLabel": "Sort accounts"
+    },
+    "status": {
+      "active": "Active",
+      "expiringSoon": "Expiring soon",
+      "expired": "Expired"
+    }
+  }
+}

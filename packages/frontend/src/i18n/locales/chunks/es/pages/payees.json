@@ -12,7 +12,7 @@
       "categoryHint": "Categoría efectiva de este beneficiario. Muestra la predeterminada si ha configurado una — de lo contrario, la categoría utilizada con más frecuencia en transacciones anteriores. Se rellena automáticamente al crear una nueva transacción.",
       "topCategory": "Categoría principal",
       "defaultCategory": "Categoría predeterminada",
-      "defaultTags": "Default tags"
+      "defaultTags": "Etiquetas por defecto"
     },
     "sort": {
       "label": "Ordenar por",
@@ -20,7 +20,7 @@
       "netFlow": "Flujo neto",
       "name": "Nombre",
       "lastSeen": "Actividad reciente",
-      "defaultTags": "Default tags"
+      "defaultTags": "Etiquetas por defecto"
     },
     "actions": {
       "menu": "Acciones",
@@ -28,6 +28,17 @@
       "merge": "Combinar con…",
       "delete": "Eliminar",
       "deleteAndIgnore": "Eliminar e ignorar"
+    },
+    "bulk": {
+      "select": "Select",
+      "selectedCount": "{count} seleccionadas",
+      "clearSelection": "Limpiar selección",
+      "selectAll": "Select all loaded payees",
+      "selectRow": "Select {name}",
+      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
+      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
+      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
+      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
     },
     "emptyState": {
       "title": "Aún no hay beneficiarios",
@@ -77,11 +88,11 @@
       "defaultTagsLabel": "Aplicar etiquetas automáticamente",
       "defaultTagsPlaceholder": "Seleccionar etiquetas para aplicar automáticamente",
       "defaultTagsHint": "Estas etiquetas se añaden automáticamente a las nuevas transacciones vinculadas a este beneficiario (sincronizaciones bancarias e importaciones).",
-      "defaultLocationLabel": "Default location",
-      "defaultLocationEmpty": "No location set",
-      "defaultLocationHint": "Transactions linked to this payee that have no location of their own get this one, both at creation and during bank sync.",
-      "clearDefaultLocationTitle": "Remove default location?",
-      "clearDefaultLocationDescription": "New transactions linked to this payee will no longer get this location. Existing transactions keep theirs.",
+      "defaultLocationLabel": "Ubicación por defecto",
+      "defaultLocationEmpty": "Ubicación no establecida",
+      "defaultLocationHint": "Las transacciones vinculadas a este beneficiario que no tienen ubicación propia obtienen esta, tanto al momento de la creación como durante la sincronización bancaria.",
+      "clearDefaultLocationTitle": "¿Eliminar ubicación predeterminada?",
+      "clearDefaultLocationDescription": "Las nuevas transacciones vinculadas a este beneficiario ya no obtendrán esta ubicación. Las transacciones existentes mantienen las suyas.",
       "applyTagsToExisting": "Aplicar a transacciones existentes"
     },
     "logo": {
@@ -111,7 +122,9 @@
       "aliasDeleted": "Alias eliminado",
       "aliasAdded": "Alias añadido",
       "deletedAndIgnored": "Beneficiario eliminado y añadido a la lista de nombres ignorados",
-      "tagsAppliedToExisting": "Etiquetas aplicadas a {count} transacciones"
+      "tagsAppliedToExisting": "Etiquetas aplicadas a {count} transacciones",
+      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
+      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
     },
     "errors": {
       "collision": "Ya existe un beneficiario con este nombre. Combínelos en su lugar.",
@@ -124,6 +137,7 @@
     "settings": {
       "title": "Ajustes de detección de beneficiarios",
       "description": "Controle cómo la aplicación detecta automáticamente beneficiarios de sus transacciones sincronizadas.",
+      "howDetectionWorks": "Cómo funciona la detección",
       "payeeFromDescription": {
         "label": "Detectar beneficiarios desde descripciones de transacciones",
         "description": "Cuando su banco no proporciona un campo de comercio dedicado, use la descripción de la transacción (nota) para detectar beneficiarios automáticamente. Útil para conexiones bancarias con campos de comercio vacíos o ausentes. Puede producir nombres de beneficiarios menos precisos (p. ej., prefijos de cuotas) que podrá renombrar o combinar después.",
@@ -162,6 +176,7 @@
       "conflictDescription": "Ya existe un beneficiario con el mismo nombre normalizado que \"{name}\". Si continúa, se eliminará ese beneficiario (las transacciones permanecen, pierden el vínculo).",
       "forceConfirm": "Eliminar beneficiario e ignorar"
     },
-    "loadingMore": "Cargando más…"
+    "loadingMore": "Cargando más…",
+    "txCount": "{count} tx"
   }
 }

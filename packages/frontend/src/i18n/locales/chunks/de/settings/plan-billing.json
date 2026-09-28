@@ -9,10 +9,10 @@
       "updatePaymentMethod": "Update payment method",
       "manageBilling": "Manage billing",
       "currentPlan": "Current plan",
-      "recommended": "Recommended",
+      "recommended": "Empfohlen",
       "previousPlan": "Previous plan",
       "yourPlan": "Your plan",
-      "planned": "Planned",
+      "planned": "Geplant",
       "voteOnRoadmap": "Vote on the roadmap",
       "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
       "saveUpTo": "Save up to {percent}%",
@@ -54,15 +54,16 @@
         "noFurtherCharges": "No further charges",
         "cancelNote": "Changed your mind? Renew in the billing portal and your renewal date stays the same.",
         "monthlyHint": "Switch to yearly and save {amount} a year.",
-        "noCard": "No card on file"
+        "noCard": "No card on file",
+        "readOnlyHelp": "What does read-only mean?"
       },
       "status": {
         "pastDue": "Payment failed",
         "active": "Aktiv",
         "paused": "Paused",
-        "readOnly": "Read-only",
+        "readOnly": "Nur lesen",
         "trial": "Plus features",
-        "processing": "Processing",
+        "processing": "Verarbeiten",
         "earlyAdopter": "Early adopter",
         "endsOn": "Ends {date}"
       },
@@ -113,6 +114,7 @@
             "everythingInEssential": "Everything in Essential",
             "bankProviders": "Bank connections (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "AI features on our key, fair-use capped",
+            "firePlanner": "FIRE planner",
             "seats": "5 household seats"
           }
         },

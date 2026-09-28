@@ -101,6 +101,7 @@
       "archive": {
         "title": "Arsipkan Akun",
         "description": "Pengarsipan menyimpan semua transaksi tetapi menghapus akun dari daftar aktif Anda. Koneksi bank dan keanggotaan grup akan diputuskan.",
+        "compareOptionsLink": "Archive, exclude or delete?",
         "archiveButton": "Arsipkan Akun",
         "confirmTitle": "Arsipkan Akun",
         "confirmDescription": "Yakin ingin mengarsipkan \"{name}\"? Ini akan:",
@@ -203,6 +204,17 @@
         "syncStarted": "Sinkronisasi dimulai...",
         "accessForbidden": "Akses ditolak",
         "failed": "Gagal menyinkronkan transaksi"
+      },
+      "reconcileDuplicates": {
+        "title": "Merge duplicate transactions",
+        "description": "Folds leftover pending rows into the booked transactions that replaced them.",
+        "button": "Merge duplicates",
+        "running": "Merging…",
+        "confirm": "Gabungkan",
+        "confirmTitle": "Merge duplicate transactions?",
+        "confirmDescription": "Pending rows that match a booked transaction on this account will be deleted. Notes and categories you set on them move to the booked transaction. This cannot be undone.",
+        "result": "Merged {merged} duplicate(s), skipped {skipped}.",
+        "failed": "Failed to merge duplicates."
       },
       "relinkWarning": {
         "title": "Enable Banking: Akun perlu diperbarui",

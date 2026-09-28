@@ -2,101 +2,101 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "selectionModeWarning": "Selection mode — choose transactions to unlink",
-        "selectAll": "Select all",
-        "selected": "{count} selected",
-        "unlink": "Unlink",
-        "cancel": "Cancel",
-        "unlinkSelected": "Unlink Selected",
-        "noMatchingTransactions": "No matching transactions",
-        "noTransactionsLinked": "No transactions linked",
-        "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
-        "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
-        "resetFilters": "Reset Filters",
-        "addTransactions": "Add Transactions",
-        "add": "Add",
-        "loadingMore": "Loading more..."
+        "selectionModeWarning": "Režim výberu — vyberte transakcie na odpojenie",
+        "selectAll": "Vybrať všetko",
+        "selected": "Vybraných: {count}",
+        "unlink": "Odpojiť",
+        "cancel": "Zrušiť",
+        "unlinkSelected": "Odpojiť vybrané",
+        "noMatchingTransactions": "Žiadne zodpovedajúce transakcie",
+        "noTransactionsLinked": "Žiadne prepojené transakcie",
+        "filterAdjustmentHint": "Skúste upraviť filtre a zobrazí sa vám viac transakcií.",
+        "addTransactionsHint": "Pridajte transakcie do tohto rozpočtu a začnite sledovať svoje výdavky.",
+        "resetFilters": "Vynulovať filtre",
+        "addTransactions": "Pridať transakcie",
+        "add": "Pridať",
+        "loadingMore": "Načítavanie ďalších..."
       }
     },
     "budgetDetails": {
-      "notSet": "Not set",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "loading": "Loading...",
-      "uncategorized": "Uncategorized",
+      "notSet": "Nenastavené",
+      "saving": "Ukladanie...",
+      "saveChanges": "Uložiť zmeny",
+      "loading": "Načítavanie...",
+      "uncategorized": "Nezaradené",
       "stats": {
-        "income": "Income",
-        "expenses": "Expenses",
-        "netBalance": "Net Balance"
+        "income": "Príjmy",
+        "expenses": "Výdavky",
+        "netBalance": "Čistý zostatok"
       },
       "utilization": {
-        "title": "Budget Utilization",
-        "summary": "{spent} of {limit} limit",
-        "na": "N/A"
+        "title": "Čerpanie rozpočtu",
+        "summary": "{spent} z limitu {limit}",
+        "na": "Nedostupné"
       },
-      "noTransactionsYet": "No transactions yet",
-      "transactions": "Transactions",
-      "transactionsLinked": "{count} transaction linked to this budget | {count} transactions linked to this budget",
+      "noTransactionsYet": "Zatiaľ žiadne transakcie",
+      "transactions": "Transakcie",
+      "transactionsLinked": "S týmto rozpočtom je prepojená {count} transakcia | S týmto rozpočtom je prepojených {count} transakcií",
       "tabs": {
-        "statistics": "Statistics",
-        "transactions": "Transactions",
-        "sharing": "Sharing"
+        "statistics": "Štatistiky",
+        "transactions": "Transakcie",
+        "sharing": "Zdieľanie"
       },
       "statistics": {
         "tabs": {
-          "categories": "Categories",
-          "timeline": "Timeline"
+          "categories": "Kategórie",
+          "timeline": "Časová os"
         },
-        "errorTitle": "Failed to load statistics",
-        "errorDescription": "Something went wrong while loading the data. Please try again later.",
-        "noDataTitle": "No spending data",
-        "noDataDescription": "There's no spending data available for this budget yet.",
-        "noCategoryData": "No category spending data.",
-        "noTimelineData": "No timeline data.",
-        "total": "Total",
-        "income": "Income",
-        "expenses": "Expenses",
-        "incomeLabel": "Income:",
-        "expensesLabel": "Expenses:"
+        "errorTitle": "Štatistiky sa nepodarilo načítať",
+        "errorDescription": "Pri načítavaní údajov sa niečo pokazilo. Skúste to znova neskôr, prosím.",
+        "noDataTitle": "Žiadne údaje o výdavkoch",
+        "noDataDescription": "Pre tento rozpočet zatiaľ nie sú dostupné žiadne údaje o výdavkoch.",
+        "noCategoryData": "Žiadne údaje o výdavkoch podľa kategórií.",
+        "noTimelineData": "Žiadne údaje pre časovú os.",
+        "total": "Spolu",
+        "income": "Príjmy",
+        "expenses": "Výdavky",
+        "incomeLabel": "Príjmy:",
+        "expensesLabel": "Výdavky:"
       },
       "sharing": {
-        "title": "Sharing",
-        "description": "Manage who can see this budget and contribute to it.",
-        "inviteAnother": "Invite someone",
-        "membersHeading": "Members",
-        "pendingHeading": "Pending invitations",
-        "loadError": "Couldn't load members.",
+        "title": "Zdieľanie",
+        "description": "Spravujte, kto môže tento rozpočet vidieť a prispievať doň.",
+        "inviteAnother": "Pozvite niekoho",
+        "membersHeading": "Členovia",
+        "pendingHeading": "Čakajúce pozvánky",
+        "loadError": "Členov sa nepodarilo načítať.",
         "permissions": {
-          "read": "View only",
-          "write": "Attach own transactions",
-          "manage": "Manage"
+          "read": "Len zobrazenie",
+          "write": "Priraďovať vlastné transakcie",
+          "manage": "Spravovať"
         },
         "member": {
-          "you": "you",
-          "roleOwner": "Owner",
-          "roleRecipient": "Member",
-          "ownerHint": "Full control of this budget",
-          "updateSuccess": "Permission updated.",
-          "updateError": "Couldn't update permission.",
-          "revoke": "Revoke access",
-          "revokeConfirm": "Revoke",
-          "revokeTitle": "Revoke access?",
-          "revokeDescription": "{user} will lose access to {budget}.",
-          "revokeSuccess": "Access revoked.",
-          "revokeError": "Couldn't revoke access."
+          "you": "vy",
+          "roleOwner": "Vlastník",
+          "roleRecipient": "Člen",
+          "ownerHint": "Plná kontrola nad týmto rozpočtom",
+          "updateSuccess": "Oprávnenie aktualizované.",
+          "updateError": "Oprávnenie sa nepodarilo aktualizovať.",
+          "revoke": "Odobrať prístup",
+          "revokeConfirm": "Odobrať",
+          "revokeTitle": "Odobrať prístup?",
+          "revokeDescription": "{user} stratí prístup k rozpočtu {budget}.",
+          "revokeSuccess": "Prístup odobratý.",
+          "revokeError": "Prístup sa nepodarilo odobrať."
         },
         "pending": {
-          "empty": "No pending invitations.",
-          "resend": "Resend",
-          "resendSuccess": "Invitation resent.",
-          "resendError": "Couldn't resend invitation.",
-          "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
-          "cancel": "Cancel",
-          "cancelConfirm": "Cancel invitation",
-          "cancelTitle": "Cancel invitation?",
-          "cancelDescription": "The invitation to {email} will be cancelled.",
-          "cancelSuccess": "Invitation cancelled.",
-          "cancelError": "Couldn't cancel invitation."
+          "empty": "Žiadne čakajúce pozvánky.",
+          "resend": "Odoslať znova",
+          "resendSuccess": "Pozvánka bola opätovne odoslaná.",
+          "resendError": "Pozvánku sa nepodarilo odoslať znova.",
+          "resendDeliveryFailed": "Odoslané znova, email sa však nepodarilo doručiť.",
+          "cancel": "Zrušiť",
+          "cancelConfirm": "Zrušiť pozvánku",
+          "cancelTitle": "Zrušiť pozvánku?",
+          "cancelDescription": "Pozvánka pre {email} bude zrušená.",
+          "cancelSuccess": "Pozvánka zrušená.",
+          "cancelError": "Pozvánku sa nepodarilo zrušiť."
         }
       }
     }

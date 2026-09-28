@@ -30,10 +30,10 @@
         "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
       },
       "revoke": {
-        "action": "Xóa",
+        "action": "Remove",
         "title": "Remove household member?",
         "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
-        "confirm": "Xóa",
+        "confirm": "Remove",
         "success": "Member removed.",
         "error": "Couldn't remove this member."
       },

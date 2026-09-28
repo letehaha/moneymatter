@@ -1,424 +1,439 @@
 {
   "common": {
-    "loading": "Loading...",
-    "new": "New",
+    "loading": "Načítavanie...",
+    "new": "Nové",
     "actions": {
-      "loading": "Loading...",
-      "signUp": "Sign up",
-      "save": "Save",
-      "cancel": "Cancel",
-      "back": "Back",
-      "accept": "Accept",
-      "delete": "Delete",
-      "edit": "Edit",
-      "addSubcategory": "Add subcategory",
-      "settings": "Settings",
-      "confirm": "Confirm",
-      "viewTransactions": "View transactions",
-      "viewAnalytics": "View analytics",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "done": "Done",
-      "failed": "Failed",
-      "viewAll": "View all",
-      "scan": "Scan",
-      "link": "Link",
-      "clear": "Clear",
-      "apply": "Apply",
-      "retry": "Try again",
-      "copyInviteLink": "Copy invite link",
-      "moveTo": "Move to…"
+      "loading": "Načítavanie...",
+      "signUp": "Zaregistrovať sa",
+      "save": "Uložiť",
+      "cancel": "Zrušiť",
+      "back": "Späť",
+      "accept": "Potvrdiť",
+      "delete": "Zmazať",
+      "edit": "Upraviť",
+      "addSubcategory": "Pridať podkategóriu",
+      "settings": "Nastavenia",
+      "confirm": "Potvrdiť",
+      "viewTransactions": "Zobraziť transakcie",
+      "viewAnalytics": "Zobraziť analytiku",
+      "saving": "Ukladanie...",
+      "saveChanges": "Uložiť zmeny",
+      "done": "Hotovo",
+      "failed": "Zlyhalo",
+      "viewAll": "Zobraziť všetko",
+      "scan": "Skenovať",
+      "link": "Odkaz",
+      "clear": "Vymazať",
+      "apply": "Použiť",
+      "retry": "Skúsiť znova",
+      "copyInviteLink": "Kopírovať pozývací odkaz",
+      "moveTo": "Presunúť do…",
+      "learnMore": "Zistiť viac"
     },
     "ui": {
-      "close": "Close",
-      "actions": "Actions",
-      "chooseAction": "Choose an action",
-      "other": "Other",
-      "refund": "Refund",
-      "split": "Split",
-      "deletedBadge": "Deleted"
+      "close": "Zavrieť",
+      "actions": "Akcie",
+      "chooseAction": "Vyberte akciu",
+      "other": "Ostatné",
+      "refund": "Vrátenie platby",
+      "split": "Rozdeliť",
+      "deletedBadge": "Zmazané"
     },
     "components": {
       "statusIndicator": {
-        "autoMatched": "Auto-matched",
-        "suggested": "Suggested",
-        "willCreate": "Will create",
-        "needsAttention": "Needs attention",
-        "invalid": "Invalid",
-        "optional": "Optional",
-        "skipped": "Skipped"
+        "autoMatched": "Automaticky priradené",
+        "suggested": "Navrhnuté",
+        "willCreate": "Vytvorí sa",
+        "needsAttention": "Vyžaduje pozornosť",
+        "invalid": "Neplatné",
+        "optional": "Voliteľné",
+        "skipped": "Preskočené"
       },
       "selectField": {
-        "clearSelection": "Clear selection"
+        "clearSelection": "Zrušiť výber"
       }
     },
     "errors": {
-      "copyToClipboardFailed": "Failed to copy to clipboard"
+      "copyToClipboardFailed": "Kopírovanie do schránky zlyhalo"
     },
     "notifications": {
-      "subscriptionCurrencyNotConnected": "Subscriptions summary can't convert {currencies} to your base currency. Connect the currency in Settings → Currencies.",
-      "backgroundJobFailed": "A background job failed while you were away: {error}",
-      "inviteLinkCopied": "Invite link copied to clipboard"
+      "subscriptionCurrencyNotConnected": "Súhrn predplatných nedokáže prepočítať {currencies} na vašu základnú menu. Pripojte menu v Nastavenia → Meny.",
+      "backgroundJobFailed": "Počas vašej neprítomnosti zlyhala úloha na pozadí: {error}",
+      "inviteLinkCopied": "Pozývací odkaz skopírovaný do schránky"
     },
     "sharing": {
-      "emailNotSent": "Email sending not configured — share the invite link manually"
+      "emailNotSent": "Odosielanie emailov nie je nastavené — zdieľajte pozývací odkaz ručne"
     },
     "labels": {
       "email": "Email",
-      "password": "Password",
-      "system": "system",
-      "unknown": "Unknown",
-      "total": "Total"
+      "password": "Heslo",
+      "system": "systém",
+      "unknown": "Neznáme",
+      "total": "Spolu"
     },
     "placeholders": {
-      "email": "your{'@'}email.com",
-      "password": "Your password"
+      "email": "vas{'@'}email.sk",
+      "password": "Vaše heslo"
     },
     "dialogs": {
-      "createAccount": "Create account",
-      "createVehicle": "Add vehicle",
-      "editVehicle": "Edit vehicle"
+      "createAccount": "Vytvoriť účet",
+      "createVehicle": "Pridať vozidlo",
+      "editVehicle": "Upraviť vozidlo"
     },
     "accountCategories": {
-      "general": "General",
-      "cash": "Cash",
-      "currentAccount": "Current account",
-      "creditCard": "Credit card",
-      "saving": "Saving account",
+      "general": "Všeobecné",
+      "cash": "Hotovosť",
+      "currentAccount": "Bežný účet",
+      "creditCard": "Kreditná karta",
+      "saving": "Sporiaci účet",
       "bonus": "Bonus",
-      "insurance": "Insurance",
-      "investment": "Investment",
-      "loan": "Loan",
-      "mortgage": "Mortgage",
-      "overdraft": "Overdraft",
-      "crypto": "Crypto",
-      "vehicle": "Vehicle"
+      "insurance": "Poistenie",
+      "investment": "Investície",
+      "loan": "Pôžička",
+      "mortgage": "Hypotéka",
+      "overdraft": "Kontokorent",
+      "crypto": "Kryptomeny",
+      "vehicle": "Vozidlo"
     },
     "paymentTypes": {
-      "creditCard": "Credit Card",
-      "bankTransfer": "Bank Transfer",
-      "cash": "Cash",
-      "debitCard": "Debit Card",
-      "mobilePayment": "Mobile Payment",
-      "voucher": "Voucher",
-      "webPayment": "Web Payment"
+      "creditCard": "Kreditná karta",
+      "bankTransfer": "Bankový prevod",
+      "cash": "Hotovosť",
+      "debitCard": "Debetná karta",
+      "mobilePayment": "Mobilná platba",
+      "voucher": "Poukaz",
+      "webPayment": "Platba cez web"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
       "suv": "SUV",
-      "truck": "Truck",
-      "luxury": "Luxury",
-      "ev": "Electric vehicle",
-      "motorcycle": "Motorcycle",
-      "other": "Other"
+      "truck": "Nákladné vozidlo",
+      "luxury": "Luxusné vozidlo",
+      "ev": "Elektrické vozidlo",
+      "motorcycle": "Motorka",
+      "other": "Ostatné"
     },
     "depreciationPresets": {
-      "classDefault": "Class default",
-      "slow": "Slow",
-      "average": "Average",
-      "fast": "Fast",
-      "custom": "Custom rate"
+      "classDefault": "Predvolené pre triedu",
+      "slow": "Pomalé",
+      "average": "Priemerné",
+      "fast": "Rýchle",
+      "custom": "Vlastná sadzba"
     },
     "aiFeatures": {
       "categorization": {
-        "name": "Transaction Categorization",
-        "description": "Automatically categorize transactions based on their description and merchant"
+        "name": "Kategorizácia transakcií",
+        "description": "Automaticky zaraďuje transakcie do kategórií na základe popisu a obchodníka"
       },
       "statementParsing": {
-        "name": "Statement Parser",
-        "description": "Extract transactions from bank statements (PDF, CSV, TXT) using AI"
+        "name": "Analyzátor výpisov",
+        "description": "Vyťaženie transakcií z bankových výpisov (PDF, CSV, TXT) pomocou AI"
       },
       "investmentTransactionsParsing": {
-        "name": "Investment transactions import",
-        "description": "AI-extracted buy/sell transactions from exchange exports, broker statements, or pasted text."
+        "name": "Import investičných transakcií",
+        "description": "Transakcie nákupu a predaja vyťažené pomocou AI z exportov z burzy, výpisov brokera alebo vloženého textu."
+      },
+      "receiptParsing": {
+        "name": "Priraďovanie faktúr",
+        "description": "Prečíta nahranú faktúru alebo účtenku a nájde transakciu, ku ktorej patrí."
       }
     },
     "transactions": {
       "delete": {
-        "success": "Successfully removed",
-        "error": "Failed to delete transaction!"
+        "success": "Úspešne odstránené",
+        "error": "Transakciu sa nepodarilo zmazať!"
       },
       "submit": {
-        "unexpectedError": "Unexpected error!"
+        "unexpectedError": "Neočakávaná chyba!"
       },
       "unlink": {
-        "error": "Failed to unlink transactions!"
+        "error": "Transakcie sa nepodarilo odpojiť!"
       },
       "record": {
-        "addedByTooltip": "This transaction was attached to the budget by {handle}",
-        "externalLinkTooltip": "Open external link",
-        "locationTooltip": "Open location on the map",
-        "attachmentsTooltip": "Has attachments",
-        "hiddenAccount": "Hidden account",
-        "selectRow": "Select transaction",
+        "addedByTooltip": "Túto transakciu priradil k rozpočtu používateľ {handle}",
+        "externalLinkTooltip": "Otvoriť externý odkaz",
+        "locationTooltip": "Otvoriť polohu na mape",
+        "attachmentsTooltip": "Obsahuje prílohy",
+        "hiddenAccount": "Skrytý účet",
+        "selectRow": "Vybrať transakciu",
         "unselectableReasons": {
-          "split": "Can't be selected: split transactions don't support bulk editing. Edit it individually instead.",
-          "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
+          "sharedAccount": "Nedá sa vybrať: táto transakcia je na účte zdieľanom s vami a upravovať ju môže len jeho vlastník."
         }
       }
     },
-    "outOfWallet": "Out of Wallet",
+    "outOfWallet": "Mimo peňaženky",
     "dateSelector": {
-      "dialogTitle": "Date range",
-      "dueDate": "Due date",
-      "quickSelect": "Quick select",
-      "apply": "Apply",
+      "dialogTitle": "Rozsah dátumov",
+      "dueDate": "Dátum splatnosti",
+      "quickSelect": "Rýchly výber",
+      "apply": "Použiť",
       "periodTypes": {
-        "day": "Day",
-        "month": "Month",
-        "quarter": "Quarter",
-        "halfYear": "Half-year",
-        "year": "Year"
+        "day": "Deň",
+        "month": "Mesiac",
+        "quarter": "Štvrťrok",
+        "halfYear": "Polrok",
+        "year": "Rok"
       },
       "filterModes": {
-        "is": "is",
-        "before": "before",
-        "after": "after",
-        "between": "between"
+        "is": "je",
+        "before": "pred",
+        "after": "po",
+        "between": "medzi"
       },
-      "currentMonth": "Current month",
+      "currentMonth": "Aktuálny mesiac",
       "placeholders": {
-        "day": "Try: 2025-03-15, 03/15/2025",
-        "month": "Try: Jan 2025, 03/2025",
-        "quarter": "Try: Q1, Q4 2025",
-        "halfYear": "Try: H1, H2 2025",
-        "year": "Try: 2025, 2024",
-        "default": "Try: 2025, Q4, Jan 2025"
+        "day": "Skúste: 2025-03-15, 03/15/2025",
+        "month": "Skúste: Jan 2025, 03/2025",
+        "quarter": "Skúste: Q1, Q4 2025",
+        "halfYear": "Skúste: H1, H2 2025",
+        "year": "Skúste: 2025, 2024",
+        "default": "Skúste: 2025, Q4, Jan 2025"
       }
     },
     "appUpdate": {
-      "title": "Update available",
-      "description": "A new version is ready. Reload to get the latest improvements.",
-      "reload": "Reload"
+      "title": "K dispozícii je aktualizácia",
+      "description": "Je pripravená nová verzia. Obnovte stránku a získajte najnovšie vylepšenia.",
+      "reload": "Obnoviť"
     },
     "resourceLease": {
-      "activeLabel": "Session active",
-      "expiredLabel": "Session expired",
-      "defaultResourceLabel": "This resource",
-      "activeTooltip": "{resource} is being kept on the server, and about {duration} of inactivity is allowed. Keep working and it stays available.",
-      "countingDownTooltip": "{resource} is released in {time} because you're inactive. Interact with the page to keep it.",
-      "cappedTooltip": "{resource} is released in {time}. The maximum session length has been reached, so this can no longer be extended.",
-      "expiredTooltip": "{resource} has been released from the server. Start again to continue.",
+      "activeLabel": "Záznamy aktívne",
+      "expiredLabel": "Relácia vypršala",
+      "defaultResourceLabel": "Tento zdroj",
+      "activeTooltip": "{resource} zostáva na serveri a povolená je približne {duration} nečinnosti. Ak budete pokračovať v práci, zostane dostupný.",
+      "countingDownTooltip": "{resource} sa uvoľní za {time} kvôli neaktivite. Ak s ním chcete pracovať ďalej, urobte na stránke nejakú akciu.",
+      "cappedTooltip": "{resource} sa uvoľní za {time}. Bola dosiahnutá maximálna dĺžka relácie, preto sa už nedá predĺžiť.",
+      "expiredTooltip": "{resource} bol zo servera uvoľnený. Ak chcete pokračovať, začnite znova.",
       "status": {
-        "active": "{resource} is being kept available.",
-        "countingDown": "{resource} will be released soon.",
-        "expired": "{resource} has been released."
+        "active": "{resource} zostáva dostupný.",
+        "countingDown": "{resource} sa čoskoro uvoľní.",
+        "expired": "{resource} bol uvoľnený."
       },
       "duration": {
-        "seconds": "{count} second | {count} seconds",
-        "minutes": "{count} minute | {count} minutes",
-        "hours": "{count} hour | {count} hours"
+        "seconds": "{count} sekunda | {count} sekúnd",
+        "minutes": "{count} minúta | {count} minút",
+        "hours": "{count} hodina | {count} hodín"
       }
     },
     "logo": {
       "tabs": {
-        "brand": "Brand",
-        "letters": "Letters"
+        "brand": "Značka",
+        "letters": "Písmená"
       },
-      "searchPlaceholder": "Brand name or domain",
-      "searchHint": "Type a brand name, or a domain like amazon.com",
-      "noResults": "No matching brands found.",
-      "noResultsLettersHint": "Use letters instead",
-      "useDomainDirectly": "Use {domain}",
-      "autoLabel": "Automatic (from name)",
-      "domainHint": "To find the exact brand, type the company's website domain (e.g. amazon.com) – that always matches the right logo.",
-      "searchError": "Couldn't load logos – try again",
-      "brandNotConfigured": "Brand logos are not configured on this instance. Ask the admin to set VITE_LOGO_DEV_TOKEN, or use letters instead.",
-      "editAriaLabel": "Edit logo",
-      "dialogTitle": "Change logo",
-      "resetToAuto": "Reset to automatic",
-      "remove": "Remove logo",
-      "lettersLabel": "Letters (1–2)",
+      "searchPlaceholder": "Názov značky alebo doména",
+      "searchHint": "Zadajte názov značky alebo doménu, napríklad amazon.com",
+      "noResults": "Nenašli sa žiadne zodpovedajúce značky.",
+      "noResultsLettersHint": "Použiť namiesto toho písmená",
+      "useDomainDirectly": "Použiť {domain}",
+      "autoLabel": "Automaticky (z názvu)",
+      "domainHint": "Ak chcete nájsť presnú značku, zadajte doménu webovej stránky spoločnosti (napr. amazon.com) — tá vždy priradí správne logo.",
+      "searchError": "Logá sa nepodarilo načítať — skúste to znova",
+      "brandNotConfigured": "Logá značiek nie sú na tejto inštancii nastavené. Požiadajte správcu o nastavenie VITE_LOGO_DEV_TOKEN, alebo použite namiesto toho písmená.",
+      "editAriaLabel": "Upraviť logo",
+      "dialogTitle": "Zmeniť logo",
+      "resetToAuto": "Vrátiť na automatické",
+      "remove": "Odstrániť logo",
+      "lettersLabel": "Písmená (1-2)",
       "lettersPlaceholder": "AB",
-      "colorLabel": "Color",
-      "colorSwatchAriaLabel": "Use color {color}",
-      "customColorAriaLabel": "Pick a custom color",
-      "applyLetters": "Apply",
-      "lettersSelectedLabel": "Letters “{letters}”"
+      "colorLabel": "Farba",
+      "colorSwatchAriaLabel": "Použiť farbu {color}",
+      "customColorAriaLabel": "Vybrať vlastnú farbu",
+      "applyLetters": "Použiť",
+      "lettersSelectedLabel": "Písmená “{letters}”"
     },
     "importBatchDeleteOverlay": {
-      "title": "Deleting imported transactions",
-      "description": "A large import batch is being removed. Balances are recalculated when it finishes, so the app is locked until then.",
-      "deleting": "Deleting transactions",
-      "preparing": "Getting ready",
-      "finishing": "Finishing up",
-      "takingLong": "This is taking longer than usual — large batches can take several minutes. Keep this page open.",
-      "unreachableTitle": "Can't reach the server",
-      "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
-      "failedTitle": "Delete failed",
-      "dismiss": "Dismiss"
+      "title": "Mažú sa importované transakcie",
+      "description": "Odstraňuje sa veľká dávka importu. Po jej dokončení sa prepočítajú zostatky, dovtedy je aplikácia uzamknutá.",
+      "deleting": "Mažú sa transakcie",
+      "preparing": "Pripravuje sa",
+      "finishing": "Dokončuje sa",
+      "takingLong": "Toto trvá dlhšie než zvyčajne — veľké dávky môžu trvať niekoľko minút. Nechajte túto stránku otvorenú.",
+      "unreachableTitle": "Server nedostupný",
+      "unreachableDescription": "Mazanie stále môže prebiehať. Toto okno zavrite, ak chcete pokračovať v používaní aplikácie, a výsledok zistíte neskôr obnovením stránky.",
+      "failedTitle": "Zmazanie zlyhalo",
+      "dismiss": "Zavrieť"
+    },
+    "duration": {
+      "years": "{n} r. | {n} r.",
+      "months": "{n} mes. | {n} mes."
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {
     "create": {
-      "error": "Failed to create the group"
+      "error": "Vytvorenie skupiny zlyhalo"
     },
     "update": {
-      "success": "Group updated",
-      "error": "Failed to update group"
+      "success": "Skupina bola aktualizovaná",
+      "error": "Skupinu sa nepodarilo aktualizovať"
     },
     "delete": {
-      "success": "Group has been deleted",
-      "error": "Failed to delete the group"
+      "success": "Skupina bola zmazaná",
+      "error": "Skupinu sa nepodarilo zmazať"
     },
     "link": {
-      "success": "Account has been added to the group",
-      "error": "Failed to add the account to the group"
+      "success": "Účet bol pridaný do skupiny",
+      "error": "Účet sa nepodarilo pridať do skupiny"
     },
     "unlink": {
-      "success": "Account has been removed from the group",
-      "error": "Failed to remove the account from the group"
+      "success": "Účet bol odstránený zo skupiny",
+      "error": "Účet sa nepodarilo odstrániť zo skupiny"
     }
   },
   "validation": {
-    "minLength": "Minimal length is {length}.",
-    "emailInvalid": "Please enter a valid email address.",
-    "passwordsNoMatch": "Passwords don't match"
+    "minLength": "Minimálna dĺžka je {length}.",
+    "emailInvalid": "Zadajte platnú emailovú adresu, prosím.",
+    "passwordsNoMatch": "Heslá sa nezhodujú"
   },
   "notifications": {
-    "title": "Notifications",
-    "markAllAsRead": "Mark all as read",
-    "empty": "No notifications yet",
-    "containerAriaLabel": "Notifications",
-    "closeToast": "Close notification",
-    "viewOnGitHub": "View on GitHub",
-    "newVersion": "New version {version}",
-    "newRelease": "New release",
+    "title": "Upozornenia",
+    "markAllAsRead": "Označiť všetky ako prečítané",
+    "empty": "Zatiaľ žiadne upozornenia",
+    "containerAriaLabel": "Upozornenia",
+    "closeToast": "Zavrieť upozornenie",
+    "viewOnGitHub": "Zobraziť na GitHub",
+    "newVersion": "Nová verzia {version}",
+    "newRelease": "Nová verzia",
     "tagReminder": {
-      "thresholdMessage": "spent {amount} (threshold: {threshold})",
-      "existenceMessage": "{count} transaction | {count} transactions"
+      "thresholdMessage": "minuté {amount} (hranica: {threshold})",
+      "existenceMessage": "{count} transakcia | {count} transakcií"
     },
     "share": {
-      "sendFailedHint": "Open the sharing panel to resend."
+      "sendFailedHint": "Ak chcete odoslať znova, otvorte panel zdieľania."
     }
   },
   "currencyNames": {
-    "UAH": "Ukrainian Hryvnia",
-    "USD": "US Dollar",
+    "UAH": "Ukrajinská hrivna",
+    "USD": "Americký dolár",
     "EUR": "Euro",
-    "GBP": "British Pound Sterling",
-    "JPY": "Japanese Yen",
-    "CHF": "Swiss Franc",
-    "CAD": "Canadian Dollar",
-    "AUD": "Australian Dollar",
-    "NZD": "New Zealand Dollar",
-    "CNY": "Chinese Yuan",
-    "HKD": "Hong Kong Dollar",
-    "SGD": "Singapore Dollar",
-    "SEK": "Swedish Krona",
-    "NOK": "Norwegian Krone",
-    "DKK": "Danish Krone",
-    "PLN": "Polish Zloty",
-    "CZK": "Czech Koruna",
-    "HUF": "Hungarian Forint",
-    "RON": "Romanian Leu",
-    "BGN": "Bulgarian Lev",
-    "HRK": "Croatian Kuna",
-    "RSD": "Serbian Dinar",
-    "TRY": "Turkish Lira",
-    "RUB": "Russian Ruble",
-    "BYN": "Belarusian Ruble",
-    "KZT": "Kazakhstani Tenge",
-    "INR": "Indian Rupee",
-    "IDR": "Indonesian Rupiah",
-    "MYR": "Malaysian Ringgit",
-    "PHP": "Philippine Peso",
-    "THB": "Thai Baht",
-    "VND": "Vietnamese Dong",
-    "KRW": "South Korean Won",
-    "TWD": "New Taiwan Dollar",
-    "BRL": "Brazilian Real",
-    "MXN": "Mexican Peso",
-    "ARS": "Argentine Peso",
-    "CLP": "Chilean Peso",
-    "COP": "Colombian Peso",
-    "PEN": "Peruvian Sol",
-    "ZAR": "South African Rand",
-    "EGP": "Egyptian Pound",
-    "AED": "UAE Dirham",
-    "SAR": "Saudi Riyal",
-    "ILS": "Israeli New Shekel",
-    "QAR": "Qatari Riyal",
-    "KWD": "Kuwaiti Dinar",
-    "BHD": "Bahraini Dinar",
-    "OMR": "Omani Rial",
-    "JOD": "Jordanian Dinar",
-    "MAD": "Moroccan Dirham",
-    "NGN": "Nigerian Naira",
-    "KES": "Kenyan Shilling",
-    "GHS": "Ghanaian Cedi",
+    "GBP": "Britská libra šterling",
+    "JPY": "Japonský jen",
+    "CHF": "Švajčiarsky frank",
+    "CAD": "Kanadský dolár",
+    "AUD": "Austrálsky dolár",
+    "NZD": "Novozélandský dolár",
+    "CNY": "Čínsky juan",
+    "HKD": "Hongkongský dolár",
+    "SGD": "Singapúrsky dolár",
+    "SEK": "Švédska koruna",
+    "NOK": "Nórska koruna",
+    "DKK": "Dánska koruna",
+    "PLN": "Poľský zlotý",
+    "CZK": "Česká koruna",
+    "HUF": "Maďarský forint",
+    "RON": "Rumunský lei",
+    "BGN": "Bulharský lev",
+    "HRK": "Chorvátska kuna",
+    "RSD": "Srbský dinár",
+    "TRY": "Turecká líra",
+    "RUB": "Ruský rubeľ",
+    "BYN": "Bieloruský rubeľ",
+    "KZT": "Kazašské tenge",
+    "INR": "Indická rupia",
+    "IDR": "Indonézska rupia",
+    "MYR": "Malajzský ringgit",
+    "PHP": "Filipínske peso",
+    "THB": "Thajský baht",
+    "VND": "Vietnamský dong",
+    "KRW": "Juhokórejský won",
+    "TWD": "Nový taiwanský dolár",
+    "BRL": "Brazílsky real",
+    "MXN": "Mexické peso",
+    "ARS": "Argentínske peso",
+    "CLP": "Čílske peso",
+    "COP": "Kolumbijské peso",
+    "PEN": "Peruánsky sol",
+    "ZAR": "Juhoafrický rand",
+    "EGP": "Egyptská libra",
+    "AED": "Dirham",
+    "SAR": "Saudský rijál",
+    "ILS": "Izraelský nový šekel",
+    "QAR": "Katarský rial",
+    "KWD": "Kuvajtský dinár",
+    "BHD": "Bahrajnský dinár",
+    "OMR": "Ománsky rial",
+    "JOD": "Jordánsky dinár",
+    "MAD": "Marocký dirham",
+    "NGN": "Nigérijská naira",
+    "KES": "Keňský šiling",
+    "GHS": "Ghanské cedi",
     "XOF": "CFA Franc BCEAO",
     "XAF": "CFA Franc BEAC",
     "BTC": "Bitcoin",
     "ETH": "Ethereum"
   },
   "fileDropzone": {
-    "clickOrDrag": "Click or drag a file here",
-    "clickOrDragMultiple": "Click or drag CSV files here",
-    "dropHere": "Drop file to upload",
-    "dropHereMultiple": "Drop files here",
-    "removeFile": "Remove file",
-    "fileTooLarge": "File is too large. Max size is {max}.",
-    "fileTooLargeNamed": "{name} is larger than {max}",
-    "filesSelected": "{count} file selected | {count} files selected",
-    "clearAll": "Clear all",
-    "onlyFirstFileTaken": "Multiple files dropped – only the first was used."
+    "clickOrDrag": "Kliknite sem alebo sem presuňte súbor",
+    "clickOrDragMultiple": "Kliknite sem alebo sem presuňte CSV súbory",
+    "dropHere": "Súbor pustite sem a nahrajte ho",
+    "dropHereMultiple": "Súbory pustite sem",
+    "removeFile": "Odstrániť súbor",
+    "fileTooLarge": "Súbor je príliš veľký. Maximálna veľkosť je {max}.",
+    "fileTooLargeNamed": "{name} je väčší než {max}",
+    "filesSelected": "Vybraný súbor: {count} | Vybrané súbory: {count}",
+    "clearAll": "Vymazať všetko",
+    "onlyFirstFileTaken": "Bolo pretiahnutých viac súborov — použil sa len prvý."
   },
   "demo": {
-    "featureNotAvailable": "This feature is not available in demo mode",
-    "passwordChangeRestricted": "Password changes are not available in demo mode",
+    "featureNotAvailable": "Táto funkcia nie je v demo režime dostupná",
+    "passwordChangeRestricted": "Zmena hesla nie je v demo režime dostupná",
     "investmentsRestricted": {
-      "title": "Investments Unavailable in Demo",
-      "description": "The investments feature is not available in demo mode. Please sign up for a full account to access investments tracking."
+      "title": "Investície nie sú v demo verzii dostupné",
+      "description": "Funkcia investícií nie je v demo režime dostupná. Ak chcete sledovať investície, zaregistrujte si, prosím, plný účet."
     },
     "banner": {
-      "message": "You're exploring a demo with sample data{time}. {signUpLink} to create your own account.",
-      "resets": "resets in {time}",
-      "signUp": "Sign up",
+      "message": "Prezeráte si demo s ukážkovými údajmi{time}. {signUpLink} a vytvorte si vlastný účet.",
+      "resets": "reset o {time}",
+      "signUp": "Zaregistrovať sa",
       "timeFormat": {
-        "hoursMinutes": "{hours}h {minutes}m",
-        "minutes": "{minutes}m"
+        "hoursMinutes": "{hours} h {minutes} min",
+        "minutes": "{minutes} min"
       }
     },
-    "sessionExpiredNotice": "Your demo session has ended. Create a free account to continue, or sign in below if you already have one."
+    "sessionExpiredNotice": "Vaša demo relácia sa skončila. Ak chcete pokračovať, vytvorte si bezplatný účet, alebo sa nižšie prihláste, ak už účet máte."
   },
   "billing": {
-    "seePlans": "See plans",
-    "updatePaymentMethod": "Update your payment method",
+    "seePlans": "Zobraziť plány",
+    "updatePaymentMethod": "Aktualizovať spôsob platby",
     "planRequired": {
-      "essential": "Included in the Essential plan",
-      "plus": "Included in the Plus plan",
-      "hint": "Your current plan doesn't include this feature. Upgrade to unlock it."
+      "essential": "Súčasť plánu Essential",
+      "plus": "Súčasť plánu Plus",
+      "hint": "Váš súčasný plán túto funkciu neobsahuje. Ak ju chcete odomknúť, prejdite na vyšší plán."
     },
     "banner": {
-      "trial": "{count} day left in your trial · {link} | {count} days left in your trial · {link}",
-      "readOnly": "Your trial has ended. You can view and export your data; subscribe to keep editing. {link}",
-      "subscriptionEnded": "Your subscription has ended. {link} to keep editing your data.",
-      "pastDue": "Your last payment failed. {link} to keep your plan."
+      "trial": "V skúšobnej verzii zostáva {count} deň · {link} | V skúšobnej verzii zostáva {count} dní · {link}",
+      "readOnly": "Vaša skúšobná verzia sa skončila. Údaje si môžete prezerať a exportovať; na ich ďalšiu úpravu si predplaťte plán. {link}",
+      "subscriptionEnded": "Vaše predplatné sa skončilo. {link}, ak chcete pokračovať v úprave svojich údajov.",
+      "pastDue": "Vaša posledná platba zlyhala. {link}, ak si chcete plán zachovať."
     }
   },
   "settings": {
     "currencies": {
       "setBase": {
         "overlay": {
-          "title": "Changing your base currency",
-          "description": "We're recalculating every amount into your new base currency. This can take a few minutes — please keep this tab open.",
-          "takingLong": "This is taking longer than usual. Your data is safe — we're still working on it.",
-          "failedTitle": "Base currency change failed",
-          "unreachableTitle": "Can't verify the change status",
-          "unreachableDescription": "The server is not responding. You can dismiss this screen — if the change is still running, the app will lock again on your next action.",
-          "dismiss": "Dismiss",
-          "preparing": "Getting things ready…",
-          "finishing": "Finishing up…",
+          "title": "Mení sa vaša základná mena",
+          "description": "Prepočítavame všetky sumy na vašu novú základnú menu. Môže to trvať niekoľko minút — nechajte túto kartu otvorenú, prosím.",
+          "takingLong": "Toto trvá dlhšie než zvyčajne. Vaše údaje sú v bezpečí — stále na tom pracujeme.",
+          "failedTitle": "Zmena základnej meny zlyhala",
+          "unreachableTitle": "Stav zmeny sa nedá overiť",
+          "unreachableDescription": "Server neodpovedá. Túto obrazovku môžete zavrieť — ak zmena stále prebieha, aplikácia sa pri ďalšej akcii znova uzamkne.",
+          "dismiss": "Zavrieť",
+          "preparing": "Všetko pripravujeme…",
+          "finishing": "Dokončujeme...",
           "steps": {
-            "transactions": "Updating transactions",
-            "accounts": "Updating accounts",
-            "loanDetails": "Updating loans",
-            "balances": "Rebuilding balance history",
-            "investmentTransactions": "Updating investment transactions",
-            "portfolioTransfers": "Updating portfolio transfers",
-            "holdings": "Updating holdings",
-            "portfolioBalances": "Rebuilding portfolio balances"
+            "transactions": "Aktualizujú sa transakcie",
+            "accounts": "Aktualizujú sa účty",
+            "loanDetails": "Aktualizujú sa pôžičky",
+            "balances": "Prestavuje sa história zostatkov",
+            "investmentTransactions": "Aktualizujú sa investičné transakcie",
+            "portfolioTransfers": "Aktualizujú sa prevody portfólia",
+            "holdings": "Aktualizujú sa pozície",
+            "portfolioBalances": "Prestavujú sa zostatky portfólia"
           }
         }
       }
@@ -426,38 +441,38 @@
   },
   "ai": {
     "estimatedCost": {
-      "yourApiKey": "(your API key)",
-      "setByEndpoint": "Set by your endpoint"
+      "yourApiKey": "(váš API kľúč)",
+      "setByEndpoint": "Ocenené vaším poskytovateľom"
     }
   },
   "transactionGroups": {
     "groupDialog": {
-      "editTitle": "Edit Group",
-      "nameLabel": "Name",
-      "noteLabel": "Note (optional)",
-      "notePlaceholder": "Optional note...",
-      "loadingText": "Loading...",
-      "savingAction": "Save",
-      "cancelButton": "Cancel",
-      "editAction": "Edit",
-      "deleteAction": "Delete Group",
-      "transactionsLabel": "Transactions",
-      "deleteGroupTitle": "Delete group",
-      "deleteGroupDescription": "Are you sure you want to delete \"{groupName}\"? The transactions will not be deleted.",
-      "removeTransactionTitle": "Remove transaction from group",
-      "removeTransactionDescription": "This will leave fewer than 2 transactions in the group, so the group will be deleted. Continue?",
-      "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
-      "removeButtonText": "Remove",
-      "removeAndDeleteButtonText": "Remove & Delete Group",
+      "editTitle": "Upraviť skupinu",
+      "nameLabel": "Názov",
+      "noteLabel": "Poznámka (voliteľné)",
+      "notePlaceholder": "Voliteľná poznámka...",
+      "loadingText": "Načítavanie...",
+      "savingAction": "Uložiť",
+      "cancelButton": "Zrušiť",
+      "editAction": "Upraviť",
+      "deleteAction": "Zmazať skupinu",
+      "transactionsLabel": "Transakcie",
+      "deleteGroupTitle": "Zmazať skupinu",
+      "deleteGroupDescription": "Naozaj chcete zmazať „{groupName}\"? Transakcie zmazané nebudú.",
+      "removeTransactionTitle": "Odstrániť transakciu zo skupiny",
+      "removeTransactionDescription": "V skupine by tak zostali menej než 2 transakcie, preto sa skupina zmaže. Pokračovať?",
+      "removeTransactionDescriptionNormal": "Naozaj chcete odstrániť túto transakciu zo skupiny?",
+      "removeButtonText": "Odstrániť",
+      "removeAndDeleteButtonText": "Odstrániť a zmazať skupinu",
       "summary": {
-        "transactions": "Transactions",
-        "net": "Net",
-        "moneyIn": "Money in",
-        "moneyOut": "Money out"
+        "transactions": "Transakcie",
+        "net": "Čistý zostatok",
+        "moneyIn": "Prijaté",
+        "moneyOut": "Odoslané"
       }
     },
     "transactionGroupRecord": {
-      "transactionCountLabel": "transactions"
+      "transactionCountLabel": "transakcie"
     }
   }
 }

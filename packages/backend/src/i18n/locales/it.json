@@ -351,8 +351,23 @@
     "defaultCurrencyNotPresent": "Cannot delete currency. Default currency is not present in the system"
   },
   "ai": {
-    "apiKeyValidationFailed": "API key validation failed",
-    "noApiKeyForProvider": "No API key configured for provider: {{provider}}",
+    "connectionNotFound": "AI model not found.",
+    "connectionNameTaken": "You already have an AI model with this name.",
+    "connectionLimitReached": "You can add up to {{max}} AI models.",
+    "connectionNameInvalidLength": "Name must be between 1 and {{max}} characters.",
+    "connectionModelRequired": "Enter a model name.",
+    "connectionBaseUrlRequired": "Enter the base URL of your OpenAI-compatible server.",
+    "connectionBaseUrlNotAllowed": "This provider always uses its official API address, so it doesn't take a base URL.",
+    "connectionApiKeyRequired": "Enter the API key.",
+    "connectionProviderMismatch": "That AI model uses a different provider.",
+    "connectionKeySourceMissing": "The AI model you're copying from has no API key. Enter one.",
+    "connectionStoredKeyUnreadable": "The API key saved for this AI model can no longer be read. Enter it again.",
+    "connectionKeyRejected": "The provider rejected this API key. Check that it's correct, active, and has credits.",
+    "connectionModelNotAvailable": "This API key can't use the model \"{{model}}\". Check the model name.",
+    "connectionProviderUnreachable": "Couldn't reach the provider. Try again in a moment.",
+    "connectionValidationFailed": "The provider refused the test request: {{reason}}",
+    "serverModelUnavailable": "The included MoneyMatter AI model isn't available on your plan.",
+    "connectionKeyNotInBackup": "API key isn't included in backups. Edit this model and enter the key again.",
     "customEndpointUnreachable": "Could not reach the endpoint. Check the base URL and make sure the server is running and reachable from the internet.",
     "customEndpointAuthFailed": "The endpoint rejected the API key. Check that the key is correct and has the required permissions.",
     "customEndpointModelNotFound": "The endpoint does not serve a model named \"{{model}}\".",
@@ -360,16 +375,9 @@
     "customEndpointMoreModels": "and {{count}} more",
     "customEndpointNotApiResponse": "The server at this URL answered with HTTP {{status}} instead of an OpenAI-compatible response. Check that the server is running and that the base URL is correct — it usually ends with /v1.",
     "customEndpointValidationFailed": "The endpoint did not return a usable response. Check the base URL, model name and API key.",
-    "customEndpointMissingFields": "A base URL and a model name are required.",
-    "customEndpointNameTaken": "You already have an endpoint with this name.",
-    "customEndpointNameInvalidLength": "Endpoint name must be between 1 and 50 characters.",
-    "customEndpointNotFound": "Custom endpoint not found.",
-    "customEndpointIdRequired": "Select which custom endpoint serves this model.",
-    "customModelNameInvalidLength": "The model name must be between 1 and 200 characters.",
-    "customEndpointLimitReached": "You can store up to {{max}} custom endpoints. Remove one before adding another.",
-    "customEndpointStoredKeyUnreadable": "The saved API key for this endpoint can no longer be read. Please enter it again.",
     "categorizationAlreadyRunning": "AI categorization is already running. Wait for it to finish before starting another run.",
-    "categorizationRateLimited": "You've started AI categorization too many times recently. Please try again later."
+    "categorizationRateLimited": "You've started AI categorization too many times recently. Please try again later.",
+    "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
   },
   "middleware": {
     "tooManyRequests": "Too many requests. Please try again later."
@@ -554,6 +562,12 @@
     "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF file.",
     "tooManyAttachments": "A transaction can hold at most {{max}} attachments.",
     "quotaExceeded": "Attachment storage quota exceeded.",
+    "noFileUploaded": "No file was uploaded."
+  },
+  "invoiceMatching": {
+    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF invoice.",
+    "notAnInvoice": "This document does not look like an invoice or a receipt.",
+    "incompleteInvoice": "Could not read a vendor, total amount and date from this invoice.",
     "noFileUploaded": "No file was uploaded."
   }
 }

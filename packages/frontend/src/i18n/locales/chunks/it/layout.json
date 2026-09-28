@@ -12,6 +12,7 @@
     "optimizations": "Ottimizzazioni",
     "automations": "Automazioni",
     "accountDetails": "Dettagli account",
+    "helpAndDocs": "Help & docs",
     "logout": "Disconnessione",
     "appVersion": "Versione app {version}",
     "settings": "Impostazioni",
@@ -23,8 +24,8 @@
     "venture": "Investimenti"
   },
   "sidebar": {
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar",
+    "collapse": "Nascondi barra laterale",
+    "expand": "Mostra barra laterale",
     "settings": {
       "title": "Impostazioni",
       "sections": {
@@ -57,6 +58,10 @@
   "header": {
     "add": "Aggiungere",
     "importData": "Importazione dati",
+    "moreActions": "More ways to add data",
+    "importDataHint": "CSV file or bank statement",
+    "attachInvoice": "Attach invoice",
+    "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "Lingua",
     "newTransaction": "Aggiungere transazione",
     "settings": "Impostazioni",
@@ -77,7 +82,7 @@
       "completed": "L'IA ha categorizzato {count} transazioni | L'IA ha categorizzato {count} transazioni",
       "completedShort": "Categorizzazione completata",
       "completedWithSkipped": "Classificate {count} transazioni ({skipped} saltate) | Classificate {count} transazioni ({skipped} saltate)",
-      "failed": "Categorizzazione fallita",
+      "failed": "Classificazione non riuscita",
       "failedShort": "Non Riuscita",
       "allSkipped": "L'AI non ha potuto categorizzare in modo sicuro la transazione <unk> L'AI non ha potuto categorizzare in modo sicuro nessuna delle transazioni {count}",
       "queued": "Attendi...",
@@ -100,6 +105,8 @@
         "featureRequest": "Richiedo una funzionalità",
         "other": "Altro..."
       },
+      "docsHint": "Not sure how something works? Check the {link} first.",
+      "docsHintLink": "docs",
       "messageLabel": "La tua opinione",
       "messagePlaceholder": "Cos'è successo o cosa vorresti vedere?",
       "messageRequired": "Scrivi un messaggio...",

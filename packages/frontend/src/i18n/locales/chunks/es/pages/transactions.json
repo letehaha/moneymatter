@@ -38,7 +38,7 @@
         "label": "Planificadas"
       },
       "attachments": {
-        "label": "Attachments"
+        "label": "Adjuntos"
       },
       "filterOperation": {
         "all": "Todos",
@@ -177,7 +177,7 @@
     },
     "pending": {
       "label": "Pendiente",
-      "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
+      "tooltip": "El banco no ha reservado esta transacción todavía. No afecta el saldo de la cuenta."
     },
     "table": {
       "columns": {
@@ -203,7 +203,11 @@
         "title": "Configuración de tabla",
         "columns": "Columnas",
         "visibleCount": "{count} visibles",
-        "resetDefaults": "Restablecer valores por defecto"
+        "resetDefaults": "Restablecer valores por defecto",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
       },
       "categorizationSourceValues": {
         "manual": "Manual",
@@ -230,6 +234,16 @@
       "confirmDescription": "Esta acción no se puede deshacer. Se eliminarán ambos lados de las transferencias.",
       "successMessage": "{count} transacciones eliminadas",
       "unexpectedError": "No se pudieron eliminar las transacciones. Por favor, intente de nuevo."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Entendido",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
     }
   },
   "records": {

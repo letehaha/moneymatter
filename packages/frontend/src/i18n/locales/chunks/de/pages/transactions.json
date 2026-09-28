@@ -1,10 +1,10 @@
 {
   "transactions": {
     "filters": {
-      "filtersLabel": "Filters",
-      "selectFilters": "Select filters",
+      "filtersLabel": "Filter",
+      "selectFilters": "Filter auswählen",
       "reset": "Reset",
-      "apply": "Apply",
+      "apply": "Anwenden",
       "dateRange": {
         "placeholder": "Date or range",
         "presets": {
@@ -21,24 +21,24 @@
         "allTypes": "All types"
       },
       "amountRange": {
-        "from": "Amount from (gte)",
-        "to": "To (lte)",
-        "placeholderFrom": ">= than",
-        "placeholderTo": "<= than",
+        "from": "Betrag von (>=)",
+        "to": "Bis (<=)",
+        "placeholderFrom": "Größer gleich",
+        "placeholderTo": "Kleiner gleich",
         "compactFrom": "Min amount",
         "compactTo": "Max amount"
       },
       "refundsFilter": {
-        "label": "Refunds"
+        "label": "Erstattet"
       },
       "transferFilter": {
         "label": "Transfers"
       },
       "plannedFilter": {
-        "label": "Planned"
+        "label": "Geplant"
       },
       "attachments": {
-        "label": "Attachments"
+        "label": "Anhänge"
       },
       "filterOperation": {
         "all": "All",
@@ -76,13 +76,13 @@
         "disabledTooltip": "Transfers are excluded by the filter above, so transfer kinds have no effect.",
         "commonTransfer": "Between accounts",
         "outOfWallet": "Out of wallet",
-        "toPortfolio": "To portfolio",
+        "toPortfolio": "Zielportfolio",
         "toVenture": "To venture",
         "selectedCount": "{n} selected"
       }
     },
     "list": {
-      "noMoreData": "No more transactions",
+      "noMoreData": "Keine weiteren Transaktionen",
       "loadingMore": "Loading more...",
       "detailsTitle": "Transaction details",
       "detailsDescription": "View and edit transaction"
@@ -90,7 +90,7 @@
     "bulkEdit": {
       "selectAll": "Alles auswählen",
       "cancelSelection": "Cancel selection",
-      "editButton": "Edit",
+      "editButton": "Bearbeiten",
       "selectedCount": "{count} selected",
       "dialogTitle": "Edit {count} transactions",
       "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
@@ -111,7 +111,7 @@
       "confirmTagsLabel": "Tags",
       "confirmNoteLabel": "Note",
       "cancelButton": "Abbrechen",
-      "confirmApplyButton": "Apply",
+      "confirmApplyButton": "Anwenden",
       "successMessage": "Successfully updated {count} transactions",
       "unexpectedError": "An unexpected error occurred",
       "tagModeLabel": "Tag action",
@@ -127,7 +127,7 @@
     },
     "transactionGroups": {
       "bulkActions": {
-        "createNewGroup": "Create new group",
+        "createNewGroup": "Neue Gruppe erstellen",
         "addToExistingGroup": "Add to existing group",
         "groupButton": "Group"
       },
@@ -148,7 +148,7 @@
         "groupNamePlaceholder": "e.g. May salary transfer",
         "noteLabel": "Note (optional)",
         "notePlaceholder": "Optional description...",
-        "creatingText": "Creating...",
+        "creatingText": "Wird erstellt...",
         "buttonLabel": "Create Group",
         "cancelButton": "Abbrechen"
       },
@@ -169,7 +169,7 @@
       }
     },
     "planned": {
-      "label": "Planned",
+      "label": "Geplant",
       "confirmedLabel": "Confirmed",
       "plannedTooltip": "Planned transaction",
       "expiredTooltip": "Expected {days} days ago, no matching bank transaction",
@@ -196,14 +196,18 @@
         "split": "Split"
       },
       "outOfWallet": "Out of wallet",
-      "hint": "Click a row to view details. Select rows to bulk edit.",
+      "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
       "emptyTitle": "No transactions match these filters",
       "emptyDescription": "Try adjusting or resetting the filters.",
       "columnConfig": {
         "title": "Table settings",
         "columns": "Columns",
         "visibleCount": "{count} visible",
-        "resetDefaults": "Reset to defaults"
+        "resetDefaults": "Reset to defaults",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
       },
       "categorizationSourceValues": {
         "manual": "Manual",
@@ -230,6 +234,16 @@
       "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
       "successMessage": "{count} transactions deleted",
       "unexpectedError": "Failed to delete transactions. Please try again."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Verstanden",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
     }
   },
   "records": {
@@ -246,7 +260,7 @@
       "deletePlanTitle": "Delete planned transaction?",
       "deletePlanDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
       "plansLoadFailed": "Couldn't load planned transactions",
-      "confirmAction": "Confirm",
+      "confirmAction": "Bestätigen",
       "confirmTooltip": "The money moved — record it and update the balance",
       "confirmPlanSuccess": "Plan recorded — balance updated",
       "confirmPlanError": "Failed to record the plan"

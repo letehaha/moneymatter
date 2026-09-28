@@ -7,7 +7,6 @@
       "accountsGroups": "Gruppi di conti",
       "importData": "Importa/Esporta",
       "ai": "IA",
-      "aiIntegrations": "Integrazioni IA",
       "security": "Sicurezza",
       "admin": "Amministratore",
       "sharedWithMe": "Condivisi con me",
@@ -19,7 +18,8 @@
       "general": "Generale",
       "payees": "Beneficiari",
       "subscriptions": "Pagamenti programmati",
-      "planBilling": "Piani e fatturazione"
+      "planBilling": "Piani e fatturazione",
+      "collapse": "Collapse"
     },
     "backToSettings": "Torna a Impostazioni"
   }

@@ -44,13 +44,13 @@
         "runLoadError": "Couldn't load this run's transactions.",
         "backToRuns": "Back to all runs",
         "runEmptyTitle": "Nothing left from this run",
-        "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
+        "runEmptyDescription": "Všetky transakcie, ktoré toto spustenie zaradilo do kategórie, boli odvtedy znova zaradené inde alebo zmazané.",
         "transactionCount": "{count} transaction | {count} transactions",
         "trigger": {
           "manual": "Manual",
           "import": "Data import",
           "sync": "Bank sync",
-          "unknown": "Unknown"
+          "unknown": "Neznáme"
         },
         "triggerTooltip": {
           "manual": "You started this run manually",
@@ -63,7 +63,7 @@
         "title": "Run setup",
         "model": "Model",
         "notConfigured": "Not configured",
-        "endpoint": "Endpoint",
+        "connection": "AI model",
         "limits": "Limits",
         "limitsSharedKey": "3 runs per hour",
         "limitsOwnCredentials": "Unlimited — runs on your own key",

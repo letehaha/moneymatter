@@ -29,6 +29,17 @@
       "delete": "Delete",
       "deleteAndIgnore": "Delete & ignore"
     },
+    "bulk": {
+      "select": "Select",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Clear selection",
+      "selectAll": "Select all loaded payees",
+      "selectRow": "Select {name}",
+      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
+      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
+      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
+      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
+    },
     "emptyState": {
       "title": "No payees yet",
       "description": "Connect a bank to detect payees automatically, or create one manually."
@@ -111,7 +122,9 @@
       "aliasDeleted": "Alias removed",
       "aliasAdded": "Alias added",
       "deletedAndIgnored": "Payee deleted and added to ignored-names list",
-      "tagsAppliedToExisting": "Tags applied to {count} transactions"
+      "tagsAppliedToExisting": "Tags applied to {count} transactions",
+      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
+      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
     },
     "errors": {
       "collision": "A payee with this name already exists. Merge instead.",
@@ -124,6 +137,7 @@
     "settings": {
       "title": "Payee detection settings",
       "description": "Control how the app auto-detects Payees from your synced transactions.",
+      "howDetectionWorks": "How detection works",
       "payeeFromDescription": {
         "label": "Detect payees from transaction descriptions",
         "description": "When your bank doesn't provide a dedicated merchant field, fall back to the transaction description (note) to auto-detect Payees. Useful for bank connections that have merchant fields empty or absent. May produce noisier Payee names (e.g. installment-payment prefixes) which you can rename or merge afterwards.",
@@ -162,6 +176,7 @@
       "conflictDescription": "A Payee with the same normalized name as \"{name}\" already exists. Continuing will delete that Payee (transactions stay, lose link).",
       "forceConfirm": "Delete Payee and ignore"
     },
-    "loadingMore": "Loading more…"
+    "loadingMore": "Loading more…",
+    "txCount": "{count} tx"
   }
 }

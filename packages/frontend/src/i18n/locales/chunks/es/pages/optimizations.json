@@ -63,7 +63,7 @@
         "title": "Configuración de la ejecución",
         "model": "Modelo",
         "notConfigured": "Sin configurar",
-        "endpoint": "Endpoint",
+        "connection": "Modelos de IA",
         "limits": "Límites",
         "limitsSharedKey": "3 ejecuciones por hora",
         "limitsOwnCredentials": "Ilimitado — con su propia clave",

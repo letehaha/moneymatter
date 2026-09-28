@@ -1,0 +1,98 @@
+{
+  "settings": {
+    "tags": {
+      "title": "Tags",
+      "addButton": "Add Tag",
+      "empty": "No tags yet. Create your first tag to organize your transactions.",
+      "tabs": {
+        "details": "Details",
+        "reminders": "Reminders"
+      },
+      "form": {
+        "createTitle": "Create Tag",
+        "editTitle": "Edit Tag",
+        "name": "Name",
+        "namePlaceholder": "Tag name",
+        "color": "Color",
+        "icon": "Icon",
+        "iconPlaceholder": "Select icon",
+        "iconSearchPlaceholder": "Search icons...",
+        "clearIcon": "Clear icon",
+        "description": "Description",
+        "descriptionPlaceholder": "Optional description",
+        "saveButton": "Save",
+        "previewPlaceholder": "Tag name"
+      },
+      "delete": {
+        "title": "Delete tag?",
+        "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel"
+      },
+      "notifications": {
+        "createSuccess": "Tag created",
+        "createFailed": "Failed to create tag",
+        "updateSuccess": "Tag updated",
+        "updateFailed": "Failed to update tag",
+        "deleteSuccess": "Tag deleted",
+        "deleteFailed": "Failed to delete tag"
+      },
+      "reminders": {
+        "addButton": "Add Reminder",
+        "empty": "No reminders yet. Create a reminder to get notified about this tag's activity.",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "form": {
+          "createTitle": "Create Reminder",
+          "editTitle": "Edit Reminder",
+          "type": "Reminder Type",
+          "typePlaceholder": "Select type",
+          "amountThreshold": "Amount Threshold",
+          "amountThresholdPlaceholder": "Enter threshold amount",
+          "amountThresholdHint": "Get notified when spending on this tag exceeds this amount",
+          "frequency": "Frequency",
+          "frequencyPlaceholder": "Select frequency",
+          "dayOfMonth": "Day of month",
+          "dayOfMonthPlaceholder": "Select day",
+          "dayOfMonthHint": "For months with fewer days, the last day will be used",
+          "isEnabled": "Enabled",
+          "saveButton": "Save"
+        },
+        "types": {
+          "amountThreshold": "Amount Threshold",
+          "amountThresholdDescription": "Notify when spending exceeds a certain amount",
+          "existenceCheck": "Activity Check",
+          "existenceCheckDescription": "Notify when there are transactions with this tag"
+        },
+        "frequencies": {
+          "immediate": "Immediate",
+          "immediateDescription": "Triggers when transactions are tagged (24h cooldown)",
+          "daily": "Daily",
+          "dailyDescription": "Check every day",
+          "weekly": "Weekly",
+          "weeklyDescription": "Check every Monday",
+          "monthly": "Monthly",
+          "monthlyDescription": "Check on a specific day each month",
+          "quarterly": "Quarterly",
+          "quarterlyDescription": "Check every 3 months (Jan, Apr, Jul, Oct)",
+          "yearly": "Yearly",
+          "yearlyDescription": "Check once per year in January"
+        },
+        "delete": {
+          "title": "Delete reminder?",
+          "description": "This will permanently delete this reminder. This action cannot be undone.",
+          "deleteButton": "Delete",
+          "cancelButton": "Cancel"
+        },
+        "notifications": {
+          "createSuccess": "Reminder created",
+          "createFailed": "Failed to create reminder",
+          "updateSuccess": "Reminder updated",
+          "updateFailed": "Failed to update reminder",
+          "deleteSuccess": "Reminder deleted",
+          "deleteFailed": "Failed to delete reminder"
+        }
+      }
+    }
+  }
+}

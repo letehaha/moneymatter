@@ -131,6 +131,7 @@
       "addCurrencyButton": "Añadir nueva moneda +",
       "initialBalanceLabel": "Saldo inicial",
       "initialBalancePlaceholder": "Saldo inicial",
+      "initialBalanceHelpLink": "¿Qué debo ingresar?",
       "accountCategoryLabel": "Categoría de cuenta",
       "accountCategoryPlaceholder": "Seleccionar categoría de cuenta",
       "creditLimitLabel": "Límite de crédito",

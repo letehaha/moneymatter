@@ -5,67 +5,9 @@
       "description": "Konfigurasikan fitur berbasis AI seperti kategorisasi transaksi otomatis",
       "tabs": {
         "features": "Fitur AI",
-        "apiKeys": "Kunci API",
-        "invalidKeysTooltip": "Satu atau lebih kunci API tidak valid",
-        "customEndpoints": "Endpoint kustom",
-        "invalidEndpointsTooltip": "Satu atau lebih endpoint kustom tidak lagi berfungsi"
-      },
-      "apiKeyManager": {
-        "title": "Kunci API",
-        "description": "Tambahkan kunci API Anda sendiri untuk menggunakan penyedia tertentu",
-        "badges": {
-          "default": "Bawaan"
-        },
-        "buttons": {
-          "setDefault": "Jadikan Default"
-        },
-        "invalidKeyHelp": "Tambahkan kunci baru di bawah untuk mengganti yang ini, atau hapus jika tidak diperlukan lagi.",
-        "deleteDialog": {
-          "title": "Hapus kunci API?",
-          "description": "Yakin ingin menghapus kunci API {provider}?",
-          "descriptionMultiple": "Fitur AI yang saat ini menggunakan {provider} akan beralih ke penyedia lain yang tersedia.",
-          "cancel": "Batal",
-          "remove": "Hapus"
-        },
-        "allConfigured": "Semua penyedia telah diatur",
-        "form": {
-          "titleAdd": "Tambah Kunci API",
-          "titleAddAnother": "Tambah Penyedia Lain",
-          "providerLabel": "Penyedia",
-          "apiKeyLabel": "Kunci API",
-          "buttonSaving": "Memvalidasi...",
-          "buttonSave": "Simpan Kunci"
-        },
-        "providers": {
-          "anthropic": {
-            "label": "Anthropic (Claude)",
-            "placeholder": "sk-ant-...",
-            "description": "Dapatkan kunci API dari"
-          },
-          "openai": {
-            "label": "OpenAI (GPT)",
-            "placeholder": "sk-...",
-            "description": "Dapatkan kunci API dari"
-          },
-          "google": {
-            "label": "Google (Gemini)",
-            "placeholder": "AIza...",
-            "description": "Dapatkan kunci API dari"
-          },
-          "groq": {
-            "label": "Groq (Llama, Mixtral)",
-            "placeholder": "gsk_...",
-            "description": "Dapatkan kunci API dari"
-          }
-        },
-        "notifications": {
-          "saveSuccess": "Kunci API berhasil disimpan dan divalidasi",
-          "saveFailed": "Kunci API tidak berfungsi. Harap verifikasi kunci sudah benar, memiliki kredit yang cukup, dan memiliki izin yang diperlukan.",
-          "setDefaultSuccess": "{provider} ditetapkan sebagai bawaan",
-          "setDefaultFailed": "Gagal menetapkan penyedia bawaan",
-          "removeSuccess": "Kunci API {provider} dihapus",
-          "removeFailed": "Gagal menghapus kunci API"
-        }
+        "models": "AI models",
+        "connectedApps": "Connectors (MCP)",
+        "invalidConnectionsTooltip": "One of your AI models needs attention"
       },
       "credentialStatus": {
         "validated": "Tervalidasi {timeAgo}",
@@ -75,76 +17,47 @@
       "features": {
         "title": "Fitur AI",
         "description": "Konfigurasikan model mana yang digunakan untuk setiap fitur berbasis AI",
-        "loading": "Memuat fitur..."
+        "howItWorks": "How it works",
+        "loadError": "Couldn't load your AI features."
       },
       "categorization": {
-        "modelHint": {
-          "trigger": "Model apa yang harus saya pilih?",
-          "text": "Model yang lebih besar (lebih mahal) umumnya lebih akurat untuk transaksi dalam bahasa yang jarang digunakan atau dengan deskripsi yang tidak jelas. Model yang lebih kecil dan lebih cepat sudah cukup untuk sebagian besar kasus dalam bahasa Inggris."
-        },
         "howItWorks": {
-          "title": "Cara kerjanya",
           "points": {
             "autoSync": "Saat Anda menyinkronkan transaksi dari bank, transasi yang tidak terkategorikan otomatis dikirim ke AI untuk dikategorikan.",
             "analysis": "AI menganalisis deskripsi transaksi dan nama merchant untuk menyarankan kategori yang sesuai dari daftar kategori Anda.",
             "override": "Anda selalu dapat mengganti kategori yang disarankan AI secara manual."
           }
-        },
-        "loading": "Memuat model..."
+        }
       },
       "statementParsing": {
-        "modelHint": {
-          "trigger": "Model apa yang harus saya pilih?",
-          "text": "Model dengan konteks besar dan kemampuan visi (jika PDF) sangat membantu untuk penguraian pernyataan. Model yang lebih murah mungkin gagal pada tata letak yang kompleks."
-        },
         "howItWorks": {
-          "title": "Cara kerjanya",
           "points": {
             "upload": "Upload laporan bank (PDF, CSV, atau TXT) dan AI akan mengekstrak semua transaksi secara otomatis.",
             "analysis": "AI menganalisis struktur dokumen untuk mengidentifikasi tanggal, deskripsi, jumlah, dan jenis transaksi.",
             "review": "Anda dapat meninjau dan mengoreksi data yang diekstrak sebelum mengimpor ke akun Anda.",
             "cost": "Biaya diperkirakan sebelum diproses, namun hanya mencerminkan perkiraan biaya."
           }
-        },
-        "loading": "Memuat model..."
+        }
       },
       "modelSelector": {
+        "placeholder": "Pick a model",
+        "automaticOption": "Automatic",
+        "automaticOptionWithTarget": "Automatic · {target}",
+        "serverOption": "MoneyMatter AI · included",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
         "badges": {
           "yourKey": "Kunci Anda",
           "yourKeyTooltip": "Fitur ini menggunakan kunci API pribadi Anda. Anda memiliki kendali penuh atas penggunaan dan biaya, tanpa batasan jumlah dari server kami.",
           "server": "Server",
           "serverTooltip": "Fitur ini menggunakan kunci API bersama server kami. Gratis tetapi mungkin memiliki batasan jumlah saat permintaan tinggi. Tambahkan kunci API Anda sendiri untuk akses tak terbatas."
         },
+        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
+        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Model",
-        "resetButton": "Kembalikan ke Default",
-        "noApiKey": "(Tidak ada kunci API)",
         "modelInfo": {
-          "context": "Konteks:",
-          "capabilities": "Kemampuan:",
           "estimatedCost": "Perkiraan biaya:",
           "per100Transactions": "per 100 transaksi"
-        },
-        "rateLimitWarning": "Menggunakan AI yang disediakan server dengan batasan jumlah gratis. Ketersediaan fitur tergantung pada permintaan pengguna lain. Untuk akses yang andal, tambahkan kunci API Anda sendiri di tab Kunci API.",
-        "groupLabels": {
-          "recommended": "⭐ Direkomendasikan",
-          "openai": "OpenAI",
-          "anthropic": "Anthropic",
-          "google": "Google",
-          "groq": "Groq"
-        },
-        "costLabels": {
-          "free": "Gratis",
-          "low": "Biaya rendah",
-          "medium": "Biaya sedang",
-          "high": "Biaya tinggi"
-        },
-        "capabilities": {
-          "textGeneration": "Teks",
-          "structuredOutput": "Terstruktur",
-          "functionCalling": "Fungsi",
-          "vision": "Visi",
-          "fastInference": "Cepat",
-          "agents": "Agen"
         },
         "notifications": {
           "updateSuccess": "Model berhasil diperbarui",
@@ -152,114 +65,206 @@
           "resetSuccess": "Kembali ke model bawaan",
           "resetFailed": "Gagal mengembalikan model"
         },
-        "addKeyHint": "Tambahkan kunci API Anda sendiri untuk memilih dari semua model yang tersedia.",
-        "addKeyHintLink": "Tambah Kunci API →",
-        "customModel": {
-          "nameLabel": "Nama model",
-          "applyButton": "Terapkan",
-          "hint": "Dikirim apa adanya ke {baseUrl}.",
-          "endpointOption": "{endpoint} — {model}",
-          "unknownEndpoint": "Endpoint kustom",
-          "missingModelName": "Endpoint ini belum memiliki nama model yang dikonfigurasi — masukkan satu terlebih dahulu",
-          "endpointsLoadError": "Endpoint Anda tidak dapat dimuat, sehingga nama model tidak dapat diedit saat ini."
+        "empty": {
+          "title": "No AI model yet",
+          "description": "Add your own AI model to use this feature."
+        },
+        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDownLink": "AI models"
+      },
+      "modelGuide": {
+        "trigger": "Which model fits?",
+        "tierHeading": "{tier} model is enough",
+        "tiers": {
+          "light": "Terang",
+          "balanced": "Balanced",
+          "smart": "Smart"
+        },
+        "needsLabel": "Needs",
+        "picksLabel": "Good picks",
+        "yourModel": "Your model",
+        "source": "Model details from models.dev",
+        "needs": {
+          "textOnly": "Text only",
+          "runsOften": "Runs on every sync",
+          "longAnswers": "Long answers",
+          "readsFiles": "Reads images & PDFs",
+          "structuredAnswers": "Structured answers"
+        },
+        "why": {
+          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
+          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
+          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Good fit",
+          "gaps": "{count} gap | {count} gaps",
+          "unknown": "Not checked"
+        },
+        "warning": {
+          "readsFiles": "Can't read files",
+          "readsText": "Can't read text",
+          "readsImages": "Can't read images",
+          "readsPdfs": "Can't read PDFs",
+          "longAnswers": "Short answers only",
+          "structuredAnswers": "No structured answers"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Reads text",
+            "fail": "This model doesn't take text."
+          },
+          "readsImages": {
+            "label": "Reads images",
+            "fail": "Image files won't work."
+          },
+          "readsPdfs": {
+            "label": "Reads PDFs",
+            "fail": "PDF files won't work."
+          },
+          "longAnswers": {
+            "label": "Long answers",
+            "ok": "Writes up to {tokens} tokens.",
+            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+          },
+          "structuredAnswers": {
+            "label": "Structured answers",
+            "fail": "Its answers may come back in a shape the app can't read."
+          }
+        },
+        "unknown": {
+          "title": "Can't check this model",
+          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
         }
       },
-      "customEndpoint": {
-        "title": "Endpoint kustom",
-        "description": "Hubungkan server yang kompatibel dengan OpenAI milik Anda sendiri dan gunakan modelnya untuk fitur AI apa pun.",
-        "loading": "Memuat endpoint…",
-        "addButton": "Tambah endpoint",
+      "connections": {
+        "title": "AI models",
+        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "tip": {
+          "ariaLabel": "About AI models",
+          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+        },
+        "addButton": "Add model",
+        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
+        "duplicateName": "{name} copy",
         "empty": {
-          "title": "Belum ada endpoint kustom",
-          "description": "Hubungkan server yang kompatibel dengan OpenAI — Ollama lokal, LM Studio, atau gateway yang dihosting — untuk menggunakan modelnya untuk fitur AI apa pun."
+          "title": "No AI models yet",
+          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
         },
         "loadError": {
-          "title": "Tidak dapat memuat endpoint Anda",
-          "description": "Endpoint tersimpan Anda masih ada — kami hanya belum dapat mengambilnya saat ini. Periksa koneksi Anda dan coba lagi.",
-          "retry": "Coba lagi"
+          "title": "Couldn't load your AI models",
+          "description": "Your saved models are still there. Check your connection and try again."
+        },
+        "badges": {
+          "default": "Default",
+          "defaultSkipped": "Default · skipped while it needs attention"
         },
         "status": {
-          "model": "Model: {model}"
+          "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "Tindakan endpoint",
-          "reconnect": "Sambungkan ulang"
-        },
-        "form": {
-          "titleAdd": "Tambah endpoint",
-          "titleEdit": "Sunting endpoint",
-          "nameLabel": "Nama",
-          "namePlaceholder": "Ollama Rumah",
-          "baseUrlLabel": "URL Dasar",
-          "baseUrlPlaceholder": "http://localhost:11434/v1",
-          "modelLabel": "Nama model",
-          "modelPlaceholder": "llama3.2",
-          "apiKeyLabel": "Kunci API (opsional)",
-          "apiKeyPlaceholder": "Masukkan kunci API",
-          "apiKeySavedHint": "Kunci sudah disimpan. Biarkan kosong untuk mempertahankannya.",
-          "apiKeyOptionalHint": "Biarkan kosong jika endpoint Anda tidak memerlukan autentikasi.",
-          "removeApiKeyButton": "Hapus kunci tersimpan",
-          "saveButton": "Simpan",
-          "testButton": "Uji koneksi",
-          "removeButton": "Hapus"
-        },
-        "compatibilityHint": "Endpoint harus kompatibel dengan OpenAI. Berfungsi dengan Ollama, vLLM, OpenRouter, LM Studio, dan proxy /v1 apa pun.",
-        "test": {
-          "success": "Koneksi berhasil.",
-          "failed": "Tidak dapat menjangkau endpoint."
-        },
-        "notifications": {
-          "saveSuccess": "Endpoint kustom disimpan",
-          "saveFailed": "Gagal menyimpan endpoint kustom",
-          "removeSuccess": "Endpoint kustom dihapus",
-          "removeFailed": "Gagal menghapus endpoint kustom",
-          "removeKeySuccess": "Kunci tersimpan dihapus",
-          "removeKeyFailed": "Gagal menghapus kunci tersimpan",
-          "removeKeyInvalid": "Kunci API dihapus, tetapi endpoint gagal validasi tanpanya: {reason}",
-          "editedEndpointGone": "Endpoint ini telah dihapus, sehingga editor ditutup."
+          "menuAriaLabel": "AI model actions",
+          "duplicate": "Duplikat",
+          "setDefault": "Set as default",
+          "remove": "Remove",
+          "reconnect": "Sambungkan Ulang",
+          "enterKey": "Enter API key"
         },
         "removeDialog": {
-          "title": "Hapus endpoint kustom?",
-          "descriptionNamed": "\"{name}\" akan dihapus. Fitur apa pun yang menggunakannya akan beralih ke model lain yang tersedia. Tindakan ini tidak dapat dibatalkan.",
-          "confirm": "Hapus"
+          "title": "Remove this AI model?",
+          "description": "\"{name}\" and its saved API key will be removed.",
+          "pinnedFeatures": "These features will switch to automatic: {features}.",
+          "confirm": "Remove"
         },
         "removeKeyDialog": {
-          "title": "Hapus kunci tersimpan?",
-          "description": "Endpoint akan diuji ulang tanpa kunci. Jika memerlukan autentikasi, perubahan akan ditolak.",
-          "confirm": "Hapus kunci"
+          "title": "Remove the API key?",
+          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
+          "confirm": "Remove key"
         },
-        "setupHelp": {
-          "trigger": "Di mana saya bisa menemukan ini?",
-          "rule": "URL Dasar adalah semua bagian sampai sebelum {path}, tanpa menyertakannya. Untuk hampir semua penyedia, itu berarti URL berakhir dengan {suffix}.",
-          "ruleCheck": "Periksa cepat: membuka {url} seharusnya mengembalikan daftar model dalam format JSON.",
-          "apiKeyEmpty": "Biarkan kosong.",
-          "lmStudio": {
-            "startServer": "Mulai server lokal terlebih dahulu (Developer tab → Start Server).",
-            "baseUrl": "Alamat yang ditampilkan LM Studio, ditambah {suffix}. Contohnya {example}.",
-            "model": "Identifier API model. Ditampilkan di Developer tab, atau tercantum di {url}."
+        "test": {
+          "success": "Connected. The model answered.",
+          "failed": "Couldn't reach the model."
+        },
+        "notifications": {
+          "saveSuccess": "AI model saved",
+          "saveFailed": "Couldn't save the AI model",
+          "removeSuccess": "AI model removed",
+          "removeFailed": "Couldn't remove the AI model",
+          "setDefaultSuccess": "\"{name}\" is now your default model",
+          "setDefaultFailed": "Couldn't change the default model",
+          "removeKeySuccess": "API key removed",
+          "removeKeyFailed": "Couldn't remove the API key",
+          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
+          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+        },
+        "form": {
+          "titleAdd": "Add AI model",
+          "titleEdit": "Edit AI model",
+          "titleDuplicate": "Duplicate AI model",
+          "providerLabel": "Provider",
+          "providerPlaceholder": "Select a provider",
+          "nameLabel": "Nama",
+          "baseUrlLabel": "Base URL",
+          "baseUrlPlaceholder": "https://example.com/v1",
+          "apiKeyLabel": "API key",
+          "apiKeyPlaceholder": "Paste your API key",
+          "apiKeyGetHint": "Get a key at {link}.",
+          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
+          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
+          "removeApiKeyButton": "Remove API key",
+          "modelLabel": "Model",
+          "modelPlaceholder": "Type or pick a model",
+          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
+          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
+          "testButton": "Test connection",
+          "saveButton": "Simpan perubahan",
+          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
+          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "e.g. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "e.g. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "e.g. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "e.g. OpenRouter Llama"
           },
           "ollama": {
-            "model": "Tag persis dari {command}, contohnya {example}."
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Local Llama"
           },
-          "openRouter": {
-            "model": "ID model lengkap dari halaman model mereka, contohnya {example}.",
-            "apiKeyRequired": "Wajib diisi."
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "e.g. LM Studio Qwen"
           },
-          "other": {
-            "tabLabel": "Lainnya",
-            "title": "{name} atau server lain yang kompatibel dengan OpenAI",
-            "baseUrl": "Alamat server, ditambah {suffix}.",
-            "model": "Apa pun yang dikembalikan {request} sebagai {field}.",
-            "apiKey": "Hanya jika server diatur untuk memerlukannya."
-          },
-          "localNetworkOnly": "Server yang berjalan di komputer Anda sendiri ({ip} atau {hostname}) hanya berfungsi jika aplikasi ini dijalankan di perangkat atau jaringan Anda sendiri. Versi yang dihosting tidak dapat menjangkaunya, karena alamat privat diblokir di sana.",
-          "dockerHost": "Jika Anda menjalankan aplikasi ini di Docker pada mesin yang sama dengan server model, gunakan {dockerHost} sebagai ganti {ip}."
+          "custom": {
+            "label": "Custom (OpenAI-compatible)",
+            "namePlaceholder": "e.g. My server"
+          }
         }
       },
       "customInstructions": {
         "title": "Instruksi Kustom",
         "description": "Berikan konteks untuk membantu AI mengkategorikan transaksi Anda. Instruksi ini disertakan saat mengkategorikan transaksi selama sinkronisasi bank dan impor manual.",
         "placeholder": "Mis: Transaksi dari 'Starbucks' harus 'Kopi'. Pemasukan lepas saya berasal dari 'Acme Corp'.",
+        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
         "requiresOwnCredentials": "Tambahkan kunci API Anda sendiri atau endpoint kustom untuk menggunakan instruksi kustom.",
         "credentialsCheckFailed": "Kami tidak dapat memeriksa apakah Anda memiliki kredensial AI sendiri. Coba lagi untuk membuka instruksi kustom.",
         "retryCredentialsCheck": "Coba lagi",

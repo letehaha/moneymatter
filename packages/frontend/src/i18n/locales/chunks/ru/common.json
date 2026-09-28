@@ -27,7 +27,8 @@
       "apply": "Применить",
       "retry": "Попробовать снова",
       "copyInviteLink": "Скопировать ссылку-приглашение",
-      "moveTo": "Переместить в…"
+      "moveTo": "Переместить в…",
+      "learnMore": "Learn more"
     },
     "ui": {
       "close": "Закрыть",
@@ -131,6 +132,10 @@
       "investmentTransactionsParsing": {
         "name": "Импорт инвестиционных транзакций",
         "description": "Извлечение AI транзакций покупки и продажи из экспортов бирж, брокерских выписок или вставленного текста."
+      },
+      "receiptParsing": {
+        "name": "Invoice matching",
+        "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
       }
     },
     "transactions": {
@@ -152,7 +157,6 @@
         "hiddenAccount": "Скрытый счёт",
         "selectRow": "Выберите транзакцию",
         "unselectableReasons": {
-          "split": "Нельзя выбрать: транзакции с разбиением не поддерживают массовое редактирование. Измените эту транзакцию отдельно.",
           "sharedAccount": "Нельзя выбрать: эта транзакция находится на счёте, доступ к которому вам предоставлен, и редактировать её может только владелец счёта."
         }
       }
@@ -247,6 +251,17 @@
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
       "dismiss": "Скрыть"
+    },
+    "duration": {
+      "years": "{n} yr | {n} yrs",
+      "months": "{n} mo | {n} mos"
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {

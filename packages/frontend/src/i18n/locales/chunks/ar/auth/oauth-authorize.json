@@ -1,0 +1,43 @@
+{
+  "oauth": {
+    "authorize": {
+      "title": "{name} يريد الوصول الى بيانات MoneyMatter",
+      "description": "هذا التطبيق يطلب هذه الأذونات:",
+      "approve": "قبول",
+      "deny": "رفض",
+      "footer": "يمكنك إلغاء الوصول في أي وقت من الإعدادات ← الذكاء الصناعي ← الموصلات (MCP).",
+      "error": "فشلت معالجة الطلب. الرجاء المحاولة مرة أخرى.",
+      "unexpected_response": "استجابة غير متوقعة من الخادم. الرجاء المحاولة مرة أخرى.",
+      "always_granted": "القبول دائما",
+      "optional": "اختياري",
+      "delete_warning": "القبول للتطبيقات التي تثق بها فقط",
+      "unknown_app": "تطبيق"
+    },
+    "scopes": {
+      "finance_read": {
+        "label": "عرض بياناتك المالية",
+        "desc": "Read accounts, transactions, budgets, categories, tags, portfolios, and spending stats."
+      },
+      "finance_write": {
+        "label": "إنشاء وتعديل بياناتك المالية",
+        "desc": "Add and update transactions, budgets, subscriptions, investment positions, and more."
+      },
+      "finance_delete": {
+        "label": "حذف بياناتك المالية",
+        "desc": "Permanently remove transactions, accounts, budgets, and other records."
+      },
+      "profile_read": {
+        "label": "عرض ملفك الشخصي",
+        "desc": "شاهد اسمك، البريد الإلكتروني، والعملة الافتراضية."
+      },
+      "offline_access": {
+        "label": "البقاء متصلا في الخلفية",
+        "desc": "ابق الوصول نشطا دون سؤالك مرة أخرى في كل جلسة."
+      },
+      "unknown": {
+        "label": "أذونات إضافية",
+        "desc": "طلب التطبيق إذنًا لم يتعرف عليه MoneyMatter."
+      }
+    }
+  }
+}

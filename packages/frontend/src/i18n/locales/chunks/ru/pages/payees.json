@@ -29,6 +29,17 @@
       "delete": "Удалить",
       "deleteAndIgnore": "Удалить и игнорировать"
     },
+    "bulk": {
+      "select": "Select",
+      "selectedCount": "Выбрано: {count}",
+      "clearSelection": "Очистить выбор",
+      "selectAll": "Select all loaded payees",
+      "selectRow": "Select {name}",
+      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
+      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
+      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
+      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
+    },
     "emptyState": {
       "title": "Получателей пока нет",
       "description": "Подключите банк для автоматического обнаружения получателей или создайте получателя вручную."
@@ -111,7 +122,9 @@
       "aliasDeleted": "Псевдоним удалён",
       "aliasAdded": "Псевдоним добавлен",
       "deletedAndIgnored": "Получатель удалён и добавлен в список игнорируемых имён",
-      "tagsAppliedToExisting": "Теги применены к {count} транзакциям"
+      "tagsAppliedToExisting": "Теги применены к {count} транзакциям",
+      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
+      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
     },
     "errors": {
       "collision": "Получатель с таким названием уже существует. Вместо этого объедините их.",
@@ -124,6 +137,7 @@
     "settings": {
       "title": "Настройки обнаружения получателей",
       "description": "Настройте автоматическое обнаружение получателей в синхронизируемых транзакциях.",
+      "howDetectionWorks": "How detection works",
       "payeeFromDescription": {
         "label": "Определять получателей из описания транзакции",
         "description": "Если банк не передаёт отдельное поле продавца, использовать описание транзакции (примечание) для автоматического определения получателей. Полезно для подключений, где поле продавца пустое или отсутствует. Может создавать более шумные названия, которые затем можно переименовать или объединить.",
@@ -162,6 +176,7 @@
       "conflictDescription": "Получатель с тем же нормализованным названием, что и «{name}», уже существует. Продолжение удалит этого получателя (транзакции останутся, связь будет удалена).",
       "forceConfirm": "Удалить получателя и игнорировать"
     },
-    "loadingMore": "Загрузка…"
+    "loadingMore": "Загрузка…",
+    "txCount": "{count} tx"
   }
 }

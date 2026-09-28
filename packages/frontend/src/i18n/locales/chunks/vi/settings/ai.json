@@ -5,67 +5,9 @@
       "description": "Cấu hình các tính năng hỗ trợ AI, ví dụ như tự động phân loại giao dịch",
       "tabs": {
         "features": "Tính năng AI",
-        "apiKeys": "Khóa API",
-        "invalidKeysTooltip": "Một hoặc nhiều khoá API không hợp lệ",
-        "customEndpoints": "Điểm truy cập tùy chỉnh",
-        "invalidEndpointsTooltip": "Một hoặc nhiều điểm truy cập tuỳ chỉnh đang không hoạt động"
-      },
-      "apiKeyManager": {
-        "title": "Khóa API",
-        "description": "Thêm khoá API của bạn để sử dụng các nhà cung cấp khác nhau",
-        "badges": {
-          "default": "Mặc định"
-        },
-        "buttons": {
-          "setDefault": "Đặt làm mặc định"
-        },
-        "invalidKeyHelp": "Thêm khóa mới bên dưới để thay thế khóa này, hoặc xóa nếu bạn không còn cần dùng nữa.",
-        "deleteDialog": {
-          "title": "Xóa khóa API?",
-          "description": "Bạn có chắc muốn xóa khóa API {provider} không?",
-          "descriptionMultiple": "Các tính năng AI đang dùng {provider} sẽ chuyển sang một nhà cung cấp khả dụng khác.",
-          "cancel": "Hủy",
-          "remove": "Xóa"
-        },
-        "allConfigured": "Tất cả nhà cung cấp đã được thiết lập",
-        "form": {
-          "titleAdd": "Thêm khóa API",
-          "titleAddAnother": "Thêm nhà cung cấp khác",
-          "providerLabel": "Nhà cung cấp",
-          "apiKeyLabel": "Khóa API",
-          "buttonSaving": "Đang xác nhận...",
-          "buttonSave": "Lưu khóa"
-        },
-        "providers": {
-          "anthropic": {
-            "label": "Anthropic (Claude)",
-            "placeholder": "sk-ant-...",
-            "description": "Lấy khóa API của bạn từ"
-          },
-          "openai": {
-            "label": "OpenAI (GPT)",
-            "placeholder": "sk-...",
-            "description": "Lấy khóa API của bạn từ"
-          },
-          "google": {
-            "label": "Google (Gemini)",
-            "placeholder": "AIza...",
-            "description": "Lấy khóa API của bạn từ"
-          },
-          "groq": {
-            "label": "Groq (Llama, GPT-OSS)",
-            "placeholder": "gsk_...",
-            "description": "Lấy khóa API của bạn từ"
-          }
-        },
-        "notifications": {
-          "saveSuccess": "Đã lưu và xác thực khóa API thành công",
-          "saveFailed": "Khoá API đang không hoạt động. Vui lòng kiểm tra khóa có chính xác, còn đủ hạn mức, và có đủ quyền cần thiết.",
-          "setDefaultSuccess": "Đã đặt {provider} làm mặc định",
-          "setDefaultFailed": "Không đặt được nhà cung cấp mặc định",
-          "removeSuccess": "Đã xóa khóa API {provider}",
-          "removeFailed": "Không xóa được khóa API"
-        }
+        "models": "AI models",
+        "connectedApps": "Connectors (MCP)",
+        "invalidConnectionsTooltip": "One of your AI models needs attention"
       },
       "credentialStatus": {
         "validated": "Đã xác thực {timeAgo}",
@@ -75,76 +17,47 @@
       "features": {
         "title": "Tính năng AI",
         "description": "Cấu hình mô hình dùng cho từng tính năng AI",
-        "loading": "Đang tải tính năng..."
+        "howItWorks": "How it works",
+        "loadError": "Couldn't load your AI features."
       },
       "categorization": {
-        "modelHint": {
-          "trigger": "Nên chọn mô hình nào?",
-          "text": "Với phân loại giao dịch, nên dùng các mô hình chi phí thấp như Gemma 4, Gemini 3.5 Flash Lite hoặc Claude Haiku 4.5. Phân loại là tác vụ đơn giản, không cần đến các mô hình suy luận đắt tiền. Dùng mô hình rẻ hơn giúp bạn xử lý nhiều giao dịch hơn với chi phí thấp hơn."
-        },
         "howItWorks": {
-          "title": "Cách hoạt động",
           "points": {
             "autoSync": "Khi bạn đồng bộ giao dịch từ ngân hàng, các giao dịch chưa gán danh mục sẽ tự động được gửi đến AI để phân loại.",
             "analysis": "AI phân tích mô tả giao dịch và tên người bán để đề xuất danh mục phù hợp từ danh sách hiện có của bạn.",
             "override": "Bạn luôn có thể tự chỉnh lại danh mục do AI đề xuất."
           }
-        },
-        "loading": "Đang tải mô hình..."
+        }
       },
       "statementParsing": {
-        "modelHint": {
-          "trigger": "Nên chọn mô hình nào?",
-          "text": "Với phân tích sao kê, nên dùng các mô hình tầm trung như Gemini 3.6 Flash, Claude Sonnet 5 hoặc GPT-5.6 Terra. Phân tích sao kê đòi hỏi hiểu cấu trúc tài liệu phức tạp và trích xuất dữ liệu chính xác, nên cần mô hình mạnh hơn. Tuy nhiên, các mô hình rẻ hơn như Gemini 3.5 Flash Lite hoặc Claude Haiku 4.5 cũng hoạt động tốt với những sao kê đơn giản."
-        },
         "howItWorks": {
-          "title": "Cách hoạt động",
           "points": {
             "upload": "Tải lên sao kê ngân hàng (PDF, CSV hoặc TXT) và AI sẽ tự động trích xuất toàn bộ giao dịch.",
             "analysis": "AI phân tích cấu trúc tài liệu để nhận diện ngày, mô tả, số tiền và loại giao dịch.",
             "review": "Bạn có thể kiểm tra và chỉnh lại dữ liệu đã trích xuất trước khi nhập vào tài khoản.",
             "cost": "Hệ thống ước tính chi phí trước khi xử lý, nhưng con số này chỉ mang tính tương đối."
           }
-        },
-        "loading": "Đang tải mô hình..."
+        }
       },
       "modelSelector": {
+        "placeholder": "Pick a model",
+        "automaticOption": "Automatic",
+        "automaticOptionWithTarget": "Automatic · {target}",
+        "serverOption": "MoneyMatter AI · included",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
         "badges": {
           "yourKey": "Khóa của bạn",
           "yourKeyTooltip": "Tính năng này dùng khóa API cá nhân của bạn. Bạn toàn quyền kiểm soát mức sử dụng và chi phí, không bị giới hạn tốc độ từ máy chủ của chúng tôi.",
           "server": "Máy chủ",
           "serverTooltip": "Tính năng này sử dụng khóa API dùng chung trên máy chủ của chúng tôi. Miễn phí nhưng có thể bị giới hạn tốc độ khi nhu cầu cao. Thêm khóa API của riêng bạn để sử dụng không giới hạn."
         },
+        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
+        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Mô hình",
-        "resetButton": "Khôi phục về mặc định",
-        "noApiKey": "(Không có khóa API)",
         "modelInfo": {
-          "context": "Ngữ cảnh:",
-          "capabilities": "Khả năng:",
           "estimatedCost": "Chi phí ước tính:",
           "per100Transactions": "mỗi 100 giao dịch"
-        },
-        "rateLimitWarning": "Bạn đang dùng AI từ máy chủ với giới hạn tốc độ của gói miễn phí. Tính năng có thể không có sẵn tùy theo nhu cầu của những người dùng khác. Để truy cập ổn định, hãy thêm khóa API của riêng bạn trong tab Khóa API.",
-        "groupLabels": {
-          "recommended": "⭐ Đề xuất",
-          "openai": "OpenAI",
-          "anthropic": "Anthropic",
-          "google": "Google",
-          "groq": "Groq"
-        },
-        "costLabels": {
-          "free": "Miễn phí",
-          "low": "Chi phí thấp",
-          "medium": "Chi phí trung bình",
-          "high": "Chi phí cao"
-        },
-        "capabilities": {
-          "textGeneration": "Văn bản",
-          "structuredOutput": "Dự liệu có cấu trúc",
-          "functionCalling": "Gọi công cụ",
-          "vision": "Thị giác",
-          "fastInference": "Nhanh",
-          "agents": "Agent"
         },
         "notifications": {
           "updateSuccess": "Đã cập nhật mô hình thành công",
@@ -152,114 +65,206 @@
           "resetSuccess": "Đã đặt lại về mô hình mặc định",
           "resetFailed": "Không đặt lại được mô hình"
         },
-        "addKeyHint": "Thêm khóa API của riêng bạn để chọn trong tất cả mô hình khả dụng.",
-        "addKeyHintLink": "Thêm khóa API →",
-        "customModel": {
-          "nameLabel": "Tên mô hình",
-          "applyButton": "Áp dụng",
-          "hint": "Được gửi nguyên văn đến {baseUrl}.",
-          "endpointOption": "{endpoint} — {model}",
-          "unknownEndpoint": "Điểm truy cập tùy chỉnh",
-          "missingModelName": "Điểm truy cập này chưa có tên mô hình — hãy nhập tên trước",
-          "endpointsLoadError": "Không tải được danh sách điểm truy cập nên hiện tại không thể sửa tên mô hình."
+        "empty": {
+          "title": "No AI model yet",
+          "description": "Add your own AI model to use this feature."
+        },
+        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDownLink": "AI models"
+      },
+      "modelGuide": {
+        "trigger": "Which model fits?",
+        "tierHeading": "{tier} model is enough",
+        "tiers": {
+          "light": "Light",
+          "balanced": "Balanced",
+          "smart": "Smart"
+        },
+        "needsLabel": "Needs",
+        "picksLabel": "Good picks",
+        "yourModel": "Your model",
+        "source": "Model details from models.dev",
+        "needs": {
+          "textOnly": "Text only",
+          "runsOften": "Runs on every sync",
+          "longAnswers": "Long answers",
+          "readsFiles": "Reads images & PDFs",
+          "structuredAnswers": "Structured answers"
+        },
+        "why": {
+          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
+          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
+          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Good fit",
+          "gaps": "{count} gap | {count} gaps",
+          "unknown": "Not checked"
+        },
+        "warning": {
+          "readsFiles": "Can't read files",
+          "readsText": "Can't read text",
+          "readsImages": "Can't read images",
+          "readsPdfs": "Can't read PDFs",
+          "longAnswers": "Short answers only",
+          "structuredAnswers": "No structured answers"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Reads text",
+            "fail": "This model doesn't take text."
+          },
+          "readsImages": {
+            "label": "Reads images",
+            "fail": "Image files won't work."
+          },
+          "readsPdfs": {
+            "label": "Reads PDFs",
+            "fail": "PDF files won't work."
+          },
+          "longAnswers": {
+            "label": "Long answers",
+            "ok": "Writes up to {tokens} tokens.",
+            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+          },
+          "structuredAnswers": {
+            "label": "Structured answers",
+            "fail": "Its answers may come back in a shape the app can't read."
+          }
+        },
+        "unknown": {
+          "title": "Can't check this model",
+          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
         }
       },
-      "customEndpoint": {
-        "title": "Điểm truy cập tùy chỉnh",
-        "description": "Kết nối máy chủ của riêng bạn theo chuẩn OpenAI và dùng các mô hình khả dụng cho mọi tính năng AI.",
-        "loading": "Đang tải điểm truy cập…",
-        "addButton": "Thêm điểm truy cập",
+      "connections": {
+        "title": "AI models",
+        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "tip": {
+          "ariaLabel": "About AI models",
+          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+        },
+        "addButton": "Add model",
+        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
+        "duplicateName": "{name} copy",
         "empty": {
-          "title": "Chưa có điểm truy cập tùy chỉnh nào",
-          "description": "Kết nối máy chủ theo chuẩn OpenAI — Ollama cục bộ, LM Studio hoặc một gateway trực tuyến — để dùng các mô hình khả dụng cho mọi tính năng AI."
+          "title": "No AI models yet",
+          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
         },
         "loadError": {
-          "title": "Không tải được điểm truy cập của bạn",
-          "description": "Các điểm truy cập đã lưu vẫn còn nguyên — chỉ là hiện tại chúng tôi chưa tải được. Hãy kiểm tra kết nối và thử lại.",
-          "retry": "Thử lại"
+          "title": "Couldn't load your AI models",
+          "description": "Your saved models are still there. Check your connection and try again."
+        },
+        "badges": {
+          "default": "Default",
+          "defaultSkipped": "Default · skipped while it needs attention"
         },
         "status": {
-          "model": "Mô hình: {model}"
+          "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "Thao tác với điểm truy cập",
-          "reconnect": "Kết nối lại"
-        },
-        "form": {
-          "titleAdd": "Thêm điểm truy cập",
-          "titleEdit": "Sửa điểm truy cập",
-          "nameLabel": "Tên",
-          "namePlaceholder": "Ollama cục bộ",
-          "baseUrlLabel": "URL gốc",
-          "baseUrlPlaceholder": "http://localhost:11434/v1",
-          "modelLabel": "Tên mô hình",
-          "modelPlaceholder": "llama3.2",
-          "apiKeyLabel": "Khóa API (không bắt buộc)",
-          "apiKeyPlaceholder": "Nhập khóa API",
-          "apiKeySavedHint": "Có một khóa đã lưu. Để trống nếu muốn giữ nguyên.",
-          "apiKeyOptionalHint": "Để trống nếu điểm truy cập của bạn không cần xác thực.",
-          "removeApiKeyButton": "Xóa khóa đã lưu",
-          "saveButton": "Lưu",
-          "testButton": "Kiểm tra kết nối",
-          "removeButton": "Xóa"
-        },
-        "compatibilityHint": "Điểm truy cập phải tương thích với chuẩn OpenAI. Hoạt động với Ollama, vLLM, OpenRouter, LM Studio và mọi proxy /v1.",
-        "test": {
-          "success": "Kết nối thành công.",
-          "failed": "Không kết nối được đến điểm truy cập."
-        },
-        "notifications": {
-          "saveSuccess": "Đã lưu điểm truy cập tùy chỉnh",
-          "saveFailed": "Không lưu được điểm truy cập tùy chỉnh",
-          "removeSuccess": "Đã xóa điểm truy cập tùy chỉnh",
-          "removeFailed": "Không xóa được điểm truy cập tùy chỉnh",
-          "removeKeySuccess": "Đã xóa khóa đã lưu",
-          "removeKeyFailed": "Không xóa được khóa đã lưu",
-          "removeKeyInvalid": "Đã xóa khóa API, nhưng điểm truy cập không khả dụng nếu thiếu khóa: {reason}",
-          "editedEndpointGone": "Điểm truy cập này đã bị xóa nên trình chỉnh sửa đã đóng lại."
+          "menuAriaLabel": "AI model actions",
+          "duplicate": "Duplicate",
+          "setDefault": "Set as default",
+          "remove": "Remove",
+          "reconnect": "Reconnect",
+          "enterKey": "Enter API key"
         },
         "removeDialog": {
-          "title": "Xóa điểm truy cập tùy chỉnh?",
-          "descriptionNamed": "\"{name}\" sẽ bị xóa. Mọi tính năng đang dùng nó sẽ chuyển sang một mô hình khả dụng khác. Không thể hoàn tác thao tác này.",
-          "confirm": "Xóa"
+          "title": "Remove this AI model?",
+          "description": "\"{name}\" and its saved API key will be removed.",
+          "pinnedFeatures": "These features will switch to automatic: {features}.",
+          "confirm": "Remove"
         },
         "removeKeyDialog": {
-          "title": "Xóa khóa đã lưu?",
-          "description": "Điểm truy cập sẽ được xác thực lại mà không có khóa. Nếu điểm truy cập yêu cầu xác thực, thay đổi sẽ bị từ chối.",
-          "confirm": "Xóa khóa"
+          "title": "Remove the API key?",
+          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
+          "confirm": "Remove key"
         },
-        "setupHelp": {
-          "trigger": "Tìm những thông tin này ở đâu?",
-          "rule": "URL gốc gồm mọi thứ cho đến trước và không bao gồm {path}. Với hầu hết nhà cung cấp, URL sẽ kết thúc bằng {suffix}.",
-          "ruleCheck": "Kiểm tra nhanh: mở {url} sẽ trả về danh sách mô hình dạng JSON.",
-          "apiKeyEmpty": "Để trống.",
-          "lmStudio": {
-            "startServer": "Hãy khởi động máy chủ cục bộ trước (tab Developer → Start Server).",
-            "baseUrl": "Địa chỉ mà LM Studio hiển thị, cộng thêm {suffix}. Ví dụ {example}.",
-            "model": "Mã định danh API của mô hình. Mã này hiển thị trong tab Developer hoặc trong danh sách tại {url}."
+        "test": {
+          "success": "Connected. The model answered.",
+          "failed": "Couldn't reach the model."
+        },
+        "notifications": {
+          "saveSuccess": "AI model saved",
+          "saveFailed": "Couldn't save the AI model",
+          "removeSuccess": "AI model removed",
+          "removeFailed": "Couldn't remove the AI model",
+          "setDefaultSuccess": "\"{name}\" is now your default model",
+          "setDefaultFailed": "Couldn't change the default model",
+          "removeKeySuccess": "API key removed",
+          "removeKeyFailed": "Couldn't remove the API key",
+          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
+          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+        },
+        "form": {
+          "titleAdd": "Add AI model",
+          "titleEdit": "Edit AI model",
+          "titleDuplicate": "Duplicate AI model",
+          "providerLabel": "Provider",
+          "providerPlaceholder": "Select a provider",
+          "nameLabel": "Name",
+          "baseUrlLabel": "Base URL",
+          "baseUrlPlaceholder": "https://example.com/v1",
+          "apiKeyLabel": "API key",
+          "apiKeyPlaceholder": "Paste your API key",
+          "apiKeyGetHint": "Get a key at {link}.",
+          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
+          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
+          "removeApiKeyButton": "Remove API key",
+          "modelLabel": "Mô hình",
+          "modelPlaceholder": "Type or pick a model",
+          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
+          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
+          "testButton": "Test connection",
+          "saveButton": "Save changes",
+          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
+          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "e.g. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "e.g. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "e.g. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "e.g. OpenRouter Llama"
           },
           "ollama": {
-            "model": "Đúng thẻ từ {command}, ví dụ {example}."
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Local Llama"
           },
-          "openRouter": {
-            "model": "Mã định danh mô hình đầy đủ trên trang danh sách mô hình của họ, ví dụ {example}.",
-            "apiKeyRequired": "Bắt buộc."
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "e.g. LM Studio Qwen"
           },
-          "other": {
-            "tabLabel": "Khác",
-            "title": "{name} hoặc bất kỳ máy chủ nào khác theo chuẩn OpenAI",
-            "baseUrl": "Địa chỉ máy chủ, cộng thêm {suffix}.",
-            "model": "Giá trị mà {request} trả về ở trường {field}.",
-            "apiKey": "Chỉ khi máy chủ có thiết lập yêu cầu khóa."
-          },
-          "localNetworkOnly": "Máy chủ chạy trên máy tính của bạn ({ip} hoặc {hostname}) chỉ hoạt động khi ứng dụng này chạy trên chính máy hoặc mạng của bạn. Bản trực tuyến sẽ không kết nối tới được, vì địa chỉ nội bộ bị chặn ở đó.",
-          "dockerHost": "Nếu bạn chạy ứng dụng này trong Docker trên cùng máy với máy chủ mô hình, hãy dùng {dockerHost} thay cho {ip}."
+          "custom": {
+            "label": "Custom (OpenAI-compatible)",
+            "namePlaceholder": "e.g. My server"
+          }
         }
       },
       "customInstructions": {
         "title": "Hướng dẫn tùy chỉnh",
         "description": "Cung cấp ngữ cảnh để AI phân loại giao dịch của bạn chính xác hơn. Những hướng dẫn này được dùng khi phân loại giao dịch trong lúc đồng bộ ngân hàng và nhập thủ công.",
         "placeholder": "Ví dụ: Giao dịch từ 'Starbucks' nên được xếp vào 'Coffee'. Thu nhập freelance của tôi đến từ 'Acme Corp'.",
+        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
         "requiresOwnCredentials": "Thêm khóa API của riêng bạn hoặc một điểm truy cập tùy chỉnh để dùng hướng dẫn tùy chỉnh.",
         "credentialsCheckFailed": "Chúng tôi không kiểm tra được bạn có thông tin xác thực AI riêng hay không. Hãy thử lại để mở khóa hướng dẫn tùy chỉnh.",
         "retryCredentialsCheck": "Thử lại",

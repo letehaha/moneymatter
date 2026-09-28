@@ -1,0 +1,248 @@
+{
+  "automations": {
+    "title": "الأتمتة",
+    "subtitle": "Run on new transactions from bank sync and file imports. First matching rule wins — drag a rule to reorder.",
+    "newAutomation": "New automation",
+    "new": "New",
+    "dragHint": "Drag to reorder",
+    "toggleAriaLabel": "Enable automation",
+    "menuAriaLabel": "Automation actions",
+    "disabledPill": "Disabled",
+    "mcpTip": {
+      "trigger": "Tips",
+      "text": "You can manage automations with AI through an MCP connection — ask it to reorganize your rules, or check for duplicates and conflicts.",
+      "link": "Set up MCP connection"
+    },
+    "statusFilter": {
+      "all": "Show all",
+      "enabled": "Only active",
+      "disabled": "Only disabled",
+      "empty": "No automations match this filter."
+    },
+    "pausedMissingRef": "Paused — {refType} \"{label}\" was deleted",
+    "pausedMissingRefUnnamed": "Paused: a {refType} this rule referenced was deleted",
+    "matchStats": "{count} match · last {date} | {count} matches · last {date}",
+    "matchStatsNever": "Never matched",
+    "loadError": "Couldn't load automations. Check your connection and try again.",
+    "reorderDisabledFiltered": "Clear the status filter to reorder",
+    "density": {
+      "comfortable": "Detailed",
+      "compact": "Compact"
+    },
+    "chips": {
+      "when": "When",
+      "then": "Then",
+      "not": "not",
+      "day": "day",
+      "more": "+{count} more",
+      "less": "Show less",
+      "noteReplace": "set note",
+      "noteAppend": "append",
+      "notePrepend": "prepend",
+      "note": {
+        "containsAny": "note has",
+        "notContainsAny": "note lacks",
+        "startsWithAny": "note starts",
+        "endsWithAny": "note ends",
+        "equalsAny": "note is",
+        "isEmpty": "note empty"
+      },
+      "merchant": {
+        "containsAny": "merchant has",
+        "notContainsAny": "merchant lacks",
+        "startsWithAny": "merchant starts",
+        "endsWithAny": "merchant ends",
+        "equalsAny": "merchant is",
+        "isEmpty": "merchant empty"
+      }
+    },
+    "refType": {
+      "category": "category",
+      "tag": "tag",
+      "account": "account",
+      "accountGroup": "account group",
+      "bankConnection": "bank connection",
+      "payee": "payee"
+    },
+    "emptyState": {
+      "title": "No automations yet",
+      "description": "Automations categorize, tag, and annotate transactions the moment they arrive from a bank sync or a file import.",
+      "cta": "Create your first automation"
+    },
+    "delete": {
+      "title": "Delete automation?",
+      "description": "\"{name}\" will stop running on new transactions. Transactions it already categorized keep their category, tags, and note.",
+      "confirm": "Delete"
+    },
+    "notifications": {
+      "deleteSuccess": "Automation deleted.",
+      "deleteError": "Could not delete the automation. Please try again.",
+      "toggleError": "Could not change the automation's status. Please try again.",
+      "reorderError": "Could not save the new order. Please try again.",
+      "staleReference": "This automation points at something that was deleted. Open it and pick a replacement.",
+      "openRule": "Open rule"
+    },
+    "fields": {
+      "note": "Note",
+      "merchant": "Merchant",
+      "payee": "Payee",
+      "amount": "Amount",
+      "transactionType": "Transaction type",
+      "account": "Account",
+      "accountGroup": "Account group",
+      "bankConnection": "Bank connection",
+      "dayOfMonth": "Day of month"
+    },
+    "operators": {
+      "contains_any": "contains any of",
+      "not_contains_any": "does not contain",
+      "starts_with_any": "starts with",
+      "ends_with_any": "ends with",
+      "equals_any": "equals any of",
+      "is_empty": "is empty",
+      "in": "is one of",
+      "not_in": "is not one of",
+      "gte": "is at least",
+      "lte": "is at most",
+      "between": "is between",
+      "equals": "equals"
+    },
+    "actions": {
+      "set_category": "Set category",
+      "set_payee": "Set payee",
+      "add_tags": "Add tags",
+      "set_note": "Set note",
+      "noteMode": {
+        "replace": "Replace",
+        "append": "Append",
+        "prepend": "Prepend"
+      }
+    },
+    "editor": {
+      "titleNew": "New automation",
+      "titleEdit": "Edit automation",
+      "back": "Back to automations",
+      "enabled": "Enabled",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Groceries from Biedronka",
+      "conditionsHeader": "Match {match} of these conditions",
+      "matchAll": "all",
+      "matchAny": "any",
+      "joinAnd": "AND",
+      "joinOr": "OR",
+      "addCondition": "Add condition",
+      "removeCondition": "Remove condition",
+      "removeKeyword": "Remove keyword",
+      "fieldPlaceholder": "Select a field",
+      "operatorPlaceholder": "Select a condition",
+      "keywordPlaceholder": "Type a keyword and press Enter",
+      "amountPlaceholder": "Enter an amount",
+      "minPlaceholder": "Min amount",
+      "maxPlaceholder": "Max amount",
+      "currencyPlaceholder": "Select a currency",
+      "currency": {
+        "transaction": "Transaction currency",
+        "base": "Base currency ({code})",
+        "specific": "in {code}"
+      },
+      "accountsPlaceholder": "Select accounts",
+      "accountGroupPlaceholder": "Select an account group",
+      "bankConnectionPlaceholder": "Select a bank connection",
+      "dayFromPlaceholder": "From day",
+      "dayToPlaceholder": "To day",
+      "actionsHeader": "Then do this",
+      "addAction": "Add action",
+      "removeAction": "Remove action",
+      "categoryPlaceholder": "Select a category",
+      "payeePlaceholder": "Select a payee",
+      "tagsPlaceholder": "Select tags",
+      "notePlaceholder": "Enter the note text",
+      "saveSuccess": "Automation saved.",
+      "notFound": {
+        "title": "Automation not found",
+        "description": "This automation no longer exists or was deleted.",
+        "link": "Back to automations"
+      },
+      "unsaved": {
+        "title": "Discard unsaved changes?",
+        "description": "This automation has changes that have not been saved. Leaving now discards them.",
+        "confirm": "Discard changes"
+      },
+      "preview": {
+        "title": "Preview",
+        "run": "Preview matches",
+        "hint": "Finish the rule to preview which transactions it would match.",
+        "summary": "{matched} of the last {scanned} transactions this rule could apply to",
+        "empty": "No matches",
+        "stale": "Conditions changed since this preview ran.",
+        "error": "Could not run the preview. Please try again."
+      },
+      "errors": {
+        "nameRequired": "Enter a name for this automation.",
+        "nameTooLong": "The name must be {max} characters or fewer.",
+        "conditionsRequired": "Add at least one condition.",
+        "actionsRequired": "Add at least one action.",
+        "keywordsRequired": "Add at least one keyword.",
+        "keywordsMax": "Use at most {max} keywords.",
+        "keywordTooLong": "Each keyword must be {max} characters or fewer.",
+        "selectionRequired": "Select at least one option.",
+        "selectionMax": "Select at most {max} options.",
+        "missingRef": "was deleted — pick another or remove this row",
+        "amountRequired": "Enter an amount.",
+        "amountBoundsRequired": "Enter both a minimum and a maximum amount.",
+        "amountRange": "The minimum amount must not be greater than the maximum.",
+        "dayRange": "Enter a day range between 1 and 31, with the first day not after the last.",
+        "categoryRequired": "Select a category.",
+        "payeeRequired": "Select a payee.",
+        "tagsRequired": "Select at least one tag.",
+        "noteRequired": "Enter the note text.",
+        "noteTooLong": "The note must be {max} characters or fewer.",
+        "saveFailed": "Could not save the automation. Please try again.",
+        "transactionTypeDuplicate": "Only one transaction type condition is allowed"
+      },
+      "noResults": "No results"
+    },
+    "summary": {
+      "missingRef": "(deleted)",
+      "currency": {
+        "transaction": "(transaction currency)",
+        "base": "(base currency)"
+      },
+      "transactionTypeValue": {
+        "income": "income",
+        "expense": "expense"
+      }
+    },
+    "applyToHistory": {
+      "trigger": "Apply to past transactions",
+      "saveFirst": "Save your changes first",
+      "pickTitle": "Apply a rule to past transactions",
+      "pickHint": "Pick a rule. You'll review the matching transactions before anything changes.",
+      "title": "Apply \"{name}\" to past transactions",
+      "noRules": "You don't have any automations yet.",
+      "summary": "{count} past transaction matches this rule | {count} past transactions match this rule",
+      "moreMatches": "Only the {shown} most recent matches are listed. Apply these, then run it again.",
+      "scanCapped": "Only your {limit} most recent transactions were checked.",
+      "emptyState": {
+        "settledTitle": "All caught up",
+        "settledDescription": "This rule has nothing left to change on the only matching past transaction. | This rule has nothing left to change on the {count} matching past transactions.",
+        "noneTitle": "No matches yet",
+        "noneDescription": "No past transaction on your synced or imported accounts matches these conditions."
+      },
+      "selectAll": "Select all",
+      "selectedCount": "{count} selected",
+      "irreversible": "This can't be undone. Review the list carefully.",
+      "applyAction": "Apply to {count} transactions",
+      "confirm": {
+        "title": "Apply this rule?",
+        "action": "Apply",
+        "description": "{count} transactions will be updated right away.",
+        "payeeNote": "The payee on those transactions will be treated as set by you, so automatic payee detection won't change it later."
+      },
+      "success": "Applied to {applied} transactions",
+      "successWithSkipped": "Applied to {applied} transactions, {skipped} skipped",
+      "nothingApplied": "Nothing was applied. {skipped} transactions were skipped.",
+      "applyError": "Couldn't apply the rule to past transactions."
+    }
+  }
+}

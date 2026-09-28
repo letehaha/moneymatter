@@ -110,7 +110,7 @@
       "confirmPayeeLabel": "Payee",
       "confirmTagsLabel": "Etichette",
       "confirmNoteLabel": "Note",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "confirmApplyButton": "Apply",
       "successMessage": "Successfully updated {count} transactions",
       "unexpectedError": "An unexpected error occurred",
@@ -138,7 +138,7 @@
         "noSearchResultsMessage": "No groups match your search.",
         "addingText": "Aggiunta in corso...",
         "buttonLabel": "Add to Group",
-        "cancelButton": "Cancel",
+        "cancelButton": "Cancella",
         "transactionCountLabel": "transactions"
       },
       "createGroupDialog": {
@@ -150,7 +150,7 @@
         "notePlaceholder": "Optional description...",
         "creatingText": "Creating...",
         "buttonLabel": "Create Group",
-        "cancelButton": "Cancel"
+        "cancelButton": "Cancella"
       },
       "groupsPage": {
         "title": "Transaction Groups",
@@ -196,14 +196,18 @@
         "split": "Dividi"
       },
       "outOfWallet": "Out of wallet",
-      "hint": "Click a row to view details. Select rows to bulk edit.",
+      "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
       "emptyTitle": "No transactions match these filters",
       "emptyDescription": "Try adjusting or resetting the filters.",
       "columnConfig": {
         "title": "Table settings",
         "columns": "Columns",
         "visibleCount": "{count} visible",
-        "resetDefaults": "Reset to defaults"
+        "resetDefaults": "Reset to defaults",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
       },
       "categorizationSourceValues": {
         "manual": "Manual",
@@ -230,6 +234,16 @@
       "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
       "successMessage": "{count} transactions deleted",
       "unexpectedError": "Failed to delete transactions. Please try again."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Got it",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
     }
   },
   "records": {

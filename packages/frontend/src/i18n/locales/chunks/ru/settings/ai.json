@@ -5,67 +5,9 @@
       "description": "Настройте функции на базе AI, например автоматическую категоризацию транзакций",
       "tabs": {
         "features": "AI-функции",
-        "apiKeys": "API-ключи",
-        "invalidKeysTooltip": "Один или несколько API-ключей недействительны",
-        "customEndpoints": "Пользовательские эндпоинты",
-        "invalidEndpointsTooltip": "Один или несколько пользовательских эндпоинтов больше не работают"
-      },
-      "apiKeyManager": {
-        "title": "API-ключи",
-        "description": "Добавьте собственные API-ключи для использования определённых провайдеров",
-        "badges": {
-          "default": "По умолчанию"
-        },
-        "buttons": {
-          "setDefault": "Сделать по умолчанию"
-        },
-        "invalidKeyHelp": "Добавьте новый ключ ниже, чтобы заменить этот, или удалите его, если он больше не нужен.",
-        "deleteDialog": {
-          "title": "Удалить API-ключ?",
-          "description": "Вы уверены, что хотите удалить API-ключ {provider}?",
-          "descriptionMultiple": "AI-функции, использующие {provider}, переключатся на другого доступного провайдера.",
-          "cancel": "Отмена",
-          "remove": "Удалить"
-        },
-        "allConfigured": "Все провайдеры настроены",
-        "form": {
-          "titleAdd": "Добавить API-ключ",
-          "titleAddAnother": "Добавить другого провайдера",
-          "providerLabel": "Провайдер",
-          "apiKeyLabel": "API-ключ",
-          "buttonSaving": "Проверка...",
-          "buttonSave": "Сохранить ключ"
-        },
-        "providers": {
-          "anthropic": {
-            "label": "Anthropic (Claude)",
-            "placeholder": "sk-ant-...",
-            "description": "Получите API-ключ на"
-          },
-          "openai": {
-            "label": "OpenAI (GPT)",
-            "placeholder": "sk-...",
-            "description": "Получите API-ключ на"
-          },
-          "google": {
-            "label": "Google (Gemini)",
-            "placeholder": "AIza...",
-            "description": "Получите API-ключ на"
-          },
-          "groq": {
-            "label": "Groq (Llama, GPT-OSS)",
-            "placeholder": "gsk_...",
-            "description": "Получите API-ключ на"
-          }
-        },
-        "notifications": {
-          "saveSuccess": "API-ключ сохранён и успешно проверен",
-          "saveFailed": "API-ключ не работает. Проверьте правильность ключа, наличие достаточного баланса и необходимых разрешений.",
-          "setDefaultSuccess": "{provider} выбран провайдером по умолчанию",
-          "setDefaultFailed": "Не удалось установить провайдера по умолчанию",
-          "removeSuccess": "API-ключ {provider} удалён",
-          "removeFailed": "Не удалось удалить API-ключ"
-        }
+        "models": "AI models",
+        "connectedApps": "Connectors (MCP)",
+        "invalidConnectionsTooltip": "One of your AI models needs attention"
       },
       "credentialStatus": {
         "validated": "Проверено {timeAgo}",
@@ -75,76 +17,47 @@
       "features": {
         "title": "AI-функции",
         "description": "Настройте модель для каждой функции на базе AI",
-        "loading": "Загрузка функций..."
+        "howItWorks": "How it works",
+        "loadError": "Couldn't load your AI features."
       },
       "categorization": {
-        "modelHint": {
-          "trigger": "Какую модель выбрать?",
-          "text": "Для категоризации транзакций рекомендуются недорогие модели, например Gemma 4, Gemini 3.5 Flash Lite или Claude Haiku 4.5. Категоризация — относительно простая задача, не требующая дорогих reasoning-моделей. Более дешёвые модели позволяют обрабатывать больше транзакций с меньшими затратами."
-        },
         "howItWorks": {
-          "title": "Как это работает",
           "points": {
             "autoSync": "При синхронизации транзакций из банка транзакции без категории автоматически отправляются AI для категоризации.",
             "analysis": "AI анализирует описания транзакций и названия продавцов и предлагает подходящие категории из существующего списка.",
             "override": "Категорию, предложенную AI, всегда можно изменить вручную."
           }
-        },
-        "loading": "Загрузка моделей..."
+        }
       },
       "statementParsing": {
-        "modelHint": {
-          "trigger": "Какую модель выбрать?",
-          "text": "Для распознавания выписок рекомендуются модели среднего уровня, например Gemini 3.6 Flash, Claude Sonnet 5 или GPT-5.6 Terra. Эта задача требует понимания сложной структуры документов и точного извлечения данных, поэтому более мощные модели обычно работают лучше. Для простых выписок также могут подойти Gemini 3.5 Flash Lite или Claude Haiku 4.5."
-        },
         "howItWorks": {
-          "title": "Как это работает",
           "points": {
             "upload": "Загрузите банковскую выписку (PDF, CSV или TXT), и AI автоматически извлечёт все транзакции.",
             "analysis": "AI анализирует структуру документа, чтобы определить даты, описания, суммы и типы транзакций.",
             "review": "Перед импортом в счёт можно проверить и исправить извлечённые данные.",
             "cost": "Стоимость оценивается до обработки, но является приблизительной."
           }
-        },
-        "loading": "Загрузка моделей..."
+        }
       },
       "modelSelector": {
+        "placeholder": "Pick a model",
+        "automaticOption": "Automatic",
+        "automaticOptionWithTarget": "Automatic · {target}",
+        "serverOption": "MoneyMatter AI · included",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
         "badges": {
           "yourKey": "Ваш ключ",
           "yourKeyTooltip": "Эта функция использует ваш личный API-ключ. Вы полностью контролируете использование и расходы, а ограничения нашего сервера не применяются.",
           "server": "Сервер",
           "serverTooltip": "Эта функция использует общий API-ключ сервера. Это бесплатно, но при высокой нагрузке могут действовать ограничения. Добавьте собственный API-ключ для стабильного доступа."
         },
+        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
+        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Модель",
-        "resetButton": "Сбросить по умолчанию",
-        "noApiKey": "(Нет API-ключа)",
         "modelInfo": {
-          "context": "Контекст:",
-          "capabilities": "Возможности:",
           "estimatedCost": "Ориент. стоимость:",
           "per100Transactions": "за 100 транзакций"
-        },
-        "rateLimitWarning": "Используется серверный AI с ограничениями бесплатного тарифа. Доступность зависит от нагрузки других пользователей. Для стабильного доступа добавьте собственный API-ключ на вкладке «API-ключи».",
-        "groupLabels": {
-          "recommended": "⭐ Рекомендуемые",
-          "openai": "OpenAI",
-          "anthropic": "Anthropic",
-          "google": "Google",
-          "groq": "Groq"
-        },
-        "costLabels": {
-          "free": "Бесплатно",
-          "low": "Низкая стоимость",
-          "medium": "Средняя стоимость",
-          "high": "Высокая стоимость"
-        },
-        "capabilities": {
-          "textGeneration": "Текст",
-          "structuredOutput": "Структурированный вывод",
-          "functionCalling": "Функции",
-          "vision": "Изображения",
-          "fastInference": "Быстро",
-          "agents": "Агенты"
         },
         "notifications": {
           "updateSuccess": "Модель успешно обновлена",
@@ -152,114 +65,206 @@
           "resetSuccess": "Восстановлена модель по умолчанию",
           "resetFailed": "Не удалось восстановить модель по умолчанию"
         },
-        "addKeyHint": "Добавьте собственный API-ключ, чтобы выбирать из всех доступных моделей.",
-        "addKeyHintLink": "Добавить API-ключ →",
-        "customModel": {
-          "nameLabel": "Название модели",
-          "applyButton": "Применить",
-          "hint": "Передаётся в {baseUrl} без изменений.",
-          "endpointOption": "{endpoint} — {model}",
-          "unknownEndpoint": "Пользовательский эндпоинт",
-          "missingModelName": "Для этого эндпоинта не настроено название модели — сначала укажите его",
-          "endpointsLoadError": "Не удалось загрузить эндпоинты, поэтому сейчас нельзя изменить название модели."
+        "empty": {
+          "title": "No AI model yet",
+          "description": "Add your own AI model to use this feature."
+        },
+        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDownLink": "AI models"
+      },
+      "modelGuide": {
+        "trigger": "Which model fits?",
+        "tierHeading": "{tier} model is enough",
+        "tiers": {
+          "light": "Светлая",
+          "balanced": "Balanced",
+          "smart": "Smart"
+        },
+        "needsLabel": "Needs",
+        "picksLabel": "Good picks",
+        "yourModel": "Your model",
+        "source": "Model details from models.dev",
+        "needs": {
+          "textOnly": "Text only",
+          "runsOften": "Runs on every sync",
+          "longAnswers": "Long answers",
+          "readsFiles": "Reads images & PDFs",
+          "structuredAnswers": "Structured answers"
+        },
+        "why": {
+          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
+          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
+          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Good fit",
+          "gaps": "{count} gap | {count} gaps",
+          "unknown": "Not checked"
+        },
+        "warning": {
+          "readsFiles": "Can't read files",
+          "readsText": "Can't read text",
+          "readsImages": "Can't read images",
+          "readsPdfs": "Can't read PDFs",
+          "longAnswers": "Short answers only",
+          "structuredAnswers": "No structured answers"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Reads text",
+            "fail": "This model doesn't take text."
+          },
+          "readsImages": {
+            "label": "Reads images",
+            "fail": "Image files won't work."
+          },
+          "readsPdfs": {
+            "label": "Reads PDFs",
+            "fail": "PDF files won't work."
+          },
+          "longAnswers": {
+            "label": "Long answers",
+            "ok": "Writes up to {tokens} tokens.",
+            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+          },
+          "structuredAnswers": {
+            "label": "Structured answers",
+            "fail": "Its answers may come back in a shape the app can't read."
+          }
+        },
+        "unknown": {
+          "title": "Can't check this model",
+          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
         }
       },
-      "customEndpoint": {
-        "title": "Пользовательские эндпоинты",
-        "description": "Подключайте собственные OpenAI-совместимые серверы и используйте их модели для любых AI-функций.",
-        "loading": "Загрузка эндпоинтов…",
-        "addButton": "Добавить эндпоинт",
+      "connections": {
+        "title": "AI models",
+        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "tip": {
+          "ariaLabel": "About AI models",
+          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+        },
+        "addButton": "Add model",
+        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
+        "duplicateName": "{name} copy",
         "empty": {
-          "title": "Пользовательских эндпоинтов пока нет",
-          "description": "Подключите OpenAI-совместимый сервер — локальный Ollama, LM Studio или облачный шлюз — и используйте его модели для любых AI-функций."
+          "title": "No AI models yet",
+          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
         },
         "loadError": {
-          "title": "Не удалось загрузить эндпоинты",
-          "description": "Сохранённые эндпоинты не потеряны — сейчас их просто не удалось получить. Проверьте подключение и попробуйте снова.",
-          "retry": "Попробовать снова"
+          "title": "Couldn't load your AI models",
+          "description": "Your saved models are still there. Check your connection and try again."
+        },
+        "badges": {
+          "default": "Default",
+          "defaultSkipped": "Default · skipped while it needs attention"
         },
         "status": {
-          "model": "Модель: {model}"
+          "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "Действия с эндпоинтом",
-          "reconnect": "Переподключить"
-        },
-        "form": {
-          "titleAdd": "Добавить эндпоинт",
-          "titleEdit": "Изменить эндпоинт",
-          "nameLabel": "Название",
-          "namePlaceholder": "Домашний Ollama",
-          "baseUrlLabel": "Базовый URL",
-          "baseUrlPlaceholder": "http://localhost:11434/v1",
-          "modelLabel": "Название модели",
-          "modelPlaceholder": "llama3.2",
-          "apiKeyLabel": "API-ключ (необязательно)",
-          "apiKeyPlaceholder": "Введите API-ключ",
-          "apiKeySavedHint": "Ключ сохранён. Оставьте поле пустым, чтобы не менять его.",
-          "apiKeyOptionalHint": "Оставьте пустым, если эндпоинт не требует аутентификации.",
-          "removeApiKeyButton": "Удалить сохранённый ключ",
-          "saveButton": "Сохранить",
-          "testButton": "Проверить подключение",
-          "removeButton": "Удалить"
-        },
-        "compatibilityHint": "Эндпоинт должен быть OpenAI-совместимым. Поддерживаются Ollama, vLLM, OpenRouter, LM Studio и любые прокси с /v1.",
-        "test": {
-          "success": "Подключение успешно.",
-          "failed": "Не удалось подключиться к эндпоинту."
-        },
-        "notifications": {
-          "saveSuccess": "Пользовательский эндпоинт сохранён",
-          "saveFailed": "Не удалось сохранить пользовательский эндпоинт",
-          "removeSuccess": "Пользовательский эндпоинт удалён",
-          "removeFailed": "Не удалось удалить пользовательский эндпоинт",
-          "removeKeySuccess": "Сохранённый ключ удалён",
-          "removeKeyFailed": "Не удалось удалить сохранённый ключ",
-          "removeKeyInvalid": "API-ключ удалён, но проверка эндпоинта без него завершилась ошибкой: {reason}",
-          "editedEndpointGone": "Этот эндпоинт был удалён, поэтому редактор закрыт."
+          "menuAriaLabel": "AI model actions",
+          "duplicate": "Дубликат",
+          "setDefault": "Set as default",
+          "remove": "Remove",
+          "reconnect": "Переподключить",
+          "enterKey": "Enter API key"
         },
         "removeDialog": {
-          "title": "Удалить пользовательский эндпоинт?",
-          "descriptionNamed": "«{name}» будет удалён. Функции, использующие его, переключатся на другую доступную модель. Это действие нельзя отменить.",
-          "confirm": "Удалить"
+          "title": "Remove this AI model?",
+          "description": "\"{name}\" and its saved API key will be removed.",
+          "pinnedFeatures": "These features will switch to automatic: {features}.",
+          "confirm": "Remove"
         },
         "removeKeyDialog": {
-          "title": "Удалить сохранённый ключ?",
-          "description": "Эндпоинт будет повторно проверен без ключа. Если для него требуется аутентификация, изменение будет отклонено.",
-          "confirm": "Удалить ключ"
+          "title": "Remove the API key?",
+          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
+          "confirm": "Remove key"
         },
-        "setupHelp": {
-          "trigger": "Где найти эти значения?",
-          "rule": "Базовый URL — это адрес до {path}, не включая этот путь. Для большинства провайдеров он заканчивается на {suffix}.",
-          "ruleCheck": "Быстрая проверка: при открытии {url} должен возвращаться JSON-список моделей.",
-          "apiKeyEmpty": "Оставьте пустым.",
-          "lmStudio": {
-            "startServer": "Сначала запустите локальный сервер (вкладка Developer → Start Server).",
-            "baseUrl": "Адрес, который показывает LM Studio, плюс {suffix}. Например, {example}.",
-            "model": "API-идентификатор модели. Он отображается на вкладке Developer или в списке по адресу {url}."
+        "test": {
+          "success": "Connected. The model answered.",
+          "failed": "Couldn't reach the model."
+        },
+        "notifications": {
+          "saveSuccess": "AI model saved",
+          "saveFailed": "Couldn't save the AI model",
+          "removeSuccess": "AI model removed",
+          "removeFailed": "Couldn't remove the AI model",
+          "setDefaultSuccess": "\"{name}\" is now your default model",
+          "setDefaultFailed": "Couldn't change the default model",
+          "removeKeySuccess": "API key removed",
+          "removeKeyFailed": "Couldn't remove the API key",
+          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
+          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+        },
+        "form": {
+          "titleAdd": "Add AI model",
+          "titleEdit": "Edit AI model",
+          "titleDuplicate": "Duplicate AI model",
+          "providerLabel": "Provider",
+          "providerPlaceholder": "Select a provider",
+          "nameLabel": "Название",
+          "baseUrlLabel": "Base URL",
+          "baseUrlPlaceholder": "https://example.com/v1",
+          "apiKeyLabel": "API key",
+          "apiKeyPlaceholder": "Paste your API key",
+          "apiKeyGetHint": "Get a key at {link}.",
+          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
+          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
+          "removeApiKeyButton": "Remove API key",
+          "modelLabel": "Модель",
+          "modelPlaceholder": "Type or pick a model",
+          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
+          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
+          "testButton": "Test connection",
+          "saveButton": "Сохранить изменения",
+          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
+          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "e.g. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "e.g. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "e.g. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "e.g. OpenRouter Llama"
           },
           "ollama": {
-            "model": "Точный тег из {command}, например {example}."
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Local Llama"
           },
-          "openRouter": {
-            "model": "Полный ID модели со страницы моделей, например {example}.",
-            "apiKeyRequired": "Обязательно."
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "e.g. LM Studio Qwen"
           },
-          "other": {
-            "tabLabel": "Другое",
-            "title": "{name} или любой другой OpenAI-совместимый сервер",
-            "baseUrl": "Адрес сервера плюс {suffix}.",
-            "model": "Значение поля {field}, которое возвращает {request}.",
-            "apiKey": "Только если сервер настроен на обязательную аутентификацию."
-          },
-          "localNetworkOnly": "Сервер, работающий на вашем компьютере ({ip} или {hostname}), доступен только если это приложение также работает на вашем компьютере или в вашей локальной сети. Облачная версия не может подключаться к частным адресам.",
-          "dockerHost": "Если это приложение запущено в Docker на том же компьютере, что и сервер модели, используйте {dockerHost} вместо {ip}."
+          "custom": {
+            "label": "Custom (OpenAI-compatible)",
+            "namePlaceholder": "e.g. My server"
+          }
         }
       },
       "customInstructions": {
         "title": "Пользовательские инструкции",
         "description": "Добавьте контекст, который поможет AI категоризировать транзакции. Эти инструкции используются при категоризации во время банковской синхронизации и ручного импорта.",
         "placeholder": "например, транзакции из «Starbucks» должны относиться к категории «Кофе». Мой доход от фриланса поступает от «Acme Corp».",
+        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
         "requiresOwnCredentials": "Чтобы использовать пользовательские инструкции, добавьте собственный API-ключ или пользовательский эндпоинт.",
         "credentialsCheckFailed": "Не удалось проверить наличие собственных AI-учётных данных. Попробуйте снова, чтобы разблокировать пользовательские инструкции.",
         "retryCredentialsCheck": "Попробовать снова",

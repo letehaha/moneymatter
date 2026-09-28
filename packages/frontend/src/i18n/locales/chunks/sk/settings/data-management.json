@@ -41,6 +41,7 @@
       },
       "import": {
         "back": "Back to Import",
+        "whichImporterHint": "Not sure which one to use?",
         "groups": {
           "filesAndText": "Files & text",
           "fromOtherApps": "From other apps",
@@ -52,6 +53,7 @@
       },
       "export": {
         "cardTitle": "Export your data",
+        "backupOrExportHint": "Not sure whether you need Export or Backup?",
         "form": {
           "title": "Export your data",
           "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
@@ -67,7 +69,7 @@
         },
         "groups": {
           "label": "What to include",
-          "selectAll": "Select all",
+          "selectAll": "Vybrať všetko",
           "deselectAll": "Deselect all",
           "transactions": "Transactions & accounts",
           "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
@@ -92,9 +94,9 @@
           "clear": "Clear date range"
         },
         "accounts": {
-          "label": "Accounts",
+          "label": "Účty",
           "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "All accounts"
+          "placeholder": "Všetky účty"
         },
         "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
       }

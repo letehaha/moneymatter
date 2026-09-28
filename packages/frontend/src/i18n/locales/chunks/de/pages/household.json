@@ -20,12 +20,12 @@
         "own": "Can edit only their own transactions"
       },
       "invite": {
-        "emailLabel": "Email",
+        "emailLabel": "E-Mail",
         "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "Permission",
-        "writeScopeLabel": "Write scope",
+        "permissionLabel": "Berechtigung",
+        "writeScopeLabel": "Bearbeitungsumfang",
         "submit": "Send household invite",
-        "sent": "Invitation sent.",
+        "sent": "Einladung gesendet.",
         "error": "Couldn't send the invitation.",
         "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
       },

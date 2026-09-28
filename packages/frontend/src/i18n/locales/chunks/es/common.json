@@ -27,7 +27,8 @@
       "apply": "Aplicar",
       "retry": "Reintentar",
       "copyInviteLink": "Copiar enlace de invitación",
-      "moveTo": "Mover a…"
+      "moveTo": "Mover a…",
+      "learnMore": "Saber más"
     },
     "ui": {
       "close": "Cerrar",
@@ -131,6 +132,10 @@
       "investmentTransactionsParsing": {
         "name": "Importación de transacciones de inversión",
         "description": "Transacciones de compra/venta extraídas por IA de exportaciones de exchanges, extractos de brokers o texto pegado."
+      },
+      "receiptParsing": {
+        "name": "Coincidencia de factura",
+        "description": "Lee una factura o recibo subido y encuentra la transacción a la que pertenece."
       }
     },
     "transactions": {
@@ -148,11 +153,10 @@
         "addedByTooltip": "{handle} adjuntó esta transacción al presupuesto",
         "externalLinkTooltip": "Abrir enlace externo",
         "locationTooltip": "Abrir ubicación en el mapa",
-        "attachmentsTooltip": "Has attachments",
+        "attachmentsTooltip": "Tiene adjuntos",
         "hiddenAccount": "Cuenta oculta",
         "selectRow": "Seleccionar transacción",
         "unselectableReasons": {
-          "split": "No se puede seleccionar: las transacciones divididas no admiten edición masiva. Edítela individualmente.",
           "sharedAccount": "No se puede seleccionar: esta transacción pertenece a una cuenta compartida contigo, y solo su propietario puede editarla."
         }
       }
@@ -247,6 +251,17 @@
       "unreachableDescription": "El borrado puede estar ejecutándose. Descartar para seguir usando la aplicación, y volver a cargar más tarde para ver el resultado.",
       "failedTitle": "No se pudo eliminar",
       "dismiss": "Descartar"
+    },
+    "duration": {
+      "years": "{n} yr | {n} yrs",
+      "months": "{n} mo | {n} mos"
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {

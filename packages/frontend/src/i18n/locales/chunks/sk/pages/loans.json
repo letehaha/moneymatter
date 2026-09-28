@@ -1,6 +1,6 @@
 {
   "loans": {
-    "title": "Loans",
+    "title": "Pôžičky",
     "loadError": "Failed to load loans.",
     "tryAgain": "Try again",
     "addButton": {
@@ -15,10 +15,10 @@
     "linkPayments": {
       "title": "Link previous payments",
       "description": "Select transactions you've already paid toward this loan to record them as payments.",
-      "emptyTitle": "No matching transactions",
+      "emptyTitle": "Žiadne zodpovedajúce transakcie",
       "emptyDescription": "No transactions match these filters. Try widening the date range or clearing filters.",
-      "selectedCount": "{count} selected",
-      "clearSelection": "Clear",
+      "selectedCount": "Vybraných: {count}",
+      "clearSelection": "Vymazať",
       "linkSelected": "Link {count}",
       "success": "Linked {count} payment to the loan. | Linked {count} payments to the loan.",
       "preAnchorWarning": "{count} selected payment is dated before the loan's balance anchor ({date}) — it links as history only and won't reduce the outstanding balance. | {count} selected payments are dated before the loan's balance anchor ({date}) — they link as history only and won't reduce the outstanding balance.",
@@ -34,10 +34,10 @@
       "editDescription": "Update the loan's terms. Changes to the rate, term, or planned payment are recorded in the events timeline."
     },
     "settings": {
-      "title": "Settings",
+      "title": "Nastavenia",
       "editTitle": "Edit loan details",
       "editDescription": "Update the name, balance, rate, term, payment fields, or lender info.",
-      "editButton": "Edit",
+      "editButton": "Upraviť",
       "excludeFromStatsTitle": "Exclude from statistics",
       "excludeFromStatsDescription": "Hide this loan from net worth, charts, and reports without archiving it.",
       "archiveTitle": "Archive loan",
@@ -45,13 +45,13 @@
       "archiveButton": "Archive",
       "archivedTitle": "This loan is archived",
       "archivedDescription": "It's hidden from the sidebar and account pickers and listed under Archived on the loans page. Restore it to resume tracking.",
-      "unarchiveButton": "Restore",
+      "unarchiveButton": "Obnoviť",
       "archiveConfirmTitle": "Archive this loan?",
       "archiveConfirmDescription": "{name} will move to the Archived section on this page and be hidden from the sidebar and account pickers.",
       "archiveAlsoExclude": "Also exclude from statistics",
       "deleteTitle": "Delete loan",
       "deleteDescription": "Permanently removes the loan and its history. This cannot be undone.",
-      "deleteButton": "Delete",
+      "deleteButton": "Zmazať",
       "deleteConfirmTitle": "Delete this loan permanently?",
       "deleteConfirmDescription": "{name} and all its events will be permanently removed. This cannot be undone.",
       "toggleSuccess": "Setting updated",
@@ -76,9 +76,9 @@
       "interestPaid": "Interest paid (est.)"
     },
     "archivedList": {
-      "sectionTitle": "Archived",
-      "badge": "Archived",
-      "outstanding": "Outstanding"
+      "sectionTitle": "Archivované",
+      "badge": "Archivované",
+      "outstanding": "Držaný"
     },
     "aggregate": {
       "avgApr": "Avg APR",
@@ -90,7 +90,7 @@
     },
     "list": {
       "columns": {
-        "loan": "Loan",
+        "loan": "Pôžička",
         "progress": "Progress",
         "balance": "Balance",
         "apr": "APR",
@@ -103,10 +103,10 @@
       "ofPrincipal": "of {amount}"
     },
     "types": {
-      "mortgage": "Mortgage",
-      "auto": "Vehicle",
+      "mortgage": "Hypotéka",
+      "auto": "Vozidlo",
       "student": "Student",
-      "personal": "Personal",
+      "personal": "Osobné",
       "heloc": "HELOC",
       "business": "Business",
       "medical": "Medical",
@@ -148,7 +148,7 @@
         "cost": {
           "title": "What this loan cost",
           "totalLabel": "Total cost",
-          "principal": "Principal",
+          "principal": "Istina",
           "interest": "Interest (est.)",
           "estimateFootnote": "Interest is an amortization-schedule estimate — payments are recorded as principal, so no exact interest split is stored.",
           "effectiveCost": "Effective cost: {cents}¢ of interest per $1 borrowed"
@@ -161,7 +161,7 @@
       },
       "projection": {
         "title": "Projection",
-        "paidLabel": "Paid",
+        "paidLabel": "Platené",
         "paidOfOriginal": "{paid} of {original} paid",
         "payoffDate": "Payoff date",
         "monthsRemaining": "Months remaining",
@@ -171,7 +171,7 @@
         "plannedPayment": "Planned payment"
       },
       "events": {
-        "title": "Timeline",
+        "title": "Časová os",
         "empty": "No history yet – rate changes, balance corrections, and notes will appear here.",
         "rateChange": "Rate changed from {from}% to {to}%",
         "termChange": "Term changed from {from} to {to} months",

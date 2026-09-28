@@ -63,7 +63,7 @@
         "title": "Pengaturan proses",
         "model": "Model",
         "notConfigured": "Belum dikonfigurasi",
-        "endpoint": "Endpoint",
+        "connection": "AI model",
         "limits": "Batas",
         "limitsSharedKey": "3 proses per jam",
         "limitsOwnCredentials": "Tidak terbatas — berjalan dengan kunci Anda sendiri",

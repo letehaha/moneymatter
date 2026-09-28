@@ -1,8 +1,6 @@
 {
   "settings": {
     "aiIntegrations": {
-      "title": "AI Integrations",
-      "description": "Connect AI assistants like Claude or ChatGPT to analyze your financial data directly from chat.",
       "mcpServer": {
         "title": "MCP Server",
         "description": "Use this URL to connect AI assistants to your MoneyMatter account. Your data is shared read-only.",
@@ -38,7 +36,7 @@
         "add": "Aggiungere"
       },
       "connectedApps": {
-        "title": "Connected Apps",
+        "title": "Active connectors",
         "description": "Apps that have access to your financial data. You can revoke access at any time.",
         "emptyTitle": "No apps connected yet.",
         "emptyDescription": "Use the buttons above to connect an AI assistant.",
@@ -56,6 +54,8 @@
       },
       "scopes": {
         "financeRead": "Read financial data",
+        "financeWrite": "Edit financial data",
+        "financeDelete": "Delete financial data",
         "profileRead": "Read profile",
         "offlineAccess": "Offline access"
       }

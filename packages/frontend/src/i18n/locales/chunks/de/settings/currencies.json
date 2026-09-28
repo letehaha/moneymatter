@@ -6,7 +6,7 @@
         "description": "Manage the currencies you track and the exchange rates used across your accounts."
       },
       "addNew": {
-        "loading": "Wird geladen...",
+        "loading": "Laden...",
         "selectCurrency": "Select currency",
         "addButton": "Add",
         "sectionLabel": "Add a currency",
@@ -16,7 +16,7 @@
         }
       },
       "howItWorks": {
-        "trigger": "How it works?",
+        "trigger": "So funktioniert's",
         "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
       },
       "row": {
@@ -57,7 +57,7 @@
       "setBase": {
         "button": "Als Basiswährung festlegen",
         "buttonShort": "Set as base",
-        "processing": "Processing...",
+        "processing": "Wird verarbeitet...",
         "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
         "dialog": {
           "title": "Change Base Currency?",

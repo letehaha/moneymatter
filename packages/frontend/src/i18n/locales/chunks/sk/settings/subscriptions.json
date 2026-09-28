@@ -1,7 +1,7 @@
 {
   "settings": {
     "subscriptions": {
-      "title": "Scheduled payments",
+      "title": "Pravidelné platby",
       "defaultAutoRecord": {
         "label": "Default auto-record on new scheduled payments",
         "help": "When enabled, the create-subscription form's auto-record toggle starts ON by default. You can always override it per subscription.",

@@ -1,48 +1,48 @@
 {
   "accounts": {
-    "title": "Accounts",
-    "createAccount": "Create account",
-    "createVehicle": "Add vehicle",
-    "actionsMenu": "Account actions",
+    "title": "Účty",
+    "createAccount": "Vytvoriť účet",
+    "createVehicle": "Pridať vozidlo",
+    "actionsMenu": "Operácie s účtom",
     "sections": {
-      "archived": "Archived",
-      "manual": "Manual accounts",
-      "sharedWithMe": "Shared with me",
-      "vehicles": "Vehicles",
-      "bankConnections": "Bank connections"
+      "archived": "Archivované",
+      "manual": "Manuálne účty",
+      "sharedWithMe": "Zdieľané so mnou",
+      "vehicles": "Vozidlá",
+      "bankConnections": "Bankové pripojenia"
     },
     "empty": {
-      "title": "No Accounts Yet",
-      "description": "Connect your bank or create a manual account to start tracking your finances, balances, and transactions.",
-      "connectBank": "Connect Bank Account",
-      "createManual": "Create Manual Account"
+      "title": "Zatiaľ žiadne účty",
+      "description": "Pripojte banku alebo vytvorte manuálny účet a začnite sledovať financie, zostatky a transakcie.",
+      "connectBank": "Pripojiť bankový účet",
+      "createManual": "Vytvoriť manuálny účet"
     },
     "overview": {
-      "totalBalance": "Total balance",
-      "assets": "Assets",
-      "liabilities": "Liabilities",
-      "vehicles": "Vehicles",
-      "projected": "Projected {amount} · {count} planned entry through {date} | Projected {amount} · {count} planned entries through {date}"
+      "totalBalance": "Celkový zostatok",
+      "assets": "Aktíva",
+      "liabilities": "Záväzky",
+      "vehicles": "Vozidlá",
+      "projected": "Výhľad: {amount} · {count} plánovaný záznam do {date} | Výhľad: {amount} · {count} plánovaných záznamov do {date}"
     },
-    "sharedBy": "Shared by {handle}",
-    "viaHousehold": "Shared via {handle}'s household",
-    "connect": "Connect",
-    "connectBank": "Connect bank",
-    "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
-    "reconnect": "Reconnect",
-    "manageConnection": "Manage connection",
-    "accountsCount": "{count} account | {count} accounts",
-    "inGroupSubtitle": "in {name}",
+    "sharedBy": "Zdieľané {handle}",
+    "viaHousehold": "Zdieľané cez domácnosť používateľa {handle}",
+    "connect": "Pripojiť",
+    "connectBank": "Pripojiť banku",
+    "noBanksConnected": "Zatiaľ nie je pripojená žiadna banka — pripojte ju a zostatky sa budú synchronizovať automaticky.",
+    "reconnect": "Obnoviť pripojenie",
+    "manageConnection": "Spravovať pripojenie",
+    "accountsCount": "{count} účet | {count} účtov",
+    "inGroupSubtitle": "v {name}",
     "sort": {
-      "auto": "Auto",
-      "name": "Name",
-      "balance": "Balance",
-      "ariaLabel": "Sort accounts"
+      "auto": "Automaticky",
+      "name": "Názov",
+      "balance": "Zostatok",
+      "ariaLabel": "Zoradiť účty"
     },
     "status": {
-      "active": "Active",
-      "expiringSoon": "Expiring soon",
-      "expired": "Expired"
+      "active": "Aktívne",
+      "expiringSoon": "Čoskoro vyprší",
+      "expired": "Vypršané"
     }
   }
 }

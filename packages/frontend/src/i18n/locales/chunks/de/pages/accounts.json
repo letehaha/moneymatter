@@ -13,7 +13,7 @@
     },
     "empty": {
       "title": "Noch keine Konten",
-      "description": "Verbinden deine Bank oder erstellen ein manuelles Konto, um deine Finanzen, Kontostände und Transaktionen zu verfolgen.",
+      "description": "Verbinde deine Bank oder erstelle ein manuelles Konto, um deine Finanzen, Kontostände und Transaktionen zu verfolgen.",
       "connectBank": "Bankkonto verbinden",
       "createManual": "Manuelles Konto erstellen"
     },
@@ -22,7 +22,7 @@
       "assets": "Vermögenswerte",
       "liabilities": "Verbindlichkeiten",
       "vehicles": "Fahrzeuge",
-      "projected": "Prognose {amount} · {count} geplanter Eintrag bis {date} | Prognose {amount} · {count} geplante Einträge bis {date}"
+      "projected": "Prognostiziert {amount} · {count} geplanter Eintrag bis {date} | Prognostiziert {amount} · {count} geplante Einträge bis {date}"
     },
     "sharedBy": "Geteilt von {handle}",
     "viaHousehold": "Geteilt über den Haushalt von {handle}",

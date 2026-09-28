@@ -1,0 +1,113 @@
+{
+  "budgets": {
+    "title": "Budgets",
+    "description": "Track spending and monitor financial events",
+    "notFound": "Budget not found",
+    "notFoundDescription": "We couldn't find this budget. It may have been deleted or you might not have access to it.",
+    "backToList": "Back to budgets",
+    "newBudget": "New Budget",
+    "createBudget": "Create budget",
+    "creation": {
+      "success": "Budget created",
+      "error": "Unexpected error!",
+      "nameLabel": "Budget name",
+      "namePlaceholder": "Enter the name",
+      "typeLabel": "Budget type",
+      "typeManual": "Manual",
+      "typeManualDescription": "Manually add transactions to this budget",
+      "typeCategory": "Category-based",
+      "typeCategoryDescription": "Auto-track spending by categories",
+      "categoriesLabel": "Categories to track",
+      "categoriesRequired": "Select at least one category",
+      "fromDateLabel": "From date",
+      "toDateLabel": "To date",
+      "autoIncludeLabel": "Auto include transactions",
+      "limitLabel": "Budget limit",
+      "limitPlaceholder": "Enter the limit",
+      "submitButton": "Add budget"
+    },
+    "list": {
+      "tabCategory": "Category Budgets",
+      "tabManual": "Manual Budgets",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteSuccess": "Budget deleted successfully!",
+      "deleteError": "Unexpected error!",
+      "updateSuccess": "Budget updated successfully!",
+      "updateError": "Failed to update budget",
+      "unlinkTransactionsSuccess": "Transactions unlinked successfully!",
+      "deleteDialog": {
+        "title": "Do you want to delete this budget?",
+        "description": "By clicking \"Accept\", all associated transactions will be unlinked from the budget but will remain in the system."
+      },
+      "limitLabel": "Limit: {amount}",
+      "transactionsCount": "{count} transactions",
+      "categoriesCount": "{count} categories",
+      "noTransactions": "No transactions yet",
+      "noTimePeriod": "No time period",
+      "autoTracked": "Auto-tracked",
+      "status": {
+        "ended": "Ended",
+        "lastDay": "Last day",
+        "oneDayLeft": "1 day left",
+        "daysLeft": "{count} days left",
+        "startsToday": "Starts today",
+        "startsTomorrow": "Starts tomorrow",
+        "startsInDays": "Starts in {count} days"
+      },
+      "income": "Income",
+      "expenses": "Expenses",
+      "net": "Net",
+      "used": "Used",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "archivedLabel": "Archived",
+      "archiveError": "Failed to update archive status",
+      "showArchived": "Show archived",
+      "hideArchived": "Hide archived",
+      "emptyState": {
+        "title": "No budgets yet",
+        "description": "Create a budget to start tracking your spending or monitoring specific events."
+      }
+    },
+    "settings": {
+      "nameLabel": "Budget name",
+      "namePlaceholder": "Enter budget name",
+      "limitLabel": "Budget limit",
+      "limitPlaceholder": "Enter limit amount (optional)",
+      "startDateLabel": "Start date",
+      "endDateLabel": "End date",
+      "notSet": "Not set"
+    },
+    "addTransactionsDialog": {
+      "title": "Add Transactions to Budget",
+      "addSelected": "Add Selected",
+      "clearSelection": "Clear selection"
+    },
+    "categoryBudget": {
+      "trackedCategories": "Tracked Categories",
+      "categoriesCount": "{count} categories tracked",
+      "autoTrackedInfo": "Transactions are automatically tracked based on categories",
+      "transactionsTitle": "Transactions",
+      "transactionsCount": "{count} transactions",
+      "noTransactions": "No transactions yet",
+      "noTransactionsDescription": "Transactions matching your tracked categories will appear here automatically.",
+      "transactionsLoadError": "Failed to load transactions",
+      "categoryBreakdown": "Category Breakdown",
+      "edit": "Edit",
+      "editTitle": "Edit Budget",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "settings": {
+        "categoriesLabel": "Tracked Categories"
+      }
+    },
+    "manualBudget": {
+      "edit": "Edit",
+      "editTitle": "Edit Budget"
+    },
+    "share": {
+      "sharedByBadge": "Shared by {handle}"
+    }
+  }
+}

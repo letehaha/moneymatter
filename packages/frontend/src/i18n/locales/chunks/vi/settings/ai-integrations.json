@@ -1,8 +1,6 @@
 {
   "settings": {
     "aiIntegrations": {
-      "title": "Tích hợp AI",
-      "description": "Kết nối các trợ lý AI như Claude hay ChatGPT để phân tích dữ liệu tài chính của bạn ngay trong khung chat.",
       "mcpServer": {
         "title": "Máy chủ MCP",
         "description": "Dùng URL này để kết nối trợ lý AI với tài khoản MoneyMatter của bạn. Dữ liệu của bạn được chia sẻ ở chế độ chỉ đọc.",
@@ -56,6 +54,8 @@
       },
       "scopes": {
         "financeRead": "Đọc dữ liệu tài chính",
+        "financeWrite": "Edit financial data",
+        "financeDelete": "Delete financial data",
         "profileRead": "Đọc hồ sơ",
         "offlineAccess": "Truy cập ngoại tuyến"
       }

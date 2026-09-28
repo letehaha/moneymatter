@@ -41,7 +41,7 @@
         "carryLabel": "Default carry %",
         "hurdleLabel": "Default hurdle %",
         "percentInvalid": "Must be between 0 and 100",
-        "cancel": "Cancel",
+        "cancel": "Cancella",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"
@@ -107,7 +107,7 @@
         "pickAnotherTransaction": "Add another transaction",
         "removeLinkedTransaction": "Remove linked transaction",
         "linkedSummary": "Linked {total} across {count} transaction(s)",
-        "cancel": "Cancel",
+        "cancel": "Cancella",
         "create": "Create",
         "saving": "Saving…"
       },
@@ -187,7 +187,7 @@
         "percentInvalid": "Must be between 0 and 100",
         "notesLabel": "Notes",
         "notesPlaceholder": "Optional notes about this deal",
-        "cancel": "Cancel",
+        "cancel": "Cancella",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"

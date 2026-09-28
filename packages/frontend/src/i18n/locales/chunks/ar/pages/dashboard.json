@@ -1,0 +1,313 @@
+{
+  "dashboard": {
+    "editMode": {
+      "customize": "Customize",
+      "addWidgets": "Add widgets",
+      "emptyState": "Click Customize to add widgets",
+      "removeWidget": "Remove widget"
+    },
+    "widgets": {
+      "common": {
+        "includePlanned": "Include planned transactions",
+        "includePlannedTooltip": "Count pending planned transactions in this widget's numbers.",
+        "includePlannedSaveError": "Couldn't save the planned transactions setting. Please try again."
+      },
+      "balanceTrend": {
+        "title": "Balance trend",
+        "balanceTypes": {
+          "total": "Total",
+          "accounts": "Accounts",
+          "portfolios": "المحافظ",
+          "ventures": "المشاريع",
+          "vehicles": "Vehicles",
+          "loans": "القروض"
+        },
+        "tooltip": {
+          "accounts": "Accounts:",
+          "portfolios": "Portfolios:",
+          "total": "Total:",
+          "ventures": "Ventures:",
+          "vehicles": "Vehicles:",
+          "loans": "Loans:"
+        },
+        "today": "Today",
+        "vsPreviousPeriod": "vs previous period",
+        "spikePanel": {
+          "accounts": "Accounts",
+          "portfolios": "المحافظ",
+          "priceDrivenChange": "Price-driven change — transaction details coming soon",
+          "noSignificantTransactions": "No significant transactions for this date.",
+          "seeAllTransactions": "See all transactions"
+        },
+        "spikeSettings": {
+          "showMarkers": "Show spike markers",
+          "showMarkersTooltip": "Toggle colored markers on the chart that highlight significant balance changes.",
+          "percentThreshold": "Min change %",
+          "percentThresholdTooltip": "Minimum percentage change in balance between two consecutive days to mark as a spike. Either this or the absolute threshold must be exceeded. Low values show more markers.",
+          "absoluteThreshold": "Min change $",
+          "absoluteThresholdTooltip": "Minimum absolute balance change (in your base currency) to qualify as a spike. Either this or the % threshold must be exceeded.",
+          "maxMarkers": "Max markers",
+          "maxMarkersTooltip": "Maximum number of spike markers shown on the chart. When there are more spikes than this limit, only the most significant ones are displayed.",
+          "resetDefaults": "Reset defaults",
+          "accept": "Accept",
+          "validation": {
+            "outOfRange": "Value is out of allowed range",
+            "integer": "Must be a whole number"
+          }
+        },
+        "settings": {
+          "title": "Settings",
+          "spikeMarkers": "Spike markers",
+          "fitToLatestData": "Fit to latest data",
+          "fitToLatestDataTooltip": "When on, the chart only spans up to your latest data point. When off, the x-axis covers the full selected period, leaving empty space for any future dates.",
+          "fitToLatestDataLockedTooltip": "Turn off planned transactions to change this — their projection always extends the chart to the end of the period.",
+          "on": "On",
+          "off": "Off",
+          "includeInTotal": "Include in total",
+          "includePlannedTooltip": "Show a dashed projection of pending planned transactions on top of the trend."
+        },
+        "componentsSettings": {
+          "description": "Choose which components count toward the Total balance line.",
+          "vehicles": "Vehicles",
+          "ventures": "المشاريع",
+          "loans": "القروض",
+          "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
+          "allIncluded": "All components",
+          "excluding": "Excluding {items}"
+        },
+        "projection": {
+          "summary": "{amount} projected · {count} planned entry through {date} | {amount} projected · {count} planned entries through {date}"
+        }
+      },
+      "expensesStructure": {
+        "title": "Expenses Structure",
+        "today": "Today",
+        "vsPreviousPeriod": "vs previous period",
+        "viewButton": "View"
+      },
+      "latestTransactions": {
+        "title": "Latest Transactions",
+        "showAll": "View all"
+      },
+      "subscriptions": {
+        "title": "Subscriptions & Bills",
+        "titleSubscriptions": "Subscriptions",
+        "titleBills": "Bills",
+        "titleAll": "Recurring Payments",
+        "titleInstallments": "Installments",
+        "configTypeAll": "All",
+        "configTypeSubscriptions": "Subscriptions",
+        "configTypeBills": "Bills",
+        "configTypeInstallments": "Installments",
+        "activeSummary": "{count} active",
+        "perYear": " per year",
+        "incomeSummary": "{count} active · {amount}/month income",
+        "percentOfIncome": "{percent}% of avg income",
+        "settings": {
+          "title": "Settings",
+          "show": "Show",
+          "incomeWindow": "Income window",
+          "incomeWindowTooltip": "We average your incoming transactions over this period to compute the % of income spent on recurring payments.",
+          "lookbackOption": {
+            "1": "Last month",
+            "3": "Last 3 months",
+            "6": "Last 6 months",
+            "12": "Last 12 months"
+          }
+        }
+      },
+      "categoryTracker": {
+        "title": "Categories Watchlist",
+        "addCategory": "Add category",
+        "selectCategories": "Select Categories"
+      },
+      "cashFlow": {
+        "title": "Cash Flow",
+        "description": "Shows your net savings: income minus expenses for the selected period, with a trend of previous periods",
+        "vsPrevious": "vs previous",
+        "income": "Income",
+        "expenses": "Expenses",
+        "saved": "Saved",
+        "previousPeriodsTrend": "Previous periods trend",
+        "viewDetails": "View details"
+      },
+      "netWorth": {
+        "title": "Net Worth",
+        "description": "How your net worth changed over the selected period. Counts every balance change: accounts, investments, loans, and asset values.",
+        "vsPrevious": "vs previous",
+        "start": "Start",
+        "end": "End",
+        "growth": "Growth",
+        "previousPeriodsTrend": "Previous periods trend",
+        "excludedTooltip": "Excluded from net worth: {components}",
+        "viewHistory": "View history",
+        "loadFailed": "Couldn't load net worth data.",
+        "components": {
+          "ventures": "المشاريع",
+          "vehicles": "Vehicles",
+          "loans": "القروض"
+        },
+        "settings": {
+          "title": "Include in net worth",
+          "loans": "القروض",
+          "vehicles": "Vehicles",
+          "ventures": "المشاريع"
+        },
+        "trendTooltip": {
+          "change": "Change",
+          "netWorth": "Net worth",
+          "noData": "No data for this period"
+        }
+      },
+      "creditUtilization": {
+        "title": "Credit Utilization",
+        "description": "Shows how much of your credit limits are currently used across all accounts",
+        "utilized": "utilized",
+        "noAccounts": "No accounts with credit limits"
+      },
+      "plannedOverview": {
+        "title": "مخطط له",
+        "projectedTotal": "Projected balance",
+        "pendingCount": "{count} planned entry | {count} planned entries",
+        "through": "Through {date}",
+        "loadFailed": "Couldn't load planned transactions"
+      },
+      "emptyState": "There are no data in selected time interval.",
+      "registry": {
+        "balanceTrend": {
+          "name": "Balance Trend",
+          "description": "Track your balance over time"
+        },
+        "categoryTracker": {
+          "name": "Categories Watchlist",
+          "description": "Watch spending and income for selected categories"
+        },
+        "spendingCategories": {
+          "name": "Spending by Categories",
+          "description": "See where your money goes"
+        },
+        "latestRecords": {
+          "name": "Latest Records",
+          "description": "Your most recent transactions"
+        },
+        "subscriptions": {
+          "name": "Subscriptions & Bills",
+          "description": "Overview of recurring payments"
+        },
+        "cashFlow": {
+          "name": "Cash Flow",
+          "description": "Income vs expenses with savings rate"
+        },
+        "netWorth": {
+          "name": "Net Worth",
+          "description": "How your total net worth changes over time, including investments, loans, and assets."
+        },
+        "creditUtilization": {
+          "name": "Credit Utilization",
+          "description": "Credit limit usage across your accounts"
+        },
+        "plannedOverview": {
+          "name": "Planned overview",
+          "description": "Pending planned transactions and your projected balance"
+        },
+        "fireProgress": {
+          "name": "FIRE progress",
+          "description": "How close you are to financial independence"
+        }
+      }
+    },
+    "periodSelector": {
+      "presets": {
+        "currentMonth": "Current Month",
+        "last3Months": "Last 3 Months",
+        "last6Months": "Last 6 Months",
+        "lastYear": "Last 12 Months",
+        "thisYear": "This Year",
+        "previousYear": "Previous Year"
+      }
+    }
+  },
+  "widgets": {
+    "subscriptionsOverview": {
+      "upcoming": {
+        "collapsed": "{count} upcoming payments",
+        "collapsedAction": "Open"
+      },
+      "empty": "All caught up — nothing due in the next 3 days.",
+      "overdueBadge": "Overdue",
+      "payAction": "Mark paid"
+    },
+    "latestRecords": {
+      "config": {
+        "includeScheduled": {
+          "label": "Include scheduled payments",
+          "on": "On",
+          "off": "Off"
+        }
+      },
+      "settings": {
+        "excludeTitle": "Exclude transactions",
+        "excludeTransfersDescription": "Hide transfers between your own accounts",
+        "excludeOutOfWalletDescription": "Hide transfers to and from accounts you don't track",
+        "balanceAdjustmentsTitle": "Balance adjustments",
+        "excludeBalanceAdjustmentsDescription": "Hide balance adjustment transactions",
+        "plannedTitle": "Planned transactions",
+        "excludePlannedDescription": "Hide pending planned transactions from the list",
+        "nothingExcluded": "Nothing excluded"
+      },
+      "overdueBadge": "Overdue",
+      "scheduledBadge": "Scheduled",
+      "payAction": "Mark paid"
+    },
+    "fireProgress": {
+      "title": "FIRE progress",
+      "config": {
+        "style": {
+          "label": "Style",
+          "ring": "Ring",
+          "numbers": "Numbers"
+        }
+      },
+      "openPlan": "Open FIRE plan",
+      "loadFailed": "Couldn't load FIRE progress.",
+      "toType": "to {type}",
+      "ringLabelFor": "{pct}% of {type} target reached, {duration} left",
+      "ringLabelReachedFor": "{type} target reached",
+      "ringLabelUnreachableFor": "{pct}% of {type} target reached, not reachable at your current pace",
+      "timeTo": "Time to {type}",
+      "unitYears": "{n} yrs | {n} yr | {n} yrs",
+      "unitMonths": "{n} mos | {n} mo | {n} mos",
+      "atAge": "at age {age}",
+      "nextMilestone": "Next milestone",
+      "saved": "Saved",
+      "progress": "Progress",
+      "coastFire": "Coast FIRE",
+      "reached": "Reached",
+      "milestoneIn": "{pct}% in {duration}",
+      "typeNumber": "{type} number",
+      "atRate": "at {rate}%",
+      "milestonesReached": "{n} of {total} milestones",
+      "balanceOfTarget": "{balance} of {target}",
+      "reachedType": "{type} reached",
+      "supports": "Supports {amount}/mo",
+      "pctOfSpending": "{pct}% of spending",
+      "unreachable": "Not reachable at current savings",
+      "needs": "Needs about {amount}/mo to get there in {duration}",
+      "chart": {
+        "today": "Today",
+        "typeTarget": "{type} · {amount}",
+        "ariaLabel": "Net worth path: actual history up to today, projected toward your FIRE number"
+      },
+      "setup": {
+        "title": "Plan your path to FIRE",
+        "description": "Uses your accounts and spending. Two numbers if you have no data yet.",
+        "action": "Set up"
+      },
+      "locked": {
+        "title": "Plan your path to FIRE",
+        "description": "Plus feature",
+        "action": "Unlock"
+      }
+    }
+  }
+}

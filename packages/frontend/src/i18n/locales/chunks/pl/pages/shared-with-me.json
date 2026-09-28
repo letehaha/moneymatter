@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "sharedWithMe": {
+      "title": "Shared with me",
+      "loadError": "Failed to load shared resources.",
+      "empty": {
+        "title": "Nothing shared with you yet",
+        "description": "When someone shares an account with you, it'll show up here."
+      },
+      "sections": {
+        "account": "Accounts",
+        "household": "Households",
+        "budget": "Budgets shared with you"
+      },
+      "sharedBy": "Shared by {handle}",
+      "viaHousehold": "Via {handle} household",
+      "unnamedResource": "Untitled",
+      "permissions": {
+        "read": "Read",
+        "write": "Write",
+        "manage": "Manage"
+      },
+      "leave": "Leave",
+      "leaveTitle": "Leave share?",
+      "leaveDescription": "You'll lose access to {resource} owned by {owner}. The owner won't be notified.",
+      "leaveConfirm": "Leave",
+      "leaveSuccess": "You've left the share.",
+      "leaveError": "Could not leave the share.",
+      "pending": {
+        "heading": "Pending invitations",
+        "review": "Review"
+      }
+    }
+  }
+}

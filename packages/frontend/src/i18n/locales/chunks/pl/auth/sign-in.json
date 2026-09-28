@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "login": {
+      "title": "Log in to account",
+      "divider": "Or continue with email",
+      "submitButton": "Log in",
+      "noAccount": "Don't have an account?",
+      "signupsDisabledTooltip": "New signups are disabled by the administrator of this instance",
+      "errors": {
+        "incorrectEmailOrPassword": "Incorrect email or password.",
+        "incorrectPassword": "Incorrect password.",
+        "userNotFound": "User not found.",
+        "emailNotVerified": "Please verify your email before signing in.",
+        "sessionExpired": "Your session has expired. Please sign in again.",
+        "noPasswordSet": "No password set for this account. Try signing in with Google.",
+        "passwordInvalid": "Password is invalid.",
+        "genericError": "An error occurred.",
+        "genericErrorRetry": "An error occurred. Please try again.",
+        "oauthFailed": "Failed to sign in with {provider}. Please try again.",
+        "oauthNotConfigured": "{provider} sign-in is not configured on this server.",
+        "passkeyFailed": "Failed to sign in with passkey. Please try again."
+      }
+    },
+    "shared": {
+      "divider": "Or continue with",
+      "passkeyButton": {
+        "signIn": "Sign in with Passkey",
+        "register": "Add Passkey"
+      },
+      "oauthButton": {
+        "signIn": "Sign in with {provider}",
+        "signUp": "Sign up with {provider}"
+      }
+    }
+  }
+}

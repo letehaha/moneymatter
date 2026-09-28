@@ -64,10 +64,10 @@
           "unknownBrowser": "Unknown Browser"
         },
         "timeAgo": {
-          "justNow": "Just now",
-          "minutesAgo": "{count} minute ago | {count} minutes ago",
-          "hoursAgo": "{count} hour ago | {count} hours ago",
-          "daysAgo": "{count} day ago | {count} days ago"
+          "justNow": "Gerade eben",
+          "minutesAgo": "Vor {count} Minute | Vor {count} Minuten",
+          "hoursAgo": "Vor {count} Stunde | Vor {count} Stunden",
+          "daysAgo": "Vor {count} Tag | Vor {count} Tagen"
         },
         "notifications": {
           "loadFailed": "Failed to load sessions",
@@ -135,9 +135,9 @@
             "accounts": "Accounts and balances",
             "transactions": "Transactions, refunds, and transfers",
             "budgets": "Budgets, tags, and categories",
-            "portfolios": "Investments, portfolios, and holdings",
+            "portfolios": "Investments, Portfolios und Positionen",
             "settings": "User settings, AI keys, and onboarding state",
-            "baseCurrency": "Base currency and exchange rates"
+            "baseCurrency": "Basiswährung und Wechselkurse"
           },
           "kept": "Your login and profile remain. You'll restart from the onboarding flow.",
           "typeConfirm": "To confirm, type {phrase} below:",
@@ -173,7 +173,7 @@
           "confirmFull": "Please type {email} to confirm",
           "placeholder": "Enter your email",
           "acceptButton": "Delete my account",
-          "acceptButtonLoading": "Deleting..."
+          "acceptButtonLoading": "Wird gelöscht..."
         },
         "notifications": {
           "success": "Your account has been deleted successfully",
@@ -185,7 +185,7 @@
           "title": "Download backup",
           "description": "Save a complete, restorable copy of all your data as a zip file.",
           "button": "Download",
-          "loading": "Wird vorbereitet …",
+          "loading": "Vorbereitung...",
           "success": "Backup downloaded",
           "failed": "Could not create backup. Please try again.",
           "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
@@ -252,7 +252,7 @@
             "title": "Restore failed",
             "genericError": "Something went wrong while restoring your backup.",
             "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
-            "closeButton": "Close"
+            "closeButton": "Schließen"
           },
           "overlay": {
             "title": "Restoring your data",

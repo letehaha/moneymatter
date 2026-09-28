@@ -1,7 +1,7 @@
 {
   "settings": {
     "general": {
-      "title": "General",
+      "title": "Všeobecné",
       "description": "Control how your financial data is calculated and displayed across the app.",
       "creditLimit": {
         "label": "Include credit limits in balance",
@@ -20,6 +20,10 @@
         "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
         "successNotification": "Pending transactions setting updated",
         "errorNotification": "Failed to update pending transactions setting"
+      },
+      "quickStart": {
+        "label": "Quick Start guide",
+        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
       },
       "savingsCategories": {
         "label": "Count categories as savings",
@@ -53,19 +57,19 @@
         "errorNotification": "Unexpected error happened. Setting not saved",
         "fields": {
           "externalUrl": {
-            "label": "External URL",
+            "label": "Externá URL",
             "description": "Link the transaction to an order page, booking confirmation or receipt."
           },
           "externalReference": {
-            "label": "External reference",
+            "label": "Externý odkaz",
             "description": "Keep an order number, invoice number or booking reference with the transaction."
           },
           "originalAmount": {
-            "label": "Original amount",
+            "label": "Pôvodná suma",
             "description": "The amount actually charged in another currency, when it differs from the account's currency."
           },
           "location": {
-            "label": "Location",
+            "label": "Poloha",
             "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
           }
         },
@@ -73,6 +77,13 @@
           "label": "Map picker",
           "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
         }
+      },
+      "defaultPaymentType": {
+        "label": "Default payment type",
+        "description": "Preselected when you add a new transaction.",
+        "placeholder": "Select a payment type",
+        "successNotification": "Default payment type updated",
+        "errorNotification": "Failed to update default payment type"
       }
     }
   }

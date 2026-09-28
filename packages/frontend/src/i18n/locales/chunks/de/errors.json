@@ -1,18 +1,18 @@
 {
   "errors": {
     "api": {
-      "failedToFetch": "Failed to fetch data from the server.",
-      "failedToFetchSelfHost": "Cannot reach the server. The backend may still be starting (~30s after startup), or your ALLOWED_ORIGINS env var does not include this URL.",
-      "unexpectedError": "Unexpected error.",
-      "sessionExpired": "Your session has expired. Please sign in again",
-      "payloadTooLarge": "The request is too large. Please try importing fewer items at a time"
+      "failedToFetch": "Fehler beim Abrufen der Daten vom Server.",
+      "failedToFetchSelfHost": "Der Server kann nicht erreicht werden. Das Backend startet möglicherweise immer noch (~30s nach dem Start) oder deine ALLOWED_ORIGINS Umgebungsvariable enthält diese URL nicht.",
+      "unexpectedError": "Unerwarteter Fehler.",
+      "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an",
+      "payloadTooLarge": "Die Datenmenge ist zu groß. Bitte importiere weniger Einträge auf einmal."
     },
     "notFound": {
-      "title": "This page is off the books",
-      "description": "We couldn't find what you were looking for. The link may be broken, or the page may have moved.",
-      "attemptedLabel": "You tried to visit: ",
-      "goBack": "Go back",
-      "goHome": "Take me home"
+      "title": "Diese Seite konnte nicht gefunden werden.",
+      "description": "Wir konnten das, wonach du gesucht hast, nicht finden. Möglicherweise ist der Link defekt oder die Seite wurde verschoben.",
+      "attemptedLabel": "Du hast versucht aufzurufen: ",
+      "goBack": "Zurück",
+      "goHome": "Zurück zur Hauptseite"
     }
   }
 }

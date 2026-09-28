@@ -2,19 +2,19 @@
   "auth": {
     "welcome": {
       "title": "Basiswährung auswählen",
-      "description": "Deine Basiswährung sollte idealerweise diejenige sein, die du am häufigsten verwendest. Alle Transaktionen in anderen Währungen werden auf der Grundlage dieser Währung berechnet.",
+      "description": "Deine Basiswährung sollte idealerweise die Währung sein, die du am häufigsten verwendest. Alle Transaktionen in anderen Währungen werden auf Basis dieser Währung berechnet.",
       "submitButton": "Währung bestätigen",
-      "trialStarted": "Deine kostenlose Testversion hat begonnen, alles ist für {count} Tag freigeschaltet. {link} | Deine kostenlose Testversion hat begonnen, alles ist für {count} Tage freigeschaltet. {link}",
+      "trialStarted": "Dein kostenloser Testzeitraum hat begonnen, alles ist für {count} Tag freigeschaltet. {link} | Dein kostenloser Testzeitraum hat begonnen, alles ist für {count} Tage freigeschaltet. {link}",
       "logout": "Abmelden",
       "labels": {
         "baseCurrency": "Basiswährung"
       },
       "placeholders": {
-        "loading": "Wird geladen..."
+        "loading": "Laden..."
       },
       "errors": {
-        "unableToLoadCurrencies": "Liste der Währungen kann nicht geladen werden. Versuche es später erneut.",
-        "unableToSetCurrency": "Unerwarteter Fehler. Basiswährung kann nicht gesetzt werden. Bitte versuche es später erneut oder kontaktiere den Support."
+        "unableToLoadCurrencies": "Währungsliste konnte nicht geladen werden. Versuche es später erneut.",
+        "unableToSetCurrency": "Unerwarteter Fehler. Basiswährung konnte nicht festgelegt werden. Bitte versuche es später erneut oder kontaktiere den Support."
       }
     },
     "oauthCallback": {

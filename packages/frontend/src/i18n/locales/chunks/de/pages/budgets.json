@@ -19,8 +19,8 @@
       "typeCategoryDescription": "Auto-track spending by categories",
       "categoriesLabel": "Categories to track",
       "categoriesRequired": "Select at least one category",
-      "fromDateLabel": "From date",
-      "toDateLabel": "To date",
+      "fromDateLabel": "Von Datum",
+      "toDateLabel": "Bis Datum",
       "autoIncludeLabel": "Auto include transactions",
       "limitLabel": "Budget limit",
       "limitPlaceholder": "Enter the limit",
@@ -29,7 +29,7 @@
     "list": {
       "tabCategory": "Category Budgets",
       "tabManual": "Manual Budgets",
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "delete": "Löschen",
       "deleteSuccess": "Budget deleted successfully!",
       "deleteError": "Unexpected error!",
@@ -94,7 +94,7 @@
       "noTransactionsDescription": "Transactions matching your tracked categories will appear here automatically.",
       "transactionsLoadError": "Failed to load transactions",
       "categoryBreakdown": "Category Breakdown",
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "editTitle": "Edit Budget",
       "showMore": "Show more",
       "showLess": "Show less",
@@ -103,7 +103,7 @@
       }
     },
     "manualBudget": {
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "editTitle": "Edit Budget"
     },
     "share": {

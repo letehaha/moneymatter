@@ -1,6 +1,6 @@
 {
   "portfolioDetail": {
-    "loading": "Wird geladen...",
+    "loading": "Laden...",
     "loadingDetails": "Loading portfolio details...",
     "loadError": "Failed to load portfolio details.",
     "tryAgain": "Try Again",
@@ -10,12 +10,12 @@
     "subtitle": "Portfolio Overview",
     "actions": {
       "transfer": "Transfer",
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "delete": "Löschen",
-      "exchangeCurrency": "Exchange Currency"
+      "exchangeCurrency": "Währung umtauschen"
     },
     "balance": {
-      "totalValue": "Total Value",
+      "totalValue": "Gesamtwert",
       "baseCurrencyEquivalent": "≈ {value} in {code}",
       "loadError": "Failed to load portfolio summary.",
       "metrics": {
@@ -26,37 +26,37 @@
       }
     },
     "cashBalances": {
-      "title": "Cash Balances",
-      "emptyState": "No cash balances",
+      "title": "Cash-Bestände",
+      "emptyState": "Keine Cash-Bestände",
       "tabs": {
         "balances": "Balances",
         "cashTransactions": "Transactions",
         "buysSells": "Buys & Sells"
       },
       "cashTransactions": {
-        "addButton": "Add Cash Transaction",
-        "emptyState": "No cash transactions yet",
+        "addButton": "Cash-Transaktion hinzufügen",
+        "emptyState": "Noch keine Cash-Transaktionen",
         "deposit": "Deposit",
         "withdrawal": "Withdrawal",
         "transferIn": "Transfer In",
         "transferOut": "Transfer Out",
-        "exchange": "Currency Exchange",
-        "deleteConfirm": "Delete this cash transaction?",
+        "exchange": "Währungsumtausch",
+        "deleteConfirm": "Cash-Transaktion löschen?",
         "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
         "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
         "deleteLinkedTransaction": "Also delete the linked account transaction",
         "adjustmentBadge": "Adjustment",
-        "noCashBadge": "No cash impact",
+        "noCashBadge": "Cash-neutral",
         "markedAsAdjustment": "Marked as a balance correction",
         "markedAsContribution": "Marked as a real contribution",
         "adjustmentError": "Failed to update this transfer",
         "rowActions": "Transaction actions",
         "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
-        "edit": "Edit",
+        "edit": "Bearbeiten",
         "editDialog": {
-          "title": "Edit cash transaction",
+          "title": "Cash-Transaktion bearbeiten",
           "description": "Change how this transaction is treated in reports.",
-          "save": "Save changes"
+          "save": "Änderungen speichern"
         }
       },
       "buysSells": {
@@ -65,53 +65,53 @@
       }
     },
     "holdings": {
-      "title": "Holdings",
-      "subtitle": "{count} symbols",
-      "filterPlaceholder": "Filter by symbol or name...",
-      "addButton": "Add Symbol",
-      "importButton": "Import transactions",
-      "importButtonShort": "Import"
+      "title": "Positionen",
+      "subtitle": "{count} Symbole",
+      "filterPlaceholder": "Nach Symbol oder Namen filtern...",
+      "addButton": "Symbol hinzufügen",
+      "importButton": "Transaktionen importieren",
+      "importButtonShort": "Importieren"
     },
     "holdingsTable": {
-      "loadError": "Could not load holdings",
-      "empty": "No holdings yet",
-      "noFilterResults": "No matching holdings",
-      "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
-      "clearFilterButton": "Clear search",
+      "loadError": "Konnte Positionen nicht laden",
+      "empty": "Noch keine Positionen",
+      "noFilterResults": "Keine passenden Positionen",
+      "noFilterResultsDescription": "Keine Positionen stimmen mit deiner Suche überein. Versuche ein anderes Symbol oder einen anderen Namen.",
+      "clearFilterButton": "Suche zurücksetzen",
       "headers": {
         "symbol": "Symbol",
         "name": "Name",
-        "shares": "Shares",
-        "price": "Price",
-        "avgCostPerShare": "AC/Share",
-        "totalCost": "Total Cost",
-        "marketValue": "Market Value",
-        "unrealizedGain": "Unrealized Gain",
-        "realizedGain": "Realized Gain"
+        "shares": "Anteile",
+        "price": "Preis",
+        "avgCostPerShare": "Ø-Kosten/Anteil",
+        "totalCost": "Gesamtkosten",
+        "marketValue": "Marktwert",
+        "unrealizedGain": "Unrealisierter Gewinn",
+        "realizedGain": "Realisierter Gewinn"
       },
       "transactions": {
-        "loading": "Loading transactions…",
-        "empty": "No transactions found.",
-        "addFirstButton": "Add first Transaction"
+        "loading": "Transaktionen werden geladen…",
+        "empty": "Keine Transaktionen gefunden.",
+        "addFirstButton": "Erste Transaktion hinzufügen"
       },
-      "closedPositions": "Closed positions ({count})",
-      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "closedPositions": "Geschlossene Positionen ({count})",
+      "stalePrice": "Letzter verfügbarer Preis. Marktwert und Gewinne sind möglicherweise veraltet.",
       "deleteHolding": {
-        "ariaLabel": "Delete holding",
-        "title": "Delete holding",
-        "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
-        "confirmLabel": "Delete holding",
-        "success": "Holding deleted.",
-        "error": "Failed to delete the holding."
+        "ariaLabel": "Position löschen",
+        "title": "Position löschen",
+        "description": "Dies wird die {symbol} Position und all ihre Transaktionen dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirmLabel": "Position löschen",
+        "success": "Position löscht.",
+        "error": "Fehler beim Löschen der Position."
       },
       "addTransactionDialog": {
-        "title": "Add Transaction",
-        "description": "Add a new transaction to your portfolio."
+        "title": "Transaktion hinzufügen",
+        "description": "Füge deinem Portfolio eine neue Transaktion hinzu."
       },
-      "tryAgainLater": "Please try again later",
-      "emptyDescription": "Add your first transaction to start tracking your investments",
-      "addFirstHolding": "Add first holding",
-      "importTransactions": "Or import from a file"
+      "tryAgainLater": "Bitte versuche es später erneut",
+      "emptyDescription": "Füge deine erste Transaktion hinzu, um deine Investments zu verfolgen",
+      "addFirstHolding": "Erster Position hinzufügen",
+      "importTransactions": "Oder aus Datei importieren"
     },
     "transactionsList": {
       "title": "Transactions",

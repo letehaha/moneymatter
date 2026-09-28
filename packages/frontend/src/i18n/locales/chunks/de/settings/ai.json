@@ -2,70 +2,12 @@
   "settings": {
     "ai": {
       "title": "KI-Einstellungen",
-      "description": "KI-gestützte Funktionen wie die automatische Kategorisierung von Transaktionen konfigurieren",
+      "description": "KI-Modell für jede Funktion auswählen, eigene Modelle hinzufügen und KI-Apps wie Claude oder ChatGPT mit deinen Daten verbinden.",
       "tabs": {
         "features": "KI-Funktionen",
-        "apiKeys": "API-Schlüssel",
-        "invalidKeysTooltip": "Ein oder mehrere API-Schlüssel sind ungültig",
-        "customEndpoints": "Benutzerdefinierte Endpunkte",
-        "invalidEndpointsTooltip": "Ein oder mehrere benutzerdefinierte Endpunkte funktionieren nicht mehr"
-      },
-      "apiKeyManager": {
-        "title": "API-Schlüssel",
-        "description": "Füge deine eigenen API-Schlüssel hinzu, um bestimmte Anbieter zu verwenden",
-        "badges": {
-          "default": "Standard"
-        },
-        "buttons": {
-          "setDefault": "Als Standard festlegen"
-        },
-        "invalidKeyHelp": "Füge unten einen neuen Schlüssel hinzu, um diesen zu ersetzen, oder entferne ihn, wenn du ihn nicht mehr benötigst.",
-        "deleteDialog": {
-          "title": "API-Schlüssel entfernen?",
-          "description": "Bist du sicher, dass du den {provider} API-Schlüssel entfernen möchtest?",
-          "descriptionMultiple": "KI-Funktionen, die derzeit {provider} nutzen, werden zu einem anderen verfügbaren Anbieter wechseln.",
-          "cancel": "Abbrechen",
-          "remove": "Entfernen"
-        },
-        "allConfigured": "Alle Anbieter wurden eingerichtet",
-        "form": {
-          "titleAdd": "API-Schlüssel hinzufügen",
-          "titleAddAnother": "Neuen Anbieter hinzufügen",
-          "providerLabel": "Anbieter",
-          "apiKeyLabel": "API-Schlüssel",
-          "buttonSaving": "Wird überprüft...",
-          "buttonSave": "Schlüssel speichern"
-        },
-        "providers": {
-          "anthropic": {
-            "label": "Anthropic (Claude)",
-            "placeholder": "sk-ant-...",
-            "description": "Hole dir deinen API-Schlüssel von"
-          },
-          "openai": {
-            "label": "OpenAI (GPT)",
-            "placeholder": "sk-...",
-            "description": "Hole dir deinen API-Schlüssel von"
-          },
-          "google": {
-            "label": "Google (Gemini)",
-            "placeholder": "AIza...",
-            "description": "Hole dir deinen API-Schlüssel von"
-          },
-          "groq": {
-            "label": "Groq (Llama, GPT-OSS)",
-            "placeholder": "gsk_...",
-            "description": "Hole dir deinen API-Schlüssel von"
-          }
-        },
-        "notifications": {
-          "saveSuccess": "API-Schlüssel gespeichert und erfolgreich überprüft",
-          "saveFailed": "API-Schlüssel funktioniert nicht. Bitte stelle sicher, dass der Schlüssel korrekt ist, ausreichende Credits enthält und die erforderlichen Berechtigungen besitzt.",
-          "setDefaultSuccess": "{provider} als Standard gesetzt",
-          "setDefaultFailed": "Standard-Anbieter konnte nicht gesetzt werden",
-          "removeSuccess": "{provider} API-Schlüssel entfernt",
-          "removeFailed": "API-Schlüssel konnte nicht entfernt werden"
-        }
+        "models": "KI-Modelle",
+        "connectedApps": "Konnektoren (MCP)",
+        "invalidConnectionsTooltip": "Eines deiner KI-Modelle benötigt Aufmerksamkeit"
       },
       "credentialStatus": {
         "validated": "Überprüft {timeAgo}",
@@ -75,76 +17,47 @@
       "features": {
         "title": "KI-Funktionen",
         "description": "Konfiguriere das zu verwendende Modell für jede KI-basierte Funktion",
-        "loading": "Funktionen werden geladen..."
+        "howItWorks": "So funktioniert's",
+        "loadError": "KI-Funktionen konnten nicht geladen werden."
       },
       "categorization": {
-        "modelHint": {
-          "trigger": "Welches Modell soll ich wählen?",
-          "text": "Zur Kategorisierung von Transaktionen werden kostengünstige Modelle wie Gemma 4, Gemini 3.5 Flash Lite oder Claude Haiku 4.5 empfohlen. Kategorisierung ist eine einfache Aufgabe, die keine teuren Reasoning-Modelle erfordert. Mit billigeren Modellen kannst du mehr Transaktionen zu niedrigeren Kosten verarbeiten."
-        },
         "howItWorks": {
-          "title": "So funktioniert's",
           "points": {
             "autoSync": "Wenn du Transaktionen von deiner Bank synchronisierst, werden nicht kategorisierte Transaktionen automatisch zur Kategorisierung an die KI gesendet.",
             "analysis": "Die KI analysiert Transaktionsbeschreibungen und Händlernamen, um geeignete Kategorien aus deiner bestehenden Kategorieliste vorzuschlagen.",
             "override": "Du kannst die von der KI vorgeschlagenen Kategorien immer manuell überschreiben."
           }
-        },
-        "loading": "Modelle werden geladen..."
+        }
       },
       "statementParsing": {
-        "modelHint": {
-          "trigger": "Welches Modell soll ich wählen?",
-          "text": "Für das Auswerten von Kontoauszügen werden Mittelklassemodelle wie Gemini 3.6 Flash, Claude Sonnet 5 oder GPT-5.6 Terra empfohlen. Das Auswerten erfordert das Verständnis komplexer Dokumentstrukturen und das Extrahieren präziser Daten, die von leistungsfähigeren Modellen profitieren. Allerdings können günstigere Modelle wie Gemini 3.5 Flash Lite oder Claude Haiku 4.5 auch für einfachere Kontoauszüge gut funktionieren."
-        },
         "howItWorks": {
-          "title": "So funktioniert's",
           "points": {
             "upload": "Lade einen Kontoauszug (PDF, CSV oder TXT) hoch und die KI wird alle Transaktionen automatisch extrahieren.",
             "analysis": "Die KI analysiert die Dokumentstruktur zur Identifizierung von Datum, Beschreibungen, Beträgen und Transaktionstypen.",
             "review": "Du kannst alle extrahierten Daten überprüfen und korrigieren, bevor sie in dein Konto importiert werden.",
             "cost": "Die Kosten werden vor der Verarbeitung geschätzt, aber sie spiegeln nur die ungefähren Kosten wider."
           }
-        },
-        "loading": "Modelle werden geladen..."
+        }
       },
       "modelSelector": {
+        "placeholder": "Wähle ein Modell",
+        "automaticOption": "Automatisch",
+        "automaticOptionWithTarget": "Automatisch · {target}",
+        "serverOption": "MoneyMatter KI · enthalten",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (benötigt Aufmerksamkeit)",
         "badges": {
           "yourKey": "Dein Schlüssel",
-          "yourKeyTooltip": "Diese Funktion verwendet deinen persönlichen API-Schlüssel. Du hast die volle Kontrolle über die Nutzung und die Kosten, ohne Preisbeschränkungen von unserem Server.",
+          "yourKeyTooltip": "Läuft auf einem Ihrer eigenen KI-Modelle. Ihr Anbieter rechnet Sie direkt und MoneyMatter beschränkt die Nutzung nicht.",
           "server": "Server",
-          "serverTooltip": "Diese Funktion verwendet den gemeinsamen API-Schlüssel unseres Servers. Er ist kostenlos, kann aber bei hoher Nachfrage Preisbeschränkungen haben. Fügen deinen eigenen API-Schlüssel für unbegrenzten Zugriff hinzu."
+          "serverTooltip": "Läuft auf der MoneyMatter KI, die in deinem Plan enthalten ist. Es gelten Nutzungsgrenzen."
         },
+        "sharedPoolNote": "Mit deinem aktuellen Plan läuft das enthaltene Modell in einem geteilten Pool, sodass die Beschränkungen gelten können, wenn die Gesamtnachfrage hoch ist. {link}, um diese zu vermeiden.",
+        "sharedPoolNoteLink": "Auf Plus upgraden",
         "modelLabel": "Modell",
-        "resetButton": "Auf Standard zurücksetzen",
-        "noApiKey": "(Kein API-Schlüssel)",
         "modelInfo": {
-          "context": "Kontext:",
-          "capabilities": "Fähigkeiten:",
           "estimatedCost": "Vsl. Kosten:",
           "per100Transactions": "pro 100 Transaktionen"
-        },
-        "rateLimitWarning": "Nutzt serverseitig bereitgestellte KI in der kostenlosen Preisstufe. Die Verfügbarkeit der Funktionen hängt von der Nachfrage anderer Benutzer ab. Füge für zuverlässigen Zugriff deinen eigenen API-Schlüssel in die Registerkarte API-Schlüssel ein.",
-        "groupLabels": {
-          "recommended": "⭐ Empfohlen",
-          "openai": "OpenAI",
-          "anthropic": "Anthropic",
-          "google": "Google",
-          "groq": "Groq"
-        },
-        "costLabels": {
-          "free": "Kostenlos",
-          "low": "Geringe Kosten",
-          "medium": "Mittlere Kosten",
-          "high": "Hohe Kosten"
-        },
-        "capabilities": {
-          "textGeneration": "Text",
-          "structuredOutput": "Strukturiert",
-          "functionCalling": "Funktionen",
-          "vision": "Vision",
-          "fastInference": "Schnell",
-          "agents": "Agenten"
         },
         "notifications": {
           "updateSuccess": "Modell erfolgreich aktualisiert",
@@ -152,114 +65,206 @@
           "resetSuccess": "Auf Standard-Modell zurückgesetzt",
           "resetFailed": "Fehler beim Zurücksetzen des Modells"
         },
-        "addKeyHint": "Füge deinen eigenen API-Schlüssel hinzu, um aus allen verfügbaren Modellen auszuwählen.",
-        "addKeyHintLink": "API-Schlüssel hinzufügen →",
-        "customModel": {
-          "nameLabel": "Modellname",
-          "applyButton": "Übernehmen",
-          "hint": "Wird unverändert an {baseUrl} gesendet.",
-          "endpointOption": "{endpoint} — {model}",
-          "unknownEndpoint": "Benutzerdefinierter Endpunkt",
-          "missingModelName": "Dieser Endpunkt hat keinen Modellnamen konfiguriert — gib zuerst einen ein",
-          "endpointsLoadError": "Deine Endpunkte konnten nicht geladen werden, daher kann der Modellname momentan nicht bearbeitet werden."
+        "empty": {
+          "title": "Noch kein KI-Modell",
+          "description": "Füge dein eigenes KI-Modell hinzu, um dieses Feature zu nutzen."
+        },
+        "allConnectionsDown": "Alle deine KI-Modelle erfordern Aufmerksamkeit, daher ist diese Funktion pausiert. Behebe das Problem unter {link}.",
+        "allConnectionsDownLink": "KI-Modelle"
+      },
+      "modelGuide": {
+        "trigger": "Welches Modell ist geeignet?",
+        "tierHeading": "{tier} Modell ist ausreichend",
+        "tiers": {
+          "light": "Einfach",
+          "balanced": "Ausgewogen",
+          "smart": "Intelligent"
+        },
+        "needsLabel": "Erfordert",
+        "picksLabel": "Gute Auswahl",
+        "yourModel": "Dein Modell",
+        "source": "Modelldetails von models.dev",
+        "needs": {
+          "textOnly": "Nur Text",
+          "runsOften": "Läuft bei jeder Synchronisation",
+          "longAnswers": "Lange Antworten",
+          "readsFiles": "Liest Bilder & PDFs",
+          "structuredAnswers": "Strukturierte Antworten"
+        },
+        "why": {
+          "categorization": "Eine kurze, wiederkehrende Aufgabe. Ein kleines Modell erledigt das problemlos und hält die Kosten niedrig.",
+          "statementParsing": "Liest den gesamten Auszug und überträgt jede Zeile. Dafür wird ein Modell benötigt, das auch bei langen Texten präzise arbeitet.",
+          "investmentTransactionsParsing": "Wandelt Broker-Exporte in Kauf- und Verkaufszeilen um. Lange Exporte erfordern ein Modell, das ausführliche Antworten schreiben kann.",
+          "receiptParsing": "Das Modell schaut sich die Rechnungsdatei selbst an, also muss es Bilder und PDFs lesen."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Passt gut",
+          "gaps": "{count} fehlt | {count} fehlen",
+          "unknown": "Ungeprüft"
+        },
+        "warning": {
+          "readsFiles": "Kann keine Dateien lesen",
+          "readsText": "Kann keinen Text lesen",
+          "readsImages": "Kann keine Bilder lesen",
+          "readsPdfs": "Kann keine PDFs lesen",
+          "longAnswers": "Nur kurze Antworten",
+          "structuredAnswers": "Keine strukturierten Antworten"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Liest Text",
+            "fail": "Dieses Modell nimmt keinen Text an."
+          },
+          "readsImages": {
+            "label": "Liest Bilder",
+            "fail": "Bilddateien werden nicht funktionieren."
+          },
+          "readsPdfs": {
+            "label": "Liest PDFs",
+            "fail": "PDF-Dateien werden nicht funktionieren."
+          },
+          "longAnswers": {
+            "label": "Ausführliche Antworten",
+            "ok": "Schreibt bis zu {tokens} Token.",
+            "fail": "Schreibt bis zu {tokens} Tokens, sodass lange Dateien abgeschnitten werden."
+          },
+          "structuredAnswers": {
+            "label": "Strukturierte Antworten",
+            "fail": "Seine Antworten können in einer Form wiedergegeben werden, die die App nicht lesen kann."
+          }
+        },
+        "unknown": {
+          "title": "Dieses Modell kann nicht überprüft werden",
+          "detail": "models.dev hat momentan keine Details zu diesem Modell, daher können wir es nicht überprüfen. Stelle sicher, dass es die oben genannten Anforderungen erfüllt."
         }
       },
-      "customEndpoint": {
-        "title": "Benutzerdefinierte Endpunkte",
-        "description": "Verbinden deine eigenen OpenAI-kompatiblen Server und nutze deren Modelle für jede beliebige KI-Funktion.",
-        "loading": "Endpunkte werden geladen…",
-        "addButton": "Endpunkt hinzufügen",
+      "connections": {
+        "title": "KI-Modelle",
+        "description": "Verbinde OpenAI, Claude, Gemini, OpenRouter oder ein lokales Modell. Jeder Eintrag steht für ein Modell, das du für jede beliebige Funktion auswählen kannst.",
+        "tip": {
+          "ariaLabel": "Über KI-Modelle",
+          "text": "Du kannst denselben Anbieter mehrfach mit unterschiedlichen Modellen hinzufügen. Benenne sie am besten nach ihrer Leistungsfähigkeit – wie „Claude smart“ und „Claude fast“ – und wähle dann für jede Funktion das passende Modell aus."
+        },
+        "addButton": "Modell hinzufügen",
+        "capReached": "Du hast das Limit von {max} KI-Modellen erreicht. Entferne eines, um ein anderes hinzuzufügen.",
+        "duplicateName": "{name} Kopie",
         "empty": {
-          "title": "Noch keine eigenen Endpunkte",
-          "description": "Verbinde einen OpenAI-kompatiblen Server — ein lokales Ollama, LM Studio oder ein gehostetes Gateway — um seine Modelle für jede beliebige KI-Funktion zu nutzen."
+          "title": "Noch keine KI-Modelle",
+          "description": "Füge ein Modell mit deinem eigenen API-Schlüssel hinzu oder binde ein lokales Modell wie Ollama oder LM Studio ein."
         },
         "loadError": {
-          "title": "Deine Endpunkte konnten nicht geladen werden",
-          "description": "Deine gespeicherten Endpunkte sind noch vorhanden – wir konnten sie nur gerade nicht abrufen. Überprüfe deine Verbindung und versuche es erneut.",
-          "retry": "Erneut versuchen"
+          "title": "KI-Modelle konnten nicht geladen werden",
+          "description": "Deine gespeicherten Modelle sind noch vorhanden. Überprüfe deine Verbindung und versuche es erneut."
+        },
+        "badges": {
+          "default": "Standard",
+          "defaultSkipped": "Standard · Übersprungen, solange Handlungsbedarf"
         },
         "status": {
-          "model": "Modell: {model}"
+          "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "Endpunkt-Aktionen",
-          "reconnect": "Erneut verbinden"
-        },
-        "form": {
-          "titleAdd": "Endpunkt hinzufügen",
-          "titleEdit": "Endpunkt bearbeiten",
-          "nameLabel": "Name",
-          "namePlaceholder": "Home Ollama",
-          "baseUrlLabel": "Basis-URL",
-          "baseUrlPlaceholder": "http://localhost:11434/v1",
-          "modelLabel": "Modellname",
-          "modelPlaceholder": "llama3.2",
-          "apiKeyLabel": "API-Schlüssel (optional)",
-          "apiKeyPlaceholder": "API-Schlüssel eingeben",
-          "apiKeySavedHint": "Ein API-Schlüssel wurde gespeichert. Leer lassen, um ihn zu behalten.",
-          "apiKeyOptionalHint": "Leer lassen, wenn Ihr Endpunkt keine Authentifizierung benötigt.",
-          "removeApiKeyButton": "Gespeicherten Schlüssel entfernen",
-          "saveButton": "Speichern",
-          "testButton": "Verbindung testen",
-          "removeButton": "Entfernen"
-        },
-        "compatibilityHint": "Der Endpunkt muss OpenAI-kompatibel sein. Funktioniert mit Ollama, vLLM, OpenRouter, LM Studio und jedem /v1-Proxy.",
-        "test": {
-          "success": "Verbindung erfolgreich.",
-          "failed": "Endpunkt konnte nicht erreicht werden."
-        },
-        "notifications": {
-          "saveSuccess": "Benutzerdefinierter Endpunkt gespeichert",
-          "saveFailed": "Fehler beim Speichern des benutzerdefinierten Endpunkts",
-          "removeSuccess": "Benutzerdefinierter Endpunkt entfernt",
-          "removeFailed": "Fehler beim Entfernen des benutzerdefinierten Endpunkts",
-          "removeKeySuccess": "Gespeicherten Schlüssel entfernt",
-          "removeKeyFailed": "Fehler beim Entfernen des gespeicherten Schlüssels",
-          "removeKeyInvalid": "API-Schlüssel entfernt, aber der Endpunkt konnte nicht validiert werden: {reason}",
-          "editedEndpointGone": "Dieser Endpunkt wurde entfernt, sodass der Editor geschlossen wurde."
+          "menuAriaLabel": "KI-Modell-Aktionen",
+          "duplicate": "Duplizieren",
+          "setDefault": "Als Standard festlegen",
+          "remove": "Entfernen",
+          "reconnect": "Erneut verbinden",
+          "enterKey": "API-Schlüssel eingeben"
         },
         "removeDialog": {
-          "title": "Benutzerdefinierten Endpunkt entfernen?",
-          "descriptionNamed": "\"{name}\" wird entfernt. Jede Funktion, die es verwendet, fällt auf ein anderes verfügbares Modell zurück. Diese Aktion kann nicht rückgängig gemacht werden.",
+          "title": "Dieses KI-Modell entfernen?",
+          "description": "\"{name}\" und sein gespeicherter API-Schlüssel werden entfernt.",
+          "pinnedFeatures": "Diese Funktionen wechseln auf automatisch: {features}.",
           "confirm": "Entfernen"
         },
         "removeKeyDialog": {
-          "title": "Gespeicherten Schlüssel entfernen?",
-          "description": "Der Endpunkt wird ohne Schlüssel erneut getestet. Wenn eine Authentifizierung erforderlich ist, wird die Änderung abgelehnt.",
+          "title": "API-Schlüssel entfernen?",
+          "description": "Anfragen an dieses Modell werden ohne API-Schlüssel gesendet. Server, die einen Schlüssel voraussetzen, antworten dann nicht mehr.",
           "confirm": "Schlüssel entfernen"
         },
-        "setupHelp": {
-          "trigger": "Wo finde ich diese Angaben?",
-          "rule": "Die Basis-URL umfasst alles bis vor {path}. Bei fast allen Anbietern endet sie somit mit {suffix}.",
-          "ruleCheck": "Schnelltest: Öffnen von {url} sollte eine JSON-Liste der Modelle zurückgeben.",
-          "apiKeyEmpty": "Leer lassen.",
-          "lmStudio": {
-            "startServer": "Starte zuerst den lokalen Server (Developer-Tab → Start Server).",
-            "baseUrl": "Die Adresse, die in LM Studio angezeigt wird, plus {suffix}. Zum Beispiel {example}.",
-            "model": "Die API-Kennung des Modells. Sie wird im Developer-Tab angezeigt oder unter {url} aufgelistet."
+        "test": {
+          "success": "Verbunden. Das Modell antwortet.",
+          "failed": "Konnte das Modell nicht erreichen."
+        },
+        "notifications": {
+          "saveSuccess": "KI-Modell gespeichert",
+          "saveFailed": "KI-Modell konnte nicht gespeichert werden",
+          "removeSuccess": "KI-Modell entfernt",
+          "removeFailed": "KI-Modell konnte nicht entfernt werden",
+          "setDefaultSuccess": "\"{name}\" ist jetzt dein Standardmodell",
+          "setDefaultFailed": "Das Standardmodell konnte nicht geändert werden",
+          "removeKeySuccess": "API-Schlüssel entfernt",
+          "removeKeyFailed": "API-Schlüssel konnte nicht entfernt werden",
+          "removeKeyInvalid": "API-Schlüssel wurde entfernt, aber das Modell antwortet nicht mehr: {reason}",
+          "editedConnectionGone": "Dieses KI-Modell wurde an anderer Stelle entfernt, sodass das Formular geschlossen wurde."
+        },
+        "form": {
+          "titleAdd": "KI-Modell hinzufügen",
+          "titleEdit": "KI-Modell bearbeiten",
+          "titleDuplicate": "KI-Modell duplizieren",
+          "providerLabel": "Anbieter",
+          "providerPlaceholder": "Anbieter auswählen",
+          "nameLabel": "Name",
+          "baseUrlLabel": "Basis-URL",
+          "baseUrlPlaceholder": "https://beispiel.com/v1",
+          "apiKeyLabel": "API-Schlüssel",
+          "apiKeyPlaceholder": "API-Schlüssel einfügen",
+          "apiKeyGetHint": "Hole dir einen Schlüssel bei {link}",
+          "apiKeyOptionalHint": "Optional. Leer lassen, wenn dein Server keinen Schlüssel benötigt.",
+          "apiKeySavedHint": "Leer lassen, um den gespeicherten Schlüssel beizubehalten.",
+          "apiKeyBorrowedHint": "Verwendet den Schlüssel von \"{name}\". Gib Sie einen neuen Schlüssel ein, um einen anderen zu verwenden.",
+          "removeApiKeyButton": "API-Schlüssel entfernen",
+          "modelLabel": "Modell",
+          "modelPlaceholder": "Modell eingeben oder auswählen",
+          "modelListEmpty": "Keine Modelle zum Auswählen. Gib den Modellnamen ein, den dein Server verwendet.",
+          "modelListNoMatch": "Kein aufgelistetes Modell stimmt überein. Du kannst den eingegebenen Namen trotzdem nutzen.",
+          "testButton": "Verbindung testen",
+          "saveButton": "Änderungen speichern",
+          "localNetworkOnly": "MoneyMatter kann keinen Server auf deinem eigenen Computer (wie {hostname} oder {ip}) erreichen. Mache ihn über einen Tunnel wie ngrok oder Cloudflare Tunnel erreichbar und füge die Tunnel-URL hier ein.",
+          "dockerHost": "Falls du diese App in Docker auf demselben Computer wie den Modell-Server betreibst, nutze {dockerHost} statt {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "z.B. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "z.B. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "z.B. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "z.B. OpenRouter Llama"
           },
           "ollama": {
-            "model": "Der genaue Tag von {command}, zum Beispiel {example}."
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Lokales Llama"
           },
-          "openRouter": {
-            "model": "Die vollständige Modell-Id von ihrer Modellseite, zum Beispiel {example}.",
-            "apiKeyRequired": "Erforderlich."
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "z.B. LM Studio Qwen"
           },
-          "other": {
-            "tabLabel": "Sonstige",
-            "title": "{name} oder irgendein anderer OpenAI-kompatibler Server",
-            "baseUrl": "Die Server-Adresse, plus {suffix}.",
-            "model": "Was {request} als {field} zurückgibt.",
-            "apiKey": "Nur wenn der Server so konfiguriert wurde, dass er einen benötigt."
-          },
-          "localNetworkOnly": "Ein Server, der auf deinem eigenen Computer läuft ({ip} oder {hostname}) funktioniert nur, wenn diese App auf deinem eigenen Rechner oder deinem eigenen Netzwerk läuft. Die gehostete Version kann es nicht erreichen, da private Adressen dort gesperrt werden.",
-          "dockerHost": "Wenn du diese App in Docker auf dem gleichen Rechner wie den Modellserver ausführst, verwende {dockerHost} statt {ip}."
+          "custom": {
+            "label": "Benutzerdefiniert (OpenAI-kompatibel)",
+            "namePlaceholder": "z.B. Mein Server"
+          }
         }
       },
       "customInstructions": {
         "title": "Benutzerdefinierte Anweisungen",
         "description": "Gib Kontext, der der KI hilft, deine Transaktionen zu kategorisieren. Diese Anweisungen sind bei der Kategorisierung von Transaktionen während der Banksynchronisierung und manueller Import enthalten.",
         "placeholder": "z.B. Transaktionen von 'Starbucks' sollten 'Kaffee' sein. Mein Freiberuflereinkommen stammt von 'Acme Corp'.",
+        "serverModelHint": "Eigene Anweisungen gelten nur, wenn eines deiner KI-Modelle die Kategorisierung übernimmt. Wähle oben ein Modell aus.",
         "requiresOwnCredentials": "Fügen deinen eigenen API-Schlüssel oder einen benutzerdefinierten Endpunkt hinzu, um benutzerdefinierte Anweisungen zu verwenden.",
         "credentialsCheckFailed": "Wir konnten nicht überprüfen, ob du eigene KI-Zugangsdaten hast. Versuche es erneut, um benutzerdefinierte Anweisungen freizuschalten.",
         "retryCredentialsCheck": "Erneut versuchen",

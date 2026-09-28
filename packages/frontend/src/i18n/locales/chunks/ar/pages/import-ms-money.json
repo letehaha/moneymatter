@@ -1,0 +1,139 @@
+{
+  "pages": {
+    "importExport": {
+      "msMoneyImport": {
+        "pageTitle": "Import from Microsoft Money",
+        "pageDescription": "Bring your accounts, categories and transactions across from a Microsoft Money .mny file.",
+        "stepper": {
+          "steps": {
+            "upload": "Upload",
+            "resolve": "Map data",
+            "review": "Review",
+            "execute": "Import",
+            "done": "Done"
+          }
+        },
+        "fileUpload": {
+          "stepTitle": "Upload your Money file",
+          "description": "Pick the .mny file Microsoft Money saved on your computer.",
+          "maxSize": ".mny file, up to 50 MB",
+          "passwordLabel": "File password (optional)",
+          "passwordPlaceholder": "Enter the file password",
+          "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
+          "parsing": "Reading file…",
+          "continue": "Continue",
+          "errors": {
+            "invalidFormatNamed": "\"{name}\" is not a .mny file.",
+            "passwordUnsupportedChars": "This password contains characters we can't send. Try a password without emoji or non-Latin letters."
+          }
+        },
+        "errors": {
+          "uploadUnavailable": "The uploaded file is no longer available. Please upload your Money file again."
+        },
+        "resolve": {
+          "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
+          "accounts": {
+            "sectionTitle": "Accounts",
+            "currentBalanceLabel": "Current balance",
+            "currentBalancePlaceholder": "Leave blank to use the imported total",
+            "willCreateHint": "Will be created in {currency}.",
+            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+          },
+          "categories": {
+            "sectionTitle": "Categories"
+          },
+          "quickActions": {
+            "mapExactMatches": "Map exact matches",
+            "createNewForUnmatched": "Create new for unmatched",
+            "reset": "Reset",
+            "tooltips": {
+              "mapExactMatchesAccounts": "Link every account whose name exactly matches one you already have.",
+              "mapExactMatchesCategories": "Link every category whose name exactly matches one you already have.",
+              "createNewForUnmatched": "Set every undecided row to \"create new\".",
+              "reset": "Clear all choices and match again."
+            }
+          },
+          "footer": {
+            "back": "Back",
+            "continue": "Continue"
+          }
+        },
+        "review": {
+          "transactions": "Transactions",
+          "transfersDetected": "Transfers",
+          "outOfWallet": "Out-of-wallet",
+          "duplicatesSkipped": "Duplicates skipped",
+          "willImport": "Will import",
+          "dateRange": "Date range: {from} — {to}",
+          "warningsTitle": "Some things were left out",
+          "warningsHint": "These rows are not part of the import.",
+          "warnings": {
+            "accountTypeUnsupported": "{count} account(s) skipped",
+            "orphanRowSkipped": "{count} transaction(s) skipped",
+            "transferCounterpartNotImported": "{count} transfer leg(s) imported as out-of-wallet",
+            "rowLimitReached": "{count} transaction(s) over the limit were dropped",
+            "accountCurrencyDefaulted": "{count} account(s) had no currency in the file, so USD was assumed — check the currency on the accounts step before continuing",
+            "rowMissingDate": "{count} transaction(s) with no readable date were skipped",
+            "accountNameMissing": "{count} account(s) had no name",
+            "accountNameDuplicated": "{count} account(s) shared a name",
+            "rowAmountUnreadable": "{count} transaction(s) with no readable amount were skipped",
+            "fileSchemaUnexpected": "{count} unexpected file structure issue(s) found"
+          },
+          "includeVoided": {
+            "label": "Import {count} voided transaction(s)",
+            "hint": "Microsoft Money keeps voided entries in the register but never applies them to your balance, so they're imported at zero and tagged \"Void\" — keeping their date, payee, category, memo and cheque number."
+          },
+          "duplicatesTitle": "{count} possible duplicate(s)",
+          "duplicatesHint": "These already look like transactions you have. Check a row to import it anyway; unchecked duplicates are skipped.",
+          "back": "Back",
+          "importing": "Starting import…",
+          "importButton": "Import {count} transactions"
+        },
+        "execute": {
+          "starting": "Starting the import…",
+          "progressCount": "{processed} of {total}",
+          "failed": "The import failed.",
+          "partialImportNote": "Some transactions may already have been imported.",
+          "statusQueued": "Queued",
+          "statusRunning": "Importing",
+          "statusCompleted": "Completed",
+          "statusFailed": "Failed"
+        },
+        "done": {
+          "successTitle": "Import finished",
+          "successDescription": "Everything from your Money file is now in your account.",
+          "partialTitle": "Imported with {count} issue(s)",
+          "partialDescription": "Most rows landed. The list below shows what didn't.",
+          "emptyTitle": "Nothing new to import",
+          "emptyDescription": "Every row was either skipped or already in your ledger, so no transactions were created.",
+          "allFailedTitle": "Nothing was imported",
+          "allFailedDescription": "No transactions could be created. See the errors below.",
+          "accountsCreated": "Accounts created",
+          "accountsLinked": "Accounts linked",
+          "accountsSkipped": "Accounts skipped",
+          "categoriesCreated": "Categories created",
+          "payeesCreated": "Payees created",
+          "transactionsImported": "Transactions imported",
+          "transfersImported": "Transfers imported",
+          "outOfWalletImported": "Out-of-wallet transfers",
+          "duplicatesSkipped": "Duplicates skipped",
+          "voidedImported": "Voided imported",
+          "mergedIntoPlanned": "Merged into planned",
+          "balanceWarningTitle": "Some balances may be off",
+          "balanceWarningBody": "We couldn't set the final balance on every account. Check them and adjust if needed.",
+          "errorsTitle": "{count} row(s) could not be imported",
+          "errorsOverflow": "…and {count} more",
+          "rowPrefix": "Row {rowIndex}:",
+          "viewTransactions": "View transactions",
+          "importAnother": "Import another file"
+        },
+        "leaseExpired": {
+          "title": "Your uploaded file is no longer available",
+          "description": "The parsed copy of your Money file was released after a period of inactivity. Your mapping choices could not be kept, so the import needs to start from the upload step again.",
+          "action": "Start over"
+        },
+        "leaseResourceLabel": "Your uploaded file"
+      }
+    }
+  }
+}

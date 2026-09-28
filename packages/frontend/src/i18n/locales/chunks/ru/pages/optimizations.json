@@ -63,7 +63,7 @@
         "title": "Настройка запуска",
         "model": "Модель",
         "notConfigured": "Не настроено",
-        "endpoint": "Эндпоинт",
+        "connection": "AI model",
         "limits": "Лимиты",
         "limitsSharedKey": "3 запуска в час",
         "limitsOwnCredentials": "Без ограничений — используется ваш ключ",

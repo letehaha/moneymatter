@@ -1,6 +1,6 @@
 {
   "portfolioDetail": {
-    "loading": "Loading...",
+    "loading": "Načítavanie...",
     "loadingDetails": "Loading portfolio details...",
     "loadError": "Failed to load portfolio details.",
     "tryAgain": "Try Again",
@@ -10,9 +10,9 @@
     "subtitle": "Portfolio Overview",
     "actions": {
       "transfer": "Transfer",
-      "edit": "Edit",
-      "delete": "Delete",
-      "exchangeCurrency": "Exchange Currency"
+      "edit": "Upraviť",
+      "delete": "Zmazať",
+      "exchangeCurrency": "Zmena meny"
     },
     "balance": {
       "totalValue": "Total Value",
@@ -52,11 +52,11 @@
         "adjustmentError": "Failed to update this transfer",
         "rowActions": "Transaction actions",
         "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
-        "edit": "Edit",
+        "edit": "Upraviť",
         "editDialog": {
           "title": "Edit cash transaction",
           "description": "Change how this transaction is treated in reports.",
-          "save": "Save changes"
+          "save": "Ulož zmeny"
         }
       },
       "buysSells": {
@@ -77,7 +77,7 @@
       "empty": "No holdings yet",
       "noFilterResults": "No matching holdings",
       "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
-      "clearFilterButton": "Clear search",
+      "clearFilterButton": "Vymazať vyhľadávanie",
       "headers": {
         "symbol": "Symbol",
         "name": "Name",
@@ -97,15 +97,15 @@
       "closedPositions": "Closed positions ({count})",
       "stalePrice": "Last available price. Market value and gains may be outdated.",
       "deleteHolding": {
-        "ariaLabel": "Delete holding",
-        "title": "Delete holding",
+        "ariaLabel": "Odstrániť pozíciu",
+        "title": "Odstrániť pozíciu",
         "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
-        "confirmLabel": "Delete holding",
+        "confirmLabel": "Odstrániť pozíciu",
         "success": "Holding deleted.",
         "error": "Failed to delete the holding."
       },
       "addTransactionDialog": {
-        "title": "Add Transaction",
+        "title": "Pridať transakciu",
         "description": "Add a new transaction to your portfolio."
       },
       "tryAgainLater": "Please try again later",
@@ -127,7 +127,7 @@
         "amount": "Amount",
         "refAmount": "Base amount",
         "refFees": "Base fees",
-        "settlementAmount": "Cash",
+        "settlementAmount": "Hotovosť",
         "settlementCurrency": "Cash ccy",
         "settlementFees": "Cash fees",
         "settlementRate": "FX rate",
@@ -140,7 +140,7 @@
         "transfer": "Transfer",
         "tax": "Tax",
         "fee": "Fee",
-        "cancel": "Cancel",
+        "cancel": "Zrušiť",
         "other": "Other"
       },
       "headerTooltips": {
@@ -149,7 +149,7 @@
         "settlementAmount": "Cash actually paid or received in your account, in its settlement currency."
       },
       "deleteTransaction": {
-        "tooltip": "Delete transaction"
+        "tooltip": "Zmazať transakciu"
       }
     }
   }

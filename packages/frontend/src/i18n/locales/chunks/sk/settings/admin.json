@@ -7,7 +7,7 @@
         "title": "Securities Price Sync",
         "description": "Manually trigger price synchronization for all securities with holdings",
         "button": "Trigger Price Sync",
-        "buttonLoading": "Syncing...",
+        "buttonLoading": "Synchronizácia...",
         "notifications": {
           "success": "Securities prices sync completed successfully",
           "failed": "Failed to trigger price sync",
@@ -21,11 +21,11 @@
         "button": "Upload Security Prices",
         "dialogTitle": "Upload Security Prices",
         "selectSecurity": {
-          "searchLabel": "Search symbol or name",
+          "searchLabel": "Hľadať symbol alebo názov",
           "searchPlaceholder": "AAPL",
           "searching": "Searching…",
-          "failed": "Failed to search securities.",
-          "noResults": "No results.",
+          "failed": "Vyhľadávanie cenných papierov zlyhalo.",
+          "noResults": "Žiadne výsledky.",
           "changeButton": "Change"
         },
         "dateRangeInfo": {
@@ -77,7 +77,7 @@
             "existingPrice": "Existing Price",
             "difference": "Difference (%)"
           },
-          "noExistingPrice": "N/A",
+          "noExistingPrice": "Nedostupné",
           "scrollForMore": "Scroll for more...",
           "noDifferences": "No records with significant differences found.",
           "backButton": "Back to Mapping",
@@ -93,7 +93,7 @@
             "title": "Override existing records",
             "description": "Update existing price records instead of skipping duplicates"
           },
-          "backButton": "Back",
+          "backButton": "Späť",
           "uploadButton": "Upload Prices",
           "uploadingButton": "Uploading..."
         },

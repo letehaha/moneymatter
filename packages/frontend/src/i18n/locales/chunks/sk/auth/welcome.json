@@ -1,47 +1,47 @@
 {
   "auth": {
     "welcome": {
-      "title": "Select Base Currency",
-      "description": "Your base currency should ideally be the one you use most often. All transactions in other currencies will be calculated based on this one.",
-      "submitButton": "Confirm Currency",
-      "trialStarted": "Your free trial has started, everything is unlocked for {count} day. {link} | Your free trial has started, everything is unlocked for {count} days. {link}",
-      "logout": "Logout",
+      "title": "Vyberte základnú menu",
+      "description": "Vašou referenčnou menou by mala byť ideálne mena, ktorú používate najčastejšie. Všetky transakcie v iných menách budú účtované na základe tejto.",
+      "submitButton": "Potvrďte menu",
+      "trialStarted": "Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} deň. {link} | Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} dní. {link}",
+      "logout": "Odhlásiť sa",
       "labels": {
-        "baseCurrency": "Base Currency"
+        "baseCurrency": "Základná mena"
       },
       "placeholders": {
-        "loading": "Loading..."
+        "loading": "Načítavanie..."
       },
       "errors": {
-        "unableToLoadCurrencies": "Unable to load currencies list. Try later",
-        "unableToSetCurrency": "Unexpected error. Cannot set base currency. Please try later or contact support."
+        "unableToLoadCurrencies": "Zoznam mien sa nepodarilo načítať. Skúste to neskôr.",
+        "unableToSetCurrency": "Neočakávaná chyba. Nie je možné nastaviť základnú menu. Skúste to neskôr alebo kontaktujte podporu."
       }
     },
     "oauthCallback": {
-      "completingSignIn": "Completing sign in...",
+      "completingSignIn": "Dokončuje sa prihlásenie...",
       "errors": {
         "accessDenied": {
-          "signIn": "Sign in was cancelled or access was denied",
-          "signUp": "Sign up was cancelled or access was denied",
-          "link": "Linking was cancelled or access was denied"
+          "signIn": "Prihlásenie bolo zrušené alebo bol zamietnutý prístup",
+          "signUp": "Registrácia bola zrušená alebo bol zamietnutý prístup",
+          "link": "Prepojenie bolo zrušené alebo bol zamietnutý prístup"
         },
         "userAlreadyExists": {
-          "signIn": "An account with this email already exists",
-          "signUp": "An account with this email already exists",
-          "link": "This account is already linked to another user"
+          "signIn": "Účet s touto emailovou adresou už existuje",
+          "signUp": "Účet s touto emailovou adresou už existuje",
+          "link": "Tento účet je už prepojený s iným používateľom"
         },
         "accountNotLinked": {
-          "signIn": "No account found with this email. Please sign up first.",
-          "signUp": "Failed to create account. Please try again.",
-          "link": "Failed to link account. Please try again."
+          "signIn": "Pod touto emailovou adresou nebol nájdený žiadny účet. Najskôr sa zaregistrujte, prosím.",
+          "signUp": "Vytvorenie účtu zlyhalo. Skúste to znovu, prosím.",
+          "link": "Prepojenie účtu zlyhalo. Skúste to znovu, prosím."
         },
         "genericError": {
-          "signIn": "Failed to sign in. Please try again.",
-          "signUp": "Failed to sign up. Please try again.",
-          "link": "Failed to link account. Please try again."
+          "signIn": "Prihlásenie zlyhalo. Skúste to znovu, prosím.",
+          "signUp": "Registrácia zlyhala. Skúste to znovu, prosím.",
+          "link": "Prepojenie účtu zlyhalo. Skúste to znovu, prosím."
         },
-        "unauthorizedClient": "This application is not authorized to use this authentication method",
-        "temporarilyUnavailable": "The authentication service is temporarily unavailable. Please try again later."
+        "unauthorizedClient": "Táto aplikácia nemá oprávnenie používať túto metódu overovania",
+        "temporarilyUnavailable": "Autentifikačná služba je dočasne nedostupná. Skúste to neskôr, prosím."
       }
     }
   }

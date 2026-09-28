@@ -4,8 +4,8 @@
       "title": "General",
       "description": "Control how your financial data is calculated and displayed across the app.",
       "creditLimit": {
-        "label": "Include credit limits in balance",
-        "description": "When enabled, credit limits are subtracted from account balances in statistics and the balance trend chart. This shows your actual financial position instead of available credit.",
+        "label": "Kreditrahmen in Salden einbeziehen",
+        "description": "Wenn aktiviert, werden Kreditlimits von den Kontosalden in Statistiken und dem Saldo-Entwicklungs-Diagramm abgezogen. Dies zeigt deine aktuelle finanzielle Lage statt verfügbarem Guthaben.",
         "successNotification": "Setting updated successfully",
         "errorNotification": "Failed to update setting"
       },
@@ -20,6 +20,10 @@
         "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
         "successNotification": "Pending transactions setting updated",
         "errorNotification": "Failed to update pending transactions setting"
+      },
+      "quickStart": {
+        "label": "Quick Start guide",
+        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
       },
       "savingsCategories": {
         "label": "Count categories as savings",
@@ -53,11 +57,11 @@
         "errorNotification": "Unexpected error happened. Setting not saved",
         "fields": {
           "externalUrl": {
-            "label": "External URL",
+            "label": "Externe URL",
             "description": "Link the transaction to an order page, booking confirmation or receipt."
           },
           "externalReference": {
-            "label": "External reference",
+            "label": "Externe Referenz",
             "description": "Keep an order number, invoice number or booking reference with the transaction."
           },
           "originalAmount": {
@@ -65,7 +69,7 @@
             "description": "The amount actually charged in another currency, when it differs from the account's currency."
           },
           "location": {
-            "label": "Location",
+            "label": "Standort",
             "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
           }
         },
@@ -73,6 +77,13 @@
           "label": "Map picker",
           "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
         }
+      },
+      "defaultPaymentType": {
+        "label": "Default payment type",
+        "description": "Preselected when you add a new transaction.",
+        "placeholder": "Select a payment type",
+        "successNotification": "Default payment type updated",
+        "errorNotification": "Failed to update default payment type"
       }
     }
   }

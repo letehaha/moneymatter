@@ -23,7 +23,7 @@
         "signupsDisabled": "Registrierungen wurden vom Administrator dieser Instanz deaktiviert.",
         "genericErrorRetry": "Es ist ein Fehler aufgetreten. Bitte versuche es erneut.",
         "oauthFailed": "Fehler beim Anmelden mit {provider}. Bitte versuche es erneut.",
-        "oauthNotConfigured": "{provider} Anmeldung ist auf diesem Server nicht konfiguriert."
+        "oauthNotConfigured": "Die Anmeldung mit {provider} ist auf diesem Server nicht konfiguriert."
       }
     },
     "shared": {

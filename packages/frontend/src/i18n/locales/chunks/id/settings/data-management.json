@@ -41,6 +41,7 @@
       },
       "import": {
         "back": "Kembali ke Impor",
+        "whichImporterHint": "Not sure which one to use?",
         "groups": {
           "filesAndText": "File & teks",
           "fromOtherApps": "Dari aplikasi lain",
@@ -52,6 +53,7 @@
       },
       "export": {
         "cardTitle": "Ekspor data Anda",
+        "backupOrExportHint": "Not sure whether you need Export or Backup?",
         "form": {
           "title": "Ekspor data Anda",
           "description": "Pilih format dan bagian data yang Anda inginkan. Unduhan dimulai setelah Anda mengonfirmasi.",

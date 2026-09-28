@@ -1,0 +1,53 @@
+{
+  "settings": {
+    "categories": {
+      "title": "Categories",
+      "description": "Organize your transactions into categories and subcategories. Drag a category to move it under a different parent or to the top level.",
+      "addButton": "Add Category",
+      "organizeButton": "Organize",
+      "empty": "No categories yet. Create your first category to get started.",
+      "categoriesCount": "{n} category | {n} categories",
+      "organizeHint": "Drag onto a new parent, or drop here for top-level.",
+      "dropToTopLevel": "Drop here to make “{name}” a top-level category",
+      "movesQueued": "{n} move queued | {n} moves queued",
+      "unqueueMove": "Remove this move",
+      "topLevel": "Top level",
+      "saveChanges": "Save changes",
+      "parentField": {
+        "label": "Parent category",
+        "placeholder": "Select a parent category",
+        "hiddenHint": "Categories that can't be used as the parent are hidden from the list."
+      },
+      "moveDialog": {
+        "title": "Move “{name}”",
+        "description": "Choose a new parent category.",
+        "moveButton": "Move"
+      },
+      "delete": {
+        "title": "Delete category?",
+        "description": "This will permanently delete \"{name}\". This action cannot be undone.",
+        "deleteButton": "Delete",
+        "cancelButton": "Cancel"
+      },
+      "errors": {
+        "cannotLoad": "Cannot load categories"
+      },
+      "notifications": {
+        "deleteSuccess": "Category deleted",
+        "deleteFailed": "Failed to delete category",
+        "checkFailed": "Failed to check category",
+        "moveFailed": "Failed to move category.",
+        "saveSuccess": "Changes saved.",
+        "staleMovesRemoved": "Removed {n} queued move that no longer applies | Removed {n} queued moves that no longer apply"
+      },
+      "dropErrors": {
+        "currentParent": "Already inside this category",
+        "insideItself": "A category can't be moved inside its own subcategory",
+        "internalTarget": "System categories can't contain other categories",
+        "tooDeep": "Categories can only be nested {max} levels deep",
+        "childrenTooDeep": "Its subcategories would end up deeper than {max} levels",
+        "alreadyTopLevel": "Already a top-level category"
+      }
+    }
+  }
+}

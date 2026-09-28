@@ -21,7 +21,7 @@
       "dateLabel": "Transaction Date",
       "noteLabel": "Note",
       "notePlaceholder": "Optional. Add a note about this transaction",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "submitButton": "Create Transaction",
       "submitButtonLoading": "Creating...",
       "notifications": {
@@ -66,7 +66,7 @@
       "displayCurrencyPlaceholder": "Select display currency",
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "submitButton": "Salva modifiche",
       "submitButtonLoading": "Saving...",
       "notifications": {
@@ -98,7 +98,7 @@
       "dateLabel": "Date",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this transfer...",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "submitButton": "Transfer",
       "submitButtonLoading": "Processing...",
       "confirmDialog": {
@@ -107,7 +107,7 @@
         "actionTransfer": "transfer",
         "actionWithdrawal": "withdrawal",
         "actionDeposit": "deposit",
-        "cancelButton": "Cancel",
+        "cancelButton": "Cancella",
         "confirmButton": "Confirm Transfer"
       },
       "validation": {
@@ -131,6 +131,7 @@
       "addCurrencyButton": "Add new currency +",
       "initialBalanceLabel": "Initial balance",
       "initialBalancePlaceholder": "Initial balance",
+      "initialBalanceHelpLink": "What should I enter?",
       "accountCategoryLabel": "Account Category",
       "accountCategoryPlaceholder": "Select account category",
       "creditLimitLabel": "Credit limit",
@@ -166,13 +167,13 @@
       "adjustmentLabel": "This is a balance correction",
       "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the Investment Contributions report.",
       "descriptionPlaceholder": "Optional description",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "submitButton": "Submit",
       "submitButtonLoading": "Submitting...",
       "confirmDialog": {
         "title": "Confirm Transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
-        "cancelButton": "Cancel",
+        "cancelButton": "Cancella",
         "confirmButton": "Confirm",
         "actionDeposit": "deposit",
         "actionWithdrawal": "withdrawal"
@@ -201,7 +202,7 @@
       "dateLabel": "Exchange Date",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this exchange...",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "submitButton": "Exchange",
       "submitButtonLoading": "Processing...",
       "validation": {
@@ -285,7 +286,7 @@
       "saveButton": "Save changes",
       "submitButton": "Create loan",
       "submitButtonLoading": "Creating…",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "notifications": {
         "success": "Loan created.",
         "error": "Failed to create the loan. Please try again.",

@@ -17,7 +17,7 @@
     "resolvedCounterWord": "resolved",
     "quickActionsMenuLabel": "Bulk actions",
     "quickActions": {
-      "menu": "Actions"
+      "menu": "Akcie"
     },
     "columns": {
       "sourceName": "Source name",
@@ -26,7 +26,7 @@
       "target": "Target"
     },
     "account": {
-      "selectTarget": "Select account",
+      "selectTarget": "Vyberte účet",
       "noMatchingCurrency": "No account with currency {currency}",
       "willCreate": "Will create {name} ({currency})",
       "empty": "No accounts to map",
@@ -52,7 +52,7 @@
         "newRows": "New rows",
         "backfillRows": "Backfill rows"
       },
-      "newAccount": "New account"
+      "newAccount": "Nový účet"
     },
     "duplicatesTable": {
       "columnHeaders": {

@@ -2,11 +2,11 @@
   "settings": {
     "currencies": {
       "page": {
-        "title": "Currencies",
+        "title": "Meny",
         "description": "Manage the currencies you track and the exchange rates used across your accounts."
       },
       "addNew": {
-        "loading": "Loading...",
+        "loading": "Načítavanie...",
         "selectCurrency": "Select currency",
         "addButton": "Add",
         "sectionLabel": "Add a currency",
@@ -16,15 +16,15 @@
         }
       },
       "howItWorks": {
-        "trigger": "How it works?",
+        "trigger": "Ako to funguje?",
         "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
       },
       "row": {
         "baseBadge": "Base",
-        "custom": "Custom",
+        "custom": "Vlastné",
         "live": "Live",
         "unused": "Unused",
-        "accountsCount": "{count} account | {count} accounts"
+        "accountsCount": "{count} účet | {count} účtov"
       },
       "empty": {
         "title": "No other currencies yet",
@@ -44,14 +44,14 @@
         }
       },
       "delete": {
-        "confirmTitle": "Delete currency?",
-        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
-        "button": "Delete currency",
-        "buttonShort": "Delete",
-        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
-        "successfullyDeleted": "Successfully deleted.",
+        "confirmTitle": "Vymazať menu?",
+        "description": "Mena sa dá vymazať alebo odpojiť, len ak k nej nie sú priradené žiadne účty ani transakcie.",
+        "button": "Vymazať menu",
+        "buttonShort": "Zmazať",
+        "disabledTooltip": "Túto menu nemožno zmazať, pretože je stále prepojená s jedným alebo viacerými účtami.",
+        "successfullyDeleted": "Úspešne vymazané.",
         "errors": {
-          "deleteFailed": "Unexpected error. Currency is not deleted."
+          "deleteFailed": "Neočakávaná chyba. Menu sa nepodarilo zmazať."
         }
       },
       "setBase": {
@@ -75,7 +75,7 @@
           "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
           "confirmation": "Are you sure you want to proceed?",
           "changeButton": "Change Base Currency",
-          "cancelButton": "Cancel"
+          "cancelButton": "Zrušiť"
         },
         "successMessage": "Base currency changed successfully.",
         "errors": {

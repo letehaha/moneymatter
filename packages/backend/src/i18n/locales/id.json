@@ -351,8 +351,23 @@
     "defaultCurrencyNotPresent": "Tidak dapat menghapus mata uang. Mata uang bawaan tidak ada dalam sistem"
   },
   "ai": {
-    "apiKeyValidationFailed": "Validasi kunci API gagal",
-    "noApiKeyForProvider": "Tidak ada kunci API yang dikonfigurasi untuk provider: {{provider}}",
+    "connectionNotFound": "AI model not found.",
+    "connectionNameTaken": "You already have an AI model with this name.",
+    "connectionLimitReached": "You can add up to {{max}} AI models.",
+    "connectionNameInvalidLength": "Name must be between 1 and {{max}} characters.",
+    "connectionModelRequired": "Enter a model name.",
+    "connectionBaseUrlRequired": "Enter the base URL of your OpenAI-compatible server.",
+    "connectionBaseUrlNotAllowed": "This provider always uses its official API address, so it doesn't take a base URL.",
+    "connectionApiKeyRequired": "Enter the API key.",
+    "connectionProviderMismatch": "That AI model uses a different provider.",
+    "connectionKeySourceMissing": "The AI model you're copying from has no API key. Enter one.",
+    "connectionStoredKeyUnreadable": "The API key saved for this AI model can no longer be read. Enter it again.",
+    "connectionKeyRejected": "The provider rejected this API key. Check that it's correct, active, and has credits.",
+    "connectionModelNotAvailable": "This API key can't use the model \"{{model}}\". Check the model name.",
+    "connectionProviderUnreachable": "Couldn't reach the provider. Try again in a moment.",
+    "connectionValidationFailed": "The provider refused the test request: {{reason}}",
+    "serverModelUnavailable": "The included MoneyMatter AI model isn't available on your plan.",
+    "connectionKeyNotInBackup": "API key isn't included in backups. Edit this model and enter the key again.",
     "customEndpointUnreachable": "Tidak dapat menjangkau endpoint. Periksa URL dasar dan pastikan server berjalan serta dapat diakses dari internet.",
     "customEndpointAuthFailed": "Endpoint menolak kunci API. Pastikan kunci sudah benar dan memiliki izin yang diperlukan.",
     "customEndpointModelNotFound": "Endpoint tidak menyediakan model bernama \"{{model}}\".",
@@ -360,16 +375,9 @@
     "customEndpointMoreModels": "dan {{count}} lainnya",
     "customEndpointNotApiResponse": "Server di URL ini merespons dengan HTTP {{status}}, bukan respons yang kompatibel dengan OpenAI. Pastikan server berjalan dan URL dasar sudah benar — biasanya berakhir dengan /v1.",
     "customEndpointValidationFailed": "Endpoint tidak mengembalikan respons yang dapat digunakan. Periksa URL dasar, nama model, dan kunci API.",
-    "customEndpointMissingFields": "URL dasar dan nama model wajib diisi.",
-    "customEndpointNameTaken": "Anda sudah memiliki endpoint dengan nama ini.",
-    "customEndpointNameInvalidLength": "Nama endpoint harus antara 1 hingga 50 karakter.",
-    "customEndpointNotFound": "Endpoint kustom tidak ditemukan.",
-    "customEndpointIdRequired": "Pilih endpoint kustom mana yang menyediakan model ini.",
-    "customModelNameInvalidLength": "Nama model harus antara 1 hingga 200 karakter.",
-    "customEndpointLimitReached": "Anda dapat menyimpan hingga {{max}} endpoint kustom. Hapus salah satu sebelum menambahkan yang baru.",
-    "customEndpointStoredKeyUnreadable": "Kunci API tersimpan untuk endpoint ini tidak dapat dibaca lagi. Silakan masukkan kembali.",
     "categorizationAlreadyRunning": "Kategorisasi AI sedang berjalan. Tunggu hingga selesai sebelum memulai proses lain.",
-    "categorizationRateLimited": "Anda telah memulai kategorisasi AI terlalu sering baru-baru ini. Silakan coba lagi nanti."
+    "categorizationRateLimited": "Anda telah memulai kategorisasi AI terlalu sering baru-baru ini. Silakan coba lagi nanti.",
+    "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
   },
   "middleware": {
     "tooManyRequests": "Terlalu banyak permintaan. Silakan coba lagi nanti."
@@ -554,6 +562,12 @@
     "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF file.",
     "tooManyAttachments": "A transaction can hold at most {{max}} attachments.",
     "quotaExceeded": "Attachment storage quota exceeded.",
+    "noFileUploaded": "No file was uploaded."
+  },
+  "invoiceMatching": {
+    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF invoice.",
+    "notAnInvoice": "This document does not look like an invoice or a receipt.",
+    "incompleteInvoice": "Could not read a vendor, total amount and date from this invoice.",
     "noFileUploaded": "No file was uploaded."
   }
 }

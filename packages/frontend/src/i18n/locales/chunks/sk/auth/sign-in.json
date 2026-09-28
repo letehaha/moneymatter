@@ -1,35 +1,35 @@
 {
   "auth": {
     "login": {
-      "title": "Log in to account",
-      "divider": "Or continue with email",
-      "submitButton": "Log in",
-      "noAccount": "Don't have an account?",
-      "signupsDisabledTooltip": "New signups are disabled by the administrator of this instance",
+      "title": "Prihláste sa do účtu",
+      "divider": "alebo pokračujte pomocou emailu",
+      "submitButton": "Prihlásiť sa",
+      "noAccount": "Ešte nemáte účet?",
+      "signupsDisabledTooltip": "Správca tejto inštancie zakázal registráciu nových používateľov",
       "errors": {
-        "incorrectEmailOrPassword": "Incorrect email or password.",
-        "incorrectPassword": "Incorrect password.",
-        "userNotFound": "User not found.",
-        "emailNotVerified": "Please verify your email before signing in.",
-        "sessionExpired": "Your session has expired. Please sign in again.",
-        "noPasswordSet": "No password set for this account. Try signing in with Google.",
-        "passwordInvalid": "Password is invalid.",
-        "genericError": "An error occurred.",
-        "genericErrorRetry": "An error occurred. Please try again.",
-        "oauthFailed": "Failed to sign in with {provider}. Please try again.",
-        "oauthNotConfigured": "{provider} sign-in is not configured on this server.",
-        "passkeyFailed": "Failed to sign in with passkey. Please try again."
+        "incorrectEmailOrPassword": "Nesprávny email alebo heslo.",
+        "incorrectPassword": "Nesprávne heslo.",
+        "userNotFound": "Používateľ nebol nenájdený.",
+        "emailNotVerified": "Pred prihlásením si overte svoju emailovú adresu, prosím.",
+        "sessionExpired": "Vaša relácia vypršala. Prihláste sa znova, prosím.",
+        "noPasswordSet": "Pre tento účet nie je nastavené žiadne heslo. Skúste sa prihlásiť cez Google.",
+        "passwordInvalid": "Heslo je neplatné.",
+        "genericError": "Vyskytla sa chyba.",
+        "genericErrorRetry": "Vyskytla sa chyba. Skúste to znova, prosím.",
+        "oauthFailed": "Prihlásenie cez {provider} sa nepodarilo. Skúste to znovu, prosím.",
+        "oauthNotConfigured": "Na tomto serveri nie je nakonfigurované prihlasovanie cez {provider}.",
+        "passkeyFailed": "Prihlásenie pomocou prístupového kľúča sa nepodarilo. Skúste to znovu, prosím."
       }
     },
     "shared": {
-      "divider": "Or continue with",
+      "divider": "alebo pokračujte pomocou",
       "passkeyButton": {
-        "signIn": "Sign in with Passkey",
-        "register": "Add Passkey"
+        "signIn": "Prihláste sa pomocou prístupového kľúča",
+        "register": "Pridať prístupový kľúč"
       },
       "oauthButton": {
-        "signIn": "Sign in with {provider}",
-        "signUp": "Sign up with {provider}"
+        "signIn": "Prihlásiť sa cez {provider}",
+        "signUp": "Zaregistrovať sa cez {provider}"
       }
     }
   }

@@ -1,24 +1,24 @@
 {
   "auth": {
     "login": {
-      "title": "Anmelden",
+      "title": "Bei deinem Konto anmelden",
       "divider": "Oder weiter mit E-Mail-Adresse",
       "submitButton": "Anmelden",
-      "noAccount": "Du hast noch kein Konto?",
-      "signupsDisabledTooltip": "Neue Anmeldungen wurden vom Administrator dieser Instanz deaktiviert",
+      "noAccount": "Noch kein Konto?",
+      "signupsDisabledTooltip": "Neue Registrierungen wurden vom Administrator dieser Instanz deaktiviert",
       "errors": {
-        "incorrectEmailOrPassword": "Falsche E-Mail-Adresse oder Passwort.",
+        "incorrectEmailOrPassword": "Ungültige E-Mail-Adresse oder falsches Passwort.",
         "incorrectPassword": "Falsches Passwort.",
         "userNotFound": "Benutzer nicht gefunden.",
         "emailNotVerified": "Bitte bestätige deine E-Mail-Adresse bevor du dich anmeldest.",
         "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.",
-        "noPasswordSet": "Kein Passwort für dieses Konto gesetzt. Versuche dich mit Google anzumelden.",
+        "noPasswordSet": "Für dieses Konto wurde kein Passwort festgelegt. Versuche, dich mit Google anzumelden.",
         "passwordInvalid": "Passwort ist ungültig.",
         "genericError": "Es ist ein Fehler aufgetreten.",
         "genericErrorRetry": "Es ist ein Fehler aufgetreten. Bitte versuche es erneut.",
-        "oauthFailed": "Fehler beim Anmelden mit {provider}. Bitte versuche es erneut.",
+        "oauthFailed": "Anmeldung mit {provider} fehlgeschlagen. Bitte versuche es erneut.",
         "oauthNotConfigured": "{provider} Anmeldung ist auf diesem Server nicht konfiguriert.",
-        "passkeyFailed": "Fehler beim Anmelden mit Passkey. Bitte versuche es erneut."
+        "passkeyFailed": "Anmeldung mit Passkey fehlgeschlagen. Bitte versuche es erneut."
       }
     },
     "shared": {

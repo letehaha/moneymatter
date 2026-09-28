@@ -7,7 +7,6 @@
       "accountsGroups": "Grup akun",
       "importData": "Impor/Ekspor",
       "ai": "AI",
-      "aiIntegrations": "Integrasi AI",
       "security": "Keamanan",
       "admin": "Admin",
       "sharedWithMe": "Dibagikan dengan saya",
@@ -19,7 +18,8 @@
       "general": "Statistik",
       "payees": "Penerima",
       "subscriptions": "Pembayaran terjadwal",
-      "planBilling": "Plan & billing"
+      "planBilling": "Plan & billing",
+      "collapse": "Ciutkan"
     },
     "backToSettings": "Kembali ke Pengaturan"
   }

@@ -1,6 +1,6 @@
 {
   "payees": {
-    "title": "Payees",
+    "title": "Príjemcovia",
     "subtitle": "Master list of merchants you transact with",
     "newPayeeButton": "New Payee",
     "searchPlaceholder": "Search payees…",
@@ -23,11 +23,22 @@
       "defaultTags": "Default tags"
     },
     "actions": {
-      "menu": "Actions",
+      "menu": "Akcie",
       "rename": "Rename",
       "merge": "Merge into…",
-      "delete": "Delete",
+      "delete": "Zmazať",
       "deleteAndIgnore": "Delete & ignore"
+    },
+    "bulk": {
+      "select": "Select",
+      "selectedCount": "Vybraných: {count}",
+      "clearSelection": "Zrušiť výber",
+      "selectAll": "Select all loaded payees",
+      "selectRow": "Select {name}",
+      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
+      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
+      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
+      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
     },
     "emptyState": {
       "title": "No payees yet",
@@ -35,7 +46,7 @@
     },
     "form": {
       "namePlaceholder": "Enter payee name",
-      "categoryPlaceholder": "Select a category",
+      "categoryPlaceholder": "Vyberte kategóriu",
       "categorizationMode": {
         "label": "AI categorization",
         "enforce": {
@@ -73,7 +84,7 @@
       "mergeDescription": "Pick the target payee. All transactions and aliases move to the target; this payee is deleted.",
       "confirmMerge": "Merge",
       "topCategoryHint": "The category most frequently used in transactions linked to this payee. Used as a fallback when no default category is set.",
-      "defaultCategoryPlaceholder": "Select a category",
+      "defaultCategoryPlaceholder": "Vyberte kategóriu",
       "defaultTagsLabel": "Auto-apply tags",
       "defaultTagsPlaceholder": "Select tags to auto-apply",
       "defaultTagsHint": "These tags are automatically added to new transactions linked to this payee (bank syncs and imports).",
@@ -85,10 +96,10 @@
       "applyTagsToExisting": "Apply to existing transactions"
     },
     "logo": {
-      "change": "Change logo",
+      "change": "Zmeniť logo",
       "dialogTitle": "Change Logo",
       "dialogDescription": "Search for a brand logo to represent this payee.",
-      "resetToAuto": "Reset to automatic",
+      "resetToAuto": "Vrátiť na automatické",
       "updatedToast": "Logo updated.",
       "resetToast": "Logo reset to automatic.",
       "fieldLabel": "Logo",
@@ -101,7 +112,7 @@
       "unlinked": "Transaction unlinked from payee",
       "unlinkConfirmTitle": "Unlink transaction?",
       "unlinkConfirmDescription": "This transaction will no longer be linked to {name}. Future bank syncs won't re-link it automatically.",
-      "unlinkConfirmLabel": "Unlink"
+      "unlinkConfirmLabel": "Odpojiť"
     },
     "toasts": {
       "created": "Payee created",
@@ -111,19 +122,22 @@
       "aliasDeleted": "Alias removed",
       "aliasAdded": "Alias added",
       "deletedAndIgnored": "Payee deleted and added to ignored-names list",
-      "tagsAppliedToExisting": "Tags applied to {count} transactions"
+      "tagsAppliedToExisting": "Tags applied to {count} transactions",
+      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
+      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
     },
     "errors": {
       "collision": "A payee with this name already exists. Merge instead.",
       "generic": "Something went wrong, please try again."
     },
     "tabs": {
-      "manage": "Manage",
-      "settings": "Settings"
+      "manage": "Spravovať",
+      "settings": "Nastavenia"
     },
     "settings": {
       "title": "Payee detection settings",
       "description": "Control how the app auto-detects Payees from your synced transactions.",
+      "howDetectionWorks": "How detection works",
       "payeeFromDescription": {
         "label": "Detect payees from transaction descriptions",
         "description": "When your bank doesn't provide a dedicated merchant field, fall back to the transaction description (note) to auto-detect Payees. Useful for bank connections that have merchant fields empty or absent. May produce noisier Payee names (e.g. installment-payment prefixes) which you can rename or merge afterwards.",
@@ -162,6 +176,7 @@
       "conflictDescription": "A Payee with the same normalized name as \"{name}\" already exists. Continuing will delete that Payee (transactions stay, lose link).",
       "forceConfirm": "Delete Payee and ignore"
     },
-    "loadingMore": "Loading more…"
+    "loadingMore": "Loading more…",
+    "txCount": "{count} tx"
   }
 }

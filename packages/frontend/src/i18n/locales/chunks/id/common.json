@@ -27,7 +27,8 @@
       "apply": "Terapkan",
       "retry": "Coba lagi",
       "copyInviteLink": "Salin tautan undangan",
-      "moveTo": "Pindahkan ke…"
+      "moveTo": "Pindahkan ke…",
+      "learnMore": "Learn more"
     },
     "ui": {
       "close": "Tutup",
@@ -131,6 +132,10 @@
       "investmentTransactionsParsing": {
         "name": "Impor transaksi investasi",
         "description": "Transaksi beli/jual yang diekstrak AI dari ekspor bursa, laporan broker, atau teks yang ditempel."
+      },
+      "receiptParsing": {
+        "name": "Invoice matching",
+        "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
       }
     },
     "transactions": {
@@ -152,7 +157,6 @@
         "hiddenAccount": "Akun tersembunyi",
         "selectRow": "Pilih transaksi",
         "unselectableReasons": {
-          "split": "Tidak dapat dipilih: transaksi split tidak mendukung pengeditan massal. Edit secara individual.",
           "sharedAccount": "Tidak dapat dipilih: transaksi ini berada di akun yang dibagikan dengan Anda, dan hanya pemiliknya yang dapat mengeditnya."
         }
       }
@@ -247,6 +251,17 @@
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
       "dismiss": "Abaikan"
+    },
+    "duration": {
+      "years": "{n} yr | {n} yrs",
+      "months": "{n} mo | {n} mos"
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {

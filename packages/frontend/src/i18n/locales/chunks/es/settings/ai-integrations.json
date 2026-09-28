@@ -1,8 +1,6 @@
 {
   "settings": {
     "aiIntegrations": {
-      "title": "Integraciones de IA",
-      "description": "Conecta asistentes de IA como Claude o ChatGPT para analizar tus datos financieros directamente desde el chat.",
       "mcpServer": {
         "title": "Servidor MCP",
         "description": "Utiliza esta URL para conectar asistentes de IA a tu cuenta de MoneyMatter. Tus datos se comparten en modo de solo lectura.",
@@ -56,6 +54,8 @@
       },
       "scopes": {
         "financeRead": "Leer datos financieros",
+        "financeWrite": "Leer datos financieros",
+        "financeDelete": "Eliminar sus datos financieros",
         "profileRead": "Leer perfil",
         "offlineAccess": "Acceso sin conexión"
       }

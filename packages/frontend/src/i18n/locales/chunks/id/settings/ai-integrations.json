@@ -1,8 +1,6 @@
 {
   "settings": {
     "aiIntegrations": {
-      "title": "Integrasi AI",
-      "description": "Hubungkan asisten AI seperti Claude atau ChatGPT untuk menganalisis data keuangan Anda langsung dari chat.",
       "mcpServer": {
         "title": "Server MCP",
         "description": "Gunakan URL ini untuk menghubungkan asisten AI ke akun MoneyMatter Anda. Data Anda dibagikan dalam mode hanya baca.",
@@ -56,6 +54,8 @@
       },
       "scopes": {
         "financeRead": "Baca data keuangan",
+        "financeWrite": "Edit financial data",
+        "financeDelete": "Delete financial data",
         "profileRead": "Baca profil",
         "offlineAccess": "Akses offline"
       }

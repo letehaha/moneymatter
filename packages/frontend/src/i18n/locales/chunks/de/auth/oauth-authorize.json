@@ -5,34 +5,34 @@
       "description": "Diese App fordert folgende Berechtigungen an:",
       "approve": "Genehmigen",
       "deny": "Ablehnen",
-      "footer": "Da kannst den Zugriff jederzeit unter Einstellungen > AI Integrationen widerrufen.",
+      "footer": "Du kannst den Zugriff jederzeit unter Einstellungen → KI → Konnektoren (MCP) widerrufen.",
       "error": "Anfrage konnte nicht verarbeitet werden. Bitte versuche es erneut.",
       "unexpected_response": "Unerwartete Antwort vom Server. Bitte versuche es erneut.",
       "always_granted": "Immer gewährt",
       "optional": "Optional",
-      "delete_warning": "Nur Apps gewähren, denen du voll vertraust",
+      "delete_warning": "Gewähre den Zugriff nur Apps, denen du vollkommen vertraust",
       "unknown_app": "Eine Anwendung"
     },
     "scopes": {
       "finance_read": {
         "label": "Finanzdaten einsehen",
-        "desc": "Konten, Transaktionen, Budgets, Kategorien, Schlagwörter, Portfolios und Ausgabestatistiken lesen."
+        "desc": "Konten, Transaktionen, Budgets, Kategorien, Tags, Portfolios und Ausgabenstatistiken lesen."
       },
       "finance_write": {
-        "label": "Finanzdaten erstellen und bearbeiten",
-        "desc": "Transaktionen, Budgets, Abonnements, Anlagepositionen und mehr hinzufügen und aktualisieren."
+        "label": "Deine Finanzdaten erstellen und bearbeiten",
+        "desc": "Transaktionen, Budgets, Abonnements, Investmentpositionen und mehr hinzufügen und aktualisieren."
       },
       "finance_delete": {
-        "label": "Finanzdaten löschen",
+        "label": "Deine Finanzdaten löschen",
         "desc": "Transaktionen, Konten, Budgets und andere Datensätze dauerhaft entfernen."
       },
       "profile_read": {
-        "label": "Profil einsehen",
-        "desc": "Deinen Namen, E-Mail-Adresse und Standardwährung anzeigen."
+        "label": "Dein Profil ansehen",
+        "desc": "Deinen Namen, deine E-Mail-Adresse und deine Standardwährung einsehen."
       },
       "offline_access": {
         "label": "Im Hintergrund verbunden bleiben",
-        "desc": "Behalte den Zugriff aktiv, ohne jede Sitzung erneut gefragt zu werden."
+        "desc": "Zugriff aktiv halten, ohne in jeder Sitzung erneut nachzufragen."
       },
       "unknown": {
         "label": "Zusätzliche Berechtigung",

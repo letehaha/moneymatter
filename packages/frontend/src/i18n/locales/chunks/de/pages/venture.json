@@ -9,7 +9,7 @@
       "createButton": "Add platform",
       "emptyTitle": "No platforms yet",
       "emptyDescription": "Add the syndicates or GPs you invest through (e.g., Acme Ventures, AngelList). Configure default fees once — applied to all deals on that platform.",
-      "editTooltip": "Edit",
+      "editTooltip": "Bearbeiten",
       "deleteTooltip": "Löschen",
       "entryFee": "Entry fee",
       "mgmtFee": "Mgmt fee",
@@ -26,7 +26,7 @@
         "created": "Platform created",
         "updated": "Platform updated",
         "deleted": "Platform deleted",
-        "error": "Es ist ein Fehler aufgetreten"
+        "error": "Etwas ist schiefgelaufen"
       },
       "form": {
         "nameLabel": "Name",
@@ -89,7 +89,7 @@
       "notifications": {
         "created": "Event created",
         "deleted": "Event deleted",
-        "error": "Es ist ein Fehler aufgetreten"
+        "error": "Etwas ist schiefgelaufen"
       },
       "form": {
         "typeLabel": "Event type",
@@ -126,7 +126,7 @@
       "editDialogTitle": "Edit deal",
       "editDialogDescription": "Updates apply going forward; historical event values are not retroactively recalculated.",
       "backToDeals": "Back to deals",
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "delete": "Löschen",
       "deleteTitle": "Delete deal?",
       "deleteDescription": "{name} will be removed along with all its events. This can be undone via the trash.",
@@ -149,7 +149,7 @@
         "created": "Deal created",
         "updated": "Deal updated",
         "deleted": "Deal deleted",
-        "error": "Es ist ein Fehler aufgetreten"
+        "error": "Etwas ist schiefgelaufen"
       },
       "form": {
         "nameLabel": "Name",

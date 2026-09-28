@@ -266,7 +266,7 @@
             "dismiss": "Descartar"
           }
         },
-        "attachmentsNotIncluded": "Transaction attachments (receipts, invoices and other files) are not included in backups and are not restored."
+        "attachmentsNotIncluded": "Los archivos adjuntos de la transacción (recibos, facturas y otros archivos) no están incluidos en las copias de seguridad y no se restauran."
       }
     }
   }

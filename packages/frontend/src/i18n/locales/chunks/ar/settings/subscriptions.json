@@ -1,0 +1,13 @@
+{
+  "settings": {
+    "subscriptions": {
+      "title": "Scheduled payments",
+      "defaultAutoRecord": {
+        "label": "Default auto-record on new scheduled payments",
+        "help": "When enabled, the create-subscription form's auto-record toggle starts ON by default. You can always override it per subscription.",
+        "successNotification": "Setting saved",
+        "errorNotification": "Failed to save setting"
+      }
+    }
+  }
+}

@@ -9,9 +9,9 @@
           "steps": {
             "upload": "Upload",
             "map": "Map Columns",
-            "resolveAccounts": "Accounts",
+            "resolveAccounts": "Účty",
             "resolveCategories": "Categories",
-            "review": "Review",
+            "review": "Skontrolovať",
             "results": "Done"
           }
         },
@@ -67,7 +67,7 @@
           "starting": "Starting import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "Queued",
-          "statusRunning": "Importing…",
+          "statusRunning": "Importovanie...",
           "statusCompleted": "Complete",
           "statusFailed": "Failed",
           "failed": "Import failed.",
@@ -95,7 +95,7 @@
           "invalidWillBeSkipped": "invalid rows will be skipped.",
           "duplicatesWillBeSkipped": "duplicates will be skipped.",
           "backToMapping": "Back to Mapping",
-          "importing": "Importing...",
+          "importing": "Importovanie...",
           "importButton": "Import {count} Transactions",
           "unpriceableTitle": "{count} row(s) cannot be priced — no exchange rate found",
           "unpriceableDescription": "These rows use a currency that has no stored exchange rate and cannot be converted to your base currency. You must skip them or cancel the import.",
@@ -280,8 +280,8 @@
         "extractFailed": "Couldn't load the values to resolve. Please go back and try again.",
         "retry": "Try again",
         "footer": {
-          "back": "Back",
-          "next": "Next"
+          "back": "Späť",
+          "next": "Ďalej"
         }
       },
       "mapColumns": {
@@ -296,8 +296,8 @@
         "choosePlaceholder": "Choose…",
         "alreadyMatchedSuffix": "(already matched)",
         "amountSignNote": "Determined from the amount sign",
-        "back": "Back",
-        "next": "Next",
+        "back": "Späť",
+        "next": "Ďalej",
         "missingHint": "Still needed: {fields}",
         "fields": {
           "date": "Date",

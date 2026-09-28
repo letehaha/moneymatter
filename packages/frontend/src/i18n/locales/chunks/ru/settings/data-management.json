@@ -41,6 +41,7 @@
       },
       "import": {
         "back": "Назад к импорту",
+        "whichImporterHint": "Not sure which one to use?",
         "groups": {
           "filesAndText": "Файлы и текст",
           "fromOtherApps": "Из других приложений",
@@ -52,6 +53,7 @@
       },
       "export": {
         "cardTitle": "Экспорт данных",
+        "backupOrExportHint": "Not sure whether you need Export or Backup?",
         "form": {
           "title": "Экспорт данных",
           "description": "Выберите формат и разделы данных. Загрузка начнётся сразу после подтверждения.",

@@ -2,7 +2,7 @@
   "pages": {
     "statementParser": {
       "pageTitle": "Statement Parser",
-      "pageDescription": "Upload a bank statement (PDF, CSV, or TXT) to extract transactions using AI. Requires an AI API key configured in settings.",
+      "pageDescription": "Upload a bank statement (PDF, CSV, or TXT) to extract transactions using AI. Add your own AI model in settings for unlimited access.",
       "stepper": {
         "steps": {
           "upload": "Upload",
@@ -70,8 +70,8 @@
             "description": "Processing may take 5+ minutes. Consider splitting the file into smaller parts for faster processing."
           }
         },
-        "freeApiWarning": "You're using free AI access which has daily rate limits. For the fast and uninterrupted service, add your own API key.",
-        "addApiKeyLink": "Add your API key in settings →",
+        "freeApiWarning": "You're using the included MoneyMatter AI, which has usage limits.",
+        "addApiKeyLink": "Add your own AI model",
         "status": {
           "sendingFile": "Sending file to AI...",
           "readingDocument": "AI is reading the document...",

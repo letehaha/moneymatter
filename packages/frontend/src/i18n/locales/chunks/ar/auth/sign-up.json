@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "signup": {
+      "title": "إنشاء حساب",
+      "divider": "أو المتابعة باستخدام البريد الإلكتروني",
+      "submitButton": "تسجيل الخروج",
+      "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+      "signInLink": "تسجل الدخول",
+      "labels": {
+        "displayName": "الاسم الظاهر",
+        "verifyPassword": "التحقق من كلمة المرور"
+      },
+      "placeholders": {
+        "displayName": "مثل محمد محسن",
+        "verifyPassword": "التحقق من كلمة المرور"
+      },
+      "errors": {
+        "invalidEmail": "الرجاء إدخال بريد إلكتروني صالح.",
+        "passwordTooShort": "كلمة السر قصيرة جدا.",
+        "passwordTooLong": "كلمة السر طويلة جداً.",
+        "invalidPassword": "كلمة السر غير صحيحة.",
+        "userExists": "يوجد بالفعل مستخدم بهذا البريد الإلكتروني.",
+        "signupsDisabled": "تم تعطيل عمليات الاشتراك من قبل مسؤول هذه المرحلة.",
+        "genericErrorRetry": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+        "oauthFailed": "فشل التسجيل باستخدام {provider}. الرجاء المحاولة مرة أخرى.",
+        "oauthNotConfigured": "لم يتم تهيئة تسجيل الدخول {provider} على هذا الخادم."
+      }
+    },
+    "shared": {
+      "divider": "أو متابعة بـ",
+      "passkeyButton": {
+        "signIn": "تسجيل الدخول باستخدام Passkey",
+        "register": "إضافة Passkey"
+      },
+      "oauthButton": {
+        "signIn": "تسجيل الدخول من خلال {provider}",
+        "signUp": "التسجيل بواسطة {provider}"
+      }
+    }
+  }
+}

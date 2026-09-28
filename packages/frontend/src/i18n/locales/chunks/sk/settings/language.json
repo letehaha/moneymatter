@@ -1,18 +1,18 @@
 {
   "settings": {
     "language": {
-      "title": "Language",
-      "description": "Display language for the app interface.",
+      "title": "Jazyk",
+      "description": "Zobrazovací jazyk rozhrania aplikácie.",
       "community": {
-        "title": "Community translations",
-        "hint": "Translated by volunteers on Crowdin. Anything not translated yet is shown in English."
+        "title": "Preklady od komunity",
+        "hint": "Prekladajú ho dobrovoľníci na Crowdine. Čo ešte nie je preložené, zobrazuje sa v angličtine."
       },
       "contribute": {
-        "title": "Missing or wrong translations?",
-        "description": "Community languages are translated on Crowdin. You can request a new language, suggest corrections, or translate strings yourself – no coding required.",
-        "requestNote": "Prefer not to use Crowdin? Request a language on our {boardLink}.",
-        "requestNoteLink": "feature board",
-        "action": "Contribute on Crowdin"
+        "title": "Chýbajúce alebo nesprávne preklady?",
+        "description": "Jazyky komunity sa prekladajú na Crowdine. Môžete požiadať o nový jazyk, navrhnúť opravy, alebo si preklady urobiť sami — programovanie nie je potrebné.",
+        "requestNote": "Radšej nechcete používať Crowdin? Požiadajte o jazyk na našej {boardLink}.",
+        "requestNoteLink": "nástenke návrhov",
+        "action": "Prispieť na Crowdine"
       }
     }
   }

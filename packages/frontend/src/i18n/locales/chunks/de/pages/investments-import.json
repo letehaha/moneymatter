@@ -70,7 +70,7 @@
       "imported": "Imported {count} transactions",
       "extractFailed": "Could not extract transactions from the file.",
       "importFailed": "Could not import transactions.",
-      "skippedHoldings": "Holdings skipped: {count}",
+      "skippedHoldings": "Positionen übersprungen: {count}",
       "failedTransactions": "Transactions failed: {count}",
       "estimateFailed": "Failed to estimate import cost",
       "csvParseFailed": "Could not parse the CSV. Check the file format and try again."

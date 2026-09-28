@@ -54,7 +54,8 @@
         "noFurtherCharges": "No hay cargos adicionales",
         "cancelNote": "¿Has cambiado de opinión? Renueva desde el portal de facturación y tu fecha de renovación seguira siendo la misma.",
         "monthlyHint": "Cambia a anual y ahorra {amount} al año.",
-        "noCard": "No hay tarjeta ingresada"
+        "noCard": "No hay tarjeta ingresada",
+        "readOnlyHelp": "¿Qué significa solo lectura?"
       },
       "status": {
         "pastDue": "No se pudo efectuar el pago",
@@ -113,6 +114,7 @@
             "everythingInEssential": "Todo lo de Esencial",
             "bankProviders": "Conexiones bancarias (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
             "ourAiKey": "Características de IA con nuestra clave, limitado",
+            "firePlanner": "FIRE planner",
             "seats": "5 integrantes"
           }
         },

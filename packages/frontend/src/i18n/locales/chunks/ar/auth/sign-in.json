@@ -1,0 +1,36 @@
+{
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول إلى الحساب",
+      "divider": "أو المتابعة باستخدام البريد الإلكتروني",
+      "submitButton": "تسجيل الدخول",
+      "noAccount": "ليس لديك حساب؟",
+      "signupsDisabledTooltip": "تم تعطيل عمليات الاشتراك من قبل مسؤول هذه المرجلة",
+      "errors": {
+        "incorrectEmailOrPassword": "البريد الإلكتروني أو كلمة السر غير صحيحة.",
+        "incorrectPassword": "كلمة السر غير الصحيحة.",
+        "userNotFound": "لم يتم العثور على المستخدم.",
+        "emailNotVerified": "الرجاء تحقيق بريدك الإلكتروني قبل تسجيل الدخول.",
+        "sessionExpired": "انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى.",
+        "noPasswordSet": "لم يتم تعيين كلمة سر لهذا الحساب. حاول تسجيل الدخول باستخدام جوجل.",
+        "passwordInvalid": "كلمة السر غير صالحة.",
+        "genericError": "حدث خطأ ما.",
+        "genericErrorRetry": "حدث خطأ. يرجى المحاولة مرة أخرى.",
+        "oauthFailed": "فشل التسجيل باستخدام {provider}. الرجاء المحاولة مرة أخرى.",
+        "oauthNotConfigured": "لم يتم تهيئة تسجيل الدخول {provider} على هذا الخادم.",
+        "passkeyFailed": "فشل التسجيل باستخدام passkey. الرجاء المحاولة مرة أخرى."
+      }
+    },
+    "shared": {
+      "divider": "أو متابعة بـ",
+      "passkeyButton": {
+        "signIn": "تسجيل الدخول باستخدام Passkey",
+        "register": "إضافة Passkey"
+      },
+      "oauthButton": {
+        "signIn": "تسجيل الدخول من خلال {provider}",
+        "signUp": "التسجيل بواسطة {provider}"
+      }
+    }
+  }
+}

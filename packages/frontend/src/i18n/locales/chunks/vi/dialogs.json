@@ -102,6 +102,7 @@
       "recordList": {},
       "form": {
         "payeeLabel": "Payee",
+        "outOfWalletDocsLink": "What is Out of Wallet?",
         "destinationGroupLabel": "Where the money goes",
         "paymentTypeLabel": "Payment type",
         "noteLabel": "Note",
@@ -553,6 +554,88 @@
     },
     "pickTransaction": {
       "title": "Select transaction"
+    },
+    "attachInvoice": {
+      "title": "Attach invoice",
+      "description": "Drop an invoice or receipt. We read the total, date and merchant, then find the transaction it belongs to.",
+      "resultsTitle": "Pick the transaction",
+      "resultsDescription": "No transactions match this invoice. | {count} transaction could belong to this invoice. | {count} transactions could belong to this invoice.",
+      "analyzing": "Reading the invoice and searching your transactions…",
+      "attaching": "Attaching the invoice to the transaction…",
+      "privacyNote": "The file goes to the AI provider for reading only. Nothing is saved until you link it to a transaction.",
+      "direction": {
+        "paid": "I paid this",
+        "gotPaid": "I got paid",
+        "paidHint": "We search your expenses for the payment.",
+        "gotPaidHint": "We search your income for the payment."
+      },
+      "invoice": {
+        "number": "Invoice №",
+        "issued": "Issued",
+        "total": "Total"
+      },
+      "fixDetails": "Fix details",
+      "form": {
+        "vendor": "Merchant",
+        "vendorPlaceholder": "Enter the merchant name",
+        "customer": "Customer",
+        "customerPlaceholder": "Who the invoice is billed to",
+        "total": "Total",
+        "totalPlaceholder": "0.00",
+        "currency": "Currency",
+        "currencyPlaceholder": "EUR",
+        "issued": "Invoice date",
+        "submit": "Search again"
+      },
+      "signals": {
+        "amountExact": "Amount exact",
+        "amountClose": "{diff} off",
+        "amountConverted": "Matches after conversion",
+        "amountUnknown": "Amount not compared",
+        "sameDay": "Same day as invoice",
+        "daysAfter": "{count} day after invoice | {count} days after invoice",
+        "daysBefore": "{count} day before invoice | {count} days before invoice",
+        "merchant": {
+          "match": "Merchant matches",
+          "partial": "Merchant looks similar",
+          "none": "Different merchant",
+          "unknown": "No payee set"
+        },
+        "customer": {
+          "match": "Customer matches",
+          "partial": "Customer looks similar",
+          "none": "Different customer",
+          "unknown": "No payee set"
+        }
+      },
+      "alreadyHasFile": "Already has a file",
+      "bestMatch": "Best match · {score}%",
+      "empty": {
+        "title": "No matching transaction",
+        "description": "We looked for about {total} from 14 days before to 30 days after the invoice date, in all accounts. The payment may not be imported yet, or the invoice was read wrong."
+      },
+      "searchManually": "Search manually",
+      "createTransaction": "Create transaction",
+      "link": "Link invoice",
+      "linked": "Invoice linked to the transaction",
+      "created": "Transaction created and invoice attached",
+      "openTransaction": "Open transaction",
+      "confirm": {
+        "title": "Link invoice to this transaction?",
+        "description": "{filename} will be attached to the {amount} transaction from {date}. You can remove it from the transaction later."
+      },
+      "errors": {
+        "match": "Could not read the invoice. Try again or use a clearer file.",
+        "link": "Could not link the invoice. Try again.",
+        "detailsNotFilled": "Invoice attached, but its details couldn't be copied to the transaction. Add them manually if you need them.",
+        "createdNotAttached": "Transaction created, but the invoice wasn't attached. Pick it from the list to attach it.",
+        "rematch": "Could not search again. Check the details and retry.",
+        "openTransaction": "Couldn't open the transaction. Find it in your transactions list."
+      },
+      "trial": {
+        "left": "1 free try left of {limit} | {count} free tries left of {limit}",
+        "spent": "You've used all your free tries. Upgrade to Plus to keep attaching invoices with AI."
+      }
     },
     "exchangeCurrency": {
       "title": "Exchange Currency",

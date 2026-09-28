@@ -1,26 +1,26 @@
 {
   "settings": {
     "navigation": {
-      "currencies": "Currencies",
-      "categories": "Categories",
-      "tags": "Tags",
-      "accountsGroups": "Accounts groups",
-      "importData": "Import/Export",
+      "currencies": "Meny",
+      "categories": "Kategórie",
+      "tags": "Štítky",
+      "accountsGroups": "Skupiny účtov",
+      "importData": "Importovať/Exportovať",
       "ai": "AI",
-      "aiIntegrations": "AI Integrations",
-      "security": "Security",
-      "admin": "Admin",
-      "sharedWithMe": "Shared with me",
-      "household": "Household",
-      "personalGroup": "Personal",
-      "workspaceGroup": "Workspace",
-      "appearance": "Appearance",
-      "language": "Language",
-      "general": "General",
-      "payees": "Payees",
-      "subscriptions": "Scheduled payments",
-      "planBilling": "Plan & billing"
+      "security": "Zabezpečenie",
+      "admin": "Administrácia",
+      "sharedWithMe": "Zdieľané so mnou",
+      "household": "Domácnosť",
+      "personalGroup": "Osobné",
+      "workspaceGroup": "Pracovný priestor",
+      "appearance": "Vzhľad",
+      "language": "Jazyk",
+      "general": "Všeobecné",
+      "payees": "Príjemcovia",
+      "subscriptions": "Pravidelné platby",
+      "planBilling": "Predplatné a fakturácia",
+      "collapse": "Zbaliť"
     },
-    "backToSettings": "Back to Settings"
+    "backToSettings": "Späť do nastavenia"
   }
 }

@@ -1,42 +1,42 @@
 {
   "oauth": {
     "authorize": {
-      "title": "{name} wants access to your MoneyMatter data",
-      "description": "This app is requesting these permissions:",
-      "approve": "Approve",
-      "deny": "Deny",
-      "footer": "You can revoke access at any time from Settings > AI Integrations.",
-      "error": "Failed to process request. Please try again.",
-      "unexpected_response": "Unexpected response from server. Please try again.",
-      "always_granted": "Always granted",
-      "optional": "Optional",
-      "delete_warning": "Grant only to apps you fully trust",
-      "unknown_app": "An application"
+      "title": "{name} žiada o prístup k vašim údajom v MoneyMatter",
+      "description": "Táto aplikácia žiada o tieto oprávnenia:",
+      "approve": "Schváliť",
+      "deny": "Zamietnuť",
+      "footer": "Prístup môžete kedykoľvek zrušiť v časti Nastavenia → AI → Konektory (MCP).",
+      "error": "Spracovanie požiadavky sa nepodarilo. Skúste to znovu, prosím.",
+      "unexpected_response": "Neočakávaná odpoveď zo servera. Skúste to znovu, prosím.",
+      "always_granted": "Vždy povolené",
+      "optional": "Voliteľné",
+      "delete_warning": "Udeľujte povolenia len aplikáciám, ktorým plne dôverujete",
+      "unknown_app": "Aplikácia"
     },
     "scopes": {
       "finance_read": {
-        "label": "View your financial data",
-        "desc": "Read accounts, transactions, budgets, categories, tags, portfolios, and spending stats."
+        "label": "Zobraziť vaše finančné údaje",
+        "desc": "Čítať účty, transakcie, rozpočty, kategórie, štítky, portfóliá a štatistiky výdavkov."
       },
       "finance_write": {
-        "label": "Create and edit your financial data",
-        "desc": "Add and update transactions, budgets, subscriptions, investment positions, and more."
+        "label": "Vytvárať a upravovať vaše finančné údaje",
+        "desc": "Pridávať a aktualizovať transakcie, rozpočty, predplatné, investičné pozície a ďalšie položky."
       },
       "finance_delete": {
-        "label": "Delete your financial data",
-        "desc": "Permanently remove transactions, accounts, budgets, and other records."
+        "label": "Vymazať vaše finančné údaje",
+        "desc": "Trvalo vymazať transakcie, účty, rozpočty a ďalšie záznamy."
       },
       "profile_read": {
-        "label": "View your profile",
-        "desc": "See your name, email, and default currency."
+        "label": "Zobraziť váš profil",
+        "desc": "Zobrazovať vaše meno, email a predvolenú menu."
       },
       "offline_access": {
-        "label": "Stay connected in the background",
-        "desc": "Keep access active without asking you again each session."
+        "label": "Udržiavať pripojenie na pozadí",
+        "desc": "Udržiava prístup aktívny bez toho, aby sa vás pri každom prihlásení opäť pýtala na súhlas."
       },
       "unknown": {
-        "label": "Additional permission",
-        "desc": "The app requested a permission that is not recognized by MoneyMatter."
+        "label": "Dodatočné oprávnenia",
+        "desc": "Aplikácia požiadala o povolenie, ktoré aplikácia MoneyMatter nerozpoznáva."
       }
     }
   }

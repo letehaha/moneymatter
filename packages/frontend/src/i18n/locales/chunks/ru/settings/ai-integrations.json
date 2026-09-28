@@ -1,8 +1,6 @@
 {
   "settings": {
     "aiIntegrations": {
-      "title": "AI-интеграции",
-      "description": "Подключайте AI-ассистентов, например Claude или ChatGPT, чтобы анализировать финансовые данные прямо из чата.",
       "mcpServer": {
         "title": "MCP-сервер",
         "description": "Используйте этот URL для подключения AI-ассистентов к вашему аккаунту MoneyMatter. Данные предоставляются только для чтения.",
@@ -56,6 +54,8 @@
       },
       "scopes": {
         "financeRead": "Чтение финансовых данных",
+        "financeWrite": "Edit financial data",
+        "financeDelete": "Delete financial data",
         "profileRead": "Чтение профиля",
         "offlineAccess": "Фоновый доступ"
       }

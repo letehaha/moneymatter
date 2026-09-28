@@ -5,7 +5,7 @@
       "description": "Administrative tools and system management",
       "priceSync": {
         "title": "Securities Price Sync",
-        "description": "Manually trigger price synchronization for all securities with holdings",
+        "description": "Preissynchronisation für alle Wertpapiere mit Positionen manuell auslösen",
         "button": "Trigger Price Sync",
         "buttonLoading": "Synchronisieren...",
         "notifications": {
@@ -21,16 +21,16 @@
         "button": "Upload Security Prices",
         "dialogTitle": "Upload Security Prices",
         "selectSecurity": {
-          "searchLabel": "Search symbol or name",
+          "searchLabel": "Symbol oder Name suchen",
           "searchPlaceholder": "AAPL",
           "searching": "Searching…",
-          "failed": "Failed to search securities.",
-          "noResults": "No results.",
+          "failed": "Fehler bei der Suche nach Wertpapieren.",
+          "noResults": "Keine Ergebnisse.",
           "changeButton": "Change"
         },
         "dateRangeInfo": {
           "loading": "Loading date range information...",
-          "title": "Available Exchange Rates Date Range ({currency}):",
+          "title": "Verfügbarer Wechselkurszeitraum ({currency}):",
           "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
         },
         "fileUpload": {
@@ -104,7 +104,7 @@
           "duplicatesUpdated": "updated",
           "duplicatesSkipped": "skipped",
           "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
-          "closeButton": "Close",
+          "closeButton": "Schließen",
           "uploadMoreButton": "Upload More"
         },
         "notifications": {

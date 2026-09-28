@@ -1,0 +1,26 @@
+{
+  "pages": {
+    "importExport": {
+      "importHistory": {
+        "pageTitle": "Import History",
+        "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
+        "loadError": "Couldn't load your import history.",
+        "emptyTitle": "No imports yet",
+        "emptyDescription": "Once you import transactions, they'll show up here.",
+        "emptyAction": "Import data",
+        "transactionCount": "{count} transaction | {count} transactions",
+        "accountCount": "{count} account | {count} accounts",
+        "deleteButton": "Delete import",
+        "deleteConfirmTitle": "Delete this import batch?",
+        "deleteConfirmDescription": "This will permanently delete {count} transaction from this import. This action cannot be undone. | This will permanently delete {count} transactions from this import. This action cannot be undone.",
+        "deleteSuccessMessage": "Deleted {count} transaction | Deleted {count} transactions",
+        "deleteUnexpectedError": "Something went wrong while deleting the import batch. Please try again.",
+        "deleteLinkedTransfersWarningTitle": "This import is linked to another transaction",
+        "deleteLinkedTransfersCheckbox": "Also delete the linked transfer transaction",
+        "deleteLinkedTransfersDescription": "By default, any transaction linked to this import as a transfer is only unlinked, not deleted. Checking this box will permanently delete it too — this cannot be undone.",
+        "deleteLinkedTransfersConfirmTitle": "Delete the linked transaction too?",
+        "deleteLinkedTransfersConfirmDescription": "You're about to permanently delete a transaction outside this import batch, not just unlink it. This action cannot be undone."
+      }
+    }
+  }
+}

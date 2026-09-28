@@ -131,6 +131,7 @@
       "addCurrencyButton": "Tambah mata uang baru +",
       "initialBalanceLabel": "Saldo awal",
       "initialBalancePlaceholder": "Saldo awal",
+      "initialBalanceHelpLink": "What should I enter?",
       "accountCategoryLabel": "Kategori Akun",
       "accountCategoryPlaceholder": "Pilih kategori akun",
       "creditLimitLabel": "Batas kredit",

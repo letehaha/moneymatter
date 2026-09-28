@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Map accounts",
-            "review": "Review",
+            "review": "Skontrolovať",
             "results": "Done"
           }
         },
@@ -17,7 +17,7 @@
           "description": "Select a statement file that you downloaded from your bank or credit card provider.",
           "maxSize": ".ofx or .qfx file, up to 10 MB",
           "parsing": "Reading file…",
-          "continue": "Continue",
+          "continue": "Pokračovať",
           "errors": {
             "invalidFormatNamed": "\"{name}\" is not an OFX or QFX file."
           }
@@ -27,7 +27,7 @@
         },
         "resolve": {
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Účty",
             "nameLabel": "Account name",
             "namePlaceholder": "Enter an account name",
             "currentBalanceLabel": "Current balance",
@@ -37,7 +37,7 @@
             "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
             "statementType": {
               "bank": "Bank account",
-              "credit-card": "Credit card"
+              "credit-card": "Kreditná karta"
             }
           },
           "quickActions": {
@@ -51,8 +51,8 @@
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Späť",
+            "continue": "Pokračovať"
           }
         },
         "review": {
@@ -70,7 +70,7 @@
           },
           "duplicatesTitle": "{count} possible duplicate | {count} possible duplicates",
           "duplicatesHint": "These transactions look like transactions that you already have. Check a row to import it anyway; unchecked duplicates are skipped.",
-          "back": "Back",
+          "back": "Späť",
           "importing": "Starting import…",
           "importButton": "Import {count} transaction | Import {count} transactions"
         },

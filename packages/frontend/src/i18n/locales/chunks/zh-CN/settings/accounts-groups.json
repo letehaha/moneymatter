@@ -38,7 +38,7 @@
         "unlinkTooltip": "Remove from group",
         "removeConfirmTitle": "Remove \"{name}\" from this group?",
         "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
-        "removeConfirmAction": "删除"
+        "removeConfirmAction": "Remove"
       },
       "delete": {
         "button": "Delete group",

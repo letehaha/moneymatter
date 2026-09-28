@@ -95,7 +95,7 @@
         "addFirstButton": "Añadir primera transacción"
       },
       "closedPositions": "Posiciones cerradas ({count})",
-      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "stalePrice": "Último precio disponible. El valor del mercado y las ganancias pueden estar desactualizadas.",
       "deleteHolding": {
         "ariaLabel": "Eliminar posición",
         "title": "Eliminar posición",

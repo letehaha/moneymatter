@@ -1,0 +1,573 @@
+{
+  "common": {
+    "processAlreadyLocked": "عملية المزامنة ل \"{{lockKey}}\" مقفلة بالفعل.",
+    "serviceTemporarilyUnavailable": "الخدمة غير متاحة مؤقتا. يرجى المحاولة مرة أخرى."
+  },
+  "accounts": {
+    "groupNotFound": "لم يتم العثور على المجموعة أو الحساب",
+    "accountNotFound": "لم يتم العثور على الحساب!",
+    "accountUpdateFailed": "فشل تحديث الحساب",
+    "accountNoExternalId": "الحساب ليس لديه ID خارجي",
+    "accountNoExternalIdMonobank": "الحساب ليس لديه ID خارجي من Monobbank",
+    "accountNoExternalIdEnableBanking": "Account does not have external ID from Enable Banking",
+    "accountNotFoundForTransaction": "لم يتم العثور على الحساب لهذه المعاملة",
+    "deleteBlockedByLoanPayments": "هذا الحساب عليه قروض. احذف القرض أو أعد هيكلته قبل حذف الحساب.",
+    "loanBalanceUseUpdateLoan": "Change a loan's outstanding balance from its loan page, not from account settings.",
+    "loanCategoryImmutable": "لا يمكن تغيير تصنيف حساب القروض.",
+    "dedicatedFlowCategoryNotAllowed": "Loan and vehicle accounts must be created through their dedicated endpoints, not the generic accounts endpoint."
+  },
+  "balanceAdjustment": {
+    "defaultNote": "Balance adjustment",
+    "accountNotFound": "Account with id \"{{accountId}}\" not found.",
+    "vehicleUseOverride": "A vehicle's value can only be changed from its vehicle page.",
+    "vehicleNegativeValue": "A vehicle's value cannot be negative."
+  },
+  "accountGroups": {
+    "groupNotFound": "Group not found",
+    "groupUpdateFailed": "Group update was not successful",
+    "parentGroupNotExist": "Parent with such id does not exist.",
+    "parentGroupDoesNotExist": "Parent group does not exists.",
+    "accountNotFound": "Account with such id is not found.",
+    "accountGroupNotFound": "Account group with such id is not found."
+  },
+  "categories": {
+    "notFound": "Category with provided id does not exist.",
+    "systemCannotBeMoved": "System categories cannot be moved.",
+    "parentNotFound": "Category with such parentId doesn't exist.",
+    "systemParentForbidden": "System categories cannot be used as a parent.",
+    "ownParent": "Category cannot be its own parent.",
+    "underOwnSubcategory": "Category cannot be moved under its own subcategory.",
+    "nestingTooDeep": "Categories cannot be nested deeper than {{max}} levels."
+  },
+  "transactions": {
+    "notFound": "Transaction not found",
+    "missingRequiredFields": "One of required fields are missing: destinationAmount, destinationAccountId.",
+    "destinationAmountRequiredCrossCurrency": "destinationAmount is required when changing the amount of a cross-currency transfer.",
+    "refundAndTransferNotAllowed": "It is not allowed to create a transaction that is a refund and a transfer at the same time",
+    "notOwnTransaction": "You can only edit or delete transactions you created on this shared account.",
+    "sharedAccountChangeNotSupported": "Moving a transaction to a different account is only allowed for the account owner.",
+    "sharedTransfersNotSupported": "Transfers on a shared account are not supported yet.",
+    "sharedRefundsNotSupported": "Refund linking on a shared account is not supported yet.",
+    "cannotCreateWithParams": "Cannot create transaction with provided params",
+    "idCannotBeChanged": "id cannot be changed",
+    "editReadonlyFields": "Attempt to edit readonly fields of the external account",
+    "changeTypeNotAllowed": "It's disallowed to change \"transactionType\" of the non-system account",
+    "bothRefundFieldsNotAllowed": "You cannot use both \"refundedByTxIds\" and \"refundsTxId\" simultaneously. Please choose one or the other.",
+    "oppositeTransactionNotFound": "Cannot find opposite tx to make an updation",
+    "transactionIdNotExist": "Transaction with provided `id` does not exist!",
+    "notAuthorizedToEdit": "You are not authorized to edit this transaction.",
+    "cannotDeleteExternal": "It's not allowed to manually delete external transactions",
+    "unexpectedDeleteIssue": "Unexpected issue when tried to delete transaction",
+    "linkSelfNotAllowed": "Trying to link the transaction to itself.",
+    "linkSameTypeNotAllowed": "Trying to link with the transaction that has the same \"transactionType\".",
+    "linkSameAccountNotAllowed": "Trying to link with the transaction within the same account. It's allowed to link only between different accounts",
+    "linkAlreadyTransferNotAllowed": "Trying to link transaction that is already a transfer.",
+    "linkUnexpectedError": "Unexpected error. Cannot link asked transactions.",
+    "linkCannotFind": "Cannot find base or opposite transactions",
+    "linkPlannedNotAllowed": "A planned transaction can't be linked as a transfer.",
+    "linkSplitTransactionNotAllowed": "A transaction with splits can't be linked as a transfer.",
+    "invalidTagIds": "One or more tag IDs are invalid or do not belong to this user",
+    "cannotEditPortfolioLinkedTransaction": "Cannot edit a transaction linked to a portfolio. Unlink it first.",
+    "refFieldsRequiredForTransferToPortfolio": "Reference currency and reference amount must be set for portfolio-transfer transactions.",
+    "vehicleAccountReadonly": "This account tracks a vehicle. Its value can only be changed from the vehicle page.",
+    "transferNatureChangeNotAllowed": "Cannot change the transfer kind of an existing transfer. Unlink the transfer first, then mark the transaction again.",
+    "transferToLoanRequiresLoanDestination": "A loan payment requires the destination to be a loan account.",
+    "transferToLoanRelinkRequired": "This transfer's destination is a loan account. Unlink the transfer first, then mark the expense as a loan payment.",
+    "loanPaymentOverpay": "Payment exceeds the remaining loan balance.",
+    "loanAccountReadonly": "Loan accounts can only be changed by recording a payment. Use the loan's page to record one.",
+    "loanPaymentMustBeExpense": "A loan payment must be an expense — income transactions can't be transferred to a loan.",
+    "plannedMustBeStandalone": "A planned transaction must be a plain income or expense — transfers, refunds and imported records are not supported.",
+    "plannedAmountMustBePositive": "A planned transaction must have an amount greater than zero.",
+    "plannedAccountNotSupported": "Planned transactions are not available on loan and vehicle accounts.",
+    "plannedOwnerOnly": "Only the account owner can create planned transactions.",
+    "plannedFlipNotAllowed": "This transaction cannot be turned into a planned one.",
+    "plannedCreatorOnly": "Only the creator of a planned transaction can edit or delete it.",
+    "manualOnConnectedAccount": "Only planned transactions can be added to a bank-connected account. Real transactions arrive from your bank.",
+    "plannedUnflipOnConnectedAccount": "This plan is on a bank-connected account, so your bank confirms it automatically. Delete if it is no longer expected.",
+    "plannedCannotConfirmPayment": "A planned transaction cannot confirm a payment. Wait for it to be confirmed, then link it.",
+    "plannedCannotBeRefundLinked": "A planned transaction cannot be part of a refund link.",
+    "splits": {
+      "splitsOnTransfer": "Cannot add splits to transfer transactions",
+      "splitLimitExceeded": "Maximum {{max}} splits allowed per transaction",
+      "missingCategory": "Category is required for each split",
+      "missingAmount": "Amount is required for each split",
+      "amountNegative": "Split amount cannot be negative",
+      "amountTooSmall": "Split amount must be at least {{min}} (system minimum)",
+      "noteTooLong": "Split note cannot exceed {{max}} characters",
+      "invalidCategory": "Category with id {{categoryId}} not found or does not belong to user",
+      "duplicateCategory": "Each split must use a different category",
+      "exceedTotal": "Total split amount ({{total}}) exceeds transaction amount ({{transactionAmount}})",
+      "invalidData": "Invalid split data",
+      "splitNotFound": "Split not found",
+      "cannotDeleteWithRefunds": "Cannot delete split that has refunds targeting it",
+      "cannotReduceBelowRefunded": "This split has refunds totaling {{refundsText}}. You cannot reduce it below the refunded amount. To reduce further, first unlink the refunds."
+    }
+  },
+  "budgets": {
+    "budgetNotFound": "Budget not found",
+    "someTransactionIdsInvalid": "Some transactions IDs are invalid",
+    "transactionsAddedSuccessfully": "Transactions added successfully",
+    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based budgets. Transactions are tracked automatically by category.",
+    "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
+    "notCategoryBudget": "This endpoint is only available for category-based budgets"
+  },
+  "tags": {
+    "tagNotFound": "Tag not found",
+    "tagNameAlreadyExists": "A tag with this name already exists",
+    "someTransactionIdsInvalid": "Some transaction IDs are invalid",
+    "transactionsAddedSuccessfully": "Transactions added to tag successfully",
+    "transactionsRemovedSuccessfully": "Transactions removed from tag successfully"
+  },
+  "tagReminders": {
+    "reminderNotFound": "Tag reminder not found",
+    "reminderAlreadyExists": "An identical reminder already exists for this tag",
+    "amountThresholdRequired": "Amount threshold is required for amount threshold reminders",
+    "maxRemindersReached": "Maximum number of reminders (50) reached",
+    "notifications": {
+      "thresholdExceeded": {
+        "title": "Tag Spending Alert",
+        "message": "Your spending on \"{{tagName}}\" ({{actualAmount}}) exceeded your threshold of {{thresholdAmount}}"
+      },
+      "existenceCheck": {
+        "title": "Tag Activity Summary",
+        "message": "You have {{count}} transaction(s) tagged with \"{{tagName}}\""
+      }
+    }
+  },
+  "defaultTags": {
+    "want": {
+      "name": "Want",
+      "description": "Nice-to-have purchases and discretionary spending"
+    },
+    "need": {
+      "name": "Need",
+      "description": "Important but not urgent expenses"
+    },
+    "must": {
+      "name": "Must",
+      "description": "Essential expenses that cannot be avoided"
+    }
+  },
+  "investments": {
+    "portfolioNotFound": "Portfolio not found",
+    "portfolioIdRequired": "Portfolio ID is required.",
+    "holdingNotFound": "Holding not found",
+    "holdingNotFoundAddSecurity": "Holding not found. Please add the security to the portfolio first.",
+    "holdingNotFoundForRecalculation": "Holding not found for recalculation.",
+    "securityAlreadyInPortfolio": "This security is already in the portfolio.",
+    "securityNotFound": "Security not found.",
+    "currencyForSecurityNotFound": "Currency for security not found.",
+    "currencyNotFound": "Currency not found",
+    "transactionNotFound": "Investment transaction not found",
+    "userBaseCurrencyNotFound": "User base currency not found",
+    "insufficientSharesToSell": "Insufficient shares to sell. After this update, you would have {{adjustedQuantity}} shares but are trying to sell {{sellQuantity}} shares.",
+    "sourceAndDestinationMustDiffer": "Source and destination portfolios must be different",
+    "transferAmountMustBePositive": "Transfer amount must be greater than zero",
+    "sourcePortfolioNotFound": "Source portfolio not found",
+    "destinationPortfolioNotFound": "Destination portfolio not found",
+    "sourceAccountNotFound": "Source account not found",
+    "destinationAccountNotFound": "Destination account not found",
+    "cannotDeleteHoldingWithActivePosition": "Cannot delete a holding with an active position. Please sell or transfer all shares first.",
+    "transactionAlreadyTransfer": "Transaction is already marked as a transfer and cannot be linked to a portfolio.",
+    "transactionAlreadyLinkedToPortfolio": "Transaction is already linked to a portfolio transfer.",
+    "transactionAlreadyLinkedToVenture": "Transaction is already linked to a venture deal",
+    "portfolioTransferNotFound": "Portfolio transfer not found",
+    "exchangeCurrenciesMustDiffer": "Exchange currencies must be different"
+  },
+  "landingFaq": {
+    "unavailable": "The assistant is unavailable right now. Please try again later or email support@moneymatter.app."
+  },
+  "loans": {
+    "loanNotFound": "Loan not found.",
+    "createAccountFailed": "Failed to create loan account",
+    "deleteBlockedByPayments": "This loan has recorded payments. Delete the payments before deleting the loan.",
+    "linkPaymentsInvalidSelection": "Some selected transactions can't be linked to this loan.",
+    "linkPaymentsOverpayConfirmation": "These payments exceed the remaining balance. Confirming will pay the loan off; the extra won't be credited back.",
+    "unlinkPaymentNotFound": "Loan payment not found.",
+    "unlinkPaymentInvalidSelection": "This transaction is not a payment on this loan.",
+    "correctionAsOfBeforeStartDate": "currentBalanceAsOf cannot be earlier than the loan start date",
+    "correctionOverpay": "Corrected balance would overpay the loan by {{overpayAmount}}: payments totaling {{paymentsTotal}} are dated on/after {{asOfDate}}"
+  },
+  "errors": {
+    "connectionNotFound": "Connection not found",
+    "connectionNotFoundOrNotYours": "Connection not found or does not belong to you",
+    "providerNoReauthorization": "Provider {{providerType}} does not support reauthorization",
+    "providerNotFoundInRegistry": "Provider {{providerType}} not found in registry",
+    "connectionIdNotFound": "Bank data provider connection {{connectionId}} not found",
+    "accountIdNotFound": "Account {{accountId}} not found",
+    "providerTypeMismatch": "Connection {{connectionId}} is for provider {{actualType}}, not {{expectedType}}",
+    "providerAlreadyRegistered": "Provider {{providerType}} is already registered. Cannot register duplicate providers.",
+    "providerNotRegistered": "Provider {{providerType}} is not registered. Available providers: {{available}}",
+    "missingRequiredProviders": "Missing required bank data providers: {{missing}}. Please ensure these providers are registered at app startup."
+  },
+  "validation": {
+    "dateInvalid": "\"date\" is invalid date."
+  },
+  "urlGuard": {
+    "invalidUrl": "This is not a valid URL.",
+    "unsupportedProtocol": "Only http:// and https:// URLs are allowed.",
+    "credentialsInUrlNotAllowed": "The URL must not contain a username or password. Use the API key field instead.",
+    "privateAddressBlocked": "{{host}} points to a private or reserved network address, which is not allowed.",
+    "hostnameNotResolvable": "{{host}} could not be resolved. Check the address for typos.",
+    "redirectNotAllowed": "The endpoint answered with a redirect. Enter the final URL instead.",
+    "hostnameLookupUnavailable": "We couldn't verify {{host}} right now. Please try again in a moment."
+  },
+  "bankDataProviders": {
+    "reauthorizationStarted": "Reauthorization started. Please complete the OAuth flow.",
+    "connectionEstablished": "Connection successfully established",
+    "failedToFetchBanks": "Failed to fetch banks. Please check your credentials and country code.",
+    "failedToFetchCountries": "Failed to fetch countries. Please check your credentials.",
+    "accountNotLinkedToConnection": "Account not found or not linked to this connection",
+    "accountAlreadyConnectedToAnotherConnection": "Account \"{{account}}\" is already connected through \"{{connection}}\". Disconnect it there first.",
+    "cannotLoadBeforeLinkDate": "Cannot load transactions before account link date ({{linkedAt}}). This account was linked using \"forward-only\" strategy to prevent data duplication.",
+    "dateRangeExceedsLimit": "Date range cannot exceed 1 year.",
+    "fromAfterTo": "\"from\" date must be before \"to\" date",
+    "fromMustBeValidDate": "\"from\" must be a valid date string",
+    "toMustBeValidDate": "\"to\" must be a valid date string",
+    "reconciliationOnlyForEnableBanking": "Reconciliation is only available for Enable Banking connections",
+    "transactionLoadingQueued": "Transaction loading queued. Estimated time: {{minutes}} minute(s)",
+    "noValidAccountIds": "None of the selected account IDs are valid",
+    "accountCurrencyNotSupported": "Account currency \"{{currency}}\" is not supported by this system.",
+    "periodLoadNotSupported": "Loading transactions for a custom period is not supported by this provider.",
+    "transactionsLoadedCount": "Loaded {{count}} transactions.",
+    "transactionsAllDuplicates": "Found {{count}} transactions for this period — all were already imported.",
+    "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
+    "apiError": "{{provider}} API error: {{message}}",
+    "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",
+    "monobank": {
+      "invalidCredentialsFormat": "Invalid credentials format for Monobank",
+      "invalidApiToken": "Invalid Monobank API token",
+      "rateLimitExceeded": "Monobank API rate limit exceeded. Please try again in a minute.",
+      "accountNotFound": "Account {{accountExternalId}} not found in Monobank",
+      "accountReconnectRequired": "This account is no longer available at Monobank. Please reconnect your Monobank connection to resume syncing.",
+      "webhookNotImplemented": "handleWebhook not yet implemented for Monobank",
+      "unknownCurrencyCode": "Unknown currency code: {{numericCode}}",
+      "geoBlocked": "Monobank is blocking requests from this server's IP. Disable VPN or use a Ukrainian IP address.",
+      "geoBlockedProduction": "Monobank sync is temporarily unavailable. We've been notified and are working on it. Please contact support if this is urgent."
+    },
+    "enableBanking": {
+      "invalidCredentialsFormat": "Invalid credentials format for Enable Banking",
+      "invalidRsaKey": "Invalid RSA private key format",
+      "invalidCredentials": "Invalid Enable Banking credentials",
+      "authUrlNotFound": "Authorization URL not found for this connection",
+      "invalidOAuthState": "Invalid OAuth state parameter",
+      "oAuthStateExpired": "OAuth state expired or invalid",
+      "oAuthAuthorizationFailed": "OAuth authorization failed: {{error}}",
+      "invalidStoredCredentials": "Invalid stored credentials",
+      "bankInfoNotFound": "Bank information not found in connection metadata",
+      "noActiveSession": "No active session. Please complete OAuth flow first.",
+      "noActiveSessionGeneric": "No active session",
+      "noBalanceInfo": "No balance information available",
+      "authenticationFailed": "Enable Banking authentication failed: {{message}}",
+      "sessionExpiredReconnect": "Bank session expired. Please reconnect your bank account to continue syncing.",
+      "apiBadRequestError": "Enable Banking API error: {{message}}",
+      "apiGeneralError": "Enable Banking API error: {{message}}",
+      "redirectUriNotAllowed": "Your Enable Banking application is missing the required redirect URL. Please log in to the Enable Banking dashboard, edit your application, and add this URL to the allowed redirect URLs: {{redirectUrl}}"
+    },
+    "lunchflow": {
+      "invalidCredentialsFormat": "Invalid LunchFlow credentials format. Please provide a valid API key.",
+      "invalidApiKey": "Invalid LunchFlow API key. Please check your credentials.",
+      "accountNoExternalId": "Account has no external ID for LunchFlow sync.",
+      "accountNotFound": "LunchFlow account not found."
+    },
+    "simplefin": {
+      "invalidCredentialsFormat": "Invalid SimpleFIN credentials format.",
+      "invalidSetupToken": "Invalid or already-used SimpleFIN setup token. Generate a new one from the SimpleFIN Bridge and try again.",
+      "invalidAccessUrl": "Invalid or unauthorized SimpleFIN access URL.",
+      "claimFailed": "Could not claim a SimpleFIN access URL from the setup token.",
+      "accountNotFound": "SimpleFIN account not found.",
+      "accountNoExternalId": "This account is not linked to a SimpleFIN account.",
+      "accountAbsentFromResponse": "SimpleFIN did not return data for this account in the latest sync. The account may have been disabled at the bank – try syncing again, or reconnect if the issue persists.",
+      "rateLimited": "SimpleFIN is receiving too many requests right now. Please wait a little and try again."
+    },
+    "walutomat": {
+      "invalidCredentialsFormat": "Invalid Walutomat credentials format. API key and private key are required.",
+      "invalidApiKey": "Invalid Walutomat API key or private key.",
+      "accountNoExternalId": "Walutomat account has no external ID.",
+      "walletNotFound": "Walutomat wallet not found for currency: {{currency}}"
+    }
+  },
+  "csvImport": {
+    "headersCannotBeParsed": "Headers cannot be parsed",
+    "csvFileEmpty": "CSV file is empty",
+    "csvFileNoHeaders": "CSV file has no headers",
+    "csvFileMalformed": "The CSV file could not be parsed. Check for unmatched quotes or an unexpected delimiter, or try re-exporting the file.",
+    "csvFileTooManyRows": "CSV file exceeds the maximum allowed row count of {{max}} rows.",
+    "csvFileForbiddenHeader": "CSV file contains a header name that is not allowed.",
+    "invalidDateFormat": "Invalid date format: \"{{dateStr}}\". Expected ISO format (YYYY-MM-DD).",
+    "invalidAmount": "Invalid amount: \"{{amountStr}}\". Expected numeric value.",
+    "accountNameEmpty": "Account name is empty",
+    "currencyCodeEmpty": "Currency code is empty",
+    "unknownTransactionType": "Unknown transaction type value: \"{{typeValue}}\"",
+    "dateColumnNotFound": "Date column \"{{columnName}}\" not found in CSV",
+    "amountColumnNotFound": "Amount column \"{{columnName}}\" not found in CSV",
+    "invalidDefaultCurrency": "Invalid default currency code: \"{{defaultCurrency}}\"",
+    "payeeColumnNotFound": "Payee column \"{{column}}\" not found in CSV headers"
+  },
+  "importExport": {
+    "batchDeleteBankLinkedAccount": "This import can no longer be undone because its account is now connected to a bank. Deleting these transactions could throw off the synced balance.",
+    "batchDeleteLinkedLoanTransfer": "This import is linked to a loan payment and can't be undone on its own. Enable \"also delete linked transfer transactions\" to remove it.",
+    "batchDeleteInProgress": "An import batch is already being deleted. Wait for it to finish before starting another.",
+    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one."
+  },
+  "statementParser": {
+    "invalidFile": "Invalid file",
+    "textExtractionFailed": "Text extraction failed. The PDF may be a scanned document. Image-based extraction is not yet implemented.",
+    "failedToExtractText": "Failed to extract text from file.",
+    "fileContentRequired": "File content is required",
+    "pdfPasswordRequired": "This PDF is password-protected. Enter the document password to continue.",
+    "pdfPasswordInvalid": "The password you entered is incorrect. Check it and try again.",
+    "pdfParseFailed": "Could not read this PDF. The file may be corrupted or use an unsupported format."
+  },
+  "currencies": {
+    "notSupportedForBaseCurrency": "Changing base currency to {{currency}} is not supported. Only these currencies are supported: {{supportedCurrencies}}.",
+    "listIsEmpty": "Currencies list is empty",
+    "noBaseCurrency": "User does not have a base currency set",
+    "alreadyBaseCurrency": "The selected currency is already a base currency",
+    "baseCurrencyLockedByShares": "Cannot change base currency while you have active shared resources. Revoke or leave them first.",
+    "baseCurrencyLockedByHousehold": "Cannot change base currency while you are part of an active household. Revoke or leave your household membership first.",
+    "baseCurrencyChangeInProgress": "Base currency change is in progress. Please wait until it completes.",
+    "baseCurrencyChangeSyncInProgress": "A bank sync is still finishing. Please try changing your base currency again in a few minutes.",
+    "baseCurrencyChangeDrainCheckFailed": "Could not verify bank syncs are idle. Please try again.",
+    "baseCurrencyChangeInProgressOtherUser": "The other participant is currently changing their base currency. Please try again once their migration finishes.",
+    "cannotFindForRefAmount": "Cannot find currency to calculate ref amount!",
+    "cannotCalculateRefAmount": "Cannot calculate ref amount",
+    "currencyNotConnected": "Asked currency is not connected",
+    "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}"
+  },
+  "userSettings": {
+    "userSettingsNotFound": "User settings not found"
+  },
+  "users": {
+    "usernameAlreadyTaken": "Username \"{{username}}\" is already taken"
+  },
+  "userCurrencies": {
+    "baseCurrencyExists": "Base currency already exists!",
+    "currencyCodeNotExist": "Currency with passed code does not exist.",
+    "currencyNotExist": "Currency with code \"{{currencyCode}}\" does not exist.",
+    "cannotDeleteDefaultCurrency": "It is not allowed to delete default currency. Unmake it default first.",
+    "cannotDeleteCurrencyWithAccounts": "It is not allowed to delete currency associated with any accounts. Delete accounts first. Accounts names: \"{{accountNames}}\".",
+    "cannotDeleteCurrencyWithInvestments": "It is not allowed to delete currency \"{{currencyCode}}\" while it is used by investment holdings. Delete those holdings first.",
+    "defaultCurrencyNotPresent": "Cannot delete currency. Default currency is not present in the system"
+  },
+  "ai": {
+    "connectionNotFound": "AI model not found.",
+    "connectionNameTaken": "You already have an AI model with this name.",
+    "connectionLimitReached": "You can add up to {{max}} AI models.",
+    "connectionNameInvalidLength": "Name must be between 1 and {{max}} characters.",
+    "connectionModelRequired": "Enter a model name.",
+    "connectionBaseUrlRequired": "Enter the base URL of your OpenAI-compatible server.",
+    "connectionBaseUrlNotAllowed": "This provider always uses its official API address, so it doesn't take a base URL.",
+    "connectionApiKeyRequired": "Enter the API key.",
+    "connectionProviderMismatch": "That AI model uses a different provider.",
+    "connectionKeySourceMissing": "The AI model you're copying from has no API key. Enter one.",
+    "connectionStoredKeyUnreadable": "The API key saved for this AI model can no longer be read. Enter it again.",
+    "connectionKeyRejected": "The provider rejected this API key. Check that it's correct, active, and has credits.",
+    "connectionModelNotAvailable": "This API key can't use the model \"{{model}}\". Check the model name.",
+    "connectionProviderUnreachable": "Couldn't reach the provider. Try again in a moment.",
+    "connectionValidationFailed": "The provider refused the test request: {{reason}}",
+    "serverModelUnavailable": "The included MoneyMatter AI model isn't available on your plan.",
+    "connectionKeyNotInBackup": "API key isn't included in backups. Edit this model and enter the key again.",
+    "customEndpointUnreachable": "Could not reach the endpoint. Check the base URL and make sure the server is running and reachable from the internet.",
+    "customEndpointAuthFailed": "The endpoint rejected the API key. Check that the key is correct and has the required permissions.",
+    "customEndpointModelNotFound": "The endpoint does not serve a model named \"{{model}}\".",
+    "customEndpointModelNotListed": "The endpoint does not serve \"{{model}}\". Models it offers: {{available}}.",
+    "customEndpointMoreModels": "and {{count}} more",
+    "customEndpointNotApiResponse": "The server at this URL answered with HTTP {{status}} instead of an OpenAI-compatible response. Check that the server is running and that the base URL is correct — it usually ends with /v1.",
+    "customEndpointValidationFailed": "The endpoint did not return a usable response. Check the base URL, model name and API key.",
+    "categorizationAlreadyRunning": "AI categorization is already running. Wait for it to finish before starting another run.",
+    "categorizationRateLimited": "You've started AI categorization too many times recently. Please try again later.",
+    "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
+  },
+  "middleware": {
+    "tooManyRequests": "Too many requests. Please try again later."
+  },
+  "defaultCategories": {
+    "main": {
+      "food": "Food & Drinks",
+      "shopping": "Shopping",
+      "housing": "Housing",
+      "transportation": "Transportation",
+      "vehicle": "Vehicle",
+      "life": "Life & Entertainment",
+      "communication": "Communication, PC",
+      "financial-expenses": "Financial expenses",
+      "investments": "Investments",
+      "income": "Income",
+      "other": "Other"
+    },
+    "subcategories": {
+      "food": {
+        "groceries": "Groceries",
+        "restaurant": "Restaurant, fast-food",
+        "bar-cafe": "Bar, cafe"
+      },
+      "shopping": {
+        "clothes-shoes": "Clothes & shoes",
+        "jewels-accessories": "Jewels, accessories",
+        "health-beauty": "Health and beauty",
+        "kids": "Kids",
+        "home-garden": "Home, garden",
+        "pets-animals": "Pets, animals",
+        "electronics-accessories": "Electronics, accessories",
+        "gifts-joy": "Gifts, joy",
+        "stationery-tools": "Stationery, tools",
+        "free-time": "Free time",
+        "drugstore-chemist": "Drug-store, chemist"
+      },
+      "housing": {
+        "rent": "Rent",
+        "mortgage": "Mortgage",
+        "energy-utilities": "Energy, utilities",
+        "services": "Services",
+        "maintenance-repairs": "Maintenance, repairs",
+        "property-insurance": "Property insurance"
+      },
+      "transportation": {
+        "public-transport": "Public transport",
+        "taxi": "Taxi",
+        "long-distance": "Long distance",
+        "business-trips": "Business trips"
+      },
+      "vehicle": {
+        "fuel": "Fuel",
+        "parking": "Parking",
+        "vehicle-maintenance": "Vehicle maintenance",
+        "rentals": "Rentals",
+        "vehicle-insurance": "Vehicle insurance",
+        "leasing": "Leasing"
+      },
+      "life": {
+        "health-care-doctor": "Health care, doctor",
+        "wellness-beauty": "Wellness, beauty",
+        "active-sport-fitness": "Active sport, fitness",
+        "culture-sport-events": "Culture, sport events",
+        "hobbies": "Hobbies",
+        "education-development": "Education, development",
+        "books-audio-subscriptions": "Books, audio, subscriptions",
+        "tv-streaming": "TV, Streaming",
+        "holiday-trips-hotels": "Holiday, trips, hotels",
+        "charity-gifts": "Charity, gifts",
+        "alcohol-tobacco": "Alcohol, tobacco",
+        "lottery-gambling": "Lottery, gambling"
+      },
+      "communication": {
+        "phone-cell-phone": "Phone, cell phone",
+        "internet": "Internet",
+        "software-apps-games": "Software, apps, games",
+        "postal-services": "Postal services"
+      },
+      "financial-expenses": {
+        "taxes": "Taxes",
+        "insurances": "Insurances",
+        "loan-interests": "Loan, interests",
+        "fines": "Fines",
+        "advisory": "Advisory",
+        "charges-fees": "Charges, Fees",
+        "child-support": "Child Support"
+      },
+      "investments": {
+        "realty": "Realty",
+        "vehicles-chattels": "Vehicles, chattels",
+        "financial-investments": "Financial investments",
+        "savings": "Savings",
+        "collections": "Collections"
+      },
+      "income": {
+        "wage-invoices": "Wage, invoices",
+        "interests-dividends": "Interests, dividends",
+        "sale": "Sale",
+        "rental-income": "Rental income",
+        "dues-grants": "Dues & grants",
+        "lending-renting": "Lending, renting",
+        "checks-coupons": "Checks, coupons",
+        "lottery-gambling": "Lottery, gambling",
+        "refunds": "Refunds (tax, purchase)",
+        "freelance": "Freelance",
+        "gifts": "Gifts"
+      }
+    }
+  },
+  "subscriptions": {
+    "transactionsNotFoundOrNotBelongToUser": "One or more transactions not found or do not belong to user.",
+    "cannotLinkDifferentTransactionType": "Cannot link transactions with a different type than the recurring payment",
+    "summaryCurrencyNotConnected": "Subscriptions summary can't be calculated: currency {{currencyCodes}} is not connected to your account. Connect it in Settings → Currencies.",
+    "summaryBaseCurrencyNotSet": "Base currency is not set. Set a default currency in your settings to view the subscriptions summary.",
+    "payeeNotFoundOrNotBelongToUser": "Payee not found or does not belong to user.",
+    "tagsNotFoundOrNotBelongToUser": "One or more tags were not found or do not belong to user.",
+    "validation": {
+      "autoRecord": {
+        "requiresAccount": "Auto-record requires an account so the booked transaction has somewhere to land.",
+        "requiresAmount": "Auto-record requires expectedAmount and expectedCurrencyCode so the booked transaction has a value.",
+        "excludesMatching": "Auto-record and matching rules cannot be used together — both would settle the same period.",
+        "requiresAccountField": "Auto-record requires an account to book the transaction against.",
+        "requiresAmountField": "Auto-record requires expectedAmount and expectedCurrencyCode.",
+        "excludesMatchingField": "Auto-record and matching rules are mutually exclusive."
+      }
+    }
+  },
+  "transactionTemplates": {
+    "notFound": "Transaction template not found.",
+    "nameAlreadyExists": "A transaction template with this name already exists.",
+    "amountRequiresAccount": "An amount can only be saved together with an account.",
+    "accountNotFound": "Account not found or does not belong to user.",
+    "accountMustBeSystem": "Only manually managed accounts can be used in a transaction template.",
+    "accountArchived": "Archived accounts can't be used in a template.",
+    "categoryNotFound": "Category not found or does not belong to user.",
+    "payeeNotFound": "Payee not found or does not belong to user.",
+    "tagsNotFound": "One or more tags were not found or do not belong to user."
+  },
+  "payees": {
+    "aliasNameRequired": "Alias name is required",
+    "aliasNotFound": "Alias not found",
+    "aliasUsedByOtherPayee": "This alias is already used by \"{{name}}\"",
+    "nameUsedByAliasOfOtherPayee": "This name is already used as an alias of \"{{name}}\"",
+    "cannotDeleteCanonicalAlias": "Can't delete the alias matching the Payee's canonical name. Rename the Payee instead if you want to change its primary name.",
+    "defaultCategoryNotOwned": "The selected default category doesn't belong to your account",
+    "defaultTagsNotOwned": "One or more tags do not belong to user",
+    "duplicateAlias": "This alias is already attached to this payee",
+    "duplicateName": "A payee with this name already exists",
+    "ignoredNameCollidesWithPayee": "An existing Payee matches this name. Delete the Payee first, or pass `force: true` to delete it as part of this operation.",
+    "ignoredNameNotFound": "Ignored name not found.",
+    "mergeSelf": "Cannot merge a payee with itself",
+    "nameRequired": "Payee name is required",
+    "notFound": "Payee not found",
+    "renameCollision": "Another payee already uses this name – merge them instead"
+  },
+  "brandLogos": {
+    "domainAndInitialsExclusive": "A brand logo and custom letters can't be set at the same time.",
+    "colorRequiresInitials": "A monogram color requires monogram letters."
+  },
+  "venture": {
+    "dealNotFound": "Venture deal not found",
+    "eventNotFound": "Venture event not found"
+  },
+  "vehicles": {
+    "notFound": "Vehicle not found"
+  },
+  "stats": {
+    "netWorthHistoryTooManyPoints": "This date range and granularity produce too many data points. Pick a coarser granularity or a shorter range."
+  },
+  "automations": {
+    "automationNotFound": "Automation not found.",
+    "previewRequiresConditions": "Provide either conditions or a saved automation to preview.",
+    "reorderStale": "The automation list has changed. Refresh and try again.",
+    "ruleLimitReached": "You have reached the maximum number of automations.",
+    "staleReference": "This automation references an item that no longer exists."
+  },
+  "attachments": {
+    "transactionNotFound": "Transaction not found.",
+    "attachmentNotFound": "Attachment not found.",
+    "fileNotFound": "Attachment file not found.",
+    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF file.",
+    "tooManyAttachments": "A transaction can hold at most {{max}} attachments.",
+    "quotaExceeded": "Attachment storage quota exceeded.",
+    "noFileUploaded": "No file was uploaded."
+  },
+  "invoiceMatching": {
+    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF invoice.",
+    "notAnInvoice": "This document does not look like an invoice or a receipt.",
+    "incompleteInvoice": "Could not read a vendor, total amount and date from this invoice.",
+    "noFileUploaded": "No file was uploaded."
+  }
+}

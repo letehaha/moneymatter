@@ -1,0 +1,222 @@
+{
+  "loans": {
+    "title": "Loans",
+    "loadError": "Failed to load loans.",
+    "tryAgain": "Try again",
+    "addButton": {
+      "label": "Add loan"
+    },
+    "actions": {
+      "more": "More",
+      "moreAriaLabel": "More actions",
+      "excludeFromStats": "Exclude from stats",
+      "linkPayments": "Link previous payments"
+    },
+    "linkPayments": {
+      "title": "Link previous payments",
+      "description": "Select transactions you've already paid toward this loan to record them as payments.",
+      "emptyTitle": "No matching transactions",
+      "emptyDescription": "No transactions match these filters. Try widening the date range or clearing filters.",
+      "selectedCount": "{count} selected",
+      "clearSelection": "Clear",
+      "linkSelected": "Link {count}",
+      "success": "Linked {count} payment to the loan. | Linked {count} payments to the loan.",
+      "preAnchorWarning": "{count} selected payment is dated before the loan's balance anchor ({date}) — it links as history only and won't reduce the outstanding balance. | {count} selected payments are dated before the loan's balance anchor ({date}) — they link as history only and won't reduce the outstanding balance.",
+      "error": "Couldn't link the selected payments. Please try again.",
+      "overpayTitle": "Payments exceed the balance",
+      "overpayDescription": "The selected payments add up to {amount} more than the remaining loan balance. Link them anyway?",
+      "overpayConfirmButton": "Link anyway"
+    },
+    "dialog": {
+      "createTitle": "Add a loan",
+      "createDescription": "Track a mortgage, auto loan, student loan, or any other liability. You can edit anything later.",
+      "editTitle": "Edit loan",
+      "editDescription": "Update the loan's terms. Changes to the rate, term, or planned payment are recorded in the events timeline."
+    },
+    "settings": {
+      "title": "Settings",
+      "editTitle": "Edit loan details",
+      "editDescription": "Update the name, balance, rate, term, payment fields, or lender info.",
+      "editButton": "Edit",
+      "excludeFromStatsTitle": "Exclude from statistics",
+      "excludeFromStatsDescription": "Hide this loan from net worth, charts, and reports without archiving it.",
+      "archiveTitle": "Archive loan",
+      "archiveDescription": "Hides the loan from the sidebar and account lists. You can restore it any time.",
+      "archiveButton": "Archive",
+      "archivedTitle": "This loan is archived",
+      "archivedDescription": "It's hidden from the sidebar and account pickers and listed under Archived on the loans page. Restore it to resume tracking.",
+      "unarchiveButton": "Restore",
+      "archiveConfirmTitle": "Archive this loan?",
+      "archiveConfirmDescription": "{name} will move to the Archived section on this page and be hidden from the sidebar and account pickers.",
+      "archiveAlsoExclude": "Also exclude from statistics",
+      "deleteTitle": "Delete loan",
+      "deleteDescription": "Permanently removes the loan and its history. This cannot be undone.",
+      "deleteButton": "Delete",
+      "deleteConfirmTitle": "Delete this loan permanently?",
+      "deleteConfirmDescription": "{name} and all its events will be permanently removed. This cannot be undone.",
+      "toggleSuccess": "Setting updated",
+      "toggleError": "Could not update the setting",
+      "archiveSuccess": "Loan archived",
+      "archiveError": "Could not archive the loan",
+      "unarchiveSuccess": "Loan restored",
+      "deleteSuccess": "Loan deleted",
+      "deleteError": "Could not delete the loan",
+      "deleteBlockedByPayments": "This loan has recorded payments. Delete them first, then you can delete the loan."
+    },
+    "empty": {
+      "title": "No loans yet",
+      "description": "Track mortgages, auto loans, student loans, and other liabilities here.",
+      "createFirstButton": "Add your first loan"
+    },
+    "paidOff": {
+      "sectionTitle": "Paid off",
+      "repaid": "Repaid",
+      "opened": "Opened",
+      "closed": "Closed",
+      "interestPaid": "Interest paid (est.)"
+    },
+    "archivedList": {
+      "sectionTitle": "Archived",
+      "badge": "Archived",
+      "outstanding": "Outstanding"
+    },
+    "aggregate": {
+      "avgApr": "Avg APR",
+      "monthlyObligation": "Monthly obligation",
+      "interestProjected": "Interest projected",
+      "totalOutstanding": "Total outstanding",
+      "principalRepaid": "{percent}% of {amount} principal repaid",
+      "debtFree": "Debt-free"
+    },
+    "list": {
+      "columns": {
+        "loan": "Loan",
+        "progress": "Progress",
+        "balance": "Balance",
+        "apr": "APR",
+        "monthly": "Monthly",
+        "payoff": "Payoff",
+        "interestLeft": "Interest left"
+      },
+      "paidPercent": "{value}% paid",
+      "monthsLeft": "{count} mo left",
+      "ofPrincipal": "of {amount}"
+    },
+    "types": {
+      "mortgage": "Mortgage",
+      "auto": "Vehicle",
+      "student": "Student",
+      "personal": "Personal",
+      "heloc": "HELOC",
+      "business": "Business",
+      "medical": "Medical",
+      "other": "Other"
+    },
+    "warnings": {
+      "no_planned_payment": "No planned payment set – projected payoff unavailable.",
+      "payment_below_interest": "Planned payment doesn't cover monthly interest – loan would grow."
+    },
+    "detail": {
+      "backToList": "Back to loans",
+      "loadError": "Failed to load this loan.",
+      "paidOffBadge": "Paid off",
+      "summary": {
+        "outstanding": "Current balance",
+        "principalOnlyTooltip": "Balance reflects principal payments only. Interest is not accrued automatically – your lender's statement is the source of truth.",
+        "apr": "APR",
+        "originalPrincipal": "Original principal",
+        "term": "Term",
+        "termMonths": "{count} month | {count} months",
+        "startDate": "Start date",
+        "paymentDay": "Payment day",
+        "dayOfMonth": "{day} of each month",
+        "accountNumber": "Account number",
+        "balanceAnchor": "Balance as of",
+        "balanceAnchorTooltip": "The outstanding balance is fixed as of this date. Payments dated before it are kept for history but don't change the Paid progress.",
+        "actualDuration": "Actual duration"
+      },
+      "paidOff": {
+        "bannerTitle": "{name} — paid off in full",
+        "bannerSubline": "{type} · Opened {opened} · Closed {closed}",
+        "took": "Took",
+        "monthsEarly": "{count} mo early",
+        "duration": {
+          "full": "{years} yrs {months} mo",
+          "years": "{years} yrs",
+          "months": "{months} mo"
+        },
+        "cost": {
+          "title": "What this loan cost",
+          "totalLabel": "Total cost",
+          "principal": "Principal",
+          "interest": "Interest (est.)",
+          "estimateFootnote": "Interest is an amortization-schedule estimate — payments are recorded as principal, so no exact interest split is stored.",
+          "effectiveCost": "Effective cost: {cents}¢ of interest per $1 borrowed"
+        },
+        "chart": {
+          "title": "Balance journey",
+          "titleHint": "Your loan's actual recorded balance over time, against the original amortization schedule.",
+          "noData": "Not enough history to chart this loan's balance journey."
+        }
+      },
+      "projection": {
+        "title": "Projection",
+        "paidLabel": "Paid",
+        "paidOfOriginal": "{paid} of {original} paid",
+        "payoffDate": "Payoff date",
+        "monthsRemaining": "Months remaining",
+        "totalInterestRemaining": "Total interest remaining",
+        "nextMonthInterest": "Next month's interest",
+        "nextMonthPrincipal": "Next month's principal",
+        "plannedPayment": "Planned payment"
+      },
+      "events": {
+        "title": "Timeline",
+        "empty": "No history yet – rate changes, balance corrections, and notes will appear here.",
+        "rateChange": "Rate changed from {from}% to {to}%",
+        "termChange": "Term changed from {from} to {to} months",
+        "plannedPaymentChange": "Planned payment changed from {from} to {to}",
+        "paidOff": "Loan paid off",
+        "balanceCorrection": "Outstanding balance corrected from {from} to {to}"
+      },
+      "payments": {
+        "title": "Recent payments",
+        "empty": "No payments recorded against this loan yet.",
+        "loadError": "Failed to load recent payments.",
+        "seeAll": "See all",
+        "allTitle": "All payments"
+      },
+      "recordPayment": "Record payment",
+      "payoffChart": {
+        "title": "Payoff projection",
+        "titleHint": "Projects when your loan will be fully paid under the minimum, planned, and a custom monthly payment, with each scenario's payoff date and total interest. Type any amount into the custom payment field to play with the numbers and instantly see how it changes your payoff date and total interest.",
+        "customPaymentLabel": "Custom payment",
+        "applyAsPlanned": "Apply as planned payment",
+        "applyConfirmTitle": "Apply as planned payment?",
+        "applyConfirmDescription": "This sets the loan's planned monthly payment to {amount}.",
+        "applySuccess": "Planned payment updated.",
+        "applyError": "Couldn't update the planned payment. Please try again.",
+        "belowInterest": "This payment doesn't cover the monthly interest, so the balance never goes down.",
+        "paidOff": "This loan is paid off — there's nothing left to project.",
+        "enterPaymentPrompt": "Enter a payment amount above to project the payoff.",
+        "paidOffShort": "Paid off",
+        "neverPaysOff": "Never",
+        "interestVsPlanned": "Interest vs planned",
+        "payoffVsPlanned": "Payoff vs planned",
+        "sameAsPlanned": "Same as planned",
+        "earlierBy": "{time} earlier",
+        "laterBy": "{time} later",
+        "monthsLabel": "{n} mo",
+        "yearsLabel": "{n} yr",
+        "yearsMonthsLabel": "{y} yr {m} mo",
+        "legend": {
+          "minimum": "Minimum payment",
+          "planned": "Planned payment",
+          "custom": "Custom payment",
+          "actual": "Actual balance",
+          "schedule": "Original schedule"
+        }
+      }
+    }
+  }
+}

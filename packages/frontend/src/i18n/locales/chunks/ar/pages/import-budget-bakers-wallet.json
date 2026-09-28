@@ -1,0 +1,134 @@
+{
+  "pages": {
+    "importExport": {
+      "budgetBakersWalletImport": {
+        "pageTitle": "Import from Wallet (BudgetBakers)",
+        "pageDescription": "Import your transactions exported from the Wallet app by BudgetBakers.",
+        "fileUpload": {
+          "stepTitle": "Upload your Wallet CSV file",
+          "description": "Upload one or more Wallet CSV export files to import transactions. All files must have the same columns.",
+          "maxSize": "Maximum file size: 10 MB",
+          "parsing": "Parsing…",
+          "errors": {
+            "invalidFormatNamed": "\"{name}\" is not a CSV file.",
+            "parseFailed": "Failed to parse file. Please check the format and try again.",
+            "merge": {
+              "emptySelection": "Select at least one CSV file",
+              "fileReadFailed": "Couldn't read \"{file}\"",
+              "fileEmpty": "\"{file}\" is empty",
+              "fileNoDataRows": "\"{file}\" has no data rows",
+              "headerMismatch": "Columns in \"{file}\" don't match the first file. All files must have the same columns in the same order.",
+              "forbiddenHeader": "\"{file}\" uses a reserved column name",
+              "tooManyRows": "Selected files total more than {max} rows. Remove some files or rows and try again.",
+              "parseError": "Couldn't parse \"{file}\". Make sure it's a valid CSV."
+            }
+          },
+          "continue": "Continue"
+        },
+        "preview": {
+          "accountsHelper": "Configure how each detected account will be handled during import.",
+          "accounts": "Accounts",
+          "transactions": "Transactions",
+          "rowPrefix": "Row {rowIndex}: "
+        },
+        "accountRow": {
+          "transactionsCount": "{count} transactions | {count} transaction | {count} transactions",
+          "modeLabel": "Action",
+          "modePlaceholder": "Select action",
+          "modeCreateNew": "Create new account",
+          "modeLinkExisting": "Link to existing account",
+          "currentBalanceLabel": "Current balance (optional)",
+          "currentBalancePlaceholder": "e.g. 1234.56",
+          "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
+          "linkTargetLabel": "Existing account",
+          "linkTargetPlaceholder": "Select account",
+          "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
+        },
+        "execute": {
+          "starting": "Starting import…",
+          "progressCount": "{processed} / {total}",
+          "statusQueued": "Queued",
+          "statusRunning": "Importing…",
+          "statusCompleted": "Complete",
+          "statusFailed": "Failed",
+          "failed": "Import failed.",
+          "partialImportNote": "Some rows may have already been imported before this failure. Re-importing could create duplicates."
+        },
+        "done": {
+          "successTitle": "Import complete",
+          "successDescription": "Your Wallet data has been successfully imported.",
+          "partialTitle": "Imported with {count} error(s)",
+          "partialDescription": "Some rows were imported successfully, but others encountered errors.",
+          "allFailedTitle": "Import failed",
+          "allFailedDescription": "No rows were imported. Review the errors below and try again.",
+          "accountsCreated": "Accounts created",
+          "accountsLinked": "Accounts linked",
+          "accountsSkipped": "Accounts skipped",
+          "categoriesCreated": "Categories created",
+          "tagsCreated": "Tags created",
+          "transactionsImported": "Transactions imported",
+          "transfersImported": "Transfers imported",
+          "outOfWalletImported": "Out-of-wallet imported",
+          "mergedIntoPlanned": "Merged into planned",
+          "duplicatesSkipped": "Duplicates skipped",
+          "errorsTitle": "{count} row(s) failed | {count} row failed | {count} rows failed",
+          "errorsOverflow": "+{count} more",
+          "balanceWarningTitle": "Some account balances may be incorrect",
+          "balanceWarningBody": "We couldn't reset the balance on one or more existing accounts after import. Review the affected accounts.",
+          "viewTransactions": "View transactions",
+          "importAnother": "Import another file"
+        },
+        "stepper": {
+          "steps": {
+            "upload": "Upload",
+            "resolve": "Resolve",
+            "review": "Review",
+            "results": "Done"
+          }
+        },
+        "resolve": {
+          "resolvedCounterWord": "resolved",
+          "accounts": {
+            "sectionTitle": "Accounts",
+            "currentBalanceLabel": "Current balance (optional)",
+            "currentBalancePlaceholder": "Leave blank to use imported total",
+            "willCreateHint": "Will create a new {currency} account",
+            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+          },
+          "categories": {
+            "sectionTitle": "Categories"
+          },
+          "quickActions": {
+            "mapExactMatches": "Map exact matches",
+            "createNewForUnmatched": "Create new for unmatched",
+            "reset": "Reset",
+            "tooltips": {
+              "mapExactMatchesAccounts": "Link every account whose name exactly matches an existing account",
+              "mapExactMatchesCategories": "Link every category whose name exactly matches an existing category",
+              "createNewForUnmatched": "Set all still-unresolved rows to create a new entry",
+              "reset": "Clear all choices and auto-match by name again"
+            }
+          },
+          "footer": {
+            "back": "Back",
+            "continue": "Continue"
+          }
+        },
+        "review": {
+          "transactions": "Transactions",
+          "transfersDetected": "Transfers detected",
+          "outOfWallet": "Out of wallet",
+          "duplicatesSkipped": "Duplicates skipped",
+          "willImport": "Will import",
+          "warningsTitle": "{count} warning(s)",
+          "rowPrefix": "Row {rowIndex}:",
+          "duplicatesTitle": "{count} possible duplicate(s)",
+          "duplicatesHint": "Checked rows will be imported anyway; unchecked duplicates are skipped.",
+          "back": "Back",
+          "importButton": "Import {count} transactions",
+          "importing": "Importing…"
+        }
+      }
+    }
+  }
+}

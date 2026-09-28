@@ -1,40 +1,40 @@
 {
   "investments": {
-    "title": "Investments",
-    "createButton": "Create Portfolio",
-    "loadError": "Failed to load portfolios",
-    "tryAgain": "Try Again",
+    "title": "Investície",
+    "createButton": "Vytvoriť portfólio",
+    "loadError": "Portfóliá sa nepodarilo načítať",
+    "tryAgain": "Skúsiť znova",
     "menu": {
-      "view": "View",
-      "delete": "Delete"
+      "view": "Zobraziť",
+      "delete": "Zmazať"
     },
     "card": {
-      "hidden": "Hidden",
-      "portfolioType": "{type} Portfolio",
-      "costBasis": "Cost basis"
+      "hidden": "Skryté",
+      "portfolioType": "Portfólio: {type}",
+      "costBasis": "Obstarávacia cena"
     },
     "empty": {
-      "title": "No Portfolios Yet",
-      "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
-      "createFirstButton": "Create Your First Portfolio"
+      "title": "Zatiaľ žiadne portfóliá",
+      "description": "Vytvorte prvé investičné portfólio a začnite sledovať pozície, transakcie a výkonnosť.",
+      "createFirstButton": "Vytvoriť prvé portfólio"
     },
     "trash": {
-      "title": "Trash",
-      "retentionHint": "Items here are permanently deleted after {days} days",
-      "loadError": "Couldn't load trashed portfolios.",
-      "deletedAgo": "Deleted {time}",
-      "restoreButton": "Restore",
-      "restoringButton": "Restoring…",
-      "purgeButton": "Delete now",
-      "purgingButton": "Deleting…",
-      "confirmPurgeTitle": "Delete portfolio permanently?",
-      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
-      "tryAgain": "Try again",
+      "title": "Kôš",
+      "retentionHint": "Položky sa natrvalo zmažú po {days} dňoch",
+      "loadError": "Portfóliá v koši sa nepodarilo načítať.",
+      "deletedAgo": "Zmazané: {time}",
+      "restoreButton": "Obnoviť",
+      "restoringButton": "Obnovovanie...",
+      "purgeButton": "Zmazať teraz",
+      "purgingButton": "Mazanie…",
+      "confirmPurgeTitle": "Zmazať portfólio natrvalo?",
+      "confirmPurge": "Natrvalo zmazať „{name}“? Túto akciu nie je možné vrátiť späť.",
+      "tryAgain": "Skúsiť znova",
       "notifications": {
-        "restored": "Portfolio restored",
-        "restoreError": "Failed to restore portfolio",
-        "purged": "Portfolio permanently deleted",
-        "purgeError": "Failed to delete portfolio"
+        "restored": "Portfólio obnovené",
+        "restoreError": "Portfólio sa nepodarilo obnoviť",
+        "purged": "Portfólio natrvalo zmazané",
+        "purgeError": "Portfólio sa nepodarilo zmazať"
       }
     }
   }

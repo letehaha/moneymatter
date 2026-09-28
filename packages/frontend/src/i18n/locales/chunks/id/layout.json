@@ -12,6 +12,7 @@
     "optimizations": "Optimasi",
     "automations": "Otomatisasi",
     "accountDetails": "Detail akun",
+    "helpAndDocs": "Help & docs",
     "logout": "Keluar",
     "appVersion": "App version {version}",
     "settings": "Pengaturan",
@@ -57,6 +58,10 @@
   "header": {
     "add": "Tambah",
     "importData": "Impor data",
+    "moreActions": "More ways to add data",
+    "importDataHint": "CSV file or bank statement",
+    "attachInvoice": "Attach invoice",
+    "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "Bahasa",
     "newTransaction": "Transaksi Baru",
     "settings": "Pengaturan",
@@ -100,6 +105,8 @@
         "featureRequest": "Saya ingin fitur baru",
         "other": "Hal lainnya"
       },
+      "docsHint": "Not sure how something works? Check the {link} first.",
+      "docsHintLink": "docs",
       "messageLabel": "Masukan Anda",
       "messagePlaceholder": "Apa yang terjadi, atau apa yang ingin Anda lihat?",
       "messageRequired": "Tulis pesan sebelum mengirim.",

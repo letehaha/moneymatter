@@ -6,7 +6,7 @@
       "tabs": {
         "loginMethods": "Login Methods",
         "activeSessions": "Active Sessions",
-        "password": "Password",
+        "password": "Heslo",
         "backup": "Backup & restore",
         "dangerZone": "Danger Zone"
       },
@@ -17,11 +17,11 @@
           "connectedAs": "Connected as {email}",
           "accountName": "{provider} Account",
           "notConnected": "Not connected",
-          "disconnect": "Disconnect",
-          "connect": "Connect"
+          "disconnect": "Odpojiť",
+          "connect": "Pripojiť"
         },
         "password": {
-          "title": "Password",
+          "title": "Heslo",
           "passwordSet": "Password is set",
           "noPassword": "No password set",
           "manageInTab": "Manage in Password tab",
@@ -31,7 +31,7 @@
           "title": "Passkeys",
           "noPasskeys": "No passkeys registered",
           "passkeyCount": "{count} passkey(s) registered",
-          "addButton": "Add Passkey",
+          "addButton": "Pridať prístupový kľúč",
           "passkeyName": "Passkey",
           "added": "Added {date}",
           "rename": "Rename",
@@ -64,10 +64,10 @@
           "unknownBrowser": "Unknown Browser"
         },
         "timeAgo": {
-          "justNow": "Just now",
-          "minutesAgo": "{count} minute ago | {count} minutes ago",
-          "hoursAgo": "{count} hour ago | {count} hours ago",
-          "daysAgo": "{count} day ago | {count} days ago"
+          "justNow": "Práve teraz",
+          "minutesAgo": "pred {count} minútou | pred {count} minútami",
+          "hoursAgo": "pred {count} hodinou | pred {count} hodinami",
+          "daysAgo": "pred {count} dňom | pred {count} dňami"
         },
         "notifications": {
           "loadFailed": "Failed to load sessions",
@@ -78,13 +78,13 @@
         }
       },
       "passwordSection": {
-        "title": "Password",
+        "title": "Heslo",
         "descriptionChange": "Change your password",
         "descriptionSet": "Set up a password for your account",
         "labels": {
           "currentPassword": "Current Password",
           "newPassword": "New Password",
-          "password": "Password",
+          "password": "Heslo",
           "confirmPassword": "Confirm Password"
         },
         "placeholders": {
@@ -173,7 +173,7 @@
           "confirmFull": "Please type {email} to confirm",
           "placeholder": "Enter your email",
           "acceptButton": "Delete my account",
-          "acceptButtonLoading": "Deleting..."
+          "acceptButtonLoading": "Mazanie…..."
         },
         "notifications": {
           "success": "Your account has been deleted successfully",
@@ -185,7 +185,7 @@
           "title": "Download backup",
           "description": "Save a complete, restorable copy of all your data as a zip file.",
           "button": "Download",
-          "loading": "Preparing...",
+          "loading": "Príprava...",
           "success": "Backup downloaded",
           "failed": "Could not create backup. Please try again.",
           "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
@@ -194,7 +194,7 @@
             "title": "What a backup leaves out",
             "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
             "items": {
-              "bankConnectionsTerm": "Bank connections",
+              "bankConnectionsTerm": "Bankové pripojenia",
               "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
               "aiKeysTerm": "AI API keys",
               "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
@@ -216,7 +216,7 @@
             "warning": "This replaces ALL your current data",
             "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
             "selectedFile": "Selected file: {name}",
-            "confirmLabel": "Restore",
+            "confirmLabel": "Obnoviť",
             "reconnectTitle": "After restoring, set these up again",
             "reconnectBankConnections": "Reconnect your bank connections",
             "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"

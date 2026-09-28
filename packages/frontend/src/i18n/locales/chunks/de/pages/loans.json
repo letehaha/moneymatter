@@ -1,6 +1,6 @@
 {
   "loans": {
-    "title": "Loans",
+    "title": "Kredite",
     "loadError": "Failed to load loans.",
     "tryAgain": "Try again",
     "addButton": {
@@ -34,10 +34,10 @@
       "editDescription": "Update the loan's terms. Changes to the rate, term, or planned payment are recorded in the events timeline."
     },
     "settings": {
-      "title": "Settings",
+      "title": "Einstellungen",
       "editTitle": "Edit loan details",
       "editDescription": "Update the name, balance, rate, term, payment fields, or lender info.",
-      "editButton": "Edit",
+      "editButton": "Bearbeiten",
       "excludeFromStatsTitle": "Exclude from statistics",
       "excludeFromStatsDescription": "Hide this loan from net worth, charts, and reports without archiving it.",
       "archiveTitle": "Archive loan",
@@ -90,7 +90,7 @@
     },
     "list": {
       "columns": {
-        "loan": "Loan",
+        "loan": "Kredit",
         "progress": "Progress",
         "balance": "Balance",
         "apr": "APR",
@@ -161,7 +161,7 @@
       },
       "projection": {
         "title": "Projection",
-        "paidLabel": "Kostenpflichtig",
+        "paidLabel": "Bezahlt",
         "paidOfOriginal": "{paid} of {original} paid",
         "payoffDate": "Payoff date",
         "monthsRemaining": "Months remaining",

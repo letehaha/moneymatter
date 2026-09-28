@@ -12,6 +12,7 @@
     "optimizations": "优化",
     "automations": "自动化",
     "accountDetails": "账户详情",
+    "helpAndDocs": "Help & docs",
     "logout": "登出",
     "appVersion": "App version {version}",
     "settings": "设置",
@@ -57,6 +58,10 @@
   "header": {
     "add": "添加",
     "importData": "导入数据",
+    "moreActions": "More ways to add data",
+    "importDataHint": "CSV file or bank statement",
+    "attachInvoice": "Attach invoice",
+    "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "语言",
     "newTransaction": "添加交易",
     "settings": "设置",
@@ -100,6 +105,8 @@
         "featureRequest": "我想要新功能",
         "other": "其他"
       },
+      "docsHint": "Not sure how something works? Check the {link} first.",
+      "docsHintLink": "docs",
       "messageLabel": "您的反馈",
       "messagePlaceholder": "发生了什么，或者你想看到什么？",
       "messageRequired": "请在发送前填写消息。",

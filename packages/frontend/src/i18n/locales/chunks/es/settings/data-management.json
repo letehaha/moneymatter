@@ -41,6 +41,7 @@
       },
       "import": {
         "back": "Volver a Importar",
+        "whichImporterHint": "¿No estás seguro de cuál usar?",
         "groups": {
           "filesAndText": "Archivos y texto",
           "fromOtherApps": "Desde otras apps",
@@ -52,6 +53,7 @@
       },
       "export": {
         "cardTitle": "Exporta tus datos",
+        "backupOrExportHint": "¿No estás seguro de si necesitas exportar o hacer una copia de seguridad?",
         "form": {
           "title": "Exporta tus datos",
           "description": "Elige un formato y las partes de tus datos que deseas. La descarga comenzará tan pronto como confirmes.",
@@ -93,7 +95,7 @@
         },
         "accounts": {
           "label": "Cuentas",
-          "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
+          "helper": "Exportar solo las cuentas seleccionadas con sus transacciones e historial de saldo. Dejar en blanco para exportar todas las cuentas.",
           "placeholder": "Todas las cuentas"
         },
         "listDescription": "Descarga un zip para hojas de cálculo, impuestos o migración"

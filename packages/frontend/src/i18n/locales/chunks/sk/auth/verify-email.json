@@ -1,17 +1,17 @@
 {
   "auth": {
     "verifyEmail": {
-      "title": "Check your email",
-      "description": "We've sent a verification link to",
-      "descriptionYourEmail": "your email address",
-      "descriptionContinued": ". Please click the link to verify your account.",
-      "didntReceive": "Didn't receive the email? Check your spam folder or",
-      "resend": "click here to resend",
-      "sending": "Sending...",
-      "resendIn": "Resend in {count}s",
-      "backToSignIn": "Back to Sign In",
-      "resendSuccess": "Verification email sent! Please check your inbox.",
-      "resendError": "Failed to resend verification email. Please try again."
+      "title": "Skontrolujte si svoj email",
+      "description": "Poslali sme overovací odkaz na",
+      "descriptionYourEmail": "vašu emailovú adresu",
+      "descriptionContinued": ". Kliknite na odkaz a overte svoj účet, prosím.",
+      "didntReceive": "Nedostali ste email? Skontrolujte priečinok so spamom alebo",
+      "resend": "kliknite sem pre opätovné odoslanie",
+      "sending": "Odosielanie...",
+      "resendIn": "Opätovné odoslanie o {count}s",
+      "backToSignIn": "Späť na prihlásenie",
+      "resendSuccess": "Overovací email bol odoslaný! Skontrolujte si doručenú poštu, prosím.",
+      "resendError": "Opätovné odoslanie emailu zlyhalo. Skúste to znovu, prosím."
     }
   }
 }

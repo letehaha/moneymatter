@@ -38,7 +38,7 @@
         "unlinkTooltip": "Bỏ khỏi nhóm",
         "removeConfirmTitle": "Bỏ \"{name}\" khỏi nhóm này?",
         "removeConfirmDescription": "Tài khoản không bị xóa — chỉ rời khỏi nhóm này.",
-        "removeConfirmAction": "Xóa"
+        "removeConfirmAction": "Remove"
       },
       "delete": {
         "button": "Xóa nhóm",

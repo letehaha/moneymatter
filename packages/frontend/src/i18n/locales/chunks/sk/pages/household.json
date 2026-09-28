@@ -1,75 +1,75 @@
 {
   "pages": {
     "household": {
-      "title": "Household",
-      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "title": "Domácnosť",
+      "description": "Pozvite dôveryhodné osoby a zdieľajte s nimi prístup ku všetkým svojim účtom. Členovia vidia vaše účty a (s právom na zápis) môžu na nich zaznamenávať transakcie.",
       "myHousehold": {
-        "title": "My household",
-        "description": "People here get access to every account you own. Per-account shares always override household access."
+        "title": "Moja domácnosť",
+        "description": "Osoby tu uvedené získajú prístup ku všetkým vašim účtom. Zdieľanie na úrovni jednotlivého účtu má vždy prednosť pred prístupom cez domácnosť."
       },
-      "youOwner": "You — owner",
-      "noMembers": "No one has joined your household yet.",
-      "loadMembersError": "Couldn't load household members. Try refreshing.",
+      "youOwner": "Vy — vlastník",
+      "noMembers": "Do vašej domácnosti sa zatiaľ nikto nepridal.",
+      "loadMembersError": "Členov domácnosti sa nepodarilo načítať. Skúste stránku obnoviť.",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "Čítať",
+        "write": "Zapisovať",
+        "manage": "Spravovať"
       },
       "writeScope": {
-        "all": "Can edit any transaction",
-        "own": "Can edit only their own transactions"
+        "all": "Môže upravovať akúkoľvek transakciu",
+        "own": "Môže upravovať len svoje vlastné transakcie"
       },
       "invite": {
         "emailLabel": "Email",
-        "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "Permission",
-        "writeScopeLabel": "Write scope",
-        "submit": "Send household invite",
-        "sent": "Invitation sent.",
-        "error": "Couldn't send the invitation.",
-        "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
+        "emailPlaceholder": "osoba{'@'}domena.sk",
+        "permissionLabel": "Oprávnenia",
+        "writeScopeLabel": "Rozsah práva na zápis",
+        "submit": "Odoslať pozvánku do domácnosti",
+        "sent": "Pozvánka bol odoslaná.",
+        "error": "Pozvánku sa nepodarilo odoslať.",
+        "emailDeliveryFailed": "Pozvánka bola vytvorená, email sa však nepodarilo doručiť. Môžete ju odoslať znova z panela pozvánok."
       },
       "revoke": {
-        "action": "Remove",
-        "title": "Remove household member?",
-        "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
-        "confirm": "Remove",
-        "success": "Member removed.",
-        "error": "Couldn't remove this member."
+        "action": "Odstrániť",
+        "title": "Odstrániť člena domácnosti?",
+        "description": "{handle} stratí prístup ku všetkým účtom vo vašej domácnosti. Zdieľania na úrovni jednotlivých účtov (ak nejaké existujú) tým nie sú dotknuté.",
+        "confirm": "Odstrániť",
+        "success": "Člen odstránený.",
+        "error": "Tohto člena sa nepodarilo odstrániť."
       },
       "permissionChange": {
-        "setRead": "Make read-only",
-        "setWrite": "Allow writes",
-        "success": "Permission updated.",
-        "error": "Couldn't update permission."
+        "setRead": "Nastaviť len na čítanie",
+        "setWrite": "Povoliť zápis",
+        "success": "Oprávnenie aktualizované.",
+        "error": "Oprávnenie sa nepodarilo aktualizovať."
       },
       "imIn": {
-        "title": "Households I'm in",
-        "description": "Other people's households you've joined. Leaving drops your access to every account they shared this way.",
-        "empty": "You haven't joined anyone else's household.",
-        "unnamedHousehold": "{'@'}{handle}'s household",
-        "loadError": "Couldn't load the households you're in. Try again later."
+        "title": "Domácnosti, v ktorých som",
+        "description": "Domácnosti iných ľudí, do ktorých ste sa pridali. Odchodom stratíte prístup ku všetkým účtom, ktoré s vami takto zdieľali.",
+        "empty": "Zatiaľ ste sa nepridali do žiadnej cudzej domácnosti.",
+        "unnamedHousehold": "Domácnosť používateľa {'@'}{handle}",
+        "loadError": "Domácnosti, v ktorých ste sa nepodarilo načítať. Skúste to znova neskôr."
       },
       "leave": {
-        "action": "Leave",
-        "title": "Leave this household?",
-        "description": "You'll lose access to every account {owner} shares through their household. Per-account shares (if any) are unaffected.",
-        "confirm": "Leave",
-        "success": "You left the household.",
-        "error": "Couldn't leave the household."
+        "action": "Odísť",
+        "title": "Opustiť túto domácnosť?",
+        "description": "Stratíte prístup ku všetkým účtom, ktoré {owner} zdieľa cez svoju domácnosť. Zdieľania na úrovni jednotlivých účtov (ak nejaké existujú) tým nie sú dotknuté.",
+        "confirm": "Odísť",
+        "success": "Opustili ste domácnosť.",
+        "error": "Domácnosť sa nepodarilo opustiť."
       },
       "pending": {
-        "badge": "Pending",
-        "resend": "Resend",
-        "cancel": "Cancel",
-        "cancelTitle": "Cancel invitation?",
-        "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
-        "cancelConfirm": "Cancel invitation",
-        "cancelSuccess": "Invitation cancelled.",
-        "cancelError": "Failed to cancel invitation.",
-        "resendSuccess": "Invitation resent.",
-        "resendError": "Failed to resend invitation.",
-        "resendDeliveryFailed": "Invitation updated, but the email could not be sent. Try again later."
+        "badge": "Čaká na vybavenie",
+        "resend": "Odoslať znova",
+        "cancel": "Zrušiť",
+        "cancelTitle": "Zrušiť pozvánku?",
+        "cancelDescription": "Zrušiť čakajúcu pozvánku odoslanú na {email}? Táto osoba ju už nebude môcť prijať.",
+        "cancelConfirm": "Zrušiť pozvánku",
+        "cancelSuccess": "Pozvánka zrušená.",
+        "cancelError": "Pozvánku sa nepodarilo zrušiť.",
+        "resendSuccess": "Pozvánka bola opätovne odoslaná.",
+        "resendError": "Opätovné odoslanie pozvánky zlyhalo.",
+        "resendDeliveryFailed": "Pozvánka bola aktualizovaná, email sa však nepodarilo odoslať. Skúste to znova neskôr."
       }
     }
   }

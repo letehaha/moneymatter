@@ -1,0 +1,89 @@
+{
+  "settings": {
+    "currencies": {
+      "page": {
+        "title": "Currencies",
+        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+      },
+      "addNew": {
+        "loading": "Loading...",
+        "selectCurrency": "Select currency",
+        "addButton": "Add",
+        "sectionLabel": "Add a currency",
+        "successfullyAdded": "Currency added",
+        "errors": {
+          "addFailed": "Unexpected error. Currency is not added."
+        }
+      },
+      "howItWorks": {
+        "trigger": "How it works?",
+        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+      },
+      "row": {
+        "baseBadge": "Base",
+        "custom": "Custom",
+        "live": "Live",
+        "unused": "Unused",
+        "accountsCount": "{count} account | {count} accounts"
+      },
+      "empty": {
+        "title": "No other currencies yet",
+        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+      },
+      "exchangeRate": {
+        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
+        "liveUpdateInfo": "When enabled, custom rate is ignored.",
+        "liveUpdateLabel": "Live update",
+        "ratePlaceholder": "0.00",
+        "saveButton": "Save",
+        "successfullyUpdated": "Successfully updated.",
+        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "errors": {
+          "unexpectedError": "Unexpected error",
+          "updateFailed": "Unexpected error. Currency is not updated."
+        }
+      },
+      "delete": {
+        "confirmTitle": "Delete currency?",
+        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
+        "button": "Delete currency",
+        "buttonShort": "Delete",
+        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
+        "successfullyDeleted": "Successfully deleted.",
+        "errors": {
+          "deleteFailed": "Unexpected error. Currency is not deleted."
+        }
+      },
+      "setBase": {
+        "button": "Set as base currency",
+        "buttonShort": "Set as base",
+        "processing": "Processing...",
+        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "dialog": {
+          "title": "Change Base Currency?",
+          "warningTitle": "Warning:",
+          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
+          "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
+          "roundingTitle": "How exactly is rounding calculated?",
+          "roundingIntro": "Currency conversions use Banker's Rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
+          "roundingHow": "How it works:",
+          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
+          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
+          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
+          "untouchedWarning": "Original transactions amount will always remain untouched!",
+          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
+          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
+          "confirmation": "Are you sure you want to proceed?",
+          "changeButton": "Change Base Currency",
+          "cancelButton": "Cancel"
+        },
+        "successMessage": "Base currency changed successfully.",
+        "errors": {
+          "changeFailed": "Unexpected error. Failed to change base currency.",
+          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
+          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first."
+        }
+      }
+    }
+  }
+}

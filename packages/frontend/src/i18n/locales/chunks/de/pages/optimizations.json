@@ -1,11 +1,11 @@
 {
   "optimizations": {
-    "title": "Optimizations",
-    "landingDescription": "Tools to help you organize and clean up your financial data.",
-    "backToOptimizations": "Back to optimizations",
+    "title": "Optimierungen",
+    "landingDescription": "Tools, die dir helfen, deine Finanzdaten zu organisieren und aufzuräumen.",
+    "backToOptimizations": "Zurück zu Optimierungen",
     "cards": {
       "transfers": {
-        "title": "Transfer matching",
+        "title": "Umbuchungserkennung",
         "description": "Find expense-income pairs that might be transfers between your accounts and link them automatically."
       },
       "aiCategorization": {
@@ -63,7 +63,7 @@
         "title": "Run setup",
         "model": "Modell",
         "notConfigured": "Not configured",
-        "endpoint": "Endpoint",
+        "connection": "AI model",
         "limits": "Limits",
         "limitsSharedKey": "3 runs per hour",
         "limitsOwnCredentials": "Unlimited — runs on your own key",

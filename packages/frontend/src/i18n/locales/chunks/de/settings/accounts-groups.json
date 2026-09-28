@@ -26,7 +26,7 @@
         "manageConnection": "Verbindung verwalten"
       },
       "update": {
-        "label": "Group name",
+        "label": "Gruppenname",
         "placeholder": "Enter group name",
         "saveButton": "Speichern",
         "emptyNameError": "Group name can't be empty"

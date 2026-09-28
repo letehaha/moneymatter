@@ -19,14 +19,14 @@
         "bankBadge": "Created by bank connection",
         "bankBadgeShort": "Connection",
         "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
-        "accountsCount": "{count} account | {count} accounts",
+        "accountsCount": "{count} účet | {count} účtov",
         "noAccounts": "No accounts",
         "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
         "inParent": "in {name}",
-        "manageConnection": "Manage connection"
+        "manageConnection": "Spravovať pripojenie"
       },
       "update": {
-        "label": "Group name",
+        "label": "Názov skupiny",
         "placeholder": "Enter group name",
         "saveButton": "Save",
         "emptyNameError": "Group name can't be empty"

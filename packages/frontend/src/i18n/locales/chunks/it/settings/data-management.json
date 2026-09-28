@@ -41,6 +41,7 @@
       },
       "import": {
         "back": "Back to Import",
+        "whichImporterHint": "Not sure which one to use?",
         "groups": {
           "filesAndText": "Files & text",
           "fromOtherApps": "From other apps",
@@ -52,6 +53,7 @@
       },
       "export": {
         "cardTitle": "Export your data",
+        "backupOrExportHint": "Not sure whether you need Export or Backup?",
         "form": {
           "title": "Export your data",
           "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",

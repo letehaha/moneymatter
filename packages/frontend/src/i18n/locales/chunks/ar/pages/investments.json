@@ -1,0 +1,41 @@
+{
+  "investments": {
+    "title": "Investments",
+    "createButton": "Create Portfolio",
+    "loadError": "Failed to load portfolios",
+    "tryAgain": "Try Again",
+    "menu": {
+      "view": "View",
+      "delete": "Delete"
+    },
+    "card": {
+      "hidden": "Hidden",
+      "portfolioType": "{type} Portfolio",
+      "costBasis": "Cost basis"
+    },
+    "empty": {
+      "title": "No Portfolios Yet",
+      "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
+      "createFirstButton": "Create Your First Portfolio"
+    },
+    "trash": {
+      "title": "Trash",
+      "retentionHint": "Items here are permanently deleted after {days} days",
+      "loadError": "Couldn't load trashed portfolios.",
+      "deletedAgo": "Deleted {time}",
+      "restoreButton": "Restore",
+      "restoringButton": "Restoring…",
+      "purgeButton": "Delete now",
+      "purgingButton": "Deleting…",
+      "confirmPurgeTitle": "Delete portfolio permanently?",
+      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
+      "tryAgain": "Try again",
+      "notifications": {
+        "restored": "Portfolio restored",
+        "restoreError": "Failed to restore portfolio",
+        "purged": "Portfolio permanently deleted",
+        "purgeError": "Failed to delete portfolio"
+      }
+    }
+  }
+}

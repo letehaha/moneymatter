@@ -5,67 +5,9 @@
       "description": "设置自动交易分类等AI驱动功能",
       "tabs": {
         "features": "AI 功能",
-        "apiKeys": "API 密钥",
-        "invalidKeysTooltip": "有一个或多个 API 密钥无效",
-        "customEndpoints": "自定义端点",
-        "invalidEndpointsTooltip": "一个或多个自定义端点不再工作"
-      },
-      "apiKeyManager": {
-        "title": "API 密钥",
-        "description": "添加您自己的 API 密钥以使用特定的提供商",
-        "badges": {
-          "default": "默认"
-        },
-        "buttons": {
-          "setDefault": "设置为默认"
-        },
-        "invalidKeyHelp": "在下方添加新密钥以替换此密钥，或如果不再需要则将其删除。",
-        "deleteDialog": {
-          "title": "删除 API 密钥？",
-          "description": "您确认要删除 {provider} 的 API 密钥吗？",
-          "descriptionMultiple": "目前使用 {provider} 的 AI 功能将会切换使用另一个提供商。",
-          "cancel": "取消",
-          "remove": "删除"
-        },
-        "allConfigured": "已设置所有提供商",
-        "form": {
-          "titleAdd": "添加 API 密钥",
-          "titleAddAnother": "添加另一个提供商",
-          "providerLabel": "提供商",
-          "apiKeyLabel": "API 密钥",
-          "buttonSaving": "验证中……",
-          "buttonSave": "保存密钥"
-        },
-        "providers": {
-          "anthropic": {
-            "label": "Anthropic (Claude)",
-            "placeholder": "sk-ant-...",
-            "description": "您可从此处获得 API 密钥："
-          },
-          "openai": {
-            "label": "OpenAI (GPT)",
-            "placeholder": "sk-...",
-            "description": "您可从此处获得 API 密钥："
-          },
-          "google": {
-            "label": "Google (Gemini)",
-            "placeholder": "AIza...",
-            "description": "您可从此处获得 API 密钥："
-          },
-          "groq": {
-            "label": "Groq (Llama, GPT-OSS)",
-            "placeholder": "gsk_...",
-            "description": "您可从此处获得 API 密钥："
-          }
-        },
-        "notifications": {
-          "saveSuccess": "API key saved and validated successfully",
-          "saveFailed": "API key is not working. Please verify the key is correct, has sufficient credits, and has the required permissions.",
-          "setDefaultSuccess": "{provider} set as default",
-          "setDefaultFailed": "Failed to set default provider",
-          "removeSuccess": "{provider} API key removed",
-          "removeFailed": "Failed to remove API key"
-        }
+        "models": "AI models",
+        "connectedApps": "Connectors (MCP)",
+        "invalidConnectionsTooltip": "One of your AI models needs attention"
       },
       "credentialStatus": {
         "validated": "Validated {timeAgo}",
@@ -75,76 +17,47 @@
       "features": {
         "title": "AI 功能",
         "description": "Configure which model to use for each AI-powered feature",
-        "loading": "Loading features..."
+        "howItWorks": "How it works",
+        "loadError": "Couldn't load your AI features."
       },
       "categorization": {
-        "modelHint": {
-          "trigger": "What model should I choose?",
-          "text": "For transaction categorization, low-cost models like Gemma 4, Gemini 3.5 Flash Lite, or Claude Haiku 4.5 are recommended. Categorization is a straightforward task that doesn't require expensive reasoning models. Using cheaper models lets you process more transactions at lower cost."
-        },
         "howItWorks": {
-          "title": "How it works",
           "points": {
             "autoSync": "When you sync transactions from your bank, uncategorized transactions are automatically sent to AI for categorization.",
             "analysis": "The AI analyzes transaction descriptions and merchant names to suggest appropriate categories from your existing category list.",
             "override": "You can always manually override AI-suggested categories."
           }
-        },
-        "loading": "Loading models..."
+        }
       },
       "statementParsing": {
-        "modelHint": {
-          "trigger": "What model should I choose?",
-          "text": "For statement parsing, mid-tier models like Gemini 3.6 Flash, Claude Sonnet 5, or GPT-5.6 Terra are recommended. Statement parsing requires understanding complex document structures and extracting accurate data, which benefits from more capable models. However, cheaper models like Gemini 3.5 Flash Lite or Claude Haiku 4.5 can also work well for simpler statements."
-        },
         "howItWorks": {
-          "title": "How it works",
           "points": {
             "upload": "Upload a bank statement (PDF, CSV, or TXT) and AI will extract all transactions automatically.",
             "analysis": "The AI analyzes the document structure to identify dates, descriptions, amounts, and transaction types.",
             "review": "You can review and correct any extracted data before importing into your account.",
             "cost": "Cost is estimated before processing, yet it only reflects the approximate cost."
           }
-        },
-        "loading": "Loading models..."
+        }
       },
       "modelSelector": {
+        "placeholder": "Pick a model",
+        "automaticOption": "Automatic",
+        "automaticOptionWithTarget": "Automatic · {target}",
+        "serverOption": "MoneyMatter AI · included",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
         "badges": {
           "yourKey": "Your key",
-          "yourKeyTooltip": "This feature uses your personal API key. You have full control over usage and costs, with no rate limits from our server.",
+          "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
           "server": "Server",
-          "serverTooltip": "This feature uses our server's shared API key. It's free but may have rate limits during high demand. Add your own API key for unlimited access."
+          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
         },
+        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
+        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Model",
-        "resetButton": "Reset to Default",
-        "noApiKey": "(No API key)",
         "modelInfo": {
-          "context": "Context:",
-          "capabilities": "Capabilities:",
           "estimatedCost": "Est. cost:",
           "per100Transactions": "per 100 txns"
-        },
-        "rateLimitWarning": "Using server-provided AI with free-tier rate limiting. Feature availability depends on demand from other users. For reliable access, add your own API key in the API Keys tab.",
-        "groupLabels": {
-          "recommended": "⭐ Recommended",
-          "openai": "OpenAI",
-          "anthropic": "Anthropic",
-          "google": "Google",
-          "groq": "Groq"
-        },
-        "costLabels": {
-          "free": "Free",
-          "low": "Low cost",
-          "medium": "Medium cost",
-          "high": "High cost"
-        },
-        "capabilities": {
-          "textGeneration": "Text",
-          "structuredOutput": "Structured",
-          "functionCalling": "Functions",
-          "vision": "Vision",
-          "fastInference": "Fast",
-          "agents": "Agents"
         },
         "notifications": {
           "updateSuccess": "Model updated successfully",
@@ -152,116 +65,208 @@
           "resetSuccess": "Reset to default model",
           "resetFailed": "Failed to reset model"
         },
-        "addKeyHint": "Add your own API key to select from all available models.",
-        "addKeyHintLink": "Add API key →",
-        "customModel": {
-          "nameLabel": "Model name",
-          "applyButton": "应用",
-          "hint": "Sent as-is to {baseUrl}.",
-          "endpointOption": "{endpoint} — {model}",
-          "unknownEndpoint": "Custom endpoint",
-          "missingModelName": "This endpoint has no model name configured — enter one first",
-          "endpointsLoadError": "Your endpoints could not be loaded, so the model name can't be edited right now."
+        "empty": {
+          "title": "No AI model yet",
+          "description": "Add your own AI model to use this feature."
+        },
+        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDownLink": "AI models"
+      },
+      "modelGuide": {
+        "trigger": "Which model fits?",
+        "tierHeading": "{tier} model is enough",
+        "tiers": {
+          "light": "浅色",
+          "balanced": "Balanced",
+          "smart": "Smart"
+        },
+        "needsLabel": "Needs",
+        "picksLabel": "Good picks",
+        "yourModel": "Your model",
+        "source": "Model details from models.dev",
+        "needs": {
+          "textOnly": "Text only",
+          "runsOften": "Runs on every sync",
+          "longAnswers": "Long answers",
+          "readsFiles": "Reads images & PDFs",
+          "structuredAnswers": "Structured answers"
+        },
+        "why": {
+          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
+          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
+          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Good fit",
+          "gaps": "{count} gap | {count} gaps",
+          "unknown": "Not checked"
+        },
+        "warning": {
+          "readsFiles": "Can't read files",
+          "readsText": "Can't read text",
+          "readsImages": "Can't read images",
+          "readsPdfs": "Can't read PDFs",
+          "longAnswers": "Short answers only",
+          "structuredAnswers": "No structured answers"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Reads text",
+            "fail": "This model doesn't take text."
+          },
+          "readsImages": {
+            "label": "Reads images",
+            "fail": "Image files won't work."
+          },
+          "readsPdfs": {
+            "label": "Reads PDFs",
+            "fail": "PDF files won't work."
+          },
+          "longAnswers": {
+            "label": "Long answers",
+            "ok": "Writes up to {tokens} tokens.",
+            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+          },
+          "structuredAnswers": {
+            "label": "Structured answers",
+            "fail": "Its answers may come back in a shape the app can't read."
+          }
+        },
+        "unknown": {
+          "title": "Can't check this model",
+          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
         }
       },
-      "customEndpoint": {
-        "title": "自定义端点",
-        "description": "Connect your own OpenAI-compatible servers and use their models for any AI feature.",
-        "loading": "Loading endpoints…",
-        "addButton": "Add endpoint",
+      "connections": {
+        "title": "AI models",
+        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "tip": {
+          "ariaLabel": "About AI models",
+          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+        },
+        "addButton": "Add model",
+        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
+        "duplicateName": "{name} copy",
         "empty": {
-          "title": "No custom endpoints yet",
-          "description": "Connect an OpenAI-compatible server — a local Ollama, LM Studio, or a hosted gateway — to use its models for any AI feature."
+          "title": "No AI models yet",
+          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
         },
         "loadError": {
-          "title": "Couldn't load your endpoints",
-          "description": "Your saved endpoints are still there — we just couldn't fetch them right now. Check your connection and try again.",
-          "retry": "Try again"
+          "title": "Couldn't load your AI models",
+          "description": "Your saved models are still there. Check your connection and try again."
+        },
+        "badges": {
+          "default": "Default",
+          "defaultSkipped": "Default · skipped while it needs attention"
         },
         "status": {
-          "model": "Model: {model}"
+          "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "Endpoint actions",
-          "reconnect": "重新连接"
-        },
-        "form": {
-          "titleAdd": "Add endpoint",
-          "titleEdit": "Edit endpoint",
-          "nameLabel": "Name",
-          "namePlaceholder": "Home Ollama",
-          "baseUrlLabel": "Base URL",
-          "baseUrlPlaceholder": "http://localhost:11434/v1",
-          "modelLabel": "Model name",
-          "modelPlaceholder": "llama3.2",
-          "apiKeyLabel": "API key (optional)",
-          "apiKeyPlaceholder": "Enter API key",
-          "apiKeySavedHint": "A key is saved. Leave blank to keep it.",
-          "apiKeyOptionalHint": "Leave blank if your endpoint needs no authentication.",
-          "removeApiKeyButton": "Remove saved key",
-          "saveButton": "Save",
-          "testButton": "Test connection",
-          "removeButton": "删除"
-        },
-        "compatibilityHint": "The endpoint must be OpenAI-compatible. Works with Ollama, vLLM, OpenRouter, LM Studio, and any /v1 proxy.",
-        "test": {
-          "success": "Connection successful.",
-          "failed": "Could not reach the endpoint."
-        },
-        "notifications": {
-          "saveSuccess": "Custom endpoint saved",
-          "saveFailed": "Failed to save the custom endpoint",
-          "removeSuccess": "Custom endpoint removed",
-          "removeFailed": "Failed to remove the custom endpoint",
-          "removeKeySuccess": "Saved key removed",
-          "removeKeyFailed": "Failed to remove the saved key",
-          "removeKeyInvalid": "API key removed, but the endpoint failed validation without it: {reason}",
-          "editedEndpointGone": "This endpoint was removed, so the editor was closed."
+          "menuAriaLabel": "AI model actions",
+          "duplicate": "Duplicate",
+          "setDefault": "Set as default",
+          "remove": "Remove",
+          "reconnect": "重新连接",
+          "enterKey": "Enter API key"
         },
         "removeDialog": {
-          "title": "Remove custom endpoint?",
-          "descriptionNamed": "\"{name}\" will be removed. Any feature using it falls back to another available model. This action cannot be undone.",
-          "confirm": "删除"
+          "title": "Remove this AI model?",
+          "description": "\"{name}\" and its saved API key will be removed.",
+          "pinnedFeatures": "These features will switch to automatic: {features}.",
+          "confirm": "Remove"
         },
         "removeKeyDialog": {
-          "title": "Remove saved key?",
-          "description": "The endpoint is re-tested without a key. If it requires authentication, the change is rejected.",
+          "title": "Remove the API key?",
+          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
           "confirm": "Remove key"
         },
-        "setupHelp": {
-          "trigger": "Where do I find these?",
-          "rule": "The Base URL is everything up to, but not including, {path}. For almost every provider that means it ends in {suffix}.",
-          "ruleCheck": "Quick check: opening {url} should return a JSON list of models.",
-          "apiKeyEmpty": "Leave empty.",
-          "lmStudio": {
-            "startServer": "Start the local server first (Developer tab → Start Server).",
-            "baseUrl": "The address LM Studio shows, plus {suffix}. For example {example}.",
-            "model": "The model's API identifier. It's shown in the Developer tab, or listed at {url}."
+        "test": {
+          "success": "Connected. The model answered.",
+          "failed": "Couldn't reach the model."
+        },
+        "notifications": {
+          "saveSuccess": "AI model saved",
+          "saveFailed": "Couldn't save the AI model",
+          "removeSuccess": "AI model removed",
+          "removeFailed": "Couldn't remove the AI model",
+          "setDefaultSuccess": "\"{name}\" is now your default model",
+          "setDefaultFailed": "Couldn't change the default model",
+          "removeKeySuccess": "API key removed",
+          "removeKeyFailed": "Couldn't remove the API key",
+          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
+          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+        },
+        "form": {
+          "titleAdd": "Add AI model",
+          "titleEdit": "Edit AI model",
+          "titleDuplicate": "Duplicate AI model",
+          "providerLabel": "Provider",
+          "providerPlaceholder": "Select a provider",
+          "nameLabel": "Name",
+          "baseUrlLabel": "Base URL",
+          "baseUrlPlaceholder": "https://example.com/v1",
+          "apiKeyLabel": "API key",
+          "apiKeyPlaceholder": "Paste your API key",
+          "apiKeyGetHint": "Get a key at {link}.",
+          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
+          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
+          "removeApiKeyButton": "Remove API key",
+          "modelLabel": "Model",
+          "modelPlaceholder": "Type or pick a model",
+          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
+          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
+          "testButton": "Test connection",
+          "saveButton": "Save changes",
+          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
+          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "e.g. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "e.g. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "e.g. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "e.g. OpenRouter Llama"
           },
           "ollama": {
-            "model": "The exact tag from {command}, for example {example}."
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Local Llama"
           },
-          "openRouter": {
-            "model": "The full model id from their models page, for example {example}.",
-            "apiKeyRequired": "Required."
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "e.g. LM Studio Qwen"
           },
-          "other": {
-            "tabLabel": "Other",
-            "title": "{name} or any other OpenAI-compatible server",
-            "baseUrl": "The server address, plus {suffix}.",
-            "model": "Whatever {request} returns as the {field}.",
-            "apiKey": "Only if the server was set up to require one."
-          },
-          "localNetworkOnly": "A server running on your own computer ({ip} or {hostname}) only works when this app runs on your own machine or your own network. The hosted version can't reach it, because private addresses are blocked there.",
-          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+          "custom": {
+            "label": "Custom (OpenAI-compatible)",
+            "namePlaceholder": "e.g. My server"
+          }
         }
       },
       "customInstructions": {
         "title": "Custom Instructions",
         "description": "Provide context to help AI categorize your transactions. These instructions are included when categorizing transactions during bank sync and manual import.",
         "placeholder": "e.g., Transactions from 'Starbucks' should be 'Coffee'. My freelance income comes from 'Acme Corp'.",
-        "requiresOwnCredentials": "Add your own API key or a custom endpoint to use custom instructions.",
-        "credentialsCheckFailed": "We couldn't check whether you have your own AI credentials. Try again to unlock custom instructions.",
+        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
+        "requiresOwnCredentials": "Add your own AI model to use custom instructions.",
+        "credentialsCheckFailed": "Couldn't check your AI models, so custom instructions are unavailable for now.",
         "retryCredentialsCheck": "Try again",
         "save": "Save",
         "saved": "Saved!",

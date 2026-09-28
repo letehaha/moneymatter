@@ -12,6 +12,7 @@
     "optimizations": "Optimizaciones",
     "automations": "Automatizaciones",
     "accountDetails": "Detalles de la cuenta",
+    "helpAndDocs": "Ayuda & Documentación",
     "logout": "Cerrar sesión",
     "appVersion": "App version {version}",
     "settings": "Ajustes",
@@ -23,8 +24,8 @@
     "venture": "Venture"
   },
   "sidebar": {
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar",
+    "collapse": "Contraer barra lateral",
+    "expand": "Expandir barra lateral",
     "settings": {
       "title": "Ajustes",
       "sections": {
@@ -57,6 +58,10 @@
   "header": {
     "add": "Añadir",
     "importData": "Importar datos",
+    "moreActions": "Más formas de añadir datos",
+    "importDataHint": "Archivo CSV o extracto bancario",
+    "attachInvoice": "Adjuntar factura",
+    "attachInvoiceHint": "Encontramos la transacción a la que pertenece",
     "language": "Idioma",
     "newTransaction": "Nueva transacción",
     "settings": "Ajustes",
@@ -100,6 +105,8 @@
         "featureRequest": "Quiero una función",
         "other": "Otra cosa"
       },
+      "docsHint": "¿No estás seguro de cómo funciona algo? Revisa la {link} primero.",
+      "docsHintLink": "documentos",
       "messageLabel": "Su comentario",
       "messagePlaceholder": "¿Qué ocurrió o qué le gustaría ver?",
       "messageRequired": "Escriba un mensaje antes de enviarlo.",

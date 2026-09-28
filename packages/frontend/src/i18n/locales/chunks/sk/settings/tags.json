@@ -1,7 +1,7 @@
 {
   "settings": {
     "tags": {
-      "title": "Tags",
+      "title": "Štítky",
       "addButton": "Add Tag",
       "empty": "No tags yet. Create your first tag to organize your transactions.",
       "tabs": {
@@ -13,21 +13,21 @@
         "editTitle": "Edit Tag",
         "name": "Name",
         "namePlaceholder": "Tag name",
-        "color": "Color",
-        "icon": "Icon",
-        "iconPlaceholder": "Select icon",
+        "color": "Farba",
+        "icon": "Ikona",
+        "iconPlaceholder": "Vyberte ikonu",
         "iconSearchPlaceholder": "Search icons...",
         "clearIcon": "Clear icon",
         "description": "Description",
-        "descriptionPlaceholder": "Optional description",
+        "descriptionPlaceholder": "Voliteľný popis",
         "saveButton": "Save",
         "previewPlaceholder": "Tag name"
       },
       "delete": {
         "title": "Delete tag?",
         "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
-        "deleteButton": "Delete",
-        "cancelButton": "Cancel"
+        "deleteButton": "Zmazať",
+        "cancelButton": "Zrušiť"
       },
       "notifications": {
         "createSuccess": "Tag created",
@@ -81,8 +81,8 @@
         "delete": {
           "title": "Delete reminder?",
           "description": "This will permanently delete this reminder. This action cannot be undone.",
-          "deleteButton": "Delete",
-          "cancelButton": "Cancel"
+          "deleteButton": "Zmazať",
+          "cancelButton": "Zrušiť"
         },
         "notifications": {
           "createSuccess": "Reminder created",

@@ -7,7 +7,6 @@
       "accountsGroups": "Группы счетов",
       "importData": "Импорт/Экспорт",
       "ai": "AI",
-      "aiIntegrations": "AI-интеграции",
       "security": "Безопасность",
       "admin": "Администрирование",
       "sharedWithMe": "Предоставленные мне",
@@ -19,7 +18,8 @@
       "general": "Общие",
       "payees": "Получатели",
       "subscriptions": "Запланированные платежи",
-      "planBilling": "Plan & billing"
+      "planBilling": "Plan & billing",
+      "collapse": "Свернуть"
     },
     "backToSettings": "Назад к настройкам"
   }

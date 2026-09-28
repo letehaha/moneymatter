@@ -16,10 +16,14 @@
         "errorNotification": "Error al actualizar el ajuste de asociación de transferencias"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
+        "label": "Importar transacciones bancarias pendientes",
         "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "successNotification": "Configuración de transacciones pendientes actualizada",
+        "errorNotification": "Error al actualizar la configuración de transacciones pendientes"
+      },
+      "quickStart": {
+        "label": "Guía de Inicio Rápido",
+        "description": "Mostrar la lista de verificación de incorporación en el tablero. Desactívala para ocultar la guía; vuelve a encenderla para traerla de vuelta en cualquier momento."
       },
       "savingsCategories": {
         "label": "Contar categorías como ahorro",
@@ -73,6 +77,13 @@
           "label": "Selector de mapa",
           "description": "Escoja las ubicaciones de las transacciones en un mapa y las direcciones de búsqueda. Los cuadros de mapa y la búsqueda provienen de OpenStreetMap, que recibe su dirección IP cuando el mapa se abre."
         }
+      },
+      "defaultPaymentType": {
+        "label": "Default payment type",
+        "description": "Preselected when you add a new transaction.",
+        "placeholder": "Select a payment type",
+        "successNotification": "Default payment type updated",
+        "errorNotification": "Failed to update default payment type"
       }
     }
   }

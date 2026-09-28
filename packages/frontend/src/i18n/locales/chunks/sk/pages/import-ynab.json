@@ -7,8 +7,8 @@
         "stepper": {
           "steps": {
             "upload": "Upload",
-            "preview": "Review",
-            "results": "Done"
+            "preview": "Skontrolovať",
+            "results": "Hotovo"
           }
         },
         "fileUpload": {
@@ -16,19 +16,19 @@
           "description": "YNAB → Budget → Export budget → unzip → use the Register.csv file.",
           "maxSize": "Up to 10 MB.",
           "parsing": "Parsing…",
-          "continueToPreview": "Continue",
+          "continueToPreview": "Pokračovať",
           "errors": {
             "invalidFormat": "Please upload a .csv file."
           }
         },
         "preview": {
           "emptyList": "Nothing to import here.",
-          "accounts": "Accounts",
-          "categories": "Categories",
-          "payees": "Payees",
-          "tags": "Tags",
-          "transactions": "Transactions",
-          "transfers": "Transfers",
+          "accounts": "Účty",
+          "categories": "Kategórie",
+          "payees": "Príjemcovia",
+          "tags": "Štítky",
+          "transactions": "Transakcie",
+          "transfers": "Prevody",
           "dateRange": "Range: {from} → {to}",
           "accountsHelper": "For each YNAB account, confirm the currency.",
           "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported.",
@@ -41,7 +41,7 @@
           "transactionsCount": "{count} transactions",
           "startingBalance": "Starting balance",
           "currencyPlaceholder": "USD",
-          "currencyLabel": "Currency",
+          "currencyLabel": "Mena",
           "currencyInvalid": "Enter a 3-letter currency code (e.g. USD)",
           "autoDetected": "auto-detected: {code}",
           "undoSkip": "Include in import"
@@ -50,9 +50,9 @@
           "starting": "Starting the import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "Queued",
-          "statusRunning": "Importing…",
-          "statusCompleted": "Done",
-          "statusFailed": "Failed",
+          "statusRunning": "Importovanie...",
+          "statusCompleted": "Hotovo",
+          "statusFailed": "Zlyhalo",
           "failed": "The import couldn't finish."
         },
         "done": {
@@ -67,7 +67,7 @@
           "transfersImported": "Transfers imported",
           "splitsDetected": "Split groups detected",
           "errorsTitle": "{count} rows failed to import",
-          "viewTransactions": "View transactions",
+          "viewTransactions": "Zobraziť transakcie",
           "importAnother": "Import another file"
         }
       }

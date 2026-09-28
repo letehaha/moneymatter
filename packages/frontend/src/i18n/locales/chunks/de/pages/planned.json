@@ -37,7 +37,7 @@
       "addMatchingRules": "Add matching rules",
       "updateMatchingRules": "Update matching rules",
       "linked": {
-        "totalPaid": "Total paid",
+        "totalPaid": "Gesamt bezahlt",
         "average": "Average",
         "lastPayment": "Last payment",
         "driftUp": "↑ {percent}% since first payment ({date})",
@@ -93,7 +93,7 @@
         "categoryLabel": "Category",
         "categoryPlaceholder": "Select category",
         "payeeLabel": "Payee",
-        "payeePlaceholder": "Select a payee",
+        "payeePlaceholder": "Empfänger auswählen",
         "payeeHint": "Applied to matched transactions that don't already have a payee.",
         "tagsLabel": "Tags",
         "tagsPlaceholder": "Select tags",
@@ -212,7 +212,7 @@
         "incomeLabel": "Expected income",
         "monthlyIncome": "~{amount}/mo",
         "acrossIncome": "across {count} active income payment | across {count} active income payments",
-        "percentOfIncome": "{percent}% of avg income",
+        "percentOfIncome": "{percent}% der durchschn. Einnahmen",
         "projectedPerYearLabel": "Projected / yr",
         "activeCountLabel": "Aktiv",
         "loadError": "Couldn't load the summary."
@@ -234,7 +234,7 @@
         },
         "dismissed": "Candidate dismissed",
         "dismissError": "Failed to dismiss candidate",
-        "close": "Close",
+        "close": "Schließen",
         "possibleMatch": "Similar to existing: {name}",
         "linkToExisting": "Link to existing",
         "linkSuccess": "Candidate linked to existing subscription",
@@ -248,7 +248,7 @@
       },
       "periods": {
         "status": {
-          "paid": "Kostenpflichtig",
+          "paid": "Bezahlt",
           "overdue": "Overdue",
           "skipped": "Skipped",
           "upcoming": "Upcoming"
@@ -316,7 +316,7 @@
           "frequencyPlaceholder": "Select a frequency",
           "clearDueDate": "Clear",
           "detectionOnlyHint": "Without a due date this subscription only detects matching transactions — no payment periods or reminders.",
-          "emailOn": "On",
+          "emailOn": "An",
           "emailOff": "Off"
         },
         "automation": {

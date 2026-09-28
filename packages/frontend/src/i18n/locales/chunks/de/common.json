@@ -1,22 +1,22 @@
 {
   "common": {
-    "loading": "Wird geladen...",
+    "loading": "Laden...",
     "new": "New",
     "actions": {
-      "loading": "Wird geladen...",
+      "loading": "Laden...",
       "signUp": "Sign up",
       "save": "Speichern",
       "cancel": "Abbrechen",
       "back": "Zurück",
-      "accept": "Accept",
+      "accept": "Annehmen",
       "delete": "Löschen",
-      "edit": "Edit",
+      "edit": "Bearbeiten",
       "addSubcategory": "Add subcategory",
-      "settings": "Settings",
-      "confirm": "Confirm",
+      "settings": "Einstellungen",
+      "confirm": "Bestätigen",
       "viewTransactions": "View transactions",
       "viewAnalytics": "View analytics",
-      "saving": "Wird gespeichert …",
+      "saving": "Speichern...",
       "saveChanges": "Save Changes",
       "done": "Done",
       "failed": "Failed",
@@ -24,13 +24,14 @@
       "scan": "Scan",
       "link": "Link",
       "clear": "Clear",
-      "apply": "Apply",
+      "apply": "Anwenden",
       "retry": "Try again",
       "copyInviteLink": "Copy invite link",
-      "moveTo": "Move to…"
+      "moveTo": "Move to…",
+      "learnMore": "Mehr erfahren"
     },
     "ui": {
-      "close": "Close",
+      "close": "Schließen",
       "actions": "Actions",
       "chooseAction": "Choose an action",
       "other": "Other",
@@ -61,10 +62,10 @@
       "inviteLinkCopied": "Invite link copied to clipboard"
     },
     "sharing": {
-      "emailNotSent": "Email sending not configured — share the invite link manually"
+      "emailNotSent": "E-Mail-Versand nicht konfiguriert — Teile den Einladungslink manuell"
     },
     "labels": {
-      "email": "Email",
+      "email": "E-Mail",
       "password": "Password",
       "system": "system",
       "unknown": "Unknown",
@@ -75,7 +76,7 @@
       "password": "Your password"
     },
     "dialogs": {
-      "createAccount": "Create account",
+      "createAccount": "Konto erstellen",
       "createVehicle": "Add vehicle",
       "editVehicle": "Edit vehicle"
     },
@@ -88,7 +89,7 @@
       "bonus": "Bonus",
       "insurance": "Insurance",
       "investment": "Investment",
-      "loan": "Loan",
+      "loan": "Kredit",
       "mortgage": "Mortgage",
       "overdraft": "Overdraft",
       "crypto": "Crypto",
@@ -131,6 +132,10 @@
       "investmentTransactionsParsing": {
         "name": "Investment transactions import",
         "description": "AI-extracted buy/sell transactions from exchange exports, broker statements, or pasted text."
+      },
+      "receiptParsing": {
+        "name": "Invoice matching",
+        "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
       }
     },
     "transactions": {
@@ -150,9 +155,8 @@
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",
         "hiddenAccount": "Hidden account",
-        "selectRow": "Select transaction",
+        "selectRow": "Transaktion auswählen",
         "unselectableReasons": {
-          "split": "Can't be selected: split transactions don't support bulk editing. Edit it individually instead.",
           "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
         }
       }
@@ -162,7 +166,7 @@
       "dialogTitle": "Date range",
       "dueDate": "Due date",
       "quickSelect": "Quick select",
-      "apply": "Apply",
+      "apply": "Anwenden",
       "periodTypes": {
         "day": "Day",
         "month": "Month",
@@ -206,8 +210,8 @@
       },
       "duration": {
         "seconds": "{count} second | {count} seconds",
-        "minutes": "{count} minute | {count} minutes",
-        "hours": "{count} hour | {count} hours"
+        "minutes": "{count} Minute | {count} Minuten",
+        "hours": "{count} Stunde | {count} Stunden"
       }
     },
     "logo": {
@@ -230,10 +234,10 @@
       "remove": "Remove logo",
       "lettersLabel": "Letters (1–2)",
       "lettersPlaceholder": "AB",
-      "colorLabel": "Color",
+      "colorLabel": "Farbe",
       "colorSwatchAriaLabel": "Use color {color}",
       "customColorAriaLabel": "Pick a custom color",
-      "applyLetters": "Apply",
+      "applyLetters": "Anwenden",
       "lettersSelectedLabel": "Letters “{letters}”"
     },
     "importBatchDeleteOverlay": {
@@ -247,6 +251,17 @@
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
       "dismiss": "Dismiss"
+    },
+    "duration": {
+      "years": "{n} yr | {n} yrs",
+      "months": "{n} mo | {n} mos"
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {
@@ -417,7 +432,7 @@
             "balances": "Rebuilding balance history",
             "investmentTransactions": "Updating investment transactions",
             "portfolioTransfers": "Updating portfolio transfers",
-            "holdings": "Updating holdings",
+            "holdings": "Positionen aktualisieren",
             "portfolioBalances": "Rebuilding portfolio balances"
           }
         }
@@ -427,7 +442,7 @@
   "ai": {
     "estimatedCost": {
       "yourApiKey": "(your API key)",
-      "setByEndpoint": "Set by your endpoint"
+      "setByEndpoint": "Priced by your provider"
     }
   },
   "transactionGroups": {
@@ -436,10 +451,10 @@
       "nameLabel": "Name",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Optional note...",
-      "loadingText": "Wird geladen...",
+      "loadingText": "Laden...",
       "savingAction": "Speichern",
       "cancelButton": "Abbrechen",
-      "editAction": "Edit",
+      "editAction": "Bearbeiten",
       "deleteAction": "Delete Group",
       "transactionsLabel": "Transactions",
       "deleteGroupTitle": "Delete group",

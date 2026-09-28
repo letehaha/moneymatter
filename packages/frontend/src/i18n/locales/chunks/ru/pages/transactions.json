@@ -203,7 +203,11 @@
         "title": "Настройки таблицы",
         "columns": "Столбцы",
         "visibleCount": "Видимых: {count}",
-        "resetDefaults": "Сбросить по умолчанию"
+        "resetDefaults": "Сбросить по умолчанию",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
       },
       "categorizationSourceValues": {
         "manual": "Вручную",
@@ -230,6 +234,16 @@
       "confirmDescription": "Это действие нельзя отменить. У переводов будут удалены обе стороны.",
       "successMessage": "Удалено транзакций: {count}",
       "unexpectedError": "Не удалось удалить транзакции. Попробуйте снова."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Понятно",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
     }
   },
   "records": {

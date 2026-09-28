@@ -13,7 +13,8 @@
       "collapse": "Collapse",
       "sections": {
         "investments": "Investments"
-      }
+      },
+      "fire": "FIRE"
     },
     "controls": {
       "options": "Options"
@@ -158,7 +159,15 @@
       "configure": "Configure",
       "hideInputs": "Hide",
       "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
-      "portfolioNoHistoryOption": "{name} — not enough history"
+      "portfolioNoHistoryOption": "{name} — not enough history",
+      "presetReturnOption": "{label} (~{rate}%/yr)",
+      "rangeMin": "最少",
+      "rangeMax": "最多",
+      "indicators": {
+        "worldStock": "Total World Stock",
+        "usTreasury": "US Treasury Bonds",
+        "corporateBonds": "Corporate Bonds"
+      }
     },
     "portfolioFilter": {
       "all": "All portfolios",
@@ -166,6 +175,200 @@
       "selectedMany": "{n} portfolios",
       "searchPlaceholder": "Search portfolios",
       "noResults": "No portfolios match your search"
+    },
+    "fire": {
+      "subtitle": "When your savings could cover your spending for good",
+      "planLink": "Plan for FIRE",
+      "addToDashboard": "Add to dashboard",
+      "addedToDashboard": "FIRE progress added to your dashboard",
+      "addToDashboardFailed": "Couldn't add the widget. Try again.",
+      "saveFailed": "Couldn't save your FIRE assumptions. Try again to keep your changes.",
+      "loading": "Loading FIRE plan",
+      "loadFailed": "Couldn't load the data for your FIRE plan.",
+      "adjustAssumptions": "Adjust assumptions",
+      "disclaimer": "Projections use historical market averages and your recent spending. They are estimates, not advice. Returns will vary.",
+      "callouts": {
+        "contributionClamped": "You spent more than you earned over the last 12 months, so the projection assumes no new savings.",
+        "enterContribution": "Enter a contribution",
+        "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
+        "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
+        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to World stocks.",
+        "customMissing": "Enter a custom return. Until then, the plan uses World stocks.",
+        "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
+        "hide": "Hide warning",
+        "hideTitle": "Hide this warning?",
+        "hideDescription": "It comes back the next time you open the planner.",
+        "dontShowAgain": "Don't show again",
+        "hideConfirm": "Hide"
+      },
+      "assumptions": {
+        "title": "Assumptions",
+        "spendingLabel": "Yearly spending in retirement",
+        "spendingPlaceholder": "e.g. 40000",
+        "requiredBadge": "Required",
+        "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
+        "backToAuto": "Back to Auto ({amount})",
+        "excludedLabel": "Not counted as spending",
+        "excludedPlaceholder": "排除分类",
+        "savingsNote": "Savings categories are excluded too. {link}",
+        "savingsNoteLink": "编辑",
+        "contributionLabel": "Monthly contribution",
+        "contributionPlaceholder": "e.g. 1500",
+        "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
+        "savingsRate": "You save {pct} of your income",
+        "countsTitle": "What counts toward FIRE",
+        "countsCash": "Cash & bank accounts",
+        "countsPortfolios": "Investment portfolios",
+        "countsVentures": "风险投资",
+        "countsVehicles": "Vehicles",
+        "countsLoans": "贷款",
+        "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
+        "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
+        "archivedNoteLink": "Review",
+        "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
+        "inflationLabel": "Inflation",
+        "inflationBuiltIn": "{pct}% · built into this preset",
+        "inflationBuiltInHint": "Market presets are US and global nominal returns, so they come with US inflation. Pairing them with your local inflation would give misleading numbers. Pick a custom return or your portfolio to set inflation yourself.",
+        "withdrawalLabel": "Withdrawal rate",
+        "withdrawalCustom": "Custom",
+        "withdrawalPlaceholder": "e.g. 3.8",
+        "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
+        "more": "More",
+        "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
+        "leanLabel": "Lean FIRE multiplier",
+        "leanPlaceholder": "e.g. 0.7",
+        "fatLabel": "Fat FIRE multiplier",
+        "fatPlaceholder": "e.g. 1.5",
+        "baristaLabel": "Part-time income per month",
+        "baristaPlaceholder": "e.g. 1000",
+        "birthYearLabel": "Birth year",
+        "birthYearPlaceholder": "e.g. 1990",
+        "coastAgeLabel": "Coast FIRE target age",
+        "coastAgePlaceholder": "e.g. 65"
+      },
+      "auto": "自动",
+      "perYear": "{amount}/yr",
+      "perMonth": "{amount}/mo",
+      "notWithinHorizon": "not within 50 yrs",
+      "hero": {
+        "timeTo": "Time to {type}",
+        "unitYears": "{n} yrs | {n} yr | {n} yrs",
+        "unitMonths": "{n} mos | {n} mo | {n} mos",
+        "atAge": "at age {age}",
+        "alwaysCounted": "Always counted",
+        "range": "{earliest} to {latest} if returns run 2 points higher or lower",
+        "rangeOpen": "{earliest} to after {year} if returns run 2 points higher or lower",
+        "basedOn": {
+          "spending": "Spending: {amount}",
+          "saving": "Saving: {amount}",
+          "counting": "Counting: {buckets}"
+        },
+        "reached": {
+          "eyebrowFor": "{type} reached",
+          "title": "You're financially independent",
+          "supports": "Your money supports {amount}/mo",
+          "pctOfSpending": "{pct}% of your spending · at {rate}% withdrawal",
+          "yearsCovered": "Less than a year of spending covered | 1 year of spending covered | {n} years of spending covered",
+          "drawdown": "You're drawing down about {amount}/mo.",
+          "noNewSavings": "Projections assume no new savings."
+        },
+        "unreachable": {
+          "title": "Not reachable at current savings",
+          "noSavingsTitle": "No new savings.",
+          "noSavingsClamped": "You spent more than you earned over the last 12 months, so the contribution is set to 0.",
+          "noSavings": "Your monthly contribution is 0 or less.",
+          "enterContribution": "Enter a contribution",
+          "lowReturnTitle": "Return doesn't beat inflation.",
+          "lowReturn": "The balance shrinks in today's money.",
+          "tooSlow": "At this pace it takes more than 50 years.",
+          "whatItTakes": "What it would take",
+          "whatItTakesDetail": "to reach {target} in {duration} at the current return."
+        }
+      },
+      "progress": {
+        "progressTo": "Progress to {type}",
+        "amountOfTarget": "{balance} of {target}",
+        "next": "Next: {goal} · {date}",
+        "nextGoal": "{goal} in {duration}",
+        "nextUnreachable": "Next: {goal} · not reached at these numbers",
+        "targetReached": "FIRE target reached",
+        "supportsToday": "Supports {amount}/mo today",
+        "negativeNetWorth": "Net worth is below zero. Your contributions pay down the gap first, then grow."
+      },
+      "chips": {
+        "lean": {
+          "name": "Lean FIRE",
+          "description": "{pct}% of your spending"
+        },
+        "regular": {
+          "name": "Regular FIRE",
+          "description": "current lifestyle"
+        },
+        "fat": {
+          "name": "Fat FIRE",
+          "description": "{pct}% of your spending"
+        },
+        "barista": {
+          "name": "Barista FIRE",
+          "description": "part-time income covers part",
+          "withIncome": "with {amount}/mo part-time"
+        },
+        "coast": {
+          "name": "Coast FIRE",
+          "description": "needed today to retire at {age}",
+          "needsBirthYear": "needs your birth year",
+          "pastAge": "you're past your coast age of {age}",
+          "notMeaningful": "growth alone can't get there at 0% real return or less"
+        },
+        "others": "Others",
+        "nextGoal": "{name} · next",
+        "eta": "in {duration}",
+        "growthOnly": "growth only",
+        "reached": "Reached",
+        "reachedCoast": "Reached · saving is optional now",
+        "reachedBaristaCovers": "Part-time income covers your spending",
+        "actions": {
+          "enterSpending": "enter spending first",
+          "changeCoastAge": "Change coast age",
+          "changeReturn": "Change return",
+          "addPartTimeIncome": "Add part-time income",
+          "addBirthYear": "Add birth year"
+        }
+      },
+      "chart": {
+        "ariaLabel": "Net worth history and projected path to your FIRE number",
+        "actual": "Actual",
+        "projected": "Projected",
+        "range": "±2 pts return",
+        "today": "Today",
+        "typeTarget": "{type} · {amount}",
+        "typeLabel": "{type} · {date}"
+      },
+      "milestones": {
+        "reached": "Reached",
+        "eta": "in {duration} · {date}"
+      },
+      "empty": {
+        "noData": {
+          "title": "Plan your path to financial independence",
+          "description": "This page fills in from your accounts and transactions. Nothing is tracked yet, so start with your yearly spending. Once you add accounts, the plan switches to live figures."
+        },
+        "shortHistory": {
+          "title": "No full months of transactions yet | Only 1 full month of transactions | Only {n} full months of transactions",
+          "description": "Spending can't be worked out yet. It switches to Auto after 3 full months. Until then, enter it by hand."
+        },
+        "noSpending": {
+          "title": "No spending recorded yet",
+          "description": "Your recent months have no expenses we can use. Enter your yearly spending to see your plan."
+        },
+        "enterSpending": "Enter spending",
+        "addAccount": "Add an account"
+      },
+      "trial": {
+        "daysLeft": "FIRE planner trial · {n} day left | FIRE planner trial · {n} days left",
+        "ended": "Your 14-day FIRE planner trial has ended. Upgrade to Plus to keep planning your path to FIRE.",
+        "startFailed": "Couldn't start the FIRE planner trial. Reload the page to try again."
+      }
     }
   },
   "pivotReport": {

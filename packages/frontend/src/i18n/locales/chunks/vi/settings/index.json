@@ -7,7 +7,6 @@
       "accountsGroups": "Nhóm tài khoản",
       "importData": "Nhập/Xuất",
       "ai": "AI",
-      "aiIntegrations": "Tích hợp AI",
       "security": "Bảo mật",
       "admin": "Quản trị",
       "sharedWithMe": "Được chia sẻ với tôi",
@@ -19,7 +18,8 @@
       "general": "Tổng quan",
       "payees": "Người nhận",
       "subscriptions": "Khoản định kỳ",
-      "planBilling": "Gói & thanh toán"
+      "planBilling": "Gói & thanh toán",
+      "collapse": "Collapse"
     },
     "backToSettings": "Quay lại Cài đặt"
   }

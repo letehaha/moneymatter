@@ -75,7 +75,7 @@
           "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
           "confirmation": "Are you sure you want to proceed?",
           "changeButton": "Change Base Currency",
-          "cancelButton": "Cancel"
+          "cancelButton": "Cancella"
         },
         "successMessage": "Base currency changed successfully.",
         "errors": {

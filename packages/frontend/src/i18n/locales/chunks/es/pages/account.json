@@ -101,6 +101,7 @@
       "archive": {
         "title": "Archivar cuenta",
         "description": "Al archivar se conservan todas las transacciones, pero se elimina la cuenta de su lista activa. Las conexiones bancarias y los grupos de pertenencia se desconectarán.",
+        "compareOptionsLink": "¿Archivar, excluir o eliminar?",
         "archiveButton": "Archivar cuenta",
         "confirmTitle": "Archivar cuenta",
         "confirmDescription": "¿Está seguro de que desea archivar \"{name}\"? Esto hará lo siguiente:",
@@ -203,6 +204,17 @@
         "syncStarted": "Sincronización iniciada...",
         "accessForbidden": "Acceso denegado",
         "failed": "Error al sincronizar las transacciones"
+      },
+      "reconcileDuplicates": {
+        "title": "Fusionar transacciones duplicadas",
+        "description": "Pega las filas pendientes en las transacciones reservadas que las reemplazaron.",
+        "button": "Fusionar duplicados",
+        "running": "Fusionando…",
+        "confirm": "Combinar",
+        "confirmTitle": "¿Fusionar transacciones duplicadas?",
+        "confirmDescription": "Los registros pendientes que coincidan con una transacción reservada en esta cuenta serán eliminados. Notas y categorías que ha establecido al mover a la transacción reservada. Esto no se puede deshacer.",
+        "result": "Fusionado {merged} duplicado(s), omitió {skipped}.",
+        "failed": "Error al fusionar duplicados."
       },
       "relinkWarning": {
         "title": "Enable Banking: la cuenta necesita actualización",

@@ -63,7 +63,7 @@
         "title": "Run setup",
         "model": "Model",
         "notConfigured": "Not configured",
-        "endpoint": "Endpoint",
+        "connection": "AI model",
         "limits": "Limits",
         "limitsSharedKey": "3 runs per hour",
         "limitsOwnCredentials": "Unlimited — runs on your own key",

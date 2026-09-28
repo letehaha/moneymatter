@@ -20,9 +20,9 @@
     },
     "budgetDetails": {
       "notSet": "Not set",
-      "saving": "Wird gespeichert …",
+      "saving": "Speichern...",
       "saveChanges": "Save Changes",
-      "loading": "Wird geladen...",
+      "loading": "Laden...",
       "uncategorized": "Uncategorized",
       "stats": {
         "income": "Einnahmen",
@@ -67,8 +67,8 @@
         "pendingHeading": "Ausstehende Einladungen",
         "loadError": "Couldn't load members.",
         "permissions": {
-          "read": "View only",
-          "write": "Attach own transactions",
+          "read": "Nur anzeigen",
+          "write": "Eigene Transaktionen hinzufügen",
           "manage": "Verwalten"
         },
         "member": {

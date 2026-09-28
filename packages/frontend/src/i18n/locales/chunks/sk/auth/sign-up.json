@@ -1,40 +1,40 @@
 {
   "auth": {
     "signup": {
-      "title": "Create an account",
-      "divider": "Or continue with email",
-      "submitButton": "Sign up",
-      "alreadyHaveAccount": "Already have an account?",
-      "signInLink": "Sign in",
+      "title": "Vytvoriť účet",
+      "divider": "alebo pokračujte pomocou emailu",
+      "submitButton": "Zaregistrovať sa",
+      "alreadyHaveAccount": "Už máte účet?\t",
+      "signInLink": "Prihlásiť sa",
       "labels": {
-        "displayName": "Display Name",
-        "verifyPassword": "Verify Password"
+        "displayName": "Zobrazované meno",
+        "verifyPassword": "Overenie hesla"
       },
       "placeholders": {
-        "displayName": "ie. John Snow",
-        "verifyPassword": "Verify password"
+        "displayName": "napr. Janko Mrkvička",
+        "verifyPassword": "Potvrďte heslo"
       },
       "errors": {
-        "invalidEmail": "Please enter a valid email address.",
-        "passwordTooShort": "Password is too short.",
-        "passwordTooLong": "Password is too long.",
-        "invalidPassword": "Invalid password.",
-        "userExists": "User with that email already exists.",
-        "signupsDisabled": "Sign-ups are disabled by the administrator of this instance.",
-        "genericErrorRetry": "An error occurred. Please try again.",
-        "oauthFailed": "Failed to sign up with {provider}. Please try again.",
-        "oauthNotConfigured": "{provider} sign-in is not configured on this server."
+        "invalidEmail": "Zadajte platnú emailovú adresu, prosím.",
+        "passwordTooShort": "Heslo je príliš krátke.",
+        "passwordTooLong": "Heslo je príliš dlhé.",
+        "invalidPassword": "Neplatné heslo.",
+        "userExists": "Používateľ s týmto emailom už existuje.",
+        "signupsDisabled": "Správca tejto inštancie zakázal registráciu.",
+        "genericErrorRetry": "Vyskytla sa chyba. Skúste to znova, prosím.",
+        "oauthFailed": "Registrácia cez {provider} sa nepodarila. Skúste to znovu, prosím.",
+        "oauthNotConfigured": "Na tomto serveri nie je nakonfigurované prihlasovanie cez {provider}."
       }
     },
     "shared": {
-      "divider": "Or continue with",
+      "divider": "alebo pokračujte pomocou",
       "passkeyButton": {
-        "signIn": "Sign in with Passkey",
-        "register": "Add Passkey"
+        "signIn": "Prihláste sa pomocou prístupového kľúča",
+        "register": "Pridať prístupový kľúč"
       },
       "oauthButton": {
-        "signIn": "Sign in with {provider}",
-        "signUp": "Sign up with {provider}"
+        "signIn": "Prihlásiť sa cez {provider}",
+        "signUp": "Zaregistrovať sa cez {provider}"
       }
     }
   }

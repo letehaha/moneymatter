@@ -1,0 +1,118 @@
+{
+  "settings": {
+    "admin": {
+      "title": "Admin Panel",
+      "description": "Administrative tools and system management",
+      "priceSync": {
+        "title": "Securities Price Sync",
+        "description": "Manually trigger price synchronization for all securities with holdings",
+        "button": "Trigger Price Sync",
+        "buttonLoading": "Syncing...",
+        "notifications": {
+          "success": "Securities prices sync completed successfully",
+          "failed": "Failed to trigger price sync",
+          "rateLimited": "Not allowed. Try again in {time}.",
+          "adminRequired": "Admin privileges required for this action"
+        }
+      },
+      "priceUpload": {
+        "title": "Manual Security Price Upload",
+        "description": "Upload historical price data for securities via CSV or JSON files",
+        "button": "Upload Security Prices",
+        "dialogTitle": "Upload Security Prices",
+        "selectSecurity": {
+          "searchLabel": "Search symbol or name",
+          "searchPlaceholder": "AAPL",
+          "searching": "Searching…",
+          "failed": "Failed to search securities.",
+          "noResults": "No results.",
+          "changeButton": "Change"
+        },
+        "dateRangeInfo": {
+          "loading": "Loading date range information...",
+          "title": "Available Exchange Rates Date Range ({currency}):",
+          "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
+        },
+        "fileUpload": {
+          "title": "Upload File",
+          "supportedFormats": "CSV or JSON files supported",
+          "errors": {
+            "unsupportedFormat": "Unsupported file format. Please upload CSV or JSON file.",
+            "parseFailed": "Failed to parse {fileType} file: {error}"
+          }
+        },
+        "fieldMapper": {
+          "title": "Map Fields",
+          "description": "Match your file's fields to the required fields below.",
+          "selectField": "Select field...",
+          "dateFormatLabel": "Date Format",
+          "dateFormatDescription": "Select the date format used in your file",
+          "dateFormats": {
+            "ddMMyyyySlash": "DD/MM/YYYY (e.g., 31/12/2024)",
+            "MMddyyyySlash": "MM/DD/YYYY (e.g., 12/31/2024)",
+            "yyyyMMddDash": "YYYY-MM-DD (e.g., 2024-12-31)",
+            "ddMMyyyyDash": "DD-MM-YYYY (e.g., 31-12-2024)",
+            "MMddyyyyDash": "MM-DD-YYYY (e.g., 12-31-2024)"
+          },
+          "mappingComplete": "All required fields mapped",
+          "mappingIncomplete": "Please map all required fields to continue",
+          "fileInfo": "File:",
+          "records": "{count} records",
+          "changeFileButton": "Change File",
+          "continueButton": "Continue to Preview"
+        },
+        "preview": {
+          "title": "Data Preview",
+          "recordsCount": "{count} record will be uploaded | {count} records will be uploaded",
+          "recordsPeriod": "for period between {oldest} and {newest}",
+          "loadingExisting": "Loading existing prices for comparison...",
+          "warnings": {
+            "significantDifferences": "Significant price differences detected",
+            "differencesDetails": "{count} record has a price difference greater than 4% compared to existing data. Please review carefully. | {count} records have a price difference greater than 4% compared to existing data. Please review carefully."
+          },
+          "filterCheckbox": "Show only records with significant differences (>4%)",
+          "tableHeaders": {
+            "date": "Date",
+            "newPrice": "New Price",
+            "existingPrice": "Existing Price",
+            "difference": "Difference (%)"
+          },
+          "noExistingPrice": "N/A",
+          "scrollForMore": "Scroll for more...",
+          "noDifferences": "No records with significant differences found.",
+          "backButton": "Back to Mapping",
+          "continueButton": "Continue to Options"
+        },
+        "options": {
+          "title": "Upload Options",
+          "autoFilter": {
+            "title": "Auto-filter dates outside available range",
+            "description": "Automatically remove dates that are outside the available exchange rate range"
+          },
+          "override": {
+            "title": "Override existing records",
+            "description": "Update existing price records instead of skipping duplicates"
+          },
+          "backButton": "Back",
+          "uploadButton": "Upload Prices",
+          "uploadingButton": "Uploading..."
+        },
+        "result": {
+          "title": "Upload Complete!",
+          "inserted": "✓ {count} new record inserted | ✓ {count} new records inserted",
+          "duplicates": "• {count} duplicate {action}",
+          "duplicatesUpdated": "updated",
+          "duplicatesSkipped": "skipped",
+          "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
+          "closeButton": "Close",
+          "uploadMoreButton": "Upload More"
+        },
+        "notifications": {
+          "dateInfoLoadFailed": "Failed to load date info: {error}",
+          "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
+          "uploadFailed": "Upload failed: {error}"
+        }
+      }
+    }
+  }
+}

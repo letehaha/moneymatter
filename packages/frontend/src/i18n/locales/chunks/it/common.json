@@ -27,7 +27,8 @@
       "apply": "Applica",
       "retry": "Riprova",
       "copyInviteLink": "Copia il link d'invito",
-      "moveTo": "Sposta in…"
+      "moveTo": "Sposta in…",
+      "learnMore": "Learn more"
     },
     "ui": {
       "close": "Chiudi",
@@ -131,6 +132,10 @@
       "investmentTransactionsParsing": {
         "name": "Importa i movimenti degli investimenti",
         "description": "AI-extracted buy/sell transactions from exchange exports, broker statements, or pasted text."
+      },
+      "receiptParsing": {
+        "name": "Invoice matching",
+        "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
       }
     },
     "transactions": {
@@ -152,7 +157,6 @@
         "hiddenAccount": "Hidden account",
         "selectRow": "Select transaction",
         "unselectableReasons": {
-          "split": "Can't be selected: split transactions don't support bulk editing. Edit it individually instead.",
           "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
         }
       }
@@ -247,6 +251,17 @@
       "unreachableDescription": "The delete may still be running. Dismiss to keep using the app, and reload later to see the result.",
       "failedTitle": "Delete failed",
       "dismiss": "Dismiss"
+    },
+    "duration": {
+      "years": "{n} yr | {n} yrs",
+      "months": "{n} mo | {n} mos"
+    },
+    "fire": {
+      "targets": {
+        "lean": "Lean FIRE",
+        "regular": "FIRE",
+        "fat": "Fat FIRE"
+      }
     }
   },
   "accountGroups": {
@@ -427,7 +442,7 @@
   "ai": {
     "estimatedCost": {
       "yourApiKey": "(your API key)",
-      "setByEndpoint": "Set by your endpoint"
+      "setByEndpoint": "Priced by your provider"
     }
   },
   "transactionGroups": {
@@ -438,7 +453,7 @@
       "notePlaceholder": "Optional note...",
       "loadingText": "Caricamento in corso...",
       "savingAction": "Save",
-      "cancelButton": "Cancel",
+      "cancelButton": "Cancella",
       "editAction": "Edit",
       "deleteAction": "Delete Group",
       "transactionsLabel": "Transactions",

@@ -1,34 +1,34 @@
 {
   "pages": {
     "sharedWithMe": {
-      "title": "Shared with me",
-      "loadError": "Failed to load shared resources.",
+      "title": "Zdieľané so mnou",
+      "loadError": "Nepodarilo sa načítať zdieľané zdroje.",
       "empty": {
-        "title": "Nothing shared with you yet",
-        "description": "When someone shares an account with you, it'll show up here."
+        "title": "Zatiaľ s vami nebolo zdieľané nič",
+        "description": "Keď s vami niekto zdieľa účet, zobrazí sa to práve tu."
       },
       "sections": {
-        "account": "Accounts",
-        "household": "Households",
-        "budget": "Budgets shared with you"
+        "account": "Účty",
+        "household": "Domácnosti",
+        "budget": "Rozpočty zdieľané s vami"
       },
-      "sharedBy": "Shared by {handle}",
-      "viaHousehold": "Via {handle} household",
-      "unnamedResource": "Untitled",
+      "sharedBy": "Zdieľané {handle}",
+      "viaHousehold": "Cez domácnosť {handle}",
+      "unnamedResource": "Bez názvu",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "Čítať",
+        "write": "Zapisovať",
+        "manage": "Spravovať"
       },
-      "leave": "Leave",
-      "leaveTitle": "Leave share?",
-      "leaveDescription": "You'll lose access to {resource} owned by {owner}. The owner won't be notified.",
-      "leaveConfirm": "Leave",
-      "leaveSuccess": "You've left the share.",
-      "leaveError": "Could not leave the share.",
+      "leave": "Odísť",
+      "leaveTitle": "Odísť zo zdieľania?",
+      "leaveDescription": "Stratíte prístup k {resource}, ktorého vlastníkom je {owner}. Vlastník o tom nebude informovaný.",
+      "leaveConfirm": "Odísť",
+      "leaveSuccess": "Odišli ste zo zdieľania.",
+      "leaveError": "Nepodarilo sa opustiť zdieľanie.",
       "pending": {
-        "heading": "Pending invitations",
-        "review": "Review"
+        "heading": "Čakajúce pozvánky",
+        "review": "Skontrolovať"
       }
     }
   }

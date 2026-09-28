@@ -29,6 +29,17 @@
       "delete": "Hapus",
       "deleteAndIgnore": "Hapus & abaikan"
     },
+    "bulk": {
+      "select": "Select",
+      "selectedCount": "{count} dipilih",
+      "clearSelection": "Hapus pilihan",
+      "selectAll": "Select all loaded payees",
+      "selectRow": "Select {name}",
+      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
+      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
+      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
+      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
+    },
     "emptyState": {
       "title": "Belum ada penerima",
       "description": "Hubungkan bank untuk mendeteksi penerima secara otomatis, atau buat secara manual."
@@ -111,7 +122,9 @@
       "aliasDeleted": "Alias dihapus",
       "aliasAdded": "Alias ditambahkan",
       "deletedAndIgnored": "Penerima dihapus dan ditambahkan ke daftar nama yang diabaikan",
-      "tagsAppliedToExisting": "Tag diterapkan ke {count} transaksi"
+      "tagsAppliedToExisting": "Tag diterapkan ke {count} transaksi",
+      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
+      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
     },
     "errors": {
       "collision": "Penerima dengan nama ini sudah ada. Gabungkan saja.",
@@ -124,6 +137,7 @@
     "settings": {
       "title": "Pengaturan deteksi penerima",
       "description": "Kontrol bagaimana aplikasi mendeteksi Penerima secara otomatis dari transaksi yang disinkronkan.",
+      "howDetectionWorks": "How detection works",
       "payeeFromDescription": {
         "label": "Deteksi penerima dari deskripsi transaksi",
         "description": "Ketika bank Anda tidak menyediakan bidang pedagang khusus, gunakan deskripsi transaksi (catatan) untuk mendeteksi Penerima secara otomatis. Berguna untuk koneksi bank yang memiliki bidang pedagang kosong atau tidak ada. Mungkin menghasilkan nama Penerima yang lebih berisik (mis. prefiks pembayaran cicilan) yang dapat Anda ubah nama atau gabungkan setelahnya.",
@@ -162,6 +176,7 @@
       "conflictDescription": "Penerima dengan nama yang dinormalisasi sama dengan \"{name}\" sudah ada. Melanjutkan akan menghapus Penerima itu (transaksi tetap, kehilangan tautan).",
       "forceConfirm": "Hapus Penerima dan abaikan"
     },
-    "loadingMore": "Memuat lebih banyak…"
+    "loadingMore": "Memuat lebih banyak…",
+    "txCount": "{count} tx"
   }
 }

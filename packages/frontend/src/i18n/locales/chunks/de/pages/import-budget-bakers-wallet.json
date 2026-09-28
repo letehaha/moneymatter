@@ -41,7 +41,7 @@
           "currentBalancePlaceholder": "e.g. 1234.56",
           "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
           "linkTargetLabel": "Existing account",
-          "linkTargetPlaceholder": "Select account",
+          "linkTargetPlaceholder": "Konto auswählen",
           "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
         },
         "execute": {

@@ -95,7 +95,7 @@
           "invalidWillBeSkipped": "invalid rows will be skipped.",
           "duplicatesWillBeSkipped": "duplicates will be skipped.",
           "backToMapping": "Back to Mapping",
-          "importing": "Importiere...",
+          "importing": "Importieren...",
           "importButton": "Import {count} Transactions",
           "unpriceableTitle": "{count} row(s) cannot be priced — no exchange rate found",
           "unpriceableDescription": "These rows use a currency that has no stored exchange rate and cannot be converted to your base currency. You must skip them or cancel the import.",

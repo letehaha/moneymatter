@@ -23,11 +23,11 @@
               "parseError": "Couldn't parse \"{file}\". Make sure it's a valid CSV."
             }
           },
-          "continue": "Continue"
+          "continue": "Pokračovať"
         },
         "preview": {
           "accountsHelper": "Configure how each detected account will be handled during import.",
-          "accounts": "Accounts",
+          "accounts": "Účty",
           "transactions": "Transactions",
           "rowPrefix": "Row {rowIndex}: "
         },
@@ -41,14 +41,14 @@
           "currentBalancePlaceholder": "e.g. 1234.56",
           "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
           "linkTargetLabel": "Existing account",
-          "linkTargetPlaceholder": "Select account",
+          "linkTargetPlaceholder": "Vyberte účet",
           "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
         },
         "execute": {
           "starting": "Starting import…",
           "progressCount": "{processed} / {total}",
           "statusQueued": "Queued",
-          "statusRunning": "Importing…",
+          "statusRunning": "Importovanie...",
           "statusCompleted": "Complete",
           "statusFailed": "Failed",
           "failed": "Import failed.",
@@ -82,14 +82,14 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Resolve",
-            "review": "Review",
+            "review": "Skontrolovať",
             "results": "Done"
           }
         },
         "resolve": {
           "resolvedCounterWord": "resolved",
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Účty",
             "currentBalanceLabel": "Current balance (optional)",
             "currentBalancePlaceholder": "Leave blank to use imported total",
             "willCreateHint": "Will create a new {currency} account",
@@ -110,23 +110,23 @@
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Späť",
+            "continue": "Pokračovať"
           }
         },
         "review": {
           "transactions": "Transactions",
           "transfersDetected": "Transfers detected",
-          "outOfWallet": "Out of wallet",
+          "outOfWallet": "Mimo peňaženky",
           "duplicatesSkipped": "Duplicates skipped",
           "willImport": "Will import",
           "warningsTitle": "{count} warning(s)",
           "rowPrefix": "Row {rowIndex}:",
           "duplicatesTitle": "{count} possible duplicate(s)",
           "duplicatesHint": "Checked rows will be imported anyway; unchecked duplicates are skipped.",
-          "back": "Back",
+          "back": "Späť",
           "importButton": "Import {count} transactions",
-          "importing": "Importing…"
+          "importing": "Importovanie..."
         }
       }
     }

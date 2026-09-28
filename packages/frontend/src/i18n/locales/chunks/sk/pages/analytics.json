@@ -1,411 +1,614 @@
 {
   "analytics": {
-    "backToAnalytics": "Back to Analytics",
+    "backToAnalytics": "Späť na Analytiku",
     "timePeriods": {},
     "navigation": {
-      "cashFlow": "Cash Flow",
-      "trendsComparison": "Trends Comparison",
-      "investmentCalculator": "Investment Projection",
-      "pivotReport": "Pivot",
-      "netWorthDrivers": "Net Worth Drivers",
-      "investmentContributions": "Contributions",
-      "netWorthHistory": "Net Worth History",
-      "collapse": "Collapse",
+      "cashFlow": "Peňažný tok",
+      "trendsComparison": "Porovnanie trendov",
+      "investmentCalculator": "Investičná projekcia",
+      "pivotReport": "Kontingenčná tabuľka",
+      "netWorthDrivers": "Faktory čistej hodnoty majetku",
+      "investmentContributions": "Príspevky",
+      "netWorthHistory": "História čistej hodnoty majetku",
+      "collapse": "Zbaliť",
       "sections": {
-        "investments": "Investments"
-      }
+        "investments": "Investície"
+      },
+      "fire": "FIRE"
     },
     "controls": {
-      "options": "Options"
+      "options": "Možnosti"
     },
     "cashFlow": {
-      "subtitle": "Income against expenses over time, and where the money went.",
-      "income": "Income",
-      "expenses": "Expenses",
-      "netSavings": "Net Savings",
-      "netFlow": "Net Flow",
-      "savingsRate": "Savings Rate",
-      "loadError": "Failed to load cash flow data",
-      "noData": "No transactions found",
-      "noDataHint": "Try selecting a different period or check if you have any transactions",
-      "showTrendLine": "Show trend line",
-      "showTrendLineHint": "Smoothed average of net cash flow",
-      "trendLine": "Trend Line",
-      "vsPreviousPeriod": "vs previous period",
+      "subtitle": "Príjmy voči výdavkom v čase a prehľad, kam peniaze smerovali.",
+      "income": "Príjmy",
+      "expenses": "Výdavky",
+      "netSavings": "Čisté úspory",
+      "netFlow": "Čistý tok",
+      "savingsRate": "Miera úspor",
+      "loadError": "Údaje o peňažnom toku sa nepodarilo načítať",
+      "noData": "Nenašli sa žiadne transakcie",
+      "noDataHint": "Skúste vybrať iné obdobie alebo skontrolujte, či máte nejaké transakcie",
+      "showTrendLine": "Zobraziť trendovú krivku",
+      "showTrendLineHint": "Vyhladený priemer čistého peňažného toku",
+      "trendLine": "Trendová krivka",
+      "vsPreviousPeriod": "vs. predchádzajúce obdobie",
       "chartTypes": {
-        "stacked": "Stacked",
-        "mirrored": "Mirrored",
-        "grouped": "Grouped"
+        "stacked": "Skladané",
+        "mirrored": "Zrkadlené",
+        "grouped": "Zoskupené"
       },
       "granularity": {
-        "monthly": "Monthly",
-        "biweekly": "Bi-weekly",
-        "weekly": "Weekly"
+        "monthly": "Mesačne",
+        "biweekly": "Dvojtýždenne",
+        "weekly": "Týždenne"
       },
       "periods": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
-        "last12Months": "Last 12 months",
-        "thisYear": "This year",
-        "previousYear": "Previous year",
-        "allTime": "All time"
+        "last3Months": "Posledné 3 mesiace",
+        "last6Months": "Posledných 6 mesiacov",
+        "last12Months": "Posledných 12 mesiacov",
+        "thisYear": "Tento rok",
+        "previousYear": "Predchádzajúci rok",
+        "allTime": "Za celý čas"
       },
       "composition": {
         "detail": "Detail",
-        "levelsSummary": "Sources L{sources} · Expenses L{expenses}",
-        "levelsHint": "Category nesting level per side: higher levels break flows into subcategories.",
-        "sources": "Sources",
-        "level": "Level {level}",
-        "topN": "Top {count}",
-        "totalIncome": "Total income",
-        "incomePlusDeficit": "Income + deficit",
-        "savings": "Savings",
-        "deficit": "Deficit",
-        "other": "Other",
-        "noData": "No transactions in this period",
-        "noDataHint": "Pick another period or click a bar in the chart above",
-        "loadError": "Failed to load composition",
-        "amount": "Amount",
-        "shareOfIncome": "Share of income",
-        "shareOfExpenses": "Share of expenses",
-        "saved": "Saved",
-        "pctOfIncome": "{pct} of income",
-        "pctSavingsRate": "{pct} savings rate",
-        "keptAsCash": "Kept as cash",
-        "shareOfSavings": "Share of savings",
-        "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
-        "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
-        "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} more",
-        "settings": "Chart settings"
+        "levelsSummary": "Zdroje: úroveň {sources} · Výdavky: úroveň {expenses}",
+        "levelsHint": "Úroveň vnorenia kategórií pre každú stranu: vyššie úrovne rozdelia toky na podkategórie.",
+        "sources": "Zdroje",
+        "level": "Úroveň {level}",
+        "topN": "Najvyšších {count}",
+        "totalIncome": "Celkové príjmy",
+        "incomePlusDeficit": "Príjmy + schodok",
+        "savings": "Úspory",
+        "deficit": "Schodok",
+        "other": "Ostatné",
+        "noData": "Za toto obdobie nie sú žiadne transakcie",
+        "noDataHint": "Vyberte iné obdobie alebo kliknite na stĺpec v grafe vyššie",
+        "loadError": "Zloženie sa nepodarilo načítať",
+        "amount": "Suma",
+        "shareOfIncome": "Podiel na príjmoch",
+        "shareOfExpenses": "Podiel na výdavkoch",
+        "saved": "Ušetrené",
+        "pctOfIncome": "{pct} z príjmov",
+        "pctSavingsRate": "Miera úspor: {pct}",
+        "keptAsCash": "Ponechané v hotovosti",
+        "shareOfSavings": "Podiel na úsporách",
+        "deficitOverspend": "Výdavky prevýšili príjmy o {amount}. Rozdiel bol pokrytý z existujúcich zostatkov na účtoch.",
+        "deficitInvested": "Vklady do portfólia ({invested}) prevýšili čisté úspory za toto obdobie ({saved}). Rozdiel pochádzal z existujúcich zostatkov na účtoch.",
+        "deficitBoth": "Výdavky prevýšili príjmy o {overspend} a do portfólií sa napriek tomu presunulo {invested}. Oboje bolo pokryté z existujúcich zostatkov na účtoch.",
+        "andMore": "+{count} ďalších",
+        "settings": "Nastavenia grafu"
       }
     },
     "trends": {
-      "subtitle": "Compare spending, income and savings with the previous period.",
+      "subtitle": "Porovnajte výdavky, príjmy a úspory s predchádzajúcim obdobím.",
       "metrics": {
-        "expenses": "Expenses",
-        "income": "Income",
-        "savings": "Savings"
+        "expenses": "Výdavky",
+        "income": "Príjmy",
+        "savings": "Úspory"
       },
       "chart": {
-        "selectedPeriod": "Selected period",
-        "comparisonPeriod": "Previous period",
-        "cumulativeNote": "Cumulative total up to this point"
+        "selectedPeriod": "Vybrané obdobie",
+        "comparisonPeriod": "Predchádzajúce obdobie",
+        "cumulativeNote": "Kumulatívny súčet k tomuto bodu"
       },
       "categoryBreakdown": {
-        "title": "Category Breakdown",
-        "noData": "No data for this period",
-        "viewAll": "View all categories",
-        "moreCount": "{count} more"
+        "title": "Rozdelenie podľa kategórií",
+        "noData": "Za toto obdobie nie sú žiadne údaje",
+        "viewAll": "Zobraziť všetky kategórie",
+        "moreCount": "{count} ďalších"
       },
       "monthlyComparison": {
-        "title": "Monthly Comparison",
-        "allCategories": "All Categories",
-        "average": "Average",
-        "total": "Total",
-        "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
+        "title": "Mesačné porovnanie",
+        "allCategories": "Všetky kategórie",
+        "average": "Priemer",
+        "total": "Spolu",
+        "vsLastMonth": "vs. predchádzajúci mesiac",
+        "viewTransactions": "Zobraziť transakcie"
       },
       "cumulativeProgress": {
-        "title": "Cumulative Progress"
+        "title": "Kumulatívny priebeh"
       },
       "filters": {
-        "button": "Filters",
-        "title": "Filters",
-        "categories": "Categories",
-        "include": "Include",
-        "exclude": "Exclude",
-        "accounts": "Accounts",
-        "payees": "Payees",
-        "tags": "Tags",
-        "reset": "Reset"
+        "button": "Filtre",
+        "title": "Filtre",
+        "categories": "Kategórie",
+        "include": "Zahrnúť",
+        "exclude": "Vylúčiť",
+        "accounts": "Účty",
+        "payees": "Príjemcovia",
+        "tags": "Štítky",
+        "reset": "Vynulovať"
       },
       "legend": {
-        "hide": "Hide from chart",
-        "show": "Show in chart"
+        "hide": "Skryť z grafu",
+        "show": "Zobraziť v grafe"
       },
-      "vsPreviousPeriod": "vs previous period",
-      "loadError": "Failed to load data",
-      "noData": "No data available",
-      "noDataHint": "No transactions recorded for this period"
+      "vsPreviousPeriod": "vs. predchádzajúce obdobie",
+      "loadError": "Údaje sa nepodarilo načítať",
+      "noData": "Nie sú dostupné žiadne údaje",
+      "noDataHint": "Za toto obdobie nie sú zaznamenané žiadne transakcie"
     },
     "investmentCalculator": {
-      "subtitle": "Project how your portfolio could grow with regular contributions.",
-      "initialBalance": "Initial balance",
-      "useCurrentBalance": "Use current balance",
-      "monthlyContribution": "Monthly contribution",
-      "useAvgNetIncome": "Use avg net income →",
-      "timeHorizon": "Time horizon (years)",
-      "annualReturn": "Annual return (%)",
-      "annualReturnPlaceholder": "Select preset",
-      "annualInflation": "Annual inflation (%)",
-      "totalInvested": "Total invested",
-      "nominalFinalValue": "Nominal final value",
-      "growth": "growth",
-      "realFinalValue": "Real final value",
-      "realGrowth": "real growth",
-      "realMultiplier": "Real multiplier",
-      "realMultiplierTooltip": "How much your total investment grows after accounting for inflation. Unlike nominal returns, this shows real purchasing power. 1.5x means every $1 invested becomes $1.50 in today's money.",
-      "ofMoneyInvested": "of money invested",
-      "customIndicator": "Custom",
-      "customReturnRate": "Enter rate (%)",
-      "inflationAdjustedSuffix": "(Inflation Adjusted)",
-      "yearN": "Year {n}",
-      "disclaimer": "Based on constant {rate}%/yr return. S&P 500 historical average is ~10%/yr. Does not account for taxes or fees.",
-      "useAvgNetIncomeTooltip": "Your average monthly net income (income minus expenses) over the selected period, based on your transaction history",
-      "inflationTooltip": "How fast prices rise each year, reducing your money's real value.\n\n~1–2% — very low, stable economy\n~2–3% — normal (typical target)\n~4–6% — above average\n~7%+ — crisis-level inflation",
-      "totalInvestedBreakdown": "{initial} initial + {contributions} contributions",
-      "configure": "Configure",
-      "hideInputs": "Hide",
-      "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
-      "portfolioNoHistoryOption": "{name} — not enough history"
+      "subtitle": "Odhadnite, ako by mohlo vaše portfólio rásť pri pravidelných vkladoch.",
+      "initialBalance": "Počiatočný zostatok",
+      "useCurrentBalance": "Použiť aktuálny zostatok",
+      "monthlyContribution": "Mesačný vklad",
+      "useAvgNetIncome": "Použiť priemerný čistý príjem →",
+      "timeHorizon": "Časový horizont (roky)",
+      "annualReturn": "Ročný výnos (%)",
+      "annualReturnPlaceholder": "Vyberte predvoľbu",
+      "annualInflation": "Ročná inflácia (%)",
+      "totalInvested": "Celkovo investované",
+      "nominalFinalValue": "Nominálna konečná hodnota",
+      "growth": "nárast",
+      "realFinalValue": "Reálna konečná hodnota",
+      "realGrowth": "reálny rast",
+      "realMultiplier": "Reálny násobiteľ",
+      "realMultiplierTooltip": "Ako narastie vaša celková investícia po zohľadnení inflácie. Na rozdiel od nominálneho výnosu tu ide o reálnu kúpnu silu. Násobiteľ 1,5x znamená, že z každého investovaného 1 eura sa stane 1,50 eura v dnešnej hodnote.",
+      "ofMoneyInvested": "z investovaných peňazí",
+      "customIndicator": "Vlastné",
+      "customReturnRate": "Zadajte sadzbu (%)",
+      "inflationAdjustedSuffix": "(očistené o infláciu)",
+      "yearN": "{n}. rok",
+      "disclaimer": "Na základe konštantného ročného výnosu {rate} %. Historický priemer indexu S&P 500 je približne 10 % ročne. Nezohľadňuje dane ani poplatky.",
+      "useAvgNetIncomeTooltip": "Váš priemerný mesačný čistý príjem (príjmy mínus výdavky) za vybrané obdobie, na základe histórie transakcií",
+      "inflationTooltip": "Ako rýchlo každoročne rastú ceny a znižujú reálnu hodnotu vašich peňazí.\n\n~1 – 2 % – veľmi nízka, stabilná ekonomika\n~2 – 3 % – bežná úroveň (typický cieľ)\n~4 – 6 % – nadpriemerná\n~7 %+ – inflácia na úrovni krízy",
+      "totalInvestedBreakdown": "{initial} počiatočný vklad + {contributions} príspevky",
+      "configure": "Nastaviť",
+      "hideInputs": "Skryť",
+      "portfolioReturnOption": "{name} (vaša hodnota ~{rate}%/rok)",
+      "portfolioNoHistoryOption": "{name} — nedostatok histórie",
+      "presetReturnOption": "{label} (~{rate}%/rok)",
+      "rangeMin": "Min",
+      "rangeMax": "Max",
+      "indicators": {
+        "worldStock": "Total World Stock",
+        "usTreasury": "US Treasury Bonds",
+        "corporateBonds": "Corporate Bonds"
+      }
     },
     "portfolioFilter": {
-      "all": "All portfolios",
-      "selectedOne": "1 portfolio",
-      "selectedMany": "{n} portfolios",
-      "searchPlaceholder": "Search portfolios",
-      "noResults": "No portfolios match your search"
+      "all": "Všetky portfóliá",
+      "selectedOne": "1 portfólio",
+      "selectedMany": "Portfóliá: {n}",
+      "searchPlaceholder": "Hľadať portfóliá",
+      "noResults": "Vášmu hľadaniu nezodpovedá žiadne portfólio"
+    },
+    "fire": {
+      "subtitle": "Kedy by vaše úspory natrvalo pokryli vaše výdavky",
+      "planLink": "Naplánujte si FIRE",
+      "addToDashboard": "Pridať na nástenku",
+      "addedToDashboard": "Priebeh FIRE bol pridaný na vašu nástenku",
+      "addToDashboardFailed": "Widget sa nepodarilo pridať. Skúste to znova.",
+      "saveFailed": "Vaše predpoklady FIRE sa nepodarilo uložiť. Skúste to znova, aby sa zmeny zachovali.",
+      "loading": "Načítavanie plánu FIRE",
+      "loadFailed": "Údaje pre váš plán FIRE sa nepodarilo načítať.",
+      "adjustAssumptions": "Upraviť predpoklady",
+      "disclaimer": "Projekcie vychádzajú z historických priemerov trhu a vašich nedávnych výdavkov. Ide o odhady, nie o odporúčanie. Skutočné výnosy sa budú líšiť.",
+      "callouts": {
+        "contributionClamped": "Za posledných 12 mesiacov ste minuli viac, než ste zarobili, preto projekcia počíta s nulovými novými úsporami.",
+        "enterContribution": "Zadajte príspevok",
+        "returnBelowInflation": "Váš predpokladaný výnos neprekonáva infláciu (reálne {real}), preto zostatok v dnešnej hodnote peňazí klesá.",
+        "portfolioShortHistory": "Výnos vášho portfólia vychádza len z {years} rokov histórie. Krátka história alebo obdobie rastúceho trhu sa málokedy zopakuje. Zvážte použitie trhovej predvoľby.",
+        "portfolioUnavailable": "Portfólio použité v tomto pláne už neexistuje alebo má príliš krátku históriu. Výnos sa prepol na World stocks.",
+        "customMissing": "Zadajte vlastný výnos. Dovtedy plán používa World stocks.",
+        "historyDegraded": "Niektoré pozície sú ocenené obstarávacou cenou, alebo chýba výmenný kurz. Váš zostatok môže byť podhodnotený, kým sa ceny nesynchronizujú.",
+        "hide": "Skryť upozornenie",
+        "hideTitle": "Skryť toto upozornenie?",
+        "hideDescription": "Nabudúce, keď otvoríte plánovač, sa zobrazí opäť.",
+        "dontShowAgain": "Nabudúce nezobrazovať",
+        "hideConfirm": "Skryť"
+      },
+      "assumptions": {
+        "title": "Predpoklady",
+        "spendingLabel": "Ročné výdavky v dôchodku",
+        "spendingPlaceholder": "napr. 40000",
+        "requiredBadge": "Povinné",
+        "autoSpendingHint": "Priemer za posledný {n} celý mesiac × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték. | Priemer za posledných {n} celých mesiacov × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték.",
+        "backToAuto": "Späť na automatické ({amount})",
+        "excludedLabel": "Nepočíta sa ako výdavok",
+        "excludedPlaceholder": "Vylúčiť kategórie",
+        "savingsNote": "Kategórie úspor sú tiež vylúčené. {link}",
+        "savingsNoteLink": "Upraviť",
+        "contributionLabel": "Mesačný vklad",
+        "contributionPlaceholder": "napr. 1500",
+        "autoContributionHint": "Priemerný čistý tok za rovnaký {n} mesiac. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos). | Priemerný čistý tok za rovnakých {n} mesiacov. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos).",
+        "savingsRate": "Sporíte {pct} svojho príjmu",
+        "countsTitle": "Čo sa počíta do FIRE",
+        "countsCash": "Hotovosť a bankové účty",
+        "countsPortfolios": "Investičné portfóliá",
+        "countsVentures": "Rizikové kapitály",
+        "countsVehicles": "Vozidlá",
+        "countsLoans": "Pôžičky",
+        "countsHint": "Hotovosť a portfóliá sa počítajú vždy. Splátky pôžičiek sa už počítajú ako výdavok, preto sú pôžičky predvolene vypnuté.",
+        "archivedNote": "{count} archivovaný účet vylúčený zo štatistík stále drží {amount}. {link} | {count} archivovaných účtov vylúčených zo štatistík stále drží {amount}. {link}",
+        "archivedNoteLink": "Skontrolovať",
+        "presetLabel": "{label} · ≈{real} reálne ({nominal} nominálne, {inflation} inflácia v USA)",
+        "inflationLabel": "Inflácia",
+        "inflationBuiltIn": "{pct} % · súčasť tejto predvoľby",
+        "inflationBuiltInHint": "Trhové predvoľby predstavujú nominálne výnosy v USA a vo svete, preto sa viažu na infláciu v USA. Ich kombinácia s vašou lokálnou infláciou by dávala skreslené výsledky. Ak chcete infláciu nastaviť sami, zvoľte vlastný výnos alebo svoje portfólio.",
+        "withdrawalLabel": "Miera výberu",
+        "withdrawalCustom": "Vlastné",
+        "withdrawalPlaceholder": "napr. 3,8",
+        "withdrawalHint": "Podiel úspor, ktorý každoročne vyberáte. Vyššia miera znamená nižšie cieľové číslo FIRE, ale väčšie riziko, že vám peniaze dôjdu. Pravidlo 4 % vychádza z amerických údajov pre 30-ročný dôchodok.",
+        "more": "Viac",
+        "moreSummary": "Lean {lean}× · Fat {fat}× · coast pri veku {age}",
+        "leanLabel": "Násobiteľ Lean FIRE",
+        "leanPlaceholder": "napr. 0,7",
+        "fatLabel": "Násobiteľ Fat FIRE",
+        "fatPlaceholder": "napr. 1,5",
+        "baristaLabel": "Príjem z čiastočného úväzku mesačne",
+        "baristaPlaceholder": "napr. 1000",
+        "birthYearLabel": "Rok narodenia",
+        "birthYearPlaceholder": "napr. 1990",
+        "coastAgeLabel": "Cieľový vek pre Coast FIRE",
+        "coastAgePlaceholder": "napr. 65"
+      },
+      "auto": "Automaticky",
+      "perYear": "{amount}/rok",
+      "perMonth": "{amount}/mes.",
+      "notWithinHorizon": "nie do 50 rokov",
+      "hero": {
+        "timeTo": "Čas do {type}",
+        "unitYears": "{n} r. | {n} r. | {n} r.",
+        "unitMonths": "{n} mes. | {n} mes. | {n} mes.",
+        "atAge": "vo veku {age}",
+        "alwaysCounted": "Počíta sa vždy",
+        "range": "{earliest} až {latest} pri výnose o 2 body vyššom alebo nižšom",
+        "rangeOpen": "{earliest} až po {year} pri výnose o 2 body vyššom alebo nižšom",
+        "basedOn": {
+          "spending": "Výdavky: {amount}",
+          "saving": "Úspory: {amount}",
+          "counting": "Počíta sa: {buckets}"
+        },
+        "reached": {
+          "eyebrowFor": "{type} dosiahnuté",
+          "title": "Dosiahli ste finančnú nezávislosť",
+          "supports": "Vaše peniaze pokryjú {amount}/mes.",
+          "pctOfSpending": "{pct} % vašich výdavkov · pri výbere {rate} %",
+          "yearsCovered": "Pokrytý menej než rok výdavkov | Pokrytý 1 rok výdavkov | Pokryté roky výdavkov: {n}",
+          "drawdown": "Čerpáte približne {amount}/mes.",
+          "noNewSavings": "Projekcie počítajú s nulovými novými úsporami."
+        },
+        "unreachable": {
+          "title": "Pri súčasných úsporách nedosiahnuteľné",
+          "noSavingsTitle": "Žiadne nové úspory.",
+          "noSavingsClamped": "Za posledných 12 mesiacov ste minuli viac, než ste zarobili, preto je príspevok nastavený na 0.",
+          "noSavings": "Váš mesačný príspevok je 0 alebo menej.",
+          "enterContribution": "Zadajte príspevok",
+          "lowReturnTitle": "Výnos neprekonáva infláciu.",
+          "lowReturn": "Zostatok v dnešnej hodnote peňazí klesá.",
+          "tooSlow": "Pri tomto tempe to bude trvať viac než 50 rokov.",
+          "whatItTakes": "Čo by bolo potrebné",
+          "whatItTakesDetail": "na dosiahnutie {target} za {duration} pri súčasnom výnose."
+        }
+      },
+      "progress": {
+        "progressTo": "Priebeh k {type}",
+        "amountOfTarget": "{balance} z {target}",
+        "next": "Ďalší cieľ: {goal} · {date}",
+        "nextGoal": "{goal} za {duration}",
+        "nextUnreachable": "Ďalší cieľ: {goal} · pri týchto číslach nedosiahnuteľný",
+        "targetReached": "Cieľ FIRE dosiahnutý",
+        "supportsToday": "Dnes pokryje {amount}/mes.",
+        "negativeNetWorth": "Čistá hodnota majetku je záporná. Vaše príspevky najprv splatia tento rozdiel, až potom začnú rásť."
+      },
+      "chips": {
+        "lean": {
+          "name": "Lean FIRE",
+          "description": "{pct} % vašich výdavkov"
+        },
+        "regular": {
+          "name": "Regular FIRE",
+          "description": "súčasný životný štýl"
+        },
+        "fat": {
+          "name": "Fat FIRE",
+          "description": "{pct} % vašich výdavkov"
+        },
+        "barista": {
+          "name": "Barista FIRE",
+          "description": "príjem z čiastočného úväzku pokryje časť",
+          "withIncome": "s {amount}/mes. z čiastočného úväzku"
+        },
+        "coast": {
+          "name": "Coast FIRE",
+          "description": "potrebné dnes, aby ste mohli odísť do dôchodku vo veku {age}",
+          "needsBirthYear": "vyžaduje váš rok narodenia",
+          "pastAge": "prekročili ste svoj coast vek {age}",
+          "notMeaningful": "samotný rast to pri reálnom výnose 0 % alebo nižšom nedosiahne"
+        },
+        "others": "Ostatné",
+        "nextGoal": "{name} · ďalší",
+        "eta": "za {duration}",
+        "growthOnly": "len rast",
+        "reached": "Dosiahnuté",
+        "reachedCoast": "Dosiahnuté · sporenie je teraz voliteľné",
+        "reachedBaristaCovers": "Príjem z čiastočného úväzku pokryje vaše výdavky",
+        "actions": {
+          "enterSpending": "najprv zadajte výdavky",
+          "changeCoastAge": "Zmeniť coast vek",
+          "changeReturn": "Zmeniť výnos",
+          "addPartTimeIncome": "Pridať príjem z čiastočného úväzku",
+          "addBirthYear": "Pridať rok narodenia"
+        }
+      },
+      "chart": {
+        "ariaLabel": "História čistej hodnoty majetku a predpokladaná cesta k vášmu cieľovému číslu FIRE",
+        "actual": "Skutočnosť",
+        "projected": "Projekcia",
+        "range": "±2 body výnosu",
+        "today": "Dnes",
+        "typeTarget": "{type} · {amount}",
+        "typeLabel": "{type} · {date}"
+      },
+      "milestones": {
+        "reached": "Dosiahnuté",
+        "eta": "za {duration} · {date}"
+      },
+      "empty": {
+        "noData": {
+          "title": "Naplánujte si cestu k finančnej nezávislosti",
+          "description": "Táto stránka sa vypĺňa na základe vašich účtov a transakcií. Zatiaľ sa nič nesleduje, začnite preto zadaním ročných výdavkov. Po pridaní účtov sa plán prepne na aktuálne údaje."
+        },
+        "shortHistory": {
+          "title": "Zatiaľ žiadny celý mesiac transakcií | Len 1 celý mesiac transakcií | Len {n} celých mesiacov transakcií",
+          "description": "Výdavky sa zatiaľ nedajú vypočítať. Po 3 celých mesiacoch sa prepnú na automatický výpočet. Dovtedy ich zadajte ručne."
+        },
+        "noSpending": {
+          "title": "Zatiaľ nie sú zaznamenané žiadne výdavky",
+          "description": "Vaše nedávne mesiace neobsahujú výdavky, ktoré by sa dali použiť. Zadajte ročné výdavky, aby ste videli svoj plán."
+        },
+        "enterSpending": "Zadajte výdavky",
+        "addAccount": "Pridať účet"
+      },
+      "trial": {
+        "daysLeft": "Skúšobná verzia plánovača FIRE · zostáva {n} deň | Skúšobná verzia plánovača FIRE · zostáva {n} dní",
+        "ended": "Vaša 14-dňová skúšobná verzia plánovača FIRE sa skončila. Ak chcete pokračovať v plánovaní cesty k FIRE, prejdite na Plus.",
+        "startFailed": "Skúšobnú verziu plánovača FIRE sa nepodarilo spustiť. Načítajte stránku znova a skúste to opäť."
+      }
     }
   },
   "pivotReport": {
-    "subtitle": "Break spending down by any dimension, lay it across time, and compare.",
+    "subtitle": "Rozložte výdavky podľa ľubovoľného rozmeru, zobrazte ich v čase a porovnajte.",
     "controls": {
-      "rows": "Rows",
-      "columns": "Columns",
-      "measure": "Measure",
-      "settings": "Settings"
+      "rows": "Riadky",
+      "columns": "Stĺpce",
+      "measure": "Metrika",
+      "settings": "Nastavenia"
     },
     "dimensions": {
-      "category": "Category",
-      "subcategory": "+ Subcategory",
-      "payee": "Payee",
-      "tag": "Tag"
+      "category": "Kategória",
+      "subcategory": "+ Podkategória",
+      "payee": "Protistrana",
+      "tag": "Značka"
     },
     "granularity": {
-      "yearly": "Years",
-      "quarterly": "Quarters",
-      "monthly": "Months",
-      "weekly": "Weeks"
+      "yearly": "Roky",
+      "quarterly": "Kvartály",
+      "monthly": "Mesiace",
+      "weekly": "Týždne"
     },
     "measure": {
-      "expense": "Expenses",
-      "income": "Income"
+      "expense": "Výdavky",
+      "income": "Príjmy"
     },
     "display": {
-      "title": "Display options"
+      "title": "Možnosti zobrazenia"
     },
     "toggles": {
-      "heatmap": "Heatmap",
-      "percentChange": "% change"
+      "heatmap": "Teplotná mapa",
+      "percentChange": "Zmena v %"
     },
     "filters": {
-      "period": "Period",
-      "allCategories": "All",
-      "button": "Filters",
-      "categories": "Categories",
-      "payees": "Payees",
-      "accounts": "Accounts",
-      "reset": "Reset",
-      "resetTooltip": "Reset to defaults"
+      "period": "Obdobie",
+      "allCategories": "Všetko",
+      "button": "Filtre",
+      "categories": "Kategórie",
+      "payees": "Príjemcovia",
+      "accounts": "Účty",
+      "reset": "Vynulovať",
+      "resetTooltip": "Obnoviť predvolené"
     },
     "periods": {
-      "last6Months": "Last 6 months",
-      "last12Months": "Last 12 months",
-      "thisYear": "This year",
-      "previousYear": "Previous year",
-      "last3Years": "Last 3 years",
-      "last5Years": "Last 5 years",
-      "allTime": "All time"
+      "last6Months": "Posledných 6 mesiacov",
+      "last12Months": "Posledných 12 mesiacov",
+      "thisYear": "Tento rok",
+      "previousYear": "Predchádzajúci rok",
+      "last3Years": "Posledné 3 roky",
+      "last5Years": "Posledných 5 rokov",
+      "allTime": "Za celý čas"
     },
     "savedViews": {
-      "trigger": "Views",
-      "empty": "No saved views yet",
-      "saveCurrent": "Save current view",
-      "customView": "Custom view",
-      "dialogTitle": "Save view",
-      "dialogDescription": "Save the current layout and filters as a reusable view.",
-      "nameLabel": "View name",
-      "namePlaceholder": "e.g. Grocery watch",
-      "savedToast": "View saved",
-      "deletedToast": "View deleted",
-      "saveError": "Could not save the view"
+      "trigger": "Pohľady",
+      "empty": "Zatiaľ žiadne uložené pohľady",
+      "saveCurrent": "Uložiť aktuálny pohľad",
+      "customView": "Vlastný pohľad",
+      "dialogTitle": "Uložiť pohľad",
+      "dialogDescription": "Uložte aktuálne rozloženie a filtre ako opakovane použiteľný pohľad.",
+      "nameLabel": "Názov pohľadu",
+      "namePlaceholder": "napr. Sledovanie nákupov",
+      "savedToast": "Pohľad uložený",
+      "deletedToast": "Pohľad zmazaný",
+      "saveError": "Pohľad sa nepodarilo uložiť"
     },
     "table": {
-      "total": "Total",
-      "collapseAll": "Collapse all",
-      "expandAll": "Expand all",
-      "expandRow": "Expand",
-      "collapseRow": "Collapse"
+      "total": "Spolu",
+      "collapseAll": "Zbaliť všetko",
+      "expandAll": "Rozbaliť všetko",
+      "expandRow": "Rozbaliť",
+      "collapseRow": "Zbaliť"
     },
     "states": {
-      "emptyTitle": "No data for this selection",
-      "emptyHint": "Try a wider period or different filters.",
-      "errorTitle": "Couldn't load the report",
-      "errorHint": "Something went wrong. Please try again."
+      "emptyTitle": "Pre tento výber nie sú žiadne údaje",
+      "emptyHint": "Skúste širšie obdobie alebo iné filtre.",
+      "errorTitle": "Prehľad sa nepodarilo načítať",
+      "errorHint": "Niečo sa pokazilo. Skúste to znova, prosím."
     }
   },
   "netWorthDrivers": {
-    "subtitle": "How much of your growth you saved, and how much the market returned. Transfers between your own accounts count as neither.",
+    "subtitle": "Koľko z rastu tvorili vaše úspory a koľko výnos trhu. Prevody medzi vlastnými účtami sa nezapočítavajú do ani jedného z nich.",
     "portfolioFilter": {
-      "scopeHint": "Filters investment holdings and growth only. Saved amounts and account cash are not affected."
+      "scopeHint": "Filtruje len investičné pozície a ich rast. Uložené sumy a hotovosť na účtoch nie sú ovplyvnené."
     },
     "calcInfo": {
-      "trigger": "How this is calculated",
-      "title": "How this is calculated",
-      "savedHeading": "Saved",
-      "savedBody": "Money you set aside — income minus spending. Moving money between your own accounts, or into an investment portfolio, doesn't count as saving.",
-      "grownHeading": "Grown",
-      "grownBody": "What the market did to your holdings — price changes, plus dividends, minus fees. Money you put in is never counted as growth.",
-      "exampleHeading": "Example",
-      "exampleBody": "You earn $10,000, invest it, and it grows to $12,000. That's $10,000 Saved and $2,000 Grown — the $10,000 is counted once, as Saved, and only the $2,000 counts as Grown.",
-      "noteBody": "Growth is counted as prices move each period, not only when you sell. Selling something that already rose doesn't add to Grown a second time."
+      "trigger": "Ako sa to počíta",
+      "title": "Ako sa to počíta",
+      "savedHeading": "Ušetrené",
+      "savedBody": "Peniaze, ktoré si odložíte — príjmy mínus výdavky. Presun peňazí medzi vlastnými účtami alebo do investičného portfólia sa nepočíta ako sporenie.",
+      "grownHeading": "Zhodnotenie",
+      "grownBody": "To, ako sa vďaka trhu vyvinula hodnota vašich pozícií — zmeny cien, plus dividendy, mínus poplatky. Vložené peniaze sa nikdy nepočítajú ako zhodnotenie.",
+      "exampleHeading": "Príklad",
+      "exampleBody": "Zarobíte 10 000 $, investujete ich a hodnota narastie na 12 000 $. To znamená 10 000 $ v Úsporách a 2 000 $ v Zhodnotení — suma 10 000 $ sa počíta len raz, ako Úspory, a len 2 000 $ sa počíta ako Zhodnotenie.",
+      "noteBody": "Zhodnotenie sa počíta priebežne s pohybom cien v každom období, nielen pri predaji. Predaj niečoho, čo už predtým vzrástlo, sa do Zhodnotenia nepripočíta druhýkrát."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Mesačne",
+      "quarterly": "Štvrťročne",
+      "yearly": "Ročne"
     },
     "chart": {
-      "title": "Saved vs. grown",
-      "subtitle": "Cumulative totals over the selected period.",
-      "saved": "Saved",
-      "grown": "Grown",
-      "totalGained": "Total gained",
-      "thisPeriod": "This period",
-      "periodSavings": "Savings",
-      "periodGrowth": "Growth",
-      "allocationContext": "{share}% of your net worth sits in investments (was {reference}% in {date})",
-      "allocationContextNoReference": "{share}% of your net worth sits in investments"
+      "title": "Úspory vs. zhodnotenie",
+      "subtitle": "Kumulatívne súčty za vybrané obdobie.",
+      "saved": "Ušetrené",
+      "grown": "Zhodnotenie",
+      "totalGained": "Celkový zisk",
+      "thisPeriod": "Toto obdobie",
+      "periodSavings": "Úspory",
+      "periodGrowth": "Nárast",
+      "allocationContext": "{share} % vášho majetku tvoria investície (v {date} to bolo {reference} %)",
+      "allocationContextNoReference": "{share} % vášho majetku tvoria investície"
     },
     "breakdownChart": {
-      "title": "Per-period breakdown",
-      "subtitle": "How much you saved and how much the market returned in each period.",
-      "periodTotal": "Gained this period",
-      "others": "Others",
-      "grownTotal": "Grown total"
+      "title": "Rozdelenie podľa jednotlivých období",
+      "subtitle": "Koľko ste ušetrili a koľko priniesol trh v jednotlivých obdobiach.",
+      "periodTotal": "Zisk za toto obdobie",
+      "others": "Ostatné",
+      "grownTotal": "Celkové zhodnotenie"
     },
     "degraded": {
-      "title": "Some values are estimated",
-      "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
-      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "title": "Niektoré hodnoty sú odhadované",
+      "unpricedSecurities": "Pre {securities} nie sú k dispozícii aktuálne cenové údaje, ich zhodnotenie je preto odhadované z obstarávacej ceny.",
+      "unpricedSecuritiesTruncated": "Pre {securities} a ďalšie (spolu {count} cenných papierov) nie sú k dispozícii aktuálne cenové údaje, ich zhodnotenie je preto odhadované z obstarávacej ceny.",
+      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}; tieto sumy používajú kurz 1:1."
     },
     "states": {
-      "loadError": "Couldn't load the report",
-      "noData": "Nothing to show for this period",
-      "noDataHint": "Once you have income, expenses, or investments in this range, they'll appear here.",
-      "noPortfoliosHint": "Investment growth appears once you add a portfolio with priced holdings.",
-      "noPortfoliosTitle": "No investments yet",
-      "noPortfoliosPlaceholder": "This report splits your net-worth change into what you saved and what your investments grew. Add a portfolio to start tracking growth.",
-      "noPortfoliosAction": "Add a portfolio"
+      "loadError": "Prehľad sa nepodarilo načítať",
+      "noData": "Za toto obdobie nie je čo zobraziť",
+      "noDataHint": "Keď budete mať v tomto rozsahu príjmy, výdavky alebo investície, zobrazia sa tu.",
+      "noPortfoliosHint": "Zhodnotenie investícií sa zobrazí po pridaní portfólia s oceňovanými pozíciami.",
+      "noPortfoliosTitle": "Zatiaľ žiadne investície",
+      "noPortfoliosPlaceholder": "Tento prehľad rozdeľuje zmenu vášho majetku na to, čo ste ušetrili, a o čo sa zhodnotili vaše investície. Pridajte portfólio a začnite sledovať zhodnotenie.",
+      "noPortfoliosAction": "Pridať portfólio"
     },
     "target": {
-      "title": "Growth crossover",
-      "subtitle": "The portfolio size where market growth — not your saving — does most of the work.",
-      "targetShareLabel": "Growth's share of your monthly gain",
-      "savingsLabel": "Expected monthly saving",
-      "savingsPlaceholder": "e.g. 1,000",
-      "savingsResetToAverage": "Use my average ({amount})",
-      "currentShareLine": "Today growth covers ~{current}% of your monthly gain — you're aiming for {target}%.",
-      "valueNeeded": "Portfolio value needed",
-      "progressLine": "You're {pct}% of the way — {current} of {needed}.",
-      "progressReached": "Target reached — your portfolio is already there.",
-      "gapLabel": "Gap",
-      "gapValue": "{amount} more needed",
-      "reached": "Target reached",
-      "timeLabel": "Time to target",
-      "etaValue": "~{years} yr",
-      "etaReached": "Reached",
-      "etaHint": "If you keep saving and the return holds.",
-      "noReturn": "Pick a positive expected return to see a target value.",
-      "assumptionsLabel": "Assumptions",
-      "disclaimer": "A straight projection from today's values and your assumptions — not financial advice."
+      "title": "Bod zvratu v zhodnotení",
+      "subtitle": "Veľkosť portfólia, pri ktorej väčšinu práce odvádza rast trhu, nie vaše sporenie.",
+      "targetShareLabel": "Podiel zhodnotenia na vašom mesačnom zisku",
+      "savingsLabel": "Očakávané mesačné sporenie",
+      "savingsPlaceholder": "napr. 1 000",
+      "savingsResetToAverage": "Použiť môj priemer ({amount})",
+      "currentShareLine": "Zhodnotenie dnes pokrýva ~{current} % vášho mesačného zisku — vaším cieľom je {target} %.",
+      "valueNeeded": "Potrebná hodnota portfólia",
+      "progressLine": "Ste na {pct} % cesty — {current} z {needed}.",
+      "progressReached": "Cieľ dosiahnutý — vaše portfólio už tam je.",
+      "gapLabel": "Rozdiel",
+      "gapValue": "Chýba ešte: {amount}",
+      "reached": "Cieľ dosiahnutý",
+      "timeLabel": "Čas do dosiahnutia cieľa",
+      "etaValue": "~{years} r.",
+      "etaReached": "Dosiahnuté",
+      "etaHint": "Ak budete pokračovať v sporení a výnos zostane rovnaký.",
+      "noReturn": "Vyberte kladný očakávaný výnos, aby sa zobrazila cieľová hodnota.",
+      "assumptionsLabel": "Predpoklady",
+      "disclaimer": "Priamočiary odhad na základe dnešných hodnôt a vašich predpokladov — nejde o finančné poradenstvo."
     }
   },
   "investmentContributions": {
-    "subtitle": "How much cash you've moved into your portfolios over time, and where it went.",
-    "average": "Average",
+    "subtitle": "Koľko hotovosti ste v priebehu času presunuli do svojich portfólií a kam smerovala.",
+    "average": "Priemer",
     "portfolioFilter": {
-      "scopeHint": "Filters which portfolios count toward contributions."
+      "scopeHint": "Určuje, ktoré portfóliá sa počítajú do vkladov."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Mesačne",
+      "quarterly": "Štvrťročne",
+      "yearly": "Ročne"
     },
     "cards": {
-      "totalContributed": "Total contributed",
-      "shareOfSavings": "Share of savings",
-      "averagePerPeriod": "Average per period"
+      "totalContributed": "Celkovo vložené",
+      "shareOfSavings": "Podiel na úsporách",
+      "averagePerPeriod": "Priemer za obdobie"
     },
     "chart": {
-      "vsPrevious": "vs previous"
+      "vsPrevious": "vs. predchádzajúce obdobie"
     },
     "states": {
-      "noData": "No contributions in this range",
-      "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "No portfolios yet",
-      "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
-      "noPortfoliosAction": "Add a portfolio",
-      "loadError": "Couldn't load contributions"
+      "noData": "V tomto rozsahu nie sú žiadne vklady",
+      "noDataHint": "Presuňte peniaze do portfólia v tomto období a zobrazia sa tu.",
+      "noPortfoliosTitle": "Zatiaľ žiadne portfóliá",
+      "noPortfoliosPlaceholder": "Vytvorte portfólio a začnite investovať, aby ste tu mohli sledovať svoje vklady.",
+      "noPortfoliosAction": "Pridať portfólio",
+      "loadError": "Vklady sa nepodarilo načítať"
     }
   },
   "netWorthHistory": {
-    "subtitle": "How your assets, liabilities and net worth changed over time",
+    "subtitle": "Ako sa v priebehu času menili vaše aktíva, záväzky a čistá hodnota majetku",
     "granularity": {
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "weekly": "Týždenne",
+      "monthly": "Mesačne",
+      "quarterly": "Štvrťročne",
+      "yearly": "Ročne"
     },
     "kindFilter": {
-      "all": "All liabilities",
-      "scopeHint": "Choose which debt types count as liabilities in this report.",
-      "selectedOne": "1 type",
-      "selectedMany": "{n} types"
+      "all": "Všetky záväzky",
+      "scopeHint": "Vyberte, ktoré typy dlhov sa v tomto prehľade počítajú ako záväzky.",
+      "selectedOne": "1 typ",
+      "selectedMany": "Typy: {n}"
     },
     "assetKinds": {
-      "cash": "Cash & accounts",
-      "investments": "Investments",
-      "vehicles": "Vehicles",
-      "ventures": "Ventures"
+      "cash": "Hotovosť a účty",
+      "investments": "Investície",
+      "vehicles": "Vozidlá",
+      "ventures": "Rizikové kapitály"
     },
     "assetFilter": {
-      "all": "All assets",
-      "scopeHint": "Choose which asset types count in this report.",
-      "selectedOne": "1 type",
-      "selectedMany": "{n} types"
+      "all": "Všetky aktíva",
+      "scopeHint": "Vyberte, ktoré typy aktív sa v tomto prehľade počítajú.",
+      "selectedOne": "1 typ",
+      "selectedMany": "Typy: {n}"
     },
     "cards": {
-      "currentNetWorth": "Current net worth",
-      "periodChange": "Period change",
-      "annualized": "≈ {pct} / yr",
-      "averageLiabilities": "You have an average of {amount} in liabilities during the selected period.",
-      "noLiabilities": "You had no liabilities during the selected period."
+      "currentNetWorth": "Aktuálna čistá hodnota majetku",
+      "periodChange": "Zmena za obdobie",
+      "annualized": "≈ {pct} / rok",
+      "averageLiabilities": "Za vybrané obdobie máte v priemere {amount} v záväzkoch.",
+      "noLiabilities": "Za vybrané obdobie ste nemali žiadne záväzky."
     },
     "chart": {
-      "assets": "Assets",
-      "liabilities": "Liabilities",
-      "netWorth": "Net worth",
-      "averageLiabilities": "Avg. liabilities",
-      "liabilitiesZoomed": "Liabilities scale zoomed"
+      "assets": "Aktíva",
+      "liabilities": "Záväzky",
+      "netWorth": "Čistá hodnota majetku",
+      "averageLiabilities": "Priem. záväzky",
+      "liabilitiesZoomed": "Priblížená mierka záväzkov"
     },
     "settings": {
-      "title": "Chart settings",
-      "zoomLiabilities": "Zoom liabilities scale",
-      "zoomLiabilitiesHint": "Enlarge small debts so they stay visible next to large assets."
+      "title": "Nastavenia grafu",
+      "zoomLiabilities": "Priblížiť mierku záväzkov",
+      "zoomLiabilitiesHint": "Zväčšiť malé dlhy, aby zostali viditeľné vedľa veľkých aktív."
     },
     "degraded": {
-      "title": "Some values are estimated",
-      "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
-      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "title": "Niektoré hodnoty sú odhadované",
+      "unpricedSecurities": "Pre {securities} nie sú k dispozícii aktuálne cenové údaje, preto sa zobrazujú v obstarávacej cene a čistá hodnota majetku môže byť podhodnotená.",
+      "unpricedSecuritiesTruncated": "Pre {securities} a ďalšie (spolu {count} cenných papierov) nie sú k dispozícii aktuálne cenové údaje, preto sa zobrazujú v obstarávacej cene a čistá hodnota majetku môže byť podhodnotená.",
+      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}; tieto sumy používajú kurz 1:1."
     },
     "states": {
-      "loadError": "Failed to load net worth history. Please try again later.",
-      "noData": "No history for this period",
-      "noDataHint": "Try a longer period, or add accounts and transactions so there are balances to snapshot."
+      "loadError": "História čistej hodnoty majetku sa nepodarila načítať. Skúste to znova neskôr, prosím.",
+      "noData": "Za toto obdobie nie je k dispozícii žiadna história",
+      "noDataHint": "Skúste dlhšie obdobie, alebo pridajte účty a transakcie, aby bolo z čoho zaznamenať zostatky."
     }
   }
 }

@@ -21,6 +21,10 @@
         "successNotification": "Pending transactions setting updated",
         "errorNotification": "Failed to update pending transactions setting"
       },
+      "quickStart": {
+        "label": "Quick Start guide",
+        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+      },
       "savingsCategories": {
         "label": "Считать категории сбережениями",
         "description": "Расходы в этих категориях и их подкатегориях исключаются из расходов в аналитике денежных потоков, поэтому учитываются как ежемесячные сбережения и влияют на норму сбережений.",
@@ -73,6 +77,13 @@
           "label": "Выбор на карте",
           "description": "Выбирайте местоположение транзакции на карте и ищите адреса. Карта и поиск предоставляются OpenStreetMap, который получает ваш IP-адрес при открытии карты."
         }
+      },
+      "defaultPaymentType": {
+        "label": "Default payment type",
+        "description": "Preselected when you add a new transaction.",
+        "placeholder": "Select a payment type",
+        "successNotification": "Default payment type updated",
+        "errorNotification": "Failed to update default payment type"
       }
     }
   }
