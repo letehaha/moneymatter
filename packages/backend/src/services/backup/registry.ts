@@ -345,6 +345,8 @@ export const BACKUP_TABLES: readonly BackupTableDef[] = [
     tier: 4,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
+    paranoid: true,
+    selfRefColumn: 'mergedIntoId',
   },
   {
     fileName: 'balances',

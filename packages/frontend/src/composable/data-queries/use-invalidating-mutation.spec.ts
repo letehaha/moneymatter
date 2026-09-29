@@ -30,11 +30,13 @@ interface Variables {
 const mountMutation = ({
   mutationFn,
   successKey,
+  successMessage,
   silentErrorCodes,
   persistentErrorId,
 }: {
   mutationFn: (variables: Variables) => Promise<string>;
   successKey?: string;
+  successMessage?: (data: string) => string;
   silentErrorCodes?: API_ERROR_CODES[];
   persistentErrorId?: string;
 }) => {
@@ -48,6 +50,7 @@ const mountMutation = ({
         mutationFn,
         invalidateKeys: [KEY_A, KEY_B],
         successKey,
+        successMessage,
         errorKey: ERROR_KEY,
         silentErrorCodes,
         persistentErrorId,
@@ -99,6 +102,19 @@ describe('useInvalidatingMutation', () => {
     await mutation.mutateAsync({ value: 1 });
 
     expect(addSuccessNotification).toHaveBeenCalledWith('toasts.saved');
+  });
+
+  it('builds the success toast from the response, over the success key', async () => {
+    const { mutation } = mountMutation({
+      mutationFn: () => Promise.resolve('3 rows'),
+      successKey: 'toasts.saved',
+      successMessage: (data) => `Merged ${data}`,
+    });
+
+    await mutation.mutateAsync({ value: 1 });
+
+    expect(addSuccessNotification).toHaveBeenCalledTimes(1);
+    expect(addSuccessNotification).toHaveBeenCalledWith('Merged 3 rows');
   });
 
   it('toasts the server message over the fallback key', async () => {

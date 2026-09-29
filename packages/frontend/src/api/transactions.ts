@@ -153,6 +153,44 @@ export const bulkDeleteTransactions = async (
   return api.post('/transactions/bulk-delete', payload);
 };
 
+export const reconciliationRemove = async (
+  payload: endpointsTypes.ReconciliationRemoveBody,
+): Promise<endpointsTypes.ReconciliationActionResponse> => {
+  return api.post('/transactions/reconciliation/remove', payload);
+};
+
+export const reconciliationMerge = async (
+  payload: endpointsTypes.ReconciliationMergeBody,
+): Promise<endpointsTypes.ReconciliationActionResponse> => {
+  return api.post('/transactions/reconciliation/merge', payload);
+};
+
+export const reconciliationRestore = async (
+  payload: endpointsTypes.ReconciliationRestoreBody,
+): Promise<endpointsTypes.ReconciliationRestoreResponse> => {
+  return api.post('/transactions/reconciliation/restore', payload);
+};
+
+export const loadReconciliationHistory = async (): Promise<endpointsTypes.ReconciliationHistoryEvent[]> => {
+  return api.get('/transactions/reconciliation/history');
+};
+
+export const loadStuckPending = async (): Promise<endpointsTypes.StuckPendingItem[]> => {
+  return api.get('/transactions/reconciliation/stuck-pending');
+};
+
+export const checkStuckPending = async (
+  payload: endpointsTypes.CheckStuckPendingBody,
+): Promise<endpointsTypes.CheckStuckPendingResponse> => {
+  return api.post('/transactions/reconciliation/stuck-pending/check', payload);
+};
+
+export const keepAsBooked = async (
+  payload: endpointsTypes.KeepAsBookedBody,
+): Promise<endpointsTypes.KeepAsBookedResponse> => {
+  return api.post('/transactions/reconciliation/keep-as-booked', payload);
+};
+
 export const loadRefundRecommendations = async (
   params: { transactionId: string } | { transactionType: TRANSACTION_TYPES; originAmount: number; accountId: string },
 ): Promise<endpointsTypes.GetRefundRecommendationsResponse> => {

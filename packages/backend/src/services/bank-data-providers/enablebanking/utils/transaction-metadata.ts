@@ -132,6 +132,10 @@ export function wherePreBookingStatus() {
   });
 }
 
+export function setRawTransactionStatus({ status }: { status: TransactionStatus }) {
+  return Sequelize.literal(`jsonb_set("externalData", '{rawTransaction,status}', '"${status}"')`);
+}
+
 export function isPreBookingRow({ tx }: { tx: StoredRow }): boolean {
   return isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) });
 }

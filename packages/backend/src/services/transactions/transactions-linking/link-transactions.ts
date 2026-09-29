@@ -1,3 +1,4 @@
+import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
 import { ACCOUNT_CATEGORIES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -10,16 +11,6 @@ import { withTransaction } from '@root/services/common/with-transaction';
 import { assertTxWriteAccess } from '@services/sharing/auth/authorize-account-write.service';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
-
-// Natures that indicate a transaction is already linked as a transfer.
-// transfer_out_wallet is intentionally excluded – it can be re-linked (upgraded to common_transfer).
-// NOTE: if new TRANSACTION_TRANSFER_NATURE values are added, review whether they belong here.
-const ALREADY_LINKED_NATURES = [
-  TRANSACTION_TRANSFER_NATURE.common_transfer,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
-];
 
 const validateTransactionLinking = ({
   base,
@@ -46,8 +37,8 @@ const validateTransactionLinking = ({
     });
   }
   if (
-    ALREADY_LINKED_NATURES.includes(opposite.transferNature) ||
-    (!ignoreBaseTxTypeValidation && ALREADY_LINKED_NATURES.includes(base.transferNature))
+    LINKED_TRANSFER_NATURES.includes(opposite.transferNature) ||
+    (!ignoreBaseTxTypeValidation && LINKED_TRANSFER_NATURES.includes(base.transferNature))
   ) {
     // TODO: disabled when multiple links are available
     throw new ValidationError({

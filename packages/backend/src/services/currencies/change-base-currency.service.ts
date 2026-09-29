@@ -361,6 +361,7 @@ async function rebuildTransactions(params: {
     balanceAdjustments: 'include',
     completeness: 'all',
     transaction,
+    paranoid: false,
   });
 
   logger.info(`Recalculating ${transactions.length} transactions for user ${userId}`);

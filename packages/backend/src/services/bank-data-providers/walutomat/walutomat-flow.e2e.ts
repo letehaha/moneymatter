@@ -1,4 +1,10 @@
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  ACCOUNT_TYPES,
+  BANK_PROVIDER_TYPE,
+  type RecordId,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import Transactions from '@models/transactions.model';
@@ -260,6 +266,30 @@ describe('Walutomat Data Provider E2E', () => {
 
       // Should still be the same count (no duplicates)
       expect(transactions.length).toBe(TX_COUNT);
+    });
+
+    it('does not re-import a row removed via reconciliation', async () => {
+      const mockedHistory = getMockedWalutomatHistory({ amount: 3, currency: 'EUR' });
+      const mockBank = () =>
+        global.mswMockServer.use(getWalutomatHistoryMock({ response: mockedHistory }), getWalutomatBalancesMock());
+      const { connectionId } = await helpers.walutomat.pair();
+
+      mockBank();
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: ['wallet-eur'],
+        raw: true,
+      });
+      const accountId = syncedAccounts[0]!.id;
+      const [removed, ...kept] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      await helpers.reconciliationRemove({ transactionIds: [removed!.id as RecordId], raw: true });
+
+      mockBank();
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const after = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(after.map((tx) => tx.id).toSorted()).toEqual(kept.map((tx) => tx.id).toSorted());
+      expect(after.filter((tx) => tx.originalId === removed!.originalId)).toEqual([]);
     });
 
     it('should store externalData with operation metadata', async () => {

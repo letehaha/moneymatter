@@ -555,6 +555,7 @@ export const mergePayees = withTransaction(
       access: { creator: userId },
       balanceAdjustments: 'include',
       where: { payeeId: source.id },
+      paranoid: false,
     });
 
     // Move subscription payee rules and template pre-fills before the source is deleted:

@@ -8,7 +8,9 @@ import { REAL_TRANSACTIONS_VIEW } from '../../migrations/utils/real-transactions
  * "Transactions" without rebuilding the view leaves it silently short a column, and raw SQL
  * reading through it sees stale schema. Nothing in TypeScript can catch that, so this test
  * is the guard: it fails on the first migration that adds a column and skips the rebuild.
- * The fix is to re-run `createRealTransactionsViewSql` at the end of that migration.
+ * The fix is to re-create the `real_transactions` view at the end of that migration, with the
+ * current view SQL written inline (keeping its `"deletedAt" IS NULL` filter), since a SELECT *
+ * view freezes its column list.
  */
 const columnsOf = async (relation: string): Promise<string[]> => {
   const [rows] = (await connection.sequelize.query(
@@ -30,5 +32,13 @@ describe('real_transactions view', () => {
 
     expect(tableColumns.length).toBeGreaterThan(0);
     expect(viewColumns).toEqual(tableColumns);
+  });
+
+  it('hides soft-deleted rows', async () => {
+    const [[{ def }]] = (await connection.sequelize.query(
+      `SELECT pg_get_viewdef('${REAL_TRANSACTIONS_VIEW}'::regclass) AS def`,
+    )) as unknown as [[{ def: string }], unknown];
+
+    expect(def).toContain('"deletedAt" IS NULL');
   });
 });

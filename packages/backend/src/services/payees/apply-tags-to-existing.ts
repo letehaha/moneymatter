@@ -46,6 +46,7 @@ export const applyPayeeTagsToExisting = withTransaction(
         CROSS JOIN "PayeeTags" pt
        WHERE t."payeeId" = :payeeId
          AND t."userId" = :userId
+         AND t."deletedAt" IS NULL
          AND pt."payeeId" = :payeeId
       ON CONFLICT DO NOTHING
       RETURNING "transactionId"

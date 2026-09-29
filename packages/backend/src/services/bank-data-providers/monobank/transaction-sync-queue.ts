@@ -502,6 +502,7 @@ async function createMonobankTransaction({
       originalId: data.id,
       accountId,
     },
+    paranoid: false,
   });
 
   if (isTransactionExists) {

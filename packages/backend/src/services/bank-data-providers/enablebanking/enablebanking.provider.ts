@@ -17,7 +17,12 @@ import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { countTransactions, findOneTransaction, findTransactions } from '@models/transactions-query';
+import {
+  countTransactions,
+  findOneTransaction,
+  findTransactions,
+  updateTransactions,
+} from '@models/transactions-query';
 import Transactions from '@models/transactions.model';
 import { getUserDefaultCategory } from '@models/users.model';
 import {
@@ -897,12 +902,13 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           let stalePendingIgnoredCount = 0;
           let revokedRemovedCount = 0;
           let revokedKeptCount = 0;
+          let softDeletedSkippedCount = 0;
           const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId });
 
           for (const tx of providerTransactions) {
             await checkpoint();
 
-            const existingTx = await this.findExistingTransactionForSync({
+            let existingTx = await this.findExistingTransactionForSync({
               accountId: account.id,
               tx,
               accountHasPendingRows,
@@ -928,11 +934,35 @@ export class EnableBankingProvider extends BaseBankDataProvider {
                   if (createdIndex !== -1) createdTransactionIds.splice(createdIndex, 1);
                   const mergedIndex = mergedPlannedIds.indexOf(existingTx.id);
                   if (mergedIndex !== -1) mergedPlannedIds.splice(mergedIndex, 1);
-                  await existingTx.destroy();
+                  await existingTx.destroy({ force: true });
                   revokedRemovedCount++;
                 }
               }
               continue;
+            }
+
+            // Soft-deleted: the user removed it via reconciliation, so the bank copy must not come back.
+            // Only a booking is handed to a still-pending merge survivor: any other payload would
+            // re-anchor the survivor onto the removed row's identity and break its own matching.
+            if (existingTx?.deletedAt) {
+              // A survivor can itself be merged away later, so follow the chain to the live row.
+              let survivor: Transactions | null = null;
+              let nextId = incomingStatus === TransactionStatus.BOOK ? existingTx.mergedIntoId : null;
+              while (nextId) {
+                survivor = await findOneTransaction({
+                  planned: 'exclude',
+                  access: 'unscoped-internal',
+                  balanceAdjustments: 'include',
+                  paranoid: false,
+                  where: { id: nextId, accountId: account.id },
+                });
+                nextId = survivor?.deletedAt ? survivor.mergedIntoId : null;
+              }
+              if (!survivor || survivor.deletedAt || !isPreBookingRow({ tx: survivor })) {
+                softDeletedSkippedCount++;
+                continue;
+              }
+              existingTx = survivor;
             }
 
             if (existingTx) {
@@ -1093,10 +1123,11 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             mergedPlannedIds.length > 0 ||
             stalePendingIgnoredCount > 0 ||
             revokedRemovedCount > 0 ||
-            revokedKeptCount > 0
+            revokedKeptCount > 0 ||
+            softDeletedSkippedCount > 0
           ) {
             logger.info(
-              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept for account ${account.id}`,
+              `Enable Banking sync: ${createdTransactionIds.length} created, ${updatedCount} updated, ${mergedPlannedIds.length} planned confirmed, ${stalePendingIgnoredCount} stale pending ignored, ${revokedRemovedCount} revoked removed, ${revokedKeptCount} revoked kept, ${softDeletedSkippedCount} soft-deleted skipped for account ${account.id}`,
             );
           }
 
@@ -1598,6 +1629,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       balanceAdjustments: 'include',
       completeness: 'all',
       where: { accountId: account.id },
+      paranoid: false,
     });
 
     let migratedCount = 0;
@@ -1672,6 +1704,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           accountId,
           [Op.and]: [Sequelize.where(Sequelize.literal(`"externalData"->>'entryReference'`), entryReference)],
         },
+        paranoid: false,
+        order: [['deletedAt', 'ASC NULLS FIRST']],
       });
       if (byEntryRef) return byEntryRef;
     }
@@ -1695,6 +1729,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.externalId),
         ],
       },
+      paranoid: false,
+      order: [['deletedAt', 'ASC NULLS FIRST']],
     });
     if (byOriginalId) return byOriginalId;
 
@@ -1736,6 +1772,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             whereNoEntryReference(),
           ],
         },
+        paranoid: false,
+        order: [['deletedAt', 'ASC NULLS FIRST']],
       });
       if (byFingerprint) return byFingerprint;
     }
@@ -1909,6 +1947,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     const logSkip = ({ orphanId, reason }: { orphanId: RecordId; reason: ReconcileSkipReason }) => {
       logger.info(`Reconcile: skipping orphan tx ${orphanId} (account ${account.id}) – ${reason}`);
     };
+    // The FK's ON DELETE SET NULL would otherwise turn a reconciliation merge into the deleted row into a "remove".
+    const repointMergedRows = ({ fromId, toId }: { fromId: RecordId; toId: RecordId }) =>
+      updateTransactions({
+        values: { mergedIntoId: toId },
+        where: { accountId: account.id, mergedIntoId: fromId },
+        paranoid: false,
+        planned: 'include',
+        access: 'unscoped-internal',
+        balanceAdjustments: 'include',
+      });
     // Each check is seven COUNT queries and the same pending row is offered to every
     // booked row in its bucket; nothing inside this run can change the answer.
     const dependentRowsByTxId = new Map<RecordId, boolean>();
@@ -2002,7 +2050,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         if (Object.keys(survivorUpdates).length > 0) {
           await booked.update(survivorUpdates);
         }
-        await pending.destroy();
+        await repointMergedRows({ fromId: pending.id, toId: booked.id });
+        await pending.destroy({ force: true });
         pairedBooked.add(booked.id);
         mergedPending.add(pending.id);
         mergedCount++;
@@ -2056,7 +2105,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           continue;
         }
 
-        await orphan.destroy();
+        await repointMergedRows({ fromId: orphan.id, toId: canonical.id });
+        await orphan.destroy({ force: true });
         mergedCount++;
       }
     }

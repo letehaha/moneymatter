@@ -3,7 +3,7 @@ import { Card } from '@/components/lib/ui/card';
 import { useTransactionAutomations } from '@/composable/data-queries/transaction-automations';
 import ApplyToHistoryDialog from '@/pages/automations/components/apply-to-history-dialog.vue';
 import { ROUTES_NAMES } from '@/routes';
-import { ArrowRightLeftIcon, HistoryIcon, SparklesIcon } from '@lucide/vue';
+import { ArrowRightLeftIcon, GitMergeIcon, HistoryIcon, SparklesIcon } from '@lucide/vue';
 import { type Component, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -34,6 +34,14 @@ const optimizations: OptimizationCard[] = [
     descriptionKey: 'optimizations.cards.aiCategorization.description',
     onClick: () => {
       router.push({ name: ROUTES_NAMES.optimizationsAiCategorization });
+    },
+  },
+  {
+    icon: GitMergeIcon,
+    titleKey: 'optimizations.cards.reconciliation.title',
+    descriptionKey: 'optimizations.cards.reconciliation.description',
+    onClick: () => {
+      router.push({ name: ROUTES_NAMES.optimizationsReconciliation });
     },
   },
   {

@@ -13,6 +13,7 @@
     />
 
     <OperationPills
+      v-if="!hidePlanned"
       :label="$t('transactions.filters.plannedFilter.label')"
       :model-value="plannedFilter"
       @update:model-value="$emit('update:planned-filter', $event)"
@@ -29,6 +30,7 @@ defineProps<{
   refundFilter: FILTER_OPERATION;
   transferFilter: FILTER_OPERATION;
   plannedFilter: FILTER_OPERATION;
+  hidePlanned?: boolean;
 }>();
 
 defineEmits<{

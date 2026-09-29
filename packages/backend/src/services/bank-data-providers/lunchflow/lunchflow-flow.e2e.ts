@@ -5,6 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   DEACTIVATION_REASON,
   TRANSACTION_TYPES,
+  type RecordId,
   asDecimal,
 } from '@bt/shared/types';
 import { NONEXISTENT_ID, generateRandomRecordId } from '@common/lib/record-id-helpers';
@@ -731,6 +732,42 @@ describe('LunchFlow Data Provider E2E', () => {
       });
 
       expect(transactions.length).toBe(MOCK_AMOUNT);
+    });
+
+    it('does not re-import a row removed via reconciliation', async () => {
+      const { connectionId } = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.LUNCHFLOW,
+        credentials: { apiKey: VALID_LUNCHFLOW_API_KEY },
+        raw: true,
+      });
+      const { accounts: externalAccounts } = await helpers.bankDataProviders.listExternalAccounts({
+        connectionId,
+        raw: true,
+      });
+      const externalId = externalAccounts[0]!.externalId;
+      const mockedTxData = helpers.lunchflow.mockedTransactionData(3);
+      const mockBank = () =>
+        global.mswMockServer.use(
+          getLunchFlowTransactionsMock({ response: mockedTxData, accountId: externalId }),
+          getLunchFlowBalanceMock({ accountId: externalId }),
+        );
+
+      mockBank();
+      const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId,
+        accountExternalIds: [externalId],
+        raw: true,
+      });
+      const accountId = syncedAccounts[0]!.id;
+      const [removed, ...kept] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      await helpers.reconciliationRemove({ transactionIds: [removed!.id as RecordId], raw: true });
+
+      mockBank();
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const after = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(after.map((tx) => tx.id).toSorted()).toEqual(kept.map((tx) => tx.id).toSorted());
+      expect(after.filter((tx) => tx.originalId === removed!.originalId)).toEqual([]);
     });
   });
 

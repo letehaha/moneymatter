@@ -1,4 +1,11 @@
-import { ACCOUNT_TYPES, BANK_PROVIDER_TYPE, DEACTIVATION_REASON, TRANSACTION_TYPES, asDecimal } from '@bt/shared/types';
+import {
+  ACCOUNT_TYPES,
+  BANK_PROVIDER_TYPE,
+  DEACTIVATION_REASON,
+  type RecordId,
+  TRANSACTION_TYPES,
+  asDecimal,
+} from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -337,6 +344,22 @@ describe('SimpleFIN Data Provider E2E', () => {
 
       const stored = await Transactions.findAll({ where: { accountId }, raw: true });
       expect(stored.length).toBe(MOCK_AMOUNT);
+    });
+
+    it('does not re-import a row removed via reconciliation', async () => {
+      const transactions = getMockedSimplefinTransactions(3);
+      const { connectionId, accountId } = await connectAndImport(transactions);
+      const [removed, ...kept] = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      await helpers.reconciliationRemove({ transactionIds: [removed!.id as RecordId], raw: true });
+
+      global.mswMockServer.use(
+        getSimplefinAccountsMock({ response: getMockedSimplefinAccountSet({ account1Transactions: transactions }) }),
+      );
+      await helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
+
+      const after = await helpers.getTransactions({ accountIds: [accountId], raw: true });
+      expect(after.map((tx) => tx.id).toSorted()).toEqual(kept.map((tx) => tx.id).toSorted());
+      expect(after.filter((tx) => tx.originalId === removed!.originalId)).toEqual([]);
     });
 
     it('syncs zero transactions when the account has none (empty state)', async () => {

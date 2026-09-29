@@ -15,6 +15,7 @@ export const useInvalidatingMutation = <TData, TVariables>({
   mutationFn,
   invalidateKeys,
   successKey,
+  successMessage,
   errorKey,
   silentErrorCodes,
   persistentErrorId,
@@ -24,12 +25,14 @@ export const useInvalidatingMutation = <TData, TVariables>({
   invalidateKeys: QueryKey[];
   /** Omit for writes whose result is obvious from the UI updating. */
   successKey?: string;
+  /** Takes precedence over `successKey` when the copy depends on the response. */
+  successMessage?: (data: TData) => string;
   errorKey: string;
   /** Codes the caller renders itself (e.g. inline), so the generic toast is skipped. */
   silentErrorCodes?: API_ERROR_CODES[];
   /** Keeps the error toast up until dismissed, under this id so the caller can clear it on retry. */
   persistentErrorId?: string;
-  onSuccess?: () => void;
+  onSuccess?: (data: TData) => void;
 }) => {
   const { t } = useI18n();
   const queryClient = useQueryClient();
@@ -37,9 +40,10 @@ export const useInvalidatingMutation = <TData, TVariables>({
 
   return useMutation<TData, unknown, TVariables>({
     mutationFn,
-    onSuccess: () => {
-      if (successKey) addSuccessNotification(t(successKey));
-      onSuccess?.();
+    onSuccess: (data) => {
+      const message = successMessage ? successMessage(data) : successKey && t(successKey);
+      if (message) addSuccessNotification(message);
+      onSuccess?.(data);
       return Promise.all(invalidateKeys.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
     },
     onError: (error) => {

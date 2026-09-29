@@ -67,12 +67,11 @@ export async function purgeUserOwnedRestoreTables({
     (def): def is BackupTableDef & { scope: { strategy: 'userColumn'; column: 'userId' | 'ownerUserId' } } =>
       def.restoreMode === 'insert' && def.scope.strategy === 'userColumn',
   )
-    .sort((a, b) => b.tier - a.tier)
+    .toSorted((a, b) => b.tier - a.tier)
     .map((def) => ({ model: def.model, column: def.scope.column }));
 
   for (const { model, column } of targets) {
-    // force:true so paranoid models (Portfolios, VentureDeals, VenturePlatforms)
-    // hard-delete instead of leaving soft-deleted rows behind their default scope.
+    // force:true so paranoid models hard-delete instead of leaving soft-deleted rows behind their default scope.
     await model.destroy({ where: { [column]: userId }, transaction, force: true });
   }
 }
@@ -302,7 +301,10 @@ async function insertTable({
       else byParent.set(mappedParent, [finalId]);
     }
     for (const [parent, ids] of byParent) {
-      await def.model.update({ [selfRefColumn]: parent }, { where: { id: ids }, transaction: ctx.transaction });
+      await def.model.update(
+        { [selfRefColumn]: parent },
+        { where: { id: ids }, transaction: ctx.transaction, paranoid: false },
+      );
     }
     if (selfRefNulled > 0) {
       ctx.warnings.push({

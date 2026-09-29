@@ -158,7 +158,7 @@ export const updateTransactions = async ({
 // `truncate` (and its `cascade`/`restartIdentity` companions) stays off this interface: it empties
 // the table and ignores `where`, so no policy could constrain it.
 interface DestroyTransactionsOptions
-  extends Omit<DestroyOptions<TxAttributes>, 'cascade' | 'restartIdentity' | 'truncate' | 'where'>, TxPolicy {
+  extends Omit<DestroyOptions<TxAttributes>, 'cascade' | 'force' | 'restartIdentity' | 'truncate' | 'where'>, TxPolicy {
   where: WhereOptions<TxAttributes>;
 }
 
@@ -174,7 +174,7 @@ export const destroyTransactions = async ({
 
   assertScopedWrite({ operation: 'destroyTransactions', where: composed });
 
-  return Transactions.destroy({ ...rest, where: composed });
+  return Transactions.destroy({ ...rest, where: composed, force: true });
 };
 
 /**

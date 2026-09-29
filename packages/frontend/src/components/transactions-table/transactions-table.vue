@@ -212,6 +212,7 @@
               :unselectable-reason="getUnselectableReason(displayTransactions[virtualRow.index]!)"
               :payee="payeeById.get(displayTransactions[virtualRow.index]!.payeeId ?? '')"
               :cell-states="cellStates"
+              :row-click-selects="rowClickSelects"
               :editing-column="
                 editTarget?.tx.id === displayTransactions[virtualRow.index]!.id ? editTarget.column : null
               "
@@ -346,6 +347,7 @@ const props = defineProps<{
   isMobileMode: boolean;
   selectionScopeKey?: string;
   alwaysShowLockedCells?: boolean;
+  rowClickSelects?: boolean;
 }>();
 
 const emit = defineEmits<{

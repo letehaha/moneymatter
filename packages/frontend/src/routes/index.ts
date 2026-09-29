@@ -257,6 +257,12 @@ const routes: RouteRecordRaw[] = [
         meta: { i18nChunks: ['pages/optimizations', 'pages/transactions'] as I18nChunkName[] },
       },
       {
+        path: '/transactions/optimizations/reconciliation',
+        name: ROUTES_NAMES.optimizationsReconciliation,
+        component: () => import('@/pages/optimizations/reconciliation/index.vue'),
+        meta: { i18nChunks: ['pages/optimizations', 'pages/transactions'] as I18nChunkName[] },
+      },
+      {
         path: '/transactions/automations',
         name: ROUTES_NAMES.automations,
         component: () => import('@/pages/automations/index.vue'),

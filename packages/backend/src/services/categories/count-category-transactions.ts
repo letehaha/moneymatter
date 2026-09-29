@@ -17,6 +17,7 @@ export const countCategoryTransactions = async ({ categoryId, userId }: { catego
     planned: 'include',
     access: { creator: userId },
     balanceAdjustments: 'include',
+    paranoid: false,
   });
 
   return filedUnderCategory + splitTransactionIds.length;

@@ -4,7 +4,7 @@
     :class="['group/row hover:bg-muted/50 h-10 cursor-pointer divide-x transition-colors', isPlannedRow && 'bg-muted']"
     aria-haspopup="true"
     :data-index="index"
-    @click="emitRecordClick"
+    @click="onRowClick"
   >
     <!-- Selection checkbox (sticky so it survives horizontal scroll) -->
     <!-- Arbitrary property, not border-dashed: the cell's border-b must stay solid. -->
@@ -319,6 +319,8 @@ const props = defineProps<{
   payee: PayeeLookupItem | undefined;
   cellStates: Map<string, InlineCellSaveState>;
   editingColumn: TABLE_COLUMN | null;
+  /** Row click toggles selection instead of opening details, and inline cell editing is off. */
+  rowClickSelects?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -416,7 +418,8 @@ const cellModes = computed<Partial<Record<TABLE_COLUMN, InlineCellMode>>>(() =>
   ),
 );
 
-const modeOf = ({ column }: { column: TABLE_COLUMN }) => cellModes.value[column] ?? 'na';
+const modeOf = ({ column }: { column: TABLE_COLUMN }): InlineCellMode =>
+  props.rowClickSelects ? 'na' : (cellModes.value[column] ?? 'na');
 
 const isCellClaimed = ({ column }: { column: TABLE_COLUMN }) => isClaimedCellMode(modeOf({ column }));
 
@@ -438,5 +441,10 @@ const emitRecordClick = () => {
 
 const onSelectionChange = (value: boolean | 'indeterminate') => {
   emit('selection-change', { value: value === true, id: props.tx.id, index: props.index });
+};
+
+const onRowClick = () => {
+  if (!props.rowClickSelects) return emitRecordClick();
+  if (props.isSelectable) onSelectionChange(!props.isSelected);
 };
 </script>

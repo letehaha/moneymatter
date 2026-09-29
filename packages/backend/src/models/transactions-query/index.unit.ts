@@ -250,7 +250,7 @@ describe('destroyTransactions', () => {
     expect(destroyMock).not.toHaveBeenCalled();
   });
 
-  it('passes the Sequelize delete options through untouched', async () => {
+  it('passes the Sequelize delete options through and forces a hard delete', async () => {
     const transaction = { id: 'tx-scope' };
 
     await destroyTransactions({
@@ -269,6 +269,7 @@ describe('destroyTransactions', () => {
     expect(options.individualHooks).toBe(true);
     expect(options.limit).toBe(10);
     expect(options.transaction).toBe(transaction);
+    expect(options.force).toBe(true);
   });
 
   it('states no hook policy of its own', async () => {

@@ -1,6 +1,6 @@
 import { DataTypes, QueryInterface, Transaction } from 'sequelize';
 
-import { createRealTransactionsViewSql, dropRealTransactionsViewSql } from './utils/real-transactions-view';
+import { createLegacyRealTransactionsViewSql, dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 const COLUMNS = {
   externalUrl: { type: DataTypes.STRING(2048), allowNull: true },
@@ -16,7 +16,7 @@ module.exports = {
       for (const [name, definition] of Object.entries(COLUMNS)) {
         await queryInterface.addColumn('Transactions', name, definition, { transaction: t });
       }
-      await queryInterface.sequelize.query(createRealTransactionsViewSql, { transaction: t });
+      await queryInterface.sequelize.query(createLegacyRealTransactionsViewSql, { transaction: t });
 
       await t.commit();
     } catch (error) {
@@ -33,7 +33,7 @@ module.exports = {
       for (const name of Object.keys(COLUMNS)) {
         await queryInterface.removeColumn('Transactions', name, { transaction: t });
       }
-      await queryInterface.sequelize.query(createRealTransactionsViewSql, { transaction: t });
+      await queryInterface.sequelize.query(createLegacyRealTransactionsViewSql, { transaction: t });
 
       await t.commit();
     } catch (error) {

@@ -22,6 +22,7 @@
       :refund-filter="filters.refundFilter"
       :transfer-filter="filters.transferFilter"
       :planned-filter="filters.plannedFilter"
+      :hide-planned="hidePlanned"
       @update:refund-filter="$emit('update:filters', { ...filters, refundFilter: $event })"
       @update:transfer-filter="$emit('update:filters', { ...filters, transferFilter: $event })"
       @update:planned-filter="$emit('update:filters', { ...filters, plannedFilter: $event })"
@@ -120,6 +121,7 @@ withDefaults(
     surface?: 'dialog' | 'card';
     /** Hosts already scoped to one budget (the budget page) hide the budget picker. */
     hideBudgets?: boolean;
+    hidePlanned?: boolean;
   }>(),
   { surface: 'dialog' },
 );

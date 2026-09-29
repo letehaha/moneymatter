@@ -79,6 +79,13 @@ async function exportArchive(): Promise<{ buffer: Buffer; base64: string }> {
   return { buffer, base64: buffer.toString('base64') };
 }
 
+const summarizeHistory = async () =>
+  (await helpers.getReconciliationHistory({ raw: true })).map((event) => ({
+    type: event.type,
+    survivorId: event.survivor?.id ?? null,
+    transactionIds: event.transactions.map((tx) => tx.id).toSorted(),
+  }));
+
 // --- Seeders -----------------------------------------------------------------
 
 /** A broad, cross-tier dataset exercising money, transfers, splits, refunds,
@@ -344,6 +351,29 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       const settingsAfter = (secondArchive.readData({ name: 'user-settings' }) as Row[])[0]!;
       expect((settingsAfter.settings as { locale?: string }).locale).toBe('uk');
     });
+
+    it('keeps merged and removed bank rows in reconciliation history', async () => {
+      const { account, transactions } = await helpers.monobank.mockTransactions({
+        transactions: [{ amount: -1000 }, { amount: -2000 }, { amount: -3000 }],
+      });
+      const [survivor, merged, removed] = transactions.filter((tx) => tx.accountId === account.id);
+      await helpers.reconciliationMerge({
+        transactionIds: [survivor!.id, merged!.id],
+        survivorId: survivor!.id,
+        raw: true,
+      });
+      await helpers.reconciliationRemove({ transactionIds: [removed!.id], raw: true });
+
+      const before = await summarizeHistory();
+      expect(before).toHaveLength(2);
+
+      const { base64 } = await exportArchive();
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      expect(await summarizeHistory()).toEqual(before);
+    }, 30000);
   });
 
   describe('Cross-user restore', () => {

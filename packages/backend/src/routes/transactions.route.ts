@@ -15,6 +15,7 @@ import getTransactions from '@controllers/transactions.controller/get-transactio
 import getTransactionsByIds from '@controllers/transactions.controller/get-transactions-by-ids';
 import linkToPortfolio from '@controllers/transactions.controller/link-to-portfolio';
 import matchInvoice from '@controllers/transactions.controller/match-invoice';
+import * as reconciliation from '@controllers/transactions.controller/reconciliation';
 import createRefund from '@controllers/transactions.controller/refunds/create-refund';
 import deleteRefund from '@controllers/transactions.controller/refunds/delete-refund';
 import getRefund from '@controllers/transactions.controller/refunds/get-refund';
@@ -31,6 +32,7 @@ import unlinkFromPortfolio from '@controllers/transactions.controller/unlink-fro
 import updateTransaction from '@controllers/transactions.controller/update-transaction';
 import { authenticateSessionOrUploadToken } from '@middlewares/attachment-upload-auth';
 import { authenticateSession } from '@middlewares/better-auth';
+import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature, requireFeatureOrTrial } from '@middlewares/entitlements';
 import { attachmentUploadRateLimit } from '@middlewares/rate-limit';
@@ -108,6 +110,56 @@ router.delete(
   checkBaseCurrencyLock,
   validateEndpoint(deleteRefund.schema),
   deleteRefund.handler,
+);
+
+router.get(
+  '/reconciliation/history',
+  authenticateSession,
+  validateEndpoint(reconciliation.historyController.schema),
+  reconciliation.historyController.handler,
+);
+router.get(
+  '/reconciliation/stuck-pending',
+  authenticateSession,
+  validateEndpoint(reconciliation.stuckPendingController.schema),
+  reconciliation.stuckPendingController.handler,
+);
+router.post(
+  '/reconciliation/remove',
+  authenticateSession,
+  checkBaseCurrencyLock,
+  validateEndpoint(reconciliation.removeController.schema),
+  reconciliation.removeController.handler,
+);
+router.post(
+  '/reconciliation/merge',
+  authenticateSession,
+  checkBaseCurrencyLock,
+  validateEndpoint(reconciliation.mergeController.schema),
+  reconciliation.mergeController.handler,
+);
+router.post(
+  '/reconciliation/restore',
+  authenticateSession,
+  checkBaseCurrencyLock,
+  validateEndpoint(reconciliation.restoreController.schema),
+  reconciliation.restoreController.handler,
+);
+router.post(
+  '/reconciliation/keep-as-booked',
+  authenticateSession,
+  checkBaseCurrencyLock,
+  validateEndpoint(reconciliation.keepAsBookedController.schema),
+  reconciliation.keepAsBookedController.handler,
+);
+router.post(
+  '/reconciliation/stuck-pending/check',
+  authenticateSession,
+  requireFeature(FEATURES.bank_providers),
+  blockDemoUsers,
+  checkBaseCurrencyLock,
+  validateEndpoint(reconciliation.checkStuckPendingController.schema),
+  reconciliation.checkStuckPendingController.handler,
 );
 
 // Split routes

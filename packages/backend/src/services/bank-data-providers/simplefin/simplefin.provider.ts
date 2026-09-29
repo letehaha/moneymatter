@@ -827,6 +827,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
         access: 'unscoped-internal',
         balanceAdjustments: 'include',
         where: { accountId: account.id, originalId: tx.id },
+        paranoid: false,
       });
       if (existingTx) continue;
 
@@ -840,6 +841,7 @@ export class SimplefinProvider extends BaseBankDataProvider {
           { accountId: account.id, originalId: null },
           Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id),
         ),
+        paranoid: false,
       });
       if (existingByOriginalSource) {
         // Restore originalId so future syncs use the fast primary path.

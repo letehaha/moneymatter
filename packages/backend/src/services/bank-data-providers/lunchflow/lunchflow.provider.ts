@@ -337,6 +337,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
               accountId: account.id,
               originalId: tx.id!,
             },
+            paranoid: false,
           });
 
           if (existingTx) {
@@ -354,6 +355,7 @@ export class LunchFlowProvider extends BaseBankDataProvider {
               { accountId: account.id, originalId: null },
               Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx.id!),
             ),
+            paranoid: false,
           });
 
           if (existingByOriginalSource) {

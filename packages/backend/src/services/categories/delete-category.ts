@@ -63,6 +63,7 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
       planned: 'include',
       access: { creator: payload.userId },
       balanceAdjustments: 'include',
+      paranoid: false,
     });
   }
 

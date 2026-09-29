@@ -364,6 +364,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
               accountId: account.id,
               originalId: item.transactionId,
             },
+            paranoid: false,
           });
 
           if (existingTx) {
@@ -380,6 +381,7 @@ export class WalutomatProvider extends BaseBankDataProvider {
               { accountId: account.id, originalId: null },
               Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), item.transactionId),
             ),
+            paranoid: false,
           });
 
           if (existingByOriginalSource) {
