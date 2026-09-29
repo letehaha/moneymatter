@@ -16,7 +16,8 @@ const alreadyNotified = async ({ userId, transactionIds }: { userId: number; tra
   if (await Notifications.count({ where: { ...where, status: NOTIFICATION_STATUSES.unread } })) return true;
 
   const latest = await Notifications.findOne({ where, order: [['createdAt', 'DESC']] });
-  const known = new Set((latest?.payload as StuckPendingNotificationPayload | undefined)?.transactionIds ?? []);
+  const payloadIds = (latest?.payload as { transactionIds?: unknown } | undefined)?.transactionIds;
+  const known = new Set<unknown>(Array.isArray(payloadIds) ? payloadIds : []);
   return transactionIds.every((id) => known.has(id));
 };
 

@@ -3,6 +3,7 @@ import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAccountsStore } from '@/stores';
+import { RECONCILIATION_MERGE_MAX, RECONCILIATION_REMOVE_MAX } from '@bt/shared/const/reconciliation';
 import type { RecordId, TransactionModel } from '@bt/shared/types';
 import { GitMergeIcon, Trash2Icon, XIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
@@ -19,6 +20,7 @@ const props = defineProps<{
 const emit = defineEmits<{ 'clear-selection': [] }>();
 
 const { accountsRecord } = storeToRefs(useAccountsStore());
+const blockReasonParams = { mergeMax: RECONCILIATION_MERGE_MAX, removeMax: RECONCILIATION_REMOVE_MAX };
 
 const selectedIdSet = computed(() => new Set(props.selectedIds));
 const selectedTransactions = computed(() => props.transactions.filter((tx) => selectedIdSet.value.has(tx.id)));
@@ -75,7 +77,7 @@ const actions = computed(() =>
             </span>
             <template #content>
               <template v-if="item.reasons.length === 1">
-                {{ $t(`optimizations.reconciliation.blockReasons.${item.reasons[0]}`) }}
+                {{ $t(`optimizations.reconciliation.blockReasons.${item.reasons[0]}`, blockReasonParams) }}
               </template>
               <template v-else>
                 <p class="mb-1 font-medium">
@@ -87,7 +89,7 @@ const actions = computed(() =>
                 </p>
                 <ul class="list-disc space-y-0.5 pl-4">
                   <li v-for="reason in item.reasons" :key="reason">
-                    {{ $t(`optimizations.reconciliation.blockReasons.${reason}`) }}
+                    {{ $t(`optimizations.reconciliation.blockReasons.${reason}`, blockReasonParams) }}
                   </li>
                 </ul>
               </template>

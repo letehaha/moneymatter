@@ -921,9 +921,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
             // while it was still pending has to go, and nothing about the payload may
             // be written back. A row the user made load-bearing is kept instead —
             // losing their splits, tags or transfer is worse than an extra row.
+            // A soft-deleted row stays too: hard-deleting it would drop it from reconciliation history.
             if (isRevokedStatus({ status: incomingStatus })) {
               const storedStatus = getRawTransactionStatus({ externalData: existingTx?.externalData });
-              if (existingTx && isPreBookingStatus({ status: storedStatus })) {
+              if (existingTx && !existingTx.deletedAt && isPreBookingStatus({ status: storedStatus })) {
                 if (await this.hasDependentRows({ tx: existingTx })) {
                   revokedKeptCount++;
                   logger.info(
@@ -939,6 +940,16 @@ export class EnableBankingProvider extends BaseBankDataProvider {
                 }
               }
               continue;
+            }
+
+            // A removed pending row the bank now books is a real charge: it comes back and is upgraded below.
+            if (
+              existingTx?.deletedAt &&
+              !existingTx.mergedIntoId &&
+              incomingStatus === TransactionStatus.BOOK &&
+              isPreBookingRow({ tx: existingTx })
+            ) {
+              await existingTx.restore();
             }
 
             // Soft-deleted: the user removed it via reconciliation, so the bank copy must not come back.

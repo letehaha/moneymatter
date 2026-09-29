@@ -160,32 +160,24 @@
         "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
         "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
         "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to 50, remove: up to 500).",
+        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
         "differentAccounts": "All transactions must belong to the same account."
       },
       "merge": {
         "title": "Merge transactions",
-        "description": "Pick the transaction to keep. The others are removed and can be restored from History. Highlighted fields differ.",
+        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
         "fields": {
-          "date": "Date",
-          "amount": "Amount",
-          "type": "Type",
-          "category": "Category",
           "payee": "Payee",
-          "note": "Note",
-          "status": "Status"
-        },
-        "types": {
-          "income": "Income",
-          "expense": "Expense"
+          "status": "Status",
+          "time": "Time"
         },
         "status": {
           "pending": "Pending",
           "booked": "Booked"
         },
         "keep": "Keep",
-        "willBeRemoved": "Will be removed",
-        "pickHint": "Click to keep this one",
+        "remove": "Remove",
+        "sameInAll": "Same in all:",
         "confirm": "Merge and remove {count} | Merge and remove {count}"
       },
       "remove": {

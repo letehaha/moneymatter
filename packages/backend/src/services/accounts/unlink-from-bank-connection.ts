@@ -71,6 +71,8 @@ export const unlinkAccountFromBankConnection = withTransaction(
       balanceAdjustments: 'include',
       completeness: 'all',
       where: { accountId },
+      // Rows removed via reconciliation must convert too, or restore rejects them as still bank-typed.
+      paranoid: false,
     });
 
     // Bulk-flip every transaction to `system` in a single SQL UPDATE. We
@@ -91,6 +93,7 @@ export const unlinkAccountFromBankConnection = withTransaction(
       balanceAdjustments: 'include',
       values: { accountType: ACCOUNT_TYPES.system, originalId: null },
       where: { accountId },
+      paranoid: false,
       hooks: false,
     });
 
@@ -117,6 +120,7 @@ export const unlinkAccountFromBankConnection = withTransaction(
         balanceAdjustments: 'include',
         values: { externalData: updatedTxExternalData },
         where: { id: transaction.id },
+        paranoid: false,
         hooks: false,
       });
     }

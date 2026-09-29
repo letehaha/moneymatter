@@ -1,9 +1,9 @@
+import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
 import { ACCOUNT_TYPES, RecordId } from '@bt/shared/types';
 import type { CheckStuckPendingResponse, KeepAsBookedResponse } from '@bt/shared/types/endpoints';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
-import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import { type FindTransactionsOptions, findTransactions, updateTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
@@ -35,12 +35,20 @@ const toMatchRow = ({ tx }: { tx: Transactions }): StuckPendingMatchRow => ({
   merchantName: typeof tx.externalData?.merchantName === 'string' ? tx.externalData.merchantName : null,
 });
 
-export const findStuckPending = ({ access, attributes }: Pick<FindTransactionsOptions, 'access' | 'attributes'>) =>
+// Transfer- and refund-linked rows are left out: merge and remove reject them.
+export const findStuckPending = ({
+  access,
+  attributes,
+  where = {},
+}: Pick<FindTransactionsOptions, 'access' | 'attributes' | 'where'>) =>
   findTransactions({
     where: {
       accountType: ACCOUNT_TYPES.enableBanking,
       time: { [Op.lt]: subDays(new Date(), STUCK_AFTER_DAYS) },
-      [Op.and]: [wherePreBookingStatus()],
+      transferId: null,
+      transferNature: { [Op.notIn]: [...LINKED_TRANSFER_NATURES] },
+      refundLinked: false,
+      [Op.and]: [wherePreBookingStatus(), where],
     },
     planned: 'exclude',
     access,
@@ -108,20 +116,11 @@ export const checkStuckPendingWithBank = async ({
     throw new ValidationError({ message: t({ key: 'transactions.reconciliation.bankCheckUnsupported' }) });
   }
 
-  const now = new Date();
+  const bankCheckFrom = subDays(new Date(), BANK_CHECK_MAX_DAYS);
   const findCheckable = ({ ids }: { ids?: RecordId[] } = {}) =>
-    findTransactions({
-      where: {
-        accountId,
-        time: { [Op.lt]: subDays(now, STUCK_AFTER_DAYS), [Op.gte]: subDays(now, BANK_CHECK_MAX_DAYS) },
-        [Op.and]: [wherePreBookingStatus()],
-        ...(ids && { id: { [Op.in]: ids } }),
-      },
-      planned: 'exclude',
+    findStuckPending({
       access: { creator: userId },
-      balanceAdjustments: 'include',
-      completeness: 'all',
-      order: [['time', 'ASC']],
+      where: { accountId, time: { [Op.gte]: bankCheckFrom }, ...(ids && { id: { [Op.in]: ids } }) },
     });
 
   const checkable = await findCheckable();
@@ -129,30 +128,12 @@ export const checkStuckPendingWithBank = async ({
 
   const stored = account.externalData?.oldestPendingDate;
   const storedTime = typeof stored === 'string' ? Date.parse(stored) : NaN;
-  const widened = oldest && !(storedTime <= oldest.time.getTime()) ? oldest.time.toISOString() : null;
-  if (widened) {
-    await account.update({ externalData: { ...account.externalData, oldestPendingDate: widened } });
+  const needsWidening = oldest && (Number.isNaN(storedTime) || storedTime > oldest.time.getTime());
+  if (needsWidening) {
+    await account.update({ externalData: { ...account.externalData, oldestPendingDate: oldest.time.toISOString() } });
   }
 
-  try {
-    await syncTransactionsForAccount({ connectionId: account.bankDataProviderConnectionId, userId, accountId });
-  } catch (error) {
-    if (widened) {
-      try {
-        await account.reload();
-        if (account.externalData?.oldestPendingDate === widened) {
-          const { oldestPendingDate: _, ...rest } = account.externalData;
-          await account.update({ externalData: stored === undefined ? rest : { ...rest, oldestPendingDate: stored } });
-        }
-      } catch (rollbackError) {
-        logger.error({
-          message: `Failed to roll back oldestPendingDate for account ${accountId}`,
-          error: rollbackError as Error,
-        });
-      }
-    }
-    throw error;
-  }
+  await syncTransactionsForAccount({ connectionId: account.bankDataProviderConnectionId, userId, accountId });
 
   if (!checkable.length) return { bookedCount: 0, pendingCount: 0 };
 

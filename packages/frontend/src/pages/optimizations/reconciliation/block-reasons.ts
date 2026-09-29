@@ -4,7 +4,7 @@ import {
   RECONCILIATION_MERGE_MIN,
   RECONCILIATION_REMOVE_MAX,
 } from '@bt/shared/const/reconciliation';
-import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
+import { isLinkedTransfer } from '@bt/shared/const/transfers';
 import type { AccountModel, TransactionModel } from '@bt/shared/types';
 import type { ReconciliationHistoryEvent } from '@bt/shared/types/endpoints';
 
@@ -35,9 +35,7 @@ export const getReconciliationBlockReasons = ({
     reasons.push('notBankConnected');
   }
   if (transactions.some((tx) => tx.isPlanned)) reasons.push('planned');
-  if (transactions.some((tx) => tx.transferId != null || LINKED_TRANSFER_NATURES.includes(tx.transferNature))) {
-    reasons.push('linkedTransfer');
-  }
+  if (transactions.some((tx) => isLinkedTransfer({ tx }))) reasons.push('linkedTransfer');
   if (transactions.some((tx) => tx.refundLinked)) reasons.push('refundLinked');
 
   if (action === 'merge') {

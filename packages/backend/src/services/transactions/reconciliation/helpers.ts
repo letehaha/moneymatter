@@ -1,5 +1,5 @@
-import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
-import { ACCOUNT_TYPES, RecordId } from '@bt/shared/types';
+import { isLinkedTransfer } from '@bt/shared/const/transfers';
+import { ACCOUNT_TYPES, RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import BudgetTransactions from '@models/budget-transactions.model';
@@ -43,7 +43,7 @@ export const loadReconcilableRows = async ({
   });
   rejectIfAny({ rows: rows.filter((row) => row.isPlanned), key: 'transactions.reconciliation.plannedNotAllowed' });
   rejectIfAny({
-    rows: rows.filter((row) => row.transferId != null || LINKED_TRANSFER_NATURES.includes(row.transferNature)),
+    rows: rows.filter((tx) => isLinkedTransfer({ tx })),
     key: 'transactions.reconciliation.transferNotAllowed',
   });
   rejectIfAny({ rows: rows.filter((row) => row.refundLinked), key: 'transactions.reconciliation.refundNotAllowed' });
@@ -59,7 +59,8 @@ export const detachLinks = async ({ transactionIds }: { transactionIds: RecordId
   await Promise.all([
     BudgetTransactions.destroy({ where }),
     TransactionGroupItems.destroy({ where }),
-    SubscriptionTransactions.destroy({ where }),
+    // `unlinked` markers stay so a restored row is not auto-matched back to a subscription the user unlinked.
+    SubscriptionTransactions.destroy({ where: { ...where, status: SUBSCRIPTION_LINK_STATUS.active } }),
     SubscriptionPeriods.update({ transactionId: null, transactionAutoCreated: false }, { where }),
   ]);
 

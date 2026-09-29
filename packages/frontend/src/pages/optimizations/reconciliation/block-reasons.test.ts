@@ -53,6 +53,7 @@ describe('getReconciliationBlockReasons', () => {
       'planned',
       'linkedTransfer',
       'refundLinked',
+      'tooMany',
       'differentAccounts',
     ]);
     expect(getReconciliationBlockReasons({ action: 'remove', transactions, accountsRecord })).toEqual([

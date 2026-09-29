@@ -51,9 +51,8 @@ const maxPendingDays = computed(() => Math.max(1, ...items.value.map((item) => i
 const hasChecked = ref(false);
 const isResolvable = computed(() => hasChecked.value || checkableAccountIds.value.length === 0);
 
-// Settled includes failed checks, so an error doesn't keep the rows locked.
 const checkAll = () =>
-  checkWithBank.mutate({ accountIds: checkableAccountIds.value }, { onSettled: () => (hasChecked.value = true) });
+  checkWithBank.mutate({ accountIds: checkableAccountIds.value }, { onSuccess: () => (hasChecked.value = true) });
 
 const showCheckedCopy = computed(() => hasChecked.value && !checkWithBank.isError.value);
 

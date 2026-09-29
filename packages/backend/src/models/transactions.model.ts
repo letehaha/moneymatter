@@ -157,6 +157,8 @@ export interface TransactionsAttributes {
 
 @Table({
   timestamps: true,
+  // Hard deletes must pass `force: true` (or go through destroyTransactions / deleteTransactionById);
+  // without it Sequelize only sets `deletedAt`.
   paranoid: true,
   tableName: 'Transactions',
   freezeTableName: true,

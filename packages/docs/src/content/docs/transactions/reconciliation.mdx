@@ -1,0 +1,167 @@
+---
+title: Reconciliation
+description: Merge duplicate bank transactions, remove ones that shouldn't be there, resolve pending payments your bank never booked, and restore anything you removed by mistake.
+sidebar:
+  order: 8
+---
+
+import { Aside, Badge, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+Transactions from a [bank connection](/import/bank-connections/) belong to your bank, so you can't delete them from **Edit Transaction**. Most of the time that's what you want. But now and then a bank sends something wrong: the same payment twice, a card hold that was never charged, or a pending payment that sits there for weeks. **Reconciliation** is where you clean those up, without losing the ability to undo it.
+
+## When to use it
+
+- **The same payment shows up twice.** For example, a card payment arrived once while it was pending and again when the bank booked it under a different ID. [Merge](#merge-duplicates) the two into one.
+- **A transaction shouldn't be there at all.** A hold that the bank released, a test charge, or a row from a file you imported into a connected account by mistake. [Remove](#remove-transactions) it.
+- **A pending payment never cleared.** If you import pending payments from Enable Banking, some can stay pending long after the bank has booked or dropped them. The [Stuck pending](#resolve-stuck-pending-transactions) tab helps you sort them out.
+- **You removed or merged the wrong thing.** [Restore](#restore-from-history) it from **History**.
+
+Reconciliation only works on bank-connected transactions. Transactions in accounts you track by hand can be edited and deleted as usual.
+
+## Open Reconciliation
+
+<Steps>
+
+1. In the sidebar, open **Transactions**, then **Optimizations**.
+2. Click the **Reconciliation** card.
+
+</Steps>
+
+The **Transactions reconciliation** page has three tabs: **Transactions**, **Stuck pending** and **History**. When you have stuck pending transactions, the **Stuck pending** tab shows how many.
+
+## Merge duplicates
+
+<Steps>
+
+1. On the **Transactions** tab, find the duplicates. The filters panel on the left works like the one in [Search and filter](/transactions/search-and-filter/). Planned transactions aren't listed.
+2. Click each duplicate to select it. On this page, clicking a row selects it instead of opening it.
+3. Click **Merge**.
+4. In **Merge transactions**, click the transaction you want to keep. It's marked **Keep**, and the others are marked **Remove**. Details that are the same for all of them, like the time or status, are listed once at the top.
+5. Click **Merge and remove**. The button shows how many transactions will be removed.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/transactions/reconciliation-merge-dialog.png"
+  alt="The Merge transactions dialog with three copies of the same payment: the details they share listed at the top, the booked one marked Keep, and a pending copy and a second booked copy marked Remove."
+  hint="SimpleFIN demo has no real duplicates, so fake them in the browser: route GET /transactions (first page) and insert two copies of the newest SimpleFIN Checking expense right after it (new ids; one with isPending: true and a POS-style note). Open /transactions/optimizations/reconciliation, select the three rows, click Merge, pick the booked original to keep, move the mouse off the dialog. Crop to the dialog. Never submit."
+/>
+
+When you merge:
+
+- **One transaction stays, the rest are removed.** Removed transactions disappear from your lists and stop counting in your stats. The account's balance still comes from your bank.
+- **Links move to the one you keep.** If a removed transaction was in a budget or a [transaction group](/transactions/groups/), or linked to a subscription, the kept transaction takes that link over. If the kept transaction already belongs to a different budget, group or subscription than a removed one, the merge is refused. Put them in the same one first.
+- **Category, payee, note and tags aren't copied.** The kept transaction keeps its own. If the removed one had the better category or note, pick it as the one to keep, or copy the details over before merging.
+
+<Aside type="note" title="Keep the booked one">
+If you merge a pending transaction with a booked one, pick the booked one to keep. MoneyMatter refuses to keep the pending copy, because it would stay pending forever.
+</Aside>
+
+### What you can merge
+
+You can merge 2 to 4 transactions at a time. They must all be:
+
+- **bank-connected**;
+- **on the same account**;
+- **not planned**;
+- **not part of a linked transfer**. [Unlink the transfer](/transfers-and-refunds/how-transfers-work/#unlink-a-transfer) first;
+- **not linked as a refund**. [Unlink the refund](/transfers-and-refunds/refunds/) first.
+
+If your selection doesn't qualify, the **Merge** button is disabled. Hover it to see why.
+
+## Remove transactions
+
+<Steps>
+
+1. On the **Transactions** tab, select the transactions to remove, up to 500 at a time.
+2. Click **Remove**.
+3. Confirm with **Remove**.
+
+</Steps>
+
+Removed transactions disappear from your lists and stop counting in your stats. The account's balance still comes from your bank. The same rules as for merging apply, except that the transactions can come from different accounts.
+
+Removing also takes a transaction out of any budget, transaction group or subscription it was linked to.
+
+<Aside type="note" title="Removed transactions don't come back on the next sync">
+MoneyMatter remembers what you removed, so your bank syncing the same transaction again doesn't bring it back. Only [restoring it](#restore-from-history) does. The one exception is a pending transaction you removed that your bank later books: it comes back as a booked transaction, because the charge turned out to be real.
+</Aside>
+
+## Resolve stuck pending transactions
+
+This tab only matters if you connected a bank through **Enable Banking** and turned on [Import pending bank transactions](/settings/general-settings/#import-pending-bank-transactions). A pending payment normally turns into a booked one within a few days. The **Stuck pending** tab lists the ones that are still pending more than 7 days later.
+
+A payment usually gets stuck for one of two reasons:
+
+- **The bank booked it under a new ID**, so MoneyMatter couldn't join the two, and you now have a pending copy and a booked copy.
+- **The bank dropped it.** A hotel or car-rental deposit, for example, is often released without ever being charged.
+
+<Steps>
+
+1. Open the **Stuck pending** tab.
+2. Click **Check with bank**. MoneyMatter syncs the affected accounts and looks again. Transactions your bank has booked since then disappear from the list.
+3. For each transaction still listed, read its **Status** and pick an action. See the table below.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/transactions/reconciliation-stuck-pending.png"
+  alt="The Stuck pending tab after checking with the bank, listing pending transactions with their account, date, category, how many days they've been pending, amount, a status such as Possible duplicate or Not found at bank, and Merge or Keep as booked buttons."
+  hint="Mock GET /transactions/reconciliation/stuck-pending with three items built from real transactions: one with a candidate, one without, and one with canCheckWithBank false. Mock POST …/stuck-pending/check ({ bookedCount: 0, pendingCount: 2 }) and rename the SimpleFIN accounts in GET /accounts (Main Card, Travel Card). Click Check with bank, hide the toast, and crop to the tab bar and the card."
+/>
+
+The **Status** and actions only appear after you check with your bank, so you don't act on transactions the bank has already settled. Hover a status to see what it means.
+
+| Status | What it means | What to do |
+|---|---|---|
+| **Possible duplicate** | A booked transaction on the same account, from the same payee, of the same type and dated up to 5 days later looks like the same payment. | Click **Merge**. The booked transaction is already picked as the one to keep. |
+| **Not found at bank** | Your bank has no booked copy. It may be a released hold. | Click **Keep as booked** if the charge really happened. Click **Remove** (the bin button) if it didn't. |
+| **Too old to check** | The transaction is older than about 90 days, which is as far back as your bank shares. | Same as **Not found at bank**: keep it if the charge happened, remove it if it didn't. |
+
+**Keep as booked** marks the transaction as booked, so it leaves this list and stays in your transactions.
+
+If you remove a transaction here and your bank books it later after all, it comes back on its own as a booked transaction.
+
+When every stuck transaction is older than 90 days, there's nothing to check, so the statuses and actions show straight away.
+
+<Aside type="note">
+**Check with bank** needs an active bank connection, so it requires <Badge text="Plus" variant="tip" />. Each check counts as a sync, and Enable Banking limits how many times a day an account can sync.
+</Aside>
+
+### The daily reminder
+
+Once a day, MoneyMatter checks for transactions that have been pending for more than a week. If it finds some, you get a notification: **Some card payments haven't cleared**. Click it to open the **Stuck pending** tab.
+
+You won't get another reminder while the last one is unread, or until a new transaction gets stuck. The reminder doesn't sync with your bank. Use **Check with bank** for that.
+
+## Restore from History
+
+The **History** tab lists every merge and removal, newest first. Each entry shows when it happened, whether it was **Merged** or **Removed**, the transaction that was **Kept** (for a merge), and the transactions that were removed.
+
+<Steps>
+
+1. Open the **History** tab.
+2. On the entry you want to undo, click **Restore**.
+3. Confirm with **Restore**.
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/transactions/reconciliation-history.png"
+  alt="The History tab with a Merged entry showing the kept transaction and the removed one, and a Removed entry below it, each with a Restore button."
+  hint="Copy two SimpleFIN Checking transactions in the local DB (tagged for cleanup). Through the API, remove one copy and merge the other into its original, then open ?tab=history. Crop to the tab bar and the two entries. Delete the copies afterwards."
+/>
+
+Restoring brings back every transaction removed in that entry. They count in your stats again. Keep in mind:
+
+- **A merge is undone only on the removed side.** The kept transaction stays as it is, so you'll see the duplicates again.
+- **Links don't come back.** Budgets, transaction groups and subscriptions that were detached when the transaction was removed have to be set up again.
+- **The account must still be connected.** If you've since disconnected the account from the bank, restoring fails with "Can't restore: the account is no longer connected to the bank."
+
+## Related
+
+- [Bank connections](/import/bank-connections/)
+- [Import pending bank transactions](/settings/general-settings/#import-pending-bank-transactions)
+- [Link existing transactions](/transfers-and-refunds/link-existing-transactions/)
+- [Transaction groups](/transactions/groups/)

@@ -26,6 +26,10 @@ module.exports = {
         { transaction: t },
       );
       await queryInterface.sequelize.query(
+        'ALTER TABLE "Transactions" ADD CONSTRAINT transactions_merged_into_requires_deleted CHECK ("mergedIntoId" IS NULL OR "deletedAt" IS NOT NULL);',
+        { transaction: t },
+      );
+      await queryInterface.sequelize.query(
         `CREATE OR REPLACE VIEW real_transactions AS SELECT * FROM "Transactions" WHERE "isPlanned" = false AND "deletedAt" IS NULL;`,
         { transaction: t },
       );
@@ -42,6 +46,10 @@ module.exports = {
 
     try {
       await queryInterface.sequelize.query(dropRealTransactionsViewSql, { transaction: t });
+      await queryInterface.sequelize.query(
+        'ALTER TABLE "Transactions" DROP CONSTRAINT transactions_merged_into_requires_deleted;',
+        { transaction: t },
+      );
       for (const name of Object.keys(COLUMNS)) {
         await queryInterface.removeColumn('Transactions', name, { transaction: t });
       }

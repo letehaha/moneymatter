@@ -1,4 +1,6 @@
+import { RECONCILIATION_MERGE_MAX } from '@bt/shared/const/reconciliation';
 import {
+  ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
   RecordId,
   SUBSCRIPTION_FREQUENCIES,
@@ -516,7 +518,8 @@ describe('Transactions reconciliation', () => {
     });
 
     it('rejects an invalid selection', async () => {
-      const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '11.00' })];
+      const overCap = RECONCILIATION_MERGE_MAX + 1;
+      const fixed = Array.from({ length: overCap }, (_, i) => booked({ ref: `r${i + 1}`, amount: `${10 + i}.00` }));
       const { byAmount, accountIds } = await setupEnableBanking({
         transactions: fixed,
         accountExternalIds: [MOCK_IDENTIFICATION_HASH_1, MOCK_IDENTIFICATION_HASH_2],
@@ -531,6 +534,7 @@ describe('Transactions reconciliation', () => {
         [[a.id, systemTx.id as RecordId], a.id, 422],
         [[a.id, otherAccountTx!.id as RecordId], a.id, 422],
         [[a.id, NONEXISTENT_ID], a.id, 404],
+        [Array.from({ length: overCap }, (_, i) => byAmount({ amount: 10 + i }).id), a.id, 422],
       ];
       for (const [transactionIds, survivorId, status] of invalid) {
         expect((await helpers.reconciliationMerge({ transactionIds, survivorId })).statusCode).toBe(status);
@@ -563,18 +567,45 @@ describe('Transactions reconciliation', () => {
       expect(await balance()).toEqual(balanceBefore);
     });
 
-    it('rejects restoring rows of an account unlinked from its bank connection', async () => {
+    it('restores a removed row after its account is unlinked from the bank', async () => {
       const { accountId, byAmount } = await setupEnableBanking({
-        transactions: [booked({ ref: 'r1', amount: '10.00' })],
+        transactions: [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00' })],
       });
       const removed = byAmount({ amount: 10 });
       await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+      const balance = async () => (await helpers.getAccount({ id: accountId, raw: true })).currentBalance;
+      const balanceBefore = await balance();
 
+      expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(200);
+
+      const restored = (
+        (await helpers.getTransactions({ accountIds: [accountId], raw: true })) as unknown as TransactionModel[]
+      ).find((tx) => tx.id === removed.id);
+      expect(restored?.accountType).toBe(ACCOUNT_TYPES.system);
+      expect(await helpers.getReconciliationHistory({ raw: true })).toEqual([]);
+      expect(await balance()).toEqual(balanceBefore);
+    });
+
+    it('does not re-import a removed row when the unlinked account is linked to the bank again', async () => {
+      const { entryReference: _entryReference, ...noRef } = booked({ ref: 'unused', amount: '10.00' });
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [noRef, booked({ ref: 'r2', amount: '20.00' })],
+      });
+      const [removed, kept] = [byAmount({ amount: 10 }), byAmount({ amount: 20 })];
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
       await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
 
-      expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(422);
-      const [event] = await helpers.getReconciliationHistory({ raw: true });
-      expect(event!.transactions.map((tx) => tx.id)).toEqual([removed.id]);
+      const linked = await helpers.linkAccountToBankConnection({
+        id: accountId,
+        connectionId,
+        externalAccountId: MOCK_IDENTIFICATION_HASH_1,
+      });
+      expect(linked.statusCode).toBe(200);
+      await resync({ connectionId, accountId });
+
+      expect(await listIds({ accountId })).toEqual([kept.id]);
+      expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
     });
 
     it('restores a removed row with its payee merged and its category replaced while it was removed', async () => {
@@ -662,6 +693,20 @@ describe('Transactions reconciliation', () => {
       await resync({ connectionId, accountId });
 
       expect(await listIds({ accountId })).toEqual([]);
+      expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
+      expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(200);
+      expect(await listIds({ accountId })).toEqual([removed.id]);
+    });
+
+    it('keeps a removed pending row in history when the bank cancels it', async () => {
+      const removedFixture = pending({ amount: '9.00', days: 5 });
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: [removedFixture] });
+      const removed = byAmount({ amount: 9 });
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+
+      helpers.enablebanking.setFixedTransactions([{ ...removedFixture, status: 'CNCL' }]);
+      await resync({ connectionId, accountId });
+
       expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
       expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(200);
       expect(await listIds({ accountId })).toEqual([removed.id]);
@@ -809,6 +854,35 @@ describe('Transactions reconciliation', () => {
       await resync({ connectionId, accountId });
 
       expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([]);
+    });
+
+    it('brings a removed pending row back when the bank books it', async () => {
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [{ ...pending({ amount: '12.00', days: 20 }), entryReference: 'removed-ref' }],
+      });
+      const removed = byAmount({ amount: 12 });
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+
+      helpers.enablebanking.setFixedTransactions([booked({ ref: 'removed-ref', amount: '12.00', days: 19 })]);
+      await resync({ connectionId, accountId });
+
+      expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([removed.id]);
+      const restored = (await helpers.getTransactionById({ id: removed.id, raw: true }))!;
+      expect(restored.isPending).toBe(false);
+      expect(restored.amount).toBe(12);
+      expect(await historyEvents()).toEqual([]);
+    });
+
+    it('keeps a removed pending row removed when the bank re-sends it as pending', async () => {
+      const removedFixture = { ...pending({ amount: '12.00', days: 20 }), entryReference: 'removed-ref' };
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: [removedFixture] });
+      const removed = byAmount({ amount: 12 });
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+
+      await resync({ connectionId, accountId });
+
+      expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([]);
+      expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
     });
 
     it('keeps only the booked survivor live after merging its pending copy and re-syncing', async () => {

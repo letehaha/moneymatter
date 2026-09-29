@@ -13,3 +13,9 @@ const IS_LINKED_NATURE = {
 export const LINKED_TRANSFER_NATURES: readonly TRANSACTION_TRANSFER_NATURE[] = (
   Object.keys(IS_LINKED_NATURE) as TRANSACTION_TRANSFER_NATURE[]
 ).filter((nature) => IS_LINKED_NATURE[nature]);
+
+export const isLinkedTransfer = ({
+  tx,
+}: {
+  tx: { transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
+}) => tx.transferId != null || LINKED_TRANSFER_NATURES.includes(tx.transferNature);
