@@ -16,14 +16,14 @@ import {
 } from '@tests/mocks/enablebanking/data';
 import { format, subDays } from 'date-fns';
 
-const daysAgo = (days: number) => format(subDays(new Date(), days), 'yyyy-MM-dd');
+const daysAgo = ({ days }: { days: number }) => format(subDays(new Date(), days), 'yyyy-MM-dd');
 
 const booked = ({ ref, amount, days = 3 }: { ref: string; amount: string; days?: number }): FixedTransaction => ({
   entryReference: ref,
   amount,
   currency: 'EUR',
   isExpense: true,
-  bookingDate: daysAgo(days),
+  bookingDate: daysAgo({ days }),
   counterpartyIban: null,
 });
 
@@ -31,7 +31,7 @@ const pending = ({ amount, days }: { amount: string; days: number }): FixedTrans
   amount,
   currency: 'EUR',
   isExpense: true,
-  transactionDate: daysAgo(days),
+  transactionDate: daysAgo({ days }),
   counterpartyIban: null,
   status: 'PDNG',
 });
@@ -83,7 +83,7 @@ async function setupEnableBanking({
   });
   const accountId = syncedAccounts[0]!.id as RecordId;
   const txs = (await helpers.getTransactions({ accountIds: [accountId], raw: true })) as unknown as TransactionModel[];
-  const byAmount = (amount: number) => txs.find((tx) => tx.amount === amount)!;
+  const byAmount = ({ amount }: { amount: number }) => txs.find((tx) => tx.amount === amount)!;
 
   return { connectionId, accountId, accountIds: syncedAccounts.map((a) => a.id as RecordId), byAmount };
 }
@@ -120,7 +120,7 @@ const createSubscription = async ({
   const subscription = await helpers.createSubscription({
     name,
     frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-    startDate: daysAgo(60),
+    startDate: daysAgo({ days: 60 }),
     dueDate,
     expectedAmount: 10,
     expectedCurrencyCode: 'EUR',
@@ -173,16 +173,16 @@ describe('Transactions reconciliation', () => {
     it('hides removed rows from the list and Enable Banking re-sync does not re-import them', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00' })];
       const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const removed = byAmount(10);
+      const removed = byAmount({ amount: 10 });
 
       const result = await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
 
       expect(result.removedIds).toEqual([removed.id]);
-      expect(await listIds({ accountId })).toEqual([byAmount(20).id]);
+      expect(await listIds({ accountId })).toEqual([byAmount({ amount: 20 }).id]);
 
       await resync({ connectionId, accountId });
 
-      expect(await listIds({ accountId })).toEqual([byAmount(20).id]);
+      expect(await listIds({ accountId })).toEqual([byAmount({ amount: 20 }).id]);
     });
 
     it('does not re-import a removed Monobank row on the next sync', async () => {
@@ -205,10 +205,10 @@ describe('Transactions reconciliation', () => {
     it('detaches budget, group and subscription links, and restore does not bring them back', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00' })];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const target = byAmount(10);
+      const target = byAmount({ amount: 10 });
 
       const budgetId = await createBudget({ name: 'Trip', transactionIds: [target.id] });
-      const groupId = await createGroup({ transactionIds: [target.id, byAmount(20).id] });
+      const groupId = await createGroup({ transactionIds: [target.id, byAmount({ amount: 20 }).id] });
       const subscriptionId = await createSubscription({ name: 'Gym', transactionIds: [target.id] });
 
       await helpers.reconciliationRemove({ transactionIds: [target.id], raw: true });
@@ -247,10 +247,19 @@ describe('Transactions reconciliation', () => {
         payload: { accountId, amount: 50, time: new Date().toISOString() },
         raw: true,
       });
-      await helpers.linkTransactions({ payload: { ids: [[byAmount(30).id, systemIncome.id]] }, raw: true });
-      await helpers.createSingleRefund({ originalTxId: byAmount(40).id, refundTxId: byAmount(5).id });
+      await helpers.linkTransactions({ payload: { ids: [[byAmount({ amount: 30 }).id, systemIncome.id]] }, raw: true });
+      await helpers.createSingleRefund({
+        originalTxId: byAmount({ amount: 40 }).id,
+        refundTxId: byAmount({ amount: 5 }).id,
+      });
 
-      for (const id of [systemTx.id, planned.id, byAmount(30).id, byAmount(40).id, byAmount(5).id]) {
+      for (const id of [
+        systemTx.id,
+        planned.id,
+        byAmount({ amount: 30 }).id,
+        byAmount({ amount: 40 }).id,
+        byAmount({ amount: 5 }).id,
+      ]) {
         const res = await helpers.reconciliationRemove({ transactionIds: [id as RecordId] });
         expect(res.statusCode).toBe(422);
       }
@@ -268,18 +277,24 @@ describe('Transactions reconciliation', () => {
         raw: true,
       });
       const linked = await helpers.linkTransactionToPortfolio({
-        transactionId: byAmount(10).id,
+        transactionId: byAmount({ amount: 10 }).id,
         payload: { portfolioId: portfolio.id },
       });
       expect(linked.statusCode).toBe(200);
 
-      expect((await helpers.reconciliationRemove({ transactionIds: [byAmount(10).id] })).statusCode).toBe(422);
+      expect((await helpers.reconciliationRemove({ transactionIds: [byAmount({ amount: 10 }).id] })).statusCode).toBe(
+        422,
+      );
     });
 
     it('clears the subscription period the removed row paid', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
-      const removed = byAmount(10);
-      const subscriptionId = await createSubscription({ name: 'Gym', transactionIds: [], dueDate: daysAgo(60) });
+      const removed = byAmount({ amount: 10 });
+      const subscriptionId = await createSubscription({
+        name: 'Gym',
+        transactionIds: [],
+        dueDate: daysAgo({ days: 60 }),
+      });
       const periodId = await payNextPeriod({ subscriptionId, transactionId: removed.id });
       expect(await periodTxId({ subscriptionId, periodId })).toBe(removed.id);
 
@@ -291,7 +306,7 @@ describe('Transactions reconciliation', () => {
     it('returns 404 for an already removed row and leaves history unchanged', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '11.00' })];
       const { accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [removed, live] = [byAmount(10), byAmount(11)];
+      const [removed, live] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
       await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
       const historyBefore = await historyEvents();
 
@@ -317,7 +332,7 @@ describe('Transactions reconciliation', () => {
         booked({ ref: 'r3', amount: '12.00' }),
       ];
       const { accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, a, b] = [byAmount(10), byAmount(11), byAmount(12)];
+      const [survivor, a, b] = [byAmount({ amount: 10 }), byAmount({ amount: 11 }), byAmount({ amount: 12 })];
 
       const result = await helpers.reconciliationMerge({
         transactionIds: [survivor.id, a.id, b.id],
@@ -342,7 +357,7 @@ describe('Transactions reconciliation', () => {
         booked({ ref: 'r3', amount: '12.00' }),
       ];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, removed, other] = [byAmount(10), byAmount(11), byAmount(12)];
+      const [survivor, removed, other] = [byAmount({ amount: 10 }), byAmount({ amount: 11 }), byAmount({ amount: 12 })];
 
       const budgetId = await createBudget({ name: 'Trip', transactionIds: [removed.id] });
       const groupId = await createGroup({ transactionIds: [removed.id, other.id] });
@@ -366,7 +381,7 @@ describe('Transactions reconciliation', () => {
         booked({ ref: 'r3', amount: '12.00' }),
       ];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, removed, other] = [byAmount(10), byAmount(11), byAmount(12)];
+      const [survivor, removed, other] = [byAmount({ amount: 10 }), byAmount({ amount: 11 }), byAmount({ amount: 12 })];
 
       const budgetId = await createBudget({ name: 'Trip', transactionIds: [survivor.id, removed.id] });
       const groupId = await createGroup({ transactionIds: [survivor.id, removed.id, other.id] });
@@ -386,20 +401,20 @@ describe('Transactions reconciliation', () => {
     it('rejects merges whose links conflict', async () => {
       const fixed = Array.from({ length: 8 }, (_, i) => booked({ ref: `r${i + 1}`, amount: `${i + 1}0.00` }));
       const { accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const t = (n: number) => byAmount(n * 10).id;
+      const t = ({ n }: { n: number }) => byAmount({ amount: n * 10 }).id;
 
-      await createBudget({ name: 'B1', transactionIds: [t(1)] });
-      await createBudget({ name: 'B2', transactionIds: [t(2)] });
-      await createGroup({ transactionIds: [t(3), t(5)] });
-      await createGroup({ transactionIds: [t(4), t(6)] });
-      await createSubscription({ name: 'S1', transactionIds: [t(7)] });
-      await createSubscription({ name: 'S2', transactionIds: [t(8)] });
+      await createBudget({ name: 'B1', transactionIds: [t({ n: 1 })] });
+      await createBudget({ name: 'B2', transactionIds: [t({ n: 2 })] });
+      await createGroup({ transactionIds: [t({ n: 3 }), t({ n: 5 })] });
+      await createGroup({ transactionIds: [t({ n: 4 }), t({ n: 6 })] });
+      await createSubscription({ name: 'S1', transactionIds: [t({ n: 7 })] });
+      await createSubscription({ name: 'S2', transactionIds: [t({ n: 8 })] });
 
       const cases: [RecordId[], RecordId][] = [
-        [[t(1), t(2)], t(1)],
-        [[t(3), t(4)], t(3)],
-        [[t(1), t(5), t(6)], t(1)],
-        [[t(7), t(8)], t(7)],
+        [[t({ n: 1 }), t({ n: 2 })], t({ n: 1 })],
+        [[t({ n: 3 }), t({ n: 4 })], t({ n: 3 })],
+        [[t({ n: 1 }), t({ n: 5 }), t({ n: 6 })], t({ n: 1 })],
+        [[t({ n: 7 }), t({ n: 8 })], t({ n: 7 })],
       ];
       for (const [transactionIds, survivorId] of cases) {
         expect((await helpers.reconciliationMerge({ transactionIds, survivorId })).statusCode).toBe(422);
@@ -415,7 +430,7 @@ describe('Transactions reconciliation', () => {
         booked({ ref: 'r3', amount: '12.00' }),
       ];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, a, b] = [byAmount(10), byAmount(11), byAmount(12)];
+      const [survivor, a, b] = [byAmount({ amount: 10 }), byAmount({ amount: 11 }), byAmount({ amount: 12 })];
       const budgetA = await createBudget({ name: 'A', transactionIds: [a.id] });
       const budgetB = await createBudget({ name: 'B', transactionIds: [b.id] });
 
@@ -432,7 +447,7 @@ describe('Transactions reconciliation', () => {
     it('moves an active subscription link onto a survivor that was unlinked from that subscription', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '11.00' })];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, removed] = [byAmount(10), byAmount(11)];
+      const [survivor, removed] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
       const subscriptionId = await createSubscription({ name: 'Gym', transactionIds: [survivor.id, removed.id] });
       await helpers.unlinkTransactionsFromSubscription({
         id: subscriptionId,
@@ -452,8 +467,12 @@ describe('Transactions reconciliation', () => {
     it('moves the subscription period a removed row paid onto the survivor', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '11.00' })];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, removed] = [byAmount(10), byAmount(11)];
-      const subscriptionId = await createSubscription({ name: 'Gym', transactionIds: [], dueDate: daysAgo(60) });
+      const [survivor, removed] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
+      const subscriptionId = await createSubscription({
+        name: 'Gym',
+        transactionIds: [],
+        dueDate: daysAgo({ days: 60 }),
+      });
       const periodId = await payNextPeriod({ subscriptionId, transactionId: removed.id });
 
       await helpers.reconciliationMerge({
@@ -468,8 +487,12 @@ describe('Transactions reconciliation', () => {
     it('rejects a merge when the survivor and a removed row pay different periods', async () => {
       const fixed = [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '11.00' })];
       const { byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [survivor, removed] = [byAmount(10), byAmount(11)];
-      const subscriptionId = await createSubscription({ name: 'Gym', transactionIds: [], dueDate: daysAgo(60) });
+      const [survivor, removed] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
+      const subscriptionId = await createSubscription({
+        name: 'Gym',
+        transactionIds: [],
+        dueDate: daysAgo({ days: 60 }),
+      });
       const survivorPeriodId = await payNextPeriod({ subscriptionId, transactionId: survivor.id });
       const removedPeriodId = await payNextPeriod({ subscriptionId, transactionId: removed.id });
 
@@ -485,7 +508,7 @@ describe('Transactions reconciliation', () => {
 
     it('rejects a pending survivor when a removed row is settled', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
-      const [pendingTx, bookedTx] = [byAmount(12), byAmount(12.5)];
+      const [pendingTx, bookedTx] = [byAmount({ amount: 12 }), byAmount({ amount: 12.5 })];
       const transactionIds = [pendingTx.id, bookedTx.id];
 
       expect((await helpers.reconciliationMerge({ transactionIds, survivorId: pendingTx.id })).statusCode).toBe(422);
@@ -498,7 +521,7 @@ describe('Transactions reconciliation', () => {
         transactions: fixed,
         accountExternalIds: [MOCK_IDENTIFICATION_HASH_1, MOCK_IDENTIFICATION_HASH_2],
       });
-      const [a, b] = [byAmount(10), byAmount(11)];
+      const [a, b] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
       const [otherAccountTx] = await helpers.getTransactions({ accountIds: [accountIds[1]!], raw: true });
       const [systemTx] = await helpers.createTransaction({ raw: true });
 
@@ -523,7 +546,7 @@ describe('Transactions reconciliation', () => {
         booked({ ref: 'r3', amount: '12.00' }),
       ];
       const { accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [a, b, c] = [byAmount(10), byAmount(11), byAmount(12)];
+      const [a, b, c] = [byAmount({ amount: 10 }), byAmount({ amount: 11 }), byAmount({ amount: 12 })];
       const balance = async () => (await helpers.getAccount({ id: accountId, raw: true })).currentBalance;
       const balanceBefore = await balance();
 
@@ -544,7 +567,7 @@ describe('Transactions reconciliation', () => {
       const { accountId, byAmount } = await setupEnableBanking({
         transactions: [booked({ ref: 'r1', amount: '10.00' })],
       });
-      const removed = byAmount(10);
+      const removed = byAmount({ amount: 10 });
       await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
 
       await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
@@ -556,7 +579,7 @@ describe('Transactions reconciliation', () => {
 
     it('restores a removed row with its payee merged and its category replaced while it was removed', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
-      const removed = byAmount(10);
+      const removed = byAmount({ amount: 10 });
       const sourcePayee = await helpers.createPayee({ payload: { name: 'Old Payee' }, raw: true });
       const targetPayee = await helpers.createPayee({ payload: { name: 'New Payee' }, raw: true });
       const category = await helpers.addCustomCategory({ name: 'Old Category', color: '#FF0000', raw: true });
@@ -584,7 +607,7 @@ describe('Transactions reconciliation', () => {
 
     it('restores a row removed before a base-currency change with ref values in the new base currency', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
-      const removed = byAmount(10);
+      const removed = byAmount({ amount: 10 });
       expect(removed.refCurrencyCode).not.toBe('EUR');
       await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
 
@@ -600,7 +623,9 @@ describe('Transactions reconciliation', () => {
     it('rejects rows that are not removed and an empty payload', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
 
-      expect((await helpers.reconciliationRestore({ transactionIds: [byAmount(10).id] })).statusCode).toBe(404);
+      expect((await helpers.reconciliationRestore({ transactionIds: [byAmount({ amount: 10 }).id] })).statusCode).toBe(
+        404,
+      );
       expect((await helpers.reconciliationRestore({ transactionIds: [] })).statusCode).toBe(422);
     });
   });
@@ -612,12 +637,12 @@ describe('Transactions reconciliation', () => {
 
     it('records a plain removal', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
-      await helpers.reconciliationRemove({ transactionIds: [byAmount(10).id], raw: true });
+      await helpers.reconciliationRemove({ transactionIds: [byAmount({ amount: 10 }).id], raw: true });
 
       const [event] = await helpers.getReconciliationHistory({ raw: true });
       expect(event!.type).toBe('remove');
       expect(event!.survivor).toBeNull();
-      expect(event!.transactions.map((tx) => tx.id)).toEqual([byAmount(10).id]);
+      expect(event!.transactions.map((tx) => tx.id)).toEqual([byAmount({ amount: 10 }).id]);
     });
 
     it('turns a merge into a restorable removal when the bank cancels the pending survivor', async () => {
@@ -626,7 +651,7 @@ describe('Transactions reconciliation', () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({
         transactions: [survivorFixture, mergedAwayFixture],
       });
-      const [survivor, removed] = [byAmount(25), byAmount(9)];
+      const [survivor, removed] = [byAmount({ amount: 25 }), byAmount({ amount: 9 })];
       await helpers.reconciliationMerge({
         transactionIds: [survivor.id, removed.id],
         survivorId: survivor.id,
@@ -661,7 +686,12 @@ describe('Transactions reconciliation', () => {
         pending({ amount: '30.00', days: 20 }),
       ];
       const { accountId, byAmount } = await setupEnableBanking({ transactions: fixed });
-      const [removed, a, b, stuck] = [byAmount(10), byAmount(11), byAmount(12), byAmount(30)];
+      const [removed, a, b, stuck] = [
+        byAmount({ amount: 10 }),
+        byAmount({ amount: 11 }),
+        byAmount({ amount: 12 }),
+        byAmount({ amount: 30 }),
+      ];
       await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
 
       const userB = await helpers.signUpSecondUser();
@@ -694,9 +724,9 @@ describe('Transactions reconciliation', () => {
       const items = await helpers.getStuckPending({ raw: true });
 
       expect(items).toHaveLength(2);
-      const recent = items.find((item) => item.transaction.id === byAmount(12).id)!;
-      const old = items.find((item) => item.transaction.id === byAmount(30).id)!;
-      expect(recent.candidate?.id).toBe(byAmount(12.5).id);
+      const recent = items.find((item) => item.transaction.id === byAmount({ amount: 12 }).id)!;
+      const old = items.find((item) => item.transaction.id === byAmount({ amount: 30 }).id)!;
+      expect(recent.candidate?.id).toBe(byAmount({ amount: 12.5 }).id);
       expect(recent.canCheckWithBank).toBe(true);
       expect(recent.pendingDays).toBeGreaterThanOrEqual(19);
       expect(recent.pendingDays).toBeLessThanOrEqual(21);
@@ -715,23 +745,29 @@ describe('Transactions reconciliation', () => {
         }),
         raw: true,
       });
-      await helpers.linkTransactions({ payload: { ids: [[byAmount(12.5).id, systemIncome.id]] }, raw: true });
+      await helpers.linkTransactions({
+        payload: { ids: [[byAmount({ amount: 12.5 }).id, systemIncome.id]] },
+        raw: true,
+      });
 
       const items = await helpers.getStuckPending({ raw: true });
 
-      expect(items.find((item) => item.transaction.id === byAmount(12).id)!.candidate).toBeNull();
+      expect(items.find((item) => item.transaction.id === byAmount({ amount: 12 }).id)!.candidate).toBeNull();
     });
 
     it('offers no candidate when the booked copy is refund-linked', async () => {
       const { byAmount } = await setupEnableBanking({
         transactions: [...STUCK_FIXTURES, { ...booked({ ref: 'refund', amount: '1.00', days: 17 }), isExpense: false }],
       });
-      const refund = await helpers.createSingleRefund({ originalTxId: byAmount(12.5).id, refundTxId: byAmount(1).id });
+      const refund = await helpers.createSingleRefund({
+        originalTxId: byAmount({ amount: 12.5 }).id,
+        refundTxId: byAmount({ amount: 1 }).id,
+      });
       expect(refund.statusCode).toBe(200);
 
       const items = await helpers.getStuckPending({ raw: true });
 
-      expect(items.find((item) => item.transaction.id === byAmount(12).id)!.candidate).toBeNull();
+      expect(items.find((item) => item.transaction.id === byAmount({ amount: 12 }).id)!.candidate).toBeNull();
     });
 
     it('returns an empty list without pending rows', async () => {
@@ -741,13 +777,13 @@ describe('Transactions reconciliation', () => {
     it('keeps a pending row as booked', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
 
-      const result = await helpers.keepAsBooked({ transactionIds: [byAmount(12).id], raw: true });
+      const result = await helpers.keepAsBooked({ transactionIds: [byAmount({ amount: 12 }).id], raw: true });
 
-      expect(result.updatedIds).toEqual([byAmount(12).id]);
+      expect(result.updatedIds).toEqual([byAmount({ amount: 12 }).id]);
       const items = await helpers.getStuckPending({ raw: true });
-      expect(items.map((item) => item.transaction.id)).toEqual([byAmount(30).id]);
+      expect(items.map((item) => item.transaction.id)).toEqual([byAmount({ amount: 30 }).id]);
 
-      expect((await helpers.keepAsBooked({ transactionIds: [byAmount(12.5).id] })).statusCode).toBe(422);
+      expect((await helpers.keepAsBooked({ transactionIds: [byAmount({ amount: 12.5 }).id] })).statusCode).toBe(422);
       const [systemTx] = await helpers.createTransaction({ raw: true });
       expect((await helpers.keepAsBooked({ transactionIds: [systemTx.id as RecordId] })).statusCode).toBe(422);
       expect((await helpers.keepAsBooked({ transactionIds: [NONEXISTENT_ID] })).statusCode).toBe(404);
@@ -756,7 +792,7 @@ describe('Transactions reconciliation', () => {
 
     it('keeps a kept-as-booked row out of stuck pending after a re-sync, without a duplicate', async () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
-      const kept = byAmount(12);
+      const kept = byAmount({ amount: 12 });
 
       await helpers.keepAsBooked({ transactionIds: [kept.id], raw: true });
       await resync({ connectionId, accountId });
@@ -769,7 +805,7 @@ describe('Transactions reconciliation', () => {
     it('does not re-import a removed stuck pending row', async () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
 
-      await helpers.reconciliationRemove({ transactionIds: [byAmount(12).id], raw: true });
+      await helpers.reconciliationRemove({ transactionIds: [byAmount({ amount: 12 }).id], raw: true });
       await resync({ connectionId, accountId });
 
       expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([]);
@@ -777,7 +813,7 @@ describe('Transactions reconciliation', () => {
 
     it('keeps only the booked survivor live after merging its pending copy and re-syncing', async () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
-      const [pendingTx, bookedTx] = [byAmount(12), byAmount(12.5)];
+      const [pendingTx, bookedTx] = [byAmount({ amount: 12 }), byAmount({ amount: 12.5 })];
 
       await helpers.reconciliationMerge({
         transactionIds: [pendingTx.id, bookedTx.id],
@@ -799,12 +835,12 @@ describe('Transactions reconciliation', () => {
       helpers.enablebanking.setFixedTransactions([booked({ ref: 'later', amount: '3.00', days: 1 })]);
       await resync({ connectionId, accountId });
       await resync({ connectionId, accountId });
-      expect(dateFrom() > daysAgo(20)).toBe(true);
+      expect(dateFrom() > daysAgo({ days: 20 })).toBe(true);
 
       const result = await helpers.checkStuckPending({ accountId, raw: true });
 
       expect(result).toEqual({ bookedCount: 0, pendingCount: 1 });
-      expect(dateFrom() <= daysAgo(20)).toBe(true);
+      expect(dateFrom() <= daysAgo({ days: 20 })).toBe(true);
     });
 
     it('reports how many checkable stuck rows the bank booked and how many are still pending', async () => {
@@ -829,7 +865,7 @@ describe('Transactions reconciliation', () => {
       expect(result).toEqual({ bookedCount: 1, pendingCount: 1 });
       const items = await helpers.getStuckPending({ raw: true });
       expect(items.map((item) => item.transaction.id).toSorted()).toEqual(
-        [byAmount(15).id, byAmount(30).id].toSorted(),
+        [byAmount({ amount: 15 }).id, byAmount({ amount: 30 }).id].toSorted(),
       );
     });
 
@@ -857,7 +893,7 @@ describe('Transactions reconciliation', () => {
           { ...pending({ amount: '13.00', days: 9 }), entryReference: 'merged-ref' },
         ],
       });
-      const [survivor, removed] = [byAmount(12), byAmount(13)];
+      const [survivor, removed] = [byAmount({ amount: 12 }), byAmount({ amount: 13 })];
       await helpers.reconciliationMerge({
         transactionIds: [survivor.id, removed.id],
         survivorId: survivor.id,
@@ -883,7 +919,11 @@ describe('Transactions reconciliation', () => {
           { ...pending({ amount: '13.00', days: 9 }), entryReference: 'merged-ref' },
         ],
       });
-      const [finalSurvivor, middle, first] = [byAmount(12), byAmount(14), byAmount(13)];
+      const [finalSurvivor, middle, first] = [
+        byAmount({ amount: 12 }),
+        byAmount({ amount: 14 }),
+        byAmount({ amount: 13 }),
+      ];
       await helpers.reconciliationMerge({ transactionIds: [middle.id, first.id], survivorId: middle.id, raw: true });
       await helpers.reconciliationMerge({
         transactionIds: [finalSurvivor.id, middle.id],
@@ -903,7 +943,7 @@ describe('Transactions reconciliation', () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({
         transactions: [pending({ amount: '12.00', days: 10 }), pending({ amount: '13.00', days: 9 })],
       });
-      const [survivor, removed] = [byAmount(12), byAmount(13)];
+      const [survivor, removed] = [byAmount({ amount: 12 }), byAmount({ amount: 13 })];
       await helpers.reconciliationMerge({
         transactionIds: [survivor.id, removed.id],
         survivorId: survivor.id,
@@ -927,7 +967,7 @@ describe('Transactions reconciliation', () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({
         transactions: [survivorFixture, { ...pending({ amount: '11.00', days: 6 }), entryReference: 'merged-ref' }],
       });
-      const [survivor, removed] = [byAmount(10), byAmount(11)];
+      const [survivor, removed] = [byAmount({ amount: 10 }), byAmount({ amount: 11 })];
       await helpers.reconciliationMerge({
         transactionIds: [survivor.id, removed.id],
         survivorId: survivor.id,
@@ -955,7 +995,7 @@ describe('Transactions reconciliation', () => {
       const { connectionId, accountId, byAmount } = await setupEnableBanking({
         transactions: [bookedFixture, mergedAwayFixture],
       });
-      const [bookedCopy, mergedAway] = [byAmount(25), byAmount(9)];
+      const [bookedCopy, mergedAway] = [byAmount({ amount: 25 }), byAmount({ amount: 9 })];
 
       // Arrives after its booked copy is stored, so sync keeps both rows instead of upgrading.
       helpers.enablebanking.setFixedTransactions([

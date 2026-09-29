@@ -126,6 +126,12 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
       };
     }
 
+    case NOTIFICATION_TYPES.stuckPending:
+      return {
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.optimizationsReconciliation, query: { tab: 'stuck-pending' } },
+      };
+
     default:
       return null;
   }

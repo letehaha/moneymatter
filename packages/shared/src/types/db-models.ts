@@ -517,6 +517,10 @@ export interface TagReminderNotificationPayload {
   transactionIds?: string[];
 }
 
+export interface StuckPendingNotificationPayload {
+  transactionIds: RecordId[];
+}
+
 /**
  * Common metadata about a share-related notification's owner / recipient pair.
  * The recipient's perspective uses `owner` fields; the owner's perspective uses `recipient` fields.
@@ -585,6 +589,7 @@ export type NotificationPayload =
   | SystemNotificationPayload
   | ChangelogNotificationPayload
   | TagReminderNotificationPayload
+  | StuckPendingNotificationPayload
   | ShareInvitationNotificationPayload
   | ShareLifecycleNotificationPayload
   | ShareInvitationSendFailedPayload

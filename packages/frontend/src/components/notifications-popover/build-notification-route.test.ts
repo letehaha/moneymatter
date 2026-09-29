@@ -189,6 +189,22 @@ describe('buildNotificationRoute', () => {
     });
   });
 
+  describe('stuck_pending', () => {
+    it('returns SPA route to the reconciliation stuck-pending tab', () => {
+      const route = buildNotificationRoute(
+        baseNotification({
+          type: NOTIFICATION_TYPES.stuckPending,
+          payload: { transactionIds: [NONEXISTENT_ID] },
+        }),
+      );
+
+      expect(route).toEqual({
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.optimizationsReconciliation, query: { tab: 'stuck-pending' } },
+      });
+    });
+  });
+
   describe('household_invitation_received', () => {
     it('returns SPA route to shared-with-me with invitation_token query when token present', () => {
       const route = buildNotificationRoute(

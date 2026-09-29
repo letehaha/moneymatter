@@ -115,7 +115,12 @@
       "subscriptionConflict": "The selected transactions are linked to different subscriptions. Align their subscriptions before merging.",
       "accountDisconnected": "Can't restore: the account is no longer connected to the bank.",
       "bankCheckUnsupported": "Checking with the bank is only available for Enable Banking accounts.",
-      "notPending": "Only pending transactions can be kept as booked."
+      "notPending": "Only pending transactions can be kept as booked.",
+      "stuckPendingNotification": {
+        "title": "Some card payments haven't cleared",
+        "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
+        "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
+      }
     }
   },
   "budgets": {

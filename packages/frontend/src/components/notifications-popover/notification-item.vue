@@ -18,6 +18,7 @@ import {
   ClockIcon,
   HandshakeIcon,
   HomeIcon,
+  HourglassIcon,
   InfoIcon,
   LogOutIcon,
   MailIcon,
@@ -85,6 +86,8 @@ const getIcon = (type: NotificationType) => {
       return CalendarClockIcon;
     case NOTIFICATION_TYPES.plannedConfirmed:
       return CalendarCheckIcon;
+    case NOTIFICATION_TYPES.stuckPending:
+      return HourglassIcon;
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return MailIcon;
@@ -132,6 +135,8 @@ const getIconBg = (type: NotificationType) => {
       return 'bg-cyan-500';
     case NOTIFICATION_TYPES.plannedConfirmed:
       return 'bg-teal-500';
+    case NOTIFICATION_TYPES.stuckPending:
+      return 'bg-yellow-500';
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return 'bg-violet-500';

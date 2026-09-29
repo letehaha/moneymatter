@@ -3,8 +3,9 @@ import type { CheckStuckPendingResponse, KeepAsBookedResponse } from '@bt/shared
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
-import { findTransactions, updateTransactions } from '@models/transactions-query';
+import { type FindTransactionsOptions, findTransactions, updateTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
 import { serializeTransaction } from '@root/serializers/transactions.serializer';
 import { syncTransactionsForAccount } from '@services/bank-data-providers/connection/sync-transactions-for-account';
@@ -34,20 +35,24 @@ const toMatchRow = ({ tx }: { tx: Transactions }): StuckPendingMatchRow => ({
   merchantName: typeof tx.externalData?.merchantName === 'string' ? tx.externalData.merchantName : null,
 });
 
-export const getStuckPending = async ({ userId }: { userId: number }) => {
-  const now = new Date();
-  const pending = await findTransactions({
+export const findStuckPending = ({ access, attributes }: Pick<FindTransactionsOptions, 'access' | 'attributes'>) =>
+  findTransactions({
     where: {
       accountType: ACCOUNT_TYPES.enableBanking,
-      time: { [Op.lt]: subDays(now, STUCK_AFTER_DAYS) },
+      time: { [Op.lt]: subDays(new Date(), STUCK_AFTER_DAYS) },
       [Op.and]: [wherePreBookingStatus()],
     },
     planned: 'exclude',
-    access: { creator: userId },
+    access,
     balanceAdjustments: 'include',
     completeness: 'all',
     order: [['time', 'ASC']],
+    attributes,
   });
+
+export const getStuckPending = async ({ userId }: { userId: number }) => {
+  const now = new Date();
+  const pending = await findStuckPending({ access: { creator: userId } });
 
   if (!pending.length) return [];
 
@@ -133,10 +138,17 @@ export const checkStuckPendingWithBank = async ({
     await syncTransactionsForAccount({ connectionId: account.bankDataProviderConnectionId, userId, accountId });
   } catch (error) {
     if (widened) {
-      await account.reload();
-      if (account.externalData?.oldestPendingDate === widened) {
-        const { oldestPendingDate: _, ...rest } = account.externalData;
-        await account.update({ externalData: stored === undefined ? rest : { ...rest, oldestPendingDate: stored } });
+      try {
+        await account.reload();
+        if (account.externalData?.oldestPendingDate === widened) {
+          const { oldestPendingDate: _, ...rest } = account.externalData;
+          await account.update({ externalData: stored === undefined ? rest : { ...rest, oldestPendingDate: stored } });
+        }
+      } catch (rollbackError) {
+        logger.error({
+          message: `Failed to roll back oldestPendingDate for account ${accountId}`,
+          error: rollbackError as Error,
+        });
       }
     }
     throw error;

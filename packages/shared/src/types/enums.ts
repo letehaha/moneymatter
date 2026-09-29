@@ -387,6 +387,8 @@ export const NOTIFICATION_TYPES = {
   subscriptionReminder: 'subscription_reminder',
   /** A bank sync confirmed N planned transactions by merging real rows into them. */
   plannedConfirmed: 'planned_confirmed',
+  /** Enable Banking rows still pending after a week; the user should check them with the bank. */
+  stuckPending: 'stuck_pending',
   shareInvitationReceived: 'share_invitation_received',
   shareInvitationSendFailed: 'share_invitation_send_failed',
   shareAccepted: 'share_accepted',
