@@ -102,8 +102,8 @@
       "monthlyComparison": {
         "title": "Monthly Comparison",
         "allCategories": "All Categories",
-        "average": "Average",
-        "total": "Total",
+        "average": "Durchschnittlich",
+        "total": "Gesamt",
         "vsLastMonth": "vs previous month",
         "viewTransactions": "View transactions"
       },
@@ -224,7 +224,7 @@
         "countsLoans": "Kredite",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
-        "archivedNoteLink": "Überprüfung",
+        "archivedNoteLink": "Überprüfen",
         "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
         "inflationLabel": "Inflation",
         "inflationBuiltIn": "{pct}% · built into this preset",
@@ -346,6 +346,7 @@
       },
       "milestones": {
         "reached": "Reached",
+        "reachedOn": "Reached {date}",
         "eta": "in {duration} · {date}"
       },
       "empty": {
@@ -435,7 +436,7 @@
       "saveError": "Could not save the view"
     },
     "table": {
-      "total": "Total",
+      "total": "Gesamt",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
       "expandRow": "Expand",
@@ -528,7 +529,7 @@
   },
   "investmentContributions": {
     "subtitle": "How much cash you've moved into your portfolios over time, and where it went.",
-    "average": "Average",
+    "average": "Durchschnittlich",
     "portfolioFilter": {
       "scopeHint": "Filters which portfolios count toward contributions."
     },

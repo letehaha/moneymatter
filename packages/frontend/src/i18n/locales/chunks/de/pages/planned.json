@@ -38,7 +38,7 @@
       "updateMatchingRules": "Update matching rules",
       "linked": {
         "totalPaid": "Gesamt bezahlt",
-        "average": "Average",
+        "average": "Durchschnittlich",
         "lastPayment": "Last payment",
         "driftUp": "↑ {percent}% since first payment ({date})",
         "driftDown": "↓ {percent}% since first payment ({date})",
@@ -212,7 +212,7 @@
         "incomeLabel": "Expected income",
         "monthlyIncome": "~{amount}/mo",
         "acrossIncome": "across {count} active income payment | across {count} active income payments",
-        "percentOfIncome": "{percent}% der durchschn. Einnahmen",
+        "percentOfIncome": "{percent}% des ø Einkommens",
         "projectedPerYearLabel": "Projected / yr",
         "activeCountLabel": "Aktiv",
         "loadError": "Couldn't load the summary."
@@ -314,9 +314,9 @@
           "description": "How often it repeats and when it is due.",
           "edit": "Edit schedule",
           "frequencyPlaceholder": "Select a frequency",
-          "clearDueDate": "Clear",
+          "clearDueDate": "Zurücksetzen",
           "detectionOnlyHint": "Without a due date this subscription only detects matching transactions — no payment periods or reminders.",
-          "emailOn": "An",
+          "emailOn": "Ein",
           "emailOff": "Off"
         },
         "automation": {

@@ -1,67 +1,67 @@
 {
   "settings": {
     "security": {
-      "title": "Security Settings",
-      "description": "Manage your login methods, active sessions, and password",
+      "title": "Bezpečnostné nastavenia",
+      "description": "Spravujte svoje spôsoby prihlásenia, aktívne relácie a heslo",
       "tabs": {
-        "loginMethods": "Login Methods",
-        "activeSessions": "Active Sessions",
+        "loginMethods": "Spôsoby prihlásenia",
+        "activeSessions": "Aktívne relácie",
         "password": "Heslo",
-        "backup": "Backup & restore",
-        "dangerZone": "Danger Zone"
+        "backup": "Záloha a obnova",
+        "dangerZone": "Nebezpečná zóna"
       },
       "loginMethods": {
-        "title": "Login Methods",
-        "description": "Manage how you sign in to your account",
+        "title": "Spôsoby prihlásenia",
+        "description": "Spravujte, ako sa prihlasujete do svojho účtu",
         "oauth": {
-          "connectedAs": "Connected as {email}",
-          "accountName": "{provider} Account",
-          "notConnected": "Not connected",
+          "connectedAs": "Pripojené ako {email}",
+          "accountName": "Účet {provider}",
+          "notConnected": "Nepripojené",
           "disconnect": "Odpojiť",
           "connect": "Pripojiť"
         },
         "password": {
           "title": "Heslo",
-          "passwordSet": "Password is set",
-          "noPassword": "No password set",
-          "manageInTab": "Manage in Password tab",
-          "setupInTab": "Set up in Password tab"
+          "passwordSet": "Heslo je nastavené",
+          "noPassword": "Nie je nastavené žiadne heslo",
+          "manageInTab": "Spravujte na karte Heslo",
+          "setupInTab": "Nastavte na karte Heslo"
         },
         "passkeys": {
-          "title": "Passkeys",
-          "noPasskeys": "No passkeys registered",
-          "passkeyCount": "{count} passkey(s) registered",
+          "title": "Prístupové kľúče",
+          "noPasskeys": "Nie sú zaregistrované žiadne prístupové kľúče",
+          "passkeyCount": "Zaregistrované prístupové kľúče: {count}",
           "addButton": "Pridať prístupový kľúč",
-          "passkeyName": "Passkey",
-          "added": "Added {date}",
-          "rename": "Rename",
-          "renamePlaceholder": "Enter passkey name",
-          "deleteConfirmTitle": "Remove passkey?",
-          "deleteConfirmDescription": "\"{name}\" will no longer be able to sign in to your account. This cannot be undone."
+          "passkeyName": "Prístupový kľúč",
+          "added": "Pridané {date}",
+          "rename": "Premenovať",
+          "renamePlaceholder": "Zadajte názov prístupového kľúča",
+          "deleteConfirmTitle": "Odstrániť prístupový kľúč?",
+          "deleteConfirmDescription": "„{name}\" sa už nebude dať použiť na prihlásenie do vášho účtu. Túto akciu nie je možné vrátiť späť."
         },
-        "warningOneMethod": "Add another login method before disconnecting your OAuth account.",
+        "warningOneMethod": "Pred odpojením účtu OAuth pridajte iný spôsob prihlásenia.",
         "notifications": {
-          "oauthConnectFailed": "Failed to connect {provider} account",
-          "oauthDisconnectSuccess": "{provider} account disconnected",
-          "oauthDisconnectFailed": "Failed to disconnect {provider} account",
-          "passkeyAddSuccess": "Passkey added successfully",
-          "passkeyAddFailed": "Failed to add passkey. Make sure your device supports passkeys.",
-          "passkeyRemoveSuccess": "Passkey removed",
-          "passkeyRemoveFailed": "Failed to remove passkey",
-          "passkeyRenameFailed": "Failed to rename passkey"
+          "oauthConnectFailed": "Účet {provider} sa nepodarilo pripojiť",
+          "oauthDisconnectSuccess": "Účet {provider} odpojený",
+          "oauthDisconnectFailed": "Účet {provider} sa nepodarilo odpojiť",
+          "passkeyAddSuccess": "Prístupový kľúč bol úspešne pridaný",
+          "passkeyAddFailed": "Prístupový kľúč sa nepodarilo pridať. Uistite sa, že vaše zariadenie podporuje prístupové kľúče.",
+          "passkeyRemoveSuccess": "Prístupový kľúč bol odstránený",
+          "passkeyRemoveFailed": "Prístupový kľúč sa nepodarilo odstrániť",
+          "passkeyRenameFailed": "Prístupový kľúč sa nepodarilo premenovať"
         }
       },
       "activeSessions": {
-        "title": "Active Sessions",
-        "description": "Manage devices where you're currently signed in",
-        "currentBadge": "Current",
-        "unknownLocation": "Unknown location",
-        "lastActive": "Last active: {date}",
-        "noSessions": "No active sessions found",
-        "revokeAllButton": "Sign out of all other sessions",
+        "title": "Aktívne relácie",
+        "description": "Spravujte zariadenia s aktívnym prihlásením",
+        "currentBadge": "Aktuálna",
+        "unknownLocation": "Neznáma poloha",
+        "lastActive": "Naposledy aktívna: {date}",
+        "noSessions": "Nenašli sa žiadne aktívne relácie",
+        "revokeAllButton": "Odhlásiť zo všetkých ostatných relácií",
         "deviceTypes": {
-          "unknownDevice": "Unknown Device",
-          "unknownBrowser": "Unknown Browser"
+          "unknownDevice": "Neznáme zariadenie",
+          "unknownBrowser": "Neznámy prehliadač"
         },
         "timeAgo": {
           "justNow": "Práve teraz",
@@ -70,203 +70,203 @@
           "daysAgo": "pred {count} dňom | pred {count} dňami"
         },
         "notifications": {
-          "loadFailed": "Failed to load sessions",
-          "revokeSuccess": "Session revoked",
-          "revokeFailed": "Failed to revoke session",
-          "revokeAllSuccess": "All other sessions have been signed out",
-          "revokeAllFailed": "Failed to revoke sessions"
+          "loadFailed": "Relácie sa nepodarilo načítať",
+          "revokeSuccess": "Relácia ukončená",
+          "revokeFailed": "Reláciu sa nepodarilo ukončiť",
+          "revokeAllSuccess": "Všetky ostatné relácie boli odhlásené",
+          "revokeAllFailed": "Relácie sa nepodarilo ukončiť"
         }
       },
       "passwordSection": {
         "title": "Heslo",
-        "descriptionChange": "Change your password",
-        "descriptionSet": "Set up a password for your account",
+        "descriptionChange": "Zmeňte si heslo",
+        "descriptionSet": "Nastavte si heslo pre svoj účet",
         "labels": {
-          "currentPassword": "Current Password",
-          "newPassword": "New Password",
+          "currentPassword": "Aktuálne heslo",
+          "newPassword": "Nové heslo",
           "password": "Heslo",
-          "confirmPassword": "Confirm Password"
+          "confirmPassword": "Potvrďte heslo"
         },
         "placeholders": {
-          "currentPassword": "Enter current password",
-          "newPassword": "Enter new password",
-          "confirmPassword": "Confirm new password"
+          "currentPassword": "Zadajte aktuálne heslo",
+          "newPassword": "Zadajte nové heslo",
+          "confirmPassword": "Potvrďte nové heslo"
         },
         "buttons": {
-          "change": "Change Password",
-          "set": "Set Password"
+          "change": "Zmeniť heslo",
+          "set": "Nastaviť heslo"
         },
         "strength": {
-          "veryWeak": "Very weak",
-          "weak": "Weak",
-          "fair": "Fair",
-          "strong": "Strong",
-          "veryStrong": "Very strong"
+          "veryWeak": "Veľmi slabé",
+          "weak": "Slabé",
+          "fair": "Priemerné",
+          "strong": "Silné",
+          "veryStrong": "Veľmi silné"
         },
         "requirements": {
-          "title": "Password requirements",
-          "minLength": "Minimum 8 characters",
-          "mixedCase": "Mix of uppercase and lowercase letters recommended",
-          "specialChars": "Include numbers and special characters for stronger security"
+          "title": "Požiadavky na heslo",
+          "minLength": "Minimálne 8 znakov",
+          "mixedCase": "Odporúča sa kombinácia veľkých a malých písmen",
+          "specialChars": "Pre vyššiu bezpečnosť pridajte čísla a špeciálne znaky"
         },
         "validation": {
-          "minLength": "Password must be at least 8 characters",
-          "passwordsNoMatch": "Passwords do not match"
+          "minLength": "Heslo musí mať aspoň 8 znakov",
+          "passwordsNoMatch": "Heslá sa nezhodujú"
         },
         "notifications": {
-          "changeSuccess": "Password changed successfully",
-          "changeFailed": "Failed to change password",
-          "setSuccess": "Password set successfully",
-          "setFailed": "Failed to set password",
-          "unexpectedError": "An unexpected error occurred",
-          "updateFailed": "Failed to update password"
+          "changeSuccess": "Heslo bolo úspešne zmenené",
+          "changeFailed": "Heslo sa nepodarilo zmeniť",
+          "setSuccess": "Heslo bolo úspešne nastavené",
+          "setFailed": "Heslo sa nepodarilo nastaviť",
+          "unexpectedError": "Vyskytla sa neočakávaná chyba",
+          "updateFailed": "Heslo sa nepodarilo aktualizovať"
         }
       },
-      "dangerZone": "Danger zone",
+      "dangerZone": "Nebezpečná zóna",
       "wipeData": {
-        "title": "Wipe all data",
-        "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "Warning:",
-        "button": "Wipe data",
+        "title": "Vymazať všetky údaje",
+        "warningFull": "{strong} Táto akcia odstráni všetko vo vašom pracovnom priestore. Vaše prihlásenie zostane zachované, aby ste mohli začať odznova.",
+        "warningStrong": "Upozornenie:",
+        "button": "Vymazať údaje",
         "dialog": {
-          "title": "Wipe all your data?",
-          "description": "This permanently deletes everything in your workspace, including:",
+          "title": "Vymazať všetky vaše údaje?",
+          "description": "Toto natrvalo zmaže všetko vo vašom pracovnom priestore:",
           "list": {
-            "accounts": "Accounts and balances",
-            "transactions": "Transactions, refunds, and transfers",
-            "budgets": "Budgets, tags, and categories",
-            "portfolios": "Investments, portfolios, and holdings",
-            "settings": "User settings, AI keys, and onboarding state",
-            "baseCurrency": "Base currency and exchange rates"
+            "accounts": "Účty a zostatky",
+            "transactions": "Transakcie, vrátenia platby a prevody",
+            "budgets": "Rozpočty, štítky a kategórie",
+            "portfolios": "Investície, portfóliá a pozície",
+            "settings": "Používateľských nastavení, kľúčov AI a stavu úvodného nastavenia",
+            "baseCurrency": "Základnej meny a výmenných kurzov"
           },
-          "kept": "Your login and profile remain. You'll restart from the onboarding flow.",
-          "typeConfirm": "To confirm, type {phrase} below:",
-          "confirmLabel": "Wipe data",
-          "confirmLoading": "Wiping…"
+          "kept": "Vaše prihlásenie a profil zostanú zachované. Začnete odznova od úvodného nastavenia.",
+          "typeConfirm": "Na potvrdenie zadajte nižšie {phrase}:",
+          "confirmLabel": "Vymazať údaje",
+          "confirmLoading": "Mazanie…"
         },
         "sharingDialog": {
-          "title": "You're sharing data with other users",
-          "warning": "Others will lose access immediately",
-          "description": "Wiping your data revokes access to the following shared resources:",
-          "householdsCount": "And {count} household member will lose access. | And {count} household members will lose access.",
-          "confirmLabel": "Wipe anyway"
+          "title": "Zdieľate údaje s inými používateľmi",
+          "warning": "Ostatní okamžite stratia prístup",
+          "description": "Vymazaním údajov sa odoberie prístup k týmto zdieľaným zdrojom:",
+          "householdsCount": "A prístup stratí {count} člen domácnosti. | A prístup stratí {count} členov domácnosti.",
+          "confirmLabel": "Aj tak vymazať"
         },
         "notifications": {
-          "success": "All data wiped. Starting fresh.",
-          "failed": "Couldn't wipe data. Please try again."
+          "success": "Všetky údaje vymazané. Začíname odznova.",
+          "failed": "Údaje sa nepodarilo vymazať. Skúste to znova, prosím."
         }
       },
       "deleteAccount": {
-        "title": "Delete your account",
-        "warningFull": "Once you delete your account, there is no going back. {strong} Please be certain.",
-        "warningStrong": "All your data will be permanently erased.",
-        "button": "Delete my account",
+        "title": "Zmazať svoj účet",
+        "warningFull": "Po zmazaní účtu už niet cesty späť. {strong} Dobre si to premyslite, prosím.",
+        "warningStrong": "Všetky vaše údaje budú natrvalo vymazané.",
+        "button": "Zmazať môj účet",
         "dialog": {
-          "title": "Are you absolutely sure?",
-          "description": "This action cannot be undone. This will permanently delete your account and remove all your data including:",
+          "title": "Naozaj to chcete urobiť?",
+          "description": "Túto akciu nie je možné vrátiť späť. Váš účet sa natrvalo zmaže spolu so všetkými vašimi údajmi:",
           "dataList": {
-            "accounts": "All accounts and transactions",
-            "categories": "All categories and budgets",
-            "portfolios": "All investment portfolios",
-            "settings": "All settings and preferences"
+            "accounts": "Všetky účty a transakcie",
+            "categories": "Všetky kategórie a rozpočty",
+            "portfolios": "Všetky investičné portfóliá",
+            "settings": "Všetky nastavenia a predvoľby"
           },
-          "confirmFull": "Please type {email} to confirm",
-          "placeholder": "Enter your email",
-          "acceptButton": "Delete my account",
+          "confirmFull": "Na potvrdenie zadajte {email}, prosím",
+          "placeholder": "Zadajte svoj email",
+          "acceptButton": "Zmazať môj účet",
           "acceptButtonLoading": "Mazanie…..."
         },
         "notifications": {
-          "success": "Your account has been deleted successfully",
-          "failed": "An error occurred while trying to delete your account"
+          "success": "Váš účet bol úspešne zmazaný",
+          "failed": "Pri pokuse o zmazanie vášho účtu došlo k chybe"
         }
       },
       "backup": {
         "download": {
-          "title": "Download backup",
-          "description": "Save a complete, restorable copy of all your data as a zip file.",
-          "button": "Download",
+          "title": "Stiahnuť zálohu",
+          "description": "Uložte si kompletnú, obnoviteľnú kópiu všetkých svojich údajov ako zip súbor.",
+          "button": "Stiahnuť",
           "loading": "Príprava...",
-          "success": "Backup downloaded",
-          "failed": "Could not create backup. Please try again.",
-          "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
+          "success": "Záloha stiahnutá",
+          "failed": "Zálohu sa nepodarilo vytvoriť. Skúste to znova, prosím.",
+          "downloadBlocked": "Záloha bola vytvorená, prehliadač však stiahnutie zablokoval. Skontrolujte nastavenia sťahovania a skúste to znova.",
           "limitations": {
-            "trigger": "Has limitations",
-            "title": "What a backup leaves out",
-            "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
+            "trigger": "Má obmedzenia",
+            "title": "Čo záloha neobsahuje",
+            "intro": "Vaša záloha obsahuje všetky vaše údaje. Z bezpečnostných dôvodov sa do nej nezmestí zopár šifrovaných položiek, ktoré bude po obnove potrebné nastaviť znova:",
             "items": {
               "bankConnectionsTerm": "Bankové pripojenia",
-              "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
-              "aiKeysTerm": "AI API keys",
-              "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
+              "bankConnections": "{term} — prístupové tokeny sú šifrované a viazané na tento server, preto po obnove každú banku znova pripojíte.",
+              "aiKeysTerm": "API kľúče AI",
+              "aiKeys": "{term} — uložené šifrovane, preto ich po obnove zadáte znova."
             },
-            "included": "Everything else — accounts, transactions, categories, budgets, investments, loans, tags, payees and subscriptions — is included."
+            "included": "Všetko ostatné — účty, transakcie, kategórie, rozpočty, investície, pôžičky, štítky, protistrany a predplatné — je zahrnuté."
           }
         },
         "restore": {
-          "title": "Restore from backup",
-          "description": "Replace all current data with the contents of a backup zip.",
-          "button": "Select backup file",
-          "reading": "Reading file...",
-          "failedGeneric": "Backup restore failed",
-          "invalidFileType": "Please choose a .zip backup file.",
-          "fileTooLarge": "That backup is too large to restore (max {max}).",
-          "readFailed": "Could not read that file. Please try again.",
+          "title": "Obnoviť zo zálohy",
+          "description": "Nahraďte všetky súčasné údaje obsahom zálohy zip.",
+          "button": "Vybrať súbor so zálohou",
+          "reading": "Načítavanie súboru...",
+          "failedGeneric": "Obnova zo zálohy zlyhala",
+          "invalidFileType": "Vyberte .zip súbor so zálohou, prosím.",
+          "fileTooLarge": "Táto záloha je na obnovu príliš veľká (max. {max}).",
+          "readFailed": "Tento súbor sa nepodarilo prečítať. Skúste to znova, prosím.",
           "confirm": {
-            "title": "Restore from backup?",
-            "warning": "This replaces ALL your current data",
-            "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
-            "selectedFile": "Selected file: {name}",
+            "title": "Obnoviť zo zálohy?",
+            "warning": "Toto nahradí VŠETKY vaše súčasné údaje",
+            "description": "Všetko, čo je aktuálne vo vašom účte, sa natrvalo zmaže a nahradí obsahom tejto zálohy. Túto akciu nie je možné vrátiť späť.",
+            "selectedFile": "Vybraný súbor: {name}",
             "confirmLabel": "Obnoviť",
-            "reconnectTitle": "After restoring, set these up again",
-            "reconnectBankConnections": "Reconnect your bank connections",
-            "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"
+            "reconnectTitle": "Po obnove nastavte znova",
+            "reconnectBankConnections": "Znova pripojte svoje bankové pripojenia",
+            "reconnectAiKeys": "Znova zadajte svoje API kľúče AI (ak nejaké používate)"
           },
           "acknowledge": {
-            "title": "Shared resources will lose access",
-            "description": "You own resources that other people currently have access to. Restoring will remove that access.",
-            "householdsCount": "{count} shared household | {count} shared households",
-            "checkbox": "I understand these shared resources will lose access.",
-            "confirmLabel": "Restore anyway"
+            "title": "Zdieľané zdroje stratia prístup",
+            "description": "Vlastníte zdroje, ku ktorým majú aktuálne prístup iní ľudia. Obnovou sa tento prístup odoberie.",
+            "householdsCount": "{count} zdieľaná domácnosť | {count} zdieľaných domácností",
+            "checkbox": "Rozumiem, že tieto zdieľané zdroje stratia prístup.",
+            "confirmLabel": "Aj tak obnoviť"
           },
           "progress": {
-            "title": "Restoring your data",
-            "description": "This can take a little while. Please keep this window open.",
-            "inserted": "{count} records restored",
+            "title": "Obnovujú sa vaše údaje",
+            "description": "Môže to chvíľu trvať. Nechajte toto okno otvorené, prosím.",
+            "inserted": "Obnovené záznamy: {count}",
             "phases": {
-              "validating": "Validating backup...",
-              "preparingSecurities": "Preparing securities...",
-              "wiping": "Clearing current data...",
-              "restoring": "Restoring records...",
-              "finalizing": "Finalizing..."
+              "validating": "Overovanie zálohy...",
+              "preparingSecurities": "Príprava cenných papierov...",
+              "wiping": "Mazanie súčasných údajov...",
+              "restoring": "Obnovovanie záznamov...",
+              "finalizing": "Dokončovanie..."
             }
           },
           "summary": {
-            "title": "Restore complete",
-            "description": "Your data has been restored from the backup.",
-            "recordsHeading": "Restored records",
-            "warningsHeading": "Warnings",
-            "noRecords": "No records were restored.",
-            "doneButton": "Done"
+            "title": "Obnova dokončená",
+            "description": "Vaše údaje boli obnovené zo zálohy.",
+            "recordsHeading": "Obnovené záznamy",
+            "warningsHeading": "Upozornenia",
+            "noRecords": "Nebol obnovený žiadny záznam.",
+            "doneButton": "Hotovo"
           },
           "failed": {
-            "title": "Restore failed",
-            "genericError": "Something went wrong while restoring your backup.",
-            "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
-            "closeButton": "Close"
+            "title": "Obnova zlyhala",
+            "genericError": "Pri obnove vašej zálohy sa niečo pokazilo.",
+            "unconfirmed": "Stav obnovy sa nepodarilo overiť. Načítajte stránku znova a skontrolujte svoje údaje.",
+            "closeButton": "Zavrieť"
           },
           "overlay": {
-            "title": "Restoring your data",
-            "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
-            "preparing": "Preparing…",
-            "finishing": "Finishing up",
-            "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
-            "unreachableTitle": "Can't reach the server",
-            "unreachableDescription": "We lost contact while the restore was running. It may still be finishing. You can dismiss this and reload the page to check.",
-            "failedTitle": "Restore failed",
-            "dismiss": "Dismiss"
+            "title": "Obnovujú sa vaše údaje",
+            "description": "Nechajte túto kartu otvorenú, prosím. Nahrádzame vaše údaje zálohou — môže to chvíľu trvať.",
+            "preparing": "Pripravuje sa…",
+            "finishing": "Dokončuje sa",
+            "takingLong": "Toto trvá dlhšie než zvyčajne. Vaše údaje sa stále obnovujú — nechajte túto kartu otvorenú, prosím.",
+            "unreachableTitle": "Server nedostupný",
+            "unreachableDescription": "Počas obnovy sme stratili spojenie. Možno stále prebieha. Toto okno môžete zavrieť a overiť to obnovením stránky.",
+            "failedTitle": "Obnova zlyhala",
+            "dismiss": "Zavrieť"
           }
         },
-        "attachmentsNotIncluded": "Transaction attachments (receipts, invoices and other files) are not included in backups and are not restored."
+        "attachmentsNotIncluded": "Prílohy transakcií (účtenky, faktúry a iné súbory) nie sú súčasťou záloh a neobnovujú sa."
       }
     }
   }

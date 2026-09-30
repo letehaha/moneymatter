@@ -127,7 +127,7 @@
         "amount": "Amount",
         "refAmount": "Base amount",
         "refFees": "Base fees",
-        "settlementAmount": "Cash",
+        "settlementAmount": "Bargeld",
         "settlementCurrency": "Cash ccy",
         "settlementFees": "Cash fees",
         "settlementRate": "FX rate",

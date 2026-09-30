@@ -4,27 +4,27 @@
     "subtitle": "Werden auf neue über Banksynchronisation oder Dateiimport erstellte Transaktionen angewendet. Die erste übereinstimmende Regel gewinnt — ziehe eine Regel, um sie neu zu ordnen.",
     "newAutomation": "Neue Automatisierung",
     "new": "Neu",
-    "dragHint": "Zum Neuanordnen ziehen",
+    "dragHint": "Ziehen zum Neuordnen",
     "toggleAriaLabel": "Automatisierung aktivieren",
     "menuAriaLabel": "Automatisierungsaktionen",
     "disabledPill": "Deaktiviert",
     "mcpTip": {
       "trigger": "Tipps",
-      "text": "Du kannst Automatisierungen mit KI über eine MCP-Verbindung verwalten – fragen sie, deine Regeln neu zu organisieren oder nach Duplikaten und Konflikten zu suchen.",
+      "text": "Du kannst Automatisierungen per KI über eine MCP-Verbindung verwalten – bitte sie, deine Regeln neu zu ordnen oder nach Duplikaten und Konflikten zu suchen.",
       "link": "MCP-Verbindung einrichten"
     },
     "statusFilter": {
       "all": "Alle anzeigen",
       "enabled": "Nur Aktive",
       "disabled": "Nur Deaktivierte",
-      "empty": "Keine Automatisierung stimmt mit diesem Filter überein."
+      "empty": "Keine Automatisierungen entsprechen diesem Filter."
     },
     "pausedMissingRef": "Pausiert — {refType} \"{label}\" wurde gelöscht",
-    "pausedMissingRefUnnamed": "Ein(e) {refType}, auf den diese Regel verwies, wurde gelöscht",
-    "matchStats": "{count} Treffer · zuletzt am {date} | {count} Treffer · zuletzt am {date}",
+    "pausedMissingRefUnnamed": "Pausiert: Ein von dieser Regel referenziertes Objekt ({refType}) wurde gelöscht",
+    "matchStats": "{count} Treffer · zuletzt {date} | {count} Treffer · zuletzt {date}",
     "matchStatsNever": "Noch kein Treffer",
     "loadError": "Automatisierungen konnten nicht geladen werden. Überprüfen deine Verbindung und versuche es erneut.",
-    "reorderDisabledFiltered": "Statusfilter zum Umsortieren zurücksetzen",
+    "reorderDisabledFiltered": "Entferne den Statusfilter, um die Reihenfolge zu ändern",
     "density": {
       "comfortable": "Detailliert",
       "compact": "Kompakt"
@@ -37,21 +37,21 @@
       "more": "+{count} weitere",
       "less": "Weniger anzeigen",
       "noteReplace": "Notiz festlegen",
-      "noteAppend": "anhängen",
+      "noteAppend": "anfügen",
       "notePrepend": "voranstellen",
       "note": {
-        "containsAny": "Notiz mit",
-        "notContainsAny": "Notiz ohne",
-        "startsWithAny": "Notiz beginnt",
-        "endsWithAny": "Notiz endet",
+        "containsAny": "Notiz enthält",
+        "notContainsAny": "Notiz enthält nicht",
+        "startsWithAny": "Notiz beginnt mit",
+        "endsWithAny": "Notiz endet mit",
         "equalsAny": "Notiz ist",
         "isEmpty": "Notiz leer"
       },
       "merchant": {
-        "containsAny": "Händler mit",
-        "notContainsAny": "Händler ohne",
-        "startsWithAny": "Händler beginnt",
-        "endsWithAny": "Händler endet",
+        "containsAny": "Händler enthält",
+        "notContainsAny": "Händler enthält nicht",
+        "startsWithAny": "Händler beginnt mit",
+        "endsWithAny": "Händler endet mit",
         "equalsAny": "Händler ist",
         "isEmpty": "Händler leer"
       }
@@ -62,30 +62,30 @@
       "account": "Konto",
       "accountGroup": "Kontogruppe",
       "bankConnection": "Bankverbindung",
-      "payee": "Empfänger"
+      "payee": "Zahlungsempfänger"
     },
     "emptyState": {
       "title": "Noch keine Automatisierungen",
-      "description": "Automatisierungen kategorisieren, markieren und kommentieren Transaktionen in dem Moment, in dem sie von einer Banksynchronisation oder einem Dateiimport kommen.",
+      "description": "Automatisierungen kategorisieren, taggen und versehen Transaktionen mit Notizen, sobald sie aus einem Bank-Sync oder Datei-Import eingehen.",
       "cta": "Erstelle deine erste Automatisierung"
     },
     "delete": {
       "title": "Automatisierung löschen?",
-      "description": "\"{name}\" wird nicht mehr auf neue Transaktionen angewendet. Transaktionen, die bereits kategorisiert wurden, behalten ihre Kategorie, Tags und Notizen.",
+      "description": "\"{name}\" wird nicht mehr für neue Transaktionen ausgeführt. Bereits kategorisierte Transaktionen behalten ihre Kategorie, Tags und Notiz.",
       "confirm": "Löschen"
     },
     "notifications": {
       "deleteSuccess": "Automatisierung gelöscht.",
       "deleteError": "Automatisierung konnte nicht gelöscht werden. Bitte versuche es erneut.",
-      "toggleError": "Der Automatisierungsstatus konnte nicht geändert werden. Bitte versuche es erneut.",
-      "reorderError": "Die neue Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
-      "staleReference": "Diese Automatisierung verweist auf etwas, das gelöscht wurde. Öffne es und wähle einen Ersatz aus.",
-      "openRule": "Regeln öffnen"
+      "toggleError": "Status der Automatisierung konnte nicht geändert werden. Bitte versuche es erneut.",
+      "reorderError": "Neue Reihenfolge konnte nicht gespeichert werden. Bitte versuche es erneut.",
+      "staleReference": "Diese Automatisierung verweist auf etwas, das gelöscht wurde. Öffne sie und wähle einen Ersatz.",
+      "openRule": "Regel öffnen"
     },
     "fields": {
       "note": "Notiz",
       "merchant": "Händler",
-      "payee": "Empfänger",
+      "payee": "Zahlungsempfänger",
       "amount": "Betrag",
       "transactionType": "Transaktionstyp",
       "account": "Konto",
@@ -101,20 +101,20 @@
       "equals_any": "entspricht eines von",
       "is_empty": "ist leer",
       "in": "ist eines von",
-      "not_in": "ist nicht eines von",
+      "not_in": "ist keines von",
       "gte": "ist mindestens",
       "lte": "ist höchstens",
-      "between": "ist zwischen",
-      "equals": "ist gleich"
+      "between": "liegt zwischen",
+      "equals": "entspricht"
     },
     "actions": {
       "set_category": "Kategorie festlegen",
-      "set_payee": "Empfänger festlegen",
+      "set_payee": "Zahlungsempfänger festlegen",
       "add_tags": "Tags hinzufügen",
       "set_note": "Notiz festlegen",
       "noteMode": {
         "replace": "Ersetzen",
-        "append": "Anhängen",
+        "append": "Anfügen",
         "prepend": "Voranstellen"
       }
     },
@@ -124,8 +124,8 @@
       "back": "Zurück zu Automatisierungen",
       "enabled": "Aktiviert",
       "nameLabel": "Name",
-      "namePlaceholder": "z.B. Lebensmittel von Edeka",
-      "conditionsHeader": "Prüfe {match} dieser Bedingungen",
+      "namePlaceholder": "z.B. Lebensmittel von Biedronka",
+      "conditionsHeader": "Erfüllt {match} der folgenden Bedingungen",
       "matchAll": "alle",
       "matchAny": "mindestens eine",
       "joinAnd": "UND",
@@ -150,11 +150,11 @@
       "bankConnectionPlaceholder": "Bankverbindung auswählen",
       "dayFromPlaceholder": "Von Tag",
       "dayToPlaceholder": "Bis Tag",
-      "actionsHeader": "Dann tue dies",
+      "actionsHeader": "Dann Folgendes ausführen",
       "addAction": "Aktion hinzufügen",
       "removeAction": "Aktion entfernen",
       "categoryPlaceholder": "Kategorie auswählen",
-      "payeePlaceholder": "Empfänger auswählen",
+      "payeePlaceholder": "Zahlungsempfänger auswählen",
       "tagsPlaceholder": "Tags auswählen",
       "notePlaceholder": "Notiztext eingeben",
       "saveSuccess": "Automatisierung gespeichert.",
@@ -170,11 +170,11 @@
       },
       "preview": {
         "title": "Vorschau",
-        "run": "Treffer prüfen",
-        "hint": "Vervollständige die Regel, um vorab zu sehen, auf welche Transaktionen sie zutreffen würde.",
-        "summary": "{matched} der letzten {scanned} Transaktionen, für die diese Regel angewendet werden könnte",
+        "run": "Treffer in Vorschau anzeigen",
+        "hint": "Vervollständige die Regel, um eine Vorschau der passenden Transaktionen zu sehen.",
+        "summary": "{matched} der letzten {scanned} Transaktionen, auf die diese Regel zutreffen könnte",
         "empty": "Keine Treffer",
-        "stale": "Bedingungen seit dieser Vorschau geändert.",
+        "stale": "Die Bedingungen wurden seit der letzten Vorschau geändert.",
         "error": "Die Vorschau konnte nicht ausgeführt werden. Bitte versuche es erneut."
       },
       "errors": {
@@ -184,21 +184,21 @@
         "actionsRequired": "Füge mindestens eine Aktion hinzu.",
         "keywordsRequired": "Füge mindestens ein Stichwort hinzu.",
         "keywordsMax": "Verwende maximal {max} Stichwörter.",
-        "keywordTooLong": "Jedes Stichwort darf maximal {max} Zeichen enthalten.",
+        "keywordTooLong": "Jedes Stichwort darf höchstens {max} Zeichen lang sein.",
         "selectionRequired": "Wähle mindestens eine Option aus.",
-        "selectionMax": "Wähle maximal {max} Optionen aus.",
-        "missingRef": "wurde gelöscht — wähle eine andere oder entferne diese Zeile",
-        "amountRequired": "Betrag eingeben.",
+        "selectionMax": "Wähle höchstens {max} Optionen aus.",
+        "missingRef": "wurde gelöscht – wähle ein anderes Element aus oder entferne diese Zeile",
+        "amountRequired": "Gib einen Betrag ein.",
         "amountBoundsRequired": "Gib sowohl einen Mindest- als auch einen Maximalbetrag ein.",
         "amountRange": "Der Mindestbetrag darf nicht größer als das Maximalbetrag sein.",
-        "dayRange": "Gib einen Tagesbereich zwischen 1 und 31 ein, wobei der erste Tag nicht nach dem letzten ist.",
+        "dayRange": "Gib einen Tagesbereich zwischen 1 und 31 ein, bei dem der erste Tag nicht nach dem letzten liegt.",
         "categoryRequired": "Wähle eine Kategorie.",
-        "payeeRequired": "Wähle einen Empfänger.",
+        "payeeRequired": "Wähle einen Zahlungsempfänger aus.",
         "tagsRequired": "Wähle mindestens einen Tag.",
         "noteRequired": "Gib den Notiztext ein.",
-        "noteTooLong": "Die Notiz darf maximal {max} Zeichen enthalten.",
-        "saveFailed": "Die Automatisierung konnte nicht gespeichert werden. Bitte versuche es erneut.",
-        "transactionTypeDuplicate": "Nur eine Bedingung mit Transaktionstyp ist erlaubt"
+        "noteTooLong": "Die Notiz darf höchstens {max} Zeichen lang sein.",
+        "saveFailed": "Automatisierung konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        "transactionTypeDuplicate": "Es ist nur eine Transaktionstyp-Bedingung erlaubt"
       },
       "noResults": "Keine Ergebnisse"
     },
@@ -209,8 +209,8 @@
         "base": "(Basiswährung)"
       },
       "transactionTypeValue": {
-        "income": "Einnahmen",
-        "expense": "Ausgaben"
+        "income": "Einnahme",
+        "expense": "Ausgabe"
       }
     },
     "applyToHistory": {
@@ -221,11 +221,11 @@
       "title": "\"{name}\" auf vergangene Transaktionen anwenden",
       "noRules": "Du hast noch keine Automatisierungen.",
       "summary": "{count} vergangene Transaktion entspricht dieser Regel | {count} vergangene Transaktionen entsprechen dieser Regel",
-      "moreMatches": "Es werden nur die aktuellsten Treffer von {shown} aufgelistet. Wende diese an und führe den Vorgang anschließend erneut aus.",
-      "scanCapped": "Nur deine {limit} aktuellsten Transaktionen wurden überprüft.",
+      "moreMatches": "Es werden nur die {shown} neuesten Treffer aufgelistet. Wende diese an und führe es erneut aus.",
+      "scanCapped": "Es wurden nur deine {limit} neuesten Transaktionen überprüft.",
       "emptyState": {
-        "settledTitle": "Alles aufgeholt",
-        "settledDescription": "Diese Regel hat bei der einzigen übereinstimmenden vergangenen Transaktion nichts mehr zu ändern. | Diese Regel hat bei den {count} übereinstimmenden vergangenen Transaktionen nichts mehr zu ändern.",
+        "settledTitle": "Alles auf dem neuesten Stand",
+        "settledDescription": "Diese Regel muss an der einzigen passenden vergangenen Transaktion nichts mehr ändern. | Diese Regel muss an den {count} passenden vergangenen Transaktionen nichts mehr ändern.",
         "noneTitle": "Noch keine Treffer",
         "noneDescription": "Keine der vergangenen Transaktionen in deinen synchronisierten oder importierten Konten entspricht diesen Bedingungen."
       },
@@ -237,12 +237,12 @@
         "title": "Diese Regel anwenden?",
         "action": "Anwenden",
         "description": "{count} Transaktionen werden sofort aktualisiert.",
-        "payeeNote": "Der Empfänger bei diesen Transaktionen wird wie von dir festgelegt behandelt, sodass die automatische Empfängererkennung es später nicht ändert."
+        "payeeNote": "Der Zahlungsempfänger bei diesen Transaktionen wird so behandelt, als hättest du ihn festgelegt, sodass die automatische Erkennung ihn später nicht mehr ändert."
       },
       "success": "Auf {applied} Transaktionen angewendet",
       "successWithSkipped": "Auf {applied} Transaktionen angewendet, {skipped} übersprungen",
-      "nothingApplied": "Es wurde nichts angewendet. {skipped} Transaktionen wurden ignoriert.",
-      "applyError": "Die Regel konnte nicht auf frühere Transaktionen angewendet werden."
+      "nothingApplied": "Es wurde nichts angewendet. {skipped} Transaktionen wurden übersprungen.",
+      "applyError": "Die Regel konnte nicht auf vergangene Transaktionen angewendet werden."
     }
   }
 }

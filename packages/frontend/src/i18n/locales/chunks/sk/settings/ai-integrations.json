@@ -2,62 +2,62 @@
   "settings": {
     "aiIntegrations": {
       "mcpServer": {
-        "title": "MCP Server",
-        "description": "Use this URL to connect AI assistants to your MoneyMatter account. Your data is shared read-only.",
-        "copyTooltip": "Copy URL",
-        "copiedNotification": "MCP server URL copied to clipboard"
+        "title": "MCP server",
+        "description": "Pomocou tejto URL adresy pripojíte AI asistentov k svojmu účtu MoneyMatter. Vaše údaje sa zdieľajú len na čítanie.",
+        "copyTooltip": "Kopírovať URL adresu",
+        "copiedNotification": "URL adresa MCP servera skopírovaná do schránky"
       },
       "quickConnect": {
-        "title": "Quick Connect",
-        "description": "Choose an AI assistant below. Click the button to open its settings, then follow the steps.",
-        "openSettings": "Open Settings",
+        "title": "Rýchle pripojenie",
+        "description": "Vyberte nižšie AI asistenta. Kliknutím na tlačidlo otvorte jeho nastavenia a postupujte podľa krokov.",
+        "openSettings": "Otvoriť nastavenia",
         "claude": {
           "steps": {
-            "createConnector": "Click the {icon} icon next to \"Connectors\" to create a new connector",
-            "selectCustom": "Select {action}",
-            "enterName": "For \"Name\" enter {value}",
-            "pasteUrl": "For \"Remote MCP server URL\" paste {value}",
-            "finish": "Leave Advanced settings empty and click {action}",
-            "authorize": "You will be redirected to MoneyMatter to authorize access"
+            "createConnector": "Kliknutím na ikonu {icon} vedľa „Connectors\" vytvorte nový konektor",
+            "selectCustom": "Vyberte {action}",
+            "enterName": "Do poľa „Name\" zadajte {value}",
+            "pasteUrl": "Do poľa „Remote MCP server URL\" vložte {value}",
+            "finish": "Nechajte Advanced settings prázdne a kliknite na {action}",
+            "authorize": "Po presmerovaní do MoneyMatter povoľte prístup"
           }
         },
         "chatgpt": {
           "steps": {
-            "addConnector": "Click {action}",
-            "pasteUrl": "For \"URL\" paste {value}",
-            "clickAdd": "Click {action}",
-            "authorize": "You will be redirected to MoneyMatter to authorize access"
+            "addConnector": "Kliknite na {action}",
+            "pasteUrl": "Do poľa „URL\" vložte {value}",
+            "clickAdd": "Kliknite na {action}",
+            "authorize": "Po presmerovaní do MoneyMatter povoľte prístup"
           }
         }
       },
       "actions": {
-        "addCustomConnector": "Add custom connector",
-        "addConnector": "Add connector",
-        "add": "Add"
+        "addCustomConnector": "Pridať vlastný konektor",
+        "addConnector": "Pridať konektor",
+        "add": "Pridať"
       },
       "connectedApps": {
-        "title": "Active connectors",
-        "description": "Apps that have access to your financial data. You can revoke access at any time.",
-        "emptyTitle": "No apps connected yet.",
-        "emptyDescription": "Use the buttons above to connect an AI assistant.",
-        "connectedAt": "Connected: {date}",
-        "lastUsed": "Last used: {time}",
-        "scope": "Scope: {scopes}",
+        "title": "Aktívne konektory",
+        "description": "Aplikácie, ktoré majú prístup k vašim finančným údajom. Prístup môžete kedykoľvek odobrať.",
+        "emptyTitle": "Zatiaľ nie sú pripojené žiadne aplikácie.",
+        "emptyDescription": "Pomocou tlačidiel vyššie pripojte AI asistenta.",
+        "connectedAt": "Pripojené: {date}",
+        "lastUsed": "Naposledy použité: {time}",
+        "scope": "Rozsah: {scopes}",
         "revoke": "Odobrať"
       },
       "revokeDialog": {
         "title": "Odobrať prístup?",
-        "description": "This will immediately disconnect the app and invalidate all its tokens. You can reconnect later.",
-        "confirm": "Revoke Access",
-        "successNotification": "App access revoked successfully",
-        "errorNotification": "Failed to revoke app access"
+        "description": "Aplikácia sa okamžite odpojí a všetky jej tokeny stratia platnosť. Neskôr sa môžete pripojiť znova.",
+        "confirm": "Odobrať prístup",
+        "successNotification": "Prístup aplikácie bol úspešne odobratý",
+        "errorNotification": "Prístup aplikácie sa nepodarilo odobrať"
       },
       "scopes": {
-        "financeRead": "Read financial data",
-        "financeWrite": "Edit financial data",
-        "financeDelete": "Delete financial data",
-        "profileRead": "Read profile",
-        "offlineAccess": "Offline access"
+        "financeRead": "Čítanie finančných údajov",
+        "financeWrite": "Úprava finančných údajov",
+        "financeDelete": "Mazanie finančných údajov",
+        "profileRead": "Čítanie profilu",
+        "offlineAccess": "Prístup v režime offline"
       }
     }
   }

@@ -224,7 +224,7 @@
         "countsLoans": "Pôžičky",
         "countsHint": "Hotovosť a portfóliá sa počítajú vždy. Splátky pôžičiek sa už počítajú ako výdavok, preto sú pôžičky predvolene vypnuté.",
         "archivedNote": "{count} archivovaný účet vylúčený zo štatistík stále drží {amount}. {link} | {count} archivovaných účtov vylúčených zo štatistík stále drží {amount}. {link}",
-        "archivedNoteLink": "Skontrolovať",
+        "archivedNoteLink": "Kontrola",
         "presetLabel": "{label} · ≈{real} reálne ({nominal} nominálne, {inflation} inflácia v USA)",
         "inflationLabel": "Inflácia",
         "inflationBuiltIn": "{pct} % · súčasť tejto predvoľby",
@@ -346,6 +346,7 @@
       },
       "milestones": {
         "reached": "Dosiahnuté",
+        "reachedOn": "Dosiahnuté {date}",
         "eta": "za {duration} · {date}"
       },
       "empty": {

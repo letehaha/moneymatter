@@ -197,6 +197,7 @@
       },
       "outOfWallet": "Out of wallet",
       "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
+      "plannedRows": "{count} planned transactions",
       "emptyTitle": "No transactions match these filters",
       "emptyDescription": "Try adjusting or resetting the filters.",
       "columnConfig": {

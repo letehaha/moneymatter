@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Map accounts",
-            "review": "Überprüfung",
+            "review": "Überprüfen",
             "results": "Done"
           }
         },
@@ -37,7 +37,7 @@
             "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
             "statementType": {
               "bank": "Bank account",
-              "credit-card": "Credit card"
+              "credit-card": "Kreditkarte"
             }
           },
           "quickActions": {

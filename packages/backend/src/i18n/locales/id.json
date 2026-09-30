@@ -14,7 +14,9 @@
     "deleteBlockedByLoanPayments": "Akun ini memiliki pembayaran pinjaman. Hapus atau alihkan pembayaran tersebut sebelum menghapus akun.",
     "loanBalanceUseUpdateLoan": "Ubah saldo pinjaman dari halaman pinjaman, bukan dari pengaturan akun.",
     "loanCategoryImmutable": "Kategori akun pinjaman tidak dapat diubah.",
-    "dedicatedFlowCategoryNotAllowed": "Akun pinjaman dan kendaraan harus dibuat melalui endpoint khusus, bukan endpoint akun umum."
+    "dedicatedFlowCategoryNotAllowed": "Akun pinjaman dan kendaraan harus dibuat melalui endpoint khusus, bukan endpoint akun umum.",
+    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
+    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
   },
   "balanceAdjustment": {
     "defaultNote": "Penyesuaian saldo",
@@ -101,6 +103,26 @@
       "splitNotFound": "Split tidak ditemukan",
       "cannotDeleteWithRefunds": "Tidak dapat menghapus split yang memiliki refund yang menargetkannya",
       "cannotReduceBelowRefunded": "Split ini memiliki refund sebesar {{refundsText}}. Anda tidak dapat menguranginya di bawah jumlah yang sudah direfund. Untuk mengurangi lebih lanjut, lepaskan tautan refund terlebih dahulu."
+    },
+    "reconciliation": {
+      "systemNotAllowed": "Only bank-connected transactions can be merged or removed.",
+      "plannedNotAllowed": "Planned transactions can't be merged or removed.",
+      "transferNotAllowed": "Linked transfers can't be merged or removed. Unlink the transfer first.",
+      "refundNotAllowed": "Refund-linked transactions can't be merged or removed. Unlink the refund first.",
+      "survivorPending": "Pick the booked transaction as the one to keep. A pending survivor would stay stuck as pending.",
+      "survivorNotSelected": "The transaction to keep must be one of the selected transactions.",
+      "differentAccounts": "Only transactions from the same account can be merged.",
+      "budgetConflict": "The selected transactions belong to different budgets. Align their budgets before merging.",
+      "groupConflict": "The selected transactions belong to different transaction groups. Align their groups before merging.",
+      "subscriptionConflict": "The selected transactions are linked to different subscriptions. Align their subscriptions before merging.",
+      "accountDisconnected": "Can't restore: the account is no longer connected to the bank.",
+      "bankCheckUnsupported": "Checking with the bank is only available for Enable Banking accounts.",
+      "notPending": "Only pending transactions can be kept as booked.",
+      "stuckPendingNotification": {
+        "title": "Some card payments haven't cleared",
+        "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
+        "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
+      }
     }
   },
   "budgets": {
@@ -568,6 +590,7 @@
     "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF invoice.",
     "notAnInvoice": "This document does not look like an invoice or a receipt.",
     "incompleteInvoice": "Could not read a vendor, total amount and date from this invoice.",
+    "pdfWithoutText": "Custom AI connections can't receive PDF files directly, and this one couldn't be opened to convert it (for example, it's password-protected). Convert it to an image (PNG or JPEG), such as a screenshot of the invoice, and upload that instead.",
     "noFileUploaded": "No file was uploaded."
   }
 }

@@ -2,24 +2,24 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Import History",
-        "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
-        "loadError": "Couldn't load your import history.",
-        "emptyTitle": "No imports yet",
-        "emptyDescription": "Once you import transactions, they'll show up here.",
+        "pageTitle": "História importov",
+        "pageDescription": "Prezrite si svoje minulé importy a zistite, presne ktoré účty a transakcie každý z nich vytvoril.",
+        "loadError": "Vašu históriu importov sa nepodarilo načítať.",
+        "emptyTitle": "Zatiaľ žiadne importy",
+        "emptyDescription": "Keď importujete transakcie, zobrazia sa tu.",
         "emptyAction": "Importovať údaje",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "transactionCount": "{count} transakcia | {count} transakcií",
         "accountCount": "{count} účet | {count} účtov",
-        "deleteButton": "Delete import",
-        "deleteConfirmTitle": "Delete this import batch?",
-        "deleteConfirmDescription": "This will permanently delete {count} transaction from this import. This action cannot be undone. | This will permanently delete {count} transactions from this import. This action cannot be undone.",
-        "deleteSuccessMessage": "Deleted {count} transaction | Deleted {count} transactions",
-        "deleteUnexpectedError": "Something went wrong while deleting the import batch. Please try again.",
-        "deleteLinkedTransfersWarningTitle": "This import is linked to another transaction",
-        "deleteLinkedTransfersCheckbox": "Also delete the linked transfer transaction",
-        "deleteLinkedTransfersDescription": "By default, any transaction linked to this import as a transfer is only unlinked, not deleted. Checking this box will permanently delete it too — this cannot be undone.",
-        "deleteLinkedTransfersConfirmTitle": "Delete the linked transaction too?",
-        "deleteLinkedTransfersConfirmDescription": "You're about to permanently delete a transaction outside this import batch, not just unlink it. This action cannot be undone."
+        "deleteButton": "Zmazať import",
+        "deleteConfirmTitle": "Zmazať túto dávku importu?",
+        "deleteConfirmDescription": "Toto natrvalo zmaže {count} transakciu z tohto importu. Túto akciu nie je možné vrátiť späť. | Toto natrvalo zmaže {count} transakcií z tohto importu. Túto akciu nie je možné vrátiť späť.",
+        "deleteSuccessMessage": "Zmazaná {count} transakcia | Zmazaných {count} transakcií",
+        "deleteUnexpectedError": "Pri mazaní dávky importu sa niečo pokazilo. Skúste to znova, prosím.",
+        "deleteLinkedTransfersWarningTitle": "Tento import je prepojený s inou transakciou",
+        "deleteLinkedTransfersCheckbox": "Zmazať aj prepojenú transakciu prevodu",
+        "deleteLinkedTransfersDescription": "Predvolene sa každá transakcia prepojená s týmto importom ako prevod len odpojí, nezmaže sa. Zaškrtnutím tohto políčka ju natrvalo zmažete aj vy — túto akciu nie je možné vrátiť späť.",
+        "deleteLinkedTransfersConfirmTitle": "Zmazať aj prepojenú transakciu?",
+        "deleteLinkedTransfersConfirmDescription": "Chystáte sa natrvalo zmazať transakciu mimo tejto dávky importu, nielen ju odpojiť. Túto akciu nie je možné vrátiť späť."
       }
     }
   }

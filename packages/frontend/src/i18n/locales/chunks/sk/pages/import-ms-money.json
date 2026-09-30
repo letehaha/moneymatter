@@ -2,55 +2,55 @@
   "pages": {
     "importExport": {
       "msMoneyImport": {
-        "pageTitle": "Import from Microsoft Money",
-        "pageDescription": "Bring your accounts, categories and transactions across from a Microsoft Money .mny file.",
+        "pageTitle": "Import z Microsoft Money",
+        "pageDescription": "Prenesite si účty, kategórie a transakcie zo súboru .mny z Microsoft Money.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Map data",
-            "review": "Skontrolovať",
+            "upload": "Nahratie",
+            "resolve": "Priradenie údajov",
+            "review": "Kontrola",
             "execute": "Import",
-            "done": "Done"
+            "done": "Hotovo"
           }
         },
         "fileUpload": {
-          "stepTitle": "Upload your Money file",
-          "description": "Pick the .mny file Microsoft Money saved on your computer.",
-          "maxSize": ".mny file, up to 50 MB",
-          "passwordLabel": "File password (optional)",
-          "passwordPlaceholder": "Enter the file password",
-          "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
-          "parsing": "Reading file…",
+          "stepTitle": "Nahrajte svoj súbor Money",
+          "description": "Vyberte súbor .mny, ktorý Microsoft Money uložil vo vašom počítači.",
+          "maxSize": "Súbor .mny, do 50 MB",
+          "passwordLabel": "Heslo súboru (voliteľné)",
+          "passwordPlaceholder": "Zadajte heslo súboru",
+          "passwordHint": "Nechajte prázdne, pokiaľ ste v Microsoft Money nenastavili heslo.",
+          "parsing": "Čítanie súboru…",
           "continue": "Pokračovať",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not a .mny file.",
-            "passwordUnsupportedChars": "This password contains characters we can't send. Try a password without emoji or non-Latin letters."
+            "invalidFormatNamed": "„{name}\" nie je súbor .mny.",
+            "passwordUnsupportedChars": "Toto heslo obsahuje znaky, ktoré nevieme odoslať. Skúste heslo bez emoji alebo nelatinských písmen."
           }
         },
         "errors": {
-          "uploadUnavailable": "The uploaded file is no longer available. Please upload your Money file again."
+          "uploadUnavailable": "Nahraný súbor už nie je dostupný. Nahrajte svoj súbor Money znova, prosím."
         },
         "resolve": {
-          "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
+          "prepareFailed": "Priradenie účtov a kategórií sa nepodarilo pripraviť. Načítajte stránku znova a skúste to znova.",
           "accounts": {
             "sectionTitle": "Účty",
-            "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the imported total",
-            "willCreateHint": "Will be created in {currency}.",
-            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+            "currentBalanceLabel": "Aktuálny zostatok",
+            "currentBalancePlaceholder": "Nechajte prázdne, ak chcete použiť importovaný súčet",
+            "willCreateHint": "Vytvorí sa v mene {currency}.",
+            "skippedNote": "Preskočí sa účtov: {count}. Ich transakcie — a akékoľvek prevody z nich alebo na ne — sa neimportujú."
           },
           "categories": {
-            "sectionTitle": "Categories"
+            "sectionTitle": "Kategórie"
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Priradiť presné zhody",
+            "createNewForUnmatched": "Vytvoriť nové pre nezhodné",
+            "reset": "Vynulovať",
             "tooltips": {
-              "mapExactMatchesAccounts": "Link every account whose name exactly matches one you already have.",
-              "mapExactMatchesCategories": "Link every category whose name exactly matches one you already have.",
-              "createNewForUnmatched": "Set every undecided row to \"create new\".",
-              "reset": "Clear all choices and match again."
+              "mapExactMatchesAccounts": "Prepojí každý účet, ktorého názov presne zodpovedá tomu, ktorý už máte.",
+              "mapExactMatchesCategories": "Prepojí každú kategóriu, ktorej názov presne zodpovedá tej, ktorú už máte.",
+              "createNewForUnmatched": "Pri každom nerozhodnutom riadku nastaví „vytvoriť nový\".",
+              "reset": "Vymaže všetky voľby a znova priradí."
             }
           },
           "footer": {
@@ -59,80 +59,80 @@
           }
         },
         "review": {
-          "transactions": "Transactions",
+          "transactions": "Transakcie",
           "transfersDetected": "Prevody",
-          "outOfWallet": "Out-of-wallet",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "dateRange": "Date range: {from} — {to}",
-          "warningsTitle": "Some things were left out",
-          "warningsHint": "These rows are not part of the import.",
+          "outOfWallet": "Mimo peňaženky",
+          "duplicatesSkipped": "Preskočené duplicity",
+          "willImport": "Importuje sa",
+          "dateRange": "Rozsah dátumov: {from} — {to}",
+          "warningsTitle": "Niektoré veci boli vynechané",
+          "warningsHint": "Tieto riadky nie sú súčasťou importu.",
           "warnings": {
-            "accountTypeUnsupported": "{count} account(s) skipped",
-            "orphanRowSkipped": "{count} transaction(s) skipped",
-            "transferCounterpartNotImported": "{count} transfer leg(s) imported as out-of-wallet",
-            "rowLimitReached": "{count} transaction(s) over the limit were dropped",
-            "accountCurrencyDefaulted": "{count} account(s) had no currency in the file, so USD was assumed — check the currency on the accounts step before continuing",
-            "rowMissingDate": "{count} transaction(s) with no readable date were skipped",
-            "accountNameMissing": "{count} account(s) had no name",
-            "accountNameDuplicated": "{count} account(s) shared a name",
-            "rowAmountUnreadable": "{count} transaction(s) with no readable amount were skipped",
-            "fileSchemaUnexpected": "{count} unexpected file structure issue(s) found"
+            "accountTypeUnsupported": "Preskočené účty: {count}",
+            "orphanRowSkipped": "Preskočené transakcie: {count}",
+            "transferCounterpartNotImported": "Strany prevodu importované ako mimo peňaženky: {count}",
+            "rowLimitReached": "Vynechané transakcie nad limit: {count}",
+            "accountCurrencyDefaulted": "Účtov bez uvedenej meny v súbore: {count} — predpokladá sa USD, pred pokračovaním skontrolujte menu v kroku s účtami",
+            "rowMissingDate": "Preskočené transakcie bez čitateľného dátumu: {count}",
+            "accountNameMissing": "Účty bez názvu: {count}",
+            "accountNameDuplicated": "Účty so zhodným názvom: {count}",
+            "rowAmountUnreadable": "Preskočené transakcie bez čitateľnej sumy: {count}",
+            "fileSchemaUnexpected": "Nájdené neočakávané problémy so štruktúrou súboru: {count}"
           },
           "includeVoided": {
-            "label": "Import {count} voided transaction(s)",
-            "hint": "Microsoft Money keeps voided entries in the register but never applies them to your balance, so they're imported at zero and tagged \"Void\" — keeping their date, payee, category, memo and cheque number."
+            "label": "Importovať zrušené transakcie ({count})",
+            "hint": "Microsoft Money uchováva zrušené záznamy v registri, no nikdy ich nepremietne do zostatku, preto sa importujú s nulovou sumou a označením „Void\" — so zachovaním dátumu, protistrany, kategórie, poznámky a čísla šeku."
           },
-          "duplicatesTitle": "{count} possible duplicate(s)",
-          "duplicatesHint": "These already look like transactions you have. Check a row to import it anyway; unchecked duplicates are skipped.",
+          "duplicatesTitle": "Možné duplicity: {count}",
+          "duplicatesHint": "Tieto vyzerajú ako transakcie, ktoré už máte. Označte riadok, ak ho chcete napriek tomu importovať; neoznačené duplicity sa preskočia.",
           "back": "Späť",
-          "importing": "Starting import…",
-          "importButton": "Import {count} transactions"
+          "importing": "Spúšťanie importu…",
+          "importButton": "Importovať {count} transakcií"
         },
         "execute": {
-          "starting": "Starting the import…",
-          "progressCount": "{processed} of {total}",
-          "failed": "The import failed.",
-          "partialImportNote": "Some transactions may already have been imported.",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing",
-          "statusCompleted": "Completed",
-          "statusFailed": "Failed"
+          "starting": "Spúšťanie importu…",
+          "progressCount": "{processed} z {total}",
+          "failed": "Import zlyhal.",
+          "partialImportNote": "Niektoré transakcie mohli byť už importované.",
+          "statusQueued": "V rade",
+          "statusRunning": "Importovanie",
+          "statusCompleted": "Dokončené",
+          "statusFailed": "Zlyhalo"
         },
         "done": {
-          "successTitle": "Import finished",
-          "successDescription": "Everything from your Money file is now in your account.",
-          "partialTitle": "Imported with {count} issue(s)",
-          "partialDescription": "Most rows landed. The list below shows what didn't.",
-          "emptyTitle": "Nothing new to import",
-          "emptyDescription": "Every row was either skipped or already in your ledger, so no transactions were created.",
-          "allFailedTitle": "Nothing was imported",
-          "allFailedDescription": "No transactions could be created. See the errors below.",
-          "accountsCreated": "Accounts created",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "outOfWalletImported": "Out-of-wallet transfers",
-          "duplicatesSkipped": "Duplicates skipped",
-          "voidedImported": "Voided imported",
-          "mergedIntoPlanned": "Merged into planned",
-          "balanceWarningTitle": "Some balances may be off",
-          "balanceWarningBody": "We couldn't set the final balance on every account. Check them and adjust if needed.",
-          "errorsTitle": "{count} row(s) could not be imported",
-          "errorsOverflow": "…and {count} more",
-          "rowPrefix": "Row {rowIndex}:",
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "successTitle": "Import dokončený",
+          "successDescription": "Všetko z vášho súboru Money je teraz vo vašom účte.",
+          "partialTitle": "Importované s problémami ({count})",
+          "partialDescription": "Väčšina riadkov sa importovala. Zoznam nižšie ukazuje tie, ktoré nie.",
+          "emptyTitle": "Nie je čo nové importovať",
+          "emptyDescription": "Každý riadok bol buď preskočený, alebo už bol vo vašich záznamoch, preto sa nevytvorili žiadne transakcie.",
+          "allFailedTitle": "Nič sa neimportovalo",
+          "allFailedDescription": "Nepodarilo sa vytvoriť žiadnu transakciu. Pozrite si chyby nižšie.",
+          "accountsCreated": "Vytvorené účty",
+          "accountsLinked": "Prepojené účty",
+          "accountsSkipped": "Preskočené účty",
+          "categoriesCreated": "Vytvorené kategórie",
+          "payeesCreated": "Vytvorené protistrany",
+          "transactionsImported": "Importované transakcie",
+          "transfersImported": "Importované prevody",
+          "outOfWalletImported": "Prevody mimo peňaženky",
+          "duplicatesSkipped": "Preskočené duplicity",
+          "voidedImported": "Importované zrušené",
+          "mergedIntoPlanned": "Zlúčené s plánovanými",
+          "balanceWarningTitle": "Niektoré zostatky môžu byť nesprávne",
+          "balanceWarningBody": "Konečný zostatok sa nepodarilo nastaviť pri každom účte. Skontrolujte ich a v prípade potreby upravte.",
+          "errorsTitle": "Nepodarilo sa importovať riadky: {count}",
+          "errorsOverflow": "…a {count} ďalších",
+          "rowPrefix": "Riadok {rowIndex}:",
+          "viewTransactions": "Zobraziť transakcie",
+          "importAnother": "Importovať ďalší súbor"
         },
         "leaseExpired": {
-          "title": "Your uploaded file is no longer available",
-          "description": "The parsed copy of your Money file was released after a period of inactivity. Your mapping choices could not be kept, so the import needs to start from the upload step again.",
-          "action": "Start over"
+          "title": "Váš nahraný súbor už nie je dostupný",
+          "description": "Spracovaná kópia vášho súboru Money bola po období nečinnosti uvoľnená. Vaše voľby priradenia sa nepodarilo zachovať, preto je potrebné import spustiť znova od kroku nahrania.",
+          "action": "Začať odznova"
         },
-        "leaseResourceLabel": "Your uploaded file"
+        "leaseResourceLabel": "Váš nahraný súbor"
       }
     }
   }

@@ -14,7 +14,9 @@
     "deleteBlockedByLoanPayments": "Dieses Konto hat Kreditrückzahlungen. Löschen oder neu zuweisen, bevor das Konto gelöscht wird.",
     "loanBalanceUseUpdateLoan": "Passe den Restbetrag des Kredits direkt auf dessen Detailseite an, nicht in den Kontoeinstellungen.",
     "loanCategoryImmutable": "Die Kategorie eines Kreditkontos kann nicht geändert werden.",
-    "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten."
+    "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten.",
+    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
+    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
   },
   "balanceAdjustment": {
     "defaultNote": "Kontostandsanpassung",
@@ -101,6 +103,26 @@
       "splitNotFound": "Aufteilung nicht gefunden",
       "cannotDeleteWithRefunds": "Aufteilung, auf die sich Rückerstattungen beziehen, kann nicht gelöscht werden",
       "cannotReduceBelowRefunded": "Für diese Aufteilung liegen Rückerstattungen in Höhe von insgesamt {{refundsText}} vor. Du kannst sie nicht unter den erstatteten Betrag reduzieren. Um sie weiter zu reduzieren, hebe zuerst die Verknüpfung der Rückerstattungen auf."
+    },
+    "reconciliation": {
+      "systemNotAllowed": "Nur mit der Bank verbundene Transaktionen können zusammengeführt oder entfernt werden.",
+      "plannedNotAllowed": "Geplante Transaktionen können nicht zusammengeführt oder entfernt werden.",
+      "transferNotAllowed": "Verknüpfte Umbuchungen können nicht zusammengeführt oder entfernt werden. Hebe zuerst die Verknüpfung der Umbuchung auf.",
+      "refundNotAllowed": "Mit Rückerstattungen verknüpfte Transaktionen können nicht zusammengeführt oder entfernt werden. Hebe zuerst die Verknüpfung der Rückerstattung auf.",
+      "survivorPending": "Wähle die gebuchte Transaktion als diejenige aus, die behalten werden soll. Eine ausstehende Transaktion würde sonst im Status \"ausstehend\" hängen bleiben.",
+      "survivorNotSelected": "Die Transaktion, die behalten werden soll, muss eine der ausgewählten Transaktionen sein.",
+      "differentAccounts": "Nur Transaktionen vom selben Konto können zusammengeführt werden.",
+      "budgetConflict": "Die ausgewählten Transaktionen gehören zu unterschiedlichen Budgets. Passe ihre Budgets vor dem Zusammenführen an.",
+      "groupConflict": "Die ausgewählten Transaktionen gehören zu unterschiedlichen Transaktionsgruppen. Passe ihre Gruppen vor dem Zusammenführen an.",
+      "subscriptionConflict": "Die ausgewählten Transaktionen sind mit unterschiedlichen Abonnements verknüpft. Passe ihre Abonnements vor dem Zusammenführen an.",
+      "accountDisconnected": "Wiederherstellung nicht möglich: Das Konto ist nicht mehr mit der Bank verbunden.",
+      "bankCheckUnsupported": "Die Überprüfung mit der Bank ist nur für Enable Banking-Konten verfügbar.",
+      "notPending": "Nur ausstehende Transaktionen können als gebucht behalten werden.",
+      "stuckPendingNotification": {
+        "title": "Einige Kartenzahlungen wurden noch nicht abgewickelt",
+        "message_one": "1 Transaktion ist seit über einer Woche ausstehend. Überprüfe sie bei deiner Bank, damit dein Kontostand korrekt bleibt.",
+        "message_other": "{{count}} Transaktionen sind seit über einer Woche ausstehend. Überprüfe sie bei deiner Bank, damit dein Kontostand korrekt bleibt."
+      }
     }
   },
   "budgets": {
@@ -568,6 +590,7 @@
     "unsupportedFileType": "Nicht unterstützter Dateityp. Lade eine Rechnung als JPEG-, PNG-, WebP- oder PDF-Datei hoch.",
     "notAnInvoice": "Dieses Dokument sieht nicht wie eine Rechnung oder ein Beleg aus.",
     "incompleteInvoice": "Anbieter, Gesamtbetrag und Datum konnten aus dieser Rechnung nicht gelesen werden.",
+    "pdfWithoutText": "Custom AI connections can't receive PDF files directly, and this one couldn't be opened to convert it (for example, it's password-protected). Convert it to an image (PNG or JPEG), such as a screenshot of the invoice, and upload that instead.",
     "noFileUploaded": "Es wurde keine Datei hochgeladen."
   }
 }

@@ -21,7 +21,7 @@
     "budgetDetails": {
       "notSet": "Not set",
       "saving": "Speichern...",
-      "saveChanges": "Save Changes",
+      "saveChanges": "Änderungen speichern",
       "loading": "Laden...",
       "uncategorized": "Uncategorized",
       "stats": {
@@ -53,7 +53,7 @@
         "noDataDescription": "There's no spending data available for this budget yet.",
         "noCategoryData": "No category spending data.",
         "noTimelineData": "No timeline data.",
-        "total": "Total",
+        "total": "Gesamt",
         "income": "Einnahmen",
         "expenses": "Expenses",
         "incomeLabel": "Income:",

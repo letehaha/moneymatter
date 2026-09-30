@@ -59,7 +59,7 @@
         "error": "Domácnosť sa nepodarilo opustiť."
       },
       "pending": {
-        "badge": "Čaká na vybavenie",
+        "badge": "Čakajúce",
         "resend": "Odoslať znova",
         "cancel": "Zrušiť",
         "cancelTitle": "Zrušiť pozvánku?",

@@ -9,7 +9,7 @@
     "createBudget": "Create budget",
     "creation": {
       "success": "Budget created",
-      "error": "Unexpected error!",
+      "error": "Unerwarteter Fehler!",
       "nameLabel": "Budget name",
       "namePlaceholder": "Enter the name",
       "typeLabel": "Budget type",
@@ -32,7 +32,7 @@
       "edit": "Bearbeiten",
       "delete": "Löschen",
       "deleteSuccess": "Budget deleted successfully!",
-      "deleteError": "Unexpected error!",
+      "deleteError": "Unerwarteter Fehler!",
       "updateSuccess": "Budget updated successfully!",
       "updateError": "Failed to update budget",
       "unlinkTransactionsSuccess": "Transactions unlinked successfully!",
@@ -82,7 +82,7 @@
     "addTransactionsDialog": {
       "title": "Add Transactions to Budget",
       "addSelected": "Add Selected",
-      "clearSelection": "Clear selection"
+      "clearSelection": "Auswahl aufheben"
     },
     "categoryBudget": {
       "trackedCategories": "Tracked Categories",

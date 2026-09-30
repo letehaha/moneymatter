@@ -1,116 +1,116 @@
 {
   "settings": {
     "admin": {
-      "title": "Admin Panel",
-      "description": "Administrative tools and system management",
+      "title": "Administrátorský panel",
+      "description": "Administratívne nástroje a správa systému",
       "priceSync": {
-        "title": "Securities Price Sync",
-        "description": "Manually trigger price synchronization for all securities with holdings",
-        "button": "Trigger Price Sync",
+        "title": "Synchronizácia cien cenných papierov",
+        "description": "Ručne spustite synchronizáciu cien pre všetky cenné papiere s pozíciami",
+        "button": "Spustiť synchronizáciu cien",
         "buttonLoading": "Synchronizácia...",
         "notifications": {
-          "success": "Securities prices sync completed successfully",
-          "failed": "Failed to trigger price sync",
-          "rateLimited": "Not allowed. Try again in {time}.",
-          "adminRequired": "Admin privileges required for this action"
+          "success": "Synchronizácia cien cenných papierov bola úspešne dokončená",
+          "failed": "Synchronizáciu cien sa nepodarilo spustiť",
+          "rateLimited": "Nie je povolené. Skúste to znova o {time}.",
+          "adminRequired": "Táto akcia vyžaduje administrátorské oprávnenia"
         }
       },
       "priceUpload": {
-        "title": "Manual Security Price Upload",
-        "description": "Upload historical price data for securities via CSV or JSON files",
-        "button": "Upload Security Prices",
-        "dialogTitle": "Upload Security Prices",
+        "title": "Ručné nahratie cien cenných papierov",
+        "description": "Nahrajte historické cenové údaje cenných papierov cez súbory CSV alebo JSON",
+        "button": "Nahrať ceny cenných papierov",
+        "dialogTitle": "Nahrať ceny cenných papierov",
         "selectSecurity": {
           "searchLabel": "Hľadať symbol alebo názov",
           "searchPlaceholder": "AAPL",
-          "searching": "Searching…",
+          "searching": "Vyhľadávanie…",
           "failed": "Vyhľadávanie cenných papierov zlyhalo.",
           "noResults": "Žiadne výsledky.",
-          "changeButton": "Change"
+          "changeButton": "Zmeniť"
         },
         "dateRangeInfo": {
-          "loading": "Loading date range information...",
-          "title": "Available Exchange Rates Date Range ({currency}):",
-          "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
+          "loading": "Načítavanie informácií o rozsahu dátumov...",
+          "title": "Dostupný rozsah dátumov výmenných kurzov ({currency}):",
+          "tooltipText": "Ceny cenných papierov môžete nahrať len pre dátumy, pre ktoré máme dostupné výmenné kurzy. Inak nebude možné prepočítať cenu cenného papiera na iné meny. Ak potrebujete staršie údaje, najprv nahrajte výmenné kurzy. Inak sa záznamy, v závislosti od voľby v ďalších krokoch, buď automaticky odfiltrujú (vynechajú), alebo požiadavka na nahratie zlyhá."
         },
         "fileUpload": {
-          "title": "Upload File",
-          "supportedFormats": "CSV or JSON files supported",
+          "title": "Nahrať súbor",
+          "supportedFormats": "Podporované sú súbory CSV alebo JSON",
           "errors": {
-            "unsupportedFormat": "Unsupported file format. Please upload CSV or JSON file.",
-            "parseFailed": "Failed to parse {fileType} file: {error}"
+            "unsupportedFormat": "Nepodporovaný formát súboru. Nahrajte súbor CSV alebo JSON, prosím.",
+            "parseFailed": "Súbor {fileType} sa nepodarilo spracovať: {error}"
           }
         },
         "fieldMapper": {
-          "title": "Map Fields",
-          "description": "Match your file's fields to the required fields below.",
-          "selectField": "Select field...",
-          "dateFormatLabel": "Date Format",
-          "dateFormatDescription": "Select the date format used in your file",
+          "title": "Priradenie polí",
+          "description": "Priraďte polia vášho súboru k požadovaným poliam nižšie.",
+          "selectField": "Vyberte pole...",
+          "dateFormatLabel": "Formát dátumu",
+          "dateFormatDescription": "Vyberte formát dátumu použitý vo vašom súbore",
           "dateFormats": {
-            "ddMMyyyySlash": "DD/MM/YYYY (e.g., 31/12/2024)",
-            "MMddyyyySlash": "MM/DD/YYYY (e.g., 12/31/2024)",
-            "yyyyMMddDash": "YYYY-MM-DD (e.g., 2024-12-31)",
-            "ddMMyyyyDash": "DD-MM-YYYY (e.g., 31-12-2024)",
-            "MMddyyyyDash": "MM-DD-YYYY (e.g., 12-31-2024)"
+            "ddMMyyyySlash": "DD/MM/RRRR (napr. 31/12/2024)",
+            "MMddyyyySlash": "MM/DD/RRRR (napr. 12/31/2024)",
+            "yyyyMMddDash": "RRRR-MM-DD (napr. 2024-12-31)",
+            "ddMMyyyyDash": "DD-MM-RRRR (napr. 31-12-2024)",
+            "MMddyyyyDash": "MM-DD-RRRR (napr. 12-31-2024)"
           },
-          "mappingComplete": "All required fields mapped",
-          "mappingIncomplete": "Please map all required fields to continue",
-          "fileInfo": "File:",
-          "records": "{count} records",
-          "changeFileButton": "Change File",
-          "continueButton": "Continue to Preview"
+          "mappingComplete": "Všetky požadované polia sú priradené",
+          "mappingIncomplete": "Ak chcete pokračovať, priraďte všetky požadované polia",
+          "fileInfo": "Súbor:",
+          "records": "{count} záznamov",
+          "changeFileButton": "Zmeniť súbor",
+          "continueButton": "Pokračovať na náhľad"
         },
         "preview": {
-          "title": "Data Preview",
-          "recordsCount": "{count} record will be uploaded | {count} records will be uploaded",
-          "recordsPeriod": "for period between {oldest} and {newest}",
-          "loadingExisting": "Loading existing prices for comparison...",
+          "title": "Náhľad údajov",
+          "recordsCount": "Nahrá sa {count} záznam | Nahrá sa {count} záznamov",
+          "recordsPeriod": "za obdobie od {oldest} do {newest}",
+          "loadingExisting": "Načítavanie existujúcich cien na porovnanie...",
           "warnings": {
-            "significantDifferences": "Significant price differences detected",
-            "differencesDetails": "{count} record has a price difference greater than 4% compared to existing data. Please review carefully. | {count} records have a price difference greater than 4% compared to existing data. Please review carefully."
+            "significantDifferences": "Zistené výrazné cenové rozdiely",
+            "differencesDetails": "{count} záznam má cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ho skontrolujte. | {count} záznamy majú cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ich skontrolujte."
           },
-          "filterCheckbox": "Show only records with significant differences (>4%)",
+          "filterCheckbox": "Zobraziť len záznamy s výrazným rozdielom (>4 %)",
           "tableHeaders": {
-            "date": "Date",
-            "newPrice": "New Price",
-            "existingPrice": "Existing Price",
-            "difference": "Difference (%)"
+            "date": "Dátum",
+            "newPrice": "Nová cena",
+            "existingPrice": "Existujúca cena",
+            "difference": "Rozdiel (%)"
           },
           "noExistingPrice": "Nedostupné",
-          "scrollForMore": "Scroll for more...",
-          "noDifferences": "No records with significant differences found.",
-          "backButton": "Back to Mapping",
-          "continueButton": "Continue to Options"
+          "scrollForMore": "Posuňte pre viac...",
+          "noDifferences": "Nenašli sa žiadne záznamy s výrazným rozdielom.",
+          "backButton": "Späť na priradenie polí",
+          "continueButton": "Pokračovať na možnosti"
         },
         "options": {
-          "title": "Upload Options",
+          "title": "Možnosti nahrávania",
           "autoFilter": {
-            "title": "Auto-filter dates outside available range",
-            "description": "Automatically remove dates that are outside the available exchange rate range"
+            "title": "Automaticky odfiltrovať dátumy mimo dostupného rozsahu",
+            "description": "Automaticky odstrániť dátumy, ktoré sú mimo dostupného rozsahu výmenných kurzov"
           },
           "override": {
-            "title": "Override existing records",
-            "description": "Update existing price records instead of skipping duplicates"
+            "title": "Prepísať existujúce záznamy",
+            "description": "Aktualizovať existujúce cenové záznamy namiesto preskočenia duplicít"
           },
           "backButton": "Späť",
-          "uploadButton": "Upload Prices",
-          "uploadingButton": "Uploading..."
+          "uploadButton": "Nahrať ceny",
+          "uploadingButton": "Nahrávanie..."
         },
         "result": {
-          "title": "Upload Complete!",
-          "inserted": "✓ {count} new record inserted | ✓ {count} new records inserted",
-          "duplicates": "• {count} duplicate {action}",
-          "duplicatesUpdated": "updated",
-          "duplicatesSkipped": "skipped",
-          "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
-          "closeButton": "Close",
-          "uploadMoreButton": "Upload More"
+          "title": "Nahrávanie dokončené!",
+          "inserted": "✓ Vložený {count} nový záznam | ✓ Vložených {count} nových záznamov",
+          "duplicates": "• {count} duplicít {action}",
+          "duplicatesUpdated": "aktualizovaných",
+          "duplicatesSkipped": "preskočených",
+          "filtered": "• {count} dátum odfiltrovaný (mimo rozsahu) | • {count} dátumov odfiltrovaných (mimo rozsahu)",
+          "closeButton": "Zavrieť",
+          "uploadMoreButton": "Nahrať ďalšie"
         },
         "notifications": {
-          "dateInfoLoadFailed": "Failed to load date info: {error}",
-          "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
-          "uploadFailed": "Upload failed: {error}"
+          "dateInfoLoadFailed": "Informácie o dátume sa nepodarilo načítať: {error}",
+          "uploadSuccess": "Úspešne nahraný {count} cenový záznam | Úspešne nahraných {count} cenových záznamov",
+          "uploadFailed": "Nahrávanie zlyhalo: {error}"
         }
       }
     }

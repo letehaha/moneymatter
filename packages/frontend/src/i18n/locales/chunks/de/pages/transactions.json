@@ -192,11 +192,12 @@
         "tags": "Tags",
         "categorizationSource": "Categorized by",
         "group": "Group",
-        "refund": "Refund",
-        "split": "Split"
+        "refund": "Rückerstattung",
+        "split": "Aufteilen"
       },
       "outOfWallet": "Out of wallet",
       "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
+      "plannedRows": "{count} planned transactions",
       "emptyTitle": "No transactions match these filters",
       "emptyDescription": "Try adjusting or resetting the filters.",
       "columnConfig": {

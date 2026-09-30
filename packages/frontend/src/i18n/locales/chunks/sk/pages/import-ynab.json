@@ -2,73 +2,73 @@
   "pages": {
     "importExport": {
       "ynabImport": {
-        "pageTitle": "Import from YNAB",
-        "pageDescription": "Upload your YNAB Register.csv export to bring accounts, transactions, categories, payees and tags into MoneyMatter.",
+        "pageTitle": "Import z YNAB",
+        "pageDescription": "Nahrajte export Register.csv z YNAB a prenesite účty, transakcie, kategórie, protistrany a štítky do MoneyMatter.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "preview": "Skontrolovať",
+            "upload": "Nahratie",
+            "preview": "Kontrola",
             "results": "Hotovo"
           }
         },
         "fileUpload": {
-          "stepTitle": "Drop your Register.csv here",
-          "description": "YNAB → Budget → Export budget → unzip → use the Register.csv file.",
-          "maxSize": "Up to 10 MB.",
-          "parsing": "Parsing…",
+          "stepTitle": "Súbor Register.csv pustite sem",
+          "description": "YNAB → Budget → Export budget → rozbaľte → použite súbor Register.csv.",
+          "maxSize": "Do 10 MB.",
+          "parsing": "Spracúvanie…",
           "continueToPreview": "Pokračovať",
           "errors": {
-            "invalidFormat": "Please upload a .csv file."
+            "invalidFormat": "Nahrajte súbor .csv, prosím."
           }
         },
         "preview": {
-          "emptyList": "Nothing to import here.",
+          "emptyList": "Tu nie je čo importovať.",
           "accounts": "Účty",
           "categories": "Kategórie",
           "payees": "Príjemcovia",
           "tags": "Štítky",
           "transactions": "Transakcie",
           "transfers": "Prevody",
-          "dateRange": "Range: {from} → {to}",
-          "accountsHelper": "For each YNAB account, confirm the currency.",
-          "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported.",
-          "warningsTitle": "Warnings",
-          "rowPrefix": "Row {rowIndex}:",
-          "startOver": "Start over",
-          "continueToImport": "Start import"
+          "dateRange": "Rozsah: {from} → {to}",
+          "accountsHelper": "Pri každom účte z YNAB potvrďte menu.",
+          "skippedNote": "Preskočí sa účtov: {count}. Ich transakcie — a akékoľvek prevody z nich alebo na ne — sa neimportujú.",
+          "warningsTitle": "Upozornenia",
+          "rowPrefix": "Riadok {rowIndex}:",
+          "startOver": "Začať odznova",
+          "continueToImport": "Spustiť import"
         },
         "accountRow": {
-          "transactionsCount": "{count} transactions",
-          "startingBalance": "Starting balance",
+          "transactionsCount": "Transakcie: {count}",
+          "startingBalance": "Počiatočný zostatok",
           "currencyPlaceholder": "USD",
           "currencyLabel": "Mena",
-          "currencyInvalid": "Enter a 3-letter currency code (e.g. USD)",
-          "autoDetected": "auto-detected: {code}",
-          "undoSkip": "Include in import"
+          "currencyInvalid": "Zadajte trojpísmenový kód meny (napr. USD)",
+          "autoDetected": "automaticky rozpoznané: {code}",
+          "undoSkip": "Zahrnúť do importu"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Spúšťanie importu…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "Queued",
+          "statusQueued": "V rade",
           "statusRunning": "Importovanie...",
           "statusCompleted": "Hotovo",
           "statusFailed": "Zlyhalo",
-          "failed": "The import couldn't finish."
+          "failed": "Import sa nepodarilo dokončiť."
         },
         "done": {
-          "successTitle": "Import complete",
-          "successDescription": "Your YNAB data is now in MoneyMatter.",
-          "accountsCreated": "Accounts created",
-          "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "tagsCreated": "Tags created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "splitsDetected": "Split groups detected",
-          "errorsTitle": "{count} rows failed to import",
+          "successTitle": "Import dokončený",
+          "successDescription": "Vaše údaje z YNAB sú teraz v MoneyMatter.",
+          "accountsCreated": "Vytvorené účty",
+          "accountsSkipped": "Preskočené účty",
+          "categoriesCreated": "Vytvorené kategórie",
+          "payeesCreated": "Vytvorené protistrany",
+          "tagsCreated": "Vytvorené štítky",
+          "transactionsImported": "Importované transakcie",
+          "transfersImported": "Importované prevody",
+          "splitsDetected": "Rozpoznané rozdelené skupiny",
+          "errorsTitle": "Riadky, ktoré sa nepodarilo importovať: {count}",
           "viewTransactions": "Zobraziť transakcie",
-          "importAnother": "Import another file"
+          "importAnother": "Importovať ďalší súbor"
         }
       }
     }

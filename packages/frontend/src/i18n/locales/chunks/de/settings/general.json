@@ -1,7 +1,7 @@
 {
   "settings": {
     "general": {
-      "title": "General",
+      "title": "Allgemein",
       "description": "Control how your financial data is calculated and displayed across the app.",
       "creditLimit": {
         "label": "Kreditrahmen in Salden einbeziehen",

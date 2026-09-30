@@ -3,44 +3,44 @@
     "currencies": {
       "page": {
         "title": "Meny",
-        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+        "description": "Spravujte meny, ktoré sledujete, a výmenné kurzy používané na vašich účtoch."
       },
       "addNew": {
         "loading": "Načítavanie...",
-        "selectCurrency": "Select currency",
-        "addButton": "Add",
-        "sectionLabel": "Add a currency",
-        "successfullyAdded": "Currency added",
+        "selectCurrency": "Vyberte menu",
+        "addButton": "Pridať",
+        "sectionLabel": "Pridať menu",
+        "successfullyAdded": "Mena pridaná",
         "errors": {
-          "addFailed": "Unexpected error. Currency is not added."
+          "addFailed": "Neočakávaná chyba. Mena nebola pridaná."
         }
       },
       "howItWorks": {
         "trigger": "Ako to funguje?",
-        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+        "body": "Základná mena je tá, na ktorú sa prepočítava každý zostatok pre súčty a prehľady. Každá pridaná mena sa automaticky aktualizuje podľa aktuálnych trhových kurzov, alebo môžete nastaviť vlastný kurz, ktorý ich prepíše."
       },
       "row": {
-        "baseBadge": "Base",
+        "baseBadge": "Základná",
         "custom": "Vlastné",
-        "live": "Live",
-        "unused": "Unused",
+        "live": "Živý kurz",
+        "unused": "Nepoužívaná",
         "accountsCount": "{count} účet | {count} účtov"
       },
       "empty": {
-        "title": "No other currencies yet",
-        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+        "title": "Zatiaľ žiadne ďalšie meny",
+        "description": "Vyššie pridajte menu a sledujte jej zostatky a výmenné kurzy popri základnej mene."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
-        "liveUpdateInfo": "When enabled, custom rate is ignored.",
-        "liveUpdateLabel": "Live update",
-        "ratePlaceholder": "0.00",
-        "saveButton": "Save",
-        "successfullyUpdated": "Successfully updated.",
-        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "disableLiveUpdate": "Ak chcete nastaviť vlastný výmenný kurz, vypnite živú aktualizáciu.",
+        "liveUpdateInfo": "Keď je zapnutá, vlastný kurz sa ignoruje.",
+        "liveUpdateLabel": "Živá aktualizácia",
+        "ratePlaceholder": "0,00",
+        "saveButton": "Uložiť",
+        "successfullyUpdated": "Úspešne aktualizované.",
+        "balancesNotRefreshed": "Zostatky účtov, ktoré sa zatiaľ nepodarilo obnoviť novým kurzom (počet: {count}), sa automaticky aktualizujú, keď bude kurz dostupný.",
         "errors": {
-          "unexpectedError": "Unexpected error",
-          "updateFailed": "Unexpected error. Currency is not updated."
+          "unexpectedError": "Neočakávaná chyba",
+          "updateFailed": "Neočakávaná chyba. Mena nebola aktualizovaná."
         }
       },
       "delete": {
@@ -55,33 +55,33 @@
         }
       },
       "setBase": {
-        "button": "Set as base currency",
-        "buttonShort": "Set as base",
-        "processing": "Processing...",
-        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "button": "Nastaviť ako základnú menu",
+        "buttonShort": "Nastaviť ako základnú",
+        "processing": "Prebieha spracovanie...",
+        "tooltip": "Označiť ako základnú menu. Všetky štatistiky a údaje na nástenke sa budú zobrazovať v tejto mene. Transakcie sa prepočítajú výmenným kurzom platným v deň ich zaznamenania.",
         "dialog": {
-          "title": "Change Base Currency?",
-          "warningTitle": "Warning:",
-          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
-          "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
-          "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's Rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
-          "roundingHow": "How it works:",
-          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
-          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
-          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
-          "untouchedWarning": "Original transactions amount will always remain untouched!",
-          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
-          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
-          "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change Base Currency",
+          "title": "Zmeniť základnú menu?",
+          "warningTitle": "Upozornenie:",
+          "warningText": "Zmena základnej meny by mala byť dôkladne zvážené rozhodnutie. V ideálnom prípade by sa mala vykonať len raz, hoci neexistujú žiadne skutočné obmedzenia.",
+          "descriptionText": "Pri každej zmene základnej meny sa všetky transakcie prepočítajú podľa historických výmenných kurzov. Kvôli aritmetike s pohyblivou desatinnou čiarkou a bežným odchýlkam medzi kurzami základnej a kotovanej meny môžu opakované prepočty postupne spôsobiť drobné rozdiely vo vašich referenčných sumách. Referenčné sumy sa používajú na zobrazenie štatistík a nastavenie limitov rozpočtov.",
+          "roundingTitle": "Ako presne sa počíta zaokrúhľovanie?",
+          "roundingIntro": "Prepočty mien používajú bankové zaokrúhľovanie (štandard IEEE 754), známe aj ako „zaokrúhľovanie polovice na párne“. Tým sa minimalizujú kumulatívne chyby zaokrúhľovania pri veľkom počte výpočtov.",
+          "roundingHow": "Ako to funguje:",
+          "roundingRule1": "Ak je hodnota presne v polovici (napr. 0,5), zaokrúhli sa na najbližšie párne číslo",
+          "roundingRule2": "Príklad: 0,5 → 0, 1,5 → 2, 2,5 → 2, 3,5 → 4",
+          "roundingStandard": "Túto metódu odporúčajú účtovné štandardy IFRS/GAAP a používajú ju významné finančné systémy, aby sa predišlo systematickému skresleniu pri prepočtoch mien.",
+          "untouchedWarning": "Pôvodné sumy transakcií zostanú vždy nedotknuté!",
+          "processingTimeInfo": "Môže to chvíľu trvať, ak ide o menej bežnú menu.",
+          "restrictionWarning": "Kým proces prebieha, nebudete môcť vytvárať nové účty, transakcie ani nič, čo súvisí so „sumami“.",
+          "confirmation": "Naozaj chcete pokračovať?",
+          "changeButton": "Zmeniť základnú menu",
           "cancelButton": "Zrušiť"
         },
-        "successMessage": "Base currency changed successfully.",
+        "successMessage": "Základná mena bola úspešne zmenená.",
         "errors": {
-          "changeFailed": "Unexpected error. Failed to change base currency.",
-          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
-          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first."
+          "changeFailed": "Neočakávaná chyba. Základnú menu sa nepodarilo zmeniť.",
+          "lockedHousehold": "Máte {count} aktívne členstvo v domácnosti. Najprv ho opustite v Nastavenia → Domácnosť. | Máte {count} aktívnych členstiev v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť.",
+          "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte."
         }
       }
     }

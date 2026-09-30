@@ -8,7 +8,7 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Map data",
-            "review": "Überprüfung",
+            "review": "Überprüfen",
             "execute": "Import",
             "done": "Done"
           }

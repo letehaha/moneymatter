@@ -64,10 +64,10 @@
           "unknownBrowser": "Unknown Browser"
         },
         "timeAgo": {
-          "justNow": "Just now",
-          "minutesAgo": "{count} minute ago | {count} minutes ago",
-          "hoursAgo": "{count} hour ago | {count} hours ago",
-          "daysAgo": "{count} day ago | {count} days ago"
+          "justNow": "الآن",
+          "minutesAgo": "منذ {count} دققيقة | منذ {count} دقيقة",
+          "hoursAgo": "منذ {count} ساعة | منذ {count} ساعة",
+          "daysAgo": "منذ {count} يوم | منذ {count} يوم"
         },
         "notifications": {
           "loadFailed": "Failed to load sessions",

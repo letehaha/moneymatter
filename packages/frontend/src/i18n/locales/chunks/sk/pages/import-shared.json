@@ -2,95 +2,95 @@
   "pages": {
     "importExport": {
       "progress": {
-        "jobExpired": "The import job expired or could not be found.",
-        "lostContact": "Lost contact with the import job."
+        "jobExpired": "Úloha importu vypršala, alebo sa nenašla.",
+        "lostContact": "Stratené spojenie s úlohou importu."
       }
     }
   },
   "importShared": {
     "action": {
-      "createNew": "Create new",
-      "linkExisting": "Link to existing",
-      "skip": "Skip"
+      "createNew": "Vytvoriť nový",
+      "linkExisting": "Prepojiť s existujúcim",
+      "skip": "Preskočiť"
     },
-    "selectAction": "Select action",
-    "resolvedCounterWord": "resolved",
-    "quickActionsMenuLabel": "Bulk actions",
+    "selectAction": "Vyberte akciu",
+    "resolvedCounterWord": "vyriešené",
+    "quickActionsMenuLabel": "Hromadné akcie",
     "quickActions": {
       "menu": "Akcie"
     },
     "columns": {
-      "sourceName": "Source name",
-      "currency": "Currency",
-      "action": "Action",
-      "target": "Target"
+      "sourceName": "Zdrojový názov",
+      "currency": "Mena",
+      "action": "Akcia",
+      "target": "Cieľ"
     },
     "account": {
       "selectTarget": "Vyberte účet",
-      "noMatchingCurrency": "No account with currency {currency}",
-      "willCreate": "Will create {name} ({currency})",
-      "empty": "No accounts to map",
-      "willSkip": "Will not be imported"
+      "noMatchingCurrency": "Žiadny účet s menou {currency}",
+      "willCreate": "Vytvorí sa {name} ({currency})",
+      "empty": "Nie sú žiadne účty na priradenie",
+      "willSkip": "Neimportuje sa"
     },
     "category": {
-      "selectTarget": "Select category",
-      "willCreate": "Will create {name}",
-      "empty": "No categories to map"
+      "selectTarget": "Vyberte kategóriu",
+      "willCreate": "Vytvorí sa {name}",
+      "empty": "Nie sú žiadne kategórie na priradenie"
     },
     "recalculateBalance": {
-      "label": "Update account balances from imported transactions",
-      "hint": "Transactions older than an account's latest existing transaction are treated as backfill and don't change its current balance.",
-      "loadFailedHint": "Couldn't load your saved preference — defaulting to off."
+      "label": "Aktualizovať zostatky účtov podľa importovaných transakcií",
+      "hint": "Transakcie staršie než najnovšia existujúca transakcia účtu sa považujú za spätné doplnenie a nemenia jeho aktuálny zostatok.",
+      "loadFailedHint": "Vaše uložené nastavenie sa nepodarilo načítať — predvolene je vypnuté."
     },
     "balanceChanges": {
-      "title": "Account balance changes",
+      "title": "Zmeny zostatkov účtov",
       "columns": {
-        "account": "Account",
-        "before": "Before",
-        "after": "After",
-        "delta": "Change",
-        "newRows": "New rows",
-        "backfillRows": "Backfill rows"
+        "account": "Účet",
+        "before": "Pred",
+        "after": "Po",
+        "delta": "Zmeniť",
+        "newRows": "Nové riadky",
+        "backfillRows": "Riadky spätného doplnenia"
       },
       "newAccount": "Nový účet"
     },
     "duplicatesTable": {
       "columnHeaders": {
-        "row": "Row",
-        "match": "Match",
-        "csvTransaction": "CSV transaction",
-        "existingTransaction": "Existing transaction",
+        "row": "Riadok",
+        "match": "Zhoda",
+        "csvTransaction": "Transakcia z CSV",
+        "existingTransaction": "Existujúca transakcia",
         "csvShort": "CSV",
-        "existingShort": "Existing"
+        "existingShort": "Existujúca"
       },
       "matchTypeLabels": {
-        "exact": "Exact",
-        "idMatch": "ID match",
-        "fuzzy": "Fuzzy"
+        "exact": "Presná",
+        "idMatch": "Zhoda podľa ID",
+        "fuzzy": "Približná"
       },
       "fieldLabels": {
-        "amount": "Amount",
-        "date": "Date",
-        "note": "Note",
-        "category": "Category"
+        "amount": "Suma",
+        "date": "Dátum",
+        "note": "Poznámka",
+        "category": "Kategória"
       },
-      "importAnywayAriaLabel": "Import row {row} anyway"
+      "importAnywayAriaLabel": "Napriek tomu importovať riadok {row}"
     },
     "aiMapping": {
-      "action": "AI match",
-      "tooltipCategories": "Let AI link each source category to the closest existing category. Rows you already linked to a category are left untouched.",
-      "failed": "AI matching failed. Please try again.",
-      "inProgress": "AI matching in progress…"
+      "action": "Priradenie pomocou AI",
+      "tooltipCategories": "Nechajte AI, aby prepojila každú zdrojovú kategóriu s najbližšou existujúcou kategóriou. Riadky, ktoré ste už prepojili s kategóriou, zostanú nezmenené.",
+      "failed": "Priradenie pomocou AI zlyhalo. Skúste to znova, prosím.",
+      "inProgress": "Prebieha priradenie pomocou AI…"
     },
     "categoryPreset": {
-      "menuTrigger": "Apply mapping",
-      "currentLayout": "This file's layout",
-      "savedTemplates": "Saved templates",
-      "lastUsed": "Last used mapping",
-      "namePlaceholder": "Name this mapping",
-      "renameAria": "Rename mapping",
-      "deleteAria": "Delete mapping",
-      "confirmRenameAria": "Save name"
+      "menuTrigger": "Použiť priradenie",
+      "currentLayout": "Rozloženie tohto súboru",
+      "savedTemplates": "Uložené šablóny",
+      "lastUsed": "Naposledy použité priradenie",
+      "namePlaceholder": "Pomenujte toto priradenie",
+      "renameAria": "Premenovať priradenie",
+      "deleteAria": "Zmazať priradenie",
+      "confirmRenameAria": "Uložiť názov"
     }
   }
 }

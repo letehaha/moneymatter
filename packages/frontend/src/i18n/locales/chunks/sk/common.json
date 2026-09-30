@@ -116,7 +116,7 @@
     "depreciationPresets": {
       "classDefault": "Predvolené pre triedu",
       "slow": "Pomalé",
-      "average": "Priemerné",
+      "average": "Priemer",
       "fast": "Rýchle",
       "custom": "Vlastná sadzba"
     },

@@ -346,6 +346,7 @@
       },
       "milestones": {
         "reached": "Reached",
+        "reachedOn": "Reached {date}",
         "eta": "in {duration} · {date}"
       },
       "empty": {

@@ -7,7 +7,7 @@
         "stepper": {
           "steps": {
             "upload": "Upload",
-            "preview": "Überprüfung",
+            "preview": "Überprüfen",
             "results": "Done"
           }
         },

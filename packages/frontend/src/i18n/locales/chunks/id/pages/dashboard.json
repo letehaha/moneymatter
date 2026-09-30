@@ -113,7 +113,8 @@
             "3": "3 bulan terakhir",
             "6": "6 bulan terakhir",
             "12": "12 bulan terakhir"
-          }
+          },
+          "showStrip": "Show 30-day chart"
         }
       },
       "categoryTracker": {
@@ -167,9 +168,8 @@
       },
       "plannedOverview": {
         "title": "Terencana",
-        "projectedTotal": "Proyeksi saldo",
-        "pendingCount": "{count} entri terencana | {count} entri terencana",
-        "through": "Hingga {date}",
+        "projectedBy": "Projected by {date}",
+        "upcoming": "Upcoming · {count}",
         "loadFailed": "Tidak dapat memuat transaksi terencana"
       },
       "emptyState": "Tidak ada data dalam interval waktu yang dipilih.",
@@ -229,13 +229,18 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "{count} pembayaran mendatang",
-        "collapsedAction": "Buka"
+      "payAction": "Tandai dibayar",
+      "listTitle": "Akan Datang",
+      "dueCount": "{count} due",
+      "nothingDue": "Nothing due in 3 days",
+      "overdueHint": "Overdue since {date}",
+      "dueSoonHint": "Due in the next 3 days",
+      "strip": {
+        "title": "30 hari ke depan",
+        "goingOut": "{amount} going out",
+        "today": "Hari ini"
       },
-      "empty": "Semua beres — tidak ada yang jatuh tempo dalam 3 hari ke depan.",
-      "overdueBadge": "Terlambat",
-      "payAction": "Tandai dibayar"
+      "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
       "config": {
@@ -253,7 +258,11 @@
         "excludeBalanceAdjustmentsDescription": "Sembunyikan transaksi penyesuaian saldo",
         "plannedTitle": "Transaksi terencana",
         "excludePlannedDescription": "Sembunyikan transaksi terencana yang tertunda dari daftar",
-        "nothingExcluded": "Tidak ada yang dikecualikan"
+        "nothingExcluded": "Tidak ada yang dikecualikan",
+        "tagsStyleTitle": "Tag",
+        "tagsStyleNames": "Names",
+        "tagsStyleBars": "Bars",
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
       },
       "overdueBadge": "Terlambat",
       "scheduledBadge": "Terjadwal",

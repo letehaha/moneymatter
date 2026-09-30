@@ -29,7 +29,7 @@
     "connect": "Connect",
     "connectBank": "الاتصال بالبنك",
     "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
-    "reconnect": "Reconnect",
+    "reconnect": "إعادة الاتصال",
     "manageConnection": "Manage connection",
     "accountsCount": "{count} account | {count} accounts",
     "inGroupSubtitle": "in {name}",

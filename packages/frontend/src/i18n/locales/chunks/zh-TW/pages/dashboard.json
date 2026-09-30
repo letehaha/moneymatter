@@ -113,7 +113,8 @@
             "3": "Last 3 months",
             "6": "Last 6 months",
             "12": "Last 12 months"
-          }
+          },
+          "showStrip": "Show 30-day chart"
         }
       },
       "categoryTracker": {
@@ -167,9 +168,8 @@
       },
       "plannedOverview": {
         "title": "Planned",
-        "projectedTotal": "Projected balance",
-        "pendingCount": "{count} planned entry | {count} planned entries",
-        "through": "Through {date}",
+        "projectedBy": "Projected by {date}",
+        "upcoming": "Upcoming · {count}",
         "loadFailed": "Couldn't load planned transactions"
       },
       "emptyState": "There are no data in selected time interval.",
@@ -229,13 +229,18 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "{count} upcoming payments",
-        "collapsedAction": "Open"
+      "payAction": "Mark paid",
+      "listTitle": "Upcoming",
+      "dueCount": "{count} due",
+      "nothingDue": "Nothing due in 3 days",
+      "overdueHint": "Overdue since {date}",
+      "dueSoonHint": "Due in the next 3 days",
+      "strip": {
+        "title": "Next 30 days",
+        "goingOut": "{amount} going out",
+        "today": "Today"
       },
-      "empty": "All caught up — nothing due in the next 3 days.",
-      "overdueBadge": "Overdue",
-      "payAction": "Mark paid"
+      "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
       "config": {
@@ -253,7 +258,11 @@
         "excludeBalanceAdjustmentsDescription": "Hide balance adjustment transactions",
         "plannedTitle": "Planned transactions",
         "excludePlannedDescription": "Hide pending planned transactions from the list",
-        "nothingExcluded": "Nothing excluded"
+        "nothingExcluded": "Nothing excluded",
+        "tagsStyleTitle": "Tags",
+        "tagsStyleNames": "Names",
+        "tagsStyleBars": "Bars",
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
       },
       "overdueBadge": "Overdue",
       "scheduledBadge": "Scheduled",

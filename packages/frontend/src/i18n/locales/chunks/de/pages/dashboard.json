@@ -4,21 +4,21 @@
       "customize": "Anpassen",
       "addWidgets": "Widgets hinzufügen",
       "emptyState": "Klicke auf Anpassen, um Widgets hinzuzufügen",
-      "removeWidget": "Remove widget"
+      "removeWidget": "Widget entfernen"
     },
     "widgets": {
       "common": {
         "includePlanned": "Geplante Transaktionen einbeziehen",
-        "includePlannedTooltip": "Ausstehende geplante Transaktionen in den Zahlen dieses Widgets berücksichtigen.",
-        "includePlannedSaveError": "Die Einstellungen für geplante Transaktionen konnten nicht gespeichert werden. Bitte versuche es erneut."
+        "includePlannedTooltip": "Berücksichtigt ausstehende geplante Transaktionen in den Zahlen dieses Widgets.",
+        "includePlannedSaveError": "Einstellung für geplante Transaktionen konnte nicht gespeichert werden. Bitte versuche es erneut."
       },
       "balanceTrend": {
-        "title": "Saldo Entwicklung",
+        "title": "Saldoverlauf",
         "balanceTypes": {
           "total": "Gesamt",
           "accounts": "Konten",
           "portfolios": "Portfolios",
-          "ventures": "Ventures",
+          "ventures": "Beteiligungen",
           "vehicles": "Fahrzeuge",
           "loans": "Kredite"
         },
@@ -26,7 +26,7 @@
           "accounts": "Konten:",
           "portfolios": "Portfolios:",
           "total": "Gesamt:",
-          "ventures": "Ventures:",
+          "ventures": "Beteiligungen:",
           "vehicles": "Fahrzeuge:",
           "loans": "Kredite:"
         },
@@ -35,19 +35,19 @@
         "spikePanel": {
           "accounts": "Konten",
           "portfolios": "Portfolios",
-          "priceDrivenChange": "Preisgetriebene Änderung — Transaktionsdetails kommen bald",
+          "priceDrivenChange": "Preisbedingte Änderung – Transaktionsdetails demnächst verfügbar",
           "noSignificantTransactions": "Keine wesentlichen Transaktionen für dieses Datum.",
           "seeAllTransactions": "Alle Transaktionen anzeigen"
         },
         "spikeSettings": {
-          "showMarkers": "Spike-Marker anzeigen",
-          "showMarkersTooltip": "Farbige Markierungen, die wesentliche Saldoveränderungen hervorheben, im Diagramm ein- oder ausblenden.",
+          "showMarkers": "Ausschlag-Markierungen anzeigen",
+          "showMarkersTooltip": "Farbige Markierungen im Diagramm ein-/ausschalten, die deutliche Saldoänderungen hervorheben.",
           "percentThreshold": "Min. Änderung %",
-          "percentThresholdTooltip": "Mindestprozentsatz der Saldoveränderung zwischen zwei aufeinanderfolgenden Tagen, damit eine Spitze als solche gekennzeichnet wird. Entweder dieser Wert oder der absolute Schwellwert muss überschritten werden. Bei niedrigen Werten werden mehr Markierungen angezeigt.",
+          "percentThresholdTooltip": "Mindestprozentsatz der Saldoänderung zwischen zwei aufeinanderfolgenden Tagen für eine Markierung. Entweder dieser oder der absolute Schwellenwert muss überschritten werden. Niedrige Werte zeigen mehr Markierungen an.",
           "absoluteThreshold": "Min. Änderung $",
-          "absoluteThresholdTooltip": "Mindeständerung des absoluten Saldos (in deiner Basiswährung), damit eine Spitze vorliegt. Entweder dieser Wert oder der prozentuale Schwellwert muss überschritten werden.",
-          "maxMarkers": "Max. Marker",
-          "maxMarkersTooltip": "Maximale Anzahl an Spike-Markern, die auf dem Diagramm angezeigt werden. Wenn es mehr Spitzen als dieses Limit gibt, werden nur die wichtigsten angezeigt.",
+          "absoluteThresholdTooltip": "Mindeständerung des absoluten Saldos (in deiner Basiswährung), damit ein Ausschlag vorliegt. Entweder dieser Wert oder der prozentuale Schwellwert muss überschritten werden.",
+          "maxMarkers": "Max. Markierungen",
+          "maxMarkersTooltip": "Maximale Anzahl der angezeigten Markierungen im Diagramm. Gibt es mehr Ausschläge als dieses Limit, werden nur die bedeutendsten angezeigt.",
           "resetDefaults": "Auf Standardwerte zurücksetzen",
           "accept": "Anwenden",
           "validation": {
@@ -57,26 +57,26 @@
         },
         "settings": {
           "title": "Einstellungen",
-          "spikeMarkers": "Spike-Marker",
-          "fitToLatestData": "An aktuelle Daten anpassen",
-          "fitToLatestDataTooltip": "Wenn diese Option aktiviert ist, reicht das Diagramm nur bis zum letzten Datenpunkt. Wenn sie deaktiviert ist, deckt die x-Achse den gesamten ausgewählten Zeitraum ab, wobei Platz für zukünftige Daten frei bleibt.",
-          "fitToLatestDataLockedTooltip": "Schalte geplante Transaktionen aus, um dies zu ändern – ihre Prognose erweitert das Diagramm immer bis zum Ende des Zeitraums.",
-          "on": "An",
+          "spikeMarkers": "Ausschlag-Markierungen",
+          "fitToLatestData": "An neueste Daten anpassen",
+          "fitToLatestDataTooltip": "Wenn aktiviert, reicht das Diagramm nur bis zum neuesten Datenpunkt. Wenn deaktiviert, deckt die X-Achse den gesamten gewählten Zeitraum ab und lässt Platz für zukünftige Daten.",
+          "fitToLatestDataLockedTooltip": "Deaktiviere geplante Transaktionen, um dies zu ändern – deren Prognose erweitert das Diagramm immer bis zum Ende des Zeitraums.",
+          "on": "Ein",
           "off": "Aus",
           "includeInTotal": "In Gesamtsumme einbeziehen",
-          "includePlannedTooltip": "Zeige eine gestrichelte Projektion der anstehenden geplanten Transaktionen über der Entwicklung an."
+          "includePlannedTooltip": "Zeige eine gestrichelte Prognose ausstehender geplanter Transaktionen über dem Trend an."
         },
         "componentsSettings": {
-          "description": "Wähle, welche Komponenten in die Gesamtsumme einbezogen werden.",
+          "description": "Wähle, welche Komponenten zur Gesamtsaldo-Linie zählen.",
           "vehicles": "Fahrzeuge",
-          "ventures": "Ventures",
+          "ventures": "Beteiligungen",
           "loans": "Kredite",
-          "loansTooltip": "Wenn aktiviert, werden deine ausstehenden Kreditsalden vom Gesamtbetrag abgezogen (tatsächliches Nettovermögen). Wenn nicht, werden Kredite ignoriert, sodass die Gesamtsumme nur Vermögenswerte anzeigt.",
+          "loansTooltip": "Wenn aktiviert, werden offene Kreditsalden vom Gesamtwert abgezogen (echtes Nettovermögen). Wenn deaktiviert, werden Kredite ignoriert, sodass nur Vermögenswerte angezeigt werden.",
           "allIncluded": "Alle Komponenten",
-          "excluding": "{items} ausschließen"
+          "excluding": "Ohne {items}"
         },
         "projection": {
-          "summary": "Prognose {amount} · {count} geplanter Eintrag bis {date} | Prognose {amount} · {count} geplante Einträge bis {date}"
+          "summary": "{amount} prognostiziert · {count} geplanter Eintrag bis {date} | {amount} prognostiziert · {count} geplante Einträge bis {date}"
         }
       },
       "expensesStructure": {
@@ -86,11 +86,11 @@
         "viewButton": "Anzeigen"
       },
       "latestTransactions": {
-        "title": "Letzte Transaktionen",
+        "title": "Neueste Transaktionen",
         "showAll": "Alle anzeigen"
       },
       "subscriptions": {
-        "title": "Abonnements & Abrechnungen",
+        "title": "Abos & Rechnungen",
         "titleSubscriptions": "Abonnements",
         "titleBills": "Rechnungen",
         "titleAll": "Wiederkehrende Zahlungen",
@@ -98,101 +98,101 @@
         "configTypeAll": "Alle",
         "configTypeSubscriptions": "Abonnements",
         "configTypeBills": "Rechnungen",
-        "configTypeInstallments": "Raten",
+        "configTypeInstallments": "Ratenzahlungen",
         "activeSummary": "{count} aktiv",
         "perYear": " pro Jahr",
         "incomeSummary": "{count} aktiv · {amount}/Monat Einnahmen",
-        "percentOfIncome": "{percent}% der durchschn. Einnahmen",
+        "percentOfIncome": "{percent}% des ø Einkommens",
         "settings": {
           "title": "Einstellungen",
           "show": "Anzeigen",
-          "incomeWindow": "Einnahmenfenster",
-          "incomeWindowTooltip": "Wir berechnen den Durchschnitt deiner eingehenden Transaktionen in diesem Zeitraum, um den prozentualen Anteil der Einnahmen zu ermitteln, der für wiederkehrende Zahlungen aufgewendet wird.",
+          "incomeWindow": "Einkommenszeitraum",
+          "incomeWindowTooltip": "Wir berechnen den Durchschnitt deiner Einnahmen über diesen Zeitraum, um den Prozentanteil für wiederkehrende Zahlungen zu ermitteln.",
           "lookbackOption": {
             "1": "Letzter Monat",
             "3": "Letzte 3 Monate",
             "6": "Letzte 6 Monate",
             "12": "Letzte 12 Monate"
-          }
+          },
+          "showStrip": "Show 30-day chart"
         }
       },
       "categoryTracker": {
-        "title": "Kategorien Watchlist",
+        "title": "Kategorien-Beobachtungsliste",
         "addCategory": "Kategorie hinzufügen",
         "selectCategories": "Kategorien auswählen"
       },
       "cashFlow": {
         "title": "Cashflow",
-        "description": "Zeigt deine Nettoersparnis: Einnahmen abzüglich Ausgaben für den ausgewählten Zeitraum, mit einem Trend der vorherigen Zeiträume",
+        "description": "Zeigt deine Nettoersparnis: Einnahmen abzüglich Ausgaben für den gewählten Zeitraum, mit Trend aus vorherigen Zeiträumen",
         "vsPrevious": "gegenüber Vorperiode",
         "income": "Einnahmen",
         "expenses": "Ausgaben",
         "saved": "Gespart",
-        "previousPeriodsTrend": "Trend der vorherigen Perioden",
+        "previousPeriodsTrend": "Trend vorheriger Zeiträume",
         "viewDetails": "Details anzeigen"
       },
       "netWorth": {
         "title": "Nettovermögen",
-        "description": "Wie sich dein Nettovermögen im ausgewählten Zeitraum verändert hat. Berücksichtigt werden alle Saldenänderungen: Konten, Anlagen, Kredite und Vermögenswerte.",
+        "description": "Wie sich dein Nettovermögen im gewählten Zeitraum verändert hat. Berücksichtigt jede Saldoänderung: Konten, Investments, Kredite und Vermögenswerte.",
         "vsPrevious": "gegenüber Vorperiode",
         "start": "Beginn",
         "end": "Ende",
         "growth": "Wachstum",
-        "previousPeriodsTrend": "Trend der vorherigen Perioden",
-        "excludedTooltip": "Vom Nettovermögen ausgenommen: {components}",
+        "previousPeriodsTrend": "Trend vorheriger Zeiträume",
+        "excludedTooltip": "Vom Nettovermögen ausgeschlossen: {components}",
         "viewHistory": "Verlauf anzeigen",
-        "loadFailed": "Konnte Nettovermögen-Daten nicht laden.",
+        "loadFailed": "Daten zum Nettovermögen konnten nicht geladen werden.",
         "components": {
-          "ventures": "Ventures",
+          "ventures": "Beteiligungen",
           "vehicles": "Fahrzeuge",
           "loans": "Kredite"
         },
         "settings": {
-          "title": "Im Nettovermögen berücksichtigen",
+          "title": "In Nettovermögen einbeziehen",
           "loans": "Kredite",
           "vehicles": "Fahrzeuge",
-          "ventures": "Ventures"
+          "ventures": "Beteiligungen"
         },
         "trendTooltip": {
           "change": "Änderung",
           "netWorth": "Nettovermögen",
-          "noData": "Keine Daten in diesem Zeitraum"
+          "noData": "Keine Daten für diesen Zeitraum"
         }
       },
       "creditUtilization": {
         "title": "Kreditnutzung",
-        "description": "Zeigt an, wieviel deiner Kreditrahmen derzeit für alle Konten verwendet werden",
+        "description": "Zeigt, wie viel deines Kreditrahmens über alle Konten hinweg derzeit genutzt wird",
         "utilized": "genutzt",
         "noAccounts": "Keine Konten mit Kreditrahmen"
       },
       "plannedOverview": {
         "title": "Geplant",
-        "projectedTotal": "Voraussichtlicher Saldo",
-        "pendingCount": "{count} geplante Einträge | {count} geplante Einträge",
-        "through": "Bis {date}",
-        "loadFailed": "Konnte geplante Transaktionen nicht laden"
+        "projectedBy": "Projected by {date}",
+        "upcoming": "Upcoming · {count}",
+        "loadFailed": "Geplante Transaktionen konnten nicht geladen werden"
       },
-      "emptyState": "Im ausgewählten Zeitraum sind keine Daten vorhanden.",
+      "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
       "registry": {
         "balanceTrend": {
-          "name": "Saldo Entwicklung",
+          "name": "Saldoverlauf",
           "description": "Verfolge die Entwicklung deines Saldos im Zeitverlauf"
         },
         "categoryTracker": {
-          "name": "Kategorien Watchlist",
-          "description": "Beobachte Ausgaben und Einnahmen für ausgewählte Kategorien"
+          "name": "Kategorien-Beobachtungsliste",
+          "description": "Behalte Ausgaben und Einnahmen ausgewählter Kategorien im Blick"
         },
         "spendingCategories": {
           "name": "Ausgaben nach Kategorien",
-          "description": "Sieh, wohin dein Geld fließt"
+          "description": "Sieh, wofür du dein Geld ausgibst"
         },
         "latestRecords": {
-          "name": "Letzte Datensätze",
+          "name": "Neueste Einträge",
           "description": "Deine letzten Transaktionen"
         },
         "subscriptions": {
-          "name": "Abonnements & Rechnungen",
-          "description": "Übersicht der wiederkehrenden Zahlungen"
+          "name": "Abos & Rechnungen",
+          "description": "Übersicht wiederkehrender Zahlungen"
         },
         "cashFlow": {
           "name": "Cashflow",
@@ -200,19 +200,19 @@
         },
         "netWorth": {
           "name": "Nettovermögen",
-          "description": "Wie sich dein gesamtes Nettovermögen im Laufe der Zeit verändert, einschließlich Investitionen, Darlehen und Vermögenswerte."
+          "description": "Wie sich dein Gesamtnettovermögen im Zeitverlauf verändert, einschließlich Investments, Krediten und Vermögenswerten."
         },
         "creditUtilization": {
-          "name": "Kreditnutzung",
-          "description": "Kreditrahmennutzung für alle deine Konten"
+          "name": "Kreditrahmenauslastung",
+          "description": "Nutzung des Kreditrahmens über deine Konten"
         },
         "plannedOverview": {
           "name": "Übersicht geplanter Zahlungen",
           "description": "Ausstehende geplante Transaktionen und dein prognostizierter Saldo"
         },
         "fireProgress": {
-          "name": "FIRE progress",
-          "description": "How close you are to financial independence"
+          "name": "FIRE-Fortschritt",
+          "description": "Wie nah du der finanziellen Unabhängigkeit bist"
         }
       }
     },
@@ -229,84 +229,93 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "{count} bevorstehende Zahlungen",
-        "collapsedAction": "Öffnen"
+      "payAction": "Bezahlt",
+      "listTitle": "Upcoming",
+      "dueCount": "{count} due",
+      "nothingDue": "Nothing due in 3 days",
+      "overdueHint": "Overdue since {date}",
+      "dueSoonHint": "Due in the next 3 days",
+      "strip": {
+        "title": "Next 30 days",
+        "goingOut": "{amount} going out",
+        "today": "Heute"
       },
-      "empty": "Alles erledigt — nichts fällig in den nächsten 3 Tagen.",
-      "overdueBadge": "Überfällig",
-      "payAction": "Bezahlt"
+      "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
       "config": {
         "includeScheduled": {
           "label": "Geplante Zahlungen einbeziehen",
-          "on": "An",
+          "on": "Ein",
           "off": "Aus"
         }
       },
       "settings": {
         "excludeTitle": "Transaktionen ausschließen",
-        "excludeTransfersDescription": "Umbuchungen zwischen deinen eigenen Konten ausblenden",
-        "excludeOutOfWalletDescription": "Umbuchungen zu und von Konten, die du nicht verfolgst, ausblenden",
-        "balanceAdjustmentsTitle": "Kontostandanpassungen",
-        "excludeBalanceAdjustmentsDescription": "Kontostandanpassungstransaktionen ausblenden",
+        "excludeTransfersDescription": "Umbuchungen zwischen eigenen Konten ausblenden",
+        "excludeOutOfWalletDescription": "Umbuchungen von/zu nicht nachverfolgten Konten ausblenden",
+        "balanceAdjustmentsTitle": "Saldokorrekturen",
+        "excludeBalanceAdjustmentsDescription": "Saldokorrektur-Transaktionen ausblenden",
         "plannedTitle": "Geplante Transaktionen",
         "excludePlannedDescription": "Ausstehende geplante Transaktionen aus der Liste ausblenden",
-        "nothingExcluded": "Nichts ausgeschlossen"
+        "nothingExcluded": "Nichts ausgeschlossen",
+        "tagsStyleTitle": "Tags",
+        "tagsStyleNames": "Names",
+        "tagsStyleBars": "Bars",
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
       },
       "overdueBadge": "Überfällig",
       "scheduledBadge": "Geplant",
       "payAction": "Bezahlt"
     },
     "fireProgress": {
-      "title": "FIRE progress",
+      "title": "FIRE-Fortschritt",
       "config": {
         "style": {
-          "label": "Style",
+          "label": "Stil",
           "ring": "Ring",
-          "numbers": "Numbers"
+          "numbers": "Zahlen"
         }
       },
-      "openPlan": "Open FIRE plan",
-      "loadFailed": "Couldn't load FIRE progress.",
-      "toType": "to {type}",
-      "ringLabelFor": "{pct}% of {type} target reached, {duration} left",
-      "ringLabelReachedFor": "{type} target reached",
-      "ringLabelUnreachableFor": "{pct}% of {type} target reached, not reachable at your current pace",
-      "timeTo": "Time to {type}",
-      "unitYears": "{n} yrs | {n} yr | {n} yrs",
-      "unitMonths": "{n} mos | {n} mo | {n} mos",
-      "atAge": "at age {age}",
-      "nextMilestone": "Next milestone",
+      "openPlan": "FIRE-Plan öffnen",
+      "loadFailed": "FIRE-Fortschritt konnte nicht geladen werden.",
+      "toType": "bis {type}",
+      "ringLabelFor": "{pct}% des Ziels ({type}) erreicht, noch {duration}",
+      "ringLabelReachedFor": "Ziel ({type}) erreicht",
+      "ringLabelUnreachableFor": "{pct}% des Ziels ({type}) erreicht, bei aktuellem Tempo nicht erreichbar",
+      "timeTo": "Zeit bis {type}",
+      "unitYears": "{n} Jahre | {n} Jahr | {n} Jahre",
+      "unitMonths": "{n} Monate | {n} Monat | {n} Monate",
+      "atAge": "im Alter von {age}",
+      "nextMilestone": "Nächster Meilenstein",
       "saved": "Gespart",
-      "progress": "Progress",
+      "progress": "Fortschritt",
       "coastFire": "Coast FIRE",
-      "reached": "Reached",
+      "reached": "Erreicht",
       "milestoneIn": "{pct}% in {duration}",
-      "typeNumber": "{type} number",
-      "atRate": "at {rate}%",
-      "milestonesReached": "{n} of {total} milestones",
-      "balanceOfTarget": "{balance} of {target}",
-      "reachedType": "{type} reached",
-      "supports": "Supports {amount}/mo",
-      "pctOfSpending": "{pct}% of spending",
-      "unreachable": "Not reachable at current savings",
-      "needs": "Needs about {amount}/mo to get there in {duration}",
+      "typeNumber": "{type}-Ziel",
+      "atRate": "bei {rate}%",
+      "milestonesReached": "{n} von {total} Meilensteinen",
+      "balanceOfTarget": "{balance} von {target}",
+      "reachedType": "{type} erreicht",
+      "supports": "Ermöglicht {amount}/Monat",
+      "pctOfSpending": "{pct}% der Ausgaben",
+      "unreachable": "Bei aktueller Sparrate nicht erreichbar",
+      "needs": "Benötigt ca. {amount}/Monat, um es in {duration} zu erreichen",
       "chart": {
         "today": "Heute",
         "typeTarget": "{type} · {amount}",
-        "ariaLabel": "Net worth path: actual history up to today, projected toward your FIRE number"
+        "ariaLabel": "Nettovermögensverlauf: bisherige Historie bis heute, prognostiziert auf dein FIRE-Ziel"
       },
       "setup": {
-        "title": "Plan your path to FIRE",
-        "description": "Uses your accounts and spending. Two numbers if you have no data yet.",
-        "action": "Set up"
+        "title": "Plane deinen Weg zu FIRE",
+        "description": "Nutzt deine Konten und Ausgaben. Zwei Zahlen, falls du noch keine Daten hast.",
+        "action": "Einrichten"
       },
       "locked": {
-        "title": "Plan your path to FIRE",
-        "description": "Plus feature",
-        "action": "Unlock"
+        "title": "Plane deinen Weg zu FIRE",
+        "description": "Plus-Funktion",
+        "action": "Freischalten"
       }
     }
   }

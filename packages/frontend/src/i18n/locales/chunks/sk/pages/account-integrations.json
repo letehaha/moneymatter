@@ -415,7 +415,7 @@
       },
       "labels": {
         "free": "Zadarmo",
-        "paid": "Platené",
+        "paid": "Zaplatené",
         "easySetup": "Jednoduché nastavenie",
         "mediumSetup": "Stredne náročné nastavenie",
         "veryDifficultSetup": "Veľmi náročné nastavenie"

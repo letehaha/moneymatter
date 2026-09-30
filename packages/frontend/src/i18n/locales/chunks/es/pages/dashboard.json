@@ -113,7 +113,8 @@
             "3": "Últimos 3 meses",
             "6": "Últimos 6 meses",
             "12": "Últimos 12 meses"
-          }
+          },
+          "showStrip": "Show 30-day chart"
         }
       },
       "categoryTracker": {
@@ -167,9 +168,8 @@
       },
       "plannedOverview": {
         "title": "Planificadas",
-        "projectedTotal": "Saldo previsto",
-        "pendingCount": "{count} movimiento planificado | {count} movimientos planificados",
-        "through": "Hasta {date}",
+        "projectedBy": "Projected by {date}",
+        "upcoming": "Upcoming · {count}",
         "loadFailed": "No se pudieron cargar las transacciones planificadas"
       },
       "emptyState": "No hay datos en el intervalo de tiempo seleccionado.",
@@ -229,13 +229,18 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "{count} pagos próximos",
-        "collapsedAction": "Abrir"
+      "payAction": "Marcar como pagado",
+      "listTitle": "Próximo",
+      "dueCount": "{count} due",
+      "nothingDue": "Nothing due in 3 days",
+      "overdueHint": "Overdue since {date}",
+      "dueSoonHint": "Due in the next 3 days",
+      "strip": {
+        "title": "Próximos 30 días",
+        "goingOut": "{amount} going out",
+        "today": "Hoy"
       },
-      "empty": "Todo al día — nada pendiente en los próximos 3 días.",
-      "overdueBadge": "Vencido",
-      "payAction": "Marcar como pagado"
+      "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
       "config": {
@@ -253,7 +258,11 @@
         "excludeBalanceAdjustmentsDescription": "Ocultar transacciones de ajuste de saldo",
         "plannedTitle": "Transacciones planificadas",
         "excludePlannedDescription": "Ocultar de la lista las transacciones planificadas pendientes",
-        "nothingExcluded": "Nada excluido"
+        "nothingExcluded": "Nada excluido",
+        "tagsStyleTitle": "Etiquetas",
+        "tagsStyleNames": "Names",
+        "tagsStyleBars": "Bars",
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
       },
       "overdueBadge": "Vencido",
       "scheduledBadge": "Programado",

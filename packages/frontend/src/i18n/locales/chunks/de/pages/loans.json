@@ -18,7 +18,7 @@
       "emptyTitle": "No matching transactions",
       "emptyDescription": "No transactions match these filters. Try widening the date range or clearing filters.",
       "selectedCount": "{count} selected",
-      "clearSelection": "Clear",
+      "clearSelection": "Zurücksetzen",
       "linkSelected": "Link {count}",
       "success": "Linked {count} payment to the loan. | Linked {count} payments to the loan.",
       "preAnchorWarning": "{count} selected payment is dated before the loan's balance anchor ({date}) — it links as history only and won't reduce the outstanding balance. | {count} selected payments are dated before the loan's balance anchor ({date}) — they link as history only and won't reduce the outstanding balance.",
@@ -103,8 +103,8 @@
       "ofPrincipal": "of {amount}"
     },
     "types": {
-      "mortgage": "Mortgage",
-      "auto": "Vehicle",
+      "mortgage": "Immobilienkredit",
+      "auto": "Fahrzeug",
       "student": "Student",
       "personal": "Personal",
       "heloc": "HELOC",

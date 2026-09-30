@@ -1,135 +1,256 @@
 {
   "optimizations": {
-    "title": "Optimizations",
-    "landingDescription": "Tools to help you organize and clean up your financial data.",
-    "backToOptimizations": "Back to optimizations",
+    "title": "Optimalizácie",
+    "landingDescription": "Nástroje, ktoré vám pomôžu usporiadať a vyčistiť finančné údaje.",
+    "backToOptimizations": "Späť na Optimalizácie",
     "cards": {
       "transfers": {
-        "title": "Transfer matching",
-        "description": "Find expense-income pairs that might be transfers between your accounts and link them automatically."
+        "title": "Priraďovanie prevodov",
+        "description": "Nájdite páry výdavok-príjem, ktoré by mohli byť prevodmi medzi vašimi účtami, a automaticky ich prepojte."
       },
       "aiCategorization": {
-        "title": "AI categorization",
-        "description": "Let AI sort uncategorized transactions and review past runs."
+        "title": "Kategorizácia pomocou AI",
+        "description": "Nechajte AI zaradiť nezaradené transakcie a skontrolujte si predchádzajúce spustenia."
       },
       "applyRules": {
-        "title": "Apply a rule to past transactions",
-        "description": "Pick one of your automations and run it over transactions you already have."
+        "title": "Použiť pravidlo na minulé transakcie",
+        "description": "Vyberte jednu zo svojich automatizácií a spustite ju nad transakciami, ktoré už máte."
+      },
+      "reconciliation": {
+        "title": "Zosúladenie",
+        "description": "Zlúčte duplicitné bankové transakcie, odstráňte nesprávne a vyriešte čakajúce transakcie, ktoré banka nikdy nezaúčtovala."
       }
     },
     "aiCategorization": {
-      "title": "AI categorization",
-      "description": "Run AI over transactions that are still in your default category and let it pick a better one. You can always change a category afterwards.",
+      "title": "Kategorizácia pomocou AI",
+      "description": "Spustite AI nad transakciami, ktoré sú stále v predvolenej kategórii, a nechajte ju vybrať vhodnejšiu. Kategóriu môžete kedykoľvek neskôr zmeniť.",
       "tabs": {
-        "categorize": "Categorize",
-        "history": "History"
+        "categorize": "Zaradiť",
+        "history": "História"
       },
       "count": {
-        "capNote": "One run covers the {limit} most recent. Run it again to work through the rest.",
-        "allDoneTitle": "Everything is categorized",
-        "allDoneDescription": "No transactions are sitting in your default category right now."
+        "capNote": "Jedno spustenie pokryje {limit} najnovších. Ak chcete spracovať zvyšok, spustite to znova.",
+        "allDoneTitle": "Všetko je zaradené",
+        "allDoneDescription": "Momentálne nie sú v predvolenej kategórii žiadne transakcie."
       },
       "bar": {
-        "uncategorizedCount": "{count} uncategorized",
-        "capChip": "{limit} per run"
+        "uncategorizedCount": "Nezaradené: {count}",
+        "capChip": "{limit} na spustenie"
       },
       "table": {
-        "selectionHint": "Select rows to categorize only those.",
-        "loadError": "Couldn't load the transactions waiting for categorization."
+        "selectionHint": "Vyberte riadky, ak chcete zaradiť len tie.",
+        "loadError": "Transakcie čakajúce na zaradenie sa nepodarilo načítať."
       },
       "history": {
-        "emptyTitle": "No AI categorization runs yet",
-        "emptyDescription": "Once you run AI categorization, every run shows up here so you can review what it changed.",
-        "loadError": "Couldn't load the run history.",
-        "runLoadError": "Couldn't load this run's transactions.",
-        "backToRuns": "Back to all runs",
-        "runEmptyTitle": "Nothing left from this run",
+        "emptyTitle": "Zatiaľ žiadne spustenia kategorizácie cez AI",
+        "emptyDescription": "Po spustení kategorizácie AI sa tu zobrazí každé spustenie, aby ste si mohli skontrolovať, čo zmenilo.",
+        "loadError": "Históriu spustení sa nepodarilo načítať.",
+        "runLoadError": "Transakcie tohto spustenia sa nepodarilo načítať.",
+        "backToRuns": "Späť na všetky spustenia",
+        "runEmptyTitle": "Z tohto spustenia nič neostalo",
         "runEmptyDescription": "Všetky transakcie, ktoré toto spustenie zaradilo do kategórie, boli odvtedy znova zaradené inde alebo zmazané.",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "transactionCount": "{count} transakcia | {count} transakcií",
         "trigger": {
-          "manual": "Manual",
-          "import": "Data import",
-          "sync": "Bank sync",
+          "manual": "Ručne",
+          "import": "Import údajov",
+          "sync": "Banková synchronizácia",
           "unknown": "Neznáme"
         },
         "triggerTooltip": {
-          "manual": "You started this run manually",
-          "import": "Started automatically after a data import",
-          "sync": "Started automatically after a bank sync",
-          "unknown": "This run's origin wasn't recorded"
+          "manual": "Tento beh ste spustili ručne",
+          "import": "Spustené automaticky po importe údajov",
+          "sync": "Spustené automaticky po bankovej synchronizácii",
+          "unknown": "Pôvod tohto spustenia nebol zaznamenaný"
         }
       },
       "setup": {
-        "title": "Run setup",
+        "title": "Nastavenie spustenia",
         "model": "Model",
-        "notConfigured": "Not configured",
-        "connection": "AI model",
-        "limits": "Limits",
-        "limitsSharedKey": "3 runs per hour",
-        "limitsOwnCredentials": "Unlimited — runs on your own key",
-        "changeModel": "Change in AI settings",
-        "errorChip": "AI setup problem",
-        "loadError": "Couldn't load your AI setup."
+        "notConfigured": "Nenastavené",
+        "connection": "Model AI",
+        "limits": "Limity",
+        "limitsSharedKey": "3 spustenia za hodinu",
+        "limitsOwnCredentials": "Bez obmedzenia — beží na vašom vlastnom kľúči",
+        "changeModel": "Zmeniť v nastaveniach AI",
+        "errorChip": "Problém s nastavením AI",
+        "loadError": "Vaše nastavenie AI sa nepodarilo načítať."
       },
       "run": {
-        "button": "Categorize with AI (all)",
-        "categorizeSelected": "Categorize {count} selected",
-        "inProgress": "Categorizing…",
-        "progressLabel": "AI categorization progress",
-        "processed": "{processed} of {total} transactions processed"
+        "button": "Zaradiť pomocou AI (všetko)",
+        "categorizeSelected": "Zaradiť vybrané ({count})",
+        "inProgress": "Zaraďovanie…",
+        "progressLabel": "Priebeh kategorizácie AI",
+        "processed": "Spracovaných {processed} z {total} transakcií"
       },
       "confirm": {
-        "title": "Categorize all uncategorized transactions?",
-        "description": "AI will look at {count} transaction that is still in your default category and pick a category for it. You can change it afterwards. | AI will look at {count} transactions that are still in your default category and pick a category for each one. You can change any of them afterwards.",
-        "action": "Categorize all"
+        "title": "Zaradiť všetky nezaradené transakcie?",
+        "description": "AI sa pozrie na {count} transakciu, ktorá je stále v predvolenej kategórii, a vyberie pre ňu kategóriu. Neskôr ju môžete zmeniť. | AI sa pozrie na {count} transakcií, ktoré sú stále v predvolenej kategórii, a pre každú z nich vyberie kategóriu. Ktorúkoľvek z nich môžete neskôr zmeniť.",
+        "action": "Zaradiť všetko"
       },
       "notifications": {
-        "started": "Categorizing {count} transaction with AI | Categorizing {count} transactions with AI",
-        "nothingToCategorize": "Everything is already categorized — nothing left for AI to do",
-        "alreadyRunning": "AI categorization is already running",
-        "rateLimited": "You've reached the manual categorization limit. Try again in {time}.",
-        "failed": "Could not start AI categorization"
+        "started": "Zaraďovanie {count} transakcie pomocou AI | Zaraďovanie {count} transakcií pomocou AI",
+        "nothingToCategorize": "Všetko je už zaradené — pre AI nezostáva nič na spracovanie",
+        "alreadyRunning": "Kategorizácia AI už prebieha",
+        "rateLimited": "Dosiahli ste limit ručnej kategorizácie. Skúste to znova o {time}.",
+        "failed": "Kategorizáciu AI sa nepodarilo spustiť"
       }
     },
     "transferSuggestions": {
-      "description": "Find transactions that should be linked as transfers between your accounts",
-      "suggestionsFor": "Suggestions for",
-      "selectExpense": "Select a transaction to see suggestions",
-      "potentialTransfersFound": "potential transfers found",
+      "description": "Nájdite transakcie, ktoré by mali byť prepojené ako prevody medzi vašimi účtami",
+      "suggestionsFor": "Návrhy pre",
+      "selectExpense": "Ak chcete vidieť návrhy, vyberte transakciu",
+      "potentialTransfersFound": "nájdených možných prevodov",
       "empty": {
-        "title": "No transfer suggestions found",
-        "description": "Try adjusting the date range"
+        "title": "Nenašli sa žiadne návrhy prevodov",
+        "description": "Skúste upraviť rozsah dátumov"
       },
       "initial": {
-        "title": "Find transfer suggestions",
-        "description": "Scan your transactions to find income and expense pairs that should be linked as transfers between accounts"
+        "title": "Nájsť návrhy prevodov",
+        "description": "Prehľadajte svoje transakcie a nájdite páry príjem-výdavok, ktoré by mali byť prepojené ako prevody medzi účtami"
       },
-      "scanning": "Scanning transactions...",
+      "scanning": "Prehľadávanie transakcií...",
       "confirmLink": {
-        "title": "Link as transfer?",
-        "description": "Both transactions will be linked as a transfer between accounts. This will correct your statistics and analytics by excluding them from income and expense totals."
+        "title": "Prepojiť ako prevod?",
+        "description": "Obe transakcie sa prepoja ako prevod medzi účtami. Tým sa opravia vaše štatistiky a analytika, keďže sa vylúčia zo súčtov príjmov a výdavkov."
       },
       "presets": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
-        "lastYear": "Last year",
-        "thisYear": "This year",
-        "previousYear": "Previous year"
+        "last3Months": "Posledné 3 mesiace",
+        "last6Months": "Posledných 6 mesiacov",
+        "lastYear": "Posledný rok",
+        "thisYear": "Tento rok",
+        "previousYear": "Predchádzajúci rok"
       },
-      "includeOutOfWallet": "Include out-of-wallet transfers",
+      "includeOutOfWallet": "Zahrnúť prevody mimo peňaženky",
       "skip": {
-        "action": "Skip",
-        "title": "Skip this suggestion?",
-        "description": "This pair will be hidden from future scan results. The transactions themselves won't be changed.",
-        "dontShowAgain": "Don't show this confirmation again"
+        "action": "Preskočiť",
+        "title": "Preskočiť tento návrh?",
+        "description": "Tento pár sa skryje z budúcich výsledkov prehľadávania. Samotné transakcie sa nezmenia.",
+        "dontShowAgain": "Toto potvrdenie už nezobrazovať"
       },
       "notifications": {
-        "loadError": "Failed to load more suggestions",
-        "scanError": "Failed to scan for transfer suggestions",
-        "linkSuccess": "Transactions linked as transfer",
-        "linkError": "Failed to link transactions",
-        "skipSuccess": "Suggestion dismissed",
-        "skipError": "Failed to skip suggestion"
+        "loadError": "Ďalšie návrhy sa nepodarilo načítať",
+        "scanError": "Vyhľadávanie návrhov prevodov zlyhalo",
+        "linkSuccess": "Transakcie prepojené ako prevod",
+        "linkError": "Transakcie sa nepodarilo prepojiť",
+        "skipSuccess": "Návrh zamietnutý",
+        "skipError": "Návrh sa nepodarilo preskočiť"
+      }
+    },
+    "reconciliation": {
+      "title": "Zosúladenie transakcií",
+      "tabs": {
+        "transactions": "Transakcie",
+        "stuckPending": "Zaseknuté čakajúce",
+        "history": "História"
+      },
+      "table": {
+        "hint": "Vyberte bankové transakcie a zlúčte duplicity alebo odstráňte prebytočné"
+      },
+      "actions": {
+        "merge": "Zlúčiť",
+        "remove": "Odstrániť"
+      },
+      "blockReasons": {
+        "header": {
+          "merge": "Nedá sa zlúčiť z {count} dôvodov:",
+          "remove": "Nedá sa odstrániť z {count} dôvodov:"
+        },
+        "notBankConnected": "Zosúladiť možno len transakcie prepojené s bankou.",
+        "planned": "Plánované transakcie nemožno zosúladiť.",
+        "linkedTransfer": "Prepojené prevody nemožno zosúladiť. Najprv prevod odpojte.",
+        "refundLinked": "Transakcie prepojené s vrátením platby nemožno zosúladiť. Najprv vrátenie platby odpojte.",
+        "tooFew": "Na zlúčenie vyberte aspoň 2 transakcie.",
+        "tooMany": "Vybraných príliš veľa transakcií (zlúčenie: najviac {mergeMax}, odstránenie: najviac {removeMax}).",
+        "differentAccounts": "Všetky transakcie musia patriť k rovnakému účtu."
+      },
+      "merge": {
+        "title": "Zlúčiť transakcie",
+        "description": "Vyberte transakciu, ktorú si chcete ponechať. Ostatné sa odstránia a dajú sa obnoviť z Histórie.",
+        "fields": {
+          "payee": "Protistrana",
+          "status": "Stav",
+          "time": "Čas"
+        },
+        "status": {
+          "pending": "Čakajúce",
+          "booked": "Zaúčtované"
+        },
+        "keep": "Ponechať",
+        "remove": "Odstrániť",
+        "sameInAll": "Rovnaké vo všetkých:",
+        "confirm": "Zlúčiť a odstrániť {count} | Zlúčiť a odstrániť {count}"
+      },
+      "remove": {
+        "title": "Odstrániť {count} transakciu? | Odstrániť {count} transakcií?",
+        "description": "Odstránené transakcie sa prestanú počítať do zostatkov a štatistík. Prepojenia s rozpočtom, skupinou a predplatným sa odpoja. Môžete ich obnoviť z Histórie, prepojenia sa však už nevrátia.",
+        "confirm": "Odstrániť"
+      },
+      "restoreDialog": {
+        "title": "Obnoviť {count} transakciu? | Obnoviť {count} transakcií?",
+        "description": "Obnovené transakcie sa opäť počítajú do zostatkov a štatistík. Ak boli zlúčené, ponechaná transakcia zostáva, takže sa môžu znova objaviť duplicity. Prepojenia s rozpočtom, skupinou a predplatným, ktoré sa pri odstránení odpojili, sa nevrátia.",
+        "confirm": "Obnoviť"
+      },
+      "notifications": {
+        "removed": "Odstránená {count} transakcia | Odstránených {count} transakcií",
+        "merged": "Zlúčené, odstránený {count} duplikát | Zlúčené, odstránených {count} duplikátov",
+        "restored": "Obnovená {count} transakcia | Obnovených {count} transakcií",
+        "keptAsBooked": "Označené ako zaúčtované",
+        "checkedWithBank": "Overené v banke",
+        "unexpectedError": "Niečo sa pokazilo. Skúste to znova, prosím.",
+        "bankCheck": {
+          "allBooked": "Vaša banka transakciu zaúčtovala | Vaša banka zaúčtovala všetkých {count} transakcií",
+          "someBooked": "Vaša banka zaúčtovala {count} transakciu | Vaša banka zaúčtovala {count} transakcií",
+          "noneBooked": "Vaša banka zatiaľ nezaúčtovala žiadnu z nich",
+          "stillPending": "{count} stále čaká. | {count} stále čaká.",
+          "someFailed": "Banku pre {count} účet sa nepodarilo osloviť. | Banku pre {count} účtov sa nepodarilo osloviť."
+        }
+      },
+      "stuckPending": {
+        "loadError": "Zaseknuté čakajúce transakcie sa nepodarilo načítať.",
+        "emptyTitle": "Žiadne zaseknuté čakajúce transakcie",
+        "emptyDescription": "Čakajúce transakcie staršie než 7 dní sa zobrazujú tu, aby ste ich mohli vyriešiť.",
+        "checkWithBank": "Overiť v banke",
+        "summaryTooOld": "{count} riadok stále čaká už týždeň. Je príliš starý na overenie v banke. | {count} riadkov stále čaká už týždeň. Sú príliš staré na overenie v banke.",
+        "checking": "Overovanie v banke...",
+        "checkAgain": "Overiť znova",
+        "keepAsBooked": "Ponechať ako zaúčtované",
+        "header": {
+          "title": "{count} transakcia zaseknutá v čakajúcich | {count} transakcií zaseknutých v čakajúcich",
+          "description": "Čaká viac než týždeň na {count} účte. | Čaká viac než týždeň na {count} účtoch.",
+          "titleChecked": "{count} transakcia stále čaká | {count} transakcií stále čaká",
+          "descriptionChecked": "Overené vo vašej banke. Rozhodnite, čo urobiť s každou z nich."
+        },
+        "checkFirstHint": "Najprv overte v banke. Transakcie, ktoré medzičasom zaúčtovala, zmiznú z tohto zoznamu.",
+        "columns": {
+          "account": "Účet",
+          "date": "Dátum",
+          "category": "Kategória",
+          "pendingFor": "Čaká už",
+          "amount": "Suma",
+          "status": "Stav",
+          "actions": "Akcie"
+        },
+        "pendingDaysShort": "{count} d",
+        "status": {
+          "tooOld": "Príliš staré na overenie",
+          "tooOldHint": "Vaša banka zdieľa históriu len za približne 90 dní, preto sa táto transakcia nedá overiť. Ponechajte ju, ak sa platba uskutočnila, odstráňte ju, ak nie.",
+          "duplicate": "Možný duplikát",
+          "duplicateHint": "Zaúčtovaná transakcia od rovnakej protistrany z {date} vyzerá ako tá istá platba. Zlúčte ich a ponechajte jednu.",
+          "notFound": "V banke sa nenašla",
+          "notFoundHint": "Vaša banka nemá zaúčtovanú kópiu tejto transakcie, preto môže ísť o uvoľnenú predautorizáciu. Ponechajte ju, ak sa platba uskutočnila, odstráňte ju, ak nie."
+        }
+      },
+      "history": {
+        "loadError": "Históriu zosúladenia sa nepodarilo načítať.",
+        "emptyTitle": "Zatiaľ žiadna história zosúladenia",
+        "emptyDescription": "Zlúčené a odstránené transakcie sa zobrazujú tu, aby ste ich mohli obnoviť.",
+        "type": {
+          "merge": "Zlúčené",
+          "remove": "Odstránené"
+        },
+        "restore": "Obnoviť",
+        "kept": "Ponechané",
+        "removedRows": "{count} odstránená transakcia | {count} odstránených transakcií"
       }
     }
   }

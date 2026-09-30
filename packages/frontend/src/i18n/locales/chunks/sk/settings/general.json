@@ -2,88 +2,88 @@
   "settings": {
     "general": {
       "title": "Všeobecné",
-      "description": "Control how your financial data is calculated and displayed across the app.",
+      "description": "Nastavte, ako sa vaše finančné údaje počítajú a zobrazujú v celej aplikácii.",
       "creditLimit": {
-        "label": "Include credit limits in balance",
-        "description": "When enabled, credit limits are subtracted from account balances in statistics and the balance trend chart. This shows your actual financial position instead of available credit.",
-        "successNotification": "Setting updated successfully",
-        "errorNotification": "Failed to update setting"
+        "label": "Zahrnúť úverové limity do zostatku",
+        "description": "Keď je zapnuté, úverové limity sa v štatistikách a v grafe vývoja zostatku odpočítajú od zostatkov na účtoch. Zobrazí sa tak vaša skutočná finančná pozícia namiesto dostupného úveru.",
+        "successNotification": "Nastavenie bolo úspešne aktualizované",
+        "errorNotification": "Nastavenie sa nepodarilo aktualizovať"
       },
       "manualTransferMatching": {
-        "label": "Match transfers with manual accounts",
-        "description": "Allow automatically detected transfers to link a synced bank transaction with one you created manually.",
-        "successNotification": "Transfer matching setting updated",
-        "errorNotification": "Failed to update transfer matching setting"
+        "label": "Priraďovať prevody k manuálnym účtom",
+        "description": "Umožnite automaticky rozpoznaným prevodom prepojiť synchronizovanú bankovú transakciu s transakciou, ktorú ste vytvorili ručne.",
+        "successNotification": "Nastavenie priraďovania prevodov aktualizované",
+        "errorNotification": "Nastavenie priraďovania prevodov sa nepodarilo aktualizovať"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
-        "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "label": "Importovať čakajúce bankové transakcie",
+        "description": "Ukladá transakcie z Enable Banking ešte pred ich zaúčtovaním bankou. Sú označené ako čakajúce, nikdy nezmenia zostatok účtu a do zaúčtovania im často chýbajú údaje o obchodníkovi. Ostatných poskytovateľov sa to netýka: SimpleFIN a LunchFlow vždy importujú len zaúčtované transakcie a Monobank importuje každú transakciu ako bežnú.",
+        "successNotification": "Nastavenie čakajúcich transakcií aktualizované",
+        "errorNotification": "Nastavenie čakajúcich transakcií sa nepodarilo aktualizovať"
       },
       "quickStart": {
-        "label": "Quick Start guide",
-        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+        "label": "Sprievodca Rýchlym štartom",
+        "description": "Zobraziť na nástenke úvodný zoznam úloh. Vypnutím sprievodcu skryjete, opätovným zapnutím ho kedykoľvek vrátite späť."
       },
       "savingsCategories": {
-        "label": "Count categories as savings",
-        "description": "Spending in these categories (and their subcategories) is excluded from expenses in cash-flow analytics, so it counts toward monthly savings and the savings rate.",
-        "successNotification": "Savings categories updated",
-        "errorNotification": "Failed to update savings categories"
+        "label": "Počítať kategórie ako úspory",
+        "description": "Výdavky v týchto kategóriách (a ich podkategóriách) sa v analytike peňažného toku vylučujú z výdavkov, takže sa počítajú do mesačných úspor a miery úspor.",
+        "successNotification": "Kategórie úspor aktualizované",
+        "errorNotification": "Kategórie úspor sa nepodarilo aktualizovať"
       },
       "accountDropdowns": {
         "defaultAccount": {
-          "label": "Default account",
-          "description": "Pre-selected when you create a transaction.",
-          "placeholder": "No default — first account"
+          "label": "Predvolený účet",
+          "description": "Predvyplní sa pri vytváraní transakcie.",
+          "placeholder": "Bez predvoľby — prvý účet"
         },
         "showArchived": {
-          "label": "Show archived accounts",
-          "description": "When off, archived accounts are hidden from account pickers."
+          "label": "Zobraziť archivované účty",
+          "description": "Keď je vypnuté, archivované účty sú vo výberoch účtov skryté."
         },
-        "successNotification": "Account dropdown settings updated",
-        "errorNotification": "Failed to update account dropdown settings"
+        "successNotification": "Nastavenia výberu účtov aktualizované",
+        "errorNotification": "Nastavenia výberu účtov sa nepodarilo aktualizovať"
       },
       "showUpcomingTransactions": {
-        "label": "Show upcoming transactions",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
-        "successNotification": "Upcoming transactions setting updated",
-        "errorNotification": "Failed to update upcoming transactions setting"
+        "label": "Zobraziť nadchádzajúce transakcie",
+        "description": "Pripnite na vrch zoznamu transakcií sekciu s omeškanými pravidelnými platbami a tými, ktoré sú splatné v nasledujúcich 3 dňoch.",
+        "successNotification": "Nastavenie nadchádzajúcich transakcií aktualizované",
+        "errorNotification": "Nastavenie nadchádzajúcich transakcií sa nepodarilo aktualizovať"
       },
       "transactionFields": {
-        "label": "Optional transaction fields",
-        "description": "Extra fields shown in the transaction form. A field that already has a value is always shown.",
-        "successNotification": "Transaction fields updated",
-        "errorNotification": "Unexpected error happened. Setting not saved",
+        "label": "Voliteľné polia transakcie",
+        "description": "Ďalšie polia zobrazené vo formulári transakcie. Pole, ktoré už má hodnotu, sa zobrazuje vždy.",
+        "successNotification": "Polia transakcie aktualizované",
+        "errorNotification": "Vyskytla sa neočakávaná chyba. Nastavenie sa neuložilo",
         "fields": {
           "externalUrl": {
             "label": "Externá URL",
-            "description": "Link the transaction to an order page, booking confirmation or receipt."
+            "description": "Prepojte transakciu so stránkou objednávky, potvrdením rezervácie alebo účtenkou."
           },
           "externalReference": {
             "label": "Externý odkaz",
-            "description": "Keep an order number, invoice number or booking reference with the transaction."
+            "description": "Uchovajte pri transakcii číslo objednávky, číslo faktúry alebo referenciu rezervácie."
           },
           "originalAmount": {
             "label": "Pôvodná suma",
-            "description": "The amount actually charged in another currency, when it differs from the account's currency."
+            "description": "Skutočne zaplatená suma v inej mene, keď sa líši od meny účtu."
           },
           "location": {
             "label": "Poloha",
-            "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
+            "description": "Súradnice GPS miesta, kde sa nákup uskutočnil. Vyplňte podľa polohy vášho zariadenia, alebo ich zadajte ručne"
           }
         },
         "mapPicker": {
-          "label": "Map picker",
-          "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
+          "label": "Výber na mape",
+          "description": "Vyberajte polohy transakcií na mape a vyhľadávajte adresy. Mapové podklady a vyhľadávanie poskytuje OpenStreetMap, ktorý pri otvorení mapy dostane vašu IP adresu."
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Predvolený spôsob platby",
+        "description": "Predvyplní sa pri pridávaní novej transakcie.",
+        "placeholder": "Vyberte spôsob platby",
+        "successNotification": "Predvolený spôsob platby aktualizovaný",
+        "errorNotification": "Predvolený spôsob platby sa nepodarilo aktualizovať"
       }
     }
   }

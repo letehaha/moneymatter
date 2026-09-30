@@ -113,7 +113,8 @@
             "3": "Последние 3 месяца",
             "6": "Последние 6 месяцев",
             "12": "Последние 12 месяцев"
-          }
+          },
+          "showStrip": "Show 30-day chart"
         }
       },
       "categoryTracker": {
@@ -167,9 +168,8 @@
       },
       "plannedOverview": {
         "title": "Запланированные",
-        "projectedTotal": "Прогнозируемый баланс",
-        "pendingCount": "{count} запланированная запись | {count} запланированные записи | {count} запланированных записей",
-        "through": "До {date}",
+        "projectedBy": "Projected by {date}",
+        "upcoming": "Upcoming · {count}",
         "loadFailed": "Не удалось загрузить запланированные транзакции"
       },
       "emptyState": "За выбранный период данных нет.",
@@ -229,13 +229,18 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "Предстоящих платежей: {count}",
-        "collapsedAction": "Открыть"
+      "payAction": "Отметить оплаченным",
+      "listTitle": "Предстоящее",
+      "dueCount": "{count} due",
+      "nothingDue": "Nothing due in 3 days",
+      "overdueHint": "Overdue since {date}",
+      "dueSoonHint": "Due in the next 3 days",
+      "strip": {
+        "title": "Следующие 30 дней",
+        "goingOut": "{amount} going out",
+        "today": "Сегодня"
       },
-      "empty": "Всё оплачено — в ближайшие 3 дня платежей нет.",
-      "overdueBadge": "Просрочено",
-      "payAction": "Отметить оплаченным"
+      "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
       "config": {
@@ -253,7 +258,11 @@
         "excludeBalanceAdjustmentsDescription": "Скрывать транзакции корректировки баланса",
         "plannedTitle": "Запланированные транзакции",
         "excludePlannedDescription": "Скрывать ожидающие запланированные транзакции из списка",
-        "nothingExcluded": "Ничего не исключено"
+        "nothingExcluded": "Ничего не исключено",
+        "tagsStyleTitle": "Теги",
+        "tagsStyleNames": "Names",
+        "tagsStyleBars": "Bars",
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
       },
       "overdueBadge": "Просрочено",
       "scheduledBadge": "Запланировано",

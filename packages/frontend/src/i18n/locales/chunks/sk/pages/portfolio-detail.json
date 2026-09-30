@@ -1,152 +1,152 @@
 {
   "portfolioDetail": {
     "loading": "Načítavanie...",
-    "loadingDetails": "Loading portfolio details...",
-    "loadError": "Failed to load portfolio details.",
-    "tryAgain": "Try Again",
-    "notFoundTitle": "Portfolio not found",
-    "notFoundDescription": "We couldn't find this portfolio. It may have been deleted or you might not have access to it.",
-    "backToInvestments": "Back to Investments",
-    "subtitle": "Portfolio Overview",
+    "loadingDetails": "Načítavanie podrobností portfólia...",
+    "loadError": "Podrobnosti portfólia sa nepodarilo načítať.",
+    "tryAgain": "Skúsiť znova",
+    "notFoundTitle": "Portfólio sa nenašlo",
+    "notFoundDescription": "Toto portfólio sa nepodarilo nájsť. Mohlo byť zmazané, alebo k nemu nemáte prístup.",
+    "backToInvestments": "Späť na Investície",
+    "subtitle": "Prehľad portfólia",
     "actions": {
-      "transfer": "Transfer",
+      "transfer": "Prevod",
       "edit": "Upraviť",
       "delete": "Zmazať",
       "exchangeCurrency": "Zmena meny"
     },
     "balance": {
-      "totalValue": "Total Value",
-      "baseCurrencyEquivalent": "≈ {value} in {code}",
-      "loadError": "Failed to load portfolio summary.",
+      "totalValue": "Celková hodnota",
+      "baseCurrencyEquivalent": "≈ {value} v {code}",
+      "loadError": "Súhrn portfólia sa nepodarilo načítať.",
       "metrics": {
-        "costBasis": "Cost Basis",
-        "unrealized": "Unrealized",
-        "realized": "Realized",
-        "totalReturn": "Total Return"
+        "costBasis": "Obstarávacia cena",
+        "unrealized": "Nerealizované",
+        "realized": "Realizované",
+        "totalReturn": "Celkový výnos"
       }
     },
     "cashBalances": {
-      "title": "Cash Balances",
-      "emptyState": "No cash balances",
+      "title": "Hotovostné zostatky",
+      "emptyState": "Žiadne hotovostné zostatky",
       "tabs": {
-        "balances": "Balances",
-        "cashTransactions": "Transactions",
-        "buysSells": "Buys & Sells"
+        "balances": "Zostatky",
+        "cashTransactions": "Transakcie",
+        "buysSells": "Nákupy a predaje"
       },
       "cashTransactions": {
-        "addButton": "Add Cash Transaction",
-        "emptyState": "No cash transactions yet",
-        "deposit": "Deposit",
-        "withdrawal": "Withdrawal",
-        "transferIn": "Transfer In",
-        "transferOut": "Transfer Out",
-        "exchange": "Currency Exchange",
-        "deleteConfirm": "Delete this cash transaction?",
-        "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
-        "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
-        "deleteLinkedTransaction": "Also delete the linked account transaction",
-        "adjustmentBadge": "Adjustment",
-        "noCashBadge": "No cash impact",
-        "markedAsAdjustment": "Marked as a balance correction",
-        "markedAsContribution": "Marked as a real contribution",
-        "adjustmentError": "Failed to update this transfer",
-        "rowActions": "Transaction actions",
-        "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
+        "addButton": "Pridať hotovostnú transakciu",
+        "emptyState": "Zatiaľ žiadne hotovostné transakcie",
+        "deposit": "Vklad",
+        "withdrawal": "Výber",
+        "transferIn": "Prevod dnu",
+        "transferOut": "Prevod von",
+        "exchange": "Zmena meny",
+        "deleteConfirm": "Zmazať túto hotovostnú transakciu?",
+        "linkedTransactionNote": "Tento prevod má prepojenú transakciu na účte. Čo s ňou chcete urobiť?",
+        "keepLinkedTransaction": "Ponechať transakciu na účte. Obnovia sa pôvodné údaje transakcie.",
+        "deleteLinkedTransaction": "Zmazať aj prepojenú transakciu na účte",
+        "adjustmentBadge": "Úprava",
+        "noCashBadge": "Bez vplyvu na hotovosť",
+        "markedAsAdjustment": "Označené ako úprava zostatku",
+        "markedAsContribution": "Označené ako skutočný vklad",
+        "adjustmentError": "Tento prevod sa nepodarilo aktualizovať",
+        "rowActions": "Akcie transakcie",
+        "emptyStateDescription": "Vklady, výbery a prevody tohto portfólia sa zobrazia tu.",
         "edit": "Upraviť",
         "editDialog": {
-          "title": "Edit cash transaction",
-          "description": "Change how this transaction is treated in reports.",
+          "title": "Upraviť hotovostnú transakciu",
+          "description": "Zmeňte, ako sa táto transakcia zohľadňuje v prehľadoch.",
           "save": "Ulož zmeny"
         }
       },
       "buysSells": {
-        "emptyState": "No buy/sell transactions",
-        "shares": "shares"
+        "emptyState": "Žiadne nákupné/predajné transakcie",
+        "shares": "akcií"
       }
     },
     "holdings": {
-      "title": "Holdings",
-      "subtitle": "{count} symbols",
-      "filterPlaceholder": "Filter by symbol or name...",
-      "addButton": "Add Symbol",
-      "importButton": "Import transactions",
+      "title": "Pozície",
+      "subtitle": "{count} symbolov",
+      "filterPlaceholder": "Filtrovať podľa symbolu alebo názvu...",
+      "addButton": "Pridať symbol",
+      "importButton": "Importovať transakcie",
       "importButtonShort": "Import"
     },
     "holdingsTable": {
-      "loadError": "Could not load holdings",
-      "empty": "No holdings yet",
-      "noFilterResults": "No matching holdings",
-      "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
+      "loadError": "Pozície sa nepodarilo načítať",
+      "empty": "Zatiaľ žiadne pozície",
+      "noFilterResults": "Žiadne zodpovedajúce pozície",
+      "noFilterResultsDescription": "Vášmu hľadaniu nezodpovedajú žiadne pozície. Skúste iný symbol alebo názov.",
       "clearFilterButton": "Vymazať vyhľadávanie",
       "headers": {
         "symbol": "Symbol",
-        "name": "Name",
-        "shares": "Shares",
-        "price": "Price",
-        "avgCostPerShare": "AC/Share",
-        "totalCost": "Total Cost",
-        "marketValue": "Market Value",
-        "unrealizedGain": "Unrealized Gain",
-        "realizedGain": "Realized Gain"
+        "name": "Názov",
+        "shares": "Akcie",
+        "price": "Cena",
+        "avgCostPerShare": "Priem. cena/akcia",
+        "totalCost": "Celková cena",
+        "marketValue": "Trhová hodnota",
+        "unrealizedGain": "Nerealizovaný zisk",
+        "realizedGain": "Realizovaný zisk"
       },
       "transactions": {
-        "loading": "Loading transactions…",
-        "empty": "No transactions found.",
-        "addFirstButton": "Add first Transaction"
+        "loading": "Načítavanie transakcií…",
+        "empty": "Nenašli sa žiadne transakcie.",
+        "addFirstButton": "Pridať prvú transakciu"
       },
-      "closedPositions": "Closed positions ({count})",
-      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "closedPositions": "Uzavreté pozície ({count})",
+      "stalePrice": "Posledná dostupná cena. Trhová hodnota a zisky môžu byť neaktuálne.",
       "deleteHolding": {
-        "ariaLabel": "Odstrániť pozíciu",
-        "title": "Odstrániť pozíciu",
-        "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
-        "confirmLabel": "Odstrániť pozíciu",
-        "success": "Holding deleted.",
-        "error": "Failed to delete the holding."
+        "ariaLabel": "Zmazať pozíciu",
+        "title": "Zmazať pozíciu",
+        "description": "Toto natrvalo zmaže pozíciu {symbol} a všetky jej transakcie. Túto akciu nie je možné vrátiť späť.",
+        "confirmLabel": "Zmazať pozíciu",
+        "success": "Pozícia zmazaná.",
+        "error": "Pozíciu sa nepodarilo zmazať."
       },
       "addTransactionDialog": {
         "title": "Pridať transakciu",
-        "description": "Add a new transaction to your portfolio."
+        "description": "Pridajte novú transakciu do svojho portfólia."
       },
-      "tryAgainLater": "Please try again later",
-      "emptyDescription": "Add your first transaction to start tracking your investments",
-      "addFirstHolding": "Add first holding",
-      "importTransactions": "Or import from a file"
+      "tryAgainLater": "Skúste to znova, prosím",
+      "emptyDescription": "Pridajte prvú transakciu a začnite sledovať svoje investície",
+      "addFirstHolding": "Pridať prvú pozíciu",
+      "importTransactions": "Alebo importovať zo súboru"
     },
     "transactionsList": {
-      "title": "Transactions",
-      "addButton": "Add transaction",
-      "loadingMore": "Loading more transactions…",
+      "title": "Transakcie",
+      "addButton": "Pridať transakciu",
+      "loadingMore": "Načítavanie ďalších transakcií…",
       "headers": {
-        "date": "Date",
-        "type": "Type",
-        "note": "Note",
-        "quantity": "Quantity",
-        "price": "Price",
-        "fees": "Fees",
-        "amount": "Amount",
-        "refAmount": "Base amount",
-        "refFees": "Base fees",
+        "date": "Dátum",
+        "type": "Typ",
+        "note": "Poznámka",
+        "quantity": "Množstvo",
+        "price": "Cena",
+        "fees": "Poplatky",
+        "amount": "Suma",
+        "refAmount": "Suma v základnej mene",
+        "refFees": "Poplatky v základnej mene",
         "settlementAmount": "Hotovosť",
-        "settlementCurrency": "Cash ccy",
-        "settlementFees": "Cash fees",
-        "settlementRate": "FX rate",
-        "createdAt": "Added on"
+        "settlementCurrency": "Mena hotovosti",
+        "settlementFees": "Poplatky v hotovosti",
+        "settlementRate": "Kurz",
+        "createdAt": "Pridané"
       },
       "categories": {
-        "buy": "Buy",
-        "sell": "Sell",
-        "dividend": "Dividend",
-        "transfer": "Transfer",
-        "tax": "Tax",
-        "fee": "Fee",
+        "buy": "Nákup",
+        "sell": "Predaj",
+        "dividend": "Dividenda",
+        "transfer": "Prevod",
+        "tax": "Daň",
+        "fee": "Poplatok",
         "cancel": "Zrušiť",
-        "other": "Other"
+        "other": "Ostatné"
       },
       "headerTooltips": {
-        "amount": "Transaction total in the security's trading currency.",
-        "refAmount": "Transaction total converted to your base currency.",
-        "settlementAmount": "Cash actually paid or received in your account, in its settlement currency."
+        "amount": "Celková suma transakcie v obchodnej mene cenného papiera.",
+        "refAmount": "Celková suma transakcie prepočítaná na vašu základnú menu.",
+        "settlementAmount": "Hotovosť skutočne zaplatená alebo prijatá na vašom účte, vo vyrovnávacej mene účtu."
       },
       "deleteTransaction": {
         "tooltip": "Zmazať transakciu"

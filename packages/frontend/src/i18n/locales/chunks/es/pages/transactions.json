@@ -197,6 +197,7 @@
       },
       "outOfWallet": "Desde cartera",
       "hint": "Haga clic en una fila para ver los detalles. Seleccione filas para edición masiva.",
+      "plannedRows": "{count} planned transactions",
       "emptyTitle": "Ninguna transacción coincide con estos filtros",
       "emptyDescription": "Intente ajustar o restablecer los filtros.",
       "columnConfig": {

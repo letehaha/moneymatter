@@ -2,50 +2,50 @@
   "settings": {
     "accountGroups": {
       "page": {
-        "title": "Account groups",
-        "description": "Organize accounts into groups. Bank connections create and manage their own groups automatically.",
-        "addButton": "Add group"
+        "title": "Skupiny účtov",
+        "description": "Usporiadajte účty do skupín. Bankové pripojenia si svoje skupiny vytvárajú a spravujú automaticky.",
+        "addButton": "Pridať skupinu"
       },
       "empty": {
-        "title": "No account groups yet",
-        "description": "Group accounts by bank, currency or purpose to keep your accounts list tidy."
+        "title": "Zatiaľ žiadne skupiny účtov",
+        "description": "Zoskupte účty podľa banky, meny alebo účelu a udržte si prehľadný zoznam účtov."
       },
       "loadError": {
-        "title": "Couldn't load your groups",
-        "description": "Something went wrong while fetching your account groups. Check your connection and try again.",
-        "retry": "Try again"
+        "title": "Vaše skupiny sa nepodarilo načítať",
+        "description": "Pri načítavaní vašich skupín účtov sa niečo pokazilo. Skontrolujte pripojenie a skúste to znova.",
+        "retry": "Skúsiť znova"
       },
       "row": {
-        "bankBadge": "Created by bank connection",
-        "bankBadgeShort": "Connection",
-        "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
+        "bankBadge": "Vytvorené bankovým pripojením",
+        "bankBadgeShort": "Pripojenie",
+        "bankBadgeTooltip": "Táto skupina vznikla pri pripojení banky, no nepredstavuje samotné pripojenie — môžete ju voľne premenovať, presúvať z nej účty alebo ju zmazať. Účty zostanú synchronizované bez ohľadu na to.",
         "accountsCount": "{count} účet | {count} účtov",
-        "noAccounts": "No accounts",
-        "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
-        "inParent": "in {name}",
+        "noAccounts": "Žiadne účty",
+        "accountsElsewhere": "{count} synchronizovaný účet v iných skupinách | {count} synchronizovaných účtov v iných skupinách",
+        "inParent": "v {name}",
         "manageConnection": "Spravovať pripojenie"
       },
       "update": {
         "label": "Názov skupiny",
-        "placeholder": "Enter group name",
-        "saveButton": "Save",
-        "emptyNameError": "Group name can't be empty"
+        "placeholder": "Zadajte názov skupiny",
+        "saveButton": "Uložiť",
+        "emptyNameError": "Názov skupiny nemôže byť prázdny"
       },
       "accounts": {
-        "heading": "Accounts in this group",
-        "empty": "No accounts in this group yet. Add accounts to a group from the account page.",
-        "emptyBankLinked": "This connection's accounts are organized into other groups — moving them doesn't affect syncing.",
-        "unlinkTooltip": "Remove from group",
-        "removeConfirmTitle": "Remove \"{name}\" from this group?",
-        "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
-        "removeConfirmAction": "Remove"
+        "heading": "Účty v tejto skupine",
+        "empty": "Zatiaľ žiadne účty v tejto skupine. Účty do skupiny pridáte na stránke účtu.",
+        "emptyBankLinked": "Účty tohto pripojenia sú usporiadané v iných skupinách — ich presunutie neovplyvní synchronizáciu.",
+        "unlinkTooltip": "Odstrániť zo skupiny",
+        "removeConfirmTitle": "Odstrániť „{name}“ z tejto skupiny?",
+        "removeConfirmDescription": "Účet sa nezmaže — len opustí túto skupinu.",
+        "removeConfirmAction": "Odstrániť"
       },
       "delete": {
-        "button": "Delete group",
-        "confirmTitle": "Delete \"{name}\"?",
-        "accountsKept": "Accounts are kept — they simply become ungrouped.",
-        "syncContinues": "Bank syncing continues — the connection is separate from this group.",
-        "ungroupedHeading": "Becoming ungrouped"
+        "button": "Zmazať skupinu",
+        "confirmTitle": "Zmazať „{name}“?",
+        "accountsKept": "Účty zostanú zachované — len prestanú byť v skupine.",
+        "syncContinues": "Banková synchronizácia pokračuje — pripojenie je nezávislé od tejto skupiny.",
+        "ungroupedHeading": "Ostávajú bez skupiny"
       }
     }
   }

@@ -1,13 +1,13 @@
 {
   "pages": {
     "statementParser": {
-      "pageTitle": "Statement Parser",
+      "pageTitle": "Kontoauszug-Parser",
       "pageDescription": "Upload a bank statement (PDF, CSV, or TXT) to extract transactions using AI. Add your own AI model in settings for unlimited access.",
       "stepper": {
         "steps": {
           "upload": "Upload",
           "account": "Account",
-          "review": "Überprüfung",
+          "review": "Überprüfen",
           "results": "Import"
         }
       },
@@ -136,7 +136,7 @@
         "willImportLabel": "Will Import:",
         "alreadyInAccountLabel": "Already in Account:",
         "timelineTitle": "Transaction Timeline",
-        "legendNew": "New",
+        "legendNew": "Neu",
         "legendDuplicate": "Duplicate",
         "legendExisting": "Already in account",
         "statusDup": "Duplicate",

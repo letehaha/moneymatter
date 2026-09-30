@@ -113,7 +113,8 @@
             "3": "Posledné 3 mesiace",
             "6": "Posledných 6 mesiacov",
             "12": "Posledných 12 mesiacov"
-          }
+          },
+          "showStrip": "Zobraziť 30-dňový graf"
         }
       },
       "categoryTracker": {
@@ -167,9 +168,8 @@
       },
       "plannedOverview": {
         "title": "Plánované",
-        "projectedTotal": "Predpokladaný zostatok",
-        "pendingCount": "{count} plánovaný záznam | {count} plánovaných záznamov",
-        "through": "Do {date}",
+        "projectedBy": "Predpokladané do {date}",
+        "upcoming": "Nadchádzajúce · {count}",
         "loadFailed": "Plánované transakcie sa nepodarilo načítať"
       },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
@@ -229,13 +229,18 @@
   },
   "widgets": {
     "subscriptionsOverview": {
-      "upcoming": {
-        "collapsed": "Nadchádzajúce platby: {count}",
-        "collapsedAction": "Otvoriť"
+      "payAction": "Označiť ako zaplatené",
+      "listTitle": "Nadchádzajúce",
+      "dueCount": "Splatné: {count}",
+      "nothingDue": "V najbližších 3 dňoch nič nie je splatné",
+      "overdueHint": "Po splatnosti od {date}",
+      "dueSoonHint": "Splatné v nasledujúcich 3 dňoch",
+      "strip": {
+        "title": "Nasledujúcich 30 dní",
+        "goingOut": "Odchádza {amount}",
+        "today": "Dnes"
       },
-      "empty": "Všetko vybavené — v najbližších 3 dňoch nie je splatné nič.",
-      "overdueBadge": "Po splatnosti",
-      "payAction": "Označiť ako zaplatené"
+      "loadFailed": "Pravidelné platby sa nepodarilo načítať"
     },
     "latestRecords": {
       "config": {
@@ -253,7 +258,11 @@
         "excludeBalanceAdjustmentsDescription": "Skryť transakcie na úpravu zostatku",
         "plannedTitle": "Plánované transakcie",
         "excludePlannedDescription": "Skryť čakajúce plánované transakcie zo zoznamu",
-        "nothingExcluded": "Nič nie je vylúčené"
+        "nothingExcluded": "Nič nie je vylúčené",
+        "tagsStyleTitle": "Štítky",
+        "tagsStyleNames": "Názvy",
+        "tagsStyleBars": "Pruhy",
+        "tagsStyleSaveError": "Štýl štítkov sa nepodarilo uložiť. Skúste to znova, prosím."
       },
       "overdueBadge": "Po splatnosti",
       "scheduledBadge": "Naplánované",

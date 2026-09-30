@@ -140,7 +140,7 @@
       "notes": "Poznámky",
       "dealTerms": "Podmienky obchodu",
       "status": {
-        "outstanding": "Držaný",
+        "outstanding": "Nesplatené",
         "partial_exit": "Čiastočný exit",
         "fully_exited": "Úplný exit",
         "written_off": "Odpísaný"

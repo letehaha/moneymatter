@@ -143,7 +143,13 @@
         "balanceComparison": "Vergleich der aktuellen Kontostände:",
         "systemAccount": "Systemkonto:",
         "externalAccount": "Externes Konto:",
-        "adjustmentNote": "Wenn die Kontostände voneinander abweichen, wird automatisch eine Ausgleichsbuchung erstellt."
+        "difference": "Differenz",
+        "residualTitle": "Wie sollen wir mit der Differenz umgehen?",
+        "residualAdjustmentLabel": "Saldokorrektur hinzufügen",
+        "residualAdjustmentDescription": "Fügt eine Saldokorrektur-Transaktion mit heutigem Datum hinzu. Deine vergangenen Salden bleiben unverändert.",
+        "residualOpeningLabel": "Anfangssaldo ändern",
+        "residualOpeningDescription": "Verschiebt den Anfangssaldo des Kontos um die Differenz, sodass sich auch jeder vergangene Saldo verschiebt. Wähle dies, wenn am Anfang des Verlaufs Transaktionen fehlen.",
+        "residualHint": "Der endgültige Betrag wird nach der ersten Synchronisierung festgelegt, daher kann er leicht von dieser Vorschau abweichen."
       },
       "tabs": {
         "details": "Details",
@@ -159,6 +165,11 @@
         "creditLimitUpdateError": "Kreditrahmen konnte nicht aktualisiert werden",
         "save": "Speichern",
         "initialBalance": "Anfangssaldo:",
+        "editInitialBalance": "Edit initial balance",
+        "initialBalancePlaceholder": "Enter initial balance",
+        "initialBalanceHint": "Changing the initial balance also changes your current balance and your entire balance history by the same amount.",
+        "initialBalanceUpdateSuccess": "Initial balance updated",
+        "initialBalanceUpdateError": "Failed to update initial balance",
         "accountType": "Kontotyp:",
         "accountCategory": "Kontokategorie:",
         "editAccountCategory": "Kategorie bearbeiten",

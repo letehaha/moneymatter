@@ -2,19 +2,19 @@
   "pages": {
     "sharedWithMe": {
       "title": "Mit mir geteilt",
-      "loadError": "Fehler beim Laden gemeinsamer Ressourcen.",
+      "loadError": "Freigegebene Ressourcen konnten nicht geladen werden.",
       "empty": {
-        "title": "Noch nichts mit dir geteilt",
+        "title": "Noch nichts für dich freigegeben",
         "description": "Wenn jemand ein Konto mit dir teilt, wird es hier angezeigt."
       },
       "sections": {
         "account": "Konten",
         "household": "Haushalte",
-        "budget": "Mit dir geteilte Budgets"
+        "budget": "Für dich freigegebene Budgets"
       },
       "sharedBy": "Geteilt von {handle}",
       "viaHousehold": "Über {handle} Haushalt",
-      "unnamedResource": "Unbenannt",
+      "unnamedResource": "Ohne Titel",
       "permissions": {
         "read": "Lesen",
         "write": "Schreiben",
@@ -22,13 +22,13 @@
       },
       "leave": "Verlassen",
       "leaveTitle": "Freigabe verlassen?",
-      "leaveDescription": "Du verlierst den Zugriff auf {resource} im Besitz von {owner}. Der Besitzer wird nicht benachrichtigt.",
+      "leaveDescription": "Du verlierst den Zugriff auf {resource} von {owner}. Der Inhaber wird nicht benachrichtigt.",
       "leaveConfirm": "Verlassen",
       "leaveSuccess": "Du hast die Freigabe verlassen.",
       "leaveError": "Freigabe konnte nicht verlassen werden.",
       "pending": {
         "heading": "Ausstehende Einladungen",
-        "review": "Überprüfung"
+        "review": "Überprüfen"
       }
     }
   }

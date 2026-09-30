@@ -15,6 +15,10 @@
       "applyRules": {
         "title": "Apply a rule to past transactions",
         "description": "Pick one of your automations and run it over transactions you already have."
+      },
+      "reconciliation": {
+        "title": "Reconciliation",
+        "description": "Merge duplicate bank transactions, remove wrong ones, and resolve pending transactions the bank never booked."
       }
     },
     "aiCategorization": {
@@ -50,7 +54,7 @@
           "manual": "Manual",
           "import": "Data import",
           "sync": "Bank sync",
-          "unknown": "Unknown"
+          "unknown": "Unbekannt"
         },
         "triggerTooltip": {
           "manual": "You started this run manually",
@@ -130,6 +134,123 @@
         "linkError": "Failed to link transactions",
         "skipSuccess": "Suggestion dismissed",
         "skipError": "Failed to skip suggestion"
+      }
+    },
+    "reconciliation": {
+      "title": "Transactions reconciliation",
+      "tabs": {
+        "transactions": "Transactions",
+        "stuckPending": "Stuck pending",
+        "history": "History"
+      },
+      "table": {
+        "hint": "Select bank transactions to merge duplicates or remove extras"
+      },
+      "actions": {
+        "merge": "Merge",
+        "remove": "Entfernen"
+      },
+      "blockReasons": {
+        "header": {
+          "merge": "Can't merge for {count} reasons:",
+          "remove": "Can't remove for {count} reasons:"
+        },
+        "notBankConnected": "Only bank-connected transactions can be reconciled.",
+        "planned": "Planned transactions can't be reconciled.",
+        "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
+        "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
+        "tooFew": "Select at least 2 transactions to merge.",
+        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
+        "differentAccounts": "All transactions must belong to the same account."
+      },
+      "merge": {
+        "title": "Merge transactions",
+        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
+        "fields": {
+          "payee": "Payee",
+          "status": "Status",
+          "time": "Time"
+        },
+        "status": {
+          "pending": "Pending",
+          "booked": "Booked"
+        },
+        "keep": "Keep",
+        "remove": "Entfernen",
+        "sameInAll": "Same in all:",
+        "confirm": "Merge and remove {count} | Merge and remove {count}"
+      },
+      "remove": {
+        "title": "Remove {count} transaction? | Remove {count} transactions?",
+        "description": "Removed transactions stop counting toward balances and stats. Budget, group and subscription links are detached. You can restore them from History, but the links won't come back.",
+        "confirm": "Entfernen"
+      },
+      "restoreDialog": {
+        "title": "Restore {count} transaction? | Restore {count} transactions?",
+        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
+        "confirm": "Restore"
+      },
+      "notifications": {
+        "removed": "Removed {count} transaction | Removed {count} transactions",
+        "merged": "Merged, removed {count} duplicate | Merged, removed {count} duplicates",
+        "restored": "Restored {count} transaction | Restored {count} transactions",
+        "keptAsBooked": "Marked as booked",
+        "checkedWithBank": "Checked with bank",
+        "unexpectedError": "Something went wrong. Please try again.",
+        "bankCheck": {
+          "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
+          "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
+          "noneBooked": "Your bank hasn't booked any of them yet",
+          "stillPending": "{count} is still pending. | {count} are still pending.",
+          "someFailed": "Couldn't reach the bank for {count} account. | Couldn't reach the bank for {count} accounts."
+        }
+      },
+      "stuckPending": {
+        "loadError": "Couldn't load stuck pending transactions.",
+        "emptyTitle": "No stuck pending transactions",
+        "emptyDescription": "Pending transactions older than 7 days show up here so you can resolve them.",
+        "checkWithBank": "Check with bank",
+        "summaryTooOld": "{count} row is still pending after a week. It's too old to check with your bank. | {count} rows are still pending after a week. They're too old to check with your bank.",
+        "checking": "Checking with bank…",
+        "checkAgain": "Check again",
+        "keepAsBooked": "Keep as booked",
+        "header": {
+          "title": "{count} transaction stuck in pending | {count} transactions stuck in pending",
+          "description": "Pending for more than a week in {count} account. | Pending for more than a week in {count} accounts.",
+          "titleChecked": "{count} transaction still pending | {count} transactions still pending",
+          "descriptionChecked": "Checked with your bank. Decide what to do with each one."
+        },
+        "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
+        "columns": {
+          "account": "Account",
+          "date": "Date",
+          "category": "Category",
+          "pendingFor": "Pending for",
+          "amount": "Amount",
+          "status": "Status",
+          "actions": "Aktionen"
+        },
+        "pendingDaysShort": "{count}d",
+        "status": {
+          "tooOld": "Too old to check",
+          "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
+          "duplicate": "Possible duplicate",
+          "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
+          "notFound": "Not found at bank",
+          "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
+        }
+      },
+      "history": {
+        "loadError": "Couldn't load reconciliation history.",
+        "emptyTitle": "No reconciliation history yet",
+        "emptyDescription": "Merged and removed transactions appear here so you can restore them.",
+        "type": {
+          "merge": "Merged",
+          "remove": "Removed"
+        },
+        "restore": "Restore",
+        "kept": "Kept",
+        "removedRows": "{count} removed transaction | {count} removed transactions"
       }
     }
   }

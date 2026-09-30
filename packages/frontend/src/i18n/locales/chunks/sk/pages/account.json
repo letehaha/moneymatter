@@ -143,7 +143,13 @@
         "balanceComparison": "Porovnanie aktuálnych zostatkov:",
         "systemAccount": "Systémový účet:",
         "externalAccount": "Externý účet:",
-        "adjustmentNote": "Ak sa zostatky líšia, automaticky sa vytvorí opravná transakcia."
+        "difference": "Rozdiel",
+        "residualTitle": "Ako chcete rozdiel vyriešiť?",
+        "residualAdjustmentLabel": "Pridať úpravu zostatku",
+        "residualAdjustmentDescription": "Pridá jednu transakciu na úpravu zostatku s dnešným dátumom. Vaše minulé zostatky zostanú presne také, aké sú.",
+        "residualOpeningLabel": "Zmeniť počiatočný zostatok",
+        "residualOpeningDescription": "Posunie počiatočný zostatok účtu o rozdiel, takže sa posunú aj všetky minulé zostatky. Zvoľte túto možnosť, ak na začiatku histórie chýbajú transakcie.",
+        "residualHint": "Konečná suma sa určí po prvej synchronizácii, preto sa môže mierne líšiť od tohto náhľadu."
       },
       "tabs": {
         "details": "Podrobnosti",
@@ -159,6 +165,11 @@
         "creditLimitUpdateError": "Aktualizácia úverového limitu zlyhala",
         "save": "Uložiť",
         "initialBalance": "Počiatočný zostatok:",
+        "editInitialBalance": "Edit initial balance",
+        "initialBalancePlaceholder": "Enter initial balance",
+        "initialBalanceHint": "Changing the initial balance also changes your current balance and your entire balance history by the same amount.",
+        "initialBalanceUpdateSuccess": "Initial balance updated",
+        "initialBalanceUpdateError": "Failed to update initial balance",
         "accountType": "Typ účtu:",
         "accountCategory": "Kategória účtu:",
         "editAccountCategory": "Upraviť kategóriu",

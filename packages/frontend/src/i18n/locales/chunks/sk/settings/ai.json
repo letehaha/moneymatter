@@ -1,101 +1,101 @@
 {
   "settings": {
     "ai": {
-      "title": "AI Settings",
-      "description": "Pick which AI model powers each feature, add your own models, and connect AI apps like Claude or ChatGPT to your data.",
+      "title": "Nastavenia AI",
+      "description": "Vyberte, ktorý model AI má poháňať jednotlivé funkcie, pridajte si vlastné modely a pripojte k svojim údajom AI aplikácie ako Claude alebo ChatGPT.",
       "tabs": {
-        "features": "AI Features",
-        "models": "AI models",
-        "connectedApps": "Connectors (MCP)",
-        "invalidConnectionsTooltip": "One of your AI models needs attention"
+        "features": "Funkcie AI",
+        "models": "Modely AI",
+        "connectedApps": "Konektory (MCP)",
+        "invalidConnectionsTooltip": "Jeden z vašich modelov AI vyžaduje pozornosť"
       },
       "credentialStatus": {
-        "validated": "Validated {timeAgo}",
-        "failed": "Failed {timeAgo}",
+        "validated": "Overené pred {timeAgo}",
+        "failed": "Zlyhalo pred {timeAgo}",
         "invalidBadge": "Neplatné"
       },
       "features": {
-        "title": "AI Features",
-        "description": "Configure which model to use for each AI-powered feature",
-        "howItWorks": "How it works",
-        "loadError": "Couldn't load your AI features."
+        "title": "Funkcie AI",
+        "description": "Nastavte, ktorý model sa má použiť pre jednotlivé funkcie využívajúce AI",
+        "howItWorks": "Ako to funguje",
+        "loadError": "Vaše funkcie AI sa nepodarilo načítať."
       },
       "categorization": {
         "howItWorks": {
           "points": {
-            "autoSync": "When you sync transactions from your bank, uncategorized transactions are automatically sent to AI for categorization.",
-            "analysis": "The AI analyzes transaction descriptions and merchant names to suggest appropriate categories from your existing category list.",
-            "override": "You can always manually override AI-suggested categories."
+            "autoSync": "Pri synchronizácii transakcií z banky sa nezaradené transakcie automaticky odošlú na zaradenie do kategórií pomocou AI.",
+            "analysis": "AI analyzuje popisy transakcií a názvy obchodníkov a navrhne vhodné kategórie z vášho existujúceho zoznamu kategórií.",
+            "override": "Kategórie navrhnuté AI môžete kedykoľvek ručne zmeniť."
           }
         }
       },
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Upload a bank statement (PDF, CSV, or TXT) and AI will extract all transactions automatically.",
-            "analysis": "The AI analyzes the document structure to identify dates, descriptions, amounts, and transaction types.",
-            "review": "You can review and correct any extracted data before importing into your account.",
-            "cost": "Cost is estimated before processing, yet it only reflects the approximate cost."
+            "upload": "Nahrajte bankový výpis (PDF, CSV alebo TXT) a AI automaticky vyťaží všetky transakcie.",
+            "analysis": "AI analyzuje štruktúru dokumentu a identifikuje dátumy, popisy, sumy a typy transakcií.",
+            "review": "Pred importom do účtu si môžete vyťažené údaje prezrieť a opraviť.",
+            "cost": "Cena sa odhaduje pred spracovaním, ide však len o približný odhad."
           }
         }
       },
       "modelSelector": {
-        "placeholder": "Pick a model",
-        "automaticOption": "Automatic",
-        "automaticOptionWithTarget": "Automatic · {target}",
-        "serverOption": "MoneyMatter AI · included",
+        "placeholder": "Vyberte model",
+        "automaticOption": "Automaticky",
+        "automaticOptionWithTarget": "Automaticky · {target}",
+        "serverOption": "MoneyMatter AI · v cene",
         "connectionOption": "{name} · {model}",
-        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
+        "connectionOptionNeedsAttention": "{name} · {model} (vyžaduje pozornosť)",
         "badges": {
-          "yourKey": "Your key",
-          "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
+          "yourKey": "Váš kľúč",
+          "yourKeyTooltip": "Beží na jednom z vašich vlastných modelov AI. Účtuje vám priamo váš poskytovateľ a MoneyMatter používanie nijako neobmedzuje.",
           "server": "Server",
-          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
+          "serverTooltip": "Beží na MoneyMatter AI, zahrnutom vo vašom pláne. Platia limity používania."
         },
-        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
-        "sharedPoolNoteLink": "Upgrade to Plus",
+        "sharedPoolNote": "Vo vašom súčasnom pláne beží zahrnutý model v zdieľanom fonde, preto pri vysokom celkovom dopyte môžu platiť limity. {link} a vyhnite sa im.",
+        "sharedPoolNoteLink": "Prejdite na Plus",
         "modelLabel": "Model",
         "modelInfo": {
-          "estimatedCost": "Est. cost:",
-          "per100Transactions": "per 100 txns"
+          "estimatedCost": "Odh. cena:",
+          "per100Transactions": "na 100 transakcií"
         },
         "notifications": {
-          "updateSuccess": "Model updated successfully",
-          "updateFailed": "Failed to update model",
-          "resetSuccess": "Reset to default model",
-          "resetFailed": "Failed to reset model"
+          "updateSuccess": "Model bol úspešne aktualizovaný",
+          "updateFailed": "Model sa nepodarilo aktualizovať",
+          "resetSuccess": "Obnoviť na predvolený model",
+          "resetFailed": "Model sa nepodarilo obnoviť"
         },
         "empty": {
-          "title": "No AI model yet",
-          "description": "Add your own AI model to use this feature."
+          "title": "Zatiaľ žiadny model AI",
+          "description": "Ak chcete túto funkciu používať, pridajte vlastný model AI."
         },
-        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
-        "allConnectionsDownLink": "AI models"
+        "allConnectionsDown": "Všetky vaše modely AI vyžadujú pozornosť, preto je táto funkcia pozastavená. Opravte niektorý v {link}.",
+        "allConnectionsDownLink": "Modely AI"
       },
       "modelGuide": {
-        "trigger": "Which model fits?",
-        "tierHeading": "{tier} model is enough",
+        "trigger": "Ktorý model sa hodí?",
+        "tierHeading": "Postačí model {tier}",
         "tiers": {
-          "light": "Svetlá",
-          "balanced": "Balanced",
-          "smart": "Smart"
+          "light": "Ľahký",
+          "balanced": "Vyvážený",
+          "smart": "Inteligentný"
         },
-        "needsLabel": "Needs",
-        "picksLabel": "Good picks",
-        "yourModel": "Your model",
-        "source": "Model details from models.dev",
+        "needsLabel": "Vyžaduje",
+        "picksLabel": "Dobrá voľba",
+        "yourModel": "Váš model",
+        "source": "Podrobnosti o modeli z models.dev",
         "needs": {
-          "textOnly": "Text only",
-          "runsOften": "Runs on every sync",
-          "longAnswers": "Long answers",
-          "readsFiles": "Reads images & PDFs",
-          "structuredAnswers": "Structured answers"
+          "textOnly": "Len text",
+          "runsOften": "Spúšťa sa pri každej synchronizácii",
+          "longAnswers": "Dlhé odpovede",
+          "readsFiles": "Číta obrázky a PDF",
+          "structuredAnswers": "Štruktúrované odpovede"
         },
         "why": {
-          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
-          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
-          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
-          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+          "categorization": "Krátka, opakujúca sa úloha. Malý model si s ňou dobre poradí a udrží nízke náklady.",
+          "statementParsing": "Prečíta celý výpis a vráti každý riadok, preto potrebuje model, ktorý si udrží presnosť aj pri dlhom texte.",
+          "investmentTransactionsParsing": "Prevádza exporty od brokera na riadky nákupov a predajov. Dlhé exporty vyžadujú model schopný písať dlhé odpovede.",
+          "receiptParsing": "Model si prezerá priamo súbor faktúry, preto musí vedieť čítať obrázky a PDF."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
@@ -104,173 +104,173 @@
           "receiptParsing": "Gemini Flash · Claude Sonnet"
         },
         "verdict": {
-          "fit": "Good fit",
-          "gaps": "{count} gap | {count} gaps",
-          "unknown": "Not checked"
+          "fit": "Dobre vyhovuje",
+          "gaps": "{count} nedostatok | {count} nedostatkov",
+          "unknown": "Neoverené"
         },
         "warning": {
-          "readsFiles": "Can't read files",
-          "readsText": "Can't read text",
-          "readsImages": "Can't read images",
-          "readsPdfs": "Can't read PDFs",
-          "longAnswers": "Short answers only",
-          "structuredAnswers": "No structured answers"
+          "readsFiles": "Nevie čítať súbory",
+          "readsText": "Nevie čítať text",
+          "readsImages": "Nevie čítať obrázky",
+          "readsPdfs": "Nevie čítať PDF",
+          "longAnswers": "Len krátke odpovede",
+          "structuredAnswers": "Bez štruktúrovaných odpovedí"
         },
         "checks": {
           "readsText": {
-            "label": "Reads text",
-            "fail": "This model doesn't take text."
+            "label": "Číta text",
+            "fail": "Tento model nedokáže spracovať text."
           },
           "readsImages": {
-            "label": "Reads images",
-            "fail": "Image files won't work."
+            "label": "Číta obrázky",
+            "fail": "Súbory s obrázkami nebudú fungovať."
           },
           "readsPdfs": {
-            "label": "Reads PDFs",
-            "fail": "PDF files won't work."
+            "label": "Číta PDF",
+            "fail": "Súbory PDF nebudú fungovať."
           },
           "longAnswers": {
-            "label": "Long answers",
-            "ok": "Writes up to {tokens} tokens.",
-            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+            "label": "Dlhé odpovede",
+            "ok": "Napíše až {tokens} tokenov.",
+            "fail": "Napíše len {tokens} tokenov, preto sa dlhé súbory orežú."
           },
           "structuredAnswers": {
-            "label": "Structured answers",
-            "fail": "Its answers may come back in a shape the app can't read."
+            "label": "Štruktúrované odpovede",
+            "fail": "Jeho odpovede sa môžu vrátiť vo formáte, ktorý aplikácia nedokáže spracovať."
           }
         },
         "unknown": {
-          "title": "Can't check this model",
-          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
+          "title": "Tento model sa nedá overiť",
+          "detail": "models.dev momentálne nemá podrobnosti o tomto modeli, preto ho nemôžeme overiť. Uistite sa, že spĺňa požiadavky uvedené vyššie."
         }
       },
       "connections": {
-        "title": "AI models",
-        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "title": "Modely AI",
+        "description": "Pripojte OpenAI, Claude, Gemini, OpenRouter alebo lokálny model. Každá položka predstavuje jeden model, ktorý môžete vybrať pre ľubovoľnú funkciu.",
         "tip": {
-          "ariaLabel": "About AI models",
-          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+          "ariaLabel": "O modeloch AI",
+          "text": "Toho istého poskytovateľa môžete pridať aj viackrát s rôznymi modelmi. Pomenujte ich podľa toho, ako sú výkonné, napríklad „Claude inteligentný“ a „Claude rýchly“, a potom pre každú funkciu vyberte ten správny."
         },
-        "addButton": "Add model",
-        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
-        "duplicateName": "{name} copy",
+        "addButton": "Pridať model",
+        "capReached": "Dosiahli ste limit {max} modelov AI. Ak chcete pridať ďalší, jeden odstráňte.",
+        "duplicateName": "Kópia {name}",
         "empty": {
-          "title": "No AI models yet",
-          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
+          "title": "Zatiaľ žiadne modely AI",
+          "description": "Pridajte model s vlastným API kľúčom, alebo pripojte lokálny model, napríklad Ollama či LM Studio."
         },
         "loadError": {
-          "title": "Couldn't load your AI models",
-          "description": "Your saved models are still there. Check your connection and try again."
+          "title": "Vaše modely AI sa nepodarilo načítať",
+          "description": "Vaše uložené modely sú stále k dispozícii. Skontrolujte pripojenie a skúste to znova."
         },
         "badges": {
-          "default": "Default",
-          "defaultSkipped": "Default · skipped while it needs attention"
+          "default": "Predvolený",
+          "defaultSkipped": "Predvolený · preskočený, kým vyžaduje pozornosť"
         },
         "status": {
           "model": "{provider} · {model}"
         },
         "actions": {
-          "menuAriaLabel": "AI model actions",
-          "duplicate": "Duplicate",
-          "setDefault": "Set as default",
-          "remove": "Remove",
+          "menuAriaLabel": "Akcie modelu AI",
+          "duplicate": "Duplikovať",
+          "setDefault": "Nastaviť ako predvolený",
+          "remove": "Odstrániť",
           "reconnect": "Pripojiť znova",
-          "enterKey": "Enter API key"
+          "enterKey": "Zadajte API kľúč"
         },
         "removeDialog": {
-          "title": "Remove this AI model?",
-          "description": "\"{name}\" and its saved API key will be removed.",
-          "pinnedFeatures": "These features will switch to automatic: {features}.",
-          "confirm": "Remove"
+          "title": "Odstrániť tento model AI?",
+          "description": "Odstráni sa „{name}“ aj jeho uložený API kľúč.",
+          "pinnedFeatures": "Tieto funkcie sa prepnú na automatické: {features}.",
+          "confirm": "Odstrániť"
         },
         "removeKeyDialog": {
-          "title": "Remove the API key?",
-          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
-          "confirm": "Remove key"
+          "title": "Odstrániť API kľúč?",
+          "description": "Požiadavky na tento model sa budú odosielať bez kľúča. Servery, ktoré ho vyžadujú, prestanú odpovedať.",
+          "confirm": "Odstrániť kľúč"
         },
         "test": {
-          "success": "Connected. The model answered.",
-          "failed": "Couldn't reach the model."
+          "success": "Pripojené. Model odpovedal.",
+          "failed": "Model sa nepodarilo osloviť."
         },
         "notifications": {
-          "saveSuccess": "AI model saved",
-          "saveFailed": "Couldn't save the AI model",
-          "removeSuccess": "AI model removed",
-          "removeFailed": "Couldn't remove the AI model",
-          "setDefaultSuccess": "\"{name}\" is now your default model",
-          "setDefaultFailed": "Couldn't change the default model",
-          "removeKeySuccess": "API key removed",
-          "removeKeyFailed": "Couldn't remove the API key",
-          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
-          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+          "saveSuccess": "Model AI uložený",
+          "saveFailed": "Model AI sa nepodarilo uložiť",
+          "removeSuccess": "Model AI odstránený",
+          "removeFailed": "Model AI sa nepodarilo odstrániť",
+          "setDefaultSuccess": "„{name}“ je teraz váš predvolený model",
+          "setDefaultFailed": "Predvolený model sa nepodarilo zmeniť",
+          "removeKeySuccess": "API kľúč odstránený",
+          "removeKeyFailed": "API kľúč sa nepodarilo odstrániť",
+          "removeKeyInvalid": "API kľúč odstránený, model však prestal odpovedať: {reason}",
+          "editedConnectionGone": "Tento model AI bol medzitým odstránený inde, preto sa formulár zatvoril."
         },
         "form": {
-          "titleAdd": "Add AI model",
-          "titleEdit": "Edit AI model",
-          "titleDuplicate": "Duplicate AI model",
-          "providerLabel": "Provider",
-          "providerPlaceholder": "Select a provider",
-          "nameLabel": "Name",
-          "baseUrlLabel": "Base URL",
-          "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API key",
-          "apiKeyPlaceholder": "Paste your API key",
-          "apiKeyGetHint": "Get a key at {link}.",
-          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
-          "apiKeySavedHint": "Leave blank to keep the saved key.",
-          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
-          "removeApiKeyButton": "Remove API key",
+          "titleAdd": "Pridať model AI",
+          "titleEdit": "Upraviť model AI",
+          "titleDuplicate": "Duplikovať model AI",
+          "providerLabel": "Poskytovateľ",
+          "providerPlaceholder": "Vyberte poskytovateľa",
+          "nameLabel": "Názov",
+          "baseUrlLabel": "Základná URL adresa",
+          "baseUrlPlaceholder": "https://priklad.com/v1",
+          "apiKeyLabel": "API kľúč",
+          "apiKeyPlaceholder": "Vložte svoj API kľúč",
+          "apiKeyGetHint": "Kľúč získate na {link}.",
+          "apiKeyOptionalHint": "Voliteľné. Nechajte prázdne, ak váš server kľúč nevyžaduje.",
+          "apiKeySavedHint": "Ak chcete zachovať uložený kľúč, nechajte prázdne.",
+          "apiKeyBorrowedHint": "Používa kľúč z „{name}“. Ak chcete použiť iný, zadajte nový kľúč.",
+          "removeApiKeyButton": "Odstrániť API kľúč",
           "modelLabel": "Model",
-          "modelPlaceholder": "Type or pick a model",
-          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
-          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
-          "testButton": "Test connection",
-          "saveButton": "Ulož zmeny",
-          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
-          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+          "modelPlaceholder": "Zadajte alebo vyberte model",
+          "modelListEmpty": "Nie je z čoho vyberať. Zadajte názov modelu, ktorý váš server používa.",
+          "modelListNoMatch": "Žiadny uvedený model nezodpovedá. Zadaný názov môžete napriek tomu použiť.",
+          "testButton": "Otestovať pripojenie",
+          "saveButton": "Uložiť zmeny",
+          "localNetworkOnly": "MoneyMatter sa nedostane k serveru na vašom vlastnom počítači, ako je {hostname} alebo {ip}. Sprístupnite ho cez tunel, napríklad ngrok alebo Cloudflare Tunnel a sem vložte URL adresu tunela.",
+          "dockerHost": "Ak túto aplikáciu prevádzkujete v Dockeri na rovnakom počítači ako server modelu, použite namiesto {ip} {dockerHost}."
         },
         "presets": {
           "openai": {
             "label": "OpenAI",
-            "namePlaceholder": "e.g. GPT fast"
+            "namePlaceholder": "napr. GPT rýchly"
           },
           "anthropic": {
             "label": "Anthropic (Claude)",
-            "namePlaceholder": "e.g. Claude smart"
+            "namePlaceholder": "napr. Claude inteligentný"
           },
           "google": {
             "label": "Google (Gemini)",
-            "namePlaceholder": "e.g. Gemini fast"
+            "namePlaceholder": "napr. Gemini rýchly"
           },
           "openrouter": {
             "label": "OpenRouter",
-            "namePlaceholder": "e.g. OpenRouter Llama"
+            "namePlaceholder": "napr. OpenRouter Llama"
           },
           "ollama": {
             "label": "Ollama",
-            "namePlaceholder": "e.g. Local Llama"
+            "namePlaceholder": "napr. Lokálna Llama"
           },
           "lmStudio": {
             "label": "LM Studio",
-            "namePlaceholder": "e.g. LM Studio Qwen"
+            "namePlaceholder": "napr. LM Studio Qwen"
           },
           "custom": {
-            "label": "Custom (OpenAI-compatible)",
-            "namePlaceholder": "e.g. My server"
+            "label": "Vlastný (kompatibilný s OpenAI)",
+            "namePlaceholder": "napr. Môj server"
           }
         }
       },
       "customInstructions": {
-        "title": "Custom Instructions",
-        "description": "Provide context to help AI categorize your transactions. These instructions are included when categorizing transactions during bank sync and manual import.",
-        "placeholder": "e.g., Transactions from 'Starbucks' should be 'Coffee'. My freelance income comes from 'Acme Corp'.",
-        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
-        "requiresOwnCredentials": "Add your own AI model to use custom instructions.",
-        "credentialsCheckFailed": "Couldn't check your AI models, so custom instructions are unavailable for now.",
-        "retryCredentialsCheck": "Try again",
-        "save": "Save",
-        "saved": "Saved!",
-        "saveFailed": "Failed to save custom instructions. Please try again."
+        "title": "Vlastné pokyny",
+        "description": "Poskytnite kontext, ktorý AI pomôže pri zaraďovaní vašich transakcií do kategórií. Tieto pokyny sa zohľadnia pri zaraďovaní transakcií počas bankovej synchronizácie aj ručného importu.",
+        "placeholder": "napr. Transakcie od „Starbucks“ by mali patriť do kategórie „Káva“. Môj príjem z voľnej nohy pochádza od „Acme Corp“.",
+        "serverModelHint": "Vlastné pokyny sa uplatnia len vtedy, keď kategorizáciu vykonáva jeden z vašich vlastných modelov AI. Vyberte ho vyššie.",
+        "requiresOwnCredentials": "Ak chcete používať vlastné pokyny, pridajte si vlastný model AI.",
+        "credentialsCheckFailed": "Vaše modely AI sa nepodarilo overiť, preto sú vlastné pokyny momentálne nedostupné.",
+        "retryCredentialsCheck": "Skúsiť znova",
+        "save": "Uložiť",
+        "saved": "Uložené!",
+        "saveFailed": "Vlastné pokyny sa nepodarilo uložiť. Skúste to znova, prosím."
       }
     }
   }

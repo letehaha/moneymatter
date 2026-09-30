@@ -143,7 +143,13 @@
         "balanceComparison": "Perbandingan Saldo Saat Ini:",
         "systemAccount": "Akun Sistem:",
         "externalAccount": "Akun Eksternal:",
-        "adjustmentNote": "Jika saldo berbeda, transaksi penyesuaian akan dibuat secara otomatis."
+        "difference": "Difference",
+        "residualTitle": "How should we handle the difference?",
+        "residualAdjustmentLabel": "Add a balance correction",
+        "residualAdjustmentDescription": "Adds one balance adjustment transaction dated today. Your past balances stay exactly as they are.",
+        "residualOpeningLabel": "Change the starting balance",
+        "residualOpeningDescription": "Moves the account's starting balance by the difference, so every past balance shifts too. Pick this if transactions are missing from the start of the history.",
+        "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
       },
       "tabs": {
         "details": "Detail",
@@ -159,6 +165,11 @@
         "creditLimitUpdateError": "Gagal memperbarui batas kredit",
         "save": "Simpan",
         "initialBalance": "Saldo Awal:",
+        "editInitialBalance": "Edit initial balance",
+        "initialBalancePlaceholder": "Enter initial balance",
+        "initialBalanceHint": "Changing the initial balance also changes your current balance and your entire balance history by the same amount.",
+        "initialBalanceUpdateSuccess": "Initial balance updated",
+        "initialBalanceUpdateError": "Failed to update initial balance",
         "accountType": "Tipe Akun:",
         "accountCategory": "Kategori Akun:",
         "editAccountCategory": "Edit kategori",

@@ -197,6 +197,7 @@
       },
       "outOfWallet": "Вне кошелька",
       "hint": "Нажмите строку для просмотра. Выберите строки для массового редактирования.",
+      "plannedRows": "{count} planned transactions",
       "emptyTitle": "Нет транзакций, соответствующих фильтрам",
       "emptyDescription": "Измените или сбросьте фильтры.",
       "columnConfig": {

@@ -112,69 +112,69 @@
       "messageRequired": "الرجاء كتابة رسالة قبل الإرسال.",
       "submit": "إرسال",
       "thanks": "شكرًا، نحن نقرأ كل رسالة.",
-      "unavailable": "Sending is unavailable right now. Use the board below instead.",
-      "or": "or",
+      "unavailable": "الإرسال غير متوفر الآن. استخدم اللوحة أدناه بدلاً من ذلك.",
+      "or": "أو",
       "board": {
-        "title": "Post it on the public board",
-        "description": "Vote on other people's ideas, see what is already planned, and get a reply on yours."
+        "title": "شاركه على اللوحة العامة",
+        "description": "صوّت على أفكار الآخرين، واطلع على ما تم التخطيط له بالفعل، وستنال رد على أفكارك."
       }
     }
   },
   "syncStatusTooltip": {
-    "title": "Banks connections sync status",
-    "syncedSuccessfully": "Synced successfully",
-    "syncCompletedWithErrors": "Some accounts failed to sync",
-    "syncStuckTitle": "Sync seems stuck",
-    "syncStuckDescription": "Some bank connections didn't respond in time. Try again, or reconnect them from the integrations page.",
-    "progress": "{current} of {total} synced",
+    "title": "حالة مزامنة اتصالات البنوك",
+    "syncedSuccessfully": "تمت المزامنة بنجاح",
+    "syncCompletedWithErrors": "فشلت في المزامنة بعض الحسابات",
+    "syncStuckTitle": "يبدو أن المزامنة متوقفة",
+    "syncStuckDescription": "بعض اتصالات البنوك لم تستجب في الوقت المحدد. حاول مرة أخرى، أو أعد الاتصال بها من صفحة الربط.",
+    "progress": "{current} من {total} تمت مزامنته",
     "progressPercentage": "{percentage}%",
     "statuses": {
       "syncing": "المزامنة",
-      "queued": "Queued",
-      "synced": "Synced",
-      "failed": "Failed",
-      "idle": "Idle"
+      "queued": "قيد الانتظار",
+      "synced": "تمت المزامنة",
+      "failed": "فشل",
+      "idle": "خامل"
     },
-    "lastSynced": "Last synced:",
-    "neverSynced": "Never synced",
-    "syncNowButton": "Sync Now",
-    "noBankAccounts": "No bank accounts connected",
-    "connectButton": "Connect",
-    "retrySyncButton": "Retry sync",
-    "manageConnectionsButton": "Manage connections",
-    "needsReauthTitle": "Connections need reconnecting",
-    "needsReauthDescription": "These bank sessions expired. Reconnect to resume syncing.",
-    "reconnectButton": "Reconnect",
-    "affectedAccounts": "1 account | {count} accounts",
+    "lastSynced": "آخر مزامنة:",
+    "neverSynced": "لم تتم المزامنة أبداً",
+    "syncNowButton": "المزامنة الآن",
+    "noBankAccounts": "لا توجد حسابات بنكية متصلة",
+    "connectButton": "وصل",
+    "retrySyncButton": "إعادة المزامنة",
+    "manageConnectionsButton": "إدارة الاتصالات",
+    "needsReauthTitle": "تحتاج الاتصالات إلى إعادة الاتصال",
+    "needsReauthDescription": "انتهت صلاحية الاتصال. أعد الاتصال لاستئناف المزامنة.",
+    "reconnectButton": "إعادة الاتصال",
+    "affectedAccounts": "1 حساب | {count} حسابات",
     "timeAgo": {
-      "justNow": "Just now",
-      "secondsAgo": "{count} second ago | {count} seconds ago",
-      "minutesAgo": "{count} minute ago | {count} minutes ago",
-      "hoursAgo": "{count} hour ago | {count} hours ago",
-      "daysAgo": "{count} day ago | {count} days ago",
-      "weeksAgo": "{count} week ago | {count} weeks ago",
-      "monthsAgo": "{count} month ago | {count} months ago",
-      "yearsAgo": "{count} year ago | {count} years ago"
+      "justNow": "الآن",
+      "secondsAgo": "منذ {count} ثانية | منذ {count} ثانية",
+      "minutesAgo": "منذ {count} دققيقة | منذ {count} دقيقة",
+      "hoursAgo": "منذ {count} ساعة | منذ {count} ساعة",
+      "daysAgo": "منذ {count} يوم | منذ {count} يوم",
+      "weeksAgo": "منذ {count} أسبوع| منذ {count} أسبوع",
+      "monthsAgo": "منذ {count} شهر | منذ {count} شهر",
+      "yearsAgo": "منذ {count} عام | منذ {count} عام"
     }
   },
   "banners": {
     "recoveryMethod": {
-      "title": "Add a backup login method",
-      "description": "Protect your account by adding Google sign-in or a passkey. This ensures you can always access your account.",
-      "actionButton": "Go to Security Settings"
+      "title": "أطف طريقة احتياطية لتسجيل الدخول",
+      "description": "احمِ حسابك بإضافة تسجيل الدخول عبر Google أو مفتاح مرور Passkey. يضمن ذلك أن تتمكن من الوصول إلى حسابك دائما.",
+      "actionButton": "انتقل إلى إعدادات الأمان"
     }
   },
   "relinkWarning": {
-    "buttonLabel": "{count} account needs attention | {count} accounts need attention",
-    "title": "Enable Banking: Action Required",
-    "description": "These Enable Banking accounts need to be updated due to a data schema change. This is a one-time action to improve synchronization reliability.",
-    "step1Full": "To save your time, firstly try reconnecting the whole bank connection. You can find a {reconnect} button under the {connectionValidity} section on each connection page:",
-    "reconnectButton": "Reconnect",
-    "connectionValiditySection": "Connection Validity",
-    "connectionLabel": "Connection #{id}",
-    "step2Full": "If any accounts remain listed below after reconnection, go to each account and manually {unlink} then {link} again.",
-    "unlinkAction": "Unlink",
-    "linkAction": "Link"
+    "buttonLabel": "{count} حساب يتطلب إجراء | {count} حساب يتطلب إجراء",
+    "title": "تمكين البنك: يتطلب تفعيل",
+    "description": "هذه الحسابات المرتبطة بـتمكين البنك تحتاج إلى تحديث بسبب تغيير في مخطط البيانات. هذا إجراء لمرة واحدة لتحسين موثوقية المزامنة.",
+    "step1Full": "لتوفير وقتك، جرب أولا إعادة الاتصال الكامل بالنك. ستجد زر {reconnect} ضمن قسم {connectionValidity} في صفحة كل اتصال:",
+    "reconnectButton": "إعادة الاتصال",
+    "connectionValiditySection": "صحة الاتصال",
+    "connectionLabel": "الاتصال #{id}",
+    "step2Full": "إذا بقيت أي حسابات في الأسفل بعد إعادة الاتصال، فانتقل إلى كل حساب وقم يدويا بـ {unlink} ثم {link} مرة أخرى.",
+    "unlinkAction": "إلغاء الربط",
+    "linkAction": "ربط"
   },
   "pages": {
     "integrations": {
@@ -183,7 +183,7 @@
           "name": "Monobank"
         },
         "enableBanking": {
-          "name": "Enable Banking"
+          "name": "تمكين البنك"
         },
         "lunchflow": {
           "name": "Lunch Flow"
@@ -193,40 +193,40 @@
   },
   "dashboard": {
     "onboarding": {
-      "title": "Welcome to MoneyMatter",
-      "subtitle": "Get started by setting up your first account",
+      "title": "مرحبا بك في MoneyMatter",
+      "subtitle": "ابدأ من خلال إعداد حسابك الأول",
       "createManualAccount": {
-        "title": "Create Manual Account",
-        "description": "Track cash, savings, or any account manually"
+        "title": "إنشاء حساب يدوي",
+        "description": "تتبع الكاش، المدخرات، أو أي حساب يدوياً"
       },
       "connectBank": {
-        "title": "Connect Your Bank",
-        "description": "Automatically sync transactions from your bank"
+        "title": "قم بتوصيل حسابك البنكي",
+        "description": "مزامنة المعاملات تلقائياً من البنك الخاص بك"
       },
-      "divider": "or import existing data",
+      "divider": "أو استيراد بيانات موجودة",
       "importFile": {
-        "title": "Import from File",
-        "description": "Import transactions from bank statements (PDF) or CSV files"
+        "title": "استيراد من ملف",
+        "description": "استيراد المعاملات من كشف حساب بنكي (PDF) أو ملفات CSV"
       },
       "quickStart": {
         "categories": {
           "getting-started": {
-            "title": "Getting Started"
+            "title": "ابدأ"
           },
           "advanced-transactions": {
-            "title": "Advanced Transactions"
+            "title": "معاملات متقدمة"
           },
           "organization": {
-            "title": "Organize Your Finances"
+            "title": "تنظيم مالياتك"
           },
           "bank-import": {
-            "title": "Connect & Import"
+            "title": "الاتصال والاستيراد"
           },
           "analytics": {
-            "title": "Explore Analytics"
+            "title": "استكشاف التحليلات"
           },
           "ai-settings": {
-            "title": "AI Features"
+            "title": "مميزات الذكاء الاصطناعي"
           },
           "sharing": {
             "title": "Sharing & Household"
@@ -234,23 +234,23 @@
         },
         "tasks": {
           "create-account": {
-            "title": "Create your first account",
-            "description": "Add a bank account or wallet to track"
+            "title": "أنشئ حسابك الأول",
+            "description": "إضافة حساب بنكي أو محفظة لتتبع"
           },
           "add-transaction": {
-            "title": "Add your first transaction",
-            "description": "Record an income or expense"
+            "title": "إضافة معاملتك الأولى",
+            "description": "تسجيل الدخل أو المصروفات"
           },
           "create-transfer": {
-            "title": "Create a transfer",
-            "description": "Move money between your accounts"
+            "title": "إنشاء تحويل",
+            "description": "نقل الأموال بين حساباتك"
           },
           "link-refund": {
-            "title": "Link a refund",
-            "description": "Connect refunds to original purchases"
+            "title": "ربط استرجاع",
+            "description": "ربط الاسترداد بعمليات الشراء الأصلية"
           },
           "link-transactions": {
-            "title": "Link existing transactions",
+            "title": "ربط المعاملات الحالية",
             "description": "Connect related transactions together"
           },
           "split-transaction": {

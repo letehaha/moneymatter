@@ -2,95 +2,95 @@
   "settings": {
     "tags": {
       "title": "Štítky",
-      "addButton": "Add Tag",
-      "empty": "No tags yet. Create your first tag to organize your transactions.",
+      "addButton": "Pridať štítok",
+      "empty": "Zatiaľ žiadne štítky. Vytvorte prvý štítok a usporiadajte si transakcie.",
       "tabs": {
-        "details": "Details",
-        "reminders": "Reminders"
+        "details": "Podrobnosti",
+        "reminders": "Pripomienky"
       },
       "form": {
-        "createTitle": "Create Tag",
-        "editTitle": "Edit Tag",
-        "name": "Name",
-        "namePlaceholder": "Tag name",
+        "createTitle": "Vytvoriť štítok",
+        "editTitle": "Upraviť štítok",
+        "name": "Názov",
+        "namePlaceholder": "Názov štítku",
         "color": "Farba",
         "icon": "Ikona",
         "iconPlaceholder": "Vyberte ikonu",
-        "iconSearchPlaceholder": "Search icons...",
-        "clearIcon": "Clear icon",
-        "description": "Description",
+        "iconSearchPlaceholder": "Hľadať ikony...",
+        "clearIcon": "Vymazať ikonu",
+        "description": "Popis",
         "descriptionPlaceholder": "Voliteľný popis",
-        "saveButton": "Save",
-        "previewPlaceholder": "Tag name"
+        "saveButton": "Uložiť",
+        "previewPlaceholder": "Názov štítku"
       },
       "delete": {
-        "title": "Delete tag?",
-        "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
+        "title": "Zmazať štítok?",
+        "description": "Toto natrvalo zmaže „{name}\" a odstráni ho zo všetkých transakcií. Túto akciu nie je možné vrátiť späť.",
         "deleteButton": "Zmazať",
         "cancelButton": "Zrušiť"
       },
       "notifications": {
-        "createSuccess": "Tag created",
-        "createFailed": "Failed to create tag",
-        "updateSuccess": "Tag updated",
-        "updateFailed": "Failed to update tag",
-        "deleteSuccess": "Tag deleted",
-        "deleteFailed": "Failed to delete tag"
+        "createSuccess": "Štítok vytvorený",
+        "createFailed": "Štítok sa nepodarilo vytvoriť",
+        "updateSuccess": "Štítok bol aktualizovaný",
+        "updateFailed": "Štítok sa nepodarilo aktualizovať",
+        "deleteSuccess": "Štítok bol zmazaný",
+        "deleteFailed": "Štítok sa nepodarilo zmazať"
       },
       "reminders": {
-        "addButton": "Add Reminder",
-        "empty": "No reminders yet. Create a reminder to get notified about this tag's activity.",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
+        "addButton": "Pridať pripomienku",
+        "empty": "Zatiaľ žiadne pripomienky. Vytvorte pripomienku a nechajte sa upozorniť na aktivitu tohto štítku.",
+        "enabled": "Zapnuté",
+        "disabled": "Vypnuté",
         "form": {
-          "createTitle": "Create Reminder",
-          "editTitle": "Edit Reminder",
-          "type": "Reminder Type",
-          "typePlaceholder": "Select type",
-          "amountThreshold": "Amount Threshold",
-          "amountThresholdPlaceholder": "Enter threshold amount",
-          "amountThresholdHint": "Get notified when spending on this tag exceeds this amount",
-          "frequency": "Frequency",
-          "frequencyPlaceholder": "Select frequency",
-          "dayOfMonth": "Day of month",
-          "dayOfMonthPlaceholder": "Select day",
-          "dayOfMonthHint": "For months with fewer days, the last day will be used",
-          "isEnabled": "Enabled",
-          "saveButton": "Save"
+          "createTitle": "Vytvoriť pripomienku",
+          "editTitle": "Upraviť pripomienku",
+          "type": "Typ pripomienky",
+          "typePlaceholder": "Vyberte typ",
+          "amountThreshold": "Hraničná suma",
+          "amountThresholdPlaceholder": "Zadajte hraničnú sumu",
+          "amountThresholdHint": "Upozorníme vás, keď výdavky s týmto štítkom prekročia túto sumu",
+          "frequency": "Frekvencia",
+          "frequencyPlaceholder": "Vyberte frekvenciu",
+          "dayOfMonth": "Deň v mesiaci",
+          "dayOfMonthPlaceholder": "Vyberte deň",
+          "dayOfMonthHint": "Pri mesiacoch s menším počtom dní sa použije posledný deň",
+          "isEnabled": "Zapnuté",
+          "saveButton": "Uložiť"
         },
         "types": {
-          "amountThreshold": "Amount Threshold",
-          "amountThresholdDescription": "Notify when spending exceeds a certain amount",
-          "existenceCheck": "Activity Check",
-          "existenceCheckDescription": "Notify when there are transactions with this tag"
+          "amountThreshold": "Hraničná suma",
+          "amountThresholdDescription": "Upozorniť, keď výdavky prekročia určitú sumu",
+          "existenceCheck": "Kontrola aktivity",
+          "existenceCheckDescription": "Upozorniť, keď sa objavia transakcie s týmto štítkom"
         },
         "frequencies": {
-          "immediate": "Immediate",
-          "immediateDescription": "Triggers when transactions are tagged (24h cooldown)",
-          "daily": "Daily",
-          "dailyDescription": "Check every day",
-          "weekly": "Weekly",
-          "weeklyDescription": "Check every Monday",
-          "monthly": "Monthly",
-          "monthlyDescription": "Check on a specific day each month",
-          "quarterly": "Quarterly",
-          "quarterlyDescription": "Check every 3 months (Jan, Apr, Jul, Oct)",
-          "yearly": "Yearly",
-          "yearlyDescription": "Check once per year in January"
+          "immediate": "Okamžite",
+          "immediateDescription": "Spustí sa pri označení transakcií štítkom (interval 24 hodín)",
+          "daily": "Denne",
+          "dailyDescription": "Kontrola každý deň",
+          "weekly": "Týždenne",
+          "weeklyDescription": "Kontrola každý pondelok",
+          "monthly": "Mesačne",
+          "monthlyDescription": "Kontrola v určený deň každého mesiaca",
+          "quarterly": "Štvrťročne",
+          "quarterlyDescription": "Kontrola každé 3 mesiace (jan, apr, júl, okt)",
+          "yearly": "Ročne",
+          "yearlyDescription": "Kontrola raz ročne v januári"
         },
         "delete": {
-          "title": "Delete reminder?",
-          "description": "This will permanently delete this reminder. This action cannot be undone.",
+          "title": "Zmazať pripomienku?",
+          "description": "Toto natrvalo zmaže túto pripomienku. Túto akciu nie je možné vrátiť späť.",
           "deleteButton": "Zmazať",
           "cancelButton": "Zrušiť"
         },
         "notifications": {
-          "createSuccess": "Reminder created",
-          "createFailed": "Failed to create reminder",
-          "updateSuccess": "Reminder updated",
-          "updateFailed": "Failed to update reminder",
-          "deleteSuccess": "Reminder deleted",
-          "deleteFailed": "Failed to delete reminder"
+          "createSuccess": "Pripomienka vytvorená",
+          "createFailed": "Pripomienku sa nepodarilo vytvoriť",
+          "updateSuccess": "Pripomienka aktualizovaná",
+          "updateFailed": "Pripomienku sa nepodarilo aktualizovať",
+          "deleteSuccess": "Pripomienka zmazaná",
+          "deleteFailed": "Pripomienku sa nepodarilo zmazať"
         }
       }
     }

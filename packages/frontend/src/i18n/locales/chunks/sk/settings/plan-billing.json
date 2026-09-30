@@ -1,134 +1,134 @@
 {
   "settings": {
     "planBilling": {
-      "title": "Plan & billing",
-      "description": "Choose a plan and manage your billing.",
-      "checkoutSuccess": "Your plan is now active.",
-      "checkoutFailed": "Could not open checkout. Please try again.",
-      "currentPlanEyebrow": "Current plan",
-      "updatePaymentMethod": "Update payment method",
-      "manageBilling": "Manage billing",
-      "currentPlan": "Current plan",
+      "title": "Predplatné a fakturácia",
+      "description": "Vyberte si predplatné a spravujte svoju fakturáciu.",
+      "checkoutSuccess": "Vaše predplatné je teraz aktívne.",
+      "checkoutFailed": "Platobný proces sa nepodarilo otvoriť. Skúste to znova, prosím.",
+      "currentPlanEyebrow": "Aktuálne predplatné",
+      "updatePaymentMethod": "Aktualizovať spôsob platby",
+      "manageBilling": "Spravovať fakturáciu",
+      "currentPlan": "Aktuálne predplatné",
       "recommended": "Odporúčané",
-      "previousPlan": "Previous plan",
-      "yourPlan": "Your plan",
+      "previousPlan": "Predchádzajúce predplatné",
+      "yourPlan": "Vaše predplatné",
       "planned": "Plánované",
-      "voteOnRoadmap": "Vote on the roadmap",
-      "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
-      "saveUpTo": "Save up to {percent}%",
-      "portalFailed": "Could not open the billing portal. Please try again.",
-      "pastDueNote": "Your last payment failed. Stripe will retry your card automatically over the next few days. Update your payment method via Manage billing to keep access after {date}.",
-      "priceNote": "Prices are in USD, excluding tax. Your local currency and any applicable tax are shown at checkout.",
+      "voteOnRoadmap": "Hlasujte na roadmape",
+      "roadmapNote": "Bez poplatku. Podporte to hlasom a dáme vám vedieť, keď to bude hotové.",
+      "saveUpTo": "Ušetríte až {percent} %",
+      "portalFailed": "Fakturačný portál sa nepodarilo otvoriť. Skúste to znova, prosím.",
+      "pastDueNote": "Vaša posledná platba zlyhala. Stripe sa automaticky pokúsi vašu kartu zaúčtovať znova v priebehu nasledujúcich dní. Ak si chcete zachovať prístup po {date}, aktualizujte spôsob platby cez Spravovať fakturáciu.",
+      "priceNote": "Ceny sú v USD bez dane. Vaša miestna mena a prípadná daň sa zobrazia pri platbe.",
       "cycleHint": {
-        "year": "Yearly is 6 months of monthly. Billed once a year.",
-        "month": "Cancel any month. Yearly costs half."
+        "year": "Ročné predplatné vyjde na 6 mesačných platieb. Účtuje sa raz ročne.",
+        "month": "Zrušiť môžete kedykoľvek. Ročné vyjde na polovicu."
       },
       "price": {
-        "yearFootnote": "{amount} / mo · {struck} · {save}",
-        "monthFootnote": "or {amount} / year · {save}",
-        "save": "save {amount}"
+        "yearFootnote": "{amount} / mes. · {struck} · {save}",
+        "monthFootnote": "alebo {amount} / rok · {save}",
+        "save": "ušetríte {amount}"
       },
       "current": {
-        "lifetime": "{plan} · lifetime",
-        "lifetimeMeta": "Everything in Plus. No renewal, no card on file.",
-        "earlyAdopterNote": "Thank you for being here early. Everything in Plus as it exists today is yours for life. Features we add from here on, and anything that costs us per user to run, belong to the paid plans. Want them? 50% off any plan, forever, applied automatically at checkout.",
-        "seats": "1 household seat | {count} household seats",
+        "lifetime": "{plan} · doživotne",
+        "lifetimeMeta": "Všetko z plánu Plus. Bez obnovovania, bez uloženej karty.",
+        "earlyAdopterNote": "Ďakujeme, že ste tu od začiatku. Všetko, čo dnes obsahuje plán Plus, je vaše navždy. Funkcie, ktoré pridáme odteraz, a čokoľvek, čo nás pri používateľovi niečo stojí, patrí do platených plánov. Máte o ne záujem? Na akýkoľvek plán navždy 50 % zľava, uplatnená automaticky pri platbe.",
+        "seats": "1 miesto v domácnosti | {count} miest v domácnosti",
         "subscription": "{tier} · {cycle}",
-        "trial": "{count} day left in your trial | {count} days left in your trial",
-        "trialProgress": "Day {used} of {total}",
-        "trialEnded": "Trial ended",
-        "trialEndedMeta": "Your {days}-day trial is over. Pick a plan to keep adding to it.",
-        "trialEndsOn": "Ends {date}",
-        "trialExcluded": "Backup restore isn't available during the trial",
-        "subscriptionEnded": "Subscription ended",
-        "endedMeta": "Your data is safe. Pick a plan to keep adding to it.",
-        "renewsOn": "Renews on {date}",
-        "activating": "Activating your plan",
-        "activatingNote": "Payment received. Stripe usually confirms within a few seconds.",
-        "activationTimedOut": "Your payment went through but the plan is still being set up. Refresh in a minute; if nothing changes, contact support.",
-        "activationUnreachable": "We could not reach the server to confirm your payment. Reload the page; if the plan is still missing, contact support.",
-        "accessContinuesUntil": "Access continues until {date}",
-        "accessUntil": "Access until {date}, then read-only",
-        "resumesOn": "Resumes automatically on {date}",
-        "pausedNote": "While paused the account is read-only.",
-        "noFurtherCharges": "No further charges",
-        "cancelNote": "Changed your mind? Renew in the billing portal and your renewal date stays the same.",
-        "monthlyHint": "Switch to yearly and save {amount} a year.",
-        "noCard": "No card on file",
-        "readOnlyHelp": "What does read-only mean?"
+        "trial": "Vo vašej skúšobnej verzii zostáva {count} deň | Vo vašej skúšobnej verzii zostáva {count} dní",
+        "trialProgress": "Deň {used} z {total}",
+        "trialEnded": "Skúšobná verzia sa skončila",
+        "trialEndedMeta": "Vaša {days}-dňová skúšobná verzia sa skončila. Ak chcete pokračovať v pridávaní, vyberte si plán.",
+        "trialEndsOn": "Končí {date}",
+        "trialExcluded": "Obnova zo zálohy nie je počas skúšobnej verzie dostupná",
+        "subscriptionEnded": "Predplatné sa skončilo",
+        "endedMeta": "Vaše údaje sú v bezpečí. Ak chcete pokračovať v pridávaní, vyberte si plán.",
+        "renewsOn": "Obnoví sa {date}",
+        "activating": "Aktivuje sa váš plán",
+        "activatingNote": "Platba prijatá. Stripe ju zvyčajne potvrdí do niekoľkých sekúnd.",
+        "activationTimedOut": "Vaša platba prebehla, plán sa však ešte nastavuje. Obnovte stránku o minútu; ak sa nič nezmení, kontaktujte podporu.",
+        "activationUnreachable": "Server na potvrdenie vašej platby sa nepodarilo osloviť. Načítajte stránku znova; ak plán stále chýba, kontaktujte podporu.",
+        "accessContinuesUntil": "Prístup trvá do {date}",
+        "accessUntil": "Prístup do {date}, potom len na čítanie",
+        "resumesOn": "Automaticky sa obnoví {date}",
+        "pausedNote": "Kým je pozastavený, účet je len na čítanie.",
+        "noFurtherCharges": "Žiadne ďalšie platby",
+        "cancelNote": "Rozmysleli ste si to? Obnovte predplatné vo fakturačnom portáli a dátum obnovenia zostane rovnaký.",
+        "monthlyHint": "Prejdite na ročné a ušetrite {amount} ročne.",
+        "noCard": "Žiadna uložená karta",
+        "readOnlyHelp": "Čo znamená len na čítanie?"
       },
       "status": {
-        "pastDue": "Payment failed",
+        "pastDue": "Platba zlyhala",
         "active": "Aktívne",
-        "paused": "Paused",
+        "paused": "Pozastavený",
         "readOnly": "Len na čítanie",
-        "trial": "Plus features",
-        "processing": "Processing",
-        "earlyAdopter": "Early adopter",
-        "endsOn": "Ends {date}"
+        "trial": "Funkcie Plus",
+        "processing": "Prebieha spracovanie",
+        "earlyAdopter": "Prvý používateľ",
+        "endsOn": "Končí {date}"
       },
       "cta": {
-        "activating": "Activating…",
-        "switchTo": "Switch to {tier}",
-        "switchToCycle": "Switch to {cycle} billing",
-        "subscribeAgain": "Subscribe again",
-        "getTier": "Get {tier}"
+        "activating": "Aktivácia…",
+        "switchTo": "Prejsť na {tier}",
+        "switchToCycle": "Prejsť na {cycle} fakturáciu",
+        "subscribeAgain": "Predplatiť znova",
+        "getTier": "Získať {tier}"
       },
       "ctaNote": {
-        "keepIt": "Update your payment method to keep it.",
-        "viaPortal": "Changed in the billing portal.",
-        "billedToday": "Billed today. Cancel anytime.",
-        "earlyAdopter": "50% off for life, applied at checkout"
+        "keepIt": "Ak si to chcete zachovať, aktualizujte spôsob platby.",
+        "viaPortal": "Zmenené vo fakturačnom portáli.",
+        "billedToday": "Účtované dnes. Kedykoľvek môžete zrušiť.",
+        "earlyAdopter": "50 % zľava navždy, uplatnená pri platbe"
       },
       "plans": {
         "essential": "Essential",
         "plus": "Plus",
         "premium": "Premium",
-        "early_adopter": "Early Adopter"
+        "early_adopter": "Prvý používateľ"
       },
       "cycle": {
-        "month": "Monthly",
-        "year": "Yearly"
+        "month": "Mesačne",
+        "year": "Ročne"
       },
       "perCycle": {
-        "month": "/month",
-        "year": "/year"
+        "month": "/mesiac",
+        "year": "/rok"
       },
       "tiers": {
         "essential": {
           "name": "Essential",
-          "tagline": "Manual entry and everything that's local math.",
+          "tagline": "Ručné zadávanie a všetko, čo je len lokálny výpočet.",
           "features": {
-            "imports": "CSV, OFX, YNAB, Wallet, MS Money imports",
-            "investments": "Investments, loans, vehicles",
-            "ownAiKey": "AI features on your own API key",
-            "backup": "Backup export and restore",
-            "mcp": "MCP server access",
-            "seats": "2 household seats"
+            "imports": "Import CSV, OFX, YNAB, Wallet, MS Money",
+            "investments": "Investície, pôžičky, vozidlá",
+            "ownAiKey": "Funkcie AI na vlastnom API kľúči",
+            "backup": "Export a obnova zálohy",
+            "mcp": "Prístup k MCP serveru",
+            "seats": "2 miesta v domácnosti"
           }
         },
         "plus": {
           "name": "Plus",
-          "tagline": "Everything around bring-your-own bank connections.",
+          "tagline": "Všetko okolo vlastných bankových pripojení.",
           "features": {
-            "everythingInEssential": "Everything in Essential",
-            "bankProviders": "Bank connections (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
-            "ourAiKey": "AI features on our key, fair-use capped",
-            "firePlanner": "FIRE planner",
-            "seats": "5 household seats"
+            "everythingInEssential": "Všetko z plánu Essential",
+            "bankProviders": "Bankové pripojenia (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
+            "ourAiKey": "Funkcie AI na našom kľúči, s limitom férového používania",
+            "firePlanner": "Plánovač FIRE",
+            "seats": "5 miesta v domácnosti"
           }
         },
         "premium": {
           "name": "Premium",
-          "tagline": "Bank sync we run for you. Planned – help us prioritise it.",
-          "priceTba": "Price to be announced",
-          "priceNote": "Priced once bank-sync costs are known.",
+          "tagline": "Bankovú synchronizáciu prevádzkujeme za vás. Plánované – pomôžte nám určiť prioritu.",
+          "priceTba": "Cena bude oznámená",
+          "priceNote": "Cena bude stanovená po zistení nákladov na bankovú synchronizáciu.",
           "features": {
-            "everythingInPlus": "Everything in Plus",
-            "builtInBankSync": "Bank sync built into the app – no third-party account to set up",
-            "realtimePrices": "Realtime security prices",
-            "higherAiCap": "AI features on our key, higher cap",
-            "seats": "10 household seats"
+            "everythingInPlus": "Všetko z plánu Plus",
+            "builtInBankSync": "Banková synchronizácia zabudovaná v aplikácii – bez nutnosti nastavovať účet u tretej strany",
+            "realtimePrices": "Ceny cenných papierov v reálnom čase",
+            "higherAiCap": "Funkcie AI na našom kľúči, s vyšším limitom",
+            "seats": "10 miest v domácnosti"
           }
         }
       }

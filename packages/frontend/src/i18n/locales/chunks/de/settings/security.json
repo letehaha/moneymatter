@@ -6,7 +6,7 @@
       "tabs": {
         "loginMethods": "Login Methods",
         "activeSessions": "Active Sessions",
-        "password": "Password",
+        "password": "Passwort",
         "backup": "Backup & restore",
         "dangerZone": "Danger Zone"
       },
@@ -21,7 +21,7 @@
           "connect": "Verbinden"
         },
         "password": {
-          "title": "Password",
+          "title": "Passwort",
           "passwordSet": "Password is set",
           "noPassword": "No password set",
           "manageInTab": "Manage in Password tab",
@@ -78,13 +78,13 @@
         }
       },
       "passwordSection": {
-        "title": "Password",
+        "title": "Passwort",
         "descriptionChange": "Change your password",
         "descriptionSet": "Set up a password for your account",
         "labels": {
           "currentPassword": "Current Password",
           "newPassword": "New Password",
-          "password": "Password",
+          "password": "Passwort",
           "confirmPassword": "Confirm Password"
         },
         "placeholders": {

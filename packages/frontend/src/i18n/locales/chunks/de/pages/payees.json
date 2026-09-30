@@ -23,7 +23,7 @@
       "defaultTags": "Default tags"
     },
     "actions": {
-      "menu": "Actions",
+      "menu": "Aktionen",
       "rename": "Rename",
       "merge": "Merge into…",
       "delete": "Löschen",
@@ -32,7 +32,7 @@
     "bulk": {
       "select": "Select",
       "selectedCount": "{count} selected",
-      "clearSelection": "Clear selection",
+      "clearSelection": "Auswahl aufheben",
       "selectAll": "Select all loaded payees",
       "selectRow": "Select {name}",
       "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
@@ -96,10 +96,10 @@
       "applyTagsToExisting": "Apply to existing transactions"
     },
     "logo": {
-      "change": "Change logo",
+      "change": "Logo ändern",
       "dialogTitle": "Change Logo",
       "dialogDescription": "Search for a brand logo to represent this payee.",
-      "resetToAuto": "Reset to automatic",
+      "resetToAuto": "Auf automatisch zurücksetzen",
       "updatedToast": "Logo updated.",
       "resetToast": "Logo reset to automatic.",
       "fieldLabel": "Logo",

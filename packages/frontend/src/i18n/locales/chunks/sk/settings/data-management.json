@@ -1,104 +1,104 @@
 {
   "settings": {
     "dataManagement": {
-      "title": "Import Data",
-      "description": "Import your financial data from various sources",
+      "title": "Import údajov",
+      "description": "Importujte svoje finančné údaje z rôznych zdrojov",
       "tabs": {
         "import": "Import",
         "export": "Export"
       },
       "textSource": {
-        "title": "Import from any Text Source",
-        "aiBadge": "AI-powered",
-        "listDescription": "Bank statements, emails, or any text source"
+        "title": "Import z ľubovoľného textového zdroja",
+        "aiBadge": "Poháňané AI",
+        "listDescription": "Bankové výpisy, emaily alebo akýkoľvek textový zdroj"
       },
       "csv": {
         "title": "Import CSV",
-        "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
-        "button": "Import CSV File",
-        "cta": "Import CSV file",
-        "listDescription": "Map columns and handle duplicates"
+        "description": "Importujte transakcie zo súboru CSV. Môžete priradiť stĺpce, riešiť duplicity a podľa potreby vytvárať nové účty alebo kategórie.",
+        "button": "Importovať CSV súbor",
+        "cta": "Importovať CSV súbor",
+        "listDescription": "Priraďte stĺpce a vyriešte duplicity"
       },
       "ofx": {
-        "title": "OFX or QFX statement",
-        "listDescription": "Import bank and credit card transactions"
+        "title": "Výpis OFX alebo QFX",
+        "listDescription": "Importujte transakcie z banky a kreditnej karty"
       },
       "ynab": {
-        "title": "Import from YNAB",
-        "listDescription": "Accounts, transactions, categories, and payees"
+        "title": "Import z YNAB",
+        "listDescription": "Účty, transakcie, kategórie a protistrany"
       },
       "budget-bakers-wallet": {
         "title": "Wallet (BudgetBakers)",
-        "listDescription": "Multi-currency with automatic transfer pairing"
+        "listDescription": "Viacero mien s automatickým párovaním prevodov"
       },
       "ms-money": {
         "title": "Microsoft Money",
-        "listDescription": "Import a .mny file from Microsoft Money"
+        "listDescription": "Importujte súbor .mny z Microsoft Money"
       },
       "importHistory": {
-        "title": "Import History",
-        "listDescription": "View past imports and what they created"
+        "title": "História importov",
+        "listDescription": "Prezrite si minulé importy a to, čo vytvorili"
       },
       "import": {
-        "back": "Back to Import",
-        "whichImporterHint": "Not sure which one to use?",
+        "back": "Späť na Import",
+        "whichImporterHint": "Neviete, ktorý použiť?",
         "groups": {
-          "filesAndText": "Files & text",
-          "fromOtherApps": "From other apps",
-          "history": "History"
+          "filesAndText": "Súbory a text",
+          "fromOtherApps": "Z iných aplikácií",
+          "history": "História"
         },
         "requestMore": {
-          "title": "Want more options? Request here"
+          "title": "Chcete viac možností? Požiadajte tu"
         }
       },
       "export": {
-        "cardTitle": "Export your data",
-        "backupOrExportHint": "Not sure whether you need Export or Backup?",
+        "cardTitle": "Exportujte svoje údaje",
+        "backupOrExportHint": "Neviete, či potrebujete Export alebo Zálohu?",
         "form": {
-          "title": "Export your data",
-          "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
-          "confirmLabel": "Download",
-          "confirmLoading": "Preparing…",
-          "back": "Back to Export"
+          "title": "Exportujte svoje údaje",
+          "description": "Vyberte formát a časti údajov, ktoré chcete exportovať. Sťahovanie sa spustí hneď po potvrdení.",
+          "confirmLabel": "Stiahnuť",
+          "confirmLoading": "Pripravuje sa…",
+          "back": "Späť na Export"
         },
         "format": {
-          "label": "Format",
+          "label": "Formát",
           "json": "JSON",
           "csv": "CSV",
           "xlsx": "Excel"
         },
         "groups": {
-          "label": "What to include",
+          "label": "Čo zahrnúť",
           "selectAll": "Vybrať všetko",
-          "deselectAll": "Deselect all",
-          "transactions": "Transactions & accounts",
-          "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
-          "budgets": "Budgets",
-          "budgetsDescription": "Custom budgets with linked categories and spending totals",
-          "subscriptions": "Subscriptions & reminders",
-          "subscriptionsDescription": "Recurring subscriptions and bill reminders",
-          "investments": "Investments",
-          "investmentsDescription": "Portfolios, holdings, investment transactions, transfers"
+          "deselectAll": "Zrušiť výber",
+          "transactions": "Transakcie a účty",
+          "transactionsDescription": "Transakcie, účty, história zostatkov, kategórie, štítky, vozidlá",
+          "budgets": "Rozpočty",
+          "budgetsDescription": "Vlastné rozpočty s priradenými kategóriami a súčtami výdavkov",
+          "subscriptions": "Predplatné a pripomienky",
+          "subscriptionsDescription": "Opakované predplatné a pripomienky platieb",
+          "investments": "Investície",
+          "investmentsDescription": "Portfóliá, pozície, investičné transakcie, prevody"
         },
         "notifications": {
-          "success": "Export ready – your download should start in a moment.",
-          "successWithCount": "Export ready – {count} rows exported.",
-          "failed": "Could not export your data. Please try again.",
-          "downloadBlocked": "Export ready, but your browser blocked the download. Check the address bar for a download prompt.",
-          "tooLarge": "Your data is too large for a single export. Please contact support."
+          "success": "Export je pripravený – sťahovanie by sa malo o chvíľu spustiť.",
+          "successWithCount": "Export je pripravený – exportovaných riadkov: {count}.",
+          "failed": "Vaše údaje sa nepodarilo exportovať. Skúste to znova, prosím.",
+          "downloadBlocked": "Export je pripravený, prehliadač však stiahnutie zablokoval. Pozrite sa do riadka s adresou, či sa tam nezobrazila výzva na stiahnutie.",
+          "tooLarge": "Vaše údaje sú na jeden export príliš veľké. Kontaktujte podporu, prosím."
         },
         "dateRange": {
-          "label": "Date range (optional)",
-          "helper": "Only event tables (transactions, balance history, investment activity) get filtered. Accounts, categories, and other reference tables stay complete.",
-          "placeholder": "All time",
-          "clear": "Clear date range"
+          "label": "Rozsah dátumov (voliteľné)",
+          "helper": "Filtrujú sa len tabuľky udalostí (transakcie, história zostatkov, investičná aktivita). Účty, kategórie a ostatné referenčné tabuľky zostanú kompletné.",
+          "placeholder": "Celé obdobie",
+          "clear": "Vymazať rozsah dátumov"
         },
         "accounts": {
           "label": "Účty",
-          "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
+          "helper": "Exportuje len vybrané účty s ich transakciami a históriou zostatkov. Ak chcete exportovať všetky účty, nechajte prázdne.",
           "placeholder": "Všetky účty"
         },
-        "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
+        "listDescription": "Stiahnite si zip pre tabuľky, dane alebo presun údajov"
       }
     }
   }

@@ -82,7 +82,7 @@
           "steps": {
             "upload": "Upload",
             "resolve": "Resolve",
-            "review": "Überprüfung",
+            "review": "Überprüfen",
             "results": "Done"
           }
         },

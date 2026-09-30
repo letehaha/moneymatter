@@ -197,6 +197,7 @@
       },
       "outOfWallet": "Di luar dompet",
       "hint": "Klik baris untuk melihat detail. Pilih baris untuk mengedit massal.",
+      "plannedRows": "{count} planned transactions",
       "emptyTitle": "Tidak ada transaksi yang cocok dengan filter ini",
       "emptyDescription": "Coba sesuaikan atau atur ulang filter.",
       "columnConfig": {
