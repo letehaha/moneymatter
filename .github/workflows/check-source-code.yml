@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: prepare-env
         uses: ./.github/actions/prepare-local-env
       - name: Install dependencies
@@ -37,7 +37,7 @@ jobs:
       backend-only: ${{ steps.detect.outputs.backend_only }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0 # Fetch all history for file changes
       - id: detect
@@ -54,7 +54,7 @@ jobs:
       - name: Skip – no frontend changes
         if: needs.detect-changes.outputs.backend-only == 'true'
         run: echo "No frontend changes detected. Skipping."
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: needs.detect-changes.outputs.backend-only != 'true'
       - uses: ./.github/actions/prepare-local-env
         if: needs.detect-changes.outputs.backend-only != 'true'
@@ -76,7 +76,7 @@ jobs:
           large-packages: true
           docker-images: true
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: frontend-docker-build
         uses: ./.github/actions/frontend-docker-build
       - name: Image digest
@@ -95,7 +95,7 @@ jobs:
       - name: Skip – no backend changes
         if: needs.detect-changes.outputs.frontend-only == 'true'
         run: echo "No backend changes detected. Skipping."
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: needs.detect-changes.outputs.frontend-only != 'true'
       - uses: ./.github/actions/prepare-local-env
         if: needs.detect-changes.outputs.frontend-only != 'true'
@@ -171,7 +171,7 @@ jobs:
       - name: Skip – no backend changes
         if: needs.detect-changes.outputs.frontend-only == 'true'
         run: echo "No backend changes detected. Skipping."
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         if: needs.detect-changes.outputs.frontend-only != 'true'
       - uses: ./.github/actions/prepare-local-env
         if: needs.detect-changes.outputs.frontend-only != 'true'
@@ -290,7 +290,7 @@ jobs:
           large-packages: true
           docker-images: true
       - name: Checkout repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: backend-docker-build
         uses: ./.github/actions/backend-docker-build
       - name: Image digest
