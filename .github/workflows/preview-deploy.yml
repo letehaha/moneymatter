@@ -110,7 +110,7 @@ jobs:
           script: mkdir -p "$VPS_PREVIEW_BASE_PATH/pr-$PR_NUMBER"
 
       - name: Copy compose file to VPS
-        uses: appleboy/scp-action@917f8b81dfc1ccd331fef9e2d61bdc6c8be94634 # v0.1.7
+        uses: appleboy/scp-action@ff85246acaad7bdce478db94a363cd2bf7c90345 # v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
