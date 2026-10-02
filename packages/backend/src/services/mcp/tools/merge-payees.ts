@@ -15,12 +15,12 @@ export function registerMergePayees(server: McpServer) {
     'merge_payees',
     {
       description:
-        'Merge a source Payee into a target Payee. Transactions and aliases move to the target; the target wins silently on defaultCategoryId conflict; the source is deleted. Use to dedupe near-duplicates like "Amazon" and "AMZN MKT".',
+        'Merge a source Payee into a target Payee. Transactions and aliases move to the target; the target wins silently on defaultCategoryId conflict; the source is deleted. Use to dedupe near-duplicates like "Amazon" and "AMZN MKT". Requires finance:delete scope.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:write' });
+      requireScope({ extra, scope: 'finance:delete' });
       trackMcpToolUsed({ userId, tool: 'merge_payees', clientId: extra.authInfo?.clientId });
 
       const target = await mergePayees({

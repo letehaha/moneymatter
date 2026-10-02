@@ -54,21 +54,17 @@ function handleMcpError({ error, res, label }: { error: unknown; res: Response; 
 
 /**
  * Authenticate MCP requests via OAuth bearer token.
- * Returns 401 if the token is missing, invalid, or expired.
+ * Returns 401 if the token is missing, invalid, or expired, and 403 if it lacks `finance:read`.
  */
 async function authenticateMcpRequest({ req, res }: { req: Request; res: Response }): Promise<boolean> {
+  const resourceMetadataUrl = `${MCP_BASE_URL}/.well-known/oauth-protected-resource`;
+
+  let authInfo: McpAuthInfo;
   try {
-    const authInfo = await verifyMcpToken({
+    authInfo = await verifyMcpToken({
       authorizationHeader: req.headers.authorization,
     });
-
-    req.mcpAuthInfo = authInfo;
-    // Set req.auth so the MCP SDK passes authInfo to tool handlers via extra.authInfo
-    req.auth = authInfo;
-    return true;
   } catch {
-    const resourceMetadataUrl = `${MCP_BASE_URL}/.well-known/oauth-protected-resource`;
-
     res
       .status(401)
       .set('WWW-Authenticate', `Bearer resource_metadata="${resourceMetadataUrl}"`)
@@ -79,6 +75,35 @@ async function authenticateMcpRequest({ req, res }: { req: Request; res: Respons
       });
     return false;
   }
+
+  // Read tools do not check scopes themselves, so this is the only gate keeping a
+  // token without `finance:read` away from them.
+  if (!authInfo.scopes.includes('finance:read')) {
+    logger.info('MCP request rejected: token lacks finance:read', {
+      clientId: authInfo.clientId,
+      scopes: authInfo.scopes,
+    });
+    // The challenge repeats the granted scopes: a client that re-authorizes with
+    // exactly the challenged list would otherwise lose them.
+    const challengeScope = ['finance:read', ...authInfo.scopes].join(' ');
+    res
+      .status(403)
+      .set(
+        'WWW-Authenticate',
+        `Bearer error="insufficient_scope", scope="${challengeScope}", resource_metadata="${resourceMetadataUrl}"`,
+      )
+      .json({
+        jsonrpc: '2.0',
+        error: { code: -32001, message: 'Missing required scope: finance:read. Re-connect the app and grant it.' },
+        id: null,
+      });
+    return false;
+  }
+
+  req.mcpAuthInfo = authInfo;
+  // Set req.auth so the MCP SDK passes authInfo to tool handlers via extra.authInfo
+  req.auth = authInfo;
+  return true;
 }
 
 /**

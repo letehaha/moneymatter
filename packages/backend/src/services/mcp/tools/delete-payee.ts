@@ -14,12 +14,12 @@ export function registerDeletePayee(server: McpServer) {
     'delete_payee',
     {
       description:
-        'Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Use cautiously — this is irreversible.',
+        'Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Use cautiously — this is irreversible. Requires finance:delete scope.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:write' });
+      requireScope({ extra, scope: 'finance:delete' });
       trackMcpToolUsed({ userId, tool: 'delete_payee', clientId: extra.authInfo?.clientId });
       await deletePayee({ userId, id: args.id });
       return jsonContent({ data: { ok: true } });

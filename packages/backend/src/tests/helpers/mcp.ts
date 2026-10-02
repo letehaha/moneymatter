@@ -1,7 +1,10 @@
 import { authPool } from '@config/auth';
+import { app } from '@root/app';
 import { ConnectedApp } from '@services/mcp/connected-apps';
 import * as helpers from '@tests/helpers';
 import { CustomResponse } from '@tests/helpers';
+import { createHash, randomUUID } from 'node:crypto';
+import request from 'supertest';
 
 export async function getOAuthClientInfo({
   clientId,
@@ -147,6 +150,34 @@ export async function createTestOAuthAccessToken({
      ON CONFLICT DO NOTHING`,
     [id, token, clientId, userId, scopes],
   );
+}
+
+/**
+ * Issue a bearer token the `/mcp` route accepts: the auth DB stores the SHA-256
+ * (base64url) hash, the caller sends the raw value.
+ */
+export async function createTestMcpBearerToken({ scopes }: { scopes: string[] }): Promise<string> {
+  const token = randomUUID();
+  await createTestOAuthAccessToken({
+    id: `test-access-token-${token}`,
+    token: createHash('sha256').update(token).digest('base64url'),
+    scopes: JSON.stringify(scopes),
+  });
+  return token;
+}
+
+export function requestMcp({
+  method = 'post',
+  token,
+  body,
+}: {
+  method?: 'post' | 'get' | 'delete';
+  token?: string;
+  body?: object;
+}) {
+  const req = request(app)[method]('/mcp');
+  if (token) req.set('Authorization', `Bearer ${token}`);
+  return req.send(body);
 }
 
 /**

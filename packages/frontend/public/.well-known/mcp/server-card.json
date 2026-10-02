@@ -360,11 +360,11 @@
     },
     {
       "name": "merge_payees",
-      "description": "Merge a source Payee into a target Payee. Transactions and aliases move to the target; the target wins silently on defaultCategoryId conflict; the source is deleted. Requires finance:write scope."
+      "description": "Merge a source Payee into a target Payee. Transactions and aliases move to the target; the target wins silently on defaultCategoryId conflict; the source is deleted. Requires finance:delete scope."
     },
     {
       "name": "delete_payee",
-      "description": "Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:write scope."
+      "description": "Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
     },
     {
       "name": "get_transaction_automations",
