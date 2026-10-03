@@ -4,6 +4,7 @@ import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
@@ -77,6 +78,60 @@ const getManualBudgetStats = async ({
     planned: { visibleTo: callerUserId },
     access: 'pre-scoped',
     balanceAdjustments: 'include',
+    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked'],
+  });
+
+  const limitAmount = budgetDetails.limitAmount?.toCents() ?? null;
+  const result = aggregateTransactionStats({ transactions, limitAmount });
+  await applyRefundAdjustments({ countedTransactions: transactions, result, limitAmount });
+  return result;
+};
+
+/**
+ * Calculate stats for tag-based budgets. Tags apply only at the whole-transaction
+ * level (no split-tag association exists), so — unlike category budgets — this
+ * needs no split-aware handling. `findWithFilters`'s `tagIds` filter already
+ * OR-matches across the linked tags, so a transaction carrying multiple linked
+ * tags is still counted once.
+ */
+const getTagBudgetStats = async ({
+  userId,
+  budgetId,
+  isOwner,
+}: {
+  userId: number;
+  budgetId: string;
+  isOwner: boolean;
+}): Promise<StatsResponse> => {
+  const budgetDetails = await findOrThrowNotFound({
+    query: Budgets.findByPk(budgetId, {
+      include: [{ model: Tags, as: 'tags', attributes: ['id'] }],
+    }),
+    message: t({ key: 'budgets.budgetNotFound' }),
+  });
+
+  const tagIds = budgetDetails.tags?.map((tag) => tag.id) || [];
+
+  if (!tagIds.length) {
+    return getResponseInitialState();
+  }
+
+  const transactions: Pick<
+    Transactions.default,
+    'id' | 'time' | 'amount' | 'refAmount' | 'transactionType' | 'refundLinked'
+  >[] = await Transactions.findWithFilters({
+    excludeTransfer: true,
+    tagIds,
+    completeness: 'all',
+    // Planned rows are owner-only: they count as spent for the owner, but a share
+    // recipient must never see them — same rule as category budgets' `isOwner` handling.
+    planned: isOwner ? 'include' : 'exclude',
+    // A tag can be on any of the owner's transactions, so scope explicitly by
+    // owner rather than trusting a pre-scoped junction (unlike manual budgets).
+    access: { creator: userId },
+    balanceAdjustments: 'include',
+    startDate: budgetDetails.startDate ? budgetDetails.startDate.toISOString() : undefined,
+    endDate: budgetDetails.endDate ? budgetDetails.endDate.toISOString() : undefined,
     attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked'],
   });
 
@@ -320,6 +375,10 @@ export const getBudgetStats = withTransaction(
 
     if (budgetDetails.type === BUDGET_TYPES.category) {
       return getCategoryBudgetStats({ userId: ownerUserId, budgetId, isOwner });
+    }
+
+    if (budgetDetails.type === BUDGET_TYPES.tag) {
+      return getTagBudgetStats({ userId: ownerUserId, budgetId, isOwner });
     }
 
     return getManualBudgetStats({ budgetId, callerUserId: userId });

@@ -68,6 +68,7 @@ export const BACKUP_FILE_NAMES = [
   'transaction-group-items',
   'budget-transactions',
   'budget-categories',
+  'budget-tags',
   'refund-transactions',
   'subscription-transactions',
   'subscription-tags',

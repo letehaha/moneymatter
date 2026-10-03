@@ -131,6 +131,7 @@ export interface BudgetRow {
   limitAmount: number | null;
   currency: string;
   categories: string[];
+  tags: string[];
   spentAmount: number;
 }
 

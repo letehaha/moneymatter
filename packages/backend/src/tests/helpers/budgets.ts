@@ -14,6 +14,7 @@ interface TestCreateBudgetPayload {
   status?: string;
   type?: BUDGET_TYPES;
   categoryIds?: string[];
+  tagIds?: string[];
   startDate?: string | Date | null;
   endDate?: string | Date | null;
   autoInclude?: boolean;
@@ -23,6 +24,7 @@ interface TestCreateBudgetPayload {
 interface EditBudgetPayload {
   name?: string;
   categoryIds?: string[];
+  tagIds?: string[];
   startDate?: string;
   endDate?: string;
   limitAmount?: number;

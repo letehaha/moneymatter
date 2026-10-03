@@ -117,7 +117,7 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
   // Domain-top tables. DB-level FK CASCADE handles most children:
   //   Accounts → Balances, Transactions, BankDataProviderConnections,
   //              TransactionTags, TransactionSplits, RefundTransactions
-  //   Budget → BudgetCategories, BudgetTransactions
+  //   Budget → BudgetCategories, BudgetTags, BudgetTransactions
   //   Subscriptions → SubscriptionPeriods → SubscriptionPeriodNotifications,
   //                   SubscriptionTransactions
   //   Portfolios → Holdings, PortfolioBalances, PortfolioTransfers, InvestmentTransaction

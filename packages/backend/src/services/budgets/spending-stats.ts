@@ -5,6 +5,7 @@ import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
@@ -705,6 +706,84 @@ const getCategoryBudgetSpendingStats = async ({
   });
 };
 
+/**
+ * Tag budget: fetch transactions by linked tag IDs (OR-matched, same as `stats.ts`'s
+ * `getTagBudgetStats`) and roll up to root category — mirroring the manual budget's
+ * root-category rollup rather than the category budget's target-category walk, since
+ * a tag has no fixed category set of its own; every category its transactions land in
+ * is relevant. Owner-scoped only (no cross-user merge map): like category budgets,
+ * tag budgets don't accept recipient-attached transactions, so only the owner's own
+ * category tree is ever in play.
+ */
+const getTagBudgetSpendingStats = async ({
+  userId,
+  budgetId,
+  isOwner,
+}: {
+  userId: number;
+  budgetId: string;
+  isOwner: boolean;
+}): Promise<SpendingStatsResponse> => {
+  const budgetDetails = await findOrThrowNotFound({
+    query: Budgets.findOne({
+      where: { id: budgetId, userId },
+      include: [{ model: Tags, as: 'tags', attributes: ['id'] }],
+    }),
+    message: t({ key: 'budgets.budgetNotFound' }),
+  });
+
+  const tagIds = budgetDetails.tags?.map((tag) => tag.id) || [];
+
+  if (!tagIds.length) return getEmptyResponse();
+
+  // Planned rows are owner-only: they count as spent for the owner, but a share
+  // recipient must never see them.
+  const planned: PlannedPolicy = isOwner ? 'include' : 'exclude';
+
+  const transactions = await Transactions.findWithFilters({
+    excludeTransfer: true,
+    tagIds,
+    completeness: 'all',
+    planned,
+    access: { creator: userId },
+    balanceAdjustments: 'include',
+    startDate: budgetDetails.startDate ? budgetDetails.startDate.toISOString() : undefined,
+    endDate: budgetDetails.endDate ? budgetDetails.endDate.toISOString() : undefined,
+    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked'],
+  });
+
+  if (transactions.length === 0) return getEmptyResponse();
+
+  const allCategoriesRaw = (await Categories.findAll({
+    where: { userId },
+    attributes: ['id', 'name', 'color', 'parentId'],
+    raw: true,
+  })) as unknown as { id: RecordId; name: string; color: string; parentId: RecordId | null }[];
+  const categoryMap = buildCategoryMap({ categories: allCategoriesRaw });
+
+  const txDataList: NormalizedTxData[] = transactions.map((tx) => ({
+    time: tx.time,
+    amount: tx.refAmount.toCents(),
+    isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
+    categoryId: tx.categoryId ? getRootCategoryId({ categoryId: tx.categoryId, categoryMap }) : null,
+    originalCategoryId: tx.categoryId,
+  }));
+
+  const countedTransactions = transactions.map((tx) => ({ id: tx.id, refundLinked: tx.refundLinked }));
+  const refundPairs = await fetchBudgetRefundPairs({ countedTransactions });
+  const refundAdjustments = buildRefundAdjustments({
+    pairs: refundPairs,
+    resolveCategoryBucket: (categoryId) => getRootCategoryId({ categoryId, categoryMap }),
+  });
+
+  return aggregateTransactionData({
+    txDataList: [...txDataList, ...refundAdjustments],
+    budgetStartDate: budgetDetails.startDate,
+    budgetEndDate: budgetDetails.endDate,
+    categoryMap,
+  });
+};
+
 export const getBudgetSpendingStats = async ({
   userId,
   budgetId,
@@ -724,6 +803,10 @@ export const getBudgetSpendingStats = async ({
 
   if (budgetDetails.type === BUDGET_TYPES.category) {
     return getCategoryBudgetSpendingStats({ userId: ownerUserId, budgetId, isOwner });
+  }
+
+  if (budgetDetails.type === BUDGET_TYPES.tag) {
+    return getTagBudgetSpendingStats({ userId: ownerUserId, budgetId, isOwner });
   }
 
   return getManualBudgetSpendingStats({ userId: ownerUserId, budgetId, callerUserId: userId });

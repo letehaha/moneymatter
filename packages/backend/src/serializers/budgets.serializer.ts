@@ -21,6 +21,13 @@ interface BudgetCategoryResponse {
   parentId: string | null;
 }
 
+interface BudgetTagResponse {
+  id: string;
+  name: string;
+  color: string;
+  icon: string | null;
+}
+
 interface BudgetApiResponse {
   id: string;
   userId: number;
@@ -32,6 +39,7 @@ interface BudgetApiResponse {
   autoInclude: boolean;
   limitAmount: number | null;
   categories: BudgetCategoryResponse[];
+  tags: BudgetTagResponse[];
   /** Present on user-facing list/detail responses when share context is attached. */
   share?: ResourceShareInfo;
 }
@@ -51,6 +59,13 @@ export function serializeBudget(budget: Budgets & { _shareContext?: BudgetShareC
     parentId: c.parentId,
   }));
 
+  const tags: BudgetTagResponse[] = (budget.tags || []).map((tag) => ({
+    id: tag.id,
+    name: tag.name,
+    color: tag.color,
+    icon: tag.icon,
+  }));
+
   const response: BudgetApiResponse = {
     id: budget.id,
     userId: budget.userId,
@@ -62,6 +77,7 @@ export function serializeBudget(budget: Budgets & { _shareContext?: BudgetShareC
     autoInclude: budget.autoInclude,
     limitAmount: centsToApiDecimalOrNull(budget.limitAmount),
     categories,
+    tags,
   };
 
   if (budget._shareContext) {

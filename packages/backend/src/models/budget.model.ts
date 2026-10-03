@@ -8,7 +8,9 @@ import Users from '@models/users.model';
 import { Table, Column, Model, ForeignKey, DataType, BelongsToMany } from 'sequelize-typescript';
 
 import BudgetCategories from './budget-categories.model';
+import BudgetTags from './budget-tags.model';
 import BudgetTransactions from './budget-transactions.model';
+import Tags from './tags.model';
 
 @Table({
   timestamps: false,
@@ -59,4 +61,11 @@ export default class Budgets extends Model {
     otherKey: 'categoryId',
   })
   categories!: Categories[];
+
+  @BelongsToMany(() => Tags, {
+    through: { model: () => BudgetTags, unique: false },
+    foreignKey: 'budgetId',
+    otherKey: 'tagId',
+  })
+  tags!: Tags[];
 }
