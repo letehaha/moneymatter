@@ -862,72 +862,55 @@ describe('CSV import balance recalculation', () => {
   });
 
   describe('non-system (bank-connected) linked account', () => {
-    it('recalc ON: mixed import moves currentBalance by the new subset while the provider-owned initialBalance stays put', async () => {
-      // A non-system (bank-connected) account owns its opening balance: import
-      // reconciliation must move only currentBalance/refCurrentBalance and leave
-      // initialBalance alone — the opposite of a system account, where the
-      // absorbed backfill shifts initialBalance. `absorbBalanceAdjustment` keys
-      // this off the account's real type (read from the DB), so even though the
-      // imported rows are written with `accountType: system` (moving
-      // currentBalance via the balance hook), the opening balance is preserved.
-      // The account is created straight through POST /accounts, which permits a
-      // non-system `type` outside production; base currency keeps the numbers
-      // exact. The unit-level branch coverage lives in
-      // `absorb-balance-adjustment.unit.ts`.
+    it('rejects the import and writes no row', async () => {
+      // POST /accounts permits a non-system `type` outside production.
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({
+          name: 'Monobank Black',
           type: ACCOUNT_TYPES.monobank,
           currencyCode: global.BASE_CURRENCY_CODE,
           initialBalance: 1000,
         }),
         raw: true,
       });
-      // Seed a boundary row (day 2024-01-16) so the Jan 15 import row is backfill
-      // and the Jan 16 / Jan 17 rows are new. Seeded via an import: a manual write
-      // on a bank-connected account is rejected unless planned, and planned rows
-      // don't set the boundary.
-      const seedProgress = await runImport({
-        fileContent: buildCsv([
-          {
-            date: '2024-01-16',
-            amount: '5.00',
-            description: 'Boundary seed',
-            account: 'Bank Acc',
-            currency: account.currencyCode,
-            type: 'expense',
-          },
-        ]),
-        accountMapping: { 'Bank Acc': { action: 'link-existing', accountId: account.id } },
-        recalculateBalance: true,
-      });
-      expectCsvImportCompleted(seedProgress);
-      expect(seedProgress.summary.imported).toBe(1);
-      const before = await helpers.getAccount({ id: account.id, raw: true });
-      const balanceBefore = Number(before.currentBalance);
-      const initialBalanceBefore = Number(before.initialBalance);
 
       const progress = await runImport({
         fileContent: buildCsv(threeRows({ account: 'Bank Acc', currency: account.currencyCode })),
         accountMapping: { 'Bank Acc': { action: 'link-existing', accountId: account.id } },
         recalculateBalance: true,
       });
-      expectCsvImportCompleted(progress);
-      expect(progress.summary.imported).toBe(3);
-      expect(progress.summary.errors).toHaveLength(0);
+      expect(progress.status).toBe('failed');
+      if (progress.status === 'failed') {
+        expect(progress.error).toContain(account.name);
+      }
 
       const after = await helpers.getAccount({ id: account.id, raw: true });
-      // New subset only: −50.00 + 2500.00 = +2450.00 (the −100.50 backfill is dropped).
-      expect(Number(after.currentBalance)).toBe(balanceBefore + 2450);
-      // The provider-owned opening balance is untouched — the absorbed backfill
-      // does NOT move initialBalance for a non-system account.
-      expect(Number(after.initialBalance)).toBe(initialBalanceBefore);
+      expect(Number(after.currentBalance)).toBe(Number(account.currentBalance));
+      expect(Number(after.initialBalance)).toBe(Number(account.initialBalance));
+      expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+    });
 
-      expect(progress.summary.accountBalanceChanges?.[0]).toMatchObject({
-        delta: 2450,
-        movedCount: 2,
-        historicalCount: 1,
-        isNewAccount: false,
+    it('creates no account when another source account of the same import links to a bank-connected one', async () => {
+      const bankAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ type: ACCOUNT_TYPES.monobank }),
+        raw: true,
       });
+      const currency = bankAccount.currencyCode;
+
+      const progress = await runImport({
+        fileContent: buildCsv([
+          ...threeRows({ account: 'Fresh Acc', currency }),
+          ...threeRows({ account: 'Bank Acc', currency }),
+        ]),
+        accountMapping: {
+          'Fresh Acc': { action: 'create-new', currentBalance: null },
+          'Bank Acc': { action: 'link-existing', accountId: bankAccount.id },
+        },
+      });
+      expect(progress.status).toBe('failed');
+
+      const accounts = await helpers.getAccounts();
+      expect(accounts.find((a) => a.name === 'Fresh Acc')).toBeUndefined();
     });
   });
 });

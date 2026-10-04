@@ -20,6 +20,7 @@ import { logger } from '@js/utils/logger';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
 import { createAccountsIfNeeded } from '@services/import-export/core/resolve/create-accounts-if-needed';
@@ -68,6 +69,7 @@ interface ExecuteImportParams {
    * Optional — safe to omit in tests or one-shot callers.
    */
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
+  openImportBatch: OpenImportBatch;
 }
 
 function pickReferenced<T>({ mapping, referenced }: { mapping: Record<string, T>; referenced: Set<string> }) {
@@ -83,7 +85,7 @@ function pickReferenced<T>({ mapping, referenced }: { mapping: Record<string, T>
  * account, category, and tag creation each wrap themselves in `withTransaction`
  * further down the call stack, so they commit independently of the row loop too.
  */
-export async function executeImport({
+async function executeImportImpl({
   userId,
   validRows,
   accountMapping,
@@ -95,9 +97,14 @@ export async function executeImport({
   defaultCategoryId,
   recalculateBalance = false,
   onProgress,
+  openImportBatch,
 }: ExecuteImportParams): Promise<CsvImportSummary> {
   const batchId = uuidv4();
-  const importedAt = new Date();
+  const importDetails: TransactionImportDetails = {
+    batchId,
+    importedAt: new Date().toISOString(),
+    source: ImportSource.csv,
+  };
 
   // Merge duplicate and unpriceable skip indices into one set so both are
   // filtered with a single pass. Both sets use the same rowIndex space as
@@ -213,6 +220,11 @@ export async function executeImport({
     accountNameToId,
     accountMapping: importableMapping,
   });
+  const importBatchId = await openImportBatch({
+    userId,
+    importDetails,
+    createdAccountIds: createdAccounts.map((account) => account.accountId),
+  });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
   const plannedMatchAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
@@ -296,12 +308,6 @@ export async function executeImport({
       // instead of re-extracting from `rawMerchantName`. `payeeLocked` stays at
       // its default — an import-assigned Payee stays user-overridable.
       const payeeId = row.payeeName ? payeeNameToId.get(row.payeeName) : undefined;
-
-      const importDetails: TransactionImportDetails = {
-        batchId,
-        importedAt: importedAt.toISOString(),
-        source: ImportSource.csv,
-      };
 
       // Resolve the imported tags for this row: source names mapped to ids,
       // deduped (distinct names can resolve to the same id; a name can repeat
@@ -435,6 +441,7 @@ export async function executeImport({
   // write surfaces as an `account-balance-desync` error instead of failing the
   // import — the rows are already committed.
   const { accountBalanceChanges, errors: balanceErrors } = await reconciler.finalize({
+    importBatchId,
     recalculateBalance,
     createdAccounts,
     logLabel: 'CSV import',
@@ -466,3 +473,5 @@ export async function executeImport({
     accountBalanceChanges,
   };
 }
+
+export const executeImport = withImportBatchRecord(executeImportImpl);

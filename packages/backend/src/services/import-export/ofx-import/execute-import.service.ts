@@ -16,6 +16,7 @@ import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import * as Transactions from '@models/transactions.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
 import { createAccountsIfNeeded } from '@services/import-export/core/resolve/create-accounts-if-needed';
@@ -61,13 +62,14 @@ function resolvePaymentType({ transactionType }: { transactionType: string }): P
   }
 }
 
-export async function executeOfxImport({
+async function executeOfxImportImpl({
   userId,
   uploadId,
   accountMapping,
   skipDuplicateIndices,
   recalculateBalance = false,
   onProgress,
+  openImportBatch,
 }: {
   userId: number;
   uploadId: string;
@@ -75,6 +77,7 @@ export async function executeOfxImport({
   skipDuplicateIndices: number[];
   recalculateBalance?: boolean;
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
+  openImportBatch: OpenImportBatch;
 }): Promise<OfxImportSummary> {
   const parsed = await readOfxUpload({ userId, uploadId });
   const missing = parsed.accounts.filter((account) => !accountMapping[account.sourceAccountKey]);
@@ -155,6 +158,11 @@ export async function executeOfxImport({
   const { capturedAccountIds, createdAccounts } = partitionReconcileAccounts({
     accountNameToId: accountIdByKey,
     accountMapping: mappingWithoutSkipped,
+  });
+  const importBatchId = await openImportBatch({
+    userId,
+    importDetails,
+    createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
   const plannedAccountIds = await selectAccountsWithPlannedRows({ accountIds: capturedAccountIds });
@@ -261,6 +269,7 @@ export async function executeOfxImport({
   }
 
   const { accountBalanceChanges, errors } = await reconciler.finalize({
+    importBatchId,
     recalculateBalance,
     createdAccounts,
     logLabel: 'OFX import',
@@ -275,3 +284,5 @@ export async function executeOfxImport({
   }
   return summary;
 }
+
+export const executeOfxImport = withImportBatchRecord(executeOfxImportImpl);

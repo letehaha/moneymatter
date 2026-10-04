@@ -256,6 +256,12 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     expect(account).toBeDefined();
     // initialBalance starts at 0; one -1200 expense makes currentBalance -1200.
     expect(Number(account.currentBalance)).toBe(-1200);
+
+    const { items } = await helpers.getBatchesHistory({ raw: true });
+    expect(items).toEqual([expect.objectContaining({ createdAccountCount: 1 })]);
+
+    await helpers.deleteImportBatch({ batchId: items[0]!.batchId, raw: true });
+    expect((await helpers.getAccounts()).some((a) => a.id === account.id)).toBe(false);
   });
 
   /**

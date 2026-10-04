@@ -16,6 +16,7 @@ import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
 import { createAccountsIfNeeded } from '@services/import-export/core/resolve/create-accounts-if-needed';
@@ -63,6 +64,7 @@ interface ExecuteMsMoneyImportParams {
    *  BullMQ worker can fan progress out over SSE. Optional — safe to omit in
    *  tests or one-shot callers. */
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
+  openImportBatch: OpenImportBatch;
 }
 
 /**
@@ -83,7 +85,7 @@ interface ExecuteMsMoneyImportParams {
  * on/after the boundary (recalc ON, backfill absorbed into `initialBalance`).
  * Skipped duplicates are never written, so they fall out of both paths for free.
  */
-export async function executeMsMoneyImport({
+async function executeMsMoneyImportImpl({
   userId,
   uploadId,
   accountMapping,
@@ -92,6 +94,7 @@ export async function executeMsMoneyImport({
   includeVoidedTransactions = false,
   recalculateBalance = false,
   onProgress,
+  openImportBatch,
 }: ExecuteMsMoneyImportParams): Promise<MsMoneyImportSummary> {
   const parsed = await readMsMoneyUpload({ userId, uploadId });
 
@@ -243,6 +246,11 @@ export async function executeMsMoneyImport({
   const { capturedAccountIds, createdAccounts } = partitionReconcileAccounts({
     accountNameToId: accountIdByName,
     accountMapping: importableMapping,
+  });
+  const importBatchId = await openImportBatch({
+    userId,
+    importDetails,
+    createdAccountIds: createdAccounts.map((account) => account.accountId),
   });
   const reconciler = await startBalanceReconciliation({ userId, accountIds: capturedAccountIds });
 
@@ -543,6 +551,7 @@ export async function executeMsMoneyImport({
   // `account-balance-desync`: the rows are committed, so the user must see and
   // fix the balance manually.
   const { accountBalanceChanges, errors: balanceErrors } = await reconciler.finalize({
+    importBatchId,
     recalculateBalance,
     createdAccounts,
     logLabel: 'MS Money import',
@@ -561,3 +570,5 @@ export async function executeMsMoneyImport({
 
   return summary;
 }
+
+export const executeMsMoneyImport = withImportBatchRecord(executeMsMoneyImportImpl);

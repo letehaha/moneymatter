@@ -86,6 +86,29 @@ describe('Execute YNAB import endpoint', () => {
     expect(linkedPair).toHaveLength(2);
   });
 
+  it('undoing the import removes every batch transaction and every account it created', async () => {
+    const { summary, accountNames } = await helpers.runYnabImport();
+    expect(summary.accountsCreated).toBe(3);
+    expect(summary.errors).toHaveLength(0);
+
+    const createdIds = (await helpers.getAccounts()).filter((a) => accountNames.includes(a.name)).map((a) => a.id);
+    expect(createdIds).toHaveLength(3);
+
+    const { items } = await helpers.getBatchesHistory({ raw: true });
+    expect(items).toHaveLength(1);
+    const batch = items[0]!;
+    // Both legs of a transfer carry the batch stamp.
+    const stampedRows = summary.transactionsImported + summary.transfersImported * 2;
+    expect(batch.transactionCount).toBe(stampedRows);
+
+    const result = await helpers.deleteImportBatch({ batchId: batch.batchId, raw: true });
+    expect(result.deletedCount).toBe(stampedRows);
+    expect(await helpers.getTransactions({ batchId: batch.batchId, raw: true })).toHaveLength(0);
+
+    const accountIdsAfterUndo = (await helpers.getAccounts()).map((a) => a.id);
+    expect(accountIdsAfterUndo.filter((id) => createdIds.includes(id))).toEqual([]);
+  });
+
   describe('POST /import/ynab/parse', () => {
     it('surfaces parser validation errors as HTTP 422', async () => {
       const response = await helpers.parseYnab({ payload: { fileContent: '   ' } });

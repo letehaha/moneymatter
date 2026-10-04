@@ -425,11 +425,12 @@ describeWithFixture('Microsoft Money import execution', () => {
      * Recalc OFF is the default contract for a linked account: its balance is
      * what the user last reconciled, so back-filled history must not move it.
      */
-    it('recalc false preserves the linked account balance', async () => {
+    it('recalc false preserves the linked account balance, and undo restores the account in both currencies', async () => {
       const { account, balanceBefore } = await createAudAccount({
         name: 'Recalc off AUD',
         boundaryTime: '2003-01-01T12:00:00Z',
       });
+      const before = await helpers.getAccount({ id: account.id, raw: true });
       const upload = await helpers.uploadMsMoneyFixture({ file: FIXTURE, password: FIXTURE_PASSWORD });
 
       const progress = await runImport({
@@ -455,6 +456,24 @@ describeWithFixture('Microsoft Money import execution', () => {
         movedCount: 1,
         historicalCount: 0,
         isNewAccount: false,
+      });
+
+      expect(after.initialBalance).not.toBe(before.initialBalance);
+
+      const { items } = await helpers.getBatchesHistory({ raw: true });
+      expect(items).toHaveLength(1);
+      const { batchId } = items[0]!;
+
+      const result = await helpers.deleteImportBatch({ batchId, raw: true });
+      expect(result.deletedCount).toBe(1);
+      expect(await helpers.getTransactions({ batchId, raw: true })).toHaveLength(0);
+
+      expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
+        id: account.id,
+        currentBalance: before.currentBalance,
+        initialBalance: before.initialBalance,
+        refCurrentBalance: before.refCurrentBalance,
+        refInitialBalance: before.refInitialBalance,
       });
     });
 
@@ -566,6 +585,12 @@ describeWithFixture('Microsoft Money import execution', () => {
           isNewAccount: true,
         },
       ]);
+
+      const { items } = await helpers.getBatchesHistory({ raw: true });
+      expect(items).toEqual([expect.objectContaining({ createdAccountCount: 1 })]);
+
+      await helpers.deleteImportBatch({ batchId: items[0]!.batchId, raw: true });
+      expect((await helpers.getAccounts()).some((a) => a.id === stocks.id)).toBe(false);
     });
   });
 

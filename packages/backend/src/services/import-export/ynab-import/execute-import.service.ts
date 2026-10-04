@@ -21,6 +21,7 @@ import { createTransaction } from '@services/transactions';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
+import { type OpenImportBatch, withImportBatchRecord } from '../core/import-batch-record';
 import { createAccountsIfNeeded } from '../core/resolve/create-accounts-if-needed';
 import { createTwoLevelCategoriesIfNeeded } from '../core/resolve/create-categories-if-needed';
 import { createNamedTagsIfNeeded } from '../core/resolve/create-tags-if-needed';
@@ -39,6 +40,7 @@ interface ExecuteYnabImportParams {
    *  the BullMQ worker can fan progress out over SSE. Optional — safe to omit
    *  in tests or one-shot callers. */
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
+  openImportBatch: OpenImportBatch;
 }
 
 /**
@@ -48,11 +50,12 @@ interface ExecuteYnabImportParams {
  * category / payee / tag creation, individual transaction insert) still runs
  * inside its own `withTransaction` further down the call stack.
  */
-export async function executeYnabImport({
+async function executeYnabImportImpl({
   userId,
   fileContent,
   accountMapping,
   onProgress,
+  openImportBatch,
 }: ExecuteYnabImportParams): Promise<YnabImportSummary> {
   const parsed = parseYnabRegister({ fileContent });
   const batchId = uuidv4();
@@ -137,6 +140,12 @@ export async function executeYnabImport({
     resolveInitialBalanceCents: (accountName) => startingBalanceCentsByName.get(accountName) ?? 0,
   });
   summary.accountsCreated = accountsCreated;
+
+  await openImportBatch({
+    userId,
+    importDetails,
+    createdAccountIds: Array.from(accountIdByName.values()),
+  });
 
   // Phase 3: categories. YNAB "Bills > Taxes" becomes parent "Bills" + child
   // "Taxes" under it. Existing same-named categories on the user are reused
@@ -318,6 +327,8 @@ export async function executeYnabImport({
 
   return summary;
 }
+
+export const executeYnabImport = withImportBatchRecord(executeYnabImportImpl);
 
 function parseIsoToDate(iso: string): Date {
   const [y, m, d] = iso.split('-').map(Number);

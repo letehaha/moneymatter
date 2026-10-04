@@ -4,6 +4,7 @@ import * as Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import Budget from '@models/budget.model';
 import Categories from '@models/categories.model';
+import ImportBatches from '@models/import-batches.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Notifications from '@models/notifications.model';
@@ -156,6 +157,8 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
   await Vehicles.destroy({ where: { userId: user.id } });
   await AccountGroups.destroy({ where: { userId: user.id } });
   await TransactionGroups.destroy({ where: { userId: user.id } });
+  // No cascade reaches this table: its only owner FK is to Users, which stays.
+  await ImportBatches.destroy({ where: { userId: user.id } });
   await Accounts.default.destroy({ where: { userId: user.id } });
   // Payees go after Accounts so Transactions (cascaded above) are already gone.
   // PayeeAliases/PayeeTags CASCADE off payeeId, so destroying Payees clears

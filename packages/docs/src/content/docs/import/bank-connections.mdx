@@ -211,17 +211,14 @@ You also can't:
 
 - **Delete** these transactions. The **Delete** button doesn't appear. To get rid of a duplicate or a wrong one, use [Reconciliation](/transactions/reconciliation/), where you can merge or remove it and undo that later.
 - **Add** transactions to a bank-connected account by hand. They arrive from your bank.
-
-<Aside type="caution" title="Don't import files into a connected account">
-The CSV, OFX, Wallet and Microsoft Money importers still let you pick a bank-connected account. Avoid it: the imported rows can duplicate transactions your bank syncs, and the import can't be undone from [Import History](/import/import-from-csv/#undo-an-import).
-</Aside>
+- **Import** a file into a bank-connected account. The importers only offer accounts you manage by hand.
 
 You can still make a synced transaction part of a transfer. See [transfers with bank-connected accounts](/transfers-and-refunds/how-transfers-work/#transfers-with-bank-connected-accounts-).
 
 ## Why you won't see duplicates
 
 - **Each bank transaction is saved once.** MoneyMatter remembers the bank's own ID for every transaction and skips ones it already has, even after you disconnect and reconnect the account. The exception is Monobank: after reconnecting, the most recent transaction from before you disconnected can come in a second time.
-- **Manual and synced transactions don't overlap.** You can't add transactions to a connected account by hand, and a [linked account](#link-an-account-you-already-have) doesn't download the history you already entered. File imports are the exception, see [what you can edit](#what-you-can-edit).
+- **Manual and synced transactions don't overlap.** You can't add transactions to a connected account by hand, and a [linked account](#link-an-account-you-already-have) doesn't download the history you already entered.
 - **Pending payments merge with the booked ones** (Enable Banking only), so a card payment doesn't appear twice when the bank books it a few days later.
 
 If a duplicate slips through anyway, or a pending payment stays pending for more than a week, fix it in [Reconciliation](/transactions/reconciliation/).

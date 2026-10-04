@@ -14,6 +14,8 @@ import Categories from '@models/categories.model';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
 import FeatureUsages from '@models/feature-usages.model';
+import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
+import ImportBatches from '@models/import-batches.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import PortfolioBalances from '@models/investments/portfolio-balances.model';
@@ -80,7 +82,8 @@ export type BackupParentScope =
   | 'budgets'
   | 'subscriptions'
   | 'ventureEvents'
-  | 'subscriptionPeriods';
+  | 'subscriptionPeriods'
+  | 'importBatches';
 
 /**
  * How a table's rows are selected for the current user.
@@ -337,6 +340,13 @@ export const BACKUP_TABLES: readonly BackupTableDef[] = [
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
   },
+  {
+    fileName: 'import-batches',
+    model: ImportBatches,
+    tier: 3,
+    scope: { strategy: 'userColumn', column: 'userId' },
+    restoreMode: 'insert',
+  },
 
   // tier 4
   {
@@ -395,6 +405,13 @@ export const BACKUP_TABLES: readonly BackupTableDef[] = [
     model: SubscriptionCandidates,
     tier: 4,
     scope: { strategy: 'userColumn', column: 'userId' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'import-batch-account-effects',
+    model: ImportBatchAccountEffects,
+    tier: 4,
+    scope: { strategy: 'viaParent', fk: 'importBatchId', parent: 'importBatches' },
     restoreMode: 'insert',
   },
 

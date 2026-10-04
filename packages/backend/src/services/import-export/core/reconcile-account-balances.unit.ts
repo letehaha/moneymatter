@@ -12,18 +12,30 @@ import { ValidationError } from '@js/errors';
 // them keeps this unit run free of the database/queue connections their real
 // import graph opens.
 jest.mock('@models/accounts.model', () => ({ __esModule: true, getAccountById: jest.fn() }));
+jest.mock('@models/import-batch-account-effects.model', () => ({
+  __esModule: true,
+  default: { create: jest.fn(), update: jest.fn() },
+}));
 jest.mock('@models/transactions-query', () => ({ __esModule: true, findOneTransaction: jest.fn() }));
 jest.mock('@services/accounts.service', () => ({ __esModule: true, updateAccount: jest.fn() }));
 jest.mock('@services/accounts/absorb-balance-adjustment', () => ({
   __esModule: true,
   absorbBalanceAdjustment: jest.fn(),
 }));
+jest.mock('@services/accounts/lock-account-row', () => ({ __esModule: true, lockAccountRow: jest.fn() }));
+// The real wrapper needs a DB connection this unit test has none of.
+jest.mock('@services/common/with-transaction', () => ({
+  __esModule: true,
+  withTransaction: <T extends unknown[], R>(fn: (...args: T) => Promise<R>) => fn,
+}));
 
 /* eslint-disable import/first */
 import * as Accounts from '@models/accounts.model';
+import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import { findOneTransaction } from '@models/transactions-query';
 import { updateAccount } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
 
 import { startBalanceReconciliation } from './reconcile-account-balances';
 /* eslint-enable import/first */
@@ -32,11 +44,15 @@ const getAccountByIdMock = jest.mocked(Accounts.getAccountById);
 const findOneMock = jest.mocked(findOneTransaction);
 const updateAccountMock = jest.mocked(updateAccount);
 const absorbMock = jest.mocked(absorbBalanceAdjustment);
+const lockAccountRowMock = jest.mocked(lockAccountRow);
+const createEffectMock = jest.mocked(ImportBatchAccountEffects.create);
+const updateEffectMock = jest.mocked(ImportBatchAccountEffects.update);
 
 type AccountRow = NonNullable<Awaited<ReturnType<typeof Accounts.getAccountById>>>;
 type TransactionRow = Awaited<ReturnType<typeof findOneTransaction>>;
 
 const USER_ID = 42;
+const IMPORT_BATCH_ID = generateRandomRecordId();
 
 /** Minimal account shape the session reads: name, balance, category. */
 function buildAccount({
@@ -93,6 +109,8 @@ beforeEach(() => {
   jest.clearAllMocks();
   updateAccountMock.mockResolvedValue(undefined as never);
   absorbMock.mockRejectedValue(new Error('absorb mock not wired for this test') as never);
+  lockAccountRowMock.mockImplementation((async ({ accountId }: { accountId: string }) =>
+    buildAccount({ id: accountId, name: 'Locked' })) as unknown as typeof lockAccountRow);
   getAccountByIdMock.mockResolvedValue(null);
   findOneMock.mockResolvedValue(null);
 });
@@ -122,6 +140,7 @@ describe('startBalanceReconciliation', () => {
       ...row({ signedAmount: Money.fromDecimal(10) }),
     });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       logLabel: 'test import',
     });
@@ -145,7 +164,11 @@ describe('recordRow classification against the pre-import boundary', () => {
       ...row({ signedAmount: Money.fromDecimal(100) }),
     });
     reconciler.recordRow({ accountId, rowIso: '2024-01-15', ...row({ signedAmount: Money.fromDecimal(-40) }) });
-    const { accountBalanceChanges } = await reconciler.finalize({ recalculateBalance: true, logLabel: 'test import' });
+    const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
+      recalculateBalance: true,
+      logLabel: 'test import',
+    });
 
     // All rows are new, so with recalc ON there is nothing to remove — the
     // balance hook already left the account at its target and no write happens.
@@ -179,7 +202,11 @@ describe('recordRow classification against the pre-import boundary', () => {
     });
     mockAbsorbApplyingDelta(accounts);
 
-    const { accountBalanceChanges } = await reconciler.finalize({ recalculateBalance: true, logLabel: 'test import' });
+    const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
+      recalculateBalance: true,
+      logLabel: 'test import',
+    });
 
     // Recalc ON removes only the backfill: adjustment = −(−100.50) = +100.50.
     expect(absorbMock).toHaveBeenCalledTimes(1);
@@ -226,7 +253,11 @@ describe('recordRow classification against the pre-import boundary', () => {
       rowIso: '2024-01-15T23:59:59.999Z',
       ...row({ signedAmount: Money.fromDecimal(1) }),
     });
-    const { accountBalanceChanges } = await reconciler.finalize({ recalculateBalance: true, logLabel: 'test import' });
+    const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
+      recalculateBalance: true,
+      logLabel: 'test import',
+    });
 
     expect(absorbMock.mock.calls[0]![0].amountDelta.toNumber()).toBe(-1);
     expect(accountBalanceChanges[0]).toMatchObject({ movedCount: 2, historicalCount: 1, delta: 2 });
@@ -270,7 +301,11 @@ describe('recordRow classification against the pre-import boundary', () => {
       rowIso: '2024-07-31',
       ...row({ signedAmount: Money.fromDecimal(21) }),
     });
-    const { accountBalanceChanges } = await reconciler.finalize({ recalculateBalance: true, logLabel: 'test import' });
+    const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
+      recalculateBalance: true,
+      logLabel: 'test import',
+    });
 
     // Only the source has backfill to remove; the destination needs no write.
     expect(absorbMock).toHaveBeenCalledTimes(1);
@@ -291,11 +326,13 @@ describe('finalize — captured (linked) accounts', () => {
     const reconciler = await startBalanceReconciliation({ userId: USER_ID, accountIds: [accountId] });
     reconciler.recordRow({ accountId, rowIso: '2024-01-17', ...row({ signedAmount: Money.fromDecimal(2349.5) }) });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       logLabel: 'test import',
     });
 
     expect(absorbMock).not.toHaveBeenCalled();
+    expect(createEffectMock).not.toHaveBeenCalled();
     expect(updateAccountMock).not.toHaveBeenCalled();
     expect(errors).toHaveLength(0);
     expect(accountBalanceChanges).toEqual([
@@ -325,6 +362,7 @@ describe('finalize — captured (linked) accounts', () => {
     const reconciler = await startBalanceReconciliation({ userId: USER_ID, accountIds: [accountId] });
     reconciler.recordRow({ accountId, rowIso: '2024-01-17', ...row({ signedAmount: Money.fromDecimal(75) }) });
     const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: false,
       logLabel: 'test import',
     });
@@ -333,6 +371,12 @@ describe('finalize — captured (linked) accounts', () => {
     // concurrent writer's contribution between capture and finalize survives.
     expect(absorbMock).toHaveBeenCalledTimes(1);
     expect(absorbMock.mock.calls[0]![0].amountDelta.toNumber()).toBe(-75);
+    // The exact absorbed delta is recorded against the batch so undo can negate it.
+    expect(createEffectMock).toHaveBeenCalledTimes(1);
+    const effect = createEffectMock.mock.calls[0]![0] as { absorbedAmount: Money };
+    expect(effect).toMatchObject({ importBatchId: IMPORT_BATCH_ID, accountId });
+    expect(effect.absorbedAmount.toNumber()).toBe(-75);
+    expect(absorbMock.mock.invocationCallOrder[0]!).toBeLessThan(createEffectMock.mock.invocationCallOrder[0]!);
     expect(accountBalanceChanges[0]).toMatchObject({
       balanceBefore: 300,
       balanceAfter: 300,
@@ -356,7 +400,11 @@ describe('finalize — captured (linked) accounts', () => {
       rowIso: '2024-01-17',
       ...row({ signedAmount: Money.fromDecimal(-100) }),
     });
-    await reconciler.finalize({ recalculateBalance: false, logLabel: 'test import' });
+    await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
+      recalculateBalance: false,
+      logLabel: 'test import',
+    });
 
     const call = absorbMock.mock.calls[0]![0];
     expect(call.amountDelta.toNumber()).toBe(100);
@@ -397,6 +445,7 @@ describe('finalize — captured (linked) accounts', () => {
       ...row({ signedAmount: Money.fromDecimal(1) }),
     });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: false,
       logLabel: 'test import',
     });
@@ -413,6 +462,9 @@ describe('finalize — captured (linked) accounts', () => {
     // The failed account gets no summary entry; the other one still does.
     expect(accountBalanceChanges).toHaveLength(1);
     expect(accountBalanceChanges[0]!.accountId).not.toBe(firstId);
+    // A failed absorb records no effect, so undo has nothing to reverse for it.
+    expect(createEffectMock).toHaveBeenCalledTimes(1);
+    expect(createEffectMock.mock.calls[0]![0]).not.toMatchObject({ accountId: firstId });
   });
 });
 
@@ -431,6 +483,7 @@ describe('finalize — created accounts', () => {
       ...row({ signedAmount: Money.fromDecimal(2349.5) }),
     });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       createdAccounts: [{ accountId: createdId, accountName: 'Fresh' }],
       logLabel: 'test import',
@@ -453,14 +506,18 @@ describe('finalize — created accounts', () => {
     expect(accountBalanceChanges[0]).not.toHaveProperty('delta');
   });
 
-  it('forces targetCurrentBalance via updateAccount before the summary read-back', async () => {
+  it('forces targetCurrentBalance via updateAccount and records the shift for undo', async () => {
     const createdId = generateRandomRecordId();
     mockAccounts([
       { account: buildAccount({ id: createdId, name: 'Targeted', currentBalance: Money.fromDecimal(5000.5) }) },
     ]);
+    lockAccountRowMock.mockResolvedValue(
+      buildAccount({ id: createdId, name: 'Targeted', currentBalance: Money.fromDecimal(-1700) }) as never,
+    );
 
     const reconciler = await startBalanceReconciliation({ userId: USER_ID, accountIds: [] });
     const { accountBalanceChanges } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       createdAccounts: [
         { accountId: createdId, accountName: 'Targeted', targetCurrentBalance: Money.fromDecimal(5000.5) },
@@ -472,6 +529,14 @@ describe('finalize — created accounts', () => {
     const call = updateAccountMock.mock.calls[0]![0] as { id: string; currentBalance: Money };
     expect(call.id).toBe(createdId);
     expect(call.currentBalance.toNumber()).toBe(5000.5);
+    expect(updateEffectMock).toHaveBeenCalledTimes(1);
+    const [values, options] = updateEffectMock.mock.calls[0]! as unknown as [
+      { absorbedAmount: Money },
+      { where: { importBatchId: string; accountId: string } },
+    ];
+    expect(values.absorbedAmount.toNumber()).toBe(6700.5);
+    expect(options.where).toEqual({ importBatchId: IMPORT_BATCH_ID, accountId: createdId });
+    expect(createEffectMock).not.toHaveBeenCalled();
     expect(accountBalanceChanges[0]).toMatchObject({ balanceAfter: 5000.5, isNewAccount: true });
   });
 
@@ -485,6 +550,7 @@ describe('finalize — created accounts', () => {
 
     const reconciler = await startBalanceReconciliation({ userId: USER_ID, accountIds: [] });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       createdAccounts: [
         { accountId: createdId, accountName: 'Desynced', targetCurrentBalance: Money.fromDecimal(9999) },
@@ -499,6 +565,7 @@ describe('finalize — created accounts', () => {
         error: 'Desynced: entered balance could not be applied after import; this account balance may be incorrect',
       },
     ]);
+    expect(updateEffectMock).not.toHaveBeenCalled();
     expect(accountBalanceChanges).toEqual([
       {
         accountId: createdId,
@@ -517,6 +584,7 @@ describe('finalize — created accounts', () => {
 
     const reconciler = await startBalanceReconciliation({ userId: USER_ID, accountIds: [] });
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       createdAccounts: [{ accountId: createdId, accountName: 'Ghost' }],
       logLabel: 'test import',
@@ -534,6 +602,7 @@ describe('finalize — created accounts', () => {
     // Everything is committed by finalize time — a transient read failure must
     // not reject (a failed job here would invite a duplicating re-import).
     const { accountBalanceChanges, errors } = await reconciler.finalize({
+      importBatchId: IMPORT_BATCH_ID,
       recalculateBalance: true,
       createdAccounts: [{ accountId: createdId, accountName: 'Flaky' }],
       logLabel: 'test import',

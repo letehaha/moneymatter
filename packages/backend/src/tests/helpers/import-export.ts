@@ -1,3 +1,9 @@
+import {
+  AccountOptionValue,
+  CategoryOptionValue,
+  CurrencyOptionValue,
+  TransactionTypeOptionValue,
+} from '@bt/shared/types';
 import type {
   AccountMappingConfig,
   AiMapImportCategoriesResponse,
@@ -283,6 +289,70 @@ export function expectCsvImportCompleted(
   }
 }
 
+/** Two-row CSV import. Source account "A" links to `accountId`, or is created when it is omitted. */
+export async function runCsvImport({
+  accountId,
+  currencyCode,
+  recalculateBalance = false,
+  incomeAccountId,
+  extraRows = [],
+  timeoutMs,
+  enteredBalance = null,
+}: {
+  accountId?: string;
+  currencyCode: string;
+  recalculateBalance?: boolean;
+  /** Balance the user enters for "A" when the import creates it. */
+  enteredBalance?: number | null;
+  /** Adds a third income row on this account, giving the batch a row linkable
+   *  to one of the expenses as a transfer pair. */
+  incomeAccountId?: string;
+  /** Extra CSV lines appended after the fixed rows, for oversized batches. */
+  extraRows?: string[];
+  timeoutMs?: number;
+}) {
+  const { jobId } = await executeImport({
+    payload: {
+      fileContent: [
+        'Date,Amount,Description,Category,Account,Currency,Type',
+        `2024-01-15,10.00,Coffee,,A,${currencyCode},expense`,
+        `2024-01-16,20.00,Lunch,,A,${currencyCode},expense`,
+        ...(incomeAccountId ? [`2024-01-17,20.00,Moved in,,B,${currencyCode},income`] : []),
+        ...extraRows,
+      ].join('\n'),
+      delimiter: ',',
+      columnMapping: {
+        date: 'Date',
+        dateFieldOrder: 'month-first',
+        amount: 'Amount',
+        description: 'Description',
+        category: { option: CategoryOptionValue.mapDataSourceColumn, columnName: 'Category' },
+        currency: { option: CurrencyOptionValue.dataSourceColumn, columnName: 'Currency' },
+        transactionType: {
+          option: TransactionTypeOptionValue.dataSourceColumn,
+          columnName: 'Type',
+          incomeValues: ['income'],
+          expenseValues: ['expense'],
+        },
+        account: { option: AccountOptionValue.dataSourceColumn, columnName: 'Account' },
+      },
+      accountMapping: {
+        A: accountId
+          ? { action: 'link-existing', accountId }
+          : { action: 'create-new', currentBalance: enteredBalance },
+        ...(incomeAccountId ? { B: { action: 'link-existing', accountId: incomeAccountId } } : {}),
+      },
+      categoryMapping: {},
+      skipDuplicateIndices: [],
+      recalculateBalance,
+    },
+    raw: true,
+  });
+  const progress = await waitForCsvImportCompletion({ jobId, timeoutMs });
+  expectCsvImportCompleted(progress);
+  return progress.summary;
+}
+
 // ============================================
 // Statement Parser - Estimate Cost Endpoint
 // ============================================
@@ -543,6 +613,20 @@ export function expectYnabImportCompleted(
   if (progress.status !== 'completed') {
     throw new Error(`Expected completed YNAB import, got status="${progress.status}".`);
   }
+}
+
+/** Imports `register-basic.csv`, creating every account it names in its detected currency. */
+export async function runYnabImport() {
+  const fileContent = loadYnabFixture('register-basic.csv');
+  const parsed = await parseYnab({ payload: { fileContent }, raw: true });
+  const accountNames = parsed.result.accounts.map((a) => a.originalName);
+  const accountMapping = Object.fromEntries(
+    parsed.result.accounts.map((a) => [a.originalName, { currencyCode: a.detectedCurrency! }]),
+  );
+  const { jobId } = await executeYnab({ payload: { fileContent, accountMapping }, raw: true });
+  const progress = await waitForYnabImportCompletion({ jobId });
+  expectYnabImportCompleted(progress);
+  return { summary: progress.summary, accountNames };
 }
 
 // ============================================

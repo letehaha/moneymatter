@@ -96,10 +96,10 @@ export const useAccountsStore = defineStore('accounts', () => {
 
   // Vehicle and loan balances are derived (depreciation model / loan anchor), so
   // data imports must never link imported rows to them or shift their balance.
-  // Import wizards offer only the remaining accounts as link targets; the backend
-  // rejects a vehicle/loan link target as well.
+  // A bank-linked balance is owned by the provider sync. Import wizards offer only
+  // the remaining accounts as link targets; the backend rejects the rest as well.
   const importLinkableAccounts = computed(() =>
-    (accounts.value ?? []).filter((item) => !isDedicatedFlowAccountCategory(item.accountCategory)),
+    systemAccounts.value.filter((item) => !isDedicatedFlowAccountCategory(item.accountCategory)),
   );
 
   /**

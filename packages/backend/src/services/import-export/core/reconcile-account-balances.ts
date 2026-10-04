@@ -1,12 +1,15 @@
-import type { AccountBalanceChange, ImportError } from '@bt/shared/types';
+import type { AccountBalanceChange, ImportError, RecordId } from '@bt/shared/types';
 import { isDedicatedFlowAccountCategory } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
+import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
 import { findOneTransaction } from '@models/transactions-query';
 import { updateAccount } from '@services/accounts.service';
 import { absorbBalanceAdjustment } from '@services/accounts/absorb-balance-adjustment';
+import { lockAccountRow } from '@services/accounts/lock-account-row';
+import { withTransaction } from '@services/common/with-transaction';
 import { importDayKey } from '@services/import-export/core/duplicates/import-day-key';
 
 /**
@@ -42,6 +45,49 @@ interface ImportRowTally {
   movedCount: number;
   historicalCount: number;
 }
+
+// Insert the effects row AFTER the absorb. Inserting first takes KEY SHARE on the
+// account through the FK, and upgrading that to the absorb's FOR UPDATE deadlocks
+// two finalizes on one account.
+const absorbAndRecordEffect = withTransaction(
+  async ({
+    userId,
+    importBatchId,
+    accountId,
+    amountDelta,
+  }: {
+    userId: number;
+    importBatchId: RecordId;
+    accountId: string;
+    amountDelta: Money;
+  }) => {
+    const updated = await absorbBalanceAdjustment({ userId, accountId, amountDelta });
+    await ImportBatchAccountEffects.create({ importBatchId, accountId, absorbedAmount: amountDelta });
+    return updated;
+  },
+);
+
+const forceTargetAndRecordEffect = withTransaction(
+  async ({
+    userId,
+    importBatchId,
+    accountId,
+    targetCurrentBalance,
+  }: {
+    userId: number;
+    importBatchId: RecordId;
+    accountId: string;
+    targetCurrentBalance: Money;
+  }) => {
+    const account = await lockAccountRow({ accountId, userId });
+    if (!account) throw new ValidationError({ message: `Account with ID ${accountId} not found` });
+    await updateAccount({ id: accountId, userId, currentBalance: targetCurrentBalance });
+    await ImportBatchAccountEffects.update(
+      { absorbedAmount: targetCurrentBalance.subtract(account.currentBalance) },
+      { where: { importBatchId, accountId } },
+    );
+  },
+);
 
 function emptyTally(): ImportRowTally {
   return {
@@ -136,6 +182,8 @@ interface BalanceReconciliationSession {
    * created account still gets one with its actual (read-back) balance.
    */
   finalize(params: {
+    /** `ImportBatches.id` of this run; every opening-balance shift is recorded against it for undo. */
+    importBatchId: RecordId;
     recalculateBalance: boolean;
     createdAccounts?: CreatedAccountInput[];
     /** Importer name prefixed to log lines (e.g. "CSV import"). */
@@ -172,10 +220,12 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
   }
 
   async finalize({
+    importBatchId,
     recalculateBalance,
     createdAccounts = [],
     logLabel,
   }: {
+    importBatchId: RecordId;
     recalculateBalance: boolean;
     createdAccounts?: CreatedAccountInput[];
     logLabel: string;
@@ -187,8 +237,14 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
     // read-back reports the final value), then back-adjust captured accounts,
     // then read created accounts back for their summary entries. All three share
     // the `errors` / `accountBalanceChanges` accumulators.
-    await this.#forceCreatedAccountTargets({ createdAccounts, logLabel, errors });
-    await this.#reconcileCapturedAccounts({ recalculateBalance, logLabel, accountBalanceChanges, errors });
+    await this.#forceCreatedAccountTargets({ importBatchId, createdAccounts, logLabel, errors });
+    await this.#reconcileCapturedAccounts({
+      importBatchId,
+      recalculateBalance,
+      logLabel,
+      accountBalanceChanges,
+      errors,
+    });
     await this.#buildCreatedAccountSummaries({ createdAccounts, logLabel, accountBalanceChanges });
 
     return { accountBalanceChanges, errors };
@@ -200,10 +256,12 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
    * final value.
    */
   async #forceCreatedAccountTargets({
+    importBatchId,
     createdAccounts,
     logLabel,
     errors,
   }: {
+    importBatchId: RecordId;
     createdAccounts: CreatedAccountInput[];
     logLabel: string;
     errors: BalanceReconcileError[];
@@ -211,10 +269,11 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
     for (const created of createdAccounts) {
       if (created.targetCurrentBalance === undefined) continue;
       try {
-        await updateAccount({
-          id: created.accountId,
+        await forceTargetAndRecordEffect({
           userId: this.userId,
-          currentBalance: created.targetCurrentBalance,
+          importBatchId,
+          accountId: created.accountId,
+          targetCurrentBalance: created.targetCurrentBalance,
         });
       } catch (err) {
         logger.error({
@@ -236,11 +295,13 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
    * acquire their row locks in the same order (no deadlock).
    */
   async #reconcileCapturedAccounts({
+    importBatchId,
     recalculateBalance,
     logLabel,
     accountBalanceChanges,
     errors,
   }: {
+    importBatchId: RecordId;
     recalculateBalance: boolean;
     logLabel: string;
     accountBalanceChanges: AccountBalanceChange[];
@@ -266,8 +327,9 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
         balanceAfter = capture.balanceBefore.add(semanticDelta);
       } else {
         try {
-          const updated = await absorbBalanceAdjustment({
+          const updated = await absorbAndRecordEffect({
             userId: this.userId,
+            importBatchId,
             accountId: capture.accountId,
             amountDelta,
           });

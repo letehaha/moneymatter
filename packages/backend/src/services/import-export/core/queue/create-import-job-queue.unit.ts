@@ -22,6 +22,11 @@ jest.mock('@services/currencies/base-currency-lock', () => ({
   __esModule: true,
   isBaseCurrencyChangeLocked: jest.fn(),
 }));
+const batchUpdateMock = jest.fn<(values: unknown, options: unknown) => Promise<unknown>>();
+jest.mock('@models/import-batches.model', () => ({
+  __esModule: true,
+  default: { update: (values: unknown, options: unknown) => batchUpdateMock(values, options) },
+}));
 jest.mock('@js/utils/sentry', () => ({
   __esModule: true,
   withQueueProcessSpan: jest.fn(),
@@ -61,6 +66,7 @@ const expectFailedPayload = ({ error }: { error: string }) =>
 
 beforeEach(() => {
   jest.clearAllMocks();
+  batchUpdateMock.mockResolvedValue([0]);
 });
 
 describe('createImportJobQueue failure reporting', () => {
@@ -70,6 +76,21 @@ describe('createImportJobQueue failure reporting', () => {
     expect(logger.warn).toHaveBeenCalledWith(expect.any(String), { jobId: JOB_ID, userId: USER_ID });
     expect(logger.error).not.toHaveBeenCalled();
     expectFailedPayload({ error: DEFAULT_INTERRUPTED_KEY });
+  });
+
+  it("finishes the user's unfinished import batches when a job fails as stalled, so undo is allowed", () => {
+    failJob({ bundle: buildBundle(), error: new Error(STALLED_REASON) });
+
+    expect(batchUpdateMock).toHaveBeenCalledWith(
+      { finishedAt: expect.any(Date) },
+      { where: { userId: USER_ID, finishedAt: null } },
+    );
+  });
+
+  it('leaves import batches alone on an ordinary failure', () => {
+    failJob({ bundle: buildBundle(), error: new Error('boom') });
+
+    expect(batchUpdateMock).not.toHaveBeenCalled();
   });
 
   it('sends the interrupted message of the key the queue was built with', () => {

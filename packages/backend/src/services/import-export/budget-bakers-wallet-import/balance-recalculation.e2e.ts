@@ -155,10 +155,11 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
     });
   });
 
-  it('recalc explicit false: linked balance is preserved even for boundary-newer rows', async () => {
+  it('recalc explicit false: linked balance is preserved for boundary-newer rows, and undo restores the account in both currencies', async () => {
     const { account, balanceBefore } = await createLinkedAccountWithBoundaryTx({
       boundaryTime: '2025-01-10T12:00:00Z',
     });
+    const before = await helpers.getAccount({ id: account.id, raw: true });
 
     const fileContent = [
       CSV_HEADER,
@@ -189,6 +190,24 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       balanceAfter: balanceBefore,
       movedCount: 1,
       historicalCount: 0,
+    });
+
+    expect(after.initialBalance).not.toBe(before.initialBalance);
+
+    const { items } = await helpers.getBatchesHistory({ raw: true });
+    expect(items).toHaveLength(1);
+    const { batchId } = items[0]!;
+
+    const result = await helpers.deleteImportBatch({ batchId, raw: true });
+    expect(result.deletedCount).toBe(1);
+    expect(await helpers.getTransactions({ batchId, raw: true })).toHaveLength(0);
+
+    expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
+      id: account.id,
+      currentBalance: before.currentBalance,
+      initialBalance: before.initialBalance,
+      refCurrentBalance: before.refCurrentBalance,
+      refInitialBalance: before.refInitialBalance,
     });
   });
 

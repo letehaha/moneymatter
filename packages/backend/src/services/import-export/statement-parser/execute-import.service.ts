@@ -18,6 +18,8 @@ import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import * as Users from '@models/users.model';
 import { CATEGORIZATION_SCOPE, queueCategorizationJob } from '@services/ai-categorization';
+import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
+import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { createTransaction } from '@services/transactions';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { v4 as uuidv4 } from 'uuid';
@@ -52,9 +54,14 @@ async function executeImportImpl({
   transactions,
   skipIndices,
   onProgress,
-}: ExecuteImportParams): Promise<StatementImportSummary> {
+  openImportBatch,
+}: ExecuteImportParams & { openImportBatch: OpenImportBatch }): Promise<StatementImportSummary> {
   const batchId = uuidv4();
-  const importedAt = new Date();
+  const importDetails: TransactionImportDetails = {
+    batchId,
+    importedAt: new Date().toISOString(),
+    source: ImportSource.statementParser,
+  };
 
   // Filter out transactions that should be skipped
   const skipSet = new Set(skipIndices);
@@ -84,6 +91,7 @@ async function executeImportImpl({
       message: `Account with ID ${accountId} not found`,
     });
   }
+  assertImportTargetNotBankLinked({ account });
 
   // Get user's default category
   const defaultCategoryId = await Users.getUserDefaultCategory({ id: userId });
@@ -101,6 +109,8 @@ async function executeImportImpl({
     processedCount += 1;
     if (onProgress) await onProgress(processedCount, transactions.length);
   };
+
+  await openImportBatch({ userId, importDetails });
 
   for (let i = 0; i < transactions.length; i++) {
     // Skip if in skip list
@@ -155,12 +165,6 @@ async function executeImportImpl({
 
       // Note: tx.amount is in decimal format from AI extraction (e.g., 35 means 35.00)
       const amount = Money.fromDecimal(tx.amount);
-
-      const importDetails: TransactionImportDetails = {
-        batchId,
-        importedAt: importedAt.toISOString(),
-        source: ImportSource.statementParser,
-      };
 
       // Service-layer createTransaction handles refAmount, payee extraction
       // (via `rawMerchantName`), and inline `payee_rule` auto-categorization.
@@ -225,12 +229,14 @@ async function executeImportImpl({
   };
 }
 
+const executeImportWithBatchRecord = withImportBatchRecord(executeImportImpl);
+
 /**
  * Execute statement import and queue AI categorization for imported transactions.
  * The categorization is queued AFTER the per-row transactions have committed.
  */
 export async function executeImport(params: ExecuteImportParams): Promise<StatementImportSummary> {
-  const result = await executeImportImpl(params);
+  const result = await executeImportWithBatchRecord(params);
 
   // Queue AI categorization for the newly imported transactions. Each row was
   // committed by its own createTransaction call above, so the queued ids point

@@ -51,8 +51,9 @@
           <li v-for="batch in batches" :key="batch.batchId" class="relative">
             <Button
               variant="ghost"
-              class="h-auto w-full justify-between gap-3 rounded-none px-4 py-3"
-              @click="openBatch(batch)"
+              class="h-auto w-full justify-between gap-3 rounded-none px-4 py-3 aria-disabled:cursor-default aria-disabled:hover:bg-transparent"
+              :aria-disabled="batch.transactionCount === 0"
+              @click="batch.transactionCount > 0 && openBatch(batch)"
             >
               <span class="flex min-w-0 flex-col items-start gap-0.5">
                 <span class="flex max-w-full min-w-0 items-center gap-2">
@@ -84,7 +85,9 @@
               <span class="flex shrink-0 items-center gap-3">
                 <!-- Reserves the slot the absolutely-positioned delete button overlays. -->
                 <span class="size-10" aria-hidden="true" />
-                <ChevronRightIcon class="text-muted-foreground size-4" />
+                <ChevronRightIcon
+                  :class="cn('text-muted-foreground size-4', batch.transactionCount === 0 && 'invisible')"
+                />
               </span>
             </Button>
             <DesktopOnlyTooltip :content="$t('pages.importExport.importHistory.deleteButton')">
@@ -113,22 +116,31 @@
       confirm-variant="destructive"
       :confirm-disabled="deleteBatchMutation.isPending.value"
       @confirm="handleDeleteConfirm"
-      @cancel="resetDeleteState"
     >
       <template #title>{{ $t('pages.importExport.importHistory.deleteConfirmTitle') }}</template>
       <template #description>
-        {{
-          batchPendingDelete
-            ? $t(
-                'pages.importExport.importHistory.deleteConfirmDescription',
-                { count: batchPendingDelete.transactionCount },
-                batchPendingDelete.transactionCount,
-              )
-            : ''
-        }}
+        <template v-if="isPendingBatchEmpty">
+          {{ $t('pages.importExport.importHistory.deleteConfirmDescriptionNoTransactions') }}
+        </template>
+        <template v-else-if="batchPendingDelete">
+          {{
+            $t(
+              'pages.importExport.importHistory.deleteConfirmDescription',
+              { count: batchPendingDelete.transactionCount },
+              batchPendingDelete.transactionCount,
+            )
+          }}
+        </template>
+        <p v-if="batchPendingDelete?.createdAccountCount" class="mt-2">
+          {{ $t('pages.importExport.importHistory.deleteConfirmCreatedAccountsNote') }}
+        </p>
       </template>
 
-      <Callout variant="warning" :title="$t('pages.importExport.importHistory.deleteLinkedTransfersWarningTitle')">
+      <Callout
+        v-if="!isPendingBatchEmpty"
+        variant="warning"
+        :title="$t('pages.importExport.importHistory.deleteLinkedTransfersWarningTitle')"
+      >
         <p class="text-muted-foreground text-xs">
           {{ $t('pages.importExport.importHistory.deleteLinkedTransfersDescription') }}
         </p>
@@ -149,7 +161,6 @@
       confirm-variant="destructive"
       :confirm-disabled="deleteBatchMutation.isPending.value"
       @confirm="handleConfirmLinkedTransfersDelete"
-      @cancel="resetDeleteState"
     >
       <template #title>{{ $t('pages.importExport.importHistory.deleteLinkedTransfersConfirmTitle') }}</template>
       <template #description>
@@ -168,6 +179,7 @@ import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useDateLocale } from '@/composable/use-date-locale';
+import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
 import {
   ChevronLeftIcon,
@@ -178,7 +190,7 @@ import {
   TriangleAlertIcon,
 } from '@lucide/vue';
 import { useIntersectionObserver } from '@vueuse/core';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 
 import { ImportSource, type ImportBatchSummary } from '@bt/shared/types';
@@ -222,17 +234,12 @@ const isDeleteDialogOpen = ref(false);
 const isConfirmLinkedTransfersOpen = ref(false);
 const batchPendingDelete = ref<ImportBatchSummary | null>(null);
 const deleteLinkedTransfers = ref(false);
-
-const resetDeleteState = () => {
-  batchPendingDelete.value = null;
-  deleteLinkedTransfers.value = false;
-};
+const isPendingBatchEmpty = computed(() => batchPendingDelete.value?.transactionCount === 0);
 
 const deleteBatchMutation = useDeleteImportBatch({
   onSuccess: () => {
     isDeleteDialogOpen.value = false;
     isConfirmLinkedTransfersOpen.value = false;
-    resetDeleteState();
   },
 });
 

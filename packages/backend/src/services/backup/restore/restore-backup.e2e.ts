@@ -4,6 +4,7 @@ import {
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   DEACTIVATION_REASON,
+  ImportSource,
   PLANS,
   RESOURCE_TYPES,
   type RecordId,
@@ -26,6 +27,8 @@ import { randomUUID } from 'node:crypto';
 type Row = Record<string, unknown>;
 
 const LEGACY_ENDPOINT_BASE_URL = 'http://ollama.home.test/v1';
+
+const IMPORT_BATCH_TABLES = ['import-batches', 'import-batch-account-effects'];
 
 // Tables whose restored copy legitimately differs from the dump: `user` and
 // `user-settings` are re-created rather than bulk-inserted (fresh ids/timestamps,
@@ -601,6 +604,137 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect(fire?.spendingExcludedCategoryIds).toEqual([targetCategory!.id]);
           expect(fire?.returnIndicatorId).toBe(`portfolio:${targetPortfolio!.id}`);
         },
+      });
+    });
+
+    it('restores an import batch the target can undo, returning its account to the pre-import balances', async () => {
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Import target' }),
+        raw: true,
+      });
+
+      const { batchId, newTransactionIds } = await helpers.runCsvImport({
+        accountId: account.id,
+        currencyCode: account.currencyCode,
+      });
+      expect(newTransactionIds).toHaveLength(2);
+
+      const sourceAfterImport = await helpers.getAccount({ id: account.id, raw: true });
+      expect(sourceAfterImport.currentBalance).toBe(account.currentBalance);
+      expect(sourceAfterImport.initialBalance).not.toBe(account.initialBalance);
+
+      const { buffer, base64 } = await exportArchive();
+      const archive = helpers.parseBackupArchive({ buffer });
+      for (const name of IMPORT_BATCH_TABLES) {
+        expect((archive.readData({ name }) as unknown[]).length).toBeGreaterThan(0);
+      }
+
+      const target = await helpers.provisionSecondUserWithBaseCurrency();
+      await helpers.asUser({
+        cookies: target.cookies,
+        fn: async () => {
+          const restore = await helpers.withSelfHost(() => helpers.restoreBackup({ fileContent: base64 }));
+          expect(restore.statusCode).toBe(200);
+          const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+          expect(status.status).toBe('completed');
+
+          const warnings = status.summary?.warnings ?? [];
+          for (const table of IMPORT_BATCH_TABLES) {
+            expect(warnings.filter((w) => w.table === table)).toEqual([]);
+            expect(status.summary?.insertedByTable[table]).toBeGreaterThan(0);
+          }
+
+          const restored = (await helpers.getAccounts()).find((a) => a.name === account.name)!;
+          expect(restored.id).not.toBe(account.id);
+          expect(restored.currentBalance).toBe(sourceAfterImport.currentBalance);
+          expect(restored.initialBalance).toBe(sourceAfterImport.initialBalance);
+
+          const undo = await helpers.deleteImportBatch({ batchId, raw: true });
+          expect(undo.deletedCount).toBe(newTransactionIds.length);
+          expect(await helpers.getTransactions({ batchId, raw: true })).toHaveLength(0);
+
+          const restoredAfterUndo = await helpers.getAccount({ id: restored.id, raw: true });
+          expect(restoredAfterUndo.initialBalance).toBe(account.initialBalance);
+          expect(restoredAfterUndo.currentBalance).toBe(account.currentBalance);
+        },
+      });
+
+      expect(await helpers.getTransactions({ batchId, raw: true })).toHaveLength(newTransactionIds.length);
+      const sourceAfterUndo = await helpers.getAccount({ id: account.id, raw: true });
+      expect(sourceAfterUndo.initialBalance).toBe(sourceAfterImport.initialBalance);
+      expect(sourceAfterUndo.currentBalance).toBe(sourceAfterImport.currentBalance);
+
+      await helpers.deleteImportBatch({ batchId, raw: true });
+      const sourceAfterOwnUndo = await helpers.getAccount({ id: account.id, raw: true });
+      expect(sourceAfterOwnUndo.initialBalance).toBe(account.initialBalance);
+      expect(sourceAfterOwnUndo.currentBalance).toBe(account.currentBalance);
+    });
+
+    it('lists a batch restored without import-batch files alongside a newer import and undoes it on its own', async () => {
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Import target' }),
+        raw: true,
+      });
+      const { batchId, newTransactionIds } = await helpers.runCsvImport({
+        accountId: account.id,
+        currencyCode: account.currencyCode,
+      });
+      expect(newTransactionIds).toHaveLength(2);
+
+      const { files } = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      for (const name of IMPORT_BATCH_TABLES) {
+        expect(files.delete(`data/${name}.json`)).toBe(true);
+      }
+
+      const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+      for (const table of IMPORT_BATCH_TABLES) {
+        expect(status.summary?.warnings).toContainEqual(
+          expect.objectContaining({ code: 'table_missing_treated_empty', table }),
+        );
+      }
+
+      const restored = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      expect(restored.readData({ name: 'import-batches' })).toEqual([]);
+
+      expect(await helpers.getBatchesHistory({ raw: true })).toEqual({
+        items: [
+          expect.objectContaining({
+            batchId,
+            source: ImportSource.csv,
+            transactionCount: newTransactionIds.length,
+            createdAccountCount: 0,
+          }),
+        ],
+        totalCount: 1,
+      });
+
+      const restoredAccount = (await helpers.getAccounts()).find((a) => a.name === account.name)!;
+      const newer = await helpers.runCsvImport({
+        accountId: restoredAccount.id,
+        currencyCode: restoredAccount.currencyCode,
+      });
+
+      expect(await helpers.getBatchesHistory({ raw: true })).toEqual({
+        items: [
+          expect.objectContaining({ batchId: newer.batchId, source: ImportSource.csv }),
+          expect.objectContaining({
+            batchId,
+            source: ImportSource.csv,
+            transactionCount: newTransactionIds.length,
+            createdAccountCount: 0,
+          }),
+        ],
+        totalCount: 2,
+      });
+
+      const undo = await helpers.deleteImportBatch({ batchId, raw: true });
+      expect(undo.deletedCount).toBe(newTransactionIds.length);
+      expect(await helpers.getBatchesHistory({ raw: true })).toEqual({
+        items: [expect.objectContaining({ batchId: newer.batchId })],
+        totalCount: 1,
       });
     });
   });
@@ -1252,6 +1386,19 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       expect(await helpers.getAccounts()).toHaveLength(0);
       expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
       expect(await helpers.listAutomations({ raw: true })).toHaveLength(0);
+    });
+
+    it('exports no import batch records after a data wipe', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      await helpers.runCsvImport({ accountId: account.id, currencyCode: account.currencyCode });
+
+      const wipeRes = await helpers.wipeUserData();
+      expect(wipeRes.statusCode).toBe(200);
+
+      const archive = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
+      for (const name of IMPORT_BATCH_TABLES) {
+        expect(archive.readData({ name })).toEqual([]);
+      }
     });
   });
 

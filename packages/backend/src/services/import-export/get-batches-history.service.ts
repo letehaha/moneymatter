@@ -1,4 +1,6 @@
-import { type ImportBatchesHistoryResponse, type ImportSource } from '@bt/shared/types';
+import { type ImportBatchSummary, type ImportBatchesHistoryResponse, type ImportSource } from '@bt/shared/types';
+import ImportBatchAccountEffects from '@models/import-batch-account-effects.model';
+import ImportBatches from '@models/import-batches.model';
 import { findTransactions } from '@models/transactions-query';
 import { col, fn, literal } from 'sequelize';
 
@@ -6,42 +8,18 @@ const BATCH_ID_EXPR = `"Transactions"."externalData"->'importDetails'->>'batchId
 const SOURCE_EXPR = `"Transactions"."externalData"->'importDetails'->>'source'`;
 const IMPORTED_AT_EXPR = `"Transactions"."externalData"->'importDetails'->>'importedAt'`;
 
-/**
- * Policy declared once and shared by both queries below. A batch history entry
- * must cover every row an import actually created, so nothing is narrowed:
- * `planned: 'exclude'` because imports only ever write real transactions;
- * `balanceAdjustments: 'include'` and no `transfers` constraint keep every
- * transfer leg an import created.
- */
-function buildBatchScope({ userId }: { userId: number }) {
-  return {
-    planned: 'exclude' as const,
-    access: { creator: userId } as const,
-    balanceAdjustments: 'include' as const,
-    where: literal(`${BATCH_ID_EXPR} IS NOT NULL`),
-  };
-}
-
-async function countBatches({ userId }: { userId: number }): Promise<number> {
-  const [row] = (await findTransactions({
-    ...buildBatchScope({ userId }),
-    completeness: 'all',
-    attributes: [[fn('COUNT', literal(`DISTINCT (${BATCH_ID_EXPR})`)), 'batchCount']],
-    raw: true,
-  })) as unknown as { batchCount: string | number }[];
-
-  return Number(row?.batchCount ?? 0);
+interface StampGroup {
+  batchId: string;
+  source: ImportSource;
+  importedAt: string;
+  transactionCount: string | number;
+  accountIds: string[];
 }
 
 /**
- * One entry per distinct `importDetails.batchId` stamp any import wrote onto
- * `Transactions.externalData`. Derived entirely from existing transaction rows —
- * there is no dedicated batch table.
- *
- * `source`/`importedAt` are identical across every row of a batch, so MIN/MAX just
- * pick the shared value. The total is only counted for the first page — later pages
- * of an infinite scroll get `null` rather than paying for a COUNT that cannot have
- * changed meaning for them.
+ * One entry per import batch, merged from `ImportBatches` rows and the `importDetails`
+ * stamps on transactions. A batch row is listed while it has stamped rows or an effect
+ * undo can reverse; a stamped batch with no batch row is listed from its stamps alone.
  */
 export async function listBatchesHistory({
   userId,
@@ -52,49 +30,88 @@ export async function listBatchesHistory({
   limit: number;
   offset: number;
 }): Promise<ImportBatchesHistoryResponse> {
-  const isFirstPage = offset === 0;
-
-  const [rows, totalCount] = await Promise.all([
+  // ponytail: loads every batch of the user per request and pages in memory, fine while
+  // a user has tens of batches. Move the visibility predicate into SQL and page there.
+  const [groups, batches] = await Promise.all([
     findTransactions({
-      ...buildBatchScope({ userId }),
-      completeness: { page: { offset, limit } },
+      // Same row set undo deletes, so `transactionCount` matches its `deletedCount`:
+      // no planned rows (imports never write them), adjustments and transfer legs kept.
+      planned: 'exclude',
+      access: { creator: userId },
+      balanceAdjustments: 'include',
+      where: literal(`${BATCH_ID_EXPR} IS NOT NULL`),
+      completeness: 'all',
       attributes: [
         [literal(BATCH_ID_EXPR), 'batchId'],
+        // Identical on every row of a batch, so MIN/MAX just pick the shared value.
         [literal(`MIN(${SOURCE_EXPR})`), 'source'],
-        // Kept as text (ISO-8601 `Z` strings sort identically to their chronological
-        // order), not cast to timestamptz — a cast would make node-postgres parse this
-        // into a JS Date at runtime while the field is typed/serialized as a string.
+        // Kept as text: a timestamptz cast makes node-postgres return a JS Date while
+        // the field is typed and serialized as a string.
         [fn('MAX', literal(IMPORTED_AT_EXPR)), 'importedAt'],
         [fn('COUNT', col('Transactions.id')), 'transactionCount'],
         [fn('array_agg', fn('DISTINCT', col('accountId'))), 'accountIds'],
       ],
-      // GROUP BY resolves against the `batchId` output column above; ORDER BY
-      // against the `importedAt` one. `batchId` is a tiebreaker for imports that
-      // land in the same millisecond, so paging stays stable.
+      // Resolves against the `batchId` output column above.
       group: ['batchId'],
-      order: literal(`"importedAt" DESC, "batchId" DESC`),
       subQuery: false,
       raw: true,
-    }) as unknown as Promise<
-      {
-        batchId: string;
-        source: ImportSource;
-        importedAt: string;
-        transactionCount: string | number;
-        accountIds: string[];
-      }[]
-    >,
-    isFirstPage ? countBatches({ userId }) : null,
+    }) as unknown as Promise<StampGroup[]>,
+    ImportBatches.findAll({ where: { userId } }),
   ]);
 
+  const effects =
+    batches.length > 0
+      ? await ImportBatchAccountEffects.findAll({ where: { importBatchId: batches.map((batch) => batch.id) } })
+      : [];
+
+  const undoableEffectsByBatchRowId = new Map<string, ImportBatchAccountEffects[]>();
+  for (const effect of effects) {
+    if (!effect.createdByImport && effect.absorbedAmount.isZero()) continue;
+    const list = undoableEffectsByBatchRowId.get(effect.importBatchId) ?? [];
+    list.push(effect);
+    undoableEffectsByBatchRowId.set(effect.importBatchId, list);
+  }
+
+  const stampOnlyGroups = new Map(groups.map((group) => [group.batchId, group]));
+  const items: ImportBatchSummary[] = [];
+
+  for (const batch of batches) {
+    const group = stampOnlyGroups.get(batch.batchId);
+    stampOnlyGroups.delete(batch.batchId);
+    const undoableEffects = undoableEffectsByBatchRowId.get(batch.id) ?? [];
+    if (!group && undoableEffects.length === 0) continue;
+
+    items.push({
+      batchId: batch.batchId,
+      source: batch.source,
+      importedAt: batch.importedAt.toISOString(),
+      transactionCount: Number(group?.transactionCount ?? 0),
+      accountIds: [...new Set([...(group?.accountIds ?? []), ...undoableEffects.map((effect) => effect.accountId)])],
+      createdAccountCount: undoableEffects.filter((effect) => effect.createdByImport).length,
+    });
+  }
+
+  for (const group of stampOnlyGroups.values()) {
+    items.push({
+      batchId: group.batchId,
+      source: group.source,
+      importedAt: group.importedAt,
+      transactionCount: Number(group.transactionCount),
+      accountIds: group.accountIds,
+      createdAccountCount: 0,
+    });
+  }
+
+  // ISO-8601 `Z` strings sort chronologically as text. `batchId` breaks ties between
+  // imports stamped in the same millisecond, so paging stays stable.
+  items.sort((a, b) => {
+    if (a.importedAt !== b.importedAt) return a.importedAt < b.importedAt ? 1 : -1;
+    if (a.batchId === b.batchId) return 0;
+    return a.batchId < b.batchId ? 1 : -1;
+  });
+
   return {
-    items: rows.map((row) => ({
-      batchId: row.batchId,
-      source: row.source,
-      importedAt: row.importedAt,
-      transactionCount: Number(row.transactionCount),
-      accountIds: row.accountIds,
-    })),
-    totalCount,
+    items: items.slice(offset, offset + limit),
+    totalCount: offset === 0 ? items.length : null,
   };
 }

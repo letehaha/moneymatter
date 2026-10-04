@@ -1,5 +1,5 @@
 import type { ExtractedTransaction, TransactionImportDetails } from '@bt/shared/types';
-import { ImportSource, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, ImportSource, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -313,6 +313,25 @@ describe('Statement Parser - Execute Import endpoint', () => {
       });
 
       expect(negativeAmount.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('fails the job for a bank-linked target account, naming it and writing no row', async () => {
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Monobank card', type: ACCOUNT_TYPES.monobank }),
+        raw: true,
+      });
+
+      const { jobId } = await helpers.statementExecuteImport({
+        payload: { accountId: account.id, transactions: createExtractedTransactions(), skipIndices: [] },
+        raw: true,
+      });
+      const progress = await helpers.waitForStatementImportCompletion({ jobId });
+
+      expect(progress.status).toBe('failed');
+      if (progress.status !== 'failed') throw new Error('unreachable');
+      expect(progress.error).toContain(account.name);
+
+      expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
     });
 
     it('reports per-row date and amount violations while importing the rows around them', async () => {

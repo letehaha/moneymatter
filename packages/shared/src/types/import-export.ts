@@ -66,6 +66,8 @@ export interface ImportBatchSummary {
   transactionCount: number;
   /** Distinct account ids touched by the batch. */
   accountIds: string[];
+  /** Accounts the import created; undo deletes each one that has no transactions left. */
+  createdAccountCount: number;
 }
 
 /**

@@ -1055,6 +1055,31 @@ describe('Execute Import endpoint (async)', () => {
       expect(transactions.filter((tx) => tx.accountId === account.id)).toHaveLength(0);
     });
 
+    it('leaves no created account behind when a later create-new account fails', async () => {
+      // Accounts are created in row order and Accounts.name is varchar(255), so
+      // the second insert fails after the first one succeeded.
+      const firstAccountName = 'Rolled Back Account';
+      const tooLongAccountName = 'A'.repeat(300);
+
+      const { progress } = await runImport({
+        fileContent: buildCsv([
+          { date: '2024-01-15', amount: '10.00', account: firstAccountName, currency: 'USD', type: 'expense' },
+          { date: '2024-01-16', amount: '20.00', account: tooLongAccountName, currency: 'USD', type: 'expense' },
+        ]),
+        accountMapping: {
+          [firstAccountName]: { action: 'create-new', currentBalance: null },
+          [tooLongAccountName]: { action: 'create-new', currentBalance: null },
+        },
+      });
+
+      expect(progress.status).toBe('failed');
+      if (progress.status !== 'failed') throw new Error('unreachable');
+      expect(progress.error).toMatch(/too long/i);
+
+      const accountNames = (await helpers.getAccounts()).map((account) => account.name);
+      expect(accountNames).not.toContain(firstAccountName);
+    });
+
     it('completes with an empty summary when the CSV has only a header row', async () => {
       // No data rows → the worker parses zero valid rows and completes with an
       // empty summary (not a failure).
@@ -1671,6 +1696,39 @@ describe('Execute Import endpoint (async)', () => {
         // The batch aborted before the row loop, so nothing was imported.
         expect(await txByNote('overlong-payee')).toBeUndefined();
       }, 60_000);
+
+      it('lists and undoes an account created by an import that then failed on an over-long payee name', async () => {
+        const accountName = 'Failed Import Account';
+
+        const { progress } = await runImport({
+          fileContent: buildCsv([
+            expenseRow({
+              description: 'overlong-payee-new-account',
+              account: accountName,
+              currency: 'USD',
+              payee: `Overlong ${generateRandomRecordId()} ${'A'.repeat(250)}`,
+            }),
+          ]),
+          columnMapping: buildColumnMapping({ payee: 'Payee' }),
+          accountMapping: { [accountName]: { action: 'create-new', currentBalance: null } },
+        });
+
+        expect(progress.status).toBe('failed');
+
+        const created = (await helpers.getAccounts()).find((account) => account.name === accountName)!;
+        expect(created).toBeDefined();
+
+        const history = await helpers.getBatchesHistory({ raw: true });
+        expect(history).toEqual({
+          items: [expect.objectContaining({ transactionCount: 0, accountIds: [created.id], createdAccountCount: 1 })],
+          totalCount: 1,
+        });
+
+        await helpers.deleteImportBatch({ batchId: history.items[0]!.batchId, raw: true });
+
+        expect(await helpers.getBatchesHistory({ raw: true })).toEqual({ items: [], totalCount: 0 });
+        expect((await helpers.getAccounts()).map((account) => account.id)).not.toContain(created.id);
+      });
     });
   });
 });

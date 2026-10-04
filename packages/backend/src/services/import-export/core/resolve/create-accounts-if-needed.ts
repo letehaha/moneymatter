@@ -4,6 +4,8 @@ import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { withTransaction } from '@services/common/with-transaction';
+import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
 
 interface CreateAccountsIfNeededParams {
   userId: number;
@@ -73,7 +75,6 @@ export async function createAccountsIfNeeded({
   defaultAccountId,
 }: CreateAccountsIfNeededParams): Promise<CreateAccountsIfNeededResult> {
   const accountNameToId = new Map<string, string>();
-  let accountsCreated = 0;
 
   const uniqueAccountNames = new Set(accountNames);
 
@@ -118,7 +119,6 @@ export async function createAccountsIfNeeded({
       throw new ValidationError({ message: `Failed to create account "${accountName}".` });
     }
     accountNameToId.set(accountName, newAccount.id);
-    accountsCreated += 1;
   };
 
   // Verify an existing account id belongs to the user and is an eligible import
@@ -132,12 +132,17 @@ export async function createAccountsIfNeeded({
       });
     }
     assertNotDerivedBalanceAccount({ account, actionPhrase: 'be an import target' });
+    assertImportTargetNotBankLinked({ account });
     return account;
   };
 
+  // Every existing target is validated before the first insert, so a rejected
+  // mapping never leaves a freshly created account behind.
+  const namesToCreate: string[] = [];
+
   for (const accountName of uniqueAccountNames) {
     if (alwaysCreate) {
-      await createNewAccount(accountName);
+      namesToCreate.push(accountName);
       continue;
     }
 
@@ -161,9 +166,18 @@ export async function createAccountsIfNeeded({
       const account = await resolveExistingAccount(mapping.accountId);
       accountNameToId.set(accountName, account.id);
     } else if (mapping.action === 'create-new') {
-      await createNewAccount(accountName);
+      namesToCreate.push(accountName);
     }
   }
 
-  return { accountNameToId, accountsCreated };
+  // One transaction for all inserts, so a failed creation rolls back the earlier ones.
+  if (namesToCreate.length > 0) {
+    await withTransaction(async () => {
+      for (const accountName of namesToCreate) {
+        await createNewAccount(accountName);
+      }
+    })();
+  }
+
+  return { accountNameToId, accountsCreated: namesToCreate.length };
 }

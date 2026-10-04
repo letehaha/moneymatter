@@ -126,9 +126,17 @@ describe('OFX import HTTP endpoints', () => {
     const history = await helpers.getBatchesHistory({ raw: true });
     expect(history.items).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ batchId: progress.summary.batchId, source: ImportSource.ofx, transactionCount: 2 }),
+        expect.objectContaining({
+          batchId: progress.summary.batchId,
+          source: ImportSource.ofx,
+          transactionCount: 2,
+          createdAccountCount: 1,
+        }),
       ]),
     );
+
+    await helpers.deleteImportBatch({ batchId: progress.summary.batchId, raw: true });
+    expect((await helpers.getAccounts()).some((candidate) => candidate.id === account.id)).toBe(false);
   });
 
   it('links an existing account, detects a repeated file, and skips it on a second execution', async () => {
@@ -160,6 +168,55 @@ describe('OFX import HTTP endpoints', () => {
 
     const transactions = await helpers.getTransactions({ accountIds: [account.id], raw: true });
     expect(transactions).toHaveLength(1);
+
+    const history = await helpers.getBatchesHistory({ raw: true });
+    expect(history.totalCount).toBe(1);
+    expect(history.items.map((item) => item.batchId)).toEqual([first.summary.batchId]);
+  });
+
+  it('restores a linked non-base-currency account in both currencies when a recalc-off import is undone', async () => {
+    // Non-zero opening balance plus a seeded row keeps every ref balance non-zero.
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({
+        name: `OFX undo ${Date.now()}`,
+        currencyCode: 'EUR',
+        initialBalance: 1000,
+      }),
+      raw: true,
+    });
+    await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 500, time: '2024-06-10T12:00:00Z' }),
+      raw: true,
+    });
+    const before = await helpers.getAccount({ id: account.id, raw: true });
+
+    const upload = await helpers.uploadOfxFixture({ filename: 'bank-v2.ofx' });
+    const sourceKey = upload.result.accounts[0]!.sourceAccountKey;
+    const progress = await runImport({
+      uploadId: upload.uploadId,
+      accountMapping: { [sourceKey]: { action: 'link-existing', accountId: account.id } },
+      skipDuplicateIndices: [],
+      recalculateBalance: false,
+    });
+    helpers.expectOfxCompleted(progress);
+    expect(progress.summary).toMatchObject({ accountsLinked: 1, transactionsImported: 1, errors: [] });
+    const { batchId } = progress.summary;
+
+    const afterImport = await helpers.getAccount({ id: account.id, raw: true });
+    expect(afterImport.currentBalance).toBe(before.currentBalance);
+    expect(afterImport.initialBalance).not.toBe(before.initialBalance);
+
+    const result = await helpers.deleteImportBatch({ batchId, raw: true });
+    expect(result.deletedCount).toBe(1);
+    expect(await helpers.getTransactions({ batchId, raw: true })).toHaveLength(0);
+
+    expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
+      id: account.id,
+      currentBalance: before.currentBalance,
+      initialBalance: before.initialBalance,
+      refCurrentBalance: before.refCurrentBalance,
+      refInitialBalance: before.refInitialBalance,
+    });
   });
 
   it('honors skip mappings without creating an account or transaction', async () => {

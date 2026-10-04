@@ -174,4 +174,19 @@ describe('useAccountsStore – accountsRecord mirrors the live accounts list', (
       expect(ids).toEqual(['acc-active', 'acc-archived']);
     });
   });
+
+  describe('importLinkableAccounts', () => {
+    it('offers only hand-managed accounts whose balance an import may shift', async () => {
+      mockLoadAccounts.mockResolvedValue([
+        buildAccount('acc-cash'),
+        buildAccount('acc-mono', { type: ACCOUNT_TYPES.monobank }),
+        buildAccount('acc-loan', { accountCategory: ACCOUNT_CATEGORIES.loan }),
+        buildAccount('acc-car', { accountCategory: ACCOUNT_CATEGORIES.vehicle }),
+      ]);
+      mountStore();
+      await flushPromises();
+
+      expect(store.importLinkableAccounts.map((account) => account.id)).toEqual(['acc-cash']);
+    });
+  });
 });

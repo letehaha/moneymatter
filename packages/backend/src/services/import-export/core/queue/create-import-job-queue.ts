@@ -2,6 +2,7 @@ import { SSEEventPayload, SSEEventType } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import { SentryTraceData, withQueueProcessSpan, withQueuePublishSpan } from '@js/utils/sentry';
+import ImportBatches from '@models/import-batches.model';
 import { runWithBalanceRevalueBatch } from '@services/balances/revalue-balance-history.service';
 import { sseManager } from '@services/common/sse';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
@@ -310,6 +311,16 @@ export function createImportJobQueue<
         jobId: job?.id,
         userId: job?.data.userId,
       });
+      // The killed importer never set finishedAt, and undo refuses unfinished batches.
+      // ponytail: assumes one worker process; with several, scope this to the job's own batch.
+      if (job) {
+        ImportBatches.update(
+          { finishedAt: new Date() },
+          { where: { userId: job.data.userId, finishedAt: null } },
+        ).catch((error) =>
+          logger.error({ message: `[${logLabel} Worker] Failed to finish interrupted import batches`, error }),
+        );
+      }
     } else {
       logger.error({ message: `[${logLabel} Worker] Job ${job?.id} failed`, error: err });
     }

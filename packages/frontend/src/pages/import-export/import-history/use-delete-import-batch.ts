@@ -29,7 +29,9 @@ export function useDeleteImportBatch({ onSuccess }: { onSuccess?: () => void } =
       });
 
       addSuccessNotification(
-        i18n.global.t('pages.importExport.importHistory.deleteSuccessMessage', { count: result.deletedCount }),
+        result.deletedCount === 0
+          ? i18n.global.t('pages.importExport.importHistory.deleteSuccessNoTransactions')
+          : i18n.global.t('pages.importExport.importHistory.deleteSuccessMessage', { count: result.deletedCount }),
       );
 
       onSuccess?.();

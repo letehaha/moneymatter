@@ -312,7 +312,9 @@ Every import is listed in **Import History**, where you can review it or delete 
 What deleting an import does:
 
 - **It permanently deletes every transaction from that import.** This can't be undone.
-- **It keeps everything else the import created**: accounts, categories, payees and tags stay. Delete them yourself if you don't need them.
+- **It deletes accounts the import created, if they have no transactions left.** An account that still has transactions is kept. Categories, payees and tags the import created stay. Delete them yourself if you don't need them.
+- **It restores the opening balance the import adjusted.** If the import changed an account's initial balance to keep its current balance the same (see [how an import affects balances](#how-an-import-affects-balances)), that change is reversed.
+- **Imports made before this feature was added only delete their transactions.** Their accounts stay and their balances aren't restored.
 - **Transfers are unlinked, not deleted.** If one of your other transactions was linked as a [transfer](/transfers-and-refunds/how-transfers-work/) to an imported one, it stays, as an [Out of Wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transaction. Tick **Also delete the linked transfer transaction** to delete it as well. You'll be asked to confirm a second time.
 - **Large imports take a moment.** For imports with more than 1,000 transactions, the app shows "Deleting imported transactions" and is locked until it finishes.
 
@@ -322,7 +324,7 @@ After deleting, check the balance of each affected account. If it doesn't match 
 If an account from the import has since been connected to a bank, you'll see "This import can no longer be undone because its account is now connected to a bank". The bank decides that account's balance, and deleting its history could throw the synced balance off.
 </Aside>
 
-The list is built from the transactions themselves. If you delete all of an import's transactions by hand, the import disappears from the list.
+If you delete all of an import's transactions by hand, the import stays in the list while it still has something to undo: an adjustment it made to an account's opening balance, or an account it created. Once nothing is left to undo, it disappears from the list. Imports made before this feature was added disappear as soon as their last transaction is deleted.
 
 ## Good to know
 
