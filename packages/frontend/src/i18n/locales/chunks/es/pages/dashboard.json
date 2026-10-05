@@ -126,6 +126,7 @@
         "title": "Flujo de caja",
         "description": "Muestra su ahorro neto: ingresos menos gastos para el período seleccionado, con una tendencia de períodos anteriores",
         "vsPrevious": "vs anterior",
+        "notAvailable": "N/D",
         "income": "Ingresos",
         "expenses": "Gastos",
         "saved": "Ahorrado",

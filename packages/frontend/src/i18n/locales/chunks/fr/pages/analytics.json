@@ -1,0 +1,615 @@
+{
+  "analytics": {
+    "backToAnalytics": "Back to Analytics",
+    "timePeriods": {},
+    "navigation": {
+      "cashFlow": "Cash Flow",
+      "trendsComparison": "Trends Comparison",
+      "investmentCalculator": "Investment Projection",
+      "pivotReport": "Pivot",
+      "netWorthDrivers": "Net Worth Drivers",
+      "investmentContributions": "Contributions",
+      "netWorthHistory": "Net Worth History",
+      "collapse": "Collapse",
+      "sections": {
+        "investments": "Investments"
+      },
+      "fire": "FIRE"
+    },
+    "controls": {
+      "options": "Options"
+    },
+    "cashFlow": {
+      "subtitle": "Income against expenses over time, and where the money went.",
+      "income": "Income",
+      "expenses": "Expenses",
+      "netSavings": "Net Savings",
+      "netFlow": "Net Flow",
+      "savingsRate": "Savings Rate",
+      "loadError": "Failed to load cash flow data",
+      "noData": "No transactions found",
+      "noDataHint": "Try selecting a different period or check if you have any transactions",
+      "showTrendLine": "Show trend line",
+      "showTrendLineHint": "Smoothed average of net cash flow",
+      "trendLine": "Trend Line",
+      "vsPreviousPeriod": "vs previous period",
+      "chartTypes": {
+        "stacked": "Stacked",
+        "mirrored": "Mirrored",
+        "grouped": "Grouped"
+      },
+      "granularity": {
+        "monthly": "Monthly",
+        "biweekly": "Bi-weekly",
+        "weekly": "Weekly"
+      },
+      "periods": {
+        "last3Months": "Last 3 months",
+        "last6Months": "Last 6 months",
+        "last12Months": "Last 12 months",
+        "thisYear": "This year",
+        "previousYear": "Previous year",
+        "allTime": "All time"
+      },
+      "composition": {
+        "detail": "Detail",
+        "levelsSummary": "Sources L{sources} · Expenses L{expenses}",
+        "levelsHint": "Category nesting level per side: higher levels break flows into subcategories.",
+        "sources": "Sources",
+        "level": "Level {level}",
+        "topN": "Top {count}",
+        "totalIncome": "Total income",
+        "incomePlusDeficit": "Income + deficit",
+        "savings": "Savings",
+        "deficit": "Deficit",
+        "other": "Other",
+        "noData": "No transactions in this period",
+        "noDataHint": "Pick another period or click a bar in the chart above",
+        "loadError": "Failed to load composition",
+        "amount": "Amount",
+        "shareOfIncome": "Share of income",
+        "shareOfExpenses": "Share of expenses",
+        "saved": "Saved",
+        "pctOfIncome": "{pct} of income",
+        "pctSavingsRate": "{pct} savings rate",
+        "keptAsCash": "Kept as cash",
+        "shareOfSavings": "Share of savings",
+        "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
+        "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
+        "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
+        "andMore": "+{count} more",
+        "settings": "Chart settings"
+      }
+    },
+    "trends": {
+      "subtitle": "Compare spending, income and savings with the previous period.",
+      "metrics": {
+        "expenses": "Expenses",
+        "income": "Income",
+        "savings": "Savings"
+      },
+      "chart": {
+        "selectedPeriod": "Selected period",
+        "comparisonPeriod": "Previous period",
+        "cumulativeNote": "Cumulative total up to this point"
+      },
+      "categoryBreakdown": {
+        "title": "Category Breakdown",
+        "noData": "No data for this period",
+        "viewAll": "View all categories",
+        "moreCount": "{count} more"
+      },
+      "monthlyComparison": {
+        "title": "Monthly Comparison",
+        "allCategories": "All Categories",
+        "average": "Average",
+        "total": "Total",
+        "vsLastMonth": "vs previous month",
+        "viewTransactions": "View transactions"
+      },
+      "cumulativeProgress": {
+        "title": "Cumulative Progress"
+      },
+      "filters": {
+        "button": "Filters",
+        "title": "Filters",
+        "categories": "Categories",
+        "include": "Include",
+        "exclude": "Exclude",
+        "accounts": "Accounts",
+        "payees": "Payees",
+        "tags": "Tags",
+        "reset": "Reset"
+      },
+      "legend": {
+        "hide": "Hide from chart",
+        "show": "Show in chart"
+      },
+      "vsPreviousPeriod": "vs previous period",
+      "loadError": "Failed to load data",
+      "noData": "No data available",
+      "noDataHint": "No transactions recorded for this period"
+    },
+    "investmentCalculator": {
+      "subtitle": "Project how your portfolio could grow with regular contributions.",
+      "initialBalance": "Initial balance",
+      "useCurrentBalance": "Use current balance",
+      "monthlyContribution": "Monthly contribution",
+      "useAvgNetIncome": "Use avg net income →",
+      "timeHorizon": "Time horizon (years)",
+      "annualReturn": "Annual return (%)",
+      "annualReturnPlaceholder": "Select preset",
+      "annualInflation": "Annual inflation (%)",
+      "totalInvested": "Total invested",
+      "nominalFinalValue": "Nominal final value",
+      "growth": "growth",
+      "realFinalValue": "Real final value",
+      "realGrowth": "real growth",
+      "realMultiplier": "Real multiplier",
+      "realMultiplierTooltip": "How much your total investment grows after accounting for inflation. Unlike nominal returns, this shows real purchasing power. 1.5x means every $1 invested becomes $1.50 in today's money.",
+      "ofMoneyInvested": "of money invested",
+      "customIndicator": "Custom",
+      "customReturnRate": "Enter rate (%)",
+      "inflationAdjustedSuffix": "(Inflation Adjusted)",
+      "yearN": "Year {n}",
+      "disclaimer": "Based on constant {rate}%/yr return. S&P 500 historical average is ~10%/yr. Does not account for taxes or fees.",
+      "useAvgNetIncomeTooltip": "Your average monthly net income (income minus expenses) over the selected period, based on your transaction history",
+      "inflationTooltip": "How fast prices rise each year, reducing your money's real value.\n\n~1–2% — very low, stable economy\n~2–3% — normal (typical target)\n~4–6% — above average\n~7%+ — crisis-level inflation",
+      "totalInvestedBreakdown": "{initial} initial + {contributions} contributions",
+      "configure": "Configure",
+      "hideInputs": "Hide",
+      "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
+      "portfolioNoHistoryOption": "{name} — not enough history",
+      "presetReturnOption": "{label} (~{rate}%/yr)",
+      "rangeMin": "Min",
+      "rangeMax": "Max",
+      "indicators": {
+        "worldStock": "Total World Stock",
+        "usTreasury": "US Treasury Bonds",
+        "corporateBonds": "Corporate Bonds"
+      }
+    },
+    "portfolioFilter": {
+      "all": "All portfolios",
+      "selectedOne": "1 portfolio",
+      "selectedMany": "{n} portfolios",
+      "searchPlaceholder": "Search portfolios",
+      "noResults": "No portfolios match your search"
+    },
+    "fire": {
+      "subtitle": "When your savings could cover your spending for good",
+      "planLink": "Plan for FIRE",
+      "addToDashboard": "Add to dashboard",
+      "addedToDashboard": "FIRE progress added to your dashboard",
+      "addToDashboardFailed": "Couldn't add the widget. Try again.",
+      "saveFailed": "Couldn't save your FIRE assumptions. Try again to keep your changes.",
+      "loading": "Loading FIRE plan",
+      "loadFailed": "Couldn't load the data for your FIRE plan.",
+      "adjustAssumptions": "Adjust assumptions",
+      "disclaimer": "Projections use historical market averages and your recent spending. They are estimates, not advice. Returns will vary.",
+      "callouts": {
+        "contributionClamped": "You spent more than you earned over the last 12 months, so the projection assumes no new savings.",
+        "enterContribution": "Enter a contribution",
+        "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
+        "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
+        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to World stocks.",
+        "customMissing": "Enter a custom return. Until then, the plan uses World stocks.",
+        "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
+        "hide": "Hide warning",
+        "hideTitle": "Hide this warning?",
+        "hideDescription": "It comes back the next time you open the planner.",
+        "dontShowAgain": "Don't show again",
+        "hideConfirm": "Hide"
+      },
+      "assumptions": {
+        "title": "Assumptions",
+        "spendingLabel": "Yearly spending in retirement",
+        "spendingPlaceholder": "e.g. 40000",
+        "requiredBadge": "Required",
+        "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
+        "backToAuto": "Back to Auto ({amount})",
+        "excludedLabel": "Not counted as spending",
+        "excludedPlaceholder": "Exclude categories",
+        "savingsNote": "Savings categories are excluded too. {link}",
+        "savingsNoteLink": "Edit",
+        "contributionLabel": "Monthly contribution",
+        "contributionPlaceholder": "e.g. 1500",
+        "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
+        "savingsRate": "You save {pct} of your income",
+        "countsTitle": "What counts toward FIRE",
+        "countsCash": "Cash & bank accounts",
+        "countsPortfolios": "Investment portfolios",
+        "countsVentures": "Ventures",
+        "countsVehicles": "Véhicules",
+        "countsLoans": "Loans",
+        "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
+        "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
+        "archivedNoteLink": "Review",
+        "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
+        "inflationLabel": "Inflation",
+        "inflationBuiltIn": "{pct}% · built into this preset",
+        "inflationBuiltInHint": "Market presets are US and global nominal returns, so they come with US inflation. Pairing them with your local inflation would give misleading numbers. Pick a custom return or your portfolio to set inflation yourself.",
+        "withdrawalLabel": "Withdrawal rate",
+        "withdrawalCustom": "Custom",
+        "withdrawalPlaceholder": "e.g. 3.8",
+        "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
+        "more": "More",
+        "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
+        "leanLabel": "Lean FIRE multiplier",
+        "leanPlaceholder": "e.g. 0.7",
+        "fatLabel": "Fat FIRE multiplier",
+        "fatPlaceholder": "e.g. 1.5",
+        "baristaLabel": "Part-time income per month",
+        "baristaPlaceholder": "e.g. 1000",
+        "birthYearLabel": "Birth year",
+        "birthYearPlaceholder": "e.g. 1990",
+        "coastAgeLabel": "Coast FIRE target age",
+        "coastAgePlaceholder": "e.g. 65"
+      },
+      "auto": "Auto",
+      "perYear": "{amount}/yr",
+      "perMonth": "{amount}/mo",
+      "notWithinHorizon": "not within 50 yrs",
+      "hero": {
+        "timeTo": "Time to {type}",
+        "unitYears": "{n} yrs | {n} yr | {n} yrs",
+        "unitMonths": "{n} mos | {n} mo | {n} mos",
+        "atAge": "at age {age}",
+        "alwaysCounted": "Always counted",
+        "range": "{earliest} to {latest} if returns run 2 points higher or lower",
+        "rangeOpen": "{earliest} to after {year} if returns run 2 points higher or lower",
+        "basedOn": {
+          "spending": "Spending: {amount}",
+          "saving": "Saving: {amount}",
+          "counting": "Counting: {buckets}"
+        },
+        "reached": {
+          "eyebrowFor": "{type} reached",
+          "title": "You're financially independent",
+          "supports": "Your money supports {amount}/mo",
+          "pctOfSpending": "{pct}% of your spending · at {rate}% withdrawal",
+          "yearsCovered": "Less than a year of spending covered | 1 year of spending covered | {n} years of spending covered",
+          "drawdown": "You're drawing down about {amount}/mo.",
+          "noNewSavings": "Projections assume no new savings."
+        },
+        "unreachable": {
+          "title": "Not reachable at current savings",
+          "noSavingsTitle": "No new savings.",
+          "noSavingsClamped": "You spent more than you earned over the last 12 months, so the contribution is set to 0.",
+          "noSavings": "Your monthly contribution is 0 or less.",
+          "enterContribution": "Enter a contribution",
+          "lowReturnTitle": "Return doesn't beat inflation.",
+          "lowReturn": "The balance shrinks in today's money.",
+          "tooSlow": "At this pace it takes more than 50 years.",
+          "whatItTakes": "What it would take",
+          "whatItTakesDetail": "to reach {target} in {duration} at the current return."
+        }
+      },
+      "progress": {
+        "progressTo": "Progress to {type}",
+        "amountOfTarget": "{balance} of {target}",
+        "next": "Next: {goal} · {date}",
+        "nextGoal": "{goal} in {duration}",
+        "nextUnreachable": "Next: {goal} · not reached at these numbers",
+        "targetReached": "FIRE target reached",
+        "supportsToday": "Supports {amount}/mo today",
+        "negativeNetWorth": "Net worth is below zero. Your contributions pay down the gap first, then grow."
+      },
+      "chips": {
+        "lean": {
+          "name": "Lean FIRE",
+          "description": "{pct}% of your spending"
+        },
+        "regular": {
+          "name": "Regular FIRE",
+          "description": "current lifestyle"
+        },
+        "fat": {
+          "name": "Fat FIRE",
+          "description": "{pct}% of your spending"
+        },
+        "barista": {
+          "name": "Barista FIRE",
+          "description": "part-time income covers part",
+          "withIncome": "with {amount}/mo part-time"
+        },
+        "coast": {
+          "name": "Coast FIRE",
+          "description": "needed today to retire at {age}",
+          "needsBirthYear": "needs your birth year",
+          "pastAge": "you're past your coast age of {age}",
+          "notMeaningful": "growth alone can't get there at 0% real return or less"
+        },
+        "others": "Others",
+        "nextGoal": "{name} · next",
+        "eta": "in {duration}",
+        "growthOnly": "growth only",
+        "reached": "Reached",
+        "reachedCoast": "Reached · saving is optional now",
+        "reachedBaristaCovers": "Part-time income covers your spending",
+        "actions": {
+          "enterSpending": "enter spending first",
+          "changeCoastAge": "Change coast age",
+          "changeReturn": "Change return",
+          "addPartTimeIncome": "Add part-time income",
+          "addBirthYear": "Add birth year"
+        }
+      },
+      "chart": {
+        "ariaLabel": "Net worth history and projected path to your FIRE number",
+        "actual": "Actual",
+        "projected": "Projected",
+        "range": "±2 pts return",
+        "today": "Today",
+        "typeTarget": "{type} · {amount}",
+        "typeLabel": "{type} · {date}"
+      },
+      "milestones": {
+        "reached": "Reached",
+        "reachedOn": "Reached {date}",
+        "eta": "in {duration} · {date}"
+      },
+      "empty": {
+        "noData": {
+          "title": "Plan your path to financial independence",
+          "description": "This page fills in from your accounts and transactions. Nothing is tracked yet, so start with your yearly spending. Once you add accounts, the plan switches to live figures."
+        },
+        "shortHistory": {
+          "title": "No full months of transactions yet | Only 1 full month of transactions | Only {n} full months of transactions",
+          "description": "Spending can't be worked out yet. It switches to Auto after 3 full months. Until then, enter it by hand."
+        },
+        "noSpending": {
+          "title": "No spending recorded yet",
+          "description": "Your recent months have no expenses we can use. Enter your yearly spending to see your plan."
+        },
+        "enterSpending": "Enter spending",
+        "addAccount": "Add an account"
+      },
+      "trial": {
+        "daysLeft": "FIRE planner trial · {n} day left | FIRE planner trial · {n} days left",
+        "ended": "Your 14-day FIRE planner trial has ended. Upgrade to Plus to keep planning your path to FIRE.",
+        "startFailed": "Couldn't start the FIRE planner trial. Reload the page to try again."
+      }
+    }
+  },
+  "pivotReport": {
+    "subtitle": "Break spending down by any dimension, lay it across time, and compare.",
+    "controls": {
+      "rows": "Rows",
+      "columns": "Columns",
+      "measure": "Measure",
+      "settings": "Settings"
+    },
+    "dimensions": {
+      "category": "Category",
+      "subcategory": "+ Subcategory",
+      "payee": "Payee",
+      "tag": "Tag"
+    },
+    "granularity": {
+      "yearly": "Years",
+      "quarterly": "Quarters",
+      "monthly": "Months",
+      "weekly": "Weeks"
+    },
+    "measure": {
+      "expense": "Expenses",
+      "income": "Income"
+    },
+    "display": {
+      "title": "Display options"
+    },
+    "toggles": {
+      "heatmap": "Heatmap",
+      "percentChange": "% change"
+    },
+    "filters": {
+      "period": "Period",
+      "allCategories": "All",
+      "button": "Filters",
+      "categories": "Categories",
+      "payees": "Payees",
+      "accounts": "Accounts",
+      "reset": "Reset",
+      "resetTooltip": "Reset to defaults"
+    },
+    "periods": {
+      "last6Months": "Last 6 months",
+      "last12Months": "Last 12 months",
+      "thisYear": "This year",
+      "previousYear": "Previous year",
+      "last3Years": "Last 3 years",
+      "last5Years": "Last 5 years",
+      "allTime": "All time"
+    },
+    "savedViews": {
+      "trigger": "Views",
+      "empty": "No saved views yet",
+      "saveCurrent": "Save current view",
+      "customView": "Custom view",
+      "dialogTitle": "Save view",
+      "dialogDescription": "Save the current layout and filters as a reusable view.",
+      "nameLabel": "View name",
+      "namePlaceholder": "e.g. Grocery watch",
+      "savedToast": "View saved",
+      "deletedToast": "View deleted",
+      "saveError": "Could not save the view"
+    },
+    "table": {
+      "total": "Total",
+      "collapseAll": "Collapse all",
+      "expandAll": "Expand all",
+      "expandRow": "Expand",
+      "collapseRow": "Collapse"
+    },
+    "states": {
+      "emptyTitle": "No data for this selection",
+      "emptyHint": "Try a wider period or different filters.",
+      "errorTitle": "Couldn't load the report",
+      "errorHint": "Something went wrong. Please try again."
+    }
+  },
+  "netWorthDrivers": {
+    "subtitle": "How much of your growth you saved, and how much the market returned. Transfers between your own accounts count as neither.",
+    "portfolioFilter": {
+      "scopeHint": "Filters investment holdings and growth only. Saved amounts and account cash are not affected."
+    },
+    "calcInfo": {
+      "trigger": "How this is calculated",
+      "title": "How this is calculated",
+      "savedHeading": "Saved",
+      "savedBody": "Money you set aside — income minus spending. Moving money between your own accounts, or into an investment portfolio, doesn't count as saving.",
+      "grownHeading": "Grown",
+      "grownBody": "What the market did to your holdings — price changes, plus dividends, minus fees. Money you put in is never counted as growth.",
+      "exampleHeading": "Example",
+      "exampleBody": "You earn $10,000, invest it, and it grows to $12,000. That's $10,000 Saved and $2,000 Grown — the $10,000 is counted once, as Saved, and only the $2,000 counts as Grown.",
+      "noteBody": "Growth is counted as prices move each period, not only when you sell. Selling something that already rose doesn't add to Grown a second time."
+    },
+    "granularity": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "chart": {
+      "title": "Saved vs. grown",
+      "subtitle": "Cumulative totals over the selected period.",
+      "saved": "Saved",
+      "grown": "Grown",
+      "totalGained": "Total gained",
+      "thisPeriod": "This period",
+      "periodSavings": "Savings",
+      "periodGrowth": "Growth",
+      "allocationContext": "{share}% of your net worth sits in investments (was {reference}% in {date})",
+      "allocationContextNoReference": "{share}% of your net worth sits in investments"
+    },
+    "breakdownChart": {
+      "title": "Per-period breakdown",
+      "subtitle": "How much you saved and how much the market returned in each period.",
+      "periodTotal": "Gained this period",
+      "others": "Others",
+      "grownTotal": "Grown total"
+    },
+    "degraded": {
+      "title": "Some values are estimated",
+      "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
+      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
+    },
+    "states": {
+      "loadError": "Couldn't load the report",
+      "noData": "Nothing to show for this period",
+      "noDataHint": "Once you have income, expenses, or investments in this range, they'll appear here.",
+      "noPortfoliosHint": "Investment growth appears once you add a portfolio with priced holdings.",
+      "noPortfoliosTitle": "No investments yet",
+      "noPortfoliosPlaceholder": "This report splits your net-worth change into what you saved and what your investments grew. Add a portfolio to start tracking growth.",
+      "noPortfoliosAction": "Add a portfolio"
+    },
+    "target": {
+      "title": "Growth crossover",
+      "subtitle": "The portfolio size where market growth — not your saving — does most of the work.",
+      "targetShareLabel": "Growth's share of your monthly gain",
+      "savingsLabel": "Expected monthly saving",
+      "savingsPlaceholder": "e.g. 1,000",
+      "savingsResetToAverage": "Use my average ({amount})",
+      "currentShareLine": "Today growth covers ~{current}% of your monthly gain — you're aiming for {target}%.",
+      "valueNeeded": "Portfolio value needed",
+      "progressLine": "You're {pct}% of the way — {current} of {needed}.",
+      "progressReached": "Target reached — your portfolio is already there.",
+      "gapLabel": "Gap",
+      "gapValue": "{amount} more needed",
+      "reached": "Target reached",
+      "timeLabel": "Time to target",
+      "etaValue": "~{years} yr",
+      "etaReached": "Reached",
+      "etaHint": "If you keep saving and the return holds.",
+      "noReturn": "Pick a positive expected return to see a target value.",
+      "assumptionsLabel": "Assumptions",
+      "disclaimer": "A straight projection from today's values and your assumptions — not financial advice."
+    }
+  },
+  "investmentContributions": {
+    "subtitle": "How much cash you've moved into your portfolios over time, and where it went.",
+    "average": "Average",
+    "portfolioFilter": {
+      "scopeHint": "Filters which portfolios count toward contributions."
+    },
+    "granularity": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "cards": {
+      "totalContributed": "Total contributed",
+      "shareOfSavings": "Share of savings",
+      "averagePerPeriod": "Average per period"
+    },
+    "chart": {
+      "vsPrevious": "vs previous"
+    },
+    "states": {
+      "noData": "No contributions in this range",
+      "noDataHint": "Move money into a portfolio during this period to see it here.",
+      "noPortfoliosTitle": "No portfolios yet",
+      "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
+      "noPortfoliosAction": "Add a portfolio",
+      "loadError": "Couldn't load contributions"
+    }
+  },
+  "netWorthHistory": {
+    "subtitle": "How your assets, liabilities and net worth changed over time",
+    "granularity": {
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "kindFilter": {
+      "all": "All liabilities",
+      "scopeHint": "Choose which debt types count as liabilities in this report.",
+      "selectedOne": "1 type",
+      "selectedMany": "{n} types"
+    },
+    "assetKinds": {
+      "cash": "Cash & accounts",
+      "investments": "Investments",
+      "vehicles": "Véhicules",
+      "ventures": "Ventures"
+    },
+    "assetFilter": {
+      "all": "All assets",
+      "scopeHint": "Choose which asset types count in this report.",
+      "selectedOne": "1 type",
+      "selectedMany": "{n} types"
+    },
+    "cards": {
+      "currentNetWorth": "Current net worth",
+      "periodChange": "Period change",
+      "annualized": "≈ {pct} / yr",
+      "averageLiabilities": "You have an average of {amount} in liabilities during the selected period.",
+      "noLiabilities": "You had no liabilities during the selected period."
+    },
+    "chart": {
+      "assets": "Actifs",
+      "liabilities": "Passifs",
+      "netWorth": "Net worth",
+      "averageLiabilities": "Avg. liabilities",
+      "liabilitiesZoomed": "Liabilities scale zoomed"
+    },
+    "settings": {
+      "title": "Chart settings",
+      "zoomLiabilities": "Zoom liabilities scale",
+      "zoomLiabilitiesHint": "Enlarge small debts so they stay visible next to large assets."
+    },
+    "degraded": {
+      "title": "Some values are estimated",
+      "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
+      "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
+    },
+    "states": {
+      "loadError": "Failed to load net worth history. Please try again later.",
+      "noData": "No history for this period",
+      "noDataHint": "Try a longer period, or add accounts and transactions so there are balances to snapshot."
+    }
+  }
+}

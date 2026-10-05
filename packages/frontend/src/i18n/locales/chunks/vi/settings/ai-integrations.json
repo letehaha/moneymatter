@@ -54,8 +54,8 @@
       },
       "scopes": {
         "financeRead": "Đọc dữ liệu tài chính",
-        "financeWrite": "Edit financial data",
-        "financeDelete": "Delete financial data",
+        "financeWrite": "Chỉnh sửa dữ liệu tài chính",
+        "financeDelete": "Xóa dữ liệu tài chính",
         "profileRead": "Đọc hồ sơ",
         "offlineAccess": "Truy cập ngoại tuyến"
       }

@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "عملية المزامنة ل \"{{lockKey}}\" مقفلة بالفعل.",
-    "serviceTemporarilyUnavailable": "الخدمة غير متاحة مؤقتا. يرجى المحاولة مرة أخرى."
+    "serviceTemporarilyUnavailable": "الخدمة غير متاحة مؤقتا. يرجى المحاولة مرة أخرى.",
+    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
   },
   "accounts": {
     "groupNotFound": "لم يتم العثور على المجموعة أو الحساب",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "This import can no longer be undone because its account is now connected to a bank. Deleting these transactions could throw off the synced balance.",
     "batchDeleteLinkedLoanTransfer": "This import is linked to a loan payment and can't be undone on its own. Enable \"also delete linked transfer transactions\" to remove it.",
     "batchDeleteInProgress": "An import batch is already being deleted. Wait for it to finish before starting another.",
-    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one."
+    "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
+    "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
+    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one.",
+    "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
     "invalidFile": "Invalid file",

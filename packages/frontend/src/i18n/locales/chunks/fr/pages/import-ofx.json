@@ -1,0 +1,120 @@
+{
+  "pages": {
+    "importExport": {
+      "ofxImport": {
+        "pageTitle": "Import an OFX or QFX file",
+        "pageDescription": "Import bank and credit card transactions from an OFX or QFX file.",
+        "stepper": {
+          "steps": {
+            "upload": "Upload",
+            "resolve": "Map accounts",
+            "review": "Review",
+            "results": "Done"
+          }
+        },
+        "fileUpload": {
+          "stepTitle": "Upload your OFX or QFX file",
+          "description": "Select a statement file that you downloaded from your bank or credit card provider.",
+          "maxSize": ".ofx or .qfx file, up to 10 MB",
+          "parsing": "Reading file…",
+          "continue": "Continue",
+          "errors": {
+            "invalidFormatNamed": "\"{name}\" is not an OFX or QFX file."
+          }
+        },
+        "errors": {
+          "uploadUnavailable": "The uploaded file is no longer available. Upload your OFX or QFX file again."
+        },
+        "resolve": {
+          "accounts": {
+            "sectionTitle": "Accounts",
+            "nameLabel": "Account name",
+            "namePlaceholder": "Enter an account name",
+            "currentBalanceLabel": "Current balance",
+            "currentBalancePlaceholder": "Leave blank to use the sum of imported transactions",
+            "ledgerBalanceHint": "Statement balance: {balance} on {date}",
+            "transactionCount": "{count} transaction | {count} transactions",
+            "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
+            "statementType": {
+              "bank": "Bank account",
+              "credit-card": "Credit card"
+            }
+          },
+          "quickActions": {
+            "mapExactMatches": "Map exact matches",
+            "createNewForUnmatched": "Create new for unmatched",
+            "reset": "Reset",
+            "tooltips": {
+              "mapExactMatches": "Link each account to an existing account that has the same name and currency.",
+              "createNewForUnmatched": "Set each account that is not linked to an existing account to create a new account.",
+              "reset": "Clear all choices and match again."
+            }
+          },
+          "footer": {
+            "back": "Back",
+            "continue": "Continue"
+          }
+        },
+        "review": {
+          "transactions": "Transactions",
+          "accountsSkipped": "Accounts skipped",
+          "duplicatesSkipped": "Duplicates skipped",
+          "willImport": "Will import",
+          "dateRange": "Date range: {from} — {to}",
+          "warningsTitle": "Check these file details",
+          "warningsHint": "The import can continue, but some transactions need special handling.",
+          "warnings": {
+            "dateUserFallback": "{count} transaction used the file's fallback time zone | {count} transactions used the file's fallback time zone",
+            "fitidMissing": "{count} transaction had no bank transaction ID | {count} transactions had no bank transaction ID",
+            "fitidDuplicate": "{count} duplicate bank transaction ID was found in the file | {count} duplicate bank transaction IDs were found in the file"
+          },
+          "duplicatesTitle": "{count} possible duplicate | {count} possible duplicates",
+          "duplicatesHint": "These transactions look like transactions that you already have. Check a row to import it anyway; unchecked duplicates are skipped.",
+          "back": "Back",
+          "importing": "Starting import…",
+          "importButton": "Import {count} transaction | Import {count} transactions"
+        },
+        "execute": {
+          "starting": "Starting the import…",
+          "progressCount": "{processed} of {total}",
+          "failed": "The import failed.",
+          "partialImportNote": "Some transactions might already be imported.",
+          "statusQueued": "Queued",
+          "statusRunning": "Importing",
+          "statusCompleted": "Completed",
+          "statusFailed": "Failed"
+        },
+        "done": {
+          "successTitle": "Import finished",
+          "successDescription": "Your OFX or QFX transactions are now in your account.",
+          "partialTitle": "Imported with {count} issue | Imported with {count} issues",
+          "partialDescription": "Most transactions were imported. The list below shows what was not imported.",
+          "emptyTitle": "Nothing new to import",
+          "emptyDescription": "Each transaction was skipped or was already in your ledger.",
+          "failedTitle": "Nothing was imported",
+          "failedDescription": "No transactions could be created. Review the errors below.",
+          "accountsCreated": "Accounts created",
+          "accountsLinked": "Accounts linked",
+          "accountsSkipped": "Accounts skipped",
+          "payeesCreated": "Payees created",
+          "transactionsImported": "Transactions imported",
+          "duplicatesSkipped": "Duplicates skipped",
+          "mergedIntoPlanned": "Merged into planned",
+          "balanceWarningTitle": "Some balances might be incorrect",
+          "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
+          "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
+          "errorsOverflow": "…and {count} more",
+          "rowPrefix": "Row {rowIndex}:",
+          "viewTransactions": "View transactions",
+          "importAnother": "Import another file"
+        },
+        "leaseExpired": {
+          "title": "Your uploaded file is no longer available",
+          "description": "The parsed copy of your OFX or QFX file was released after a period of inactivity. Your mapping choices could not be kept. Start the import again.",
+          "action": "Start over"
+        },
+        "leaseResourceLabel": "Your uploaded file"
+      }
+    }
+  }
+}

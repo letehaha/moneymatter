@@ -1,0 +1,48 @@
+{
+  "auth": {
+    "welcome": {
+      "title": "Select Base Currency",
+      "description": "Your base currency should ideally be the one you use most often. All transactions in other currencies will be calculated based on this one.",
+      "submitButton": "Confirm Currency",
+      "trialStarted": "Your free trial has started, everything is unlocked for {count} day. {link} | Your free trial has started, everything is unlocked for {count} days. {link}",
+      "logout": "Logout",
+      "labels": {
+        "baseCurrency": "Base Currency"
+      },
+      "placeholders": {
+        "loading": "Loading..."
+      },
+      "errors": {
+        "unableToLoadCurrencies": "Unable to load currencies list. Try later",
+        "unableToSetCurrency": "Unexpected error. Cannot set base currency. Please try later or contact support."
+      }
+    },
+    "oauthCallback": {
+      "completingSignIn": "Completing sign in...",
+      "errors": {
+        "accessDenied": {
+          "signIn": "Sign in was cancelled or access was denied",
+          "signUp": "Sign up was cancelled or access was denied",
+          "link": "Linking was cancelled or access was denied"
+        },
+        "userAlreadyExists": {
+          "signIn": "An account with this email already exists",
+          "signUp": "An account with this email already exists",
+          "link": "This account is already linked to another user"
+        },
+        "accountNotLinked": {
+          "signIn": "No account found with this email. Please sign up first.",
+          "signUp": "Failed to create account. Please try again.",
+          "link": "Failed to link account. Please try again."
+        },
+        "genericError": {
+          "signIn": "Failed to sign in. Please try again.",
+          "signUp": "Failed to sign up. Please try again.",
+          "link": "Failed to link account. Please try again."
+        },
+        "unauthorizedClient": "This application is not authorized to use this authentication method",
+        "temporarilyUnavailable": "The authentication service is temporarily unavailable. Please try again later."
+      }
+    }
+  }
+}

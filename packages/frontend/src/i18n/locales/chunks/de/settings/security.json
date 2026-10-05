@@ -1,67 +1,67 @@
 {
   "settings": {
     "security": {
-      "title": "Security Settings",
-      "description": "Manage your login methods, active sessions, and password",
+      "title": "Sicherheitseinstellungen",
+      "description": "Verwalte deine Anmeldemethoden, aktiven Sitzungen und dein Passwort",
       "tabs": {
-        "loginMethods": "Login Methods",
-        "activeSessions": "Active Sessions",
+        "loginMethods": "Anmeldemethoden",
+        "activeSessions": "Aktive Sitzungen",
         "password": "Passwort",
-        "backup": "Backup & restore",
-        "dangerZone": "Danger Zone"
+        "backup": "Sicherung & Wiederherstellung",
+        "dangerZone": "Gefahrenzone"
       },
       "loginMethods": {
-        "title": "Login Methods",
-        "description": "Manage how you sign in to your account",
+        "title": "Anmeldemethoden",
+        "description": "Verwalte, wie du dich in deinem Konto anmeldest",
         "oauth": {
-          "connectedAs": "Connected as {email}",
-          "accountName": "{provider} Account",
-          "notConnected": "Not connected",
+          "connectedAs": "Verbunden als {email}",
+          "accountName": "{provider}-Konto",
+          "notConnected": "Nicht verbunden",
           "disconnect": "Trennen",
           "connect": "Verbinden"
         },
         "password": {
           "title": "Passwort",
-          "passwordSet": "Password is set",
-          "noPassword": "No password set",
-          "manageInTab": "Manage in Password tab",
-          "setupInTab": "Set up in Password tab"
+          "passwordSet": "Passwort ist festgelegt",
+          "noPassword": "Kein Passwort festgelegt",
+          "manageInTab": "Im Tab Passwort verwalten",
+          "setupInTab": "Im Tab Passwort einrichten"
         },
         "passkeys": {
           "title": "Passkeys",
-          "noPasskeys": "No passkeys registered",
-          "passkeyCount": "{count} passkey(s) registered",
+          "noPasskeys": "Keine Passkeys registriert",
+          "passkeyCount": "{count} Passkey(s) registriert",
           "addButton": "Passkey hinzufügen",
           "passkeyName": "Passkey",
-          "added": "Added {date}",
-          "rename": "Rename",
-          "renamePlaceholder": "Enter passkey name",
-          "deleteConfirmTitle": "Remove passkey?",
-          "deleteConfirmDescription": "\"{name}\" will no longer be able to sign in to your account. This cannot be undone."
+          "added": "Hinzugefügt am {date}",
+          "rename": "Umbenennen",
+          "renamePlaceholder": "Passkey-Name eingeben",
+          "deleteConfirmTitle": "Passkey entfernen?",
+          "deleteConfirmDescription": "\"{name}\" kann sich nicht mehr in deinem Konto anmelden. Dies kann nicht rückgängig gemacht werden."
         },
-        "warningOneMethod": "Add another login method before disconnecting your OAuth account.",
+        "warningOneMethod": "Füge eine weitere Anmeldemethode hinzu, bevor du dein OAuth-Konto trennst.",
         "notifications": {
-          "oauthConnectFailed": "Failed to connect {provider} account",
-          "oauthDisconnectSuccess": "{provider} account disconnected",
-          "oauthDisconnectFailed": "Failed to disconnect {provider} account",
-          "passkeyAddSuccess": "Passkey added successfully",
-          "passkeyAddFailed": "Failed to add passkey. Make sure your device supports passkeys.",
-          "passkeyRemoveSuccess": "Passkey removed",
-          "passkeyRemoveFailed": "Failed to remove passkey",
-          "passkeyRenameFailed": "Failed to rename passkey"
+          "oauthConnectFailed": "{provider}-Konto konnte nicht verbunden werden",
+          "oauthDisconnectSuccess": "{provider}-Konto getrennt",
+          "oauthDisconnectFailed": "{provider}-Konto konnte nicht getrennt werden",
+          "passkeyAddSuccess": "Passkey erfolgreich hinzugefügt",
+          "passkeyAddFailed": "Passkey konnte nicht hinzugefügt werden. Stelle sicher, dass dein Gerät Passkeys unterstützt.",
+          "passkeyRemoveSuccess": "Passkey entfernt",
+          "passkeyRemoveFailed": "Passkey konnte nicht entfernt werden",
+          "passkeyRenameFailed": "Passkey konnte nicht umbenannt werden"
         }
       },
       "activeSessions": {
-        "title": "Active Sessions",
-        "description": "Manage devices where you're currently signed in",
-        "currentBadge": "Current",
-        "unknownLocation": "Unknown location",
-        "lastActive": "Last active: {date}",
-        "noSessions": "No active sessions found",
-        "revokeAllButton": "Sign out of all other sessions",
+        "title": "Aktive Sitzungen",
+        "description": "Verwalte Geräte, auf denen du derzeit angemeldet bist",
+        "currentBadge": "Aktuell",
+        "unknownLocation": "Unbekannter Standort",
+        "lastActive": "Zuletzt aktiv: {date}",
+        "noSessions": "Keine aktiven Sitzungen gefunden",
+        "revokeAllButton": "Aus allen anderen Sitzungen abmelden",
         "deviceTypes": {
-          "unknownDevice": "Unknown Device",
-          "unknownBrowser": "Unknown Browser"
+          "unknownDevice": "Unbekanntes Gerät",
+          "unknownBrowser": "Unbekannter Browser"
         },
         "timeAgo": {
           "justNow": "Gerade eben",
@@ -70,203 +70,203 @@
           "daysAgo": "Vor {count} Tag | Vor {count} Tagen"
         },
         "notifications": {
-          "loadFailed": "Failed to load sessions",
-          "revokeSuccess": "Session revoked",
-          "revokeFailed": "Failed to revoke session",
-          "revokeAllSuccess": "All other sessions have been signed out",
-          "revokeAllFailed": "Failed to revoke sessions"
+          "loadFailed": "Sitzungen konnten nicht geladen werden",
+          "revokeSuccess": "Sitzung beendet",
+          "revokeFailed": "Sitzung konnte nicht beendet werden",
+          "revokeAllSuccess": "Du wurdest aus allen anderen Sitzungen abgemeldet",
+          "revokeAllFailed": "Sitzungen konnten nicht beendet werden"
         }
       },
       "passwordSection": {
         "title": "Passwort",
-        "descriptionChange": "Change your password",
-        "descriptionSet": "Set up a password for your account",
+        "descriptionChange": "Ändere dein Passwort",
+        "descriptionSet": "Richte ein Passwort für dein Konto ein",
         "labels": {
-          "currentPassword": "Current Password",
-          "newPassword": "New Password",
+          "currentPassword": "Aktuelles Passwort",
+          "newPassword": "Neues Passwort",
           "password": "Passwort",
-          "confirmPassword": "Confirm Password"
+          "confirmPassword": "Passwort bestätigen"
         },
         "placeholders": {
-          "currentPassword": "Enter current password",
-          "newPassword": "Enter new password",
-          "confirmPassword": "Confirm new password"
+          "currentPassword": "Aktuelles Passwort eingeben",
+          "newPassword": "Neues Passwort eingeben",
+          "confirmPassword": "Neues Passwort bestätigen"
         },
         "buttons": {
-          "change": "Change Password",
-          "set": "Set Password"
+          "change": "Passwort ändern",
+          "set": "Passwort festlegen"
         },
         "strength": {
-          "veryWeak": "Very weak",
-          "weak": "Weak",
-          "fair": "Fair",
-          "strong": "Strong",
-          "veryStrong": "Very strong"
+          "veryWeak": "Sehr schwach",
+          "weak": "Schwach",
+          "fair": "Mittel",
+          "strong": "Stark",
+          "veryStrong": "Sehr stark"
         },
         "requirements": {
-          "title": "Password requirements",
-          "minLength": "Minimum 8 characters",
-          "mixedCase": "Mix of uppercase and lowercase letters recommended",
-          "specialChars": "Include numbers and special characters for stronger security"
+          "title": "Passwort-Anforderungen",
+          "minLength": "Mindestens 8 Zeichen",
+          "mixedCase": "Mischung aus Groß- und Kleinbuchstaben empfohlen",
+          "specialChars": "Füge Zahlen und Sonderzeichen für höhere Sicherheit hinzu"
         },
         "validation": {
-          "minLength": "Password must be at least 8 characters",
-          "passwordsNoMatch": "Passwords do not match"
+          "minLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
+          "passwordsNoMatch": "Die Passwörter stimmen nicht überein"
         },
         "notifications": {
-          "changeSuccess": "Password changed successfully",
-          "changeFailed": "Failed to change password",
-          "setSuccess": "Password set successfully",
-          "setFailed": "Failed to set password",
-          "unexpectedError": "An unexpected error occurred",
-          "updateFailed": "Failed to update password"
+          "changeSuccess": "Passwort erfolgreich geändert",
+          "changeFailed": "Passwort konnte nicht geändert werden",
+          "setSuccess": "Passwort erfolgreich festgelegt",
+          "setFailed": "Passwort konnte nicht festgelegt werden",
+          "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+          "updateFailed": "Passwort konnte nicht aktualisiert werden"
         }
       },
-      "dangerZone": "Danger zone",
+      "dangerZone": "Gefahrenzone",
       "wipeData": {
-        "title": "Wipe all data",
-        "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "Warning:",
-        "button": "Wipe data",
+        "title": "Alle Daten löschen",
+        "warningFull": "{strong} Diese Aktion entfernt alles in deinem Arbeitsbereich. Deine Anmeldung bleibt bestehen, sodass du neu anfangen kannst.",
+        "warningStrong": "Warnung:",
+        "button": "Daten löschen",
         "dialog": {
-          "title": "Wipe all your data?",
-          "description": "This permanently deletes everything in your workspace, including:",
+          "title": "Alle deine Daten löschen?",
+          "description": "Dadurch wird alles in deinem Arbeitsbereich dauerhaft gelöscht, einschließlich:",
           "list": {
-            "accounts": "Accounts and balances",
-            "transactions": "Transactions, refunds, and transfers",
-            "budgets": "Budgets, tags, and categories",
+            "accounts": "Konten und Kontostände",
+            "transactions": "Transaktionen, Rückerstattungen und Umbuchungen",
+            "budgets": "Budgets, Tags und Kategorien",
             "portfolios": "Investments, Portfolios und Positionen",
-            "settings": "User settings, AI keys, and onboarding state",
+            "settings": "Benutzereinstellungen, KI-Schlüssel und Onboarding-Status",
             "baseCurrency": "Basiswährung und Wechselkurse"
           },
-          "kept": "Your login and profile remain. You'll restart from the onboarding flow.",
-          "typeConfirm": "To confirm, type {phrase} below:",
-          "confirmLabel": "Wipe data",
-          "confirmLoading": "Wiping…"
+          "kept": "Deine Anmeldung und dein Profil bleiben erhalten. Du startest erneut beim Onboarding-Prozess.",
+          "typeConfirm": "Gib zur Bestätigung unten {phrase} ein:",
+          "confirmLabel": "Daten löschen",
+          "confirmLoading": "Wird gelöscht…"
         },
         "sharingDialog": {
-          "title": "You're sharing data with other users",
-          "warning": "Others will lose access immediately",
-          "description": "Wiping your data revokes access to the following shared resources:",
-          "householdsCount": "And {count} household member will lose access. | And {count} household members will lose access.",
-          "confirmLabel": "Wipe anyway"
+          "title": "Du teilst Daten mit anderen Benutzern",
+          "warning": "Andere verlieren sofort den Zugriff",
+          "description": "Das Löschen deiner Daten entzieht den Zugriff auf die folgenden geteilten Ressourcen:",
+          "householdsCount": "Und {count} Haushaltsmitglied verliert den Zugriff. | Und {count} Haushaltsmitglieder verlieren den Zugriff.",
+          "confirmLabel": "Trotzdem löschen"
         },
         "notifications": {
-          "success": "All data wiped. Starting fresh.",
-          "failed": "Couldn't wipe data. Please try again."
+          "success": "Alle Daten gelöscht. Neuanfang gestartet.",
+          "failed": "Daten konnten nicht gelöscht werden. Bitte versuche es erneut."
         }
       },
       "deleteAccount": {
-        "title": "Delete your account",
-        "warningFull": "Once you delete your account, there is no going back. {strong} Please be certain.",
-        "warningStrong": "All your data will be permanently erased.",
-        "button": "Delete my account",
+        "title": "Konto löschen",
+        "warningFull": "Sobald du dein Konto löschst, gibt es kein Zurück mehr. {strong} Bitte sei dir ganz sicher.",
+        "warningStrong": "Alle deine Daten werden dauerhaft gelöscht.",
+        "button": "Mein Konto löschen",
         "dialog": {
-          "title": "Are you absolutely sure?",
-          "description": "This action cannot be undone. This will permanently delete your account and remove all your data including:",
+          "title": "Bist du absolut sicher?",
+          "description": "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch wird dein Konto dauerhaft gelöscht und alle deine Daten werden entfernt, einschließlich:",
           "dataList": {
-            "accounts": "All accounts and transactions",
-            "categories": "All categories and budgets",
-            "portfolios": "All investment portfolios",
-            "settings": "All settings and preferences"
+            "accounts": "Alle Konten und Transaktionen",
+            "categories": "Alle Kategorien und Budgets",
+            "portfolios": "Alle Investment-Portfolios",
+            "settings": "Alle Einstellungen und Präferenzen"
           },
-          "confirmFull": "Please type {email} to confirm",
-          "placeholder": "Enter your email",
-          "acceptButton": "Delete my account",
+          "confirmFull": "Bitte gib {email} ein, um zu bestätigen",
+          "placeholder": "Gib deine E-Mail-Adresse ein",
+          "acceptButton": "Mein Konto löschen",
           "acceptButtonLoading": "Wird gelöscht..."
         },
         "notifications": {
-          "success": "Your account has been deleted successfully",
-          "failed": "An error occurred while trying to delete your account"
+          "success": "Dein Konto wurde erfolgreich gelöscht",
+          "failed": "Beim Versuch, dein Konto zu löschen, ist ein Fehler aufgetreten"
         }
       },
       "backup": {
         "download": {
-          "title": "Download backup",
-          "description": "Save a complete, restorable copy of all your data as a zip file.",
-          "button": "Download",
-          "loading": "Vorbereitung...",
-          "success": "Backup downloaded",
-          "failed": "Could not create backup. Please try again.",
-          "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
+          "title": "Sicherung herunterladen",
+          "description": "Speichere eine vollständige, wiederherstellbare Kopie all deiner Daten als ZIP-Datei.",
+          "button": "Herunterladen",
+          "loading": "Wird vorbereitet...",
+          "success": "Sicherung heruntergeladen",
+          "failed": "Sicherung konnte nicht erstellt werden. Bitte versuche es erneut.",
+          "downloadBlocked": "Die Sicherung wurde erstellt, aber dein Browser hat den Download blockiert. Überprüfe deine Download-Einstellungen und versuche es erneut.",
           "limitations": {
-            "trigger": "Has limitations",
-            "title": "What a backup leaves out",
-            "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
+            "trigger": "Hat Einschränkungen",
+            "title": "Was in der Sicherung nicht enthalten ist",
+            "intro": "Deine Sicherung enthält alle deine Daten. Aus Sicherheitsgründen können einige verschlüsselte Elemente nicht mitgesichert werden und müssen nach der Wiederherstellung erneut eingerichtet werden:",
             "items": {
               "bankConnectionsTerm": "Bankverbindungen",
-              "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
-              "aiKeysTerm": "AI API keys",
-              "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
+              "bankConnections": "{term} — Zugriffs-Token sind verschlüsselt und an diesen Server gebunden, daher musst du jede Bank nach der Wiederherstellung neu verbinden.",
+              "aiKeysTerm": "KI-API-Schlüssel",
+              "aiKeys": "{term} — verschlüsselt gespeichert, daher musst du sie nach der Wiederherstellung erneut eingeben."
             },
-            "included": "Everything else — accounts, transactions, categories, budgets, investments, loans, tags, payees and subscriptions — is included."
+            "included": "Alles andere — Konten, Transaktionen, Kategorien, Budgets, Investitionen, Kredite, Tags, Zahlungsempfänger und geplante Zahlungen — ist enthalten."
           }
         },
         "restore": {
-          "title": "Restore from backup",
-          "description": "Replace all current data with the contents of a backup zip.",
-          "button": "Select backup file",
-          "reading": "Reading file...",
-          "failedGeneric": "Backup restore failed",
-          "invalidFileType": "Please choose a .zip backup file.",
-          "fileTooLarge": "That backup is too large to restore (max {max}).",
-          "readFailed": "Could not read that file. Please try again.",
+          "title": "Aus Sicherung wiederherstellen",
+          "description": "Ersetze alle aktuellen Daten durch den Inhalt einer Sicherungs-ZIP-Datei.",
+          "button": "Sicherungsdatei auswählen",
+          "reading": "Datei wird gelesen...",
+          "failedGeneric": "Wiederherstellung aus Sicherung fehlgeschlagen",
+          "invalidFileType": "Bitte wähle eine .zip-Sicherungsdatei aus.",
+          "fileTooLarge": "Diese Sicherung ist zu groß für eine Wiederherstellung (max. {max}).",
+          "readFailed": "Diese Datei konnte nicht gelesen werden. Bitte versuche es erneut.",
           "confirm": {
-            "title": "Restore from backup?",
-            "warning": "This replaces ALL your current data",
-            "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
-            "selectedFile": "Selected file: {name}",
-            "confirmLabel": "Restore",
-            "reconnectTitle": "After restoring, set these up again",
-            "reconnectBankConnections": "Reconnect your bank connections",
-            "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"
+            "title": "Aus Sicherung wiederherstellen?",
+            "warning": "Dies ersetzt ALLE deine aktuellen Daten",
+            "description": "Alles, was sich derzeit in deinem Konto befindet, wird dauerhaft gelöscht und durch den Inhalt dieser Sicherung ersetzt. Dies kann nicht rückgängig gemacht werden.",
+            "selectedFile": "Ausgewählte Datei: {name}",
+            "confirmLabel": "Wiederherstellen",
+            "reconnectTitle": "Richte dies nach der Wiederherstellung erneut ein",
+            "reconnectBankConnections": "Verbinde deine Bankverbindungen neu",
+            "reconnectAiKeys": "Gib deine KI-API-Schlüssel erneut ein (falls du welche nutzt)"
           },
           "acknowledge": {
-            "title": "Shared resources will lose access",
-            "description": "You own resources that other people currently have access to. Restoring will remove that access.",
-            "householdsCount": "{count} shared household | {count} shared households",
-            "checkbox": "I understand these shared resources will lose access.",
-            "confirmLabel": "Restore anyway"
+            "title": "Geteilte Ressourcen verlieren ihren Zugriff",
+            "description": "Du besitzt Ressourcen, auf die andere Personen derzeit Zugriff haben. Die Wiederherstellung entfernt diesen Zugriff.",
+            "householdsCount": "{count} geteilter Haushalt | {count} geteilte Haushalte",
+            "checkbox": "Ich verstehe, dass diese geteilten Ressourcen ihren Zugriff verlieren.",
+            "confirmLabel": "Trotzdem wiederherstellen"
           },
           "progress": {
-            "title": "Restoring your data",
-            "description": "This can take a little while. Please keep this window open.",
-            "inserted": "{count} records restored",
+            "title": "Deine Daten werden wiederhergestellt",
+            "description": "Dies kann ein wenig dauern. Bitte halte dieses Fenster geöffnet.",
+            "inserted": "{count} Datensätze wiederhergestellt",
             "phases": {
-              "validating": "Validating backup...",
-              "preparingSecurities": "Preparing securities...",
-              "wiping": "Clearing current data...",
-              "restoring": "Restoring records...",
-              "finalizing": "Finalizing..."
+              "validating": "Sicherung wird überprüft...",
+              "preparingSecurities": "Wertpapiere werden vorbereitet...",
+              "wiping": "Aktuelle Daten werden gelöscht...",
+              "restoring": "Datensätze werden wiederhergestellt...",
+              "finalizing": "Wird abgeschlossen..."
             }
           },
           "summary": {
-            "title": "Restore complete",
-            "description": "Your data has been restored from the backup.",
-            "recordsHeading": "Restored records",
-            "warningsHeading": "Warnings",
-            "noRecords": "No records were restored.",
-            "doneButton": "Done"
+            "title": "Wiederherstellung abgeschlossen",
+            "description": "Deine Daten wurden aus der Sicherung wiederhergestellt.",
+            "recordsHeading": "Wiederhergestellte Datensätze",
+            "warningsHeading": "Warnungen",
+            "noRecords": "Es wurden keine Datensätze wiederhergestellt.",
+            "doneButton": "Fertig"
           },
           "failed": {
-            "title": "Restore failed",
-            "genericError": "Something went wrong while restoring your backup.",
-            "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
+            "title": "Wiederherstellung fehlgeschlagen",
+            "genericError": "Beim Wiederherstellen deiner Sicherung ist etwas schiefgelaufen.",
+            "unconfirmed": "Der Wiederherstellungsstatus konnte nicht bestätigt werden. Lade die Seite neu und überprüfe deine Daten.",
             "closeButton": "Schließen"
           },
           "overlay": {
-            "title": "Restoring your data",
-            "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
-            "preparing": "Preparing…",
-            "finishing": "Finishing up",
-            "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
-            "unreachableTitle": "Can't reach the server",
-            "unreachableDescription": "We lost contact while the restore was running. It may still be finishing. You can dismiss this and reload the page to check.",
-            "failedTitle": "Restore failed",
-            "dismiss": "Dismiss"
+            "title": "Deine Daten werden wiederhergestellt",
+            "description": "Bitte halte diesen Tab geöffnet. Wir ersetzen deine Daten mit deiner Sicherung — dies kann einen Moment dauern.",
+            "preparing": "Wird vorbereitet…",
+            "finishing": "Wird abgeschlossen",
+            "takingLong": "Dies dauert länger als gewöhnlich. Deine Daten werden weiterhin wiederhergestellt — bitte halte diesen Tab geöffnet.",
+            "unreachableTitle": "Server kann nicht erreicht werden",
+            "unreachableDescription": "Die Verbindung ging während der Wiederherstellung verloren. Möglicherweise wird sie noch abgeschlossen. Du kannst dies schließen und die Seite neu laden, um es zu überprüfen.",
+            "failedTitle": "Wiederherstellung fehlgeschlagen",
+            "dismiss": "Schließen"
           }
         },
-        "attachmentsNotIncluded": "Transaction attachments (receipts, invoices and other files) are not included in backups and are not restored."
+        "attachmentsNotIncluded": "Transaktionsanhänge (Belege, Rechnungen und andere Dateien) sind nicht in Sicherungen enthalten und werden nicht wiederhergestellt."
       }
     }
   }

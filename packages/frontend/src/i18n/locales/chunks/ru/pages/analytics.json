@@ -252,8 +252,8 @@
       "notWithinHorizon": "not within 50 yrs",
       "hero": {
         "timeTo": "Time to {type}",
-        "unitYears": "{n} yrs | {n} yr | {n} yrs",
-        "unitMonths": "{n} mos | {n} mo | {n} mos",
+        "unitYears": "{n} год | {n} года | {n} лет",
+        "unitMonths": "{n} мес. | {n} мес. | {n} мес.",
         "atAge": "at age {age}",
         "alwaysCounted": "Always counted",
         "range": "{earliest} to {latest} if returns run 2 points higher or lower",
@@ -268,7 +268,7 @@
           "title": "You're financially independent",
           "supports": "Your money supports {amount}/mo",
           "pctOfSpending": "{pct}% of your spending · at {rate}% withdrawal",
-          "yearsCovered": "Less than a year of spending covered | 1 year of spending covered | {n} years of spending covered",
+          "yearsCovered": "Покрыт {n} год расходов | Покрыто {n} года расходов | Покрыто {n} лет расходов",
           "drawdown": "You're drawing down about {amount}/mo.",
           "noNewSavings": "Projections assume no new savings."
         },
@@ -355,7 +355,7 @@
           "description": "This page fills in from your accounts and transactions. Nothing is tracked yet, so start with your yearly spending. Once you add accounts, the plan switches to live figures."
         },
         "shortHistory": {
-          "title": "No full months of transactions yet | Only 1 full month of transactions | Only {n} full months of transactions",
+          "title": "Пока только {n} полный месяц транзакций | Пока только {n} полных месяца транзакций | Пока только {n} полных месяцев транзакций",
           "description": "Spending can't be worked out yet. It switches to Auto after 3 full months. Until then, enter it by hand."
         },
         "noSpending": {

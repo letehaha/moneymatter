@@ -1,0 +1,43 @@
+{
+  "oauth": {
+    "authorize": {
+      "title": "{name} wants access to your MoneyMatter data",
+      "description": "This app is requesting these permissions:",
+      "approve": "Approve",
+      "deny": "Deny",
+      "footer": "You can revoke access at any time from Settings → AI → Connectors (MCP).",
+      "error": "Failed to process request. Please try again.",
+      "unexpected_response": "Unexpected response from server. Please try again.",
+      "always_granted": "Always granted",
+      "optional": "Optional",
+      "delete_warning": "Grant only to apps you fully trust",
+      "unknown_app": "An application"
+    },
+    "scopes": {
+      "finance_read": {
+        "label": "View your financial data",
+        "desc": "Read accounts, transactions, budgets, categories, tags, portfolios, and spending stats."
+      },
+      "finance_write": {
+        "label": "Create and edit your financial data",
+        "desc": "Add and update transactions, budgets, subscriptions, investment positions, and more."
+      },
+      "finance_delete": {
+        "label": "Delete your financial data",
+        "desc": "Permanently remove transactions, accounts, budgets, and other records."
+      },
+      "profile_read": {
+        "label": "View your profile",
+        "desc": "See your name, email, and default currency."
+      },
+      "offline_access": {
+        "label": "Stay connected in the background",
+        "desc": "Keep access active without asking you again each session."
+      },
+      "unknown": {
+        "label": "Additional permission",
+        "desc": "The app requested a permission that is not recognized by MoneyMatter."
+      }
+    }
+  }
+}

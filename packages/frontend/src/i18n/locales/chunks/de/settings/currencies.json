@@ -2,86 +2,86 @@
   "settings": {
     "currencies": {
       "page": {
-        "title": "Currencies",
-        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+        "title": "Währungen",
+        "description": "Verwalte die Währungen, die du verfolgst, und die Wechselkurse, die für deine Konten verwendet werden."
       },
       "addNew": {
         "loading": "Laden...",
-        "selectCurrency": "Select currency",
-        "addButton": "Add",
-        "sectionLabel": "Add a currency",
-        "successfullyAdded": "Currency added",
+        "selectCurrency": "Währung auswählen",
+        "addButton": "Hinzufügen",
+        "sectionLabel": "Währung hinzufügen",
+        "successfullyAdded": "Währung hinzugefügt",
         "errors": {
-          "addFailed": "Unexpected error. Currency is not added."
+          "addFailed": "Unerwarteter Fehler. Währung wurde nicht hinzugefügt."
         }
       },
       "howItWorks": {
-        "trigger": "So funktioniert's",
-        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+        "trigger": "Wie funktioniert das?",
+        "body": "Deine Basiswährung ist die Währung, in die jeder Saldo für Gesamtsummen und Berichte umgerechnet wird. Jede hinzugefügte Währung wird automatisch anhand aktueller Marktkurse aktualisiert, oder du kannst einen benutzerdefinierten Kurs festlegen, um ihn zu überschreiben."
       },
       "row": {
-        "baseBadge": "Base",
-        "custom": "Custom",
+        "baseBadge": "Basis",
+        "custom": "Benutzerdefiniert",
         "live": "Live",
-        "unused": "Unused",
+        "unused": "Ungenutzt",
         "accountsCount": "{count} Konto | {count} Konten"
       },
       "empty": {
-        "title": "No other currencies yet",
-        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+        "title": "Noch keine weiteren Währungen",
+        "description": "Füge oben eine Währung hinzu, um Salden und Wechselkurse neben deiner Basiswährung zu verfolgen."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
-        "liveUpdateInfo": "When enabled, custom rate is ignored.",
-        "liveUpdateLabel": "Live update",
+        "disableLiveUpdate": "Deaktiviere Live-Aktualisierung, um einen benutzerdefinierten Wechselkurs festlegen zu können.",
+        "liveUpdateInfo": "Wenn aktiviert, wird der benutzerdefinierte Kurs ignoriert.",
+        "liveUpdateLabel": "Live-Aktualisierung",
         "ratePlaceholder": "0.00",
         "saveButton": "Speichern",
-        "successfullyUpdated": "Successfully updated.",
-        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "successfullyUpdated": "Erfolgreich aktualisiert.",
+        "balancesNotRefreshed": "{count} Kontostand/Kontostände konnten noch nicht mit dem neuen Kurs aktualisiert werden — sie werden automatisch aktualisiert, sobald ein Kurs verfügbar ist.",
         "errors": {
-          "unexpectedError": "Unexpected error",
-          "updateFailed": "Unexpected error. Currency is not updated."
+          "unexpectedError": "Unerwarteter Fehler",
+          "updateFailed": "Unerwarteter Fehler. Währung wurde nicht aktualisiert."
         }
       },
       "delete": {
-        "confirmTitle": "Delete currency?",
-        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
-        "button": "Delete currency",
+        "confirmTitle": "Währung löschen?",
+        "description": "Eine Währung kann nur gelöscht/getrennt werden, wenn ihr keine Konten und/oder Transaktionen zugeordnet sind.",
+        "button": "Währung löschen",
         "buttonShort": "Löschen",
-        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
-        "successfullyDeleted": "Successfully deleted.",
+        "disabledTooltip": "Du kannst diese Währung nicht löschen, da sie noch mit Konten verbunden ist.",
+        "successfullyDeleted": "Erfolgreich gelöscht.",
         "errors": {
-          "deleteFailed": "Unexpected error. Currency is not deleted."
+          "deleteFailed": "Unerwarteter Fehler. Währung wurde nicht gelöscht."
         }
       },
       "setBase": {
         "button": "Als Basiswährung festlegen",
-        "buttonShort": "Set as base",
+        "buttonShort": "Als Basis festlegen",
         "processing": "Wird verarbeitet...",
-        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "tooltip": "Als Basiswährung festlegen. Alle Statistiken und Dashboard-Informationen werden in dieser Währung angezeigt.\n\nTransaktionen werden anhand des Wechselkurses zum Zeitpunkt der Erfassung neu berechnet.",
         "dialog": {
-          "title": "Change Base Currency?",
-          "warningTitle": "Warning:",
-          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
-          "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
-          "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's Rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
-          "roundingHow": "How it works:",
-          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
-          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
-          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
-          "untouchedWarning": "Original transactions amount will always remain untouched!",
-          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
-          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
-          "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change Base Currency",
+          "title": "Basiswährung ändern?",
+          "warningTitle": "Warnung:",
+          "warningText": "Das Ändern der Basiswährung sollte eine sehr gut überlegte Entscheidung sein. Idealerweise sollte diese Aktion nur einmal durchgeführt werden, auch wenn es keine tatsächlichen Einschränkungen gibt.",
+          "descriptionText": "Jedes Mal, wenn du die Basiswährung änderst, werden alle Transaktionen unter Verwendung historischer Wechselkurse neu berechnet. Aufgrund von Fließkomma-Arithmetik und normalen Schwankungen zwischen Basis- und Zielwährungskursen können wiederholte Neuberechnungen im Laufe der Zeit kleine Abweichungen in deinen Referenzbeträgen verursachen. Referenzbeträge werden verwendet, um Statistiken anzuzeigen und deine Budgetgrenzen festzulegen.",
+          "roundingTitle": "Wie genau wird die Rundung berechnet?",
+          "roundingIntro": "Währungsumrechnungen nutzen das Mathematische Runden / Bankiersrunden (IEEE 754-Standard), auch bekannt als \"Ganzzahliges Runden zur nächsten geraden Zahl\". Dies minimiert kumulative Rundungsfehler über viele Berechnungen hinweg.",
+          "roundingHow": "Wie es funktioniert:",
+          "roundingRule1": "Wenn ein Wert genau in der Mitte liegt (z.B. 0,5), wird er auf die nächste gerade Zahl gerundet",
+          "roundingRule2": "Beispiel: 0,5 → 0, 1,5 → 2, 2,5 → 2, 3,5 → 4",
+          "roundingStandard": "Diese Methode wird von den Rechnungslegungsstandards IFRS/GAAP empfohlen und von großen Finanzsystemen verwendet, um systematische Verzerrungen bei Währungsumrechnungen zu vermeiden.",
+          "untouchedWarning": "Der ursprüngliche Transaktionsbetrag bleibt immer unverändert!",
+          "processingTimeInfo": "Dies kann eine Weile dauern, wenn deine Währung nicht sehr gebräuchlich ist.",
+          "restrictionWarning": "Du kannst keine neuen Konten, Transaktionen oder andere Dinge, die mit \"Beträgen\" zusammenhängen, erstellen, während der Prozess läuft.",
+          "confirmation": "Möchtest du wirklich fortfahren?",
+          "changeButton": "Basiswährung ändern",
           "cancelButton": "Abbrechen"
         },
-        "successMessage": "Base currency changed successfully.",
+        "successMessage": "Basiswährung erfolgreich geändert.",
         "errors": {
-          "changeFailed": "Unexpected error. Failed to change base currency.",
-          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
-          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first."
+          "changeFailed": "Unerwarteter Fehler. Basiswährung konnte nicht geändert werden.",
+          "lockedHousehold": "Du bist Mitglied in {count} aktiven Haushalt. Verlasse diesen zuerst unter Einstellungen → Haushalt. | Du bist Mitglied in {count} aktiven Haushalten. Verlasse diese zuerst unter Einstellungen → Haushalt.",
+          "lockedShares": "Du hast {count} aktive Kontofreigabe. Widerrufe diese zuerst im Konto. | Du hast {count} aktive Kontofreigaben. Widerrufe diese zuerst in jedem Konto."
         }
       }
     }

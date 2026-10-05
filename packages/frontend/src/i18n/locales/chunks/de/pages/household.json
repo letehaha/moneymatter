@@ -1,75 +1,75 @@
 {
   "pages": {
     "household": {
-      "title": "Household",
-      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "title": "Haushalt",
+      "description": "Lade vertraute Personen ein, um Zugriff auf alle deine Konten zu teilen. Mitglieder sehen deine Konten und können (mit Schreibzugriff) Transaktionen darauf erfassen.",
       "myHousehold": {
-        "title": "My household",
-        "description": "People here get access to every account you own. Per-account shares always override household access."
+        "title": "Mein Haushalt",
+        "description": "Personen hier erhalten Zugriff auf jedes deiner Konten. Einzelne Freigaben pro Konto überschreiben stets den Haushaltszugriff."
       },
-      "youOwner": "You — owner",
-      "noMembers": "No one has joined your household yet.",
-      "loadMembersError": "Couldn't load household members. Try refreshing.",
+      "youOwner": "Du – Eigentümer",
+      "noMembers": "Noch niemand ist deinem Haushalt beigetreten.",
+      "loadMembersError": "Haushaltsmitglieder konnten nicht geladen werden. Versuche die Seite neu zu laden.",
       "permissions": {
         "read": "Lesen",
         "write": "Schreiben",
         "manage": "Verwalten"
       },
       "writeScope": {
-        "all": "Can edit any transaction",
-        "own": "Can edit only their own transactions"
+        "all": "Kann jede Transaktion bearbeiten",
+        "own": "Kann nur eigene Transaktionen bearbeiten"
       },
       "invite": {
         "emailLabel": "E-Mail",
         "emailPlaceholder": "person{'@'}example.com",
         "permissionLabel": "Berechtigung",
         "writeScopeLabel": "Bearbeitungsumfang",
-        "submit": "Send household invite",
+        "submit": "Haushaltseinladung senden",
         "sent": "Einladung gesendet.",
-        "error": "Couldn't send the invitation.",
-        "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
+        "error": "Einladung konnte nicht gesendet werden.",
+        "emailDeliveryFailed": "Einladung erstellt, aber die E-Mail konnte nicht zugestellt werden. Du kannst sie über den Bereich für Einladungen erneut senden."
       },
       "revoke": {
         "action": "Entfernen",
-        "title": "Remove household member?",
-        "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
+        "title": "Haushaltsmitglied entfernen?",
+        "description": "{handle} verliert den Zugriff auf jedes Konto in deinem Haushalt. Einzelne Freigaben pro Konto (falls vorhanden) bleiben unberührt.",
         "confirm": "Entfernen",
-        "success": "Member removed.",
-        "error": "Couldn't remove this member."
+        "success": "Mitglied entfernt.",
+        "error": "Dieses Mitglied konnte nicht entfernt werden."
       },
       "permissionChange": {
-        "setRead": "Make read-only",
-        "setWrite": "Allow writes",
-        "success": "Permission updated.",
-        "error": "Couldn't update permission."
+        "setRead": "Auf Nur-Lesezugriff setzen",
+        "setWrite": "Schreibzugriff erlauben",
+        "success": "Berechtigung aktualisiert.",
+        "error": "Berechtigung konnte nicht aktualisiert werden."
       },
       "imIn": {
-        "title": "Households I'm in",
-        "description": "Other people's households you've joined. Leaving drops your access to every account they shared this way.",
-        "empty": "You haven't joined anyone else's household.",
-        "unnamedHousehold": "{'@'}{handle}'s household",
-        "loadError": "Couldn't load the households you're in. Try again later."
+        "title": "Haushalte, in denen ich bin",
+        "description": "Haushalte anderer Personen, denen du beigetreten bist. Beim Verlassen verlierst du den Zugriff auf jedes Konto, das auf diese Weise freigegeben wurde.",
+        "empty": "Du bist noch keinem anderen Haushalt beigetreten.",
+        "unnamedHousehold": "Haushalt von {'@'}{handle}",
+        "loadError": "Die Haushalte, in denen du bist, konnten nicht geladen werden. Versuche es später erneut."
       },
       "leave": {
         "action": "Verlassen",
-        "title": "Leave this household?",
-        "description": "You'll lose access to every account {owner} shares through their household. Per-account shares (if any) are unaffected.",
+        "title": "Diesen Haushalt verlassen?",
+        "description": "Du verlierst den Zugriff auf jedes Konto, das {owner} über seinen Haushalt freigibt. Einzelne Freigaben pro Konto (falls vorhanden) bleiben unberührt.",
         "confirm": "Verlassen",
-        "success": "You left the household.",
-        "error": "Couldn't leave the household."
+        "success": "Du hast den Haushalt verlassen.",
+        "error": "Der Haushalt konnte nicht verlassen werden."
       },
       "pending": {
-        "badge": "Pending",
-        "resend": "Resend",
+        "badge": "Ausstehend",
+        "resend": "Erneut senden",
         "cancel": "Abbrechen",
-        "cancelTitle": "Cancel invitation?",
-        "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
-        "cancelConfirm": "Cancel invitation",
-        "cancelSuccess": "Invitation cancelled.",
-        "cancelError": "Failed to cancel invitation.",
-        "resendSuccess": "Invitation resent.",
-        "resendError": "Failed to resend invitation.",
-        "resendDeliveryFailed": "Invitation updated, but the email could not be sent. Try again later."
+        "cancelTitle": "Einladung stornieren?",
+        "cancelDescription": "Möchtest du die an {email} gesendete ausstehende Einladung stornieren? Die Person kann sie dann nicht mehr annehmen.",
+        "cancelConfirm": "Einladung stornieren",
+        "cancelSuccess": "Einladung storniert.",
+        "cancelError": "Einladung konnte nicht storniert werden.",
+        "resendSuccess": "Einladung erneut gesendet.",
+        "resendError": "Einladung konnte nicht erneut gesendet werden.",
+        "resendDeliveryFailed": "Einladung aktualisiert, aber die E-Mail konnte nicht gesendet werden. Versuche es später erneut."
       }
     }
   }

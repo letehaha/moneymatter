@@ -26,7 +26,7 @@
       "menu": "Actions",
       "rename": "Rename",
       "merge": "Merge into…",
-      "delete": "Delete",
+      "delete": "Xóa",
       "deleteAndIgnore": "Delete & ignore"
     },
     "bulk": {
@@ -69,7 +69,7 @@
       "aliasesEmpty": "No aliases yet. New variants will appear here when this Payee matches another merchant name.",
       "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the Payee's name. Rename the Payee instead.",
       "deleteAliasConfirm": "Remove this alias?",
-      "addAlias": "Add",
+      "addAlias": "Thêm",
       "addAliasTitle": "Add alias",
       "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this Payee. Past transactions are unchanged.",
       "addAliasInputLabel": "Merchant name",
@@ -164,7 +164,7 @@
       "title": "Ignored merchant names",
       "description": "Raw merchant strings that should never automatically create a Payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a Payee manually — only automatic matching is blocked.",
       "addPlaceholder": "e.g. Spotify",
-      "addButton": "Add",
+      "addButton": "Thêm",
       "addedToast": "Added to ignored names",
       "addError": "Failed to add to ignored names",
       "removeTooltip": "Remove from ignored list",

@@ -114,7 +114,7 @@
             "6": "Letzte 6 Monate",
             "12": "Letzte 12 Monate"
           },
-          "showStrip": "Show 30-day chart"
+          "showStrip": "30-Tage-Diagramm anzeigen"
         }
       },
       "categoryTracker": {
@@ -126,6 +126,7 @@
         "title": "Cashflow",
         "description": "Zeigt deine Nettoersparnis: Einnahmen abzüglich Ausgaben für den gewählten Zeitraum, mit Trend aus vorherigen Zeiträumen",
         "vsPrevious": "gegenüber Vorperiode",
+        "notAvailable": "N/A",
         "income": "Einnahmen",
         "expenses": "Ausgaben",
         "saved": "Gespart",
@@ -168,8 +169,8 @@
       },
       "plannedOverview": {
         "title": "Geplant",
-        "projectedBy": "Projected by {date}",
-        "upcoming": "Upcoming · {count}",
+        "projectedBy": "Hochgerechnet bis {date}",
+        "upcoming": "Anstehend · {count}",
         "loadFailed": "Geplante Transaktionen konnten nicht geladen werden"
       },
       "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
@@ -230,17 +231,17 @@
   "widgets": {
     "subscriptionsOverview": {
       "payAction": "Bezahlt",
-      "listTitle": "Upcoming",
-      "dueCount": "{count} due",
-      "nothingDue": "Nothing due in 3 days",
-      "overdueHint": "Overdue since {date}",
-      "dueSoonHint": "Due in the next 3 days",
+      "listTitle": "Bevorstehend",
+      "dueCount": "{count} fällig",
+      "nothingDue": "Nichts fällig in 3 Tagen",
+      "overdueHint": "Überfällig seit {date}",
+      "dueSoonHint": "Fällig in den nächsten 3 Tagen",
       "strip": {
-        "title": "Next 30 days",
-        "goingOut": "{amount} going out",
+        "title": "Nächste 30 Tage",
+        "goingOut": "{amount} Abgänge",
         "today": "Heute"
       },
-      "loadFailed": "Couldn't load recurring payments"
+      "loadFailed": "Wiederkehrende Zahlungen konnten nicht geladen werden"
     },
     "latestRecords": {
       "config": {
@@ -260,9 +261,9 @@
         "excludePlannedDescription": "Ausstehende geplante Transaktionen aus der Liste ausblenden",
         "nothingExcluded": "Nichts ausgeschlossen",
         "tagsStyleTitle": "Tags",
-        "tagsStyleNames": "Names",
-        "tagsStyleBars": "Bars",
-        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
+        "tagsStyleNames": "Namen",
+        "tagsStyleBars": "Balken",
+        "tagsStyleSaveError": "Tag-Stil konnte nicht gespeichert werden. Bitte versuche es erneut."
       },
       "overdueBadge": "Überfällig",
       "scheduledBadge": "Geplant",

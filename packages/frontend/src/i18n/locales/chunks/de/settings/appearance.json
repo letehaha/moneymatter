@@ -1,26 +1,26 @@
 {
   "settings": {
     "appearance": {
-      "title": "Appearance",
-      "description": "Customize how the app looks and which sections appear in the sidebar.",
+      "title": "Erscheinungsbild",
+      "description": "Passe das Aussehen der App an und wähle, welche Abschnitte in der Seitenleiste angezeigt werden.",
       "theme": {
-        "title": "Theme",
-        "description": "Choose how the app looks. System matches your device setting."
+        "title": "Design",
+        "description": "Wähle, wie die App aussieht. System passt sich deinen Geräteeinstellungen an."
       },
       "sidebar": {
-        "title": "Sidebar sections",
-        "description": "Pick which sections appear in the sidebar.",
-        "alwaysVisibleTooltip": "This section is always visible."
+        "title": "Abschnitte der Seitenleiste",
+        "description": "Wähle aus, welche Abschnitte in der Seitenleiste angezeigt werden.",
+        "alwaysVisibleTooltip": "Dieser Abschnitt ist immer sichtbar."
       },
       "header": {
-        "title": "Header",
-        "description": "Choose which header actions are visible.",
-        "supportButton": "Support button"
+        "title": "Kopfzeile",
+        "description": "Wähle aus, welche Aktionen in der Kopfzeile sichtbar sind.",
+        "supportButton": "Support-Schaltfläche"
       },
       "currency": {
-        "title": "Currency symbols",
-        "description": "How amounts show their currency. Short symbols look like Rp, ₴ or zł instead of IDR, UAH or PLN, but currencies that share a symbol (USD, CAD, AUD, SGD) all become $.",
-        "narrowSymbol": "Use short currency symbols"
+        "title": "Währungssymbole",
+        "description": "Wie Beträge ihre Währung anzeigen. Kurze Symbole sehen wie Rp, ₴ oder zł anstelle von IDR, UAH oder PLN aus, aber Währungen, die sich ein Symbol teilen (USD, CAD, AUD, SGD), werden alle zu $.",
+        "narrowSymbol": "Kurze Währungssymbole verwenden"
       }
     }
   }

@@ -1,0 +1,48 @@
+{
+  "accounts": {
+    "title": "Comptes",
+    "createAccount": "Créer un compte",
+    "createVehicle": "Ajouter un véhicule",
+    "actionsMenu": "Actions du compte",
+    "sections": {
+      "archived": "Archivés",
+      "manual": "Comptes manuels",
+      "sharedWithMe": "Partagés avec moi",
+      "vehicles": "Véhicules",
+      "bankConnections": "Connexions bancaires"
+    },
+    "empty": {
+      "title": "Aucun compte pour l'instant",
+      "description": "Connectez votre banque ou créez un compte manuel pour suivre vos finances, vos soldes et vos opérations.",
+      "connectBank": "Connecter un compte bancaire",
+      "createManual": "Créer un compte manuel"
+    },
+    "overview": {
+      "totalBalance": "Solde total",
+      "assets": "Actifs",
+      "liabilities": "Passifs",
+      "vehicles": "Véhicules",
+      "projected": "Prévision {amount} · {count} opération prévue jusqu'au {date} | Prévision {amount} · {count} opérations prévues jusqu'au {date}"
+    },
+    "sharedBy": "Partagé par {handle}",
+    "viaHousehold": "Partagé via le foyer de {handle}",
+    "connect": "Connecter",
+    "connectBank": "Connecter une banque",
+    "noBanksConnected": "Aucune banque connectée pour l'instant : connectez-en une pour synchroniser vos soldes automatiquement.",
+    "reconnect": "Reconnecter",
+    "manageConnection": "Gérer la connexion",
+    "accountsCount": "{count} compte | {count} comptes",
+    "inGroupSubtitle": "dans {name}",
+    "sort": {
+      "auto": "Auto",
+      "name": "Nom",
+      "balance": "Solde",
+      "ariaLabel": "Trier les comptes"
+    },
+    "status": {
+      "active": "Active",
+      "expiringSoon": "Expire bientôt",
+      "expired": "Expirée"
+    }
+  }
+}

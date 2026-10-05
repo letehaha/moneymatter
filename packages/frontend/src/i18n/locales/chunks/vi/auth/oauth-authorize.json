@@ -5,7 +5,7 @@
       "description": "Ứng dụng này đang yêu cầu các quyền sau:",
       "approve": "Chấp nhận",
       "deny": "Từ chối",
-      "footer": "Bạn có thể thu hồi quyền truy cập bất cứ lúc nào từ Cài đặt > Tích hợp AI.",
+      "footer": "Bạn có thể thu hồi quyền truy cập bất cứ lúc nào trong Cài đặt → AI → Bộ kết nối (MCP).",
       "error": "Không xử lý được yêu cầu. Vui lòng thử lại.",
       "unexpected_response": "Phản hồi không mong đợi từ máy chủ. Vui lòng thử lại.",
       "always_granted": "Luôn được cấp",

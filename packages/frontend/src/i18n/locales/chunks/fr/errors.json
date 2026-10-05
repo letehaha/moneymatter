@@ -1,0 +1,18 @@
+{
+  "errors": {
+    "api": {
+      "failedToFetch": "Failed to fetch data from the server.",
+      "failedToFetchSelfHost": "Cannot reach the server. The backend may still be starting (~30s after startup), or your ALLOWED_ORIGINS env var does not include this URL.",
+      "unexpectedError": "Unexpected error.",
+      "sessionExpired": "Your session has expired. Please sign in again",
+      "payloadTooLarge": "The request is too large. Please try importing fewer items at a time"
+    },
+    "notFound": {
+      "title": "This page is off the books",
+      "description": "We couldn't find what you were looking for. The link may be broken, or the page may have moved.",
+      "attemptedLabel": "You tried to visit: ",
+      "goBack": "Go back",
+      "goHome": "Take me home"
+    }
+  }
+}

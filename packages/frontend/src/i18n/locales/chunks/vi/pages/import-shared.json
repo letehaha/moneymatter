@@ -2,95 +2,95 @@
   "pages": {
     "importExport": {
       "progress": {
-        "jobExpired": "The import job expired or could not be found.",
-        "lostContact": "Lost contact with the import job."
+        "jobExpired": "Tác vụ nhập đã hết hạn hoặc không tìm thấy.",
+        "lostContact": "Mất kết nối với tác vụ nhập."
       }
     }
   },
   "importShared": {
     "action": {
-      "createNew": "Create new",
-      "linkExisting": "Link to existing",
-      "skip": "Skip"
+      "createNew": "Tạo mới",
+      "linkExisting": "Liên kết với mục hiện có",
+      "skip": "Bỏ qua"
     },
-    "selectAction": "Select action",
-    "resolvedCounterWord": "resolved",
-    "quickActionsMenuLabel": "Bulk actions",
+    "selectAction": "Chọn thao tác",
+    "resolvedCounterWord": "Đã xử lý",
+    "quickActionsMenuLabel": "Thao tác hàng loạt",
     "quickActions": {
-      "menu": "Actions"
+      "menu": "Thao tác"
     },
     "columns": {
-      "sourceName": "Source name",
-      "currency": "Currency",
-      "action": "Action",
-      "target": "Target"
+      "sourceName": "Tên nguồn",
+      "currency": "Tiền tệ",
+      "action": "Thao tác",
+      "target": "Đích"
     },
     "account": {
-      "selectTarget": "Select account",
-      "noMatchingCurrency": "No account with currency {currency}",
-      "willCreate": "Will create {name} ({currency})",
-      "empty": "No accounts to map",
-      "willSkip": "Will not be imported"
+      "selectTarget": "Chọn tài khoản",
+      "noMatchingCurrency": "Không có tài khoản dùng tiền tệ {currency}",
+      "willCreate": "Sẽ tạo {name} ({currency})",
+      "empty": "Không có tài khoản nào để ánh xạ",
+      "willSkip": "Sẽ không được nhập"
     },
     "category": {
-      "selectTarget": "Select category",
-      "willCreate": "Will create {name}",
-      "empty": "No categories to map"
+      "selectTarget": "Chọn danh mục",
+      "willCreate": "Sẽ tạo {name}",
+      "empty": "Không có danh mục nào để ánh xạ"
     },
     "recalculateBalance": {
-      "label": "Update account balances from imported transactions",
-      "hint": "Transactions older than an account's latest existing transaction are treated as backfill and don't change its current balance.",
-      "loadFailedHint": "Couldn't load your saved preference — defaulting to off."
+      "label": "Cập nhật số dư tài khoản từ các giao dịch đã nhập",
+      "hint": "Các giao dịch cũ hơn giao dịch mới nhất hiện có của tài khoản được xem là dữ liệu nhập bù và không làm thay đổi số dư hiện tại.",
+      "loadFailedHint": "Không tải được tùy chọn đã lưu của bạn — mặc định tắt."
     },
     "balanceChanges": {
-      "title": "Account balance changes",
+      "title": "Thay đổi số dư tài khoản",
       "columns": {
-        "account": "Account",
-        "before": "Before",
-        "after": "After",
-        "delta": "Change",
-        "newRows": "New rows",
-        "backfillRows": "Backfill rows"
+        "account": "Tài khoản",
+        "before": "Trước",
+        "after": "Sau",
+        "delta": "Thay đổi",
+        "newRows": "Dòng mới",
+        "backfillRows": "Dòng nhập bù"
       },
-      "newAccount": "New account"
+      "newAccount": "Tài khoản mới"
     },
     "duplicatesTable": {
       "columnHeaders": {
-        "row": "Row",
-        "match": "Match",
-        "csvTransaction": "CSV transaction",
-        "existingTransaction": "Existing transaction",
+        "row": "Dòng",
+        "match": "Trùng",
+        "csvTransaction": "Giao dịch trong CSV",
+        "existingTransaction": "Giao dịch hiện có",
         "csvShort": "CSV",
-        "existingShort": "Existing"
+        "existingShort": "Hiện có"
       },
       "matchTypeLabels": {
-        "exact": "Exact",
-        "idMatch": "ID match",
-        "fuzzy": "Fuzzy"
+        "exact": "Chính xác",
+        "idMatch": "Khớp ID",
+        "fuzzy": "Gần đúng"
       },
       "fieldLabels": {
-        "amount": "Amount",
-        "date": "Date",
-        "note": "Note",
-        "category": "Category"
+        "amount": "Số tiền",
+        "date": "Ngày",
+        "note": "Ghi chú",
+        "category": "Danh mục"
       },
-      "importAnywayAriaLabel": "Import row {row} anyway"
+      "importAnywayAriaLabel": "Vẫn nhập dòng {row}"
     },
     "aiMapping": {
-      "action": "AI match",
-      "tooltipCategories": "Let AI link each source category to the closest existing category. Rows you already linked to a category are left untouched.",
-      "failed": "AI matching failed. Please try again.",
-      "inProgress": "AI matching in progress…"
+      "action": "Đối sánh bằng AI",
+      "tooltipCategories": "Cho phép AI liên kết từng danh mục nguồn với danh mục hiện có phù hợp nhất. Các dòng bạn đã liên kết với danh mục sẽ được giữ nguyên.",
+      "failed": "AI không thể đối sánh. Vui lòng thử lại.",
+      "inProgress": "Đang đối sánh bằng AI…"
     },
     "categoryPreset": {
-      "menuTrigger": "Apply mapping",
-      "currentLayout": "This file's layout",
-      "savedTemplates": "Saved templates",
-      "lastUsed": "Last used mapping",
-      "namePlaceholder": "Name this mapping",
-      "renameAria": "Rename mapping",
-      "deleteAria": "Delete mapping",
-      "confirmRenameAria": "Save name"
+      "menuTrigger": "Áp dụng ánh xạ",
+      "currentLayout": "Bố cục của tệp này",
+      "savedTemplates": "Mẫu đã lưu",
+      "lastUsed": "Ánh xạ đã dùng gần đây nhất",
+      "namePlaceholder": "Đặt tên cho ánh xạ này",
+      "renameAria": "Đổi tên ánh xạ",
+      "deleteAria": "Xóa ánh xạ",
+      "confirmRenameAria": "Lưu tên"
     }
   }
 }

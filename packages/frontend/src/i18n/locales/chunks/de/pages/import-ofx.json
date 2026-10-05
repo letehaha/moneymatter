@@ -2,52 +2,52 @@
   "pages": {
     "importExport": {
       "ofxImport": {
-        "pageTitle": "Import an OFX or QFX file",
-        "pageDescription": "Import bank and credit card transactions from an OFX or QFX file.",
+        "pageTitle": "OFX- oder QFX-Datei importieren",
+        "pageDescription": "Importiere Bank- und Kreditkartentransaktionen aus einer OFX- oder QFX-Datei.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Map accounts",
+            "upload": "Hochladen",
+            "resolve": "Konten zuordnen",
             "review": "Überprüfen",
-            "results": "Done"
+            "results": "Fertig"
           }
         },
         "fileUpload": {
-          "stepTitle": "Upload your OFX or QFX file",
-          "description": "Select a statement file that you downloaded from your bank or credit card provider.",
-          "maxSize": ".ofx or .qfx file, up to 10 MB",
-          "parsing": "Reading file…",
+          "stepTitle": "Lade deine OFX- oder QFX-Datei hoch",
+          "description": "Wähle eine Kontoauszugsdatei aus, die du von deiner Bank oder deinem Kreditkartenanbieter heruntergeladen hast.",
+          "maxSize": ".ofx- oder .qfx-Datei, bis zu 10 MB",
+          "parsing": "Lese Datei…",
           "continue": "Weiter",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not an OFX or QFX file."
+            "invalidFormatNamed": "\"{name}\" ist keine OFX- oder QFX-Datei."
           }
         },
         "errors": {
-          "uploadUnavailable": "The uploaded file is no longer available. Upload your OFX or QFX file again."
+          "uploadUnavailable": "Die hochgeladene Datei ist nicht mehr verfügbar. Lade deine OFX- oder QFX-Datei erneut hoch."
         },
         "resolve": {
           "accounts": {
             "sectionTitle": "Konten",
-            "nameLabel": "Account name",
-            "namePlaceholder": "Enter an account name",
-            "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the sum of imported transactions",
-            "ledgerBalanceHint": "Statement balance: {balance} on {date}",
-            "transactionCount": "{count} transaction | {count} transactions",
-            "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
+            "nameLabel": "Kontoname",
+            "namePlaceholder": "Kontonamen eingeben",
+            "currentBalanceLabel": "Aktueller Saldo",
+            "currentBalancePlaceholder": "Leer lassen, um die Summe der importierten Transaktionen zu verwenden",
+            "ledgerBalanceHint": "Auszugssaldo: {balance} am {date}",
+            "transactionCount": "{count} Transaktion | {count} Transaktionen",
+            "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen werden nicht importiert. | {count} Konten werden übersprungen. Ihre Transaktionen werden nicht importiert.",
             "statementType": {
-              "bank": "Bank account",
+              "bank": "Bankkonto",
               "credit-card": "Kreditkarte"
             }
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Exakte Übereinstimmungen zuordnen",
+            "createNewForUnmatched": "Neue für nicht zugeordnete erstellen",
+            "reset": "Zurücksetzen",
             "tooltips": {
-              "mapExactMatches": "Link each account to an existing account that has the same name and currency.",
-              "createNewForUnmatched": "Set each account that is not linked to an existing account to create a new account.",
-              "reset": "Clear all choices and match again."
+              "mapExactMatches": "Verknüpfe jedes Konto mit einem bestehenden Konto, das denselben Namen und dieselbe Währung hat.",
+              "createNewForUnmatched": "Lege für jedes nicht verknüpfte Konto fest, dass ein neues Konto erstellt wird.",
+              "reset": "Lösche alle Auswahlen und ordne erneut zu."
             }
           },
           "footer": {
@@ -56,64 +56,64 @@
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "accountsSkipped": "Accounts skipped",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "dateRange": "Date range: {from} — {to}",
-          "warningsTitle": "Check these file details",
-          "warningsHint": "The import can continue, but some transactions need special handling.",
+          "transactions": "Transaktionen",
+          "accountsSkipped": "Konten übersprungen",
+          "duplicatesSkipped": "Duplikate übersprungen",
+          "willImport": "Zu importieren",
+          "dateRange": "Zeitraum: {from} — {to}",
+          "warningsTitle": "Überprüfe diese Dateidetails",
+          "warningsHint": "Der Import kann fortgesetzt werden, aber einige Transaktionen erfordern eine besondere Behandlung.",
           "warnings": {
-            "dateUserFallback": "{count} transaction used the file's fallback time zone | {count} transactions used the file's fallback time zone",
-            "fitidMissing": "{count} transaction had no bank transaction ID | {count} transactions had no bank transaction ID",
-            "fitidDuplicate": "{count} duplicate bank transaction ID was found in the file | {count} duplicate bank transaction IDs were found in the file"
+            "dateUserFallback": "{count} Transaktion nutzte die Ausweich-Zeitzone der Datei | {count} Transaktionen nutzten die Ausweich-Zeitzone der Datei",
+            "fitidMissing": "{count} Transaktion hatte keine Banktransaktions-ID | {count} Transaktionen hatten keine Banktransaktions-ID",
+            "fitidDuplicate": "{count} doppelte Banktransaktions-ID wurde in der Datei gefunden | {count} Doppelte Banktransaktions-IDs wurden in der Datei gefunden"
           },
-          "duplicatesTitle": "{count} possible duplicate | {count} possible duplicates",
-          "duplicatesHint": "These transactions look like transactions that you already have. Check a row to import it anyway; unchecked duplicates are skipped.",
+          "duplicatesTitle": "{count} mögliches Duplikat | {count} mögliche Duplikate",
+          "duplicatesHint": "Diese Transaktionen sehen aus wie Transaktionen, die du bereits hast. Wähle eine Zeile aus, um sie trotzdem zu importieren; nicht ausgewählte Duplikate werden übersprungen.",
           "back": "Zurück",
-          "importing": "Starting import…",
-          "importButton": "Import {count} transaction | Import {count} transactions"
+          "importing": "Starte Import…",
+          "importButton": "{count} Transaktion importieren | {count} Transaktionen importieren"
         },
         "execute": {
-          "starting": "Starting the import…",
-          "progressCount": "{processed} of {total}",
-          "failed": "The import failed.",
-          "partialImportNote": "Some transactions might already be imported.",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing",
-          "statusCompleted": "Completed",
-          "statusFailed": "Failed"
+          "starting": "Starte den Import…",
+          "progressCount": "{processed} von {total}",
+          "failed": "Der Import ist fehlgeschlagen.",
+          "partialImportNote": "Einige Transaktionen wurden möglicherweise bereits importiert.",
+          "statusQueued": "In Warteschlange",
+          "statusRunning": "Importiere",
+          "statusCompleted": "Abgeschlossen",
+          "statusFailed": "Fehlgeschlagen"
         },
         "done": {
-          "successTitle": "Import finished",
-          "successDescription": "Your OFX or QFX transactions are now in your account.",
-          "partialTitle": "Imported with {count} issue | Imported with {count} issues",
-          "partialDescription": "Most transactions were imported. The list below shows what was not imported.",
-          "emptyTitle": "Nothing new to import",
-          "emptyDescription": "Each transaction was skipped or was already in your ledger.",
-          "failedTitle": "Nothing was imported",
-          "failedDescription": "No transactions could be created. Review the errors below.",
-          "accountsCreated": "Accounts created",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
-          "duplicatesSkipped": "Duplicates skipped",
-          "mergedIntoPlanned": "Merged into planned",
-          "balanceWarningTitle": "Some balances might be incorrect",
-          "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
-          "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
-          "errorsOverflow": "…and {count} more",
-          "rowPrefix": "Row {rowIndex}:",
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "successTitle": "Import beendet",
+          "successDescription": "Deine OFX- oder QFX-Transaktionen befinden sich jetzt in deinem Konto.",
+          "partialTitle": "Mit {count} Problem importiert | Mit {count} Problemen importiert",
+          "partialDescription": "Die meisten Transaktionen wurden importiert. Die Liste unten zeigt, was nicht importiert wurde.",
+          "emptyTitle": "Nichts Neues zu importieren",
+          "emptyDescription": "Jede Transaktion wurde übersprungen oder befand sich bereits in deinem Konto.",
+          "failedTitle": "Es wurde nichts importiert",
+          "failedDescription": "Es konnten keine Transaktionen erstellt werden. Überprüfe die Fehler unten.",
+          "accountsCreated": "Konten erstellt",
+          "accountsLinked": "Konten verknüpft",
+          "accountsSkipped": "Konten übersprungen",
+          "payeesCreated": "Zahlungsempfänger erstellt",
+          "transactionsImported": "Transaktionen importiert",
+          "duplicatesSkipped": "Duplikate übersprungen",
+          "mergedIntoPlanned": "Mit geplanten zusammengeführt",
+          "balanceWarningTitle": "Einige Salden könnten fehlerhaft sein",
+          "balanceWarningBody": "Der Endsaldo konnte nicht für jedes Konto festgelegt werden. Überprüfe diese Konten und passe ihre Salden gegebenenfalls an.",
+          "errorsTitle": "{count} Transaktion konnte nicht importiert werden | {count} Transaktionen konnten nicht importiert werden",
+          "errorsOverflow": "…und {count} weitere",
+          "rowPrefix": "Zeile {rowIndex}:",
+          "viewTransactions": "Transaktionen anzeigen",
+          "importAnother": "Weitere Datei importieren"
         },
         "leaseExpired": {
-          "title": "Your uploaded file is no longer available",
-          "description": "The parsed copy of your OFX or QFX file was released after a period of inactivity. Your mapping choices could not be kept. Start the import again.",
-          "action": "Start over"
+          "title": "Deine hochgeladene Datei ist nicht mehr verfügbar",
+          "description": "Die verarbeitete Kopie deiner OFX- oder QFX-Datei wurde nach einer Phase der Inaktivität freigegeben. Deine Zuordnungsauswahl konnte nicht beibehalten werden. Starte den Import erneut.",
+          "action": "Von vorn beginnen"
         },
-        "leaseResourceLabel": "Your uploaded file"
+        "leaseResourceLabel": "Deine hochgeladene Datei"
       }
     }
   }

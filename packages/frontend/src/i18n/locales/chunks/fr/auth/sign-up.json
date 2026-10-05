@@ -1,0 +1,41 @@
+{
+  "auth": {
+    "signup": {
+      "title": "Create an account",
+      "divider": "Or continue with email",
+      "submitButton": "Sign up",
+      "alreadyHaveAccount": "Already have an account?",
+      "signInLink": "Sign in",
+      "labels": {
+        "displayName": "Display Name",
+        "verifyPassword": "Verify Password"
+      },
+      "placeholders": {
+        "displayName": "ie. John Snow",
+        "verifyPassword": "Verify password"
+      },
+      "errors": {
+        "invalidEmail": "Please enter a valid email address.",
+        "passwordTooShort": "Password is too short.",
+        "passwordTooLong": "Password is too long.",
+        "invalidPassword": "Invalid password.",
+        "userExists": "User with that email already exists.",
+        "signupsDisabled": "Sign-ups are disabled by the administrator of this instance.",
+        "genericErrorRetry": "An error occurred. Please try again.",
+        "oauthFailed": "Failed to sign up with {provider}. Please try again.",
+        "oauthNotConfigured": "{provider} sign-in is not configured on this server."
+      }
+    },
+    "shared": {
+      "divider": "Or continue with",
+      "passkeyButton": {
+        "signIn": "Sign in with Passkey",
+        "register": "Add Passkey"
+      },
+      "oauthButton": {
+        "signIn": "Sign in with {provider}",
+        "signUp": "Sign up with {provider}"
+      }
+    }
+  }
+}

@@ -3,85 +3,85 @@
     "currencies": {
       "page": {
         "title": "Tiền tệ",
-        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+        "description": "Quản lý các loại tiền tệ bạn theo dõi và tỷ giá được sử dụng trên các tài khoản."
       },
       "addNew": {
         "loading": "Đang tải...",
-        "selectCurrency": "Select currency",
-        "addButton": "Add",
-        "sectionLabel": "Add a currency",
-        "successfullyAdded": "Currency added",
+        "selectCurrency": "Chọn tiền tệ",
+        "addButton": "Thêm",
+        "sectionLabel": "Thêm loại tiền tệ",
+        "successfullyAdded": "Đã thêm tiền tệ",
         "errors": {
-          "addFailed": "Unexpected error. Currency is not added."
+          "addFailed": "Đã xảy ra lỗi ngoài dự kiến. Không thể thêm tiền tệ."
         }
       },
       "howItWorks": {
-        "trigger": "How it works?",
-        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+        "trigger": "Cơ chế hoạt động?",
+        "body": "Tiền tệ cơ sở là loại tiền tệ mà mọi số dư được quy đổi sang để tính tổng và lập báo cáo. Mỗi loại tiền tệ được thêm vào sẽ tự động cập nhật theo tỷ giá thị trường trực tiếp; bạn cũng có thể đặt tỷ giá tùy chỉnh để thay thế tỷ giá này."
       },
       "row": {
-        "baseBadge": "Base",
-        "custom": "Custom",
-        "live": "Live",
-        "unused": "Unused",
-        "accountsCount": "{count} account | {count} accounts"
+        "baseBadge": "Cơ sở",
+        "custom": "Tùy chỉnh",
+        "live": "Trực tiếp",
+        "unused": "Chưa sử dụng",
+        "accountsCount": "{count} tài khoản | {count} tài khoản"
       },
       "empty": {
-        "title": "No other currencies yet",
-        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+        "title": "Chưa có loại tiền tệ nào khác",
+        "description": "Thêm loại tiền tệ ở trên để theo dõi số dư và tỷ giá cùng với tiền tệ cơ sở."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
-        "liveUpdateInfo": "When enabled, custom rate is ignored.",
-        "liveUpdateLabel": "Live update",
+        "disableLiveUpdate": "Tắt cập nhật tỷ giá trực tiếp để có thể đặt tỷ giá tùy chỉnh.",
+        "liveUpdateInfo": "Khi bật, tỷ giá tùy chỉnh sẽ bị bỏ qua.",
+        "liveUpdateLabel": "Cập nhật trực tiếp",
         "ratePlaceholder": "0.00",
         "saveButton": "Lưu",
-        "successfullyUpdated": "Successfully updated.",
-        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "successfullyUpdated": "Đã cập nhật thành công.",
+        "balancesNotRefreshed": "{count} số dư tài khoản chưa thể cập nhật theo tỷ giá mới — sẽ tự động cập nhật khi có tỷ giá.",
         "errors": {
-          "unexpectedError": "Unexpected error",
-          "updateFailed": "Unexpected error. Currency is not updated."
+          "unexpectedError": "Đã xảy ra lỗi ngoài dự kiến",
+          "updateFailed": "Đã xảy ra lỗi ngoài dự kiến. Không thể cập nhật tiền tệ."
         }
       },
       "delete": {
-        "confirmTitle": "Delete currency?",
-        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
-        "button": "Delete currency",
-        "buttonShort": "Delete",
-        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
-        "successfullyDeleted": "Successfully deleted.",
+        "confirmTitle": "Xóa tiền tệ?",
+        "description": "Chỉ có thể xóa hoặc ngắt kết nối tiền tệ khi không còn tài khoản hay giao dịch nào liên kết với tiền tệ đó.",
+        "button": "Xóa tiền tệ",
+        "buttonShort": "Xóa",
+        "disabledTooltip": "Không thể xóa tiền tệ này vì vẫn còn tài khoản liên kết.",
+        "successfullyDeleted": "Đã xóa thành công.",
         "errors": {
-          "deleteFailed": "Unexpected error. Currency is not deleted."
+          "deleteFailed": "Đã xảy ra lỗi ngoài dự kiến. Không thể xóa tiền tệ."
         }
       },
       "setBase": {
-        "button": "Set as base currency",
-        "buttonShort": "Set as base",
-        "processing": "Processing...",
-        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "button": "Đặt làm tiền tệ cơ sở",
+        "buttonShort": "Đặt làm tiền tệ cơ sở",
+        "processing": "Đang xử lý...",
+        "tooltip": "Đặt làm tiền tệ cơ sở. Mọi thống kê và thông tin trên bảng điều khiển sẽ được hiển thị bằng loại tiền tệ này.\n\nCác giao dịch sẽ được tính toán lại theo tỷ giá tại ngày giao dịch được ghi nhận.",
         "dialog": {
-          "title": "Change Base Currency?",
-          "warningTitle": "Warning:",
-          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
-          "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
-          "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's Rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
-          "roundingHow": "How it works:",
-          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
-          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
-          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
-          "untouchedWarning": "Original transactions amount will always remain untouched!",
-          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
-          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
-          "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change Base Currency",
+          "title": "Đổi tiền tệ cơ sở?",
+          "warningTitle": "Cảnh báo:",
+          "warningText": "Bạn nên cân nhắc kỹ trước khi đổi tiền tệ cơ sở. Tốt nhất chỉ nên thực hiện việc này một lần, mặc dù không có giới hạn cụ thể nào.",
+          "descriptionText": "Mỗi lần đổi tiền tệ cơ sở, tất cả giao dịch sẽ được tính lại bằng tỷ giá theo lịch sử. Do phép tính số dấu phẩy động và biến động thông thường giữa tỷ giá của tiền tệ cơ sở và tiền tệ định giá, việc tính lại nhiều lần có thể khiến số tiền tham chiếu chênh lệch đôi chút theo thời gian. Số tiền tham chiếu được dùng để hiển thị thống kê và đặt giới hạn ngân sách.",
+          "roundingTitle": "Cách làm tròn được tính cụ thể như thế nào?",
+          "roundingIntro": "Việc quy đổi tiền tệ sử dụng phương pháp làm tròn kiểu kế toán (tiêu chuẩn IEEE 754), còn gọi là \"làm tròn nửa về số chẵn\". Cách này giúp giảm sai số làm tròn tích lũy qua nhiều phép tính.",
+          "roundingHow": "Cơ chế hoạt động:",
+          "roundingRule1": "Khi giá trị nằm đúng giữa hai số (ví dụ: 0.5), số đó được làm tròn về số chẵn gần nhất",
+          "roundingRule2": "Ví dụ: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
+          "roundingStandard": "Phương pháp này được các chuẩn mực kế toán IFRS/GAAP khuyến nghị và được các hệ thống tài chính lớn sử dụng để tránh sai lệch có hệ thống khi quy đổi tiền tệ.",
+          "untouchedWarning": "Số tiền gốc của giao dịch luôn được giữ nguyên!",
+          "processingTimeInfo": "Quá trình này có thể mất một lúc nếu tiền tệ của bạn ít phổ biến.",
+          "restrictionWarning": "Trong khi quá trình đang diễn ra, bạn sẽ không thể tạo tài khoản, giao dịch hoặc thao tác nào liên quan đến \"số tiền\".",
+          "confirmation": "Bạn có chắc chắn muốn tiếp tục?",
+          "changeButton": "Đổi tiền tệ cơ sở",
           "cancelButton": "Hủy"
         },
-        "successMessage": "Base currency changed successfully.",
+        "successMessage": "Đã đổi tiền tệ cơ sở thành công.",
         "errors": {
-          "changeFailed": "Unexpected error. Failed to change base currency.",
-          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
-          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first."
+          "changeFailed": "Đã xảy ra lỗi ngoài dự kiến. Không đổi được tiền tệ cơ sở.",
+          "lockedHousehold": "Bạn đang là thành viên của {count} hộ gia đình đang hoạt động. Trước tiên, hãy rời khỏi hộ gia đình đó trong Cài đặt → Hộ gia đình. | Bạn đang là thành viên của {count} hộ gia đình đang hoạt động. Trước tiên, hãy rời khỏi các hộ gia đình đó trong Cài đặt → Hộ gia đình.",
+          "lockedShares": "Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi quyền đó trong tài khoản. | Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi từng quyền trong các tài khoản tương ứng."
         }
       }
     }

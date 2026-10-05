@@ -2,50 +2,50 @@
   "settings": {
     "accountGroups": {
       "page": {
-        "title": "Account groups",
-        "description": "Organize accounts into groups. Bank connections create and manage their own groups automatically.",
-        "addButton": "Add group"
+        "title": "Kontengruppen",
+        "description": "Organisiere Konten in Gruppen. Bankverbindungen erstellen und verwalten ihre eigenen Gruppen automatisch.",
+        "addButton": "Gruppe hinzufügen"
       },
       "empty": {
-        "title": "No account groups yet",
-        "description": "Group accounts by bank, currency or purpose to keep your accounts list tidy."
+        "title": "Noch keine Kontengruppen",
+        "description": "Gruppiere Konten nach Bank, Währung oder Zweck, um deine Kontenliste übersichtlich zu halten."
       },
       "loadError": {
-        "title": "Couldn't load your groups",
-        "description": "Something went wrong while fetching your account groups. Check your connection and try again.",
-        "retry": "Try again"
+        "title": "Deine Gruppen konnten nicht geladen werden",
+        "description": "Beim Abrufen deiner Kontengruppen ist etwas schiefgelaufen. Überprüfe deine Verbindung und versuche es erneut.",
+        "retry": "Erneut versuchen"
       },
       "row": {
-        "bankBadge": "Created by bank connection",
-        "bankBadgeShort": "Connection",
-        "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
+        "bankBadge": "Erstellt durch Bankverbindung",
+        "bankBadgeShort": "Verbindung",
+        "bankBadgeTooltip": "Diese Gruppe wurde erstellt, als du die Bank verbunden hast, aber sie repräsentiert nicht die Verbindung selbst — du kannst sie beliebig umbenennen, Konten verschieben oder sie löschen. Konten bleiben unabhängig davon synchronisiert.",
         "accountsCount": "{count} Konto | {count} Konten",
-        "noAccounts": "No accounts",
-        "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
+        "noAccounts": "Keine Konten",
+        "accountsElsewhere": "{count} synchronisiertes Konto in anderen Gruppen | {count} synchronisierte Konten in anderen Gruppen",
         "inParent": "in {name}",
         "manageConnection": "Verbindung verwalten"
       },
       "update": {
         "label": "Gruppenname",
-        "placeholder": "Enter group name",
+        "placeholder": "Gruppennamen eingeben",
         "saveButton": "Speichern",
-        "emptyNameError": "Group name can't be empty"
+        "emptyNameError": "Gruppenname darf nicht leer sein"
       },
       "accounts": {
-        "heading": "Accounts in this group",
-        "empty": "No accounts in this group yet. Add accounts to a group from the account page.",
-        "emptyBankLinked": "This connection's accounts are organized into other groups — moving them doesn't affect syncing.",
-        "unlinkTooltip": "Remove from group",
-        "removeConfirmTitle": "Remove \"{name}\" from this group?",
-        "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
+        "heading": "Konten in dieser Gruppe",
+        "empty": "Noch keine Konten in dieser Gruppe. Füge Konten über die Kontoseite einer Gruppe hinzu.",
+        "emptyBankLinked": "Die Konten dieser Verbindung sind in anderen Gruppen organisiert — das Verschieben hat keinen Einfluss auf die Synchronisierung.",
+        "unlinkTooltip": "Aus Gruppe entfernen",
+        "removeConfirmTitle": "\"{name}\" aus dieser Gruppe entfernen?",
+        "removeConfirmDescription": "Das Konto wird nicht gelöscht — es verlässt lediglich diese Gruppe.",
         "removeConfirmAction": "Entfernen"
       },
       "delete": {
-        "button": "Delete group",
-        "confirmTitle": "Delete \"{name}\"?",
-        "accountsKept": "Accounts are kept — they simply become ungrouped.",
-        "syncContinues": "Bank syncing continues — the connection is separate from this group.",
-        "ungroupedHeading": "Becoming ungrouped"
+        "button": "Gruppe löschen",
+        "confirmTitle": "\"{name}\" löschen?",
+        "accountsKept": "Konten bleiben erhalten — sie werden lediglich keiner Gruppe mehr zugeordnet.",
+        "syncContinues": "Die Bank-Synchronisierung wird fortgesetzt — die Verbindung ist unabhängig von dieser Gruppe.",
+        "ungroupedHeading": "Werden keiner Gruppe zugeordnet"
       }
     }
   }

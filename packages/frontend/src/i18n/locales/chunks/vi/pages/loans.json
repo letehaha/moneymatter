@@ -51,7 +51,7 @@
       "archiveAlsoExclude": "Also exclude from statistics",
       "deleteTitle": "Delete loan",
       "deleteDescription": "Permanently removes the loan and its history. This cannot be undone.",
-      "deleteButton": "Delete",
+      "deleteButton": "Xóa",
       "deleteConfirmTitle": "Delete this loan permanently?",
       "deleteConfirmDescription": "{name} and all its events will be permanently removed. This cannot be undone.",
       "toggleSuccess": "Setting updated",
@@ -76,8 +76,8 @@
       "interestPaid": "Interest paid (est.)"
     },
     "archivedList": {
-      "sectionTitle": "Archived",
-      "badge": "Archived",
+      "sectionTitle": "Đã lưu trữ",
+      "badge": "Đã lưu trữ",
       "outstanding": "Outstanding"
     },
     "aggregate": {

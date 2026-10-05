@@ -1,0 +1,26 @@
+{
+  "settings": {
+    "navigation": {
+      "currencies": "Currencies",
+      "categories": "Categories",
+      "tags": "Tags",
+      "accountsGroups": "Accounts groups",
+      "importData": "Import/Export",
+      "ai": "AI",
+      "security": "Security",
+      "admin": "Admin",
+      "sharedWithMe": "Shared with me",
+      "household": "Household",
+      "personalGroup": "Personal",
+      "workspaceGroup": "Workspace",
+      "appearance": "Appearance",
+      "language": "Language",
+      "general": "General",
+      "payees": "Payees",
+      "subscriptions": "Scheduled payments",
+      "planBilling": "Plan & billing",
+      "collapse": "Collapse"
+    },
+    "backToSettings": "Back to Settings"
+  }
+}

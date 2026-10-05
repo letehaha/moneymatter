@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "Процесс синхронизации для \"{{lockKey}}\" уже заблокирован.",
-    "serviceTemporarilyUnavailable": "Сервис временно недоступен. Попробуйте снова."
+    "serviceTemporarilyUnavailable": "Сервис временно недоступен. Попробуйте снова.",
+    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
   },
   "accounts": {
     "groupNotFound": "Группа или счёт не найдены",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "Этот импорт больше нельзя отменить, поскольку его счёт теперь подключён к банку. Удаление этих транзакций может нарушить синхронизированный баланс.",
     "batchDeleteLinkedLoanTransfer": "Этот импорт связан с платежом по кредиту и не может быть отменён отдельно. Включите «также удалить связанные транзакции перевода», чтобы удалить его.",
     "batchDeleteInProgress": "An import batch is already being deleted. Wait for it to finish before starting another.",
-    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one."
+    "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
+    "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
+    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one.",
+    "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
     "invalidFile": "Некорректный файл",

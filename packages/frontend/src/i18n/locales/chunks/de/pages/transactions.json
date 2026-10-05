@@ -3,36 +3,36 @@
     "filters": {
       "filtersLabel": "Filter",
       "selectFilters": "Filter auswählen",
-      "reset": "Reset",
+      "reset": "Zurücksetzen",
       "apply": "Anwenden",
       "dateRange": {
-        "placeholder": "Date or range",
+        "placeholder": "Datum oder Bereich",
         "presets": {
-          "thisMonth": "This month",
-          "last3Months": "Last 3 months",
-          "last6Months": "Last 6 months",
-          "last12Months": "Last 12 months"
+          "thisMonth": "Diesen Monat",
+          "last3Months": "Letzte 3 Monate",
+          "last6Months": "Letzte 6 Monate",
+          "last12Months": "Letzte 12 Monate"
         }
       },
       "transactionType": {
-        "label": "Transaction type:",
+        "label": "Transaktionstyp:",
         "income": "Einnahmen",
         "expense": "Ausgaben",
-        "allTypes": "All types"
+        "allTypes": "Alle Typen"
       },
       "amountRange": {
         "from": "Betrag von (>=)",
         "to": "Bis (<=)",
-        "placeholderFrom": "Größer gleich",
-        "placeholderTo": "Kleiner gleich",
-        "compactFrom": "Min amount",
-        "compactTo": "Max amount"
+        "placeholderFrom": ">= als",
+        "placeholderTo": "<= als",
+        "compactFrom": "Min. Betrag",
+        "compactTo": "Max. Betrag"
       },
       "refundsFilter": {
-        "label": "Erstattet"
+        "label": "Rückerstattungen"
       },
       "transferFilter": {
-        "label": "Transfers"
+        "label": "Umbuchungen"
       },
       "plannedFilter": {
         "label": "Geplant"
@@ -41,230 +41,230 @@
         "label": "Anhänge"
       },
       "filterOperation": {
-        "all": "All",
-        "exclude": "Exclude",
-        "only": "Only"
+        "all": "Alle",
+        "exclude": "Ausschließen",
+        "only": "Nur"
       },
       "noteIncludes": {
-        "label": "Note includes (comma-separated):",
+        "label": "Notiz enthält (kommagetrennt):",
         "placeholder": "Amazon,nike",
-        "compactPlaceholder": "Search in notes"
+        "compactPlaceholder": "In Notizen suchen"
       },
       "tags": {
-        "allTags": "All tags",
-        "tagSingular": "tag",
-        "tagPlural": "tags",
-        "selected": "selected",
-        "searchPlaceholder": "Search tags...",
-        "blankOption": "No tags"
+        "allTags": "Alle Tags",
+        "tagSingular": "Tag",
+        "tagPlural": "Tags",
+        "selected": "ausgewählt",
+        "searchPlaceholder": "Tags suchen...",
+        "blankOption": "Keine Tags"
       },
       "payees": {
-        "label": "Payees",
-        "selectedOne": "1 Payee selected",
-        "selectedMany": "{n} Payees selected"
+        "label": "Zahlungsempfänger",
+        "selectedOne": "1 Zahlungsempfänger ausgewählt",
+        "selectedMany": "{n} Zahlungsempfänger ausgewählt"
       },
-      "removeFilter": "Remove filter",
+      "removeFilter": "Filter entfernen",
       "menu": {
-        "type": "Type",
+        "type": "Typ",
         "tags": "Tags",
         "budgets": "Budgets",
-        "amount": "Amount range",
-        "note": "Notes"
+        "amount": "Betragsbereich",
+        "note": "Notizen"
       },
       "transferNature": {
-        "label": "Transfer kinds",
-        "disabledTooltip": "Transfers are excluded by the filter above, so transfer kinds have no effect.",
-        "commonTransfer": "Between accounts",
-        "outOfWallet": "Out of wallet",
+        "label": "Umbuchungsarten",
+        "disabledTooltip": "Umbuchungen sind durch den obigen Filter ausgeschlossen, daher haben Umbuchungsarten keine Auswirkung.",
+        "commonTransfer": "Zwischen Konten",
+        "outOfWallet": "Extern",
         "toPortfolio": "Zielportfolio",
-        "toVenture": "To venture",
-        "selectedCount": "{n} selected"
+        "toVenture": "Zur Beteiligung",
+        "selectedCount": "{n} ausgewählt"
       }
     },
     "list": {
       "noMoreData": "Keine weiteren Transaktionen",
-      "loadingMore": "Loading more...",
-      "detailsTitle": "Transaction details",
-      "detailsDescription": "View and edit transaction"
+      "loadingMore": "Mehr laden...",
+      "detailsTitle": "Transaktionsdetails",
+      "detailsDescription": "Transaktion anzeigen und bearbeiten"
     },
     "bulkEdit": {
       "selectAll": "Alles auswählen",
-      "cancelSelection": "Cancel selection",
+      "cancelSelection": "Auswahl aufheben",
       "editButton": "Bearbeiten",
-      "selectedCount": "{count} selected",
-      "dialogTitle": "Edit {count} transactions",
-      "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
-      "categoryLabel": "Category",
-      "categoryPlaceholder": "Select category...",
-      "payeeLabel": "Payee",
-      "payeePlaceholder": "Select payee...",
+      "selectedCount": "{count} ausgewählt",
+      "dialogTitle": "{count} Transaktionen bearbeiten",
+      "dialogDescription": "Änderungen werden auf alle ausgewählten Transaktionen angewendet. Nur ausgefüllte Felder werden aktualisiert.",
+      "categoryLabel": "Kategorie",
+      "categoryPlaceholder": "Kategorie auswählen...",
+      "payeeLabel": "Zahlungsempfänger",
+      "payeePlaceholder": "Zahlungsempfänger auswählen...",
       "tagsLabel": "Tags",
-      "tagsPlaceholder": "Select tags...",
-      "noteLabel": "Note",
-      "notePlaceholder": "Enter note...",
-      "applyButton": "Apply changes",
-      "applyingButton": "Applying...",
-      "confirmTitle": "Confirm changes",
-      "confirmDescription": "You are about to update {count} transactions:",
-      "confirmCategoryLabel": "Category",
-      "confirmPayeeLabel": "Payee",
+      "tagsPlaceholder": "Tags auswählen...",
+      "noteLabel": "Notiz",
+      "notePlaceholder": "Notiz eingeben...",
+      "applyButton": "Änderungen anwenden",
+      "applyingButton": "Wird angewendet...",
+      "confirmTitle": "Änderungen bestätigen",
+      "confirmDescription": "Du bist dabei, {count} Transaktionen zu aktualisieren:",
+      "confirmCategoryLabel": "Kategorie",
+      "confirmPayeeLabel": "Zahlungsempfänger",
       "confirmTagsLabel": "Tags",
-      "confirmNoteLabel": "Note",
+      "confirmNoteLabel": "Notiz",
       "cancelButton": "Abbrechen",
       "confirmApplyButton": "Anwenden",
-      "successMessage": "Successfully updated {count} transactions",
-      "unexpectedError": "An unexpected error occurred",
-      "tagModeLabel": "Tag action",
-      "tagModeAdd": "Add to existing tags",
-      "tagModeReplace": "Replace all tags",
-      "tagModeRemove": "Remove these tags",
+      "successMessage": "{count} Transaktionen erfolgreich aktualisiert",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
+      "tagModeLabel": "Tag-Aktion",
+      "tagModeAdd": "Zu bestehenden Tags hinzufügen",
+      "tagModeReplace": "Alle Tags ersetzen",
+      "tagModeRemove": "Diese Tags entfernen",
       "totals": {
         "income": "Einnahmen",
         "expense": "Ausgaben",
-        "net": "Net",
-        "transfers": "Transfers"
+        "net": "Netto",
+        "transfers": "Umbuchungen"
       }
     },
     "transactionGroups": {
       "bulkActions": {
         "createNewGroup": "Neue Gruppe erstellen",
-        "addToExistingGroup": "Add to existing group",
-        "groupButton": "Group"
+        "addToExistingGroup": "Zu bestehender Gruppe hinzufügen",
+        "groupButton": "Gruppieren"
       },
       "addToGroupDialog": {
-        "title": "Add to existing group",
-        "searchPlaceholder": "Search groups...",
-        "noGroupsMessage": "No groups yet. Create one first.",
-        "noSearchResultsMessage": "No groups match your search.",
-        "addingText": "Adding...",
-        "buttonLabel": "Add to Group",
+        "title": "Zu bestehender Gruppe hinzufügen",
+        "searchPlaceholder": "Gruppen suchen...",
+        "noGroupsMessage": "Noch keine Gruppen. Erstelle zuerst eine.",
+        "noSearchResultsMessage": "Keine Gruppen entsprechen deiner Suche.",
+        "addingText": "Wird hinzugefügt...",
+        "buttonLabel": "Zu Gruppe hinzufügen",
         "cancelButton": "Abbrechen",
-        "transactionCountLabel": "transactions"
+        "transactionCountLabel": "Transaktionen"
       },
       "createGroupDialog": {
-        "title": "Create Transaction Group",
-        "descriptionPrefix": "Group",
+        "title": "Transaktionsgruppe erstellen",
+        "descriptionPrefix": "Gruppe",
         "groupNameLabel": "Name",
-        "groupNamePlaceholder": "e.g. May salary transfer",
-        "noteLabel": "Note (optional)",
-        "notePlaceholder": "Optional description...",
+        "groupNamePlaceholder": "z.B. Gehaltsumbuchung Mai",
+        "noteLabel": "Notiz (optional)",
+        "notePlaceholder": "Optionale Beschreibung...",
         "creatingText": "Wird erstellt...",
-        "buttonLabel": "Create Group",
+        "buttonLabel": "Gruppe erstellen",
         "cancelButton": "Abbrechen"
       },
       "groupsPage": {
-        "title": "Transaction Groups",
-        "searchPlaceholder": "Search groups...",
-        "noGroupsMessage": "No transaction groups yet.",
-        "emptyStateHint": "Select transactions on the Transactions page and click \"Create Group\" to get started.",
-        "transactionCountLabel": "transactions",
-        "deleteError": "Failed to delete the group. Please try again."
+        "title": "Transaktionsgruppen",
+        "searchPlaceholder": "Gruppen suchen...",
+        "noGroupsMessage": "Noch keine Transaktionsgruppen.",
+        "emptyStateHint": "Wähle Transaktionen auf der Transaktionsseite aus und klicke auf \"Gruppe erstellen\", um zu starten.",
+        "transactionCountLabel": "Transaktionen",
+        "deleteError": "Gruppe konnte nicht gelöscht werden. Bitte versuche es erneut."
       },
       "errors": {
-        "nameRequired": "Group name is required",
-        "minTransactions": "Select at least {min} transactions",
-        "alreadyInGroup": "Some selected transactions already belong to a group",
-        "createFailed": "Failed to create group",
-        "addFailed": "Failed to add transactions to group"
+        "nameRequired": "Gruppenname ist erforderlich",
+        "minTransactions": "Wähle mindestens {min} Transaktionen aus",
+        "alreadyInGroup": "Einige ausgewählte Transaktionen gehören bereits zu einer Gruppe",
+        "createFailed": "Gruppe konnte nicht erstellt werden",
+        "addFailed": "Transaktionen konnten nicht zur Gruppe hinzugefügt werden"
       }
     },
     "planned": {
       "label": "Geplant",
-      "confirmedLabel": "Confirmed",
-      "plannedTooltip": "Planned transaction",
-      "expiredTooltip": "Expected {days} days ago, no matching bank transaction",
-      "mergedTooltip": "Confirmed from planned entry on {date}"
+      "confirmedLabel": "Bestätigt",
+      "plannedTooltip": "Geplante Transaktion",
+      "expiredTooltip": "Vor {days} Tagen erwartet, keine passende Banktransaktion",
+      "mergedTooltip": "Bestätigt aus geplantem Eintrag am {date}"
     },
     "pending": {
-      "label": "Pending",
-      "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
+      "label": "Ausstehend",
+      "tooltip": "Die Bank hat diese Transaktion noch nicht gebucht. Sie hat keinen Einfluss auf den Kontostand."
     },
     "table": {
       "columns": {
-        "date": "Date",
-        "account": "Account",
-        "category": "Category",
-        "payee": "Payee",
-        "amount": "Amount",
-        "refAmount": "Base amount",
-        "originalAmount": "Original amount",
-        "note": "Note",
+        "date": "Datum",
+        "account": "Konto",
+        "category": "Kategorie",
+        "payee": "Zahlungsempfänger",
+        "amount": "Betrag",
+        "refAmount": "Basisbetrag",
+        "originalAmount": "Ursprünglicher Betrag",
+        "note": "Notiz",
         "tags": "Tags",
-        "categorizationSource": "Categorized by",
-        "group": "Group",
+        "categorizationSource": "Kategorisiert durch",
+        "group": "Gruppe",
         "refund": "Rückerstattung",
         "split": "Aufteilen"
       },
-      "outOfWallet": "Out of wallet",
-      "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
-      "plannedRows": "{count} planned transactions",
-      "emptyTitle": "No transactions match these filters",
-      "emptyDescription": "Try adjusting or resetting the filters.",
+      "outOfWallet": "Extern",
+      "hint": "Klicke auf eine Zelle, um sie zu bearbeiten, oder auf ↗, um die vollständige Transaktion zu öffnen. Wähle Zeilen aus, um sie gesammelt zu bearbeiten.",
+      "plannedRows": "{count} geplante Transaktionen",
+      "emptyTitle": "Keine Transaktionen entsprechen diesen Filtern",
+      "emptyDescription": "Versuche, die Filter anzupassen oder zurückzusetzen.",
       "columnConfig": {
-        "title": "Table settings",
-        "columns": "Columns",
-        "visibleCount": "{count} visible",
-        "resetDefaults": "Reset to defaults",
+        "title": "Tabelleneinstellungen",
+        "columns": "Spalten",
+        "visibleCount": "{count} sichtbar",
+        "resetDefaults": "Auf Standardwerte zurücksetzen",
         "alwaysShowLockedCells": {
-          "label": "Always show locked cells",
-          "description": "Shade cells you can't edit here on every row, not only on hover."
+          "label": "Gesperrte Felder immer anzeigen",
+          "description": "Zellen, die du hier nicht bearbeiten kannst, in jeder Zeile schattieren, nicht nur beim Drüberfahren."
         }
       },
       "categorizationSourceValues": {
-        "manual": "Manual",
-        "ai": "AI",
-        "mcc_rule": "MCC rule",
-        "user_rule": "User rule",
-        "subscription_rule": "Subscription rule",
-        "payee_rule": "Payee rule"
+        "manual": "Manuell",
+        "ai": "KI",
+        "mcc_rule": "MCC-Regel",
+        "user_rule": "Benutzerregel",
+        "subscription_rule": "Abo-Regel",
+        "payee_rule": "Zahlungsempfänger-Regel"
       },
       "viewToggle": {
-        "list": "List view",
-        "table": "Table view"
+        "list": "Listenansicht",
+        "table": "Tabellenansicht"
       },
       "fullscreen": {
-        "enter": "Focus mode",
-        "exit": "Exit focus mode"
+        "enter": "Fokusmodus",
+        "exit": "Fokusmodus verlassen"
       }
     },
     "bulkDelete": {
       "button": "Löschen",
-      "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
+      "externalTooltip": "Auswahl enthält bank-synchronisierte Transaktionen, die nicht gelöscht werden können.",
       "confirmButton": "Löschen",
-      "confirmTitle": "Delete {count} transactions?",
-      "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
-      "successMessage": "{count} transactions deleted",
-      "unexpectedError": "Failed to delete transactions. Please try again."
+      "confirmTitle": "{count} Transaktionen löschen?",
+      "confirmDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Bei Umbuchungen werden beide Seiten entfernt.",
+      "successMessage": "{count} Transaktionen gelöscht",
+      "unexpectedError": "Transaktionen konnten nicht gelöscht werden. Bitte versuche es erneut."
     },
     "inlineEdit": {
-      "saveFailed": "Couldn't save {field}. Try again.",
-      "bankTitle": "Set by your bank",
-      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
-      "managedTitle": "Managed elsewhere",
-      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "saveFailed": "{field} konnte nicht gespeichert werden. Versuche es erneut.",
+      "bankTitle": "Von deiner Bank festgelegt",
+      "bankDescription": "Datum, Konto und Betrag werden von deiner Bankverbindung synchronisiert. Alles andere an dieser Transaktion kannst du ändern.",
+      "managedTitle": "An anderer Stelle verwaltet",
+      "managedDescription": "Diese Transaktion gehört zu einem Portfolio, einer Investition, einem Fahrzeug oder einem Kredit. Ändere sie auf der jeweiligen Seite, damit die Salden korrekt bleiben.",
       "gotIt": "Verstanden",
-      "openDetails": "Open details",
-      "tooManyTags": "Up to {max} tags per transaction"
+      "openDetails": "Details öffnen",
+      "tooManyTags": "Bis zu {max} Tags pro Transaktion"
     }
   },
   "records": {
     "upcomingSection": {
-      "title": "Upcoming",
-      "overdueBadge": "Overdue",
-      "scheduledBadge": "Scheduled",
-      "payAction": "Mark paid",
-      "hideToggle": "Hide upcoming payments",
-      "expectedBadge": "Expected",
-      "unconfirmedBadge": "Unconfirmed",
-      "morePlans": "+{count} more planned",
-      "morePlansAtLeast": "+{count}+ more planned",
-      "deletePlanTitle": "Delete planned transaction?",
+      "title": "Anstehend",
+      "overdueBadge": "Überfällig",
+      "scheduledBadge": "Geplant",
+      "payAction": "Bezahlt",
+      "hideToggle": "Anstehende Zahlungen ausblenden",
+      "expectedBadge": "Erwartet",
+      "unconfirmedBadge": "Unbestätigt",
+      "morePlans": "+{count} weitere geplant",
+      "morePlansAtLeast": "+{count}+ weitere geplant",
+      "deletePlanTitle": "Geplante Transaktion löschen?",
       "deletePlanDescription": "Diese Aktion kann nicht rückgängig gemacht werden.",
-      "plansLoadFailed": "Couldn't load planned transactions",
+      "plansLoadFailed": "Geplante Transaktionen konnten nicht geladen werden",
       "confirmAction": "Bestätigen",
-      "confirmTooltip": "The money moved — record it and update the balance",
-      "confirmPlanSuccess": "Plan recorded — balance updated",
-      "confirmPlanError": "Failed to record the plan"
+      "confirmTooltip": "Das Geld wurde bewegt — erfasse es und aktualisiere den Kontostand",
+      "confirmPlanSuccess": "Planung erfasst — Kontostand aktualisiert",
+      "confirmPlanError": "Planung konnte nicht erfasst werden"
     }
   }
 }

@@ -176,7 +176,7 @@
       "mergedTooltip": "Confirmed from planned entry on {date}"
     },
     "pending": {
-      "label": "Pending",
+      "label": "Đang chờ",
       "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
     },
     "table": {
@@ -228,9 +228,9 @@
       }
     },
     "bulkDelete": {
-      "button": "Delete",
+      "button": "Xóa",
       "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
-      "confirmButton": "Delete",
+      "confirmButton": "Xóa",
       "confirmTitle": "Delete {count} transactions?",
       "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
       "successMessage": "{count} transactions deleted",

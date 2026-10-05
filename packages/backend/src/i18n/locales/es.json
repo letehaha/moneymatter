@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "El proceso de sincronización para \"{{lockKey}}\" ya está bloqueado.",
-    "serviceTemporarilyUnavailable": "Servicio no disponible temporalmente. Inténtelo de nuevo."
+    "serviceTemporarilyUnavailable": "Servicio no disponible temporalmente. Inténtelo de nuevo.",
+    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
   },
   "accounts": {
     "groupNotFound": "Grupo o cuenta no encontrados",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "Esta importación ya no se puede deshacer porque su cuenta ahora está conectada a un banco. Eliminar estas transacciones podría desajustar el saldo sincronizado.",
     "batchDeleteLinkedLoanTransfer": "Esta importación está vinculada a un pago de préstamo y no se puede deshacer por sí sola. Active \"también eliminar las transacciones de transferencia vinculadas\" para eliminarla.",
     "batchDeleteInProgress": "Un lote de importación ya está siendo eliminado. Espere a que termine antes de iniciar otro.",
-    "statementImportInProgress": "Ya se está ejecutando una importación de sentencias. Espere a que termine antes de comenzar otra."
+    "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
+    "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
+    "statementImportInProgress": "Ya se está ejecutando una importación de sentencias. Espere a que termine antes de comenzar otra.",
+    "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
     "invalidFile": "Archivo no válido",

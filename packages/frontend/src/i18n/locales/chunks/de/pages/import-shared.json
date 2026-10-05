@@ -2,95 +2,95 @@
   "pages": {
     "importExport": {
       "progress": {
-        "jobExpired": "The import job expired or could not be found.",
-        "lostContact": "Lost contact with the import job."
+        "jobExpired": "Der Importauftrag ist abgelaufen oder konnte nicht gefunden werden.",
+        "lostContact": "Verbindung zum Importauftrag verloren."
       }
     }
   },
   "importShared": {
     "action": {
-      "createNew": "Create new",
-      "linkExisting": "Link to existing",
-      "skip": "Skip"
+      "createNew": "Neu erstellen",
+      "linkExisting": "Verknüpfen",
+      "skip": "Überspringen"
     },
-    "selectAction": "Select action",
-    "resolvedCounterWord": "resolved",
-    "quickActionsMenuLabel": "Bulk actions",
+    "selectAction": "Aktion auswählen",
+    "resolvedCounterWord": "gelöst",
+    "quickActionsMenuLabel": "Massenaktionen",
     "quickActions": {
       "menu": "Aktionen"
     },
     "columns": {
-      "sourceName": "Source name",
-      "currency": "Currency",
-      "action": "Action",
-      "target": "Target"
+      "sourceName": "Quellname",
+      "currency": "Währung",
+      "action": "Aktion",
+      "target": "Ziel"
     },
     "account": {
       "selectTarget": "Konto auswählen",
-      "noMatchingCurrency": "No account with currency {currency}",
-      "willCreate": "Will create {name} ({currency})",
-      "empty": "No accounts to map",
-      "willSkip": "Will not be imported"
+      "noMatchingCurrency": "Kein Konto mit Währung {currency}",
+      "willCreate": "Erstellt {name} ({currency})",
+      "empty": "Keine Konten zum Zuordnen",
+      "willSkip": "Wird nicht importiert"
     },
     "category": {
-      "selectTarget": "Select category",
-      "willCreate": "Will create {name}",
-      "empty": "No categories to map"
+      "selectTarget": "Kategorie auswählen",
+      "willCreate": "Erstellt {name}",
+      "empty": "Keine Kategorien zum Zuordnen"
     },
     "recalculateBalance": {
-      "label": "Update account balances from imported transactions",
-      "hint": "Transactions older than an account's latest existing transaction are treated as backfill and don't change its current balance.",
-      "loadFailedHint": "Couldn't load your saved preference — defaulting to off."
+      "label": "Kontostände anhand importierter Transaktionen aktualisieren",
+      "hint": "Transaktionen, die älter als die neueste bestehende Transaktion eines Kontos sind, werden als Nachbereitung behandelt und ändern nicht dessen aktuellen Saldo.",
+      "loadFailedHint": "Deine gespeicherte Einstellung konnte nicht geladen werden – standardmäßig deaktiviert."
     },
     "balanceChanges": {
-      "title": "Account balance changes",
+      "title": "Änderungen der Kontosalden",
       "columns": {
-        "account": "Account",
-        "before": "Before",
-        "after": "After",
-        "delta": "Change",
-        "newRows": "New rows",
-        "backfillRows": "Backfill rows"
+        "account": "Konto",
+        "before": "Vorher",
+        "after": "Nachher",
+        "delta": "Ändern",
+        "newRows": "Neue Zeilen",
+        "backfillRows": "Nachträgliche Zeilen"
       },
       "newAccount": "Neues Konto"
     },
     "duplicatesTable": {
       "columnHeaders": {
-        "row": "Row",
-        "match": "Match",
-        "csvTransaction": "CSV transaction",
-        "existingTransaction": "Existing transaction",
+        "row": "Zeile",
+        "match": "Übereinstimmung",
+        "csvTransaction": "CSV-Transaktion",
+        "existingTransaction": "Bestehende Transaktion",
         "csvShort": "CSV",
-        "existingShort": "Existing"
+        "existingShort": "Bestehende"
       },
       "matchTypeLabels": {
-        "exact": "Exact",
-        "idMatch": "ID match",
-        "fuzzy": "Fuzzy"
+        "exact": "Exakt",
+        "idMatch": "ID-Übereinstimmung",
+        "fuzzy": "Ungefähr"
       },
       "fieldLabels": {
-        "amount": "Amount",
-        "date": "Date",
-        "note": "Note",
-        "category": "Category"
+        "amount": "Betrag",
+        "date": "Datum",
+        "note": "Notiz",
+        "category": "Kategorie"
       },
-      "importAnywayAriaLabel": "Import row {row} anyway"
+      "importAnywayAriaLabel": "Zeile {row} trotzdem importieren"
     },
     "aiMapping": {
-      "action": "AI match",
-      "tooltipCategories": "Let AI link each source category to the closest existing category. Rows you already linked to a category are left untouched.",
-      "failed": "AI matching failed. Please try again.",
-      "inProgress": "AI matching in progress…"
+      "action": "KI-Zuordnung",
+      "tooltipCategories": "Lass die KI jede Quellkategorie mit der am besten passenden bestehenden Kategorie verknüpfen. Zeilen, die du bereits mit einer Kategorie verknüpft hast, bleiben unverändert.",
+      "failed": "KI-Zuordnung fehlgeschlagen. Bitte versuche es erneut.",
+      "inProgress": "KI-Zuordnung läuft…"
     },
     "categoryPreset": {
-      "menuTrigger": "Apply mapping",
-      "currentLayout": "This file's layout",
-      "savedTemplates": "Saved templates",
-      "lastUsed": "Last used mapping",
-      "namePlaceholder": "Name this mapping",
-      "renameAria": "Rename mapping",
-      "deleteAria": "Delete mapping",
-      "confirmRenameAria": "Save name"
+      "menuTrigger": "Zuordnung anwenden",
+      "currentLayout": "Layout dieser Datei",
+      "savedTemplates": "Gespeicherte Vorlagen",
+      "lastUsed": "Zuletzt verwendete Zuordnung",
+      "namePlaceholder": "Diese Zuordnung benennen",
+      "renameAria": "Zuordnung umbenennen",
+      "deleteAria": "Zuordnung löschen",
+      "confirmRenameAria": "Name speichern"
     }
   }
 }

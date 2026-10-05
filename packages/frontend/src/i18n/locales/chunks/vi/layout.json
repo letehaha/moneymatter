@@ -50,13 +50,13 @@
       "cars": "Cars",
       "loans": "Loans",
       "collapseNavigation": "Collapse navigation",
-      "viaHousehold": "Shared via {handle}'s household",
+      "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
       "sharedBy": "Được chia sẻ bởi {handle}",
       "needsReauthTooltip": "Connection expired. Reconnect to resume syncing."
     }
   },
   "header": {
-    "add": "Add",
+    "add": "Thêm",
     "importData": "Import data",
     "moreActions": "More ways to add data",
     "importDataHint": "CSV file or bank statement",
@@ -196,7 +196,7 @@
       "title": "Welcome to MoneyMatter",
       "subtitle": "Get started by setting up your first account",
       "createManualAccount": {
-        "title": "Create Manual Account",
+        "title": "Tạo tài khoản thủ công",
         "description": "Track cash, savings, or any account manually"
       },
       "connectBank": {

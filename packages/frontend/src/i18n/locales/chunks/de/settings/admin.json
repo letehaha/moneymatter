@@ -1,116 +1,116 @@
 {
   "settings": {
     "admin": {
-      "title": "Admin Panel",
-      "description": "Administrative tools and system management",
+      "title": "Admin-Panel",
+      "description": "Administrative Werkzeuge und Systemverwaltung",
       "priceSync": {
-        "title": "Securities Price Sync",
-        "description": "Preissynchronisation für alle Wertpapiere mit Positionen manuell auslösen",
-        "button": "Trigger Price Sync",
-        "buttonLoading": "Synchronisieren...",
+        "title": "Wertpapier-Preissynchronisierung",
+        "description": "Manuell die Preissynchronisierung für alle Wertpapiere mit Beständen auslösen",
+        "button": "Preissynchronisierung auslösen",
+        "buttonLoading": "Wird synchronisiert...",
         "notifications": {
-          "success": "Securities prices sync completed successfully",
-          "failed": "Failed to trigger price sync",
-          "rateLimited": "Not allowed. Try again in {time}.",
-          "adminRequired": "Admin privileges required for this action"
+          "success": "Wertpapier-Preissynchronisierung erfolgreich abgeschlossen",
+          "failed": "Preissynchronisierung konnte nicht ausgelöst werden",
+          "rateLimited": "Nicht erlaubt. Versuche es in {time} erneut.",
+          "adminRequired": "Administratorrechte für diese Aktion erforderlich"
         }
       },
       "priceUpload": {
-        "title": "Manual Security Price Upload",
-        "description": "Upload historical price data for securities via CSV or JSON files",
-        "button": "Upload Security Prices",
-        "dialogTitle": "Upload Security Prices",
+        "title": "Manueller Wertpapierpreis-Upload",
+        "description": "Lade historische Kursdaten für Wertpapiere über CSV- oder JSON-Dateien hoch",
+        "button": "Wertpapierpreise hochladen",
+        "dialogTitle": "Wertpapierpreise hochladen",
         "selectSecurity": {
           "searchLabel": "Symbol oder Name suchen",
           "searchPlaceholder": "AAPL",
-          "searching": "Searching…",
-          "failed": "Fehler bei der Suche nach Wertpapieren.",
+          "searching": "Wird gesucht…",
+          "failed": "Suche nach Wertpapieren fehlgeschlagen.",
           "noResults": "Keine Ergebnisse.",
-          "changeButton": "Change"
+          "changeButton": "Ändern"
         },
         "dateRangeInfo": {
-          "loading": "Loading date range information...",
-          "title": "Verfügbarer Wechselkurszeitraum ({currency}):",
-          "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
+          "loading": "Datumsbereichsinformationen werden geladen...",
+          "title": "Verfügbarer Datumsbereich für Wechselkurse ({currency}):",
+          "tooltipText": "Du kannst Wertpapierpreise nur für Daten hochladen, für die uns Wechselkurse vorliegen. Andernfalls ist es nicht möglich, den Wertpapierpreis in andere Währungen umzurechnen. Wenn du ältere Daten benötigst, lade zuerst Wechselkurse hoch. Andernfalls werden Datensätze je nach der in den nächsten Schritten gewählten Option automatisch gefiltert (ausgelassen) oder die Upload-Anfrage schlägt fehl."
         },
         "fileUpload": {
-          "title": "Upload File",
-          "supportedFormats": "CSV or JSON files supported",
+          "title": "Datei hochladen",
+          "supportedFormats": "CSV- oder JSON-Dateien unterstützt",
           "errors": {
-            "unsupportedFormat": "Unsupported file format. Please upload CSV or JSON file.",
-            "parseFailed": "Failed to parse {fileType} file: {error}"
+            "unsupportedFormat": "Nicht unterstütztes Dateiformat. Bitte lade eine CSV- oder JSON-Datei hoch.",
+            "parseFailed": "{fileType}-Datei konnte nicht verarbeitet werden: {error}"
           }
         },
         "fieldMapper": {
-          "title": "Map Fields",
-          "description": "Match your file's fields to the required fields below.",
-          "selectField": "Select field...",
-          "dateFormatLabel": "Date Format",
-          "dateFormatDescription": "Select the date format used in your file",
+          "title": "Felder zuordnen",
+          "description": "Ordne die Felder deiner Datei den unten stehenden erforderlichen Feldern zu.",
+          "selectField": "Feld auswählen...",
+          "dateFormatLabel": "Datumsformat",
+          "dateFormatDescription": "Wähle das in deiner Datei verwendete Datumsformat",
           "dateFormats": {
-            "ddMMyyyySlash": "DD/MM/YYYY (e.g., 31/12/2024)",
-            "MMddyyyySlash": "MM/DD/YYYY (e.g., 12/31/2024)",
-            "yyyyMMddDash": "YYYY-MM-DD (e.g., 2024-12-31)",
-            "ddMMyyyyDash": "DD-MM-YYYY (e.g., 31-12-2024)",
-            "MMddyyyyDash": "MM-DD-YYYY (e.g., 12-31-2024)"
+            "ddMMyyyySlash": "TT/MM/JJJJ (z.B. 31/12/2024)",
+            "MMddyyyySlash": "MM/TT/JJJJ (z.B. 12/31/2024)",
+            "yyyyMMddDash": "JJJJ-MM-TT (z.B. 2024-12-31)",
+            "ddMMyyyyDash": "TT-MM-JJJJ (z.B. 31-12-2024)",
+            "MMddyyyyDash": "MM-TT-JJJJ (z.B. 12-31-2024)"
           },
-          "mappingComplete": "All required fields mapped",
-          "mappingIncomplete": "Please map all required fields to continue",
-          "fileInfo": "File:",
-          "records": "{count} records",
-          "changeFileButton": "Change File",
-          "continueButton": "Continue to Preview"
+          "mappingComplete": "Alle erforderlichen Felder zugeordnet",
+          "mappingIncomplete": "Bitte ordne alle erforderlichen Felder zu, um fortzufahren",
+          "fileInfo": "Datei:",
+          "records": "{count} Datensätze",
+          "changeFileButton": "Datei ändern",
+          "continueButton": "Weiter zur Vorschau"
         },
         "preview": {
-          "title": "Data Preview",
-          "recordsCount": "{count} record will be uploaded | {count} records will be uploaded",
-          "recordsPeriod": "for period between {oldest} and {newest}",
-          "loadingExisting": "Loading existing prices for comparison...",
+          "title": "Datenvorschau",
+          "recordsCount": "{count} Datensatz wird hochgeladen | {count} Datensätze werden hochgeladen",
+          "recordsPeriod": "für den Zeitraum zwischen {oldest} und {newest}",
+          "loadingExisting": "Bestehende Preise werden zum Vergleich geladen...",
           "warnings": {
-            "significantDifferences": "Significant price differences detected",
-            "differencesDetails": "{count} record has a price difference greater than 4% compared to existing data. Please review carefully. | {count} records have a price difference greater than 4% compared to existing data. Please review carefully."
+            "significantDifferences": "Erhebliche Preisunterschiede erkannt",
+            "differencesDetails": "{count} Datensatz weist einen Preisunterschied von mehr als 4% im Vergleich zu bestehenden Daten auf. Bitte sorgfältig prüfen. | {count} Datensätze weisen einen Preisunterschied von mehr als 4% im Vergleich zu bestehenden Daten auf. Bitte sorgfältig prüfen."
           },
-          "filterCheckbox": "Show only records with significant differences (>4%)",
+          "filterCheckbox": "Nur Datensätze mit erheblichen Unterschieden (>4%) anzeigen",
           "tableHeaders": {
-            "date": "Date",
-            "newPrice": "New Price",
-            "existingPrice": "Existing Price",
-            "difference": "Difference (%)"
+            "date": "Datum",
+            "newPrice": "Neuer Preis",
+            "existingPrice": "Bestehender Preis",
+            "difference": "Unterschied (%)"
           },
           "noExistingPrice": "N/A",
-          "scrollForMore": "Scroll for more...",
-          "noDifferences": "No records with significant differences found.",
-          "backButton": "Back to Mapping",
-          "continueButton": "Continue to Options"
+          "scrollForMore": "Scrollen für mehr...",
+          "noDifferences": "Keine Datensätze mit erheblichen Unterschieden gefunden.",
+          "backButton": "Zurück zur Zuordnung",
+          "continueButton": "Weiter zu den Optionen"
         },
         "options": {
-          "title": "Upload Options",
+          "title": "Upload-Optionen",
           "autoFilter": {
-            "title": "Auto-filter dates outside available range",
-            "description": "Automatically remove dates that are outside the available exchange rate range"
+            "title": "Daten außerhalb des verfügbaren Bereichs automatisch filtern",
+            "description": "Entfernt automatisch Daten, die außerhalb des verfügbaren Wechselkursbereichs liegen"
           },
           "override": {
-            "title": "Override existing records",
-            "description": "Update existing price records instead of skipping duplicates"
+            "title": "Bestehende Datensätze überschreiben",
+            "description": "Aktualisiert bestehende Preisdatensätze, anstatt Duplikate zu überspringen"
           },
           "backButton": "Zurück",
-          "uploadButton": "Upload Prices",
-          "uploadingButton": "Uploading..."
+          "uploadButton": "Preise hochladen",
+          "uploadingButton": "Wird hochgeladen..."
         },
         "result": {
-          "title": "Upload Complete!",
-          "inserted": "✓ {count} new record inserted | ✓ {count} new records inserted",
-          "duplicates": "• {count} duplicate {action}",
-          "duplicatesUpdated": "updated",
-          "duplicatesSkipped": "skipped",
-          "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
+          "title": "Upload abgeschlossen!",
+          "inserted": "✓ {count} neuer Datensatz eingefügt | ✓ {count} neue Datensätze eingefügt",
+          "duplicates": "• {count} Duplikat {action} | • {count} Duplikate {action}",
+          "duplicatesUpdated": "aktualisiert",
+          "duplicatesSkipped": "übersprungen",
+          "filtered": "• {count} Datum gefiltert (außerhalb des Bereichs) | • {count} Daten gefiltert (außerhalb des Bereichs)",
           "closeButton": "Schließen",
-          "uploadMoreButton": "Upload More"
+          "uploadMoreButton": "Weitere hochladen"
         },
         "notifications": {
-          "dateInfoLoadFailed": "Failed to load date info: {error}",
-          "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
-          "uploadFailed": "Upload failed: {error}"
+          "dateInfoLoadFailed": "Datums-Informationen konnten nicht geladen werden: {error}",
+          "uploadSuccess": "{count} Preisdatensatz erfolgreich hochgeladen | {count} Preisdatensätze erfolgreich hochgeladen",
+          "uploadFailed": "Upload fehlgeschlagen: {error}"
         }
       }
     }

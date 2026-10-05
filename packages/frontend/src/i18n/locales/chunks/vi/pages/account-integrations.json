@@ -354,7 +354,7 @@
           "connectedSince": "Connected {date}"
         },
         "summary": {
-          "totalBalance": "Total balance",
+          "totalBalance": "Tổng số dư",
           "accounts": "Tài khoản",
           "accountsCount": "no accounts | {count} account | {count} accounts",
           "lastSync": "Last sync",

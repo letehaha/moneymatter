@@ -1,0 +1,277 @@
+{
+  "settings": {
+    "ai": {
+      "title": "AI Settings",
+      "description": "Pick which AI model powers each feature, add your own models, and connect AI apps like Claude or ChatGPT to your data.",
+      "tabs": {
+        "features": "AI Features",
+        "models": "AI models",
+        "connectedApps": "Connectors (MCP)",
+        "invalidConnectionsTooltip": "One of your AI models needs attention"
+      },
+      "credentialStatus": {
+        "validated": "Validated {timeAgo}",
+        "failed": "Failed {timeAgo}",
+        "invalidBadge": "Invalid"
+      },
+      "features": {
+        "title": "AI Features",
+        "description": "Configure which model to use for each AI-powered feature",
+        "howItWorks": "How it works",
+        "loadError": "Couldn't load your AI features."
+      },
+      "categorization": {
+        "howItWorks": {
+          "points": {
+            "autoSync": "When you sync transactions from your bank, uncategorized transactions are automatically sent to AI for categorization.",
+            "analysis": "The AI analyzes transaction descriptions and merchant names to suggest appropriate categories from your existing category list.",
+            "override": "You can always manually override AI-suggested categories."
+          }
+        }
+      },
+      "statementParsing": {
+        "howItWorks": {
+          "points": {
+            "upload": "Upload a bank statement (PDF, CSV, or TXT) and AI will extract all transactions automatically.",
+            "analysis": "The AI analyzes the document structure to identify dates, descriptions, amounts, and transaction types.",
+            "review": "You can review and correct any extracted data before importing into your account.",
+            "cost": "Cost is estimated before processing, yet it only reflects the approximate cost."
+          }
+        }
+      },
+      "modelSelector": {
+        "placeholder": "Pick a model",
+        "automaticOption": "Automatic",
+        "automaticOptionWithTarget": "Automatic · {target}",
+        "serverOption": "MoneyMatter AI · included",
+        "connectionOption": "{name} · {model}",
+        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
+        "badges": {
+          "yourKey": "Your key",
+          "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
+          "server": "Server",
+          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
+        },
+        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
+        "sharedPoolNoteLink": "Upgrade to Plus",
+        "modelLabel": "Model",
+        "modelInfo": {
+          "estimatedCost": "Est. cost:",
+          "per100Transactions": "per 100 txns"
+        },
+        "notifications": {
+          "updateSuccess": "Model updated successfully",
+          "updateFailed": "Failed to update model",
+          "resetSuccess": "Reset to default model",
+          "resetFailed": "Failed to reset model"
+        },
+        "empty": {
+          "title": "No AI model yet",
+          "description": "Add your own AI model to use this feature."
+        },
+        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDownLink": "AI models"
+      },
+      "modelGuide": {
+        "trigger": "Which model fits?",
+        "tierHeading": "{tier} model is enough",
+        "tiers": {
+          "light": "Light",
+          "balanced": "Balanced",
+          "smart": "Smart"
+        },
+        "needsLabel": "Needs",
+        "picksLabel": "Good picks",
+        "yourModel": "Your model",
+        "source": "Model details from models.dev",
+        "needs": {
+          "textOnly": "Text only",
+          "runsOften": "Runs on every sync",
+          "longAnswers": "Long answers",
+          "readsFiles": "Reads images & PDFs",
+          "structuredAnswers": "Structured answers"
+        },
+        "why": {
+          "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
+          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
+          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+        },
+        "picks": {
+          "categorization": "Gemini Flash Lite · Claude Haiku",
+          "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
+          "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
+          "receiptParsing": "Gemini Flash · Claude Sonnet"
+        },
+        "verdict": {
+          "fit": "Good fit",
+          "gaps": "{count} gap | {count} gaps",
+          "unknown": "Not checked"
+        },
+        "warning": {
+          "readsFiles": "Can't read files",
+          "readsText": "Can't read text",
+          "readsImages": "Can't read images",
+          "readsPdfs": "Can't read PDFs",
+          "longAnswers": "Short answers only",
+          "structuredAnswers": "No structured answers"
+        },
+        "checks": {
+          "readsText": {
+            "label": "Reads text",
+            "fail": "This model doesn't take text."
+          },
+          "readsImages": {
+            "label": "Reads images",
+            "fail": "Image files won't work."
+          },
+          "readsPdfs": {
+            "label": "Reads PDFs",
+            "fail": "PDF files won't work."
+          },
+          "longAnswers": {
+            "label": "Long answers",
+            "ok": "Writes up to {tokens} tokens.",
+            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+          },
+          "structuredAnswers": {
+            "label": "Structured answers",
+            "fail": "Its answers may come back in a shape the app can't read."
+          }
+        },
+        "unknown": {
+          "title": "Can't check this model",
+          "detail": "models.dev has no details for this model right now, so we can't check it. Make sure it covers the needs above."
+        }
+      },
+      "connections": {
+        "title": "AI models",
+        "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
+        "tip": {
+          "ariaLabel": "About AI models",
+          "text": "You can add the same provider more than once with different models. Name them by how smart they are, like 'Claude smart' and 'Claude fast', then pick the right one for each feature."
+        },
+        "addButton": "Add model",
+        "capReached": "You've reached the limit of {max} AI models. Remove one to add another.",
+        "duplicateName": "{name} copy",
+        "empty": {
+          "title": "No AI models yet",
+          "description": "Add a model with your own API key, or connect a local one like Ollama or LM Studio."
+        },
+        "loadError": {
+          "title": "Couldn't load your AI models",
+          "description": "Your saved models are still there. Check your connection and try again."
+        },
+        "badges": {
+          "default": "Default",
+          "defaultSkipped": "Default · skipped while it needs attention"
+        },
+        "status": {
+          "model": "{provider} · {model}"
+        },
+        "actions": {
+          "menuAriaLabel": "AI model actions",
+          "duplicate": "Duplicate",
+          "setDefault": "Set as default",
+          "remove": "Remove",
+          "reconnect": "Reconnect",
+          "enterKey": "Enter API key"
+        },
+        "removeDialog": {
+          "title": "Remove this AI model?",
+          "description": "\"{name}\" and its saved API key will be removed.",
+          "pinnedFeatures": "These features will switch to automatic: {features}.",
+          "confirm": "Remove"
+        },
+        "removeKeyDialog": {
+          "title": "Remove the API key?",
+          "description": "Requests to this model will be sent without a key. Servers that need one will stop answering.",
+          "confirm": "Remove key"
+        },
+        "test": {
+          "success": "Connected. The model answered.",
+          "failed": "Couldn't reach the model."
+        },
+        "notifications": {
+          "saveSuccess": "AI model saved",
+          "saveFailed": "Couldn't save the AI model",
+          "removeSuccess": "AI model removed",
+          "removeFailed": "Couldn't remove the AI model",
+          "setDefaultSuccess": "\"{name}\" is now your default model",
+          "setDefaultFailed": "Couldn't change the default model",
+          "removeKeySuccess": "API key removed",
+          "removeKeyFailed": "Couldn't remove the API key",
+          "removeKeyInvalid": "API key removed, but the model stopped answering: {reason}",
+          "editedConnectionGone": "This AI model was removed elsewhere, so the form was closed."
+        },
+        "form": {
+          "titleAdd": "Add AI model",
+          "titleEdit": "Edit AI model",
+          "titleDuplicate": "Duplicate AI model",
+          "providerLabel": "Provider",
+          "providerPlaceholder": "Select a provider",
+          "nameLabel": "Name",
+          "baseUrlLabel": "Base URL",
+          "baseUrlPlaceholder": "https://example.com/v1",
+          "apiKeyLabel": "API key",
+          "apiKeyPlaceholder": "Paste your API key",
+          "apiKeyGetHint": "Get a key at {link}.",
+          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
+          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
+          "removeApiKeyButton": "Remove API key",
+          "modelLabel": "Model",
+          "modelPlaceholder": "Type or pick a model",
+          "modelListEmpty": "No models to pick from. Type the model name your server uses.",
+          "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
+          "testButton": "Test connection",
+          "saveButton": "Save changes",
+          "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
+          "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
+        },
+        "presets": {
+          "openai": {
+            "label": "OpenAI",
+            "namePlaceholder": "e.g. GPT fast"
+          },
+          "anthropic": {
+            "label": "Anthropic (Claude)",
+            "namePlaceholder": "e.g. Claude smart"
+          },
+          "google": {
+            "label": "Google (Gemini)",
+            "namePlaceholder": "e.g. Gemini fast"
+          },
+          "openrouter": {
+            "label": "OpenRouter",
+            "namePlaceholder": "e.g. OpenRouter Llama"
+          },
+          "ollama": {
+            "label": "Ollama",
+            "namePlaceholder": "e.g. Local Llama"
+          },
+          "lmStudio": {
+            "label": "LM Studio",
+            "namePlaceholder": "e.g. LM Studio Qwen"
+          },
+          "custom": {
+            "label": "Custom (OpenAI-compatible)",
+            "namePlaceholder": "e.g. My server"
+          }
+        }
+      },
+      "customInstructions": {
+        "title": "Custom Instructions",
+        "description": "Provide context to help AI categorize your transactions. These instructions are included when categorizing transactions during bank sync and manual import.",
+        "placeholder": "e.g., Transactions from 'Starbucks' should be 'Coffee'. My freelance income comes from 'Acme Corp'.",
+        "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
+        "requiresOwnCredentials": "Add your own AI model to use custom instructions.",
+        "credentialsCheckFailed": "Couldn't check your AI models, so custom instructions are unavailable for now.",
+        "retryCredentialsCheck": "Try again",
+        "save": "Save",
+        "saved": "Saved!",
+        "saveFailed": "Failed to save custom instructions. Please try again."
+      }
+    }
+  }
+}

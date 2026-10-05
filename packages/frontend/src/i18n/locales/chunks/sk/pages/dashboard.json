@@ -126,6 +126,7 @@
         "title": "Peňažný tok",
         "description": "Zobrazuje čisté úspory: príjmy mínus výdavky za vybrané obdobie, vrátane trendu predchádzajúcich období",
         "vsPrevious": "vs. predchádzajúce obdobie",
+        "notAvailable": "Nedostupné",
         "income": "Príjmy",
         "expenses": "Výdavky",
         "saved": "Ušetrené",

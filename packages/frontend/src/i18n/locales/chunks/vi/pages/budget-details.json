@@ -14,7 +14,7 @@
         "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
         "resetFilters": "Reset Filters",
         "addTransactions": "Add Transactions",
-        "add": "Add",
+        "add": "Thêm",
         "loadingMore": "Loading more..."
       }
     },
@@ -44,7 +44,7 @@
       },
       "statistics": {
         "tabs": {
-          "categories": "Categories",
+          "categories": "Danh mục",
           "timeline": "Timeline"
         },
         "errorTitle": "Failed to load statistics",
@@ -76,8 +76,8 @@
           "roleOwner": "Owner",
           "roleRecipient": "Member",
           "ownerHint": "Full control of this budget",
-          "updateSuccess": "Permission updated.",
-          "updateError": "Couldn't update permission.",
+          "updateSuccess": "Đã cập nhật quyền.",
+          "updateError": "Không cập nhật được quyền.",
           "revoke": "Revoke access",
           "revokeConfirm": "Revoke",
           "revokeTitle": "Revoke access?",
@@ -87,15 +87,15 @@
         },
         "pending": {
           "empty": "No pending invitations.",
-          "resend": "Resend",
-          "resendSuccess": "Invitation resent.",
+          "resend": "Gửi lại",
+          "resendSuccess": "Đã gửi lại lời mời.",
           "resendError": "Couldn't resend invitation.",
           "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
           "cancel": "Hủy",
-          "cancelConfirm": "Cancel invitation",
-          "cancelTitle": "Cancel invitation?",
+          "cancelConfirm": "Hủy lời mời",
+          "cancelTitle": "Hủy lời mời?",
           "cancelDescription": "The invitation to {email} will be cancelled.",
-          "cancelSuccess": "Invitation cancelled.",
+          "cancelSuccess": "Đã hủy lời mời.",
           "cancelError": "Couldn't cancel invitation."
         }
       }

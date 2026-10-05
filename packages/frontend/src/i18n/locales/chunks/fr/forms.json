@@ -1,0 +1,383 @@
+{
+  "forms": {
+    "investmentTransaction": {
+      "typeLabel": "Transaction Type",
+      "types": {
+        "buy": "Buy",
+        "sell": "Sell",
+        "dividend": "Dividend",
+        "fee": "Fee",
+        "tax": "Tax"
+      },
+      "securityLabel": "Security",
+      "securityPlaceholder": "Select a security",
+      "quantityLabel": "Quantity",
+      "quantityPlaceholder": "0.00",
+      "priceLabel": "Price per Share",
+      "pricePlaceholder": "0.00",
+      "priceHelp": "Use 0 for staking rewards, airdrops or balance adjustments.",
+      "feesLabel": "Fees (optional)",
+      "feesPlaceholder": "0.00",
+      "dateLabel": "Transaction Date",
+      "noteLabel": "Note",
+      "notePlaceholder": "Optional. Add a note about this transaction",
+      "cancelButton": "Cancel",
+      "submitButton": "Create Transaction",
+      "submitButtonLoading": "Creating...",
+      "notifications": {
+        "success": "Transaction created successfully.",
+        "error": "Failed to create transaction."
+      },
+      "settlement": {
+        "toggleLabel": "Specify actual cash amount",
+        "toggleHint": "Use when the trade settled in a different currency, or you only know the total and want the fee derived automatically",
+        "currencyLabel": "Payment currency",
+        "currencyPlaceholder": "Select currency",
+        "totalPaidLabel": "Total paid",
+        "totalReceivedLabel": "Total received",
+        "totalPlaceholder": "e.g. 1700",
+        "feeLabel": "Fee (in payment currency)",
+        "feePlaceholder": "0",
+        "sameCurrencyFeeHint": "The fee is recorded as the difference between the total and quantity × price.",
+        "crossCurrencyFeeHint": "The broker's explicit fee. Any exchange-rate spread is captured in the trade's conversion rate.",
+        "modeFee": "I know the fee",
+        "modeAuto": "Auto",
+        "modeRate": "I know the rate",
+        "rateLabel": "Exchange rate",
+        "ratePlaceholder": "e.g. 3.66",
+        "rateHint": "Settlement currency units per 1 unit of the security currency. The fee is recorded as the difference between the total and quantity × price × rate.",
+        "autoHint": "The fee is derived automatically using the market exchange rate for the transaction date.",
+        "previewRate": "≈ exchange rate {rate} will be recorded",
+        "previewFee": "≈ fee of {fee} {currency} will be recorded (rate {rate})",
+        "previewUnavailable": "No market rate found for this date – enter the fee or the exchange rate manually.",
+        "previewFetchFailed": "Couldn't load market rates. Check your connection or enter the rate manually.",
+        "previewPlaceholder": "Preview appears here as you fill the form."
+      }
+    },
+    "portfolioSettings": {
+      "nameLabel": "Portfolio Name",
+      "namePlaceholder": "My Investment Portfolio",
+      "nameRequired": "Name is required",
+      "typeLabel": "Portfolio Type",
+      "typePlaceholder": "Select portfolio type",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "A brief description of this portfolio...",
+      "displayCurrencyLabel": "Display currency",
+      "displayCurrencyPlaceholder": "Select display currency",
+      "displayCurrencyBaseOption": "Base currency ({code})",
+      "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
+      "cancelButton": "Cancel",
+      "submitButton": "Save Changes",
+      "submitButtonLoading": "Saving...",
+      "notifications": {
+        "success": "Portfolio updated successfully.",
+        "error": "Failed to update portfolio. Please try again."
+      }
+    },
+    "portfolioTransfer": {
+      "transferTypeLabel": "Transfer Type",
+      "transferTypes": {
+        "portfolioToPortfolio": "To Another Portfolio",
+        "portfolioToAccount": "To Account",
+        "accountToPortfolio": "To Portfolio"
+      },
+      "comingSoonNotice": "💡 Account-to-portfolio transfers are coming in a future update!",
+      "fromPortfolioLabel": "From Portfolio",
+      "fromPortfolioPlaceholder": "Select source portfolio",
+      "fromAccountLabel": "From Account",
+      "fromAccountPlaceholder": "Select source account",
+      "toPortfolioLabel": "To Portfolio",
+      "toPortfolioPlaceholder": "Select destination portfolio",
+      "toAccountLabel": "To Account",
+      "toAccountPlaceholder": "Select destination account",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "amountLabel": "Amount",
+      "amountLabelWithCurrency": "Amount ({currency})",
+      "amountPlaceholder": "0.00",
+      "dateLabel": "Date",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Add a note about this transfer...",
+      "cancelButton": "Cancel",
+      "submitButton": "Transfer",
+      "submitButtonLoading": "Processing...",
+      "confirmDialog": {
+        "title": "Confirm Transfer",
+        "description": "A {amount} {action} will be created from {from} to {to}",
+        "actionTransfer": "transfer",
+        "actionWithdrawal": "withdrawal",
+        "actionDeposit": "deposit",
+        "cancelButton": "Cancel",
+        "confirmButton": "Confirm Transfer"
+      },
+      "validation": {
+        "required": "This field is required",
+        "minValue": "Amount must be greater than 0"
+      },
+      "notifications": {
+        "comingSoon": "Account-to-portfolio transfers are coming in a future update!",
+        "success": "Transfer completed successfully.",
+        "error": "Transfer failed. Please try again."
+      },
+      "linkExistingTransaction": "Link existing transaction",
+      "linkedTransactionLabel": "Transaction",
+      "noPortfoliosAvailable": "No other portfolios available"
+    },
+    "createAccount": {
+      "nameLabel": "Account name",
+      "namePlaceholder": "Account name",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "addCurrencyButton": "Add new currency +",
+      "initialBalanceLabel": "Initial balance",
+      "initialBalancePlaceholder": "Initial balance",
+      "initialBalanceHelpLink": "What should I enter?",
+      "accountCategoryLabel": "Account Category",
+      "accountCategoryPlaceholder": "Select account category",
+      "creditLimitLabel": "Credit limit",
+      "creditLimitPlaceholder": "Credit limit",
+      "submitButton": "Create",
+      "submitButtonLoading": "Creating...",
+      "notifications": {
+        "success": "Created successfully.",
+        "error": "Unexpected error."
+      }
+    },
+    "directCashTransaction": {
+      "methodTypes": {
+        "direct": "Direct",
+        "transfer": "Transfer"
+      },
+      "operationTypes": {
+        "deposit": "Deposit",
+        "withdrawal": "Withdrawal"
+      },
+      "fromAccountLabel": "From Account",
+      "toAccountLabel": "To Account",
+      "accountPlaceholder": "Select account",
+      "orSeparator": "or",
+      "linkExistingTransaction": "Link existing transaction",
+      "linkedTransactionLabel": "Linked transaction",
+      "amountLabel": "Amount",
+      "amountPlaceholder": "Enter amount",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "dateLabel": "Date",
+      "descriptionLabel": "Description",
+      "adjustmentLabel": "This is a balance correction",
+      "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the Investment Contributions report.",
+      "descriptionPlaceholder": "Optional description",
+      "cancelButton": "Cancel",
+      "submitButton": "Submit",
+      "submitButtonLoading": "Submitting...",
+      "confirmDialog": {
+        "title": "Confirm Transfer",
+        "description": "A {amount} {action} will be created from {from} to {to}",
+        "cancelButton": "Cancel",
+        "confirmButton": "Confirm",
+        "actionDeposit": "deposit",
+        "actionWithdrawal": "withdrawal"
+      },
+      "validation": {
+        "required": "This field is required",
+        "minValue": "Amount must be greater than 0"
+      },
+      "notifications": {
+        "success": "Cash transaction created successfully",
+        "error": "Failed to create cash transaction"
+      }
+    },
+    "validators": {
+      "invalidCurrencyDecimal": "Enter a valid amount (up to 2 decimal places)",
+      "mustBePositive": "Amount must be positive"
+    },
+    "exchangeCurrency": {
+      "fromCurrencyLabel": "From Currency",
+      "toCurrencyLabel": "To Currency",
+      "currencyPlaceholder": "Select currency",
+      "fromAmountLabel": "From Amount",
+      "toAmountLabel": "To Amount",
+      "amountPlaceholder": "0.00",
+      "maxButton": "Max: {amount}",
+      "dateLabel": "Exchange Date",
+      "descriptionLabel": "Description (optional)",
+      "descriptionPlaceholder": "Add a note about this exchange...",
+      "cancelButton": "Cancel",
+      "submitButton": "Exchange",
+      "submitButtonLoading": "Processing...",
+      "validation": {
+        "required": "This field is required",
+        "minValue": "Amount must be greater than 0",
+        "sameCurrency": "From and To currencies must be different"
+      },
+      "notifications": {
+        "success": "Currency exchanged successfully",
+        "error": "Failed to exchange currency"
+      }
+    },
+    "createVehicle": {
+      "nameLabel": "Vehicle name",
+      "namePlaceholder": "e.g. My Camry",
+      "currencyLabel": "Currency",
+      "makeLabel": "Make",
+      "modelLabel": "Model",
+      "trimLabel": "Trim (optional)",
+      "yearLabel": "Year",
+      "vehicleClassLabel": "Vehicle class",
+      "purchasePriceLabel": "Purchase price",
+      "purchaseDateLabel": "Purchase date",
+      "depreciationPresetLabel": "Depreciation pattern",
+      "customAnnualRatePctLabel": "Custom annual depreciation rate (%)",
+      "salvageFloorPctLabel": "Salvage floor (% of purchase price)",
+      "currentMileageLabel": "Current mileage (optional)",
+      "currentMileagePlaceholder": "e.g. 45000",
+      "submitButton": "Add vehicle",
+      "submitButtonLoading": "Adding...",
+      "notifications": {
+        "success": "Vehicle added",
+        "error": "Failed to add vehicle"
+      }
+    },
+    "editVehicle": {
+      "submitButton": "Save changes",
+      "submitButtonLoading": "Saving...",
+      "notifications": {
+        "success": "Vehicle updated",
+        "error": "Failed to update vehicle"
+      }
+    },
+    "loan": {
+      "nameLabel": "Loan name",
+      "namePlaceholder": "e.g. Primary mortgage",
+      "loanTypeLabel": "Loan type",
+      "loanTypePlaceholder": "Select loan type",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select currency",
+      "originalPrincipalLabel": "Original principal",
+      "originalPrincipalPlaceholder": "e.g. 320000",
+      "initialBalanceLabel": "Current outstanding balance",
+      "initialBalancePlaceholder": "What you owe today",
+      "interestRateLabel": "Interest rate (APR %)",
+      "interestRatePlaceholder": "e.g. 6.25",
+      "minPaymentEstimateTooltip": "Estimated from principal, annual interest rate, and term using the standard amortization formula.",
+      "minPaymentApplyEstimateAriaLabel": "Use estimated minimum payment",
+      "termMonthsLabel": "Term (months)",
+      "termPresetsAriaLabel": "Term presets",
+      "termPresetsHeader": "Common terms",
+      "termMonthsSuffix": "mo",
+      "termPresetYears": "{count} year | {count} years",
+      "termMonthsPlaceholder": "e.g. 360 for a 30-year loan",
+      "startDateLabel": "Start date",
+      "startDatePlaceholder": "DD/MM/YYYY",
+      "startDateTooltip": "The date the loan originated — when you first took it out. It's informational only and doesn't change the current outstanding balance or the payoff projection.",
+      "plannedPaymentLabel": "Planned monthly payment",
+      "plannedPaymentPlaceholder": "What you actually pay",
+      "minPaymentLabel": "Minimum monthly payment",
+      "minPaymentPlaceholder": "Optional, from your lender",
+      "paymentDayLabel": "Payment day of month",
+      "paymentDayPlaceholder": "1–31",
+      "lenderNameLabel": "Lender",
+      "lenderNamePlaceholder": "e.g. Chase, Wells Fargo",
+      "accountNumberLabel": "Account / loan number",
+      "accountNumberPlaceholder": "Optional",
+      "currentBalanceLabel": "Current outstanding balance",
+      "balanceAsOfLabel": "Balance as of",
+      "balanceAsOfPlaceholder": "DD/MM/YYYY",
+      "saveButton": "Save changes",
+      "submitButton": "Create loan",
+      "submitButtonLoading": "Creating…",
+      "cancelButton": "Cancel",
+      "notifications": {
+        "success": "Loan created.",
+        "error": "Failed to create the loan. Please try again.",
+        "updateSuccess": "Loan updated",
+        "updateError": "Failed to update the loan"
+      },
+      "errors": {
+        "required": "This field is required.",
+        "mustBePositive": "Must be greater than 0.",
+        "mustBeNonNegative": "Must be 0 or greater.",
+        "interestRateRange": "Interest rate must be between 0 and 99.9999.",
+        "termRange": "Term must be between 1 and 1200 months.",
+        "paymentDayRange": "Day of month must be between 1 and 31.",
+        "asOfInFuture": "Date can't be in the future"
+      },
+      "balanceExceedsPrincipalWarning": "Outstanding balance is higher than the original principal – double-check these amounts."
+    }
+  },
+  "fields": {
+    "categorySelect": {
+      "noCategoriesFound": "No categories found",
+      "selectCategoryLabel": "Select category",
+      "searchCategoryLabel": "Search category",
+      "clearSearchLabel": "Clear search",
+      "clearSelectionLabel": "Clear selection",
+      "searchPlaceholder": "Search...",
+      "sharedOwnerNotice": "Showing {owner}'s categories",
+      "sharedOwnerNoticeTooltip": "Transactions on a shared account always use the owner's categories. Anything you save here will be filed under {owner}'s set so both of you see consistent totals.",
+      "sharedOwnerCategoriesLoadError": "Couldn't load categories for the shared account. Please try again."
+    },
+    "select": {
+      "selectOption": "Select an option",
+      "searchPlaceholder": "Search..."
+    },
+    "currencySelect": {
+      "yourCurrencies": "Your currencies",
+      "otherCurrencies": "Other currencies"
+    },
+    "comboboxAccounts": {
+      "allAccounts": "All accounts",
+      "account": "account",
+      "accountsSelected": "accounts selected",
+      "selectedOne": "1 account selected",
+      "selectedMany": "{n} accounts selected",
+      "searchPlaceholder": "Search accounts...",
+      "noResults": "No results found."
+    },
+    "comboboxCategories": {
+      "searchPlaceholder": "Search categories...",
+      "unselectedPlaceholder": "All categories",
+      "selectedOne": "1 category selected",
+      "selectedMany": "{n} categories selected",
+      "excludingOne": "Excluding 1 category",
+      "excludingMany": "Excluding {n} categories"
+    },
+    "accountMultiSelect": {
+      "ungrouped": "Ungrouped"
+    },
+    "tagSelect": {
+      "placeholder": "Select tags...",
+      "noTagsAvailable": "No tags available"
+    },
+    "categoryMultiSelect": {
+      "placeholder": "Select categories...",
+      "searchPlaceholder": "Search categories...",
+      "noCategoriesFound": "No categories found"
+    },
+    "payeeMultiSelect": {
+      "label": "All payees",
+      "searchPlaceholder": "Search payees",
+      "selectedMany": "{n} payees selected",
+      "noResults": "No payees found",
+      "unknownPayee": "Unknown payee",
+      "loadError": "Couldn't load payees. Please try again.",
+      "blankOption": "No payee"
+    },
+    "budgetMultiSelect": {
+      "label": "All budgets",
+      "selectedMany": "{n} budgets selected",
+      "searchPlaceholder": "Search budgets",
+      "noResults": "No budgets found",
+      "unknownBudget": "Unknown budget",
+      "loadError": "Couldn't load budgets. Please try again."
+    },
+    "payeeSelect": {
+      "placeholder": "Select a payee",
+      "searchPlaceholder": "Search payees…",
+      "empty": "No payees yet",
+      "createAffordance": "Create payee \"{name}\"",
+      "createNew": "Create new payee",
+      "sharedOwnerPayeesLoadError": "Couldn't load payees for the shared account. Please try again."
+    }
+  }
+}

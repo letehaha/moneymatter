@@ -189,7 +189,7 @@
       },
       "visibility": {
         "updateSuccess": "Updated successfully",
-        "unexpectedError": "Unexpected error"
+        "unexpectedError": "Đã xảy ra lỗi ngoài dự kiến"
       },
       "excludeFromStats": {
         "label": "Exclude from statistics",
@@ -282,15 +282,15 @@
         },
         "pending": {
           "empty": "No pending invitations.",
-          "resend": "Resend",
-          "cancel": "Cancel invitation",
-          "cancelTitle": "Cancel invitation?",
+          "resend": "Gửi lại",
+          "cancel": "Hủy lời mời",
+          "cancelTitle": "Hủy lời mời?",
           "cancelDescription": "The invitation sent to {email} will be revoked.",
-          "cancelConfirm": "Cancel invitation",
-          "resendSuccess": "Invitation resent.",
+          "cancelConfirm": "Hủy lời mời",
+          "resendSuccess": "Đã gửi lại lời mời.",
           "resendDeliveryFailed": "Invitation updated but the email could not be delivered.",
           "resendError": "Could not resend invitation.",
-          "cancelSuccess": "Invitation cancelled.",
+          "cancelSuccess": "Đã hủy lời mời.",
           "cancelError": "Could not cancel invitation."
         }
       }
@@ -346,10 +346,10 @@
       "overrideHistory": {
         "title": "Override history",
         "empty": "No manual overrides yet. Override the value to record one.",
-        "delete": "Delete",
+        "delete": "Xóa",
         "deleteTitle": "Delete this override?",
         "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be deleted.",
-        "deleteConfirm": "Delete",
+        "deleteConfirm": "Xóa",
         "deleteSuccess": "Override removed",
         "deleteError": "Failed to remove override"
       },

@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "Proses sinkronisasi untuk \"{{lockKey}}\" sudah terkunci.",
-    "serviceTemporarilyUnavailable": "Layanan sementara tidak tersedia. Silakan coba lagi."
+    "serviceTemporarilyUnavailable": "Layanan sementara tidak tersedia. Silakan coba lagi.",
+    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
   },
   "accounts": {
     "groupNotFound": "Grup atau akun tidak ditemukan",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "Impor ini tidak dapat lagi dibatalkan karena akunnya kini terhubung ke bank. Menghapus transaksi-transaksi ini dapat mengacaukan saldo yang tersinkronisasi.",
     "batchDeleteLinkedLoanTransfer": "Impor ini tertaut ke pembayaran pinjaman dan tidak dapat dibatalkan sendiri. Aktifkan \"juga hapus transaksi transfer tertaut\" untuk menghapusnya.",
     "batchDeleteInProgress": "An import batch is already being deleted. Wait for it to finish before starting another.",
-    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one."
+    "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
+    "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
+    "statementImportInProgress": "A statement import is already running. Wait for it to finish before starting another one.",
+    "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
     "invalidFile": "File tidak valid",

@@ -32,7 +32,7 @@
           "writeAll": "Môže upravovať transakcie",
           "manage": "Správca"
         },
-        "projectedBalance": "Predpokladaný zostatok {amount} · {count} plánovaných záznamov do {date} | Predpokladaný zostatok {amount} · {count} plánovaných záznamov do {date}"
+        "projectedBalance": "Predpokladaný zostatok {amount} · {count} plánovaný záznam do {date} | Predpokladaný zostatok {amount} · {count} plánované záznamy do {date} | Predpokladaný zostatok {amount} · {count} plánovaných záznamov do {date}"
       },
       "balanceAdjustmentDialog": {
         "title": "Upraviť zostatok",
@@ -165,11 +165,11 @@
         "creditLimitUpdateError": "Aktualizácia úverového limitu zlyhala",
         "save": "Uložiť",
         "initialBalance": "Počiatočný zostatok:",
-        "editInitialBalance": "Edit initial balance",
-        "initialBalancePlaceholder": "Enter initial balance",
-        "initialBalanceHint": "Changing the initial balance also changes your current balance and your entire balance history by the same amount.",
-        "initialBalanceUpdateSuccess": "Initial balance updated",
-        "initialBalanceUpdateError": "Failed to update initial balance",
+        "editInitialBalance": "Upraviť počiatočný zostatok",
+        "initialBalancePlaceholder": "Zadajte počiatočný zostatok",
+        "initialBalanceHint": "Zmenou počiatočného zostatku sa o rovnakú sumu zmení aj váš aktuálny zostatok a celá história zostatkov.",
+        "initialBalanceUpdateSuccess": "Počiatočný zostatok aktualizovaný",
+        "initialBalanceUpdateError": "Počiatočný zostatok sa nepodarilo aktualizovať",
         "accountType": "Typ účtu:",
         "accountCategory": "Kategória účtu:",
         "editAccountCategory": "Upraviť kategóriu",

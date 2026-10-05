@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "Proces synchronizácie pre „{{lockKey}}\" je už uzamknutý.",
-    "serviceTemporarilyUnavailable": "Služba je dočasne nedostupná. Skúste to znova, prosím."
+    "serviceTemporarilyUnavailable": "Služba je dočasne nedostupná. Skúste to znova, prosím.",
+    "jobInterruptedByServerUpdate": "Aktualizácia servera toto prerušila pred dokončením, preto sa nič nezmenilo."
   },
   "accounts": {
     "groupNotFound": "Skupina alebo účet sa nenašli",
@@ -15,8 +16,8 @@
     "loanBalanceUseUpdateLoan": "Nesplatený zostatok pôžičky zmeňte na jej stránke, nie v nastaveniach účtu.",
     "loanCategoryImmutable": "Kategóriu účtu pôžičky nemožno zmeniť.",
     "dedicatedFlowCategoryNotAllowed": "Účty pôžičiek a vozidiel sa musia vytvárať cez svoje vyhradené rozhrania, nie cez všeobecné rozhranie účtov.",
-    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialBalanceOnlySystem": "Počiatočný zostatok možno zmeniť len pri manuálnych účtoch",
+    "initialAndCurrentBalanceTogether": "Počiatočný zostatok a aktuálny zostatok nemožno zmeniť v rámci jednej požiadavky"
   },
   "balanceAdjustment": {
     "defaultNote": "Úprava zostatku",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "Tento import už nemožno vrátiť späť, keďže jeho účet je teraz pripojený k banke. Zmazanie týchto transakcií by mohlo narušiť synchronizovaný zostatok.",
     "batchDeleteLinkedLoanTransfer": "Tento import je prepojený so splátkou pôžičky a samostatne ho nemožno vrátiť späť. Ak ho chcete odstrániť, zapnite „zmazať aj prepojené prevodové transakcie\".",
     "batchDeleteInProgress": "Dávka importu sa už maže. Pred spustením ďalšej počkajte, kým sa dokončí.",
-    "statementImportInProgress": "Import výpisu už prebieha. Pred spustením ďalšieho počkajte, kým sa dokončí."
+    "batchDeleteImportStillRunning": "Tento import ešte prebieha. Pred jeho vrátením počkajte, kým sa dokončí.",
+    "importIntoBankLinkedAccount": "Účet „{{accountName}}\" je pripojený k banke, preto doň nemožno importovať transakcie. Vyberte iný účet, alebo vytvorte nový.",
+    "statementImportInProgress": "Import výpisu už prebieha. Pred spustením ďalšieho počkajte, kým sa dokončí.",
+    "importInterruptedByServerUpdate": "Aktualizácia servera prerušila tento import. Už uložené transakcie zostali zachované. Pred opätovným importom súboru tento import zmažte v sekcii „História importov\", inak sa transakcie zduplikujú."
   },
   "statementParser": {
     "invalidFile": "Neplatný súbor",

@@ -2,55 +2,55 @@
   "pages": {
     "importExport": {
       "msMoneyImport": {
-        "pageTitle": "Import from Microsoft Money",
-        "pageDescription": "Bring your accounts, categories and transactions across from a Microsoft Money .mny file.",
+        "pageTitle": "Import aus Microsoft Money",
+        "pageDescription": "Übernahme deiner Konten, Kategorien und Transaktionen aus einer .mny-Datei von Microsoft Money.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Map data",
+            "upload": "Hochladen",
+            "resolve": "Daten zuordnen",
             "review": "Überprüfen",
-            "execute": "Import",
-            "done": "Done"
+            "execute": "Importieren",
+            "done": "Fertig"
           }
         },
         "fileUpload": {
-          "stepTitle": "Upload your Money file",
-          "description": "Pick the .mny file Microsoft Money saved on your computer.",
-          "maxSize": ".mny file, up to 50 MB",
-          "passwordLabel": "File password (optional)",
-          "passwordPlaceholder": "Enter the file password",
-          "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
-          "parsing": "Reading file…",
+          "stepTitle": "Lade deine Money-Datei hoch",
+          "description": "Wähle die .mny-Datei aus, die Microsoft Money auf deinem Computer gespeichert hat.",
+          "maxSize": ".mny-Datei, bis zu 50 MB",
+          "passwordLabel": "Dateipasswort (optional)",
+          "passwordPlaceholder": "Dateipasswort eingeben",
+          "passwordHint": "Leer lassen, außer du hast ein Passwort in Microsoft Money festgelegt.",
+          "parsing": "Lese Datei…",
           "continue": "Weiter",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not a .mny file.",
-            "passwordUnsupportedChars": "This password contains characters we can't send. Try a password without emoji or non-Latin letters."
+            "invalidFormatNamed": "\"{name}\" ist keine .mny-Datei.",
+            "passwordUnsupportedChars": "Dieses Passwort enthält Zeichen, die wir nicht senden können. Versuche ein Passwort ohne Emojis oder nicht-lateinische Buchstaben."
           }
         },
         "errors": {
-          "uploadUnavailable": "The uploaded file is no longer available. Please upload your Money file again."
+          "uploadUnavailable": "Die hochgeladene Datei ist nicht mehr verfügbar. Bitte lade deine Money-Datei erneut hoch."
         },
         "resolve": {
-          "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
+          "prepareFailed": "Die Konten- und Kategorie-Zuordnung konnte nicht vorbereitet werden. Lade die Seite neu und versuche es erneut.",
           "accounts": {
             "sectionTitle": "Konten",
-            "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the imported total",
-            "willCreateHint": "Will be created in {currency}.",
-            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+            "currentBalanceLabel": "Aktueller Saldo",
+            "currentBalancePlaceholder": "Leer lassen, um die importierte Gesamtsumme zu verwenden",
+            "willCreateHint": "Wird in {currency} erstellt.",
+            "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – und alle Umbuchungen zu oder von ihnen – werden nicht importiert."
           },
           "categories": {
             "sectionTitle": "Kategorien"
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Exakte Übereinstimmungen zuordnen",
+            "createNewForUnmatched": "Neue für nicht zugeordnete erstellen",
+            "reset": "Zurücksetzen",
             "tooltips": {
-              "mapExactMatchesAccounts": "Link every account whose name exactly matches one you already have.",
-              "mapExactMatchesCategories": "Link every category whose name exactly matches one you already have.",
-              "createNewForUnmatched": "Set every undecided row to \"create new\".",
-              "reset": "Clear all choices and match again."
+              "mapExactMatchesAccounts": "Verknüpfe jedes Konto, dessen Name exakt mit einem deiner bestehenden Konten übereinstimmt.",
+              "mapExactMatchesCategories": "Verknüpfe jede Kategorie, deren Name exakt mit einer deiner bestehenden Kategorien übereinstimmt.",
+              "createNewForUnmatched": "Setze alle nicht zugeordneten Zeilen auf \"Neu erstellen\".",
+              "reset": "Lösche alle Auswahlen und ordne erneut zu."
             }
           },
           "footer": {
@@ -59,80 +59,80 @@
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "transfersDetected": "Transfers",
-          "outOfWallet": "Out-of-wallet",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "dateRange": "Date range: {from} — {to}",
-          "warningsTitle": "Some things were left out",
-          "warningsHint": "These rows are not part of the import.",
+          "transactions": "Transaktionen",
+          "transfersDetected": "Umbuchungen",
+          "outOfWallet": "Extern",
+          "duplicatesSkipped": "Duplikate übersprungen",
+          "willImport": "Zu importieren",
+          "dateRange": "Zeitraum: {from} — {to}",
+          "warningsTitle": "Einige Dinge wurden ausgelassen",
+          "warningsHint": "Diese Zeilen sind nicht Teil des Imports.",
           "warnings": {
-            "accountTypeUnsupported": "{count} account(s) skipped",
-            "orphanRowSkipped": "{count} transaction(s) skipped",
-            "transferCounterpartNotImported": "{count} transfer leg(s) imported as out-of-wallet",
-            "rowLimitReached": "{count} transaction(s) over the limit were dropped",
-            "accountCurrencyDefaulted": "{count} account(s) had no currency in the file, so USD was assumed — check the currency on the accounts step before continuing",
-            "rowMissingDate": "{count} transaction(s) with no readable date were skipped",
-            "accountNameMissing": "{count} account(s) had no name",
-            "accountNameDuplicated": "{count} account(s) shared a name",
-            "rowAmountUnreadable": "{count} transaction(s) with no readable amount were skipped",
-            "fileSchemaUnexpected": "{count} unexpected file structure issue(s) found"
+            "accountTypeUnsupported": "{count} Konto/Konten übersprungen",
+            "orphanRowSkipped": "{count} Transaktion(en) übersprungen",
+            "transferCounterpartNotImported": "{count} Buchungsteil(e) als extern importiert",
+            "rowLimitReached": "{count} Transaktion(en) über dem Limit wurden verworfen",
+            "accountCurrencyDefaulted": "{count} Konto/Konten hatten keine Währung in der Datei, daher wurde USD angenommen – überprüfe die Währung im Schritt Konten, bevor du fortfährst",
+            "rowMissingDate": "{count} Transaktion(en) ohne lesbares Datum wurden übersprungen",
+            "accountNameMissing": "{count} Konto/Konten hatten keinen Namen",
+            "accountNameDuplicated": "{count} Konto/Konten teilten sich einen Namen",
+            "rowAmountUnreadable": "{count} Transaktion(en) ohne lesbaren Betrag wurden übersprungen",
+            "fileSchemaUnexpected": "{count} unerwartetes Problem/Unerwartete Probleme mit der Dateistruktur gefunden"
           },
           "includeVoided": {
-            "label": "Import {count} voided transaction(s)",
-            "hint": "Microsoft Money keeps voided entries in the register but never applies them to your balance, so they're imported at zero and tagged \"Void\" — keeping their date, payee, category, memo and cheque number."
+            "label": "{count} stornierte Transaktion(en) importieren",
+            "hint": "Microsoft Money behält stornierte Einträge im Register, rechnet sie aber nie auf deinen Saldo an. Sie werden daher mit Null importiert und als \"Storniert\" getaggt – wobei Datum, Zahlungsempfänger, Kategorie, Notiz und Schecknummer erhalten bleiben."
           },
-          "duplicatesTitle": "{count} possible duplicate(s)",
-          "duplicatesHint": "These already look like transactions you have. Check a row to import it anyway; unchecked duplicates are skipped.",
+          "duplicatesTitle": "{count} mögliche(s) Duplikat(e)",
+          "duplicatesHint": "Diese sehen bereits aus wie Transaktionen, die du hast. Wähle eine Zeile aus, um sie trotzdem zu importieren; nicht ausgewählte Duplikate werden übersprungen.",
           "back": "Zurück",
-          "importing": "Starting import…",
-          "importButton": "Import {count} transactions"
+          "importing": "Starte Import…",
+          "importButton": "{count} Transaktionen importieren"
         },
         "execute": {
-          "starting": "Starting the import…",
-          "progressCount": "{processed} of {total}",
-          "failed": "The import failed.",
-          "partialImportNote": "Some transactions may already have been imported.",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing",
-          "statusCompleted": "Completed",
-          "statusFailed": "Failed"
+          "starting": "Starte den Import…",
+          "progressCount": "{processed} von {total}",
+          "failed": "Der Import ist fehlgeschlagen.",
+          "partialImportNote": "Einige Transaktionen wurden möglicherweise bereits importiert.",
+          "statusQueued": "In Warteschlange",
+          "statusRunning": "Importiere",
+          "statusCompleted": "Abgeschlossen",
+          "statusFailed": "Fehlgeschlagen"
         },
         "done": {
-          "successTitle": "Import finished",
-          "successDescription": "Everything from your Money file is now in your account.",
-          "partialTitle": "Imported with {count} issue(s)",
-          "partialDescription": "Most rows landed. The list below shows what didn't.",
-          "emptyTitle": "Nothing new to import",
-          "emptyDescription": "Every row was either skipped or already in your ledger, so no transactions were created.",
-          "allFailedTitle": "Nothing was imported",
-          "allFailedDescription": "No transactions could be created. See the errors below.",
-          "accountsCreated": "Accounts created",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "outOfWalletImported": "Out-of-wallet transfers",
-          "duplicatesSkipped": "Duplicates skipped",
-          "voidedImported": "Voided imported",
-          "mergedIntoPlanned": "Merged into planned",
-          "balanceWarningTitle": "Some balances may be off",
-          "balanceWarningBody": "We couldn't set the final balance on every account. Check them and adjust if needed.",
-          "errorsTitle": "{count} row(s) could not be imported",
-          "errorsOverflow": "…and {count} more",
-          "rowPrefix": "Row {rowIndex}:",
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "successTitle": "Import beendet",
+          "successDescription": "Alles aus deiner Money-Datei befindet sich jetzt in deinem Konto.",
+          "partialTitle": "Mit {count} Problem(en) importiert",
+          "partialDescription": "Die meisten Zeilen wurden übernommen. Die Liste unten zeigt, was nicht importiert wurde.",
+          "emptyTitle": "Nichts Neues zu importieren",
+          "emptyDescription": "Jede Zeile wurde entweder übersprungen oder befand sich bereits in deinem Buch, sodass keine Transaktionen erstellt wurden.",
+          "allFailedTitle": "Es wurde nichts importiert",
+          "allFailedDescription": "Es konnten keine Transaktionen erstellt werden. Siehe die Fehler unten.",
+          "accountsCreated": "Konten erstellt",
+          "accountsLinked": "Konten verknüpft",
+          "accountsSkipped": "Konten übersprungen",
+          "categoriesCreated": "Kategorien erstellt",
+          "payeesCreated": "Zahlungsempfänger erstellt",
+          "transactionsImported": "Transaktionen importiert",
+          "transfersImported": "Umbuchungen importiert",
+          "outOfWalletImported": "Externe Umbuchungen",
+          "duplicatesSkipped": "Duplikate übersprungen",
+          "voidedImported": "Stornierte importiert",
+          "mergedIntoPlanned": "Mit geplanten zusammengeführt",
+          "balanceWarningTitle": "Einige Salden könnten fehlerhaft sein",
+          "balanceWarningBody": "Wir konnten den Endsaldo nicht für jedes Konto festlegen. Überprüfe sie und passe sie bei Bedarf an.",
+          "errorsTitle": "{count} Zeile(n) konnte(n) nicht importiert werden",
+          "errorsOverflow": "…und {count} weitere",
+          "rowPrefix": "Zeile {rowIndex}:",
+          "viewTransactions": "Transaktionen anzeigen",
+          "importAnother": "Weitere Datei importieren"
         },
         "leaseExpired": {
-          "title": "Your uploaded file is no longer available",
-          "description": "The parsed copy of your Money file was released after a period of inactivity. Your mapping choices could not be kept, so the import needs to start from the upload step again.",
-          "action": "Start over"
+          "title": "Deine hochgeladene Datei ist nicht mehr verfügbar",
+          "description": "Die verarbeitete Kopie deiner Money-Datei wurde nach einer Phase der Inaktivität freigegeben. Deine Zuordnungsauswahl konnte nicht beibehalten werden, daher muss der Import erneut ab dem Schritt Hochladen gestartet werden.",
+          "action": "Von vorn beginnen"
         },
-        "leaseResourceLabel": "Your uploaded file"
+        "leaseResourceLabel": "Deine hochgeladene Datei"
       }
     }
   }

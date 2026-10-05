@@ -1,0 +1,273 @@
+{
+  "settings": {
+    "security": {
+      "title": "Security Settings",
+      "description": "Manage your login methods, active sessions, and password",
+      "tabs": {
+        "loginMethods": "Login Methods",
+        "activeSessions": "Active Sessions",
+        "password": "Password",
+        "backup": "Backup & restore",
+        "dangerZone": "Danger Zone"
+      },
+      "loginMethods": {
+        "title": "Login Methods",
+        "description": "Manage how you sign in to your account",
+        "oauth": {
+          "connectedAs": "Connected as {email}",
+          "accountName": "{provider} Account",
+          "notConnected": "Not connected",
+          "disconnect": "Disconnect",
+          "connect": "Connect"
+        },
+        "password": {
+          "title": "Password",
+          "passwordSet": "Password is set",
+          "noPassword": "No password set",
+          "manageInTab": "Manage in Password tab",
+          "setupInTab": "Set up in Password tab"
+        },
+        "passkeys": {
+          "title": "Passkeys",
+          "noPasskeys": "No passkeys registered",
+          "passkeyCount": "{count} passkey(s) registered",
+          "addButton": "Add Passkey",
+          "passkeyName": "Passkey",
+          "added": "Added {date}",
+          "rename": "Rename",
+          "renamePlaceholder": "Enter passkey name",
+          "deleteConfirmTitle": "Remove passkey?",
+          "deleteConfirmDescription": "\"{name}\" will no longer be able to sign in to your account. This cannot be undone."
+        },
+        "warningOneMethod": "Add another login method before disconnecting your OAuth account.",
+        "notifications": {
+          "oauthConnectFailed": "Failed to connect {provider} account",
+          "oauthDisconnectSuccess": "{provider} account disconnected",
+          "oauthDisconnectFailed": "Failed to disconnect {provider} account",
+          "passkeyAddSuccess": "Passkey added successfully",
+          "passkeyAddFailed": "Failed to add passkey. Make sure your device supports passkeys.",
+          "passkeyRemoveSuccess": "Passkey removed",
+          "passkeyRemoveFailed": "Failed to remove passkey",
+          "passkeyRenameFailed": "Failed to rename passkey"
+        }
+      },
+      "activeSessions": {
+        "title": "Active Sessions",
+        "description": "Manage devices where you're currently signed in",
+        "currentBadge": "Current",
+        "unknownLocation": "Unknown location",
+        "lastActive": "Last active: {date}",
+        "noSessions": "No active sessions found",
+        "revokeAllButton": "Sign out of all other sessions",
+        "deviceTypes": {
+          "unknownDevice": "Unknown Device",
+          "unknownBrowser": "Unknown Browser"
+        },
+        "timeAgo": {
+          "justNow": "Just now",
+          "minutesAgo": "{count} minute ago | {count} minutes ago",
+          "hoursAgo": "{count} hour ago | {count} hours ago",
+          "daysAgo": "{count} day ago | {count} days ago"
+        },
+        "notifications": {
+          "loadFailed": "Failed to load sessions",
+          "revokeSuccess": "Session revoked",
+          "revokeFailed": "Failed to revoke session",
+          "revokeAllSuccess": "All other sessions have been signed out",
+          "revokeAllFailed": "Failed to revoke sessions"
+        }
+      },
+      "passwordSection": {
+        "title": "Password",
+        "descriptionChange": "Change your password",
+        "descriptionSet": "Set up a password for your account",
+        "labels": {
+          "currentPassword": "Current Password",
+          "newPassword": "New Password",
+          "password": "Password",
+          "confirmPassword": "Confirm Password"
+        },
+        "placeholders": {
+          "currentPassword": "Enter current password",
+          "newPassword": "Enter new password",
+          "confirmPassword": "Confirm new password"
+        },
+        "buttons": {
+          "change": "Change Password",
+          "set": "Set Password"
+        },
+        "strength": {
+          "veryWeak": "Very weak",
+          "weak": "Weak",
+          "fair": "Fair",
+          "strong": "Strong",
+          "veryStrong": "Very strong"
+        },
+        "requirements": {
+          "title": "Password requirements",
+          "minLength": "Minimum 8 characters",
+          "mixedCase": "Mix of uppercase and lowercase letters recommended",
+          "specialChars": "Include numbers and special characters for stronger security"
+        },
+        "validation": {
+          "minLength": "Password must be at least 8 characters",
+          "passwordsNoMatch": "Passwords do not match"
+        },
+        "notifications": {
+          "changeSuccess": "Password changed successfully",
+          "changeFailed": "Failed to change password",
+          "setSuccess": "Password set successfully",
+          "setFailed": "Failed to set password",
+          "unexpectedError": "An unexpected error occurred",
+          "updateFailed": "Failed to update password"
+        }
+      },
+      "dangerZone": "Danger zone",
+      "wipeData": {
+        "title": "Wipe all data",
+        "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
+        "warningStrong": "Warning:",
+        "button": "Wipe data",
+        "dialog": {
+          "title": "Wipe all your data?",
+          "description": "This permanently deletes everything in your workspace, including:",
+          "list": {
+            "accounts": "Accounts and balances",
+            "transactions": "Transactions, refunds, and transfers",
+            "budgets": "Budgets, tags, and categories",
+            "portfolios": "Investments, portfolios, and holdings",
+            "settings": "User settings, AI keys, and onboarding state",
+            "baseCurrency": "Base currency and exchange rates"
+          },
+          "kept": "Your login and profile remain. You'll restart from the onboarding flow.",
+          "typeConfirm": "To confirm, type {phrase} below:",
+          "confirmLabel": "Wipe data",
+          "confirmLoading": "Wiping…"
+        },
+        "sharingDialog": {
+          "title": "You're sharing data with other users",
+          "warning": "Others will lose access immediately",
+          "description": "Wiping your data revokes access to the following shared resources:",
+          "householdsCount": "And {count} household member will lose access. | And {count} household members will lose access.",
+          "confirmLabel": "Wipe anyway"
+        },
+        "notifications": {
+          "success": "All data wiped. Starting fresh.",
+          "failed": "Couldn't wipe data. Please try again."
+        }
+      },
+      "deleteAccount": {
+        "title": "Delete your account",
+        "warningFull": "Once you delete your account, there is no going back. {strong} Please be certain.",
+        "warningStrong": "All your data will be permanently erased.",
+        "button": "Delete my account",
+        "dialog": {
+          "title": "Are you absolutely sure?",
+          "description": "This action cannot be undone. This will permanently delete your account and remove all your data including:",
+          "dataList": {
+            "accounts": "All accounts and transactions",
+            "categories": "All categories and budgets",
+            "portfolios": "All investment portfolios",
+            "settings": "All settings and preferences"
+          },
+          "confirmFull": "Please type {email} to confirm",
+          "placeholder": "Enter your email",
+          "acceptButton": "Delete my account",
+          "acceptButtonLoading": "Deleting..."
+        },
+        "notifications": {
+          "success": "Your account has been deleted successfully",
+          "failed": "An error occurred while trying to delete your account"
+        }
+      },
+      "backup": {
+        "download": {
+          "title": "Download backup",
+          "description": "Save a complete, restorable copy of all your data as a zip file.",
+          "button": "Download",
+          "loading": "Preparing...",
+          "success": "Backup downloaded",
+          "failed": "Could not create backup. Please try again.",
+          "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
+          "limitations": {
+            "trigger": "Has limitations",
+            "title": "What a backup leaves out",
+            "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
+            "items": {
+              "bankConnectionsTerm": "Connexions bancaires",
+              "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
+              "aiKeysTerm": "AI API keys",
+              "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
+            },
+            "included": "Everything else — accounts, transactions, categories, budgets, investments, loans, tags, payees and subscriptions — is included."
+          }
+        },
+        "restore": {
+          "title": "Restore from backup",
+          "description": "Replace all current data with the contents of a backup zip.",
+          "button": "Select backup file",
+          "reading": "Reading file...",
+          "failedGeneric": "Backup restore failed",
+          "invalidFileType": "Please choose a .zip backup file.",
+          "fileTooLarge": "That backup is too large to restore (max {max}).",
+          "readFailed": "Could not read that file. Please try again.",
+          "confirm": {
+            "title": "Restore from backup?",
+            "warning": "This replaces ALL your current data",
+            "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
+            "selectedFile": "Selected file: {name}",
+            "confirmLabel": "Restore",
+            "reconnectTitle": "After restoring, set these up again",
+            "reconnectBankConnections": "Reconnect your bank connections",
+            "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"
+          },
+          "acknowledge": {
+            "title": "Shared resources will lose access",
+            "description": "You own resources that other people currently have access to. Restoring will remove that access.",
+            "householdsCount": "{count} shared household | {count} shared households",
+            "checkbox": "I understand these shared resources will lose access.",
+            "confirmLabel": "Restore anyway"
+          },
+          "progress": {
+            "title": "Restoring your data",
+            "description": "This can take a little while. Please keep this window open.",
+            "inserted": "{count} records restored",
+            "phases": {
+              "validating": "Validating backup...",
+              "preparingSecurities": "Preparing securities...",
+              "wiping": "Clearing current data...",
+              "restoring": "Restoring records...",
+              "finalizing": "Finalizing..."
+            }
+          },
+          "summary": {
+            "title": "Restore complete",
+            "description": "Your data has been restored from the backup.",
+            "recordsHeading": "Restored records",
+            "warningsHeading": "Warnings",
+            "noRecords": "No records were restored.",
+            "doneButton": "Done"
+          },
+          "failed": {
+            "title": "Restore failed",
+            "genericError": "Something went wrong while restoring your backup.",
+            "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
+            "closeButton": "Close"
+          },
+          "overlay": {
+            "title": "Restoring your data",
+            "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
+            "preparing": "Preparing…",
+            "finishing": "Finishing up",
+            "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
+            "unreachableTitle": "Can't reach the server",
+            "unreachableDescription": "We lost contact while the restore was running. It may still be finishing. You can dismiss this and reload the page to check.",
+            "failedTitle": "Restore failed",
+            "dismiss": "Dismiss"
+          }
+        },
+        "attachmentsNotIncluded": "Transaction attachments (receipts, invoices and other files) are not included in backups and are not restored."
+      }
+    }
+  }
+}

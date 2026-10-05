@@ -72,7 +72,7 @@
     "delete": {
       "title": "Delete automation?",
       "description": "\"{name}\" will stop running on new transactions. Transactions it already categorized keep their category, tags, and note.",
-      "confirm": "Delete"
+      "confirm": "Xóa"
     },
     "notifications": {
       "deleteSuccess": "Automation deleted.",

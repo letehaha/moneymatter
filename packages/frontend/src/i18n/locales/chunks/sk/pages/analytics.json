@@ -268,7 +268,7 @@
           "title": "Dosiahli ste finančnú nezávislosť",
           "supports": "Vaše peniaze pokryjú {amount}/mes.",
           "pctOfSpending": "{pct} % vašich výdavkov · pri výbere {rate} %",
-          "yearsCovered": "Pokrytý menej než rok výdavkov | Pokrytý 1 rok výdavkov | Pokryté roky výdavkov: {n}",
+          "yearsCovered": "Pokrytý {n} rok výdavkov | Pokryté {n} roky výdavkov | Pokrytých {n} rokov výdavkov",
           "drawdown": "Čerpáte približne {amount}/mes.",
           "noNewSavings": "Projekcie počítajú s nulovými novými úsporami."
         },
@@ -355,7 +355,7 @@
           "description": "Táto stránka sa vypĺňa na základe vašich účtov a transakcií. Zatiaľ sa nič nesleduje, začnite preto zadaním ročných výdavkov. Po pridaní účtov sa plán prepne na aktuálne údaje."
         },
         "shortHistory": {
-          "title": "Zatiaľ žiadny celý mesiac transakcií | Len 1 celý mesiac transakcií | Len {n} celých mesiacov transakcií",
+          "title": "Zatiaľ len {n} celý mesiac transakcií | Zatiaľ len {n} celé mesiace transakcií | Zatiaľ len {n} celých mesiacov transakcií",
           "description": "Výdavky sa zatiaľ nedajú vypočítať. Po 3 celých mesiacoch sa prepnú na automatický výpočet. Dovtedy ich zadajte ručne."
         },
         "noSpending": {
@@ -493,7 +493,7 @@
       "title": "Niektoré hodnoty sú odhadované",
       "unpricedSecurities": "Pre {securities} nie sú k dispozícii aktuálne cenové údaje, ich zhodnotenie je preto odhadované z obstarávacej ceny.",
       "unpricedSecuritiesTruncated": "Pre {securities} a ďalšie (spolu {count} cenných papierov) nie sú k dispozícii aktuálne cenové údaje, ich zhodnotenie je preto odhadované z obstarávacej ceny.",
-      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}; tieto sumy používajú kurz 1:1."
+      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}. Tieto sumy používajú najskorší dostupný kurz, alebo 1:1, ak žiadny kurz neexistuje."
     },
     "states": {
       "loadError": "Prehľad sa nepodarilo načítať",
@@ -604,7 +604,7 @@
       "title": "Niektoré hodnoty sú odhadované",
       "unpricedSecurities": "Pre {securities} nie sú k dispozícii aktuálne cenové údaje, preto sa zobrazujú v obstarávacej cene a čistá hodnota majetku môže byť podhodnotená.",
       "unpricedSecuritiesTruncated": "Pre {securities} a ďalšie (spolu {count} cenných papierov) nie sú k dispozícii aktuálne cenové údaje, preto sa zobrazujú v obstarávacej cene a čistá hodnota majetku môže byť podhodnotená.",
-      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}; tieto sumy používajú kurz 1:1."
+      "fxFallback": "Chýbajú výmenné kurzy pre {currencies}. Tieto sumy používajú najskorší dostupný kurz, alebo 1:1, ak žiadny kurz neexistuje."
     },
     "states": {
       "loadError": "História čistej hodnoty majetku sa nepodarila načítať. Skúste to znova neskôr, prosím.",

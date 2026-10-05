@@ -101,7 +101,7 @@
           "text": "Enable Banking vyžaduje zaregistrovanie aplikácie a vygenerovanie bezpečnostných údajov na prístup k bankovým dátam. Podľa nasledujúcich krokov získate ID aplikácie a súkromný kľúč."
         },
         "step1": {
-          "title": "Zaregistrovať sa a vytvoriť aplikáciu",
+          "title": "Zaregistrujte sa a vytvorte aplikáciu",
           "intro": "Navštívte {link} a ak ešte nemáte účet, vytvorte si ho.",
           "createApp": "Potom vytvorte aplikáciu:",
           "steps": {
@@ -134,7 +134,7 @@
             "country": "Country:",
             "countryValue": "Krajina vašej banky",
             "aspsp": "ASPSP:",
-            "aspspValue": "Your bank name",
+            "aspspValue": "Názov vašej banky",
             "usageType": "Usage type:",
             "usageTypeValue": "Private",
             "clickSave": "Kliknite na „Save\"",
@@ -233,7 +233,7 @@
         "backButton": "Späť",
         "loadingAccounts": "Načítavanie účtov...",
         "backfillNote": "Teraz načítame transakcie za posledných 6 mesiacov. Staršiu históriu môžete kedykoľvek dodatočne načítať zo stránky účtu pomocou výberu dátumového rozsahu.",
-        "importButton": "Vybrať účty | Importovať 1 účet | Importovať {count} účtov",
+        "importButton": "Importovať {count} účet | Importovať {count} účty | Importovať {count} účtov",
         "importingButton": "Importovanie...",
         "errors": {
           "connectFailed": "Pripojenie k SimpleFIN zlyhalo. Skontrolujte svoj setup token a skúste to znova.",
@@ -356,7 +356,7 @@
         "summary": {
           "totalBalance": "Celkový zostatok",
           "accounts": "Účty",
-          "accountsCount": "žiadne účty | {count} účet | {count} účtov",
+          "accountsCount": "{count} účet | {count} účty | {count} účtov",
           "lastSync": "Posledná synchronizácia",
           "consent": "Súhlas",
           "every": "Každých {hours} h",
@@ -415,7 +415,7 @@
       },
       "labels": {
         "free": "Zadarmo",
-        "paid": "Zaplatené",
+        "paid": "Platené",
         "easySetup": "Jednoduché nastavenie",
         "mediumSetup": "Stredne náročné nastavenie",
         "veryDifficultSetup": "Veľmi náročné nastavenie"

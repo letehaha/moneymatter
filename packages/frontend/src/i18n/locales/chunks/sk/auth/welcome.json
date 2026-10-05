@@ -4,7 +4,7 @@
       "title": "Vyberte základnú menu",
       "description": "Vašou referenčnou menou by mala byť ideálne mena, ktorú používate najčastejšie. Všetky transakcie v iných menách budú účtované na základe tejto.",
       "submitButton": "Potvrďte menu",
-      "trialStarted": "Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} deň. {link} | Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} dní. {link}",
+      "trialStarted": "Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} deň. {link} | Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} dni. {link} | Vaša bezplatná skúšobná verzia sa spustila, všetko je odomknuté na {count} dní. {link}",
       "logout": "Odhlásiť sa",
       "labels": {
         "baseCurrency": "Základná mena"

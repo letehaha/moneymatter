@@ -1,0 +1,104 @@
+{
+  "pages": {
+    "budgets": {
+      "transactionsList": {
+        "selectionModeWarning": "Selection mode — choose transactions to unlink",
+        "selectAll": "Select all",
+        "selected": "{count} selected",
+        "unlink": "Unlink",
+        "cancel": "Cancel",
+        "unlinkSelected": "Unlink Selected",
+        "noMatchingTransactions": "No matching transactions",
+        "noTransactionsLinked": "No transactions linked",
+        "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
+        "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
+        "resetFilters": "Reset Filters",
+        "addTransactions": "Add Transactions",
+        "add": "Add",
+        "loadingMore": "Loading more..."
+      }
+    },
+    "budgetDetails": {
+      "notSet": "Not set",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "loading": "Loading...",
+      "uncategorized": "Uncategorized",
+      "stats": {
+        "income": "Income",
+        "expenses": "Expenses",
+        "netBalance": "Net Balance"
+      },
+      "utilization": {
+        "title": "Budget Utilization",
+        "summary": "{spent} of {limit} limit",
+        "na": "N/A"
+      },
+      "noTransactionsYet": "No transactions yet",
+      "transactions": "Transactions",
+      "transactionsLinked": "{count} transaction linked to this budget | {count} transactions linked to this budget",
+      "tabs": {
+        "statistics": "Statistics",
+        "transactions": "Transactions",
+        "sharing": "Sharing"
+      },
+      "statistics": {
+        "tabs": {
+          "categories": "Categories",
+          "timeline": "Timeline"
+        },
+        "errorTitle": "Failed to load statistics",
+        "errorDescription": "Something went wrong while loading the data. Please try again later.",
+        "noDataTitle": "No spending data",
+        "noDataDescription": "There's no spending data available for this budget yet.",
+        "noCategoryData": "No category spending data.",
+        "noTimelineData": "No timeline data.",
+        "total": "Total",
+        "income": "Income",
+        "expenses": "Expenses",
+        "incomeLabel": "Income:",
+        "expensesLabel": "Expenses:"
+      },
+      "sharing": {
+        "title": "Sharing",
+        "description": "Manage who can see this budget and contribute to it.",
+        "inviteAnother": "Invite someone",
+        "membersHeading": "Members",
+        "pendingHeading": "Pending invitations",
+        "loadError": "Couldn't load members.",
+        "permissions": {
+          "read": "View only",
+          "write": "Attach own transactions",
+          "manage": "Manage"
+        },
+        "member": {
+          "you": "you",
+          "roleOwner": "Owner",
+          "roleRecipient": "Member",
+          "ownerHint": "Full control of this budget",
+          "updateSuccess": "Permission updated.",
+          "updateError": "Couldn't update permission.",
+          "revoke": "Revoke access",
+          "revokeConfirm": "Revoke",
+          "revokeTitle": "Revoke access?",
+          "revokeDescription": "{user} will lose access to {budget}.",
+          "revokeSuccess": "Access revoked.",
+          "revokeError": "Couldn't revoke access."
+        },
+        "pending": {
+          "empty": "No pending invitations.",
+          "resend": "Resend",
+          "resendSuccess": "Invitation resent.",
+          "resendError": "Couldn't resend invitation.",
+          "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
+          "cancel": "Cancel",
+          "cancelConfirm": "Cancel invitation",
+          "cancelTitle": "Cancel invitation?",
+          "cancelDescription": "The invitation to {email} will be cancelled.",
+          "cancelSuccess": "Invitation cancelled.",
+          "cancelError": "Couldn't cancel invitation."
+        }
+      }
+    }
+  }
+}

@@ -2,73 +2,73 @@
   "pages": {
     "importExport": {
       "ynabImport": {
-        "pageTitle": "Import from YNAB",
-        "pageDescription": "Upload your YNAB Register.csv export to bring accounts, transactions, categories, payees and tags into MoneyMatter.",
+        "pageTitle": "Nhập từ YNAB",
+        "pageDescription": "Tải tệp Register.csv xuất từ YNAB lên để nhập tài khoản, giao dịch, danh mục, người nhận và thẻ vào MoneyMatter.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
+            "upload": "Tải lên",
             "preview": "Xem xét",
-            "results": "Done"
+            "results": "Hoàn tất"
           }
         },
         "fileUpload": {
-          "stepTitle": "Drop your Register.csv here",
-          "description": "YNAB → Budget → Export budget → unzip → use the Register.csv file.",
-          "maxSize": "Up to 10 MB.",
-          "parsing": "Parsing…",
-          "continueToPreview": "Continue",
+          "stepTitle": "Thả tệp Register.csv vào đây",
+          "description": "YNAB → Budget → Export budget → giải nén → dùng tệp Register.csv.",
+          "maxSize": "Tối đa 10 MB.",
+          "parsing": "Đang phân tích…",
+          "continueToPreview": "Tiếp tục",
           "errors": {
-            "invalidFormat": "Please upload a .csv file."
+            "invalidFormat": "Vui lòng tải lên tệp .csv."
           }
         },
         "preview": {
-          "emptyList": "Nothing to import here.",
+          "emptyList": "Không có gì để nhập ở đây.",
           "accounts": "Tài khoản",
-          "categories": "Categories",
+          "categories": "Danh mục",
           "payees": "Người nhận",
           "tags": "Thẻ",
-          "transactions": "Transactions",
-          "transfers": "Transfers",
-          "dateRange": "Range: {from} → {to}",
-          "accountsHelper": "For each YNAB account, confirm the currency.",
-          "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported.",
-          "warningsTitle": "Warnings",
-          "rowPrefix": "Row {rowIndex}:",
-          "startOver": "Start over",
-          "continueToImport": "Start import"
+          "transactions": "Giao dịch",
+          "transfers": "Chuyển khoản",
+          "dateRange": "Khoảng thời gian: {from} → {to}",
+          "accountsHelper": "Xác nhận tiền tệ cho từng tài khoản YNAB.",
+          "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Giao dịch của các tài khoản này — cùng mọi khoản chuyển khoản đến hoặc đi từ chúng — sẽ không được nhập.",
+          "warningsTitle": "Cảnh báo",
+          "rowPrefix": "Dòng {rowIndex}:",
+          "startOver": "Bắt đầu lại",
+          "continueToImport": "Bắt đầu nhập"
         },
         "accountRow": {
-          "transactionsCount": "{count} transactions",
-          "startingBalance": "Starting balance",
+          "transactionsCount": "{count} giao dịch",
+          "startingBalance": "Số dư ban đầu",
           "currencyPlaceholder": "USD",
-          "currencyLabel": "Currency",
-          "currencyInvalid": "Enter a 3-letter currency code (e.g. USD)",
-          "autoDetected": "auto-detected: {code}",
-          "undoSkip": "Include in import"
+          "currencyLabel": "Tiền tệ",
+          "currencyInvalid": "Nhập mã tiền tệ gồm 3 chữ cái (ví dụ: USD)",
+          "autoDetected": "Tự động nhận diện: {code}",
+          "undoSkip": "Bao gồm trong lần nhập"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Đang bắt đầu nhập…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing…",
-          "statusCompleted": "Done",
-          "statusFailed": "Failed",
-          "failed": "The import couldn't finish."
+          "statusQueued": "Đang chờ xử lý",
+          "statusRunning": "Đang nhập…",
+          "statusCompleted": "Hoàn tất",
+          "statusFailed": "Thất bại",
+          "failed": "Không thể hoàn tất quá trình nhập."
         },
         "done": {
-          "successTitle": "Import complete",
-          "successDescription": "Your YNAB data is now in MoneyMatter.",
-          "accountsCreated": "Accounts created",
-          "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "tagsCreated": "Tags created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
-          "splitsDetected": "Split groups detected",
-          "errorsTitle": "{count} rows failed to import",
-          "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "successTitle": "Nhập dữ liệu hoàn tất",
+          "successDescription": "Dữ liệu YNAB của bạn hiện đã có trong MoneyMatter.",
+          "accountsCreated": "Tài khoản đã tạo",
+          "accountsSkipped": "Tài khoản đã bỏ qua",
+          "categoriesCreated": "Danh mục đã tạo",
+          "payeesCreated": "Người nhận đã tạo",
+          "tagsCreated": "Thẻ đã tạo",
+          "transactionsImported": "Giao dịch đã nhập",
+          "transfersImported": "Giao dịch chuyển khoản đã nhập",
+          "splitsDetected": "Nhóm giao dịch đã phát hiện",
+          "errorsTitle": "{count} dòng không nhập được",
+          "viewTransactions": "Xem giao dịch",
+          "importAnother": "Nhập tệp khác"
         }
       }
     }

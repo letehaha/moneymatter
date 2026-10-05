@@ -559,7 +559,7 @@
       "title": "Attach invoice",
       "description": "Drop an invoice or receipt. We read the total, date and merchant, then find the transaction it belongs to.",
       "resultsTitle": "Pick the transaction",
-      "resultsDescription": "No transactions match this invoice. | {count} transaction could belong to this invoice. | {count} transactions could belong to this invoice.",
+      "resultsDescription": "{count} транзакция может относиться к этому инвойсу. | {count} транзакции могут относиться к этому инвойсу. | {count} транзакций могут относиться к этому инвойсу.",
       "analyzing": "Reading the invoice and searching your transactions…",
       "attaching": "Attaching the invoice to the transaction…",
       "privacyNote": "The file goes to the AI provider for reading only. Nothing is saved until you link it to a transaction.",

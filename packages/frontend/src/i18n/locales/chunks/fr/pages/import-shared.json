@@ -1,0 +1,96 @@
+{
+  "pages": {
+    "importExport": {
+      "progress": {
+        "jobExpired": "The import job expired or could not be found.",
+        "lostContact": "Lost contact with the import job."
+      }
+    }
+  },
+  "importShared": {
+    "action": {
+      "createNew": "Create new",
+      "linkExisting": "Link to existing",
+      "skip": "Skip"
+    },
+    "selectAction": "Select action",
+    "resolvedCounterWord": "resolved",
+    "quickActionsMenuLabel": "Bulk actions",
+    "quickActions": {
+      "menu": "Actions"
+    },
+    "columns": {
+      "sourceName": "Source name",
+      "currency": "Currency",
+      "action": "Action",
+      "target": "Target"
+    },
+    "account": {
+      "selectTarget": "Select account",
+      "noMatchingCurrency": "No account with currency {currency}",
+      "willCreate": "Will create {name} ({currency})",
+      "empty": "No accounts to map",
+      "willSkip": "Will not be imported"
+    },
+    "category": {
+      "selectTarget": "Select category",
+      "willCreate": "Will create {name}",
+      "empty": "No categories to map"
+    },
+    "recalculateBalance": {
+      "label": "Update account balances from imported transactions",
+      "hint": "Transactions older than an account's latest existing transaction are treated as backfill and don't change its current balance.",
+      "loadFailedHint": "Couldn't load your saved preference — defaulting to off."
+    },
+    "balanceChanges": {
+      "title": "Account balance changes",
+      "columns": {
+        "account": "Account",
+        "before": "Before",
+        "after": "After",
+        "delta": "Change",
+        "newRows": "New rows",
+        "backfillRows": "Backfill rows"
+      },
+      "newAccount": "New account"
+    },
+    "duplicatesTable": {
+      "columnHeaders": {
+        "row": "Row",
+        "match": "Match",
+        "csvTransaction": "CSV transaction",
+        "existingTransaction": "Existing transaction",
+        "csvShort": "CSV",
+        "existingShort": "Existing"
+      },
+      "matchTypeLabels": {
+        "exact": "Exact",
+        "idMatch": "ID match",
+        "fuzzy": "Fuzzy"
+      },
+      "fieldLabels": {
+        "amount": "Amount",
+        "date": "Date",
+        "note": "Note",
+        "category": "Category"
+      },
+      "importAnywayAriaLabel": "Import row {row} anyway"
+    },
+    "aiMapping": {
+      "action": "AI match",
+      "tooltipCategories": "Let AI link each source category to the closest existing category. Rows you already linked to a category are left untouched.",
+      "failed": "AI matching failed. Please try again.",
+      "inProgress": "AI matching in progress…"
+    },
+    "categoryPreset": {
+      "menuTrigger": "Apply mapping",
+      "currentLayout": "This file's layout",
+      "savedTemplates": "Saved templates",
+      "lastUsed": "Last used mapping",
+      "namePlaceholder": "Name this mapping",
+      "renameAria": "Rename mapping",
+      "deleteAria": "Delete mapping",
+      "confirmRenameAria": "Save name"
+    }
+  }
+}

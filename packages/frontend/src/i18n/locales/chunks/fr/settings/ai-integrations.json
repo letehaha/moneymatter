@@ -1,0 +1,64 @@
+{
+  "settings": {
+    "aiIntegrations": {
+      "mcpServer": {
+        "title": "MCP Server",
+        "description": "Use this URL to connect AI assistants to your MoneyMatter account. Your data is shared read-only.",
+        "copyTooltip": "Copy URL",
+        "copiedNotification": "MCP server URL copied to clipboard"
+      },
+      "quickConnect": {
+        "title": "Quick Connect",
+        "description": "Choose an AI assistant below. Click the button to open its settings, then follow the steps.",
+        "openSettings": "Open Settings",
+        "claude": {
+          "steps": {
+            "createConnector": "Click the {icon} icon next to \"Connectors\" to create a new connector",
+            "selectCustom": "Select {action}",
+            "enterName": "For \"Name\" enter {value}",
+            "pasteUrl": "For \"Remote MCP server URL\" paste {value}",
+            "finish": "Leave Advanced settings empty and click {action}",
+            "authorize": "You will be redirected to MoneyMatter to authorize access"
+          }
+        },
+        "chatgpt": {
+          "steps": {
+            "addConnector": "Click {action}",
+            "pasteUrl": "For \"URL\" paste {value}",
+            "clickAdd": "Click {action}",
+            "authorize": "You will be redirected to MoneyMatter to authorize access"
+          }
+        }
+      },
+      "actions": {
+        "addCustomConnector": "Add custom connector",
+        "addConnector": "Add connector",
+        "add": "Add"
+      },
+      "connectedApps": {
+        "title": "Active connectors",
+        "description": "Apps that have access to your financial data. You can revoke access at any time.",
+        "emptyTitle": "No apps connected yet.",
+        "emptyDescription": "Use the buttons above to connect an AI assistant.",
+        "connectedAt": "Connected: {date}",
+        "lastUsed": "Last used: {time}",
+        "scope": "Scope: {scopes}",
+        "revoke": "Revoke"
+      },
+      "revokeDialog": {
+        "title": "Revoke access?",
+        "description": "This will immediately disconnect the app and invalidate all its tokens. You can reconnect later.",
+        "confirm": "Revoke Access",
+        "successNotification": "App access revoked successfully",
+        "errorNotification": "Failed to revoke app access"
+      },
+      "scopes": {
+        "financeRead": "Read financial data",
+        "financeWrite": "Edit financial data",
+        "financeDelete": "Delete financial data",
+        "profileRead": "Read profile",
+        "offlineAccess": "Offline access"
+      }
+    }
+  }
+}

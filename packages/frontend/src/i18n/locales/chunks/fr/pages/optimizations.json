@@ -1,0 +1,257 @@
+{
+  "optimizations": {
+    "title": "Optimizations",
+    "landingDescription": "Tools to help you organize and clean up your financial data.",
+    "backToOptimizations": "Back to optimizations",
+    "cards": {
+      "transfers": {
+        "title": "Transfer matching",
+        "description": "Find expense-income pairs that might be transfers between your accounts and link them automatically."
+      },
+      "aiCategorization": {
+        "title": "AI categorization",
+        "description": "Let AI sort uncategorized transactions and review past runs."
+      },
+      "applyRules": {
+        "title": "Apply a rule to past transactions",
+        "description": "Pick one of your automations and run it over transactions you already have."
+      },
+      "reconciliation": {
+        "title": "Reconciliation",
+        "description": "Merge duplicate bank transactions, remove wrong ones, and resolve pending transactions the bank never booked."
+      }
+    },
+    "aiCategorization": {
+      "title": "AI categorization",
+      "description": "Run AI over transactions that are still in your default category and let it pick a better one. You can always change a category afterwards.",
+      "tabs": {
+        "categorize": "Categorize",
+        "history": "History"
+      },
+      "count": {
+        "capNote": "One run covers the {limit} most recent. Run it again to work through the rest.",
+        "allDoneTitle": "Everything is categorized",
+        "allDoneDescription": "No transactions are sitting in your default category right now."
+      },
+      "bar": {
+        "uncategorizedCount": "{count} uncategorized",
+        "capChip": "{limit} per run"
+      },
+      "table": {
+        "selectionHint": "Select rows to categorize only those.",
+        "loadError": "Couldn't load the transactions waiting for categorization."
+      },
+      "history": {
+        "emptyTitle": "No AI categorization runs yet",
+        "emptyDescription": "Once you run AI categorization, every run shows up here so you can review what it changed.",
+        "loadError": "Couldn't load the run history.",
+        "runLoadError": "Couldn't load this run's transactions.",
+        "backToRuns": "Back to all runs",
+        "runEmptyTitle": "Nothing left from this run",
+        "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
+        "transactionCount": "{count} transaction | {count} transactions",
+        "trigger": {
+          "manual": "Manual",
+          "import": "Data import",
+          "sync": "Bank sync",
+          "unknown": "Unknown"
+        },
+        "triggerTooltip": {
+          "manual": "You started this run manually",
+          "import": "Started automatically after a data import",
+          "sync": "Started automatically after a bank sync",
+          "unknown": "This run's origin wasn't recorded"
+        }
+      },
+      "setup": {
+        "title": "Run setup",
+        "model": "Model",
+        "notConfigured": "Not configured",
+        "connection": "AI model",
+        "limits": "Limits",
+        "limitsSharedKey": "3 runs per hour",
+        "limitsOwnCredentials": "Unlimited — runs on your own key",
+        "changeModel": "Change in AI settings",
+        "errorChip": "AI setup problem",
+        "loadError": "Couldn't load your AI setup."
+      },
+      "run": {
+        "button": "Categorize with AI (all)",
+        "categorizeSelected": "Categorize {count} selected",
+        "inProgress": "Categorizing…",
+        "progressLabel": "AI categorization progress",
+        "processed": "{processed} of {total} transactions processed"
+      },
+      "confirm": {
+        "title": "Categorize all uncategorized transactions?",
+        "description": "AI will look at {count} transaction that is still in your default category and pick a category for it. You can change it afterwards. | AI will look at {count} transactions that are still in your default category and pick a category for each one. You can change any of them afterwards.",
+        "action": "Categorize all"
+      },
+      "notifications": {
+        "started": "Categorizing {count} transaction with AI | Categorizing {count} transactions with AI",
+        "nothingToCategorize": "Everything is already categorized — nothing left for AI to do",
+        "alreadyRunning": "AI categorization is already running",
+        "rateLimited": "You've reached the manual categorization limit. Try again in {time}.",
+        "failed": "Could not start AI categorization"
+      }
+    },
+    "transferSuggestions": {
+      "description": "Find transactions that should be linked as transfers between your accounts",
+      "suggestionsFor": "Suggestions for",
+      "selectExpense": "Select a transaction to see suggestions",
+      "potentialTransfersFound": "potential transfers found",
+      "empty": {
+        "title": "No transfer suggestions found",
+        "description": "Try adjusting the date range"
+      },
+      "initial": {
+        "title": "Find transfer suggestions",
+        "description": "Scan your transactions to find income and expense pairs that should be linked as transfers between accounts"
+      },
+      "scanning": "Scanning transactions...",
+      "confirmLink": {
+        "title": "Link as transfer?",
+        "description": "Both transactions will be linked as a transfer between accounts. This will correct your statistics and analytics by excluding them from income and expense totals."
+      },
+      "presets": {
+        "last3Months": "Last 3 months",
+        "last6Months": "Last 6 months",
+        "lastYear": "Last year",
+        "thisYear": "This year",
+        "previousYear": "Previous year"
+      },
+      "includeOutOfWallet": "Include out-of-wallet transfers",
+      "skip": {
+        "action": "Skip",
+        "title": "Skip this suggestion?",
+        "description": "This pair will be hidden from future scan results. The transactions themselves won't be changed.",
+        "dontShowAgain": "Don't show this confirmation again"
+      },
+      "notifications": {
+        "loadError": "Failed to load more suggestions",
+        "scanError": "Failed to scan for transfer suggestions",
+        "linkSuccess": "Transactions linked as transfer",
+        "linkError": "Failed to link transactions",
+        "skipSuccess": "Suggestion dismissed",
+        "skipError": "Failed to skip suggestion"
+      }
+    },
+    "reconciliation": {
+      "title": "Transactions reconciliation",
+      "tabs": {
+        "transactions": "Transactions",
+        "stuckPending": "Stuck pending",
+        "history": "History"
+      },
+      "table": {
+        "hint": "Select bank transactions to merge duplicates or remove extras"
+      },
+      "actions": {
+        "merge": "Merge",
+        "remove": "Remove"
+      },
+      "blockReasons": {
+        "header": {
+          "merge": "Can't merge for {count} reasons:",
+          "remove": "Can't remove for {count} reasons:"
+        },
+        "notBankConnected": "Only bank-connected transactions can be reconciled.",
+        "planned": "Planned transactions can't be reconciled.",
+        "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
+        "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
+        "tooFew": "Select at least 2 transactions to merge.",
+        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
+        "differentAccounts": "All transactions must belong to the same account."
+      },
+      "merge": {
+        "title": "Merge transactions",
+        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
+        "fields": {
+          "payee": "Payee",
+          "status": "Status",
+          "time": "Time"
+        },
+        "status": {
+          "pending": "Pending",
+          "booked": "Booked"
+        },
+        "keep": "Keep",
+        "remove": "Remove",
+        "sameInAll": "Same in all:",
+        "confirm": "Merge and remove {count} | Merge and remove {count}"
+      },
+      "remove": {
+        "title": "Remove {count} transaction? | Remove {count} transactions?",
+        "description": "Removed transactions stop counting toward balances and stats. Budget, group and subscription links are detached. You can restore them from History, but the links won't come back.",
+        "confirm": "Remove"
+      },
+      "restoreDialog": {
+        "title": "Restore {count} transaction? | Restore {count} transactions?",
+        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
+        "confirm": "Restore"
+      },
+      "notifications": {
+        "removed": "Removed {count} transaction | Removed {count} transactions",
+        "merged": "Merged, removed {count} duplicate | Merged, removed {count} duplicates",
+        "restored": "Restored {count} transaction | Restored {count} transactions",
+        "keptAsBooked": "Marked as booked",
+        "checkedWithBank": "Checked with bank",
+        "unexpectedError": "Something went wrong. Please try again.",
+        "bankCheck": {
+          "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
+          "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
+          "noneBooked": "Your bank hasn't booked any of them yet",
+          "stillPending": "{count} is still pending. | {count} are still pending.",
+          "someFailed": "Couldn't reach the bank for {count} account. | Couldn't reach the bank for {count} accounts."
+        }
+      },
+      "stuckPending": {
+        "loadError": "Couldn't load stuck pending transactions.",
+        "emptyTitle": "No stuck pending transactions",
+        "emptyDescription": "Pending transactions older than 7 days show up here so you can resolve them.",
+        "checkWithBank": "Check with bank",
+        "summaryTooOld": "{count} row is still pending after a week. It's too old to check with your bank. | {count} rows are still pending after a week. They're too old to check with your bank.",
+        "checking": "Checking with bank…",
+        "checkAgain": "Check again",
+        "keepAsBooked": "Keep as booked",
+        "header": {
+          "title": "{count} transaction stuck in pending | {count} transactions stuck in pending",
+          "description": "Pending for more than a week in {count} account. | Pending for more than a week in {count} accounts.",
+          "titleChecked": "{count} transaction still pending | {count} transactions still pending",
+          "descriptionChecked": "Checked with your bank. Decide what to do with each one."
+        },
+        "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
+        "columns": {
+          "account": "Account",
+          "date": "Date",
+          "category": "Category",
+          "pendingFor": "Pending for",
+          "amount": "Amount",
+          "status": "Status",
+          "actions": "Actions"
+        },
+        "pendingDaysShort": "{count}d",
+        "status": {
+          "tooOld": "Too old to check",
+          "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
+          "duplicate": "Possible duplicate",
+          "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
+          "notFound": "Not found at bank",
+          "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
+        }
+      },
+      "history": {
+        "loadError": "Couldn't load reconciliation history.",
+        "emptyTitle": "No reconciliation history yet",
+        "emptyDescription": "Merged and removed transactions appear here so you can restore them.",
+        "type": {
+          "merge": "Merged",
+          "remove": "Removed"
+        },
+        "restore": "Restore",
+        "kept": "Kept",
+        "removedRows": "{count} removed transaction | {count} removed transactions"
+      }
+    }
+  }
+}

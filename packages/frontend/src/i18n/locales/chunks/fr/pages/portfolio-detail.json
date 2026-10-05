@@ -1,0 +1,156 @@
+{
+  "portfolioDetail": {
+    "loading": "Loading...",
+    "loadingDetails": "Loading portfolio details...",
+    "loadError": "Failed to load portfolio details.",
+    "tryAgain": "Try Again",
+    "notFoundTitle": "Portfolio not found",
+    "notFoundDescription": "We couldn't find this portfolio. It may have been deleted or you might not have access to it.",
+    "backToInvestments": "Back to Investments",
+    "subtitle": "Portfolio Overview",
+    "actions": {
+      "transfer": "Transfer",
+      "edit": "Edit",
+      "delete": "Delete",
+      "exchangeCurrency": "Exchange Currency"
+    },
+    "balance": {
+      "totalValue": "Total Value",
+      "baseCurrencyEquivalent": "≈ {value} in {code}",
+      "loadError": "Failed to load portfolio summary.",
+      "metrics": {
+        "costBasis": "Cost Basis",
+        "unrealized": "Unrealized",
+        "realized": "Realized",
+        "totalReturn": "Total Return"
+      }
+    },
+    "cashBalances": {
+      "title": "Cash Balances",
+      "emptyState": "No cash balances",
+      "tabs": {
+        "balances": "Balances",
+        "cashTransactions": "Transactions",
+        "buysSells": "Buys & Sells"
+      },
+      "cashTransactions": {
+        "addButton": "Add Cash Transaction",
+        "emptyState": "No cash transactions yet",
+        "deposit": "Deposit",
+        "withdrawal": "Withdrawal",
+        "transferIn": "Transfer In",
+        "transferOut": "Transfer Out",
+        "exchange": "Currency Exchange",
+        "deleteConfirm": "Delete this cash transaction?",
+        "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
+        "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
+        "deleteLinkedTransaction": "Also delete the linked account transaction",
+        "adjustmentBadge": "Adjustment",
+        "noCashBadge": "No cash impact",
+        "markedAsAdjustment": "Marked as a balance correction",
+        "markedAsContribution": "Marked as a real contribution",
+        "adjustmentError": "Failed to update this transfer",
+        "rowActions": "Transaction actions",
+        "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
+        "edit": "Edit",
+        "editDialog": {
+          "title": "Edit cash transaction",
+          "description": "Change how this transaction is treated in reports.",
+          "save": "Save changes"
+        }
+      },
+      "buysSells": {
+        "emptyState": "No buy/sell transactions",
+        "shares": "shares"
+      }
+    },
+    "holdings": {
+      "title": "Holdings",
+      "subtitle": "{count} symbols",
+      "filterPlaceholder": "Filter by symbol or name...",
+      "addButton": "Add Symbol",
+      "importButton": "Import transactions",
+      "importButtonShort": "Import"
+    },
+    "holdingsTable": {
+      "loadError": "Could not load holdings",
+      "empty": "No holdings yet",
+      "noFilterResults": "No matching holdings",
+      "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
+      "clearFilterButton": "Clear search",
+      "headers": {
+        "symbol": "Symbol",
+        "name": "Name",
+        "shares": "Shares",
+        "price": "Price",
+        "avgCostPerShare": "AC/Share",
+        "totalCost": "Total Cost",
+        "marketValue": "Market Value",
+        "unrealizedGain": "Unrealized Gain",
+        "realizedGain": "Realized Gain"
+      },
+      "transactions": {
+        "loading": "Loading transactions…",
+        "empty": "No transactions found.",
+        "addFirstButton": "Add first Transaction"
+      },
+      "closedPositions": "Closed positions ({count})",
+      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "deleteHolding": {
+        "ariaLabel": "Delete holding",
+        "title": "Delete holding",
+        "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
+        "confirmLabel": "Delete holding",
+        "success": "Holding deleted.",
+        "error": "Failed to delete the holding."
+      },
+      "addTransactionDialog": {
+        "title": "Add Transaction",
+        "description": "Add a new transaction to your portfolio."
+      },
+      "tryAgainLater": "Please try again later",
+      "emptyDescription": "Add your first transaction to start tracking your investments",
+      "addFirstHolding": "Add first holding",
+      "importTransactions": "Or import from a file"
+    },
+    "transactionsList": {
+      "title": "Transactions",
+      "addButton": "Add transaction",
+      "loadingMore": "Loading more transactions…",
+      "headers": {
+        "date": "Date",
+        "type": "Type",
+        "note": "Note",
+        "quantity": "Quantity",
+        "price": "Price",
+        "fees": "Fees",
+        "amount": "Amount",
+        "refAmount": "Base amount",
+        "refFees": "Base fees",
+        "settlementAmount": "Cash",
+        "settlementCurrency": "Cash ccy",
+        "settlementFees": "Cash fees",
+        "settlementRate": "FX rate",
+        "createdAt": "Added on"
+      },
+      "categories": {
+        "buy": "Buy",
+        "sell": "Sell",
+        "dividend": "Dividend",
+        "transfer": "Transfer",
+        "tax": "Tax",
+        "fee": "Fee",
+        "cancel": "Cancel",
+        "other": "Other"
+      },
+      "headerTooltips": {
+        "amount": "Transaction total in the security's trading currency.",
+        "refAmount": "Transaction total converted to your base currency.",
+        "settlementAmount": "Cash actually paid or received in your account, in its settlement currency."
+      },
+      "deleteTransaction": {
+        "tooltip": "Delete transaction"
+      }
+    }
+  }
+}

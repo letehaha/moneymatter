@@ -126,6 +126,7 @@
         "title": "Arus Kas",
         "description": "Menunjukkan tabungan bersih Anda: pemasukan dikurangi pengeluaran untuk periode yang dipilih, dengan tren periode sebelumnya",
         "vsPrevious": "vs sebelumnya",
+        "notAvailable": "N/A",
         "income": "Pemasukan",
         "expenses": "Pengeluaran",
         "saved": "Ditabung",

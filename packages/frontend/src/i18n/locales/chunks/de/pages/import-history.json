@@ -2,24 +2,27 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Import History",
-        "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
-        "loadError": "Couldn't load your import history.",
-        "emptyTitle": "No imports yet",
-        "emptyDescription": "Once you import transactions, they'll show up here.",
+        "pageTitle": "Importverlauf",
+        "pageDescription": "Sieh deine vergangenen Importe ein und prüfe genau, welche Konten und Transaktionen jeweils erstellt wurden.",
+        "loadError": "Dein Importverlauf konnte nicht geladen werden.",
+        "emptyTitle": "Noch keine Importe",
+        "emptyDescription": "Sobald du Transaktionen importierst, werden sie hier angezeigt.",
         "emptyAction": "Daten importieren",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "transactionCount": "{count} Transaktion | {count} Transaktionen",
         "accountCount": "{count} Konto | {count} Konten",
-        "deleteButton": "Delete import",
-        "deleteConfirmTitle": "Delete this import batch?",
-        "deleteConfirmDescription": "This will permanently delete {count} transaction from this import. This action cannot be undone. | This will permanently delete {count} transactions from this import. This action cannot be undone.",
-        "deleteSuccessMessage": "Deleted {count} transaction | Deleted {count} transactions",
-        "deleteUnexpectedError": "Something went wrong while deleting the import batch. Please try again.",
-        "deleteLinkedTransfersWarningTitle": "This import is linked to another transaction",
-        "deleteLinkedTransfersCheckbox": "Also delete the linked transfer transaction",
-        "deleteLinkedTransfersDescription": "By default, any transaction linked to this import as a transfer is only unlinked, not deleted. Checking this box will permanently delete it too — this cannot be undone.",
-        "deleteLinkedTransfersConfirmTitle": "Delete the linked transaction too?",
-        "deleteLinkedTransfersConfirmDescription": "You're about to permanently delete a transaction outside this import batch, not just unlink it. This action cannot be undone."
+        "deleteButton": "Import löschen",
+        "deleteConfirmTitle": "Diesen Import löschen?",
+        "deleteConfirmDescription": "Dies wird {count} Transaktion aus diesem Import dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden. | Dies wird {count} Transaktionen aus diesem Import dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "deleteConfirmDescriptionNoTransactions": "Die Transaktionen aus diesem Import wurden bereits gelöscht. Dies entfernt den verbleibenden Rest des Imports, einschließlich aller Saldenanpassungen, die an deinen Konten vorgenommen wurden.",
+        "deleteConfirmCreatedAccountsNote": "Durch diesen Import erstellte Konten werden ebenfalls entfernt, wenn sie keine anderen Transaktionen enthalten.",
+        "deleteSuccessMessage": "{count} Transaktion gelöscht | {count} Transaktionen gelöscht",
+        "deleteSuccessNoTransactions": "Import gelöscht",
+        "deleteUnexpectedError": "Beim Löschen des Imports ist etwas schiefgelaufen. Bitte versuche es erneut.",
+        "deleteLinkedTransfersWarningTitle": "Dieser Import ist mit einer anderen Transaktion verknüpft",
+        "deleteLinkedTransfersCheckbox": "Auch die verknüpfte Umbuchungstransaktion löschen",
+        "deleteLinkedTransfersDescription": "Standardmäßig wird jede Transaktion, die mit diesem Import als Umbuchung verknüpft ist, nur getrennt, nicht gelöscht. Wenn du dieses Kontrollkästchen aktivierst, wird sie ebenfalls dauerhaft gelöscht – dies kann nicht rückgängig gemacht werden.",
+        "deleteLinkedTransfersConfirmTitle": "Verknüpfte Transaktion ebenfalls löschen?",
+        "deleteLinkedTransfersConfirmDescription": "Du bist dabei, eine Transaktion außerhalb dieses Import-Stapels dauerhaft zu löschen, statt nur ihre Verknüpfung aufzuheben. Diese Aktion kann nicht rückgängig gemacht werden."
       }
     }
   }

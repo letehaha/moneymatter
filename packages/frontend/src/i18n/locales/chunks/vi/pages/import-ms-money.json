@@ -40,7 +40,7 @@
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },
           "categories": {
-            "sectionTitle": "Categories"
+            "sectionTitle": "Danh mục"
           },
           "quickActions": {
             "mapExactMatches": "Map exact matches",
@@ -90,7 +90,7 @@
           "importButton": "Import {count} transactions"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Đang bắt đầu nhập…",
           "progressCount": "{processed} of {total}",
           "failed": "The import failed.",
           "partialImportNote": "Some transactions may already have been imported.",
@@ -108,13 +108,13 @@
           "emptyDescription": "Every row was either skipped or already in your ledger, so no transactions were created.",
           "allFailedTitle": "Nothing was imported",
           "allFailedDescription": "No transactions could be created. See the errors below.",
-          "accountsCreated": "Accounts created",
+          "accountsCreated": "Tài khoản đã tạo",
           "accountsLinked": "Accounts linked",
           "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
+          "categoriesCreated": "Danh mục đã tạo",
+          "payeesCreated": "Người nhận đã tạo",
+          "transactionsImported": "Giao dịch đã nhập",
+          "transfersImported": "Giao dịch chuyển khoản đã nhập",
           "outOfWalletImported": "Out-of-wallet transfers",
           "duplicatesSkipped": "Duplicates skipped",
           "voidedImported": "Voided imported",
@@ -123,14 +123,14 @@
           "balanceWarningBody": "We couldn't set the final balance on every account. Check them and adjust if needed.",
           "errorsTitle": "{count} row(s) could not be imported",
           "errorsOverflow": "…and {count} more",
-          "rowPrefix": "Row {rowIndex}:",
+          "rowPrefix": "Dòng {rowIndex}:",
           "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "importAnother": "Nhập tệp khác"
         },
         "leaseExpired": {
           "title": "Your uploaded file is no longer available",
           "description": "The parsed copy of your Money file was released after a period of inactivity. Your mapping choices could not be kept, so the import needs to start from the upload step again.",
-          "action": "Start over"
+          "action": "Bắt đầu lại"
         },
         "leaseResourceLabel": "Your uploaded file"
       }

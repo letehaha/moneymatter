@@ -2,74 +2,74 @@
   "pages": {
     "household": {
       "title": "Hộ gia đình",
-      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "description": "Mời những người bạn tin tưởng cùng truy cập tất cả tài khoản bạn sở hữu. Thành viên có thể xem các tài khoản của bạn và (nếu có quyền chỉnh sửa) ghi nhận giao dịch trên đó.",
       "myHousehold": {
-        "title": "My household",
-        "description": "People here get access to every account you own. Per-account shares always override household access."
+        "title": "Hộ gia đình của tôi",
+        "description": "Những người ở đây có quyền truy cập vào mọi tài khoản bạn sở hữu. Quyền chia sẻ riêng theo từng tài khoản luôn được ưu tiên hơn quyền truy cập qua hộ gia đình."
       },
-      "youOwner": "You — owner",
-      "noMembers": "No one has joined your household yet.",
-      "loadMembersError": "Couldn't load household members. Try refreshing.",
+      "youOwner": "Bạn — chủ hộ",
+      "noMembers": "Chưa có ai tham gia hộ gia đình của bạn.",
+      "loadMembersError": "Không tải được thành viên hộ gia đình. Hãy thử tải lại trang.",
       "permissions": {
         "read": "Xem",
         "write": "Chỉnh sửa",
         "manage": "Quản lý"
       },
       "writeScope": {
-        "all": "Can edit any transaction",
-        "own": "Can edit only their own transactions"
+        "all": "Có thể chỉnh sửa bất kỳ giao dịch nào",
+        "own": "Chỉ có thể chỉnh sửa giao dịch do họ tạo"
       },
       "invite": {
         "emailLabel": "Email",
         "emailPlaceholder": "person{'@'}example.com",
-        "permissionLabel": "Permission",
-        "writeScopeLabel": "Write scope",
-        "submit": "Send household invite",
-        "sent": "Invitation sent.",
-        "error": "Couldn't send the invitation.",
-        "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
+        "permissionLabel": "Quyền",
+        "writeScopeLabel": "Phạm vi chỉnh sửa",
+        "submit": "Gửi lời mời vào hộ gia đình",
+        "sent": "Đã gửi lời mời.",
+        "error": "Không gửi được lời mời.",
+        "emailDeliveryFailed": "Lời mời đã được tạo nhưng không gửi được email. Bạn có thể gửi lại lời mời trong mục Lời mời."
       },
       "revoke": {
-        "action": "Remove",
-        "title": "Remove household member?",
-        "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
-        "confirm": "Remove",
-        "success": "Member removed.",
-        "error": "Couldn't remove this member."
+        "action": "Xóa",
+        "title": "Xóa thành viên khỏi hộ gia đình?",
+        "description": "{handle} sẽ mất quyền truy cập vào mọi tài khoản trong hộ gia đình của bạn. Quyền chia sẻ riêng theo từng tài khoản (nếu có) không bị ảnh hưởng.",
+        "confirm": "Xóa",
+        "success": "Đã xóa thành viên.",
+        "error": "Không xóa được thành viên này."
       },
       "permissionChange": {
-        "setRead": "Make read-only",
-        "setWrite": "Allow writes",
-        "success": "Permission updated.",
-        "error": "Couldn't update permission."
+        "setRead": "Đặt thành chỉ đọc",
+        "setWrite": "Cho phép chỉnh sửa",
+        "success": "Đã cập nhật quyền.",
+        "error": "Không cập nhật được quyền."
       },
       "imIn": {
-        "title": "Households I'm in",
-        "description": "Other people's households you've joined. Leaving drops your access to every account they shared this way.",
-        "empty": "You haven't joined anyone else's household.",
-        "unnamedHousehold": "{'@'}{handle}'s household",
-        "loadError": "Couldn't load the households you're in. Try again later."
+        "title": "Hộ gia đình tôi tham gia",
+        "description": "Hộ gia đình của người khác mà bạn đã tham gia. Khi rời khỏi, bạn sẽ mất quyền truy cập vào mọi tài khoản họ đã chia sẻ qua hộ gia đình đó.",
+        "empty": "Bạn chưa tham gia hộ gia đình nào của người khác.",
+        "unnamedHousehold": "Hộ gia đình của {'@'}{handle}",
+        "loadError": "Không tải được các hộ gia đình bạn tham gia. Hãy thử lại sau."
       },
       "leave": {
         "action": "Rời",
-        "title": "Leave this household?",
-        "description": "You'll lose access to every account {owner} shares through their household. Per-account shares (if any) are unaffected.",
+        "title": "Rời khỏi hộ gia đình này?",
+        "description": "Bạn sẽ mất quyền truy cập vào mọi tài khoản mà {owner} chia sẻ qua hộ gia đình. Quyền chia sẻ riêng theo từng tài khoản (nếu có) không bị ảnh hưởng.",
         "confirm": "Rời",
-        "success": "You left the household.",
-        "error": "Couldn't leave the household."
+        "success": "Bạn đã rời khỏi hộ gia đình.",
+        "error": "Không rời khỏi hộ gia đình được."
       },
       "pending": {
-        "badge": "Pending",
-        "resend": "Resend",
+        "badge": "Đang chờ",
+        "resend": "Gửi lại",
         "cancel": "Hủy",
-        "cancelTitle": "Cancel invitation?",
-        "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
-        "cancelConfirm": "Cancel invitation",
-        "cancelSuccess": "Invitation cancelled.",
-        "cancelError": "Failed to cancel invitation.",
-        "resendSuccess": "Invitation resent.",
-        "resendError": "Failed to resend invitation.",
-        "resendDeliveryFailed": "Invitation updated, but the email could not be sent. Try again later."
+        "cancelTitle": "Hủy lời mời?",
+        "cancelDescription": "Hủy lời mời đang chờ gửi đến {email}? Người nhận sẽ không thể chấp nhận lời mời nữa.",
+        "cancelConfirm": "Hủy lời mời",
+        "cancelSuccess": "Đã hủy lời mời.",
+        "cancelError": "Không hủy được lời mời.",
+        "resendSuccess": "Đã gửi lại lời mời.",
+        "resendError": "Không gửi lại lời mời được.",
+        "resendDeliveryFailed": "Đã cập nhật lời mời nhưng không gửi được email. Hãy thử lại sau."
       }
     }
   }

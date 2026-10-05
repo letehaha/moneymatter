@@ -1,26 +1,26 @@
 {
   "settings": {
     "navigation": {
-      "currencies": "Currencies",
+      "currencies": "Währungen",
       "categories": "Kategorien",
       "tags": "Tags",
-      "accountsGroups": "Accounts groups",
+      "accountsGroups": "Kontengruppen",
       "importData": "Import/Export",
-      "ai": "AI",
-      "security": "Security",
+      "ai": "KI",
+      "security": "Sicherheit",
       "admin": "Admin",
       "sharedWithMe": "Mit mir geteilt",
-      "household": "Household",
-      "personalGroup": "Personal",
-      "workspaceGroup": "Workspace",
-      "appearance": "Appearance",
-      "language": "Language",
+      "household": "Haushalt",
+      "personalGroup": "Persönlich",
+      "workspaceGroup": "Arbeitsbereich",
+      "appearance": "Erscheinungsbild",
+      "language": "Sprache",
       "general": "Allgemein",
-      "payees": "Payees",
-      "subscriptions": "Scheduled payments",
-      "planBilling": "Plan & billing",
-      "collapse": "Collapse"
+      "payees": "Zahlungsempfänger",
+      "subscriptions": "Geplante Zahlungen",
+      "planBilling": "Tarif & Abrechnung",
+      "collapse": "Einklappen"
     },
-    "backToSettings": "Back to Settings"
+    "backToSettings": "Zurück zu den Einstellungen"
   }
 }

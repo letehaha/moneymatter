@@ -559,7 +559,7 @@
       "title": "Priložiť faktúru",
       "description": "Pustite sem faktúru alebo účtenku. Prečítame celkovú sumu, dátum a obchodníka a nájdeme transakciu, ku ktorej patrí.",
       "resultsTitle": "Vyberte transakciu",
-      "resultsDescription": "Tejto faktúre nezodpovedá žiadna transakcia. | K tejto faktúre by mohla patriť {count} transakcia. | K tejto faktúre by mohlo patriť {count} transakcií.",
+      "resultsDescription": "K tejto faktúre by mohla patriť {count} transakcia. | K tejto faktúre by mohli patriť {count} transakcie. | K tejto faktúre by mohlo patriť {count} transakcií.",
       "analyzing": "Čítanie faktúry a vyhľadávanie vo vašich transakciách...",
       "attaching": "Prikladanie faktúry k transakcii...",
       "privacyNote": "Súbor sa pošle poskytovateľovi AI len na prečítanie. Nič sa neuloží, kým ho neprepojíte s transakciou.",

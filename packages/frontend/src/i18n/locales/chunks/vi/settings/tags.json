@@ -26,7 +26,7 @@
       "delete": {
         "title": "Delete tag?",
         "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
-        "deleteButton": "Delete",
+        "deleteButton": "Xóa",
         "cancelButton": "Hủy"
       },
       "notifications": {
@@ -81,7 +81,7 @@
         "delete": {
           "title": "Delete reminder?",
           "description": "This will permanently delete this reminder. This action cannot be undone.",
-          "deleteButton": "Delete",
+          "deleteButton": "Xóa",
           "cancelButton": "Hủy"
         },
         "notifications": {

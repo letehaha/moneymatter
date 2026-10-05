@@ -2,88 +2,88 @@
   "settings": {
     "general": {
       "title": "Allgemein",
-      "description": "Control how your financial data is calculated and displayed across the app.",
+      "description": "Steuere, wie deine Finanzdaten in der App berechnet und angezeigt werden.",
       "creditLimit": {
-        "label": "Kreditrahmen in Salden einbeziehen",
-        "description": "Wenn aktiviert, werden Kreditlimits von den Kontosalden in Statistiken und dem Saldo-Entwicklungs-Diagramm abgezogen. Dies zeigt deine aktuelle finanzielle Lage statt verfügbarem Guthaben.",
-        "successNotification": "Setting updated successfully",
-        "errorNotification": "Failed to update setting"
+        "label": "Kreditlimits im Kontostand berücksichtigen",
+        "description": "Wenn aktiviert, werden Kreditlimits in den Statistiken und im Saldenverlaufs-Diagramm von den Kontoständen abgezogen. Dies zeigt deine tatsächliche Finanzlage anstelle des verfügbaren Kredits.",
+        "successNotification": "Einstellung erfolgreich aktualisiert",
+        "errorNotification": "Einstellung konnte nicht aktualisiert werden"
       },
       "manualTransferMatching": {
-        "label": "Match transfers with manual accounts",
-        "description": "Allow automatically detected transfers to link a synced bank transaction with one you created manually.",
-        "successNotification": "Transfer matching setting updated",
-        "errorNotification": "Failed to update transfer matching setting"
+        "label": "Umbuchungen mit manuellen Konten abgleichen",
+        "description": "Ermögliche es automatisch erkannten Umbuchungen, eine synchronisierte Banktransaktion mit einer manuell erstellten Transaktion zu verknüpfen.",
+        "successNotification": "Einstellung für den Umbuchungsabgleich aktualisiert",
+        "errorNotification": "Einstellung für den Umbuchungsabgleich konnte nicht aktualisiert werden"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
-        "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "label": "Ausstehende Banktransaktionen importieren",
+        "description": "Speichere Enable Banking-Transaktionen, bevor die Bank sie bucht. Sie werden als ausstehend markiert, verändern nie den Kontostand und enthalten oft bis zur Buchung keine Händlerdetails. Andere Anbieter sind nicht betroffen: SimpleFIN und LunchFlow importieren immer nur gebuchte Transaktionen, und Monobank importiert jede Transaktion als reguläre Transaktion.",
+        "successNotification": "Einstellung für ausstehende Transaktionen aktualisiert",
+        "errorNotification": "Einstellung für ausstehende Transaktionen konnte nicht aktualisiert werden"
       },
       "quickStart": {
-        "label": "Quick Start guide",
-        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+        "label": "Schnellstart-Leitfaden",
+        "description": "Zeige die Onboarding-Checkliste auf dem Dashboard an. Schalte sie aus, um den Leitfaden auszublenden; schalte sie jederzeit wieder ein, um ihn zurückzuholen."
       },
       "savingsCategories": {
-        "label": "Count categories as savings",
-        "description": "Spending in these categories (and their subcategories) is excluded from expenses in cash-flow analytics, so it counts toward monthly savings and the savings rate.",
-        "successNotification": "Savings categories updated",
-        "errorNotification": "Failed to update savings categories"
+        "label": "Kategorien als Ersparnisse zählen",
+        "description": "Ausgaben in diesen Kategorien (und ihren Unterkategorien) werden in den Cashflow-Analysen von den Ausgaben ausgeschlossen, sodass sie zu den monatlichen Ersparnissen und der Sparquote zählen.",
+        "successNotification": "Spar-Kategorien aktualisiert",
+        "errorNotification": "Spar-Kategorien konnten nicht aktualisiert werden"
       },
       "accountDropdowns": {
         "defaultAccount": {
-          "label": "Default account",
-          "description": "Pre-selected when you create a transaction.",
-          "placeholder": "No default — first account"
+          "label": "Standardkonto",
+          "description": "Vorausgewählt, wenn du eine Transaktion erstellst.",
+          "placeholder": "Kein Standard — erstes Konto"
         },
         "showArchived": {
-          "label": "Show archived accounts",
-          "description": "When off, archived accounts are hidden from account pickers."
+          "label": "Archivierte Konten anzeigen",
+          "description": "Wenn ausgeschaltet, werden archivierte Konten in der Kontoauswahl ausgeblendet."
         },
-        "successNotification": "Account dropdown settings updated",
-        "errorNotification": "Failed to update account dropdown settings"
+        "successNotification": "Einstellungen für Konto-Dropdowns aktualisiert",
+        "errorNotification": "Einstellungen für Konto-Dropdowns konnten nicht aktualisiert werden"
       },
       "showUpcomingTransactions": {
-        "label": "Show upcoming transactions",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
-        "successNotification": "Upcoming transactions setting updated",
-        "errorNotification": "Failed to update upcoming transactions setting"
+        "label": "Anstehende Transaktionen anzeigen",
+        "description": "Hefte einen Abschnitt mit überfälligen geplanten Zahlungen und solchen, die in den nächsten 3 Tagen fällig sind, oben in der Transaktionsliste an.",
+        "successNotification": "Einstellung für anstehende Transaktionen aktualisiert",
+        "errorNotification": "Einstellung für anstehende Transaktionen konnte nicht aktualisiert werden"
       },
       "transactionFields": {
-        "label": "Optional transaction fields",
-        "description": "Extra fields shown in the transaction form. A field that already has a value is always shown.",
-        "successNotification": "Transaction fields updated",
-        "errorNotification": "Unexpected error happened. Setting not saved",
+        "label": "Optionale Transaktionsfelder",
+        "description": "Zusätzliche Felder, die im Transaktionsformular angezeigt werden. Ein Feld, das bereits einen Wert hat, wird immer angezeigt.",
+        "successNotification": "Transaktionsfelder aktualisiert",
+        "errorNotification": "Ein unerwarteter Fehler ist aufgetreten. Einstellung nicht gespeichert",
         "fields": {
           "externalUrl": {
             "label": "Externe URL",
-            "description": "Link the transaction to an order page, booking confirmation or receipt."
+            "description": "Verknüpfe die Transaktion mit einer Bestellseite, Buchungsbestätigung oder einem Beleg."
           },
           "externalReference": {
             "label": "Externe Referenz",
-            "description": "Keep an order number, invoice number or booking reference with the transaction."
+            "description": "Speichere eine Bestellnummer, Rechnungsnummer oder Buchungsreferenz bei der Transaktion."
           },
           "originalAmount": {
-            "label": "Original amount",
-            "description": "The amount actually charged in another currency, when it differs from the account's currency."
+            "label": "Ursprünglicher Betrag",
+            "description": "Der tatsächlich in einer anderen Währung abgebuchte Betrag, wenn er von der Kontowährung abweicht."
           },
           "location": {
             "label": "Standort",
-            "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
+            "description": "GPS-Koordinaten des Ortes, an dem der Kauf stattgefunden hat. Übernehme den Standort deines Geräts oder gib ihn manuell ein"
           }
         },
         "mapPicker": {
-          "label": "Map picker",
-          "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
+          "label": "Kartenauswahl",
+          "description": "Wähle Transaktionsstandorte auf einer Karte aus und suche nach Adressen. Kartenkacheln und Suche stammen von OpenStreetMap, das deine IP-Adresse erhält, wenn sich die Karte öffnet."
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Standard-Zahlungsart",
+        "description": "Vorausgewählt, wenn du eine neue Transaktion hinzufügst.",
+        "placeholder": "Wähle eine Zahlungsart aus",
+        "successNotification": "Standard-Zahlungsart aktualisiert",
+        "errorNotification": "Standard-Zahlungsart konnte nicht aktualisiert werden"
       }
     }
   }

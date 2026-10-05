@@ -1,0 +1,270 @@
+{
+  "transactions": {
+    "filters": {
+      "filtersLabel": "Filters",
+      "selectFilters": "Select filters",
+      "reset": "Reset",
+      "apply": "Apply",
+      "dateRange": {
+        "placeholder": "Date or range",
+        "presets": {
+          "thisMonth": "This month",
+          "last3Months": "Last 3 months",
+          "last6Months": "Last 6 months",
+          "last12Months": "Last 12 months"
+        }
+      },
+      "transactionType": {
+        "label": "Transaction type:",
+        "income": "Income",
+        "expense": "Expense",
+        "allTypes": "All types"
+      },
+      "amountRange": {
+        "from": "Amount from (gte)",
+        "to": "To (lte)",
+        "placeholderFrom": ">= than",
+        "placeholderTo": "<= than",
+        "compactFrom": "Min amount",
+        "compactTo": "Max amount"
+      },
+      "refundsFilter": {
+        "label": "Refunds"
+      },
+      "transferFilter": {
+        "label": "Transfers"
+      },
+      "plannedFilter": {
+        "label": "Planned"
+      },
+      "attachments": {
+        "label": "Attachments"
+      },
+      "filterOperation": {
+        "all": "All",
+        "exclude": "Exclude",
+        "only": "Only"
+      },
+      "noteIncludes": {
+        "label": "Note includes (comma-separated):",
+        "placeholder": "Amazon,nike",
+        "compactPlaceholder": "Search in notes"
+      },
+      "tags": {
+        "allTags": "All tags",
+        "tagSingular": "tag",
+        "tagPlural": "tags",
+        "selected": "selected",
+        "searchPlaceholder": "Search tags...",
+        "blankOption": "No tags"
+      },
+      "payees": {
+        "label": "Payees",
+        "selectedOne": "1 Payee selected",
+        "selectedMany": "{n} Payees selected"
+      },
+      "removeFilter": "Remove filter",
+      "menu": {
+        "type": "Type",
+        "tags": "Tags",
+        "budgets": "Budgets",
+        "amount": "Amount range",
+        "note": "Notes"
+      },
+      "transferNature": {
+        "label": "Transfer kinds",
+        "disabledTooltip": "Transfers are excluded by the filter above, so transfer kinds have no effect.",
+        "commonTransfer": "Between accounts",
+        "outOfWallet": "Out of wallet",
+        "toPortfolio": "To portfolio",
+        "toVenture": "To venture",
+        "selectedCount": "{n} selected"
+      }
+    },
+    "list": {
+      "noMoreData": "No more transactions",
+      "loadingMore": "Loading more...",
+      "detailsTitle": "Transaction details",
+      "detailsDescription": "View and edit transaction"
+    },
+    "bulkEdit": {
+      "selectAll": "Select all",
+      "cancelSelection": "Cancel selection",
+      "editButton": "Edit",
+      "selectedCount": "{count} selected",
+      "dialogTitle": "Edit {count} transactions",
+      "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
+      "categoryLabel": "Category",
+      "categoryPlaceholder": "Select category...",
+      "payeeLabel": "Payee",
+      "payeePlaceholder": "Select payee...",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Select tags...",
+      "noteLabel": "Note",
+      "notePlaceholder": "Enter note...",
+      "applyButton": "Apply changes",
+      "applyingButton": "Applying...",
+      "confirmTitle": "Confirm changes",
+      "confirmDescription": "You are about to update {count} transactions:",
+      "confirmCategoryLabel": "Category",
+      "confirmPayeeLabel": "Payee",
+      "confirmTagsLabel": "Tags",
+      "confirmNoteLabel": "Note",
+      "cancelButton": "Cancel",
+      "confirmApplyButton": "Apply",
+      "successMessage": "Successfully updated {count} transactions",
+      "unexpectedError": "An unexpected error occurred",
+      "tagModeLabel": "Tag action",
+      "tagModeAdd": "Add to existing tags",
+      "tagModeReplace": "Replace all tags",
+      "tagModeRemove": "Remove these tags",
+      "totals": {
+        "income": "Income",
+        "expense": "Expense",
+        "net": "Net",
+        "transfers": "Transfers"
+      }
+    },
+    "transactionGroups": {
+      "bulkActions": {
+        "createNewGroup": "Create new group",
+        "addToExistingGroup": "Add to existing group",
+        "groupButton": "Group"
+      },
+      "addToGroupDialog": {
+        "title": "Add to existing group",
+        "searchPlaceholder": "Search groups...",
+        "noGroupsMessage": "No groups yet. Create one first.",
+        "noSearchResultsMessage": "No groups match your search.",
+        "addingText": "Adding...",
+        "buttonLabel": "Add to Group",
+        "cancelButton": "Cancel",
+        "transactionCountLabel": "transactions"
+      },
+      "createGroupDialog": {
+        "title": "Create Transaction Group",
+        "descriptionPrefix": "Group",
+        "groupNameLabel": "Name",
+        "groupNamePlaceholder": "e.g. May salary transfer",
+        "noteLabel": "Note (optional)",
+        "notePlaceholder": "Optional description...",
+        "creatingText": "Creating...",
+        "buttonLabel": "Create Group",
+        "cancelButton": "Cancel"
+      },
+      "groupsPage": {
+        "title": "Transaction Groups",
+        "searchPlaceholder": "Search groups...",
+        "noGroupsMessage": "No transaction groups yet.",
+        "emptyStateHint": "Select transactions on the Transactions page and click \"Create Group\" to get started.",
+        "transactionCountLabel": "transactions",
+        "deleteError": "Failed to delete the group. Please try again."
+      },
+      "errors": {
+        "nameRequired": "Group name is required",
+        "minTransactions": "Select at least {min} transactions",
+        "alreadyInGroup": "Some selected transactions already belong to a group",
+        "createFailed": "Failed to create group",
+        "addFailed": "Failed to add transactions to group"
+      }
+    },
+    "planned": {
+      "label": "Planned",
+      "confirmedLabel": "Confirmed",
+      "plannedTooltip": "Planned transaction",
+      "expiredTooltip": "Expected {days} days ago, no matching bank transaction",
+      "mergedTooltip": "Confirmed from planned entry on {date}"
+    },
+    "pending": {
+      "label": "Pending",
+      "tooltip": "The bank hasn't booked this transaction yet. It doesn't affect the account balance."
+    },
+    "table": {
+      "columns": {
+        "date": "Date",
+        "account": "Account",
+        "category": "Category",
+        "payee": "Payee",
+        "amount": "Amount",
+        "refAmount": "Base amount",
+        "originalAmount": "Original amount",
+        "note": "Note",
+        "tags": "Tags",
+        "categorizationSource": "Categorized by",
+        "group": "Group",
+        "refund": "Refund",
+        "split": "Split"
+      },
+      "outOfWallet": "Out of wallet",
+      "hint": "Click a cell to edit it, or ↗ to open the full transaction. Select rows to bulk edit.",
+      "plannedRows": "{count} planned transactions",
+      "emptyTitle": "No transactions match these filters",
+      "emptyDescription": "Try adjusting or resetting the filters.",
+      "columnConfig": {
+        "title": "Table settings",
+        "columns": "Columns",
+        "visibleCount": "{count} visible",
+        "resetDefaults": "Reset to defaults",
+        "alwaysShowLockedCells": {
+          "label": "Always show locked cells",
+          "description": "Shade cells you can't edit here on every row, not only on hover."
+        }
+      },
+      "categorizationSourceValues": {
+        "manual": "Manual",
+        "ai": "AI",
+        "mcc_rule": "MCC rule",
+        "user_rule": "User rule",
+        "subscription_rule": "Subscription rule",
+        "payee_rule": "Payee rule"
+      },
+      "viewToggle": {
+        "list": "List view",
+        "table": "Table view"
+      },
+      "fullscreen": {
+        "enter": "Focus mode",
+        "exit": "Exit focus mode"
+      }
+    },
+    "bulkDelete": {
+      "button": "Delete",
+      "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
+      "confirmButton": "Delete",
+      "confirmTitle": "Delete {count} transactions?",
+      "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
+      "successMessage": "{count} transactions deleted",
+      "unexpectedError": "Failed to delete transactions. Please try again."
+    },
+    "inlineEdit": {
+      "saveFailed": "Couldn't save {field}. Try again.",
+      "bankTitle": "Set by your bank",
+      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
+      "managedTitle": "Managed elsewhere",
+      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "gotIt": "Got it",
+      "openDetails": "Open details",
+      "tooManyTags": "Up to {max} tags per transaction"
+    }
+  },
+  "records": {
+    "upcomingSection": {
+      "title": "Upcoming",
+      "overdueBadge": "Overdue",
+      "scheduledBadge": "Scheduled",
+      "payAction": "Mark paid",
+      "hideToggle": "Hide upcoming payments",
+      "expectedBadge": "Expected",
+      "unconfirmedBadge": "Unconfirmed",
+      "morePlans": "+{count} more planned",
+      "morePlansAtLeast": "+{count}+ more planned",
+      "deletePlanTitle": "Delete planned transaction?",
+      "deletePlanDescription": "This action cannot be undone.",
+      "plansLoadFailed": "Couldn't load planned transactions",
+      "confirmAction": "Confirm",
+      "confirmTooltip": "The money moved — record it and update the balance",
+      "confirmPlanSuccess": "Plan recorded — balance updated",
+      "confirmPlanError": "Failed to record the plan"
+    }
+  }
+}

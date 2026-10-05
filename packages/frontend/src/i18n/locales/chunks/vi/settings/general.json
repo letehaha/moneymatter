@@ -1,7 +1,7 @@
 {
   "settings": {
     "general": {
-      "title": "General",
+      "title": "Tổng quan",
       "description": "Kiểm soát cách dữ liệu tài chính của bạn được tính toán và hiển thị trong toàn bộ ứng dụng.",
       "creditLimit": {
         "label": "Tính hạn mức tín dụng vào số dư",
@@ -10,80 +10,80 @@
         "errorNotification": "Không cập nhật được cài đặt"
       },
       "manualTransferMatching": {
-        "label": "Match transfers with manual accounts",
-        "description": "Allow automatically detected transfers to link a synced bank transaction with one you created manually.",
-        "successNotification": "Transfer matching setting updated",
-        "errorNotification": "Failed to update transfer matching setting"
+        "label": "Tự động đối chiếu giao dịch chuyển khoản với tài khoản thủ công",
+        "description": "Cho phép các giao dịch chuyển khoản được phát hiện tự động liên kết các giao dịch ngân hàng đã đồng bộ với các giao dịch bạn tạo thủ công.",
+        "successNotification": "Đã cập nhật cài đặt đối chiếu giao dịch chuyển khoản",
+        "errorNotification": "Không cập nhật được cài đặt đối chiếu giao dịch chuyển khoản"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
-        "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "label": "Nhập giao dịch ngân hàng đang chờ xử lý",
+        "description": "Lưu giao dịch Enable Banking trước khi ngân hàng ghi sổ. Các giao dịch này được đánh dấu đang chờ xử lý, không làm thay đổi số dư tài khoản và thường chưa có thông tin người bán cho đến khi được ghi sổ. Cài đặt này không ảnh hưởng đến các nhà cung cấp khác: SimpleFIN và LunchFlow chỉ nhập giao dịch đã ghi sổ, còn Monobank nhập mọi giao dịch dưới dạng giao dịch thông thường.",
+        "successNotification": "Đã cập nhật cài đặt giao dịch đang chờ xử lý",
+        "errorNotification": "Không cập nhật được cài đặt giao dịch đang chờ xử lý"
       },
       "quickStart": {
-        "label": "Quick Start guide",
-        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+        "label": "Hướng dẫn bắt đầu nhanh",
+        "description": "Hiển thị danh sách kiểm tra thiết lập ban đầu trên bảng điều khiển. Tắt để ẩn hướng dẫn hoặc bật lại bất cứ lúc nào để hiển thị lại."
       },
       "savingsCategories": {
-        "label": "Count categories as savings",
-        "description": "Spending in these categories (and their subcategories) is excluded from expenses in cash-flow analytics, so it counts toward monthly savings and the savings rate.",
-        "successNotification": "Savings categories updated",
-        "errorNotification": "Failed to update savings categories"
+        "label": "Tính các danh mục là khoản tiết kiệm",
+        "description": "Khoản chi trong các danh mục này (và danh mục con) sẽ không được tính là chi tiêu trong phân tích dòng tiền, nhờ đó được tính vào khoản tiết kiệm hàng tháng và tỷ lệ tiết kiệm.",
+        "successNotification": "Đã cập nhật danh mục tiết kiệm",
+        "errorNotification": "Không cập nhật được danh mục tiết kiệm"
       },
       "accountDropdowns": {
         "defaultAccount": {
-          "label": "Default account",
-          "description": "Pre-selected when you create a transaction.",
-          "placeholder": "No default — first account"
+          "label": "Tài khoản mặc định",
+          "description": "Được chọn sẵn khi bạn tạo giao dịch.",
+          "placeholder": "Không đặt mặc định — tài khoản đầu tiên"
         },
         "showArchived": {
-          "label": "Show archived accounts",
-          "description": "When off, archived accounts are hidden from account pickers."
+          "label": "Hiển thị tài khoản đã lưu trữ",
+          "description": "Khi tắt, các tài khoản đã lưu trữ sẽ bị ẩn khỏi danh sách chọn tài khoản."
         },
-        "successNotification": "Account dropdown settings updated",
-        "errorNotification": "Failed to update account dropdown settings"
+        "successNotification": "Đã cập nhật cài đặt danh sách tài khoản",
+        "errorNotification": "Không cập nhật được cài đặt danh sách tài khoản"
       },
       "showUpcomingTransactions": {
-        "label": "Show upcoming transactions",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
-        "successNotification": "Upcoming transactions setting updated",
-        "errorNotification": "Failed to update upcoming transactions setting"
+        "label": "Hiển thị giao dịch sắp tới",
+        "description": "Ghim một mục ở đầu danh sách giao dịch, gồm các khoản thanh toán định kỳ quá hạn và sắp đến hạn trong 3 ngày tới.",
+        "successNotification": "Đã cập nhật cài đặt giao dịch sắp tới",
+        "errorNotification": "Không cập nhật được cài đặt giao dịch sắp tới"
       },
       "transactionFields": {
-        "label": "Optional transaction fields",
-        "description": "Extra fields shown in the transaction form. A field that already has a value is always shown.",
-        "successNotification": "Transaction fields updated",
-        "errorNotification": "Unexpected error happened. Setting not saved",
+        "label": "Trường giao dịch tùy chọn",
+        "description": "Các trường bổ sung hiển thị trong biểu mẫu giao dịch. Trường đã có giá trị sẽ luôn được hiển thị.",
+        "successNotification": "Đã cập nhật các trường giao dịch",
+        "errorNotification": "Đã xảy ra lỗi ngoài dự kiến. Cài đặt chưa được lưu",
         "fields": {
           "externalUrl": {
-            "label": "External URL",
-            "description": "Link the transaction to an order page, booking confirmation or receipt."
+            "label": "URL bên ngoài",
+            "description": "Liên kết giao dịch với trang đặt hàng, xác nhận đặt chỗ hoặc biên lai."
           },
           "externalReference": {
-            "label": "External reference",
-            "description": "Keep an order number, invoice number or booking reference with the transaction."
+            "label": "Mã tham chiếu bên ngoài",
+            "description": "Lưu số đơn hàng, số hóa đơn hoặc mã đặt chỗ cùng với giao dịch."
           },
           "originalAmount": {
-            "label": "Original amount",
-            "description": "The amount actually charged in another currency, when it differs from the account's currency."
+            "label": "Số tiền ban đầu",
+            "description": "Số tiền thực tế được tính bằng loại tiền tệ khác với loại tiền tệ của tài khoản."
           },
           "location": {
-            "label": "Location",
-            "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
+            "label": "Vị trí",
+            "description": "Tọa độ GPS của nơi giao dịch mua hàng diễn ra. Lấy vị trí từ thiết bị hoặc nhập tọa độ."
           }
         },
         "mapPicker": {
-          "label": "Map picker",
-          "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
+          "label": "Chọn vị trí trên bản đồ",
+          "description": "Chọn vị trí giao dịch trên bản đồ và tìm kiếm địa chỉ. OpenStreetMap cung cấp dữ liệu bản đồ và chức năng tìm kiếm, đồng thời nhận địa chỉ IP của bạn khi bản đồ mở."
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Loại thanh toán mặc định",
+        "description": "Được chọn sẵn khi bạn thêm giao dịch mới.",
+        "placeholder": "Chọn loại thanh toán",
+        "successNotification": "Đã cập nhật loại thanh toán mặc định",
+        "errorNotification": "Không cập nhật được loại thanh toán mặc định"
       }
     }
   }

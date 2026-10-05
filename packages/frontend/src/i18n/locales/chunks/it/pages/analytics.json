@@ -493,7 +493,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Couldn't load the report",
@@ -604,7 +604,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Failed to load net worth history. Please try again later.",

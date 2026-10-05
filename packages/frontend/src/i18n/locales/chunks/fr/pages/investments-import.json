@@ -1,0 +1,130 @@
+{
+  "investmentsImport": {
+    "title": "Import transactions",
+    "description": "Upload an exchange CSV, a broker PDF, or paste your transaction history. AI will extract buys and sells. You'll review before anything is imported.",
+    "backToPortfolio": "Back to portfolio",
+    "upload": {
+      "fileTab": "File",
+      "pasteTab": "Paste text",
+      "fileHintFormats": "CSV, TXT, or PDF",
+      "pastePlaceholder": "Paste your transactions list here...",
+      "estimatedCost": "Estimated cost",
+      "model": "Model",
+      "estimateButton": "Estimate cost",
+      "extractButton": "Extract",
+      "extracting": "Extracting…",
+      "modeAi": "AI Import",
+      "modeCsv": "CSV Import",
+      "modeAiHint": "Upload any file — AI extracts your transactions automatically. Costs tokens.",
+      "modeCsvHint": "Upload a CSV from your broker and map columns manually. No AI used.",
+      "csvHintFormats": "CSV files only.",
+      "parsingCsv": "Parsing…",
+      "continueToMapping": "Continue to mapping"
+    },
+    "review": {
+      "warningsTitle": "Warnings",
+      "empty": "AI didn't find any transactions in this file.",
+      "pickSecurity": "Pick security...",
+      "pickCurrency": "Currency...",
+      "searchPlaceholder": "Search by symbol...",
+      "searching": "Searching...",
+      "parsedSymbolHint": "We couldn't auto-match {symbol} — pick the right security below.",
+      "startTyping": "Start typing to search",
+      "noResults": "No matches",
+      "alreadyPicked": "already picked",
+      "duplicateSecurity": "Same security is picked on another row",
+      "willMerge": "Will merge into existing holding",
+      "txns": "{count} transaction | {count} transactions",
+      "expand": "Expand",
+      "collapse": "Collapse",
+      "deleteHolding": "Delete holding",
+      "deleteTransaction": "Delete transaction",
+      "buy": "Buy",
+      "sell": "Sell",
+      "possibleDup": "Possible duplicate",
+      "skipping": "Skipping",
+      "duplicateBadgeTooltip": "This looks like a possible duplicate of an existing transaction. Click to skip it — otherwise a new transaction will be created alongside the existing one (no merge or override).",
+      "back": "Back",
+      "commit": "Import",
+      "cols": {
+        "date": "Date",
+        "side": "Type",
+        "qty": "Quantity",
+        "price": "Price",
+        "fees": "Fees",
+        "amount": "Amount",
+        "security": "Security",
+        "currency": "Currency",
+        "txCount": "Transactions"
+      },
+      "tooltips": {
+        "security": "We picked a security automatically based on the AI-extracted ticker. Click the field to override the match if it's wrong.",
+        "currency": "Currency the cash side of the trade was settled in (e.g. USD, EUR). It does not change how the holding is stored — amounts are normalized to your base currency using historical exchange rates at the trade date.",
+        "parentRowDuplicates": "{count} possible duplicate in this holding will be imported as a new transaction unless skipped. | {count} possible duplicates in this holding will be imported as new transactions unless skipped."
+      }
+    },
+    "done": {
+      "transactions": "Transactions added"
+    },
+    "notifications": {
+      "imported": "Imported {count} transactions",
+      "extractFailed": "Could not extract transactions from the file.",
+      "importFailed": "Could not import transactions.",
+      "skippedHoldings": "Holdings skipped: {count}",
+      "failedTransactions": "Transactions failed: {count}",
+      "estimateFailed": "Failed to estimate import cost",
+      "csvParseFailed": "Could not parse the CSV. Check the file format and try again."
+    },
+    "columnMapping": {
+      "rowsAndDelimiter": "{rows} rows · delimiter '{delimiter}'",
+      "backToUpload": "Back",
+      "previewTitle": "Preview",
+      "requiredTitle": "Required columns",
+      "optionalTitle": "Optional columns",
+      "defaultsTitle": "Defaults",
+      "sideValueMappingTitle": "Side value mapping",
+      "sideValueMappingHint": "Tell us what each value in the side column means.",
+      "sideValueMappingEmpty": "No values found in this column yet.",
+      "selectColumn": "Select column…",
+      "notMapped": "Not mapped",
+      "pickCategory": "Pick category…",
+      "cashMovementsNote": "Cash deposits and withdrawals aren't supported yet. Pick 'Skip these rows' for those side values to leave them out of the import.",
+      "extractButton": "Continue to review",
+      "extracting": "Extracting…",
+      "fields": {
+        "symbol": "Symbol",
+        "date": "Date",
+        "side": "Side / Action",
+        "quantity": "Quantity",
+        "price": "Price",
+        "fees": "Fees",
+        "currency": "Currency",
+        "name": "Name",
+        "defaultCurrency": "Default currency",
+        "defaultAssetClass": "Default asset class"
+      },
+      "tooltips": {
+        "fees": "Column with commission/fees per transaction. If not mapped, fees default to 0.",
+        "currency": "Quote currency column (e.g. USD, EUR, USDT). Determines the cash side of each trade. Falls back to the Default currency below when empty or unmapped.",
+        "name": "Optional security display name (e.g. 'Apple Inc.'). Used for display in the review step only — ticker remains the authoritative identifier.",
+        "defaultCurrency": "Used when the Currency column above is empty or not mapped.",
+        "defaultAssetClass": "Hint for matching your symbols to securities. Pick the class that matches most rows in your file — you can override per security in the review step."
+      }
+    },
+    "categories": {
+      "buy": "Buy",
+      "sell": "Sell",
+      "dividend": "Dividend",
+      "transfer": "Transfer",
+      "tax": "Tax",
+      "fee": "Fee",
+      "cancel": "Cancel",
+      "other": "Other",
+      "skip": "Skip these rows"
+    },
+    "assetClasses": {
+      "stocks": "Stocks",
+      "crypto": "Crypto"
+    }
+  }
+}

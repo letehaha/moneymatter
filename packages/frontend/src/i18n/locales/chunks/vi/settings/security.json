@@ -126,7 +126,7 @@
       "wipeData": {
         "title": "Wipe all data",
         "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "Warning:",
+        "warningStrong": "Cảnh báo:",
         "button": "Wipe data",
         "dialog": {
           "title": "Wipe all your data?",
@@ -194,7 +194,7 @@
             "title": "What a backup leaves out",
             "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
             "items": {
-              "bankConnectionsTerm": "Bank connections",
+              "bankConnectionsTerm": "Kết nối ngân hàng",
               "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
               "aiKeysTerm": "AI API keys",
               "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."

@@ -1,0 +1,76 @@
+{
+  "pages": {
+    "household": {
+      "title": "Household",
+      "description": "Invite trusted people to share access to all the accounts you own. Members see your accounts and (with write access) can record transactions on them.",
+      "myHousehold": {
+        "title": "My household",
+        "description": "People here get access to every account you own. Per-account shares always override household access."
+      },
+      "youOwner": "You — owner",
+      "noMembers": "No one has joined your household yet.",
+      "loadMembersError": "Couldn't load household members. Try refreshing.",
+      "permissions": {
+        "read": "Read",
+        "write": "Write",
+        "manage": "Manage"
+      },
+      "writeScope": {
+        "all": "Can edit any transaction",
+        "own": "Can edit only their own transactions"
+      },
+      "invite": {
+        "emailLabel": "Email",
+        "emailPlaceholder": "person{'@'}example.com",
+        "permissionLabel": "Permission",
+        "writeScopeLabel": "Write scope",
+        "submit": "Send household invite",
+        "sent": "Invitation sent.",
+        "error": "Couldn't send the invitation.",
+        "emailDeliveryFailed": "Invitation created, but the email couldn't be delivered. You can resend it from the invitations panel."
+      },
+      "revoke": {
+        "action": "Remove",
+        "title": "Remove household member?",
+        "description": "{handle} will lose access to every account in your household. Per-account shares (if any) are unaffected.",
+        "confirm": "Remove",
+        "success": "Member removed.",
+        "error": "Couldn't remove this member."
+      },
+      "permissionChange": {
+        "setRead": "Make read-only",
+        "setWrite": "Allow writes",
+        "success": "Permission updated.",
+        "error": "Couldn't update permission."
+      },
+      "imIn": {
+        "title": "Households I'm in",
+        "description": "Other people's households you've joined. Leaving drops your access to every account they shared this way.",
+        "empty": "You haven't joined anyone else's household.",
+        "unnamedHousehold": "{'@'}{handle}'s household",
+        "loadError": "Couldn't load the households you're in. Try again later."
+      },
+      "leave": {
+        "action": "Leave",
+        "title": "Leave this household?",
+        "description": "You'll lose access to every account {owner} shares through their household. Per-account shares (if any) are unaffected.",
+        "confirm": "Leave",
+        "success": "You left the household.",
+        "error": "Couldn't leave the household."
+      },
+      "pending": {
+        "badge": "Pending",
+        "resend": "Resend",
+        "cancel": "Cancel",
+        "cancelTitle": "Cancel invitation?",
+        "cancelDescription": "Cancel the pending invitation sent to {email}? They will no longer be able to accept it.",
+        "cancelConfirm": "Cancel invitation",
+        "cancelSuccess": "Invitation cancelled.",
+        "cancelError": "Failed to cancel invitation.",
+        "resendSuccess": "Invitation resent.",
+        "resendError": "Failed to resend invitation.",
+        "resendDeliveryFailed": "Invitation updated, but the email could not be sent. Try again later."
+      }
+    }
+  }
+}

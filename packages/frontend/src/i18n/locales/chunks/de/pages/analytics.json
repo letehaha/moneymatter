@@ -10,7 +10,7 @@
       "netWorthDrivers": "Net Worth Drivers",
       "investmentContributions": "Contributions",
       "netWorthHistory": "Net Worth History",
-      "collapse": "Collapse",
+      "collapse": "Einklappen",
       "sections": {
         "investments": "Investments"
       },
@@ -27,7 +27,7 @@
       "netFlow": "Net Flow",
       "savingsRate": "Sparquote",
       "loadError": "Failed to load cash flow data",
-      "noData": "No transactions found",
+      "noData": "Keine Transaktionen gefunden",
       "noDataHint": "Try selecting a different period or check if you have any transactions",
       "showTrendLine": "Show trend line",
       "showTrendLineHint": "Smoothed average of net cash flow",
@@ -39,17 +39,17 @@
         "grouped": "Grouped"
       },
       "granularity": {
-        "monthly": "Monthly",
+        "monthly": "Monatlich",
         "biweekly": "Bi-weekly",
-        "weekly": "Weekly"
+        "weekly": "Wöchentlich"
       },
       "periods": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
+        "last3Months": "Letzte 3 Monate",
+        "last6Months": "Letzte 6 Monate",
         "last12Months": "Last 12 months",
-        "thisYear": "This year",
-        "previousYear": "Previous year",
-        "allTime": "All time"
+        "thisYear": "Dieses Jahr",
+        "previousYear": "Vorheriges Jahr",
+        "allTime": "Gesamter Zeitraum"
       },
       "composition": {
         "detail": "Detail",
@@ -62,11 +62,11 @@
         "incomePlusDeficit": "Income + deficit",
         "savings": "Ersparnisse",
         "deficit": "Deficit",
-        "other": "Other",
+        "other": "Sonstiges",
         "noData": "No transactions in this period",
         "noDataHint": "Pick another period or click a bar in the chart above",
         "loadError": "Failed to load composition",
-        "amount": "Amount",
+        "amount": "Betrag",
         "shareOfIncome": "Share of income",
         "shareOfExpenses": "Share of expenses",
         "saved": "Gespart",
@@ -77,7 +77,7 @@
         "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
         "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
         "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} more",
+        "andMore": "+{count} weitere",
         "settings": "Chart settings"
       }
     },
@@ -105,7 +105,7 @@
         "average": "Durchschnittlich",
         "total": "Gesamt",
         "vsLastMonth": "vs previous month",
-        "viewTransactions": "View transactions"
+        "viewTransactions": "Transaktionen anzeigen"
       },
       "cumulativeProgress": {
         "title": "Cumulative Progress"
@@ -115,11 +115,11 @@
         "title": "Filter",
         "categories": "Kategorien",
         "include": "Include",
-        "exclude": "Exclude",
+        "exclude": "Ausschließen",
         "accounts": "Konten",
-        "payees": "Payees",
+        "payees": "Zahlungsempfänger",
         "tags": "Tags",
-        "reset": "Reset"
+        "reset": "Zurücksetzen"
       },
       "legend": {
         "hide": "Hide from chart",
@@ -132,7 +132,7 @@
     },
     "investmentCalculator": {
       "subtitle": "Project how your portfolio could grow with regular contributions.",
-      "initialBalance": "Initial balance",
+      "initialBalance": "Startsaldo",
       "useCurrentBalance": "Use current balance",
       "monthlyContribution": "Monthly contribution",
       "useAvgNetIncome": "Use avg net income →",
@@ -161,8 +161,8 @@
       "portfolioReturnOption": "{name} (your ~{rate}%/yr)",
       "portfolioNoHistoryOption": "{name} — not enough history",
       "presetReturnOption": "{label} (~{rate}%/yr)",
-      "rangeMin": "Min.",
-      "rangeMax": "Max.",
+      "rangeMin": "Min",
+      "rangeMax": "Max",
       "indicators": {
         "worldStock": "Total World Stock",
         "usTreasury": "US Treasury Bonds",
@@ -233,7 +233,7 @@
         "withdrawalCustom": "Custom",
         "withdrawalPlaceholder": "e.g. 3.8",
         "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
-        "more": "More",
+        "more": "Mehr",
         "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
         "leanLabel": "Lean FIRE multiplier",
         "leanPlaceholder": "e.g. 0.7",
@@ -376,14 +376,14 @@
     "subtitle": "Break spending down by any dimension, lay it across time, and compare.",
     "controls": {
       "rows": "Rows",
-      "columns": "Columns",
+      "columns": "Spalten",
       "measure": "Measure",
       "settings": "Einstellungen"
     },
     "dimensions": {
-      "category": "Category",
+      "category": "Kategorie",
       "subcategory": "+ Subcategory",
-      "payee": "Payee",
+      "payee": "Zahlungsempfänger",
       "tag": "Tag"
     },
     "granularity": {
@@ -405,22 +405,22 @@
     },
     "filters": {
       "period": "Period",
-      "allCategories": "All",
+      "allCategories": "Alle",
       "button": "Filter",
       "categories": "Kategorien",
-      "payees": "Payees",
+      "payees": "Zahlungsempfänger",
       "accounts": "Konten",
-      "reset": "Reset",
+      "reset": "Zurücksetzen",
       "resetTooltip": "Reset to defaults"
     },
     "periods": {
-      "last6Months": "Last 6 months",
+      "last6Months": "Letzte 6 Monate",
       "last12Months": "Last 12 months",
-      "thisYear": "This year",
-      "previousYear": "Previous year",
+      "thisYear": "Dieses Jahr",
+      "previousYear": "Vorheriges Jahr",
       "last3Years": "Last 3 years",
       "last5Years": "Last 5 years",
-      "allTime": "All time"
+      "allTime": "Gesamter Zeitraum"
     },
     "savedViews": {
       "trigger": "Views",
@@ -439,8 +439,8 @@
       "total": "Gesamt",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
-      "expandRow": "Expand",
-      "collapseRow": "Collapse"
+      "expandRow": "Ausklappen",
+      "collapseRow": "Einklappen"
     },
     "states": {
       "emptyTitle": "No data for this selection",
@@ -466,9 +466,9 @@
       "noteBody": "Growth is counted as prices move each period, not only when you sell. Selling something that already rose doesn't add to Grown a second time."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "chart": {
       "title": "Saved vs. grown",
@@ -493,7 +493,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Couldn't load the report",
@@ -534,9 +534,9 @@
       "scopeHint": "Filters which portfolios count toward contributions."
     },
     "granularity": {
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "cards": {
       "totalContributed": "Total contributed",
@@ -558,10 +558,10 @@
   "netWorthHistory": {
     "subtitle": "How your assets, liabilities and net worth changed over time",
     "granularity": {
-      "weekly": "Weekly",
-      "monthly": "Monthly",
-      "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "weekly": "Wöchentlich",
+      "monthly": "Monatlich",
+      "quarterly": "Vierteljährlich",
+      "yearly": "Jährlich"
     },
     "kindFilter": {
       "all": "All liabilities",
@@ -604,7 +604,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Failed to load net worth history. Please try again later.",

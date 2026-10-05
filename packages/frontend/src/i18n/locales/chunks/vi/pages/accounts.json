@@ -1,48 +1,48 @@
 {
   "accounts": {
     "title": "Tài khoản",
-    "createAccount": "Create account",
-    "createVehicle": "Add vehicle",
-    "actionsMenu": "Account actions",
+    "createAccount": "Tạo tài khoản",
+    "createVehicle": "Thêm phương tiện",
+    "actionsMenu": "Thao tác tài khoản",
     "sections": {
-      "archived": "Archived",
-      "manual": "Manual accounts",
+      "archived": "Đã lưu trữ",
+      "manual": "Tài khoản thủ công",
       "sharedWithMe": "Được chia sẻ với tôi",
-      "vehicles": "Vehicles",
-      "bankConnections": "Bank connections"
+      "vehicles": "Phương tiện",
+      "bankConnections": "Kết nối ngân hàng"
     },
     "empty": {
-      "title": "No Accounts Yet",
-      "description": "Connect your bank or create a manual account to start tracking your finances, balances, and transactions.",
-      "connectBank": "Connect Bank Account",
-      "createManual": "Create Manual Account"
+      "title": "Chưa có tài khoản nào",
+      "description": "Kết nối ngân hàng hoặc tạo tài khoản thủ công để bắt đầu theo dõi tài chính, số dư và giao dịch của bạn.",
+      "connectBank": "Kết nối tài khoản ngân hàng",
+      "createManual": "Tạo tài khoản thủ công"
     },
     "overview": {
-      "totalBalance": "Total balance",
-      "assets": "Assets",
-      "liabilities": "Liabilities",
-      "vehicles": "Vehicles",
-      "projected": "Projected {amount} · {count} planned entry through {date} | Projected {amount} · {count} planned entries through {date}"
+      "totalBalance": "Tổng số dư",
+      "assets": "Tài sản",
+      "liabilities": "Nợ phải trả",
+      "vehicles": "Phương tiện",
+      "projected": "Dự kiến {amount} · {count} giao dịch đến hết {date} | Dự kiến {amount} · {count} giao dịch đến hết {date}"
     },
     "sharedBy": "Được chia sẻ bởi {handle}",
-    "viaHousehold": "Shared via {handle}'s household",
-    "connect": "Connect",
-    "connectBank": "Connect bank",
-    "noBanksConnected": "No banks connected yet — connect one to sync balances automatically.",
-    "reconnect": "Reconnect",
-    "manageConnection": "Manage connection",
-    "accountsCount": "{count} account | {count} accounts",
+    "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
+    "connect": "Kết nối",
+    "connectBank": "Kết nối ngân hàng",
+    "noBanksConnected": "Chưa kết nối ngân hàng nào — hãy kết nối một ngân hàng để tự động đồng bộ số dư.",
+    "reconnect": "Kết nối lại",
+    "manageConnection": "Quản lý kết nối",
+    "accountsCount": "{count} tài khoản | {count} tài khoản",
     "inGroupSubtitle": "trong {name}",
     "sort": {
-      "auto": "Auto",
-      "name": "Name",
-      "balance": "Balance",
-      "ariaLabel": "Sort accounts"
+      "auto": "Tự động",
+      "name": "Tên",
+      "balance": "Số dư",
+      "ariaLabel": "Sắp xếp tài khoản"
     },
     "status": {
-      "active": "Active",
-      "expiringSoon": "Expiring soon",
-      "expired": "Expired"
+      "active": "Đang hoạt động",
+      "expiringSoon": "Sắp hết hạn",
+      "expired": "Đã hết hạn"
     }
   }
 }

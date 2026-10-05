@@ -13,45 +13,45 @@
       "securityPlaceholder": "Wähle ein Wertpapier",
       "quantityLabel": "Anzahl",
       "quantityPlaceholder": "0.00",
-      "priceLabel": "Preis je Aktie",
+      "priceLabel": "Preis pro Anteil",
       "pricePlaceholder": "0.00",
       "priceHelp": "Gib 0 ein für Staking-Prämien, Airdrops oder Saldenanpassungen.",
       "feesLabel": "Gebühren (optional)",
       "feesPlaceholder": "0.00",
       "dateLabel": "Transaktionsdatum",
       "noteLabel": "Notiz",
-      "notePlaceholder": "Optional. Füge eine Notiz zu dieser Transaktion hinzu",
+      "notePlaceholder": "Optional. Notiz zu dieser Transaktion hinzufügen",
       "cancelButton": "Abbrechen",
       "submitButton": "Transaktion erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "notifications": {
         "success": "Transaktion erfolgreich erstellt.",
-        "error": "Fehler beim Erstellen der Transaktion."
+        "error": "Transaktion konnte nicht erstellt werden."
       },
       "settlement": {
         "toggleLabel": "Tatsächlichen Cash Betrag angeben",
-        "toggleHint": "Verwenden, wenn der Handel in einer anderen Währung abgerechnet wird oder du kennst nur die Summe und willst die Gebühr automatisch ableiten",
+        "toggleHint": "Verwende dies, wenn der Handel in einer anderen Währung abgewickelt wurde oder du nur den Gesamtbetrag weißt und die Gebühr automatisch ermittelt werden soll",
         "currencyLabel": "Zahlungswährung",
         "currencyPlaceholder": "Währung auswählen",
-        "totalPaidLabel": "Gesamt bezahlt",
-        "totalReceivedLabel": "Gesamt erhalten",
+        "totalPaidLabel": "Insgesamt gezahlt",
+        "totalReceivedLabel": "Insgesamt erhalten",
         "totalPlaceholder": "z.B. 1700",
         "feeLabel": "Gebühr (in Zahlungswährung)",
         "feePlaceholder": "0",
-        "sameCurrencyFeeHint": "Die Gebühr wird als die Differenz zwischen der Gesamtmenge und der Menge × Preis erfasst.",
-        "crossCurrencyFeeHint": "Die explizite Gebühr des Brokers. Etwaige Wechselkursspannen sind im Umrechnungskurs des Handels enthalten.",
+        "sameCurrencyFeeHint": "Die Gebühr wird als Differenz zwischen Gesamtbetrag und Anzahl × Preis erfasst.",
+        "crossCurrencyFeeHint": "Die explizite Gebühr des Brokers. Etwaige Wechselkursspannen werden im Umrechnungskurs des Handels berücksichtigt.",
         "modeFee": "Ich kenne die Gebühr",
         "modeAuto": "Auto",
-        "modeRate": "Ich kenne die Rate",
+        "modeRate": "Ich kenne den Kurs",
         "rateLabel": "Wechselkurs",
         "ratePlaceholder": "z.B. 3.66",
-        "rateHint": "Abrechnungswährungen pro 1 Einheit der Wertpapierwährung. Die Gebühr wird als die Differenz zwischen der Gesamtmenge und × Preis × Rate erfasst.",
-        "autoHint": "Die Gebühr wird automatisch mit dem Wechselkurs für das Transaktionsdatum abgeleitet.",
+        "rateHint": "Einheiten der Abwicklungswährung pro 1 Einheit der Wertpapierwährung. Die Gebühr wird als Differenz zwischen Gesamtbetrag und Anzahl × Preis × Kurs erfasst.",
+        "autoHint": "Die Gebühr wird automatisch anhand des Marktwechselkurses für das Transaktionsdatum ermittelt.",
         "previewRate": "≈ Wechselkurs {rate} wird erfasst",
         "previewFee": "≈ Gebühr von {fee} {currency} wird erfasst (Kurs {rate})",
-        "previewUnavailable": "Für dieses Datum wurde kein Marktkurs gefunden – gib die Gebühr oder den Wechselkurs manuell ein.",
-        "previewFetchFailed": "Marktpreise konnten nicht geladen werden. Überprüfe deine Verbindung oder gib den Kurs manuell ein.",
-        "previewPlaceholder": "Die Vorschau erscheint hier, während du das Formular ausfüllst."
+        "previewUnavailable": "Kein Marktkurs für dieses Datum gefunden – gib die Gebühr oder den Wechselkurs manuell ein.",
+        "previewFetchFailed": "Marktkurse konnten nicht geladen werden. Überprüfe deine Verbindung oder gib den Kurs manuell ein.",
+        "previewPlaceholder": "Vorschau erscheint hier beim Ausfüllen des Formulars."
       }
     },
     "portfolioSettings": {
@@ -65,7 +65,7 @@
       "displayCurrencyLabel": "Anzeigewährung",
       "displayCurrencyPlaceholder": "Anzeigewährung auswählen",
       "displayCurrencyBaseOption": "Basiswährung ({code})",
-      "displayCurrencyDescription": "Portfoliowert und -statistiken werden zum aktuellen Wechselkurs in diese Währung umgerechnet.",
+      "displayCurrencyDescription": "Portfoliowert und Statistiken werden zum aktuellen Wechselkurs in diese Währung umgerechnet.",
       "cancelButton": "Abbrechen",
       "submitButton": "Änderungen speichern",
       "submitButtonLoading": "Speichern...",
@@ -77,18 +77,18 @@
     "portfolioTransfer": {
       "transferTypeLabel": "Umbuchungstyp",
       "transferTypes": {
-        "portfolioToPortfolio": "Zu einem anderen Portfolio",
-        "portfolioToAccount": "Zielkonto",
-        "accountToPortfolio": "Zielportfolio"
+        "portfolioToPortfolio": "In ein anderes Portfolio",
+        "portfolioToAccount": "Auf Konto",
+        "accountToPortfolio": "In Portfolio"
       },
-      "comingSoonNotice": "💡 Konto-zu-Portfolio Umbuchungen kommen in einem zukünftigen Update!",
-      "fromPortfolioLabel": "Quellportfolio",
-      "fromPortfolioPlaceholder": "Quellportfolio auswählen",
+      "comingSoonNotice": "💡 Umbuchungen vom Konto ins Portfolio kommen in einem zukünftigen Update!",
+      "fromPortfolioLabel": "Aus Portfolio",
+      "fromPortfolioPlaceholder": "Quell-Portfolio auswählen",
       "fromAccountLabel": "Quellkonto",
       "fromAccountPlaceholder": "Quellkonto auswählen",
-      "toPortfolioLabel": "Zielportfolio",
-      "toPortfolioPlaceholder": "Zielportfolio auswählen",
-      "toAccountLabel": "Zielkonto",
+      "toPortfolioLabel": "In Portfolio",
+      "toPortfolioPlaceholder": "Ziel-Portfolio auswählen",
+      "toAccountLabel": "Auf Konto",
       "toAccountPlaceholder": "Zielkonto auswählen",
       "currencyLabel": "Währung",
       "currencyPlaceholder": "Währung auswählen",
@@ -97,14 +97,14 @@
       "amountPlaceholder": "0.00",
       "dateLabel": "Datum",
       "descriptionLabel": "Beschreibung (optional)",
-      "descriptionPlaceholder": "Füge eine Notiz zu dieser Umbuchung hinzu...",
+      "descriptionPlaceholder": "Notiz zu dieser Umbuchung hinzufügen...",
       "cancelButton": "Abbrechen",
       "submitButton": "Umbuchung",
       "submitButtonLoading": "Wird verarbeitet...",
       "confirmDialog": {
         "title": "Umbuchung bestätigen",
-        "description": "{amount} {action} von {from} zu {to} wird erstellt",
-        "actionTransfer": "umbuchen",
+        "description": "Eine {action} über {amount} von {from} nach {to} wird erstellt",
+        "actionTransfer": "Umbuchung",
         "actionWithdrawal": "Auszahlung",
         "actionDeposit": "Einzahlung",
         "cancelButton": "Abbrechen",
@@ -115,7 +115,7 @@
         "minValue": "Betrag muss größer als 0 sein"
       },
       "notifications": {
-        "comingSoon": "Konto-zu-Portfolio Umbuchungen kommen in einem zukünftigen Update!",
+        "comingSoon": "Umbuchungen vom Konto ins Portfolio kommen in einem zukünftigen Update!",
         "success": "Umbuchung erfolgreich abgeschlossen.",
         "error": "Umbuchung fehlgeschlagen. Bitte versuche es erneut."
       },
@@ -131,7 +131,7 @@
       "addCurrencyButton": "Neue Währung hinzufügen +",
       "initialBalanceLabel": "Anfangssaldo",
       "initialBalancePlaceholder": "Anfangssaldo",
-      "initialBalanceHelpLink": "Was soll ich eingeben?",
+      "initialBalanceHelpLink": "Was soll ich hier eingeben?",
       "accountCategoryLabel": "Kontokategorie",
       "accountCategoryPlaceholder": "Wähle eine Kontokategorie",
       "creditLimitLabel": "Kreditrahmen",
@@ -152,8 +152,8 @@
         "deposit": "Einzahlung",
         "withdrawal": "Auszahlung"
       },
-      "fromAccountLabel": "Quellkonto",
-      "toAccountLabel": "Zielkonto",
+      "fromAccountLabel": "Von Konto",
+      "toAccountLabel": "Auf Konto",
       "accountPlaceholder": "Konto auswählen",
       "orSeparator": "oder",
       "linkExistingTransaction": "Bestehende Transaktion verknüpfen",
@@ -164,15 +164,15 @@
       "currencyPlaceholder": "Währung auswählen",
       "dateLabel": "Datum",
       "descriptionLabel": "Beschreibung",
-      "adjustmentLabel": "Dies ist eine Kontostandskorrektur",
-      "adjustmentHint": "Der Cash-Bestand ändert sich noch, aber das gilt nicht als Geld, das du im Bericht über Investitionsbeiträge beigesteuert hast.",
+      "adjustmentLabel": "Dies ist eine Saldenkorrektur",
+      "adjustmentHint": "Der Cash-Bestand ändert sich weiterhin, jedoch wird dies im Bericht zu Investment-Einzahlungen nicht als eingezahltes Geld gewertet.",
       "descriptionPlaceholder": "Optionale Beschreibung",
       "cancelButton": "Abbrechen",
       "submitButton": "Absenden",
       "submitButtonLoading": "Wird gesendet...",
       "confirmDialog": {
         "title": "Umbuchung bestätigen",
-        "description": "{amount} {action} von {from} zu {to} wird erstellt",
+        "description": "Eine {action} über {amount} von {from} nach {to} wird erstellt",
         "cancelButton": "Abbrechen",
         "confirmButton": "Bestätigen",
         "actionDeposit": "Einzahlung",
@@ -184,58 +184,58 @@
       },
       "notifications": {
         "success": "Cash-Transaktion erfolgreich erstellt",
-        "error": "Fehler beim Erstellen der Cash-Transaktion"
+        "error": "Cash-Transaktion konnte nicht erstellt werden"
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Gib einen gültigen Betrag ein (bis zu 2 Dezimalstellen)",
-      "mustBePositive": "Betrag darf nicht negativ sein"
+      "invalidCurrencyDecimal": "Gib einen gültigen Betrag ein (bis zu 2 Nachkommastellen)",
+      "mustBePositive": "Betrag muss positiv sein"
     },
     "exchangeCurrency": {
       "fromCurrencyLabel": "Quellwährung",
-      "toCurrencyLabel": "Zielwährung",
+      "toCurrencyLabel": "In Währung",
       "currencyPlaceholder": "Währung auswählen",
       "fromAmountLabel": "Quellbetrag",
-      "toAmountLabel": "Zielbetrag",
+      "toAmountLabel": "In Betrag",
       "amountPlaceholder": "0.00",
-      "maxButton": "Max. {amount}",
-      "dateLabel": "Umtauschdatum",
+      "maxButton": "Max: {amount}",
+      "dateLabel": "Wechseldatum",
       "descriptionLabel": "Beschreibung (optional)",
-      "descriptionPlaceholder": "Füge eine Notiz zu diesem Umtausch hinzu...",
+      "descriptionPlaceholder": "Notiz zu diesem Währungstausch hinzufügen...",
       "cancelButton": "Abbrechen",
-      "submitButton": "Umtauschen",
+      "submitButton": "Tauschen",
       "submitButtonLoading": "Wird verarbeitet...",
       "validation": {
         "required": "Dieses Feld ist erforderlich",
         "minValue": "Betrag muss größer als 0 sein",
-        "sameCurrency": "Quell- und Zielwährungen müssen unterschiedlich sein"
+        "sameCurrency": "Ausgangs- und Zielwährung müssen unterschiedlich sein"
       },
       "notifications": {
-        "success": "Währung erfolgreich umgetauscht",
-        "error": "Währungsumtausch fehlgeschlagen"
+        "success": "Währung erfolgreich getauscht",
+        "error": "Währungstausch fehlgeschlagen"
       }
     },
     "createVehicle": {
       "nameLabel": "Fahrzeugname",
       "namePlaceholder": "z.B. Mein Camry",
       "currencyLabel": "Währung",
-      "makeLabel": "Hersteller",
+      "makeLabel": "Marke",
       "modelLabel": "Modell",
-      "trimLabel": "Ausstattungslinie",
-      "yearLabel": "Jahr",
+      "trimLabel": "Ausstattungsvariante (optional)",
+      "yearLabel": "Baujahr",
       "vehicleClassLabel": "Fahrzeugklasse",
       "purchasePriceLabel": "Kaufpreis",
       "purchaseDateLabel": "Kaufdatum",
-      "depreciationPresetLabel": "Wertverlustmuster",
+      "depreciationPresetLabel": "Wertverlustverlauf",
       "customAnnualRatePctLabel": "Benutzerdefinierte jährliche Wertverlustrate (%)",
-      "salvageFloorPctLabel": "Mindest-Restwert (% des Kaufpreises)",
+      "salvageFloorPctLabel": "Mindestrestwert (% des Kaufpreises)",
       "currentMileageLabel": "Aktueller Kilometerstand (optional)",
       "currentMileagePlaceholder": "z.B. 45000",
       "submitButton": "Fahrzeug hinzufügen",
       "submitButtonLoading": "Wird hinzugefügt...",
       "notifications": {
         "success": "Fahrzeug hinzugefügt",
-        "error": "Fehler beim Hinzufügen des Fahrzeugs"
+        "error": "Fahrzeug konnte nicht hinzugefügt werden"
       }
     },
     "editVehicle": {
@@ -243,45 +243,45 @@
       "submitButtonLoading": "Speichern...",
       "notifications": {
         "success": "Fahrzeug aktualisiert",
-        "error": "Fehler beim Aktualisieren des Fahrzeugs"
+        "error": "Fahrzeug konnte nicht aktualisiert werden"
       }
     },
     "loan": {
       "nameLabel": "Kreditname",
-      "namePlaceholder": "z.B. Primäre Hypothek",
-      "loanTypeLabel": "Kredittyp",
-      "loanTypePlaceholder": "Kredittyp auswählen",
+      "namePlaceholder": "z.B. Baufinanzierung",
+      "loanTypeLabel": "Kreditart",
+      "loanTypePlaceholder": "Kreditart auswählen",
       "currencyLabel": "Währung",
       "currencyPlaceholder": "Währung auswählen",
-      "originalPrincipalLabel": "Kreditsumme",
+      "originalPrincipalLabel": "Ursprünglicher Kreditbetrag",
       "originalPrincipalPlaceholder": "z.B. 320000",
-      "initialBalanceLabel": "Aktuelle Restschuld",
+      "initialBalanceLabel": "Aktueller offener Saldo",
       "initialBalancePlaceholder": "Was du heute schuldest",
-      "interestRateLabel": "Effektiver Jahreszins (%)",
+      "interestRateLabel": "Sollzinssatz (% p. a.)",
       "interestRatePlaceholder": "z.B. 6.25",
-      "minPaymentEstimateTooltip": "Berechnet anhand der Kreditsumme, des jährlichen Zinssatzes und der Laufzeit unter Verwendung der Standard-Tilgungsformel.",
-      "minPaymentApplyEstimateAriaLabel": "Geschätzte minimale Zahlung verwenden",
+      "minPaymentEstimateTooltip": "Geschätzt aus Kreditbetrag, Jahreszins und Laufzeit anhand der Standard-Tilgungsformel.",
+      "minPaymentApplyEstimateAriaLabel": "Geschätzte Mindestrate verwenden",
       "termMonthsLabel": "Laufzeit (Monate)",
-      "termPresetsAriaLabel": "Laufzeitvorlagen",
+      "termPresetsAriaLabel": "Laufzeit-Voreinstellungen",
       "termPresetsHeader": "Gängige Laufzeiten",
-      "termMonthsSuffix": "M",
+      "termMonthsSuffix": "Mon.",
       "termPresetYears": "{count} Jahr | {count} Jahre",
       "termMonthsPlaceholder": "z.B. 360 für einen 30-Jahre-Kredit",
       "startDateLabel": "Startdatum",
       "startDatePlaceholder": "TT/MM/JJJJ",
-      "startDateTooltip": "Das Datum der Kreditvergabe — also der Zeitpunkt, an dem du den Kredit erstmals aufgenommen hast. Diese Angabe dient lediglich der Information und hat keinen Einfluss auf den aktuellen ausstehenden Saldo oder die Tilgungsprognose.",
-      "plannedPaymentLabel": "Geplante monatliche Zahlung",
-      "plannedPaymentPlaceholder": "Was du tatsächlich bezahlst",
-      "minPaymentLabel": "Minimale monatliche Zahlung",
+      "startDateTooltip": "Das Datum, an dem der Kredit aufgenommen wurde. Es dient nur zur Information und ändert weder den aktuellen offenen Saldo noch die Tilgungsprojektion.",
+      "plannedPaymentLabel": "Geplante monatliche Rate",
+      "plannedPaymentPlaceholder": "Was du tatsächlich zahlst",
+      "minPaymentLabel": "Mindestrate pro Monat",
       "minPaymentPlaceholder": "Optional, von deinem Kreditgeber",
-      "paymentDayLabel": "Zahlungstag",
+      "paymentDayLabel": "Zahlungstag im Monat",
       "paymentDayPlaceholder": "1–31",
       "lenderNameLabel": "Kreditgeber",
       "lenderNamePlaceholder": "z.B. Chase, Wells Fargo",
-      "accountNumberLabel": "Konto-/Kreditnummer",
+      "accountNumberLabel": "Konto- / Kreditnummer",
       "accountNumberPlaceholder": "Optional",
-      "currentBalanceLabel": "Aktuelle Restschuld",
-      "balanceAsOfLabel": "Stand vom",
+      "currentBalanceLabel": "Aktueller offener Saldo",
+      "balanceAsOfLabel": "Saldo vom",
       "balanceAsOfPlaceholder": "TT/MM/JJJJ",
       "saveButton": "Änderungen speichern",
       "submitButton": "Kredit erstellen",
@@ -291,18 +291,18 @@
         "success": "Kredit erstellt.",
         "error": "Kredit konnte nicht erstellt werden. Bitte versuche es erneut.",
         "updateSuccess": "Kredit aktualisiert",
-        "updateError": "Fehler beim Aktualisieren des Kredits"
+        "updateError": "Kredit konnte nicht aktualisiert werden"
       },
       "errors": {
         "required": "Dieses Feld ist erforderlich.",
         "mustBePositive": "Muss größer als 0 sein.",
-        "mustBeNonNegative": "Muss 0 oder höher sein.",
-        "interestRateRange": "Der Zinssatz muss zwischen 0 und 99,9999 liegen.",
-        "termRange": "Die Laufzeit muss zwischen 1 und 1200 Monaten liegen.",
-        "paymentDayRange": "Der Tag des Monats muss zwischen 1 und 31 liegen.",
-        "asOfInFuture": "Das Datum kann nicht in der Zukunft liegen"
+        "mustBeNonNegative": "Muss 0 oder größer sein.",
+        "interestRateRange": "Zinssatz muss zwischen 0 und 99,9999 liegen.",
+        "termRange": "Laufzeit muss zwischen 1 und 1200 Monaten liegen.",
+        "paymentDayRange": "Tag des Monats muss zwischen 1 und 31 liegen.",
+        "asOfInFuture": "Datum darf nicht in der Zukunft liegen"
       },
-      "balanceExceedsPrincipalWarning": "Restschuld ist höher als die Kreditsumme – überprüfe die Beträge noch einmal."
+      "balanceExceedsPrincipalWarning": "Der offene Saldo ist höher als der ursprüngliche Kreditbetrag – bitte überprüfe diese Beträge."
     }
   },
   "fields": {
@@ -310,25 +310,25 @@
       "noCategoriesFound": "Keine Kategorien gefunden",
       "selectCategoryLabel": "Kategorie auswählen",
       "searchCategoryLabel": "Kategorie suchen",
-      "clearSearchLabel": "Suche zurücksetzen",
+      "clearSearchLabel": "Suche löschen",
       "clearSelectionLabel": "Auswahl löschen",
       "searchPlaceholder": "Suchen...",
-      "sharedOwnerNotice": "Zeige Kategorien von {owner}",
-      "sharedOwnerNoticeTooltip": "Transaktionen in einem geteilten Konto verwenden immer die Kategorien des Besitzers. Alles, was du hier speicherst, wird unter {owner} gesetzt, sodass beide die gleichen Summen sehen.",
+      "sharedOwnerNotice": "Kategorien von {owner} werden angezeigt",
+      "sharedOwnerNoticeTooltip": "Transaktionen auf einem geteilten Konto verwenden immer die Kategorien des Eigentümers. Alles, was du hier speicherst, wird unter dem Satz von {owner} abgelegt, damit ihr beide einheitliche Summen seht.",
       "sharedOwnerCategoriesLoadError": "Kategorien für das geteilte Konto konnten nicht geladen werden. Bitte versuche es erneut."
     },
     "select": {
-      "selectOption": "Wählen Sie eine Option",
+      "selectOption": "Option auswählen",
       "searchPlaceholder": "Suchen..."
     },
     "currencySelect": {
       "yourCurrencies": "Deine Währungen",
-      "otherCurrencies": "Andere Währungen"
+      "otherCurrencies": "Weitere Währungen"
     },
     "comboboxAccounts": {
       "allAccounts": "Alle Konten",
       "account": "Konto",
-      "accountsSelected": "Ausgewählte Konten",
+      "accountsSelected": "Konten ausgewählt",
       "selectedOne": "1 Konto ausgewählt",
       "selectedMany": "{n} Konten ausgewählt",
       "searchPlaceholder": "Konten suchen...",
@@ -339,11 +339,11 @@
       "unselectedPlaceholder": "Alle Kategorien",
       "selectedOne": "1 Kategorie ausgewählt",
       "selectedMany": "{n} Kategorien ausgewählt",
-      "excludingOne": "1 Kategorie ausschließen",
+      "excludingOne": "1 Kategorie ausgeschlossen",
       "excludingMany": "{n} Kategorien ausgeschlossen"
     },
     "accountMultiSelect": {
-      "ungrouped": "Ungruppiert"
+      "ungrouped": "Nicht gruppiert"
     },
     "tagSelect": {
       "placeholder": "Tags auswählen...",
@@ -355,13 +355,13 @@
       "noCategoriesFound": "Keine Kategorien gefunden"
     },
     "payeeMultiSelect": {
-      "label": "Alle Empfänger",
-      "searchPlaceholder": "Empfänger suchen",
-      "selectedMany": "{n} Empfänger ausgewählt",
-      "noResults": "Keine Empfänger gefunden",
-      "unknownPayee": "Unbekannter Empfänger",
-      "loadError": "Konnte Empfänger nicht laden. Bitte versuche es erneut.",
-      "blankOption": "Kein Empfänger"
+      "label": "Alle Zahlungsempfänger",
+      "searchPlaceholder": "Zahlungsempfänger suchen",
+      "selectedMany": "{n} Zahlungsempfänger ausgewählt",
+      "noResults": "Keine Zahlungsempfänger gefunden",
+      "unknownPayee": "Unbekannter Zahlungsempfänger",
+      "loadError": "Zahlungsempfänger konnten nicht geladen werden. Bitte versuche es erneut.",
+      "blankOption": "Kein ZahlungsempfängerEmpfänger"
     },
     "budgetMultiSelect": {
       "label": "Alle Budgets",
@@ -369,15 +369,15 @@
       "searchPlaceholder": "Budgets suchen",
       "noResults": "Keine Budgets gefunden",
       "unknownBudget": "Unbekanntes Budget",
-      "loadError": "Konnte Budgets nicht laden. Bitte versuche es erneut."
+      "loadError": "Budgets konnten nicht geladen werden. Bitte versuche es erneut."
     },
     "payeeSelect": {
-      "placeholder": "Empfänger auswählen",
-      "searchPlaceholder": "Empfänger werden gesucht…",
-      "empty": "Noch keine Empfänger",
-      "createAffordance": "Empfänger \"{name}\" erstellen",
-      "createNew": "Neuen Empfänger erstellen",
-      "sharedOwnerPayeesLoadError": "Empfänger des geteilten Accounts konnten nicht geladen werden. Bitte versuche es erneut."
+      "placeholder": "Zahlungsempfänger auswählen",
+      "searchPlaceholder": "Zahlungsempfänger suchen…",
+      "empty": "Noch keine Zahlungsempfänger",
+      "createAffordance": "Zahlungsempfänger \"{name}\" erstellen",
+      "createNew": "Neuen Zahlungsempfänger erstellen",
+      "sharedOwnerPayeesLoadError": "Zahlungsempfänger für das geteilte Konto konnten nicht geladen werden. Bitte versuche es erneut."
     }
   }
 }

@@ -9,7 +9,7 @@
       "title": "Recurring Payments",
       "description": "Track recurring payments, bills, and income",
       "addSubscription": "Add Recurring Payment",
-      "addSubscriptionShort": "Add",
+      "addSubscriptionShort": "Thêm",
       "backToList": "Back to recurring payments",
       "createTitle": "Create Recurring Payment",
       "typeSubscription": "Subscription",
@@ -20,7 +20,7 @@
       "cancel": "Hủy",
       "pauseSubscription": "Pause",
       "resumeSubscription": "Resume",
-      "deleteSubscription": "Delete",
+      "deleteSubscription": "Xóa",
       "amount": "Amount",
       "frequencyLabel": "Frequency",
       "nextExpected": "Next expected",
@@ -51,7 +51,7 @@
         "convertedTooltip": "Converted at each payment's exchange rate"
       },
       "quickAdd": {
-        "currencyPlaceholder": "Select currency",
+        "currencyPlaceholder": "Chọn tiền tệ",
         "nextPaymentLabel": "Next payment",
         "nextPaymentHint": "Optional. Set a date to track due payments and get reminders.",
         "refineHint": "You can add an account, category, tags, reminders and automation right after creating."
@@ -166,7 +166,7 @@
       "deleteError": "Failed to delete recurring payment",
       "deleteConfirmTitle": "Delete Recurring Payment?",
       "deleteConfirmDescription": "Are you sure you want to delete this recurring payment? This action cannot be undone.",
-      "deleteConfirm": "Delete",
+      "deleteConfirm": "Xóa",
       "toggleError": "Failed to update recurring payment status",
       "unlinkSuccess": "Transaction unlinked successfully",
       "unlinkError": "Failed to unlink transaction",
@@ -224,7 +224,7 @@
         "lastScanned": "Last scanned {time}",
         "emptyTitle": "No new subscriptions found",
         "emptyDescription": "We couldn't find any new recurring payment patterns in your transaction history.",
-        "add": "Add",
+        "add": "Thêm",
         "dismiss": "Dismiss",
         "basedOnTransactions": "Based on {count} transactions",
         "confidence": {

@@ -6,251 +6,251 @@
     "cards": {
       "transfers": {
         "title": "Umbuchungserkennung",
-        "description": "Find expense-income pairs that might be transfers between your accounts and link them automatically."
+        "description": "Finde Ausgaben-Einnahmen-Paare, die Umbuchungen zwischen deinen Konten sein könnten, und verknüpfe sie automatisch."
       },
       "aiCategorization": {
-        "title": "AI categorization",
-        "description": "Let AI sort uncategorized transactions and review past runs."
+        "title": "KI-Kategorisierung",
+        "description": "Lass die KI unkategorisierte Transaktionen sortieren und überprüfe vergangene Durchläufe."
       },
       "applyRules": {
-        "title": "Apply a rule to past transactions",
-        "description": "Pick one of your automations and run it over transactions you already have."
+        "title": "Regel auf vergangene Transaktionen anwenden",
+        "description": "Wähle eine deiner Automatisierungen aus und wende sie auf bereits vorhandene Transaktionen an."
       },
       "reconciliation": {
-        "title": "Reconciliation",
-        "description": "Merge duplicate bank transactions, remove wrong ones, and resolve pending transactions the bank never booked."
+        "title": "Abgleich",
+        "description": "Führe doppelte Banktransaktionen zusammen, entferne falsche Einträge und kläre ausstehende Transaktionen, die die Bank nie gebucht hat."
       }
     },
     "aiCategorization": {
-      "title": "AI categorization",
-      "description": "Run AI over transactions that are still in your default category and let it pick a better one. You can always change a category afterwards.",
+      "title": "KI-Kategorisierung",
+      "description": "Führe die KI für Transaktionen aus, die sich noch in deiner Standardkategorie befinden, und lass sie eine bessere auswählen. Du kannst eine Kategorie später jederzeit ändern.",
       "tabs": {
-        "categorize": "Categorize",
-        "history": "History"
+        "categorize": "Kategorisieren",
+        "history": "Verlauf"
       },
       "count": {
-        "capNote": "One run covers the {limit} most recent. Run it again to work through the rest.",
-        "allDoneTitle": "Everything is categorized",
-        "allDoneDescription": "No transactions are sitting in your default category right now."
+        "capNote": "Ein Durchlauf deckt die {limit} neuesten ab. Führe ihn erneut aus, um den Rest zu bearbeiten.",
+        "allDoneTitle": "Alles ist kategorisiert",
+        "allDoneDescription": "Derzeit befinden sich keine Transaktionen in deiner Standardkategorie."
       },
       "bar": {
-        "uncategorizedCount": "{count} uncategorized",
-        "capChip": "{limit} per run"
+        "uncategorizedCount": "{count} unkategorisiert",
+        "capChip": "{limit} pro Durchlauf"
       },
       "table": {
-        "selectionHint": "Select rows to categorize only those.",
-        "loadError": "Couldn't load the transactions waiting for categorization."
+        "selectionHint": "Wähle Zeilen aus, um nur diese zu kategorisieren.",
+        "loadError": "Transaktionen, die auf eine Kategorisierung warten, konnten nicht geladen werden."
       },
       "history": {
-        "emptyTitle": "No AI categorization runs yet",
-        "emptyDescription": "Once you run AI categorization, every run shows up here so you can review what it changed.",
-        "loadError": "Couldn't load the run history.",
-        "runLoadError": "Couldn't load this run's transactions.",
-        "backToRuns": "Back to all runs",
-        "runEmptyTitle": "Nothing left from this run",
-        "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "emptyTitle": "Noch keine Durchläufe der KI-Kategorisierung",
+        "emptyDescription": "Sobald du die KI-Kategorisierung ausführst, wird jeder Durchlauf hier angezeigt, damit du überprüfen kannst, was geändert wurde.",
+        "loadError": "Verlauf der Durchläufe konnte nicht geladen werden.",
+        "runLoadError": "Transaktionen dieses Durchlaufs konnten nicht geladen werden.",
+        "backToRuns": "Zurück zu allen Durchläufen",
+        "runEmptyTitle": "Nichts mehr aus diesem Durchlauf übrig",
+        "runEmptyDescription": "Jede Transaktion, die in diesem Durchlauf kategorisiert wurde, wurde seitdem neu kategorisiert oder gelöscht.",
+        "transactionCount": "{count} Transaktion | {count} Transaktionen",
         "trigger": {
-          "manual": "Manual",
-          "import": "Data import",
-          "sync": "Bank sync",
+          "manual": "Manuell",
+          "import": "Datenimport",
+          "sync": "Banksynchronisierung",
           "unknown": "Unbekannt"
         },
         "triggerTooltip": {
-          "manual": "You started this run manually",
-          "import": "Started automatically after a data import",
-          "sync": "Started automatically after a bank sync",
-          "unknown": "This run's origin wasn't recorded"
+          "manual": "Du hast diesen Durchlauf manuell gestartet",
+          "import": "Automatisch nach einem Datenimport gestartet",
+          "sync": "Automatisch nach einer Banksynchronisierung gestartet",
+          "unknown": "Der Ursprung dieses Durchlaufs wurde nicht aufgezeichnet"
         }
       },
       "setup": {
-        "title": "Run setup",
+        "title": "KI-Konfiguration",
         "model": "Modell",
-        "notConfigured": "Not configured",
-        "connection": "AI model",
+        "notConfigured": "Nicht konfiguriert",
+        "connection": "KI-Modell",
         "limits": "Limits",
-        "limitsSharedKey": "3 runs per hour",
-        "limitsOwnCredentials": "Unlimited — runs on your own key",
-        "changeModel": "Change in AI settings",
-        "errorChip": "AI setup problem",
-        "loadError": "Couldn't load your AI setup."
+        "limitsSharedKey": "3 Durchläufe pro Stunde",
+        "limitsOwnCredentials": "Unbegrenzt – läuft mit deinem eigenen Schlüssel",
+        "changeModel": "In den KI-Einstellungen ändern",
+        "errorChip": "Problem bei der KI-Einrichtung",
+        "loadError": "Deine KI-Einrichtung konnte nicht geladen werden."
       },
       "run": {
-        "button": "Categorize with AI (all)",
-        "categorizeSelected": "Categorize {count} selected",
-        "inProgress": "Categorizing…",
-        "progressLabel": "AI categorization progress",
-        "processed": "{processed} of {total} transactions processed"
+        "button": "Mit KI kategorisieren (alle)",
+        "categorizeSelected": "{count} ausgewählte kategorisieren",
+        "inProgress": "Kategorisiere…",
+        "progressLabel": "Fortschritt der KI-Kategorisierung",
+        "processed": "{processed} von {total} Transaktionen verarbeitet"
       },
       "confirm": {
-        "title": "Categorize all uncategorized transactions?",
-        "description": "AI will look at {count} transaction that is still in your default category and pick a category for it. You can change it afterwards. | AI will look at {count} transactions that are still in your default category and pick a category for each one. You can change any of them afterwards.",
-        "action": "Categorize all"
+        "title": "Alle unkategorisierten Transaktionen kategorisieren?",
+        "description": "Die KI prüft {count} Transaktion, die sich noch in deiner Standardkategorie befindet, und wählt eine Kategorie aus. Du kannst diese danach ändern. | Die KI prüft {count} Transaktionen, die sich noch in deiner Standardkategorie befinden, und wählt für jede eine Kategorie aus. Du kannst diese danach jederzeit ändern.",
+        "action": "Alle kategorisieren"
       },
       "notifications": {
-        "started": "Categorizing {count} transaction with AI | Categorizing {count} transactions with AI",
-        "nothingToCategorize": "Everything is already categorized — nothing left for AI to do",
-        "alreadyRunning": "AI categorization is already running",
-        "rateLimited": "You've reached the manual categorization limit. Try again in {time}.",
-        "failed": "Could not start AI categorization"
+        "started": "Kategorisiere {count} Transaktion mit KI | Kategorisiere {count} Transaktionen mit KI",
+        "nothingToCategorize": "Alles ist bereits kategorisiert – nichts mehr für die KI zu tun",
+        "alreadyRunning": "KI-Kategorisierung läuft bereits",
+        "rateLimited": "Du hast das Limit für manuelle Kategorisierung erreicht. Versuche es in {time} erneut.",
+        "failed": "KI-Kategorisierung konnte nicht gestartet werden"
       }
     },
     "transferSuggestions": {
-      "description": "Find transactions that should be linked as transfers between your accounts",
-      "suggestionsFor": "Suggestions for",
-      "selectExpense": "Select a transaction to see suggestions",
-      "potentialTransfersFound": "potential transfers found",
+      "description": "Finde Transaktionen, die als Umbuchungen zwischen deinen Konten verknüpft werden sollten",
+      "suggestionsFor": "Vorschläge für",
+      "selectExpense": "Wähle eine Transaktion aus, um Vorschläge zu sehen",
+      "potentialTransfersFound": "mögliche Umbuchungen gefunden",
       "empty": {
-        "title": "No transfer suggestions found",
-        "description": "Try adjusting the date range"
+        "title": "Keine Umbuchungsvorschläge gefunden",
+        "description": "Versuche, den Datumsbereich anzupassen"
       },
       "initial": {
-        "title": "Find transfer suggestions",
-        "description": "Scan your transactions to find income and expense pairs that should be linked as transfers between accounts"
+        "title": "Umbuchungsvorschläge finden",
+        "description": "Durchsuche deine Transaktionen nach Einnahmen- und Ausgabenpaaren, die als Umbuchungen zwischen Konten verknüpft werden sollten"
       },
-      "scanning": "Scanning transactions...",
+      "scanning": "Durchsuche Transaktionen...",
       "confirmLink": {
-        "title": "Link as transfer?",
-        "description": "Both transactions will be linked as a transfer between accounts. This will correct your statistics and analytics by excluding them from income and expense totals."
+        "title": "Als Umbuchung verknüpfen?",
+        "description": "Beide Transaktionen werden als Umbuchung zwischen Konten verknüpft. Dies korrigiert deine Statistiken und Auswertungen, indem sie aus den Einnahmen- und Ausgabensummen ausgeschlossen werden."
       },
       "presets": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
-        "lastYear": "Last year",
-        "thisYear": "This year",
-        "previousYear": "Previous year"
+        "last3Months": "Letzte 3 Monate",
+        "last6Months": "Letzte 6 Monate",
+        "lastYear": "Letztes Jahr",
+        "thisYear": "Dieses Jahr",
+        "previousYear": "Vorheriges Jahr"
       },
-      "includeOutOfWallet": "Include out-of-wallet transfers",
+      "includeOutOfWallet": "Externe Umbuchungen einschließen",
       "skip": {
-        "action": "Skip",
-        "title": "Skip this suggestion?",
-        "description": "This pair will be hidden from future scan results. The transactions themselves won't be changed.",
-        "dontShowAgain": "Don't show this confirmation again"
+        "action": "Überspringen",
+        "title": "Diesen Vorschlag überspringen?",
+        "description": "Dieses Paar wird in zukünftigen Suchergebnissen ausgeblendet. Die Transaktionen selbst werden nicht geändert.",
+        "dontShowAgain": "Diese Bestätigung nicht mehr anzeigen"
       },
       "notifications": {
-        "loadError": "Failed to load more suggestions",
-        "scanError": "Failed to scan for transfer suggestions",
-        "linkSuccess": "Transactions linked as transfer",
-        "linkError": "Failed to link transactions",
-        "skipSuccess": "Suggestion dismissed",
-        "skipError": "Failed to skip suggestion"
+        "loadError": "Weitere Vorschläge konnten nicht geladen werden",
+        "scanError": "Suche nach Umbuchungsvorschlägen fehlgeschlagen",
+        "linkSuccess": "Transaktionen als Umbuchung verknüpft",
+        "linkError": "Verknüpfung der Transaktionen fehlgeschlagen",
+        "skipSuccess": "Vorschlag verworfen",
+        "skipError": "Vorschlag konnte nicht übersprungen werden"
       }
     },
     "reconciliation": {
-      "title": "Transactions reconciliation",
+      "title": "Transaktionsabgleich",
       "tabs": {
-        "transactions": "Transactions",
-        "stuckPending": "Stuck pending",
-        "history": "History"
+        "transactions": "Transaktionen",
+        "stuckPending": "Hängende Vormerkungen",
+        "history": "Verlauf"
       },
       "table": {
-        "hint": "Select bank transactions to merge duplicates or remove extras"
+        "hint": "Wähle Banktransaktionen aus, um Duplikate zusammenzuführen oder überflüssige zu entfernen"
       },
       "actions": {
-        "merge": "Merge",
+        "merge": "Zusammenführen",
         "remove": "Entfernen"
       },
       "blockReasons": {
         "header": {
-          "merge": "Can't merge for {count} reasons:",
-          "remove": "Can't remove for {count} reasons:"
+          "merge": "Zusammenführen aus {count} Gründen nicht möglich:",
+          "remove": "Entfernen aus {count} Gründen nicht möglich:"
         },
-        "notBankConnected": "Only bank-connected transactions can be reconciled.",
-        "planned": "Planned transactions can't be reconciled.",
-        "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
-        "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
-        "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
-        "differentAccounts": "All transactions must belong to the same account."
+        "notBankConnected": "Nur mit der Bank verbundene Transaktionen können abgeglichen werden.",
+        "planned": "Geplante Transaktionen können nicht abgeglichen werden.",
+        "linkedTransfer": "Verknüpfte Umbuchungen können nicht abgeglichen werden. Hebe zuerst die Verknüpfung der Umbuchung auf.",
+        "refundLinked": "Mit Erstattungen verknüpfte Transaktionen können nicht abgeglichen werden. Hebe zuerst die Verknüpfung der Erstattung auf.",
+        "tooFew": "Wähle mindestens 2 Transaktionen zum Zusammenführen aus.",
+        "tooMany": "Zu viele Transaktionen ausgewählt (Zusammenführen: bis zu {mergeMax}, Entfernen: bis zu {removeMax}).",
+        "differentAccounts": "Alle Transaktionen müssen zum selben Konto gehören."
       },
       "merge": {
-        "title": "Merge transactions",
-        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
+        "title": "Transaktionen zusammenführen",
+        "description": "Wähle die Transaktion aus, die behalten werden soll. Die anderen werden entfernt und können aus dem Verlauf wiederhergestellt werden.",
         "fields": {
-          "payee": "Payee",
+          "payee": "Zahlungsempfänger",
           "status": "Status",
-          "time": "Time"
+          "time": "Uhrzeit"
         },
         "status": {
-          "pending": "Pending",
-          "booked": "Booked"
+          "pending": "Ausstehend",
+          "booked": "Gebucht"
         },
-        "keep": "Keep",
+        "keep": "Behalten",
         "remove": "Entfernen",
-        "sameInAll": "Same in all:",
-        "confirm": "Merge and remove {count} | Merge and remove {count}"
+        "sameInAll": "In allen identisch:",
+        "confirm": "Zusammenführen und {count} entfernen | Zusammenführen und {count} entfernen"
       },
       "remove": {
-        "title": "Remove {count} transaction? | Remove {count} transactions?",
-        "description": "Removed transactions stop counting toward balances and stats. Budget, group and subscription links are detached. You can restore them from History, but the links won't come back.",
+        "title": "{count} Transaktion entfernen? | {count} Transaktionen entfernen?",
+        "description": "Entfernte Transaktionen fließen nicht mehr in Kontostände und Statistiken ein. Verknüpfungen zu Budgets, Gruppen und Abonnements werden getrennt. Du kannst sie aus dem Verlauf wiederherstellen, aber die Verknüpfungen werden nicht wiederhergestellt.",
         "confirm": "Entfernen"
       },
       "restoreDialog": {
-        "title": "Restore {count} transaction? | Restore {count} transactions?",
-        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
-        "confirm": "Restore"
+        "title": "{count} Transaktion wiederherstellen? | {count} Transaktionen wiederherstellen?",
+        "description": "Wiederhergestellte Transaktionen fließen wieder in Kontostände und Statistiken ein. Wenn sie zusammengeführt wurden, bleibt die behaltene Transaktion bestehen, sodass du möglicherweise wieder Duplikate siehst. Beim Entfernen getrennte Verknüpfungen zu Budgets, Gruppen und Abonnements werden nicht wiederhergestellt.",
+        "confirm": "Wiederherstellen"
       },
       "notifications": {
-        "removed": "Removed {count} transaction | Removed {count} transactions",
-        "merged": "Merged, removed {count} duplicate | Merged, removed {count} duplicates",
-        "restored": "Restored {count} transaction | Restored {count} transactions",
-        "keptAsBooked": "Marked as booked",
-        "checkedWithBank": "Checked with bank",
-        "unexpectedError": "Something went wrong. Please try again.",
+        "removed": "{count} Transaktion entfernt | {count} Transaktionen entfernt",
+        "merged": "Zusammengeführt, {count} Duplikat entfernt | Zusammengeführt, {count} Duplikate entfernt",
+        "restored": "{count} Transaktion wiederhergestellt | {count} Transaktionen wiederhergestellt",
+        "keptAsBooked": "Als gebucht markiert",
+        "checkedWithBank": "Mit der Bank abgeglichen",
+        "unexpectedError": "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
         "bankCheck": {
-          "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
-          "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
-          "noneBooked": "Your bank hasn't booked any of them yet",
-          "stillPending": "{count} is still pending. | {count} are still pending.",
-          "someFailed": "Couldn't reach the bank for {count} account. | Couldn't reach the bank for {count} accounts."
+          "allBooked": "Deine Bank hat die Transaktion gebucht | Deine Bank hat alle {count} Transaktionen gebucht",
+          "someBooked": "Deine Bank hat {count} Transaktion gebucht | Deine Bank hat {count} Transaktionen gebucht",
+          "noneBooked": "Deine Bank hat noch keine davon gebucht",
+          "stillPending": "{count} ist noch ausstehend. | {count} sind noch ausstehend.",
+          "someFailed": "Die Bank konnte für {count} Konto nicht erreicht werden. | Die Bank konnte für {count} Konten nicht erreicht werden."
         }
       },
       "stuckPending": {
-        "loadError": "Couldn't load stuck pending transactions.",
-        "emptyTitle": "No stuck pending transactions",
-        "emptyDescription": "Pending transactions older than 7 days show up here so you can resolve them.",
-        "checkWithBank": "Check with bank",
-        "summaryTooOld": "{count} row is still pending after a week. It's too old to check with your bank. | {count} rows are still pending after a week. They're too old to check with your bank.",
-        "checking": "Checking with bank…",
-        "checkAgain": "Check again",
-        "keepAsBooked": "Keep as booked",
+        "loadError": "Hängengebliebene ausstehende Transaktionen konnten nicht geladen werden.",
+        "emptyTitle": "Keine hängengebliebenen ausstehenden Transaktionen",
+        "emptyDescription": "Ausstehende Transaktionen, die älter als 7 Tage sind, werden hier angezeigt, damit du sie klären kannst.",
+        "checkWithBank": "Mit der Bank abgleichen",
+        "summaryTooOld": "{count} Zeile ist nach einer Woche immer noch ausstehend. Sie ist zu alt, um mit deiner Bank abgeglichen zu werden. | {count} Zeilen sind nach einer Woche immer noch ausstehend. Sie sind zu alt, um mit deiner Bank abgeglichen zu werden.",
+        "checking": "Gleiche mit der Bank ab…",
+        "checkAgain": "Erneut abgleichen",
+        "keepAsBooked": "Als gebucht behalten",
         "header": {
-          "title": "{count} transaction stuck in pending | {count} transactions stuck in pending",
-          "description": "Pending for more than a week in {count} account. | Pending for more than a week in {count} accounts.",
-          "titleChecked": "{count} transaction still pending | {count} transactions still pending",
-          "descriptionChecked": "Checked with your bank. Decide what to do with each one."
+          "title": "{count} Transaktion hängt im Status ausstehend | {count} Transaktionen hängen im Status ausstehend",
+          "description": "Seit mehr als einer Woche ausstehend in {count} Konto. | Seit mehr als einer Woche ausstehend in {count} Konten.",
+          "titleChecked": "{count} Transaktion weiterhin ausstehend | {count} Transaktionen weiterhin ausstehend",
+          "descriptionChecked": "Mit deiner Bank abgeglichen. Entscheide, was mit jeder einzelnen geschehen soll."
         },
-        "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
+        "checkFirstHint": "Gleiche zuerst mit deiner Bank ab. Transaktionen, die sie seitdem gebucht hat, verschwinden aus dieser Liste.",
         "columns": {
-          "account": "Account",
-          "date": "Date",
-          "category": "Category",
-          "pendingFor": "Pending for",
-          "amount": "Amount",
+          "account": "Konto",
+          "date": "Datum",
+          "category": "Kategorie",
+          "pendingFor": "Ausstehend seit",
+          "amount": "Betrag",
           "status": "Status",
           "actions": "Aktionen"
         },
-        "pendingDaysShort": "{count}d",
+        "pendingDaysShort": "{count} T.",
         "status": {
-          "tooOld": "Too old to check",
-          "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Possible duplicate",
-          "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
-          "notFound": "Not found at bank",
-          "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
+          "tooOld": "Zu alt zum Abgleichen",
+          "tooOldHint": "Deine Bank stellt nur etwa 90 Tage des Verlaufs bereit, daher kann diese Transaktion nicht abgeglichen werden. Behalte sie, wenn die Abbuchung stattgefunden hat, und entferne sie, wenn nicht.",
+          "duplicate": "Mögliches Duplikat",
+          "duplicateHint": "Eine gebuchte Transaktion desselben Zahlungsempfängers vom {date} sieht nach derselben Zahlung aus. Führe sie zusammen, um eine zu behalten.",
+          "notFound": "Nicht bei der Bank gefunden",
+          "notFoundHint": "Deine Bank hat keine gebuchte Kopie dieser Transaktion, daher könnte es sich um eine aufgehobene Reservierung handeln. Behalte sie, wenn die Abbuchung stattgefunden hat, und entferne sie, wenn nicht."
         }
       },
       "history": {
-        "loadError": "Couldn't load reconciliation history.",
-        "emptyTitle": "No reconciliation history yet",
-        "emptyDescription": "Merged and removed transactions appear here so you can restore them.",
+        "loadError": "Verlauf des Abgleichs konnte nicht geladen werden.",
+        "emptyTitle": "Noch kein Abgleichsverlauf vorhanden",
+        "emptyDescription": "Zusammengeführte und entfernte Transaktionen werden hier angezeigt, damit du sie wiederherstellen kannst.",
         "type": {
-          "merge": "Merged",
-          "remove": "Removed"
+          "merge": "Zusammengeführt",
+          "remove": "Entfernt"
         },
-        "restore": "Restore",
-        "kept": "Kept",
-        "removedRows": "{count} removed transaction | {count} removed transactions"
+        "restore": "Wiederherstellen",
+        "kept": "Behalten",
+        "removedRows": "{count} entfernte Transaktion | {count} entfernte Transaktionen"
       }
     }
   }

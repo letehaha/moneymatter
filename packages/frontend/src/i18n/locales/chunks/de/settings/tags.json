@@ -2,95 +2,95 @@
   "settings": {
     "tags": {
       "title": "Tags",
-      "addButton": "Add Tag",
-      "empty": "No tags yet. Create your first tag to organize your transactions.",
+      "addButton": "Tag hinzufügen",
+      "empty": "Noch keine Tags vorhanden. Erstelle deinen ersten Tag, um deine Transaktionen zu organisieren.",
       "tabs": {
         "details": "Details",
-        "reminders": "Reminders"
+        "reminders": "Erinnerungen"
       },
       "form": {
-        "createTitle": "Create Tag",
-        "editTitle": "Edit Tag",
+        "createTitle": "Tag erstellen",
+        "editTitle": "Tag bearbeiten",
         "name": "Name",
-        "namePlaceholder": "Tag name",
+        "namePlaceholder": "Tag-Name",
         "color": "Farbe",
         "icon": "Symbol",
         "iconPlaceholder": "Symbol auswählen",
-        "iconSearchPlaceholder": "Search icons...",
-        "clearIcon": "Clear icon",
-        "description": "Description",
+        "iconSearchPlaceholder": "Symbol suchen...",
+        "clearIcon": "Symbol entfernen",
+        "description": "Beschreibung",
         "descriptionPlaceholder": "Optionale Beschreibung",
         "saveButton": "Speichern",
-        "previewPlaceholder": "Tag name"
+        "previewPlaceholder": "Tag-Name"
       },
       "delete": {
-        "title": "Delete tag?",
-        "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
+        "title": "Tag löschen?",
+        "description": "Dadurch wird \"{name}\" dauerhaft gelöscht und aus allen Transaktionen entfernt. Diese Aktion kann nicht rückgängig gemacht werden.",
         "deleteButton": "Löschen",
         "cancelButton": "Abbrechen"
       },
       "notifications": {
-        "createSuccess": "Tag created",
-        "createFailed": "Failed to create tag",
-        "updateSuccess": "Tag updated",
-        "updateFailed": "Failed to update tag",
-        "deleteSuccess": "Tag deleted",
-        "deleteFailed": "Failed to delete tag"
+        "createSuccess": "Tag erstellt",
+        "createFailed": "Tag konnte nicht erstellt werden",
+        "updateSuccess": "Tag aktualisiert",
+        "updateFailed": "Tag konnte nicht aktualisiert werden",
+        "deleteSuccess": "Tag gelöscht",
+        "deleteFailed": "Tag konnte nicht gelöscht werden"
       },
       "reminders": {
-        "addButton": "Add Reminder",
-        "empty": "No reminders yet. Create a reminder to get notified about this tag's activity.",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
+        "addButton": "Erinnerung hinzufügen",
+        "empty": "Noch keine Erinnerungen. Erstelle eine Erinnerung, um über Aktivitäten dieses Tags benachrichtigt zu werden.",
+        "enabled": "Aktiviert",
+        "disabled": "Deaktiviert",
         "form": {
-          "createTitle": "Create Reminder",
-          "editTitle": "Edit Reminder",
-          "type": "Reminder Type",
-          "typePlaceholder": "Select type",
-          "amountThreshold": "Amount Threshold",
-          "amountThresholdPlaceholder": "Enter threshold amount",
-          "amountThresholdHint": "Get notified when spending on this tag exceeds this amount",
-          "frequency": "Frequency",
-          "frequencyPlaceholder": "Select frequency",
-          "dayOfMonth": "Day of month",
-          "dayOfMonthPlaceholder": "Select day",
-          "dayOfMonthHint": "For months with fewer days, the last day will be used",
-          "isEnabled": "Enabled",
+          "createTitle": "Erinnerung erstellen",
+          "editTitle": "Erinnerung bearbeiten",
+          "type": "Erinnerungstyp",
+          "typePlaceholder": "Typ auswählen",
+          "amountThreshold": "Betragsschwellenwert",
+          "amountThresholdPlaceholder": "Schwellenwert eingeben",
+          "amountThresholdHint": "Werde benachrichtigt, wenn die Ausgaben für diesen Tag diesen Betrag übersteigen",
+          "frequency": "Häufigkeit",
+          "frequencyPlaceholder": "Häufigkeit auswählen",
+          "dayOfMonth": "Tag des Monats",
+          "dayOfMonthPlaceholder": "Tag auswählen",
+          "dayOfMonthHint": "Für Monate mit weniger Tagen wird der letzte Tag verwendet",
+          "isEnabled": "Aktiviert",
           "saveButton": "Speichern"
         },
         "types": {
-          "amountThreshold": "Amount Threshold",
-          "amountThresholdDescription": "Notify when spending exceeds a certain amount",
-          "existenceCheck": "Activity Check",
-          "existenceCheckDescription": "Notify when there are transactions with this tag"
+          "amountThreshold": "Betragsschwellenwert",
+          "amountThresholdDescription": "Benachrichtigen, wenn die Ausgaben einen bestimmten Betrag übersteigen",
+          "existenceCheck": "Aktivitätsprüfung",
+          "existenceCheckDescription": "Benachrichtigen, wenn Transaktionen mit diesem Tag vorhanden sind"
         },
         "frequencies": {
-          "immediate": "Immediate",
-          "immediateDescription": "Triggers when transactions are tagged (24h cooldown)",
-          "daily": "Daily",
-          "dailyDescription": "Check every day",
-          "weekly": "Weekly",
-          "weeklyDescription": "Check every Monday",
-          "monthly": "Monthly",
-          "monthlyDescription": "Check on a specific day each month",
-          "quarterly": "Quarterly",
-          "quarterlyDescription": "Check every 3 months (Jan, Apr, Jul, Oct)",
-          "yearly": "Yearly",
-          "yearlyDescription": "Check once per year in January"
+          "immediate": "Sofort",
+          "immediateDescription": "Wird ausgelöst, wenn eine Transaktion mit diesem Tag versehen wird. Zwischen zwei Benachrichtigungen liegen mindestens 24 Stunden.",
+          "daily": "Täglich",
+          "dailyDescription": "Jeden Tag prüfen",
+          "weekly": "Wöchentlich",
+          "weeklyDescription": "Jeden Montag prüfen",
+          "monthly": "Monatlich",
+          "monthlyDescription": "Jeden Monat an einem bestimmten Tag prüfen",
+          "quarterly": "Vierteljährlich",
+          "quarterlyDescription": "Alle 3 Monate prüfen (Jan., Apr., Jul., Okt.)",
+          "yearly": "Jährlich",
+          "yearlyDescription": "Einmal pro Jahr im Januar prüfen"
         },
         "delete": {
-          "title": "Delete reminder?",
-          "description": "This will permanently delete this reminder. This action cannot be undone.",
+          "title": "Erinnerung löschen?",
+          "description": "Dadurch wird diese Erinnerung dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.",
           "deleteButton": "Löschen",
           "cancelButton": "Abbrechen"
         },
         "notifications": {
-          "createSuccess": "Reminder created",
-          "createFailed": "Failed to create reminder",
-          "updateSuccess": "Reminder updated",
-          "updateFailed": "Failed to update reminder",
-          "deleteSuccess": "Reminder deleted",
-          "deleteFailed": "Failed to delete reminder"
+          "createSuccess": "Erinnerung erstellt",
+          "createFailed": "Erinnerung konnte nicht erstellt werden",
+          "updateSuccess": "Erinnerung aktualisiert",
+          "updateFailed": "Erinnerung konnte nicht aktualisiert werden",
+          "deleteSuccess": "Erinnerung gelöscht",
+          "deleteFailed": "Erinnerung konnte nicht gelöscht werden"
         }
       }
     }

@@ -11,7 +11,7 @@
     "actions": {
       "transfer": "Transfer",
       "edit": "Edit",
-      "delete": "Delete",
+      "delete": "Xóa",
       "exchangeCurrency": "Exchange Currency"
     },
     "balance": {

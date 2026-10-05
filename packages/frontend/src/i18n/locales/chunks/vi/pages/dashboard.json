@@ -19,7 +19,7 @@
           "accounts": "Tài khoản",
           "portfolios": "Portfolios",
           "ventures": "Ventures",
-          "vehicles": "Vehicles",
+          "vehicles": "Phương tiện",
           "loans": "Loans"
         },
         "tooltip": {
@@ -68,7 +68,7 @@
         },
         "componentsSettings": {
           "description": "Choose which components count toward the Total balance line.",
-          "vehicles": "Vehicles",
+          "vehicles": "Phương tiện",
           "ventures": "Ventures",
           "loans": "Loans",
           "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
@@ -126,6 +126,7 @@
         "title": "Cash Flow",
         "description": "Shows your net savings: income minus expenses for the selected period, with a trend of previous periods",
         "vsPrevious": "vs previous",
+        "notAvailable": "N/A",
         "income": "Income",
         "expenses": "Expenses",
         "saved": "Saved",
@@ -145,13 +146,13 @@
         "loadFailed": "Couldn't load net worth data.",
         "components": {
           "ventures": "Ventures",
-          "vehicles": "Vehicles",
+          "vehicles": "Phương tiện",
           "loans": "Loans"
         },
         "settings": {
           "title": "Include in net worth",
           "loans": "Loans",
-          "vehicles": "Vehicles",
+          "vehicles": "Phương tiện",
           "ventures": "Ventures"
         },
         "trendTooltip": {

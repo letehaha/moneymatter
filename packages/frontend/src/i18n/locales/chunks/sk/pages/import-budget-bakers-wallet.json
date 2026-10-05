@@ -32,7 +32,7 @@
           "rowPrefix": "Riadok {rowIndex}: "
         },
         "accountRow": {
-          "transactionsCount": "{count} transakcie | {count} transakcia | {count} transakcií",
+          "transactionsCount": "{count} transakcia | {count} transakcie | {count} transakcií",
           "modeLabel": "Akcia",
           "modePlaceholder": "Vyberte akciu",
           "modeCreateNew": "Vytvoriť nový účet",
@@ -71,7 +71,7 @@
           "outOfWalletImported": "Importované mimo peňaženky",
           "mergedIntoPlanned": "Zlúčené s plánovanými",
           "duplicatesSkipped": "Preskočené duplicity",
-          "errorsTitle": "Zlyhalo riadkov: {count} | Zlyhal {count} riadok | Zlyhali {count} riadky",
+          "errorsTitle": "Zlyhal {count} riadok | Zlyhali {count} riadky | Zlyhalo {count} riadkov",
           "errorsOverflow": "+{count} ďalších",
           "balanceWarningTitle": "Niektoré zostatky účtov môžu byť nesprávne",
           "balanceWarningBody": "Po importe sa nepodarilo obnoviť zostatok na jednom alebo viacerých existujúcich účtoch. Skontrolujte dotknuté účty.",

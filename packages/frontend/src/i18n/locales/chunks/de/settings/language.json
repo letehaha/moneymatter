@@ -1,18 +1,18 @@
 {
   "settings": {
     "language": {
-      "title": "Language",
-      "description": "Display language for the app interface.",
+      "title": "Sprache",
+      "description": "Anzeigesprache für die App-Oberfläche.",
       "community": {
-        "title": "Community translations",
-        "hint": "Translated by volunteers on Crowdin. Anything not translated yet is shown in English."
+        "title": "Community-Übersetzungen",
+        "hint": "Übersetzt von Freiwilligen auf Crowdin. Alles, was noch nicht übersetzt ist, wird auf Englisch angezeigt."
       },
       "contribute": {
-        "title": "Missing or wrong translations?",
-        "description": "Community languages are translated on Crowdin. You can request a new language, suggest corrections, or translate strings yourself – no coding required.",
-        "requestNote": "Prefer not to use Crowdin? Request a language on our {boardLink}.",
-        "requestNoteLink": "feature board",
-        "action": "Contribute on Crowdin"
+        "title": "Fehlende oder falsche Übersetzungen?",
+        "description": "Community-Sprachen werden auf Crowdin übersetzt. Du kannst eine neue Sprache anfragen, Korrekturen vorschlagen oder Texte selbst übersetzen – ganz ohne Programmierkenntnisse.",
+        "requestNote": "Möchtest du Crowdin lieber nicht nutzen? Schlage eine Sprache auf unserem {boardLink} vor.",
+        "requestNoteLink": "Feature-Board",
+        "action": "Auf Crowdin mithelfen"
       }
     }
   }

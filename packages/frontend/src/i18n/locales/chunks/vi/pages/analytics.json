@@ -113,7 +113,7 @@
       "filters": {
         "button": "Filters",
         "title": "Filters",
-        "categories": "Categories",
+        "categories": "Danh mục",
         "include": "Include",
         "exclude": "Exclude",
         "accounts": "Tài khoản",
@@ -220,7 +220,7 @@
         "countsCash": "Cash & bank accounts",
         "countsPortfolios": "Investment portfolios",
         "countsVentures": "Ventures",
-        "countsVehicles": "Vehicles",
+        "countsVehicles": "Phương tiện",
         "countsLoans": "Loans",
         "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
         "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
@@ -407,7 +407,7 @@
       "period": "Period",
       "allCategories": "All",
       "button": "Filters",
-      "categories": "Categories",
+      "categories": "Danh mục",
       "payees": "Người nhận",
       "accounts": "Tài khoản",
       "reset": "Reset",
@@ -493,7 +493,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so their growth is estimated from cost.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); their growth is estimated from cost.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Couldn't load the report",
@@ -572,7 +572,7 @@
     "assetKinds": {
       "cash": "Cash & accounts",
       "investments": "Investments",
-      "vehicles": "Vehicles",
+      "vehicles": "Phương tiện",
       "ventures": "Ventures"
     },
     "assetFilter": {
@@ -589,8 +589,8 @@
       "noLiabilities": "You had no liabilities during the selected period."
     },
     "chart": {
-      "assets": "Assets",
-      "liabilities": "Liabilities",
+      "assets": "Tài sản",
+      "liabilities": "Nợ phải trả",
       "netWorth": "Net worth",
       "averageLiabilities": "Avg. liabilities",
       "liabilitiesZoomed": "Liabilities scale zoomed"
@@ -604,7 +604,7 @@
       "title": "Some values are estimated",
       "unpricedSecurities": "No recent price data for {securities}, so they're shown at cost and may understate your net worth.",
       "unpricedSecuritiesTruncated": "No recent price data for {securities} and others ({count} securities total); they're shown at cost and may understate your net worth.",
-      "fxFallback": "Missing exchange rates for {currencies}; those amounts use a 1:1 rate."
+      "fxFallback": "Missing exchange rates for {currencies}. Those amounts use the earliest available rate, or 1:1 when no rate exists."
     },
     "states": {
       "loadError": "Failed to load net worth history. Please try again later.",

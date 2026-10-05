@@ -2,7 +2,7 @@
   "settings": {
     "ai": {
       "title": "Cài đặt AI",
-      "description": "Cấu hình các tính năng hỗ trợ AI, ví dụ như tự động phân loại giao dịch",
+      "description": "Pick which AI model powers each feature, add your own models, and connect AI apps like Claude or ChatGPT to your data.",
       "tabs": {
         "features": "Tính năng AI",
         "models": "AI models",
@@ -48,9 +48,9 @@
         "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
         "badges": {
           "yourKey": "Khóa của bạn",
-          "yourKeyTooltip": "Tính năng này dùng khóa API cá nhân của bạn. Bạn toàn quyền kiểm soát mức sử dụng và chi phí, không bị giới hạn tốc độ từ máy chủ của chúng tôi.",
+          "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
           "server": "Máy chủ",
-          "serverTooltip": "Tính năng này sử dụng khóa API dùng chung trên máy chủ của chúng tôi. Miễn phí nhưng có thể bị giới hạn tốc độ khi nhu cầu cao. Thêm khóa API của riêng bạn để sử dụng không giới hạn."
+          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
         },
         "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
         "sharedPoolNoteLink": "Upgrade to Plus",
@@ -265,8 +265,8 @@
         "description": "Cung cấp ngữ cảnh để AI phân loại giao dịch của bạn chính xác hơn. Những hướng dẫn này được dùng khi phân loại giao dịch trong lúc đồng bộ ngân hàng và nhập thủ công.",
         "placeholder": "Ví dụ: Giao dịch từ 'Starbucks' nên được xếp vào 'Coffee'. Thu nhập freelance của tôi đến từ 'Acme Corp'.",
         "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",
-        "requiresOwnCredentials": "Thêm khóa API của riêng bạn hoặc một điểm truy cập tùy chỉnh để dùng hướng dẫn tùy chỉnh.",
-        "credentialsCheckFailed": "Chúng tôi không kiểm tra được bạn có thông tin xác thực AI riêng hay không. Hãy thử lại để mở khóa hướng dẫn tùy chỉnh.",
+        "requiresOwnCredentials": "Add your own AI model to use custom instructions.",
+        "credentialsCheckFailed": "Couldn't check your AI models, so custom instructions are unavailable for now.",
         "retryCredentialsCheck": "Thử lại",
         "save": "Lưu",
         "saved": "Đã lưu!",

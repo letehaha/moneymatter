@@ -1,0 +1,105 @@
+{
+  "settings": {
+    "dataManagement": {
+      "title": "Import Data",
+      "description": "Import your financial data from various sources",
+      "tabs": {
+        "import": "Import",
+        "export": "Export"
+      },
+      "textSource": {
+        "title": "Import from any Text Source",
+        "aiBadge": "AI-powered",
+        "listDescription": "Bank statements, emails, or any text source"
+      },
+      "csv": {
+        "title": "Import CSV",
+        "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
+        "button": "Import CSV File",
+        "cta": "Import CSV file",
+        "listDescription": "Map columns and handle duplicates"
+      },
+      "ofx": {
+        "title": "OFX or QFX statement",
+        "listDescription": "Import bank and credit card transactions"
+      },
+      "ynab": {
+        "title": "Import from YNAB",
+        "listDescription": "Accounts, transactions, categories, and payees"
+      },
+      "budget-bakers-wallet": {
+        "title": "Wallet (BudgetBakers)",
+        "listDescription": "Multi-currency with automatic transfer pairing"
+      },
+      "ms-money": {
+        "title": "Microsoft Money",
+        "listDescription": "Import a .mny file from Microsoft Money"
+      },
+      "importHistory": {
+        "title": "Import History",
+        "listDescription": "View past imports and what they created"
+      },
+      "import": {
+        "back": "Back to Import",
+        "whichImporterHint": "Not sure which one to use?",
+        "groups": {
+          "filesAndText": "Files & text",
+          "fromOtherApps": "From other apps",
+          "history": "History"
+        },
+        "requestMore": {
+          "title": "Want more options? Request here"
+        }
+      },
+      "export": {
+        "cardTitle": "Export your data",
+        "backupOrExportHint": "Not sure whether you need Export or Backup?",
+        "form": {
+          "title": "Export your data",
+          "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
+          "confirmLabel": "Download",
+          "confirmLoading": "Preparing…",
+          "back": "Back to Export"
+        },
+        "format": {
+          "label": "Format",
+          "json": "JSON",
+          "csv": "CSV",
+          "xlsx": "Excel"
+        },
+        "groups": {
+          "label": "What to include",
+          "selectAll": "Select all",
+          "deselectAll": "Deselect all",
+          "transactions": "Transactions & accounts",
+          "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
+          "budgets": "Budgets",
+          "budgetsDescription": "Custom budgets with linked categories and spending totals",
+          "subscriptions": "Subscriptions & reminders",
+          "subscriptionsDescription": "Recurring subscriptions and bill reminders",
+          "investments": "Investments",
+          "investmentsDescription": "Portfolios, holdings, investment transactions, transfers"
+        },
+        "notifications": {
+          "success": "Export ready – your download should start in a moment.",
+          "successWithCount": "Export ready – {count} rows exported.",
+          "failed": "Could not export your data. Please try again.",
+          "downloadBlocked": "Export ready, but your browser blocked the download. Check the address bar for a download prompt.",
+          "tooLarge": "Your data is too large for a single export. Please contact support."
+        },
+        "dateRange": {
+          "label": "Date range (optional)",
+          "helper": "Only event tables (transactions, balance history, investment activity) get filtered. Accounts, categories, and other reference tables stay complete.",
+          "placeholder": "All time",
+          "clear": "Clear date range"
+        },
+        "accounts": {
+          "label": "Accounts",
+          "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
+          "placeholder": "All accounts"
+        },
+        "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
+      }
+    }
+  }
+}

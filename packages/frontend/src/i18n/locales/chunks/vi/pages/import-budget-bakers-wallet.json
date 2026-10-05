@@ -55,19 +55,19 @@
           "partialImportNote": "Some rows may have already been imported before this failure. Re-importing could create duplicates."
         },
         "done": {
-          "successTitle": "Import complete",
+          "successTitle": "Nhập dữ liệu hoàn tất",
           "successDescription": "Your Wallet data has been successfully imported.",
           "partialTitle": "Imported with {count} error(s)",
           "partialDescription": "Some rows were imported successfully, but others encountered errors.",
           "allFailedTitle": "Import failed",
           "allFailedDescription": "No rows were imported. Review the errors below and try again.",
-          "accountsCreated": "Accounts created",
+          "accountsCreated": "Tài khoản đã tạo",
           "accountsLinked": "Accounts linked",
           "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories created",
-          "tagsCreated": "Tags created",
-          "transactionsImported": "Transactions imported",
-          "transfersImported": "Transfers imported",
+          "categoriesCreated": "Danh mục đã tạo",
+          "tagsCreated": "Thẻ đã tạo",
+          "transactionsImported": "Giao dịch đã nhập",
+          "transfersImported": "Giao dịch chuyển khoản đã nhập",
           "outOfWalletImported": "Out-of-wallet imported",
           "mergedIntoPlanned": "Merged into planned",
           "duplicatesSkipped": "Duplicates skipped",
@@ -76,7 +76,7 @@
           "balanceWarningTitle": "Some account balances may be incorrect",
           "balanceWarningBody": "We couldn't reset the balance on one or more existing accounts after import. Review the affected accounts.",
           "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "importAnother": "Nhập tệp khác"
         },
         "stepper": {
           "steps": {
@@ -96,7 +96,7 @@
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },
           "categories": {
-            "sectionTitle": "Categories"
+            "sectionTitle": "Danh mục"
           },
           "quickActions": {
             "mapExactMatches": "Map exact matches",
@@ -121,7 +121,7 @@
           "duplicatesSkipped": "Duplicates skipped",
           "willImport": "Will import",
           "warningsTitle": "{count} warning(s)",
-          "rowPrefix": "Row {rowIndex}:",
+          "rowPrefix": "Dòng {rowIndex}:",
           "duplicatesTitle": "{count} possible duplicate(s)",
           "duplicatesHint": "Checked rows will be imported anyway; unchecked duplicates are skipped.",
           "back": "Back",

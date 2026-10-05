@@ -172,7 +172,7 @@
           "time": "Time"
         },
         "status": {
-          "pending": "Pending",
+          "pending": "Đang chờ",
           "booked": "Booked"
         },
         "keep": "Keep",

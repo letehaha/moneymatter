@@ -4,14 +4,14 @@
       "title": "Kontogruppe verknüpfen",
       "createNewGroup": "Neue Gruppe erstellen",
       "noGroup": "Keine Gruppe",
-      "noGroupDescription": "Dieses Konto ungruppiert lassen",
+      "noGroupDescription": "Dieses Konto keiner Gruppe zuordnen",
       "current": "Aktuell",
-      "syncHint": "Gruppen organisieren nur deine Konten — das Verschieben eines Kontos wirkt sich nicht auf die Banksynchronisierung aus.",
+      "syncHint": "Gruppen organisieren nur deine Konten — das Verschieben eines Kontos hat keinen Einfluss auf die Bank-Synchronisierung.",
       "accountsCount": "{count} Konto | {count} Konten"
     },
     "reassignCategory": {
       "title": "Transaktionen neu zuweisen",
-      "description": "Diese Kategorie hat {count} Transaktion(en). Wähle vor dem Löschen eine neue Kategorie für Transaktionen in der Kategorie \"{categoryName}\".",
+      "description": "Diese Kategorie enthält {count} Transaktion(en). Wähle vor dem Löschen eine neue Kategorie für Transaktionen von \"{categoryName}\".",
       "newCategoryLabel": "Neue Kategorie",
       "newCategoryPlaceholder": "Kategorie auswählen",
       "cancelButton": "Abbrechen",
@@ -19,36 +19,36 @@
       "reassignButtonLoading": "Wird neu zugewiesen...",
       "notifications": {
         "success": "{count} Transaktion(en) {newCategoryName} zugewiesen",
-        "error": "Fehler beim Zuweisen der Transaktionen"
+        "error": "Transaktionen konnten nicht neu zugewiesen werden"
       }
     },
     "syncConfirmation": {
-      "title": "Synchronisation kürzlich abgeschlossen",
-      "description": "Du hast deine Konten vor {time} synchronisiert. Bist du sicher, dass du sie erneut synchronisieren möchtest?",
+      "title": "Synchronisierung vor Kurzem abgeschlossen",
+      "description": "Du hast deine Konten vor {time} synchronisiert. Möchtest du wirklich erneut synchronisieren?",
       "syncAnyway": "Trotzdem synchronisieren",
       "cancel": "Abbrechen",
       "timeUnits": {
-        "someTime": "einer Weile",
+        "someTime": "einiger Zeit",
         "hours": "{count} Stunde | {count} Stunden",
         "minutes": "{count} Minute | {count} Minuten"
       }
     },
     "createPortfolio": {
       "title": "Portfolio erstellen",
-      "description": "Erstelle ein neues Anlageportfolio, um deine Beteiligungen und Transaktionen zu erfassen.",
-      "assetSupportNotice": "Unterstützt aktuell Aktien, ETFs und Kryptowährung. Anleihen, Optionen & andere Wertpapiere sind auf der {roadmapLink} – teile uns über {feedbackLink} mit, was du benötigst.",
+      "description": "Erstelle ein neues Investment-Portfolio, um deine Bestände und Transaktionen zu verfolgen.",
+      "assetSupportNotice": "Unterstützt derzeit Aktien, ETFs und Krypto. Anleihen, Optionen & weitere Wertpapiere stehen auf der {roadmapLink} – teile deine Wünsche über {feedbackLink}.",
       "assetSupportRoadmapLink": "Roadmap",
-      "assetSupportFeedbackLink": "Feature vorschlagen",
+      "assetSupportFeedbackLink": "Funktion vorschlagen",
       "form": {
-        "nameLabel": "Portfolioname",
-        "namePlaceholder": "Mein Investmentportfolio",
-        "typeLabel": "Portfoliotyp",
-        "typePlaceholder": "Portfoliotyp auswählen",
+        "nameLabel": "Portfolio-Name",
+        "namePlaceholder": "Mein Investment-Portfolio",
+        "typeLabel": "Portfolio-Typ",
+        "typePlaceholder": "Portfolio-Typ auswählen",
         "portfolioTypes": {
           "investment": "Investment",
           "retirement": "Altersvorsorge",
           "savings": "Sparen",
-          "other": "Sonstige"
+          "other": "Sonstiges"
         },
         "descriptionLabel": "Beschreibung (optional)",
         "descriptionPlaceholder": "Eine kurze Beschreibung dieses Portfolios...",
@@ -62,17 +62,17 @@
     },
     "editPortfolio": {
       "title": "Portfolio bearbeiten",
-      "description": "Aktualisiere Name, Typ oder Beschreibung deine Portfolios."
+      "description": "Aktualisiere Name, Typ oder Beschreibung deines Portfolios."
     },
     "deletePortfolio": {
       "title": "Portfolio löschen",
-      "description": "Dieses Portfolio wird in den Papierkorb verschoben und kann innerhalb von 30 Tagen wiederhergestellt werden. Danach wird es dauerhaft zusammen mit allen Beteiligungen und Transaktionen gelöscht.",
+      "description": "Dieses Portfolio wird in den Papierkorb verschoben und kann innerhalb von 30 Tagen wiederhergestellt werden. Danach wird es zusammen mit allen Beständen und Transaktionen dauerhaft gelöscht.",
       "cancelButton": "Abbrechen",
-      "deleteButton": "In den Papierkorb verschieben",
+      "deleteButton": "In den Papierkorb",
       "deleteButtonLoading": "Wird verschoben...",
       "notifications": {
-        "success": "Portfolio in den Papierkorb verschoben. Du kannst es innerhalb von 30 Tagen von der Investment-Seite wiederherstellen.",
-        "error": "Fehler beim Löschen des Portfolios."
+        "success": "Portfolio in den Papierkorb verschoben. Du kannst es innerhalb von 30 Tagen über die Investment-Seite wiederherstellen.",
+        "error": "Portfolio konnte nicht gelöscht werden."
       }
     },
     "manageTransaction": {
@@ -82,29 +82,29 @@
       "title": "Transaktion verwalten",
       "description": "Transaktion erstellen oder bearbeiten",
       "linkSection": {
-        "linkButton": "Gegenseite verknüpfen",
-        "title": "Finde die passende Gegenbuchung",
-        "description": "Wähle die passende Transaktion aus dem anderen Konto. Die beiden Datensätze wird zu einer Umbuchung — nichts wird gelöscht.",
+        "linkButton": "Gegenbuchung verknüpfen",
+        "title": "Finde die Gegenbuchung dieser Umbuchung",
+        "description": "Wähle die passende Transaktion vom anderen Konto. Die zwei Einträge werden zu einer Umbuchung zusammengefügt — nichts wird gelöscht.",
         "orDivider": "oder",
-        "linkHint": "Bereits in einem anderen Konto erfasst? Verknüpfe stattdessen beide Einträge miteinander.",
-        "unlinkButton": "Verknüpfung aufheben",
+        "linkHint": "Bereits auf einem anderen Konto erfasst? Verknüpfe die beiden Einträge stattdessen.",
+        "unlinkButton": "Transaktionen trennen",
         "cancelLinkingAriaLabel": "Verknüpfen abbrechen",
         "linkedTransactionLabel": "Verknüpfte Transaktion"
       },
       "typeSelector": {
-        "expense": "Ausgaben",
-        "income": "Einnahmen",
+        "expense": "Ausgabe",
+        "income": "Einnahme",
         "transfer": "Umbuchung",
-        "selectExpense": "Ausgaben auswählen",
-        "selectIncome": "Einnahmen auswählen",
+        "selectExpense": "Ausgabe auswählen",
+        "selectIncome": "Einnahme auswählen",
         "selectTransfer": "Umbuchung auswählen"
       },
       "recordList": {},
       "form": {
-        "payeeLabel": "Empfänger",
+        "payeeLabel": "Zahlungsempfänger",
         "outOfWalletDocsLink": "Was ist Out of Wallet?",
         "destinationGroupLabel": "Wohin das Geld fließt",
-        "paymentTypeLabel": "Zahlungstyp",
+        "paymentTypeLabel": "Zahlungsart",
         "noteLabel": "Notiz",
         "notePlaceholder": "Notiz",
         "externalUrlLabel": "Externe URL",
@@ -118,33 +118,33 @@
           "latitudePlaceholder": "Breitengrad, z.B. 50.4501",
           "longitudePlaceholder": "Längengrad, z.B. 30.5234",
           "unsupported": "Dein Browser unterstützt keine Geolokation",
-          "denied": "Standortzugriff verweigert. Erlaube ihn in den Browser-Einstellungen oder gib die Koordinaten manuell ein",
-          "unavailable": "Standort konnte nicht ermittelt werden. Versuchen es erneut oder gib die Koordinaten manuell ein",
+          "denied": "Standortzugriff wurde verweigert. Erlaube ihn in deinen Browsereinstellungen oder gib Koordinaten manuell ein",
+          "unavailable": "Dein Standort konnte nicht ermittelt werden. Versuche es erneut oder gib Koordinaten manuell ein",
           "pickOnMap": "Auf Karte auswählen",
           "picker": {
-            "title": "Wähle einen Standort",
+            "title": "Standort auswählen",
             "searchPlaceholder": "Adresse oder Ort suchen",
             "noResults": "Keine Orte gefunden",
-            "searchFailed": "Suche ist momentan nicht verfügbar. Versuche es in Kürze erneut",
+            "searchFailed": "Suche ist derzeit nicht verfügbar. Versuche es in einem Moment erneut",
             "confirm": "Diesen Standort verwenden",
             "loadFailed": "Karte konnte nicht geladen werden. Überprüfe deine Verbindung und versuche es erneut",
             "retry": "Erneut versuchen",
             "consent": {
               "title": "Kartenkacheln stammen von OpenStreetMap",
-              "description": "Das Öffnen der Karte und die Suche nach Adressen sendet Anfragen an openstreetmap.org, die deine IP-Adresse sehen. Du kannst dies später in den Einstellungen deaktivieren.",
+              "description": "Das Öffnen der Karte und das Suchen nach Adressen sendet Anfragen an openstreetmap.org, wodurch deine IP-Adresse sichtbar ist. Du kannst dies später in den Einstellungen deaktivieren.",
               "enable": "Karte aktivieren",
-              "failed": "Die Einstellung konnte nicht gespeichert werden. Versuche es erneut"
+              "failed": "Einstellung konnte nicht gespeichert werden. Versuche es erneut"
             }
           }
         },
         "tagsLabel": "Tags",
-        "originalAmountLabel": "Ursprungsbetrag",
+        "originalAmountLabel": "Originalbetrag",
         "originalAmountPlaceholder": "Betrag in Fremdwährung",
-        "originalAmountTooltip": "Wenn eine Transaktion in einer anderen Währung als der des Kontos durchgeführt wurde, ist dies der tatsächliche Betrag, der in dieser Währung gezahlt wurde. Der Hauptbetrag bleibt in der Währung des Kontos. Wirkt sich nicht auf Statistiken aus.",
-        "originalCurrencyLabel": "Ursprungswährung",
+        "originalAmountTooltip": "Wenn eine Transaktion in einer vom Konto abweichenden Währung getätigt wurde, ist dies der tatsächlich in dieser Währung gezahlte Betrag. Der Hauptbetrag bleibt in der Währung des Kontos. Dies hat keinen Einfluss auf Statistiken.",
+        "originalCurrencyLabel": "Originalwährung",
         "originalCurrencyTriggerEmpty": "Währung",
         "originalCurrencyNone": "Keine Währung",
-        "originalAmountSuggestHint": "{amount} — Kurs für {date}",
+        "originalAmountSuggestHint": "{amount} — Kurs vom {date}",
         "originalAmountSuggestApply": "Anwenden",
         "amountLabel": "Betrag",
         "amountPlaceholder": "Betrag",
@@ -153,29 +153,29 @@
         "targetAmountLabel": "Zielbetrag",
         "targetAmountPlaceholder": "Zielbetrag",
         "plannedLabel": "Geplant",
-        "plannedUnavailableNotification": "Geplante Transaktionen an dieser Stelle nicht verfügbar, daher wurde die Option deaktiviert.",
-        "plannedTooltip": "Erfasse eine bevorstehende Buchung. Dein Kontostand bleibt unverändert, bis sie ausgeführt wird.",
-        "plannedConnectedAccountTooltip": "Für ein mit einer Bank verbundenes Konto können nur geplante Transaktionen erfasst werden. Wenn du diese Funktion deaktivierst, werden das Konto und das Datum gelöscht.",
-        "plannedConfirmTooltip": "Schalte dies aus, sobald das Geld geflossen ist – beim Speichern wird der Betrag in deinem Kontostand verbucht.",
-        "plannedAccountsUnlockedHint": "Über Bankverbindungen synchronisierte Konten sind jetzt auswählbar",
-        "plannedDatesUnlockedHint": "Zukünftige Daten freigeschaltet",
-        "datetimeLabel": "Datum/Uhrzeit",
-        "splitInfo": "In {count} Kategorien aufteilen",
+        "plannedUnavailableNotification": "Geplante Transaktionen sind hier nicht verfügbar, daher wurde die Option deaktiviert.",
+        "plannedTooltip": "Erfasse eine anstehende Transaktion. Dein Kontostand bleibt unverändert, bis sie ausgeführt wird.",
+        "plannedConnectedAccountTooltip": "Nur geplante Transaktionen können sich auf einem mit der Bank verbundenen Konto befinden. Das Deaktivieren löscht das Konto und das Datum.",
+        "plannedConfirmTooltip": "Deaktiviere dies, sobald das Geld geflossen ist — beim Speichern wird es deinem Kontostand gutgeschrieben.",
+        "plannedAccountsUnlockedHint": "Mit der Bank verbundene Konten sind jetzt auswählbar",
+        "plannedDatesUnlockedHint": "Zukünftige Datumsangaben freigeschaltet",
+        "datetimeLabel": "Datum & Uhrzeit",
+        "splitInfo": "Aufgeteilt auf {count} Kategorien",
         "editSplit": "Bearbeiten",
-        "splitPillLabel": "Aufteilen",
+        "splitPillLabel": "Aufteilung",
         "moreOptionsButton": "Weitere Optionen",
         "closeButton": "Schließen",
         "deleteButton": "Löschen",
         "deleteAriaLabel": "Transaktion löschen",
         "deleteConfirmTitle": "Diese Transaktion löschen?",
-        "deleteConfirmDescription": "Dies kann nicht rückgängig gemacht werden. Alle Aufteilungen und Erstattungsverknüpfungen werden ebenfalls entfernt.",
+        "deleteConfirmDescription": "Dies kann nicht rückgängig gemacht werden. Alle damit verknüpften Aufteilungen und Rückerstattungslinks werden ebenfalls entfernt.",
         "createAriaLabel": "Transaktion erstellen",
         "editAriaLabel": "Transaktion bearbeiten",
         "loadingButton": "Laden...",
         "createButton": "Erstellen",
         "editButton": "Bearbeiten",
-        "fromAccountLabel": "Quellkonto",
-        "toAccountLabel": "Zielkonto",
+        "fromAccountLabel": "Von Konto",
+        "toAccountLabel": "Auf Konto",
         "accountLabel": "Konto",
         "selectAccountPlaceholder": "Konto auswählen",
         "noAccountExists": "Kein Konto vorhanden",
@@ -183,42 +183,42 @@
         "createAccountLink": "Konto erstellen",
         "destinationTypeAccount": "Konto",
         "destinationTypePortfolio": "Portfolio",
-        "toPortfolioLabel": "Zielportfolio",
-        "portfolioCashAlreadyReflectedLabel": "Portfolio-Saldo enthält dieses Geld bereits",
-        "portfolioCashAlreadyReflectedHint": "Erfasst die Umbuchung für deine Einzahlungshistorie, ohne dem Portfolio neues Guthaben hinzuzufügen. Nutze dies für ältere Transaktionen, wenn das Portfolio bereits mit dem aktuellen Stand eingerichtet wurde.",
+        "toPortfolioLabel": "An Portfolio",
+        "portfolioCashAlreadyReflectedLabel": "Portfolio-Guthaben enthält dieses Geld bereits",
+        "portfolioCashAlreadyReflectedHint": "Erfasst die Umbuchung für die Einzahlungshistorie, ohne dem Portfolio Bargeld hinzuzufügen. Verwende dies für ältere Transaktionen, wenn das Portfolio bereits mit seinem aktuellen Kontostand eingerichtet wurde.",
         "selectPortfolioPlaceholder": "Portfolio auswählen",
         "noPortfoliosExist": "Keine Portfolios vorhanden",
         "destinationTypeLoan": "Kredit",
-        "toLoanLabel": "Zielkredit",
+        "toLoanLabel": "An Kredit",
         "selectLoanPlaceholder": "Kredit auswählen",
         "noLoansExist": "Keine Kredite vorhanden",
         "validation": {
           "required": "Dieses Feld ist erforderlich",
           "minValue": "Der Betrag muss 0 oder größer sein",
-          "futureDate": "Das Datum muss heute oder früher sein.",
+          "futureDate": "Datum muss heute oder früher sein.",
           "latitudeRange": "Breitengrad muss zwischen -90 und 90 liegen",
           "longitudeRange": "Längengrad muss zwischen -180 und 180 liegen",
-          "locationPair": "Breitengrad und Längengrad eingeben",
+          "locationPair": "Gib sowohl Breiten- als auch Längengrad ein",
           "maxLength": "Darf {max} Zeichen nicht überschreiten",
-          "httpUrl": "Gib eine gültige http(s) URL ein"
+          "httpUrl": "Gib eine gültige HTTP(S)-URL ein"
         },
         "attachments": {
           "label": "Anhänge",
           "loading": "Anhänge werden geladen…",
-          "listLoadFailed": "Anhänge konnten nicht geladen werden. Schließe und öffne diesen Dialog, um es erneut zu versuchen.",
-          "hint": "Bis zu {max} Dateien mit einer Größe von jeweils {size}. JPEG, PNG, WebP oder PDF.",
+          "listLoadFailed": "Anhänge konnten nicht geladen werden. Schließe diesen Dialog und öffne ihn erneut, um es noch einmal zu versuchen.",
+          "hint": "Bis zu {max} Dateien, jeweils {size}. JPEG, PNG, WebP oder PDF.",
           "trigger": {
             "empty": "Anhänge hinzufügen",
             "count": "{count} Anhang | {count} Anhänge",
             "uploading": "Wird hochgeladen…"
           },
           "dropzone": {
-            "idle": "Dateien hier ablegen oder klicken, um Dateien auszuwählen",
-            "drag": "Zum Anhängen ablegen"
+            "idle": "Dateien hier ablegen oder zum Durchsuchen klicken",
+            "drag": "Zum Anhängen hier ablegen"
           },
           "errors": {
-            "unsupportedType": "Einige Dateien wurden übersprungen: Es können nur JPEG, PNG, WebP und PDF Dateien angehängt werden.",
-            "tooMany": "Eine Transaktion kann höchstens {max} Anhänge enthalten.",
+            "unsupportedType": "Einige Dateien wurden übersprungen: Nur JPEG-, PNG-, WebP- und PDF-Dateien können angehängt werden.",
+            "tooMany": "Eine Transaktion kann höchstens {max} Anhänge haben.",
             "tooLarge": "\"{filename}\" ist größer als {max} und wurde nicht hochgeladen.",
             "upload": "Fehler beim Hochladen des Anhangs.",
             "delete": "Fehler beim Löschen des Anhangs."
@@ -233,7 +233,7 @@
             "description": "Alle {count} Dateien werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden."
           },
           "viewer": {
-            "loadFailed": "Fehler beim Laden der Datei.",
+            "loadFailed": "Diese Datei konnte nicht geladen werden.",
             "openInNewTab": "In neuem Tab öffnen",
             "download": "Herunterladen"
           }
@@ -241,29 +241,29 @@
       },
       "refundRecordsList": {
         "filtersDialogTitle": "Filter auswählen",
-        "fromDateLabel": "Von Datum",
-        "toDateLabel": "Bis Datum",
+        "fromDateLabel": "Startdatum",
+        "toDateLabel": "Enddatum",
         "amountFromLabel": "Betrag von (>=)",
-        "amountFromPlaceholder": "Größer gleich",
+        "amountFromPlaceholder": ">= als",
         "amountToLabel": "Bis (<=)",
-        "amountToPlaceholder": "Kleiner gleich",
+        "amountToPlaceholder": "<= als",
         "resetButton": "Zurücksetzen",
         "applyButton": "Anwenden",
-        "noMoreTransactions": "Keine weiteren Transaktionen mehr zu laden",
-        "noIncomeTransactions": "Im System gibt es keine Einnahmenbuchungen, die nicht bereits als Rückerstattungen gekennzeichnet sind. Erstelle einige, um fortzufahren",
-        "noExpenseTransactions": "Im System gibt es keine Ausgabenbuchungen, die nicht bereits als Rückerstattungen gekennzeichnet sind. Erstelle einige, um fortzufahren",
-        "noTransactions": "Keine Transaktionen zum Auswählen vorhanden. Erstelle einige, um fortzufahren",
+        "noMoreTransactions": "Keine weiteren Transaktionen zum Laden",
+        "noIncomeTransactions": "Es gibt keine Einnahme-Transaktionen im System, die nicht bereits als Rückerstattung markiert sind. Erstelle welche, um fortzufahren",
+        "noExpenseTransactions": "Es gibt keine Ausgabe-Transaktionen im System, die nicht bereits als Rückerstattung markiert sind. Erstelle welche, um fortzufahren",
+        "noTransactions": "Es gibt keine Transaktionen zur Auswahl. Erstelle welche, um fortzufahren",
         "resetFiltersButton": "Filter zurücksetzen",
         "recommendedLabel": "Empfohlen",
         "allTransactionsLabel": "Alle Transaktionen",
         "searchPlaceholder": "Notizen durchsuchen...",
         "filtersLabel": "Filter",
-        "noSearchResults": "Es stimmt nichts mit “{query} ” überein",
+        "noSearchResults": "Keine Treffer für \"{query}\"",
         "clearSearchButton": "Suche zurücksetzen"
       },
       "splitDialog": {
         "title": "In Kategorien aufteilen",
-        "description": "Teile diese Transaktion auf mehrere Kategorien auf. Nicht verteilte Beträge verbleiben in der Hauptkategorie.",
+        "description": "Verteile diese Transaktion auf mehrere Kategorien. Die Hauptkategorie behält den nicht zugewiesenen Betrag.",
         "mainCategoryLabel": "Hauptkategorie",
         "selectCategoryPlaceholder": "Kategorie auswählen",
         "amountPlaceholder": "0",
@@ -271,51 +271,51 @@
         "removeRowLabel": "Kategorie löschen",
         "totalAmountLabel": "Gesamtbetrag",
         "splitTotalLabel": "Aufgeteilter Betrag",
-        "mainCategoryKeepsLabel": "Verbleibt in Hauptkategorie",
-        "exceedsTransactionTotal": "Aufteilungsbeträge überschreiten Transaktionssumme",
+        "mainCategoryKeepsLabel": "Hauptkategorie behält",
+        "exceedsTransactionTotal": "Aufgeteilte Beträge übersteigen den Gesamtbetrag der Transaktion",
         "cancelButton": "Abbrechen",
-        "removeSplitsButton": "Aufteilungen",
+        "removeSplitsButton": "Aufteilungen entfernen",
         "saveSplitsButton": "Aufteilungen speichern",
         "errors": {
-          "amountMustBePositive": "Betrag darf nicht negativ sein",
+          "amountMustBePositive": "Betrag muss positiv sein",
           "duplicateCategory": "Doppelte Kategorie",
-          "cannotUseMainCategory": "Hauptkategorie kann nicht in Splits verwendet werden"
+          "cannotUseMainCategory": "Hauptkategorie kann nicht in Aufteilungen verwendet werden"
         }
       },
       "markAsRefund": {
-        "linkRefund": "Erstattung verknüpfen",
+        "linkRefund": "Rückerstattung verknüpfen",
         "selectTransaction": "Transaktion auswählen",
-        "selectRefundingTransaction": "Wähle die ursprüngliche Buchung für diese Rückerstattung.",
-        "selectRefundedByTransactions": "Wähle die Transaktionen aus, die diesen Eintrag erstatten.",
+        "selectRefundingTransaction": "Wähle die ursprüngliche Transaktion aus, die durch diesen Eintrag rückerstattet wird.",
+        "selectRefundedByTransactions": "Wähle Transaktionen aus, die den aktuellen Eintrag rückerstatten.",
         "refundsLabel": "Erstattet",
-        "refundedByLabel": "Erstattet durch",
-        "refundedByCreationHint": "\"Erstattet durch\" wird verfügbar, nachdem die Transaktion angelegt wurde.",
+        "refundedByLabel": "Rückerstattet von",
+        "refundedByCreationHint": "\"Rückerstattet von\" wird verfügbar, nachdem die Transaktion erstellt wurde.",
         "saveButton": "Speichern",
         "confirmButton": "Bestätigen",
-        "linkedRefunds": "Verknüpfte Erstattungen",
+        "linkedRefunds": "Verknüpfte Rückerstattungen",
         "unlinkRefund": "Rückerstattung entfernen",
-        "refundsPortion": "Teil-Rückerstattung für {name}",
+        "refundsPortion": "Erstattet den Teil von {name}",
         "selectOnlyOne": "* Du kannst nur eine Transaktion auswählen",
-        "selectMultipleWithLimit": "* Du kannst mehrere Transaktionen auswählen, aber der Gesamtbetrag kann nicht größer sein als der ursprüngliche Transaktionsbetrag",
-        "selectWhichPartToRefund": "Wähle den zu erstattenden Teil aus",
-        "transactionSplitInfo": "Diese Transaktion ist in mehrere Kategorien aufgeteilt. Wähle den zu erstattenden Teil aus.",
-        "amountTooSmallWarning": "Optionen kleiner als dein Erstattungsbetrag",
+        "selectMultipleWithLimit": "* Du kannst mehrere Transaktionen auswählen, aber ihr Gesamtbetrag darf nicht größer als der ursprüngliche Transaktionsbetrag sein",
+        "selectWhichPartToRefund": "Wähle aus, welcher Teil erstattet werden soll",
+        "transactionSplitInfo": "Diese Transaktion ist auf mehrere Kategorien aufgeteilt. Wähle aus, welchen Teil du erstatten möchtest.",
+        "amountTooSmallWarning": "Optionen, die kleiner als dein Erstattungsbetrag sind,",
         "amountDisabled": "sind deaktiviert.",
-        "amountMayBeSmaller": "Einige Optionen können kleiner als dein Erstattungsbetrag sein",
-        "finalValidationWarning": "Die endgültige Validierung verwendet konvertierte Beträge.",
+        "amountMayBeSmaller": "Einige Optionen sind möglicherweise kleiner als dein Erstattungsbetrag",
+        "finalValidationWarning": "Für die abschließende Validierung werden umgerechnete Beträge verwendet.",
         "mainCategoryLabel": "(Hauptkategorie)",
-        "linkRemovedOnTypeChange": "Erstattungsverknüpfung wurde entfernt, da sich der Transaktionstyp geändert hat.",
+        "linkRemovedOnTypeChange": "Rückerstattungsverknüpfung entfernt, da sich der Transaktionstyp geändert hat.",
         "modeRefunds": "Erstattet eine Transaktion",
-        "helperRefunds": "Dieser Eintrag ist die Erstattung — wähle die eine erstattende Transaktion aus.",
-        "helperRefundedBy": "Andere Einträge erstatten diesen – wähle beliebig viele, zusammen bis zu {amount}.",
-        "helperRefundedByNoLimit": "Andere Einträge erstatten diesen – du kannst mehrere auswählen.",
+        "helperRefunds": "Dieser Eintrag ist die Rückerstattung — wähle die eine Transaktion aus, die er erstattet.",
+        "helperRefundedBy": "Andere Einträge erstatten diesen — wähle eine beliebige Anzahl, zusammen bis zu {amount}.",
+        "helperRefundedByNoLimit": "Andere Einträge erstatten diesen — du kannst mehrere auswählen.",
         "thisEntry": "Dieser Eintrag",
         "linkWordRefunds": "erstattet",
-        "linkWordRefundedBy": "erstattet durch",
-        "slotEmptyRefunds": "Wähle die ursprüngliche Transaktion unten aus",
-        "slotEmptyRefundedBy": "Wählen die erstattende Transaktion unten aus",
+        "linkWordRefundedBy": "rückerstattet von",
+        "slotEmptyRefunds": "Wähle unten die ursprüngliche Transaktion aus",
+        "slotEmptyRefundedBy": "Wähle unten die erstattenden Transaktionen aus",
         "slotSelectedCount": "{count} Transaktion | {count} Transaktionen",
-        "clearSelection": "Auswahl löschen",
+        "clearSelection": "Auswahl aufheben",
         "linkedAmountLabel": "{amount} verknüpft",
         "linkedOfLimit": "von {amount}",
         "limitExceeded": "Limit {amount} überschritten",
@@ -323,93 +323,93 @@
         "summaryCountOnly": "{count} ausgewählt",
         "summarySelected": "{count} ausgewählt · {amount}",
         "summaryOfLimit": "{count} ausgewählt · {amount} von {limit}",
-        "summaryExceedsBy": "{count} ausgewählt · {amount} — übersteigt den ursprünglichen Betrag um {excess}",
+        "summaryExceedsBy": "{count} ausgewählt · {amount} — übersteigt das Original um {excess}",
         "summaryExceeds": "{count} ausgewählt · {amount} — übersteigt den ursprünglichen Betrag",
         "summaryBelowRefund": "{amount} — weniger als diese Erstattung von {limit}"
       },
       "refundInfo": {
-        "trigger": "So funktioniert's",
-        "title": "Über Rückerstattungen",
-        "description": "Diese Aktion verknüpft die aktuelle Transaktion [Ausgabe/Einnahme] als Rückerstattung mit einer bereits bestehenden Transaktion.",
+        "trigger": "Wie funktioniert das?",
+        "title": "Über Rückerstattungstransaktionen",
+        "description": "Diese Aktion verknüpft die aktuelle Transaktion [Ausgabe/Einnahme] als Rückerstattung mit einer vorherigen bestehenden Transaktion.",
         "howItWorks": {
-          "title": "So funktioniert's:",
-          "expenseRefund": "Für die Erstattung einer Ausgabe: Wähle die ursprüngliche Einnahmetransaktion aus.",
-          "incomeRefund": "Für die Erstattung einer Einnahme: Wähle die ursprüngliche Ausgabetransaktion aus.",
-          "noOriginal": "Du kannst jede Transaktion als Rückerstattung markieren – selbst wenn keine „ursprüngliche“ Transaktion im System existiert. Das ist besonders praktisch, wenn das Konto der Ursprungsbuchung nicht in System hinterlegt ist."
+          "title": "Wie es funktioniert:",
+          "expenseRefund": "Für eine Ausgabenerstattung: Wähle die ursprüngliche Einnahme-Transaktion aus.",
+          "incomeRefund": "Für eine Einnahmenerstattung: Wähle die ursprüngliche Ausgaben-Transaktion aus.",
+          "noOriginal": "Du kannst jede Transaktion als Rückerstattung markieren, selbst wenn keine \"ursprüngliche\" Transaktion im System vorhanden ist. Nützlich, falls du kein Konto mit der ursprünglichen Transaktion im System hast."
         },
         "benefits": {
-          "title": "Deine Vorteile:",
-          "accuracy": "Präzise Statistiken: Erstattete Beträge werden automatisch aus deinen Ausgaben- und Einnahmen-Statistiken herausgerechnet.",
-          "tracking": "Bessere Übersicht: Zusammenhängende Transaktionen lassen sich leicht nachvollziehen, was deinen Verlauf übersichtlicher macht."
+          "title": "Vorteile:",
+          "accuracy": "Erhöht die finanzielle Genauigkeit, indem Ausgaben- oder Einnahmenstatistiken um erstattete Beträge bereinigt werden.",
+          "tracking": "Hilft beim Nachverfolgen zusammenhängender Transaktionen, um deinen Feed zu verbessern."
         },
         "notes": {
           "title": "Wichtige Hinweise:",
-          "recordKeeping": "Diese Verknüpfung dient ausschließlich der Dokumentation und Übersicht.",
-          "noBalanceAdjust": "Sie verändert den Kontostand der ursprünglichen Transaktion in keiner Weise.",
-          "canUnlink": "Du kannst die Verknüpfung zwischen Transaktionen jederzeit wieder aufheben."
+          "recordKeeping": "Diese Verknüpfung dient nur der Dokumentation.",
+          "noBalanceAdjust": "Sie passt den Kontostand der ursprünglichen Transaktion in keiner Weise an.",
+          "canUnlink": "Du kannst Transaktionen jederzeit wieder trennen."
         },
         "examples": {
           "title": "Beispiele:",
-          "customerPayment": "Kundenzahlung erstatten: Erstelle eine Ausgabe und verknüpfe sie mit der ursprünglichen Einnahme.",
-          "vendorRefund": "Erstattung von einem Händler erhalten: Erstelle eine Einnahme und verknüpfe sie mit der ursprünglichen Ausgabe.",
-          "noOriginalTx": "Erstattung ohne Ursprungsbuchung erfassen: Manchmal musst du eine Erstattung eintragen, zu der keine Buchung im System existiert – zum Beispiel bei einer Barzahlung, die ursprünglich nicht erfasst wurde. Auch in diesem Fall kannst du einen Erstattungseintrag erstellen, damit deine Statistiken stets korrekt bleiben."
+          "customerPayment": "Erstattung einer Kundenzahlung: Erstelle eine Ausgabe und verknüpfe sie mit der ursprünglichen Einnahme.",
+          "vendorRefund": "Erhalt einer Rückerstattung von einem Händler: Erstelle eine Einnahme und verknüpfe sie mit der ursprünglichen Ausgabe.",
+          "noOriginalTx": "Erfassen einer Rückerstattung ohne ursprüngliche Transaktion: Manchmal musst du eine Rückerstattung für eine Transaktion erfassen, die sich nicht in deinem System befindet. Wenn du beispielsweise eine Rückerstattung für eine Barzahlung erfasst, die ursprünglich nicht protokolliert wurde, kannst du dennoch einen Rückerstattungseintrag erstellen. Dies hilft, genaue Aufzeichnungen zu führen, selbst wenn die ursprüngliche Transaktion nicht digital erfasst wurde."
         }
       },
       "transferRecordsList": {
         "filtersDialogTitle": "Filter",
-        "fromDateLabel": "Von Datum",
-        "toDateLabel": "Bis Datum",
+        "fromDateLabel": "Startdatum",
+        "toDateLabel": "Enddatum",
         "amountFromLabel": "Betrag von",
-        "amountFromPlaceholder": "Min.",
+        "amountFromPlaceholder": "Min",
         "amountToLabel": "Betrag bis",
-        "amountToPlaceholder": "Max.",
+        "amountToPlaceholder": "Max",
         "resetButton": "Zurücksetzen",
         "applyButton": "Anwenden",
         "recommendedLabel": "Empfohlen",
         "allTransactionsLabel": "Alle Transaktionen",
         "noMoreTransactions": "Keine weiteren Transaktionen",
-        "noIncomeTransactions": "Keine Einnahmetransaktionen gefunden. Versuchen die Filter anzupassen.",
-        "noExpenseTransactions": "Keine Ausgabentransaktionen gefunden. Versuchen Sie die Filter anzupassen.",
-        "noTransactions": "Keine Transaktionen gefunden. Versuche die Filter anzupassen.",
+        "noIncomeTransactions": "Keine Einnahme-Transaktionen gefunden. Versuche, die Filter anzupassen.",
+        "noExpenseTransactions": "Keine Ausgabe-Transaktionen gefunden. Versuche, die Filter anzupassen.",
+        "noTransactions": "Keine Transaktionen gefunden. Versuche, die Filter anzupassen.",
         "resetFiltersButton": "Filter zurücksetzen"
       },
       "portfolioLinked": {
         "title": "Portfolio-verknüpfte Transaktion",
-        "linkedAs": "Diese Transaktion ist als {type} verbunden mit",
+        "linkedAs": "Diese Transaktion ist verknüpft als {type} mit",
         "deposit": "Einzahlung",
         "withdrawal": "Auszahlung",
-        "unlinkButton": "Von Portfolio trennen",
-        "unlinkWarning": "Das Entfernen der Verknüpfung wird den Cash-Bestand des Portfolios {portfolio} verringern.",
-        "unlinkWarningNoCash": "Diese Umbuchung hat den Cash-Bestand von {portfolio} nie verändert, sodass bei Aufhebung der Verknüpfung das Guthaben unverändert bleibt.",
-        "unlinkDescription": "Diese Umbuchung hat den Cash-Bestand von {portfolio} nie verändert. Wenn du die Verknüpfung aufhebst, bleibt der Cash-Bestand daher unverändert.",
+        "unlinkButton": "Vom Portfolio trennen",
+        "unlinkWarning": "Das Trennen verringert den Barbestand des Portfolios {portfolio}.",
+        "unlinkWarningNoCash": "Diese Umbuchung hat den Barbestand von {portfolio} nie verändert, daher bleibt der Saldo beim Trennen unverändert.",
+        "unlinkDescription": "Ursprüngliche Transaktionsdetails werden wiederhergestellt.",
         "cancelButton": "Abbrechen",
-        "confirmUnlink": "Verknüpfung aufheben"
+        "confirmUnlink": "Trennen bestätigen"
       },
       "ventureLinked": {
-        "title": "Venture-verknüpfte Transaktion",
-        "description": "Diese Transaktion ist mit einem Venture Event verbunden.",
-        "editHint": "Bearbeite oder entferne die Verknüpfung aus dem Verlauf des Venture-Deals.",
-        "openVenture": "Venture öffnen"
+        "title": "Mit Beteiligung verknüpfte Transaktion",
+        "description": "Diese Transaktion ist mit einem Ereignis einer Beteiligung verknüpft.",
+        "editHint": "Bearbeite oder trenne sie in der Ereignis-Timeline der zugehörigen Beteiligung.",
+        "openVenture": "Beteiligung öffnen"
       },
       "vehicleLinked": {
-        "title": "Fahrzeugwertkorrektur",
+        "title": "Fahrzeugwertanpassung",
         "description": "Diese Transaktion dokumentiert eine manuelle Wertanpassung für {name}.",
         "editHint": "Um den Wert oder das Datum zu ändern oder die Anpassung zu löschen, verwalte sie auf der Detailseite des Fahrzeugs.",
-        "openVehicle": "Öffne {name}"
+        "openVehicle": "{name} öffnen"
       },
       "templates": {
         "trigger": "Vorlagen",
-        "filterPlaceholder": "Suche eine Vorlage…",
-        "emptyState": "Vorlagen füllen dieses Formular mit Angaben, die du häufig verwendest – Betrag, Konto, Kategorie, Empfänger, Tags und Notizen. Sie erstellen von selbst keine Buchungen; für Zahlungen, die sich regelmäßig wiederholen, nutze bitte Wiederkehrende Zahlungen.",
-        "noMatches": "Keine passende Vorlage gefunden.",
-        "loadError": "Vorlagen konnten nicht geladen werden.",
-        "saveCurrent": "Als Vorlage speichern",
-        "updateApplied": "‘{name}’ aktualisieren",
+        "filterPlaceholder": "Vorlage finden…",
+        "emptyState": "Vorlagen füllen dieses Formular mit Details, die du häufig eingibst — Betrag, Konto, Kategorie, Zahlungsempfänger, Tags, Notiz. Sie fügen von selbst nichts hinzu; verwende für regelmäßige Vorgänge Wiederkehrende Zahlungen.",
+        "noMatches": "Keine passenden Vorlagen.",
+        "loadError": "Deine Vorlagen konnten nicht geladen werden.",
+        "saveCurrent": "Aktuelles als Vorlage speichern",
+        "updateApplied": "\"{name}\" aktualisieren",
         "saveAsNew": "Als neu speichern",
         "newTemplate": "Neue Vorlage",
         "use": "Vorlage verwenden",
         "edit": "Bearbeiten",
-        "tapHint": "Tippen Sie auf eine Vorlage, um das Formular auszufüllen",
+        "tapHint": "Tippe auf eine Vorlage, um das Formular auszufüllen",
         "toggleDetails": "Details anzeigen",
         "noAmount": "Kein Betrag gespeichert",
         "keepsAccount": "Behält das ausgewählte Konto bei",
@@ -417,16 +417,16 @@
           "categoryDeleted": "Kategorie gelöscht",
           "accountUnavailable": "Konto nicht verfügbar"
         },
-        "removeAriaLabel": "Vorlage entfernen, Formular wiederherstellen",
+        "removeAriaLabel": "Vorlage entfernen, Formular zurücksetzen",
         "announceApplied": "{name} angewendet — {count} Feld ausgefüllt. Betrag ist leer. | {name} angewendet — {count} Felder ausgefüllt. Betrag ist leer.",
         "announceAppliedWithAmount": "{name} angewendet — {count} Feld ausgefüllt. Betrag auf {amount} gesetzt. | {name} angewendet — {count} Felder ausgefüllt. Betrag auf {amount} gesetzt.",
         "categoryDeletedHint": "Die Kategorie dieser Vorlage wurde gelöscht — wähle eine aus.",
-        "alsoSet": "Vorlage hat auch gesetzt: {fields}",
+        "alsoSet": "Ebenfalls aus der Vorlage übernommen: {fields}",
         "tagsCount": "{count} Tag | {count} Tags",
         "applyConfirmTitle": "Vorlage anwenden?",
-        "applyConfirmDescription": "Das Anwenden ersetzt deine Aufteilungen und Erstattungsverknüpfungen.",
+        "applyConfirmDescription": "Das Anwenden ersetzt deine Aufteilungen und die Verknüpfung zur Rückerstattung.",
         "toasts": {
-          "savedFromForm": "‘{name}’ gespeichert – ist es jetzt die aktive Vorlage.",
+          "savedFromForm": "\"{name}\" gespeichert — ist jetzt die aktive Vorlage.",
           "saved": "Vorlage gespeichert.",
           "deleted": "Vorlage gelöscht."
         },
@@ -442,9 +442,9 @@
           "delete": "Vorlage löschen",
           "save": "Vorlage speichern",
           "deleteConfirmTitle": "‘{name}’ löschen?",
-          "deleteConfirmDescription": "Diese Vorlage wird entfernt. Transaktionen, die die du bereits erstellt hast.",
-          "duplicateName": "Du hast bereits eine Vorlage namens „{name}“.",
-          "originalCurrencyLabel": "Währung Ursprungsbetrag",
+          "deleteConfirmDescription": "Diese Vorlage wird entfernt. Bereits daraus erstellte Transaktionen sind nicht betroffen.",
+          "duplicateName": "Du hast bereits eine Vorlage namens \"{name}\".",
+          "originalCurrencyLabel": "Währung des Ursprungsbetrags",
           "originalCurrencyPlaceholder": "Währung auswählen"
         },
         "errors": {
@@ -456,26 +456,26 @@
     },
     "portfolioTransfer": {
       "portfolio": {
-        "title": "Umbuchung von Portfolio",
-        "description": "Guthaben von diesem Portfolio auf ein anderes Portfolio oder Konto umbuchen."
+        "title": "Umbuchung aus Portfolio",
+        "description": "Überweise Guthaben aus diesem Portfolio auf ein anderes Portfolio oder Konto."
       },
       "account": {
-        "title": "Umbuchung von Konto",
-        "description": "Guthaben von diesem Konto auf ein anderes Portfolio umbuchen."
+        "title": "Umbuchung vom Konto",
+        "description": "Überweise Guthaben von diesem Konto in ein Portfolio."
       }
     },
     "addSymbols": {
-      "title": "Symbol hinzufügen",
+      "title": "Symbole hinzufügen",
       "searchLabel": "Symbol oder Name suchen",
       "searchPlaceholder": "AAPL",
-      "searchError": "Fehler bei der Suche nach Wertpapieren.",
+      "searchError": "Wertpapiersuche fehlgeschlagen.",
       "addedIndicator": "(Hinzugefügt)",
       "noResults": "Keine Ergebnisse.",
       "emptyState": {
         "title": "Nach einem Symbol suchen",
-        "description": "Gib einen Ticker oder einen Namen ein, um Aktien oder Kryptos, die du diesem Portfolio hinzufügen kannst, zu finden."
+        "description": "Gib ein Tickersymbol oder einen Namen ein, um Aktien oder Kryptowährungen zu finden, die du zu diesem Portfolio hinzufügen kannst."
       },
-      "noResultsHint": "Probiere einen anderen Ticker, vollen Namen oder wechsle den Filter oben.",
+      "noResultsHint": "Versuche ein anderes Tickersymbol, den vollständigen Namen oder wechsle oben den Filter.",
       "clearSearch": "Suche zurücksetzen",
       "endOfList": "Das ist alles",
       "assetClass": {
@@ -489,13 +489,13 @@
       "marketCapRank": "#{rank}",
       "notifications": {
         "success": "Position hinzugefügt.",
-        "error": "Fehler beim Hinzufügen der Position."
+        "error": "Position konnte nicht hinzugefügt werden."
       },
-      "cryptoProviderNotConfigured": "Die Krypto-Suche ist nicht verfügbar. Setze einen COINGECKO_API_KEY in deiner Umgebung, um sie zu aktivieren."
+      "cryptoProviderNotConfigured": "Krypto-Suche ist nicht verfügbar. Richte COINGECKO_API_KEY in deiner Umgebung ein, um sie zu aktivieren."
     },
     "deleteInvestmentTransaction": {
       "title": "Transaktion löschen",
-      "description": "Bist du sicher, dass du diese Transaktion löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "description": "Möchtest du diese Transaktion wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "cancelButton": "Abbrechen",
       "deleteButton": "Löschen",
       "deleteButtonLoading": "Wird gelöscht...",
@@ -512,10 +512,10 @@
       "description": {
         "addSubcategory": "Unterkategorie zu {parentName} hinzufügen",
         "edit": "Kategoriename oder -einstellungen aktualisieren",
-        "add": "Eine neue Kategorie erstellen"
+        "add": "Neue Kategorie erstellen"
       },
       "nameLabel": "Kategoriename",
-      "namePlaceholder": "Gib einen Kategorienamen",
+      "namePlaceholder": "Kategorienamen eingeben",
       "colorLabel": "Farbe",
       "inheritParentColor": "Wie übergeordnet",
       "iconLabel": "Symbol",
@@ -526,7 +526,7 @@
       "notifications": {
         "updated": "Kategorie aktualisiert",
         "created": "Kategorie erstellt",
-        "saveFailed": "Fehler beim Speichern der Kategorie",
+        "saveFailed": "Kategorie konnte nicht gespeichert werden",
         "unexpectedError": "Unerwarteter Fehler"
       }
     },
@@ -550,37 +550,37 @@
     },
     "directCashTransaction": {
       "title": "Cash-Transaktion",
-      "description": "Einzahlung oder Auszahlung zum Portfolio hinzufügen"
+      "description": "Füge dem Portfolio eine Einzahlung oder Auszahlung hinzu"
     },
     "pickTransaction": {
       "title": "Transaktion auswählen"
     },
     "attachInvoice": {
       "title": "Rechnung anhängen",
-      "description": "Ziehe eine Rechnung oder einen Beleg hierher. Wir lesen Gesamtbetrag, Datum und Händler aus und finden die passende Transaktion.",
-      "resultsTitle": "Wähle die Transaktion",
-      "resultsDescription": "Keine Transaktionen stimmen mit dieser Rechnung überein. | {count} Transaktion könnte zu dieser Rechnung gehören. | {count} Transaktionen könnten zu dieser Rechnung gehören.",
-      "analyzing": "Lese die Rechnung und durchsuche deine Transaktionen…",
-      "attaching": "Die Rechnung wird der Transaktion angehängt...",
-      "privacyNote": "Die Datei wird nur zum Lesen an den KI-Provider weitergeleitet. Nichts wird gespeichert, bis du sie zu einer Transaktion verknüpfen.",
+      "description": "Lade eine Rechnung oder einen Beleg hoch. Wir lesen Gesamtbetrag, Datum und Händler aus und finden die zugehörige Transaktion.",
+      "resultsTitle": "Transaktion auswählen",
+      "resultsDescription": "Keine Transaktion passt zu dieser Rechnung. | {count} Transaktion könnte zu dieser Rechnung gehören. | {count} Transaktionen könnten zu dieser Rechnung gehören.",
+      "analyzing": "Rechnung wird ausgelesen und deine Transaktionen werden durchsucht…",
+      "attaching": "Rechnung wird an die Transaktion angehängt…",
+      "privacyNote": "Die Datei wird ausschließlich zum Auslesen an den KI-Anbieter übermittelt. Nichts wird gespeichert, bis du sie mit einer Transaktion verknüpfst.",
       "direction": {
         "paid": "Ich habe das bezahlt",
-        "gotPaid": "Ich wurde bezahlt",
-        "paidHint": "Wir suchen deine Ausgaben zu der Zahlung.",
-        "gotPaidHint": "Wir suchen deine Einnahmen zu der Zahlung."
+        "gotPaid": "Ich habe eine Zahlung erhalten",
+        "paidHint": "Wir durchsuchen deine Ausgaben nach der Zahlung.",
+        "gotPaidHint": "Wir durchsuchen deine Einnahmen nach der Zahlung."
       },
       "invoice": {
-        "number": "Rechnung Nr.",
+        "number": "Rechnungs-Nr.",
         "issued": "Ausgestellt am",
-        "total": "Gesamt"
+        "total": "Gesamtbetrag"
       },
       "fixDetails": "Angaben korrigieren",
       "form": {
         "vendor": "Händler",
-        "vendorPlaceholder": "Namen des Händlers eingeben",
+        "vendorPlaceholder": "Händlernamen eingeben",
         "customer": "Kunde",
-        "customerPlaceholder": "Auf wen die Rechnung ausgestellt ist",
-        "total": "Gesamt",
+        "customerPlaceholder": "An wen die Rechnung adressiert ist",
+        "total": "Gesamtbetrag",
         "totalPlaceholder": "0.00",
         "currency": "Währung",
         "currencyPlaceholder": "EUR",
@@ -590,7 +590,7 @@
       "signals": {
         "amountExact": "Betrag passt",
         "amountClose": "{diff} Diff.",
-        "amountConverted": "Übereinstimmungen nach Konvertierung",
+        "amountConverted": "Passt nach Umrechnung",
         "amountUnknown": "Betrag nicht verglichen",
         "sameDay": "Gleiches Datum",
         "daysAfter": "{count} Tag nach Rechnung | {count} Tage nach Rechnung",
@@ -608,11 +608,11 @@
           "unknown": "Kein Kunde"
         }
       },
-      "alreadyHasFile": "Bereits eine Datei vorhanden",
+      "alreadyHasFile": "Enthält bereits eine Datei",
       "bestMatch": "Bester Treffer · {score}%",
       "empty": {
         "title": "Keine passende Transaktion",
-        "description": "Wir haben in allen Konten nach etwa {total} im Zeitraum von 14 Tagen vor bis 30 Tagen nach dem Rechnungsdatum gesucht. Die Zahlung wurde eventuell noch nicht importiert oder die Rechnung wurde falsch ausgelesen."
+        "description": "Wir haben in allen Konten nach etwa {total} im Zeitraum von 14 Tagen vor bis 30 Tage nach dem Rechnungsdatum gesucht. Die Zahlung ist möglicherweise noch nicht importiert oder die Rechnung wurde falsch ausgelesen."
       },
       "searchManually": "Manuell suchen",
       "createTransaction": "Transaktion erstellen",
@@ -622,68 +622,68 @@
       "openTransaction": "Transaktion öffnen",
       "confirm": {
         "title": "Rechnung mit dieser Transaktion verknüpfen?",
-        "description": "{filename} wird mit der Transaktion über {amount} vom {date} verknüpft. Du kannst sie später wieder entfernen."
+        "description": "{filename} wird an die Transaktion über {amount} vom {date} angehängt. Du kannst sie später wieder von der Transaktion entfernen."
       },
       "errors": {
-        "match": "Die Rechnung konnte nicht ausgelesen werden. Versuche es erneut oder verwende eine deutlichere Datei.",
-        "link": "Die Rechnung konnte nicht verknüpft werden. Versuche es erneut.",
-        "detailsNotFilled": "Die Rechnung wurde verknüpft, aber die Details konnten nicht übernommen werden. Ergänze sie bei Bedarf manuell.",
-        "createdNotAttached": "Transaktion erstellt, aber die Rechnung wurde nicht verknüpft. Wähle sie aus der Liste aus, um sie zuzuordnen.",
-        "rematch": "Die Suche konnte nicht erneut durchgeführt werden. Überprüfe die Angaben und versuche es erneut.",
-        "openTransaction": "Die Transaktion konnte nicht geöffnet werden. Suche sie in deiner Transaktionsliste."
+        "match": "Rechnung konnte nicht ausgelesen werden. Versuche es erneut oder verwende eine deutlichere Datei.",
+        "link": "Rechnung konnte nicht verknüpft werden. Bitte versuche es erneut.",
+        "detailsNotFilled": "Rechnung wurde verknüpft, aber die Details konnten nicht übernommen werden. Ergänze sie bei Bedarf manuell.",
+        "createdNotAttached": "Transaktion erstellt, aber die Rechnung wurde nicht angehängt. Wähle sie aus der Liste aus, um sie anzuhängen.",
+        "rematch": "Erneute Suche fehlgeschlagen. Überprüfe die Details und versuche es erneut.",
+        "openTransaction": "Transaktion konnte nicht geöffnet werden. Suche sie in deiner Transaktionsliste."
       },
       "trial": {
-        "left": "1 von {limit} Gratis-Versuchen übrig | {count} von {limit} Gratis-Versuchen übrig",
-        "spent": "Du hast alle kostenlosen Versuche verbraucht. Upgrade auf Plus, um weiterhin Rechnungen mithilfe von KI zu verknüpfen."
+        "left": "1 kostenlose Analyse von {limit} übrig | {count} kostenlose Analysen von {limit} übrig",
+        "spent": "Du hast alle kostenlosen Analysen verbraucht. Führe ein Upgrade auf Plus durch, um weiterhin Rechnungen mit KI anzuhängen."
       }
     },
     "exchangeCurrency": {
-      "title": "Währung umtauschen",
-      "description": "Tausche Guthaben zwischen verschiedenen Währungen in deinem Portfolio um"
+      "title": "Währung tauschen",
+      "description": "Guthaben zwischen verschiedenen Währungen innerhalb deines Portfolios tauschen"
     },
     "shareAccountDialog": {
       "title": "Konto teilen",
-      "description": "Jemanden einladen, auf {name} zuzugreifen.",
+      "description": "Lade jemanden ein, auf {name} zuzugreifen.",
       "emailLabel": "Empfänger E-Mail",
       "emailPlaceholder": "name{'@'}example.com",
       "permissionLabel": "Berechtigung",
       "permissions": {
         "read": "Nur lesen",
-        "write": "Transaktionen einsehen & hinzufügen",
+        "write": "Lesen & Transaktionen hinzufügen",
         "manage": "Vollzugriff"
       },
-      "writeScopeLabel": "Transaktionsbearbeitungsumfang",
+      "writeScopeLabel": "Bearbeitungsumfang für Transaktionen",
       "writeScope": {
         "all": "Alle Transaktionen in dem Konto",
-        "own": "Nur Transaktionen, die sie erstellt haben"
+        "own": "Nur selbst erstellte Transaktionen"
       },
-      "householdOverrideHint": "{invitee} ist bereits Teil deines Haushalts mit dem Zugriff {permission}. Diese Freigabe ersetzt die Haushaltsberechtigung für dieses Konto.",
-      "householdLookupFailed": "Haushaltsmitgliedschaft konnte nicht geprüft werden – wird ohne Überschreibungshinweis fortgesetzt.",
+      "householdOverrideHint": "{invitee} ist bereits in deinem Haushalt mit der Berechtigung {permission}. Diese Freigabe überschreibt die Haushaltsberechtigung für dieses spezifische Konto.",
+      "householdLookupFailed": "Haushaltsmitgliedschaft konnte nicht geprüft werden – Fortfahren ohne den Hinweis.",
       "cancel": "Abbrechen",
-      "send": "Einladung versenden",
-      "success": "Einladung gesendet. Wenn ein Benutzer mit dieser Adresse registriert ist, wird er eine Einladung erhalten.",
-      "error": "Die Einladung konnte nicht erneut gesendet werden. Bitte versuche es erneut.",
-      "emailSendFailedWarning": "Einladung gespeichert, aber die E-Mail konnte nicht gesendet werden. Der Empfänger hat möglicherweise keine Benachrichtigung erhalten – versuche es später erneut."
+      "send": "Einladung senden",
+      "success": "Einladungsanfrage übermittelt. Falls ein Nutzer mit dieser Adresse registriert ist, erhält er eine Einladung.",
+      "error": "Einladung konnte nicht gesendet werden. Bitte versuche es erneut.",
+      "emailSendFailedWarning": "Einladung gespeichert, aber die E-Mail konnte nicht gesendet werden. Der Empfänger hat möglicherweise keine Benachrichtigung erhalten — versuche es später erneut."
     },
     "shareBudgetDialog": {
       "title": "Budget teilen",
-      "description": "Lade jemanden ein, dieses Budget einzusehen und eigene Transaktionen hinzuzufügen. {name}.",
+      "description": "Lade jemanden ein, dieses Budget anzusehen und eigene Transaktionen dazu beizutragen. {name}.",
       "emailLabel": "E-Mail",
       "emailPlaceholder": "Empfänger E-Mail",
       "permissionLabel": "Berechtigung",
       "permissions": {
         "read": "Nur anzeigen",
-        "write": "Eigene Transaktionen hinzufügen",
+        "write": "Eigene Transaktionen zuweisen",
         "manage": "Verwalten"
       },
       "cancel": "Abbrechen",
-      "send": "Einladung versenden",
+      "send": "Einladung senden",
       "success": "Einladung gesendet.",
       "error": "Einladung konnte nicht gesendet werden.",
       "emailSendFailedWarning": "Einladung erstellt, aber die E-Mail konnte nicht zugestellt werden."
     },
     "shareInvitationDialog": {
-      "titlePending": "{owner} möchte mit dir teilen",
+      "titlePending": "{owner} möchte etwas mit dir teilen",
       "titleAccepted": "Einladung angenommen",
       "titleDeclined": "Einladung abgelehnt",
       "titleCurrencyMismatch": "Basiswährung stimmt nicht überein",
@@ -692,63 +692,63 @@
       "titleNotFound": "Einladung nicht verfügbar",
       "loadErrorBody": "Beim Abrufen dieser Einladung ist etwas schiefgelaufen. Überprüfe deine Verbindung und versuche es erneut.",
       "retry": "Erneut versuchen",
-      "pendingMessage": "Du hast eine Einladung für den Zugriff auf {resource} erhalten. Sieh dir die Details unten an und wähle deine Antwort.",
-      "acceptedBody": "Du hast jetzt Zugriff auf diese freigegebene Ressource. Rufe sie auf, um gemeinsam zu arbeiten.",
+      "pendingMessage": "Du wurdest eingeladen, auf {resource} zuzugreifen. Überprüfe die Details unten und wähle deine Antwort.",
+      "acceptedBody": "Du hast jetzt Zugriff auf diese geteilte Ressource. Öffne sie, um mit der Zusammenarbeit zu beginnen.",
       "declinedBody": "Wir haben den Absender informiert.",
-      "currencyMismatch": "Deine Basiswährung muss {currency} sein, um diese Einladung anzunehmen. Passe deine Basiswährung an und versuche es erneut.",
-      "currencyMismatchUnknown": "Deine Basiswährung muss mit der der einladenden Person übereinstimmen, um diese Einladung anzunehmen.",
-      "acceptDataRefreshFailed": "Die Einladung wurde angenommen, aber deine Konten wurden nicht aktualisiert. Lade die Seite neu, falls Daten nicht aktuell erscheinen.",
-      "notFoundBody": "Diese Einladung ist möglicherweise abgelaufen, wurde widerrufen oder bereits bearbeitet. Bitte die einladende Person um eine neue Einladung, falls du weiterhin Zugriff benötigst.",
+      "currencyMismatch": "Deine Basiswährung muss {currency} sein, um diese Einladung anzunehmen. Aktualisiere deine Basiswährung und versuche es erneut.",
+      "currencyMismatchUnknown": "Deine Basiswährung muss mit der des Einladenden übereinstimmen, um diese Einladung anzunehmen.",
+      "acceptDataRefreshFailed": "Einladung angenommen, aber das Aktualisieren deiner Konten ist fehlgeschlagen. Lade die Seite neu, falls Daten veraltet wirken.",
+      "notFoundBody": "Diese Einladung ist möglicherweise abgelaufen, wurde widerrufen oder bereits bearbeitet. Bitte den Absender um eine neue Einladung, wenn du weiterhin Zugriff benötigst.",
       "unexpectedError": "Etwas ist schiefgelaufen. Versuche es in Kürze erneut.",
       "loading": "Einladung abrufen…",
       "householdResourceLabel": "alle deine Konten und geteilten Transaktionen",
       "permissionLabel": "Berechtigungsstufe",
-      "expiresLabel": "Gültig bis",
+      "expiresLabel": "Läuft ab am",
       "permissions": {
         "read": "Nur lesen",
         "write": "Lesen + Schreiben",
         "manage": "Verwalten"
       },
-      "unknownOwner": "Ein MoneyMatter-Benutzer",
-      "unknownResource": "eine gemeinsame Ressource",
+      "unknownOwner": "Ein MoneyMatter-Nutzer",
+      "unknownResource": "eine geteilte Ressource",
       "accept": "Annehmen",
       "decline": "Ablehnen",
       "close": "Schließen",
-      "goToAccount": "Zum Konto",
-      "goToBudget": "Zum Budget",
+      "goToAccount": "Zum Konto gehen",
+      "goToBudget": "Zum Budget gehen",
       "updateBaseCurrency": "Basiswährung aktualisieren",
-      "acceptSuccess": "Du bist nun Teil dieser gemeinsamen Ressource.",
+      "acceptSuccess": "Du bist jetzt Teil dieser geteilten Ressource.",
       "acceptError": "Einladung konnte nicht angenommen werden. Versuche es erneut.",
       "declineSuccess": "Einladung abgelehnt.",
       "declineError": "Einladung konnte nicht abgelehnt werden. Versuche es erneut.",
       "backInvite": {
-        "prompt": "Möchtest du deinen Haushalt auch mit {owner} teilen? Die Person kann deine Konten dann einsehen und verwalten.",
-        "permissionLabel": "Ihre Berechtigung",
+        "prompt": "Möchtest du deinen Haushalt ebenfalls mit {owner} teilen? Sie können dann deine Konten einsehen und darauf zugreifen.",
+        "permissionLabel": "Deren Berechtigung",
         "writeScopeLabel": "Bearbeitungsumfang",
         "permissions": {
           "read": "Nur lesen",
           "write": "Schreiben"
         },
         "writeScope": {
-          "all": "Alle Konten",
-          "own": "Nur Transaktionen, die sie erstellen"
+          "all": "Jedes Konto",
+          "own": "Nur selbst erstellte Transaktionen"
         },
         "send": "Ebenfalls teilen",
         "notNow": "Nicht jetzt",
-        "done": "Erledigt",
+        "done": "Fertig",
         "sentTitle": "Einladung gesendet",
-        "sentBody": "Wir haben eine Einladung an {owner} gesendet. Der Zugriff wird gewährt, sobald die Einladung angenommen wird.",
+        "sentBody": "Wir haben eine Einladung an {owner} gesendet. Der Zugriff wird freigeschaltet, sobald die Einladung angenommen wird.",
         "success": "Einladung gesendet.",
         "deliveryFailed": "Einladung erstellt, aber die E-Mail konnte nicht gesendet werden. Versuche es später erneut.",
-        "emailNotConfigured": "Einladung wurde erstellt, aber auf diesem Server ist kein E-Mail-Versand eingerichtet. Bitte sie, ihre Einladungen in der App zu prüfen.",
-        "error": "Fehler beim Senden der Einladung."
+        "emailNotConfigured": "Einladung erstellt, aber auf diesem Server ist kein E-Mail-Versand konfiguriert. Bitte die Person, ihre Einladungen direkt in der App zu prüfen.",
+        "error": "Einladung konnte nicht gesendet werden."
       }
     },
     "categoryExclusions": {
       "title": "Kategorien ausschließen",
-      "description": "In Diagramm und Gesamtsummen dieses Widgets ausgeblendet",
+      "description": "Aus Diagramm und Gesamtsummen dieses Widgets ausgeblendet",
       "menuItem": "Kategorien ausschließen",
-      "nothingExcluded": "Nichts ausgeschlossen. Jede Kategorie zählt für dieses Widget.",
+      "nothingExcluded": "Nichts ausgeschlossen. Jede Kategorie wird in diesem Widget berücksichtigt.",
       "excludedTag": "Ausgeschlossen",
       "stopExcluding": "{name} nicht mehr ausschließen",
       "badgeTooltip": "1 Kategorie von diesem Widget ausgeschlossen | {count} Kategorien von diesem Widget ausgeschlossen",
@@ -757,14 +757,14 @@
       "countExcluded": "1 Kategorie ausgeschlossen | {count} Kategorien ausgeschlossen"
     },
     "subscriptionMarkPaid": {
-      "title": "Zahlung markieren",
+      "title": "Zahlung erfassen",
       "description": "Eine Zahlung für {name} erfassen",
       "chooseDescription": "Wie möchtest du diese Zahlung für {name} erfassen?",
       "amountLabel": "Betrag",
       "amountPlaceholder": "0.00",
       "estimateLoading": "Schätzung wird geladen…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (geschätzt)",
-      "dateLabel": "Datum der Zahlung",
+      "dateLabel": "Zahlungsdatum",
       "accountLabel": "Konto",
       "accountPlaceholder": "Konto auswählen",
       "confirm": "Bestätigen",
@@ -772,45 +772,45 @@
       "recordModeMarkTitle": "Nur als bezahlt markieren",
       "recordModeMarkDescription": "Aktualisiert nur den Zeitplan – es wird keine Transaktion erstellt.",
       "recordModeTransactionTitle": "Transaktion erstellen",
-      "recordModeTransactionDescription": "Bucht eine tatsächliche Ausgabe auf ein Konto und verknüpft dieses auch für künftige Zahlungen.",
+      "recordModeTransactionDescription": "Buche eine echte Ausgabe auf einem Konto. Sie wird auch für zukünftige Zahlungen verknüpft.",
       "notifications": {
-        "markedAsPaid": "Zahlung erfasst.",
-        "markAsPaidFailed": "Fehler beim Erfassen der Zahlung"
+        "markedAsPaid": "Zahlung erfasst",
+        "markAsPaidFailed": "Zahlung konnte nicht erfasst werden"
       }
     },
     "loanPayment": {
       "title": "Kreditrückzahlung",
-      "description": "Zahlung gegen diesen Kredit erfassen oder bearbeiten.",
+      "description": "Erfasse oder bearbeite eine Zahlung für diesen Kredit.",
       "createTitle": "Zahlung erfassen",
       "editTitle": "Kreditrückzahlung bearbeiten",
       "payingTo": "Zahlung an",
-      "fromAccountLabel": "Quellkonto",
+      "fromAccountLabel": "Von Konto",
       "fromAccountPlaceholder": "Konto auswählen",
       "amountLabel": "Betrag",
       "amountPlaceholder": "0.00",
-      "targetAmountLabel": "Auf den Kredit angerechneter Betrag",
+      "targetAmountLabel": "Auf Kredit angerechneter Betrag",
       "targetAmountPlaceholder": "0.00",
-      "targetAmountTooltip": "Quellkonto in {source}, Kredit in {loan}. Der umgerechnete Betrag wird automatisch mit dem aktuellen Wechselkurs eingesetzt – passe ihn an, wenn deine Bank einen abweichenden Kurs genutzt hat.",
+      "targetAmountTooltip": "Quellkonto ist in {source}, Kredit ist in {loan}. Wir rechnen den Betrag mit dem aktuellen Wechselkurs um – passe ihn an, falls deine Bank einen anderen Kurs angewendet hat.",
       "saveButton": "Speichern",
       "recordButton": "Erfassen",
-      "overdrawWarning": "Dieser Betrag übersteigt den Kontostand von {account} und führt zu einer Kontoüberziehung.",
-      "preAnchorWarning": "Diese Zahlung liegt vor dem Stichtag des Kredits ({date}). Sie wird im Verlauf gespeichert und verringert den offenen Restbetrag nicht.",
-      "overpayError": "Die Zahlung übersteigt den verbleibenden Restbetrag des Kredits ({max}).",
+      "overdrawWarning": "Das ist mehr als der Kontostand von {account} und wird das Konto überziehen.",
+      "preAnchorWarning": "Diese Zahlung liegt vor dem Stichtag des Kreditsaldos ({date}), wird daher als Historie gespeichert und verringert nicht den offenen Saldo.",
+      "overpayError": "Zahlung übersteigt den verbleibenden Kreditsaldo ({max}).",
       "deleteConfirmTitle": "Diese Zahlung löschen?",
-      "deleteConfirmDescription": "Beide Seiten der Umbuchung werden entfernt und der Restbetrag des Kredits wird wiederhergestellt. Dies kann nicht rückgängig gemacht werden.",
-      "preAnchorHint": "Dieses Datum liegt vor dem Stichtag des Kredits, sodass diese Zahlung den Restbetrag nicht verändert – sie ist bereits im Anfangssaldo enthalten.",
-      "unlinkButton": "Verknüpfung aufheben",
-      "unlinkConfirmTitle": "Verknüpfung dieser Zahlung aufheben?",
-      "unlinkConfirmDescription": "Die Transaktion bleibt als reguläre Ausgabe erhalten, wird aber von diesem Kredit entfernt. Der Restbetrag des Kredits wird neu berechnet.",
-      "unlinkSuccess": "Verknüpfung der Zahlung entfernt",
-      "unlinkError": "Verknüpfung der Zahlung konnte nicht entfernt werden. Bitte versuchen Sie es erneut.",
-      "syncedAccountHint": "Zahlung über ein synchronisiertes Konto? Verwende stattdessen „Zahlungen verknüpfen“, um die importierte Ausgabe anzuhängen.",
+      "deleteConfirmDescription": "Beide Seiten der Umbuchung werden entfernt und der Kreditsaldo wird wiederhergestellt. Dies kann nicht rückgängig gemacht werden.",
+      "preAnchorHint": "Dieses Datum liegt vor dem Stichtag des Kreditsaldos, daher ändert diese Zahlung nicht den offenen Saldo — sie ist bereits im Anfangssaldo enthalten.",
+      "unlinkButton": "Trennen",
+      "unlinkConfirmTitle": "Diese Zahlung trennen?",
+      "unlinkConfirmDescription": "Die Transaktion bleibt als reguläre Ausgabe erhalten, wird aber von diesem Kredit entfernt. Der Kreditsaldo wird neu berechnet.",
+      "unlinkSuccess": "Zahlung getrennt",
+      "unlinkError": "Zahlung konnte nicht getrennt werden. Bitte versuche es erneut.",
+      "syncedAccountHint": "Zahlung von einem synchronisierten Konto? Verwende \"Zahlungen verknüpfen\", um stattdessen die importierte Ausgabe anzuhängen.",
       "sourceInfo": {
-        "trigger": "Mehr Details",
+        "trigger": "Weitere Details",
         "title": "Warum nur diese Konten?",
         "manualOnly": "Diese Auswahl zeigt nur deine manuell verwalteten Konten.",
-        "whySynced": "Buchungen von synchronisierten Konten werden direkt von deiner Bank importiert. Das Erfassen einer Kreditrückzahlung an dieser Stelle würde ein Duplikat der von deiner Bank gesendeten Transaktion erzeugen.",
-        "howToLink": "Öffne stattdessen die Banktransaktion, sobald sie angezeigt wird, und wähle „Zahlungen verknüpfen“, um sie diesem Kredit zuzuordnen. So bleibt eine einzige verlässliche Datenquelle erhalten und der Restbetrag des Kredits wird korrekt aktualisiert."
+        "whySynced": "Transaktionen von synchronisierten Konten werden direkt von deiner Bank importiert. Das Erfassen einer Kreditrückzahlung an dieser Stelle würde ein Duplikat der von deiner Bank gesendeten Transaktion erzeugen.",
+        "howToLink": "Öffne stattdessen die Banktransaktion, sobald sie erscheint, und wähle \"Zahlungen verknüpfen\", um sie diesem Kredit zuzuweisen. Das bewahrt eine eindeutige Datenbasis und aktualisiert den Kreditsaldo korrekt."
       }
     }
   }

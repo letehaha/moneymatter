@@ -75,7 +75,7 @@
           "importButton": "Import {count} transaction | Import {count} transactions"
         },
         "execute": {
-          "starting": "Starting the import…",
+          "starting": "Đang bắt đầu nhập…",
           "progressCount": "{processed} of {total}",
           "failed": "The import failed.",
           "partialImportNote": "Some transactions might already be imported.",
@@ -93,25 +93,25 @@
           "emptyDescription": "Each transaction was skipped or was already in your ledger.",
           "failedTitle": "Nothing was imported",
           "failedDescription": "No transactions could be created. Review the errors below.",
-          "accountsCreated": "Accounts created",
+          "accountsCreated": "Tài khoản đã tạo",
           "accountsLinked": "Accounts linked",
           "accountsSkipped": "Accounts skipped",
-          "payeesCreated": "Payees created",
-          "transactionsImported": "Transactions imported",
+          "payeesCreated": "Người nhận đã tạo",
+          "transactionsImported": "Giao dịch đã nhập",
           "duplicatesSkipped": "Duplicates skipped",
           "mergedIntoPlanned": "Merged into planned",
           "balanceWarningTitle": "Some balances might be incorrect",
           "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
           "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
           "errorsOverflow": "…and {count} more",
-          "rowPrefix": "Row {rowIndex}:",
+          "rowPrefix": "Dòng {rowIndex}:",
           "viewTransactions": "View transactions",
-          "importAnother": "Import another file"
+          "importAnother": "Nhập tệp khác"
         },
         "leaseExpired": {
           "title": "Your uploaded file is no longer available",
           "description": "The parsed copy of your OFX or QFX file was released after a period of inactivity. Your mapping choices could not be kept. Start the import again.",
-          "action": "Start over"
+          "action": "Bắt đầu lại"
         },
         "leaseResourceLabel": "Your uploaded file"
       }

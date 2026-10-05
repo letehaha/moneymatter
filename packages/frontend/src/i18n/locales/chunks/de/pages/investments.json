@@ -2,39 +2,39 @@
   "investments": {
     "title": "Investments",
     "createButton": "Portfolio erstellen",
-    "loadError": "Failed to load portfolios",
-    "tryAgain": "Try Again",
+    "loadError": "Portfolios konnten nicht geladen werden",
+    "tryAgain": "Erneut versuchen",
     "menu": {
-      "view": "View",
+      "view": "Anzeigen",
       "delete": "Löschen"
     },
     "card": {
-      "hidden": "Hidden",
-      "portfolioType": "{type} Portfolio",
-      "costBasis": "Cost basis"
+      "hidden": "Ausgeblendet",
+      "portfolioType": "{type}-Portfolio",
+      "costBasis": "Anschaffungskosten"
     },
     "empty": {
-      "title": "No Portfolios Yet",
-      "description": "Erstelle dein erstes Portfolio, um deine Positionen, Transaktionen und die Wertentwicklung im Blick zu behalten.",
-      "createFirstButton": "Create Your First Portfolio"
+      "title": "Noch keine Portfolios",
+      "description": "Erstelle dein erstes Investment-Portfolio, um deine Positionen, Transaktionen und Performance zu verfolgen.",
+      "createFirstButton": "Dein erstes Portfolio erstellen"
     },
     "trash": {
-      "title": "Trash",
-      "retentionHint": "Items here are permanently deleted after {days} days",
-      "loadError": "Couldn't load trashed portfolios.",
-      "deletedAgo": "Deleted {time}",
-      "restoreButton": "Restore",
-      "restoringButton": "Restoring…",
-      "purgeButton": "Delete now",
-      "purgingButton": "Deleting…",
-      "confirmPurgeTitle": "Delete portfolio permanently?",
-      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
-      "tryAgain": "Try again",
+      "title": "Papierkorb",
+      "retentionHint": "Elemente hier werden nach {days} Tagen dauerhaft gelöscht",
+      "loadError": "Gelöschte Portfolios konnten nicht geladen werden.",
+      "deletedAgo": "Gelöscht {time}",
+      "restoreButton": "Wiederherstellen",
+      "restoringButton": "Wird wiederhergestellt…",
+      "purgeButton": "Jetzt löschen",
+      "purgingButton": "Wird gelöscht…",
+      "confirmPurgeTitle": "Portfolio dauerhaft löschen?",
+      "confirmPurge": "\"{name}\" dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",
+      "tryAgain": "Erneut versuchen",
       "notifications": {
-        "restored": "Portfolio restored",
-        "restoreError": "Failed to restore portfolio",
-        "purged": "Portfolio permanently deleted",
-        "purgeError": "Failed to delete portfolio"
+        "restored": "Portfolio wiederhergestellt",
+        "restoreError": "Portfolio konnte nicht wiederhergestellt werden",
+        "purged": "Portfolio dauerhaft gelöscht",
+        "purgeError": "Portfolio konnte nicht gelöscht werden"
       }
     }
   }

@@ -1,0 +1,17 @@
+{
+  "auth": {
+    "verifyEmail": {
+      "title": "Check your email",
+      "description": "We've sent a verification link to",
+      "descriptionYourEmail": "your email address",
+      "descriptionContinued": ". Please click the link to verify your account.",
+      "didntReceive": "Didn't receive the email? Check your spam folder or",
+      "resend": "click here to resend",
+      "sending": "Sending...",
+      "resendIn": "Resend in {count}s",
+      "backToSignIn": "Back to Sign In",
+      "resendSuccess": "Verification email sent! Please check your inbox.",
+      "resendError": "Failed to resend verification email. Please try again."
+    }
+  }
+}

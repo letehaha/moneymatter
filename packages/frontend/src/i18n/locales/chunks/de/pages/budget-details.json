@@ -2,101 +2,101 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "selectionModeWarning": "Selection mode — choose transactions to unlink",
+        "selectionModeWarning": "Auswahlmodus – wähle Transaktionen zum Aufheben der Verknüpfung",
         "selectAll": "Alles auswählen",
-        "selected": "{count} selected",
-        "unlink": "Unlink",
+        "selected": "{count} ausgewählt",
+        "unlink": "Verknüpfung aufheben",
         "cancel": "Abbrechen",
-        "unlinkSelected": "Unlink Selected",
-        "noMatchingTransactions": "No matching transactions",
-        "noTransactionsLinked": "No transactions linked",
-        "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
-        "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
-        "resetFilters": "Reset Filters",
-        "addTransactions": "Add Transactions",
-        "add": "Add",
-        "loadingMore": "Loading more..."
+        "unlinkSelected": "Ausgewählte Verknüpfung aufheben",
+        "noMatchingTransactions": "Keine passenden Transaktionen",
+        "noTransactionsLinked": "Keine Transaktionen verknüpft",
+        "filterAdjustmentHint": "Versuche, deine Filter anzupassen, um mehr Transaktionen zu sehen.",
+        "addTransactionsHint": "Füge diesem Budget Transaktionen hinzu, um deine Ausgaben zu verfolgen.",
+        "resetFilters": "Filter zurücksetzen",
+        "addTransactions": "Transaktionen hinzufügen",
+        "add": "Hinzufügen",
+        "loadingMore": "Mehr laden..."
       }
     },
     "budgetDetails": {
-      "notSet": "Not set",
+      "notSet": "Nicht festgelegt",
       "saving": "Speichern...",
       "saveChanges": "Änderungen speichern",
       "loading": "Laden...",
-      "uncategorized": "Uncategorized",
+      "uncategorized": "Unkategorisiert",
       "stats": {
         "income": "Einnahmen",
-        "expenses": "Expenses",
-        "netBalance": "Net Balance"
+        "expenses": "Ausgaben",
+        "netBalance": "Nettosaldo"
       },
       "utilization": {
-        "title": "Budget Utilization",
-        "summary": "{spent} of {limit} limit",
+        "title": "Budgetauslastung",
+        "summary": "{spent} von {limit} Limit",
         "na": "N/A"
       },
-      "noTransactionsYet": "No transactions yet",
-      "transactions": "Transactions",
-      "transactionsLinked": "{count} transaction linked to this budget | {count} transactions linked to this budget",
+      "noTransactionsYet": "Noch keine Transaktionen",
+      "transactions": "Transaktionen",
+      "transactionsLinked": "{count} Transaktion mit diesem Budget verknüpft | {count} Transaktionen mit diesem Budget verknüpft",
       "tabs": {
-        "statistics": "Statistics",
-        "transactions": "Transactions",
-        "sharing": "Sharing"
+        "statistics": "Statistiken",
+        "transactions": "Transaktionen",
+        "sharing": "Freigabe"
       },
       "statistics": {
         "tabs": {
           "categories": "Kategorien",
-          "timeline": "Timeline"
+          "timeline": "Verlauf"
         },
-        "errorTitle": "Failed to load statistics",
-        "errorDescription": "Something went wrong while loading the data. Please try again later.",
-        "noDataTitle": "No spending data",
-        "noDataDescription": "There's no spending data available for this budget yet.",
-        "noCategoryData": "No category spending data.",
-        "noTimelineData": "No timeline data.",
+        "errorTitle": "Statistiken konnten nicht geladen werden",
+        "errorDescription": "Beim Laden der Daten ist etwas schiefgelaufen. Bitte versuche es später erneut.",
+        "noDataTitle": "Keine Ausgabendaten",
+        "noDataDescription": "Für dieses Budget sind noch keine Ausgabendaten verfügbar.",
+        "noCategoryData": "Keine Kategoriendaten für Ausgaben.",
+        "noTimelineData": "Keine Verlaufsdaten.",
         "total": "Gesamt",
         "income": "Einnahmen",
-        "expenses": "Expenses",
-        "incomeLabel": "Income:",
-        "expensesLabel": "Expenses:"
+        "expenses": "Ausgaben",
+        "incomeLabel": "Einnahmen:",
+        "expensesLabel": "Ausgaben:"
       },
       "sharing": {
-        "title": "Sharing",
-        "description": "Manage who can see this budget and contribute to it.",
-        "inviteAnother": "Invite someone",
-        "membersHeading": "Members",
+        "title": "Freigabe",
+        "description": "Verwalte, wer dieses Budget sehen und dazu beitragen kann.",
+        "inviteAnother": "Jemanden einladen",
+        "membersHeading": "Mitglieder",
         "pendingHeading": "Ausstehende Einladungen",
-        "loadError": "Couldn't load members.",
+        "loadError": "Mitglieder konnten nicht geladen werden.",
         "permissions": {
           "read": "Nur anzeigen",
-          "write": "Eigene Transaktionen hinzufügen",
+          "write": "Eigene Transaktionen zuweisen",
           "manage": "Verwalten"
         },
         "member": {
-          "you": "you",
-          "roleOwner": "Owner",
-          "roleRecipient": "Member",
-          "ownerHint": "Full control of this budget",
-          "updateSuccess": "Permission updated.",
-          "updateError": "Couldn't update permission.",
-          "revoke": "Revoke access",
-          "revokeConfirm": "Revoke",
-          "revokeTitle": "Revoke access?",
-          "revokeDescription": "{user} will lose access to {budget}.",
-          "revokeSuccess": "Access revoked.",
-          "revokeError": "Couldn't revoke access."
+          "you": "Du",
+          "roleOwner": "Eigentümer",
+          "roleRecipient": "Mitglied",
+          "ownerHint": "Volle Kontrolle über dieses Budget",
+          "updateSuccess": "Berechtigung aktualisiert.",
+          "updateError": "Berechtigung konnte nicht aktualisiert werden.",
+          "revoke": "Zugriff entziehen",
+          "revokeConfirm": "Entziehen",
+          "revokeTitle": "Zugriff entziehen?",
+          "revokeDescription": "{user} verliert den Zugriff auf {budget}.",
+          "revokeSuccess": "Zugriff entzogen.",
+          "revokeError": "Zugriff konnte nicht entzogen werden."
         },
         "pending": {
-          "empty": "No pending invitations.",
-          "resend": "Resend",
-          "resendSuccess": "Invitation resent.",
-          "resendError": "Couldn't resend invitation.",
-          "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
+          "empty": "Keine ausstehenden Einladungen.",
+          "resend": "Erneut senden",
+          "resendSuccess": "Einladung erneut gesendet.",
+          "resendError": "Einladung konnte nicht erneut gesendet werden.",
+          "resendDeliveryFailed": "Erneut gesendet, aber die E-Mail konnte nicht zugestellt werden.",
           "cancel": "Abbrechen",
-          "cancelConfirm": "Cancel invitation",
-          "cancelTitle": "Cancel invitation?",
-          "cancelDescription": "The invitation to {email} will be cancelled.",
-          "cancelSuccess": "Invitation cancelled.",
-          "cancelError": "Couldn't cancel invitation."
+          "cancelConfirm": "Einladung stornieren",
+          "cancelTitle": "Einladung stornieren?",
+          "cancelDescription": "Die Einladung an {email} wird storniert.",
+          "cancelSuccess": "Einladung storniert.",
+          "cancelError": "Einladung konnte nicht storniert werden."
         }
       }
     }

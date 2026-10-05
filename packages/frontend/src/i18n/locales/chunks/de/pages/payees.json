@@ -1,182 +1,182 @@
 {
   "payees": {
-    "title": "Payees",
-    "subtitle": "Master list of merchants you transact with",
-    "newPayeeButton": "New Payee",
-    "searchPlaceholder": "Search payees…",
+    "title": "Zahlungsempfänger",
+    "subtitle": "Liste aller Händler, mit denen du Transaktionen tätigst",
+    "newPayeeButton": "Neuer Zahlungsempfänger",
+    "searchPlaceholder": "Zahlungsempfänger suchen…",
     "columns": {
       "name": "Name",
-      "transactionCount": "# tx",
-      "netFlow": "Net flow",
-      "category": "Category",
-      "categoryHint": "Effective category for this payee. Shows the default if you've set one — otherwise the category most frequently used in past transactions. Auto-filled when creating a new transaction.",
-      "topCategory": "Top category",
-      "defaultCategory": "Default category",
-      "defaultTags": "Default tags"
+      "transactionCount": "Anz. Trans.",
+      "netFlow": "Nettofluss",
+      "category": "Kategorie",
+      "categoryHint": "Effektive Kategorie für diesen Zahlungsempfänger. Zeigt den Standardwert an, falls du einen festgelegt hast — ansonsten die Kategorie, die in vergangenen Transaktionen am häufigsten verwendet wurde. Wird beim Erstellen einer neuen Transaktion automatisch ausgefüllt.",
+      "topCategory": "Top-Kategorie",
+      "defaultCategory": "Standardkategorie",
+      "defaultTags": "Standard-Tags"
     },
     "sort": {
-      "label": "Sort by",
-      "transactionCount": "Tx amount",
-      "netFlow": "Net flow",
+      "label": "Sortieren nach",
+      "transactionCount": "Anzahl Transaktionen",
+      "netFlow": "Nettofluss",
       "name": "Name",
-      "lastSeen": "Recent activity",
-      "defaultTags": "Default tags"
+      "lastSeen": "Letzte Aktivität",
+      "defaultTags": "Standard-Tags"
     },
     "actions": {
       "menu": "Aktionen",
-      "rename": "Rename",
-      "merge": "Merge into…",
+      "rename": "Umbenennen",
+      "merge": "Zusammenführen mit…",
       "delete": "Löschen",
-      "deleteAndIgnore": "Delete & ignore"
+      "deleteAndIgnore": "Löschen & ignorieren"
     },
     "bulk": {
-      "select": "Select",
-      "selectedCount": "{count} selected",
+      "select": "Auswählen",
+      "selectedCount": "{count} ausgewählt",
       "clearSelection": "Auswahl aufheben",
-      "selectAll": "Select all loaded payees",
-      "selectRow": "Select {name}",
-      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
-      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
-      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
-      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
+      "selectAll": "Alle geladenen Zahlungsempfänger auswählen",
+      "selectRow": "{name} auswählen",
+      "deleteTitle": "{count} Zahlungsempfänger löschen? | {count} Zahlungsempfänger löschen?",
+      "deleteDescription": "Ihre Transaktionen bleiben erhalten, verlieren aber die Verknüpfung zum Zahlungsempfänger. Dies kann nicht rückgängig gemacht werden.",
+      "deleteAndIgnoreTitle": "{count} Zahlungsempfänger löschen und ignorieren? | {count} Zahlungsempfänger löschen und ignorieren?",
+      "deleteAndIgnoreDescription": "Ihre Namen werden auf die Liste der ignorierten Namen gesetzt, sodass Importe und Bank-Synchronisierungen sie nicht erneut erstellen. Ihre Transaktionen bleiben erhalten, verlieren aber die Verknüpfung zum Zahlungsempfänger."
     },
     "emptyState": {
-      "title": "No payees yet",
-      "description": "Connect a bank to detect payees automatically, or create one manually."
+      "title": "Noch keine Zahlungsempfänger",
+      "description": "Verbinde eine Bank, um Zahlungsempfänger automatisch zu erkennen, oder erstelle manuell einen."
     },
     "form": {
-      "namePlaceholder": "Enter payee name",
+      "namePlaceholder": "Name des Zahlungsempfängers eingeben",
       "categoryPlaceholder": "Kategorie auswählen",
       "categorizationMode": {
-        "label": "AI categorization",
+        "label": "KI-Kategorisierung",
         "enforce": {
-          "label": "Always use payee category",
-          "hint": "Payee's default category is always used. AI categorization is skipped for this payee."
+          "label": "Immer Kategorie des Zahlungsempfängers verwenden",
+          "hint": "Die Standardkategorie des Zahlungsempfängers wird immer verwendet. Die KI-Kategorisierung wird für diesen Zahlungsempfänger übersprungen."
         },
         "hint": {
-          "label": "Use as a hint",
-          "hint": "Sets the payee's default category, but AI can still override it based on the transaction details."
+          "label": "Als Hinweis verwenden",
+          "hint": "Legt die Standardkategorie des Zahlungsempfängers fest, aber die KI kann sie anhand der Transaktionsdetails weiterhin überschreiben."
         },
         "off": {
-          "label": "Off",
-          "hint": "Payee's default category is ignored. Categorization is handled by AI or your other rules."
+          "label": "Aus",
+          "hint": "Die Standardkategorie des Zahlungsempfängers wird ignoriert. Die Kategorisierung erfolgt durch die KI oder deine anderen Regeln."
         }
       }
     },
     "detail": {
-      "categorizationSection": "Categorization",
-      "aliasesHeading": "Aliases",
-      "aliasesEmpty": "No aliases yet. New variants will appear here when this Payee matches another merchant name.",
-      "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the Payee's name. Rename the Payee instead.",
-      "deleteAliasConfirm": "Remove this alias?",
-      "addAlias": "Add",
-      "addAliasTitle": "Add alias",
-      "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this Payee. Past transactions are unchanged.",
-      "addAliasInputLabel": "Merchant name",
-      "addAliasPlaceholder": "e.g. ACME STORE #1234",
-      "aliasDuplicate": "This alias is already attached to this Payee.",
-      "aliasUsedByOtherPayee": "This alias is already used by \"{name}\".",
-      "deletePayeeTitle": "Delete payee?",
-      "deletePayeeDescription": "Linked transactions keep their category but lose the payee link. This cannot be undone.",
-      "deleteAndIgnoreTitle": "Delete this Payee and ignore future matches?",
-      "deleteAndIgnoreDescription": "Deletes this Payee AND adds its names (canonical + all aliases) to the ignored-names blocklist. Future syncs won't recreate it from raw merchant text. Linked transactions stay but lose their payee link.",
-      "mergeTitle": "Merge into another payee",
-      "mergeDescription": "Pick the target payee. All transactions and aliases move to the target; this payee is deleted.",
-      "confirmMerge": "Merge",
-      "topCategoryHint": "The category most frequently used in transactions linked to this payee. Used as a fallback when no default category is set.",
+      "categorizationSection": "Kategorisierung",
+      "aliasesHeading": "Aliase",
+      "aliasesEmpty": "Noch keine Aliase. Neue Varianten erscheinen hier, wenn dieser Zahlungsempfänger mit einem anderen Händlernamen übereinstimmt.",
+      "cannotDeleteCanonicalAlias": "Der Alias, der dem Namen des Zahlungsempfängers entspricht, kann nicht gelöscht werden. Benenne stattdessen den Zahlungsempfänger um.",
+      "deleteAliasConfirm": "Diesen Alias entfernen?",
+      "addAlias": "Hinzufügen",
+      "addAliasTitle": "Alias hinzufügen",
+      "addAliasDescription": "Zukünftige Transaktionen, deren Händlertext auf diesen Alias normalisiert wird, werden automatisch mit diesem Zahlungsempfänger verknüpft. Vergangene Transaktionen bleiben unverändert.",
+      "addAliasInputLabel": "Händlername",
+      "addAliasPlaceholder": "z.B. ACME STORE #1234",
+      "aliasDuplicate": "Dieser Alias ist diesem Zahlungsempfänger bereits zugewiesen.",
+      "aliasUsedByOtherPayee": "Dieser Alias wird bereits von \"{name}\" verwendet.",
+      "deletePayeeTitle": "Zahlungsempfänger löschen?",
+      "deletePayeeDescription": "Verknüpfte Transaktionen behalten ihre Kategorie, verlieren aber die Verknüpfung zum Zahlungsempfänger. Dies kann nicht rückgängig gemacht werden.",
+      "deleteAndIgnoreTitle": "Diesen Zahlungsempfänger löschen und zukünftige Treffer ignorieren?",
+      "deleteAndIgnoreDescription": "Löscht diesen Zahlungsempfänger UND fügt seine Namen (Hauptname + alle Aliase) zur Blockliste ignorierter Namen hinzu. Zukünftige Synchronisierungen erstellen ihn nicht erneut aus dem rohen Händlertext. Verknüpfte Transaktionen bleiben erhalten, verlieren aber ihre Verknüpfung zum Zahlungsempfänger.",
+      "mergeTitle": "Mit einem anderen Zahlungsempfänger zusammenführen",
+      "mergeDescription": "Wähle den Ziel-Zahlungsempfänger aus. Alle Transaktionen und Aliase werden zum Ziel verschoben; dieser Zahlungsempfänger wird gelöscht.",
+      "confirmMerge": "Zusammenführen",
+      "topCategoryHint": "Die Kategorie, die am häufigsten in mit diesem Zahlungsempfänger verknüpften Transaktionen verwendet wird. Wird als Ausweichoption genutzt, wenn keine Standardkategorie festgelegt ist.",
       "defaultCategoryPlaceholder": "Kategorie auswählen",
-      "defaultTagsLabel": "Auto-apply tags",
-      "defaultTagsPlaceholder": "Select tags to auto-apply",
-      "defaultTagsHint": "These tags are automatically added to new transactions linked to this payee (bank syncs and imports).",
-      "defaultLocationLabel": "Default location",
-      "defaultLocationEmpty": "No location set",
-      "defaultLocationHint": "Transactions linked to this payee that have no location of their own get this one, both at creation and during bank sync.",
-      "clearDefaultLocationTitle": "Remove default location?",
-      "clearDefaultLocationDescription": "New transactions linked to this payee will no longer get this location. Existing transactions keep theirs.",
-      "applyTagsToExisting": "Apply to existing transactions"
+      "defaultTagsLabel": "Tags automatisch anwenden",
+      "defaultTagsPlaceholder": "Tags zum automatischen Anwenden auswählen",
+      "defaultTagsHint": "Diese Tags werden automatisch zu neuen Transaktionen hinzugefügt, die mit diesem Zahlungsempfänger verknüpft sind (Bank-Synchronisierungen und Importe).",
+      "defaultLocationLabel": "Standardstandort",
+      "defaultLocationEmpty": "Kein Standort festgelegt",
+      "defaultLocationHint": "Transaktionen, die mit diesem Zahlungsempfänger verknüpft sind und keinen eigenen Standort haben, erhalten diesen, sowohl bei der Erstellung als auch bei der Bank-Synchronisierung.",
+      "clearDefaultLocationTitle": "Standardstandort entfernen?",
+      "clearDefaultLocationDescription": "Neue Transaktionen, die mit diesem Zahlungsempfänger verknüpft sind, erhalten diesen Standort nicht mehr. Bestehende Transaktionen behalten ihren.",
+      "applyTagsToExisting": "Auf bestehende Transaktionen anwenden"
     },
     "logo": {
       "change": "Logo ändern",
-      "dialogTitle": "Change Logo",
-      "dialogDescription": "Search for a brand logo to represent this payee.",
+      "dialogTitle": "Logo ändern",
+      "dialogDescription": "Suche nach einem Markenlogo, das diesen Zahlungsempfänger repräsentiert.",
       "resetToAuto": "Auf automatisch zurücksetzen",
-      "updatedToast": "Logo updated.",
-      "resetToast": "Logo reset to automatic.",
+      "updatedToast": "Logo aktualisiert.",
+      "resetToast": "Logo auf automatisch zurückgesetzt.",
       "fieldLabel": "Logo",
-      "domainHint": "To find the exact brand, type the company's website domain (e.g. amazon.com) — that always matches the right logo."
+      "domainHint": "Um die genaue Marke zu finden, gib die Website-Domain des Unternehmens ein (z.B. amazon.com) — das führt immer zum richtigen Logo."
     },
     "transactionsDialog": {
-      "title": "{name} — transactions",
-      "empty": "No transactions linked to this payee.",
-      "unlink": "Unlink from payee",
-      "unlinked": "Transaction unlinked from payee",
-      "unlinkConfirmTitle": "Unlink transaction?",
-      "unlinkConfirmDescription": "This transaction will no longer be linked to {name}. Future bank syncs won't re-link it automatically.",
-      "unlinkConfirmLabel": "Unlink"
+      "title": "{name} — Transaktionen",
+      "empty": "Keine Transaktionen mit diesem Zahlungsempfänger verknüpft.",
+      "unlink": "Vom Zahlungsempfänger trennen",
+      "unlinked": "Transaktion vom Zahlungsempfänger getrennt",
+      "unlinkConfirmTitle": "Transaktion trennen?",
+      "unlinkConfirmDescription": "Diese Transaktion wird nicht mehr mit {name} verknüpft sein. Zukünftige Bank-Synchronisierungen werden sie nicht automatisch erneut verknüpfen.",
+      "unlinkConfirmLabel": "Trennen"
     },
     "toasts": {
-      "created": "Payee created",
-      "updated": "Payee updated",
-      "deleted": "Payee deleted",
-      "merged": "Payees merged",
-      "aliasDeleted": "Alias removed",
-      "aliasAdded": "Alias added",
-      "deletedAndIgnored": "Payee deleted and added to ignored-names list",
-      "tagsAppliedToExisting": "Tags applied to {count} transactions",
-      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
-      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
+      "created": "Zahlungsempfänger erstellt",
+      "updated": "Zahlungsempfänger aktualisiert",
+      "deleted": "Zahlungsempfänger gelöscht",
+      "merged": "Zahlungsempfänger zusammengeführt",
+      "aliasDeleted": "Alias entfernt",
+      "aliasAdded": "Alias hinzugefügt",
+      "deletedAndIgnored": "Zahlungsempfänger gelöscht und zur Liste ignorierter Namen hinzugefügt",
+      "tagsAppliedToExisting": "Tags auf {count} Transaktionen angewendet",
+      "bulkDeleted": "{count} Zahlungsempfänger gelöscht | {count} Zahlungsempfänger gelöscht",
+      "bulkDeletedAndIgnored": "{count} Zahlungsempfänger gelöscht und ignoriert | {count} Zahlungsempfänger gelöscht und ignoriert"
     },
     "errors": {
-      "collision": "A payee with this name already exists. Merge instead.",
-      "generic": "Something went wrong, please try again."
+      "collision": "Ein Zahlungsempfänger mit diesem Namen existiert bereits. Führe sie stattdessen zusammen.",
+      "generic": "Etwas ist schiefgelaufen, bitte versuche es erneut."
     },
     "tabs": {
       "manage": "Verwalten",
       "settings": "Einstellungen"
     },
     "settings": {
-      "title": "Payee detection settings",
-      "description": "Control how the app auto-detects Payees from your synced transactions.",
-      "howDetectionWorks": "How detection works",
+      "title": "Einstellungen zur Erkennung von Zahlungsempfängern",
+      "description": "Steuere, wie die App Zahlungsempfänger automatisch aus deinen synchronisierten Transaktionen erkennt.",
+      "howDetectionWorks": "So funktioniert die Erkennung",
       "payeeFromDescription": {
-        "label": "Detect payees from transaction descriptions",
-        "description": "When your bank doesn't provide a dedicated merchant field, fall back to the transaction description (note) to auto-detect Payees. Useful for bank connections that have merchant fields empty or absent. May produce noisier Payee names (e.g. installment-payment prefixes) which you can rename or merge afterwards.",
-        "successNotification": "Preference updated",
-        "errorNotification": "Failed to update preference"
+        "label": "Zahlungsempfänger aus Transaktionsbeschreibungen erkennen",
+        "description": "Wenn deine Bank kein eigenes Händlerfeld bereitstellt, wird auf die Transaktionsbeschreibung (Notiz) zurückgegriffen, um Zahlungsempfänger automatisch zu erkennen. Nützlich für Bankverbindungen, bei denen Händlerfelder leer sind oder fehlen. Kann ungenauere Empfängernamen erzeugen (z.B. Präfixe von Ratenzahlungen), die du später umbenennen oder zusammenführen kannst.",
+        "successNotification": "Einstellung aktualisiert",
+        "errorNotification": "Einstellung konnte nicht aktualisiert werden"
       },
       "promotionThreshold": {
-        "label": "Create a payee after N occurrences",
-        "description": "How many transactions must share the same merchant name before a payee is created automatically. Set to 1 to create payees from the first transaction.",
-        "successNotification": "Payee creation threshold updated",
-        "errorNotification": "Failed to update payee creation threshold"
+        "label": "Zahlungsempfänger nach N Vorkommnissen erstellen",
+        "description": "Wie viele Transaktionen denselben Händlernamen aufweisen müssen, bevor automatisch ein Zahlungsempfänger erstellt wird. Auf 1 setzen, um Zahlungsempfänger ab der ersten Transaktion zu erstellen.",
+        "successNotification": "Schwellenwert für Erstellung aktualisiert",
+        "errorNotification": "Schwellenwert konnte nicht aktualisiert werden"
       },
       "bulkCategorizationMode": {
-        "label": "Apply categorization mode to all payees",
-        "description": "Choose how the categorization should behave for every existing payee. This overrides each payee's individual setting.",
-        "applyButton": "Apply to all",
-        "confirmTitle": "Apply to all payees?",
-        "confirmDescription": "All payees will be switched to {mode}. You can still change each payee individually later.",
-        "successNotification": "Updated {count} payees.",
-        "errorNotification": "Failed to update payees. Please try again."
+        "label": "Kategorisierungsmodus auf alle Zahlungsempfänger anwenden",
+        "description": "Wähle, wie sich die Kategorisierung für jeden bestehenden Zahlungsempfänger verhalten soll. Dies überschreibt die individuelle Einstellung jedes Zahlungsempfängers.",
+        "applyButton": "Auf alle anwenden",
+        "confirmTitle": "Auf alle Zahlungsempfänger anwenden?",
+        "confirmDescription": "Alle Zahlungsempfänger werden auf {mode} umgestellt. Du kannst jeden Zahlungsempfänger später weiterhin individuell anpassen.",
+        "successNotification": "{count} Zahlungsempfänger aktualisiert.",
+        "errorNotification": "Zahlungsempfänger konnten nicht aktualisiert werden. Bitte versuche es erneut."
       }
     },
     "ignoredNames": {
-      "title": "Ignored merchant names",
-      "description": "Raw merchant strings that should never automatically create a Payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a Payee manually — only automatic matching is blocked.",
-      "addPlaceholder": "e.g. Spotify",
-      "addButton": "Add",
-      "addedToast": "Added to ignored names",
-      "addError": "Failed to add to ignored names",
-      "removeTooltip": "Remove from ignored list",
-      "removedToast": "Removed from ignored names",
-      "removeError": "Failed to remove",
-      "empty": "No ignored names yet.",
-      "normalizedLabel": "Normalized",
-      "conflictTitle": "An existing Payee matches",
-      "conflictDescription": "A Payee with the same normalized name as \"{name}\" already exists. Continuing will delete that Payee (transactions stay, lose link).",
-      "forceConfirm": "Delete Payee and ignore"
+      "title": "Ignorierte Händlernamen",
+      "description": "Rohdaten von Händlernamen, aus denen nie automatisch ein Zahlungsempfänger erstellt werden soll. Nützlich für störende Angaben wie \"Kartenumbuchung\", \"Von: <Name>\" oder Erstattungs-Präfixe. Du kannst diese Namen weiterhin manuell mit einem Zahlungsempfänger verknüpfen – nur die automatische Zuordnung wird blockiert.",
+      "addPlaceholder": "z.B. Spotify",
+      "addButton": "Hinzufügen",
+      "addedToast": "Zu ignorierten Namen hinzugefügt",
+      "addError": "Hinzufügen zu ignorierten Namen fehlgeschlagen",
+      "removeTooltip": "Aus ignorierter Liste entfernen",
+      "removedToast": "Aus ignorierten Namen entfernt",
+      "removeError": "Entfernen fehlgeschlagen",
+      "empty": "Noch keine ignorierten Namen.",
+      "normalizedLabel": "Normalisiert",
+      "conflictTitle": "Ein bestehender Zahlungsempfänger stimmt überein",
+      "conflictDescription": "Ein Zahlungsempfänger mit demselben normalisierten Namen wie \"{name}\" existiert bereits. Wenn du fortfährst, wird dieser Zahlungsempfänger gelöscht (Transaktionen bleiben erhalten, verlieren jedoch die Verknüpfung).",
+      "forceConfirm": "Zahlungsempfänger löschen und ignorieren"
     },
-    "loadingMore": "Loading more…",
-    "txCount": "{count} tx"
+    "loadingMore": "Weitere laden…",
+    "txCount": "{count} Transaktionen"
   }
 }

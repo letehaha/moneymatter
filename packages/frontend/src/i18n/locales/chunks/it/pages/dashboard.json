@@ -126,6 +126,7 @@
         "title": "Cash Flow",
         "description": "Shows your net savings: income minus expenses for the selected period, with a trend of previous periods",
         "vsPrevious": "vs previous",
+        "notAvailable": "N/A",
         "income": "Income",
         "expenses": "Expenses",
         "saved": "Saved",

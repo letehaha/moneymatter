@@ -1,7 +1,8 @@
 {
   "common": {
     "processAlreadyLocked": "Der Sync-Prozess für „{{lockKey}}“ ist bereits gesperrt.",
-    "serviceTemporarilyUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte versuche es später erneut."
+    "serviceTemporarilyUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.",
+    "jobInterruptedByServerUpdate": "Ein Server-Update hat dies unterbrochen, bevor es abgeschlossen werden konnte. Es wurde nichts geändert."
   },
   "accounts": {
     "groupNotFound": "Gruppe oder Konto nicht gefunden",
@@ -15,8 +16,8 @@
     "loanBalanceUseUpdateLoan": "Passe den Restbetrag des Kredits direkt auf dessen Detailseite an, nicht in den Kontoeinstellungen.",
     "loanCategoryImmutable": "Die Kategorie eines Kreditkontos kann nicht geändert werden.",
     "dedicatedFlowCategoryNotAllowed": "Kredit- und Fahrzeugkonten müssen über ihre eigenen Endpunkte erstellt werden und nicht über den Endpunkt der allgemeinen Konten.",
-    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialBalanceOnlySystem": "Der Startsaldo kann nur für manuelle Konten geändert werden",
+    "initialAndCurrentBalanceTogether": "Startsaldo und aktueller Saldo können nicht in derselben Anfrage geändert werden"
   },
   "balanceAdjustment": {
     "defaultNote": "Kontostandsanpassung",
@@ -330,7 +331,10 @@
     "batchDeleteBankLinkedAccount": "Dieser Import kann nicht mehr rückgängig gemacht werden, da das zugehörige Konto jetzt mit einer Bank verbunden ist. Das Löschen dieser Transaktionen könnte den synchronisierten Saldo verfälschen.",
     "batchDeleteLinkedLoanTransfer": "Dieser Import ist mit einer Kreditrückzahlung verknüpft und kann nicht einzeln rückgängig gemacht werden. Aktiviere „verknüpfte Umbuchungen ebenfalls löschen“, um ihn zu entfernen.",
     "batchDeleteInProgress": "Ein Import-Batch wird bereits gelöscht. Warte, bis der Vorgang abgeschlossen ist, bevor du einen weiteren startest.",
-    "statementImportInProgress": "Ein Kontoauszugs-Import läuft bereits. Warte, bis dieser abgeschlossen ist, bevor du einen neuen startest."
+    "batchDeleteImportStillRunning": "Dieser Import läuft noch. Warte, bis er abgeschlossen ist, bevor du ihn rückgängig machst.",
+    "importIntoBankLinkedAccount": "Das Konto \"{{accountName}}\" ist mit einer Bank verbunden, daher können keine Transaktionen darin importiert werden. Wähle ein anderes Konto oder erstelle ein neues.",
+    "statementImportInProgress": "Ein Kontoauszugs-Import läuft bereits. Warte, bis dieser abgeschlossen ist, bevor du einen neuen startest.",
+    "importInterruptedByServerUpdate": "Ein Server-Update hat diesen Import unterbrochen. Bereits gespeicherte Transaktionen wurden behalten. Lösche diesen Import im \"Importverlauf\", bevor du die Datei erneut importierst, da sie sonst dupliziert werden."
   },
   "statementParser": {
     "invalidFile": "Ungültige Datei",
@@ -590,7 +594,7 @@
     "unsupportedFileType": "Nicht unterstützter Dateityp. Lade eine Rechnung als JPEG-, PNG-, WebP- oder PDF-Datei hoch.",
     "notAnInvoice": "Dieses Dokument sieht nicht wie eine Rechnung oder ein Beleg aus.",
     "incompleteInvoice": "Anbieter, Gesamtbetrag und Datum konnten aus dieser Rechnung nicht gelesen werden.",
-    "pdfWithoutText": "Custom AI connections can't receive PDF files directly, and this one couldn't be opened to convert it (for example, it's password-protected). Convert it to an image (PNG or JPEG), such as a screenshot of the invoice, and upload that instead.",
+    "pdfWithoutText": "Eigene KI-Verbindungen können PDF-Dateien nicht direkt empfangen, und diese Datei konnte nicht geöffnet werden, um sie zu konvertieren (z.B. weil sie passwortgeschützt ist). Konvertiere sie in ein Bild (PNG oder JPEG), wie z.B. einen Screenshot der Rechnung, und lade dieses stattdessen hoch.",
     "noFileUploaded": "Es wurde keine Datei hochgeladen."
   }
 }

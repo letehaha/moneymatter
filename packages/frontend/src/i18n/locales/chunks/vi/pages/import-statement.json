@@ -15,7 +15,7 @@
         "accountTitle": "Select Account",
         "accountDescription": "Choose or create an account for the transactions"
       },
-      "selectCurrency": "Select currency",
+      "selectCurrency": "Chọn tiền tệ",
       "selectExistingAccount": "Select existing account",
       "accountNamePlaceholder": "e.g., Main Bank Account",
       "selectAccount": "Select an account",
