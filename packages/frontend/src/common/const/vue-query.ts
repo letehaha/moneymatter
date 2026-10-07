@@ -80,6 +80,7 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   widgetCashFlow: [transactionChange, 'widget-cash-flow'] as const,
   widgetCashFlowPrev: [transactionChange, 'widget-cash-flow-prev'] as const,
   widgetCashFlowTrend: [transactionChange, 'widget-cash-flow-trend'] as const,
+  widgetTaxes: [transactionChange, 'widget-taxes'] as const,
 
   // widget net worth
   widgetNetWorth: [transactionChange, securityPriceChange, ventureChange, 'widget-net-worth'] as const,

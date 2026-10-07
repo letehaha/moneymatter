@@ -340,13 +340,16 @@ export function generateDemoTemplate({ generatedAt = new Date() }: { generatedAt
       });
     }
 
-    if (calendarMonth === 3) {
+    // Quarterly instalments with a larger April settlement, so tax analytics
+    // get a lumpy series, not one bar a year.
+    if (calendarMonth % 3 === 0) {
+      const isSettlement = calendarMonth === 3;
       emit(setDate(monthDate, 15), {
         accountKey: 'main_checking',
         categoryKey: 'financial-expenses/taxes',
-        amount: cents({ min: 60000, max: 130000 }),
+        amount: isSettlement ? cents({ min: 60000, max: 130000 }) : cents({ min: 45000, max: 80000 }),
         transactionType: TRANSACTION_TYPES.expense,
-        note: 'Income tax settlement',
+        note: isSettlement ? 'Income tax settlement' : 'Estimated tax payment',
         paymentType: PAYMENT_TYPES.bankTransfer,
         tagKeys: ['must'],
         window: 'businessHours',
