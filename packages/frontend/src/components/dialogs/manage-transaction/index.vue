@@ -3,17 +3,19 @@ import * as Dialog from '@/components/lib/ui/dialog';
 import * as Drawer from '@/components/lib/ui/drawer';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { trackAnalyticsEvent } from '@/lib/posthog';
-import { useVModel } from '@vueuse/core';
-import { watch } from 'vue';
+import { createReusableTemplate, useVModel } from '@vueuse/core';
+import { computed, nextTick, ref, shallowRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import ManageTransactionDialogContent from './dialog-content.vue';
+import type { TransactionPrefill } from './types';
 
 const props = withDefaults(
   defineProps<{
     open?: boolean;
+    prefill?: TransactionPrefill;
   }>(),
-  { open: undefined },
+  { open: undefined, prefill: undefined },
 );
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
@@ -22,14 +24,42 @@ const { t } = useI18n();
 const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 const isOpen = useVModel(props, 'open', emit, { passive: true, defaultValue: false });
 
+const isCreateMore = ref(false);
+const nextEntryPrefill = shallowRef<TransactionPrefill>();
+const contentKey = ref(0);
+const contentRef = ref<InstanceType<typeof ManageTransactionDialogContent> | null>(null);
+const contentPrefill = computed(() => nextEntryPrefill.value ?? props.prefill);
+const [DefineContent, ReuseContent] = createReusableTemplate();
+
 watch(isOpen, (open) => {
-  if (open) {
-    trackAnalyticsEvent({ event: 'transaction_creation_opened' });
-  }
+  if (!open) return;
+  trackAnalyticsEvent({ event: 'transaction_creation_opened' });
+  isCreateMore.value = false;
+  nextEntryPrefill.value = undefined;
 });
+
+// A fresh content instance drops every one-shot state the previous entry left behind.
+const startNextEntry = async ({ prefill }: { prefill: TransactionPrefill }) => {
+  if (!isOpen.value) return;
+  nextEntryPrefill.value = prefill;
+  contentKey.value += 1;
+  await nextTick();
+  contentRef.value?.focusAmount();
+};
 </script>
 
 <template>
+  <DefineContent>
+    <ManageTransactionDialogContent
+      :key="contentKey"
+      ref="contentRef"
+      v-model:create-more="isCreateMore"
+      :prefill="contentPrefill"
+      @close-modal="isOpen = false"
+      @keep-open="startNextEntry"
+    />
+  </DefineContent>
+
   <!-- Desktop: Dialog -->
   <Dialog.Dialog v-if="!isMobile" v-model:open="isOpen">
     <Dialog.DialogTrigger as-child>
@@ -41,7 +71,7 @@ watch(isOpen, (open) => {
         {{ t('dialogs.manageTransaction.description') }}
       </Dialog.DialogDescription>
 
-      <ManageTransactionDialogContent @close-modal="isOpen = false" />
+      <ReuseContent />
     </Dialog.DialogContent>
   </Dialog.Dialog>
 
@@ -51,7 +81,7 @@ watch(isOpen, (open) => {
       <slot />
     </Drawer.DrawerTrigger>
     <Drawer.DrawerContent custom-indicator>
-      <ManageTransactionDialogContent @close-modal="isOpen = false" />
+      <ReuseContent />
     </Drawer.DrawerContent>
   </Drawer.Drawer>
 </template>

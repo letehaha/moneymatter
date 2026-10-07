@@ -35,6 +35,10 @@ The transaction appears in your list right away, and the account balance updates
 
 To record money moving between two of your own accounts, pick **Transfer** instead. It has **From account** and **To account** fields and works differently from income and expenses. See [how transfers work](/transfers-and-refunds/how-transfers-work/).
 
+### Create several transactions in a row
+
+In the **Add Transaction** form you open from the header, turn on **Create more** next to the **Create** button to keep the form open after each save. You see a **Transaction created** message, and the form clears for the next one. It keeps the type, the account (and the **To account** on a transfer), the **Datetime** and the **Payment type**; everything else starts fresh. **Planned** goes back to the account's default, and on an account that isn't bank-connected a future **Datetime** resets to now. **Create more** switches off again when you close the form. To keep the form open for just one save, press **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac).
+
 ## The fields
 
 The main column holds the fields you need every time. Everything else lives in the **More options** panel: a column on the right on a computer, or a **More options** button at the bottom of the form on a phone. On a phone, the button shows how many of those fields are filled in.
@@ -207,6 +211,17 @@ A few changes have side effects:
 
 To change many transactions at once, use [bulk edit](/transactions/search-and-filter/#edit-several-transactions-at-once).
 
+### Duplicate a transaction
+
+To add a transaction like one you already have, open it and click **Duplicate**. The **Add Transaction** form opens with everything you see in the form copied over, including changes you haven't saved, and dated now. The original stays as it was. Refund links and attachments aren't copied. A copy on a bank-connected account starts as planned, since only the bank adds real transactions there. That's also why **Duplicate** isn't offered on a bank-connected account shared with you, or for a planned transaction on any account shared with you: only the owner can add plans. It isn't offered on loan or vehicle accounts either.
+
+You can also duplicate a transfer between two of your own accounts, including one between accounts in different currencies, and an [out of wallet](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers) transfer. The copy opens on the **Transfer** tab going the same way as the original, from the same **From account** to the same **To account**, whichever side you opened. It keeps both amounts, the note, the tags and the payment type, but not the external link, reference or location. On a transfer between currencies, check that the received amount still matches today's rate. **Duplicate** isn't offered for:
+
+- transfers to or from an investment portfolio, a venture or a vehicle
+- loan payments
+- transfers where either account is bank-connected
+- transfers involving an account shared with you that you can't add transactions to
+
 ## Bank-synced transactions
 
 Transactions that arrive through a [bank connection](/import/bank-connections/) mirror what your bank reports. Some fields are locked so your records don't drift away from the bank's.
@@ -253,7 +268,9 @@ To delete several transactions at once, see [bulk delete](/transactions/search-a
 These work while the transaction form is open:
 
 - **Ctrl + Enter** (**⌘ + Enter** on a Mac) saves the transaction.
+- **Ctrl + Shift + Enter** (**⌘ + Shift + Enter** on a Mac) creates the transaction and keeps the **Add Transaction** form you opened from the header open for the next one.
 - **Alt + T** (**⌥ Option + T** on a Mac) opens or closes the templates list when you're adding an expense or income.
+- **Ctrl + D** (**⌘ + D** on a Mac) duplicates the transaction you're editing, when **Duplicate** is offered.
 
 ## Good to know
 

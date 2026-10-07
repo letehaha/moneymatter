@@ -30,7 +30,7 @@
         </template>
 
         <div class="flex items-center gap-px">
-          <ManageTransactionDialog>
+          <ManageTransactionDialog v-model:open="isCreateTransactionDialogOpen" :prefill="createTransactionPrefill">
             <Button variant="default" size="sm" class="rounded-r-none">
               <PlusIcon class="size-4" />
               {{ isMobileView ? $t('header.add') : $t('header.newTransaction') }}
@@ -191,6 +191,10 @@ import NotificationsPopover from '@/components/notifications-popover/index.vue';
 import Sidebar from '@/components/sidebar/index.vue';
 import SyncConfirmationDialog from '@/components/sync-confirmation-dialog.vue';
 import SyncStatusTooltip from '@/components/sync-status-tooltip.vue';
+import {
+  createTransactionPrefill,
+  isCreateTransactionDialogOpen,
+} from '@/composable/global-state/create-transaction-dialog';
 import { isMobileSheetOpen } from '@/composable/global-state/mobile-sheet';
 import { useCategorizationStatus } from '@/composable/use-categorization-status';
 import { useCssVarFromElementSize } from '@/composable/use-css-var-from-element-size';

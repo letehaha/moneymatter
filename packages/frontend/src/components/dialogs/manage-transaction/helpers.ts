@@ -79,6 +79,10 @@ export const getOppositeTxType = (type: TRANSACTION_TYPES): TRANSACTION_TYPES =>
 
 export const isOutOfWalletAccount = (account: typeof OUT_OF_WALLET_ACCOUNT_MOCK) => account._isOutOfWallet;
 
+// Real rows on a bank-connected account come from the sync, so the Create form makes them plans.
+export const isConnectedAccount = ({ account }: { account: Pick<AccountModel, 'type'> }): boolean =>
+  !!account.type && account.type !== ACCOUNT_TYPES.system;
+
 /**
  * Transfer destinations for a given base transaction type. A loan payment is an
  * outflow (backend rejects transfer_to_loan on an income base), so income can

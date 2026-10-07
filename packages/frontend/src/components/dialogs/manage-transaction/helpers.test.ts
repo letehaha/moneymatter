@@ -27,6 +27,7 @@ import {
   getDestinationAmount,
   getFormTypeFromTransaction,
   getTxTypeFromFormType,
+  isConnectedAccount,
   isTxEditableAsManual,
   prepopulateForm,
   resolveFormIsPlanned,
@@ -529,6 +530,20 @@ describe('components/modals/modify-record/helpers', () => {
           isRecordExternal: true,
         }),
       ).toBe(true);
+    });
+  });
+
+  describe('isConnectedAccount', () => {
+    it('is false for the out-of-wallet account', () => {
+      expect(isConnectedAccount({ account: OUT_OF_WALLET_ACCOUNT_MOCK })).toBe(false);
+    });
+
+    it('is false for a system account', () => {
+      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.system } })).toBe(false);
+    });
+
+    it('is true for a bank-connected account', () => {
+      expect(isConnectedAccount({ account: { type: ACCOUNT_TYPES.monobank } })).toBe(true);
     });
   });
 
