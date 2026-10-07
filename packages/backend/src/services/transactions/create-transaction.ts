@@ -208,10 +208,13 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   // caller bug — fail loudly.
   const destAccount = await Accounts.default.findOne({
     where: { id: destinationAccountId, userId: destOwnerUserId },
-    attributes: ['accountCategory'],
+    attributes: ['accountCategory', 'type'],
   });
   if (!destAccount) {
     throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
+  }
+  if (destAccount.type !== ACCOUNT_TYPES.system) {
+    throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
   }
   const isLoanDestination = destAccount.accountCategory === ACCOUNT_CATEGORIES.loan;
   // A loan payment is an outflow: the base leg is the expense, the auto-created

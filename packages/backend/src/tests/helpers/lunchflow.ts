@@ -114,8 +114,28 @@ const addTransactions = async ({ amount = 5 }: { amount?: number } = {}): Promis
   return { account, transactions };
 };
 
+/**
+ * Links an existing manual account to LunchFlow account 1001 with an empty statement.
+ * The account must be USD, the currency of account 1001.
+ */
+const linkManualAccount = async ({ accountId }: { accountId: string }) => {
+  const { connectionId } = await pairLunchFlowUser();
+
+  global.mswMockServer.use(getLunchFlowTransactionsMock({ response: { transactions: [], total: 0 } }));
+
+  const response = await helpers.linkAccountToBankConnection({
+    id: accountId,
+    connectionId,
+    externalAccountId: '1001',
+  });
+  if (response.statusCode !== 200) {
+    throw new Error(`Linking account ${accountId} to LunchFlow failed with status ${response.statusCode}`);
+  }
+};
+
 export default {
   pair: pairLunchFlowUser,
+  linkManualAccount,
   getTransactions,
   mockTransactions: addTransactions,
   mockedAccountsData: getMockedLunchFlowAccounts,

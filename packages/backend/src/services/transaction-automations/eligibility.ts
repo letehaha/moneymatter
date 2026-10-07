@@ -31,7 +31,8 @@ export const isAutomationEligible = ({
 /**
  * SQL twin of the account-type half of `isAutomationEligible` for the preview scan (the
  * transfer/planned halves are `findTransactions` policy). Keyed on the account row, not
- * `Transactions.accountType`: unlinking rewrites that column to `system` and relinking leaves it.
+ * `Transactions.accountType`: unlinking rewrites that column to `system` on every row, and relinking
+ * restores it only on rows the same provider synced.
  * Split parents are dropped too: their category is derived from their split rows.
  */
 export const buildEligibilityWhere = ({ bankAccountIds }: { bankAccountIds: string[] }) => ({

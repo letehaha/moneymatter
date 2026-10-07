@@ -137,6 +137,21 @@ describe('Balance Adjustment', () => {
     expect(updatedAccount.currentBalance).toBe(500);
   });
 
+  it('rejects an adjustment on a bank-linked account and creates no transaction', async () => {
+    const { account } = await helpers.lunchflow.mockTransactions();
+    const before = await helpers.getAccount({ id: account.id, raw: true });
+    const rowsBefore = (await helpers.getTransactions({ accountIds: [account.id], raw: true })).length;
+
+    const res = await helpers.balanceAdjustment({
+      id: account.id,
+      payload: { targetBalance: asDecimal(Number(before.currentBalance) + 50) },
+    });
+
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getTransactions({ accountIds: [account.id], raw: true })).toHaveLength(rowsBefore);
+    expect((await helpers.getAccount({ id: account.id, raw: true })).currentBalance).toBe(before.currentBalance);
+  });
+
   it('returns 404 when account does not belong to user', async () => {
     const res = await helpers.balanceAdjustment({
       id: generateRandomRecordId(),

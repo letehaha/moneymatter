@@ -2,6 +2,7 @@ import {
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
   PAYMENT_TYPES,
+  SUBSCRIPTION_FREQUENCIES,
   TRANSACTION_TRANSFER_NATURE,
   DEACTIVATION_REASON,
   TRANSACTION_TYPES,
@@ -30,7 +31,7 @@ import {
   getLunchFlowBalanceMock,
   getLunchFlowTransactionsMock,
 } from '@tests/mocks/lunchflow/mock-api';
-import { addDays, subDays } from 'date-fns';
+import { addDays, format, subDays } from 'date-fns';
 import { HttpResponse, http } from 'msw';
 import { Op } from 'sequelize';
 
@@ -1141,6 +1142,70 @@ describe('LunchFlow Data Provider E2E', () => {
       expect(relinked.type).toBe(ACCOUNT_TYPES.lunchflow);
       expect(relinked.bankDataProviderConnectionId).toBe(secondConnect.connectionId);
       expect(relinked.externalId).toBe(externalAccountId);
+    });
+
+    it('turns off auto-record on subscriptions booked to an account re-linked by reconnecting', async () => {
+      const externalAccountId = getMockedLunchFlowAccounts().accounts[0]!.id.toString();
+
+      const firstConnect = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.LUNCHFLOW,
+        credentials: { apiKey: VALID_LUNCHFLOW_API_KEY },
+        raw: true,
+      });
+
+      global.mswMockServer.use(
+        getLunchFlowTransactionsMock({ accountId: externalAccountId }),
+        getLunchFlowBalanceMock({ accountId: externalAccountId }),
+      );
+
+      const { syncedAccounts: firstSelected } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: firstConnect.connectionId,
+        accountExternalIds: [externalAccountId],
+        raw: true,
+      });
+      const accountId = firstSelected[0]!.id;
+
+      await helpers.bankDataProviders.disconnectProvider({
+        connectionId: firstConnect.connectionId,
+        removeAssociatedAccounts: false,
+        raw: true,
+      });
+
+      const manualAccount = await helpers.getAccount({ id: accountId, raw: true });
+      expect(manualAccount.type).toBe(ACCOUNT_TYPES.system);
+
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const created = await helpers.createSubscription({
+        name: 'Auto-recorded',
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        startDate: today,
+        dueDate: today,
+        accountId,
+        expectedAmount: 10,
+        expectedCurrencyCode: manualAccount.currencyCode,
+        autoRecord: true,
+        raw: true,
+      });
+      expect(created.autoRecord).toBe(true);
+
+      const secondConnect = await helpers.bankDataProviders.connectProvider({
+        providerType: BANK_PROVIDER_TYPE.LUNCHFLOW,
+        credentials: { apiKey: VALID_LUNCHFLOW_API_KEY },
+        raw: true,
+      });
+
+      const { syncedAccounts: secondSelected } = await helpers.bankDataProviders.connectSelectedAccounts({
+        connectionId: secondConnect.connectionId,
+        accountExternalIds: [externalAccountId],
+        raw: true,
+      });
+
+      expect(secondSelected).toHaveLength(1);
+      expect(secondSelected[0]!.id).toBe(accountId);
+      expect((await helpers.getAccount({ id: accountId, raw: true })).type).toBe(ACCOUNT_TYPES.lunchflow);
+
+      const subscription = await helpers.getSubscriptionById({ id: created.id, raw: true });
+      expect(subscription.autoRecord).toBe(false);
     });
   });
 

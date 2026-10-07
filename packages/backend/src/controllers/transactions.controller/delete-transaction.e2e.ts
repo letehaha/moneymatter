@@ -113,6 +113,41 @@ describe('Delete transaction controller', () => {
 
       expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
+
+    it('cannot delete a manual transaction once its account is linked to a bank', async () => {
+      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id }),
+        raw: true,
+      });
+      await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+
+      const res = await helpers.deleteTransaction({ id: tx.id });
+
+      expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
+      expect((await helpers.getTransactionById({ id: tx.id, raw: true }))?.accountId).toBe(account.id);
+    });
+
+    it('cannot delete a transfer leg whose twin sits on a bank-linked account', async () => {
+      const { account: linkedAccount } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+      const manualAccount = await helpers.createAccount({ raw: true });
+      const [linkedLeg, manualLeg] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId: linkedAccount.id, amount: 10 }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAccountId: manualAccount.id,
+          destinationAmount: 10,
+        },
+        raw: true,
+      });
+      await helpers.lunchflow.linkManualAccount({ accountId: linkedAccount.id });
+
+      const res = await helpers.deleteTransaction({ id: manualLeg!.id });
+
+      expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
+      expect((await helpers.getTransactionById({ id: linkedLeg.id, raw: true }))?.accountId).toBe(linkedAccount.id);
+      expect((await helpers.getTransactionById({ id: manualLeg!.id, raw: true }))?.accountId).toBe(manualAccount.id);
+    });
   });
   describe('refunded transactions', () => {
     const createExpense = async (accountId: RecordId) => {

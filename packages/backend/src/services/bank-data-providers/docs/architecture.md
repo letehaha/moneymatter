@@ -361,8 +361,10 @@ For each linked account:
     • bankDataProviderConnectionId → null
     • externalId → null
     • Store connection history in externalData
-    • All transactions: accountType → system, originalId → null
-    • Preserve originalId in externalData.originalSource (for relink dedup)
+    • All transactions: accountType → system
+    • originalId → null, preserved in externalData.originalSource (for
+      relink dedup). File-imported rows (externalData.importDetails) keep
+      their originalId and get no snapshot
        ↓
 provider.disconnect(connectionId)
   • Provider-specific cleanup (e.g. revoke OAuth session)
@@ -379,7 +381,11 @@ Permanently delete all linked accounts (and their transactions via CASCADE)
 provider.disconnect(connectionId)
 ```
 
-**Key file:** `connection/disconnect-provider.ts`, `accounts/unlink-from-bank-connection.ts`
+### Reconnecting after a disconnect
+
+A fresh connection that selects the same external account goes through `connectSelectedAccounts()`, not `linkAccountToBankConnection()`. It finds the unlinked account by `externalData.connectionHistory.previousConnection` (`providerType` + `externalId`), sets its type back to the provider type, and types its formerly synced transactions as provider rows with the same `restoreRelinkedTransactionsAccountType()` call the account-level relink uses (see Flow 6).
+
+**Key file:** `connection/disconnect-provider.ts`, `connection/connect-selected-accounts.ts`, `accounts/unlink-from-bank-connection.ts`, `accounts/restore-relinked-transactions-account-type.ts`
 
 ---
 
@@ -394,8 +400,10 @@ This is the per-account unlink/relink flow (distinct from full provider disconne
      • Account type → system
      • externalId → null, bankDataProviderConnectionId → null
      • Store connection history in externalData.connectionHistory
-     • Transactions: originalId → null, accountType → system
-     • Preserve originalId in externalData.originalSource
+     • Transactions: accountType → system
+     • originalId → null, preserved in externalData.originalSource.
+       File-imported rows (externalData.importDetails) keep their originalId
+       (OFX duplicate detection keys on it) and get no snapshot
        ↓
 2. User may add manual transactions while account is unlinked
        ↓
@@ -404,6 +412,12 @@ This is the per-account unlink/relink flow (distinct from full provider disconne
    linkAccountToBankConnection()
      • Account type → provider type (e.g. lunchflow)
      • Set externalId and bankDataProviderConnectionId
+     • Transactions whose originalSource.importedFrom is this provider:
+       accountType → provider type (soft-deleted rows included, planned
+       rows excluded, hooks off).
+       Manual and file-imported rows stay system; so do rows synced by a
+       different provider. originalId stays null until a sync with the
+       originalSource dedup re-anchors it (every provider except Monobank)
        ↓
 4. Transaction sync runs
        ↓
@@ -422,11 +436,19 @@ This is the per-account unlink/relink flow (distinct from full provider disconne
 
 ### Why Two-Tier Dedup?
 
-When an account is unlinked, `originalId` is set to `null` on all transactions. The original value is preserved in `externalData.originalSource.originalId`. On relink + sync (LunchFlow, SimpleFIN, Walutomat):
+When an account is unlinked, `originalId` is set to `null` on every transaction except file-imported ones. The original value is preserved in `externalData.originalSource.originalId`. On relink + sync (LunchFlow, SimpleFIN, Walutomat):
 
 1. **Primary dedup** (by `originalId`) won't match — the field is null
 2. **Secondary dedup** checks `externalData.originalSource.originalId` via JSONB query
 3. If found, restores `originalId` so future syncs use the fast primary path
+
+### Why Relink Restores the Row Type
+
+`Transactions.accountType` is a per-row snapshot, separate from `Accounts.type`, and it drives the balance hooks and the reconciliation guards. A formerly synced row left as `system` on a bank-typed account is hidden from the stuck-pending list, rejected by reconciliation remove/merge/restore, and has no delete action in the UI. Relink therefore types those rows as the provider again, on both relink paths: `linkAccountToBankConnection()` and the reconnect in `connectSelectedAccounts()` (Flow 5).
+
+Moving a transaction to another account, either directly or as the opposite leg of a transfer whose destination account changes, sets its `originalSource.importedFrom` to `null` and keeps `originalSource.originalId`. Linking the new account to the same provider therefore leaves the moved row `system`, and the sync dedup still finds the row if it moves back.
+
+The retype excludes planned rows.
 
 ### Why Date-Based Filtering Matters
 

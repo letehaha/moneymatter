@@ -531,6 +531,90 @@ describe('Update transaction controller', () => {
     });
   });
 
+  describe('transfer legs on bank-linked accounts', () => {
+    const accountIdOf = async ({ id }: { id: RecordId }) =>
+      (await helpers.getTransactionById({ id, raw: true }))?.accountId;
+
+    it('rejects converting a transaction into a transfer whose destination is a bank-linked account', async () => {
+      const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
+      const manualAccount = await helpers.createAccount({ raw: true });
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: manualAccount.id, amount: 10 }),
+        raw: true,
+      });
+      const bankRowsBefore = (await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).length;
+
+      const response = await helpers.updateTransaction({
+        id: tx.id,
+        payload: {
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAccountId: bankAccount.id,
+          destinationAmount: 10,
+        },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).toHaveLength(bankRowsBefore);
+      expect((await helpers.getTransactionById({ id: tx.id, raw: true }))!.transferNature).toBe(
+        TRANSACTION_TRANSFER_NATURE.not_transfer,
+      );
+    });
+
+    it('rejects changing a transfer destination to a bank-linked account', async () => {
+      const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
+      const [accountA, accountB] = await Promise.all([
+        helpers.createAccount({ raw: true }),
+        helpers.createAccount({ raw: true }),
+      ]);
+      const [baseTx, oppositeTx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({ accountId: accountA.id, amount: 10 }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAccountId: accountB.id,
+          destinationAmount: 10,
+        },
+        raw: true,
+      });
+
+      const response = await helpers.updateTransaction({
+        id: baseTx.id,
+        payload: { destinationAccountId: bankAccount.id },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await accountIdOf({ id: oppositeTx!.id })).toBe(accountB.id);
+    });
+
+    it('rejects moving a linked bank transaction off its account through the manual leg', async () => {
+      const { account: bankAccount, transactions } = await helpers.lunchflow.mockTransactions();
+      const bankTx = transactions.find((tx) => tx.accountId === bankAccount.id)!;
+      expect(bankTx).toBeDefined();
+      const [accountA, accountC] = await Promise.all([
+        helpers.createAccount({ raw: true }),
+        helpers.createAccount({ raw: true }),
+      ]);
+      const [manualLeg] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: accountA.id,
+          amount: 50,
+          transactionType:
+            bankTx.transactionType === TRANSACTION_TYPES.expense ? TRANSACTION_TYPES.income : TRANSACTION_TYPES.expense,
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationTransactionId: bankTx.id,
+        }),
+        raw: true,
+      });
+
+      const response = await helpers.updateTransaction({
+        id: manualLeg.id,
+        payload: { destinationAccountId: accountC.id },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await accountIdOf({ id: bankTx.id })).toBe(bankAccount.id);
+    });
+  });
+
   describe('link transactions between each other', () => {
     it.each([[TRANSACTION_TYPES.expense], [TRANSACTION_TYPES.income]])(
       'links %s to a transfer and unlinks both transactions back to their initial state',

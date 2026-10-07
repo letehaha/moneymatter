@@ -11,6 +11,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
 
 import {
+  assertAccountNotBankLinked,
   computeRefAmount,
   computeRestampForExistingTransaction,
   findAccountOrThrow,
@@ -92,6 +93,8 @@ const portfolioToAccountTransferImpl = async ({
 
     linkedTransactionId = existingTransactionId;
   } else {
+    assertAccountNotBankLinked({ account });
+
     const txAmount = Money.fromDecimal(amount);
     const txRefAmount = await computeRefAmount({
       amount,

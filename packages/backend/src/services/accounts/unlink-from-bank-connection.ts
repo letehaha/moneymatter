@@ -4,6 +4,7 @@ import Accounts, { getAccountById } from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
 import { withTransaction } from '@services/common/with-transaction';
+import { Sequelize } from 'sequelize';
 
 interface UnlinkAccountFromBankConnectionPayload {
   accountId: string;
@@ -54,6 +55,10 @@ export const unlinkAccountFromBankConnection = withTransaction(
       },
     };
 
+    // Read before the account turns `system`. Provider-type strings equal
+    // account-type strings, so the account type stands in for a missing connection row.
+    const importedFrom = bankConnection?.providerType || account.type;
+
     // Update the account: convert to system type and clear bank-related fields
     await account.update({
       type: ACCOUNT_TYPES.system,
@@ -87,29 +92,36 @@ export const unlinkAccountFromBankConnection = withTransaction(
     // A static bulk update skips instance hooks by default, but `hooks: false`
     // makes the intent explicit and also blocks any future `@BeforeBulkUpdate`
     // hook from sneaking back in.
+    // Never null `originalId` on file-imported rows (`importDetails`):
+    // re-importing the same file would duplicate them.
     await updateTransactions({
       planned: 'include',
       access: 'unscoped-internal',
       balanceAdjustments: 'include',
-      values: { accountType: ACCOUNT_TYPES.system, originalId: null },
+      values: {
+        accountType: ACCOUNT_TYPES.system,
+        originalId: Sequelize.literal(
+          `CASE WHEN "externalData"->'importDetails' IS NULL THEN NULL ELSE "originalId" END`,
+        ),
+      },
       where: { accountId },
       paranoid: false,
       hooks: false,
     });
 
-    // Per-row `externalData` merge — JSONB shape differs per row (the
-    // `originalSource` snapshot only applies to txs that came from the bank,
-    // i.e. had an `originalId`). Still skip hooks for the same reason as above;
-    // touches only one column, runs in milliseconds even for thousands of rows.
+    // Only bank-synced rows get an `originalSource` snapshot. File-imported rows
+    // (`importDetails`) also carry an `originalId` and get none.
     for (const transaction of transactions) {
       if (!transaction.originalId) continue;
 
-      const existingTxExternalData = (transaction.externalData as Record<string, unknown>) || {};
+      const existingTxExternalData = transaction.externalData || {};
+      if ('importDetails' in existingTxExternalData) continue;
+
       const updatedTxExternalData = {
         ...existingTxExternalData,
         originalSource: {
           originalId: transaction.originalId,
-          importedFrom: bankConnection?.providerType || null,
+          importedFrom,
           accountType: transaction.accountType,
         },
       };

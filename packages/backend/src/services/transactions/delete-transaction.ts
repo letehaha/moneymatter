@@ -1,6 +1,6 @@
-import { isTwoLegTransfer, ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
+import { isTwoLegTransfer, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { t } from '@i18n/index';
-import { UnexpectedError, ValidationError } from '@js/errors';
+import { UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import RefundTransactions from '@models/refund-transactions.model';
@@ -21,7 +21,7 @@ export const deleteTransaction = withTransaction(
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
       // pre-resolved `ctx` so the call site doesn't reassemble auth primitives.
       const { tx, ctx } = await getWritableTransactionById({ id, userId });
-      const { accountType, transferNature, transferId, refundLinked } = tx;
+      const { transferNature, transferId, refundLinked } = tx;
 
       assertPlannedWriteAllowed({ transaction: tx, callerUserId: userId });
 
@@ -35,14 +35,6 @@ export const deleteTransaction = withTransaction(
           transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
         involvesRefund: Boolean(refundLinked),
       });
-
-      // A plan on a provider account is the user's own row that the bank has never reported,
-      // so deleting it takes nothing away from the sync.
-      if (accountType !== ACCOUNT_TYPES.system && !tx.isPlanned) {
-        throw new ValidationError({
-          message: t({ key: 'transactions.cannotDeleteExternal' }),
-        });
-      }
 
       // Not gated on `refundLinked` — the flag is a cache of the link rows, and a row whose flag
       // drifted false would otherwise keep its links and leave the other end flagged forever.
@@ -92,14 +84,11 @@ export const deleteTransaction = withTransaction(
           where: { transferId },
         });
 
-        await Promise.all(
-          transferTransactions.map((transferTx) =>
-            Transactions.deleteTransactionById({
-              id: transferTx.id,
-              userId: transferTx.userId,
-            }),
-          ),
-        );
+        // Sequential: a leg on a bank-linked account rejects the delete, and the rollback
+        // must not race the other leg's queries.
+        for (const transferTx of transferTransactions) {
+          await Transactions.deleteTransactionById({ id: transferTx.id, userId: transferTx.userId });
+        }
       } else {
         logger.error(`Unexpected issue when tried to delete transaction with id ${id}`);
         throw new UnexpectedError({ message: t({ key: 'transactions.unexpectedDeleteIssue' }) });

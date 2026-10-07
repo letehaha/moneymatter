@@ -8,6 +8,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
 
 import {
+  assertAccountNotBankLinked,
   computeRefAmount,
   findAccountOrThrow,
   findCurrencyOrThrow,
@@ -36,6 +37,7 @@ const accountToPortfolioTransferImpl = async ({
   validatePositiveAmount({ amount });
 
   const account = await findAccountOrThrow({ accountId, userId, role: 'source' });
+  assertAccountNotBankLinked({ account });
   const currencyCode = account.currencyCode;
 
   await findPortfolioOrThrow({ portfolioId, userId, role: 'destination' });

@@ -228,6 +228,56 @@ describe('POST /subscriptions/:id/periods/:periodId/revert (create-mode)', () =>
     const accountAfter = await helpers.getAccount({ id: account.id, raw: true });
     expect(accountAfter.currentBalance).toBe(1000);
   });
+
+  it('keeps the auto-created transaction, detached, when its account is bank-linked', async () => {
+    const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+    const dueDate = futureDate({ monthsAhead: 1, day: 15 });
+    const sub = await helpers.createSubscription({
+      name: 'Bank-linked Sub',
+      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+      startDate: dueDate,
+      dueDate,
+      accountId: account.id,
+      categoryId: global.DEFAULT_CATEGORY_ID,
+      expectedAmount: 20,
+      expectedCurrencyCode: 'USD',
+      raw: true,
+    });
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    const period = detail.periods.find((p) => p.status === SUBSCRIPTION_PERIOD_STATUSES.upcoming)!;
+
+    const paid = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: period.id,
+      createTransaction: true,
+      raw: true,
+    });
+    expect(paid.transactionAutoCreated).toBe(true);
+    const generatedTxId = paid.transactionId!;
+
+    await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+    const txBefore = await helpers.getTransactionById({ id: generatedTxId, raw: true });
+
+    const revertRes = await helpers.revertSubscriptionPeriod({
+      id: sub.id,
+      periodId: period.id,
+      raw: false,
+    });
+
+    expect(revertRes.statusCode).toBe(200);
+    const reverted = revertRes.body.response;
+    expect([SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue]).toContain(reverted.status);
+    expect(reverted.paidAt).toBeNull();
+    expect(reverted.transactionId).toBeNull();
+    expect(reverted.transactionAutoCreated).toBe(false);
+
+    const txAfter = await helpers.getTransactionById({ id: generatedTxId, raw: true });
+    expect(txAfter).not.toBeNull();
+    expect(txAfter!.accountId).toBe(account.id);
+    expect(txAfter!.amount).toBe(txBefore!.amount);
+    expect(txAfter!.transactionType).toBe(TRANSACTION_TYPES.expense);
+    expect(txAfter!.time).toBe(txBefore!.time);
+  });
 });
 
 // ---------------------------------------------------------------------------

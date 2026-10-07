@@ -1,3 +1,4 @@
+import { ACCOUNT_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -55,6 +56,13 @@ export async function findAccountOrThrow({
     query: Accounts.getAccountById({ userId, id: accountId }),
     message: t({ key: messageKey }),
   });
+}
+
+/** A cash transfer writes a real row on the account, which a bank-linked account takes only from its sync. */
+export function assertAccountNotBankLinked({ account }: { account: { type: ACCOUNT_TYPES } }): void {
+  if (account.type !== ACCOUNT_TYPES.system) {
+    throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+  }
 }
 
 export async function findCurrencyOrThrow({ currencyCode }: { currencyCode: string }): Promise<Currencies> {

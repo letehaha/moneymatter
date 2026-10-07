@@ -147,6 +147,25 @@ describe('Portfolio to Account Transfer (POST /investments/portfolios/:id/transf
     expect(relinkResponse.statusCode).toBe(ERROR_CODES.ValidationError);
   }, 30000);
 
+  it('should reject a bank-linked destination account when no existing transaction is linked', async () => {
+    const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
+    const rowsBefore = (await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).length;
+
+    const response = await helpers.portfolioToAccountTransfer({
+      portfolioId: portfolio.id,
+      payload: {
+        accountId: bankAccount.id,
+        amount: '100',
+        currencyCode: bankAccount.currencyCode,
+        date: '2025-06-15',
+      },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).toHaveLength(rowsBefore);
+    expect((await helpers.listPortfolioTransfers({ portfolioId: portfolio.id, raw: true })).data).toEqual([]);
+  });
+
   it('should set refCurrencyCode to base currency when account currency differs from base', async () => {
     const { account: eurAccount } = await helpers.createAccountWithNewCurrency({ currency: 'EUR' });
 

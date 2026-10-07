@@ -1,8 +1,8 @@
-import { API_ERROR_CODES, API_RESPONSE_STATUS, BANK_PROVIDER_TYPE } from '@bt/shared/types';
+import { API_ERROR_CODES, API_RESPONSE_STATUS, BANK_PROVIDER_TYPE, asDecimal } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
-import { VALID_LUNCHFLOW_API_KEY } from '@tests/mocks/lunchflow/mock-api';
+import { VALID_LUNCHFLOW_API_KEY, getLunchFlowTransactionsMock } from '@tests/mocks/lunchflow/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
 
 /**
@@ -61,6 +61,28 @@ describe('Disconnect provider', () => {
   it('deletes portfolio transfers funded by accounts removed with removeAssociatedAccounts', async () => {
     // Fixed past month so the single bucket always holds the transfer, whenever the suite runs.
     const range = { from: '2026-01-01', to: '2026-01-31', granularity: 'monthly' as const };
+    const bankTransactionId = 'lunchflow-brokerage-deposit';
+
+    // A bank-linked account accepts no new rows, so the funding expense has to arrive through sync.
+    global.mswMockServer.use(
+      getLunchFlowTransactionsMock({
+        response: {
+          transactions: [
+            {
+              id: bankTransactionId,
+              accountId: 1001,
+              amount: asDecimal(-500),
+              currency: 'USD',
+              date: '2026-01-10T12:00:00.000Z',
+              merchant: 'Brokerage',
+              description: 'Brokerage deposit',
+              isPending: false,
+            },
+          ],
+          total: 1,
+        },
+      }),
+    );
 
     const { connectionId } = await helpers.bankDataProviders.connectProvider({
       providerType: BANK_PROVIDER_TYPE.LUNCHFLOW,
@@ -81,9 +103,12 @@ describe('Disconnect provider', () => {
 
     const portfolio = await helpers.createPortfolio({ raw: true });
 
-    await helpers.accountToPortfolioTransfer({
-      portfolioId: portfolio.id,
-      payload: { accountId: syncedAccounts[0]!.id, amount: '500', date: '2026-01-10' },
+    const accountTransactions = await helpers.getTransactions({ accountIds: [syncedAccounts[0]!.id], raw: true });
+    const fundingTransaction = accountTransactions.find((tx) => tx.originalId === bankTransactionId)!;
+
+    await helpers.linkTransactionToPortfolio({
+      transactionId: fundingTransaction.id,
+      payload: { portfolioId: portfolio.id },
       raw: true,
     });
 

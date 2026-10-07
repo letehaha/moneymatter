@@ -486,6 +486,28 @@ describe('Planned transactions', () => {
       expect(await getBalance({ accountId: account.id })).toBe(900);
     });
 
+    it('rejects flipping a real row that sits on a bank-linked account', async () => {
+      const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 250,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+      const balanceBefore = await getBalance({ accountId: account.id });
+
+      const response = await helpers.updateTransaction({ id: tx.id, payload: { isPlanned: true } });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      const untouched = await helpers.getTransactionById({ id: tx.id, raw: true });
+      expect(untouched!.isPlanned).toBe(false);
+      expect(untouched!.accountId).toBe(account.id);
+      expect(await getBalance({ accountId: account.id })).toBe(balanceBefore);
+    });
+
     it('applies and reverts the amount as the flag toggles on a manual account', async () => {
       const account = await createOwnedAccount({ initialBalance: 1000 });
 

@@ -201,6 +201,27 @@ describe('Create transaction controller', () => {
     expect(transactions).toContainEqual(baseTx);
     expect(transactions).toContainEqual(oppositeTx);
   });
+  it('rejects a transfer whose destination is a bank-linked account and creates neither leg', async () => {
+    const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
+    const manualAccount = await helpers.createAccount({ raw: true });
+    const listIds = async ({ accountId }: { accountId: RecordId }) =>
+      (await helpers.getTransactions({ accountIds: [accountId], raw: true })).map((tx) => tx.id).toSorted();
+    const bankIdsBefore = await listIds({ accountId: bankAccount.id });
+
+    const response = await helpers.createTransaction({
+      payload: {
+        ...helpers.buildTransactionPayload({ accountId: manualAccount.id, amount: 10 }),
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+        destinationAccountId: bankAccount.id,
+        destinationAmount: 10,
+      },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await listIds({ accountId: bankAccount.id })).toEqual(bankIdsBefore);
+    expect(await listIds({ accountId: manualAccount.id })).toEqual([]);
+  });
+
   it('should successfully create a transfer transaction between account with base and non-base currency', async () => {
     const accountA = await helpers.createAccount({ raw: true });
 

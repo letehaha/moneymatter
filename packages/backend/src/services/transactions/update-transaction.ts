@@ -52,6 +52,13 @@ interface UpdateAuthContext {
   isOwner: boolean;
 }
 
+// Clears `importedFrom` on a row that changes account: a relink of the new account
+// must not type it as a bank row. `originalId` stays, provider sync dedups on it.
+const clearOriginalSourceProvider = ({ externalData }: { externalData: Transactions.default['externalData'] }) =>
+  externalData?.originalSource
+    ? { ...externalData, originalSource: { ...externalData.originalSource, importedFrom: null } }
+    : undefined;
+
 export const EXTERNAL_ACCOUNT_RESTRICTED_UPDATION_FIELDS = ['amount', 'time', 'transactionType', 'accountId'];
 
 /**
@@ -263,6 +270,8 @@ const makeBasicBaseTxUpdation = async (
     }
 
     baseTransactionUpdateParams.accountType = destinationAccount.type;
+
+    baseTransactionUpdateParams.externalData = clearOriginalSourceProvider({ externalData: prevData.externalData });
   }
 
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
@@ -417,6 +426,8 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     notFoundKey: 'transactions.oppositeTransactionNotFound',
   });
 
+  const isDestinationAccountChanged = Boolean(destinationAccountId) && destinationAccountId !== oppositeTx.accountId;
+
   let updateOppositeTxParams = removeUndefinedKeys({
     id: oppositeTx.id,
     // Use the opposite tx's actual creator userId — the underlying model layer scopes its
@@ -434,15 +445,26 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     paymentType,
     categoryId,
     currencyCode: oppositeTx.currencyCode,
+    externalData: isDestinationAccountChanged
+      ? clearOriginalSourceProvider({ externalData: oppositeTx.externalData })
+      : undefined,
   });
 
-  // If accountId was changed to a new one
-  if (destinationAccountId && destinationAccountId !== oppositeTx.accountId) {
+  if (destinationAccountId && isDestinationAccountChanged) {
     // Since destinationAccountId is changed, we need to change currency too
-    const { currency: oppositeTxCurrency } = await Accounts.getAccountCurrency({
+    const { currency: oppositeTxCurrency, type: destinationAccountType } = await Accounts.getAccountCurrency({
       userId,
       id: destinationAccountId,
     });
+
+    // Both ends are judged by the account's current type: the opposite leg may neither
+    // leave a bank-linked account nor land on one.
+    if (await Accounts.isBankLinkedAccount({ id: oppositeTx.accountId })) {
+      throw new ValidationError({ message: t({ key: 'transactions.editReadonlyFields' }) });
+    }
+    if (destinationAccountType !== ACCOUNT_TYPES.system) {
+      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+    }
 
     updateOppositeTxParams = {
       ...updateOppositeTxParams,

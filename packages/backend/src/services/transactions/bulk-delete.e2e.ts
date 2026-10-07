@@ -118,6 +118,20 @@ describe('POST /transactions/bulk-delete', () => {
     expect(remainingIds).toContain(externalTxId);
   });
 
+  it('refuses to delete a manual transaction once its account is linked to a bank', async () => {
+    const { account } = await helpers.createAccountWithNewCurrency({ currency: 'USD' });
+    const [tx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+    await helpers.lunchflow.linkManualAccount({ accountId: account.id });
+
+    const response = await helpers.bulkDeleteTransactions({ payload: { transactionIds: [tx.id] } });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getTransactionById({ id: tx.id, raw: true }))?.accountId).toBe(account.id);
+  });
+
   it('deletes a planned transaction on a bank-connected account without moving the balance', async () => {
     const { account } = await helpers.monobank.mockTransactions({ amount: 2 });
     const balanceBefore = Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance);

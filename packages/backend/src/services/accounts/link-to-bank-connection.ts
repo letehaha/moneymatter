@@ -18,20 +18,16 @@ import Subscriptions from '@models/subscriptions.model';
 import { updateAccount } from '@services/accounts.service';
 import { absorbLinkResidual } from '@services/accounts/absorb-link-residual';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
+import {
+  PROVIDER_TO_ACCOUNT_TYPE,
+  restoreRelinkedTransactionsAccountType,
+} from '@services/accounts/restore-relinked-transactions-account-type';
 import { bankProviderRegistry } from '@services/bank-data-providers';
 import { assertExternalAccountNotLinkedElsewhere } from '@services/bank-data-providers/connection/connect-selected-accounts';
 import { syncTransactionsForAccount } from '@services/bank-data-providers/connection/sync-transactions-for-account';
 import { SyncStatus, setAccountSyncStatus } from '@services/bank-data-providers/sync/sync-status-tracker';
 import { writeBankBalanceWithHistory } from '@services/bank-data-providers/utils/write-bank-balance-with-history';
 import { withTransaction } from '@services/common/with-transaction';
-
-const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES> = {
-  [BANK_PROVIDER_TYPE.MONOBANK]: ACCOUNT_TYPES.monobank,
-  [BANK_PROVIDER_TYPE.ENABLE_BANKING]: ACCOUNT_TYPES.enableBanking,
-  [BANK_PROVIDER_TYPE.LUNCHFLOW]: ACCOUNT_TYPES.lunchflow,
-  [BANK_PROVIDER_TYPE.WALUTOMAT]: ACCOUNT_TYPES.walutomat,
-  [BANK_PROVIDER_TYPE.SIMPLEFIN]: ACCOUNT_TYPES.simplefin,
-};
 
 interface LinkAccountToBankConnectionPayload {
   accountId: string;
@@ -175,8 +171,10 @@ export const linkAccountToBankConnection = withTransaction(
 
     await Subscriptions.update({ autoRecord: false }, { where: { accountId, autoRecord: true } });
 
-    // Existing transactions keep their current type as an audit trail; only
-    // newly synced rows get the provider account type.
+    await restoreRelinkedTransactionsAccountType({
+      accountId,
+      providerType: bankConnection.providerType as BANK_PROVIDER_TYPE,
+    });
 
     await bankConnection.update({ lastSyncAt: new Date() });
 

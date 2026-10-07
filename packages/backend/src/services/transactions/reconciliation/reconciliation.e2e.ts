@@ -16,6 +16,7 @@ import {
   MOCK_IDENTIFICATION_HASH_1,
   MOCK_IDENTIFICATION_HASH_2,
 } from '@tests/mocks/enablebanking/data';
+import { getLunchFlowTransactionsMock } from '@tests/mocks/lunchflow/mock-api';
 import { format, subDays } from 'date-fns';
 
 const daysAgo = ({ days }: { days: number }) => format(subDays(new Date(), days), 'yyyy-MM-dd');
@@ -58,15 +59,28 @@ const liveIdsWithAmount = async ({ accountId, amount }: { accountId: RecordId; a
 const resync = ({ connectionId, accountId }: { connectionId: string; accountId: RecordId }) =>
   helpers.bankDataProviders.syncTransactionsForAccount({ connectionId, accountId, raw: true });
 
-async function setupEnableBanking({
-  transactions,
-  accountExternalIds = [MOCK_IDENTIFICATION_HASH_1],
-}: {
-  transactions: FixedTransaction[];
-  accountExternalIds?: string[];
-}) {
-  helpers.enablebanking.setFixedTransactions(transactions);
+const relink = async ({ connectionId, accountId }: { connectionId: string; accountId: RecordId }) => {
+  const linked = await helpers.linkAccountToBankConnection({
+    id: accountId,
+    connectionId,
+    externalAccountId: MOCK_IDENTIFICATION_HASH_1,
+  });
+  expect(linked.statusCode).toBe(200);
+};
 
+const unlinkAndRelink = async ({ connectionId, accountId }: { connectionId: string; accountId: RecordId }) => {
+  await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+  await relink({ connectionId, accountId });
+};
+
+const accountTypesById = async ({ accountId }: { accountId: RecordId }) =>
+  new Map(
+    ((await helpers.getTransactions({ accountIds: [accountId], raw: true })) as unknown as TransactionModel[]).map(
+      (tx) => [tx.id, tx.accountType],
+    ),
+  );
+
+const connectAndSelectAccounts = async ({ accountExternalIds }: { accountExternalIds: string[] }) => {
   const { connectionId } = await helpers.bankDataProviders.connectProvider({
     providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
     credentials: helpers.enablebanking.mockCredentials(),
@@ -83,6 +97,20 @@ async function setupEnableBanking({
     accountExternalIds,
     raw: true,
   });
+
+  return { connectionId, syncedAccounts };
+};
+
+async function setupEnableBanking({
+  transactions,
+  accountExternalIds = [MOCK_IDENTIFICATION_HASH_1],
+}: {
+  transactions: FixedTransaction[];
+  accountExternalIds?: string[];
+}) {
+  helpers.enablebanking.setFixedTransactions(transactions);
+
+  const { connectionId, syncedAccounts } = await connectAndSelectAccounts({ accountExternalIds });
   const accountId = syncedAccounts[0]!.id as RecordId;
   const txs = (await helpers.getTransactions({ accountIds: [accountId], raw: true })) as unknown as TransactionModel[];
   const byAmount = ({ amount }: { amount: number }) => txs.find((tx) => tx.amount === amount)!;
@@ -608,6 +636,21 @@ describe('Transactions reconciliation', () => {
       expect(await historyEvents()).toEqual([{ type: 'remove', survivorId: null, ids: [removed.id] }]);
     });
 
+    it('restores a row removed before its account was unlinked and linked to the bank again', async () => {
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00' })],
+      });
+      const [removed, kept] = [byAmount({ amount: 10 }), byAmount({ amount: 20 })];
+      await helpers.reconciliationRemove({ transactionIds: [removed.id], raw: true });
+      await unlinkAndRelink({ connectionId, accountId });
+
+      expect((await helpers.reconciliationRestore({ transactionIds: [removed.id] })).statusCode).toBe(200);
+
+      expect(await listIds({ accountId })).toEqual([removed.id, kept.id].toSorted());
+      expect((await accountTypesById({ accountId })).get(removed.id)).toBe(ACCOUNT_TYPES.enableBanking);
+      expect(await helpers.getReconciliationHistory({ raw: true })).toEqual([]);
+    });
+
     it('restores a removed row with its payee merged and its category replaced while it was removed', async () => {
       const { byAmount } = await setupEnableBanking({ transactions: [booked({ ref: 'r1', amount: '10.00' })] });
       const removed = byAmount({ amount: 10 });
@@ -957,6 +1000,221 @@ describe('Transactions reconciliation', () => {
       expect((await helpers.checkStuckPending({ accountId: systemAccount.id as RecordId })).statusCode).toBe(422);
       expect((await helpers.checkStuckPending({ accountId: NONEXISTENT_ID })).statusCode).toBe(404);
     });
+
+    it('lists, removes and restores a stuck pending row after its account is unlinked and linked again', async () => {
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({ transactions: STUCK_FIXTURES });
+      const stuck = byAmount({ amount: 12 });
+      await unlinkAndRelink({ connectionId, accountId });
+      expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([stuck.id]);
+
+      const items = await helpers.getStuckPending({ raw: true });
+      expect(items.map((item) => item.transaction.id)).toContain(stuck.id);
+
+      expect((await helpers.reconciliationRemove({ transactionIds: [stuck.id] })).statusCode).toBe(200);
+      expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([]);
+
+      expect((await helpers.reconciliationRestore({ transactionIds: [stuck.id] })).statusCode).toBe(200);
+      expect(await liveIdsWithAmount({ accountId, amount: 12 })).toEqual([stuck.id]);
+    });
+  });
+
+  describe('account unlinked and linked to the bank again', () => {
+    it('types formerly synced rows as bank rows again without duplicating them', async () => {
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00', days: 5 })],
+      });
+      const ids = [byAmount({ amount: 10 }).id, byAmount({ amount: 20 }).id].toSorted();
+
+      await unlinkAndRelink({ connectionId, accountId });
+
+      expect(await listIds({ accountId })).toEqual(ids);
+      expect([...(await accountTypesById({ accountId })).values()]).toEqual([
+        ACCOUNT_TYPES.enableBanking,
+        ACCOUNT_TYPES.enableBanking,
+      ]);
+
+      // Baseline is read after the first link: that link moves the opening balance
+      // by the sync residual, which shifts every balance row. With no rows from the
+      // bank, the second link can only move history through the retype.
+      helpers.enablebanking.setFixedTransactions([]);
+      const today = daysAgo({ days: 0 });
+      const pastHistory = async () =>
+        (await helpers.getBalanceHistory({ accountId, raw: true }))
+          .map((row) => [String(row.date).slice(0, 10), row.amount] as const)
+          .filter(([date]) => date < today)
+          .toSorted(([a], [b]) => a.localeCompare(b));
+      const historyBefore = await pastHistory();
+      expect(historyBefore).toHaveLength(2);
+
+      await unlinkAndRelink({ connectionId, accountId });
+
+      expect([...(await accountTypesById({ accountId })).values()]).toEqual([
+        ACCOUNT_TYPES.enableBanking,
+        ACCOUNT_TYPES.enableBanking,
+      ]);
+      expect(await pastHistory()).toEqual(historyBefore);
+    });
+
+    it('types formerly synced rows as bank rows again when the provider is disconnected and connected again', async () => {
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' }), booked({ ref: 'r2', amount: '20.00' })],
+      });
+      const ids = [byAmount({ amount: 10 }).id, byAmount({ amount: 20 }).id].toSorted();
+
+      const disconnected = await helpers.bankDataProviders.disconnectProvider({
+        connectionId,
+        removeAssociatedAccounts: false,
+      });
+      expect(disconnected.statusCode).toBe(200);
+      expect([...(await accountTypesById({ accountId })).values()]).toEqual([
+        ACCOUNT_TYPES.system,
+        ACCOUNT_TYPES.system,
+      ]);
+
+      const reconnected = await connectAndSelectAccounts({ accountExternalIds: [MOCK_IDENTIFICATION_HASH_1] });
+
+      expect(reconnected.connectionId).not.toBe(connectionId);
+      expect(reconnected.syncedAccounts.map((account) => account.id)).toEqual([accountId]);
+      expect(await listIds({ accountId })).toEqual(ids);
+      expect([...(await accountTypesById({ accountId })).values()]).toEqual([
+        ACCOUNT_TYPES.enableBanking,
+        ACCOUNT_TYPES.enableBanking,
+      ]);
+      expect((await helpers.reconciliationRemove({ transactionIds: [ids[0]!] })).statusCode).toBe(200);
+    });
+
+    it('keeps a formerly synced row as a system row after it moves to another account linked to the same bank', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['EUR'] });
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' })],
+      });
+      const moved = byAmount({ amount: 10 });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+      const otherAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'EUR' }),
+        raw: true,
+      });
+      const update = await helpers.updateTransaction({ id: moved.id, payload: { accountId: otherAccount.id } });
+      expect(update.statusCode).toBe(200);
+
+      helpers.enablebanking.setFixedTransactions([]);
+      const linked = await helpers.linkAccountToBankConnection({
+        id: otherAccount.id,
+        connectionId,
+        externalAccountId: MOCK_IDENTIFICATION_HASH_2,
+      });
+      expect(linked.statusCode).toBe(200);
+
+      expect((await accountTypesById({ accountId: otherAccount.id as RecordId })).get(moved.id)).toBe(
+        ACCOUNT_TYPES.system,
+      );
+    });
+
+    it('keeps a formerly synced row as a system row after a transfer edit moves it to another account linked to the same bank', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['EUR'] });
+      const { connectionId, accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' })],
+      });
+      const moved = byAmount({ amount: 10 });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+      const [baseAccount, otherAccount] = await Promise.all(
+        [1, 2].map(() =>
+          helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode: 'EUR' }), raw: true }),
+        ),
+      );
+      const [base] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: baseAccount!.id,
+          amount: 10,
+          transactionType: TRANSACTION_TYPES.income,
+        }),
+        raw: true,
+      });
+      const transfer = await helpers.linkTransactions({ payload: { ids: [[moved.id, base.id]] } });
+      expect(transfer.statusCode).toBe(200);
+      const update = await helpers.updateTransaction({
+        id: base.id,
+        payload: { destinationAccountId: otherAccount!.id },
+      });
+      expect(update.statusCode).toBe(200);
+
+      helpers.enablebanking.setFixedTransactions([]);
+      const linked = await helpers.linkAccountToBankConnection({
+        id: otherAccount!.id,
+        connectionId,
+        externalAccountId: MOCK_IDENTIFICATION_HASH_2,
+      });
+      expect(linked.statusCode).toBe(200);
+
+      expect((await accountTypesById({ accountId: otherAccount!.id as RecordId })).get(moved.id)).toBe(
+        ACCOUNT_TYPES.system,
+      );
+    });
+
+    it('keeps rows another provider synced as system rows', async () => {
+      const { accountId, byAmount } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' })],
+      });
+      const synced = byAmount({ amount: 10 });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+
+      const eurExternalAccountId = helpers.lunchflow.mockedAccountsData().accounts[1]!.id.toString();
+      global.mswMockServer.use(
+        getLunchFlowTransactionsMock({ response: { transactions: [], total: 0 }, accountId: eurExternalAccountId }),
+      );
+      const { connectionId } = await helpers.lunchflow.pair();
+      const linked = await helpers.linkAccountToBankConnection({
+        id: accountId,
+        connectionId,
+        externalAccountId: eurExternalAccountId,
+      });
+      expect(linked.statusCode).toBe(200);
+
+      expect((await accountTypesById({ accountId })).get(synced.id)).toBe(ACCOUNT_TYPES.system);
+    });
+
+    it('keeps manual and OFX-imported rows as system rows', async () => {
+      const { connectionId, accountId } = await setupEnableBanking({
+        transactions: [booked({ ref: 'r1', amount: '10.00' })],
+      });
+      await helpers.unlinkAccountFromBankConnection({ id: accountId, raw: true });
+      const bankIds = await listIds({ accountId });
+
+      const upload = await helpers.uploadOfxFixture({ filename: 'bank-v2.ofx' });
+      const { jobId } = await helpers.executeOfx({
+        payload: {
+          uploadId: upload.uploadId,
+          accountMapping: { [upload.result.accounts[0]!.sourceAccountKey]: { action: 'link-existing', accountId } },
+        },
+        raw: true,
+      });
+      const progress = await helpers.waitForOfxImportCompletion({ jobId });
+      helpers.expectOfxCompleted(progress);
+      const imported = (
+        (await helpers.getTransactions({ accountIds: [accountId], raw: true })) as unknown as TransactionModel[]
+      ).find((tx) => !bankIds.includes(tx.id));
+      if (!imported) throw new Error('OFX import created no row on the account');
+      expect(imported.originalId).toEqual(expect.any(String));
+      const [manual] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId }),
+        raw: true,
+      });
+
+      await relink({ connectionId, accountId });
+      await unlinkAndRelink({ connectionId, accountId });
+
+      const types = await accountTypesById({ accountId });
+      expect(types.get(imported.id)).toBe(ACCOUNT_TYPES.system);
+      expect(types.get(manual.id)).toBe(ACCOUNT_TYPES.system);
+      const importedAfter = await helpers.getTransactionById({ id: imported.id, raw: true });
+      expect(importedAfter?.originalId).toBe(imported.originalId);
+      const batchRows = await helpers.getTransactions({
+        accountIds: [accountId],
+        batchId: progress.summary.batchId,
+        raw: true,
+      });
+      expect(batchRows.map((tx) => tx.id)).toContain(imported.id);
+    }, 30_000);
   });
 
   describe('bank re-sync of merged rows', () => {

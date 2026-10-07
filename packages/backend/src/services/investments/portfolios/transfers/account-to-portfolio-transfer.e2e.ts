@@ -103,6 +103,20 @@ describe('Account to Portfolio Transfer (POST /investments/portfolios/:id/transf
     expect(filteredTransactions[0]!.accountId).toBe(account.id);
   });
 
+  it('should reject a bank-linked source account and create no transaction on it', async () => {
+    const { account: bankAccount } = await helpers.lunchflow.mockTransactions();
+    const rowsBefore = (await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).length;
+
+    const response = await helpers.accountToPortfolioTransfer({
+      portfolioId: portfolio.id,
+      payload: { accountId: bankAccount.id, amount: '100', date: '2025-06-15' },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await helpers.getTransactions({ accountIds: [bankAccount.id], raw: true })).toHaveLength(rowsBefore);
+    expect((await helpers.listPortfolioTransfers({ portfolioId: portfolio.id, raw: true })).data).toEqual([]);
+  });
+
   it('should handle multiple transfers accumulating balance', async () => {
     await helpers.accountToPortfolioTransfer({
       portfolioId: portfolio.id,

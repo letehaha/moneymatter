@@ -22,7 +22,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
-import Accounts from '@models/accounts.model';
+import Accounts, { isBankLinkedAccount } from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import BudgetTransactions from '@models/budget-transactions.model';
 import Budgets from '@models/budget.model';
@@ -140,6 +140,11 @@ export interface TransactionsAttributes {
     balanceAdjustment?: boolean;
     /** Set when the row was created with `applyAutomations`; keeps it automation-eligible. */
     applyAutomations?: boolean;
+    /**
+     * Written by unlink on rows a provider synced. `importedFrom` is null once
+     * the row changes account, so a relink of that account never retypes it.
+     */
+    originalSource?: { originalId: string; importedFrom: string | null; accountType: ACCOUNT_TYPES };
   } & Record<string, unknown>;
   commissionRate: Money;
   refCommissionRate: Money;
@@ -1397,6 +1402,7 @@ export interface UpdateTransactionByIdParams {
   isPlanned?: boolean;
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
+  externalData?: TransactionsAttributes['externalData'];
 }
 
 export const updateTransactionById = async (
@@ -1455,7 +1461,7 @@ export const deleteTransactionById = async ({ id, userId }: { id: string; userId
 
   // A plan on a provider account is the user's own row that the bank has never reported,
   // so deleting it takes nothing away from the sync.
-  if (tx.accountType !== ACCOUNT_TYPES.system && !tx.isPlanned) {
+  if (!tx.isPlanned && (await isBankLinkedAccount({ id: tx.accountId }))) {
     throw new ValidationError({
       message: t({ key: 'transactions.cannotDeleteExternal' }),
     });

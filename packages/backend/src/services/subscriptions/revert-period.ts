@@ -1,7 +1,9 @@
 import { SUBSCRIPTION_PERIOD_STATUSES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ConflictError, NotFoundError } from '@js/errors';
+import { isBankLinkedAccount } from '@models/accounts.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
+import Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { deleteTransaction } from '@services/transactions/delete-transaction';
 import { Op } from 'sequelize';
@@ -75,16 +77,19 @@ export const revertPeriod = withTransaction(async ({ userId, subscriptionId, per
   // (transactionAutoCreated === false) is never deleted — the user keeps their own
   // row, the period just stops pointing at it.
   if (period.transactionId != null && period.transactionAutoCreated) {
-    try {
-      // deleteTransaction joins the active transaction via `withTransaction`, so the
-      // balance reversal commits/rolls back together with the period update below.
-      await deleteTransaction({ id: period.transactionId, userId });
-    } catch (error) {
-      // The user may have already deleted the generated transaction by hand (its
-      // balance is then already restored). Treat that as a no-op and clear the link;
-      // surface anything else.
-      if (!(error instanceof NotFoundError)) {
-        throw error;
+    const tx = await Transactions.findByPk(period.transactionId, { attributes: ['accountId', 'isPlanned'] });
+
+    // A real transaction on a bank-linked account cannot be deleted, so it stays
+    // and the period only stops pointing at it.
+    if (tx && (tx.isPlanned || !(await isBankLinkedAccount({ id: tx.accountId })))) {
+      try {
+        // deleteTransaction joins the active transaction via `withTransaction`, so the
+        // balance reversal commits/rolls back together with the period update below.
+        await deleteTransaction({ id: period.transactionId, userId });
+      } catch (error) {
+        if (!(error instanceof NotFoundError)) {
+          throw error;
+        }
       }
     }
   }

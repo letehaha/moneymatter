@@ -3,7 +3,7 @@ import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ForbiddenError, ValidationError } from '@js/errors';
-import Accounts from '@models/accounts.model';
+import Accounts, { isBankLinkedAccount } from '@models/accounts.model';
 import RefundTransactions from '@models/refund-transactions.model';
 import type Transactions from '@models/transactions.model';
 import { Op } from 'sequelize';
@@ -158,6 +158,11 @@ export const assertPlannedFlipAllowed = async ({
   await assertPlannedStandalone({ transaction, message: t({ key: 'transactions.plannedFlipNotAllowed' }) });
 
   await assertAccountCanHoldPlans({ accountId: transaction.accountId, callerUserId });
+
+  // A real row on a bank-linked account stays real: as a plan it could be moved or deleted.
+  if (await isBankLinkedAccount({ id: transaction.accountId })) {
+    throw new ValidationError({ message: t({ key: 'transactions.plannedFlipNotAllowed' }) });
+  }
 };
 
 /**

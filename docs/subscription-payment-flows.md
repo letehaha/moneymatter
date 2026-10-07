@@ -17,7 +17,7 @@ How a subscription period becomes "paid", and when that creates a transaction.
 | **Auto-record** | Hourly cron runs **Create** for every due period.                  | **No** (see §4)            |
 | **Matching**    | Rules link incoming transactions (e.g. from bank sync) to periods. | Yes – the bank-account way |
 
-Reverting a period deletes the transaction only if it was app-created (**Create** / **Auto-record**); linked transactions are left untouched.
+Reverting a period deletes the transaction only if it was app-created (**Create** / **Auto-record**); linked transactions are left untouched. An app-created transaction whose account is bank-linked at revert time is also left in place, detached from the period.
 
 ---
 
@@ -77,7 +77,7 @@ flowchart LR
     SaveSub(["Create or update subscription with autoRecord on"]) --> IsBankAcc{"Account is bank-connected?"}
     IsBankAcc -->|Yes| Reject["422"]
     IsBankAcc -->|No| Saved["Saved"]
-    LinkAcc(["Manual account linked to a bank connection"]) --> TurnOff["autoRecord silently turned off"]
+    LinkAcc(["Manual account linked or reconnected to a bank connection"]) --> TurnOff["autoRecord silently turned off"]
 ```
 
 | Where                                | Guard                                                                      |
@@ -85,6 +85,7 @@ flowchart LR
 | Edit-automation dialog               | Record mode offers only manual accounts; a saved bank account blocks Save. |
 | Subscription create / update service | `assertAutoRecordAccountIsManual` → 422.                                   |
 | `linkAccountToBankConnection`        | Sets `autoRecord = false` on the account's subscriptions.                  |
+| `connectSelectedAccounts` (re-link)  | Sets `autoRecord = false` on the account's subscriptions.                  |
 | Migration                            | One-off: turns off `autoRecord` on subscriptions already on bank accounts. |
 
 After auto-record is turned off, the user keeps the **Mark paid** button (status only) and can set up **Matching** to link synced transactions automatically.

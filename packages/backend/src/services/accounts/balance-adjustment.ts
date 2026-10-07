@@ -83,6 +83,10 @@ export const adjustAccountBalance = withTransaction(
       });
     }
 
+    if (account.type !== ACCOUNT_TYPES.system) {
+      throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
+    }
+
     // Negative value for the car is impossible
     if (account.accountCategory === ACCOUNT_CATEGORIES.vehicle && targetBalance.isNegative()) {
       throw new ValidationError({

@@ -1,7 +1,6 @@
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
-  ACCOUNT_TYPES,
   API_ERROR_CODES,
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
@@ -16,8 +15,13 @@ import AccountGroup from '@models/accounts-groups/account-groups.model';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { NON_CURRENCY_CODES, getCurrency } from '@models/currencies.model';
+import Subscriptions from '@models/subscriptions.model';
 import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
+import {
+  PROVIDER_TO_ACCOUNT_TYPE,
+  restoreRelinkedTransactionsAccountType,
+} from '@services/accounts/restore-relinked-transactions-account-type';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 
 import { bankProviderRegistry } from '../registry';
@@ -30,14 +34,6 @@ const PROVIDER_TO_ANALYTICS_TYPE: Record<BANK_PROVIDER_TYPE, BankProvider> = {
   [BANK_PROVIDER_TYPE.LUNCHFLOW]: 'lunchflow',
   [BANK_PROVIDER_TYPE.WALUTOMAT]: 'walutomat',
   [BANK_PROVIDER_TYPE.SIMPLEFIN]: 'simplefin',
-};
-
-const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES> = {
-  [BANK_PROVIDER_TYPE.MONOBANK]: ACCOUNT_TYPES.monobank,
-  [BANK_PROVIDER_TYPE.ENABLE_BANKING]: ACCOUNT_TYPES.enableBanking,
-  [BANK_PROVIDER_TYPE.LUNCHFLOW]: ACCOUNT_TYPES.lunchflow,
-  [BANK_PROVIDER_TYPE.WALUTOMAT]: ACCOUNT_TYPES.walutomat,
-  [BANK_PROVIDER_TYPE.SIMPLEFIN]: ACCOUNT_TYPES.simplefin,
 };
 
 /**
@@ -173,6 +169,14 @@ const createAccountsForConnection = withTransaction(
           type: PROVIDER_TO_ACCOUNT_TYPE[connection.providerType as BANK_PROVIDER_TYPE],
           bankDataProviderConnectionId: connectionId,
           externalId: providerAccount.externalId,
+        });
+        await Subscriptions.update(
+          { autoRecord: false },
+          { where: { accountId: existingAccount.id, autoRecord: true } },
+        );
+        await restoreRelinkedTransactionsAccountType({
+          accountId: existingAccount.id,
+          providerType: connection.providerType as BANK_PROVIDER_TYPE,
         });
         createdAccounts.push(existingAccount);
       } else {

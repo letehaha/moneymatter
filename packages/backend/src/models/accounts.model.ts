@@ -285,6 +285,13 @@ export const deleteAccountById = ({ id, userId }: { id: string; userId: number }
   return Accounts.destroy({ where: { id, userId } });
 };
 
+/** Reads the account's current `type`: a transaction's `accountType` is a snapshot of it. */
+export const isBankLinkedAccount = async ({ id }: { id: string }) => {
+  const account = await Accounts.findByPk(id, { attributes: ['type'] });
+
+  return Boolean(account) && account!.type !== ACCOUNT_TYPES.system;
+};
+
 export const getAccountCurrency = async ({ userId, id }: { userId: number; id: string }) => {
   const account = (await Accounts.findOne({
     where: { userId, id },
