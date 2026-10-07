@@ -12,3 +12,4 @@ export {
   trackAutomationApplied,
   trackAutomationAppliedToHistory,
 } from './transaction-automations';
+export { trackSubscriptionStarted } from './billing';

@@ -1,4 +1,5 @@
 import { SUBSCRIPTION_STATUSES } from '@bt/shared/types';
+import { trackSubscriptionStarted } from '@js/utils/posthog/events';
 import BillingSubscriptions from '@models/billing-subscriptions.model';
 import BillingWebhookEvents from '@models/billing-webhook-events.model';
 import Users from '@models/users.model';
@@ -35,15 +36,20 @@ const findUserId = async ({ event }: { event: ParsedSubscriptionEvent }): Promis
   return byCustomer?.userId ?? null;
 };
 
-const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookOutcome> => {
+interface WebhookResult {
+  outcome: WebhookOutcome;
+  startedForUserId?: number;
+}
+
+const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookResult> => {
   const [, created] = await BillingWebhookEvents.findOrCreate({ where: { eventId: event.eventId } });
-  if (!created) return 'duplicate';
+  if (!created) return { outcome: 'duplicate' };
 
   const existing = await BillingSubscriptions.findOne({
     where: { externalSubscriptionId: event.externalSubscriptionId },
     lock: true,
   });
-  if (existing && isStale({ existing, event })) return 'stale';
+  if (existing && isStale({ existing, event })) return { outcome: 'stale' };
 
   let userId = existing?.userId ?? null;
   if (!existing) {
@@ -53,7 +59,7 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
     userId = candidate && (await Users.count({ where: { id: candidate } })) > 0 ? candidate : null;
   }
   if (!userId) {
-    if (event.status === SUBSCRIPTION_STATUSES.canceled) return 'ignored';
+    if (event.status === SUBSCRIPTION_STATUSES.canceled) return { outcome: 'ignored' };
     // Throwing rolls back the BillingWebhookEvents marker, so Stripe's retry of the
     // same event is processed rather than dismissed as a duplicate.
     throw new Error(
@@ -72,15 +78,27 @@ const handleBillingWebhookImpl = async ({ event }: { event: ParsedSubscriptionEv
   };
   if (existing) {
     await existing.update(fields);
-  } else {
-    await BillingSubscriptions.create({
-      userId,
-      externalSubscriptionId: event.externalSubscriptionId,
-      ...fields,
-    });
+    return { outcome: 'processed' };
   }
 
-  return 'processed';
+  await BillingSubscriptions.create({
+    userId,
+    externalSubscriptionId: event.externalSubscriptionId,
+    ...fields,
+  });
+  return {
+    outcome: 'processed',
+    ...(event.status !== SUBSCRIPTION_STATUSES.canceled && { startedForUserId: userId }),
+  };
 };
 
-export const handleBillingWebhook = withTransaction(handleBillingWebhookImpl);
+const handleBillingWebhookInTransaction = withTransaction(handleBillingWebhookImpl);
+
+export const handleBillingWebhook = async ({ event }: { event: ParsedSubscriptionEvent }): Promise<WebhookOutcome> => {
+  const { outcome, startedForUserId } = await handleBillingWebhookInTransaction({ event });
+  // Tracked after commit so a rolled-back webhook never reports a conversion.
+  if (startedForUserId) {
+    trackSubscriptionStarted({ userId: startedForUserId, tier: event.tier, billingCycle: event.billingCycle });
+  }
+  return outcome;
+};
