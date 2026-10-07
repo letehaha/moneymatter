@@ -61,6 +61,7 @@
         "totalIncome": "Total income",
         "incomePlusDeficit": "Income + deficit",
         "savings": "Savings",
+        "taxes": "Taxes",
         "deficit": "Deficit",
         "other": "Other",
         "noData": "No transactions in this period",

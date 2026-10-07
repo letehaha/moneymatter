@@ -31,6 +31,12 @@
         "successNotification": "Savings categories updated",
         "errorNotification": "Failed to update savings categories"
       },
+      "taxCategories": {
+        "label": "Tax categories",
+        "description": "Spending in these categories is shown as taxes in the money flow chart instead of as an expense. Subcategories are included.",
+        "successNotification": "Tax categories updated",
+        "errorNotification": "Failed to update tax categories"
+      },
       "accountDropdowns": {
         "defaultAccount": {
           "label": "Default account",

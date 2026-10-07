@@ -146,6 +146,12 @@ export interface UserSettingsSchema {
    * expense. Subcategories inherit from their parent. Empty or unset leaves cash flow unchanged.
    */
   savingsCategoryIds?: string[];
+  /**
+   * Categories whose spending is a tax. The money-flow chart shows it as its own branch instead
+   * of as an expense. Subcategories inherit from their parent.
+   * A category also covered by `savingsCategoryIds` counts as savings.
+   */
+  taxCategoryIds?: string[];
   currencyDisplay?: endpointsTypes.CurrencyDisplayPreference;
   fire?: FireSettings;
 }

@@ -86,7 +86,7 @@
       <div class="text-destructive-text">{{ $t('analytics.cashFlow.composition.loadError') }}</div>
     </div>
 
-    <template v-else-if="flow && flow.income + flow.expenses + flow.savings > 0">
+    <template v-else-if="flow && flow.income + flow.expenses + flow.taxes + flow.savings > 0">
       <div :class="cn('border-border border-y', isCompact ? 'divide-border divide-y' : 'flex flex-wrap')">
         <div
           v-for="item in summary"
@@ -152,7 +152,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { buildMoneyFlow, formatShare } from '../utils/build-money-flow';
+import { buildMoneyFlow, formatShare, pctOfIncome } from '../utils/build-money-flow';
 import CategoryListSkeleton from './category-list-skeleton.vue';
 import ChartSkeleton from './chart-skeleton.vue';
 import MoneyFlowChart from './money-flow-chart.vue';
@@ -242,24 +242,36 @@ const flow = computed(() =>
         expenseLevel: expenseLevel.value,
         topN: Number(topN.value),
         savingsCategoryIds: userSettings.value?.savingsCategoryIds,
+        taxCategoryIds: userSettings.value?.taxCategoryIds,
       })
     : undefined,
 );
 
 const { displayValue: animatedIncome } = useAnimatedNumber({ value: computed(() => flow.value?.income ?? 0) });
 const { displayValue: animatedExpenses } = useAnimatedNumber({ value: computed(() => flow.value?.expenses ?? 0) });
+const { displayValue: animatedTaxes } = useAnimatedNumber({ value: computed(() => flow.value?.taxes ?? 0) });
 const { displayValue: animatedNet } = useAnimatedNumber({ value: computed(() => flow.value?.net ?? 0) });
 
 const summary = computed(() => {
   if (!flow.value) return [];
-  const { income, expenses, net } = flow.value;
+  const { income, expenses, taxes, net } = flow.value;
   return [
     { label: t('analytics.cashFlow.income'), value: animatedIncome.value, color: colors.value.appIncome },
+    ...(taxes > 0
+      ? [
+          {
+            label: t('analytics.cashFlow.composition.taxes'),
+            value: animatedTaxes.value,
+            color: colors.value.primary,
+            hint: pctOfIncome({ value: taxes, income, t }),
+          },
+        ]
+      : []),
     {
       label: t('analytics.cashFlow.expenses'),
       value: animatedExpenses.value,
       color: colors.value.appExpense,
-      hint: income > 0 ? t('analytics.cashFlow.composition.pctOfIncome', { pct: formatShare(expenses / income) }) : '',
+      hint: pctOfIncome({ value: expenses, income, t }),
     },
     {
       label: t('analytics.cashFlow.composition.saved'),
