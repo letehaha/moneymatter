@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Categories Watchlist",
         "addCategory": "Add category",
-        "selectCategories": "Select Categories"
+        "selectCategories": "Select Categories",
+        "sort": {
+          "title": "Sort by",
+          "custom": "Custom order",
+          "spendDesc": "Highest spend first",
+          "spendAsc": "Lowest spend first"
+        }
       },
       "cashFlow": {
         "title": "Cash Flow",

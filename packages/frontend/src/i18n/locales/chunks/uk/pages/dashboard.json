@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Спостереження за категоріями",
         "addCategory": "Додати категорію",
-        "selectCategories": "Обрати категорії"
+        "selectCategories": "Обрати категорії",
+        "sort": {
+          "title": "Сортування",
+          "custom": "Власний порядок",
+          "spendDesc": "Спочатку найбільші витрати",
+          "spendAsc": "Спочатку найменші витрати"
+        }
       },
       "cashFlow": {
         "title": "Грошовий потік",
