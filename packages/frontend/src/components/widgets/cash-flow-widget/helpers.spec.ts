@@ -2,7 +2,13 @@ import { endpointsTypes } from '@bt/shared/types';
 import { format, parseISO } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
-import { computePrevPeriod, computeTrendPeriods, isFullMonthPeriod, sliceCashFlowTotals } from './helpers';
+import {
+  buildSavingsRateLine,
+  computePrevPeriod,
+  computeTrendPeriods,
+  isFullMonthPeriod,
+  sliceCashFlowTotals,
+} from './helpers';
 
 const ymd = (date: Date) => format(date, 'yyyy-MM-dd');
 
@@ -139,5 +145,105 @@ describe('sliceCashFlowTotals', () => {
       netFlow: -500,
       savingsRate: 0,
     });
+  });
+});
+
+describe('buildSavingsRateLine', () => {
+  const bucket = ({
+    income,
+    expenses,
+    isInProgress = false,
+  }: {
+    income: number;
+    expenses: number;
+    isInProgress?: boolean;
+  }) => ({ income, netFlow: income - expenses, isInProgress });
+
+  it('scales positive rates from 0% at the bottom to the best bucket near the top', () => {
+    const { points, segments, zeroYPercent } = buildSavingsRateLine({
+      buckets: [bucket({ income: 1000, expenses: 500 }), bucket({ income: 1000, expenses: 750, isInProgress: true })],
+    });
+
+    expect(points).toEqual([
+      { rate: 50, xPercent: 25, yPercent: 8, isOffScale: false },
+      { rate: 25, xPercent: 75, yPercent: 54, isOffScale: false },
+    ]);
+    expect(segments).toEqual(['25,8 75,54']);
+    expect(zeroYPercent).toBeNull();
+  });
+
+  it('keeps the line running through a finished bucket that spent without earning', () => {
+    const { points, segments, zeroYPercent } = buildSavingsRateLine({
+      buckets: [
+        bucket({ income: 1000, expenses: 500 }),
+        bucket({ income: 0, expenses: 300 }),
+        bucket({ income: 1000, expenses: 500 }),
+      ],
+    });
+
+    expect(points[1]).toMatchObject({ rate: null, yPercent: 100, isOffScale: true });
+    expect(segments).toHaveLength(1);
+    // Scale is -100..50, so 0% sits a third of the way down the 92% drawable height.
+    expect(zeroYPercent).toBeCloseTo(8 + 92 / 3);
+  });
+
+  it.each([
+    { name: 'no income yet', income: 0, expenses: 300 },
+    { name: 'income far behind its spending', income: 100, expenses: 2000 },
+  ])('leaves an in-progress bucket with $name without a point', ({ income, expenses }) => {
+    const { points, segments, zeroYPercent } = buildSavingsRateLine({
+      buckets: [
+        bucket({ income: 1000, expenses: 500 }),
+        bucket({ income: 1000, expenses: 600 }),
+        bucket({ income, expenses, isInProgress: true }),
+      ],
+    });
+
+    expect(points[2]).toBeNull();
+    expect(segments).toHaveLength(1);
+    expect(zeroYPercent).toBeNull();
+  });
+
+  it('draws a rate beyond -100% at the limit and flags it, but not a rate exactly at it', () => {
+    const { points } = buildSavingsRateLine({
+      buckets: [bucket({ income: 500, expenses: 2200 }), bucket({ income: 500, expenses: 1000 })],
+    });
+
+    expect(points[0]).toMatchObject({ rate: -340, yPercent: 100, isOffScale: true });
+    expect(points[1]).toMatchObject({ rate: -100, yPercent: 100, isOffScale: false });
+  });
+
+  it('breaks the line around a bucket with no activity and keeps a lone point out of the segments', () => {
+    const { points, segments } = buildSavingsRateLine({
+      buckets: [
+        bucket({ income: 1000, expenses: 500 }),
+        bucket({ income: 0, expenses: 0 }),
+        bucket({ income: 1000, expenses: 500 }),
+        bucket({ income: 1000, expenses: 500 }),
+      ],
+    });
+
+    expect(points[0]).not.toBeNull();
+    expect(points[1]).toBeNull();
+    expect(segments).toEqual(['62.5,8 87.5,8']);
+  });
+
+  it('puts break-even buckets on the baseline', () => {
+    const { points, segments, zeroYPercent } = buildSavingsRateLine({
+      buckets: [bucket({ income: 1000, expenses: 1000 }), bucket({ income: 1000, expenses: 1000 })],
+    });
+
+    expect(points.map((p) => p?.yPercent)).toEqual([100, 100]);
+    expect(segments).toEqual(['25,100 75,100']);
+    expect(zeroYPercent).toBeNull();
+  });
+
+  it('returns nothing to draw when no bucket has a rate', () => {
+    expect(buildSavingsRateLine({ buckets: [] })).toEqual({ points: [], segments: [], zeroYPercent: null });
+    expect(
+      buildSavingsRateLine({
+        buckets: [bucket({ income: 0, expenses: 0 }), bucket({ income: 0, expenses: 300, isInProgress: true })],
+      }),
+    ).toEqual({ points: [null, null], segments: [], zeroYPercent: null });
   });
 });

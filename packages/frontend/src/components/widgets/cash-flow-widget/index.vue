@@ -9,17 +9,26 @@ import { ChartTooltipHeader } from '@/components/common/charts/chart-tooltip';
 import FitAmount from '@/components/common/fit-amount.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { buttonVariants } from '@/components/lib/ui/button';
+import { Switch } from '@/components/lib/ui/switch';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import {
+  AVERAGE_LINE_COLOR,
+  AVERAGE_LINE_SHADOW_COLOR,
+  AVERAGE_LINE_SHADOW_WIDTH,
+} from '@/composable/charts/render-average-line';
+import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
-import { useIncludePlannedConfig } from '@/components/widgets/use-include-planned-config';
-import { format, isSameMonth, parseISO } from 'date-fns';
+import { useIncludePlannedConfig, useWidgetConfigFlag } from '@/components/widgets/use-include-planned-config';
+import { format, isFuture, isSameMonth, parseISO } from 'date-fns';
 import { ArrowDownRightIcon, ArrowUpRightIcon, InfoIcon, WalletIcon } from '@lucide/vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 import EmptyState from '../components/empty-state.vue';
 import LoadingState from '../components/loading-state.vue';
 import WidgetWrapper from '../components/widget-wrapper.vue';
+import { buildSavingsRateLine, computeSavingsRate } from './helpers';
 import { useCashFlowData } from './use-cash-flow-data';
 
 defineOptions({ name: 'cash-flow-widget' });
@@ -32,6 +41,16 @@ const { formatBaseCurrency } = useFormatCurrency();
 
 const { widgetConfigRef, excludedCategoryIds, persistExcludedCategories } = useCategoryExclusionsConfig();
 const { includePlanned } = useIncludePlannedConfig();
+
+const { t } = useI18n();
+const { isOn: showSavingsRateLine, setFlag: setShowSavingsRateLine } = useWidgetConfigFlag({
+  key: 'showSavingsRateLine',
+  saveErrorKey: 'errors.api.unexpectedError',
+});
+
+const onToggleSavingsRateLine = async (value: boolean) => {
+  await setShowSavingsRateLine({ value });
+};
 
 const {
   currentTotals,
@@ -82,34 +101,38 @@ const periodLabel = computed(() => {
 
 const isPositiveFlow = computed(() => netFlow.value >= 0);
 
-const trendBars = computed(() => {
-  const buckets = trendPeriods.value;
+const trendBuckets = computed(() => {
   const apiPeriods = unionPeriods.value;
 
   // Past periods come from the union response; the current period uses currentTotals.
   if (!apiPeriods.length && !hasCurrentData.value) return [];
 
-  const aggregated = buckets.map((bucket) => {
-    let bucketNetFlow: number;
-
+  return trendPeriods.value.map((bucket) => {
     if (bucket.isCurrent) {
-      bucketNetFlow = netFlow.value;
-    } else {
-      bucketNetFlow = 0;
-      for (const ap of apiPeriods) {
-        const apStart = parseISO(ap.periodStart);
-        if (apStart >= bucket.from && apStart <= bucket.to) {
-          bucketNetFlow += ap.netFlow;
-        }
+      return { ...bucket, income: income.value, netFlow: netFlow.value };
+    }
+
+    const totals = { income: 0, netFlow: 0 };
+    for (const ap of apiPeriods) {
+      const apStart = parseISO(ap.periodStart);
+      if (apStart >= bucket.from && apStart <= bucket.to) {
+        totals.income += ap.income;
+        totals.netFlow += ap.netFlow;
       }
     }
 
-    return { ...bucket, netFlow: bucketNetFlow };
+    return { ...bucket, ...totals };
   });
+});
 
-  const maxAbs = Math.max(...aggregated.map((p) => Math.abs(p.netFlow)), 1);
+const savingsLine = computed(() =>
+  buildSavingsRateLine({ buckets: trendBuckets.value.map((p) => ({ ...p, isInProgress: isFuture(p.to) })) }),
+);
 
-  return aggregated.map((p) => {
+const trendBars = computed(() => {
+  const maxAbs = Math.max(...trendBuckets.value.map((p) => Math.abs(p.netFlow)), 1);
+
+  return trendBuckets.value.map((p) => {
     const isSingleMonth = isSameMonth(p.from, p.to);
     const label = isSingleMonth ? format(p.from, 'MMM') : `${format(p.from, 'MMM d')} - ${format(p.to, 'MMM d')}`;
     const shortLabel = isSingleMonth ? format(p.from, 'MMM') : format(p.from, 'MMM yy');
@@ -122,8 +145,23 @@ const trendBars = computed(() => {
       isPositive: p.netFlow >= 0,
       isCurrent: p.isCurrent,
       formatted: formatBaseCurrency(p.netFlow),
+      savingsRate: computeSavingsRate({ income: p.income, netFlow: p.netFlow }),
     };
   });
+});
+
+// A label this close to the top edge would leave the plot, so it flips below its point.
+const SAVINGS_LABEL_FLIP_Y_PERCENT = 24;
+
+const savingsLineLabel = computed(() => {
+  const point = showSavingsRateLine.value && savingsLine.value.points.findLast((p) => p !== null);
+  if (!point) return null;
+
+  return {
+    point,
+    text: point.rate === null ? t('dashboard.widgets.cashFlow.noIncome') : `${point.rate}%`,
+    isBelow: point.yPercent < SAVINGS_LABEL_FLIP_Y_PERCENT,
+  };
 });
 </script>
 
@@ -168,6 +206,15 @@ const trendBars = computed(() => {
         @save="persistExcludedCategories"
       >
         <IncludePlannedMenuItem test-id-prefix="cf" />
+        <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+          <span class="text-sm font-medium">{{ $t('dashboard.widgets.cashFlow.savingsRateLine') }}</span>
+          <Switch
+            class="shrink-0"
+            :model-value="showSavingsRateLine"
+            data-testid="cf-savings-rate-line-switch"
+            @update:model-value="onToggleSavingsRateLine"
+          />
+        </div>
       </ExcludeCategoriesMenu>
     </template>
 
@@ -281,10 +328,17 @@ const trendBars = computed(() => {
 
         <!-- Trend mini bars -->
         <div v-if="trendBars.length" class="mt-auto flex flex-col gap-1.5">
-          <div class="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
-            {{ $t('dashboard.widgets.cashFlow.previousPeriodsTrend') }}
+          <div class="text-muted-foreground flex items-center justify-between gap-2 text-[11px] font-medium">
+            <span class="truncate tracking-wider uppercase">
+              {{ $t('dashboard.widgets.cashFlow.previousPeriodsTrend') }}
+            </span>
+            <span v-if="savingsLineLabel" class="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+              <span class="w-4 border-t-2 border-dotted" :style="{ borderColor: AVERAGE_LINE_COLOR }" />
+              {{ $t('dashboard.widgets.cashFlow.savingsRate') }}
+            </span>
           </div>
-          <div class="flex h-25 items-end gap-2.5">
+          <!-- Columns are spaced with padding, not a flex gap, so their centres land on the line's x positions. -->
+          <div class="relative flex h-25 items-end">
             <ResponsiveTooltip
               v-for="(bar, index) in trendBars"
               :key="index"
@@ -292,7 +346,7 @@ const trendBars = computed(() => {
               content-class-name="min-w-0"
               :delay-duration="100"
             >
-              <div class="flex flex-1 flex-col items-center gap-1">
+              <div class="flex flex-1 flex-col items-center gap-1 px-1.25">
                 <div class="flex h-22 w-full max-w-10 items-end justify-center">
                   <div
                     class="min-h-1 w-full rounded-xs transition-all duration-500"
@@ -314,8 +368,84 @@ const trendBars = computed(() => {
                 >
                   {{ bar.formatted }}
                 </div>
+                <div
+                  v-if="showSavingsRateLine"
+                  class="text-muted-foreground mt-1 flex items-center justify-between gap-3 text-xs whitespace-nowrap"
+                >
+                  {{ $t('dashboard.widgets.cashFlow.savingsRate') }}
+                  <span v-if="bar.savingsRate === null">{{ $t('dashboard.widgets.cashFlow.noIncome') }}</span>
+                  <span
+                    v-else
+                    class="font-semibold tabular-nums"
+                    :class="bar.savingsRate >= 0 ? 'text-app-income-color' : 'text-app-expense-color'"
+                  >
+                    {{ bar.savingsRate }}%
+                  </span>
+                </div>
               </template>
             </ResponsiveTooltip>
+
+            <div
+              v-if="savingsLineLabel"
+              class="pointer-events-none absolute inset-x-0 top-0 h-22"
+              :style="{ color: AVERAGE_LINE_COLOR }"
+            >
+              <div
+                v-if="savingsLine.zeroYPercent !== null"
+                class="border-border absolute inset-x-0 border-t border-dashed"
+                :style="{ top: `${savingsLine.zeroYPercent}%` }"
+              />
+              <svg
+                class="absolute inset-0 size-full overflow-visible"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <template v-for="segment in savingsLine.segments" :key="segment">
+                  <polyline
+                    :points="segment"
+                    fill="none"
+                    :stroke="AVERAGE_LINE_SHADOW_COLOR"
+                    :stroke-width="AVERAGE_LINE_SHADOW_WIDTH"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    vector-effect="non-scaling-stroke"
+                  />
+                  <polyline
+                    :points="segment"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-dasharray="0.1 5"
+                    stroke-linecap="round"
+                    vector-effect="non-scaling-stroke"
+                  />
+                </template>
+              </svg>
+              <template v-for="(point, index) in savingsLine.points" :key="index">
+                <span
+                  v-if="point"
+                  :class="
+                    cn(
+                      'ring-card absolute size-1.75 -translate-1/2 rounded-full ring-2',
+                      point.isOffScale ? 'bg-card border border-current' : 'bg-current',
+                    )
+                  "
+                  :style="{ left: `${point.xPercent}%`, top: `${point.yPercent}%` }"
+                />
+              </template>
+              <span
+                :class="
+                  cn(
+                    'bg-card text-warning-text absolute -translate-x-1/2 rounded-sm border px-1 py-0.5 text-[10px] leading-none font-bold whitespace-nowrap tabular-nums',
+                    savingsLineLabel.isBelow ? 'mt-2' : '-mt-2 -translate-y-full',
+                  )
+                "
+                :style="{ left: `${savingsLineLabel.point.xPercent}%`, top: `${savingsLineLabel.point.yPercent}%` }"
+              >
+                {{ savingsLineLabel.text }}
+              </span>
+            </div>
           </div>
         </div>
       </div>

@@ -7,8 +7,8 @@ import * as d3 from 'd3';
 export const AVERAGE_LINE_COLOR = 'rgb(234, 179, 8)';
 
 // Dark under-stroke behind the amber line keeps it legible over any bar colour.
-const SHADOW_STROKE_COLOR = 'rgba(0, 0, 0, 0.5)';
-const SHADOW_STROKE_WIDTH = 5;
+export const AVERAGE_LINE_SHADOW_COLOR = 'rgba(0, 0, 0, 0.5)';
+export const AVERAGE_LINE_SHADOW_WIDTH = 5;
 const LINE_STROKE_WIDTH = 2.5;
 const DASH_PATTERN = '8,4';
 const LABEL_FONT_SIZE = 11;
@@ -73,8 +73,8 @@ export const renderAverageLine = ({
     .attr('x2', innerWidth)
     .attr('y1', y)
     .attr('y2', y)
-    .attr('stroke', SHADOW_STROKE_COLOR)
-    .attr('stroke-width', SHADOW_STROKE_WIDTH)
+    .attr('stroke', AVERAGE_LINE_SHADOW_COLOR)
+    .attr('stroke-width', AVERAGE_LINE_SHADOW_WIDTH)
     .attr('stroke-dasharray', DASH_PATTERN)
     .style('pointer-events', 'none');
 

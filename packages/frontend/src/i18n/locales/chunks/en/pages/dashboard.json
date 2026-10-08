@@ -137,7 +137,10 @@
         "expenses": "Expenses",
         "saved": "Saved",
         "previousPeriodsTrend": "Previous periods trend",
-        "viewDetails": "View details"
+        "viewDetails": "View details",
+        "savingsRateLine": "Show savings rate line",
+        "savingsRate": "Savings rate",
+        "noIncome": "no income"
       },
       "netWorth": {
         "title": "Net Worth",

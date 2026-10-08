@@ -137,7 +137,10 @@
         "expenses": "Витрати",
         "saved": "Заощаджено",
         "previousPeriodsTrend": "Тренд попередніх періодів",
-        "viewDetails": "Переглянути деталі"
+        "viewDetails": "Переглянути деталі",
+        "savingsRateLine": "Показувати лінію рівня заощаджень",
+        "savingsRate": "Рівень заощаджень",
+        "noIncome": "немає доходу"
       },
       "netWorth": {
         "title": "Чистий капітал",
