@@ -1,3 +1,4 @@
+import { LINK_RESIDUAL_TARGETS } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as accountsService from '@services/accounts.service';
@@ -11,7 +12,7 @@ export default createController(
     body: z.object({
       connectionId: recordId(),
       externalAccountId: z.string(),
-      residualTarget: z.enum(['opening-balance', 'adjustment']).optional(),
+      residualTarget: z.enum(LINK_RESIDUAL_TARGETS).optional(),
     }),
   }),
   async ({ user, params, body }) => {

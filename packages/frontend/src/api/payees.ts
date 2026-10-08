@@ -4,6 +4,8 @@ import {
   EntityLogoPayload,
   PayeeLookupItem,
   PayeeModel,
+  PayeeSortBy,
+  PayeeSortDir,
   PayeeStats,
   TransactionLocation,
 } from '@bt/shared/types';
@@ -26,8 +28,7 @@ export interface UpdatePayeePayload extends EntityLogoPayload {
   defaultLocation?: TransactionLocation | null;
 }
 
-export type PayeeSortBy = 'lastSeen' | 'name' | 'netFlow' | 'transactionCount' | 'defaultTagsCount';
-export type PayeeSortDir = 'asc' | 'desc';
+export type { PayeeSortBy, PayeeSortDir } from '@bt/shared/types';
 
 interface ListPayeesParams {
   q?: string;

@@ -1,3 +1,4 @@
+import { PAYEE_SORT_DIRS, PAYEE_SORT_FIELDS } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as payeesService from '@services/payees';
@@ -11,8 +12,8 @@ const schema = z.object({
       q: z.string().trim().max(200).optional(),
       limit: z.coerce.number().int().min(1).max(200).optional(),
       offset: z.coerce.number().int().min(0).optional(),
-      sortBy: z.enum(['lastSeen', 'name', 'netFlow', 'transactionCount', 'defaultTagsCount']).optional(),
-      sortDir: z.enum(['asc', 'desc']).optional(),
+      sortBy: z.enum(PAYEE_SORT_FIELDS).optional(),
+      sortDir: z.enum(PAYEE_SORT_DIRS).optional(),
       // Scope to a single account's owner (mirrors the categories
       // `?accountId=` pattern). On a shared account the recipient sees the
       // owner's payee set; on an owned account it falls through to the

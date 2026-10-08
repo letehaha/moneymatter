@@ -197,7 +197,8 @@ export interface LinkTransactionsBody {
   ids: [baseTxId: RecordId, destinationTxId: RecordId][];
 }
 
-export type BulkUpdateTagMode = 'add' | 'replace' | 'remove';
+export const BULK_UPDATE_TAG_MODES = ['add', 'replace', 'remove'] as const;
+export type BulkUpdateTagMode = (typeof BULK_UPDATE_TAG_MODES)[number];
 
 export type BulkUpdateTransactionsBody = BulkTarget & {
   categoryId?: RecordId;
@@ -300,7 +301,8 @@ export interface DeleteCategoryConflictResponse {
 }
 
 // Cash Flow Analytics
-export type CashFlowGranularity = 'monthly' | 'biweekly' | 'weekly';
+export const CASH_FLOW_GRANULARITIES = ['monthly', 'biweekly', 'weekly'] as const;
+export type CashFlowGranularity = (typeof CASH_FLOW_GRANULARITIES)[number];
 
 export interface GetCashFlowPayload extends QueryPayload {
   // yyyy-mm-dd (required)
@@ -768,7 +770,8 @@ export interface GetNetWorthHistoryResponse {
 }
 
 // Cumulative Analytics (Trends Comparison)
-export type CumulativeMetric = 'expenses' | 'income' | 'savings';
+export const CUMULATIVE_METRICS = ['expenses', 'income', 'savings'] as const;
+export type CumulativeMetric = (typeof CUMULATIVE_METRICS)[number];
 
 export interface GetCumulativePayload extends QueryPayload {
   // yyyy-mm-dd (required)

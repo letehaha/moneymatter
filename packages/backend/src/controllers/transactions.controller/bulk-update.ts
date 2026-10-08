@@ -1,3 +1,4 @@
+import { endpointsTypes } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as transactionsService from '@services/transactions/bulk-update';
@@ -6,7 +7,7 @@ import { z } from 'zod';
 
 import { bulkTargetFields, bulkTargetIssue, hasOneBulkTarget, toBulkTarget } from './transaction-filters';
 
-const tagModeSchema = z.enum(['add', 'replace', 'remove']);
+const tagModeSchema = z.enum(endpointsTypes.BULK_UPDATE_TAG_MODES);
 
 const bodyZodSchema = z
   .object({

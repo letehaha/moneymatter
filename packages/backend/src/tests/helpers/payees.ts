@@ -3,6 +3,8 @@ import {
   EntityLogoPayload,
   PayeeLookupItem,
   PayeeModel,
+  PayeeSortBy,
+  PayeeSortDir,
   PayeeStats,
   TransactionLocation,
 } from '@bt/shared/types';
@@ -51,8 +53,8 @@ export async function listPayees<R extends boolean | undefined = undefined>({
 }: {
   q?: string;
   accountId?: string;
-  sortBy?: 'lastSeen' | 'name' | 'netFlow' | 'transactionCount' | 'defaultTagsCount';
-  sortDir?: 'asc' | 'desc';
+  sortBy?: PayeeSortBy;
+  sortDir?: PayeeSortDir;
   raw?: R;
 } = {}) {
   const search = new URLSearchParams();

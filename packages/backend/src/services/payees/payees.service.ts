@@ -2,6 +2,8 @@ import {
   CATEGORIZATION_MODE,
   type EntityLogoPayload,
   type PayeeLookupItem,
+  type PayeeSortBy,
+  type PayeeSortDir,
   RESOURCE_TYPES,
   SHARE_PERMISSIONS,
   type RecordId,
@@ -38,9 +40,6 @@ import { getPayeeStatsMap, PayeeStatsRow } from './payee-stats';
 const MAX_LIST_LIMIT = 200;
 const DEFAULT_LIST_LIMIT = 50;
 const AUTOCOMPLETE_LIMIT = 20;
-
-type PayeeSortBy = 'lastSeen' | 'name' | 'netFlow' | 'transactionCount' | 'defaultTagsCount';
-type PayeeSortDir = 'asc' | 'desc';
 
 async function assertCategoryOwnedByUser({
   userId,

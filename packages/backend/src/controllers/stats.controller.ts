@@ -228,7 +228,7 @@ const cashFlowSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(['monthly', 'biweekly', 'weekly']),
+      granularity: z.enum(endpointsTypes.CASH_FLOW_GRANULARITIES),
       accountId: z.string().optional(),
       ...statsScopeQuery,
       categoryIds: optionalCommaSeparatedIds(),
@@ -407,7 +407,7 @@ const cumulativeDataSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      metric: z.enum(['expenses', 'income', 'savings']),
+      metric: z.enum(endpointsTypes.CUMULATIVE_METRICS),
       accountId: z.string().optional(),
       ...statsScopeQuery,
       categoryIds: optionalCommaSeparatedIds(),

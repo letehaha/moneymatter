@@ -84,7 +84,8 @@ export interface CategoryModel extends EmbeddedCategoryModel {
 }
 
 /** Where linking puts the balance residual the post-link sync leaves unexplained. */
-export type LinkResidualTarget = 'opening-balance' | 'adjustment';
+export const LINK_RESIDUAL_TARGETS = ['opening-balance', 'adjustment'] as const;
+export type LinkResidualTarget = (typeof LINK_RESIDUAL_TARGETS)[number];
 
 /**
  * Known structure for account externalData field.
@@ -911,6 +912,11 @@ export interface PayeeLookupItem extends EntityLogoFields {
  * works naturally for both income and expense Payees (income positive, expense
  * negative) and is reported in the user's ref currency as a decimal.
  */
+export const PAYEE_SORT_FIELDS = ['lastSeen', 'name', 'netFlow', 'transactionCount', 'defaultTagsCount'] as const;
+export type PayeeSortBy = (typeof PAYEE_SORT_FIELDS)[number];
+export const PAYEE_SORT_DIRS = ['asc', 'desc'] as const;
+export type PayeeSortDir = (typeof PAYEE_SORT_DIRS)[number];
+
 export interface PayeeStats {
   payeeId: RecordId;
   transactionCount: number;
