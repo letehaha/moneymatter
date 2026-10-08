@@ -199,7 +199,7 @@ const deleteImportBatchImpl = async ({
   // Never chunk this list: `bulkDelete` skips a cascade-deleted transfer twin only
   // within one call. A twin in a later chunk gets re-queried after deletion and 404s.
   if (transactionIds.length > 0) {
-    await bulkDelete({ userId, transactionIds });
+    await bulkDelete({ userId, transactionIds, maxCount: Infinity });
   }
 
   for (const effect of absorbedEffects) {
