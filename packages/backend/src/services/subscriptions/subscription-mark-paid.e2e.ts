@@ -4,12 +4,13 @@ import {
   SUBSCRIPTION_PERIOD_STATUSES,
   SUBSCRIPTION_TYPES,
   TRANSACTION_TYPES,
+  type RecordId,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
-import { addMonths, format } from 'date-fns';
+import { addDays, addMonths, format } from 'date-fns';
 
 /** Returns a date string N months from today, on the given day-of-month. */
 function futureDate({ monthsAhead, day }: { monthsAhead: number; day: number }): string {
@@ -771,6 +772,313 @@ describe('GET /subscriptions/:id/pay-preview', () => {
     // Nothing to convert without an expectedAmount.
     expect(variableBill.convertedAmount).toBeNull();
   }, 60_000);
+});
+
+async function createSubWithOpenPeriod({ accountId, dueDate }: { accountId: RecordId; dueDate: string }) {
+  const sub = await helpers.createSubscription({
+    name: 'Hand-linked Sub',
+    frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+    startDate: dueDate,
+    dueDate,
+    accountId,
+    categoryId: global.DEFAULT_CATEGORY_ID,
+    expectedAmount: 10,
+    expectedCurrencyCode: global.BASE_CURRENCY.code,
+    raw: true,
+  });
+  const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+  const openPeriod = detail.periods.find((p) => p.status !== SUBSCRIPTION_PERIOD_STATUSES.paid)!;
+  return { sub, openPeriod };
+}
+
+async function createLinkedTx({
+  accountId,
+  subscriptionId,
+  time,
+}: {
+  accountId: RecordId;
+  subscriptionId: string;
+  time?: string;
+}) {
+  const [tx] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({ accountId, amount: 12.5, ...(time ? { time } : {}) }),
+    raw: true,
+  });
+  await helpers.linkTransactionsToSubscription({ id: subscriptionId, transactionIds: [tx!.id], raw: true });
+  return tx!;
+}
+
+describe('GET /subscriptions/:id/pay-preview?periodId – linked payments already recorded for the period', () => {
+  it('returns a hand-linked payment dated inside the period, with decimal amount', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 0, day: 15 }),
+    });
+    const tx = await createLinkedTx({ accountId: account.id, subscriptionId: sub.id });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments).toHaveLength(1);
+    const candidate = preview.linkedPayments[0]!;
+    expect(candidate.id).toBe(tx.id);
+    expect(candidate.amount).toBe(12.5);
+    expect(candidate.accountId).toBe(account.id);
+    expect(candidate.currencyCode).toBe(global.BASE_CURRENCY.code);
+    expect(new Date(candidate.time).toISOString()).toBe(new Date(tx.time).toISOString());
+
+    // Without a periodId there is nothing to match against.
+    const noPeriod = await helpers.getSubscriptionPayPreview({ id: sub.id, raw: true });
+    expect(noPeriod.linkedPayments).toEqual([]);
+  });
+
+  it('returns nothing when the transaction is not linked to the subscription', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 1, day: 1 }),
+    });
+    await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments).toEqual([]);
+  });
+
+  it('returns only linked payments dated after the previous period due date', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    // First period two months back; marking it paid opens the second period one month back.
+    const { sub, openPeriod: firstPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -2, day: 10 }),
+    });
+    await helpers.markSubscriptionPeriodPaid({ id: sub.id, periodId: firstPeriod.id, raw: true });
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    const secondPeriod = detail.periods.find((p) => p.status !== SUBSCRIPTION_PERIOD_STATUSES.paid)!;
+    expect(secondPeriod.dueDate).toBe(futureDate({ monthsAhead: -1, day: 10 }));
+
+    const beforeFirstDue = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -2, day: 5 }) + 'T12:00:00Z').toISOString(),
+    });
+    const onFirstDue = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -2, day: 10 }) + 'T12:00:00Z').toISOString(),
+    });
+    const inWindow = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -2, day: 20 }) + 'T12:00:00Z').toISOString(),
+    });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: secondPeriod.id, raw: true });
+    const ids = preview.linkedPayments.map((c) => c.id);
+    expect(ids).toEqual([inWindow.id]);
+    expect(ids).not.toContain(beforeFirstDue.id);
+    expect(ids).not.toContain(onFirstDue.id);
+  });
+
+  it('returns nothing when the linked transaction already backs another period', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod: firstPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -2, day: 10 }),
+    });
+    const tx = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -2, day: 20 }) + 'T12:00:00Z').toISOString(),
+    });
+
+    const firstPreview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: firstPeriod.id, raw: true });
+    expect(firstPreview.linkedPayments.map((c) => c.id)).toEqual([tx.id]);
+
+    await helpers.markSubscriptionPeriodPaid({ id: sub.id, periodId: firstPeriod.id, transactionId: tx.id, raw: true });
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    const secondPeriod = detail.periods.find((p) => p.status !== SUBSCRIPTION_PERIOD_STATUSES.paid)!;
+
+    const secondPreview = await helpers.getSubscriptionPayPreview({
+      id: sub.id,
+      periodId: secondPeriod.id,
+      raw: true,
+    });
+    expect(secondPreview.linkedPayments).toEqual([]);
+  });
+
+  it('orders several candidates nearest to the due date first', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -1, day: 15 }),
+    });
+    const idByDay: Record<number, string> = {};
+    for (const day of [2, 16, 28]) {
+      const tx = await createLinkedTx({
+        accountId: account.id,
+        subscriptionId: sub.id,
+        time: new Date(futureDate({ monthsAhead: -1, day }) + 'T12:00:00Z').toISOString(),
+      });
+      idByDay[day] = tx.id;
+    }
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments.map((c) => c.id)).toEqual([idByDay[16], idByDay[2], idByDay[28]]);
+  });
+
+  it('excludes a linked payment dated on the next due day, with and without a next period row', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -2, day: 15 }),
+    });
+    const inWindow = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -2, day: 20 }) + 'T12:00:00Z').toISOString(),
+    });
+    await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -1, day: 15 }) + 'T12:00:00Z').toISOString(),
+    });
+
+    const scheduled = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(scheduled.linkedPayments.map((c) => c.id)).toEqual([inWindow.id]);
+
+    await helpers.markSubscriptionPeriodPaid({ id: sub.id, periodId: openPeriod.id, raw: true });
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    expect(detail.periods.map((p) => p.dueDate)).toContain(futureDate({ monthsAhead: -1, day: 15 }));
+
+    const withNextRow = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(withNextRow.linkedPayments.map((c) => c.id)).toEqual([inWindow.id]);
+  });
+
+  it('first period: excludes a linked payment older than one cycle before the due date', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -1, day: 15 }),
+    });
+    await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -3, day: 15 }) + 'T12:00:00Z').toISOString(),
+    });
+    const withinCycle = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -1, day: 2 }) + 'T12:00:00Z').toISOString(),
+    });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments.map((c) => c.id)).toEqual([withinCycle.id]);
+  });
+
+  it('does not return a payment that was unlinked', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 0, day: 15 }),
+    });
+    const tx = await createLinkedTx({ accountId: account.id, subscriptionId: sub.id });
+    await helpers.unlinkTransactionsFromSubscription({ id: sub.id, transactionIds: [tx.id], raw: true });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments).toEqual([]);
+  });
+
+  it('does not return a linked planned transaction', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 0, day: 15 }),
+    });
+    const [planned] = await helpers.createPlannedTransaction({
+      payload: { accountId: account.id, amount: 12.5, time: addDays(new Date(), 1).toISOString() },
+      raw: true,
+    });
+    await helpers.linkTransactionsToSubscription({ id: sub.id, transactionIds: [planned.id], raw: true });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments).toEqual([]);
+  });
+
+  it('paying with the candidate links it: one transaction, not auto-created, paidAt is its date', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -1, day: 20 }),
+    });
+    const txDate = futureDate({ monthsAhead: -1, day: 14 });
+    const tx = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(txDate + 'T12:00:00Z').toISOString(),
+    });
+
+    const preview = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: openPeriod.id, raw: true });
+    expect(preview.linkedPayments.map((c) => c.id)).toEqual([tx.id]);
+
+    const period = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: openPeriod.id,
+      transactionId: preview.linkedPayments[0]!.id,
+      raw: true,
+    });
+    expect(period.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+    expect(period.transactionId).toBe(tx.id);
+    expect(period.transactionAutoCreated).toBe(false);
+    expect(format(new Date(period.paidAt!), 'yyyy-MM-dd')).toBe(txDate);
+
+    const txs = await helpers.getTransactions({ accountIds: [account.id], raw: true });
+    expect(txs).toHaveLength(1);
+    expect(txs[0]!.id).toBe(tx.id);
+  });
+
+  it('paying with the candidate and an explicit time stamps paidAt with that time', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub, openPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: -1, day: 20 }),
+    });
+    const tx = await createLinkedTx({
+      accountId: account.id,
+      subscriptionId: sub.id,
+      time: new Date(futureDate({ monthsAhead: -1, day: 14 }) + 'T12:00:00Z').toISOString(),
+    });
+    const paidTime = new Date(futureDate({ monthsAhead: -1, day: 18 }) + 'T12:00:00Z').toISOString();
+
+    const period = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: openPeriod.id,
+      transactionId: tx.id,
+      time: paidTime,
+      raw: true,
+    });
+    expect(period.transactionId).toBe(tx.id);
+    expect(new Date(period.paidAt!).toISOString()).toBe(paidTime);
+  });
+
+  it('returns 404 for a period that belongs to another subscription', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const { sub } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 1, day: 1 }),
+    });
+    const { openPeriod: foreignPeriod } = await createSubWithOpenPeriod({
+      accountId: account.id,
+      dueDate: futureDate({ monthsAhead: 1, day: 1 }),
+    });
+
+    const res = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: foreignPeriod.id });
+    expect(res.statusCode).toBe(404);
+
+    const missing = await helpers.getSubscriptionPayPreview({ id: sub.id, periodId: generateRandomRecordId() });
+    expect(missing.statusCode).toBe(404);
+  });
 });
 
 describe('Cross-currency pay when the billed currency is unconnected', () => {

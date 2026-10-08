@@ -377,14 +377,17 @@ export async function markSubscriptionPeriodPaid<R extends boolean | undefined =
 
 export async function getSubscriptionPayPreview<R extends boolean | undefined = undefined>({
   id,
+  periodId,
   raw,
 }: {
   id: string;
+  periodId?: string;
   raw?: R;
 }) {
   return makeRequest<SubscriptionPayPreview, R>({
     method: 'get',
     url: `/subscriptions/${id}/pay-preview`,
+    payload: periodId ? { periodId } : undefined,
     raw,
   });
 }

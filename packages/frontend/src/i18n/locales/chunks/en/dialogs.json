@@ -767,7 +767,6 @@
       "chooseDescription": "How do you want to record this payment for {name}?",
       "amountLabel": "Amount",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "Loading estimate…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (estimated)",
       "dateLabel": "Payment date",
       "accountLabel": "Account",
@@ -778,6 +777,13 @@
       "recordModeMarkDescription": "Updates the schedule only — no transaction is created.",
       "recordModeTransactionTitle": "Create a transaction",
       "recordModeTransactionDescription": "Book a real expense in an account. It's linked for future payments too.",
+      "useExistingTitle": "Use the existing payment",
+      "useExistingDescription": "A transaction linked to this subscription is already recorded in this period. Nothing new is added to your account.",
+      "recordNewTitle": "Record a new payment",
+      "recordNewDescription": "Adds another transaction for this period. The existing payment stays as it is.",
+      "linkedPaymentDescription": "{name} already has a payment in this period. Choose how to mark it paid.",
+      "confirmUseExisting": "Use this payment",
+      "previewUnavailable": "Couldn't check for payments already recorded in this period. Review the details before recording a new one.",
       "notifications": {
         "markedAsPaid": "Payment recorded",
         "markAsPaidFailed": "Failed to record payment"

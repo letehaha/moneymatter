@@ -7,12 +7,14 @@ const schema = z.object({
   params: z.object({
     id: recordId(),
   }),
+  query: z.object({ periodId: recordId().optional() }).optional(),
 });
 
-export default createController(schema, async ({ user, params }) => {
+export default createController(schema, async ({ user, params, query }) => {
   const preview = await getSubscriptionPayPreview({
     userId: user.id,
     subscriptionId: params.id,
+    periodId: query?.periodId,
   });
 
   return { data: preview };

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   getSubscriptionPayPreview,
+  type LinkedPaymentCandidate,
   markSubscriptionPeriodPaid,
   type SubscriptionPayPreview,
 } from '@/api/subscriptions';
@@ -16,8 +17,11 @@ import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subscriptions';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
+import { useDateLocale } from '@/composable/use-date-locale';
 import { ApiErrorResponseError } from '@/js/errors';
+import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
 import type { AccountModel } from '@bt/shared/types';
@@ -40,13 +44,15 @@ interface PayableSubscription {
   accountId: string | null;
 }
 
-/** How an account-less payment is recorded: status-only vs. a booked expense. */
-type RecordMode = 'mark' | 'transaction';
+/** How the payment is recorded: link an already-linked transaction, status-only, or book a new expense. */
+type RecordMode = 'existing' | 'mark' | 'transaction';
 
 const { t } = useI18n();
 const queryClient = useQueryClient();
 const invalidateSubscriptionQueries = useInvalidateSubscriptionQueries();
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+const { formatAmountByCurrencyCode } = useFormatCurrency();
+const { format } = useDateLocale();
 const accountsStore = useAccountsStore();
 const { accountsRecord, txTargetableSourceAccountsActiveFirst } = storeToRefs(accountsStore);
 const { resolveDefaultAccount } = useAccountDropdownPrefs();
@@ -55,7 +61,7 @@ const emit = defineEmits<{
   paid: [];
 }>();
 
-const { mutate: markPaid, isPending } = useMutation({
+const { mutate: markPaid, isPending: isMarkPending } = useMutation({
   mutationFn: markSubscriptionPeriodPaid,
   onSuccess: () => {
     invalidateSubscriptionQueries();
@@ -81,30 +87,66 @@ const activeSubscription = ref<PayableSubscription | null>(null);
 const activePeriodId = ref<string | null>(null);
 const amount = ref<string>('');
 const paidDate = ref<Date>(new Date());
-const isEstimateLoading = ref(false);
+const isPreviewLoading = ref(false);
+const isPreviewUnavailable = ref(false);
 const estimate = ref<SubscriptionPayPreview | null>(null);
+const linkedPayments = ref<LinkedPaymentCandidate[]>([]);
+const selectedLinkedPaymentId = ref<string | null>(null);
 const today = new Date();
 
-// Account-less flow only: the user's choice + the account they pick to book against.
 const recordMode = ref<RecordMode>('mark');
 const selectedAccountId = ref<string | null>(null);
 
-/** A subscription that already has an account skips the choice UI entirely. */
+const isPending = computed(() => isMarkPending.value || isPreviewLoading.value);
+
 const hasAccount = computed(() => activeSubscription.value?.accountId != null);
 
+const isBankAccount = computed(() => {
+  const accountId = activeSubscription.value?.accountId;
+  const account = accountId ? accountsRecord.value[accountId] : null;
+  return !!account && isConnectedAccount({ account });
+});
+
+/** Recording choices offered for the active subscription; the radio is shown only when there is more than one. */
+const modeOptions = computed<RecordMode[]>(() => {
+  const options: RecordMode[] = linkedPayments.value.length > 0 ? ['existing'] : [];
+  if (!hasAccount.value) return [...options, 'mark', 'transaction'];
+  return [...options, isBankAccount.value ? 'mark' : 'transaction'];
+});
+
+const modeLabels = computed<Record<RecordMode, { title: string; description: string }>>(() => ({
+  existing: {
+    title: 'dialogs.subscriptionMarkPaid.useExistingTitle',
+    description: 'dialogs.subscriptionMarkPaid.useExistingDescription',
+  },
+  mark: {
+    title: 'dialogs.subscriptionMarkPaid.recordModeMarkTitle',
+    description: 'dialogs.subscriptionMarkPaid.recordModeMarkDescription',
+  },
+  transaction: hasAccount.value
+    ? {
+        title: 'dialogs.subscriptionMarkPaid.recordNewTitle',
+        description: 'dialogs.subscriptionMarkPaid.recordNewDescription',
+      }
+    : {
+        title: 'dialogs.subscriptionMarkPaid.recordModeTransactionTitle',
+        description: 'dialogs.subscriptionMarkPaid.recordModeTransactionDescription',
+      },
+}));
+
 /** Whether the account/amount/date fields are shown (booking a real transaction). */
-const isBooking = computed(() => hasAccount.value || recordMode.value === 'transaction');
+const isBooking = computed(() => recordMode.value === 'transaction');
 
 const selectedAccount = computed(() =>
   selectedAccountId.value ? (accountsRecord.value[selectedAccountId.value] ?? null) : null,
 );
 
-const accountLabel = computed(() => {
-  const accountId = activeSubscription.value?.accountId;
-  if (!accountId) return null;
-  const account = accountsRecord.value[accountId];
+function accountLabelById({ accountId }: { accountId: string | null | undefined }): string | null {
+  const account = accountId ? accountsRecord.value[accountId] : null;
   return account ? getAccountDisplayLabel(account) : null;
-});
+}
+
+const accountLabel = computed(() => accountLabelById({ accountId: activeSubscription.value?.accountId }));
 
 function accountCurrencyFor(subscription: PayableSubscription | null): string | null {
   if (!subscription?.accountId) return null;
@@ -118,6 +160,10 @@ function isCrossCurrency(subscription: PayableSubscription): boolean {
     accountCurrency != null &&
     subscription.expectedCurrencyCode !== accountCurrency
   );
+}
+
+function candidateTitle({ candidate }: { candidate: LinkedPaymentCandidate }): string {
+  return candidate.payeeName || candidate.note || activeSubscription.value?.name || '';
 }
 
 /**
@@ -137,38 +183,72 @@ const dialogAmountCurrency = computed(() => {
 
 const isConfirmDisabled = computed(() => {
   if (isPending.value) return true;
-  // Plain "just mark as paid" needs no input.
+  if (recordMode.value === 'existing') return !selectedLinkedPaymentId.value;
   if (!isBooking.value) return false;
   // Booking against a not-yet-linked account requires picking one.
   if (!hasAccount.value && !selectedAccountId.value) return true;
   return !amount.value || Number(amount.value) <= 0;
 });
 
-const confirmLabel = computed(() =>
-  isBooking.value ? t('dialogs.subscriptionMarkPaid.confirm') : t('dialogs.subscriptionMarkPaid.confirmMarkOnly'),
-);
+const confirmLabel = computed(() => {
+  if (recordMode.value === 'existing') return t('dialogs.subscriptionMarkPaid.confirmUseExisting');
+  return isBooking.value
+    ? t('dialogs.subscriptionMarkPaid.confirm')
+    : t('dialogs.subscriptionMarkPaid.confirmMarkOnly');
+});
 
 /**
- * Entry point.
- *  - No account: open the dialog so the user chooses between a plain mark-paid
- *    and booking a real transaction (which needs an account).
+ * Entry point. The pay preview is fetched first; a transaction already linked to
+ * the subscription inside this period opens the dialog so the user chooses between
+ * reusing it and the regular flow. Without one:
+ *  - No account: dialog to choose between a plain mark-paid and booking a transaction.
  *  - Bank-connected account: status-only mark-paid; its rows come from the bank sync.
  *  - Fixed same-currency amount: book in one click, no dialog.
- *  - Variable / cross-currency amount: open the dialog to capture the amount.
+ *  - Variable / cross-currency amount: dialog to capture the amount.
+ * A failed preview cannot rule out a linked payment, so it never books in one click:
+ * the dialog opens on the booking fields instead.
  */
 async function triggerPay({ subscription, periodId }: { subscription: PayableSubscription; periodId: string }) {
+  // A second call during the preview request would overwrite the active subscription mid-flight.
+  if (isPreviewLoading.value) return;
+
+  const crossCurrency = isCrossCurrency(subscription);
+
+  activeSubscription.value = subscription;
+  activePeriodId.value = periodId;
+  paidDate.value = new Date();
+  amount.value = subscription.expectedAmount != null && !crossCurrency ? String(subscription.expectedAmount) : '';
+  selectedAccountId.value =
+    resolveDefaultAccount({ accounts: txTargetableSourceAccountsActiveFirst.value, fallbackToFirst: false })?.id ??
+    null;
+
+  let preview: SubscriptionPayPreview | null = null;
+  isPreviewLoading.value = true;
+  try {
+    preview = await getSubscriptionPayPreview({ id: subscription.id, periodId });
+  } catch (error) {
+    captureException({ error, context: { source: 'subscriptionMarkPaid.preview', subscriptionId: subscription.id } });
+  } finally {
+    isPreviewLoading.value = false;
+  }
+
+  estimate.value = preview;
+  isPreviewUnavailable.value = preview === null;
+  linkedPayments.value = preview?.linkedPayments ?? [];
+  selectedLinkedPaymentId.value = linkedPayments.value[0]?.id ?? null;
+  // Cross-currency: pre-fill the app-converted estimate so the user can adjust if their bank charged a different rate.
+  if (crossCurrency && preview?.convertedAmount != null) {
+    amount.value = String(preview.convertedAmount);
+  }
+
+  if (linkedPayments.value.length > 0) {
+    recordMode.value = 'existing';
+    isDialogOpen.value = true;
+    return;
+  }
+
   if (subscription.accountId == null) {
-    activeSubscription.value = subscription;
-    activePeriodId.value = periodId;
     recordMode.value = 'mark';
-    selectedAccountId.value =
-      resolveDefaultAccount({ accounts: txTargetableSourceAccountsActiveFirst.value, fallbackToFirst: false })?.id ??
-      null;
-    // Seed with the plan's expected amount as a convenience; the user confirms or
-    // edits it, and it is booked in the chosen account's currency.
-    amount.value = subscription.expectedAmount != null ? String(subscription.expectedAmount) : '';
-    paidDate.value = new Date();
-    estimate.value = null;
     isDialogOpen.value = true;
     return;
   }
@@ -179,46 +259,13 @@ async function triggerPay({ subscription, periodId }: { subscription: PayableSub
     return;
   }
 
-  const crossCurrency = isCrossCurrency(subscription);
-
-  // Fixed amount in the account's own currency: book in one click.
-  if (subscription.expectedAmount != null && !crossCurrency) {
+  if (preview && subscription.expectedAmount != null && !crossCurrency) {
     markPaid({ id: subscription.id, periodId, createTransaction: true, time: new Date() });
     return;
   }
 
-  // Variable amount or cross-currency: open the dialog. For cross-currency,
-  // pre-fill with the app-converted estimate so the user can adjust if their
-  // bank charged a different rate.
-  activeSubscription.value = subscription;
-  activePeriodId.value = periodId;
-  amount.value = '';
-  paidDate.value = new Date();
-  estimate.value = null;
+  recordMode.value = 'transaction';
   isDialogOpen.value = true;
-
-  if (crossCurrency) {
-    await loadPreviewEstimate({ subscriptionId: subscription.id });
-  }
-}
-
-async function loadPreviewEstimate({ subscriptionId }: { subscriptionId: string }) {
-  isEstimateLoading.value = true;
-  try {
-    const preview = await getSubscriptionPayPreview({ id: subscriptionId });
-    estimate.value = preview;
-    // Pre-fill the account-currency estimate; the user can still edit it to the
-    // exact amount their bank charged. Guard against clobbering anything typed
-    // while the request was in flight.
-    if (preview.convertedAmount != null && amount.value === '') {
-      amount.value = String(preview.convertedAmount);
-    }
-  } catch {
-    // The estimate is a convenience: if the rate lookup fails the dialog still
-    // works and the user types the amount manually.
-  } finally {
-    isEstimateLoading.value = false;
-  }
 }
 
 function confirmPay() {
@@ -227,7 +274,13 @@ function confirmPay() {
   const id = activeSubscription.value.id;
   const periodId = activePeriodId.value;
 
-  // Account-less, user chose to only update the schedule.
+  if (recordMode.value === 'existing') {
+    const transactionId = selectedLinkedPaymentId.value;
+    if (!transactionId) return;
+    markPaid({ id, periodId, transactionId });
+    return;
+  }
+
   if (!isBooking.value) {
     markPaid({ id, periodId });
     return;
@@ -252,7 +305,10 @@ defineExpose({ triggerPay, isPending });
   <ResponsiveDialog v-model:open="isDialogOpen" dialog-content-class="max-w-md">
     <template #title>{{ $t('dialogs.subscriptionMarkPaid.title') }}</template>
     <template #description>
-      <template v-if="!hasAccount">
+      <template v-if="linkedPayments.length > 0">
+        {{ $t('dialogs.subscriptionMarkPaid.linkedPaymentDescription', { name: activeSubscription?.name }) }}
+      </template>
+      <template v-else-if="!hasAccount">
         {{ $t('dialogs.subscriptionMarkPaid.chooseDescription', { name: activeSubscription?.name }) }}
       </template>
       <template v-else>
@@ -261,40 +317,57 @@ defineExpose({ triggerPay, isPending });
     </template>
 
     <div class="grid gap-4">
-      <!-- Account-less: choose how to record the payment. -->
-      <RadioGroup v-if="!hasAccount" v-model="recordMode" class="grid gap-3">
+      <p v-if="isPreviewUnavailable" class="text-muted-foreground text-xs">
+        {{ $t('dialogs.subscriptionMarkPaid.previewUnavailable') }}
+      </p>
+
+      <RadioGroup v-if="modeOptions.length > 1" v-model="recordMode" class="grid gap-3">
         <Label
+          v-for="mode in modeOptions"
+          :key="mode"
           :class="
             cn(
               'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              recordMode === 'mark' && 'border-primary bg-primary/5',
+              recordMode === mode && 'border-primary bg-primary/5',
             )
           "
         >
           <div class="flex items-center gap-2">
-            <RadioGroupItem value="mark" />
-            <span class="font-medium">{{ $t('dialogs.subscriptionMarkPaid.recordModeMarkTitle') }}</span>
+            <RadioGroupItem :value="mode" />
+            <span class="font-medium">{{ $t(modeLabels[mode].title) }}</span>
           </div>
-          <span class="text-muted-foreground pl-6 text-xs">
-            {{ $t('dialogs.subscriptionMarkPaid.recordModeMarkDescription') }}
-          </span>
+          <span class="text-muted-foreground pl-6 text-xs">{{ $t(modeLabels[mode].description) }}</span>
         </Label>
+      </RadioGroup>
+
+      <RadioGroup
+        v-if="recordMode === 'existing'"
+        v-model="selectedLinkedPaymentId"
+        :aria-label="$t('dialogs.subscriptionMarkPaid.useExistingTitle')"
+        class="grid gap-2"
+      >
         <Label
+          v-for="candidate in linkedPayments"
+          :key="candidate.id"
           :class="
             cn(
-              'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              recordMode === 'transaction' && 'border-primary bg-primary/5',
+              'border-input hover:bg-accent flex cursor-pointer items-center gap-3 rounded-md border p-3 text-sm transition-colors',
+              selectedLinkedPaymentId === candidate.id && 'border-primary bg-primary/5',
             )
           "
         >
-          <div class="flex items-center gap-2">
-            <RadioGroupItem value="transaction" />
-            <span class="font-medium">
-              {{ $t('dialogs.subscriptionMarkPaid.recordModeTransactionTitle') }}
+          <RadioGroupItem :value="candidate.id" />
+          <div class="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span class="truncate font-medium">{{ candidateTitle({ candidate }) }}</span>
+            <span class="text-muted-foreground text-xs">
+              {{ format(candidate.time, 'PP') }}
+              <template v-if="accountLabelById({ accountId: candidate.accountId })">
+                · {{ accountLabelById({ accountId: candidate.accountId }) }}
+              </template>
             </span>
           </div>
-          <span class="text-muted-foreground pl-6 text-xs">
-            {{ $t('dialogs.subscriptionMarkPaid.recordModeTransactionDescription') }}
+          <span class="font-medium whitespace-nowrap">
+            {{ formatAmountByCurrencyCode(candidate.amount, candidate.currencyCode) }}
           </span>
         </Label>
       </RadioGroup>
@@ -324,13 +397,7 @@ defineExpose({ triggerPay, isPending });
           </template>
         </InputField>
 
-        <p v-if="isEstimateLoading" class="text-muted-foreground text-xs">
-          {{ $t('dialogs.subscriptionMarkPaid.estimateLoading') }}
-        </p>
-        <p
-          v-else-if="estimate?.isCrossCurrency && estimate.expectedAmount != null"
-          class="text-muted-foreground text-xs"
-        >
+        <p v-if="estimate?.isCrossCurrency && estimate.expectedAmount != null" class="text-muted-foreground text-xs">
           {{
             $t('dialogs.subscriptionMarkPaid.crossCurrencyEstimate', {
               sourceAmount: estimate.expectedAmount,

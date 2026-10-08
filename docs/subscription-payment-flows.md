@@ -25,9 +25,20 @@ Reverting a period deletes the transaction only if it was app-created (**Create*
 
 `subscription-mark-paid-dialog.vue` → `triggerPay`
 
+Every click first calls `GET /subscriptions/:id/pay-preview?periodId=…`. Besides the cross-currency estimate, the preview returns `linkedPayments`: transactions that already have an **active `SubscriptionTransactions` link** to this subscription (hand-linked or rule-matched), are not planned, back no `SubscriptionPeriods.transactionId` yet, and are dated inside the period window: strictly after the previous period's due day and strictly before the next period's due day (computed from the schedule when the next period row does not exist yet). A first period has no previous row, so its lower bound is one cycle length (next due day minus this due day) before its own due day. Amount mismatches do not disqualify. Ordered nearest to the due date first.
+
+A failed preview cannot rule out a linked payment, so it never books in one click: the path that would create a transaction without a dialog (manual account, fixed same-currency amount) opens the dialog on the booking fields (expected amount, today) with a notice that linked payments could not be checked. The bank-account status-only path stays immediate.
+
 ```mermaid
 flowchart TD
-    Start(["Mark paid clicked"]) --> HasAcc{"Subscription has an account?"}
+    Start(["Mark paid clicked"]) --> Preview["GET pay-preview?periodId"]
+    Preview --> HasLinked{"Linked payment inside the period?"}
+    HasLinked -->|Yes| ChoiceDialog["Dialog: Use the existing payment (default) / regular option"]
+    ChoiceDialog -->|Use existing| LinkMode["Link: period paid with that transactionId, transactionAutoCreated = false, paidAt = its date"]
+    ChoiceDialog -->|No account: Mark only or Record a transaction| ModeDialog
+    ChoiceDialog -->|Bank account: Mark only| MarkOnly
+    ChoiceDialog -->|Manual account: Record a new payment| AmountDialog
+    HasLinked -->|No| HasAcc{"Subscription has an account?"}
     HasAcc -->|No| ModeDialog["Dialog: choose mode"]
     ModeDialog -->|Mark only| MarkOnly["Mark only"]
     ModeDialog -->|Create a transaction| Pick["Pick a manual account, amount, date"]
