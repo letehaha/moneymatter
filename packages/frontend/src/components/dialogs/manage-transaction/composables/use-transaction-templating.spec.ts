@@ -122,7 +122,7 @@ const setup = ({
     sourceAccounts: [account],
     formattedCategories: categories,
     currencyCode: 'USD',
-    resetPayeeTagTracking: vi.fn(),
+    resetAutoTagTracking: vi.fn(),
     focusAmountField,
     focusCategoryField,
     submit,

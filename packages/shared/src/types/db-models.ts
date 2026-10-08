@@ -60,7 +60,7 @@ export interface UserModel {
 /** `GET /user` payload. Email comes from better-auth's ba_user, not the Users table. */
 export type UserInfoResponse = UserModel & { email: string | null };
 
-export interface CategoryModel {
+export interface EmbeddedCategoryModel {
   color: string;
   id: RecordId;
   icon: null | string;
@@ -73,6 +73,14 @@ export interface CategoryModel {
   parentId: RecordId | null;
   type: CATEGORY_TYPES;
   userId: number;
+  /** Opt-in: AI categorization also adds the category's default tags to the rows it assigns this category. */
+  applyDefaultTagsOnAiCategorization: boolean;
+}
+
+/** A category as the categories endpoints return it; the embedded form carries no tag rule. */
+export interface CategoryModel extends EmbeddedCategoryModel {
+  /** Tags the transaction form pre-selects when this category is picked. */
+  defaultTagIds: RecordId[];
 }
 
 /** Where linking puts the balance residual the post-link sync leaves unexplained. */
@@ -254,7 +262,7 @@ export interface TransactionSplitModel {
   amount: number;
   refAmount: number;
   note: string | null;
-  category?: CategoryModel;
+  category?: EmbeddedCategoryModel;
 }
 
 /**
@@ -426,7 +434,7 @@ export interface BudgetModel {
    * Populated in GET responses when budget has associated categories.
    * Read-only - for mutations, use `categoryIds`.
    */
-  categories?: CategoryModel[];
+  categories?: EmbeddedCategoryModel[];
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
 }
@@ -883,7 +891,7 @@ export interface PayeeModel extends EntityLogoFields {
   createdAt: Date;
   updatedAt: Date;
   aliases?: PayeeAliasModel[];
-  defaultCategory?: CategoryModel | null;
+  defaultCategory?: EmbeddedCategoryModel | null;
 }
 
 /**

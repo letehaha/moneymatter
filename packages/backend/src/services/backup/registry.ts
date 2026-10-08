@@ -11,6 +11,7 @@ import BudgetCategories from '@models/budget-categories.model';
 import BudgetTransactions from '@models/budget-transactions.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import CategoryTags from '@models/category-tags.model';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
 import FeatureUsages from '@models/feature-usages.model';
@@ -74,6 +75,7 @@ type AnyModel = ModelStatic<Model>;
  */
 export type BackupParentScope =
   | 'accounts'
+  | 'categories'
   | 'payees'
   | 'portfolios'
   | 'transactions'
@@ -279,6 +281,13 @@ export const BACKUP_TABLES: readonly BackupTableDef[] = [
     model: PayeeTags,
     tier: 3,
     scope: { strategy: 'viaParent', fk: 'payeeId', parent: 'payees' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'category-tags',
+    model: CategoryTags,
+    tier: 3,
+    scope: { strategy: 'viaParent', fk: 'categoryId', parent: 'categories' },
     restoreMode: 'insert',
   },
   {

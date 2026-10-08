@@ -279,10 +279,16 @@ export type CreateCategoryBody = {
   color?: CategoryModel['color'];
   icon?: CategoryModel['icon'];
   parentId?: CategoryModel['parentId'];
+  defaultTagIds?: string[];
+  applyDefaultTagsOnAiCategorization?: boolean;
 };
 export type CreateCategoryResponse = CategoryModel;
 
-export type EditCategoryBody = Partial<Pick<CategoryModel, 'name' | 'color' | 'icon' | 'parentId'>>;
+export type EditCategoryBody = Partial<
+  Pick<CategoryModel, 'name' | 'color' | 'icon' | 'parentId' | 'applyDefaultTagsOnAiCategorization'>
+> & {
+  defaultTagIds?: string[];
+};
 export type EditCategoryResponse = CategoryModel[];
 
 export interface DeleteCategoryBody {

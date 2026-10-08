@@ -26,6 +26,7 @@ import {
   resolveManualLogoFields,
 } from '@services/brand-logos';
 import { canUserAccessResource } from '@services/sharing/auth/can-user-access-resource.service';
+import { assertTagsOwnedByUser } from '@services/tags/assert-tags-owned-by-user';
 import { pauseAutomationsReferencing, rewriteAutomationRef } from '@services/transaction-automations/references';
 import { Op, QueryTypes } from 'sequelize';
 
@@ -54,14 +55,6 @@ async function assertCategoryOwnedByUser({
   });
   if (!category) {
     throw new ValidationError({ message: t({ key: 'payees.defaultCategoryNotOwned' }) });
-  }
-}
-
-async function assertTagsOwnedByUser({ userId, tagIds }: { userId: number; tagIds: string[] }): Promise<void> {
-  if (tagIds.length === 0) return;
-  const ownedCount = await Tags.count({ where: { id: tagIds, userId } });
-  if (ownedCount !== tagIds.length) {
-    throw new ValidationError({ message: t({ key: 'payees.defaultTagsNotOwned' }) });
   }
 }
 
@@ -435,8 +428,7 @@ export const updatePayee = withTransaction(
     }
 
     if (defaultTagIds !== undefined) {
-      await assertTagsOwnedByUser({ userId, tagIds: defaultTagIds });
-      await payee.$set('defaultTags', defaultTagIds);
+      await payee.$set('defaultTags', await assertTagsOwnedByUser({ userId, tagIds: defaultTagIds }));
     }
 
     if (name !== undefined) {

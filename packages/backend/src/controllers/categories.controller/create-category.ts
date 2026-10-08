@@ -10,6 +10,8 @@ const CreateCategoryPayloadSchema = z
     name: z.string().min(1).max(200, 'The name must not exceed 200 characters'),
     icon: z.string().max(50, 'Icon name must not exceed 50 characters').nullable().optional(),
     type: z.enum(Object.values(CATEGORY_TYPES) as [string, ...string[]]).default(CATEGORY_TYPES.custom),
+    defaultTagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
+    applyDefaultTagsOnAiCategorization: z.boolean().optional(),
   })
   .and(
     z.union([
@@ -33,13 +35,15 @@ const schema = z.object({
 
 export default createController(schema, async ({ user, body }) => {
   const { id: userId } = user;
-  const { name, icon, color, parentId } = body;
+  const { name, icon, color, parentId, defaultTagIds, applyDefaultTagsOnAiCategorization } = body;
 
   const data = await categoriesService.createCategory({
     name,
     icon,
     color,
     parentId,
+    defaultTagIds,
+    applyDefaultTagsOnAiCategorization,
     userId,
   });
 

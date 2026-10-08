@@ -45,6 +45,7 @@ export const BACKUP_FILE_NAMES = [
   'transaction-templates',
   'payee-aliases',
   'payee-tags',
+  'category-tags',
   'user-merchant-category-codes',
   'user-exchange-rates',
   'portfolios',

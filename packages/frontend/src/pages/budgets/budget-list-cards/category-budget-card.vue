@@ -2,7 +2,7 @@
 import CategoryCircle from '@/components/common/category-circle.vue';
 import { Card } from '@/components/lib/ui/card';
 import { useFormatCurrency } from '@/composable';
-import { BudgetModel, CategoryModel } from '@bt/shared/types';
+import { BudgetModel } from '@bt/shared/types';
 import { format } from 'date-fns';
 import { ArchiveIcon, ArrowRightIcon, CalendarIcon, TagsIcon } from '@lucide/vue';
 
@@ -99,7 +99,7 @@ const formatDate = (date: Date | string | undefined | null) => {
       <!-- Category chips -->
       <div v-if="budget.categories?.length" class="mb-3 flex flex-wrap gap-1">
         <span
-          v-for="category in (budget.categories as CategoryModel[]).slice(0, 4)"
+          v-for="category in budget.categories.slice(0, 4)"
           :key="category.id"
           class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs"
           :style="{ backgroundColor: category.color + '20', color: category.color }"

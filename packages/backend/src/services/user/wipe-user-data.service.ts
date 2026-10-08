@@ -127,6 +127,7 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
   //   AccountGroups → AccountGrouping
   //   Tags → TagReminders (TransactionTags already gone via Accounts cascade)
   //   Payees → PayeeAliases, PayeeTags
+  //   Categories → CategoryTags
   //   TransactionTemplates → TransactionTemplateTags
   //
   // Paranoid models (Portfolios, VentureDeals, VenturePlatforms) need `force: true`

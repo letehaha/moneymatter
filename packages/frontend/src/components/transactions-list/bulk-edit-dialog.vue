@@ -8,7 +8,7 @@ import PayeeSelectField from '@/components/fields/payee-select-field.vue';
 import TagSelectField from '@/components/fields/tag-select-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import { usePayeeLookup } from '@/composable/data-queries/payees';
-import { usePayeeTagAutoApply } from '@/composable/use-payee-tag-auto-apply';
+import { useAutoTagApply } from '@/composable/use-auto-tag-apply';
 import { Button } from '@/components/lib/ui/button';
 import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
@@ -62,11 +62,14 @@ const isConfirmDialogOpen = ref(false);
 
 // Picking a payee pre-fills its default tags into the tag field (the user
 // can still adjust them and the mode before applying). Same dual-set model
-// as the transaction form — see `usePayeeTagAutoApply`.
-const { onPayeeSelected: handlePayeeSelected, reset: resetPayeeTagTracking } = usePayeeTagAutoApply({
+// as the transaction form — see `useAutoTagApply`.
+const { apply: applyAutoTags, reset: resetAutoTagTracking } = useAutoTagApply({
   tagIds: toRef(form, 'tagIds'),
-  payeeId: () => form.payeeId,
+  sources: { payee: () => form.payeeId },
 });
+const handlePayeeSelected = ({ defaultTagIds }: { defaultTagIds: string[] }) => {
+  applyAutoTags({ source: 'payee', autoTagIds: defaultTagIds });
+};
 
 const resetForm = () => {
   form.category = null;
@@ -74,7 +77,7 @@ const resetForm = () => {
   form.tagMode = 'add';
   form.note = '';
   form.payeeId = null;
-  resetPayeeTagTracking();
+  resetAutoTagTracking();
 };
 
 watch(isOpen, (open) => {

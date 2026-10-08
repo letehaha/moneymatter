@@ -6,6 +6,8 @@ interface BaseCreationPayload {
   parentId?: string;
   name?: string;
   color?: string;
+  defaultTagIds?: string[];
+  applyDefaultTagsOnAiCategorization?: boolean;
 }
 export async function addCustomCategory({ raw, ...params }: BaseCreationPayload & { raw?: false }): Promise<Response>;
 export async function addCustomCategory({
@@ -34,6 +36,8 @@ interface BaseUpdationPayload {
   color?: string;
   icon?: string | null;
   parentId?: string | null;
+  defaultTagIds?: string[];
+  applyDefaultTagsOnAiCategorization?: boolean;
 }
 export async function editCustomCategory({ raw, ...params }: BaseUpdationPayload & { raw?: false }): Promise<Response>;
 export async function editCustomCategory({

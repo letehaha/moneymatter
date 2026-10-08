@@ -14,6 +14,7 @@ import BudgetCategoriesModel from './budget-categories.model';
 import BudgetTransactionsModel from './budget-transactions.model';
 import BudgetModel from './budget.model';
 import CategoriesModel from './categories.model';
+import CategoryTagsModel from './category-tags.model';
 import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
 import ExchangeRatesModel from './exchange-rates.model';
@@ -138,6 +139,7 @@ const models = [
   BrandLogosModel,
   PayeeIgnoredNamesModel,
   PayeeTagsModel,
+  CategoryTagsModel,
   TransferSuggestionDismissalsModel,
   VenturePlatformsModel,
   VentureDealsModel,

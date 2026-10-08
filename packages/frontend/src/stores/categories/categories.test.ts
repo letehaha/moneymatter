@@ -47,6 +47,8 @@ const category = ({ id, name }: { id: string; name: string }): CategoryModel => 
   type: CATEGORY_TYPES.custom,
   parentId: null,
   userId: 42,
+  defaultTagIds: [],
+  applyDefaultTagsOnAiCategorization: false,
 });
 
 const FOOD = category({ id: '00000000-0000-0000-0000-000000000001', name: 'Food' });

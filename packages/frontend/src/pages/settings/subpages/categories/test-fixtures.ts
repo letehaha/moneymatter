@@ -22,5 +22,7 @@ export const category = ({
   userId: 1,
   parentId: parentId === null ? null : uuid(parentId),
   type,
+  defaultTagIds: [],
+  applyDefaultTagsOnAiCategorization: false,
   subCategories,
 });

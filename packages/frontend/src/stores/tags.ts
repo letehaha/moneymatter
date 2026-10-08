@@ -3,6 +3,7 @@ import { TagModel } from '@bt/shared/types';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
+import { useCategoriesStore } from './categories/categories';
 import { useOnboardingStore } from './onboarding';
 
 export const useTagsStore = defineStore('tags', () => {
@@ -53,6 +54,8 @@ export const useTagsStore = defineStore('tags', () => {
   const deleteTag = async ({ id }: { id: string }) => {
     await tagsApi.deleteTag({ id });
     tags.value = tags.value.filter((t) => t.id !== id);
+    // Loaded categories still list the deleted tag among their default tags.
+    await useCategoriesStore().loadCategories({ force: true });
   };
 
   const getTagById = (id: string) => tagsMap.value[id];

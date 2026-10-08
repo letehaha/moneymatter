@@ -25,7 +25,9 @@ import {
   markCustomEndpointUnreachable,
   markModelNotServed,
 } from '@services/ai';
+import { applyCategoryDefaultTagsOnAiCategorization } from '@services/categories/default-tags';
 import { sseManager } from '@services/common/sse';
+import { withTransaction } from '@services/common/with-transaction';
 import { markConnectionValid } from '@services/user-settings/ai-connections';
 import { getCustomInstructions } from '@services/user-settings/ai-custom-instructions';
 import { generateText } from 'ai';
@@ -235,12 +237,15 @@ async function categorizeBatch({
   }
 }
 
-async function applyCategorizationResults({
+/** One transaction, so a failed tag write rolls the categories back and the retry sees the rows again. */
+const applyCategorizationResults = withTransaction(async function ({
+  userId,
   results,
   candidateWhere,
   categorizedAt,
   trigger,
 }: {
+  userId: number;
   results: CategorizationResult[];
   candidateWhere: CandidateWhere;
   /** Shared by every batch of the run, so the stamp identifies the run in the history list. */
@@ -262,9 +267,9 @@ async function applyCategorizationResults({
   // `unscoped-internal` rather than a creator scope: the `Accounts` JOIN that produced these
   // ids already gated ownership, and a `userId` filter would drop shared-account rows a
   // recipient authored.
-  await Promise.all(
-    Array.from(groupedByCategory.entries()).map(([categoryId, transactionIds]) =>
-      updateTransactions({
+  const assignments = await Promise.all(
+    Array.from(groupedByCategory.entries()).map(async ([categoryId, transactionIds]) => {
+      const [, updatedRows = []] = await updateTransactions({
         values: {
           categoryId,
           categorizationMeta: {
@@ -277,10 +282,14 @@ async function applyCategorizationResults({
         access: 'unscoped-internal',
         balanceAdjustments: 'include',
         where: { ...candidateWhere, id: transactionIds },
-      }),
-    ),
+        returning: ['id'],
+      });
+      return { categoryId, transactionIds: updatedRows.map((row) => row.id) };
+    }),
   );
-}
+
+  await applyCategoryDefaultTagsOnAiCategorization({ userId, assignments });
+});
 
 /**
  * Rows the AI declined get the run's stamp too — with `skipReason` and the category
@@ -541,7 +550,13 @@ export async function categorizeTransactions({
     }
 
     if (batchResult.successful.length > 0) {
-      await applyCategorizationResults({ results: batchResult.successful, candidateWhere, categorizedAt, trigger });
+      await applyCategorizationResults({
+        userId,
+        results: batchResult.successful,
+        candidateWhere,
+        categorizedAt,
+        trigger,
+      });
     }
     if (batchResult.skipped.length > 0) {
       await applySkipStamps({ skips: batchResult.skipped, candidateWhere, categorizedAt, trigger });

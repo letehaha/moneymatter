@@ -22,6 +22,8 @@ const makeCategory = (overrides: Partial<FormattedCategory> & { id: RecordId; na
   parentId: overrides.parentId ?? null,
   type: overrides.type ?? CATEGORY_TYPES.custom,
   userId: 1,
+  defaultTagIds: [],
+  applyDefaultTagsOnAiCategorization: false,
   subCategories: overrides.subCategories ?? [],
 });
 

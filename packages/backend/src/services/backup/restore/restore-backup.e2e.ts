@@ -119,6 +119,12 @@ async function seedRichData() {
   });
 
   const tag = await helpers.createTag({ payload: helpers.buildTagPayload({ name: 'reimbursable' }), raw: true });
+  await helpers.editCustomCategory({
+    categoryId: parentCategory.id,
+    defaultTagIds: [tag.id],
+    applyDefaultTagsOnAiCategorization: true,
+    raw: true,
+  });
 
   const payee = await helpers.createPayee({ payload: helpers.buildPayeePayload({ name: 'Corner Shop' }), raw: true });
   await helpers.createPayeeAlias({ payeeId: payee.id, rawName: 'CORNER SHOP #12', raw: true });
@@ -308,6 +314,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       expect((firstArchive.readData({ name: 'transaction-splits' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'transaction-templates' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'transaction-template-tags' }) as unknown[]).length).toBeGreaterThan(0);
+      expect((firstArchive.readData({ name: 'category-tags' }) as unknown[]).length).toBeGreaterThan(0);
 
       const restore = await helpers.restoreBackup({ fileContent: first.base64 });
       expect(restore.statusCode).toBe(200);
@@ -353,6 +360,11 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       // The non-default setting round-trips through the Zod re-parse.
       const settingsAfter = (secondArchive.readData({ name: 'user-settings' }) as Row[])[0]!;
       expect((settingsAfter.settings as { locale?: string }).locale).toBe('uk');
+
+      const restoredTag = (await helpers.getTags({ raw: true })).find((row) => row.name === 'reimbursable');
+      const restoredCategory = (await helpers.getCategoriesList()).find((row) => row.name === 'Living');
+      expect(restoredCategory!.defaultTagIds).toEqual([restoredTag!.id]);
+      expect(restoredCategory!.applyDefaultTagsOnAiCategorization).toBe(true);
     });
 
     it('keeps merged and removed bank rows in reconciliation history', async () => {
