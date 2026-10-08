@@ -2,7 +2,7 @@
 import { deleteBudget as deleteBudgetApi } from '@/api';
 import { editBudget, loadBudgetById, loadBudgetStats } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { AlertDialog } from '@/components/common';
+import AlertDialog from '@/components/common/alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import ActionButton from '@/components/lib/ui/action-button/action-button.vue';

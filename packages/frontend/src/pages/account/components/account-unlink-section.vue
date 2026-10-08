@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { AlertDialog } from '@/components/common';
-import { InputField } from '@/components/fields';
+import AlertDialog from '@/components/common/alert-dialog.vue';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useAccountsStore } from '@/stores';

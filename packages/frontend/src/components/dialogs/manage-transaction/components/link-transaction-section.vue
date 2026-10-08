@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
-import { FieldLabel } from '@/components/fields';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Button } from '@/components/lib/ui/button';
 import { TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
 import { Link2Icon } from '@lucide/vue';

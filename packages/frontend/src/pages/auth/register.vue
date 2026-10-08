@@ -86,7 +86,7 @@
 
 <script lang="ts" setup>
 import { AuthDivider, GithubIcon, GoogleIcon, OAUTH_PROVIDER_NAMES, OAuthButton } from '@/components/auth';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';

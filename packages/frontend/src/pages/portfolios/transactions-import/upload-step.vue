@@ -2,7 +2,7 @@
 import { estimateInvestmentImportCost, extractInvestmentTransactions } from '@/api/investment-transactions-import';
 import AiEstimatedCost from '@/components/common/ai-estimated-cost.vue';
 import { FileDropzone } from '@/components/common/dropzone';
-import { TextareaField } from '@/components/fields';
+import TextareaField from '@/components/fields/textarea-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent } from '@/components/lib/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/lib/ui/tabs';

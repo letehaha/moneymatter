@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const';
-import { SelectField } from '@/components/fields';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import * as Popover from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';

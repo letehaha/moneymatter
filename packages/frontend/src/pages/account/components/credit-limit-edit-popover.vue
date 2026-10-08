@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import * as Popover from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';

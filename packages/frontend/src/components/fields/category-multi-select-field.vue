@@ -83,7 +83,8 @@
 <script setup lang="ts">
 import { type FormattedCategory } from '@/common/types';
 import { collectDescendantIds } from '@/components/common/combobox-categories.helpers';
-import { FieldError, FieldLabel } from '@/components/fields';
+import FieldError from '@/components/fields/components/field-error.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import CategoryItem from '@/components/fields/category-multi-select-item.vue';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';

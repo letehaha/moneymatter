@@ -8,7 +8,7 @@ import { MultiFileDropzone } from '@/components/common/dropzone';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
-import { FieldLabel } from '@/components/fields';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';

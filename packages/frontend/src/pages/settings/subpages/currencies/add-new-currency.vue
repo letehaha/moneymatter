@@ -33,7 +33,7 @@
 <script setup lang="ts">
 import { addUserCurrencies } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { SelectField } from '@/components/fields';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { useNotificationCenter } from '@/components/notification-center';

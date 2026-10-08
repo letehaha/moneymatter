@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { InputField, SelectField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import type { InvestmentImportTransaction } from '@bt/shared/types/investments';

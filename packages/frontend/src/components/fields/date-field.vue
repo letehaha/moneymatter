@@ -60,7 +60,8 @@
 </template>
 
 <script setup lang="ts">
-import { FieldError, FieldLabel } from '@/components/fields';
+import FieldError from '@/components/fields/components/field-error.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Calendar } from '@/components/lib/ui/calendar';
 import * as Popover from '@/components/lib/ui/popover';

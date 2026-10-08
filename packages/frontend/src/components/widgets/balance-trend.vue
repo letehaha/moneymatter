@@ -180,7 +180,7 @@ import { useAnimatedNumber } from '@/composable/use-animated-number';
 import { currentTheme } from '@/common/utils/color-theme';
 import { calculatePercentageDifference, formatLargeNumber } from '@/js/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { loadCombinedBalanceTrendData } from '@/services';
+import { loadCombinedBalanceTrendData } from '@/services/stats';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { SORT_DIRECTIONS } from '@bt/shared/types/enums';
 import { useQuery } from '@tanstack/vue-query';

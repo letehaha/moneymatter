@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { SelectField } from '@/components/fields';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card } from '@/components/lib/ui/card';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';

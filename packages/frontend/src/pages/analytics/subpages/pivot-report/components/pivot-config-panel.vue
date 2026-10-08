@@ -214,7 +214,7 @@ import ComboboxCategories from '@/components/common/combobox-categories.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import PayeeMultiSelectField from '@/components/fields/payee-multi-select-field.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DateSelector, type DateSelectorPreset } from '@/components/lib/ui/date-selector';
 import { type PillTabItem } from '@/components/lib/ui/pill-tabs';

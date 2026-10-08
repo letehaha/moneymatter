@@ -56,7 +56,8 @@
 </template>
 
 <script setup lang="ts">
-import { FieldError, FieldLabel } from '@/components/fields';
+import FieldError from '@/components/fields/components/field-error.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import MultiSelectTriggerContent from '@/components/fields/multi-select-trigger-content.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';

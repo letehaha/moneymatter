@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { wipeUserData, type WipeDataSharedResources } from '@/api/user';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';

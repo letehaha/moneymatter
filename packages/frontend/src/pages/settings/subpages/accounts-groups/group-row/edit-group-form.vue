@@ -2,7 +2,7 @@
 import { AccountGroups } from '@/common/types/models';
 import { type LogoSelection, logoSelectionKey, toLogoSelection } from '@/components/common/logo-selection';
 import LogoSquareField from '@/components/common/logo-square-field.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useUpdateAccountGroup } from '@/composable/data-queries/account-groups';
 import { FolderIcon, SaveIcon } from '@lucide/vue';

@@ -203,7 +203,7 @@
 
 <script setup lang="ts">
 import { getConnectedApps, getMcpServerUrl, revokeConnectedApp } from '@/api/mcp';
-import { ClickToCopy } from '@/components/common';
+import ClickToCopy from '@/components/common/click-to-copy.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';

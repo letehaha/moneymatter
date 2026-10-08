@@ -2,7 +2,7 @@
 import { acceptShareInvitation, backInviteFromShareInvitation, declineShareInvitation } from '@/api/share';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
-import { SelectField } from '@/components/fields';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ROUTES_NAMES } from '@/routes/constants';

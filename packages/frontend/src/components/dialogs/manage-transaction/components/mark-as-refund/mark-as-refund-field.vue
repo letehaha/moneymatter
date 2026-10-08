@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import type { FormattedCategory } from '@/common/types';
-import { FieldLabel } from '@/components/fields';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { useCategoriesStore } from '@/stores';
 import { TRANSACTION_TYPES, TransactionSplitModel } from '@bt/shared/types';
 import { SplitIcon } from '@lucide/vue';

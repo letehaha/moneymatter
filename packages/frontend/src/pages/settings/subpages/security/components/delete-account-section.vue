@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { deleteUserAccount } from '@/api/user';
-import { ClickToCopy } from '@/components/common';
+import ClickToCopy from '@/components/common/click-to-copy.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ROUTES_NAMES } from '@/routes';

@@ -111,7 +111,7 @@
 
 <script setup lang="ts">
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';

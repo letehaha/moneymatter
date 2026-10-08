@@ -14,7 +14,8 @@ import {
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
-import { InputField, SelectField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
 import { Separator } from '@/components/lib/ui/separator';
