@@ -1,4 +1,4 @@
-import { BACKUP_FILE_NAMES, type BackupFileName, type BackupReferenceFileName } from '@bt/shared/types';
+import type { BackupReferenceFileName } from '@bt/shared/types';
 import { connection } from '@models/index';
 import { Model, type ModelStatic } from 'sequelize';
 
@@ -48,8 +48,8 @@ export type BackupDumpScope =
  */
 export type BackupRestoreMode = 'insert' | 'updateUser' | 'zodSettings' | 'skip';
 
-export interface BackupTableDef {
-  fileName: BackupFileName;
+export interface BackupTableDef<Name extends string = BackupFileName> {
+  fileName: Name;
   model: AnyModel;
   /** Insert order on restore; wipe/delete runs in reverse. */
   tier: number;
@@ -76,7 +76,7 @@ export interface BackupTableDef {
  * restore tier. Money/decimal/JSONB/array columns are all dumped as their exact
  * storage values via `raw: true` — see the export service.
  */
-export const BACKUP_TABLES: readonly BackupTableDef[] = [
+const TABLE_DEFS = [
   // tier 1 — the Users row is updated in place on restore, never inserted.
   {
     fileName: 'user',
@@ -475,7 +475,10 @@ export const BACKUP_TABLES: readonly BackupTableDef[] = [
     scope: { strategy: 'userColumn', column: 'ownerUserId' },
     restoreMode: 'skip',
   },
-];
+] as const satisfies readonly BackupTableDef<string>[];
+
+export type BackupFileName = (typeof TABLE_DEFS)[number]['fileName'];
+export const BACKUP_TABLES: readonly BackupTableDef[] = TABLE_DEFS;
 
 interface BackupReferenceDef {
   fileName: BackupReferenceFileName;
@@ -537,21 +540,6 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
       'Rows point at files in attachment storage, which the backup archive does not carry — restoring rows alone would list attachments that cannot be opened. Attachments are not part of backup/restore.',
   },
 ];
-
-/**
- * Runtime completeness check: a table registered in BACKUP_TABLES without a
- * matching name in the shared `BACKUP_FILE_NAMES` array (or vice versa) throws
- * on module load, before the first backup request. Mirrors the Data Export
- * registry's drift check so the two lists can't diverge silently.
- */
-const registeredNames = new Set(BACKUP_TABLES.map((t) => t.fileName));
-const missing = BACKUP_FILE_NAMES.filter((n) => !registeredNames.has(n));
-const extras = [...registeredNames].filter((n) => !(BACKUP_FILE_NAMES as readonly string[]).includes(n));
-if (missing.length || extras.length) {
-  throw new Error(
-    `BACKUP_TABLES registry drifted from BACKUP_FILE_NAMES – missing: [${missing.join(', ')}], extras: [${extras.join(', ')}]`,
-  );
-}
 
 const unresolved = [...BACKUP_TABLES, ...REFERENCE_TABLES, ...BACKUP_EXCLUDED].filter((t) => !t.model);
 if (unresolved.length) {

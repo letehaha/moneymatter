@@ -15,4 +15,9 @@ describe('backup registry drift guard', () => {
 
     expect(uncovered).toEqual([]);
   });
+
+  it('file names are unique', () => {
+    const names = BACKUP_TABLES.map((t) => t.fileName);
+    expect(new Set(names).size).toBe(names.length);
+  });
 });

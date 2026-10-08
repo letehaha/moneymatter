@@ -2,7 +2,6 @@ import {
   type AutomationAction,
   type AutomationConditionField,
   type AutomationConditions,
-  type BackupFileName,
   type FireSettings,
   getPortfolioIdFromIndicatorId,
   isPortfolioIndicatorId,
@@ -26,6 +25,7 @@ import Transactions from '@models/transactions.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
 import { Model, type ModelStatic, type Transaction } from 'sequelize';
 
+import type { BackupFileName } from '../registry';
 import type { ParsedArchive } from './load-archive';
 
 type AnyModel = ModelStatic<Model>;

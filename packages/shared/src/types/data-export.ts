@@ -14,30 +14,6 @@ export const ALL_EXPORT_GROUPS = ['transactions', 'budgets', 'subscriptions', 'i
 export type ExportGroup = (typeof ALL_EXPORT_GROUPS)[number];
 
 /**
- * Stable filenames the writers produce inside the zip. Frontend tooling
- * (re-zip / unpack helpers, future round-trip importer) and the backend
- * writers both branch on this set, so the literal lives in the shared
- * package as the single source of truth.
- */
-export const EXPORT_FILE_NAMES = [
-  'transactions',
-  'accounts',
-  'balances_history',
-  'categories',
-  'tags',
-  'payees',
-  'vehicles',
-  'budgets',
-  'subscriptions',
-  'transaction_templates',
-  'portfolios',
-  'holdings',
-  'investment_transactions',
-  'portfolio_transfers',
-] as const;
-export type ExportFileName = (typeof EXPORT_FILE_NAMES)[number];
-
-/**
  * Upper bound on combined output rows. Prevents a multi-year power-user from
  * synchronously generating a gigabyte zip on the API thread. The limit is
  * intentionally generous – typical users will fall well under it.
