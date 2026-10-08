@@ -45,38 +45,6 @@ const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): b
   plan.columns.some((c) => c.field === field);
 
 /**
- * Delete any restore-target rows that outlived the shared wipe, so this user's
- * own backup ids are free and the keep-if-free inserts below reuse them instead
- * of reminting. `destroyUserOwnedData` keeps the Users row, so tables whose only
- * owner link is `userId` with an ON DELETE CASCADE to Users (Payees,
- * PayeeIgnoredNames, …) are never reached by that wipe and would collide on their
- * primary keys when re-inserted. Delete every `insert`-mode `userColumn` table
- * for this user in reverse tier order (children before parents); each survivor's
- * `viaParent` children (e.g. PayeeAliases/PayeeTags off Payees) go with it via FK
- * cascade. Most rows are already gone via the wipe + cascades, so these are
- * usually no-ops — the pass exists to guarantee emptiness for the stragglers.
- */
-export async function purgeUserOwnedRestoreTables({
-  userId,
-  transaction,
-}: {
-  userId: number;
-  transaction: Transaction;
-}): Promise<void> {
-  const targets = BACKUP_TABLES.filter(
-    (def): def is BackupTableDef & { scope: { strategy: 'userColumn'; column: 'userId' | 'ownerUserId' } } =>
-      def.restoreMode === 'insert' && def.scope.strategy === 'userColumn',
-  )
-    .toSorted((a, b) => b.tier - a.tier)
-    .map((def) => ({ model: def.model, column: def.scope.column }));
-
-  for (const { model, column } of targets) {
-    // force:true so paranoid models hard-delete instead of leaving soft-deleted rows behind their default scope.
-    await model.destroy({ where: { [column]: userId }, transaction, force: true });
-  }
-}
-
-/**
  * Rewrite one row's remappable columns and decide whether it survives. Returns
  * the overrides to layer onto the insert record, or `null` to drop the row —
  * `null` means only "MCC code missing on this target". The caller tallies the
@@ -171,7 +139,8 @@ async function insertTable({
   const hasStandaloneId = pkAttrs.length === 1 && pkAttrs[0] === 'id';
 
   // Probe which backup ids another row already holds, inside the restore tx.
-  // After the wipe only OTHER users' rows survive, so a hit is a real collision.
+  // After the wipe only other users' rows and this user's rows on their shared
+  // accounts survive, so a hit is a real collision.
   // `paranoid: false` so a soft-deleted row still counts as taken — the primary
   // key ignores `deletedAt`, so keeping its id would collide on insert anyway.
   // Chunked so a table with tens of thousands of rows stays under Postgres's

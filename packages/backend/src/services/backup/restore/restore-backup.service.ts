@@ -15,7 +15,7 @@ import { USER_ROW_GUARDED_FK, foreignReferenceNulledMessage } from './owned-refe
 import { triggerPostRestorePriceSync } from './post-restore-price-sync';
 import { remapFireSettingsIds, remapSavedPivotViewIds } from './remap-embedded-references';
 import { resolveSecurities } from './resolve-securities';
-import { insertRestoreTables, purgeUserOwnedRestoreTables } from './restore-tables';
+import { insertRestoreTables } from './restore-tables';
 
 type Row = Record<string, unknown>;
 type ProgressCallback = (progress: BackupRestoreProgress) => void | Promise<void>;
@@ -172,11 +172,6 @@ export async function restoreUserBackup({
     failureLogMessage: 'Backup restore failed',
     destroyInTx: async ({ user, transaction }) => {
       await destroyUserOwnedData({ user });
-
-      // Clear any user-owned rows the shared wipe leaves behind (it keeps the
-      // Users row, so `userId`-cascade tables like Payees survive) before the
-      // inserts re-add them under their preserved primary keys.
-      await purgeUserOwnedRestoreTables({ userId: user.id, transaction });
 
       const tableResult = await insertRestoreTables({
         archive,
