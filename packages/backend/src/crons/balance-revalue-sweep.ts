@@ -7,7 +7,14 @@ import { writeBankBalanceWithHistory } from '@services/bank-data-providers/utils
 import { withLock } from '@services/common/lock';
 import { QueryTypes } from 'sequelize';
 
-import { createScheduledSync, type SyncResult } from './lib/create-scheduled-sync';
+import { createScheduledSync } from './lib/create-scheduled-sync';
+
+interface SyncResult {
+  totalProcessed: number;
+  successfulUpdates: number;
+  failedUpdates: number;
+  errors: unknown[];
+}
 
 const loadCandidateAccounts = async (): Promise<{ accountId: string; type: ACCOUNT_TYPES }[]> =>
   (await connection.sequelize.query(
@@ -86,7 +93,7 @@ export const runBalanceRevalueSweep = async (): Promise<SyncResult> => {
  * today's row gets valued at yesterday's rate.
  */
 export const balanceRevalueSweepCron = createScheduledSync({
-  name: 'balance revalue',
+  name: 'balance revalue sweep',
   cronExpression: '45 18 * * *',
   timeZone: 'UTC',
   scheduleDescription: 'runs daily at 18:45 UTC',

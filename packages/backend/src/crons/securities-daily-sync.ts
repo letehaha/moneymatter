@@ -11,7 +11,7 @@ import { createScheduledSync } from './lib/create-scheduled-sync';
  *   - Asian markets closed (varies, but generally by 9 AM local time)
  */
 export const securitiesDailySyncCron = createScheduledSync({
-  name: 'securities daily prices',
+  name: 'securities daily prices sync',
   cronExpression: '0 6 * * *',
   timeZone: 'America/New_York',
   scheduleDescription: 'runs every day at 6:00 AM EST',

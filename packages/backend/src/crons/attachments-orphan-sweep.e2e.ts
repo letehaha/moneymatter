@@ -37,7 +37,7 @@ describe('Attachments orphan sweep', () => {
 
     expect((await helpers.deleteTransaction({ id: orphaned.transactionId })).statusCode).toBe(200);
 
-    const result = await attachmentsOrphanSweepCron.triggerManualCheck({ minAgeMs: 0 });
+    const result = await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 });
 
     expect(result).toEqual({ deleted: 1, scanned: 2 });
     expect(await storedIds()).toEqual([live.attachmentId]);
@@ -49,7 +49,7 @@ describe('Attachments orphan sweep', () => {
 
     expect((await helpers.deleteTransaction({ id: orphaned.transactionId })).statusCode).toBe(200);
 
-    const result = await attachmentsOrphanSweepCron.triggerManualCheck();
+    const result = await attachmentsOrphanSweepCron.triggerManualSync();
 
     expect(result).toEqual({ deleted: 0, scanned: 0 });
     expect(await storedIds()).toEqual([orphaned.attachmentId]);
@@ -67,7 +67,7 @@ describe('Attachments orphan sweep', () => {
       });
     }
 
-    await expect(attachmentsOrphanSweepCron.triggerManualCheck({ minAgeMs: 0 })).rejects.toThrow(
+    await expect(attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 })).rejects.toThrow(
       /orphan sweep aborted/i,
     );
 
