@@ -137,11 +137,14 @@ async function expectNumbersDesign({ page, size }: { page: Page; size: 1 | 2 }) 
   const text = await widgetText({ widget });
   expectMonthsIn({ text: text.split(/Time to FIRE/i)[1]!, expected: FIRE_MONTHS });
   expect(text).toContain(monthYear({ months: FIRE_MONTHS, style: 'long' }));
-  const progress = text.match(/(\d+)% · (\$[\d.,]+[kKM]?) of (\$[\d.,]+[kKM]?)/);
+  const progress = text.match(/Progress\s*(\d+)%/i);
   expect(progress, text).not.toBeNull();
   expect(Number(progress![1])).toBe(PROGRESS_PCT);
-  expect(parseCompact({ text: progress![2]! })).toBeCloseTo(BALANCE, -3);
-  expect(parseCompact({ text: progress![3]! })).toBeCloseTo(TARGET, -3);
+  expect(text).not.toMatch(/\d+%\s*·\s*\$/);
+  const saved = text.match(/(\$[\d.,]+[kKM]?) of (\$[\d.,]+[kKM]?)/);
+  expect(saved, text).not.toBeNull();
+  expect(parseCompact({ text: saved![1]! })).toBeCloseTo(BALANCE, -3);
+  expect(parseCompact({ text: saved![2]! })).toBeCloseTo(TARGET, -3);
   const fireNumber = text.match(/FIRE number\s*(\$[\d.,]+[kKM]?) at 4\.0%/);
   expect(fireNumber, text).not.toBeNull();
   expect(parseCompact({ text: fireNumber![1]! })).toBeCloseTo(TARGET, -3);
@@ -490,8 +493,8 @@ test.describe('FIRE progress widget', () => {
       text = await widgetText({ widget });
       expect(text).not.toMatch(/Time to FIRE/i);
       expect(monthsIn({ text: text.split(/Time to Lean FIRE/i)[1]! })).toBe(fromPage.months);
-      expect(Number(text.match(/(\d+)% · \$/)![1])).toBe(pct);
-      expectLeanTarget({ text, pattern: new RegExp(`${pct}% · \\$[\\d.,]+[kKM]? of (\\$[\\d.,]+[kKM]?)`) });
+      expect(Number(text.match(/Progress\s*(\d+)%/i)![1])).toBe(pct);
+      expectLeanTarget({ text, pattern: /\$[\d.,]+[kKM]? of (\$[\d.,]+[kKM]?)/ });
       if (size === '2×1') {
         const chart = squash({
           text: (await widget.getByRole('img', { name: /net worth path/i }).textContent()) ?? '',
