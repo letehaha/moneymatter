@@ -13,14 +13,16 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getLoans);
-router.get('/:id', authenticateSession, getLoanById);
-router.get('/:id/balance-history', authenticateSession, getBalanceHistory);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createLoan);
-router.patch('/:id', authenticateSession, checkBaseCurrencyLock, updateLoan);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteLoan);
-router.post('/:id/events', authenticateSession, checkBaseCurrencyLock, appendNoteEvent);
-router.post('/:id/link-payments', authenticateSession, checkBaseCurrencyLock, linkPayments);
-router.post('/:id/unlink-payment', authenticateSession, checkBaseCurrencyLock, unlinkPayment);
+router.use(authenticateSession);
+
+router.get('/', getLoans);
+router.get('/:id', getLoanById);
+router.get('/:id/balance-history', getBalanceHistory);
+router.post('/', checkBaseCurrencyLock, createLoan);
+router.patch('/:id', checkBaseCurrencyLock, updateLoan);
+router.delete('/:id', checkBaseCurrencyLock, deleteLoan);
+router.post('/:id/events', checkBaseCurrencyLock, appendNoteEvent);
+router.post('/:id/link-payments', checkBaseCurrencyLock, linkPayments);
+router.post('/:id/unlink-payment', checkBaseCurrencyLock, unlinkPayment);
 
 export default router;

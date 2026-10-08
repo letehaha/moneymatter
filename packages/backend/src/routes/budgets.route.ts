@@ -15,23 +15,19 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getBudgets);
-router.get('/:id', authenticateSession, getBudgetById);
-router.get('/:id/stats', authenticateSession, getStats);
-router.get('/:id/spending-stats', authenticateSession, getSpendingStats);
-router.get('/:id/category-transactions', authenticateSession, getCategoryBudgetTransactions);
-router.post('/', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, createBudget);
-router.put('/:id', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, editBudget);
-router.patch('/:id/archive', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, toggleArchive);
-router.delete('/:id', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, deleteBudget);
+router.use(authenticateSession);
 
-router.post('/:id/transactions', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, addTransactionsToBudget);
-router.delete(
-  '/:id/transactions',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  removeTransactionsFromBudget,
-);
+router.get('/', getBudgets);
+router.get('/:id', getBudgetById);
+router.get('/:id/stats', getStats);
+router.get('/:id/spending-stats', getSpendingStats);
+router.get('/:id/category-transactions', getCategoryBudgetTransactions);
+router.post('/', blockDemoUsers, checkBaseCurrencyLock, createBudget);
+router.put('/:id', blockDemoUsers, checkBaseCurrencyLock, editBudget);
+router.patch('/:id/archive', blockDemoUsers, checkBaseCurrencyLock, toggleArchive);
+router.delete('/:id', blockDemoUsers, checkBaseCurrencyLock, deleteBudget);
+
+router.post('/:id/transactions', blockDemoUsers, checkBaseCurrencyLock, addTransactionsToBudget);
+router.delete('/:id/transactions', blockDemoUsers, checkBaseCurrencyLock, removeTransactionsFromBudget);
 
 export default router;

@@ -9,10 +9,12 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getCategories);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createCategory);
-router.put('/:id', authenticateSession, checkBaseCurrencyLock, editCategory);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteCategory);
-router.get('/:id/transaction-count', authenticateSession, getCategoryTransactionCount);
+router.use(authenticateSession);
+
+router.get('/', getCategories);
+router.post('/', checkBaseCurrencyLock, createCategory);
+router.put('/:id', checkBaseCurrencyLock, editCategory);
+router.delete('/:id', checkBaseCurrencyLock, deleteCategory);
+router.get('/:id/transaction-count', getCategoryTransactionCount);
 
 export default router;

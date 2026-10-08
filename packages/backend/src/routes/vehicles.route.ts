@@ -9,10 +9,12 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getVehicles);
-router.get('/:id', authenticateSession, getVehicle);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createVehicle);
-router.patch('/:id', authenticateSession, checkBaseCurrencyLock, updateVehicle);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteVehicle);
+router.use(authenticateSession);
+
+router.get('/', getVehicles);
+router.get('/:id', getVehicle);
+router.post('/', checkBaseCurrencyLock, createVehicle);
+router.patch('/:id', checkBaseCurrencyLock, updateVehicle);
+router.delete('/:id', checkBaseCurrencyLock, deleteVehicle);
 
 export default router;

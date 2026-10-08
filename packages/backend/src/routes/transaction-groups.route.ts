@@ -13,13 +13,15 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getTransactionGroups);
-router.get('/:id', authenticateSession, getTransactionGroupById);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createTransactionGroup);
-router.put('/:id', authenticateSession, checkBaseCurrencyLock, updateTransactionGroup);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteTransactionGroup);
+router.use(authenticateSession);
 
-router.post('/:id/transactions', authenticateSession, checkBaseCurrencyLock, addTransactionsToGroup);
-router.delete('/:id/transactions', authenticateSession, checkBaseCurrencyLock, removeTransactionsFromGroup);
+router.get('/', getTransactionGroups);
+router.get('/:id', getTransactionGroupById);
+router.post('/', checkBaseCurrencyLock, createTransactionGroup);
+router.put('/:id', checkBaseCurrencyLock, updateTransactionGroup);
+router.delete('/:id', checkBaseCurrencyLock, deleteTransactionGroup);
+
+router.post('/:id/transactions', checkBaseCurrencyLock, addTransactionsToGroup);
+router.delete('/:id/transactions', checkBaseCurrencyLock, removeTransactionsFromGroup);
 
 export default router;

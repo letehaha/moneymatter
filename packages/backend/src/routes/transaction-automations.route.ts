@@ -11,16 +11,18 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, listAutomations);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createAutomation);
+router.use(authenticateSession);
+
+router.get('/', listAutomations);
+router.post('/', checkBaseCurrencyLock, createAutomation);
 
 // Static paths before `/:id` so a literal segment is never read as an id.
-router.put('/reorder', authenticateSession, checkBaseCurrencyLock, reorderAutomations);
-router.post('/preview', authenticateSession, checkBaseCurrencyLock, previewAutomation);
+router.put('/reorder', checkBaseCurrencyLock, reorderAutomations);
+router.post('/preview', checkBaseCurrencyLock, previewAutomation);
 
-router.post('/:id/apply', authenticateSession, checkBaseCurrencyLock, applyAutomationToHistory);
+router.post('/:id/apply', checkBaseCurrencyLock, applyAutomationToHistory);
 
-router.patch('/:id', authenticateSession, checkBaseCurrencyLock, updateAutomation);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteAutomation);
+router.patch('/:id', checkBaseCurrencyLock, updateAutomation);
+router.delete('/:id', checkBaseCurrencyLock, deleteAutomation);
 
 export default router;

@@ -28,15 +28,16 @@ import express from 'express';
 
 const router = express.Router();
 
+router.use(authenticateSession);
+
 // Provider discovery
-router.get('/', authenticateSession, providersController.listProviders);
+router.get('/', providersController.listProviders);
 
 // Connection management
-router.get('/connections', authenticateSession, listUserConnections);
-router.get('/connections/:connectionId', authenticateSession, getConnectionDetails);
+router.get('/connections', listUserConnections);
+router.get('/connections/:connectionId', getConnectionDetails);
 router.post(
   '/:providerType/connect',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -44,7 +45,6 @@ router.post(
 );
 router.delete(
   '/connections/:connectionId',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -52,7 +52,6 @@ router.delete(
 );
 router.post(
   '/connections/:connectionId/reauthorize',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -60,7 +59,6 @@ router.post(
 );
 router.patch(
   '/connections/:connectionId',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -70,14 +68,12 @@ router.patch(
 // Account sync flow
 router.get(
   '/connections/:connectionId/available-accounts',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   listExternalAccounts,
 );
 router.post(
   '/connections/:connectionId/sync-selected-accounts',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -87,7 +83,6 @@ router.post(
 // Transactions sync
 router.post(
   '/connections/:connectionId/sync-transactions',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -95,7 +90,6 @@ router.post(
 );
 router.post(
   '/connections/:connectionId/sync',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -103,7 +97,6 @@ router.post(
 );
 router.post(
   '/connections/:connectionId/reconcile-duplicates',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -111,31 +104,28 @@ router.post(
 );
 router.post(
   '/connections/:connectionId/load-transactions-for-period',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
   loadTransactionsForPeriod,
 );
-router.get('/connections/:connectionId/sync-job-progress', authenticateSession, getSyncJobProgress);
-router.get('/active-sync-jobs', authenticateSession, listActiveSyncJobs);
+router.get('/connections/:connectionId/sync-job-progress', getSyncJobProgress);
+router.get('/active-sync-jobs', listActiveSyncJobs);
 
 // Bulk account sync endpoints
-router.get('/sync/check', authenticateSession, requireFeature(FEATURES.bank_providers), blockDemoUsers, checkSync);
+router.get('/sync/check', requireFeature(FEATURES.bank_providers), blockDemoUsers, checkSync);
 router.post(
   '/sync/trigger',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
   triggerSync,
 );
-router.get('/sync/status', authenticateSession, blockDemoUsers, getSyncStatus);
+router.get('/sync/status', blockDemoUsers, getSyncStatus);
 
 // Enable Banking specific endpoints
 router.post(
   '/enablebanking/countries',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -143,7 +133,6 @@ router.post(
 );
 router.post(
   '/enablebanking/banks',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
@@ -151,7 +140,6 @@ router.post(
 );
 router.post(
   '/enablebanking/oauth-callback',
-  authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,

@@ -19,58 +19,38 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.post(
-  '/invitations',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  shareInvitationSendRateLimit,
-  createInvitation,
-);
-router.get('/invitations/sent', authenticateSession, listSentInvitations);
-router.get('/invitations/received', authenticateSession, listReceivedInvitations);
-router.post('/invitations/:token/accept', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, acceptInvitation);
-router.post(
-  '/invitations/:token/decline',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  declineInvitation,
-);
-router.post('/invitations/:id/resend', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, resendInvitation);
-router.delete('/invitations/:id', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, cancelInvitation);
+router.use(authenticateSession);
+
+router.post('/invitations', blockDemoUsers, checkBaseCurrencyLock, shareInvitationSendRateLimit, createInvitation);
+router.get('/invitations/sent', listSentInvitations);
+router.get('/invitations/received', listReceivedInvitations);
+router.post('/invitations/:token/accept', blockDemoUsers, checkBaseCurrencyLock, acceptInvitation);
+router.post('/invitations/:token/decline', blockDemoUsers, checkBaseCurrencyLock, declineInvitation);
+router.post('/invitations/:id/resend', blockDemoUsers, checkBaseCurrencyLock, resendInvitation);
+router.delete('/invitations/:id', blockDemoUsers, checkBaseCurrencyLock, cancelInvitation);
 router.post(
   '/invitations/:id/back-invite',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
   shareInvitationSendRateLimit,
   backInviteFromInvitation,
 );
 
-router.get('/resources/:resourceType/:resourceId/members', authenticateSession, listMembers);
+router.get('/resources/:resourceType/:resourceId/members', listMembers);
 router.patch(
   '/resources/:resourceType/:resourceId/members/:userId',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
   updateMember,
 );
 router.delete(
   '/resources/:resourceType/:resourceId/members/:userId',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
   revokeMember,
 );
 
-router.get('/shared-with-me', authenticateSession, listSharedWithMe);
-router.post(
-  '/shared-with-me/:resourceType/:resourceId/leave',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  leaveShare,
-);
+router.get('/shared-with-me', listSharedWithMe);
+router.post('/shared-with-me/:resourceType/:resourceId/leave', blockDemoUsers, checkBaseCurrencyLock, leaveShare);
 
 export default router;

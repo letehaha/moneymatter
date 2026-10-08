@@ -15,14 +15,16 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getAccounts);
-router.get('/:id', authenticateSession, getAccountById);
-router.get('/:id/transaction-count', authenticateSession, getAccountTransactionCount);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createAccount);
-router.put('/:id', authenticateSession, checkBaseCurrencyLock, updateAccount);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteAccount);
-router.post('/:id/unlink', authenticateSession, checkBaseCurrencyLock, unlinkAccountFromBankConnection);
-router.post('/:id/link', authenticateSession, checkBaseCurrencyLock, linkAccountToBankConnection);
-router.post('/:id/balance-adjustment', authenticateSession, checkBaseCurrencyLock, balanceAdjustment);
+router.use(authenticateSession);
+
+router.get('/', getAccounts);
+router.get('/:id', getAccountById);
+router.get('/:id/transaction-count', getAccountTransactionCount);
+router.post('/', checkBaseCurrencyLock, createAccount);
+router.put('/:id', checkBaseCurrencyLock, updateAccount);
+router.delete('/:id', checkBaseCurrencyLock, deleteAccount);
+router.post('/:id/unlink', checkBaseCurrencyLock, unlinkAccountFromBankConnection);
+router.post('/:id/link', checkBaseCurrencyLock, linkAccountToBankConnection);
+router.post('/:id/balance-adjustment', checkBaseCurrencyLock, balanceAdjustment);
 
 export default router;

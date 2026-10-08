@@ -13,25 +13,27 @@ import { Router } from 'express';
 
 const router = Router({});
 
+router.use(authenticateSession);
+
 // Get all notifications for the authenticated user
-router.get('/', authenticateSession, getNotifications);
+router.get('/', getNotifications);
 
 // Get unread count
-router.get('/unread-count', authenticateSession, getUnreadCount);
+router.get('/unread-count', getUnreadCount);
 
 // Get a specific notification
-router.get('/:id', authenticateSession, getNotificationById);
+router.get('/:id', getNotificationById);
 
 // Create a notification (primarily for internal/admin use, but exposed for testing)
-router.post('/', authenticateSession, checkBaseCurrencyLock, createNotification);
+router.post('/', checkBaseCurrencyLock, createNotification);
 
 // Mark a specific notification as read
-router.post('/:id/read', authenticateSession, markAsRead);
+router.post('/:id/read', markAsRead);
 
 // Mark all notifications as read
-router.post('/read-all', authenticateSession, markAllAsRead);
+router.post('/read-all', markAllAsRead);
 
 // Dismiss a notification
-router.post('/:id/dismiss', authenticateSession, checkBaseCurrencyLock, dismissNotification);
+router.post('/:id/dismiss', checkBaseCurrencyLock, dismissNotification);
 
 export default router;

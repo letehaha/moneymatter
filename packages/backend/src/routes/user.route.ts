@@ -65,28 +65,17 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getUser);
-router.post('/feature-trials/:feature', authenticateSession, startFeatureTrial);
-router.put('/update', authenticateSession, updateUser);
-router.delete('/delete', authenticateSession, checkBaseCurrencyLock, deleteUser);
-router.post('/wipe-data', authenticateSession, checkBaseCurrencyLock, wipeUserData);
-router.post(
-  '/data-export',
-  authenticateSession,
-  requireFeature(FEATURES.data_export),
-  dataExportRateLimit,
-  exportDataController,
-);
-router.post(
-  '/backup',
-  authenticateSession,
-  requireFeature(FEATURES.backup_export),
-  backupRateLimit,
-  exportBackupController,
-);
+router.use(authenticateSession);
+
+router.get('/', getUser);
+router.post('/feature-trials/:feature', startFeatureTrial);
+router.put('/update', updateUser);
+router.delete('/delete', checkBaseCurrencyLock, deleteUser);
+router.post('/wipe-data', checkBaseCurrencyLock, wipeUserData);
+router.post('/data-export', requireFeature(FEATURES.data_export), dataExportRateLimit, exportDataController);
+router.post('/backup', requireFeature(FEATURES.backup_export), backupRateLimit, exportBackupController);
 router.post(
   '/backup/restore',
-  authenticateSession,
   requireFeature(FEATURES.backup_restore),
   // Guard the most destructive write like every other mutating route: 423 while a
   // base-currency migration (or an in-flight restore, which takes the same lock) runs.
@@ -94,74 +83,68 @@ router.post(
   backupRestoreRateLimit,
   restoreBackupController,
 );
-router.get('/backup/restore/status', authenticateSession, activeRestoreStatusController);
-router.get('/backup/restore/status/:jobId', authenticateSession, restoreStatusController);
+router.get('/backup/restore/status', activeRestoreStatusController);
+router.get('/backup/restore/status/:jobId', restoreStatusController);
 
-router.get('/currencies', authenticateSession, getUserCurrencies);
-router.get('/currencies/base', authenticateSession, getUserBaseCurrency);
-router.get('/currencies/rates', authenticateSession, getCurrenciesExchangeRates);
+router.get('/currencies', getUserCurrencies);
+router.get('/currencies/base', getUserBaseCurrency);
+router.get('/currencies/rates', getCurrenciesExchangeRates);
 
-router.post('/currencies', authenticateSession, checkBaseCurrencyLock, addUserCurrencies);
-router.post('/currencies/base', authenticateSession, checkBaseCurrencyLock, setBaseUserCurrency);
+router.post('/currencies', checkBaseCurrencyLock, addUserCurrencies);
+router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,
 // so guarding it here would reject the request that is supposed to start the change.
-router.post('/currencies/change-base', authenticateSession, changeBaseCurrency);
+router.post('/currencies/change-base', changeBaseCurrency);
 // Read-only status any device polls to drive the blocking overlay; GET routes are
 // never lock-guarded.
-router.get('/currencies/change-base/status', authenticateSession, changeBaseCurrencyStatus);
+router.get('/currencies/change-base/status', changeBaseCurrencyStatus);
 
-router.put('/currency', authenticateSession, checkBaseCurrencyLock, editUserCurrency);
-router.put('/currency/rates', authenticateSession, checkBaseCurrencyLock, editCurrencyExchangeRate);
+router.put('/currency', checkBaseCurrencyLock, editUserCurrency);
+router.put('/currency/rates', checkBaseCurrencyLock, editCurrencyExchangeRate);
 
-router.delete('/currency', authenticateSession, checkBaseCurrencyLock, deleteUserCurrency);
-router.delete('/currency/rates', authenticateSession, checkBaseCurrencyLock, removeUserCurrencyExchangeRate);
+router.delete('/currency', checkBaseCurrencyLock, deleteUserCurrency);
+router.delete('/currency/rates', checkBaseCurrencyLock, removeUserCurrencyExchangeRate);
 
-router.get('/settings', authenticateSession, getUserSettings);
-router.put('/settings', authenticateSession, updateUserSettings);
-router.patch('/settings', authenticateSession, requireFireSettingsAccess, patchUserSettings);
+router.get('/settings', getUserSettings);
+router.put('/settings', updateUserSettings);
+router.patch('/settings', requireFireSettingsAccess, patchUserSettings);
 
 // Onboarding (Quick Start)
-router.get('/settings/onboarding', authenticateSession, getOnboarding);
-router.put('/settings/onboarding', authenticateSession, updateOnboarding);
+router.get('/settings/onboarding', getOnboarding);
+router.put('/settings/onboarding', updateOnboarding);
 
 // AI connections (the user's own models)
-router.get('/settings/ai/connections', authenticateSession, getConnectionsController);
-router.post('/settings/ai/connections', authenticateSession, aiConnectionProbeRateLimit, createConnectionController);
-router.post('/settings/ai/connections/test', authenticateSession, aiConnectionProbeRateLimit, testConnectionController);
-router.post(
-  '/settings/ai/connections/models',
-  authenticateSession,
-  aiConnectionModelsRateLimit,
-  listConnectionModelsController,
-);
-router.put('/settings/ai/connections/:id', authenticateSession, aiConnectionProbeRateLimit, updateConnectionController);
-router.delete('/settings/ai/connections/:id', authenticateSession, deleteConnectionController);
-router.post('/settings/ai/connections/:id/default', authenticateSession, setDefaultConnectionController);
+router.get('/settings/ai/connections', getConnectionsController);
+router.post('/settings/ai/connections', aiConnectionProbeRateLimit, createConnectionController);
+router.post('/settings/ai/connections/test', aiConnectionProbeRateLimit, testConnectionController);
+router.post('/settings/ai/connections/models', aiConnectionModelsRateLimit, listConnectionModelsController);
+router.put('/settings/ai/connections/:id', aiConnectionProbeRateLimit, updateConnectionController);
+router.delete('/settings/ai/connections/:id', deleteConnectionController);
+router.post('/settings/ai/connections/:id/default', setDefaultConnectionController);
 
 // AI Feature configuration
-router.get('/settings/ai/features', authenticateSession, getFeaturesStatus);
-router.get('/settings/ai/features/:feature', authenticateSession, getFeatureConfigController);
-router.put('/settings/ai/features/:feature', authenticateSession, setFeatureConfigController);
-router.delete('/settings/ai/features/:feature', authenticateSession, resetFeatureConfigController);
+router.get('/settings/ai/features', getFeaturesStatus);
+router.get('/settings/ai/features/:feature', getFeatureConfigController);
+router.put('/settings/ai/features/:feature', setFeatureConfigController);
+router.delete('/settings/ai/features/:feature', resetFeatureConfigController);
 
 // AI Custom Instructions
-router.get('/settings/ai/custom-instructions', authenticateSession, getCustomInstructionsController);
-router.put('/settings/ai/custom-instructions', authenticateSession, setCustomInstructionsController);
+router.get('/settings/ai/custom-instructions', getCustomInstructionsController);
+router.put('/settings/ai/custom-instructions', setCustomInstructionsController);
 
 // AI Categorization
-router.get('/ai/categorization/status', authenticateSession, categorizationStatusController);
-router.get('/ai/categorization/candidates', authenticateSession, categorizationCandidatesController);
-router.get('/ai/categorization/history', authenticateSession, categorizationHistoryController);
+router.get('/ai/categorization/status', categorizationStatusController);
+router.get('/ai/categorization/candidates', categorizationCandidatesController);
+router.get('/ai/categorization/history', categorizationHistoryController);
 router.post(
   '/ai/categorization/trigger',
-  authenticateSession,
   // Demo users would fall back to the operator's server-side AI key.
   blockDemoUsers,
   triggerCategorizationController,
 );
 
 // MCP Connected Apps
-router.get('/settings/mcp/connected-apps', authenticateSession, getConnectedAppsController);
-router.delete('/settings/mcp/connected-apps/:clientId', authenticateSession, revokeConnectedAppController);
+router.get('/settings/mcp/connected-apps', getConnectedAppsController);
+router.delete('/settings/mcp/connected-apps/:clientId', revokeConnectedAppController);
 
 export default router;

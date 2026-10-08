@@ -10,9 +10,11 @@ import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, getTransactionTemplates);
-router.post('/', authenticateSession, checkBaseCurrencyLock, createTransactionTemplate);
-router.put('/:id', authenticateSession, checkBaseCurrencyLock, updateTransactionTemplate);
-router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteTransactionTemplate);
+router.use(authenticateSession);
+
+router.get('/', getTransactionTemplates);
+router.post('/', checkBaseCurrencyLock, createTransactionTemplate);
+router.put('/:id', checkBaseCurrencyLock, updateTransactionTemplate);
+router.delete('/:id', checkBaseCurrencyLock, deleteTransactionTemplate);
 
 export default router;
