@@ -223,8 +223,7 @@
     "accountIdNotFound": "Рахунок {{accountId}} не знайдено",
     "providerTypeMismatch": "Підключення {{connectionId}} призначене для провайдера {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} вже зареєстрований. Не можна реєструвати дублікати провайдерів.",
-    "providerNotRegistered": "Провайдер {{providerType}} не зареєстрований. Доступні провайдери: {{available}}",
-    "missingRequiredProviders": "Відсутні необхідні банківські провайдери: {{missing}}. Переконайтеся, що ці провайдери зареєстровані при запуску програми."
+    "providerNotRegistered": "Провайдер {{providerType}} не зареєстрований. Доступні провайдери: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" є неправильною датою."

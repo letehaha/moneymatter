@@ -3,8 +3,6 @@
  *
  * Custom exchange rate service with ECB and NBU data sources.
  * Provides comprehensive currency coverage with historical data from 1999.
- *
- * Priority: 1 (highest - try first)
  */
 import axios from 'axios';
 import { subDays } from 'date-fns';
@@ -119,7 +117,6 @@ export class CurrencyRatesApiProvider extends BaseExchangeRateProvider {
     type: EXCHANGE_RATE_PROVIDER_TYPE.CURRENCY_RATES_API,
     name: 'Currency Rates API',
     description: 'Custom exchange rate service with ECB and NBU data sources',
-    priority: 1, // Highest priority
     supportedCurrencies: CURRENCY_RATES_API_SUPPORTED_CURRENCIES,
     minHistoricalDate: '1999-01-04',
     supportsHistoricalDataLoading: true,
