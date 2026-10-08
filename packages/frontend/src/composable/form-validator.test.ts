@@ -1,4 +1,5 @@
-import { email } from '@/js/helpers/validators';
+import { i18n, loadChunks } from '@/i18n';
+import { email, required } from '@/js/helpers/validators';
 import { computed, ref } from 'vue';
 
 import { useFormValidation } from './form-validator';
@@ -172,6 +173,28 @@ describe('useFormValidation', () => {
       touchField('form.email');
 
       expect(getFieldErrorMessage('form.email')).toBe(randomRuleMessage);
+    });
+    describe('generic messages', () => {
+      afterEach(() => {
+        i18n.global.locale.value = 'en';
+      });
+
+      it('returns the generic `required` message in the active locale', async () => {
+        const form = ref({ name: '' });
+        const { getFieldErrorMessage, touchField } = useFormValidation({ form }, { form: { name: { required } } });
+
+        touchField('form.name');
+
+        const englishMessage = getFieldErrorMessage('form.name');
+        expect(englishMessage).toBe('Field is required');
+
+        await loadChunks({ locale: 'uk', chunks: ['common'] });
+        i18n.global.locale.value = 'uk';
+
+        const ukrainianMessage = getFieldErrorMessage('form.name');
+        expect(ukrainianMessage).toBe(i18n.global.t('validation.required'));
+        expect(ukrainianMessage).not.toBe(englishMessage);
+      });
     });
   });
 });
