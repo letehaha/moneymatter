@@ -11,74 +11,27 @@ import toggleArchive from '@controllers/budgets/toggle-archive';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getBudgets.schema), getBudgets.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getBudgetById.schema), getBudgetById.handler);
-router.get('/:id/stats', authenticateSession, validateEndpoint(getStats.schema), getStats.handler);
-router.get(
-  '/:id/spending-stats',
-  authenticateSession,
-  validateEndpoint(getSpendingStats.schema),
-  getSpendingStats.handler,
-);
-router.get(
-  '/:id/category-transactions',
-  authenticateSession,
-  validateEndpoint(getCategoryBudgetTransactions.schema),
-  getCategoryBudgetTransactions.handler,
-);
-router.post(
-  '/',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(createBudget.schema),
-  createBudget.handler,
-);
-router.put(
-  '/:id',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(editBudget.schema),
-  editBudget.handler,
-);
-router.patch(
-  '/:id/archive',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(toggleArchive.schema),
-  toggleArchive.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteBudget.schema),
-  deleteBudget.handler,
-);
+router.get('/', authenticateSession, getBudgets);
+router.get('/:id', authenticateSession, getBudgetById);
+router.get('/:id/stats', authenticateSession, getStats);
+router.get('/:id/spending-stats', authenticateSession, getSpendingStats);
+router.get('/:id/category-transactions', authenticateSession, getCategoryBudgetTransactions);
+router.post('/', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, createBudget);
+router.put('/:id', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, editBudget);
+router.patch('/:id/archive', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, toggleArchive);
+router.delete('/:id', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, deleteBudget);
 
-router.post(
-  '/:id/transactions',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(addTransactionsToBudget.schema),
-  addTransactionsToBudget.handler,
-);
+router.post('/:id/transactions', authenticateSession, blockDemoUsers, checkBaseCurrencyLock, addTransactionsToBudget);
 router.delete(
   '/:id/transactions',
   authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(removeTransactionsFromBudget.schema),
-  removeTransactionsFromBudget.handler,
+  removeTransactionsFromBudget,
 );
 
 export default router;

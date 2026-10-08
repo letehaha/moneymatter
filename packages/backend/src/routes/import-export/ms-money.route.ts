@@ -6,7 +6,6 @@ import { uploadMsMoneyController } from '@controllers/import-export/ms-money/upl
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { csvImportRateLimit, msMoneyUploadRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import express, { Router } from 'express';
 
 import { MS_MONEY_ROUTE_PATHS } from './ms-money-paths';
@@ -23,8 +22,7 @@ router.post(
   checkBaseCurrencyLock,
   msMoneyUploadRateLimit,
   express.raw({ type: 'application/octet-stream', limit: MS_MONEY_MAX_FILE_BYTES }),
-  validateEndpoint(uploadMsMoneyController.schema),
-  uploadMsMoneyController.handler,
+  uploadMsMoneyController,
 );
 
 // Every step after the upload sends the upload id instead of the file, so these
@@ -34,8 +32,7 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(detectMsMoneyDuplicatesController.schema),
-  detectMsMoneyDuplicatesController.handler,
+  detectMsMoneyDuplicatesController,
 );
 
 router.post(
@@ -43,17 +40,11 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(executeMsMoneyController.schema),
-  executeMsMoneyController.handler,
+  executeMsMoneyController,
 );
 
 // No rate limit: the client polls this while an import runs, as the fallback for
 // a dropped SSE connection.
-router.get(
-  MS_MONEY_ROUTE_PATHS.status,
-  authenticateSession,
-  validateEndpoint(msMoneyStatusController.schema),
-  msMoneyStatusController.handler,
-);
+router.get(MS_MONEY_ROUTE_PATHS.status, authenticateSession, msMoneyStatusController);
 
 export default router;

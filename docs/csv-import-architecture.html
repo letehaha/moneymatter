@@ -874,9 +874,9 @@ import-export/
           </tbody>
         </table>
         <p>
-          All execute/parse routes carry <code>authenticateSession</code> + a rate limiter +
-          <code>validateEndpoint</code>; the status routes carry auth + validation but <strong>no</strong> rate limiter
-          (the frontend polls them every ~2&nbsp;s).
+          All execute/parse routes carry <code>authenticateSession</code> + a rate limiter + schema validation (built
+          into <code>createController</code>); the status routes carry auth + validation but <strong>no</strong> rate
+          limiter (the frontend polls them every ~2&nbsp;s).
         </p>
         <p>
           The <em>parse</em> and <em>status</em> controllers are identical boilerplate across providers, so they are

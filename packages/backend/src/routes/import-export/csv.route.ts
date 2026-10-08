@@ -6,20 +6,12 @@ import { parseCsv } from '@controllers/import-export/parse-csv.controller';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { csvImportRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
 // Parse CSV file and return preview
-router.post(
-  '/csv/parse',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  csvImportRateLimit,
-  validateEndpoint(parseCsv.schema),
-  parseCsv.handler,
-);
+router.post('/csv/parse', authenticateSession, checkBaseCurrencyLock, csvImportRateLimit, parseCsv);
 
 // Extract unique accounts/categories from full dataset
 router.post(
@@ -27,8 +19,7 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(extractUniqueValuesController.schema),
-  extractUniqueValuesController.handler,
+  extractUniqueValuesController,
 );
 
 // Validate and detect duplicate transactions
@@ -37,29 +28,16 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(detectDuplicatesController.schema),
-  detectDuplicatesController.handler,
+  detectDuplicatesController,
 );
 
 // Execute the import. Enqueues a background job and returns its id; progress is
 // fanned out over SSE (`CSV_IMPORT_PROGRESS`) and pollable via the status route.
-router.post(
-  '/csv/execute',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  csvImportRateLimit,
-  validateEndpoint(executeImportController.schema),
-  executeImportController.handler,
-);
+router.post('/csv/execute', authenticateSession, checkBaseCurrencyLock, csvImportRateLimit, executeImportController);
 
 // Fallback polling path for an enqueued import. No rate limiter here: the
 // frontend polls this every ~2s while an import runs, which the execute-tuned
 // `csvImportRateLimit` would quickly reject.
-router.get(
-  '/csv/execute/status/:jobId',
-  authenticateSession,
-  validateEndpoint(csvStatusController.schema),
-  csvStatusController.handler,
-);
+router.get('/csv/execute/status/:jobId', authenticateSession, csvStatusController);
 
 export default router;

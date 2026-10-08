@@ -9,54 +9,18 @@ import unlinkPayment from '@controllers/loans/unlink-payment';
 import updateLoan from '@controllers/loans/update-loan';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getLoans.schema), getLoans.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getLoanById.schema), getLoanById.handler);
-router.get(
-  '/:id/balance-history',
-  authenticateSession,
-  validateEndpoint(getBalanceHistory.schema),
-  getBalanceHistory.handler,
-);
-router.post('/', authenticateSession, checkBaseCurrencyLock, validateEndpoint(createLoan.schema), createLoan.handler);
-router.patch(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateLoan.schema),
-  updateLoan.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteLoan.schema),
-  deleteLoan.handler,
-);
-router.post(
-  '/:id/events',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(appendNoteEvent.schema),
-  appendNoteEvent.handler,
-);
-router.post(
-  '/:id/link-payments',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(linkPayments.schema),
-  linkPayments.handler,
-);
-router.post(
-  '/:id/unlink-payment',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkPayment.schema),
-  unlinkPayment.handler,
-);
+router.get('/', authenticateSession, getLoans);
+router.get('/:id', authenticateSession, getLoanById);
+router.get('/:id/balance-history', authenticateSession, getBalanceHistory);
+router.post('/', authenticateSession, checkBaseCurrencyLock, createLoan);
+router.patch('/:id', authenticateSession, checkBaseCurrencyLock, updateLoan);
+router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteLoan);
+router.post('/:id/events', authenticateSession, checkBaseCurrencyLock, appendNoteEvent);
+router.post('/:id/link-payments', authenticateSession, checkBaseCurrencyLock, linkPayments);
+router.post('/:id/unlink-payment', authenticateSession, checkBaseCurrencyLock, unlinkPayment);
 
 export default router;

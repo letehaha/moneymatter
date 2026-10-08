@@ -151,7 +151,7 @@ expect(res.statusCode).toBe(404);
 - `200` — success
 - `404` — not found
 - `409` — conflict (e.g., duplicate link)
-- **`422`** — Zod validation errors (invalid params, query, body). **NOT `400`** — the `validateEndpoint` middleware returns `422 Unprocessable Entity` for schema validation failures.
+- **`422`** — Zod validation errors (invalid params, query, body). **NOT `400`** — `createController` validates the request and returns `422 Unprocessable Entity` for schema validation failures.
 
 ### Money amounts
 
@@ -267,5 +267,5 @@ Solution: Verify migrations are up to date. The test setup should handle this au
 
 ### Unexpected 422 instead of 400
 
-Cause: The `validateEndpoint` middleware returns 422 for Zod validation failures, not 400
+Cause: `createController` returns 422 for Zod validation failures, not 400
 Solution: Always expect `422` for schema validation errors. Use `400` only for custom validation in service logic.

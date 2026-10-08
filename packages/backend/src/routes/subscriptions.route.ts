@@ -21,134 +21,40 @@ import unlinkTransactions from '@controllers/subscriptions/unlink-transactions';
 import updateSubscription from '@controllers/subscriptions/update-subscription';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getSubscriptions.schema), getSubscriptions.handler);
-router.get(
-  '/summary',
-  authenticateSession,
-  validateEndpoint(getSubscriptionsSummary.schema),
-  getSubscriptionsSummary.handler,
-);
-router.get('/upcoming', authenticateSession, validateEndpoint(getUpcomingPayments.schema), getUpcomingPayments.handler);
+router.get('/', authenticateSession, getSubscriptions);
+router.get('/summary', authenticateSession, getSubscriptionsSummary);
+router.get('/upcoming', authenticateSession, getUpcomingPayments);
 
 // Subscription candidate detection routes (must be before /:id)
-router.get(
-  '/detect-candidates',
-  authenticateSession,
-  validateEndpoint(detectCandidates.schema),
-  detectCandidates.handler,
-);
-router.get('/candidates', authenticateSession, validateEndpoint(getCandidates.schema), getCandidates.handler);
-router.post(
-  '/candidates/:id/accept',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(acceptCandidate.schema),
-  acceptCandidate.handler,
-);
-router.post(
-  '/candidates/:id/dismiss',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(dismissCandidate.schema),
-  dismissCandidate.handler,
-);
-router.get('/:id', authenticateSession, validateEndpoint(getSubscriptionById.schema), getSubscriptionById.handler);
+router.get('/detect-candidates', authenticateSession, detectCandidates);
+router.get('/candidates', authenticateSession, getCandidates);
+router.post('/candidates/:id/accept', authenticateSession, checkBaseCurrencyLock, acceptCandidate);
+router.post('/candidates/:id/dismiss', authenticateSession, checkBaseCurrencyLock, dismissCandidate);
+router.get('/:id', authenticateSession, getSubscriptionById);
 
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createSubscription.schema),
-  createSubscription.handler,
-);
-router.put(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateSubscription.schema),
-  updateSubscription.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteSubscription.schema),
-  deleteSubscription.handler,
-);
+router.post('/', authenticateSession, checkBaseCurrencyLock, createSubscription);
+router.put('/:id', authenticateSession, checkBaseCurrencyLock, updateSubscription);
+router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteSubscription);
 
-router.patch(
-  '/:id/toggle-active',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(toggleActive.schema),
-  toggleActive.handler,
-);
+router.patch('/:id/toggle-active', authenticateSession, checkBaseCurrencyLock, toggleActive);
 
-router.post(
-  '/:id/reset-logo',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(resetLogo.schema),
-  resetLogo.handler,
-);
+router.post('/:id/reset-logo', authenticateSession, checkBaseCurrencyLock, resetLogo);
 
-router.post(
-  '/:id/transactions',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(linkTransactions.schema),
-  linkTransactions.handler,
-);
-router.delete(
-  '/:id/transactions',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkTransactions.schema),
-  unlinkTransactions.handler,
-);
+router.post('/:id/transactions', authenticateSession, checkBaseCurrencyLock, linkTransactions);
+router.delete('/:id/transactions', authenticateSession, checkBaseCurrencyLock, unlinkTransactions);
 
-router.get(
-  '/:id/suggest-matches',
-  authenticateSession,
-  validateEndpoint(suggestMatches.schema),
-  suggestMatches.handler,
-);
+router.get('/:id/suggest-matches', authenticateSession, suggestMatches);
 
 // Period payment routes
-router.get('/:id/pay-preview', authenticateSession, validateEndpoint(getPayPreview.schema), getPayPreview.handler);
-router.get('/:id/periods', authenticateSession, validateEndpoint(getPeriods.schema), getPeriods.handler);
-router.post(
-  '/:id/periods/:periodId/pay',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(markPeriodPaid.schema),
-  markPeriodPaid.handler,
-);
-router.post(
-  '/:id/periods/:periodId/skip',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(skipPeriod.schema),
-  skipPeriod.handler,
-);
-router.post(
-  '/:id/periods/:periodId/unlink',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkPeriodTransaction.schema),
-  unlinkPeriodTransaction.handler,
-);
-router.post(
-  '/:id/periods/:periodId/revert',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(revertPeriod.schema),
-  revertPeriod.handler,
-);
+router.get('/:id/pay-preview', authenticateSession, getPayPreview);
+router.get('/:id/periods', authenticateSession, getPeriods);
+router.post('/:id/periods/:periodId/pay', authenticateSession, checkBaseCurrencyLock, markPeriodPaid);
+router.post('/:id/periods/:periodId/skip', authenticateSession, checkBaseCurrencyLock, skipPeriod);
+router.post('/:id/periods/:periodId/unlink', authenticateSession, checkBaseCurrencyLock, unlinkPeriodTransaction);
+router.post('/:id/periods/:periodId/revert', authenticateSession, checkBaseCurrencyLock, revertPeriod);
 
 export default router;

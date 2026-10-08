@@ -32,12 +32,11 @@ Defined in `packages/backend/tsconfig.json`:
 ```typescript
 import { Router } from 'express';
 import { authenticateSession } from '@middlewares/better-auth';
-import { validateEndpoint } from '@middlewares/validations';
 import featureController from '@controllers/feature.controller';
 
 const router = Router();
 
-router.get('/', authenticateSession, validateEndpoint(featureController.schema), featureController.handler);
+router.get('/', authenticateSession, featureController);
 
 export default router;
 ```
@@ -109,7 +108,7 @@ export const createFeature = withTransaction(createFeatureImpl);
 ## Common Middleware
 
 - `authenticateSession` — authentication (better-auth sessions)
-- `validateEndpoint` — request validation via Zod schema
+- Request validation is built into `createController` (422 on a Zod failure). `validateEndpoint(schema)` exists only to reject a bad request ahead of earlier middleware such as rate limiters (see `landing.route.ts`)
 
 ## Shared Types
 

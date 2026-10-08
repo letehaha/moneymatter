@@ -5,7 +5,6 @@ import { parseBudgetBakersWalletController } from '@controllers/import-export/bu
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { csvImportRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
@@ -15,8 +14,7 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(parseBudgetBakersWalletController.schema),
-  parseBudgetBakersWalletController.handler,
+  parseBudgetBakersWalletController,
 );
 
 router.post(
@@ -24,8 +22,7 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(detectBudgetBakersWalletDuplicatesController.schema),
-  detectBudgetBakersWalletDuplicatesController.handler,
+  detectBudgetBakersWalletDuplicatesController,
 );
 
 router.post(
@@ -33,15 +30,9 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(executeBudgetBakersWalletController.schema),
-  executeBudgetBakersWalletController.handler,
+  executeBudgetBakersWalletController,
 );
 
-router.get(
-  '/budget-bakers-wallet/status/:jobId',
-  authenticateSession,
-  validateEndpoint(budgetBakersWalletStatusController.schema),
-  budgetBakersWalletStatusController.handler,
-);
+router.get('/budget-bakers-wallet/status/:jobId', authenticateSession, budgetBakersWalletStatusController);
 
 export default router;

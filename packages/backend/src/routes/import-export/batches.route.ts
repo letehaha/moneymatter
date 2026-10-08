@@ -3,33 +3,16 @@ import { batchesHistoryController } from '@controllers/import-export/batches-his
 import { deleteBatchController } from '@controllers/import-export/delete-batch.controller';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get(
-  '/batches-history',
-  authenticateSession,
-  validateEndpoint(batchesHistoryController.schema),
-  batchesHistoryController.handler,
-);
+router.get('/batches-history', authenticateSession, batchesHistoryController);
 
 // Read-only status any device polls to drive the blocking overlay; GET routes are
 // never lock-guarded.
-router.get(
-  '/batch-delete/status',
-  authenticateSession,
-  validateEndpoint(batchDeleteStatusController.schema),
-  batchDeleteStatusController.handler,
-);
+router.get('/batch-delete/status', authenticateSession, batchDeleteStatusController);
 
-router.delete(
-  '/batch/:batchId',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteBatchController.schema),
-  deleteBatchController.handler,
-);
+router.delete('/batch/:batchId', authenticateSession, checkBaseCurrencyLock, deleteBatchController);
 
 export default router;

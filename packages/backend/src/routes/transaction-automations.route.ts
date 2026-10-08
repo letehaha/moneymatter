@@ -7,57 +7,20 @@ import reorderAutomations from '@controllers/transaction-automations/reorder-aut
 import updateAutomation from '@controllers/transaction-automations/update-automation';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(listAutomations.schema), listAutomations.handler);
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createAutomation.schema),
-  createAutomation.handler,
-);
+router.get('/', authenticateSession, listAutomations);
+router.post('/', authenticateSession, checkBaseCurrencyLock, createAutomation);
 
 // Static paths before `/:id` so a literal segment is never read as an id.
-router.put(
-  '/reorder',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reorderAutomations.schema),
-  reorderAutomations.handler,
-);
-router.post(
-  '/preview',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(previewAutomation.schema),
-  previewAutomation.handler,
-);
+router.put('/reorder', authenticateSession, checkBaseCurrencyLock, reorderAutomations);
+router.post('/preview', authenticateSession, checkBaseCurrencyLock, previewAutomation);
 
-router.post(
-  '/:id/apply',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(applyAutomationToHistory.schema),
-  applyAutomationToHistory.handler,
-);
+router.post('/:id/apply', authenticateSession, checkBaseCurrencyLock, applyAutomationToHistory);
 
-router.patch(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateAutomation.schema),
-  updateAutomation.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteAutomation.schema),
-  deleteAutomation.handler,
-);
+router.patch('/:id', authenticateSession, checkBaseCurrencyLock, updateAutomation);
+router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteAutomation);
 
 export default router;

@@ -37,59 +37,25 @@ import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature, requireFeatureOrTrial } from '@middlewares/entitlements';
 import { attachmentUploadRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import express, { Router } from 'express';
 
 const router = Router({});
 
 // Define all named routes level above to avoid matching with /:id
-router.get('/refund', authenticateSession, validateEndpoint(getRefund.schema), getRefund.handler);
-router.get('/refunds', authenticateSession, validateEndpoint(getRefunds.schema), getRefunds.handler);
-router.get(
-  '/refund-recommendations',
-  authenticateSession,
-  validateEndpoint(getRefundRecommendations.schema),
-  getRefundRecommendations.handler,
-);
-router.get(
-  '/planned-summary',
-  authenticateSession,
-  validateEndpoint(getPlannedSummary.schema),
-  getPlannedSummary.handler,
-);
-router.get(
-  '/summary',
-  authenticateSession,
-  validateEndpoint(getTransactionsSummary.schema),
-  getTransactionsSummary.handler,
-);
-router.get(
-  '/transfer-recommendations',
-  authenticateSession,
-  validateEndpoint(getTransferRecommendations.schema),
-  getTransferRecommendations.handler,
-);
+router.get('/refund', authenticateSession, getRefund);
+router.get('/refunds', authenticateSession, getRefunds);
+router.get('/refund-recommendations', authenticateSession, getRefundRecommendations);
+router.get('/planned-summary', authenticateSession, getPlannedSummary);
+router.get('/summary', authenticateSession, getTransactionsSummary);
+router.get('/transfer-recommendations', authenticateSession, getTransferRecommendations);
 router.post(
   '/transfer-recommendations/bulk-scan',
   authenticateSession,
   checkBaseCurrencyLock,
-  validateEndpoint(bulkScanTransferRecommendations.schema),
-  bulkScanTransferRecommendations.handler,
+  bulkScanTransferRecommendations,
 );
-router.post(
-  '/transfer-recommendations/dismiss',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(dismissTransferSuggestion.schema),
-  dismissTransferSuggestion.handler,
-);
-router.post(
-  '/refund',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createRefund.schema),
-  createRefund.handler,
-);
+router.post('/transfer-recommendations/dismiss', authenticateSession, checkBaseCurrencyLock, dismissTransferSuggestion);
+router.post('/refund', authenticateSession, checkBaseCurrencyLock, createRefund);
 // Reads the uploaded invoice and ranks candidates; nothing is stored, so no base-currency lock.
 router.post(
   '/match-invoice',
@@ -98,8 +64,7 @@ router.post(
   requireFeatureOrTrial(FEATURES.invoice_matching),
   attachmentUploadRateLimit,
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
-  validateEndpoint(matchInvoice.schema),
-  matchInvoice.handler,
+  matchInvoice,
 );
 router.post(
   '/match-invoice/candidates',
@@ -108,56 +73,20 @@ router.post(
   // fields of the invoice they just read. Only the attachments gate applies.
   requireFeature(FEATURES.attachments),
   attachmentUploadRateLimit,
-  validateEndpoint(rematchInvoice.schema),
-  rematchInvoice.handler,
+  rematchInvoice,
 );
-router.delete(
-  '/refund',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteRefund.schema),
-  deleteRefund.handler,
-);
+router.delete('/refund', authenticateSession, checkBaseCurrencyLock, deleteRefund);
 
-router.get(
-  '/reconciliation/history',
-  authenticateSession,
-  validateEndpoint(reconciliation.historyController.schema),
-  reconciliation.historyController.handler,
-);
-router.get(
-  '/reconciliation/stuck-pending',
-  authenticateSession,
-  validateEndpoint(reconciliation.stuckPendingController.schema),
-  reconciliation.stuckPendingController.handler,
-);
-router.post(
-  '/reconciliation/remove',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.removeController.schema),
-  reconciliation.removeController.handler,
-);
-router.post(
-  '/reconciliation/merge',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.mergeController.schema),
-  reconciliation.mergeController.handler,
-);
-router.post(
-  '/reconciliation/restore',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.restoreController.schema),
-  reconciliation.restoreController.handler,
-);
+router.get('/reconciliation/history', authenticateSession, reconciliation.historyController);
+router.get('/reconciliation/stuck-pending', authenticateSession, reconciliation.stuckPendingController);
+router.post('/reconciliation/remove', authenticateSession, checkBaseCurrencyLock, reconciliation.removeController);
+router.post('/reconciliation/merge', authenticateSession, checkBaseCurrencyLock, reconciliation.mergeController);
+router.post('/reconciliation/restore', authenticateSession, checkBaseCurrencyLock, reconciliation.restoreController);
 router.post(
   '/reconciliation/keep-as-booked',
   authenticateSession,
   checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.keepAsBookedController.schema),
-  reconciliation.keepAsBookedController.handler,
+  reconciliation.keepAsBookedController,
 );
 router.post(
   '/reconciliation/stuck-pending/check',
@@ -165,40 +94,16 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.checkStuckPendingController.schema),
-  reconciliation.checkStuckPendingController.handler,
+  reconciliation.checkStuckPendingController,
 );
 
 // Split routes
-router.delete(
-  '/splits/:splitId',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteSplit.schema),
-  deleteSplit.handler,
-);
+router.delete('/splits/:splitId', authenticateSession, checkBaseCurrencyLock, deleteSplit);
 
 // Portfolio linking routes
-router.post(
-  '/:transactionId/link-to-portfolio',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(linkToPortfolio.schema),
-  linkToPortfolio.handler,
-);
-router.post(
-  '/:transactionId/unlink-from-portfolio',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkFromPortfolio.schema),
-  unlinkFromPortfolio.handler,
-);
-router.get(
-  '/:transactionId/portfolio-link',
-  authenticateSession,
-  validateEndpoint(getPortfolioLink.schema),
-  getPortfolioLink.handler,
-);
+router.post('/:transactionId/link-to-portfolio', authenticateSession, checkBaseCurrencyLock, linkToPortfolio);
+router.post('/:transactionId/unlink-from-portfolio', authenticateSession, checkBaseCurrencyLock, unlinkFromPortfolio);
+router.get('/:transactionId/portfolio-link', authenticateSession, getPortfolioLink);
 
 // Attachments. Listing stays ungated so a lapsed user can still reach their own files.
 router.post(
@@ -207,73 +112,21 @@ router.post(
   requireFeature(FEATURES.attachments),
   attachmentUploadRateLimit,
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
-  validateEndpoint(uploadAttachmentController.schema),
-  uploadAttachmentController.handler,
+  uploadAttachmentController,
 );
-router.get(
-  '/:transactionId/attachments',
-  authenticateSession,
-  validateEndpoint(listAttachmentsController.schema),
-  listAttachmentsController.handler,
-);
+router.get('/:transactionId/attachments', authenticateSession, listAttachmentsController);
 
-router.get('/', authenticateSession, validateEndpoint(getTransactions.schema), getTransactions.handler);
-router.get('/by-ids', authenticateSession, validateEndpoint(getTransactionsByIds.schema), getTransactionsByIds.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getTransactionById.schema), getTransactionById.handler);
-router.get(
-  '/:id/refunds',
-  authenticateSession,
-  validateEndpoint(getRefundsForTransactionById.schema),
-  getRefundsForTransactionById.handler,
-);
-router.get(
-  '/transfer/:transferId',
-  authenticateSession,
-  validateEndpoint(getTransactionsByTransferId.schema),
-  getTransactionsByTransferId.handler,
-);
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createTransaction.schema),
-  createTransaction.handler,
-);
-router.put(
-  '/unlink',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkTransferTransactions.schema),
-  unlinkTransferTransactions.handler,
-);
+router.get('/', authenticateSession, getTransactions);
+router.get('/by-ids', authenticateSession, getTransactionsByIds);
+router.get('/:id', authenticateSession, getTransactionById);
+router.get('/:id/refunds', authenticateSession, getRefundsForTransactionById);
+router.get('/transfer/:transferId', authenticateSession, getTransactionsByTransferId);
+router.post('/', authenticateSession, checkBaseCurrencyLock, createTransaction);
+router.put('/unlink', authenticateSession, checkBaseCurrencyLock, unlinkTransferTransactions);
 router.put('/link', authenticateSession, checkBaseCurrencyLock, linkTransactions);
-router.put(
-  '/bulk',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkUpdate.schema),
-  bulkUpdate.handler,
-);
-router.post(
-  '/bulk-delete',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkDelete.schema),
-  bulkDelete.handler,
-);
-router.put(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateTransaction.schema),
-  updateTransaction.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteTransaction.schema),
-  deleteTransaction.handler,
-);
+router.put('/bulk', authenticateSession, checkBaseCurrencyLock, bulkUpdate);
+router.post('/bulk-delete', authenticateSession, checkBaseCurrencyLock, bulkDelete);
+router.put('/:id', authenticateSession, checkBaseCurrencyLock, updateTransaction);
+router.delete('/:id', authenticateSession, checkBaseCurrencyLock, deleteTransaction);
 
 export default router;

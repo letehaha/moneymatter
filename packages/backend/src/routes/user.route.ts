@@ -61,48 +61,28 @@ import {
   backupRestoreRateLimit,
   dataExportRateLimit,
 } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getUser.schema), getUser.handler);
-router.post(
-  '/feature-trials/:feature',
-  authenticateSession,
-  validateEndpoint(startFeatureTrial.schema),
-  startFeatureTrial.handler,
-);
-router.put('/update', authenticateSession, validateEndpoint(updateUser.schema), updateUser.handler);
-router.delete(
-  '/delete',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteUser.schema),
-  deleteUser.handler,
-);
-router.post(
-  '/wipe-data',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(wipeUserData.schema),
-  wipeUserData.handler,
-);
+router.get('/', authenticateSession, getUser);
+router.post('/feature-trials/:feature', authenticateSession, startFeatureTrial);
+router.put('/update', authenticateSession, updateUser);
+router.delete('/delete', authenticateSession, checkBaseCurrencyLock, deleteUser);
+router.post('/wipe-data', authenticateSession, checkBaseCurrencyLock, wipeUserData);
 router.post(
   '/data-export',
   authenticateSession,
   requireFeature(FEATURES.data_export),
   dataExportRateLimit,
-  validateEndpoint(exportDataController.schema),
-  exportDataController.handler,
+  exportDataController,
 );
 router.post(
   '/backup',
   authenticateSession,
   requireFeature(FEATURES.backup_export),
   backupRateLimit,
-  validateEndpoint(exportBackupController.schema),
-  exportBackupController.handler,
+  exportBackupController,
 );
 router.post(
   '/backup/restore',
@@ -112,244 +92,76 @@ router.post(
   // base-currency migration (or an in-flight restore, which takes the same lock) runs.
   checkBaseCurrencyLock,
   backupRestoreRateLimit,
-  validateEndpoint(restoreBackupController.schema),
-  restoreBackupController.handler,
+  restoreBackupController,
 );
-router.get(
-  '/backup/restore/status',
-  authenticateSession,
-  validateEndpoint(activeRestoreStatusController.schema),
-  activeRestoreStatusController.handler,
-);
-router.get(
-  '/backup/restore/status/:jobId',
-  authenticateSession,
-  validateEndpoint(restoreStatusController.schema),
-  restoreStatusController.handler,
-);
+router.get('/backup/restore/status', authenticateSession, activeRestoreStatusController);
+router.get('/backup/restore/status/:jobId', authenticateSession, restoreStatusController);
 
-router.get('/currencies', authenticateSession, validateEndpoint(getUserCurrencies.schema), getUserCurrencies.handler);
-router.get(
-  '/currencies/base',
-  authenticateSession,
-  validateEndpoint(getUserBaseCurrency.schema),
-  getUserBaseCurrency.handler,
-);
-router.get(
-  '/currencies/rates',
-  authenticateSession,
-  validateEndpoint(getCurrenciesExchangeRates.schema),
-  getCurrenciesExchangeRates.handler,
-);
+router.get('/currencies', authenticateSession, getUserCurrencies);
+router.get('/currencies/base', authenticateSession, getUserBaseCurrency);
+router.get('/currencies/rates', authenticateSession, getCurrenciesExchangeRates);
 
-router.post(
-  '/currencies',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(addUserCurrencies.schema),
-  addUserCurrencies.handler,
-);
-router.post(
-  '/currencies/base',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(setBaseUserCurrency.schema),
-  setBaseUserCurrency.handler,
-);
+router.post('/currencies', authenticateSession, checkBaseCurrencyLock, addUserCurrencies);
+router.post('/currencies/base', authenticateSession, checkBaseCurrencyLock, setBaseUserCurrency);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,
 // so guarding it here would reject the request that is supposed to start the change.
-router.post(
-  '/currencies/change-base',
-  authenticateSession,
-  validateEndpoint(changeBaseCurrency.schema),
-  changeBaseCurrency.handler,
-);
+router.post('/currencies/change-base', authenticateSession, changeBaseCurrency);
 // Read-only status any device polls to drive the blocking overlay; GET routes are
 // never lock-guarded.
-router.get(
-  '/currencies/change-base/status',
-  authenticateSession,
-  validateEndpoint(changeBaseCurrencyStatus.schema),
-  changeBaseCurrencyStatus.handler,
-);
+router.get('/currencies/change-base/status', authenticateSession, changeBaseCurrencyStatus);
 
-router.put(
-  '/currency',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(editUserCurrency.schema),
-  editUserCurrency.handler,
-);
-router.put(
-  '/currency/rates',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(editCurrencyExchangeRate.schema),
-  editCurrencyExchangeRate.handler,
-);
+router.put('/currency', authenticateSession, checkBaseCurrencyLock, editUserCurrency);
+router.put('/currency/rates', authenticateSession, checkBaseCurrencyLock, editCurrencyExchangeRate);
 
-router.delete(
-  '/currency',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteUserCurrency.schema),
-  deleteUserCurrency.handler,
-);
-router.delete(
-  '/currency/rates',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(removeUserCurrencyExchangeRate.schema),
-  removeUserCurrencyExchangeRate.handler,
-);
+router.delete('/currency', authenticateSession, checkBaseCurrencyLock, deleteUserCurrency);
+router.delete('/currency/rates', authenticateSession, checkBaseCurrencyLock, removeUserCurrencyExchangeRate);
 
-router.get('/settings', authenticateSession, validateEndpoint(getUserSettings.schema), getUserSettings.handler);
-router.put('/settings', authenticateSession, validateEndpoint(updateUserSettings.schema), updateUserSettings.handler);
-router.patch(
-  '/settings',
-  authenticateSession,
-  requireFireSettingsAccess,
-  validateEndpoint(patchUserSettings.schema),
-  patchUserSettings.handler,
-);
+router.get('/settings', authenticateSession, getUserSettings);
+router.put('/settings', authenticateSession, updateUserSettings);
+router.patch('/settings', authenticateSession, requireFireSettingsAccess, patchUserSettings);
 
 // Onboarding (Quick Start)
-router.get('/settings/onboarding', authenticateSession, validateEndpoint(getOnboarding.schema), getOnboarding.handler);
-router.put(
-  '/settings/onboarding',
-  authenticateSession,
-  validateEndpoint(updateOnboarding.schema),
-  updateOnboarding.handler,
-);
+router.get('/settings/onboarding', authenticateSession, getOnboarding);
+router.put('/settings/onboarding', authenticateSession, updateOnboarding);
 
 // AI connections (the user's own models)
-router.get(
-  '/settings/ai/connections',
-  authenticateSession,
-  validateEndpoint(getConnectionsController.schema),
-  getConnectionsController.handler,
-);
-router.post(
-  '/settings/ai/connections',
-  authenticateSession,
-  aiConnectionProbeRateLimit,
-  validateEndpoint(createConnectionController.schema),
-  createConnectionController.handler,
-);
-router.post(
-  '/settings/ai/connections/test',
-  authenticateSession,
-  aiConnectionProbeRateLimit,
-  validateEndpoint(testConnectionController.schema),
-  testConnectionController.handler,
-);
+router.get('/settings/ai/connections', authenticateSession, getConnectionsController);
+router.post('/settings/ai/connections', authenticateSession, aiConnectionProbeRateLimit, createConnectionController);
+router.post('/settings/ai/connections/test', authenticateSession, aiConnectionProbeRateLimit, testConnectionController);
 router.post(
   '/settings/ai/connections/models',
   authenticateSession,
   aiConnectionModelsRateLimit,
-  validateEndpoint(listConnectionModelsController.schema),
-  listConnectionModelsController.handler,
+  listConnectionModelsController,
 );
-router.put(
-  '/settings/ai/connections/:id',
-  authenticateSession,
-  aiConnectionProbeRateLimit,
-  validateEndpoint(updateConnectionController.schema),
-  updateConnectionController.handler,
-);
-router.delete(
-  '/settings/ai/connections/:id',
-  authenticateSession,
-  validateEndpoint(deleteConnectionController.schema),
-  deleteConnectionController.handler,
-);
-router.post(
-  '/settings/ai/connections/:id/default',
-  authenticateSession,
-  validateEndpoint(setDefaultConnectionController.schema),
-  setDefaultConnectionController.handler,
-);
+router.put('/settings/ai/connections/:id', authenticateSession, aiConnectionProbeRateLimit, updateConnectionController);
+router.delete('/settings/ai/connections/:id', authenticateSession, deleteConnectionController);
+router.post('/settings/ai/connections/:id/default', authenticateSession, setDefaultConnectionController);
 
 // AI Feature configuration
-router.get(
-  '/settings/ai/features',
-  authenticateSession,
-  validateEndpoint(getFeaturesStatus.schema),
-  getFeaturesStatus.handler,
-);
-router.get(
-  '/settings/ai/features/:feature',
-  authenticateSession,
-  validateEndpoint(getFeatureConfigController.schema),
-  getFeatureConfigController.handler,
-);
-router.put(
-  '/settings/ai/features/:feature',
-  authenticateSession,
-  validateEndpoint(setFeatureConfigController.schema),
-  setFeatureConfigController.handler,
-);
-router.delete(
-  '/settings/ai/features/:feature',
-  authenticateSession,
-  validateEndpoint(resetFeatureConfigController.schema),
-  resetFeatureConfigController.handler,
-);
+router.get('/settings/ai/features', authenticateSession, getFeaturesStatus);
+router.get('/settings/ai/features/:feature', authenticateSession, getFeatureConfigController);
+router.put('/settings/ai/features/:feature', authenticateSession, setFeatureConfigController);
+router.delete('/settings/ai/features/:feature', authenticateSession, resetFeatureConfigController);
 
 // AI Custom Instructions
-router.get(
-  '/settings/ai/custom-instructions',
-  authenticateSession,
-  validateEndpoint(getCustomInstructionsController.schema),
-  getCustomInstructionsController.handler,
-);
-router.put(
-  '/settings/ai/custom-instructions',
-  authenticateSession,
-  validateEndpoint(setCustomInstructionsController.schema),
-  setCustomInstructionsController.handler,
-);
+router.get('/settings/ai/custom-instructions', authenticateSession, getCustomInstructionsController);
+router.put('/settings/ai/custom-instructions', authenticateSession, setCustomInstructionsController);
 
 // AI Categorization
-router.get(
-  '/ai/categorization/status',
-  authenticateSession,
-  validateEndpoint(categorizationStatusController.schema),
-  categorizationStatusController.handler,
-);
-router.get(
-  '/ai/categorization/candidates',
-  authenticateSession,
-  validateEndpoint(categorizationCandidatesController.schema),
-  categorizationCandidatesController.handler,
-);
-router.get(
-  '/ai/categorization/history',
-  authenticateSession,
-  validateEndpoint(categorizationHistoryController.schema),
-  categorizationHistoryController.handler,
-);
+router.get('/ai/categorization/status', authenticateSession, categorizationStatusController);
+router.get('/ai/categorization/candidates', authenticateSession, categorizationCandidatesController);
+router.get('/ai/categorization/history', authenticateSession, categorizationHistoryController);
 router.post(
   '/ai/categorization/trigger',
   authenticateSession,
   // Demo users would fall back to the operator's server-side AI key.
   blockDemoUsers,
-  validateEndpoint(triggerCategorizationController.schema),
-  triggerCategorizationController.handler,
+  triggerCategorizationController,
 );
 
 // MCP Connected Apps
-router.get(
-  '/settings/mcp/connected-apps',
-  authenticateSession,
-  validateEndpoint(getConnectedAppsController.schema),
-  getConnectedAppsController.handler,
-);
-router.delete(
-  '/settings/mcp/connected-apps/:clientId',
-  authenticateSession,
-  validateEndpoint(revokeConnectedAppController.schema),
-  revokeConnectedAppController.handler,
-);
+router.get('/settings/mcp/connected-apps', authenticateSession, getConnectedAppsController);
+router.delete('/settings/mcp/connected-apps/:clientId', authenticateSession, revokeConnectedAppController);
 
 export default router;

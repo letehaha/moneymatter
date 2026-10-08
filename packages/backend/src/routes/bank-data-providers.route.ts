@@ -24,40 +24,23 @@ import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature } from '@middlewares/entitlements';
-import { validateEndpoint } from '@middlewares/validations';
 import express from 'express';
 
 const router = express.Router();
 
 // Provider discovery
-router.get(
-  '/',
-  authenticateSession,
-  validateEndpoint(providersController.listProviders.schema),
-  providersController.listProviders.handler,
-);
+router.get('/', authenticateSession, providersController.listProviders);
 
 // Connection management
-router.get(
-  '/connections',
-  authenticateSession,
-  validateEndpoint(listUserConnections.schema),
-  listUserConnections.handler,
-);
-router.get(
-  '/connections/:connectionId',
-  authenticateSession,
-  validateEndpoint(getConnectionDetails.schema),
-  getConnectionDetails.handler,
-);
+router.get('/connections', authenticateSession, listUserConnections);
+router.get('/connections/:connectionId', authenticateSession, getConnectionDetails);
 router.post(
   '/:providerType/connect',
   authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(connectProvider.schema),
-  connectProvider.handler,
+  connectProvider,
 );
 router.delete(
   '/connections/:connectionId',
@@ -65,8 +48,7 @@ router.delete(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(disconnectProvider.schema),
-  disconnectProvider.handler,
+  disconnectProvider,
 );
 router.post(
   '/connections/:connectionId/reauthorize',
@@ -74,8 +56,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(reauthorizeConnection.schema),
-  reauthorizeConnection.handler,
+  reauthorizeConnection,
 );
 router.patch(
   '/connections/:connectionId',
@@ -83,8 +64,7 @@ router.patch(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(updateConnectionDetails.schema),
-  updateConnectionDetails.handler,
+  updateConnectionDetails,
 );
 
 // Account sync flow
@@ -93,8 +73,7 @@ router.get(
   authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
-  validateEndpoint(listExternalAccounts.schema),
-  listExternalAccounts.handler,
+  listExternalAccounts,
 );
 router.post(
   '/connections/:connectionId/sync-selected-accounts',
@@ -102,8 +81,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(connectSelectedAccounts.schema),
-  connectSelectedAccounts.handler,
+  connectSelectedAccounts,
 );
 
 // Transactions sync
@@ -113,8 +91,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(syncTransactionsForAccount.schema),
-  syncTransactionsForAccount.handler,
+  syncTransactionsForAccount,
 );
 router.post(
   '/connections/:connectionId/sync',
@@ -122,8 +99,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(syncConnection.schema),
-  syncConnection.handler,
+  syncConnection,
 );
 router.post(
   '/connections/:connectionId/reconcile-duplicates',
@@ -131,8 +107,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(reconcileDuplicatesForAccount.schema),
-  reconcileDuplicatesForAccount.handler,
+  reconcileDuplicatesForAccount,
 );
 router.post(
   '/connections/:connectionId/load-transactions-for-period',
@@ -140,47 +115,22 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(loadTransactionsForPeriod.schema),
-  loadTransactionsForPeriod.handler,
+  loadTransactionsForPeriod,
 );
-router.get(
-  '/connections/:connectionId/sync-job-progress',
-  authenticateSession,
-  validateEndpoint(getSyncJobProgress.schema),
-  getSyncJobProgress.handler,
-);
-router.get(
-  '/active-sync-jobs',
-  authenticateSession,
-  validateEndpoint(listActiveSyncJobs.schema),
-  listActiveSyncJobs.handler,
-);
+router.get('/connections/:connectionId/sync-job-progress', authenticateSession, getSyncJobProgress);
+router.get('/active-sync-jobs', authenticateSession, listActiveSyncJobs);
 
 // Bulk account sync endpoints
-router.get(
-  '/sync/check',
-  authenticateSession,
-  requireFeature(FEATURES.bank_providers),
-  blockDemoUsers,
-  validateEndpoint(checkSync.schema),
-  checkSync.handler,
-);
+router.get('/sync/check', authenticateSession, requireFeature(FEATURES.bank_providers), blockDemoUsers, checkSync);
 router.post(
   '/sync/trigger',
   authenticateSession,
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(triggerSync.schema),
-  triggerSync.handler,
+  triggerSync,
 );
-router.get(
-  '/sync/status',
-  authenticateSession,
-  blockDemoUsers,
-  validateEndpoint(getSyncStatus.schema),
-  getSyncStatus.handler,
-);
+router.get('/sync/status', authenticateSession, blockDemoUsers, getSyncStatus);
 
 // Enable Banking specific endpoints
 router.post(
@@ -189,8 +139,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(listCountries.schema),
-  listCountries.handler,
+  listCountries,
 );
 router.post(
   '/enablebanking/banks',
@@ -198,8 +147,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(listBanks.schema),
-  listBanks.handler,
+  listBanks,
 );
 router.post(
   '/enablebanking/oauth-callback',
@@ -207,8 +155,7 @@ router.post(
   requireFeature(FEATURES.bank_providers),
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(oauthCallback.schema),
-  oauthCallback.handler,
+  oauthCallback,
 );
 
 export default router;
