@@ -113,19 +113,19 @@
           :label="$t('pivotReport.controls.rows')"
           :items="rowDimensionItems"
           :model-value="rowDimension"
-          @update:model-value="(value) => (rowDimension = value as endpointsTypes.PivotRowDimension)"
+          @update:model-value="(value) => (rowDimension = value as PivotRowDimension)"
         />
         <PivotDimensionControl
           :label="$t('pivotReport.controls.columns')"
           :items="granularityItems"
           :model-value="granularity"
-          @update:model-value="(value) => (granularity = value as endpointsTypes.PivotGranularity)"
+          @update:model-value="(value) => (granularity = value as PivotGranularity)"
         />
         <PivotDimensionControl
           :label="$t('pivotReport.controls.measure')"
           :items="measureItems"
           :model-value="measure"
-          @update:model-value="(value) => (measure = value as endpointsTypes.PivotMeasure)"
+          @update:model-value="(value) => (measure = value as PivotMeasure)"
         />
       </div>
 
@@ -193,7 +193,7 @@
           v-model="newViewName"
           :label="$t('pivotReport.savedViews.nameLabel')"
           :placeholder="$t('pivotReport.savedViews.namePlaceholder')"
-          :maxlength="endpointsTypes.SAVED_PIVOT_VIEW_NAME_MAX_LENGTH"
+          :maxlength="SAVED_PIVOT_VIEW_NAME_MAX_LENGTH"
           autofocus
         />
       </form>
@@ -209,7 +209,6 @@
 </template>
 
 <script setup lang="ts">
-import type { SavedPivotView } from '@/api/user-settings';
 import ComboboxCategories from '@/components/common/combobox-categories.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
@@ -226,7 +225,13 @@ import type { Period } from '@/composable/use-period-navigation';
 import { cn } from '@/lib/utils';
 import FiltersButton from '@/pages/analytics/components/filters-button.vue';
 import { ANALYTICS_HEADER_ACTIONS_ID } from '@/pages/analytics/utils';
-import { endpointsTypes } from '@bt/shared/types';
+import {
+  type PivotRowDimension,
+  type PivotGranularity,
+  type PivotMeasure,
+  type SavedPivotView,
+  SAVED_PIVOT_VIEW_NAME_MAX_LENGTH,
+} from '@bt/shared/types';
 import { createReusableTemplate } from '@vueuse/core';
 import { endOfMonth, endOfYear, startOfMonth, startOfYear, subMonths, subYears } from 'date-fns';
 import { CalendarIcon, CheckIcon, PlusIcon, RotateCcwIcon, Settings2Icon, Trash2Icon } from '@lucide/vue';
@@ -251,9 +256,9 @@ const emit = defineEmits<{
   reset: [];
 }>();
 
-const rowDimension = defineModel<endpointsTypes.PivotRowDimension>('rowDimension', { required: true });
-const granularity = defineModel<endpointsTypes.PivotGranularity>('granularity', { required: true });
-const measure = defineModel<endpointsTypes.PivotMeasure>('measure', { required: true });
+const rowDimension = defineModel<PivotRowDimension>('rowDimension', { required: true });
+const granularity = defineModel<PivotGranularity>('granularity', { required: true });
+const measure = defineModel<PivotMeasure>('measure', { required: true });
 const period = defineModel<Period>('period', { required: true });
 const accountIds = defineModel<string[]>('accountIds', { required: true });
 const categoryIds = defineModel<string[]>('categoryIds', { required: true });
@@ -331,7 +336,7 @@ const newViewName = ref('');
 
 const canSubmitView = computed(() => {
   const trimmed = newViewName.value.trim();
-  return trimmed.length > 0 && trimmed.length <= endpointsTypes.SAVED_PIVOT_VIEW_NAME_MAX_LENGTH;
+  return trimmed.length > 0 && trimmed.length <= SAVED_PIVOT_VIEW_NAME_MAX_LENGTH;
 });
 
 const selectView = (id: string) => {

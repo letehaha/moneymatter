@@ -9,7 +9,7 @@
  * (the parents) with the original transactions hanging off them as children.
  * The user edits both levels and commits.
  */
-import type { StatementFileType } from '../statement-parser';
+import type { StatementFileType } from '../import-export/statement-parser';
 import type { ASSET_CLASS, INVESTMENT_TRANSACTION_CATEGORY, SECURITY_PROVIDER } from './enums';
 
 /**

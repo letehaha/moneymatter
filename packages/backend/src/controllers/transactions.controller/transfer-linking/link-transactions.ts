@@ -1,4 +1,4 @@
-import { API_RESPONSE_STATUS, endpointsTypes } from '@bt/shared/types';
+import { API_RESPONSE_STATUS, type LinkTransactionsBody } from '@bt/shared/types';
 import { CustomResponse } from '@common/types';
 import { errorHandler } from '@controllers/helpers';
 import { ValidationError } from '@js/errors';
@@ -7,7 +7,7 @@ import * as transactionsService from '@services/transactions';
 
 export const linkTransactions = async (req, res: CustomResponse) => {
   try {
-    const { ids }: endpointsTypes.LinkTransactionsBody = req.body;
+    const { ids }: LinkTransactionsBody = req.body;
     const { id: userId } = req.user;
 
     if (!ids || !Array.isArray(ids)) {

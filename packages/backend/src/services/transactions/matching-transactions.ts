@@ -2,7 +2,7 @@ import {
   type RecordId,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
-  type endpointsTypes,
+  type TransactionsSummaryResponse,
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
@@ -52,9 +52,7 @@ const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> =>
   return [...new Map(rows.map((row) => [row.id, row])).values()];
 };
 
-export const getTransactionsSummary = async (
-  filters: ListFilters,
-): Promise<endpointsTypes.TransactionsSummaryResponse> => {
+export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
   const rows = dedupeTransferLegs(await findMatchingRows(filters));
   const totals = sumTransactionTotals(rows);
 

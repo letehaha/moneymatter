@@ -8,8 +8,8 @@
  * on each side independently.
  */
 
-import { TRANSACTION_TYPES } from './enums';
-import { IMPORT_JOB_STATUSES } from './import-export';
+import { TRANSACTION_TYPES } from '../transactions';
+import { IMPORT_JOB_STATUSES } from './core';
 import type {
   CategoryMappingConfig,
   DuplicateMatch,
@@ -18,7 +18,7 @@ import type {
   ImportExecuteRequestBase,
   ImportJobStatus,
   ImportSummaryBase,
-} from './import-export';
+} from './core';
 
 /** Hard cap on rows the parser will accept. Mirrors the YNAB importer limit so
  *  a single rogue upload can't OOM the parse step. */

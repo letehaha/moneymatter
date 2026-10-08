@@ -2,7 +2,7 @@ import { getCashFlow, getNetWorthHistory, getVentureContributions } from '@/api/
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { usePortfoliosAnnualizedReturns } from '@/composable/data-queries/portfolios-annualized-returns';
 import { useAccountsStore } from '@/stores';
-import { type FireSettings, type endpointsTypes, isPortfolioIndicatorId } from '@bt/shared/types';
+import { type FireSettings, isPortfolioIndicatorId, type CashFlowPeriodData } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { format, parseISO, startOfMonth, subMonths } from 'date-fns';
 import { storeToRefs } from 'pinia';
@@ -109,7 +109,7 @@ export const useFirePlan = ({
     staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
   });
   // null until the first filtered response; a toggle keeps the last applied periods until the new ones land.
-  const appliedFilteredPeriods = shallowRef<endpointsTypes.CashFlowPeriodData[] | null>(null);
+  const appliedFilteredPeriods = shallowRef<CashFlowPeriodData[] | null>(null);
   watchEffect(() => {
     if (excludedIds.value.length === 0) appliedFilteredPeriods.value = [];
     else if (filteredCashFlowQuery.data.value) appliedFilteredPeriods.value = filteredCashFlowQuery.data.value.periods;

@@ -1,5 +1,15 @@
-import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, type endpointsTypes } from '@bt/shared/types';
-import type { RecordId, TransactionLocation } from '@bt/shared/types';
+import {
+  type BulkDeleteTransactionsBody,
+  type BulkUpdateTransactionsBody,
+  type CreateTransactionBody,
+  type LinkTransactionsBody,
+  PAYMENT_TYPES,
+  type RecordId,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+  type TransactionLocation,
+  type TransactionsSummaryResponse,
+} from '@bt/shared/types';
 import Transactions from '@models/transactions.model';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import * as transactionsService from '@services/transactions';
@@ -13,9 +23,8 @@ import { CustomResponse, makeRequest } from './common';
 
 type BuildTxPartialField = 'amount' | 'time' | 'transferNature' | 'paymentType' | 'transactionType';
 export const buildTransactionPayload = (
-  params: Omit<endpointsTypes.CreateTransactionBody, BuildTxPartialField> &
-    Partial<Pick<endpointsTypes.CreateTransactionBody, BuildTxPartialField>>,
-): endpointsTypes.CreateTransactionBody => ({
+  params: Omit<CreateTransactionBody, BuildTxPartialField> & Partial<Pick<CreateTransactionBody, BuildTxPartialField>>,
+): CreateTransactionBody => ({
   amount: 1000,
   categoryId: global.DEFAULT_CATEGORY_ID,
   transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
@@ -206,18 +215,12 @@ export function unlinkTransferTransactions({
   });
 }
 
+export function linkTransactions({ payload, raw }: { payload: LinkTransactionsBody; raw?: false }): Promise<Response>;
 export function linkTransactions({
   payload,
   raw,
 }: {
-  payload: endpointsTypes.LinkTransactionsBody;
-  raw?: false;
-}): Promise<Response>;
-export function linkTransactions({
-  payload,
-  raw,
-}: {
-  payload: endpointsTypes.LinkTransactionsBody;
+  payload: LinkTransactionsBody;
   raw?: true;
 }): ReturnType<typeof transactionsService.linkTransactions>;
 export function linkTransactions({ raw = false, payload }) {
@@ -270,7 +273,7 @@ export function getTransactionById<R extends boolean | undefined = undefined>({
 }
 
 // Bulk update helpers
-type BulkUpdateTransactionsPayload = endpointsTypes.BulkUpdateTransactionsBody;
+type BulkUpdateTransactionsPayload = BulkUpdateTransactionsBody;
 
 interface BulkUpdateResult {
   updatedCount: number;
@@ -302,7 +305,7 @@ export function bulkDeleteTransactions<R extends boolean | undefined = undefined
   payload,
   raw,
 }: {
-  payload: endpointsTypes.BulkDeleteTransactionsBody;
+  payload: BulkDeleteTransactionsBody;
   raw?: R;
 }) {
   return makeRequest<BulkDeleteResult, R>({
@@ -317,7 +320,7 @@ export function getTransactionsSummary<R extends boolean | undefined = undefined
   raw,
   ...filters
 }: Record<string, unknown> & { raw?: R } = {}) {
-  return makeRequest<endpointsTypes.TransactionsSummaryResponse, R>({
+  return makeRequest<TransactionsSummaryResponse, R>({
     method: 'get',
     url: '/transactions/summary',
     payload: filters,

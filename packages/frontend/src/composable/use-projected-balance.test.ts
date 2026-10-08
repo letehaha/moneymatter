@@ -1,5 +1,10 @@
-import { ACCOUNT_CATEGORIES, ACCOUNT_STATUSES, type AccountModel, type RecordId } from '@bt/shared/types';
-import type { PlannedSummaryEntry } from '@bt/shared/types/endpoints';
+import {
+  ACCOUNT_CATEGORIES,
+  ACCOUNT_STATUSES,
+  type AccountModel,
+  type RecordId,
+  type PlannedSummaryEntry,
+} from '@bt/shared/types';
 import { type Ref, ref } from 'vue';
 
 const plannedEntries = ref<PlannedSummaryEntry[]>([]);

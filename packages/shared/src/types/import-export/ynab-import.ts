@@ -8,8 +8,8 @@
  * on each side independently.
  */
 
-import { IMPORT_JOB_STATUSES } from './import-export';
-import type { ImportJobStatus } from './import-export';
+import { IMPORT_JOB_STATUSES } from './core';
+import type { ImportJobStatus } from './core';
 
 /** YNAB Register.csv flag colors. Empty/unflagged rows are omitted. */
 export const YNAB_FLAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const;

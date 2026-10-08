@@ -1,4 +1,4 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { PivotMeasure, PivotRowDimension } from '@bt/shared/types';
 import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 import Transactions from '@models/transactions.model';
@@ -27,7 +27,7 @@ interface PivotAggregateContext {
   bucketIndexForTime: (time: Date) => number;
   categoryMap: Map<string, AccessibleCategoryInfo>;
   getRootCategoryId: (categoryId: string) => string;
-  measure: endpointsTypes.PivotMeasure;
+  measure: PivotMeasure;
   cellData: Map<string, Map<string, number>>;
   addCell: (args: { rowKey: string; columnKey: string; cents: number }) => void;
 }
@@ -215,11 +215,7 @@ const createTagStrategy = (): PivotDimensionStrategy => {
   };
 };
 
-export const getPivotStrategy = ({
-  rowDimension,
-}: {
-  rowDimension: endpointsTypes.PivotRowDimension;
-}): PivotDimensionStrategy => {
+export const getPivotStrategy = ({ rowDimension }: { rowDimension: PivotRowDimension }): PivotDimensionStrategy => {
   switch (rowDimension) {
     case 'category':
     case 'subcategory':

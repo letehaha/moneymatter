@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
 import { cn } from '@/lib/utils';
-import type { BulkTransferScanItem } from '@bt/shared/types/endpoints';
-import type { TransactionModel } from '@bt/shared/types';
+import type { TransactionModel, BulkTransferScanItem } from '@bt/shared/types';
 
 defineProps<{
   item: BulkTransferScanItem;

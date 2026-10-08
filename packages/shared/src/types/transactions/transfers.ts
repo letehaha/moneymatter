@@ -1,4 +1,6 @@
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from './enums';
+import { RecordId } from '../record-id';
+import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from './transactions';
+import type { TransactionModel } from './transactions';
 
 /**
  * `common_transfer` and `transfer_to_loan` share every two-leg invariant
@@ -69,3 +71,64 @@ export const sumTransactionTotals = (
 
   return { income, expense, net: income - expense, transfers };
 };
+
+const IS_LINKED_NATURE = {
+  [TRANSACTION_TRANSFER_NATURE.not_transfer]: false,
+  [TRANSACTION_TRANSFER_NATURE.common_transfer]: true,
+  [TRANSACTION_TRANSFER_NATURE.transfer_out_wallet]: false,
+  [TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio]: true,
+  [TRANSACTION_TRANSFER_NATURE.transfer_to_venture]: true,
+  [TRANSACTION_TRANSFER_NATURE.transfer_to_loan]: true,
+} satisfies Record<TRANSACTION_TRANSFER_NATURE, boolean>;
+
+/** Natures of a transaction already linked as a transfer; `transfer_out_wallet` can still be re-linked. */
+export const LINKED_TRANSFER_NATURES: readonly TRANSACTION_TRANSFER_NATURE[] = (
+  Object.keys(IS_LINKED_NATURE) as TRANSACTION_TRANSFER_NATURE[]
+).filter((nature) => IS_LINKED_NATURE[nature]);
+
+export const isLinkedTransfer = ({
+  tx,
+}: {
+  tx: { transferId: string | null; transferNature: TRANSACTION_TRANSFER_NATURE };
+}) => tx.transferId != null || LINKED_TRANSFER_NATURES.includes(tx.transferNature);
+
+export interface UnlinkTransferTransactionsBody {
+  transferIds: string[];
+}
+// Array of income/expense pairs to link between each other. It's better to pass
+// exactly exactly as described in the type, but in fact doesn't really matter
+export interface LinkTransactionsBody {
+  ids: [baseTxId: RecordId, destinationTxId: RecordId][];
+}
+
+export type GetTransferRecommendationsResponse = TransactionModel[];
+
+// Bulk Transfer Scan
+export interface BulkTransferScanBody {
+  from: string;
+  to: string;
+  limit?: number;
+  offset?: number;
+  includeOutOfWallet?: boolean;
+}
+
+export interface BulkTransferScanMatch {
+  transaction: TransactionModel;
+  confidence: number;
+}
+
+export interface BulkTransferScanItem {
+  expense: TransactionModel;
+  matches: BulkTransferScanMatch[];
+}
+
+export interface BulkTransferScanResponse {
+  total: number;
+  items: BulkTransferScanItem[];
+}
+
+// Transfer Suggestion Dismissals
+export interface DismissTransferSuggestionBody {
+  expenseTransactionId: RecordId;
+  incomeTransactionId: RecordId;
+}

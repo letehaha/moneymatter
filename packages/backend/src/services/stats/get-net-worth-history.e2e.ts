@@ -3,12 +3,12 @@ import {
   ASSET_CLASS,
   DEPRECIATION_PRESET,
   INVESTMENT_TRANSACTION_CATEGORY,
+  type NetWorthHistoryGranularity,
   type RecordId,
   SECURITY_PROVIDER,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
-  type endpointsTypes,
 } from '@bt/shared/types';
 import { until } from '@common/helpers';
 import { afterEach, describe, expect, it } from '@jest/globals';
@@ -202,7 +202,7 @@ describe('[Stats] Net worth history', () => {
       const unknownGranularity = await helpers.getNetWorthHistory({
         from: '2024-01-01',
         to: '2024-03-01',
-        granularity: 'hourly' as endpointsTypes.NetWorthHistoryGranularity,
+        granularity: 'hourly' as NetWorthHistoryGranularity,
       });
       // ~730 weekly buckets over 14 years — past the 500 cap.
       const tooManyBuckets = await helpers.getNetWorthHistory({

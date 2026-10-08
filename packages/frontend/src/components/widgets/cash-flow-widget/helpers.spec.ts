@@ -1,4 +1,4 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData } from '@bt/shared/types';
 import { format, parseISO } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
@@ -20,7 +20,7 @@ const period = ({
   start: string;
   income: number;
   expenses: number;
-}): endpointsTypes.CashFlowPeriodData => ({
+}): CashFlowPeriodData => ({
   periodStart: start,
   periodEnd: start,
   income,
@@ -28,7 +28,7 @@ const period = ({
   netFlow: income - expenses,
 });
 
-const PERIODS: endpointsTypes.CashFlowPeriodData[] = [
+const PERIODS: CashFlowPeriodData[] = [
   period({ start: '2026-02-01', income: 1000, expenses: 400 }),
   period({ start: '2026-03-01', income: 1200, expenses: 500 }),
   period({ start: '2026-04-01', income: 1000, expenses: 1100 }),

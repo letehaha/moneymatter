@@ -1,5 +1,29 @@
-import { AI_FEATURE, AI_PROVIDER } from '../enums';
 import type { Equals, Expect } from '../type-testing';
+
+/**
+ * Supported AI providers for features like transaction categorization.
+ *
+ * `custom` is any OpenAI-compatible endpoint (OpenRouter, Ollama, a proxy).
+ */
+export enum AI_PROVIDER {
+  anthropic = 'anthropic',
+  openai = 'openai',
+  google = 'google',
+  custom = 'custom',
+}
+
+/**
+ * AI-powered features that can have individual model configurations
+ */
+export enum AI_FEATURE {
+  categorization = 'categorization',
+  statementParsing = 'statement_parsing',
+  investmentTransactionsParsing = 'investment_transactions_parsing',
+  receiptParsing = 'receipt_parsing',
+  // Future features:
+  // insights = 'insights',
+  // budgetSuggestions = 'budget_suggestions',
+}
 
 export interface AIModelPricing {
   /** Cost per 1M input tokens in USD */

@@ -24,8 +24,8 @@ import {
   type StatementExtractionResult,
   type StatementImportProgress,
   type StatementTextExtractionErrorCode,
+  type TransactionModel,
 } from '@bt/shared/types';
-import type { TransactionModel } from '@bt/shared/types/db-models';
 import { useQueryClient } from '@tanstack/vue-query';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';

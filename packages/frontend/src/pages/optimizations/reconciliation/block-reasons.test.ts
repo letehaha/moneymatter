@@ -1,5 +1,6 @@
-import { RECONCILIATION_MERGE_MAX, RECONCILIATION_REMOVE_MAX } from '@bt/shared/const/reconciliation';
 import {
+  RECONCILIATION_MERGE_MAX,
+  RECONCILIATION_REMOVE_MAX,
   ACCOUNT_TYPES,
   type AccountModel,
   type RecordId,

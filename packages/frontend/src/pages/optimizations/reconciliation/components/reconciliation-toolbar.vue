@@ -3,8 +3,12 @@ import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useAccountsStore } from '@/stores';
-import { RECONCILIATION_MERGE_MAX, RECONCILIATION_REMOVE_MAX } from '@bt/shared/const/reconciliation';
-import type { RecordId, TransactionModel } from '@bt/shared/types';
+import {
+  RECONCILIATION_MERGE_MAX,
+  RECONCILIATION_REMOVE_MAX,
+  type RecordId,
+  type TransactionModel,
+} from '@bt/shared/types';
 import { GitMergeIcon, Trash2Icon, XIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';

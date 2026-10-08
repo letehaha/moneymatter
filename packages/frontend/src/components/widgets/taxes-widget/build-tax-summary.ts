@@ -1,4 +1,4 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData } from '@bt/shared/types';
 
 export const OTHER_SEGMENT_ID = 'other';
 /** Segments shown in the breakdown bar; past this the smallest fold into one "other" segment. */
@@ -78,8 +78,8 @@ export const buildTaxSummary = ({
   taxPeriods,
   windowMonths,
 }: {
-  allPeriods: endpointsTypes.CashFlowPeriodData[];
-  taxPeriods: endpointsTypes.CashFlowPeriodData[];
+  allPeriods: CashFlowPeriodData[];
+  taxPeriods: CashFlowPeriodData[];
   /** How many of the latest months the headline rate and the breakdown cover. */
   windowMonths: number;
 }): TaxSummary => {

@@ -1,13 +1,7 @@
-import { TRANSACTION_TYPES } from './enums';
-import { IMPORT_JOB_STATUSES } from './import-export';
-import type {
-  DuplicateMatch,
-  ImportError,
-  ImportExecuteRequestBase,
-  ImportJobStatus,
-  ImportSummaryBase,
-} from './import-export';
-import type { ResourceLease } from './resource-lease';
+import type { ResourceLease } from '../resource-lease';
+import { TRANSACTION_TYPES } from '../transactions';
+import { IMPORT_JOB_STATUSES } from './core';
+import type { DuplicateMatch, ImportError, ImportExecuteRequestBase, ImportJobStatus, ImportSummaryBase } from './core';
 
 export const OFX_MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const OFX_MAX_ROWS = 100_000;

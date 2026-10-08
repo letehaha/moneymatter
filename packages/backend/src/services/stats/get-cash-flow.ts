@@ -1,5 +1,10 @@
-import type { RecordId } from '@bt/shared/types';
-import { TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
+import {
+  type CashFlowGranularity,
+  type CashFlowPeriodData,
+  type GetCashFlowResponse,
+  type RecordId,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { expandCategoryIdsWithDescendants, getRootCategoryId } from '@services/categories/category-hierarchy';
 import {
   AccessibleCategoryInfo,
@@ -19,7 +24,7 @@ interface GetCashFlowParams extends StatsScopeFilters {
   userId: number;
   from: string;
   to: string;
-  granularity: endpointsTypes.CashFlowGranularity;
+  granularity: CashFlowGranularity;
   categoryIds?: RecordId[];
   /**
    * Categories the caller has hidden. Expanded to descendants here, because the list is a snapshot
@@ -112,7 +117,7 @@ export const getCashFlow = withTransaction(
     categoryIds,
     excludedCategoryIds,
     excludePlanned,
-  }: GetCashFlowParams): Promise<endpointsTypes.GetCashFlowResponse> => {
+  }: GetCashFlowParams): Promise<GetCashFlowResponse> => {
     // Generate period buckets
     const buckets = generatePeriodBuckets({ from, to, granularity });
 
@@ -298,10 +303,10 @@ export const getCashFlow = withTransaction(
     });
 
     // Build response periods
-    const periods: endpointsTypes.CashFlowPeriodData[] = buckets.map((bucket, index) => {
+    const periods: CashFlowPeriodData[] = buckets.map((bucket, index) => {
       const data = periodDataMap.get(index)!;
 
-      const period: endpointsTypes.CashFlowPeriodData = {
+      const period: CashFlowPeriodData = {
         periodStart: format(bucket.periodStart, 'yyyy-MM-dd'),
         periodEnd: format(bucket.periodEnd, 'yyyy-MM-dd'),
         income: data.income,

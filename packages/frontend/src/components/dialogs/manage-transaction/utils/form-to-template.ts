@@ -1,5 +1,9 @@
-import { type RecordId, type TransactionTemplateModel, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import {
+  type RecordId,
+  type TransactionTemplateModel,
+  TRANSACTION_TYPES,
+  type CreateTransactionTemplateBody,
+} from '@bt/shared/types';
 
 import { FORM_TYPES, type UI_FORM_STRUCT } from '../types';
 import { isPinnableTemplateAccount } from './template-to-form';

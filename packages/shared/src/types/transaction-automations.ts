@@ -1,6 +1,7 @@
-import type { TransactionModel } from './db-models';
-import { CATEGORIZATION_SOURCE, TRANSACTION_TYPES } from './enums';
+import { CATEGORIZATION_SOURCE } from './categorization';
 import { RecordId } from './record-id';
+import type { TransactionModel } from './transactions';
+import { TRANSACTION_TYPES } from './transactions';
 
 export const AUTOMATION_TEXT_OPERATORS = [
   'contains_any',

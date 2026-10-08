@@ -1,5 +1,4 @@
-import type { SavedPivotViewConfig } from '@/api/user-settings';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { PivotRow, SavedPivotViewConfig } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -18,7 +17,7 @@ import {
   sortPivotRows,
 } from './pivot-derivations';
 
-const makeRow = (over: Partial<endpointsTypes.PivotRow> & { id: string }): endpointsTypes.PivotRow => ({
+const makeRow = (over: Partial<PivotRow> & { id: string }): PivotRow => ({
   label: over.id,
   color: null,
   parentId: null,

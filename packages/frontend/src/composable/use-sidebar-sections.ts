@@ -1,5 +1,5 @@
-import type { SidebarSectionsConfig } from '@/api/user-settings';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
+import type { SidebarSectionsConfig } from '@bt/shared/types';
 import { CarIcon, HandCoinsIcon, RocketIcon, TrendingUpIcon } from '@lucide/vue';
 import { type Component, computed } from 'vue';
 

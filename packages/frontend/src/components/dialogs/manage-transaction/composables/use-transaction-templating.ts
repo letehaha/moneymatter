@@ -3,8 +3,7 @@ import { useTransactionTemplates } from '@/composable/data-queries/transaction-t
 import { formatUIAmount } from '@/js/helpers';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { useCurrenciesStore, useTagsStore } from '@/stores';
-import type { AccountModel, RecordId, TransactionTemplateModel } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type { AccountModel, RecordId, TransactionTemplateModel, CreateTransactionTemplateBody } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { type MaybeRefOrGetter, computed, nextTick, ref, toValue } from 'vue';
 import { useI18n } from 'vue-i18n';

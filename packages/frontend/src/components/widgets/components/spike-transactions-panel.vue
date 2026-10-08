@@ -102,9 +102,12 @@
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
 import TransactionRecordSkeleton from '@/components/transactions-list/transaction-record-skeleton.vue';
 import { formatLargeNumber } from '@/js/helpers';
-import type { TransactionModel } from '@bt/shared/types/db-models';
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types/enums';
-import { isTwoLegTransfer } from '@bt/shared/types';
+import {
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+  type TransactionModel,
+  isTwoLegTransfer,
+} from '@bt/shared/types';
 import { XIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';

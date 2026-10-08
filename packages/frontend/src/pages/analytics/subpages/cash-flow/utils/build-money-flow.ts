@@ -1,4 +1,11 @@
-import type { CategoryModel, RecordId, endpointsTypes } from '@bt/shared/types';
+import type {
+  CategoryModel,
+  RecordId,
+  GetSpendingsByCategoriesByTypeReturnType,
+  SpendingStructureByType,
+  GetInvestmentContributionsResponse,
+  GetVentureContributionsResponse,
+} from '@bt/shared/types';
 
 export const OTHER_NODE_ID = 'other';
 export const CASH_NODE_ID = 'cash';
@@ -79,8 +86,8 @@ const rollUp = ({
   shareOf,
   categoriesById,
 }: {
-  data: endpointsTypes.GetSpendingsByCategoriesByTypeReturnType;
-  pick: (entry: endpointsTypes.SpendingStructureByType) => number;
+  data: GetSpendingsByCategoriesByTypeReturnType;
+  pick: (entry: SpendingStructureByType) => number;
   level: number;
   topN: number;
   /** Denominator for `share`; defaults to the sum of the rolled-up nodes. */
@@ -128,7 +135,7 @@ const groupExpenses = ({
   total,
   categoriesById,
 }: {
-  data: endpointsTypes.GetSpendingsByCategoriesByTypeReturnType;
+  data: GetSpendingsByCategoriesByTypeReturnType;
   roots: MoneyFlowNode[];
   level: number;
   total: number;
@@ -138,7 +145,7 @@ const groupExpenses = ({
     if (root.id === OTHER_NODE_ID) return { ...root, leaves: [root] };
     const own = Object.fromEntries(
       Object.entries(data).filter(([id]) => resolveAncestorAtLevel({ id, level: 1, categoriesById }) === root.id),
-    ) as endpointsTypes.GetSpendingsByCategoriesByTypeReturnType;
+    ) as GetSpendingsByCategoriesByTypeReturnType;
     const leaves = rollUp({
       data: own,
       pick: (e) => e.expense,
@@ -155,8 +162,8 @@ const investedByDestination = ({
   contributions,
   ventures,
 }: {
-  contributions?: endpointsTypes.GetInvestmentContributionsResponse;
-  ventures?: endpointsTypes.GetVentureContributionsResponse;
+  contributions?: GetInvestmentContributionsResponse;
+  ventures?: GetVentureContributionsResponse;
 }) => {
   const totals = new Map<string, number>();
   for (const bucket of contributions?.buckets ?? []) {
@@ -185,10 +192,10 @@ export const buildMoneyFlow = ({
   savingsCategoryIds,
   taxCategoryIds,
 }: {
-  data: endpointsTypes.GetSpendingsByCategoriesByTypeReturnType;
+  data: GetSpendingsByCategoriesByTypeReturnType;
   categories: CategoryModel[];
-  contributions?: endpointsTypes.GetInvestmentContributionsResponse;
-  ventures?: endpointsTypes.GetVentureContributionsResponse;
+  contributions?: GetInvestmentContributionsResponse;
+  ventures?: GetVentureContributionsResponse;
   sourceLevel: number;
   expenseLevel: number;
   topN: number;
@@ -206,7 +213,7 @@ export const buildMoneyFlow = ({
 
   // A savings category is neither income nor spend: its legs net into one savings destination,
   // grouped under the topmost selected ancestor because the picker selects whole subtrees.
-  const spend: endpointsTypes.GetSpendingsByCategoriesByTypeReturnType = {};
+  const spend: GetSpendingsByCategoriesByTypeReturnType = {};
   const savedByCategory = new Map<string, number>();
   // Only the expense side of a tax category leaves `spend`: a tax refund stays an income source.
   const taxByCategory = new Map<string, number>();

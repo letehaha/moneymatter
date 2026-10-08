@@ -12,8 +12,9 @@
  * file. See `MsMoneyUploadResponse`.
  */
 
-import { TRANSACTION_TYPES } from './enums';
-import { IMPORT_JOB_STATUSES } from './import-export';
+import type { ResourceLease } from '../resource-lease';
+import { TRANSACTION_TYPES } from '../transactions';
+import { IMPORT_JOB_STATUSES } from './core';
 import type {
   CategoryMappingConfig,
   DuplicateMatch,
@@ -22,8 +23,7 @@ import type {
   ImportExecuteRequestBase,
   ImportJobStatus,
   ImportSummaryBase,
-} from './import-export';
-import type { ResourceLease } from './resource-lease';
+} from './core';
 
 /** Largest `.mny` upload accepted, in bytes. Money files grow with history;
  *  50MB covers a very long-running file while staying well inside what the

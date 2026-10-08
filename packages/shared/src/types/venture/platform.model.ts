@@ -1,4 +1,4 @@
-import { UserModel } from '../db-models';
+import type { UserModel } from '../users';
 
 export interface VenturePlatformModel {
   id: string;

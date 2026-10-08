@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { WipeDataSharedResources } from '@/api/user';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { RESTORE_PHASE_LABEL_KEYS } from '@/components/common/restore-phase-labels';
 import { Button } from '@/components/lib/ui/button';
@@ -11,7 +10,7 @@ import { useStallTimer } from '@/composable/use-stall-timer';
 import { ApiErrorResponseError } from '@/js/errors';
 import { resetQueryCaches } from '@/lib/query-persister';
 import { captureException } from '@/lib/sentry';
-import { API_ERROR_CODES, type BackupRestorePhase } from '@bt/shared/types';
+import { API_ERROR_CODES, type BackupRestorePhase, type WipeDataSharedResources } from '@bt/shared/types';
 import { LoaderCircleIcon } from '@lucide/vue';
 import { useQueryClient } from '@tanstack/vue-query';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';

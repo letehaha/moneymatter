@@ -1,4 +1,10 @@
-import { TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
+import {
+  type PivotColumn,
+  type PivotGranularity,
+  type PivotMeasure,
+  type PivotRowDimension,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import { createRootCategoryResolver, expandCategoryIdsWithDescendants } from '@services/categories/category-hierarchy';
 import {
@@ -20,9 +26,9 @@ interface GetPivotReportParams {
   userId: number;
   from: string;
   to: string;
-  granularity: endpointsTypes.PivotGranularity;
-  rowDimension: endpointsTypes.PivotRowDimension;
-  measure: endpointsTypes.PivotMeasure;
+  granularity: PivotGranularity;
+  rowDimension: PivotRowDimension;
+  measure: PivotMeasure;
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
@@ -129,7 +135,7 @@ export const getPivotReport = async ({
   let grandTotal = 0;
   for (const columnKey of columnKeys) grandTotal += columnTotals[columnKey]!;
 
-  const columns: endpointsTypes.PivotColumn[] = buckets.map((bucket, index) => ({
+  const columns: PivotColumn[] = buckets.map((bucket, index) => ({
     key: columnKeys[index]!,
     periodStart: format(bucket.periodStart, 'yyyy-MM-dd'),
     periodEnd: format(bucket.periodEnd, 'yyyy-MM-dd'),

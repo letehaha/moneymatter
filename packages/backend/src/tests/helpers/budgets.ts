@@ -1,4 +1,4 @@
-import { BUDGET_TYPES, BudgetModel, endpointsTypes } from '@bt/shared/types';
+import { BUDGET_TYPES, BudgetModel, type BudgetSpendingStatsResponse } from '@bt/shared/types';
 import addTransactionsToBudget from '@controllers/budgets/add-transaction-to-budget';
 import removeTransactionsFromBudget from '@controllers/budgets/remove-transaction-from-budget';
 import * as getBudgetService from '@root/services/budget.service';
@@ -234,7 +234,7 @@ export async function getSpendingStats<R extends boolean | undefined = undefined
   id: string;
   raw?: R;
 }) {
-  return makeRequest<endpointsTypes.BudgetSpendingStatsResponse, R>({
+  return makeRequest<BudgetSpendingStatsResponse, R>({
     method: 'get',
     url: `/budgets/${id}/spending-stats`,
     raw,

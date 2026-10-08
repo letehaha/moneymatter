@@ -182,7 +182,7 @@ import { calculatePercentageDifference, formatLargeNumber } from '@/js/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { loadCombinedBalanceTrendData } from '@/services/stats';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
-import { SORT_DIRECTIONS } from '@bt/shared/types/enums';
+import { SORT_DIRECTIONS } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';

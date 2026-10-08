@@ -1,4 +1,30 @@
-import { VEHICLE_CLASS } from './enums';
+/**
+ * Vehicle body / drivetrain class used to pick the default depreciation curve.
+ * VARCHAR in DB, TS-side enum for type safety (per project's no-DB-enums rule).
+ */
+export enum VEHICLE_CLASS {
+  sedan = 'sedan',
+  suv = 'suv',
+  truck = 'truck',
+  luxury = 'luxury',
+  ev = 'ev',
+  motorcycle = 'motorcycle',
+  other = 'other',
+}
+
+/**
+ * How a vehicle's depreciation is parameterized:
+ * - classDefault: use the per-class default curve as-is.
+ * - slow / average / fast: scale the per-class default curve by a preset multiplier.
+ * - custom: ignore class curve, apply a single flat annual rate (customAnnualRatePct).
+ */
+export enum DEPRECIATION_PRESET {
+  classDefault = 'class-default',
+  slow = 'slow',
+  average = 'average',
+  fast = 'fast',
+  custom = 'custom',
+}
 
 /**
  * Default annual depreciation rates (percent) by year-since-purchase, indexed

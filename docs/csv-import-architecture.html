@@ -425,7 +425,7 @@
           </div>
           <div class="cell">
             <div class="k">Shared row + request types</div>
-            <div class="v file">packages/shared/src/types/import-export.ts</div>
+            <div class="v file">packages/shared/src/types/import-export/</div>
           </div>
         </div>
 
@@ -478,7 +478,7 @@
         <h3 id="contract">2.1 The shared contract</h3>
         <p>
           The single type every tabular importer converges on lives in
-          <span class="file">packages/shared/src/types/import-export.ts</span>:
+          <span class="file">packages/shared/src/types/import-export/core.ts</span>:
         </p>
         <pre><code>interface ParsedTransactionRow {
   rowIndex: number;
@@ -1031,11 +1031,11 @@ export const parseBudgetBakersWalletController = createParseController({
           <tbody>
             <tr>
               <td>Shared row + request/response types</td>
-              <td class="file">packages/shared/src/types/import-export.ts</td>
+              <td class="file">packages/shared/src/types/import-export/</td>
             </tr>
             <tr>
               <td>Wallet types</td>
-              <td class="file">packages/shared/src/types/budget-bakers-wallet-import.ts</td>
+              <td class="file">packages/shared/src/types/import-export/budget-bakers-wallet-import.ts</td>
             </tr>
             <tr>
               <td>SSE event types</td>

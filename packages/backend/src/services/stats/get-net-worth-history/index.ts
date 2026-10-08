@@ -1,4 +1,12 @@
-import { ACCOUNT_CATEGORIES, type Cents, asCents, endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  type Cents,
+  MAX_NET_WORTH_HISTORY_BUCKETS,
+  type NetWorthHistoryDegraded,
+  type NetWorthHistoryGranularity,
+  type NetWorthHistoryUnpricedSecurity,
+  asCents,
+} from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -151,10 +159,10 @@ const buildDegraded = ({
   unpricedSecurities,
   fxFallbackCurrencies,
 }: {
-  unpricedSecurities: endpointsTypes.NetWorthHistoryUnpricedSecurity[];
+  unpricedSecurities: NetWorthHistoryUnpricedSecurity[];
   fxFallbackCurrencies: string[];
-}): endpointsTypes.NetWorthHistoryDegraded | undefined => {
-  const degraded: endpointsTypes.NetWorthHistoryDegraded = {};
+}): NetWorthHistoryDegraded | undefined => {
+  const degraded: NetWorthHistoryDegraded = {};
   if (unpricedSecurities.length > 0) degraded.unpricedSecurities = unpricedSecurities;
   if (fxFallbackCurrencies.length > 0) degraded.fxFallbackCurrencies = fxFallbackCurrencies;
 
@@ -187,7 +195,7 @@ export const getNetWorthHistory = async ({
   userId: number;
   from: string;
   to: string;
-  granularity: endpointsTypes.NetWorthHistoryGranularity;
+  granularity: NetWorthHistoryGranularity;
   includeCreditLimit?: boolean;
 }): Promise<NetWorthHistoryResultCents> => {
   // Weekly buckets follow ISO weeks (Monday start) — the shared spec every stats
@@ -201,10 +209,10 @@ export const getNetWorthHistory = async ({
   // Past this cap the chart is unreadable anyway and a fine-grained all-time range
   // would price holdings on thousands of days — the client should pick a coarser
   // granularity instead.
-  if (buckets.length > endpointsTypes.MAX_NET_WORTH_HISTORY_BUCKETS) {
+  if (buckets.length > MAX_NET_WORTH_HISTORY_BUCKETS) {
     throw new ValidationError({
       message: t({ key: 'stats.netWorthHistoryTooManyPoints' }),
-      details: { maxPoints: endpointsTypes.MAX_NET_WORTH_HISTORY_BUCKETS, requestedPoints: buckets.length },
+      details: { maxPoints: MAX_NET_WORTH_HISTORY_BUCKETS, requestedPoints: buckets.length },
     });
   }
 

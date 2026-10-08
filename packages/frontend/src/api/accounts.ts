@@ -5,14 +5,15 @@ import {
   AccountWithRelinkStatus,
   type LinkResidualTarget,
   TransactionModel,
-  endpointsTypes,
+  type CreateAccountBody,
+  type UpdateAccountBody,
 } from '@bt/shared/types';
 
 export const loadAccounts = async (): Promise<AccountWithRelinkStatus[]> => {
   return api.get('/accounts');
 };
 
-export const createAccount = async (payload: endpointsTypes.CreateAccountBody): Promise<AccountModel> => {
+export const createAccount = async (payload: CreateAccountBody): Promise<AccountModel> => {
   return api.post('/accounts', {
     ...payload,
     accountCategory: payload.accountCategory || ACCOUNT_CATEGORIES.general,
@@ -22,7 +23,7 @@ export const createAccount = async (payload: endpointsTypes.CreateAccountBody): 
 export const editAccount = async ({
   id,
   ...data
-}: endpointsTypes.UpdateAccountBody & {
+}: UpdateAccountBody & {
   id: string;
 }): Promise<AccountModel> => {
   return api.put(`/accounts/${id}`, data);

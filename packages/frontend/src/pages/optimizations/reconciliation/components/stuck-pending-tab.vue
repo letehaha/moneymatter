@@ -7,8 +7,7 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { formatUIAmount } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { useAccountsStore, useCategoriesStore } from '@/stores';
-import { TRANSACTION_TYPES, type RecordId, type TransactionModel } from '@bt/shared/types';
-import type { StuckPendingItem } from '@bt/shared/types/endpoints';
+import { TRANSACTION_TYPES, type RecordId, type TransactionModel, type StuckPendingItem } from '@bt/shared/types';
 import {
   CircleCheckIcon,
   ClockIcon,

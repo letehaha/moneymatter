@@ -1,4 +1,9 @@
-import { CATEGORY_TYPES, type CategoryModel, type endpointsTypes } from '@bt/shared/types';
+import {
+  CATEGORY_TYPES,
+  type CategoryModel,
+  type GetSpendingsByCategoriesByTypeReturnType,
+  type GetInvestmentContributionsResponse,
+} from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import { CASH_NODE_ID, DEFICIT_NODE_ID, OTHER_NODE_ID, buildMoneyFlow } from './build-money-flow';
@@ -33,7 +38,7 @@ const entry = ({ income = 0, expense = 0 }: { income?: number; expense?: number 
 });
 
 const asResponse = (d: Record<string, ReturnType<typeof entry>>) =>
-  d as unknown as endpointsTypes.GetSpendingsByCategoriesByTypeReturnType;
+  d as unknown as GetSpendingsByCategoriesByTypeReturnType;
 
 const data = asResponse({
   salary: entry({ income: 1000 }),
@@ -45,11 +50,7 @@ const data = asResponse({
 
 const sumValues = ({ nodes }: { nodes: { value: number }[] }) => nodes.reduce((sum, n) => sum + n.value, 0);
 
-const contributions = ({
-  amounts,
-}: {
-  amounts: Record<string, number>;
-}): endpointsTypes.GetInvestmentContributionsResponse => ({
+const contributions = ({ amounts }: { amounts: Record<string, number> }): GetInvestmentContributionsResponse => ({
   portfolios: Object.keys(amounts).map((id) => ({ portfolioId: id, name: `Portfolio ${id}` })),
   buckets: [
     {

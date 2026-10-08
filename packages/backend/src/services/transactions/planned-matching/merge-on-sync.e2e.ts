@@ -1,12 +1,13 @@
-import type { ExternalMonobankTransactionResponse, RecordId } from '@bt/shared/types';
 import {
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
+  type ExternalMonobankTransactionResponse,
   RESOURCE_TYPES,
+  type RecordId,
   SHARE_PERMISSIONS,
+  type SplitInput,
   TRANSACTIONS_WRITE_SCOPES,
 } from '@bt/shared/types';
-import type { endpointsTypes } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import ResourceShares from '@models/resource-shares.model';
 import Transactions from '@models/transactions.model';
@@ -484,7 +485,7 @@ describe('Planned transactions – merge on sync', () => {
      * One booked row (the anchor that unlocks matching), one plan, then the pending payload
      * that confirms it. Returns the merged row id.
      */
-    const mergePendingIntoPlan = async ({ splits }: { splits?: endpointsTypes.SplitInput[] } = {}) => {
+    const mergePendingIntoPlan = async ({ splits }: { splits?: SplitInput[] } = {}) => {
       await helpers.patchUserSettings({ patch: { importPendingBankTransactions: true }, raw: true });
       helpers.enablebanking.setFixedTransactions([ANCHOR]);
       const { connectionId, accountId } = await setupConnectionWithAccount();

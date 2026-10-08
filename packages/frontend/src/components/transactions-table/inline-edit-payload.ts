@@ -1,5 +1,4 @@
-import type { RecordId, TagModel, TransactionModel } from '@bt/shared/types';
-import type { UpdateTransactionBody } from '@bt/shared/types/endpoints';
+import type { RecordId, TagModel, TransactionModel, UpdateTransactionBody } from '@bt/shared/types';
 import { startOfMinute } from 'date-fns';
 import { toRaw } from 'vue';
 

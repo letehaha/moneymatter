@@ -2,7 +2,7 @@
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
-import type { StuckPendingItem } from '@bt/shared/types/endpoints';
+import type { StuckPendingItem } from '@bt/shared/types';
 import { InfoIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';

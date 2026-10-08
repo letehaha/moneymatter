@@ -1,5 +1,5 @@
 import { CATEGORICAL_SERIES_PALETTE, OTHERS_SERIES_COLOR } from '@/composable/charts/categorical-series-palette';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { NetWorthDriversBucket, NetWorthDriversPortfolioMeta } from '@bt/shared/types';
 import { differenceInCalendarMonths, differenceInDays, parseISO } from 'date-fns';
 
 import { NET_WORTH_ASSET_KIND_COLORS } from '../../net-worth-history/composables/net-worth-history-derivations';
@@ -25,11 +25,7 @@ export interface CumulativePoint {
  * "what happened over this range", so changing the range is meant to reshape
  * the curves.
  */
-export const buildCumulativeSeries = ({
-  buckets,
-}: {
-  buckets: endpointsTypes.NetWorthDriversBucket[];
-}): CumulativePoint[] => {
+export const buildCumulativeSeries = ({ buckets }: { buckets: NetWorthDriversBucket[] }): CumulativePoint[] => {
   let savedCumulative = 0;
   let grownCumulative = 0;
 
@@ -60,7 +56,7 @@ export const buildCumulativeSeries = ({
 export const deriveTargetSeeds = ({
   buckets,
 }: {
-  buckets: endpointsTypes.NetWorthDriversBucket[];
+  buckets: NetWorthDriversBucket[];
 }): { currentPortfolioValue: number; avgMonthlySavings: number } => {
   const first = buckets[0];
   const last = buckets[buckets.length - 1];
@@ -84,7 +80,7 @@ export const deriveTargetSeeds = ({
 export const computeHoldingsSharePct = ({
   composition,
 }: {
-  composition: endpointsTypes.NetWorthDriversBucket['composition'];
+  composition: NetWorthDriversBucket['composition'];
 }): number | null => {
   const total = composition.holdingsValue + composition.cashValue;
   if (total <= 0) return null;
@@ -113,7 +109,7 @@ const EMPTY_ALLOCATION_CONTEXT: AllocationContext = {
  * A window of all-zero buckets is indistinguishable from no data to a reader, so
  * it gets the empty state rather than a pair of flat lines on zero.
  */
-export const hasAnyData = ({ buckets }: { buckets: endpointsTypes.NetWorthDriversBucket[] }): boolean =>
+export const hasAnyData = ({ buckets }: { buckets: NetWorthDriversBucket[] }): boolean =>
   buckets.some(
     (bucket) =>
       bucket.savings.net !== 0 ||
@@ -129,7 +125,7 @@ export const hasAnyData = ({ buckets }: { buckets: endpointsTypes.NetWorthDriver
  * everything inside the window, so growth and fees — which only a portfolio can
  * produce — count as evidence too.
  */
-export const hasPortfolios = ({ buckets }: { buckets: endpointsTypes.NetWorthDriversBucket[] }): boolean =>
+export const hasPortfolios = ({ buckets }: { buckets: NetWorthDriversBucket[] }): boolean =>
   buckets.some(
     (bucket) =>
       bucket.composition.holdingsValue !== 0 ||
@@ -152,7 +148,7 @@ export const computeAllocationContext = ({
   buckets,
   referenceYearsBack = 1,
 }: {
-  buckets: endpointsTypes.NetWorthDriversBucket[];
+  buckets: NetWorthDriversBucket[];
   referenceYearsBack?: number;
 }): AllocationContext => {
   const withShare = buckets
@@ -231,8 +227,8 @@ export const buildBreakdownModel = ({
   buckets,
   portfolios,
 }: {
-  buckets: endpointsTypes.NetWorthDriversBucket[];
-  portfolios: endpointsTypes.NetWorthDriversPortfolioMeta[];
+  buckets: NetWorthDriversBucket[];
+  portfolios: NetWorthDriversPortfolioMeta[];
 }): BreakdownModel => {
   const named = portfolios.slice(0, MAX_PORTFOLIO_SERIES);
 

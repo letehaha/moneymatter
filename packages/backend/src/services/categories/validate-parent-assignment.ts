@@ -1,5 +1,4 @@
-import { MAX_CATEGORIES_NESTING } from '@bt/shared/const/categories';
-import { CATEGORY_TYPES } from '@bt/shared/types';
+import { MAX_CATEGORIES_NESTING, CATEGORY_TYPES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 

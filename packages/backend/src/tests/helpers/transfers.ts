@@ -1,5 +1,4 @@
-import { TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
-import { BulkTransferScanResponse } from '@bt/shared/types/endpoints';
+import { BulkTransferScanResponse, TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
 import * as helpers from '@tests/helpers';
 
 import { MakeRequestReturn } from './common';

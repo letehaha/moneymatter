@@ -1,4 +1,4 @@
-import type { RecordId, endpointsTypes } from '@bt/shared/types';
+import type { RecordId, CashFlowPeriodData } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import { OTHER_SEGMENT_ID, buildTaxSummary, withDirectChildren } from './build-tax-summary';
@@ -11,7 +11,7 @@ const period = ({
   month: string;
   income?: number;
   categories?: Record<string, number>;
-}): endpointsTypes.CashFlowPeriodData => ({
+}): CashFlowPeriodData => ({
   periodStart: `2026-${month}-01`,
   periodEnd: `2026-${month}-28`,
   income,

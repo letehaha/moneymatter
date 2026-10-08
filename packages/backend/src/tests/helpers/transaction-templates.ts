@@ -1,4 +1,4 @@
-import type { CreateTransactionTemplateBody, UpdateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type { CreateTransactionTemplateBody, UpdateTransactionTemplateBody } from '@bt/shared/types';
 import type {
   createTransactionTemplate as apiCreateTransactionTemplate,
   deleteTransactionTemplate as apiDeleteTransactionTemplate,

@@ -1,6 +1,10 @@
-import { PAYMENT_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
-import type { Expect, MutuallyAssignable } from '@bt/shared/types/type-testing';
+import {
+  type CreateTransactionTemplateBody,
+  type Expect,
+  type MutuallyAssignable,
+  PAYMENT_TYPES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { currencyCode, recordId, uniqueRecordIds } from '@common/lib/zod/custom-types';
 import { nonNegativeAmountSchema } from '@controllers/transactions.controller/schemas';
 import { z } from 'zod';

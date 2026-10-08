@@ -1,4 +1,4 @@
-import { PLANNED_MATCH_WINDOW_DAYS } from '@bt/shared/const/planned-transactions';
+import { PLANNED_MATCH_WINDOW_DAYS } from '@bt/shared/types';
 import { addDays, subDays } from 'date-fns';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 

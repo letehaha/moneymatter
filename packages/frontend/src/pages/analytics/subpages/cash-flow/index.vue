@@ -112,7 +112,7 @@ import Popover from '@/components/lib/ui/popover/Popover.vue';
 import PopoverContent from '@/components/lib/ui/popover/PopoverContent.vue';
 import PopoverTrigger from '@/components/lib/ui/popover/PopoverTrigger.vue';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { endpointsTypes } from '@bt/shared/types';
+import { CASH_FLOW_GRANULARITIES, type CashFlowGranularity } from '@bt/shared/types';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { useLocalStorage, useSessionStorage } from '@vueuse/core';
 import { differenceInDays, endOfMonth, startOfMonth, subDays, subMonths } from 'date-fns';
@@ -153,8 +153,7 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 // State with persistence using VueUse
 // localStorage - persists across sessions
 const selectedChartType = useLocalStorage<ChartType>('cash-flow-chart-type', 'mirrored');
-const { CASH_FLOW_GRANULARITIES } = endpointsTypes;
-const selectedGranularity = useLocalStorage<endpointsTypes.CashFlowGranularity>('cash-flow-granularity', 'monthly');
+const selectedGranularity = useLocalStorage<CashFlowGranularity>('cash-flow-granularity', 'monthly');
 
 // sessionStorage - clears when tab closes
 const selectedPeriod = useSessionStorage<Period>('cash-flow-period', getDefaultPeriod(), {

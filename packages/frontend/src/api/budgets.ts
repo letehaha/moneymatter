@@ -1,5 +1,5 @@
 import { api } from '@/api/_api';
-import { BudgetModel, endpointsTypes } from '@bt/shared/types';
+import { BudgetModel, type BudgetSpendingStatsResponse } from '@bt/shared/types';
 
 interface editBudgetParamsParams {
   name?: string;
@@ -97,6 +97,6 @@ export const loadBudgetSpendingStats = async ({
   budgetId,
 }: {
   budgetId: string;
-}): Promise<endpointsTypes.BudgetSpendingStatsResponse> => {
+}): Promise<BudgetSpendingStatsResponse> => {
   return api.get(`/budgets/${budgetId}/spending-stats`);
 };

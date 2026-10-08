@@ -1,4 +1,4 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData, GetVentureContributionsResponse } from '@bt/shared/types';
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import { sum } from 'lodash-es';
 
@@ -17,7 +17,7 @@ const median = ({ values }: { values: number[] }) => {
   return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
 };
 
-type SeedPeriod = Pick<endpointsTypes.CashFlowPeriodData, 'periodStart' | 'income' | 'expenses' | 'netFlow'>;
+type SeedPeriod = Pick<CashFlowPeriodData, 'periodStart' | 'income' | 'expenses' | 'netFlow'>;
 
 /** Window periods from the first month with any cash flow; venture contributions must cover the same span. */
 export const getFireSeedPeriods = <T extends SeedPeriod>({ periods, now }: { periods: T[]; now: Date }): T[] => {
@@ -37,7 +37,7 @@ export const deriveFireSeed = ({
 }: {
   periods: SeedPeriod[];
   excludedCategoryExpenseByPeriod: Record<string, number>;
-  ventureContributions: endpointsTypes.GetVentureContributionsResponse;
+  ventureContributions: GetVentureContributionsResponse;
   now: Date;
 }) => {
   const used = getFireSeedPeriods({ periods, now });

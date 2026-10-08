@@ -1,4 +1,8 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type {
+  NetWorthDriversPortfolioSlice,
+  NetWorthDriversBucket,
+  NetWorthDriversPortfolioMeta,
+} from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -34,8 +38,8 @@ const buildBucket = ({
   feesAndTaxes?: number;
   holdingsValue?: number;
   cashValue?: number;
-  byPortfolio?: endpointsTypes.NetWorthDriversPortfolioSlice[];
-}): endpointsTypes.NetWorthDriversBucket => ({
+  byPortfolio?: NetWorthDriversPortfolioSlice[];
+}): NetWorthDriversBucket => ({
   periodStart,
   periodEnd,
   savings: { income: Math.max(savingsNet, 0), expenses: Math.max(-savingsNet, 0), net: savingsNet },
@@ -50,14 +54,14 @@ const monthlyBucket = ({
   month: number;
   savingsNet?: number;
   growth?: number;
-  byPortfolio?: endpointsTypes.NetWorthDriversPortfolioSlice[];
+  byPortfolio?: NetWorthDriversPortfolioSlice[];
 }) => {
   const padded = String(month).padStart(2, '0');
   const lastDay = month === 2 ? '28' : '30';
   return buildBucket({ periodStart: `2026-${padded}-01`, periodEnd: `2026-${padded}-${lastDay}`, ...rest });
 };
 
-const buildPortfolios = ({ count }: { count: number }): endpointsTypes.NetWorthDriversPortfolioMeta[] =>
+const buildPortfolios = ({ count }: { count: number }): NetWorthDriversPortfolioMeta[] =>
   Array.from({ length: count }, (_, index) => ({ portfolioId: `p${index + 1}`, name: `Portfolio ${index + 1}` }));
 
 describe('buildCumulativeSeries', () => {

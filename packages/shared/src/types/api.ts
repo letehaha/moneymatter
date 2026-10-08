@@ -1,6 +1,3 @@
-import type { HouseholdSharePermission } from './enums';
-import type { RecordId } from './record-id';
-
 export enum API_RESPONSE_STATUS {
   error = 'error',
   success = 'success',
@@ -49,6 +46,11 @@ export enum API_ERROR_CODES {
   loanPaymentOverpayConfirmationRequired = 'LOAN_PAYMENT_OVERPAY_CONFIRMATION_REQUIRED',
 }
 
+export enum SORT_DIRECTIONS {
+  asc = 'ASC',
+  desc = 'DESC',
+}
+
 /**
  * Counts returned when re-anchoring account `ref*` balances after a user edits or
  * removes a custom exchange rate. `failed > 0` means some accounts kept a stale
@@ -86,15 +88,3 @@ export type LoanPaymentOverpayDetails = {
   /** Positive amount by which the batch exceeds the owed balance. */
   overpayBy: number;
 };
-
-/**
- * Preflight summary returned in the `details` of a 409 with code
- * `wipeDataSharingAcknowledgementRequired`. UI uses it to render a follow-up
- * acknowledgement dialog listing which resources will lose external access.
- */
-export interface WipeDataSharedResources {
-  /** Accounts the user OWNS that another user currently has share access to. */
-  accounts: Array<{ id: RecordId; name: string; recipientUserId: number }>;
-  /** Households the user OWNS with at least one accepted member. */
-  households: Array<{ shareId: RecordId; recipientUserId: number; permission: HouseholdSharePermission }>;
-}

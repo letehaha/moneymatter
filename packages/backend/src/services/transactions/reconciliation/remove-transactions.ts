@@ -1,5 +1,4 @@
-import type { RecordId } from '@bt/shared/types';
-import type { ReconciliationActionResponse } from '@bt/shared/types/endpoints';
+import type { ReconciliationActionResponse, RecordId } from '@bt/shared/types';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { detachLinks, loadReconcilableRows, softDeleteTransactions } from './helpers';

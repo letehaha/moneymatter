@@ -1,5 +1,11 @@
 import { api } from '@/api/_api';
-import { CategoryModel, endpointsTypes } from '@bt/shared/types';
+import {
+  CategoryModel,
+  type CreateCategoryBody,
+  type CreateCategoryResponse,
+  type EditCategoryBody,
+  type EditCategoryResponse,
+} from '@bt/shared/types';
 
 export const loadSystemCategories = async (): Promise<CategoryModel[]> => {
   // `includeAccessible` widens the result to the union of the caller's categories plus
@@ -18,9 +24,7 @@ export const loadCategoriesByAccount = async ({ accountId }: { accountId: string
   return result;
 };
 
-export const createCategory = async (
-  params: endpointsTypes.CreateCategoryBody,
-): Promise<endpointsTypes.CreateCategoryResponse> => {
+export const createCategory = async (params: CreateCategoryBody): Promise<CreateCategoryResponse> => {
   const result = await api.post('/categories', params);
 
   return result;
@@ -29,9 +33,9 @@ export const createCategory = async (
 export const editCategory = async ({
   categoryId,
   ...params
-}: endpointsTypes.EditCategoryBody & {
+}: EditCategoryBody & {
   categoryId: string;
-}): Promise<endpointsTypes.EditCategoryResponse> => {
+}): Promise<EditCategoryResponse> => {
   const result = await api.put(`/categories/${categoryId}`, params);
 
   return result;

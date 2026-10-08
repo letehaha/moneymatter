@@ -9,7 +9,7 @@ import {
 } from '@/components/common/dropdown-menu';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import type { SelectedTotals } from '@/composable/transaction-selection';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { TransactionsSummaryResponse } from '@bt/shared/types';
 import {
   GroupIcon,
   ListOrderedIcon,
@@ -34,7 +34,7 @@ const props = defineProps<{
   hasExternalSelected?: boolean;
   selectedTotals: SelectedTotals;
   /** Totals of the whole filtered set, shown while nothing is selected. */
-  matchingSummary?: endpointsTypes.TransactionsSummaryResponse;
+  matchingSummary?: TransactionsSummaryResponse;
   /** The selection covers rows that are not loaded, so grouping, which needs their ids, is off. */
   isGroupingBlocked?: boolean;
 }>();

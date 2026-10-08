@@ -1,5 +1,5 @@
-import type { TransactionModel } from './db-models';
-import { TRANSACTION_TYPES } from './enums';
+import type { TransactionModel } from './transactions';
+import { TRANSACTION_TYPES } from './transactions';
 
 /** Invoice fields the AI reads out of an uploaded document. Amounts are decimals. */
 export interface ExtractedInvoice {

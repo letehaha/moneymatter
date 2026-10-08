@@ -55,14 +55,14 @@ import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { BudgetSpendingPeriod } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { parseISO } from 'date-fns';
 import { useResizeObserver } from '@vueuse/core';
 import { computed, reactive, ref, watch } from 'vue';
 
 const props = defineProps<{
-  data: endpointsTypes.BudgetSpendingPeriod[];
+  data: BudgetSpendingPeriod[];
   granularity: 'monthly' | 'weekly';
 }>();
 
@@ -259,7 +259,7 @@ const renderChart = () => {
   }
 };
 
-function handleMouseEnter(event: MouseEvent, d: endpointsTypes.BudgetSpendingPeriod) {
+function handleMouseEnter(event: MouseEvent, d: BudgetSpendingPeriod) {
   const startDate = parseISO(d.periodStart);
   const endDate = parseISO(d.periodEnd);
   const isSameMonth = startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear();

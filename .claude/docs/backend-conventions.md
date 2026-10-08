@@ -112,9 +112,13 @@ export const createFeature = withTransaction(createFeatureImpl);
 
 ## Shared Types
 
-- API types: `@bt/shared/types/api.ts`
-- DB models: `@bt/shared/types/db-models.ts`
-- Endpoints: `@bt/shared/types/endpoints.ts`
+- API envelope, error codes, their `details` payloads and generic request primitives: `packages/shared/src/types/api.ts`
+- A new enum, model, request/response type or limit goes in `packages/shared/src/types/<domain>.ts`, where the domain is the backend routes/services feature that owns it — all kinds together
+- No file is organised by kind (no `enums.ts`, `models.ts`, `endpoints.ts`)
+- Import flat: `import { ... } from '@bt/shared/types'`
+- A domain becomes a folder only when it has separable sub-features (e.g. `transactions/`, `stats/`)
+- `investments/` and `venture/` predate this rule (kind-named files, deep imports) — not a pattern to copy
+- Non-domain constants live in `packages/shared/src/const/`
 
 ## E2E Tests
 

@@ -309,8 +309,12 @@ import { useManageTransactionDialog } from '@/components/transactions-list/use-m
 import { useTransactionsDisplay } from '@/components/transactions-list/use-transactions-display';
 import { usePayeeLookup } from '@/composable/data-queries/payees';
 import { type MatchingTransactions, useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
-import { SORT_DIRECTIONS, TRANSACTION_SORT_FIELD, TransactionModel } from '@bt/shared/types';
-import type { UpdateTransactionBody } from '@bt/shared/types/endpoints';
+import {
+  SORT_DIRECTIONS,
+  TRANSACTION_SORT_FIELD,
+  TransactionModel,
+  type UpdateTransactionBody,
+} from '@bt/shared/types';
 import { useVirtualizer } from '@tanstack/vue-virtual';
 import { useElementSize, useEventListener } from '@vueuse/core';
 import {

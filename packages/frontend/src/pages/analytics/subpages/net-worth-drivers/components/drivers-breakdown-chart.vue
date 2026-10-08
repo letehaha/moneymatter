@@ -63,7 +63,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { NetWorthDriversGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { parseISO } from 'date-fns';
@@ -79,7 +79,7 @@ import { useSeriesColors } from '../composables/use-series-colors';
 const props = defineProps<{
   bars: BreakdownBar[];
   legend: BreakdownLegendEntry[];
-  granularity: endpointsTypes.NetWorthDriversGranularity;
+  granularity: NetWorthDriversGranularity;
 }>();
 
 const { format: formatDate, locale } = useDateLocale();

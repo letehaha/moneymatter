@@ -3,10 +3,11 @@ import {
   RECONCILIATION_MERGE_MAX,
   RECONCILIATION_MERGE_MIN,
   RECONCILIATION_REMOVE_MAX,
-} from '@bt/shared/const/reconciliation';
-import { isLinkedTransfer } from '@bt/shared/const/transfers';
-import type { AccountModel, TransactionModel } from '@bt/shared/types';
-import type { ReconciliationHistoryEvent } from '@bt/shared/types/endpoints';
+  isLinkedTransfer,
+  type AccountModel,
+  type TransactionModel,
+  type ReconciliationHistoryEvent,
+} from '@bt/shared/types';
 
 type ReconciliationAction = ReconciliationHistoryEvent['type'];
 

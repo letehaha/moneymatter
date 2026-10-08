@@ -1,7 +1,13 @@
 import type { TransactionFilterParams } from '@/api/transactions';
 import type { BulkEditFormValues } from '@/components/transactions-list/bulk-edit-dialog.vue';
 import { useAccountsStore } from '@/stores';
-import { ACCOUNT_TYPES, type AccountModel, type TransactionModel, type endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_TYPES,
+  type AccountModel,
+  type TransactionModel,
+  type TransactionsSummaryResponse,
+  type BulkTarget,
+} from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -26,7 +32,7 @@ export function isExternalTransaction({ tx, account }: { tx: TransactionModel; a
 
 /** The whole result set behind the loaded rows: its totals and the filters that produce it. */
 export interface MatchingTransactions {
-  summary: endpointsTypes.TransactionsSummaryResponse;
+  summary: TransactionsSummaryResponse;
   filters: TransactionFilterParams;
 }
 
@@ -39,7 +45,7 @@ export function buildBulkTarget({
   matching: MatchingTransactions | undefined;
   excludedIds: string[];
   selectedIds: string[];
-}): endpointsTypes.BulkTarget {
+}): BulkTarget {
   return matching ? { selection: { filters: matching.filters, excludedIds } } : { transactionIds: selectedIds };
 }
 

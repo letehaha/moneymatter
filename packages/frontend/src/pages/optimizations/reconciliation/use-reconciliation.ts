@@ -11,8 +11,7 @@ import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const/
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { extractApiErrorMessage } from '@/js/errors';
-import type { RecordId } from '@bt/shared/types';
-import type { CheckStuckPendingResponse } from '@bt/shared/types/endpoints';
+import type { RecordId, CheckStuckPendingResponse } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { type ComposerTranslation, useI18n } from 'vue-i18n';
 

@@ -1,4 +1,13 @@
-import { endpointsTypes } from '@bt/shared/types';
+import {
+  MAX_NET_WORTH_HISTORY_BUCKETS,
+  type NetWorthAssetKind,
+  type NetWorthLiabilityKind,
+  type NetWorthHistoryPoint,
+  NET_WORTH_LIABILITY_KINDS,
+  NET_WORTH_ASSET_KINDS,
+  type NetWorthHistoryGranularity,
+  NET_WORTH_HISTORY_GRANULARITIES,
+} from '@bt/shared/types';
 import {
   differenceInCalendarDays,
   differenceInCalendarISOWeeks,
@@ -8,13 +17,11 @@ import {
   parseISO,
 } from 'date-fns';
 
-export const MAX_NET_WORTH_HISTORY_BUCKETS = endpointsTypes.MAX_NET_WORTH_HISTORY_BUCKETS;
-
 // One color per asset kind for the stacked bars, legend and tooltip dots. Fixed
 // mid-tone hues (Tailwind ~500 weight) that stay legible on both themes; cash keeps
 // a green so it still reads as the classic "assets" color. Liabilities stay red and
 // the net-worth line stays the theme foreground, so they never collide with these.
-export const NET_WORTH_ASSET_KIND_COLORS: Record<endpointsTypes.NetWorthAssetKind, string> = {
+export const NET_WORTH_ASSET_KIND_COLORS: Record<NetWorthAssetKind, string> = {
   cash: 'rgb(16, 185, 129)', // emerald
   investments: 'rgb(59, 130, 246)', // blue
   vehicles: 'rgb(245, 158, 11)', // amber
@@ -22,7 +29,7 @@ export const NET_WORTH_ASSET_KIND_COLORS: Record<endpointsTypes.NetWorthAssetKin
 };
 
 /** i18n label key per asset kind, shared by the filter, legend and tooltip. */
-export const NET_WORTH_ASSET_KIND_LABEL_KEYS: Record<endpointsTypes.NetWorthAssetKind, string> = {
+export const NET_WORTH_ASSET_KIND_LABEL_KEYS: Record<NetWorthAssetKind, string> = {
   cash: 'netWorthHistory.assetKinds.cash',
   investments: 'netWorthHistory.assetKinds.investments',
   vehicles: 'netWorthHistory.assetKinds.vehicles',
@@ -33,11 +40,11 @@ export interface NetWorthDisplayPoint {
   /** yyyy-MM-dd bucket-end date the snapshot is taken at. */
   date: string;
   /** Signed per-kind values for the selected asset kinds only, for the stacked bars and tooltip. */
-  assetsByKind: Partial<Record<endpointsTypes.NetWorthAssetKind, number>>;
+  assetsByKind: Partial<Record<NetWorthAssetKind, number>>;
   /** Sum of the selected asset kinds; equals the server's assetsTotal when every kind is selected. */
   assetsTotal: number;
   /** Signed per-kind values for the selected liability kinds only, for the tooltip breakdown. */
-  liabilitiesByKind: Partial<Record<endpointsTypes.NetWorthLiabilityKind, number>>;
+  liabilitiesByKind: Partial<Record<NetWorthLiabilityKind, number>>;
   /** Sum of the selected kinds' signed values — negative = owed. */
   liabilitiesTotal: number;
   /** assetsTotal + liabilitiesTotal; equals the server's netWorth when every kind is selected. */
@@ -45,22 +52,12 @@ export interface NetWorthDisplayPoint {
 }
 
 /** Liability kinds with a nonzero balance anywhere in the series, in canonical order. */
-export const kindsWithActivity = ({
-  points,
-}: {
-  points: endpointsTypes.NetWorthHistoryPoint[];
-}): endpointsTypes.NetWorthLiabilityKind[] =>
-  endpointsTypes.NET_WORTH_LIABILITY_KINDS.filter((kind) =>
-    points.some((point) => (point.liabilities[kind] ?? 0) !== 0),
-  );
+export const kindsWithActivity = ({ points }: { points: NetWorthHistoryPoint[] }): NetWorthLiabilityKind[] =>
+  NET_WORTH_LIABILITY_KINDS.filter((kind) => points.some((point) => (point.liabilities[kind] ?? 0) !== 0));
 
 /** Asset kinds with a nonzero balance anywhere in the series, in canonical order. */
-export const assetKindsWithActivity = ({
-  points,
-}: {
-  points: endpointsTypes.NetWorthHistoryPoint[];
-}): endpointsTypes.NetWorthAssetKind[] =>
-  endpointsTypes.NET_WORTH_ASSET_KINDS.filter((kind) => points.some((point) => (point.assets[kind] ?? 0) !== 0));
+export const assetKindsWithActivity = ({ points }: { points: NetWorthHistoryPoint[] }): NetWorthAssetKind[] =>
+  NET_WORTH_ASSET_KINDS.filter((kind) => points.some((point) => (point.assets[kind] ?? 0) !== 0));
 
 /**
  * Empty selection is the "all kinds" sentinel. A stored kind that has no activity
@@ -79,9 +76,9 @@ export const buildDisplayPoints = ({
   selectedAssetKinds,
   selectedLiabilityKinds,
 }: {
-  points: endpointsTypes.NetWorthHistoryPoint[];
-  selectedAssetKinds: endpointsTypes.NetWorthAssetKind[];
-  selectedLiabilityKinds: endpointsTypes.NetWorthLiabilityKind[];
+  points: NetWorthHistoryPoint[];
+  selectedAssetKinds: NetWorthAssetKind[];
+  selectedLiabilityKinds: NetWorthLiabilityKind[];
 }): NetWorthDisplayPoint[] =>
   points.map((point) => {
     const assetsByKind: NetWorthDisplayPoint['assetsByKind'] = {};
@@ -220,7 +217,7 @@ export const countBuckets = ({
 }: {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.NetWorthHistoryGranularity;
+  granularity: NetWorthHistoryGranularity;
 }): number => {
   switch (granularity) {
     case 'weekly':
@@ -238,7 +235,7 @@ export const countBuckets = ({
  * Default granularity for a range: fine enough to show shape, coarse enough that
  * every threshold stays comfortably under the backend's bucket cap.
  */
-export const autoGranularity = ({ from, to }: { from: Date; to: Date }): endpointsTypes.NetWorthHistoryGranularity => {
+export const autoGranularity = ({ from, to }: { from: Date; to: Date }): NetWorthHistoryGranularity => {
   const days = differenceInCalendarDays(to, from) + 1;
   if (days <= 370) return 'weekly';
   if (days <= 1850) return 'monthly';
@@ -246,13 +243,7 @@ export const autoGranularity = ({ from, to }: { from: Date; to: Date }): endpoin
 };
 
 /** Granularities the current range would push past the backend's bucket cap. */
-export const disabledGranularities = ({
-  from,
-  to,
-}: {
-  from: Date;
-  to: Date;
-}): endpointsTypes.NetWorthHistoryGranularity[] =>
-  endpointsTypes.NET_WORTH_HISTORY_GRANULARITIES.filter(
+export const disabledGranularities = ({ from, to }: { from: Date; to: Date }): NetWorthHistoryGranularity[] =>
+  NET_WORTH_HISTORY_GRANULARITIES.filter(
     (granularity) => countBuckets({ from, to, granularity }) > MAX_NET_WORTH_HISTORY_BUCKETS,
   );

@@ -5,7 +5,7 @@ const COLUMN = 'source';
 const CHECK_CONSTRAINT = 'ExchangeRates_source_valid';
 
 // Values MUST stay in sync with EXCHANGE_RATE_PROVIDER_TYPE in
-// packages/shared/src/types/enums.ts. Migrations run in plain Node and cannot
+// packages/shared/src/types/currencies.ts. Migrations run in plain Node and cannot
 // import app code, so the strings are duplicated here.
 const PROVIDER_CURRENCY_RATES_API = 'currency-rates-api';
 const PROVIDER_FRANKFURTER = 'frankfurter';

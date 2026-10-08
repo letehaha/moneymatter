@@ -16,7 +16,7 @@
       />
       <GranularitySelector
         :model-value="effectiveGranularity"
-        :granularities="endpointsTypes.NET_WORTH_HISTORY_GRANULARITIES"
+        :granularities="NET_WORTH_HISTORY_GRANULARITIES"
         :disabled-values="disabledGranularityValues"
         label-key-prefix="netWorthHistory.granularity"
         @update:model-value="granularityOverride = $event"
@@ -129,7 +129,12 @@ import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Callout } from '@/components/lib/ui/callout';
 import { useFormatCurrency } from '@/composable/formatters';
 import type { Period } from '@/composable/use-period-navigation';
-import { endpointsTypes } from '@bt/shared/types';
+import {
+  NET_WORTH_HISTORY_GRANULARITIES,
+  type NetWorthHistoryGranularity,
+  type NetWorthLiabilityKind,
+  type NetWorthAssetKind,
+} from '@bt/shared/types';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { useLocalStorage, useSessionStorage } from '@vueuse/core';
 import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
@@ -175,7 +180,7 @@ const selectedPeriod = useSessionStorage<Period>('net-worth-history-period', get
 // 'auto' derives the granularity from the period length; a concrete value is a
 // sticky user override. There is no UI back to 'auto' — the auto value simply
 // wins again whenever the override would blow the bucket cap.
-const granularityOverride = useLocalStorage<endpointsTypes.NetWorthHistoryGranularity | 'auto'>(
+const granularityOverride = useLocalStorage<NetWorthHistoryGranularity | 'auto'>(
   'net-worth-history-granularity',
   'auto',
 );
@@ -188,13 +193,13 @@ const disabledGranularityValues = computed(() =>
   disabledGranularities({ from: selectedPeriod.value.from, to: selectedPeriod.value.to }),
 );
 
-const effectiveGranularity = computed<endpointsTypes.NetWorthHistoryGranularity>(() => {
+const effectiveGranularity = computed<NetWorthHistoryGranularity>(() => {
   const override = granularityOverride.value;
   if (
     override !== 'auto' &&
     // A granularity dropped from the contract may still be persisted from an older
     // session; ignore it rather than send a value the API now rejects.
-    endpointsTypes.NET_WORTH_HISTORY_GRANULARITIES.includes(override) &&
+    NET_WORTH_HISTORY_GRANULARITIES.includes(override) &&
     !disabledGranularityValues.value.includes(override)
   ) {
     return override;
@@ -222,11 +227,8 @@ const points = computed(() => query.data.value?.points ?? []);
 
 // Empty = all kinds (the sentinel the filter components share). Kind toggling is
 // purely client-side — it reshapes the loaded series, never refetches.
-const storedLiabilityKinds = useLocalStorage<endpointsTypes.NetWorthLiabilityKind[]>(
-  'net-worth-history-liability-kinds',
-  [],
-);
-const storedAssetKinds = useLocalStorage<endpointsTypes.NetWorthAssetKind[]>('net-worth-history-asset-kinds', []);
+const storedLiabilityKinds = useLocalStorage<NetWorthLiabilityKind[]>('net-worth-history-liability-kinds', []);
+const storedAssetKinds = useLocalStorage<NetWorthAssetKind[]>('net-worth-history-asset-kinds', []);
 
 const availableLiabilityKinds = computed(() => kindsWithActivity({ points: points.value }));
 const availableAssetKinds = computed(() => assetKindsWithActivity({ points: points.value }));

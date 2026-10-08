@@ -1,5 +1,4 @@
-import type { RecordId, TransactionTemplateModel } from '@bt/shared/types';
-import type { UpdateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type { RecordId, TransactionTemplateModel, UpdateTransactionTemplateBody } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';

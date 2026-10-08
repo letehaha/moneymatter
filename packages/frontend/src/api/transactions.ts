@@ -1,6 +1,4 @@
 import { api } from '@/api/_api';
-import { TransactionModel } from '@bt/shared/types/db-models';
-import * as endpointsTypes from '@bt/shared/types/endpoints';
 import {
   ACCOUNT_TYPES,
   FILTER_OPERATION,
@@ -8,13 +6,37 @@ import {
   TRANSACTION_SORT_FIELD,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
-} from '@bt/shared/types/enums';
+  TransactionModel,
+  type CreateTransactionBody,
+  type UpdateTransactionBody,
+  type GetTransactionsResponse,
+  type TransactionsSummaryResponse,
+  type GetPlannedSummaryResponse,
+  type LinkTransactionsBody,
+  type UnlinkTransferTransactionsBody,
+  type BulkUpdateTransactionsBody,
+  type BulkUpdateTransactionsResponse,
+  type BulkDeleteTransactionsBody,
+  type BulkDeleteTransactionsResponse,
+  type ReconciliationRemoveBody,
+  type ReconciliationActionResponse,
+  type ReconciliationMergeBody,
+  type ReconciliationRestoreBody,
+  type ReconciliationRestoreResponse,
+  type ReconciliationHistoryEvent,
+  type StuckPendingItem,
+  type CheckStuckPendingBody,
+  type CheckStuckPendingResponse,
+  type KeepAsBookedBody,
+  type KeepAsBookedResponse,
+  type GetRefundRecommendationsResponse,
+  type GetTransferRecommendationsResponse,
+  type BulkTransferScanBody,
+  type BulkTransferScanResponse,
+  type DismissTransferSuggestionBody,
+} from '@bt/shared/types';
 
-const formatTransactionPayload = <
-  T extends endpointsTypes.CreateTransactionBody | endpointsTypes.UpdateTransactionBody,
->(
-  transaction: T,
-): T => {
+const formatTransactionPayload = <T extends CreateTransactionBody | UpdateTransactionBody>(transaction: T): T => {
   const params = { ...transaction } as Record<string, unknown>;
   const timeFieldsToPatch = ['time'];
 
@@ -81,7 +103,7 @@ export const loadTransactions = async ({
   isPlanned?: boolean;
   /** true = only rows with attachments, false = only rows without, absent = both. */
   hasAttachment?: boolean;
-}): Promise<endpointsTypes.GetTransactionsResponse> => {
+}): Promise<GetTransactionsResponse> => {
   return api.get('/transactions', {
     ...params,
     isPlanned: keepFalse({ value: params.isPlanned }),
@@ -99,7 +121,7 @@ export type TransactionFilterParams = Omit<
 
 export const loadTransactionsSummary = async (
   params: TransactionFilterParams,
-): Promise<endpointsTypes.TransactionsSummaryResponse> => {
+): Promise<TransactionsSummaryResponse> => {
   return api.get('/transactions/summary', {
     ...params,
     isPlanned: keepFalse({ value: params.isPlanned }),
@@ -107,7 +129,7 @@ export const loadTransactionsSummary = async (
   });
 };
 
-export const loadPlannedSummary = async (): Promise<endpointsTypes.GetPlannedSummaryResponse> => {
+export const loadPlannedSummary = async (): Promise<GetPlannedSummaryResponse> => {
   return api.get('/transactions/planned-summary');
 };
 
@@ -127,7 +149,7 @@ export const loadTransactionsByIds = async ({ ids }: { ids: string[] }): Promise
   return api.get('/transactions/by-ids', { ids: ids.join(',') });
 };
 
-export const createTransaction = async (params: endpointsTypes.CreateTransactionBody) => {
+export const createTransaction = async (params: CreateTransactionBody) => {
   const formattedParams = formatTransactionPayload({
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
     note: '',
@@ -137,10 +159,7 @@ export const createTransaction = async (params: endpointsTypes.CreateTransaction
   return api.post('/transactions', formattedParams);
 };
 
-export const editTransaction = async ({
-  txId,
-  ...rest
-}: endpointsTypes.UpdateTransactionBody & { txId: string }): Promise<void> => {
+export const editTransaction = async ({ txId, ...rest }: UpdateTransactionBody & { txId: string }): Promise<void> => {
   const params = formatTransactionPayload(rest);
 
   await api.put(`/transactions/${txId}`, params);
@@ -150,84 +169,76 @@ export const deleteTransaction = async (txId: string): Promise<void> => {
   await api.delete(`/transactions/${txId}`);
 };
 
-export const linkTransactions = async (payload: endpointsTypes.LinkTransactionsBody): Promise<void> => {
+export const linkTransactions = async (payload: LinkTransactionsBody): Promise<void> => {
   await api.put('/transactions/link', payload);
 };
 
-export const unlinkTransactions = async (payload: endpointsTypes.UnlinkTransferTransactionsBody): Promise<void> => {
+export const unlinkTransactions = async (payload: UnlinkTransferTransactionsBody): Promise<void> => {
   await api.put('/transactions/unlink', payload);
 };
 
 export const bulkUpdateTransactions = async (
-  payload: endpointsTypes.BulkUpdateTransactionsBody,
-): Promise<endpointsTypes.BulkUpdateTransactionsResponse> => {
+  payload: BulkUpdateTransactionsBody,
+): Promise<BulkUpdateTransactionsResponse> => {
   return api.put('/transactions/bulk', payload);
 };
 
 export const bulkDeleteTransactions = async (
-  payload: endpointsTypes.BulkDeleteTransactionsBody,
-): Promise<endpointsTypes.BulkDeleteTransactionsResponse> => {
+  payload: BulkDeleteTransactionsBody,
+): Promise<BulkDeleteTransactionsResponse> => {
   return api.post('/transactions/bulk-delete', payload);
 };
 
 export const reconciliationRemove = async (
-  payload: endpointsTypes.ReconciliationRemoveBody,
-): Promise<endpointsTypes.ReconciliationActionResponse> => {
+  payload: ReconciliationRemoveBody,
+): Promise<ReconciliationActionResponse> => {
   return api.post('/transactions/reconciliation/remove', payload);
 };
 
-export const reconciliationMerge = async (
-  payload: endpointsTypes.ReconciliationMergeBody,
-): Promise<endpointsTypes.ReconciliationActionResponse> => {
+export const reconciliationMerge = async (payload: ReconciliationMergeBody): Promise<ReconciliationActionResponse> => {
   return api.post('/transactions/reconciliation/merge', payload);
 };
 
 export const reconciliationRestore = async (
-  payload: endpointsTypes.ReconciliationRestoreBody,
-): Promise<endpointsTypes.ReconciliationRestoreResponse> => {
+  payload: ReconciliationRestoreBody,
+): Promise<ReconciliationRestoreResponse> => {
   return api.post('/transactions/reconciliation/restore', payload);
 };
 
-export const loadReconciliationHistory = async (): Promise<endpointsTypes.ReconciliationHistoryEvent[]> => {
+export const loadReconciliationHistory = async (): Promise<ReconciliationHistoryEvent[]> => {
   return api.get('/transactions/reconciliation/history');
 };
 
-export const loadStuckPending = async (): Promise<endpointsTypes.StuckPendingItem[]> => {
+export const loadStuckPending = async (): Promise<StuckPendingItem[]> => {
   return api.get('/transactions/reconciliation/stuck-pending');
 };
 
-export const checkStuckPending = async (
-  payload: endpointsTypes.CheckStuckPendingBody,
-): Promise<endpointsTypes.CheckStuckPendingResponse> => {
+export const checkStuckPending = async (payload: CheckStuckPendingBody): Promise<CheckStuckPendingResponse> => {
   return api.post('/transactions/reconciliation/stuck-pending/check', payload);
 };
 
-export const keepAsBooked = async (
-  payload: endpointsTypes.KeepAsBookedBody,
-): Promise<endpointsTypes.KeepAsBookedResponse> => {
+export const keepAsBooked = async (payload: KeepAsBookedBody): Promise<KeepAsBookedResponse> => {
   return api.post('/transactions/reconciliation/keep-as-booked', payload);
 };
 
 export const loadRefundRecommendations = async (
   params: { transactionId: string } | { transactionType: TRANSACTION_TYPES; originAmount: number; accountId: string },
-): Promise<endpointsTypes.GetRefundRecommendationsResponse> => {
+): Promise<GetRefundRecommendationsResponse> => {
   return api.get('/transactions/refund-recommendations', params);
 };
 
 export const loadTransferRecommendations = async (
   params: { transactionId: string } | { transactionType: TRANSACTION_TYPES; originAmount: number; accountId: string },
-): Promise<endpointsTypes.GetTransferRecommendationsResponse> => {
+): Promise<GetTransferRecommendationsResponse> => {
   return api.get('/transactions/transfer-recommendations', params);
 };
 
 export const bulkScanTransferRecommendations = async (
-  params: endpointsTypes.BulkTransferScanBody,
-): Promise<endpointsTypes.BulkTransferScanResponse> => {
+  params: BulkTransferScanBody,
+): Promise<BulkTransferScanResponse> => {
   return api.post('/transactions/transfer-recommendations/bulk-scan', params);
 };
 
-export const dismissTransferSuggestion = async (
-  params: endpointsTypes.DismissTransferSuggestionBody,
-): Promise<void> => {
+export const dismissTransferSuggestion = async (params: DismissTransferSuggestionBody): Promise<void> => {
   await api.post('/transactions/transfer-recommendations/dismiss', params);
 };

@@ -1,16 +1,16 @@
 import {
   ACCOUNT_STATUSES,
+  type GetPlannedSummaryResponse,
   RESOURCE_TYPES,
   SHARE_PERMISSIONS,
   TRANSACTION_TYPES,
-  type endpointsTypes,
 } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { addDays } from 'date-fns';
 
 const getPlannedSummary = <R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) =>
-  helpers.makeRequest<endpointsTypes.GetPlannedSummaryResponse, R>({
+  helpers.makeRequest<GetPlannedSummaryResponse, R>({
     method: 'get',
     url: '/transactions/planned-summary',
     raw,

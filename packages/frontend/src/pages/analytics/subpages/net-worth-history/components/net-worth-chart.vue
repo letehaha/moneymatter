@@ -91,7 +91,13 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { endpointsTypes } from '@bt/shared/types';
+import {
+  type NetWorthHistoryGranularity,
+  type NetWorthLiabilityKind,
+  type NetWorthAssetKind,
+  NET_WORTH_ASSET_KINDS,
+  NET_WORTH_LIABILITY_KINDS,
+} from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { parseISO } from 'date-fns';
@@ -106,7 +112,7 @@ import {
 
 const props = defineProps<{
   points: NetWorthDisplayPoint[];
-  granularity: endpointsTypes.NetWorthHistoryGranularity;
+  granularity: NetWorthHistoryGranularity;
   // Positive "owed" magnitude; 0 suppresses the dashed average line.
   averageOwed: number;
   // User setting: off keeps the owed region on the shared scale, never zoomed.
@@ -137,12 +143,12 @@ const OWED_REGION_TINT_OPACITY = 0.08;
 const ZERO_LINE_TICK_OVERHANG_PX = 6;
 
 interface TooltipLiabilityEntry {
-  kind: endpointsTypes.NetWorthLiabilityKind;
+  kind: NetWorthLiabilityKind;
   value: number;
 }
 
 interface TooltipAssetEntry {
-  kind: endpointsTypes.NetWorthAssetKind;
+  kind: NetWorthAssetKind;
   value: number;
 }
 
@@ -168,9 +174,7 @@ const liabilityScale = computed(() =>
 // Asset kinds present in the current (already kind-filtered) series, in canonical
 // order — drives the legend swatches. The stacked bars iterate the same tuple.
 const presentAssetKinds = computed(() =>
-  endpointsTypes.NET_WORTH_ASSET_KINDS.filter((kind) =>
-    props.points.some((point) => point.assetsByKind[kind] !== undefined),
-  ),
+  NET_WORTH_ASSET_KINDS.filter((kind) => props.points.some((point) => point.assetsByKind[kind] !== undefined)),
 );
 
 // A debt-free range draws no liability bar, so its legend swatch is dropped too.
@@ -229,13 +233,13 @@ const formatLiabilityValue = (value: number): string => {
 // its negative ones; the y-domain needs both extremes so a rare negative kind
 // (an overdrawn cash bucket) isn't clipped.
 const positiveAssetSum = (point: NetWorthDisplayPoint): number =>
-  endpointsTypes.NET_WORTH_ASSET_KINDS.reduce((sum, kind) => {
+  NET_WORTH_ASSET_KINDS.reduce((sum, kind) => {
     const value = point.assetsByKind[kind] ?? 0;
     return value > 0 ? sum + value : sum;
   }, 0);
 
 const negativeAssetSum = (point: NetWorthDisplayPoint): number =>
-  endpointsTypes.NET_WORTH_ASSET_KINDS.reduce((sum, kind) => {
+  NET_WORTH_ASSET_KINDS.reduce((sum, kind) => {
     const value = point.assetsByKind[kind] ?? 0;
     return value < 0 ? sum + value : sum;
   }, 0);
@@ -439,7 +443,7 @@ const renderChart = () => {
     const x = barX(point);
     let posCum = 0;
     let negCum = 0;
-    for (const kind of endpointsTypes.NET_WORTH_ASSET_KINDS) {
+    for (const kind of NET_WORTH_ASSET_KINDS) {
       const value = point.assetsByKind[kind] ?? 0;
       if (value === 0) continue;
       const color = NET_WORTH_ASSET_KIND_COLORS[kind];
@@ -584,11 +588,11 @@ const renderChart = () => {
 
       tooltip.periodLabel = formatTooltipPeriodLabel(point.date);
       tooltip.assetsTotal = point.assetsTotal;
-      tooltip.assetKinds = endpointsTypes.NET_WORTH_ASSET_KINDS.filter(
-        (kind) => point.assetsByKind[kind] !== undefined,
-      ).map((kind) => ({ kind, value: point.assetsByKind[kind] ?? 0 }));
+      tooltip.assetKinds = NET_WORTH_ASSET_KINDS.filter((kind) => point.assetsByKind[kind] !== undefined).map(
+        (kind) => ({ kind, value: point.assetsByKind[kind] ?? 0 }),
+      );
       tooltip.liabilitiesTotal = point.liabilitiesTotal;
-      tooltip.liabilityKinds = endpointsTypes.NET_WORTH_LIABILITY_KINDS.filter(
+      tooltip.liabilityKinds = NET_WORTH_LIABILITY_KINDS.filter(
         (kind) => point.liabilitiesByKind[kind] !== undefined,
       ).map((kind) => ({ kind, value: point.liabilitiesByKind[kind] ?? 0 }));
       tooltip.netWorth = point.netWorth;

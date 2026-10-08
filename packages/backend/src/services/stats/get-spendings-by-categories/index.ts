@@ -1,5 +1,9 @@
-import { TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
-import type { RecordId } from '@bt/shared/types';
+import {
+  type GetSpendingsByCategoriesByTypeReturnType,
+  type GetSpendingsByCategoriesReturnType,
+  type RecordId,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import {
   expandCategoryIdsWithDescendants,
   getRootCategoryId as resolveRootCategoryId,
@@ -37,7 +41,7 @@ interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
  * mid-request.
  */
 export const getSpendingsByCategories = withTransaction(
-  async (params: GetSpendingsByCategoriesParams): Promise<endpointsTypes.GetSpendingsByCategoriesReturnType> => {
+  async (params: GetSpendingsByCategoriesParams): Promise<GetSpendingsByCategoriesReturnType> => {
     const transactions = await getExpensesHistory(params);
 
     // Split distribution + refund netting is shared with the pivot report; this service only
@@ -78,13 +82,13 @@ export const getSpendingsByCategories = withTransaction(
  */
 export async function getSpendingsByCategoriesByType(
   params: Omit<GetSpendingsByCategoriesParams, 'transactionType'>,
-): Promise<endpointsTypes.GetSpendingsByCategoriesByTypeReturnType> {
+): Promise<GetSpendingsByCategoriesByTypeReturnType> {
   const [expenseByCategory, incomeByCategory] = await Promise.all([
     getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.expense }),
     getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.income }),
   ]);
 
-  const result: endpointsTypes.GetSpendingsByCategoriesByTypeReturnType = {};
+  const result: GetSpendingsByCategoriesByTypeReturnType = {};
 
   for (const categoryId of new Set([
     ...Object.keys(expenseByCategory),
@@ -130,9 +134,9 @@ function groupAllocations({
   selectedCategoryIds?: string[];
   /** Already expanded to descendants by the caller. */
   excludedCategoryIds: string[];
-}): endpointsTypes.GetSpendingsByCategoriesReturnType {
+}): GetSpendingsByCategoriesReturnType {
   const categoryMap = new Map<string, AccessibleCategoryInfo>(categories.map((cat) => [cat.id, cat]));
-  const result: endpointsTypes.GetSpendingsByCategoriesReturnType = {};
+  const result: GetSpendingsByCategoriesReturnType = {};
   const selectedSet = selectedCategoryIds ? new Set<string>(selectedCategoryIds) : null;
   const excludedSet = new Set<string>(excludedCategoryIds);
 

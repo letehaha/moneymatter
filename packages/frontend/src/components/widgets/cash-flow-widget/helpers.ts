@@ -1,4 +1,4 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData } from '@bt/shared/types';
 import { differenceInDays, endOfMonth, isSameMonth, parseISO, startOfMonth, subDays, subMonths } from 'date-fns';
 
 interface DatePeriod {
@@ -89,7 +89,7 @@ export function sliceCashFlowTotals({
   from,
   to,
 }: {
-  periods: endpointsTypes.CashFlowPeriodData[];
+  periods: CashFlowPeriodData[];
   from: Date;
   to: Date;
 }): CashFlowTotals {

@@ -1,4 +1,4 @@
-import type { Cents, endpointsTypes } from '@bt/shared/types';
+import type { Cents, NetWorthDriversDegraded, NetWorthDriversPortfolioMeta } from '@bt/shared/types';
 
 import type { TransactionRow } from '../get-combined-balance-history/types';
 
@@ -69,10 +69,10 @@ export interface NetWorthDriversResultCents {
    * forwards this untouched. Typed off the wire contract rather than restated here
    * to keep the two from drifting.
    */
-  portfolios: endpointsTypes.NetWorthDriversPortfolioMeta[];
+  portfolios: NetWorthDriversPortfolioMeta[];
   /**
    * Carries no money, so the serializer forwards it to the response as-is; typed
    * off the wire contract rather than restated here to keep the two from drifting.
    */
-  degraded?: endpointsTypes.NetWorthDriversDegraded;
+  degraded?: NetWorthDriversDegraded;
 }

@@ -1,4 +1,5 @@
-import { CurrencyModel, TransactionModel } from '../db-models';
+import type { CurrencyModel } from '../currencies';
+import { TransactionModel } from '../transactions';
 import { VentureDealModel } from './deal.model';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from './enums';
 

@@ -1,5 +1,4 @@
-import { PLANNED_MATCH_WINDOW_DAYS } from '@bt/shared/const/planned-transactions';
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { PLANNED_MATCH_WINDOW_DAYS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { namespace } from '@models/connection';
 import Transactions from '@models/transactions.model';

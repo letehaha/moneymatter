@@ -3,7 +3,7 @@ import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const'
 import { useNotificationCenter } from '@/components/notification-center';
 import { i18n } from '@/i18n';
 import { ApiErrorResponseError } from '@/js/errors';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { BulkUpdateTransactionsBody } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 
 export function useBulkUpdateCategory({ onSuccess }: { onSuccess?: () => void } = {}) {
@@ -11,7 +11,7 @@ export function useBulkUpdateCategory({ onSuccess }: { onSuccess?: () => void } 
   const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 
   return useMutation({
-    mutationFn: async (params: endpointsTypes.BulkUpdateTransactionsBody) => {
+    mutationFn: async (params: BulkUpdateTransactionsBody) => {
       return bulkUpdateTransactions(params);
     },
     onSuccess: (result) => {

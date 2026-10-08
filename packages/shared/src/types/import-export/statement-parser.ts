@@ -2,7 +2,7 @@
  * Statement Parser types
  * Types for AI-powered bank statement extraction from PDF, CSV, TXT files
  */
-import type { Decimal } from './money';
+import type { Decimal } from '../money';
 
 /**
  * Supported file types for statement parsing

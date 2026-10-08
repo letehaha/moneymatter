@@ -1,10 +1,10 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CurrencyDisplayPreference } from '@bt/shared/types';
 import { ref } from 'vue';
 
 export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
-export const currencyDisplayPreference = ref<endpointsTypes.CurrencyDisplayPreference>('symbol');
+export const currencyDisplayPreference = ref<CurrencyDisplayPreference>('symbol');
 
 export function toLocalNumber(
   value: string | number | undefined | null,

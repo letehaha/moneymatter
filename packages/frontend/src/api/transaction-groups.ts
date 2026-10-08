@@ -1,5 +1,5 @@
 import { api } from '@/api/_api';
-import type { TransactionModel } from '@bt/shared/types/db-models';
+import type { TransactionModel } from '@bt/shared/types';
 
 export interface TransactionGroupResponse {
   id: string;

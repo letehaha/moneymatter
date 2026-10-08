@@ -1,5 +1,4 @@
-import { RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
-import type { ReconciliationActionResponse } from '@bt/shared/types/endpoints';
+import { type ReconciliationActionResponse, RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import BudgetTransactions from '@models/budget-transactions.model';

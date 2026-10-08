@@ -66,7 +66,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { renderAverageLine } from '@/composable/charts/render-average-line';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { InvestmentContributionsGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { parseISO } from 'date-fns';
@@ -77,7 +77,7 @@ import { type ContributionsChartModel } from '../composables/contributions-deriv
 
 const props = defineProps<{
   model: ContributionsChartModel;
-  granularity: endpointsTypes.InvestmentContributionsGranularity;
+  granularity: InvestmentContributionsGranularity;
 }>();
 
 const { t } = useI18n();

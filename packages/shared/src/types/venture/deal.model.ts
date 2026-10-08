@@ -1,4 +1,5 @@
-import { CurrencyModel, UserModel } from '../db-models';
+import type { CurrencyModel } from '../currencies';
+import type { UserModel } from '../users';
 import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE, VENTURE_VEHICLE_TYPE } from './enums';
 import { VentureEventModel } from './event.model';
 import { VenturePlatformModel } from './platform.model';

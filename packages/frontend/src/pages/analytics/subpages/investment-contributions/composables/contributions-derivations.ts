@@ -1,4 +1,4 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type { GetInvestmentContributionsResponse } from '@bt/shared/types';
 
 /** Minimum bar count before an average is meaningful rather than noise. */
 const MIN_BARS_FOR_AVERAGE = 3;
@@ -64,7 +64,7 @@ export const buildContributionsChartModel = ({
   response,
   palette,
 }: {
-  response: endpointsTypes.GetInvestmentContributionsResponse;
+  response: GetInvestmentContributionsResponse;
   palette: string[];
 }): ContributionsChartModel => {
   const legend = response.portfolios.map((portfolio, index) => ({
