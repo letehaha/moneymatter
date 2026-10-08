@@ -309,7 +309,10 @@
         "tagsStyleTitle": "Теги",
         "tagsStyleNames": "Назви",
         "tagsStyleBars": "Смужки",
-        "tagsStyleSaveError": "Не вдалося зберегти стиль тегів. Спробуйте ще раз."
+        "tagsStyleSaveError": "Не вдалося зберегти стиль тегів. Спробуйте ще раз.",
+        "showAccountTitle": "Рахунок",
+        "showAccountDescription": "Показувати логотип рахунку для кожної транзакції",
+        "showAccountSaveError": "Не вдалося зберегти налаштування рахунку. Спробуйте ще раз."
       },
       "overdueBadge": "Прострочено",
       "scheduledBadge": "Заплановано",

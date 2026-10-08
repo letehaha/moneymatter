@@ -1,7 +1,11 @@
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { getAccountTypeIcon, getAccountTypeTintedChipClass } from './account-type-presentation';
+import {
+  getAccountTypeIcon,
+  getAccountTypeSolidChipClass,
+  getAccountTypeTintedChipClass,
+} from './account-type-presentation';
 
 describe('account-type-presentation', () => {
   describe('getAccountTypeIcon', () => {
@@ -45,6 +49,20 @@ describe('account-type-presentation', () => {
         category: 'totally-unknown-category' as ACCOUNT_CATEGORIES,
       });
       expect(chip).toBe('bg-account-checking/15 text-account-checking');
+    });
+  });
+
+  describe('getAccountTypeSolidChipClass', () => {
+    it('returns an opaque chip class for every account category', () => {
+      for (const category of Object.values(ACCOUNT_CATEGORIES)) {
+        expect(getAccountTypeSolidChipClass({ category })).toMatch(/^bg-account-\w+ text-background$/);
+      }
+    });
+
+    it('falls back to the checking chip for an unknown category', () => {
+      expect(getAccountTypeSolidChipClass({ category: 'totally-unknown-category' as ACCOUNT_CATEGORIES })).toBe(
+        'bg-account-checking text-background',
+      );
     });
   });
 });

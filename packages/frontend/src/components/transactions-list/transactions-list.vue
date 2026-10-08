@@ -49,6 +49,7 @@ const props = withDefaults(
     compact?: boolean;
     hidePlannedMarker?: boolean;
     tagsVariant?: TagsIndicatorVariant;
+    showAccount?: boolean;
   }>(),
   {
     isTransactionRecord: false,
@@ -219,6 +220,7 @@ watchEffect(() => {
             :show-checkbox="enableBulkEdit"
             :compact="compact"
             :tags-variant="tagsVariant"
+            :show-account="showAccount"
             :hide-planned-marker="hidePlannedMarker || !rawList"
             :is-selected="isTransactionSelected((item as TransactionModel).id)"
             :is-selectable="isTransactionSelectable(item as TransactionModel)"
