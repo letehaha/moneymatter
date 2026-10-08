@@ -25,6 +25,10 @@ const formatTransactionPayload = <
   return params as T;
 };
 
+// The client drops falsy query values, which would swallow e.g. `isPlanned: false`.
+// Stringifying keeps the "exclude" intent on the wire.
+const keepFalse = ({ value }: { value: boolean | undefined }) => (value === undefined ? undefined : String(value));
+
 export const loadTransactions = async ({
   from,
   to,
@@ -80,13 +84,26 @@ export const loadTransactions = async ({
 }): Promise<endpointsTypes.GetTransactionsResponse> => {
   return api.get('/transactions', {
     ...params,
-    // The client drops falsy query values, which would swallow `isPlanned: false`.
-    // Stringifying keeps the "exclude planned" intent on the wire.
-    isPlanned: params.isPlanned === undefined ? undefined : String(params.isPlanned),
-    hasAttachment: params.hasAttachment === undefined ? undefined : String(params.hasAttachment),
+    isPlanned: keepFalse({ value: params.isPlanned }),
+    hasAttachment: keepFalse({ value: params.hasAttachment }),
     includeHasAttachments: true,
     from: from ? new Date(from).toISOString() : undefined,
     to: to ? new Date(to).toISOString() : undefined,
+  });
+};
+
+export type TransactionFilterParams = Omit<
+  Parameters<typeof loadTransactions>[0],
+  'offset' | 'limit' | 'order' | 'sortBy' | 'includeSplits' | 'includeTags' | 'includeGroups'
+>;
+
+export const loadTransactionsSummary = async (
+  params: TransactionFilterParams,
+): Promise<endpointsTypes.TransactionsSummaryResponse> => {
+  return api.get('/transactions/summary', {
+    ...params,
+    isPlanned: keepFalse({ value: params.isPlanned }),
+    hasAttachment: keepFalse({ value: params.hasAttachment }),
   });
 };
 

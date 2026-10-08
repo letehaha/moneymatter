@@ -10,14 +10,16 @@
       <!-- `min-h-12` keeps the unselected and selected states the same height, so selecting
            a row does not shift the table. -->
       <div class="@container/bulk-toolbar flex min-h-12 flex-wrap items-center gap-x-3 gap-y-1.5 border-b px-3 py-2">
-        <span v-if="selectedCount > 0" class="hidden text-sm whitespace-nowrap @4xl/bulk-toolbar:inline">
-          {{ $t('transactions.bulkEdit.selectedCount', { count: selectedCount }) }}
-        </span>
+        <SelectionTotals v-if="selectedCount > 0" :totals="selectedTotals" :selected-count="selectedCount" />
+        <SelectionTotals
+          v-else-if="matching"
+          :totals="matching.summary"
+          :selected-count="matching.summary.count"
+          matching
+        />
         <span v-else class="text-muted-foreground text-sm">
           {{ $t('transactions.table.hint') }}
         </span>
-
-        <SelectionTotals v-if="selectedCount > 0" :totals="selectedTotals" :selected-count="selectedCount" />
 
         <!-- Narrow layout: collapse the action buttons to icon-only so they fit
              one row alongside "N selected" + Cancel. The Cancel control is always
@@ -51,7 +53,7 @@
                   <Button
                     variant="outline"
                     :size="isMobileMode ? 'icon-sm' : 'sm'"
-                    :disabled="isBulkLoading"
+                    :disabled="isBulkLoading || isGroupingBlocked"
                     :aria-label="
                       isMobileMode ? $t('transactions.transactionGroups.bulkActions.groupButton') : undefined
                     "
@@ -306,7 +308,7 @@ import { PLANNED_HEADER, useCollapsedPlanned } from '@/components/transactions-l
 import { useManageTransactionDialog } from '@/components/transactions-list/use-manage-transaction-dialog';
 import { useTransactionsDisplay } from '@/components/transactions-list/use-transactions-display';
 import { usePayeeLookup } from '@/composable/data-queries/payees';
-import { useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
+import { type MatchingTransactions, useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
 import { SORT_DIRECTIONS, TRANSACTION_SORT_FIELD, TransactionModel } from '@bt/shared/types';
 import type { UpdateTransactionBody } from '@bt/shared/types/endpoints';
 import { useVirtualizer } from '@tanstack/vue-virtual';
@@ -355,6 +357,8 @@ const props = defineProps<{
    */
   isMobileMode: boolean;
   selectionScopeKey?: string;
+  /** Totals and filters of the whole result set; enables "select all" beyond the loaded rows. */
+  matching?: MatchingTransactions;
   alwaysShowLockedCells?: boolean;
   rowClickSelects?: boolean;
 }>();
@@ -411,9 +415,12 @@ const {
 const bulkActions = useBulkTransactionActions({
   getTransactions: () => visibleItems.value,
   getScopeKey: () => props.selectionScopeKey,
+  getMatching: () => props.matching,
+  getHasNextPage: () => props.hasNextPage,
 });
 const {
   selectedCount,
+  isGroupingBlocked,
   getSelectedTransactionIds,
   isTransactionSelectable,
   isTransactionSelected,

@@ -1,13 +1,16 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as transactionsService from '@services/transactions/bulk-update';
+import { resolveBulkTargetIds } from '@services/transactions/matching-transactions';
 import { z } from 'zod';
+
+import { bulkTargetFields, bulkTargetIssue, hasOneBulkTarget, toBulkTarget } from './transaction-filters';
 
 const tagModeSchema = z.enum(['add', 'replace', 'remove']);
 
 const bodyZodSchema = z
   .object({
-    transactionIds: z.array(recordId()).min(1, 'At least one transaction ID required'),
+    ...bulkTargetFields,
     categoryId: recordId().optional(),
     tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
     tagMode: tagModeSchema.optional(),
@@ -24,15 +27,18 @@ const bodyZodSchema = z
     {
       message: 'At least one field (categoryId, tagIds, note, or payeeId) must be provided',
     },
-  );
+  )
+  .refine(hasOneBulkTarget, bulkTargetIssue);
 
 const schema = z.object({
   body: bodyZodSchema,
 });
 
 export default createController(schema, async ({ user, body }) => {
-  const { transactionIds, categoryId, tagIds, tagMode, note, payeeId } = body;
+  const { categoryId, tagIds, tagMode, note, payeeId } = body;
   const { id: userId } = user;
+
+  const transactionIds = await resolveBulkTargetIds({ userId, ...toBulkTarget(body) });
 
   const result = await transactionsService.bulkUpdate({
     userId,

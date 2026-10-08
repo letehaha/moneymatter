@@ -88,6 +88,28 @@ export interface PlannedSummaryEntry {
 
 export type GetPlannedSummaryResponse = PlannedSummaryEntry[];
 
+/** Totals over every transaction matching the list filters, in base currency decimals.
+ *  A transfer whose two legs both match counts once; transfers stay out of income/expense/net. */
+export interface TransactionsSummaryResponse {
+  count: number;
+  income: number;
+  expense: number;
+  net: number;
+  transfers: number;
+}
+
+/** Bulk target "everything matching these list filters, minus `excludedIds`". */
+export interface BulkFilterSelection {
+  /** The same query params the transactions list was fetched with. */
+  filters: Record<string, unknown>;
+  excludedIds?: string[];
+}
+
+/** A bulk action targets explicit ids or a filter selection, never both. */
+export type BulkTarget =
+  | { transactionIds: string[]; selection?: never }
+  | { selection: BulkFilterSelection; transactionIds?: never };
+
 export interface SplitInput {
   categoryId: RecordId;
   amount: number;
@@ -177,15 +199,14 @@ export interface LinkTransactionsBody {
 
 export type BulkUpdateTagMode = 'add' | 'replace' | 'remove';
 
-export interface BulkUpdateTransactionsBody {
-  transactionIds: string[];
+export type BulkUpdateTransactionsBody = BulkTarget & {
   categoryId?: RecordId;
   tagIds?: string[];
   tagMode?: BulkUpdateTagMode;
   note?: string;
   // Nullable: explicit `null` clears the Payee, undefined leaves it untouched.
   payeeId?: RecordId | null;
-}
+};
 
 export interface BulkUpdateTransactionsResponse {
   updatedCount: number;
@@ -196,9 +217,7 @@ export interface BulkUpdateTransactionsResponse {
 export type BulkUpdateTransactionsCategoryBody = BulkUpdateTransactionsBody;
 export type BulkUpdateTransactionsCategoryResponse = BulkUpdateTransactionsResponse;
 
-export interface BulkDeleteTransactionsBody {
-  transactionIds: string[];
-}
+export type BulkDeleteTransactionsBody = BulkTarget;
 
 export interface BulkDeleteTransactionsResponse {
   deletedCount: number;

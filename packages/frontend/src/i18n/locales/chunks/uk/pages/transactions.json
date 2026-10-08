@@ -92,6 +92,7 @@
       "cancelSelection": "Скасувати вибір",
       "editButton": "Редагувати",
       "selectedCount": "Вибрано: {count}",
+      "matchingCount": "Всього: {count}",
       "dialogTitle": "Редагувати {count} транзакцій",
       "dialogDescription": "Зміни буде застосовано до всіх вибраних транзакцій. Оновлені будуть лише заповнені поля.",
       "categoryLabel": "Категорія",

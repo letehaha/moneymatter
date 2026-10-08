@@ -3,6 +3,7 @@ import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
 import { i18n } from '@/i18n';
 import { ApiErrorResponseError } from '@/js/errors';
+import type { endpointsTypes } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 
 export function useBulkDeleteTransactions({ onSuccess }: { onSuccess?: () => void } = {}) {
@@ -10,8 +11,8 @@ export function useBulkDeleteTransactions({ onSuccess }: { onSuccess?: () => voi
   const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 
   return useMutation({
-    mutationFn: async ({ transactionIds }: { transactionIds: string[] }) => {
-      return bulkDeleteTransactions({ transactionIds });
+    mutationFn: async (target: endpointsTypes.BulkDeleteTransactionsBody) => {
+      return bulkDeleteTransactions(target);
     },
     onSuccess: (result) => {
       // Deletions move account balances, so refresh everything tx-derived.

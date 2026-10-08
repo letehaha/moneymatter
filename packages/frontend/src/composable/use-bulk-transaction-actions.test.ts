@@ -1,7 +1,7 @@
 import { ACCOUNT_TYPES, type AccountModel, type RecordId, type TransactionModel } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { isExternalTransaction } from './use-bulk-transaction-actions';
+import { buildBulkTarget, isExternalTransaction } from './use-bulk-transaction-actions';
 
 const buildTx = (overrides: Partial<TransactionModel>): TransactionModel =>
   ({
@@ -31,5 +31,24 @@ describe('isExternalTransaction', () => {
     expect(
       isExternalTransaction({ tx: buildTx({ accountType: ACCOUNT_TYPES.enableBanking }), account: undefined }),
     ).toBe(true);
+  });
+});
+
+describe('buildBulkTarget', () => {
+  const matching = {
+    summary: { count: 40, income: 0, expense: 0, net: 0, transfers: 0 },
+    filters: { accountIds: ['account-1'] },
+  };
+
+  it('targets the filter selection with the unticked ids while select-all covers the result set', () => {
+    expect(buildBulkTarget({ matching, excludedIds: ['tx-2'], selectedIds: ['tx-1'] })).toEqual({
+      selection: { filters: matching.filters, excludedIds: ['tx-2'] },
+    });
+  });
+
+  it('targets the ticked ids otherwise', () => {
+    expect(buildBulkTarget({ matching: undefined, excludedIds: ['tx-2'], selectedIds: ['tx-1'] })).toEqual({
+      transactionIds: ['tx-1'],
+    });
   });
 });

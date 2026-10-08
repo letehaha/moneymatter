@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import type { TagsIndicatorVariant } from '@/components/common/tags-indicator.vue';
 import { useScrollAreaContainer } from '@/composable/scroll-area-container';
-import { useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
+import { type MatchingTransactions, useBulkTransactionActions } from '@/composable/use-bulk-transaction-actions';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { TransactionModel } from '@bt/shared/types';
 import { useVirtualizer } from '@tanstack/vue-virtual';
@@ -46,6 +46,8 @@ const props = withDefaults(
     /** For scoped lists (e.g. a single payee) where a group row would misrepresent the set and hide per-row actions */
     disableGrouping?: boolean;
     selectionScopeKey?: string;
+    /** Totals and filters of the whole result set; enables "select all" beyond the loaded rows. */
+    matching?: MatchingTransactions;
     compact?: boolean;
     hidePlannedMarker?: boolean;
     tagsVariant?: TagsIndicatorVariant;
@@ -120,10 +122,13 @@ watch(listContainerRef, (el) => {
 const bulkActions = useBulkTransactionActions({
   getTransactions: () => visibleItems.value.filter((item): item is TransactionModel => !isGroupRow(item)),
   getScopeKey: () => props.selectionScopeKey,
+  getMatching: () => props.matching,
+  getHasNextPage: () => props.hasNextPage,
 });
 const {
   selectedCount,
   isAllSelected,
+  isGroupingBlocked,
   isTransactionSelectable,
   isTransactionSelected,
   toggleTransaction,
@@ -191,6 +196,8 @@ watchEffect(() => {
       :is-loading="isBulkLoading"
       :has-external-selected="hasExternalSelected"
       :selected-totals="selectedTotals"
+      :matching-summary="matching?.summary"
+      :is-grouping-blocked="isGroupingBlocked"
       @cancel="clearSelection"
       @edit="isBulkEditDialogOpen = true"
       @delete="isBulkDeleteDialogOpen = true"

@@ -1,5 +1,5 @@
 import { useAccountsStore } from '@/stores';
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
+import { TransactionModel, sumTransactionTotals } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed, ref, triggerRef, watch } from 'vue';
 
@@ -73,23 +73,7 @@ export interface SelectedTotals {
   transfers: number;
 }
 
-/**
- * Never count these as income or expense, and never net them against each other:
- * only one leg of a transfer pair is ever on screen, so either side would book a
- * full-value amount that never happened.
- * `transfer_out_wallet` is absent on purpose: that money leaves the tracked accounts.
- */
-const INTERNAL_TRANSFER_NATURES = new Set<TRANSACTION_TRANSFER_NATURE>([
-  TRANSACTION_TRANSFER_NATURE.common_transfer,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_portfolio,
-  TRANSACTION_TRANSFER_NATURE.transfer_to_venture,
-]);
-
-/**
- * Totals in base currency (`refAmount`). Amounts are stored positive with the
- * direction in `transactionType`, so split on the type, never on the sign.
- */
+/** Totals of the selected rows, in base currency (`refAmount`). */
 export function sumSelectedTotals({
   transactions,
   selectedIds,
@@ -97,23 +81,14 @@ export function sumSelectedTotals({
   transactions: TransactionModel[];
   selectedIds: Set<string>;
 }): SelectedTotals {
-  let income = 0;
-  let expense = 0;
-  let transfers = 0;
+  return sumTransactionTotals(transactions.filter((tx) => selectedIds.has(tx.id)));
+}
 
-  for (const tx of transactions) {
-    if (!selectedIds.has(tx.id)) continue;
+export function subtractTotals({ from, minus }: { from: SelectedTotals; minus: SelectedTotals }): SelectedTotals {
+  const income = from.income - minus.income;
+  const expense = from.expense - minus.expense;
 
-    if (INTERNAL_TRANSFER_NATURES.has(tx.transferNature)) {
-      transfers += tx.refAmount;
-    } else if (tx.transactionType === TRANSACTION_TYPES.income) {
-      income += tx.refAmount;
-    } else {
-      expense += tx.refAmount;
-    }
-  }
-
-  return { income, expense, net: income - expense, transfers };
+  return { income, expense, net: income - expense, transfers: from.transfers - minus.transfers };
 }
 
 export function useTransactionSelection({
@@ -130,6 +105,17 @@ export function useTransactionSelection({
   const { handleSelection, resetSelection, isShiftKeyPressed } = useShiftMultiSelect(selectedIds.value, triggerUpdate);
 
   const selectedCount = computed(() => selectedIds.value.size);
+
+  /**
+   * "Select all" was ticked: the selection means every row of the result set, loaded
+   * or not, minus the rows unticked since. Rows that load later arrive selected.
+   */
+  const isSelectAllActive = ref(false);
+  /**
+   * Rows unticked while select-all is active. Kept apart from `selectedIds` because a row
+   * can leave the loaded list (a collapsed section) and must stay unticked when it returns.
+   */
+  const excludedIds = ref(new Set<string>());
 
   const isTransactionSelectable = (tx: TransactionModel): boolean => !isExtraSelectable || isExtraSelectable(tx);
 
@@ -153,6 +139,20 @@ export function useTransactionSelection({
     if (selectableIndex === -1) return;
 
     handleSelection(value, id, selectableIndex, selectableTransactions, (tx) => tx.id);
+
+    if (!isSelectAllActive.value) return;
+    if (selectedIds.value.size === 0) {
+      isSelectAllActive.value = false;
+      excludedIds.value = new Set();
+      return;
+    }
+    // Shift-click toggles a whole range, so resync every loaded row, not just `id`.
+    const nextExcluded = new Set(excludedIds.value);
+    for (const tx of selectableTransactions) {
+      if (selectedIds.value.has(tx.id)) nextExcluded.delete(tx.id);
+      else nextExcluded.add(tx.id);
+    }
+    excludedIds.value = nextExcluded;
   };
 
   const selectAll = () => {
@@ -162,10 +162,14 @@ export function useTransactionSelection({
         selectedIds.value.add(tx.id);
       }
     });
+    isSelectAllActive.value = selectedIds.value.size > 0;
+    excludedIds.value = new Set();
     triggerUpdate();
   };
 
   const clearSelection = () => {
+    isSelectAllActive.value = false;
+    excludedIds.value = new Set();
     resetSelection();
   };
 
@@ -174,14 +178,28 @@ export function useTransactionSelection({
   };
 
   let observedScopeKey = getScopeKey?.();
+  let knownIds = new Set(getTransactions().map((tx) => tx.id));
 
   watch(
     () => ({ scopeKey: getScopeKey?.(), transactions: getTransactions() }),
     ({ scopeKey, transactions }) => {
+      const previouslyKnownIds = knownIds;
+      // An empty list is a refetch in flight, not the rows going away: forgetting them
+      // here would bring every row back as "newly loaded" and re-tick the unticked ones.
+      if (transactions.length > 0) knownIds = new Set(transactions.map((tx) => tx.id));
+
       if (scopeKey !== observedScopeKey) {
         observedScopeKey = scopeKey;
         if (selectedIds.value.size > 0) clearSelection();
         return;
+      }
+
+      if (isSelectAllActive.value) {
+        const arrived = transactions.filter(
+          (tx) => !previouslyKnownIds.has(tx.id) && !excludedIds.value.has(tx.id) && isTransactionSelectable(tx),
+        );
+        arrived.forEach((tx) => selectedIds.value.add(tx.id));
+        if (arrived.length > 0) triggerUpdate();
       }
 
       if (selectedIds.value.size === 0) return;
@@ -201,6 +219,8 @@ export function useTransactionSelection({
     selectedIds,
     selectedCount,
     isAllSelected,
+    isSelectAllActive,
+    excludedIds,
     isShiftKeyPressed,
     isTransactionSelectable,
     isTransactionSelected,

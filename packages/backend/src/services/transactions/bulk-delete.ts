@@ -8,6 +8,9 @@ import { Op } from 'sequelize';
 import { withTransaction } from '../common/with-transaction';
 import { deleteTransaction } from './delete-transaction';
 
+/** Each row is deleted one by one inside a single DB transaction, so the batch stays bounded. */
+const MAX_BULK_DELETE = 500;
+
 interface BulkDeleteParams {
   userId: number;
   transactionIds: string[];
@@ -35,6 +38,10 @@ interface BulkDeleteResult {
  */
 const bulkDeleteImpl = async ({ userId, transactionIds }: BulkDeleteParams): Promise<BulkDeleteResult> => {
   const uniqueIds = [...new Set(transactionIds)];
+
+  if (uniqueIds.length > MAX_BULK_DELETE) {
+    throw new ValidationError({ message: t({ key: 'transactions.bulkDeleteLimitExceeded' }) });
+  }
 
   const rows = (await Transactions.default.findAll({
     where: { id: { [Op.in]: uniqueIds }, userId },

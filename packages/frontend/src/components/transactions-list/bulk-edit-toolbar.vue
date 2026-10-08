@@ -9,6 +9,7 @@ import {
 } from '@/components/common/dropdown-menu';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import type { SelectedTotals } from '@/composable/transaction-selection';
+import type { endpointsTypes } from '@bt/shared/types';
 import {
   GroupIcon,
   ListOrderedIcon,
@@ -32,6 +33,10 @@ const props = defineProps<{
   /** Selection contains bank-connected transactions, which the backend refuses to delete. */
   hasExternalSelected?: boolean;
   selectedTotals: SelectedTotals;
+  /** Totals of the whole filtered set, shown while nothing is selected. */
+  matchingSummary?: endpointsTypes.TransactionsSummaryResponse;
+  /** The selection covers rows that are not loaded, so grouping, which needs their ids, is off. */
+  isGroupingBlocked?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -73,11 +78,13 @@ const handleEdit = () => {
         <span class="text-sm">{{ t('transactions.bulkEdit.selectAll') }}</span>
       </div>
 
-      <span v-if="hasSelection" class="text-muted-foreground hidden text-sm @4xl/bulk-toolbar:inline">
-        {{ t('transactions.bulkEdit.selectedCount', { count: selectedCount }) }}
-      </span>
-
       <SelectionTotals v-if="hasSelection" :totals="selectedTotals" :selected-count="selectedCount" />
+      <SelectionTotals
+        v-else-if="matchingSummary"
+        :totals="matchingSummary"
+        :selected-count="matchingSummary.count"
+        matching
+      />
     </div>
 
     <!-- Mobile: compact dropdown with all actions -->
@@ -94,11 +101,11 @@ const handleEdit = () => {
             <PencilIcon class="mr-2 size-4" />
             {{ t('transactions.bulkEdit.editButton') }}
           </DropdownMenuItem>
-          <DropdownMenuItem :disabled="selectedCount < 2" @select="handleCreateGroup">
+          <DropdownMenuItem :disabled="selectedCount < 2 || isGroupingBlocked" @select="handleCreateGroup">
             <PlusIcon class="mr-2 size-4" />
             {{ t('transactions.transactionGroups.bulkActions.createNewGroup') }}
           </DropdownMenuItem>
-          <DropdownMenuItem @select="handleAddToGroup">
+          <DropdownMenuItem :disabled="isGroupingBlocked" @select="handleAddToGroup">
             <ListPlusIcon class="mr-2 size-4" />
             {{ t('transactions.transactionGroups.bulkActions.addToExistingGroup') }}
           </DropdownMenuItem>
@@ -119,7 +126,7 @@ const handleEdit = () => {
 
       <DropdownMenu>
         <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="sm" :disabled="!hasSelection || isLoading">
+          <Button variant="outline" size="sm" :disabled="!hasSelection || isLoading || isGroupingBlocked">
             <GroupIcon class="size-4" />
             {{ t('transactions.transactionGroups.bulkActions.groupButton') }}
           </Button>

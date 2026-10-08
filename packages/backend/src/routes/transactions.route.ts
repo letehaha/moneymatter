@@ -13,6 +13,7 @@ import getPlannedSummary from '@controllers/transactions.controller/get-planned-
 import getPortfolioLink from '@controllers/transactions.controller/get-portfolio-link';
 import getTransactions from '@controllers/transactions.controller/get-transaction';
 import getTransactionsByIds from '@controllers/transactions.controller/get-transactions-by-ids';
+import getTransactionsSummary from '@controllers/transactions.controller/get-transactions-summary';
 import linkToPortfolio from '@controllers/transactions.controller/link-to-portfolio';
 import matchInvoice from '@controllers/transactions.controller/match-invoice';
 import * as reconciliation from '@controllers/transactions.controller/reconciliation';
@@ -55,6 +56,12 @@ router.get(
   authenticateSession,
   validateEndpoint(getPlannedSummary.schema),
   getPlannedSummary.handler,
+);
+router.get(
+  '/summary',
+  authenticateSession,
+  validateEndpoint(getTransactionsSummary.schema),
+  getTransactionsSummary.handler,
 );
 router.get(
   '/transfer-recommendations',

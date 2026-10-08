@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Transaction with provided `id` does not exist!",
     "notAuthorizedToEdit": "You are not authorized to edit this transaction.",
     "cannotDeleteExternal": "It's not allowed to manually delete external transactions",
+    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
     "unexpectedDeleteIssue": "Unexpected issue when tried to delete transaction",
     "linkSelfNotAllowed": "Trying to link the transaction to itself.",
     "linkSameTypeNotAllowed": "Trying to link with the transaction that has the same \"transactionType\".",

@@ -270,14 +270,7 @@ export function getTransactionById<R extends boolean | undefined = undefined>({
 }
 
 // Bulk update helpers
-interface BulkUpdateTransactionsPayload {
-  transactionIds: string[];
-  categoryId?: string;
-  tagIds?: string[];
-  tagMode?: 'add' | 'replace' | 'remove';
-  note?: string;
-  payeeId?: string | null;
-}
+type BulkUpdateTransactionsPayload = endpointsTypes.BulkUpdateTransactionsBody;
 
 interface BulkUpdateResult {
   updatedCount: number;
@@ -309,13 +302,25 @@ export function bulkDeleteTransactions<R extends boolean | undefined = undefined
   payload,
   raw,
 }: {
-  payload: { transactionIds: string[] };
+  payload: endpointsTypes.BulkDeleteTransactionsBody;
   raw?: R;
 }) {
   return makeRequest<BulkDeleteResult, R>({
     method: 'post',
     url: '/transactions/bulk-delete',
     payload,
+    raw,
+  });
+}
+
+export function getTransactionsSummary<R extends boolean | undefined = undefined>({
+  raw,
+  ...filters
+}: Record<string, unknown> & { raw?: R } = {}) {
+  return makeRequest<endpointsTypes.TransactionsSummaryResponse, R>({
+    method: 'get',
+    url: '/transactions/summary',
+    payload: filters,
     raw,
   });
 }

@@ -4,7 +4,12 @@ import { FILTER_OPERATION, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types'
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { DEFAULT_FILTERS, FiltersStruct, SELECTABLE_TRANSFER_NATURES } from './const';
-import { buildTriStateParam, buildTransferNaturesParam, parseStoredFilters } from './transactions-with-filters';
+import {
+  buildFilterParams,
+  buildTriStateParam,
+  buildTransferNaturesParam,
+  parseStoredFilters,
+} from './transactions-with-filters';
 
 vi.mock('@/api/_api', () => ({
   api: { get: vi.fn(() => Promise.resolve([])) },
@@ -138,5 +143,34 @@ describe('parseStoredFilters', () => {
     expect(parseStoredFilters({ raw: null })).toBeNull();
     expect(parseStoredFilters({ raw: '{not json' })).toBeNull();
     expect(parseStoredFilters({ raw: '{"foo":1}' })).toBeNull();
+  });
+});
+
+describe('buildFilterParams', () => {
+  it('maps the filter state to query params and drops everything that narrows nothing', () => {
+    const start = new Date('2026-08-01T00:00:00.000Z');
+    const params = buildFilterParams({
+      filter: {
+        ...DEFAULT_FILTERS,
+        start,
+        accountIds: ['account-1'],
+        tagIds: [],
+        amountGte: 0,
+        amountLte: 50,
+        plannedFilter: FILTER_OPERATION.exclude,
+        attachmentFilter: FILTER_OPERATION.only,
+      } as FiltersStruct,
+    });
+
+    expect(params).toMatchObject({
+      from: start.toISOString(),
+      accountIds: ['account-1'],
+      amountLte: 50,
+      isPlanned: false,
+      hasAttachment: true,
+    });
+    expect(params).not.toHaveProperty('tagIds');
+    expect(params).not.toHaveProperty('amountGte');
+    expect(params).not.toHaveProperty('to');
   });
 });
