@@ -4,18 +4,28 @@ import {
   AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH,
   AI_FEATURE,
   AI_PROVIDER,
+  CURRENCY_DISPLAY_PREFERENCES,
+  type CategoryMappingPreset,
+  type Equals,
+  type Expect,
   FIRE_LIMITS,
   FIRE_MAX_EXCLUDED_CATEGORIES,
   FIRE_TARGET_TYPES,
+  type FireSettings,
   MAX_AI_CONNECTIONS,
   MAX_CATEGORY_MAPPING_PRESETS,
+  type MutuallyAssignable,
   NOTIFICATION_TYPES,
   PAYMENT_TYPES,
+  PIVOT_GRANULARITIES,
+  PIVOT_MEASURES,
+  PIVOT_ROW_DIMENSIONS,
   RecordId,
+  SAVED_PIVOT_VIEW_NAME_MAX_LENGTH,
+  type SavedPivotView,
+  type SidebarSectionsConfig,
   TRANSACTION_OPTIONAL_FIELDS,
-  endpointsTypes,
 } from '@bt/shared/types';
-import type { CategoryMappingPreset, Equals, Expect, FireSettings, MutuallyAssignable } from '@bt/shared/types';
 import { dateRange, withDateOrder } from '@common/lib/zod/custom-types';
 import { IdColumn } from '@common/types/id-column';
 import {
@@ -244,9 +254,9 @@ const ZodSavedPivotViewConfigSchema = withDateOrder(
   z.object({
     // Enum members come from the shared pivot tuples so a persisted view can never accept a
     // dimension/granularity the report itself rejects.
-    rowDimension: z.enum(endpointsTypes.PIVOT_ROW_DIMENSIONS),
-    granularity: z.enum(endpointsTypes.PIVOT_GRANULARITIES),
-    measure: z.enum(endpointsTypes.PIVOT_MEASURES),
+    rowDimension: z.enum(PIVOT_ROW_DIMENSIONS),
+    granularity: z.enum(PIVOT_GRANULARITIES),
+    measure: z.enum(PIVOT_MEASURES),
     ...dateRange({ required: true }),
     accountIds: z.array(z.string()).optional(),
     categoryIds: z.array(z.string()).optional(),
@@ -258,7 +268,7 @@ const ZodSavedPivotViewConfigSchema = withDateOrder(
 
 const ZodSavedPivotViewSchema = z.object({
   id: z.string(),
-  name: z.string().min(1).max(endpointsTypes.SAVED_PIVOT_VIEW_NAME_MAX_LENGTH),
+  name: z.string().min(1).max(SAVED_PIVOT_VIEW_NAME_MAX_LENGTH),
   config: ZodSavedPivotViewConfigSchema,
 });
 
@@ -323,7 +333,9 @@ export const ZodSettingsSchema = z.object({
   // savings rather than spend. Descendants are expanded server-side. Plain z.uuid(), not
   // recordId(): the branded RecordId output breaks the SettingsPatchSchemaIsInSync assertion below.
   savingsCategoryIds: z.array(z.uuid()).optional(),
-  currencyDisplay: z.enum(endpointsTypes.CURRENCY_DISPLAY_PREFERENCES).optional(),
+  // Categories whose spend is a tax. Stored only: the frontend analytics decide how to present it.
+  taxCategoryIds: z.array(z.uuid()).optional(),
+  currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
 });
 
@@ -424,7 +436,8 @@ export const ZodSettingsPatchSchema = z.object({
   matchTransfersWithManualAccounts: z.boolean().optional(),
   importPendingBankTransactions: z.boolean().optional(),
   savingsCategoryIds: z.array(z.uuid()).optional(),
-  currencyDisplay: z.enum(endpointsTypes.CURRENCY_DISPLAY_PREFERENCES).optional(),
+  taxCategoryIds: z.array(z.uuid()).optional(),
+  currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
 });
 
@@ -460,9 +473,7 @@ export type FireSettingsSchemaIsInSync = Expect<Equals<z.infer<typeof ZodFireSet
  *
  * @public exported only so the assertion isn't flagged as unused.
  */
-export type SavedPivotViewSchemaIsInSync = Expect<
-  Equals<z.infer<typeof ZodSavedPivotViewSchema>, endpointsTypes.SavedPivotView>
->;
+export type SavedPivotViewSchemaIsInSync = Expect<Equals<z.infer<typeof ZodSavedPivotViewSchema>, SavedPivotView>>;
 
 /**
  * Compile-time drift guard: the persisted category preset must infer exactly the shared
@@ -481,7 +492,7 @@ export type CategoryMappingPresetSchemaIsInSync = Expect<
  * @public exported only so the assertion isn't flagged as unused.
  */
 export type SidebarSectionsSchemaIsInSync = Expect<
-  Equals<z.infer<typeof ZodSidebarSectionsSchema>, endpointsTypes.SidebarSectionsConfig>
+  Equals<z.infer<typeof ZodSidebarSectionsSchema>, SidebarSectionsConfig>
 >;
 
 /**

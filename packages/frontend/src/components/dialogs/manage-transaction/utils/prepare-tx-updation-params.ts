@@ -6,8 +6,8 @@ import {
   TransactionModel,
   isTwoLegTransfer,
   type RecordId,
+  type SplitInput,
 } from '@bt/shared/types';
-import type { SplitInput } from '@bt/shared/types/endpoints';
 
 import {
   getDestinationAccount,

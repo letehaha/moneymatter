@@ -1,4 +1,4 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { PivotColumn, PivotRow } from '@bt/shared/types';
 import { AccessibleCategoryInfo } from '@services/categories/get-accessible-category-map.service';
 
 // Synthetic residual-row ids/labels (rows for transactions without the grouping dimension).
@@ -14,7 +14,7 @@ export const UNKNOWN_PAYEE_LABEL = 'Unknown payee';
 // Fallback color for the uncategorized bucket / a category that fell out of the accessible map.
 const FALLBACK_COLOR = '#000000';
 
-type PivotRowKind = endpointsTypes.PivotRow['kind'];
+type PivotRowKind = PivotRow['kind'];
 
 /**
  * A single pivot row, still in integer cents. The serializer converts every amount to an API
@@ -41,7 +41,7 @@ export interface PivotReportRowCents {
  * every monetary field is integer cents.
  */
 export interface PivotReportResultCents {
-  columns: endpointsTypes.PivotColumn[];
+  columns: PivotColumn[];
   rows: PivotReportRowCents[];
   columnTotals: Record<string, number>;
   grandTotal: number;

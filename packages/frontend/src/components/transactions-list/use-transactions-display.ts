@@ -1,4 +1,4 @@
-import { isTwoLegTransfer, TRANSACTION_TYPES, TransactionModel } from '@bt/shared/types';
+import { TransactionModel, dedupeTransferLegs } from '@bt/shared/types';
 import { type MaybeRefOrGetter, computed, toValue } from 'vue';
 
 import type { GroupRowData } from './transaction-group-record.vue';
@@ -41,25 +41,9 @@ export function useTransactionsDisplay({
     const filtersActive = toValue(contentFiltersActive) ?? false;
     const groupingDisabled = toValue(disableGrouping) ?? false;
     const max = toValue(maxDisplay);
-    // Collect which transferIds have their expense side present in this list.
-    // Used to decide whether the income side of a pair should be shown (when the
-    // expense side is absent — e.g. account-scoped view) or suppressed (when both
-    // sides are present and we only want to show one). transfer_to_loan payments
-    // share this paired-row invariant, so they hit the same dedup pass.
-    const transferIdsWithExpense = new Set(
-      txs
-        .filter((tx) => isTwoLegTransfer(tx.transferNature) && tx.transactionType === TRANSACTION_TYPES.expense)
-        .map((tx) => tx.transferId as string),
-    );
-
-    const deduplicated = txs.filter((tx) => {
-      if (!isTwoLegTransfer(tx.transferNature)) return true;
-      if (tx.transactionType === TRANSACTION_TYPES.expense) return true;
-      // Income side: only suppress it when the expense side is also in this list
-      // (i.e. we're on the all-transactions view). When viewing a single account
-      // that only has the income leg, show it.
-      return !transferIdsWithExpense.has(tx.transferId as string);
-    });
+    // transfer_to_loan payments share the paired-row invariant of common transfers,
+    // so both go through the same dedup.
+    const deduplicated = dedupeTransferLegs(txs);
 
     // Dissolve groups — show individual transactions
     if (filtersActive || groupingDisabled) {

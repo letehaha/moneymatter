@@ -1,17 +1,30 @@
 <script lang="ts" setup>
 import type { DashboardWidgetConfig } from '@/api/user-settings';
 import CategoryCircle from '@/components/common/category-circle.vue';
+import SlidingPanels from '@/components/common/sliding-panels.vue';
 import { buttonVariants, Button } from '@/components/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { Separator } from '@/components/lib/ui/separator';
+import { useNotificationCenter } from '@/components/notification-center';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
 import { useIncludePlannedConfig } from '@/components/widgets/use-include-planned-config';
 import { useFormatCurrency } from '@/composable/formatters';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCategoriesStore } from '@/stores/categories/categories';
 import { format } from 'date-fns';
-import { GripVerticalIcon, PencilIcon, PlusIcon, SettingsIcon, Trash2Icon, SaveIcon } from '@lucide/vue';
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  GripVerticalIcon,
+  PencilIcon,
+  PlusIcon,
+  SettingsIcon,
+  Trash2Icon,
+  SaveIcon,
+} from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import type { Ref } from 'vue';
 import { computed, inject, ref, watch } from 'vue';
@@ -21,9 +34,17 @@ import { VueDraggable } from 'vue-draggable-plus';
 
 import WidgetWrapper from '../components/widget-wrapper.vue';
 import CategoryPickerDialog from './category-picker-dialog.vue';
+import {
+  CATEGORY_SORT_LABELS,
+  CATEGORY_SORT_OPTIONS,
+  type CategorySort,
+  readCategorySort,
+  sortCategoryRows,
+} from './sort-category-rows';
 import { useCategorySpendingData } from './use-category-spending-data';
 
 const { t } = useI18n();
+const { addErrorNotification } = useNotificationCenter();
 
 const props = defineProps<{
   selectedPeriod: { from: Date; to: Date };
@@ -70,14 +91,18 @@ const categoryRows = computed(() =>
   }),
 );
 
+const sortBy = computed(() => readCategorySort({ config: widgetConfigRef?.value?.config }));
+const displayRows = computed(() => sortCategoryRows({ rows: categoryRows.value, sortBy: sortBy.value }));
+
 // Mutable copy for drag-and-drop reordering
 const draggableRows = ref<typeof categoryRows.value>([]);
 
 const syncDraggableRows = () => {
-  draggableRows.value = [...categoryRows.value];
+  draggableRows.value = [...displayRows.value];
 };
 
 const isCustomizing = ref(false);
+const hasReordered = ref(false);
 
 // Sync adds/removes to draggable list without overriding drag order
 watch(categoryRows, (rows) => {
@@ -124,6 +149,11 @@ const openPickerForAdd = () => {
 };
 
 const isSettingsOpen = ref(false);
+const settingsView = ref<'main' | 'sort'>('main');
+
+watch(isSettingsOpen, (open) => {
+  if (open) settingsView.value = 'main';
+});
 
 const addCategoryFromSettings = () => {
   isSettingsOpen.value = false;
@@ -135,13 +165,24 @@ const openPickerForReplace = ({ categoryId }: { categoryId: string }) => {
   pickerOpen.value = true;
 };
 
-const persistCategories = async ({ categoryIds }: { categoryIds: string[] }) => {
+const saveConfig = async ({ config }: { config: Record<string, unknown> }) => {
   if (!saveWidgetConfig || !widgetConfigRef?.value) return;
 
-  await saveWidgetConfig({
-    widgetId: widgetConfigRef.value.widgetId,
-    config: { selectedCategoryIds: categoryIds },
-  });
+  try {
+    await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    addErrorNotification(t('errors.api.unexpectedError'));
+  }
+};
+
+const persistCategories = ({ categoryIds }: { categoryIds: string[] }) =>
+  saveConfig({ config: { selectedCategoryIds: categoryIds } });
+
+const setSortBy = ({ value }: { value: CategorySort }) => {
+  saveConfig({ config: { sortBy: value } });
+  settingsView.value = 'main';
 };
 
 const handleCategorySelected = ({ categoryId }: { categoryId: string }) => {
@@ -171,19 +212,20 @@ const removeCategory = ({ categoryId }: { categoryId: string }) => {
 
 const enterCustomize = () => {
   syncDraggableRows();
+  hasReordered.value = false;
   isCustomizing.value = true;
 };
 
+const onDragEnd = ({ oldIndex, newIndex }: { oldIndex?: number; newIndex?: number }) => {
+  if (oldIndex !== newIndex) hasReordered.value = true;
+};
+
 const exitCustomize = () => {
-  // Persist the new order from draggable list
-  const reorderedIds = draggableRows.value.map((row) => row.id);
-
-  // Only persist if order actually changed
-  const currentIds = selectedCategoryIds.value;
-  const orderChanged = reorderedIds.some((id, i) => id !== currentIds[i]);
-
-  if (orderChanged) {
-    persistCategories({ categoryIds: reorderedIds });
+  // A drag is the user defining their own order, so it replaces any amount sort.
+  if (hasReordered.value) {
+    saveConfig({
+      config: { selectedCategoryIds: draggableRows.value.map((row) => row.id), sortBy: 'custom' },
+    });
   }
 
   isCustomizing.value = false;
@@ -268,24 +310,71 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent class="w-72 overflow-hidden p-0" align="end">
-          <header class="border-b px-3 py-2 text-sm font-medium">{{ t('common.actions.settings') }}</header>
-          <template v-if="canAddCategory">
-            <div class="flex flex-col p-2">
-              <button
-                type="button"
-                data-testid="cst-settings-add-category"
-                class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
-                @click="addCategoryFromSettings"
-              >
-                <PlusIcon class="text-muted-foreground size-4" />
-                {{ t('dashboard.widgets.categoryTracker.addCategory') }}
-              </button>
-            </div>
-            <Separator />
-          </template>
-          <div class="flex flex-col p-2">
-            <IncludePlannedMenuItem test-id-prefix="cst" />
-          </div>
+          <SlidingPanels v-model="settingsView" :panels="['main', 'sort']">
+            <template #main>
+              <header class="border-b px-3 py-2 text-sm font-medium">{{ t('common.actions.settings') }}</header>
+              <template v-if="canAddCategory">
+                <div class="flex flex-col p-2">
+                  <button
+                    type="button"
+                    data-testid="cst-settings-add-category"
+                    class="hover:bg-accent flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm font-medium transition-colors"
+                    @click="addCategoryFromSettings"
+                  >
+                    <PlusIcon class="text-muted-foreground size-4" />
+                    {{ t('dashboard.widgets.categoryTracker.addCategory') }}
+                  </button>
+                </div>
+                <Separator />
+              </template>
+              <div class="flex flex-col p-2">
+                <button
+                  v-if="!isCustomizing"
+                  type="button"
+                  data-testid="cst-settings-sort"
+                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="settingsView = 'sort'"
+                >
+                  <span class="flex flex-col">
+                    <span class="text-sm font-medium">{{ t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+                    <span class="text-muted-foreground text-xs">{{ t(CATEGORY_SORT_LABELS[sortBy]) }}</span>
+                  </span>
+                  <ChevronRightIcon class="text-muted-foreground size-4" />
+                </button>
+                <IncludePlannedMenuItem test-id-prefix="cst" />
+              </div>
+            </template>
+
+            <template #sort>
+              <header class="flex items-center gap-2 border-b px-2 py-2">
+                <DesktopOnlyTooltip :content="t('common.actions.back')">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    type="button"
+                    :aria-label="t('common.actions.back')"
+                    @click="settingsView = 'main'"
+                  >
+                    <ArrowLeftIcon class="size-4" />
+                  </Button>
+                </DesktopOnlyTooltip>
+                <span class="text-sm font-medium">{{ t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+              </header>
+              <div class="flex flex-col p-2">
+                <button
+                  v-for="option in CATEGORY_SORT_OPTIONS"
+                  :key="option"
+                  type="button"
+                  :data-testid="`cst-sort-${option}`"
+                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="setSortBy({ value: option })"
+                >
+                  <span class="text-sm">{{ t(CATEGORY_SORT_LABELS[option]) }}</span>
+                  <CheckIcon v-if="sortBy === option" class="text-primary-text size-4" />
+                </button>
+              </div>
+            </template>
+          </SlidingPanels>
         </PopoverContent>
       </Popover>
     </template>
@@ -310,6 +399,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
             handle=".drag-handle"
             :animation="200"
             class="flex flex-col gap-2"
+            @end="onDragEnd"
           >
             <div
               v-for="(item, index) in draggableRows"
@@ -348,7 +438,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
           <!-- Normal mode: static rows -->
           <template v-else>
             <button
-              v-for="item in categoryRows"
+              v-for="item in displayRows"
               :key="item.id"
               class="hover:bg-muted/50 flex h-9 w-full items-center gap-2 rounded-md px-3 py-0.5 text-left transition-colors"
               @click="navigateToTransactions({ categoryId: item.id })"

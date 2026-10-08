@@ -15,105 +15,42 @@ import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { shareInvitationSendRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.post(
-  '/invitations',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  shareInvitationSendRateLimit,
-  validateEndpoint(createInvitation.schema),
-  createInvitation.handler,
-);
-router.get(
-  '/invitations/sent',
-  authenticateSession,
-  validateEndpoint(listSentInvitations.schema),
-  listSentInvitations.handler,
-);
-router.get(
-  '/invitations/received',
-  authenticateSession,
-  validateEndpoint(listReceivedInvitations.schema),
-  listReceivedInvitations.handler,
-);
-router.post(
-  '/invitations/:token/accept',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(acceptInvitation.schema),
-  acceptInvitation.handler,
-);
-router.post(
-  '/invitations/:token/decline',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(declineInvitation.schema),
-  declineInvitation.handler,
-);
-router.post(
-  '/invitations/:id/resend',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(resendInvitation.schema),
-  resendInvitation.handler,
-);
-router.delete(
-  '/invitations/:id',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(cancelInvitation.schema),
-  cancelInvitation.handler,
-);
+router.use(authenticateSession);
+
+router.post('/invitations', blockDemoUsers, checkBaseCurrencyLock, shareInvitationSendRateLimit, createInvitation);
+router.get('/invitations/sent', listSentInvitations);
+router.get('/invitations/received', listReceivedInvitations);
+router.post('/invitations/:token/accept', blockDemoUsers, checkBaseCurrencyLock, acceptInvitation);
+router.post('/invitations/:token/decline', blockDemoUsers, checkBaseCurrencyLock, declineInvitation);
+router.post('/invitations/:id/resend', blockDemoUsers, checkBaseCurrencyLock, resendInvitation);
+router.delete('/invitations/:id', blockDemoUsers, checkBaseCurrencyLock, cancelInvitation);
 router.post(
   '/invitations/:id/back-invite',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
   shareInvitationSendRateLimit,
-  validateEndpoint(backInviteFromInvitation.schema),
-  backInviteFromInvitation.handler,
+  backInviteFromInvitation,
 );
 
-router.get(
-  '/resources/:resourceType/:resourceId/members',
-  authenticateSession,
-  validateEndpoint(listMembers.schema),
-  listMembers.handler,
-);
+router.get('/resources/:resourceType/:resourceId/members', listMembers);
 router.patch(
   '/resources/:resourceType/:resourceId/members/:userId',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(updateMember.schema),
-  updateMember.handler,
+  updateMember,
 );
 router.delete(
   '/resources/:resourceType/:resourceId/members/:userId',
-  authenticateSession,
   blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(revokeMember.schema),
-  revokeMember.handler,
+  revokeMember,
 );
 
-router.get('/shared-with-me', authenticateSession, validateEndpoint(listSharedWithMe.schema), listSharedWithMe.handler);
-router.post(
-  '/shared-with-me/:resourceType/:resourceId/leave',
-  authenticateSession,
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(leaveShare.schema),
-  leaveShare.handler,
-);
+router.get('/shared-with-me', listSharedWithMe);
+router.post('/shared-with-me/:resourceType/:resourceId/leave', blockDemoUsers, checkBaseCurrencyLock, leaveShare);
 
 export default router;

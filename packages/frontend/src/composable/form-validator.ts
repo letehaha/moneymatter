@@ -1,10 +1,11 @@
+import { i18n } from '@/i18n';
 import useVuelidate, { ExtractState, GlobalConfig, ValidationArgs } from '@vuelidate/core';
 import { get as safeGet } from 'lodash-es';
 import { ComputedRef, Ref, ToRefs, isRef } from 'vue';
 
-const GENERIC_VALIDATION_MESSAGES = Object.freeze({
-  email: 'Email field is required',
-  required: 'Field is required',
+const GENERIC_VALIDATION_MESSAGE_KEYS: Readonly<Record<string, string>> = Object.freeze({
+  email: 'validation.emailInvalid',
+  required: 'validation.required',
 });
 
 /**
@@ -97,6 +98,7 @@ export const useFormValidation = <Vargs extends ValidationArgs, T extends Extrac
     }
   };
 
+  // oxlint-disable-next-line no-underscore-dangle
   const _extractVuelidateField = (fieldPath = '') => {
     const resultFieldPath = fieldPath.trim().replace(
       /(\w+)(\[\d+\])/, // path like "array[12]"
@@ -155,11 +157,10 @@ export const useFormValidation = <Vargs extends ValidationArgs, T extends Extrac
 
         const customErrorMessage = isRef(customMessage) ? customMessage.value : customMessage;
 
+        const genericMessageKey = GENERIC_VALIDATION_MESSAGE_KEYS[rule];
+
         return (
-          customErrorMessage ||
-          (GENERIC_VALIDATION_MESSAGES as Record<string, string>)[rule] ||
-          field[rule].$message ||
-          ''
+          customErrorMessage || (genericMessageKey && i18n.global.t(genericMessageKey)) || field[rule].$message || ''
         );
       }
     }

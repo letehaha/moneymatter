@@ -4,8 +4,8 @@
  * Comprehensive exchange rate service with 150+ currencies.
  * Requires API key(s) and has rate limiting.
  *
- * Priority: 3 (third / last-resort - most comprehensive but costs money, so it
- * only runs after the two free providers leave a gap)
+ * Last-resort fallback: most comprehensive but costs money, so it only runs
+ * after the free providers leave a gap.
  */
 import Currencies from '@models/currencies.model';
 import axios, { isAxiosError } from 'axios';
@@ -39,7 +39,6 @@ export class ApiLayerProvider extends BaseExchangeRateProvider {
     type: EXCHANGE_RATE_PROVIDER_TYPE.API_LAYER,
     name: 'ApiLayer',
     description: 'Comprehensive exchange rate API with 150+ currencies (Fixer)',
-    priority: 3, // Third / last-resort paid fallback, after the two free providers
     // ApiLayer supports many currencies, don't limit here
     supportedCurrencies: undefined,
   };

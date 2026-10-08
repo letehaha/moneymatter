@@ -14,7 +14,7 @@ import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.se
 import { decryptConnectionKey, getStoredAiSettings, markConnectionInvalid } from '../user-settings/ai-connections';
 import { resolveAIConfiguration } from './ai-model-resolver';
 import { CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE } from './connection-failure';
-import { SERVER_MODELS, buildConnectionModelId } from './resolution-ladder';
+import { PLUS_SERVER_MODELS, SERVER_MODELS, buildConnectionModelId } from './resolution-ladder';
 
 jest.mock('../entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
 jest.mock('../user-settings/ai-connections', () => ({
@@ -31,7 +31,7 @@ const FEATURE = AI_FEATURE.categorization;
 const USER_ID = 1;
 const NOW = new Date().toISOString();
 const IN_A_MONTH = new Date(Date.now() + 30 * 86_400_000).toISOString();
-const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'GEMINI_PLUS_API_KEY'] as const;
+const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'GEMINI_PLUS_API_KEY', 'ANTHROPIC_PLUS_API_KEY'] as const;
 
 const getEntitlementsMock = jest.mocked(getEntitlementsByUserId);
 const getStoredAiSettingsMock = jest.mocked(getStoredAiSettings);
@@ -85,6 +85,7 @@ describe('resolveAIConfiguration', () => {
     for (const name of SERVER_KEY_ENV_VARS) envBeforeTest.set(name, process.env[name]);
     process.env.GEMINI_API_KEY = 'server-key';
     delete process.env.GEMINI_PLUS_API_KEY;
+    delete process.env.ANTHROPIC_PLUS_API_KEY;
     getStoredAiSettingsMock.mockResolvedValue(null);
     grantEntitlements();
   });
@@ -141,6 +142,25 @@ describe('resolveAIConfiguration', () => {
       expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
         kind: 'server',
         apiKey: 'server-key',
+      });
+    });
+
+    it.each<[string, Partial<Entitlements>, string, string]>([
+      [
+        'a paying Plus subscriber',
+        { subscriptions: [plusSubscription] },
+        buildConnectionModelId(PLUS_SERVER_MODELS[FEATURE]!),
+        'anthropic-plus-key',
+      ],
+      ['a trial user', { trialEndsAt: IN_A_MONTH }, buildConnectionModelId(SERVER_MODELS[FEATURE]), 'server-key'],
+    ])('picks the model for %s once the Anthropic Plus key is set', async (_label, overrides, modelId, apiKey) => {
+      process.env.ANTHROPIC_PLUS_API_KEY = 'anthropic-plus-key';
+      grantEntitlements({ features: [FEATURES.operator_ai], ...overrides });
+
+      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
+        kind: 'server',
+        modelId,
+        apiKey,
       });
     });
   });

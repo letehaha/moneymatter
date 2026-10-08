@@ -1,5 +1,4 @@
-import type { TransactionTemplateModel } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type { CreateTransactionTemplateBody, TransactionTemplateModel } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';

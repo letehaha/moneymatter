@@ -15,6 +15,8 @@ describe('buildCategoryList', () => {
     key: null,
     type: CATEGORY_TYPES.custom,
     userId: 1,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
   };
 
   it('transforms CategoryModel to CategoryForCategorization', () => {

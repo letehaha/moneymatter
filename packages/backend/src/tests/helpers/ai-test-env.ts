@@ -1,6 +1,6 @@
 import { afterEach, beforeEach } from '@jest/globals';
 
-const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'GEMINI_PLUS_API_KEY'] as const;
+const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'GEMINI_PLUS_API_KEY', 'ANTHROPIC_PLUS_API_KEY'] as const;
 
 /** The outbound URL guard rejects anything that is not a public internet host. */
 export function runAsCloud(): void {

@@ -1,9 +1,7 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { PivotGranularity } from '@bt/shared/types';
 import { format, getQuarter, getYear, startOfWeek } from 'date-fns';
 
 import { PeriodBucket, generatePeriodBuckets } from '../utils';
-
-type PivotGranularity = endpointsTypes.PivotGranularity;
 
 // Weeks start on Monday to match the cash-flow report and ISO conventions.
 const WEEK_OPTS = { weekStartsOn: 1 } as const;

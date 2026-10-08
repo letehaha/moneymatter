@@ -1,8 +1,4 @@
-import {
-  RECONCILIATION_MERGE_MAX,
-  RECONCILIATION_MERGE_MIN,
-  RECONCILIATION_REMOVE_MAX,
-} from '@bt/shared/const/reconciliation';
+import { RECONCILIATION_MERGE_MAX, RECONCILIATION_MERGE_MIN, RECONCILIATION_REMOVE_MAX } from '@bt/shared/types';
 import { recordId, uniqueRecordIds } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { getReconciliationHistory } from '@services/transactions/reconciliation/get-history';

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import DateField from '@/components/fields/date-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';

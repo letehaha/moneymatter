@@ -18,103 +18,38 @@ import {
 } from '@controllers/payees';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(listPayees.schema), listPayees.handler);
-router.post('/', authenticateSession, checkBaseCurrencyLock, validateEndpoint(createPayee.schema), createPayee.handler);
+router.use(authenticateSession);
+
+router.get('/', listPayees);
+router.post('/', checkBaseCurrencyLock, createPayee);
 
 // Full minimal payee set for id→name/logo resolution. Must precede `/:id` so
 // Express doesn't capture the literal `lookup` segment as a Payee id.
-router.get('/lookup', authenticateSession, validateEndpoint(lookupPayees.schema), lookupPayees.handler);
+router.get('/lookup', lookupPayees);
 
 // Bulk-update sub-resource. Precedes `/:id` patterns for the same reason as
 // `/ignored-names` below – Express's path matcher would otherwise treat the
 // literal segment as a Payee id.
-router.patch(
-  '/bulk-categorization-mode',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkUpdateCategorizationMode.schema),
-  bulkUpdateCategorizationMode.handler,
-);
-router.post(
-  '/bulk-delete',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkDeletePayees.schema),
-  bulkDeletePayees.handler,
-);
+router.patch('/bulk-categorization-mode', checkBaseCurrencyLock, bulkUpdateCategorizationMode);
+router.post('/bulk-delete', checkBaseCurrencyLock, bulkDeletePayees);
 
 // Ignored-names sub-resource. Routes precede `/:id` patterns so Express's
 // path matcher doesn't capture the literal segment as a Payee id.
-router.get('/ignored-names', authenticateSession, validateEndpoint(listIgnoredNames.schema), listIgnoredNames.handler);
-router.post(
-  '/ignored-names',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(addIgnoredName.schema),
-  addIgnoredName.handler,
-);
-router.delete(
-  '/ignored-names/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(removeIgnoredName.schema),
-  removeIgnoredName.handler,
-);
+router.get('/ignored-names', listIgnoredNames);
+router.post('/ignored-names', checkBaseCurrencyLock, addIgnoredName);
+router.delete('/ignored-names/:id', checkBaseCurrencyLock, removeIgnoredName);
 
-router.get('/:id', authenticateSession, validateEndpoint(getPayee.schema), getPayee.handler);
-router.patch(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updatePayee.schema),
-  updatePayee.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deletePayee.schema),
-  deletePayee.handler,
-);
-router.post(
-  '/:id/merge',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(mergePayees.schema),
-  mergePayees.handler,
-);
-router.post(
-  '/:id/apply-tags',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(applyTagsToExisting.schema),
-  applyTagsToExisting.handler,
-);
-router.post(
-  '/:id/aliases',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createPayeeAlias.schema),
-  createPayeeAlias.handler,
-);
-router.delete(
-  '/:id/aliases/:aliasId',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deletePayeeAlias.schema),
-  deletePayeeAlias.handler,
-);
-router.post(
-  '/:id/reset-logo',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(resetLogo.schema),
-  resetLogo.handler,
-);
+router.get('/:id', getPayee);
+router.patch('/:id', checkBaseCurrencyLock, updatePayee);
+router.delete('/:id', checkBaseCurrencyLock, deletePayee);
+router.post('/:id/merge', checkBaseCurrencyLock, mergePayees);
+router.post('/:id/apply-tags', checkBaseCurrencyLock, applyTagsToExisting);
+router.post('/:id/aliases', checkBaseCurrencyLock, createPayeeAlias);
+router.delete('/:id/aliases/:aliasId', checkBaseCurrencyLock, deletePayeeAlias);
+router.post('/:id/reset-logo', checkBaseCurrencyLock, resetLogo);
 
 export default router;

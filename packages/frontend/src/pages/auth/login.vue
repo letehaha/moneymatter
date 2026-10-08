@@ -91,7 +91,7 @@ import {
   OAuthButton,
   PasskeyButton,
 } from '@/components/auth';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';

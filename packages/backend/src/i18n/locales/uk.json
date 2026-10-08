@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Транзакція з наданим `id` не існує!",
     "notAuthorizedToEdit": "У вас немає прав редагувати цю транзакцію.",
     "cannotDeleteExternal": "Не дозволено вручну видаляти зовнішні транзакції",
+    "bulkDeleteLimitExceeded": "За один раз можна видалити не більше 500 транзакцій. Звузьте вибір і спробуйте ще раз.",
     "unexpectedDeleteIssue": "Неочікувана помилка при спробі видалити транзакцію",
     "linkSelfNotAllowed": "Спроба прив'язати транзакцію саму до себе.",
     "linkSameTypeNotAllowed": "Спроба прив'язати до транзакції, яка має той самий \"transactionType\".",
@@ -222,8 +223,7 @@
     "accountIdNotFound": "Рахунок {{accountId}} не знайдено",
     "providerTypeMismatch": "Підключення {{connectionId}} призначене для провайдера {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} вже зареєстрований. Не можна реєструвати дублікати провайдерів.",
-    "providerNotRegistered": "Провайдер {{providerType}} не зареєстрований. Доступні провайдери: {{available}}",
-    "missingRequiredProviders": "Відсутні необхідні банківські провайдери: {{missing}}. Переконайтеся, що ці провайдери зареєстровані при запуску програми."
+    "providerNotRegistered": "Провайдер {{providerType}} не зареєстрований. Доступні провайдери: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" є неправильною датою."

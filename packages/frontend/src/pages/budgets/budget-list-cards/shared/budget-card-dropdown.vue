@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertDialog } from '@/components/common';
+import AlertDialog from '@/components/common/alert-dialog.vue';
 import {
   DropdownMenu,
   DropdownMenuContent,

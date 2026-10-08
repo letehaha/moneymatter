@@ -1,5 +1,6 @@
 import { api } from '@/api/_api';
 import type {
+  RecordId,
   RemindBeforePreset,
   SubscriptionModel,
   SubscriptionPeriodModel,
@@ -178,6 +179,18 @@ export interface SubscriptionPayPreview {
   expectedAmount: number | null;
   /** Billed amount converted into the account currency at today's rate, used to pre-fill the pay dialog. */
   convertedAmount: number | null;
+  /** Linked transactions inside the requested period that back no period yet, nearest to due date first. */
+  linkedPayments: LinkedPaymentCandidate[];
+}
+
+export interface LinkedPaymentCandidate {
+  id: RecordId;
+  amount: number;
+  currencyCode: string;
+  time: string;
+  note: string | null;
+  payeeName: string | null;
+  accountId: RecordId;
 }
 
 export const markSubscriptionPeriodPaid = async ({
@@ -248,6 +261,12 @@ export const revertSubscriptionPeriod = async ({
   return api.post(`/subscriptions/${id}/periods/${periodId}/revert`);
 };
 
-export const getSubscriptionPayPreview = async ({ id }: { id: string }): Promise<SubscriptionPayPreview> => {
-  return api.get(`/subscriptions/${id}/pay-preview`);
+export const getSubscriptionPayPreview = async ({
+  id,
+  periodId,
+}: {
+  id: string;
+  periodId?: string;
+}): Promise<SubscriptionPayPreview> => {
+  return api.get(`/subscriptions/${id}/pay-preview`, { periodId });
 };

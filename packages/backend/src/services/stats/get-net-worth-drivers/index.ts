@@ -1,4 +1,13 @@
-import { ACCOUNT_CATEGORIES, type Cents, type RecordId, asCents, endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  type Cents,
+  type NetWorthDriversDegraded,
+  type NetWorthDriversGranularity,
+  type NetWorthDriversPortfolioMeta,
+  type NetWorthDriversUnpricedSecurity,
+  type RecordId,
+  asCents,
+} from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -52,7 +61,7 @@ interface GetNetWorthDriversParams {
   userId: number;
   from: string;
   to: string;
-  granularity: endpointsTypes.NetWorthDriversGranularity;
+  granularity: NetWorthDriversGranularity;
   /**
    * Optional subset of the user's enabled portfolios to scope the investment slice
    * to (holdings, portfolio cash, flows, growth, and the unpriced-securities
@@ -75,12 +84,12 @@ interface InvestmentSlice {
   /** Sparse per-portfolio split of each bucket's growth, positionally aligned with the buckets. */
   growthByPortfolio: NetWorthDriversPortfolioSliceCents[][];
   /** Portfolios active anywhere in the window, largest absolute total growth first. */
-  portfolios: endpointsTypes.NetWorthDriversPortfolioMeta[];
+  portfolios: NetWorthDriversPortfolioMeta[];
   /**
    * Holdings the replay had no price for and therefore carried at cost basis, so
    * their price movement is understated. Empty when every holding priced.
    */
-  unpricedSecurities: endpointsTypes.NetWorthDriversUnpricedSecurity[];
+  unpricedSecurities: NetWorthDriversUnpricedSecurity[];
   /**
    * Currencies converted without a real rate for the day: at the currency's earliest
    * stored rate for earlier dates, or 1:1 when none is stored. Empty when all resolved.
@@ -122,10 +131,10 @@ const buildDegraded = ({
   unpricedSecurities,
   fxFallbackCurrencies,
 }: {
-  unpricedSecurities: endpointsTypes.NetWorthDriversUnpricedSecurity[];
+  unpricedSecurities: NetWorthDriversUnpricedSecurity[];
   fxFallbackCurrencies: string[];
-}): endpointsTypes.NetWorthDriversDegraded | undefined => {
-  const degraded: endpointsTypes.NetWorthDriversDegraded = {};
+}): NetWorthDriversDegraded | undefined => {
+  const degraded: NetWorthDriversDegraded = {};
   if (unpricedSecurities.length > 0) degraded.unpricedSecurities = unpricedSecurities;
   if (fxFallbackCurrencies.length > 0) degraded.fxFallbackCurrencies = fxFallbackCurrencies;
 
@@ -421,13 +430,10 @@ const calculateInvestmentSlice = async ({
     });
   }
 
-  const unpricedSecurities: endpointsTypes.NetWorthDriversUnpricedSecurity[] = Array.from(
-    unpricedSecurityIds,
-    (securityId) => {
-      const label = securityLabelById.get(securityId);
-      return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
-    },
-  );
+  const unpricedSecurities: NetWorthDriversUnpricedSecurity[] = Array.from(unpricedSecurityIds, (securityId) => {
+    const label = securityLabelById.get(securityId);
+    return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
+  });
 
   // The replays traffic in decimals; everything this service returns is cents. The
   // scope-wide holdings level is the per-date sum of the per-portfolio cents, so the

@@ -12,7 +12,6 @@ export {
   EXPORT_SCHEMA_VERSION,
   MAX_EXPORT_ROWS,
   type ExportDateRange,
-  type ExportFileName,
   type ExportFormat,
   type ExportGroup,
 } from '@bt/shared/types';
@@ -20,7 +19,6 @@ export {
 import {
   EXPORT_SCHEMA_VERSION,
   type ExportDateRange,
-  type ExportFileName,
   type ExportFormat,
   type ExportGroup,
   type PAYMENT_TYPES,
@@ -238,6 +236,9 @@ export type ExportTable =
   | { name: 'holdings'; rows: HoldingRow[] }
   | { name: 'investment_transactions'; rows: InvestmentTransactionRow[] }
   | { name: 'portfolio_transfers'; rows: PortfolioTransferRow[] };
+
+/** File base names inside the zip, one per `ExportTable` arm. */
+export type ExportFileName = ExportTable['name'];
 
 /**
  * Closed set of filenames that may appear inside the export zip. Pinning the

@@ -51,7 +51,7 @@ const { intervalMinutes, cronExpression } = resolveSchedule();
  * so at one batch per run a 15-minute cadence sits at ~2.9k/month.
  */
 export const cryptoPricesSyncCron = createScheduledSync({
-  name: 'crypto prices',
+  name: 'crypto prices sync',
   cronExpression,
   timeZone: 'UTC',
   scheduleDescription: `runs every ${intervalMinutes} minutes (UTC)`,

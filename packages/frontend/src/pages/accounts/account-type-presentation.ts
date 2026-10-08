@@ -35,28 +35,57 @@ const ACCOUNT_CATEGORY_ICONS: Record<ACCOUNT_CATEGORIES, Component> = {
   [ACCOUNT_CATEGORIES.loan]: HandCoinsIcon,
 };
 
+type AccountColor = 'checking' | 'saving' | 'credit' | 'cash' | 'investment' | 'crypto' | 'vehicle';
+
+const ACCOUNT_CATEGORY_COLORS: Record<ACCOUNT_CATEGORIES, AccountColor> = {
+  [ACCOUNT_CATEGORIES.currentAccount]: 'checking',
+  [ACCOUNT_CATEGORIES.general]: 'checking',
+  [ACCOUNT_CATEGORIES.bonus]: 'checking',
+  [ACCOUNT_CATEGORIES.insurance]: 'checking',
+  [ACCOUNT_CATEGORIES.saving]: 'saving',
+  [ACCOUNT_CATEGORIES.creditCard]: 'credit',
+  [ACCOUNT_CATEGORIES.overdraft]: 'credit',
+  [ACCOUNT_CATEGORIES.cash]: 'cash',
+  [ACCOUNT_CATEGORIES.investment]: 'investment',
+  [ACCOUNT_CATEGORIES.crypto]: 'crypto',
+  [ACCOUNT_CATEGORIES.vehicle]: 'vehicle',
+  [ACCOUNT_CATEGORIES.loan]: 'checking',
+};
+
 /**
- * Soft tinted square behind the account-category icon in list rows. Each branch is a full static
+ * Soft tinted square behind the account-category icon in list rows. Each entry is a full static
  * literal so Tailwind's scanner picks the classes up — never build these by string interpolation.
  */
-const ACCOUNT_CATEGORY_TINTED_CHIP_CLASSES: Record<ACCOUNT_CATEGORIES, string> = {
-  [ACCOUNT_CATEGORIES.currentAccount]: 'bg-account-checking/15 text-account-checking',
-  [ACCOUNT_CATEGORIES.general]: 'bg-account-checking/15 text-account-checking',
-  [ACCOUNT_CATEGORIES.bonus]: 'bg-account-checking/15 text-account-checking',
-  [ACCOUNT_CATEGORIES.insurance]: 'bg-account-checking/15 text-account-checking',
-  [ACCOUNT_CATEGORIES.saving]: 'bg-account-saving/15 text-account-saving',
-  [ACCOUNT_CATEGORIES.creditCard]: 'bg-account-credit/15 text-account-credit',
-  [ACCOUNT_CATEGORIES.overdraft]: 'bg-account-credit/15 text-account-credit',
-  [ACCOUNT_CATEGORIES.cash]: 'bg-account-cash/15 text-account-cash',
-  [ACCOUNT_CATEGORIES.investment]: 'bg-account-investment/15 text-account-investment',
-  [ACCOUNT_CATEGORIES.crypto]: 'bg-account-crypto/15 text-account-crypto',
-  [ACCOUNT_CATEGORIES.vehicle]: 'bg-account-vehicle/15 text-account-vehicle',
-  [ACCOUNT_CATEGORIES.loan]: 'bg-account-checking/15 text-account-checking',
+const TINTED_CHIP_CLASSES: Record<AccountColor, string> = {
+  checking: 'bg-account-checking/15 text-account-checking',
+  saving: 'bg-account-saving/15 text-account-saving',
+  credit: 'bg-account-credit/15 text-account-credit',
+  cash: 'bg-account-cash/15 text-account-cash',
+  investment: 'bg-account-investment/15 text-account-investment',
+  crypto: 'bg-account-crypto/15 text-account-crypto',
+  vehicle: 'bg-account-vehicle/15 text-account-vehicle',
 };
+
+/** Opaque counterpart, for a chip that overlaps other content where the tint would let it show through. */
+const SOLID_CHIP_CLASSES: Record<AccountColor, string> = {
+  checking: 'bg-account-checking text-background',
+  saving: 'bg-account-saving text-background',
+  credit: 'bg-account-credit text-background',
+  cash: 'bg-account-cash text-background',
+  investment: 'bg-account-investment text-background',
+  crypto: 'bg-account-crypto text-background',
+  vehicle: 'bg-account-vehicle text-background',
+};
+
+const getAccountColor = ({ category }: { category: ACCOUNT_CATEGORIES }): AccountColor =>
+  ACCOUNT_CATEGORY_COLORS[category] ?? ACCOUNT_CATEGORY_COLORS[ACCOUNT_CATEGORIES.general];
 
 // Fall back to `general` so an unrecognized category (e.g. new server-side value) still renders.
 export const getAccountTypeIcon = ({ category }: { category: ACCOUNT_CATEGORIES }): Component =>
   ACCOUNT_CATEGORY_ICONS[category] ?? ACCOUNT_CATEGORY_ICONS[ACCOUNT_CATEGORIES.general];
 
 export const getAccountTypeTintedChipClass = ({ category }: { category: ACCOUNT_CATEGORIES }): string =>
-  ACCOUNT_CATEGORY_TINTED_CHIP_CLASSES[category] ?? ACCOUNT_CATEGORY_TINTED_CHIP_CLASSES[ACCOUNT_CATEGORIES.general];
+  TINTED_CHIP_CLASSES[getAccountColor({ category })];
+
+export const getAccountTypeSolidChipClass = ({ category }: { category: ACCOUNT_CATEGORIES }): string =>
+  SOLID_CHIP_CLASSES[getAccountColor({ category })];

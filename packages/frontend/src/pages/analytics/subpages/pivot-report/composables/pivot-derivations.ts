@@ -1,5 +1,4 @@
-import type { SavedPivotViewConfig } from '@/api/user-settings';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { PivotRow, PivotMeasure, SavedPivotViewConfig } from '@bt/shared/types';
 
 /**
  * Pure derivation helpers for the Pivot Report grid. Kept free of Vue/reactivity
@@ -27,20 +26,14 @@ export const HEATMAP_MIN_ALPHA = 0.03;
 export const HEATMAP_ALPHA_RANGE = 0.25;
 
 /** Amount in a given column for a row; the synthetic 'total' column reads `row.total`. */
-export const getRowValue = ({ row, columnKey }: { row: endpointsTypes.PivotRow; columnKey: string }): number => {
+export const getRowValue = ({ row, columnKey }: { row: PivotRow; columnKey: string }): number => {
   if (columnKey === TOTAL_COLUMN_KEY) return row.total;
   return row.values[columnKey] ?? 0;
 };
 
 /** Largest absolute amount in a column across top-level rows (children excluded to
  * avoid a child out-shading its parent). Used to normalise heatmap intensity. */
-export const computeColumnMax = ({
-  rows,
-  columnKey,
-}: {
-  rows: endpointsTypes.PivotRow[];
-  columnKey: string;
-}): number => {
+export const computeColumnMax = ({ rows, columnKey }: { rows: PivotRow[]; columnKey: string }): number => {
   let max = 0;
   for (const row of rows) {
     if (row.kind === 'child') continue;
@@ -75,7 +68,7 @@ export const computeDelta = ({
 };
 
 /** A "good" delta shrinks spending (expense measure) or grows income. */
-export const isDeltaGood = ({ delta, measure }: { delta: number; measure: endpointsTypes.PivotMeasure }): boolean => {
+export const isDeltaGood = ({ delta, measure }: { delta: number; measure: PivotMeasure }): boolean => {
   if (delta === 0) return false;
   return measure === 'expense' ? delta < 0 : delta > 0;
 };
@@ -87,18 +80,18 @@ export const sortPivotRows = ({
   columnKey,
   direction,
 }: {
-  rows: endpointsTypes.PivotRow[];
+  rows: PivotRow[];
   columnKey: string;
   direction: PivotSortDirection;
-}): endpointsTypes.PivotRow[] => {
-  const compare = (a: endpointsTypes.PivotRow, b: endpointsTypes.PivotRow): number => {
+}): PivotRow[] => {
+  const compare = (a: PivotRow, b: PivotRow): number => {
     const av = Math.abs(getRowValue({ row: a, columnKey }));
     const bv = Math.abs(getRowValue({ row: b, columnKey }));
     return direction === 'asc' ? av - bv : bv - av;
   };
 
   const topLevel = rows.filter((row) => row.kind !== 'child');
-  const childrenByParent = new Map<string, endpointsTypes.PivotRow[]>();
+  const childrenByParent = new Map<string, PivotRow[]>();
   for (const row of rows) {
     if (row.kind === 'child' && row.parentId) {
       const list = childrenByParent.get(row.parentId) ?? [];
@@ -107,7 +100,7 @@ export const sortPivotRows = ({
     }
   }
 
-  const result: endpointsTypes.PivotRow[] = [];
+  const result: PivotRow[] = [];
   for (const parent of [...topLevel].sort(compare)) {
     result.push(parent);
     const children = childrenByParent.get(parent.id);
@@ -118,24 +111,12 @@ export const sortPivotRows = ({
 
 /** Rows minus the children whose parent is collapsed; collapsed parents stay
  * visible, their subcategory children are hidden until the parent is expanded. */
-export const computeVisibleRows = ({
-  rows,
-  collapsed,
-}: {
-  rows: endpointsTypes.PivotRow[];
-  collapsed: Set<string>;
-}): endpointsTypes.PivotRow[] =>
+export const computeVisibleRows = ({ rows, collapsed }: { rows: PivotRow[]; collapsed: Set<string> }): PivotRow[] =>
   rows.filter((row) => !(row.kind === 'child' && row.parentId && collapsed.has(row.parentId)));
 
 /** True when there is at least one parent row and every parent is collapsed —
  * drives the collapse-all / expand-all toggle state. */
-export const computeAllCollapsed = ({
-  rows,
-  collapsed,
-}: {
-  rows: endpointsTypes.PivotRow[];
-  collapsed: Set<string>;
-}): boolean => {
+export const computeAllCollapsed = ({ rows, collapsed }: { rows: PivotRow[]; collapsed: Set<string> }): boolean => {
   const parentIds = rows.filter((row) => row.kind === 'parent').map((row) => row.id);
   return parentIds.length > 0 && parentIds.every((id) => collapsed.has(id));
 };

@@ -1,4 +1,8 @@
-import type { endpointsTypes } from '@bt/shared/types';
+import type {
+  InvestmentContributionsBucket,
+  InvestmentContributionsPortfolioMeta,
+  GetInvestmentContributionsResponse,
+} from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -26,15 +30,15 @@ const buildBucket = ({
   total: number;
   byPortfolio?: { portfolioId: string; amount: number }[];
   savingsNet?: number;
-}): endpointsTypes.InvestmentContributionsBucket => ({ periodStart, periodEnd, total, byPortfolio, savingsNet });
+}): InvestmentContributionsBucket => ({ periodStart, periodEnd, total, byPortfolio, savingsNet });
 
 const buildResponse = ({
   buckets,
   portfolios,
 }: {
-  buckets: endpointsTypes.InvestmentContributionsBucket[];
-  portfolios?: endpointsTypes.InvestmentContributionsPortfolioMeta[];
-}): endpointsTypes.GetInvestmentContributionsResponse => ({
+  buckets: InvestmentContributionsBucket[];
+  portfolios?: InvestmentContributionsPortfolioMeta[];
+}): GetInvestmentContributionsResponse => ({
   buckets,
   portfolios: portfolios ?? [PORTFOLIO_A, PORTFOLIO_B],
 });

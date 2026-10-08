@@ -14,6 +14,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -25,6 +27,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -36,6 +40,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -47,6 +53,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -58,6 +66,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -69,6 +79,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -80,6 +92,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -91,6 +105,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -102,6 +118,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -113,6 +131,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -124,6 +144,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.internal,
     parentId: null,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -135,6 +157,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003121-0000-0000-0000-000000003121' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -146,6 +170,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003121-0000-0000-0000-000000003121' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -157,6 +183,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003121-0000-0000-0000-000000003121' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -168,6 +196,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -179,6 +209,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -190,6 +222,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -201,6 +235,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -212,6 +248,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -223,6 +261,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -234,6 +274,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -245,6 +287,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -256,6 +300,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -267,6 +313,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -278,6 +326,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003122-0000-0000-0000-000000003122' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -289,6 +339,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -300,6 +352,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -311,6 +365,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -322,6 +378,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -333,6 +391,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -344,6 +404,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003123-0000-0000-0000-000000003123' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -355,6 +417,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003124-0000-0000-0000-000000003124' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -366,6 +430,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003124-0000-0000-0000-000000003124' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -377,6 +443,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003124-0000-0000-0000-000000003124' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -388,6 +456,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003124-0000-0000-0000-000000003124' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -399,6 +469,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -410,6 +482,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -421,6 +495,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -432,6 +508,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -443,6 +521,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -454,6 +534,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003125-0000-0000-0000-000000003125' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -465,6 +547,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -476,6 +560,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -487,6 +573,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -498,6 +586,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -509,6 +599,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -520,6 +612,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -531,6 +625,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -542,6 +638,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -553,6 +651,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -564,6 +664,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -575,6 +677,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -586,6 +690,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003126-0000-0000-0000-000000003126' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -597,6 +703,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003127-0000-0000-0000-000000003127' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -608,6 +716,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003127-0000-0000-0000-000000003127' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -619,6 +729,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003127-0000-0000-0000-000000003127' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -630,6 +742,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003127-0000-0000-0000-000000003127' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -641,6 +755,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -652,6 +768,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -663,6 +781,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -674,6 +794,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -685,6 +807,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -696,6 +820,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -707,6 +833,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003128-0000-0000-0000-000000003128' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -718,6 +846,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003129-0000-0000-0000-000000003129' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -729,6 +859,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003129-0000-0000-0000-000000003129' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -740,6 +872,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003129-0000-0000-0000-000000003129' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -751,6 +885,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003129-0000-0000-0000-000000003129' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -762,6 +898,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003129-0000-0000-0000-000000003129' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -773,6 +911,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -784,6 +924,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -795,6 +937,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -806,6 +950,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -817,6 +963,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -828,6 +976,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -839,6 +989,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -850,6 +1002,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -861,6 +1015,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -872,6 +1028,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
   {
@@ -883,6 +1041,8 @@ export const USER_CATEGORIES: FormattedCategory[] = [
     type: CATEGORY_TYPES.custom,
     parentId: '00003130-0000-0000-0000-000000003130' as RecordId,
     userId: USER.id,
+    defaultTagIds: [],
+    applyDefaultTagsOnAiCategorization: false,
     subCategories: [],
   },
 ];

@@ -1,6 +1,28 @@
-import type { AccountApiResponse } from './db-models';
-import type { LOAN_TYPE } from './enums';
+import type { AccountApiResponse } from './accounts';
 import type { RecordId } from './record-id';
+
+/**
+ * Loan sub-type on `LoanDetails.loanType` — UI grouping/badges only, no impact
+ * on amortization or balance handling. VARCHAR in the DB (no-DB-enums rule).
+ */
+export enum LOAN_TYPE {
+  mortgage = 'mortgage',
+  auto = 'auto',
+  student = 'student',
+  personal = 'personal',
+  heloc = 'heloc',
+  business = 'business',
+  medical = 'medical',
+  other = 'other',
+}
+
+/** Subset of `LOAN_TYPE` the form picker exposes; HELOC-style types need multi-disbursement support first. */
+export const SUPPORTED_LOAN_TYPES = [
+  LOAN_TYPE.mortgage,
+  LOAN_TYPE.auto,
+  LOAN_TYPE.student,
+  LOAN_TYPE.personal,
+] as const;
 
 /**
  * Append-only audit/timeline entries on `LoanDetails.events` (JSONB). `at` is
@@ -172,4 +194,49 @@ export interface LoanBalanceHistoryPoint {
    * negative while debt is outstanding, 0 once settled (never positive).
    */
   amount: number;
+}
+
+/**
+ * 1:1 sidecar on `Accounts` for loan-category accounts (APR, payment plan,
+ * lender metadata, event log); the Account still owns the balance (stored
+ * negative) and currency. Monetary values are cents (BIGINT), surfaced as
+ * Money via model getters.
+ */
+export interface LoanDetailsModel {
+  id: RecordId;
+  accountId: RecordId;
+  userId: number;
+  /** Sub-type (mortgage, auto, student…) – drives UI grouping only. */
+  loanType: LOAN_TYPE;
+  /**
+   * Lender-issued principal in cents, immutable after create —
+   * Account.initialBalance drifts with balance corrections, so this frozen
+   * field preserves the amortization reference.
+   */
+  originalPrincipal: number;
+  /** Same value converted to the user's base currency at LoanDetails creation. */
+  refOriginalPrincipal: number;
+  /** APR as percent, e.g. 3.75. Range [0, 100). DECIMAL at rest; the model getter parses Postgres' string to number. */
+  interestRate: number;
+  termMonths: number | null;
+  startDate: string;
+  /**
+   * Date the outstanding balance (Account.initialBalance) is asserted as-of;
+   * post-anchor payments adjust it, earlier ones are baked into the snapshot.
+   * Distinct from startDate (contractual origination, never moves).
+   */
+  balanceAnchorDate: string;
+  minPayment: number | null;
+  refMinPayment: number | null;
+  plannedPayment: number | null;
+  refPlannedPayment: number | null;
+  /** Day-of-month [1, 31]. Values 29/30/31 clamp to the last day of short months at display/schedule time. */
+  paymentDayOfMonth: number | null;
+  lenderName: string | null;
+  /** Lender's account/loan identifier as the user records it — last four, full number, or any reference they prefer. No format enforced. */
+  accountNumber: string | null;
+  /** Append-only audit/timeline; see LoanEvent. */
+  events: LoanEvent[];
+  createdAt: Date;
+  updatedAt: Date;
 }

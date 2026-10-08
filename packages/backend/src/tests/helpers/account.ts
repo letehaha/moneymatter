@@ -3,10 +3,10 @@ import {
   ACCOUNT_STATUSES,
   ACCOUNT_TYPES,
   type AccountApiResponse,
+  type CreateAccountBody,
   type Decimal,
   type LinkResidualTarget,
   type TransactionModel,
-  type endpointsTypes,
 } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
 import Currencies from '@models/currencies.model';
@@ -15,9 +15,7 @@ import { Response } from 'express';
 import { makeRequest } from './common';
 import { addUserCurrencies, getCurrenciesRates } from './currencies';
 
-export const buildAccountPayload = (
-  overrides: Partial<endpointsTypes.CreateAccountBody> = {},
-): endpointsTypes.CreateAccountBody => ({
+export const buildAccountPayload = (overrides: Partial<CreateAccountBody> = {}): CreateAccountBody => ({
   accountCategory: ACCOUNT_CATEGORIES.general,
   currencyCode: global.BASE_CURRENCY.code,
   name: 'test',

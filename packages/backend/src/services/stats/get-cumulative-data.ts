@@ -1,4 +1,10 @@
-import { TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
+import {
+  type CumulativeMetric,
+  type CumulativeMonthData,
+  type CumulativePeriodData,
+  type GetCumulativeResponse,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { expandCategoryIdsWithDescendants } from '@services/categories/category-hierarchy';
 import { getAccessibleCategoryMap } from '@services/categories/get-accessible-category-map.service';
 import { type StatsScopeFilters, buildStatsScopeWhere } from '@services/stats/stats-scope-filters';
@@ -22,7 +28,7 @@ interface GetCumulativeDataParams extends StatsScopeFilters {
   userId: number;
   from: string;
   to: string;
-  metric: endpointsTypes.CumulativeMetric;
+  metric: CumulativeMetric;
   categoryIds?: string[];
   /** Expanded to descendants before the query, so hiding a parent hides its children. */
   excludedCategoryIds?: string[];
@@ -54,7 +60,7 @@ export const getCumulativeData = async ({
   excludedTagIds,
   categoryIds,
   excludedCategoryIds,
-}: GetCumulativeDataParams): Promise<endpointsTypes.GetCumulativeResponse> => {
+}: GetCumulativeDataParams): Promise<GetCumulativeResponse> => {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
   const toDate = parseISO(to);
@@ -130,7 +136,7 @@ async function getPeriodData({
   excludedTagIds,
   includeCategoryIds,
   excludeCategoryIds,
-}: PeriodDataParams): Promise<endpointsTypes.CumulativePeriodData> {
+}: PeriodDataParams): Promise<CumulativePeriodData> {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
   const toDate = parseISO(to);
@@ -197,7 +203,7 @@ async function getPeriodData({
   }
 
   // Build cumulative data based on metric
-  const data: endpointsTypes.CumulativeMonthData[] = [];
+  const data: CumulativeMonthData[] = [];
   let cumulativeValue = 0;
 
   // Iterate through each month in the range using date-fns for safe date iteration

@@ -1,4 +1,4 @@
-import { type Cents, type RecordId, endpointsTypes } from '@bt/shared/types';
+import type { Cents, NetWorthHistoryUnpricedSecurity, RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -52,7 +52,7 @@ interface PortfolioValuation {
    */
   valuesByDate: Map<string, Cents> | null;
   /** Holdings carried at cost basis for lack of a price; empty when every holding priced. */
-  unpricedSecurities: endpointsTypes.NetWorthHistoryUnpricedSecurity[];
+  unpricedSecurities: NetWorthHistoryUnpricedSecurity[];
   /**
    * ISO codes converted without a real rate for the day: at the currency's earliest
    * stored rate for earlier dates, or 1:1 when none is stored. Empty when all resolved.
@@ -338,13 +338,10 @@ export const calculatePortfolioValueByDate = async ({
     });
   }
 
-  const unpricedSecurities: endpointsTypes.NetWorthHistoryUnpricedSecurity[] = Array.from(
-    unpricedSecurityIds,
-    (securityId) => {
-      const label = securityLabelById.get(securityId);
-      return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
-    },
-  );
+  const unpricedSecurities: NetWorthHistoryUnpricedSecurity[] = Array.from(unpricedSecurityIds, (securityId) => {
+    const label = securityLabelById.get(securityId);
+    return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
+  });
 
   // The replays traffic in decimals; everything this service returns is cents.
   const portfolioValueByDate = new Map<string, Cents>();

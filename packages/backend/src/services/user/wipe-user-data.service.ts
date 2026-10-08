@@ -1,32 +1,9 @@
 import { HouseholdSharePermission, RecordId, RESOURCE_TYPES } from '@bt/shared/types';
-import AccountGroups from '@models/accounts-groups/account-groups.model';
 import * as Accounts from '@models/accounts.model';
-import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import Budget from '@models/budget.model';
-import Categories from '@models/categories.model';
-import ImportBatches from '@models/import-batches.model';
-import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
-import Portfolios from '@models/investments/portfolios.model';
-import Notifications from '@models/notifications.model';
-import PayeeIgnoredNames from '@models/payee-ignored-names.model';
-import Payees from '@models/payees.model';
 import ResourceShares from '@models/resource-shares.model';
 import ShareInvitations from '@models/share-invitations.model';
-import SubscriptionCandidates from '@models/subscription-candidates.model';
-import Subscriptions from '@models/subscriptions.model';
-import Tags from '@models/tags.model';
-import TransactionAutomations from '@models/transaction-automations.model';
-import TransactionGroups from '@models/transaction-groups.model';
-import TransactionTemplates from '@models/transaction-templates.model';
-import TransferSuggestionDismissals from '@models/transfer-suggestion-dismissals.model';
-import UserExchangeRates from '@models/user-exchange-rates.model';
-import UserMerchantCategoryCodes from '@models/user-merchant-category-codes.model';
-import UserSettings from '@models/user-settings.model';
-import UsersCurrencies from '@models/users-currencies.model';
 import * as Users from '@models/users.model';
-import Vehicles from '@models/vehicles.model';
-import VentureDeals from '@models/venture/venture-deals.model';
-import VenturePlatforms from '@models/venture/venture-platforms.model';
+import { BACKUP_TABLES, type BackupFileName } from '@services/backup/registry';
 import { Op } from 'sequelize';
 
 import { seedUserDefaults } from './create-user-with-defaults.service';
@@ -87,18 +64,24 @@ export const getOwnedSharedResourceSummary = async ({ userId }: { userId: number
   };
 };
 
+// Transactions, splits and refunds carry the CREATOR's userId, so on a shared
+// account they are the owner's data, not the wiper's. The Accounts cascade
+// removes the ones on owned accounts; rows on other users' accounts stay.
+const CREATOR_SCOPED_TABLES = new Set<BackupFileName>(['transactions', 'transaction-splits', 'refund-transactions']);
+
+// Reverse of the restore insert order, so FK parents (Accounts, Categories, …) go after their dependants.
+const WIPE_ORDER = BACKUP_TABLES.toReversed();
+
 /**
- * Ordered destroy of everything a user OWNS, minus the reseed. Two callers:
- * wipe-data (reseeds defaults afterwards) and backup-restore (inserts the
- * backup's own tables afterwards, no reseed). Must run inside a transaction —
- * both callers invoke it from `runUserDestroyLifecycle`'s `destroyInTx` hook so
- * the surrounding spine handles share-target snapshots and notification fan-out.
+ * Destroy of everything a user OWNS, minus the reseed. Two callers: wipe-data
+ * (reseeds defaults afterwards) and backup-restore (inserts the backup's own
+ * tables afterwards, no reseed). Must run inside a transaction — both callers
+ * invoke it from `runUserDestroyLifecycle`'s `destroyInTx` hook so the
+ * surrounding spine handles share-target snapshots and notification fan-out.
  *
- * Includes the payee library (Payees + PayeeIgnoredNames) — a wipe is a clean
- * slate, so learned payees and the ignore-list go too.
- *
- * Leaves the Users + `ba_user` rows intact (identity is preserved); only the
- * domain data + per-user settings/currency state go.
+ * Walks the backup registry's `userColumn` tables; `viaParent` children go
+ * with their parents via FK cascade. Leaves the Users + `ba_user` rows intact
+ * (identity is preserved); only the domain data + per-user settings go.
  */
 export const destroyUserOwnedData = async ({ user }: { user: Users.default }) => {
   // Break Users → Categories FK before the Categories rows go. The caller repoints
@@ -115,70 +98,11 @@ export const destroyUserOwnedData = async ({ user }: { user: Users.default }) =>
     where: { [Op.or]: [{ ownerUserId: user.id }, { inviteeUserId: user.id }] },
   });
 
-  // Domain-top tables. DB-level FK CASCADE handles most children:
-  //   Accounts → Balances, Transactions, BankDataProviderConnections,
-  //              TransactionTags, TransactionSplits, RefundTransactions
-  //   Budget → BudgetCategories, BudgetTransactions
-  //   Subscriptions → SubscriptionPeriods → SubscriptionPeriodNotifications,
-  //                   SubscriptionTransactions
-  //   Portfolios → Holdings, PortfolioBalances, PortfolioTransfers, InvestmentTransaction
-  //   VentureDeals → VentureEvents → VentureEventLinks
-  //   TransactionGroups → TransactionGroupItems
-  //   AccountGroups → AccountGrouping
-  //   Tags → TagReminders (TransactionTags already gone via Accounts cascade)
-  //   Payees → PayeeAliases, PayeeTags
-  //   TransactionTemplates → TransactionTemplateTags
-  //
-  // Paranoid models (Portfolios, VentureDeals, VenturePlatforms) need `force: true`
-  // or `.destroy()` only sets `deletedAt`, leaving the rows visible to subsequent
-  // queries that bypass the default scope. VentureDeals.platformId is SET NULL (not
-  // CASCADE) so deals must be destroyed explicitly — destroying VenturePlatforms
-  // alone would leave the deals + their events behind.
-  //
-  // Ordering note: things that reference Accounts/Categories/Tags go BEFORE those
-  // tables, so their cascades can run cleanly against still-present rows.
-  await Notifications.destroy({ where: { userId: user.id } });
-  await SubscriptionCandidates.destroy({ where: { userId: user.id } });
-  await TransferSuggestionDismissals.destroy({ where: { userId: user.id } });
-  await TransactionAutomations.destroy({ where: { userId: user.id } });
-  await Budget.destroy({ where: { userId: user.id } });
-  await Subscriptions.destroy({ where: { userId: user.id } });
-  await TransactionTemplates.destroy({ where: { userId: user.id } });
-  // PortfolioTransfers FKs Transactions / Accounts / Portfolios all via SET NULL.
-  // A prior failed wipe (or any inconsistency) can leave a PT row whose transactionId
-  // points at a Transaction that no longer exists. When `Accounts.destroy` below
-  // cascades to Transactions, Postgres re-validates the SET NULL chain on PT and
-  // trips on the dangling reference, aborting the whole wipe. Destroying PT outright
-  // by userId clears both live rows and orphans before the cascade can stumble.
-  await PortfolioTransfers.destroy({ where: { userId: user.id } });
-  await Portfolios.destroy({ where: { userId: user.id }, force: true });
-  await VentureDeals.destroy({ where: { userId: user.id }, force: true });
-  await VenturePlatforms.destroy({ where: { userId: user.id }, force: true });
-  await Vehicles.destroy({ where: { userId: user.id } });
-  await AccountGroups.destroy({ where: { userId: user.id } });
-  await TransactionGroups.destroy({ where: { userId: user.id } });
-  // No cascade reaches this table: its only owner FK is to Users, which stays.
-  await ImportBatches.destroy({ where: { userId: user.id } });
-  await Accounts.default.destroy({ where: { userId: user.id } });
-  // Payees go after Accounts so Transactions (cascaded above) are already gone.
-  // PayeeAliases/PayeeTags CASCADE off payeeId, so destroying Payees clears
-  // them too — no separate destroy needed. Payees' own FK is on Users
-  // (untouched by this function), so nothing cascades it automatically.
-  await Payees.destroy({ where: { userId: user.id } });
-  // Independent of Payees — its own userId FK, no cascade path either way.
-  await PayeeIgnoredNames.destroy({ where: { userId: user.id } });
-  // UserMerchantCategoryCodes FKs Categories WITHOUT cascade — must die first or
-  // the Categories DELETE below trips a FK violation and aborts the whole wipe.
-  await UserMerchantCategoryCodes.destroy({ where: { userId: user.id } });
-  await Tags.destroy({ where: { userId: user.id } });
-  await Categories.destroy({ where: { userId: user.id } });
-  await BankDataProviderConnections.destroy({ where: { userId: user.id } });
-
-  // Per-user settings + currency state. Wiping UsersCurrencies resets base currency,
-  // forcing the user to re-pick one on next session — matches the "fresh start" intent.
-  await UsersCurrencies.destroy({ where: { userId: user.id } });
-  await UserExchangeRates.destroy({ where: { userId: user.id } });
-  await UserSettings.destroy({ where: { userId: user.id } });
+  for (const def of WIPE_ORDER) {
+    if (def.scope.strategy !== 'userColumn' || CREATOR_SCOPED_TABLES.has(def.fileName)) continue;
+    // force:true so paranoid models hard-delete instead of leaving soft-deleted rows behind their default scope.
+    await def.model.destroy({ where: { [def.scope.column]: user.id }, force: true });
+  }
 };
 
 export const wipeUserData = async ({ userId }: { userId: number }) => {

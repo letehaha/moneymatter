@@ -6,7 +6,6 @@ import { uploadOfxController } from '@controllers/import-export/ofx/upload-ofx.c
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { csvImportRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import express, { Router } from 'express';
 
 import { OFX_ROUTE_PATHS } from './ofx-paths';
@@ -19,8 +18,7 @@ router.post(
   checkBaseCurrencyLock,
   csvImportRateLimit,
   express.raw({ type: 'application/octet-stream', limit: OFX_MAX_FILE_BYTES }),
-  validateEndpoint(uploadOfxController.schema),
-  uploadOfxController.handler,
+  uploadOfxController,
 );
 
 router.post(
@@ -28,8 +26,7 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(detectOfxDuplicatesController.schema),
-  detectOfxDuplicatesController.handler,
+  detectOfxDuplicatesController,
 );
 
 router.post(
@@ -37,15 +34,9 @@ router.post(
   authenticateSession,
   checkBaseCurrencyLock,
   csvImportRateLimit,
-  validateEndpoint(executeOfxController.schema),
-  executeOfxController.handler,
+  executeOfxController,
 );
 
-router.get(
-  OFX_ROUTE_PATHS.status,
-  authenticateSession,
-  validateEndpoint(ofxStatusController.schema),
-  ofxStatusController.handler,
-);
+router.get(OFX_ROUTE_PATHS.status, authenticateSession, ofxStatusController);
 
 export default router;

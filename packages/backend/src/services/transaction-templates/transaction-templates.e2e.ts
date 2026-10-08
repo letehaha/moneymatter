@@ -1,5 +1,10 @@
-import { ACCOUNT_STATUSES, ACCOUNT_TYPES, PAYMENT_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import {
+  ACCOUNT_STATUSES,
+  ACCOUNT_TYPES,
+  type CreateTransactionTemplateBody,
+  PAYMENT_TYPES,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';

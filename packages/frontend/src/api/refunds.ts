@@ -1,5 +1,5 @@
 import { api } from '@/api/_api';
-import { TransactionModel } from '@bt/shared/types/db-models';
+import { TransactionModel } from '@bt/shared/types';
 
 type RefundRelationship = {
   id: string;

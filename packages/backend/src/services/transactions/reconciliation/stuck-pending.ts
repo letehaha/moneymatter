@@ -1,6 +1,10 @@
-import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
-import { ACCOUNT_TYPES, RecordId } from '@bt/shared/types';
-import type { CheckStuckPendingResponse, KeepAsBookedResponse } from '@bt/shared/types/endpoints';
+import {
+  LINKED_TRANSFER_NATURES,
+  ACCOUNT_TYPES,
+  type CheckStuckPendingResponse,
+  type KeepAsBookedResponse,
+  RecordId,
+} from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';

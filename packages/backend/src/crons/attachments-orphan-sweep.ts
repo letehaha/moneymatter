@@ -1,8 +1,8 @@
-import { logger } from '@js/utils';
 import TransactionAttachments from '@models/transaction-attachments.model';
 import { STORAGE_KEY_PATTERN, deleteObject, listObjects, storageKey } from '@services/attachments/storage';
-import { CronJob } from 'cron';
 import { Op } from 'sequelize';
+
+import { createScheduledSync } from './lib/create-scheduled-sync';
 
 /** Upload writes the blob before the row, so a very young blob may simply be mid-upload. */
 const MIN_AGE_MS = 24 * 60 * 60 * 1000;
@@ -58,50 +58,11 @@ const sweepOrphanBlobs = async ({ minAgeMs = MIN_AGE_MS }: { minAgeMs?: number }
   return { deleted: orphans.length, scanned: candidates.length };
 };
 
-class AttachmentsOrphanSweepCronService {
-  private job: CronJob | null = null;
-
-  public startCron(): void {
-    if (this.job) {
-      logger.info('Attachments orphan sweep cron is already running');
-      return;
-    }
-
-    this.job = new CronJob(
-      '45 3 * * *',
-      async () => {
-        try {
-          const result = await sweepOrphanBlobs();
-          logger.info('Attachments orphan sweep completed', result);
-        } catch (error) {
-          // Stable code so Sentry groups by failure mode, not by stack-trace fingerprint.
-          logger.error(
-            { message: 'Scheduled attachments orphan sweep failed', error: error as Error },
-            { code: 'ATTACHMENTS_ORPHAN_SWEEP_CRON_FAILED' },
-          );
-        }
-      },
-      null,
-      false,
-      'UTC',
-    );
-
-    this.job.start();
-    logger.info('Attachments orphan sweep cron started — runs daily at 03:45 UTC');
-  }
-
-  public stopCron(): void {
-    if (this.job) {
-      this.job.stop();
-      this.job = null;
-      logger.info('Attachments orphan sweep cron stopped');
-    }
-  }
-
-  /** Manual trigger — used by tests instead of waiting on the schedule. */
-  public triggerManualCheck(params: { minAgeMs?: number } = {}): Promise<{ deleted: number; scanned: number }> {
-    return sweepOrphanBlobs(params);
-  }
-}
-
-export const attachmentsOrphanSweepCron = new AttachmentsOrphanSweepCronService();
+export const attachmentsOrphanSweepCron = createScheduledSync({
+  name: 'attachments orphan sweep',
+  cronExpression: '45 3 * * *',
+  timeZone: 'UTC',
+  scheduleDescription: 'runs daily at 03:45 UTC',
+  errorCode: 'ATTACHMENTS_ORPHAN_SWEEP_CRON',
+  run: sweepOrphanBlobs,
+});

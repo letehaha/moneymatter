@@ -1,4 +1,4 @@
-import landingFaqController from '@controllers/landing-faq.controller';
+import landingFaqController, { landingFaqSchema } from '@controllers/landing-faq.controller';
 import { landingFaqGlobalRateLimit, landingFaqIpRateLimit } from '@middlewares/rate-limit';
 import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
@@ -9,10 +9,10 @@ const router = Router({});
 // body doesn't burn the visitor's budget.
 router.post(
   '/faq/ask',
-  validateEndpoint(landingFaqController.schema),
+  validateEndpoint(landingFaqSchema),
   landingFaqIpRateLimit,
   landingFaqGlobalRateLimit,
-  landingFaqController.handler,
+  landingFaqController,
 );
 
 export default router;

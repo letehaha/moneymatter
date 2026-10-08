@@ -105,6 +105,28 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
     component: () => import('@/components/widgets/cash-flow-widget/index.vue'),
     needsPeriod: true,
   },
+  taxes: {
+    id: 'taxes',
+    name: 'dashboard.widgets.registry.taxes.name',
+    description: 'dashboard.widgets.registry.taxes.description',
+    defaultColSpan: 1,
+    defaultRowSpan: 1,
+    allowedSizes: [{ colSpan: 1, rowSpan: 1, label: '1×1' }],
+    component: () => import('@/components/widgets/taxes-widget/index.vue'),
+    needsPeriod: false,
+    configOptions: [
+      {
+        key: 'months',
+        label: 'dashboard.widgets.taxes.config.months.label',
+        defaultValue: '12',
+        choices: [
+          { value: '3', label: 'dashboard.widgets.taxes.config.months.m3' },
+          { value: '6', label: 'dashboard.widgets.taxes.config.months.m6' },
+          { value: '12', label: 'dashboard.widgets.taxes.config.months.m12' },
+        ],
+      },
+    ],
+  },
   'net-worth': {
     id: 'net-worth',
     name: 'dashboard.widgets.registry.netWorth.name',

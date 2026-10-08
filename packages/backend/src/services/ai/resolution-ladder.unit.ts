@@ -1,9 +1,17 @@
 import { AIFeatureConfig, AI_FEATURE } from '@bt/shared/types';
-import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { SERVER_MODELS, pickResolutionStep, type LadderConnection } from './resolution-ladder';
+import {
+  PLUS_SERVER_MODELS,
+  SERVER_MODELS,
+  pickResolutionStep,
+  suspendAnthropicServerKey,
+  type LadderConnection,
+} from './resolution-ladder';
 
-const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY'] as const;
+jest.mock('@js/utils/logger', () => ({ logger: { error: jest.fn() } }));
+
+const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'ANTHROPIC_PLUS_API_KEY'] as const;
 
 // Its default model is a Google one, so GEMINI_API_KEY is what backs the server arm here.
 const FEATURE = AI_FEATURE.categorization;
@@ -20,14 +28,23 @@ function pick({
   config = null,
   connections = [],
   serverKeysAllowed = true,
+  paidPlus = false,
   excludedConnectionIds,
 }: {
   config?: AIFeatureConfig | null;
   connections?: LadderConnection[];
   serverKeysAllowed?: boolean;
+  paidPlus?: boolean;
   excludedConnectionIds?: ReadonlySet<string>;
 } = {}) {
-  return pickResolutionStep({ feature: FEATURE, config, connections, serverKeysAllowed, excludedConnectionIds });
+  return pickResolutionStep({
+    feature: FEATURE,
+    config,
+    connections,
+    serverKeysAllowed,
+    paidPlus,
+    excludedConnectionIds,
+  });
 }
 
 describe('pickResolutionStep', () => {
@@ -46,6 +63,7 @@ describe('pickResolutionStep', () => {
       if (value === undefined) delete process.env[envVar];
       else process.env[envVar] = value;
     }
+    jest.restoreAllMocks();
   });
 
   describe('configured connection', () => {
@@ -152,6 +170,41 @@ describe('pickResolutionStep', () => {
         kind: 'all-connections-down',
         connection: SECOND,
       });
+    });
+  });
+
+  describe('Plus server model', () => {
+    const plusModel = PLUS_SERVER_MODELS[FEATURE];
+
+    beforeEach(() => {
+      process.env.GEMINI_API_KEY = 'server-key';
+      process.env.ANTHROPIC_PLUS_API_KEY = 'anthropic-plus-key';
+    });
+
+    it('serves paying Plus users only', () => {
+      expect(pick({ paidPlus: true })).toEqual({ kind: 'server-default', model: plusModel });
+      expect(pick({ config: PICK_SERVER, paidPlus: true })).toEqual({ kind: 'configured-server', model: plusModel });
+      expect(pick()).toEqual({ kind: 'server-default', model: SERVER_MODEL });
+      expect(pick({ paidPlus: true, serverKeysAllowed: false })).toEqual({ kind: 'unserved' });
+    });
+
+    it('needs no shared key', () => {
+      delete process.env.GEMINI_API_KEY;
+
+      expect(pick({ paidPlus: true })).toEqual({ kind: 'server-default', model: plusModel });
+      expect(pick()).toEqual({ kind: 'unserved' });
+    });
+
+    it('falls back to the shared model for an hour after a suspension', () => {
+      // The clock runs two hours behind, so the suspension is over once it is restored.
+      const suspendedAt = Date.now() - 2 * 60 * 60 * 1000;
+      const now = jest.spyOn(Date, 'now').mockReturnValue(suspendedAt);
+      suspendAnthropicServerKey({ reason: 'test' });
+
+      expect(pick({ paidPlus: true })).toEqual({ kind: 'server-default', model: SERVER_MODEL });
+
+      now.mockReturnValue(suspendedAt + 61 * 60 * 1000);
+      expect(pick({ paidPlus: true })).toEqual({ kind: 'server-default', model: plusModel });
     });
   });
 });

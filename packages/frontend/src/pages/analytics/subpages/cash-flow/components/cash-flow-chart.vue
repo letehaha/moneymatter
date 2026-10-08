@@ -65,7 +65,7 @@ import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
 import type { Period } from '@/composable/use-period-navigation';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { format as formatISODate, parseISO } from 'date-fns';
 import { useResizeObserver } from '@vueuse/core';
@@ -75,7 +75,7 @@ import { useI18n } from 'vue-i18n';
 import type { ChartType } from './chart-type-switcher.vue';
 
 const props = defineProps<{
-  data: endpointsTypes.CashFlowPeriodData[];
+  data: CashFlowPeriodData[];
   chartType: ChartType;
   showMovingAverage?: boolean;
   highlightedPeriod?: Period;

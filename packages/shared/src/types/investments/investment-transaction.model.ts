@@ -1,4 +1,4 @@
-import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '../enums';
+import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '../transactions';
 import { INVESTMENT_TRANSACTION_CATEGORY } from './enums';
 import { PortfolioModel } from './portfolio-models';
 import { SecurityModel } from './security.model';

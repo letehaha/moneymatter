@@ -1,4 +1,4 @@
-import { type Cents, type RecordId, asCents, endpointsTypes } from '@bt/shared/types';
+import { type Cents, type InvestmentContributionsGranularity, type RecordId, asCents } from '@bt/shared/types';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { fetchSavingsTransactions, generatePeriodBuckets, getScopedEnabledPortfolios } from '@services/stats/utils';
@@ -14,7 +14,7 @@ interface GetInvestmentContributionsParams {
   userId: number;
   from: string;
   to: string;
-  granularity: endpointsTypes.InvestmentContributionsGranularity;
+  granularity: InvestmentContributionsGranularity;
   /**
    * Optional subset of the user's enabled portfolios to scope the contributions
    * to. The requested ids are intersected against the owned-and-enabled set in the

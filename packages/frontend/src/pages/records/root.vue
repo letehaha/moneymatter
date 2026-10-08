@@ -117,6 +117,7 @@
                   :is-fetching-next-page="isFetchingNextPage"
                   :scroll-area-id="SCROLL_AREA_IDS.transactionsPage"
                   :selection-scope-key="selectionScopeKey"
+                  :matching="matching"
                   @fetch-next-page="fetchNextPage"
                 />
               </div>
@@ -185,6 +186,7 @@
                   :is-fetching-next-page="isFetchingNextPage"
                   :scroll-area-id="SCROLL_AREA_IDS.transactionsPage"
                   :selection-scope-key="selectionScopeKey"
+                  :matching="matching"
                   @fetch-next-page="fetchNextPage"
                 />
               </div>
@@ -334,6 +336,7 @@
               :is-fetched="isFetched"
               :is-mobile-mode="isMobileMode"
               :selection-scope-key="selectionScopeKey"
+              :matching="matching"
               :always-show-locked-cells="alwaysShowLockedCells"
               @update:sorting="onSortingChange"
               @fetch-next-page="fetchNextPage"
@@ -392,7 +395,8 @@ const {
   isFetchingNextPage,
   isFetched,
   transactionsListRef,
-} = useTransactionsWithFilters({ sorting });
+  matching,
+} = useTransactionsWithFilters({ sorting, withSummary: true });
 
 const { visibleColumns, configurableColumns, toggleColumn, reorderColumns, resetToDefaults } = useTableColumns();
 

@@ -1,11 +1,6 @@
 /**
- * Registry for managing exchange rate providers.
- * Implements the singleton pattern and provides priority-based fallback fetching.
- *
- * Usage:
- *   - Register providers at app startup: registry.register(new CurrencyRatesApiProvider())
- *   - Get provider instance: registry.get(EXCHANGE_RATE_PROVIDER_TYPE.CURRENCY_RATES_API)
- *   - Fetch with fallback: registry.fetchRatesWithFallback({ date: new Date() })
+ * Registry of exchange rate providers. Registration order IS the fallback
+ * order: the merge walks providers in the order they were registered.
  */
 import { logger } from '@js/utils';
 import { getAllCurrencies } from '@models/currencies.model';
@@ -20,7 +15,6 @@ import {
 import {
   DEFAULT_BASE_CURRENCY,
   EXCHANGE_RATE_PROVIDER_TYPE,
-  ExchangeRateProviderMetadata,
   FetchHistoricalRatesWithFallbackResult,
   FetchRatesParams,
   FetchRatesRangeParams,
@@ -37,28 +31,8 @@ interface ProviderFailure {
 
 class ExchangeRateProviderRegistry {
   private providers = new Map<EXCHANGE_RATE_PROVIDER_TYPE, BaseExchangeRateProvider>();
-  private static instance: ExchangeRateProviderRegistry;
 
-  /**
-   * Private constructor to enforce singleton pattern
-   */
-  private constructor() {}
-
-  /**
-   * Get the singleton instance of the registry
-   */
-  public static getInstance(): ExchangeRateProviderRegistry {
-    if (!ExchangeRateProviderRegistry.instance) {
-      ExchangeRateProviderRegistry.instance = new ExchangeRateProviderRegistry();
-    }
-    return ExchangeRateProviderRegistry.instance;
-  }
-
-  /**
-   * Register a new provider
-   * @param provider - Provider instance to register
-   * @throws Error if provider type is already registered
-   */
+  /** @throws Error if provider type is already registered */
   register(provider: BaseExchangeRateProvider): void {
     const providerType = provider.metadata.type;
 
@@ -67,57 +41,13 @@ class ExchangeRateProviderRegistry {
     }
 
     this.providers.set(providerType, provider);
-    logger.info(
-      `Registered exchange rate provider: ${provider.metadata.name} (priority: ${provider.metadata.priority})`,
-    );
+    logger.info(`Registered exchange rate provider: ${provider.metadata.name}`);
   }
 
-  /**
-   * Get a provider by type
-   * @param type - Provider type to retrieve
-   * @returns Provider instance or undefined if not registered
-   */
-  get(type: EXCHANGE_RATE_PROVIDER_TYPE): BaseExchangeRateProvider | undefined {
-    return this.providers.get(type);
-  }
-
-  /**
-   * Check if a provider type is registered
-   * @param type - Provider type to check
-   * @returns True if provider is registered
-   */
-  has(type: EXCHANGE_RATE_PROVIDER_TYPE): boolean {
-    return this.providers.has(type);
-  }
-
-  /**
-   * Get metadata for all registered providers
-   * @returns Array of provider metadata sorted by priority
-   */
-  listAll(): ExchangeRateProviderMetadata[] {
-    return Array.from(this.providers.values())
-      .map((provider) => provider.metadata)
-      .toSorted((a, b) => a.priority - b.priority);
-  }
-
-  /**
-   * Get list of all registered provider types
-   * @returns Array of provider types
-   */
-  listTypes(): EXCHANGE_RATE_PROVIDER_TYPE[] {
-    return Array.from(this.providers.keys());
-  }
-
-  /**
-   * Get providers sorted by priority (lowest priority number = highest priority)
-   * Only returns providers that are currently available
-   * @returns Array of provider instances sorted by priority
-   */
-  async getByPriority(): Promise<BaseExchangeRateProvider[]> {
-    const sorted = Array.from(this.providers.values()).toSorted((a, b) => a.metadata.priority - b.metadata.priority);
-
+  /** Registered providers in registration order, minus any whose `isAvailable()` is false. */
+  private async getAvailableProviders(): Promise<BaseExchangeRateProvider[]> {
     const available: BaseExchangeRateProvider[] = [];
-    for (const provider of sorted) {
+    for (const provider of this.providers.values()) {
       try {
         const isAvailable = await provider.isAvailable();
         if (isAvailable) {
@@ -155,7 +85,7 @@ class ExchangeRateProviderRegistry {
    */
   async fetchRatesWithFallback(params: FetchRatesParams): Promise<FetchRatesWithFallbackResult | null> {
     const registered = Array.from(this.providers.values());
-    const available = await this.getByPriority();
+    const available = await this.getAvailableProviders();
 
     // A registered provider missing from `available` was skipped by isAvailable()
     // (e.g. the primary's health check failed). That degradation never enters the
@@ -362,13 +292,9 @@ class ExchangeRateProviderRegistry {
     }
   }
 
-  /**
-   * Get providers that support efficient historical data loading, sorted by priority.
-   * Only returns available providers that have supportsHistoricalDataLoading=true.
-   * @returns Array of provider instances sorted by priority
-   */
+  /** Available providers with `supportsHistoricalDataLoading`, in registration order. */
   async getHistoricalDataProviders(): Promise<BaseExchangeRateProvider[]> {
-    const allAvailable = await this.getByPriority();
+    const allAvailable = await this.getAvailableProviders();
     return allAvailable.filter((provider) => provider.metadata.supportsHistoricalDataLoading === true);
   }
 
@@ -476,23 +402,6 @@ class ExchangeRateProviderRegistry {
   }
 
   /**
-   * Get total count of registered providers
-   * @returns Number of registered providers
-   */
-  getCount(): number {
-    return this.providers.size;
-  }
-
-  /**
-   * Clear all registered providers
-   * WARNING: Should only be used for testing purposes
-   */
-  clearAll(): void {
-    this.providers.clear();
-    logger.warn('All exchange rate providers have been cleared from registry');
-  }
-
-  /**
    * Get the earliest historical date supported by any provider that supports historical data loading.
    * Returns the earliest minHistoricalDate from all providers with supportsHistoricalDataLoading=true.
    * @returns The earliest Date, or null if no providers support historical data
@@ -572,5 +481,4 @@ class ExchangeRateProviderRegistry {
   }
 }
 
-// Export singleton instance
-export const exchangeRateProviderRegistry = ExchangeRateProviderRegistry.getInstance();
+export const exchangeRateProviderRegistry = new ExchangeRateProviderRegistry();

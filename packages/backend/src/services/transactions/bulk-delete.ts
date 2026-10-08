@@ -8,9 +8,14 @@ import { Op } from 'sequelize';
 import { withTransaction } from '../common/with-transaction';
 import { deleteTransaction } from './delete-transaction';
 
+/** Each row is deleted one by one inside a single DB transaction, so a request stays bounded. */
+const MAX_BULK_DELETE = 500;
+
 interface BulkDeleteParams {
   userId: number;
   transactionIds: string[];
+  /** Background jobs pass `Infinity`; they hold no HTTP request open. */
+  maxCount?: number;
 }
 
 interface BulkDeleteResult {
@@ -33,8 +38,16 @@ interface BulkDeleteResult {
  * transfer reversal. When a common-transfer leg is deleted its twin goes with
  * it, so a twin that was also selected is skipped instead of failing with 404.
  */
-const bulkDeleteImpl = async ({ userId, transactionIds }: BulkDeleteParams): Promise<BulkDeleteResult> => {
+const bulkDeleteImpl = async ({
+  userId,
+  transactionIds,
+  maxCount = MAX_BULK_DELETE,
+}: BulkDeleteParams): Promise<BulkDeleteResult> => {
   const uniqueIds = [...new Set(transactionIds)];
+
+  if (uniqueIds.length > maxCount) {
+    throw new ValidationError({ message: t({ key: 'transactions.bulkDeleteLimitExceeded' }) });
+  }
 
   const rows = (await Transactions.default.findAll({
     where: { id: { [Op.in]: uniqueIds }, userId },

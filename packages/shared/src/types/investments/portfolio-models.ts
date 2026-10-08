@@ -1,4 +1,6 @@
-import { AccountModel, CurrencyModel, UserModel } from '../db-models';
+import type { AccountModel } from '../accounts';
+import type { CurrencyModel } from '../currencies';
+import type { UserModel } from '../users';
 import { PORTFOLIO_TYPE } from './enums';
 import { HoldingModel } from './holding.model';
 import { InvestmentTransactionModel } from './investment-transaction.model';

@@ -10,7 +10,7 @@ import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subs
 import { ApiErrorResponseError } from '@/js/errors';
 import { cn } from '@/lib/utils';
 import { useAccountsStore } from '@/stores';
-import type { AccountModel, SubscriptionMatchingRule } from '@bt/shared/types';
+import { ACCOUNT_CATEGORIES, type AccountModel, type SubscriptionMatchingRule } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
 import { HandCoinsIcon, SearchCheckIcon, ZapIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -80,7 +80,12 @@ const selectedAccount = computed(() =>
 const isRecordMode = computed(() => mode.value === AUTOMATION_MODES.record);
 
 const accountOptions = computed(() =>
-  isRecordMode.value ? accountsStore.txTargetableSourceAccountsActiveFirst : (accountsStore.accounts ?? []),
+  isRecordMode.value
+    ? accountsStore.txTargetableSourceAccountsActiveFirst
+    : (accountsStore.accounts ?? []).filter(
+        (account) =>
+          account.accountCategory !== ACCOUNT_CATEGORIES.vehicle && account.accountCategory !== ACCOUNT_CATEGORIES.loan,
+      ),
 );
 
 const isConnectedAccountForRecord = computed(

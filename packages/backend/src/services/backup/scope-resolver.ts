@@ -1,6 +1,7 @@
 import type { RecordId } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
 import Budgets from '@models/budget.model';
+import Categories from '@models/categories.model';
 import ImportBatches from '@models/import-batches.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Payees from '@models/payees.model';
@@ -39,6 +40,7 @@ export function createScopeResolver({ userId }: { userId: number }) {
 
   const loaders: Record<BackupParentScope, () => Promise<RecordId[]>> = {
     accounts: () => idsWhere({ model: Accounts, where: { userId } }),
+    categories: () => idsWhere({ model: Categories, where: { userId } }),
     payees: () => idsWhere({ model: Payees, where: { userId } }),
     portfolios: () => idsWhere({ model: Portfolios, where: { userId } }),
     transactions: () => idsWhere({ model: Transactions, where: { userId } }),

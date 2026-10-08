@@ -3,8 +3,13 @@ import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useAccountDisplayBalance } from '@/composable/use-account-display-balance';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { useUserStore } from '@/stores/user';
-import { ACCOUNT_STATUSES, type AccountModel, type RecordId, isDedicatedFlowAccountCategory } from '@bt/shared/types';
-import type { PlannedSummaryEntry } from '@bt/shared/types/endpoints';
+import {
+  ACCOUNT_STATUSES,
+  type AccountModel,
+  type RecordId,
+  isDedicatedFlowAccountCategory,
+  type PlannedSummaryEntry,
+} from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { type Ref, computed } from 'vue';

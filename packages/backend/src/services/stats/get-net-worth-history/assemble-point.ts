@@ -1,4 +1,12 @@
-import { ACCOUNT_CATEGORIES, type Cents, asCents, endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  type Cents,
+  NET_WORTH_ASSET_KINDS,
+  NET_WORTH_LIABILITY_KINDS,
+  type NetWorthAssetKind,
+  type NetWorthLiabilityKind,
+  asCents,
+} from '@bt/shared/types';
 
 import type { NetWorthHistoryPointCents } from './types';
 
@@ -44,25 +52,23 @@ export const assembleNetWorthPoint = ({
 }): NetWorthHistoryPointCents => {
   const overdraftOwedCents = asCents(overdraft.owedCents + assetAccounts.owedCents);
 
-  const assets: Record<endpointsTypes.NetWorthAssetKind, Cents> = {
+  const assets: Record<NetWorthAssetKind, Cents> = {
     cash: asCents(assetAccounts.surplusCents + creditCard.surplusCents + overdraft.surplusCents),
     investments: portfolioCents,
     vehicles: vehicleCents,
     ventures: ventureCents,
   };
-  const assetsTotal = asCents(endpointsTypes.NET_WORTH_ASSET_KINDS.reduce((sum, kind) => sum + assets[kind], 0));
+  const assetsTotal = asCents(NET_WORTH_ASSET_KINDS.reduce((sum, kind) => sum + assets[kind], 0));
 
   // Each kind's owed cents come from a different upstream computation (loan is a
   // plain resolver, credit-card/overdraft are sign-split), so this literal is the
   // one place that pairs a kind with its value; the type forces every kind present.
-  const liabilities: Record<endpointsTypes.NetWorthLiabilityKind, Cents> = {
+  const liabilities: Record<NetWorthLiabilityKind, Cents> = {
     [ACCOUNT_CATEGORIES.creditCard]: creditCard.owedCents,
     [ACCOUNT_CATEGORIES.loan]: loanCents,
     [ACCOUNT_CATEGORIES.overdraft]: overdraftOwedCents,
   };
-  const liabilitiesTotal = asCents(
-    endpointsTypes.NET_WORTH_LIABILITY_KINDS.reduce((sum, kind) => sum + liabilities[kind], 0),
-  );
+  const liabilitiesTotal = asCents(NET_WORTH_LIABILITY_KINDS.reduce((sum, kind) => sum + liabilities[kind], 0));
 
   return {
     date,

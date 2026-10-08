@@ -8,7 +8,7 @@ import {
 } from '@/components/common/dropdown-menu';
 import PortfolioTransferDialog from '@/components/dialogs/portfolio-transfer-dialog.vue';
 import ShareAccountDialog from '@/components/dialogs/share-account-dialog.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { CardHeader } from '@/components/lib/ui/card';
 import * as Popover from '@/components/lib/ui/popover';

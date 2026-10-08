@@ -1,5 +1,5 @@
-import { RECONCILIATION_MERGE_MAX } from '@bt/shared/const/reconciliation';
 import {
+  RECONCILIATION_MERGE_MAX,
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
   RecordId,

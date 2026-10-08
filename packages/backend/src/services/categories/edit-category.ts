@@ -1,42 +1,61 @@
-import { CATEGORY_TYPES } from '@bt/shared/types';
+import { CATEGORY_TYPES, CategoryModel, EmbeddedCategoryModel, RecordId } from '@bt/shared/types';
+import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import * as Categories from '@models/categories.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertTagsOwnedByUser } from '@services/tags/assert-tags-owned-by-user';
 
+import { attachDefaultTagIds } from './default-tags';
 import { validateParentAssignment } from './validate-parent-assignment';
 
 const validateMove = async ({
   userId,
-  categoryId,
+  category,
   parentId,
 }: {
   userId: number;
-  categoryId: string;
+  category: Categories.default;
   parentId: string | null;
 }) => {
-  const categories = await Categories.getCategories({ userId });
-  const category = categories.find((item) => item.id === categoryId);
-
-  if (!category) {
-    throw new NotFoundError({ message: t({ key: 'categories.notFound' }) });
-  }
-
   if (category.type === CATEGORY_TYPES.internal) {
     throw new ValidationError({ message: t({ key: 'categories.systemCannotBeMoved' }) });
   }
 
   if (parentId === null) return;
 
-  validateParentAssignment({ categories, categoryId, parentId });
+  const categories = await Categories.getCategories({ userId });
+  validateParentAssignment({ categories, categoryId: category.id, parentId });
 };
 
-export const editCategory = withTransaction(async (payload: Categories.EditCategoryPayload) => {
-  if (payload.parentId !== undefined) {
-    await validateMove({ userId: payload.userId, categoryId: payload.categoryId, parentId: payload.parentId });
-  }
+export const editCategory = withTransaction(
+  async ({
+    defaultTagIds,
+    ...payload
+  }: Categories.EditCategoryPayload & { defaultTagIds?: RecordId[] }): Promise<CategoryModel[]> => {
+    const { userId, categoryId, ...columns } = payload;
+    const category = await findOrThrowNotFound({
+      query: Categories.default.findOne({ where: { id: categoryId, userId } }),
+      message: t({ key: 'categories.notFound' }),
+    });
+    if (columns.parentId !== undefined) {
+      await validateMove({ userId, category, parentId: columns.parentId });
+    }
 
-  const result = await Categories.editCategory(payload);
+    // An UPDATE with no columns is a no-op that returns no rows.
+    const hasColumnChanges = Object.values(columns).some((value) => value !== undefined);
+    let updated = category;
+    if (hasColumnChanges) {
+      const [row] = await Categories.editCategory(payload);
+      if (!row) throw new NotFoundError({ message: t({ key: 'categories.notFound' }) });
+      updated = row;
+    }
 
-  return result;
-});
+    if (defaultTagIds === undefined) {
+      return attachDefaultTagIds({ userId, categories: [updated.toJSON<EmbeddedCategoryModel>()] });
+    }
+    const tagIds = await assertTagsOwnedByUser({ userId, tagIds: defaultTagIds });
+    await updated.$set('defaultTags', tagIds);
+    return [{ ...updated.toJSON<EmbeddedCategoryModel>(), defaultTagIds: tagIds }];
+  },
+);

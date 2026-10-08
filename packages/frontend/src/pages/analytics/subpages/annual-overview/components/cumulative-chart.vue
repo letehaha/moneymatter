@@ -61,7 +61,7 @@ import { useFormatCurrency } from '@/composable';
 import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CumulativeMonthData } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { useResizeObserver } from '@vueuse/core';
 import { computed, reactive, ref, watch } from 'vue';
@@ -70,8 +70,8 @@ import { useI18n } from 'vue-i18n';
 type MetricType = 'expenses' | 'income' | 'savings';
 
 const props = defineProps<{
-  currentPeriodData: endpointsTypes.CumulativeMonthData[];
-  previousPeriodData: endpointsTypes.CumulativeMonthData[];
+  currentPeriodData: CumulativeMonthData[];
+  previousPeriodData: CumulativeMonthData[];
   metric: MetricType;
 }>();
 
@@ -246,7 +246,7 @@ const renderChart = () => {
   // Area fill for current year
   if (props.currentPeriodData.length > 0) {
     const area = d3
-      .area<endpointsTypes.CumulativeMonthData>()
+      .area<CumulativeMonthData>()
       .x((d) => xScale(d.month))
       .y0(yScale(0))
       .y1((d) => yScale(d.value))
@@ -261,7 +261,7 @@ const renderChart = () => {
 
   // Create line generator once for both lines
   const lineGenerator = d3
-    .line<endpointsTypes.CumulativeMonthData>()
+    .line<CumulativeMonthData>()
     .x((d) => xScale(d.month))
     .y((d) => yScale(d.value))
     .curve(d3.curveMonotoneX);
@@ -319,10 +319,7 @@ const renderChart = () => {
 
   // Create invisible hover areas for each month - spanning full height
   // Combine data from both years to get all unique months
-  const allMonthsData = new Map<
-    number,
-    { current?: endpointsTypes.CumulativeMonthData; previous?: endpointsTypes.CumulativeMonthData }
-  >();
+  const allMonthsData = new Map<number, { current?: CumulativeMonthData; previous?: CumulativeMonthData }>();
 
   for (const d of props.currentPeriodData) {
     allMonthsData.set(d.month, { current: d });

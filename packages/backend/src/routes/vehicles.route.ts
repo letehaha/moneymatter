@@ -5,33 +5,16 @@ import getVehicles from '@controllers/vehicles/get-vehicles';
 import updateVehicle from '@controllers/vehicles/update-vehicle';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getVehicles.schema), getVehicles.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getVehicle.schema), getVehicle.handler);
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createVehicle.schema),
-  createVehicle.handler,
-);
-router.patch(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateVehicle.schema),
-  updateVehicle.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteVehicle.schema),
-  deleteVehicle.handler,
-);
+router.use(authenticateSession);
+
+router.get('/', getVehicles);
+router.get('/:id', getVehicle);
+router.post('/', checkBaseCurrencyLock, createVehicle);
+router.patch('/:id', checkBaseCurrencyLock, updateVehicle);
+router.delete('/:id', checkBaseCurrencyLock, deleteVehicle);
 
 export default router;

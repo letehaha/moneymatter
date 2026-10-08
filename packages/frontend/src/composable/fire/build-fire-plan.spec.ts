@@ -1,4 +1,10 @@
-import { ACCOUNT_CATEGORIES, type FireSettings, type endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  type FireSettings,
+  type NetWorthHistoryPoint,
+  type CashFlowPeriodData,
+  type GetVentureContributionsResponse,
+} from '@bt/shared/types';
 import type { PortfolioAnnualizedReturnModel } from '@bt/shared/types/investments/portfolio-annualized-return.model';
 import { parseISO } from 'date-fns';
 import { describe, expect, it } from 'vitest';
@@ -27,7 +33,7 @@ const point = ({
   creditCard?: number;
   overdraft?: number;
   loan?: number;
-}): endpointsTypes.NetWorthHistoryPoint => ({
+}): NetWorthHistoryPoint => ({
   date,
   assets: { cash, investments, vehicles, ventures },
   assetsTotal: cash + investments + vehicles + ventures,
@@ -40,13 +46,7 @@ const point = ({
   netWorth: cash + investments + vehicles + ventures + creditCard + overdraft + loan,
 });
 
-const cashFlowPeriods = ({
-  months,
-  expenses = 3_000,
-}: {
-  months: number;
-  expenses?: number;
-}): endpointsTypes.CashFlowPeriodData[] =>
+const cashFlowPeriods = ({ months, expenses = 3_000 }: { months: number; expenses?: number }): CashFlowPeriodData[] =>
   Array.from({ length: months }, (_, idx) => {
     const month = String(idx + 1).padStart(2, '0');
     return {
@@ -69,10 +69,10 @@ const build = ({
   portfolioReturns = [],
 }: {
   fire?: FireSettings;
-  points?: endpointsTypes.NetWorthHistoryPoint[];
-  periods?: endpointsTypes.CashFlowPeriodData[];
-  filteredPeriods?: endpointsTypes.CashFlowPeriodData[];
-  ventureContributions?: endpointsTypes.GetVentureContributionsResponse;
+  points?: NetWorthHistoryPoint[];
+  periods?: CashFlowPeriodData[];
+  filteredPeriods?: CashFlowPeriodData[];
+  ventureContributions?: GetVentureContributionsResponse;
   hasOwnedAccounts?: boolean;
   isLoading?: boolean;
   portfolioReturns?: PortfolioAnnualizedReturnModel[];
@@ -484,7 +484,7 @@ describe('buildFirePlan selected target type', () => {
   }: {
     targetType?: 'lean' | 'regular' | 'fat';
     fire?: FireSettings;
-    points?: endpointsTypes.NetWorthHistoryPoint[];
+    points?: NetWorthHistoryPoint[];
   }) => build({ fire: { ...fire, ...(targetType ? { targetType } : {}) }, points });
 
   it('defaults to Regular', () => {

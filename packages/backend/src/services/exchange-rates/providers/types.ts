@@ -1,7 +1,7 @@
 /**
  * Core types and interfaces for the Exchange Rate Provider system.
  * This modular system allows easy addition/removal of currency rate data providers
- * with configurable priority for fallback behavior.
+ * with registration-order fallback behavior.
  */
 import { EXCHANGE_RATE_PROVIDER_TYPE } from '@bt/shared/types';
 
@@ -29,8 +29,6 @@ export interface ExchangeRateProviderMetadata {
   name: string;
   /** Short description of the provider */
   description: string;
-  /** Priority for fallback order (lower = higher priority) */
-  priority: number;
   /** List of supported currency codes (undefined = all currencies) */
   supportedCurrencies?: string[];
   /** Earliest date for which historical data is available (ISO date string) */
@@ -136,7 +134,7 @@ export interface IExchangeRateProvider {
   // Metadata
   // ========================================
 
-  /** Provider metadata (name, priority, supported currencies, etc.) */
+  /** Provider metadata (name, supported currencies, etc.) */
   readonly metadata: ExchangeRateProviderMetadata;
 
   // ========================================

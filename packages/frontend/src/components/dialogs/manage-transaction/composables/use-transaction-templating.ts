@@ -3,8 +3,7 @@ import { useTransactionTemplates } from '@/composable/data-queries/transaction-t
 import { formatUIAmount } from '@/js/helpers';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { useCurrenciesStore, useTagsStore } from '@/stores';
-import type { AccountModel, RecordId, TransactionTemplateModel } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type { AccountModel, RecordId, TransactionTemplateModel, CreateTransactionTemplateBody } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { type MaybeRefOrGetter, computed, nextTick, ref, toValue } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -30,7 +29,7 @@ interface TransactionTemplatingOptions {
   sourceAccounts: MaybeRefOrGetter<AccountModel[]>;
   formattedCategories: MaybeRefOrGetter<FormattedCategory[]>;
   currencyCode: MaybeRefOrGetter<string | undefined>;
-  resetPayeeTagTracking: () => void;
+  resetAutoTagTracking: () => void;
   focusAmountField: () => void;
   focusCategoryField: () => void;
   submit: () => void;
@@ -47,7 +46,7 @@ export const useTransactionTemplating = ({
   sourceAccounts,
   formattedCategories,
   currencyCode,
-  resetPayeeTagTracking,
+  resetAutoTagTracking,
   focusAmountField,
   focusCategoryField,
   submit,
@@ -147,7 +146,7 @@ export const useTransactionTemplating = ({
   const doApply = ({ template }: { template: TransactionTemplateModel }) => {
     // Reset first, or the payee watcher retracts earlier auto-applied tags from the
     // template's own tag list.
-    resetPayeeTagTracking();
+    resetAutoTagTracking();
     apply({ template, sources: templateSources.value });
     trackAnalyticsEvent({ event: 'transaction_template_applied' });
     announceApplied({ template });
@@ -184,7 +183,7 @@ export const useTransactionTemplating = ({
 
   /** Detaches the template; the values it wrote stay on the form. */
   const detach = () => {
-    resetPayeeTagTracking();
+    resetAutoTagTracking();
     dismiss();
     announcement.value = '';
   };

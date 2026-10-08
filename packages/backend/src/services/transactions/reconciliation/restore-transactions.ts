@@ -1,5 +1,4 @@
-import type { RecordId } from '@bt/shared/types';
-import type { ReconciliationRestoreResponse } from '@bt/shared/types/endpoints';
+import type { ReconciliationRestoreResponse, RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
 import Accounts from '@models/accounts.model';

@@ -1,6 +1,4 @@
-import type { BackupFileName } from '@bt/shared/types';
-
-import { BACKUP_TABLES } from '../registry';
+import { BACKUP_TABLES, type BackupFileName } from '../registry';
 
 type Row = Record<string, unknown>;
 

@@ -42,7 +42,6 @@ import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { priceSyncRateLimit, securitiesPricesBulkUploadRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
@@ -53,35 +52,19 @@ const router = Router({});
 router.use(authenticateSession);
 
 // Portfolio routes
-router.get('/portfolios', validateEndpoint(listPortfoliosController.schema), listPortfoliosController.handler);
+router.get('/portfolios', listPortfoliosController);
 
 // Static paths — must be registered before `/portfolios/:id` so they aren't
 // swallowed as `:id = "annualized-returns"` / `:id = "summaries"`.
-router.get(
-  '/portfolios/annualized-returns',
-  validateEndpoint(getPortfoliosAnnualizedReturnsController.schema),
-  getPortfoliosAnnualizedReturnsController.handler,
-);
+router.get('/portfolios/annualized-returns', getPortfoliosAnnualizedReturnsController);
 
-router.get(
-  '/portfolios/summaries',
-  validateEndpoint(getPortfolioSummariesController.schema),
-  getPortfolioSummariesController.handler,
-);
+router.get('/portfolios/summaries', getPortfolioSummariesController);
 
-router.get('/portfolios/:id', validateEndpoint(getPortfolioController.schema), getPortfolioController.handler);
+router.get('/portfolios/:id', getPortfolioController);
 
-router.get(
-  '/portfolios/:id/balance',
-  validateEndpoint(getPortfolioBalanceController.schema),
-  getPortfolioBalanceController.handler,
-);
+router.get('/portfolios/:id/balance', getPortfolioBalanceController);
 
-router.get(
-  '/portfolios/:id/summary',
-  validateEndpoint(getPortfolioSummaryController.schema),
-  getPortfolioSummaryController.handler,
-);
+router.get('/portfolios/:id/summary', getPortfolioSummaryController);
 
 // Test-only cash seeding: writes `PortfolioBalances` directly, bypassing the
 // InvestmentTransaction/PortfolioTransfers audit trail. Production cash moves
@@ -94,124 +77,46 @@ if (
   process.env.NODE_ENV === 'development' ||
   process.env.ENABLE_TEST_SEEDING_ENDPOINTS === 'true'
 ) {
-  router.put(
-    '/portfolios/:id/balance',
-    checkBaseCurrencyLock,
-    validateEndpoint(updatePortfolioBalanceController.schema),
-    updatePortfolioBalanceController.handler,
-  );
+  router.put('/portfolios/:id/balance', checkBaseCurrencyLock, updatePortfolioBalanceController);
 }
 
-router.post(
-  '/portfolios/:id/cash-transaction',
-  checkBaseCurrencyLock,
-  validateEndpoint(directCashTransactionController.schema),
-  directCashTransactionController.handler,
-);
+router.post('/portfolios/:id/cash-transaction', checkBaseCurrencyLock, directCashTransactionController);
 
-router.post(
-  '/portfolios/:id/transfer',
-  checkBaseCurrencyLock,
-  validateEndpoint(createPortfolioTransferController.schema),
-  createPortfolioTransferController.handler,
-);
+router.post('/portfolios/:id/transfer', checkBaseCurrencyLock, createPortfolioTransferController);
 
-router.post(
-  '/portfolios/:id/exchange-currency',
-  checkBaseCurrencyLock,
-  validateEndpoint(exchangeCurrencyController.schema),
-  exchangeCurrencyController.handler,
-);
+router.post('/portfolios/:id/exchange-currency', checkBaseCurrencyLock, exchangeCurrencyController);
 
-router.post(
-  '/portfolios/:id/transfer/from-account',
-  checkBaseCurrencyLock,
-  validateEndpoint(accountToPortfolioTransferController.schema),
-  accountToPortfolioTransferController.handler,
-);
+router.post('/portfolios/:id/transfer/from-account', checkBaseCurrencyLock, accountToPortfolioTransferController);
 
-router.post(
-  '/portfolios/:id/transfer/to-account',
-  checkBaseCurrencyLock,
-  validateEndpoint(portfolioToAccountTransferController.schema),
-  portfolioToAccountTransferController.handler,
-);
+router.post('/portfolios/:id/transfer/to-account', checkBaseCurrencyLock, portfolioToAccountTransferController);
 
-router.get(
-  '/portfolios/:id/transfers',
-  validateEndpoint(listPortfolioTransfersController.schema),
-  listPortfolioTransfersController.handler,
-);
+router.get('/portfolios/:id/transfers', listPortfolioTransfersController);
 
 router.patch(
   '/portfolios/:id/transfers/:transferId/adjustment',
   checkBaseCurrencyLock,
-  validateEndpoint(setTransferAdjustmentController.schema),
-  setTransferAdjustmentController.handler,
+  setTransferAdjustmentController,
 );
 
-router.delete(
-  '/portfolios/:id/transfers/:transferId',
-  checkBaseCurrencyLock,
-  validateEndpoint(deletePortfolioTransferController.schema),
-  deletePortfolioTransferController.handler,
-);
+router.delete('/portfolios/:id/transfers/:transferId', checkBaseCurrencyLock, deletePortfolioTransferController);
 
-router.put(
-  '/portfolios/:id',
-  checkBaseCurrencyLock,
-  validateEndpoint(updatePortfolioController.schema),
-  updatePortfolioController.handler,
-);
+router.put('/portfolios/:id', checkBaseCurrencyLock, updatePortfolioController);
 
-router.delete(
-  '/portfolios/:id',
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(deletePortfolioController.schema),
-  deletePortfolioController.handler,
-);
+router.delete('/portfolios/:id', blockDemoUsers, checkBaseCurrencyLock, deletePortfolioController);
 
-router.post(
-  '/portfolios/:id/restore',
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(restorePortfolioController.schema),
-  restorePortfolioController.handler,
-);
+router.post('/portfolios/:id/restore', blockDemoUsers, checkBaseCurrencyLock, restorePortfolioController);
 
-router.post(
-  '/portfolios',
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(createPortfolioController.schema),
-  createPortfolioController.handler,
-);
+router.post('/portfolios', blockDemoUsers, checkBaseCurrencyLock, createPortfolioController);
 
-router.post(
-  '/sync/securities-prices',
-  adminOnly,
-  priceSyncRateLimit,
-  validateEndpoint(securitiesSyncController.schema),
-  securitiesSyncController.handler,
-);
+router.post('/sync/securities-prices', adminOnly, priceSyncRateLimit, securitiesSyncController);
 
-router.get('/prices', validateEndpoint(getPricesController.schema), getPricesController.handler);
-router.get('/securities', validateEndpoint(getAllSecurities.schema), getAllSecurities.handler);
+router.get('/prices', getPricesController);
+router.get('/securities', getAllSecurities);
 
-router.get(
-  '/securities/search',
-  validateEndpoint(searchSecuritiesController.schema),
-  searchSecuritiesController.handler,
-);
+router.get('/securities/search', searchSecuritiesController);
 
 // Admin-only: Get price upload info (accepts currency code)
-router.post(
-  '/securities/price-upload-info',
-  adminOnly,
-  validateEndpoint(getPriceUploadInfoController.schema),
-  getPriceUploadInfoController.handler,
-);
+router.post('/securities/price-upload-info', adminOnly, getPriceUploadInfoController);
 
 // Admin-only: Bulk upload security prices (accepts SecuritySearchResult)
 // Note: 1mb limit is set in app.ts for this path
@@ -219,50 +124,20 @@ router.post(
   '/securities/prices/bulk-upload',
   adminOnly,
   securitiesPricesBulkUploadRateLimit,
-  validateEndpoint(bulkUploadPricesController.schema),
-  bulkUploadPricesController.handler,
+  bulkUploadPricesController,
 );
 
-router.get(
-  '/portfolios/:portfolioId/holdings',
-  validateEndpoint(getHoldingsController.schema),
-  getHoldingsController.handler,
-);
-router.post(
-  '/holding',
-  checkBaseCurrencyLock,
-  validateEndpoint(createHoldingController.schema),
-  createHoldingController.handler,
-);
-router.delete(
-  '/holding',
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteHoldingController.schema),
-  deleteHoldingController.handler,
-);
+router.get('/portfolios/:portfolioId/holdings', getHoldingsController);
+router.post('/holding', checkBaseCurrencyLock, createHoldingController);
+router.delete('/holding', checkBaseCurrencyLock, deleteHoldingController);
 
-router.get('/transactions', validateEndpoint(getTransactionsController.schema), getTransactionsController.handler);
+router.get('/transactions', getTransactionsController);
 
-router.post(
-  '/transaction',
-  checkBaseCurrencyLock,
-  validateEndpoint(createInvestmentTransactionController.schema),
-  createInvestmentTransactionController.handler,
-);
+router.post('/transaction', checkBaseCurrencyLock, createInvestmentTransactionController);
 
-router.delete(
-  '/transaction/:transactionId',
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteInvestmentTransactionController.schema),
-  deleteInvestmentTransactionController.handler,
-);
+router.delete('/transaction/:transactionId', checkBaseCurrencyLock, deleteInvestmentTransactionController);
 
-router.put(
-  '/transaction/:transactionId',
-  checkBaseCurrencyLock,
-  validateEndpoint(updateInvestmentTransactionController.schema),
-  updateInvestmentTransactionController.handler,
-);
+router.put('/transaction/:transactionId', checkBaseCurrencyLock, updateInvestmentTransactionController);
 
 /**
  * Investment transactions import. Two paths share the review + execute stages:
@@ -273,23 +148,8 @@ router.put(
  * the file is fed through the AI provider or parsed via the codebase CSV
  * parser using a user-supplied column mapping.
  */
-router.post(
-  '/transactions-import/estimate-cost',
-  checkBaseCurrencyLock,
-  validateEndpoint(importEstimateCostController.schema),
-  importEstimateCostController.handler,
-);
-router.post(
-  '/transactions-import/extract',
-  checkBaseCurrencyLock,
-  validateEndpoint(importExtractController.schema),
-  importExtractController.handler,
-);
-router.post(
-  '/transactions-import/execute',
-  checkBaseCurrencyLock,
-  validateEndpoint(importExecuteController.schema),
-  importExecuteController.handler,
-);
+router.post('/transactions-import/estimate-cost', checkBaseCurrencyLock, importEstimateCostController);
+router.post('/transactions-import/extract', checkBaseCurrencyLock, importExtractController);
+router.post('/transactions-import/execute', checkBaseCurrencyLock, importExecuteController);
 
 export default router;

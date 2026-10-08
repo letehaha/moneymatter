@@ -171,7 +171,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import { useDateLocale } from '@/composable/use-date-locale';
 import { ROUTES_NAMES } from '@/routes';
 import { useCategoriesStore } from '@/stores';
-import { TRANSACTION_TYPES, type endpointsTypes } from '@bt/shared/types';
+import { TRANSACTION_TYPES, type CashFlowCategoryData, type CashFlowPeriodData } from '@bt/shared/types';
 import { EyeOffIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { useResizeObserver } from '@vueuse/core';
@@ -190,7 +190,7 @@ interface PeriodWithChange {
   periodEnd: string;
   value: number;
   momChange?: number;
-  categories?: endpointsTypes.CashFlowCategoryData[];
+  categories?: CashFlowCategoryData[];
 }
 
 const props = defineProps<{
@@ -315,7 +315,7 @@ const metricLabel = computed(() => {
 // Get value based on metric
 // The endpoint already returns expenses as a positive magnitude, except where a refund landed in a
 // bucket its original purchase isn't in — there the bucket is genuinely negative and must stay so.
-const getMetricValue = (period: endpointsTypes.CashFlowPeriodData): number => {
+const getMetricValue = (period: CashFlowPeriodData): number => {
   switch (props.metric) {
     case 'expenses':
       return period.expenses;
@@ -329,7 +329,7 @@ const getMetricValue = (period: endpointsTypes.CashFlowPeriodData): number => {
 };
 
 // Get category amount based on current metric
-const getCategoryAmount = (cat: endpointsTypes.CashFlowCategoryData): number => {
+const getCategoryAmount = (cat: CashFlowCategoryData): number => {
   switch (props.metric) {
     case 'expenses':
       return cat.expenseAmount;
@@ -350,7 +350,7 @@ const sumBySign = ({ amounts, keepPositive }: { amounts: number[]; keepPositive:
 
 // Get the displayed value for a period (what the bar actually shows)
 // For stacked bars, this is the sum of category amounts; otherwise the metric total
-const getDisplayedValue = (period: endpointsTypes.CashFlowPeriodData): number => {
+const getDisplayedValue = (period: CashFlowPeriodData): number => {
   // Savings always uses the period-level netFlow (not category breakdown)
   if (props.metric === 'savings') {
     return getMetricValue(period);
@@ -911,11 +911,7 @@ function handleMouseEnter(event: MouseEvent, d: PeriodWithChange) {
   updateTooltipPosition(event);
 }
 
-function handleStackedMouseEnter(
-  event: MouseEvent,
-  period: PeriodWithChange,
-  cat: endpointsTypes.CashFlowCategoryData,
-) {
+function handleStackedMouseEnter(event: MouseEvent, period: PeriodWithChange, cat: CashFlowCategoryData) {
   // Skip if user is interacting with tooltip
   if (isTooltipInteracting.value) return;
 

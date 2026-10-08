@@ -1,9 +1,8 @@
 import { logger } from '@js/utils/logger';
 import PayeeTags from '@models/payee-tags.model';
 import Payees from '@models/payees.model';
-import TransactionTags from '@models/transaction-tags.model';
 import Transactions from '@models/transactions.model';
-import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { addTagsToTransactions } from '@services/tags/add-tags-to-transactions';
 
 import { withTransaction } from '../common/with-transaction';
 
@@ -66,13 +65,7 @@ export const applyPayeeDefaultTags = withTransaction(
     }
 
     const tagIds = ruleRows.map((row) => row.tagId);
-    await TransactionTags.bulkCreate(
-      tagIds.map((tagId) => ({ tagId, transactionId })),
-      { ignoreDuplicates: true },
-    );
-
-    // Real-time tag-reminder check, same as the manual tagging paths.
-    eventBus.emit(DOMAIN_EVENTS.TRANSACTIONS_TAGGED, { tagIds, userId: accountOwnerUserId });
+    await addTagsToTransactions({ userId: accountOwnerUserId, tagIds, transactionIds: [transactionId] });
 
     return tagIds;
   },

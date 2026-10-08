@@ -2,7 +2,7 @@
 import { searchSecurities } from '@/api/securities';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import SecurityLogo from '@/components/common/security-logo.vue';
-import { InputField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import * as Popover from '@/components/lib/ui/popover';

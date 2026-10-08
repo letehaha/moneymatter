@@ -11,6 +11,7 @@ import {
   describeMissingAiConfiguration,
   hitOutputCeiling,
 } from '@services/ai';
+import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { type AIExtractionError, resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
 import { generateText } from 'ai';
 
@@ -79,6 +80,7 @@ export async function extractInvestmentTransactionsWithAI({
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
+    trackAiUsage({ userId, feature: AI_FEATURE.investmentTransactionsParsing, aiClient, usage });
 
     // Truncated rows parse as a complete-looking but short import, so refuse them.
     if (hitOutputCeiling({ finishReason, usage })) {

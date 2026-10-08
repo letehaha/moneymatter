@@ -39,7 +39,8 @@
 </template>
 
 <script lang="ts" setup>
-import { FieldError, FieldLabel } from '@/components/fields';
+import FieldError from '@/components/fields/components/field-error.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { cn } from '@/lib/utils';
 import { computed, nextTick, onMounted, ref, watch } from 'vue';
 

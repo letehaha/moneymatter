@@ -6,8 +6,8 @@
  * and quote keys arrive LOWERCASE. Single-date only — there is NO range
  * endpoint — so it deliberately stays out of the historical backfill.
  *
- * Priority: 2 (secondary - free, covers the exotic long tail on fresh dates,
- * but only from 2024-03-02 onward; earlier dates 404).
+ * Free, so it covers the exotic long tail on fresh dates — but only from
+ * 2024-03-02 onward; earlier dates 404.
  */
 import Currencies from '@models/currencies.model';
 import axios, { AxiosResponse, isAxiosError } from 'axios';
@@ -45,7 +45,6 @@ export class FawazCurrencyApiProvider extends BaseExchangeRateProvider {
     type: EXCHANGE_RATE_PROVIDER_TYPE.FAWAZ_CURRENCY_API,
     name: 'Fawaz Currency API',
     description: 'Free CDN rates, 200+ currencies incl. exotic tail, from 2024-03-02',
-    priority: 2, // Secondary - free, fills the exotic long tail on fresh dates
     supportedCurrencies: undefined,
     minHistoricalDate: FAWAZ_MIN_DATE,
     // supportsHistoricalDataLoading intentionally unset: there is no range endpoint,

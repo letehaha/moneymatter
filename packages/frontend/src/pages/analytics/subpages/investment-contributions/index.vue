@@ -20,7 +20,7 @@
         />
         <GranularitySelector
           v-model="selectedGranularity"
-          :granularities="endpointsTypes.INVESTMENT_CONTRIBUTIONS_GRANULARITIES"
+          :granularities="INVESTMENT_CONTRIBUTIONS_GRANULARITIES"
           label-key-prefix="investmentContributions.granularity"
         />
       </ReportControls>
@@ -96,7 +96,11 @@ import { getInvestmentContributions } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { CATEGORICAL_SERIES_PALETTE } from '@/composable/charts/categorical-series-palette';
 import type { Period } from '@/composable/use-period-navigation';
-import { endpointsTypes } from '@bt/shared/types';
+import {
+  INVESTMENT_CONTRIBUTIONS_GRANULARITIES,
+  type InvestmentContributionsGranularity,
+  type GetInvestmentContributionsResponse,
+} from '@bt/shared/types';
 import { keepPreviousData, useQuery } from '@tanstack/vue-query';
 import { useLocalStorage, useSessionStorage } from '@vueuse/core';
 import { differenceInDays, endOfMonth, startOfMonth, subDays, subMonths } from 'date-fns';
@@ -135,7 +139,7 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('investment-contributions-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
-const selectedGranularity = useLocalStorage<endpointsTypes.InvestmentContributionsGranularity>(
+const selectedGranularity = useLocalStorage<InvestmentContributionsGranularity>(
   'investment-contributions-granularity',
   'monthly',
 );
@@ -186,7 +190,7 @@ const previousQuery = useQuery({
   placeholderData: keepPreviousData,
 });
 
-const EMPTY_RESPONSE: endpointsTypes.GetInvestmentContributionsResponse = { buckets: [], portfolios: [] };
+const EMPTY_RESPONSE: GetInvestmentContributionsResponse = { buckets: [], portfolios: [] };
 
 const model = computed(() =>
   buildContributionsChartModel({ response: query.data.value ?? EMPTY_RESPONSE, palette: CATEGORICAL_SERIES_PALETTE }),

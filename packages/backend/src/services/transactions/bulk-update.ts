@@ -1,4 +1,4 @@
-import { TRANSACTION_TRANSFER_NATURE, endpointsTypes } from '@bt/shared/types';
+import { type BulkUpdateTagMode, TRANSACTION_TRANSFER_NATURE } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
@@ -18,7 +18,7 @@ interface BulkUpdateParams {
   transactionIds: string[];
   categoryId?: string;
   tagIds?: string[];
-  tagMode?: endpointsTypes.BulkUpdateTagMode;
+  tagMode?: BulkUpdateTagMode;
   note?: string;
   // Nullable: explicit `null` clears the Payee on each affected row, `undefined`
   // leaves it untouched. Payee writes are restricted to transactions on

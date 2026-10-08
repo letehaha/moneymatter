@@ -2,20 +2,10 @@ import { LockedError } from '@js/errors';
 import { logger } from '@js/utils';
 import { CronJob } from 'cron';
 
-/**
- * Shape produced by the price-sync services we wrap. Kept loose because the
- * factory only needs the counts for logging; richer typing would couple this
- * module to securities-daily-sync internals.
- */
-export interface SyncResult {
-  totalProcessed: number;
-  successfulUpdates: number;
-  failedUpdates: number;
-  errors: unknown[];
-}
+type RunSource = 'Scheduled' | 'Manual';
 
-interface ScheduledSyncDefinition {
-  /** Short identifier used in log lines. */
+interface ScheduledSyncDefinition<TResult extends object, TParams> {
+  /** Noun phrase spliced into log sentences, e.g. `tag reminders check`. */
   name: string;
   /** Cron expression for the scheduled run. */
   cronExpression: string;
@@ -23,107 +13,86 @@ interface ScheduledSyncDefinition {
   timeZone: string;
   /** Human-readable schedule description, appended to the "started" log line. */
   scheduleDescription: string;
-  /** Function that performs the actual sync. */
-  run: () => Promise<SyncResult>;
+  /**
+   * Stable code attached to failure logs, e.g. `SHARE_INVITATIONS_EXPIRE_CRON`; written
+   * as `<code>_FAILED` (scheduled) and `<code>_MANUAL_FAILED` (manual).
+   */
+  errorCode?: string;
+  /** Function that performs the actual work. */
+  run: (params?: TParams) => Promise<TResult>;
 }
 
-interface ScheduledSync {
+interface ScheduledSync<TResult extends object, TParams> {
   startCron: () => void;
   stopCron: () => void;
-  isRunning: () => boolean;
-  triggerManualSync: () => Promise<SyncResult>;
+  triggerManualSync: (params?: TParams) => Promise<TResult>;
 }
 
-const logResult = ({ name, source, result }: { name: string; source: string; result: SyncResult }): void => {
-  logger.info(`${source} ${name} sync completed`, {
-    totalProcessed: result.totalProcessed,
-    successfulUpdates: result.successfulUpdates,
-    failedUpdates: result.failedUpdates,
-    errorCount: result.errors.length,
-  });
-};
+/** Arrays (per-item results, raw errors) are logged as counts so the line stays bounded. */
+const summarize = (result: object): Record<string, unknown> =>
+  Object.fromEntries(
+    Object.entries(result).map(([key, value]) => (Array.isArray(value) ? [`${key}Count`, value.length] : [key, value])),
+  );
 
 /**
- * `LockedError` means another instance of the same sync is still running. Not
- * an error — surfacing it at `error` level would page operators every time a
- * long-running stocks sync overlaps the manual button. Log at info instead.
- */
-const isExpectedConcurrentRun = (error: unknown): error is LockedError => error instanceof LockedError;
-
-/**
- * Factory for the cron + manual-trigger wrapper around a sync function.
- *
- * Two existing services (`securitiesPricesStocksDailySync` and
- * `securitiesPricesCryptoSync`) are wrapped by their respective crons; this
- * factory eliminates ~90 lines of duplicated cron boilerplate that previously
- * lived in each `crons/*.ts` file.
+ * Factory for the cron + manual-trigger wrapper around a job function.
  *
  * Scheduled failures are logged but not re-thrown — `cron` would swallow the
  * promise rejection anyway, and re-throwing would just produce an unhandled
  * rejection. Manual triggers re-throw so the controller can surface the
  * failure to the operator.
  */
-export const createScheduledSync = (definition: ScheduledSyncDefinition): ScheduledSync => {
-  const { name, cronExpression, timeZone, scheduleDescription, run } = definition;
+export const createScheduledSync = <TResult extends object, TParams = void>(
+  definition: ScheduledSyncDefinition<TResult, TParams>,
+): ScheduledSync<TResult, TParams> => {
+  const { name, cronExpression, timeZone, scheduleDescription, errorCode, run } = definition;
   let job: CronJob | null = null;
 
-  const runScheduled = async (): Promise<void> => {
+  const execute = async ({ source, params }: { source: RunSource; params?: TParams }): Promise<TResult> => {
+    logger.info(`Starting ${source.toLowerCase()} ${name}...`);
+    const startedAt = Date.now();
     try {
-      logger.info(`Starting scheduled ${name} sync...`);
-      const result = await run();
-      logResult({ name, source: 'Scheduled', result });
+      const result = await run(params);
+      logger.info(`${source} ${name} completed`, { ...summarize(result), durationMs: Date.now() - startedAt });
+      return result;
     } catch (error) {
-      if (isExpectedConcurrentRun(error)) {
-        logger.info(`Scheduled ${name} sync skipped — previous run still in progress`);
-        return;
+      // `LockedError` means another instance of the same job is still running — not a
+      // failure, and surfacing it at `error` level would page operators on every overlap.
+      if (error instanceof LockedError) {
+        logger.info(`${source} ${name} skipped — previous run still in progress`);
+      } else {
+        const code = errorCode ? `${errorCode}${source === 'Manual' ? '_MANUAL' : ''}_FAILED` : undefined;
+        logger.error({ message: `${source} ${name} failed`, error: error as Error }, code ? { code } : undefined);
       }
-      logger.error({
-        message: `Scheduled ${name} sync failed`,
-        error: error as Error,
-      });
+      throw error;
     }
   };
 
   return {
     startCron(): void {
       if (job) {
-        logger.info(`${name} sync cron job is already running`);
+        logger.info(`${name} cron job is already running`);
         return;
       }
-      job = new CronJob(cronExpression, runScheduled, null, false, timeZone);
-      job.start();
-      logger.info(`${name} sync cron job started — ${scheduleDescription}`);
+      job = CronJob.from({
+        cronTime: cronExpression,
+        timeZone,
+        start: true,
+        onTick: async () => {
+          await execute({ source: 'Scheduled' }).catch(() => undefined);
+        },
+      });
+      logger.info(`${name} cron job started — ${scheduleDescription}`);
     },
 
     stopCron(): void {
       if (job) {
         job.stop();
         job = null;
-        logger.info(`${name} sync cron job stopped`);
+        logger.info(`${name} cron job stopped`);
       }
     },
 
-    isRunning(): boolean {
-      return job?.running ?? false;
-    },
-
-    async triggerManualSync(): Promise<SyncResult> {
-      logger.info(`Starting manual ${name} sync...`);
-      try {
-        const result = await run();
-        logResult({ name, source: 'Manual', result });
-        return result;
-      } catch (error) {
-        if (isExpectedConcurrentRun(error)) {
-          logger.info(`Manual ${name} sync rejected — previous run still in progress`);
-        } else {
-          logger.error({
-            message: `Manual ${name} sync failed`,
-            error: error as Error,
-          });
-        }
-        throw error;
-      }
-    },
+    triggerManualSync: (params?: TParams) => execute({ source: 'Manual', params }),
   };
 };

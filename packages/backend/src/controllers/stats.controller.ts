@@ -1,4 +1,14 @@
-import { TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
+import {
+  CASH_FLOW_GRANULARITIES,
+  CUMULATIVE_METRICS,
+  INVESTMENT_CONTRIBUTIONS_GRANULARITIES,
+  NET_WORTH_DRIVERS_GRANULARITIES,
+  NET_WORTH_HISTORY_GRANULARITIES,
+  PIVOT_GRANULARITIES,
+  PIVOT_MEASURES,
+  PIVOT_ROW_DIMENSIONS,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import {
   booleanQuery,
   dateRange,
@@ -228,7 +238,7 @@ const cashFlowSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(['monthly', 'biweekly', 'weekly']),
+      granularity: z.enum(CASH_FLOW_GRANULARITIES),
       accountId: z.string().optional(),
       ...statsScopeQuery,
       categoryIds: optionalCommaSeparatedIds(),
@@ -281,7 +291,7 @@ const netWorthDriversSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(endpointsTypes.NET_WORTH_DRIVERS_GRANULARITIES),
+      granularity: z.enum(NET_WORTH_DRIVERS_GRANULARITIES),
       // Scopes only the investment slice; ownership + enabled are re-enforced in the
       // service against the user's portfolios, so an unknown id is silently dropped.
       portfolioIds: optionalCommaSeparatedIds(),
@@ -305,7 +315,7 @@ const netWorthHistorySchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(endpointsTypes.NET_WORTH_HISTORY_GRANULARITIES),
+      granularity: z.enum(NET_WORTH_HISTORY_GRANULARITIES),
     }),
   ),
 });
@@ -332,7 +342,7 @@ const investmentContributionsSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(endpointsTypes.INVESTMENT_CONTRIBUTIONS_GRANULARITIES),
+      granularity: z.enum(INVESTMENT_CONTRIBUTIONS_GRANULARITIES),
       // Scopes only the contributions; ownership + enabled are re-enforced in the
       // service against the user's portfolios, so an unknown id is silently dropped.
       portfolioIds: optionalCommaSeparatedIds(),
@@ -366,9 +376,9 @@ const pivotReportSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      granularity: z.enum(endpointsTypes.PIVOT_GRANULARITIES),
-      rowDimension: z.enum(endpointsTypes.PIVOT_ROW_DIMENSIONS),
-      measure: z.enum(endpointsTypes.PIVOT_MEASURES),
+      granularity: z.enum(PIVOT_GRANULARITIES),
+      rowDimension: z.enum(PIVOT_ROW_DIMENSIONS),
+      measure: z.enum(PIVOT_MEASURES),
       accountIds: optionalCommaSeparatedIds(),
       categoryIds: optionalCommaSeparatedIds(),
       payeeIds: optionalCommaSeparatedIds(),
@@ -407,7 +417,7 @@ const cumulativeDataSchema = z.object({
   query: withDateOrder(
     z.object({
       ...dateRange({ required: true }),
-      metric: z.enum(['expenses', 'income', 'savings']),
+      metric: z.enum(CUMULATIVE_METRICS),
       accountId: z.string().optional(),
       ...statsScopeQuery,
       categoryIds: optionalCommaSeparatedIds(),

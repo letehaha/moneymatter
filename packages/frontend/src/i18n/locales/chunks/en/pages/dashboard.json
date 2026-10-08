@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Categories Watchlist",
         "addCategory": "Add category",
-        "selectCategories": "Select Categories"
+        "selectCategories": "Select Categories",
+        "sort": {
+          "title": "Sort by",
+          "custom": "Custom order",
+          "spendDesc": "Highest spend first",
+          "spendAsc": "Lowest spend first"
+        }
       },
       "cashFlow": {
         "title": "Cash Flow",
@@ -131,7 +137,10 @@
         "expenses": "Expenses",
         "saved": "Saved",
         "previousPeriodsTrend": "Previous periods trend",
-        "viewDetails": "View details"
+        "viewDetails": "View details",
+        "savingsRateLine": "Show savings rate line",
+        "savingsRate": "Savings rate",
+        "noIncome": "no income"
       },
       "netWorth": {
         "title": "Net Worth",
@@ -172,6 +181,39 @@
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Couldn't load planned transactions"
+      },
+      "taxes": {
+        "title": "Average Tax Rate",
+        "description": "Spending in your tax categories as a share of income, averaged over the period chosen in the widget settings. Bars show the last 12 months.",
+        "ofIncome": "of income",
+        "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
+        "average": "avg {amount}",
+        "amount": "Taxes",
+        "shareOfIncome": "Share of income",
+        "shareOfTaxes": "Share of taxes",
+        "other": "Other",
+        "moreCategories": "{count} more",
+        "viewDetails": "View cash flow",
+        "loadFailed": "Couldn't load tax data.",
+        "noCategories": {
+          "title": "No tax categories yet",
+          "description": "Choose which categories count as taxes to see your tax rate.",
+          "action": "Choose categories"
+        },
+        "config": {
+          "months": {
+            "label": "Averaging period",
+            "saveError": "Could not save the averaging period. Try again.",
+            "m3": "3 mo",
+            "m6": "6 mo",
+            "m12": "12 mo"
+          }
+        },
+        "lastMonths": {
+          "m3": "Last 3 months",
+          "m6": "Last 6 months",
+          "m12": "Last 12 months"
+        }
       },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
@@ -214,6 +256,10 @@
         "fireProgress": {
           "name": "FIRE progress",
           "description": "How close you are to financial independence"
+        },
+        "taxes": {
+          "name": "Average Tax Rate",
+          "description": "Share of income paid in taxes, with a 12-month trend"
         }
       }
     },
@@ -263,7 +309,10 @@
         "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Names",
         "tagsStyleBars": "Bars",
-        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again.",
+        "showAccountTitle": "Account",
+        "showAccountDescription": "Show the account logo on each transaction",
+        "showAccountSaveError": "Couldn't save the account setting. Please try again."
       },
       "overdueBadge": "Overdue",
       "scheduledBadge": "Scheduled",

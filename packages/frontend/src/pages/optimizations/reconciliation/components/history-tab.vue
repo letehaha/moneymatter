@@ -5,8 +5,7 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { StatusBadge } from '@/components/lib/ui/status-badge';
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { RecordId } from '@bt/shared/types';
-import type { ReconciliationHistoryEvent } from '@bt/shared/types/endpoints';
+import type { RecordId, ReconciliationHistoryEvent } from '@bt/shared/types';
 import { HistoryIcon, Loader2Icon, TriangleAlertIcon, Undo2Icon } from '@lucide/vue';
 import { ref } from 'vue';
 

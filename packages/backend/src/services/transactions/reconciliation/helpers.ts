@@ -1,5 +1,4 @@
-import { isLinkedTransfer } from '@bt/shared/const/transfers';
-import { ACCOUNT_TYPES, RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
+import { isLinkedTransfer, ACCOUNT_TYPES, RecordId, SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import BudgetTransactions from '@models/budget-transactions.model';

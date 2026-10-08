@@ -18,7 +18,7 @@
         <PortfolioFilter v-model="selectedPortfolioIds" scope-hint-key="netWorthDrivers.portfolioFilter.scopeHint" />
         <GranularitySelector
           v-model="selectedGranularity"
-          :granularities="endpointsTypes.NET_WORTH_DRIVERS_GRANULARITIES"
+          :granularities="NET_WORTH_DRIVERS_GRANULARITIES"
           label-key-prefix="netWorthDrivers.granularity"
         />
       </ReportControls>
@@ -134,7 +134,7 @@ import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Callout } from '@/components/lib/ui/callout';
 import { useDateLocale } from '@/composable/use-date-locale';
 import type { Period } from '@/composable/use-period-navigation';
-import { endpointsTypes } from '@bt/shared/types';
+import { NET_WORTH_DRIVERS_GRANULARITIES, type NetWorthDriversGranularity } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { useLocalStorage, useSessionStorage } from '@vueuse/core';
 import { endOfMonth, parseISO, startOfMonth, subMonths } from 'date-fns';
@@ -175,10 +175,7 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('net-worth-drivers-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
-const selectedGranularity = useLocalStorage<endpointsTypes.NetWorthDriversGranularity>(
-  'net-worth-drivers-granularity',
-  'monthly',
-);
+const selectedGranularity = useLocalStorage<NetWorthDriversGranularity>('net-worth-drivers-granularity', 'monthly');
 
 // Empty = all enabled portfolios (the default), sent to the API as no filter.
 const selectedPortfolioIds = useLocalStorage<string[]>('net-worth-drivers-portfolio-ids', []);

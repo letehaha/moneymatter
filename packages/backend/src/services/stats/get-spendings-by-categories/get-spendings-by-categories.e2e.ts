@@ -1,12 +1,12 @@
 import {
   CategoryModel,
-  type RecordId,
+  type GetSpendingsByCategoriesReturnType,
   RESOURCE_TYPES,
+  type RecordId,
   SHARE_PERMISSIONS,
   TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
-  endpointsTypes,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
@@ -852,7 +852,7 @@ describe('[Stats] Spendings by categories – excludedCategoryIds', () => {
       raw: true,
     });
 
-    const breakdownSum = Object.values(breakdown as endpointsTypes.GetSpendingsByCategoriesReturnType).reduce<number>(
+    const breakdownSum = Object.values(breakdown as GetSpendingsByCategoriesReturnType).reduce<number>(
       (sum, bucket) => sum + bucket.amount,
       0,
     );
@@ -931,7 +931,7 @@ describe('[Stats] Spendings by categories – excludedCategoryIds', () => {
 
     // `optionalCommaSeparatedIds` filters unparseable entries out rather than rejecting the
     // request, so one bad id must not take the rest of the exclusion list down with it.
-    const response = await helpers.makeRequest<endpointsTypes.GetSpendingsByCategoriesReturnType, true>({
+    const response = await helpers.makeRequest<GetSpendingsByCategoriesReturnType, true>({
       method: 'get',
       url: `/stats/spendings-by-categories?excludedCategoryIds=not-a-uuid,${hiddenCategory.id}`,
       raw: true,

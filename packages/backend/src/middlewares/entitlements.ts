@@ -39,7 +39,7 @@ const planRequired = ({ res, message }: { res: Response; message: string }) =>
   });
 
 /** Resolved once per request; the gates, the read-only guard and the handlers share it. */
-const getRequestEntitlements = async ({ req }: { req: Request }): Promise<Entitlements> => {
+export const getRequestEntitlements = async ({ req }: { req: Request }): Promise<Entitlements> => {
   if (!req.entitlements) {
     req.entitlements = await resolveEntitlements({ user: req.user! });
   }

@@ -51,6 +51,7 @@ function identifyUserForTracking(user: UserInfoResponse) {
       is_demo: isDemo,
       user_role: user.role,
       plan: isDemo ? 'demo' : user.entitlements && analyticsPlan({ entitlements: user.entitlements }),
+      granted_plan: user.entitlements?.plan ?? null,
       ...demoOriginProperties,
     },
   });

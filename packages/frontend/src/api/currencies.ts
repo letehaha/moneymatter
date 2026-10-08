@@ -6,8 +6,9 @@ import {
   RefBalanceRemeasureResult,
   UserCurrencyModel,
   UserExchangeRatesModel,
+  type ExchangeRatePairQuery,
+  type ExchangeRatePairResponse,
 } from '@bt/shared/types';
-import type { ExchangeRatePairQuery, ExchangeRatePairResponse } from '@bt/shared/types/endpoints';
 
 export const getAllCurrencies = async (): Promise<CurrencyModel[]> => api.get('/models/currencies');
 

@@ -254,6 +254,13 @@ describe('isAuthError', () => {
     expect(isAuthError({ error: buildApiCallError({ statusCode: 400, responseBody }) })).toBe(true);
   });
 
+  it.each([
+    'Your credit balance is too low to access the Anthropic API.',
+    'You have reached your specified API usage limits.',
+  ])('returns true for the 400 Anthropic answers an exhausted budget with: %s', (message) => {
+    expect(isAuthError({ error: buildApiCallError({ statusCode: 400, message }) })).toBe(true);
+  });
+
   it('returns false for an unrelated 400', () => {
     expect(isAuthError({ error: buildApiCallError({ statusCode: 400, message: 'max_tokens too large' }) })).toBe(false);
   });

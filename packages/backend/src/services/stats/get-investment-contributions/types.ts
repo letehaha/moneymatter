@@ -1,4 +1,4 @@
-import type { Cents, endpointsTypes } from '@bt/shared/types';
+import type { Cents, InvestmentContributionsPortfolioMeta } from '@bt/shared/types';
 
 /** One portfolio's net contribution within a single bucket, in base-currency cents. */
 interface InvestmentContributionsPortfolioSliceCents {
@@ -25,5 +25,5 @@ export interface InvestmentContributionsResultCents {
    * Active portfolios ordered largest mover first; the serializer forwards this untouched.
    * Typed off the wire contract rather than restated here to keep the two from drifting.
    */
-  portfolios: endpointsTypes.InvestmentContributionsPortfolioMeta[];
+  portfolios: InvestmentContributionsPortfolioMeta[];
 }

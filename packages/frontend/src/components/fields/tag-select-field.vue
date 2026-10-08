@@ -91,7 +91,8 @@
 
 <script setup lang="ts">
 import TagIcon from '@/components/common/icons/tag-icon.vue';
-import { FieldError, FieldLabel } from '@/components/fields';
+import FieldError from '@/components/fields/components/field-error.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Popover, PopoverContent } from '@/components/lib/ui/popover';
 import { cn } from '@/lib/utils';
 import { useTagsStore } from '@/stores';

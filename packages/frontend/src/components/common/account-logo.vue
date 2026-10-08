@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import BrandLogo from '@/components/common/brand-logo.vue';
 import { cn } from '@/lib/utils';
-import { getAccountTypeIcon, getAccountTypeTintedChipClass } from '@/pages/accounts/account-type-presentation';
+import {
+  getAccountTypeIcon,
+  getAccountTypeSolidChipClass,
+  getAccountTypeTintedChipClass,
+} from '@/pages/accounts/account-type-presentation';
 import type { ACCOUNT_CATEGORIES, AccountModel } from '@bt/shared/types';
 import { computed, useAttrs } from 'vue';
 
@@ -11,6 +15,8 @@ const props = defineProps<{
   account: Pick<AccountModel, 'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'accountCategory'>;
   /** Overrides `account.accountCategory` for the fallback chip. */
   category?: ACCOUNT_CATEGORIES;
+  /** Opaque fallback chip, for a logo that overlaps other content. */
+  solid?: boolean;
 }>();
 
 const attrs = useAttrs();
@@ -22,7 +28,9 @@ const chipIcon = computed(() => getAccountTypeIcon({ category: chipCategory.valu
 const chipClass = computed(() =>
   cn(
     'flex shrink-0 items-center justify-center rounded-lg',
-    getAccountTypeTintedChipClass({ category: chipCategory.value }),
+    props.solid
+      ? getAccountTypeSolidChipClass({ category: chipCategory.value })
+      : getAccountTypeTintedChipClass({ category: chipCategory.value }),
     attrs.class as string | undefined,
   ),
 );

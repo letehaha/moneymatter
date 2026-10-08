@@ -132,7 +132,7 @@ The historical backfill reports degradation the same way, but skips the per-date
 Schema bits worth knowing
 
 - Table `exchange_rates`, unique on `(baseCode, quoteCode, date)`. There's a `source` column recording which provider supplied each row (added in migration `20260520000000-add-source-to-exchange-rates.ts`), useful when debugging "why is this rate weird".
-- The `source` column is a plain `VARCHAR` with **no DB-level CHECK constraint** – it was dropped in `20260720000000-drop-exchange-rates-source-check.ts`. The TypeScript enum `EXCHANGE_RATE_PROVIDER_TYPE` (`packages/shared/src/types/enums.ts`) is the single source of truth for the valid provider strings, so adding a provider is a **code-only** change with no accompanying migration.
+- The `source` column is a plain `VARCHAR` with **no DB-level CHECK constraint** – it was dropped in `20260720000000-drop-exchange-rates-source-check.ts`. The TypeScript enum `EXCHANGE_RATE_PROVIDER_TYPE` (`packages/shared/src/types/currencies.ts`) is the single source of truth for the valid provider strings, so adding a provider is a **code-only** change with no accompanying migration.
 - Every row stores `baseCode = 'USD'`. Anything that looks like a non-USD pair on the frontend is computed at read time.
 
 ---

@@ -13,6 +13,7 @@ import getPlannedSummary from '@controllers/transactions.controller/get-planned-
 import getPortfolioLink from '@controllers/transactions.controller/get-portfolio-link';
 import getTransactions from '@controllers/transactions.controller/get-transaction';
 import getTransactionsByIds from '@controllers/transactions.controller/get-transactions-by-ids';
+import getTransactionsSummary from '@controllers/transactions.controller/get-transactions-summary';
 import linkToPortfolio from '@controllers/transactions.controller/link-to-portfolio';
 import matchInvoice from '@controllers/transactions.controller/match-invoice';
 import * as reconciliation from '@controllers/transactions.controller/reconciliation';
@@ -36,237 +37,87 @@ import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { requireFeature, requireFeatureOrTrial } from '@middlewares/entitlements';
 import { attachmentUploadRateLimit } from '@middlewares/rate-limit';
-import { validateEndpoint } from '@middlewares/validations';
 import express, { Router } from 'express';
 
 const router = Router({});
 
-// Define all named routes level above to avoid matching with /:id
-router.get('/refund', authenticateSession, validateEndpoint(getRefund.schema), getRefund.handler);
-router.get('/refunds', authenticateSession, validateEndpoint(getRefunds.schema), getRefunds.handler);
-router.get(
-  '/refund-recommendations',
-  authenticateSession,
-  validateEndpoint(getRefundRecommendations.schema),
-  getRefundRecommendations.handler,
-);
-router.get(
-  '/planned-summary',
-  authenticateSession,
-  validateEndpoint(getPlannedSummary.schema),
-  getPlannedSummary.handler,
-);
-router.get(
-  '/transfer-recommendations',
-  authenticateSession,
-  validateEndpoint(getTransferRecommendations.schema),
-  getTransferRecommendations.handler,
-);
-router.post(
-  '/transfer-recommendations/bulk-scan',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkScanTransferRecommendations.schema),
-  bulkScanTransferRecommendations.handler,
-);
-router.post(
-  '/transfer-recommendations/dismiss',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(dismissTransferSuggestion.schema),
-  dismissTransferSuggestion.handler,
-);
-router.post(
-  '/refund',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createRefund.schema),
-  createRefund.handler,
-);
-// Reads the uploaded invoice and ranks candidates; nothing is stored, so no base-currency lock.
-router.post(
-  '/match-invoice',
-  authenticateSession,
-  requireFeature(FEATURES.attachments),
-  requireFeatureOrTrial(FEATURES.invoice_matching),
-  attachmentUploadRateLimit,
-  express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
-  validateEndpoint(matchInvoice.schema),
-  matchInvoice.handler,
-);
-router.post(
-  '/match-invoice/candidates',
-  authenticateSession,
-  // No AI and no try spent, so a user whose free tries are gone can still correct the
-  // fields of the invoice they just read. Only the attachments gate applies.
-  requireFeature(FEATURES.attachments),
-  attachmentUploadRateLimit,
-  validateEndpoint(rematchInvoice.schema),
-  rematchInvoice.handler,
-);
-router.delete(
-  '/refund',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteRefund.schema),
-  deleteRefund.handler,
-);
-
-router.get(
-  '/reconciliation/history',
-  authenticateSession,
-  validateEndpoint(reconciliation.historyController.schema),
-  reconciliation.historyController.handler,
-);
-router.get(
-  '/reconciliation/stuck-pending',
-  authenticateSession,
-  validateEndpoint(reconciliation.stuckPendingController.schema),
-  reconciliation.stuckPendingController.handler,
-);
-router.post(
-  '/reconciliation/remove',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.removeController.schema),
-  reconciliation.removeController.handler,
-);
-router.post(
-  '/reconciliation/merge',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.mergeController.schema),
-  reconciliation.mergeController.handler,
-);
-router.post(
-  '/reconciliation/restore',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.restoreController.schema),
-  reconciliation.restoreController.handler,
-);
-router.post(
-  '/reconciliation/keep-as-booked',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.keepAsBookedController.schema),
-  reconciliation.keepAsBookedController.handler,
-);
-router.post(
-  '/reconciliation/stuck-pending/check',
-  authenticateSession,
-  requireFeature(FEATURES.bank_providers),
-  blockDemoUsers,
-  checkBaseCurrencyLock,
-  validateEndpoint(reconciliation.checkStuckPendingController.schema),
-  reconciliation.checkStuckPendingController.handler,
-);
-
-// Split routes
-router.delete(
-  '/splits/:splitId',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteSplit.schema),
-  deleteSplit.handler,
-);
-
-// Portfolio linking routes
-router.post(
-  '/:transactionId/link-to-portfolio',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(linkToPortfolio.schema),
-  linkToPortfolio.handler,
-);
-router.post(
-  '/:transactionId/unlink-from-portfolio',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkFromPortfolio.schema),
-  unlinkFromPortfolio.handler,
-);
-router.get(
-  '/:transactionId/portfolio-link',
-  authenticateSession,
-  validateEndpoint(getPortfolioLink.schema),
-  getPortfolioLink.handler,
-);
-
-// Attachments. Listing stays ungated so a lapsed user can still reach their own files.
+// Registered before the blanket session auth: uploads may carry an upload token instead of a session.
 router.post(
   '/:transactionId/attachments',
   authenticateSessionOrUploadToken,
   requireFeature(FEATURES.attachments),
   attachmentUploadRateLimit,
   express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
-  validateEndpoint(uploadAttachmentController.schema),
-  uploadAttachmentController.handler,
-);
-router.get(
-  '/:transactionId/attachments',
-  authenticateSession,
-  validateEndpoint(listAttachmentsController.schema),
-  listAttachmentsController.handler,
+  uploadAttachmentController,
 );
 
-router.get('/', authenticateSession, validateEndpoint(getTransactions.schema), getTransactions.handler);
-router.get('/by-ids', authenticateSession, validateEndpoint(getTransactionsByIds.schema), getTransactionsByIds.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getTransactionById.schema), getTransactionById.handler);
-router.get(
-  '/:id/refunds',
-  authenticateSession,
-  validateEndpoint(getRefundsForTransactionById.schema),
-  getRefundsForTransactionById.handler,
-);
-router.get(
-  '/transfer/:transferId',
-  authenticateSession,
-  validateEndpoint(getTransactionsByTransferId.schema),
-  getTransactionsByTransferId.handler,
+router.use(authenticateSession);
+
+// Define all named routes level above to avoid matching with /:id
+router.get('/refund', getRefund);
+router.get('/refunds', getRefunds);
+router.get('/refund-recommendations', getRefundRecommendations);
+router.get('/planned-summary', getPlannedSummary);
+router.get('/summary', getTransactionsSummary);
+router.get('/transfer-recommendations', getTransferRecommendations);
+router.post('/transfer-recommendations/bulk-scan', checkBaseCurrencyLock, bulkScanTransferRecommendations);
+router.post('/transfer-recommendations/dismiss', checkBaseCurrencyLock, dismissTransferSuggestion);
+router.post('/refund', checkBaseCurrencyLock, createRefund);
+// Reads the uploaded invoice and ranks candidates; nothing is stored, so no base-currency lock.
+router.post(
+  '/match-invoice',
+  requireFeature(FEATURES.attachments),
+  requireFeatureOrTrial(FEATURES.invoice_matching),
+  attachmentUploadRateLimit,
+  express.raw({ type: 'application/octet-stream', limit: ATTACHMENT_MAX_FILE_BYTES }),
+  matchInvoice,
 );
 router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createTransaction.schema),
-  createTransaction.handler,
+  '/match-invoice/candidates',
+  // No AI and no try spent, so a user whose free tries are gone can still correct the
+  // fields of the invoice they just read. Only the attachments gate applies.
+  requireFeature(FEATURES.attachments),
+  attachmentUploadRateLimit,
+  rematchInvoice,
 );
-router.put(
-  '/unlink',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkTransferTransactions.schema),
-  unlinkTransferTransactions.handler,
-);
-router.put('/link', authenticateSession, checkBaseCurrencyLock, linkTransactions);
-router.put(
-  '/bulk',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(bulkUpdate.schema),
-  bulkUpdate.handler,
-);
+router.delete('/refund', checkBaseCurrencyLock, deleteRefund);
+
+router.get('/reconciliation/history', reconciliation.historyController);
+router.get('/reconciliation/stuck-pending', reconciliation.stuckPendingController);
+router.post('/reconciliation/remove', checkBaseCurrencyLock, reconciliation.removeController);
+router.post('/reconciliation/merge', checkBaseCurrencyLock, reconciliation.mergeController);
+router.post('/reconciliation/restore', checkBaseCurrencyLock, reconciliation.restoreController);
+router.post('/reconciliation/keep-as-booked', checkBaseCurrencyLock, reconciliation.keepAsBookedController);
 router.post(
-  '/bulk-delete',
-  authenticateSession,
+  '/reconciliation/stuck-pending/check',
+  requireFeature(FEATURES.bank_providers),
+  blockDemoUsers,
   checkBaseCurrencyLock,
-  validateEndpoint(bulkDelete.schema),
-  bulkDelete.handler,
+  reconciliation.checkStuckPendingController,
 );
-router.put(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateTransaction.schema),
-  updateTransaction.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteTransaction.schema),
-  deleteTransaction.handler,
-);
+
+// Split routes
+router.delete('/splits/:splitId', checkBaseCurrencyLock, deleteSplit);
+
+// Portfolio linking routes
+router.post('/:transactionId/link-to-portfolio', checkBaseCurrencyLock, linkToPortfolio);
+router.post('/:transactionId/unlink-from-portfolio', checkBaseCurrencyLock, unlinkFromPortfolio);
+router.get('/:transactionId/portfolio-link', getPortfolioLink);
+
+// Listing stays ungated so a lapsed user can still reach their own files.
+router.get('/:transactionId/attachments', listAttachmentsController);
+
+router.get('/', getTransactions);
+router.get('/by-ids', getTransactionsByIds);
+router.get('/:id', getTransactionById);
+router.get('/:id/refunds', getRefundsForTransactionById);
+router.get('/transfer/:transferId', getTransactionsByTransferId);
+router.post('/', checkBaseCurrencyLock, createTransaction);
+router.put('/unlink', checkBaseCurrencyLock, unlinkTransferTransactions);
+router.put('/link', checkBaseCurrencyLock, linkTransactions);
+router.put('/bulk', checkBaseCurrencyLock, bulkUpdate);
+router.post('/bulk-delete', checkBaseCurrencyLock, bulkDelete);
+router.put('/:id', checkBaseCurrencyLock, updateTransaction);
+router.delete('/:id', checkBaseCurrencyLock, deleteTransaction);
 
 export default router;

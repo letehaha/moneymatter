@@ -5,7 +5,9 @@ import type {
   FireSettings,
   PAYMENT_TYPES,
   TransactionOptionalField,
-  endpointsTypes,
+  SidebarSectionsConfig,
+  SavedPivotView,
+  CurrencyDisplayPreference,
 } from '@bt/shared/types';
 
 export interface DashboardWidgetConfig {
@@ -14,13 +16,6 @@ export interface DashboardWidgetConfig {
   rowSpan?: number;
   config?: Record<string, unknown>;
 }
-
-/**
- * Per-section visibility for the sidebar's Accounts panel. Re-exported from the shared contract
- * so it stays in lockstep with the backend Zod schema (`ZodSidebarSectionsSchema`), which is
- * compile-time asserted against it (`SidebarSectionsSchemaIsInSync`).
- */
-export type SidebarSectionsConfig = endpointsTypes.SidebarSectionsConfig;
 
 /** Optional links under the sidebar's Accounts nav group. Each is visible when unset. */
 export interface SidebarNavConfig {
@@ -86,14 +81,6 @@ export interface SubscriptionsSettings {
   defaultAutoRecord?: boolean;
 }
 
-/**
- * A saved Pivot Report view — the full configuration a user pinned so they can reload the same
- * cross-tab later. The shape is the shared contract the backend Zod schema
- * (`ZodSavedPivotViewConfigSchema`) is asserted against, so the two ends can't drift.
- */
-export type SavedPivotViewConfig = endpointsTypes.SavedPivotViewConfig;
-export type SavedPivotView = endpointsTypes.SavedPivotView;
-
 export interface UserSettingsSchema {
   locale?: SupportedLocale;
   dashboard?: {
@@ -146,7 +133,13 @@ export interface UserSettingsSchema {
    * expense. Subcategories inherit from their parent. Empty or unset leaves cash flow unchanged.
    */
   savingsCategoryIds?: string[];
-  currencyDisplay?: endpointsTypes.CurrencyDisplayPreference;
+  /**
+   * Categories whose spending is a tax. The money-flow chart shows it as its own branch instead
+   * of as an expense. Subcategories inherit from their parent.
+   * A category also covered by `savingsCategoryIds` counts as savings.
+   */
+  taxCategoryIds?: string[];
+  currencyDisplay?: CurrencyDisplayPreference;
   fire?: FireSettings;
 }
 

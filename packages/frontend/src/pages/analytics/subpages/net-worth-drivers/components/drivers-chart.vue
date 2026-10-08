@@ -94,7 +94,7 @@ import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-p
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { currentTheme } from '@/common/utils/color-theme';
-import { endpointsTypes } from '@bt/shared/types';
+import type { NetWorthDriversGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
 import * as d3 from 'd3';
 import { TrendingDownIcon, TrendingUpIcon } from '@lucide/vue';
@@ -106,7 +106,7 @@ import { useSeriesColors } from '../composables/use-series-colors';
 
 const props = defineProps<{
   points: CumulativePoint[];
-  granularity: endpointsTypes.NetWorthDriversGranularity;
+  granularity: NetWorthDriversGranularity;
 }>();
 
 const { format: formatDate } = useDateLocale();

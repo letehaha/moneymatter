@@ -35,8 +35,8 @@ import {
   type RecordId,
   TRANSACTION_TYPES,
   type TransactionTemplateModel,
+  type CreateTransactionTemplateBody,
 } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody } from '@bt/shared/types/endpoints';
 import { required, requiredIf } from '@vuelidate/validators';
 import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';

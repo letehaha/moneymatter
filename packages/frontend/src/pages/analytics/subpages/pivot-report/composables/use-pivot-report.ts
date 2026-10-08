@@ -1,8 +1,7 @@
 import { getPivotReport } from '@/api';
-import type { SavedPivotViewConfig } from '@/api/user-settings';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import type { Period } from '@/composable/use-period-navigation';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { PivotRowDimension, PivotGranularity, PivotMeasure, SavedPivotViewConfig } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { format } from 'date-fns';
 import { type ComputedRef, computed } from 'vue';
@@ -11,9 +10,9 @@ import { type ComputedRef, computed } from 'vue';
  * persisted saved-view form (`SavedPivotViewConfig`) mirrors this with the
  * period flattened to `yyyy-MM-dd` strings. */
 export interface PivotLiveConfig {
-  rowDimension: endpointsTypes.PivotRowDimension;
-  granularity: endpointsTypes.PivotGranularity;
-  measure: endpointsTypes.PivotMeasure;
+  rowDimension: PivotRowDimension;
+  granularity: PivotGranularity;
+  measure: PivotMeasure;
   period: Period;
   accountIds: string[];
   categoryIds: string[];

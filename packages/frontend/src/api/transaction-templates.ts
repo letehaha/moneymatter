@@ -1,6 +1,9 @@
 import { api } from '@/api/_api';
-import type { TransactionTemplateModel } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody, UpdateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import type {
+  TransactionTemplateModel,
+  CreateTransactionTemplateBody,
+  UpdateTransactionTemplateBody,
+} from '@bt/shared/types';
 
 export const loadTransactionTemplates = async (): Promise<TransactionTemplateModel[]> => {
   return api.get('/transaction-templates');

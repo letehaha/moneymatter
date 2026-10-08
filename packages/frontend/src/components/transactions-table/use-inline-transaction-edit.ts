@@ -15,8 +15,7 @@ import {
 } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { useTagsStore } from '@/stores';
-import { API_ERROR_CODES, type TransactionModel } from '@bt/shared/types';
-import type { UpdateTransactionBody } from '@bt/shared/types/endpoints';
+import { API_ERROR_CODES, type TransactionModel, type UpdateTransactionBody } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { reactive } from 'vue';

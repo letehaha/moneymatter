@@ -1,6 +1,6 @@
 import { getCashFlow, getCombinedBalanceHistory } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowGranularity } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { endOfMonth, startOfMonth, subMonths } from 'date-fns';
 import { computed, type Ref } from 'vue';
@@ -39,7 +39,7 @@ export function useSeedData({ selectedPeriod }: { selectedPeriod: Ref<NetIncomeP
       return {
         from: new Date(2000, 0, 1),
         to,
-        granularity: 'monthly' as endpointsTypes.CashFlowGranularity,
+        granularity: 'monthly' as CashFlowGranularity,
       };
     }
 
@@ -49,7 +49,7 @@ export function useSeedData({ selectedPeriod }: { selectedPeriod: Ref<NetIncomeP
     return {
       from,
       to,
-      granularity: 'monthly' as endpointsTypes.CashFlowGranularity,
+      granularity: 'monthly' as CashFlowGranularity,
     };
   });
 

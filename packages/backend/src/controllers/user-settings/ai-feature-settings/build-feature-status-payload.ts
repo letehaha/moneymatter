@@ -1,5 +1,5 @@
-import { AIFeatureStatus, AI_FEATURE, FEATURES } from '@bt/shared/types';
-import { getRequestFeatureAccess } from '@middlewares/entitlements';
+import { AIFeatureStatus, AI_FEATURE, FEATURES, hasPaidPlus } from '@bt/shared/types';
+import { getRequestEntitlements, getRequestFeatureAccess } from '@middlewares/entitlements';
 import type { StoredAiSettings } from '@models/user-settings.model';
 import { resolveFeatureStatus } from '@services/user-settings/resolve-feature-model-display';
 import type { Request } from 'express';
@@ -20,6 +20,9 @@ export const resolveServerKeysAllowed = async ({
   );
 };
 
+export const resolvePaidPlus = async ({ req }: { req: Request }): Promise<boolean> =>
+  hasPaidPlus({ entitlements: await getRequestEntitlements({ req }) });
+
 export async function buildFeatureStatusPayload({
   req,
   feature,
@@ -33,5 +36,6 @@ export async function buildFeatureStatusPayload({
     feature,
     aiSettings,
     serverKeysAllowed: await resolveServerKeysAllowed({ req, feature }),
+    paidPlus: await resolvePaidPlus({ req }),
   });
 }

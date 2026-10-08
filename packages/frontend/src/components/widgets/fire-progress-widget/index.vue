@@ -27,6 +27,7 @@ import FireRing from './fire-ring.vue';
 defineOptions({ name: 'fire-progress-widget' });
 
 const LEDGER_ROW_CLASS = 'border-border flex items-baseline justify-between gap-3 border-t py-1.5';
+const HERO_WITH_PCT_CLASS = 'grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3 gap-y-1';
 
 const { t } = useI18n();
 const { format } = useDateLocale();
@@ -172,8 +173,9 @@ const milestonesSummary = computed(() =>
 
 const pmtDuration = computed(() => formatDuration({ months: UNREACHABLE_PMT_MONTHS, t }));
 
-const [DefineHero, ReuseHero] = createReusableTemplate<{ numberClass: string; unitClass: string }>();
-const [DefineLedger, ReuseLedger] = createReusableTemplate<{ withPct?: boolean }>();
+const [DefineHero, ReuseHero] = createReusableTemplate<{ numberClass: string; unitClass: string; withPct?: boolean }>();
+const [DefineHeroPct, ReuseHeroPct] = createReusableTemplate();
+const [DefineLedger, ReuseLedger] = createReusableTemplate();
 const [DefineTimeline, ReuseTimeline] = createReusableTemplate();
 const [DefineStepper, ReuseStepper] = createReusableTemplate();
 const [DefineSkeletonRows, ReuseSkeletonRows] = createReusableTemplate();
@@ -197,7 +199,18 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
       </DesktopOnlyTooltip>
     </template>
 
-    <DefineHero v-slot="{ numberClass, unitClass }">
+    <DefineHeroPct>
+      <p
+        class="text-muted-foreground col-start-2 row-start-1 text-right text-[11px] font-semibold tracking-widest uppercase"
+      >
+        {{ $t('widgets.fireProgress.progress') }}
+      </p>
+      <p class="col-start-2 row-start-2 text-right text-3xl leading-none font-extrabold tracking-tight tabular-nums">
+        {{ pct }}<span class="text-muted-foreground text-lg font-semibold tracking-normal">%</span>
+      </p>
+    </DefineHeroPct>
+
+    <DefineHero v-slot="{ numberClass, unitClass, withPct }">
       <div v-if="plan.status === 'reached' && plan.reached" class="flex flex-col gap-1">
         <p class="text-success-text flex items-center gap-1.5 text-lg font-extrabold">
           <CheckIcon class="size-5 shrink-0" :stroke-width="3" />
@@ -215,25 +228,35 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
         </p>
       </div>
 
-      <div v-else-if="plan.status === 'unreachable' && plan.unreachable" class="flex flex-col gap-1">
-        <p class="text-warning-text font-bold">{{ $t('widgets.fireProgress.unreachable') }}</p>
-        <i18n-t keypath="widgets.fireProgress.needs" tag="p" class="text-muted-foreground text-xs tabular-nums">
+      <div
+        v-else-if="plan.status === 'unreachable' && plan.unreachable"
+        :class="withPct ? HERO_WITH_PCT_CLASS : 'flex flex-col gap-1'"
+      >
+        <p class="text-warning-text col-start-1 font-bold">{{ $t('widgets.fireProgress.unreachable') }}</p>
+        <i18n-t
+          keypath="widgets.fireProgress.needs"
+          tag="p"
+          class="text-muted-foreground col-start-1 text-xs tabular-nums"
+        >
           <template #amount>
             <b class="text-foreground">{{ formatWholeBaseCurrency(plan.unreachable.requiredMonthlyContribution) }}</b>
           </template>
           <template #duration>{{ pmtDuration }}</template>
         </i18n-t>
+        <ReuseHeroPct v-if="withPct" />
       </div>
 
-      <div v-else-if="plan.eta" class="flex flex-col gap-1">
-        <p class="text-primary-text flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase">
+      <div v-else-if="plan.eta" :class="withPct ? HERO_WITH_PCT_CLASS : 'flex flex-col gap-1'">
+        <p
+          class="text-primary-text col-start-1 flex items-center gap-1.5 text-[11px] font-semibold tracking-widest uppercase"
+        >
           <FlameIcon class="size-3.5" />
           {{ $t('widgets.fireProgress.timeTo', { type: targetName }) }}
         </p>
         <p
           :class="
             cn(
-              'flex flex-wrap items-baseline gap-x-2 leading-none font-extrabold tracking-tight tabular-nums',
+              'col-start-1 flex flex-wrap items-baseline gap-x-2 leading-none font-extrabold tracking-tight tabular-nums',
               numberClass,
             )
           "
@@ -261,7 +284,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
             </template>
           </i18n-t>
         </p>
-        <p class="text-muted-foreground text-sm">
+        <p class="text-muted-foreground col-span-full text-sm">
           {{ etaMonth }}
           <template v-if="age !== null">· {{ $t('widgets.fireProgress.atAge', { age }) }}</template>
           <DesktopOnlyTooltip v-if="returnWarning" :content="returnWarning">
@@ -270,19 +293,15 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
             </span>
           </DesktopOnlyTooltip>
         </p>
+        <ReuseHeroPct v-if="withPct" />
       </div>
     </DefineHero>
 
-    <DefineLedger v-slot="{ withPct }">
+    <DefineLedger>
       <dl class="text-xs tabular-nums">
         <div v-if="plan.target !== null" :class="LEDGER_ROW_CLASS">
-          <dt class="text-muted-foreground">
-            {{ withPct ? $t('widgets.fireProgress.progress') : $t('widgets.fireProgress.saved') }}
-          </dt>
-          <dd class="text-right font-bold">
-            <template v-if="withPct">{{ pct }}% · </template>
-            {{ balanceOfTarget }}
-          </dd>
+          <dt class="text-muted-foreground">{{ $t('widgets.fireProgress.saved') }}</dt>
+          <dd class="text-right font-bold">{{ balanceOfTarget }}</dd>
         </div>
         <div v-if="nextMilestone" :class="LEDGER_ROW_CLASS">
           <dt class="text-muted-foreground">{{ $t('widgets.fireProgress.nextMilestone') }}</dt>
@@ -501,6 +520,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
         <ReuseHero
           :number-class="showPath ? 'text-4xl @2xs:text-5xl @2xl:text-4xl' : 'text-4xl @2xs:text-5xl'"
           unit-class="text-lg"
+          :with-pct="true"
         />
 
         <div :class="cn('flex flex-col gap-3', showPath && '@2xl:hidden')">
@@ -509,10 +529,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
             v-if="plan.target !== null"
             class="text-muted-foreground border-border flex justify-between gap-3 border-t pt-2.5 text-xs tabular-nums"
           >
-            <span>
-              <b class="text-foreground">{{ pct }}%</b>
-              · {{ balanceOfTarget }}
-            </span>
+            <span>{{ balanceOfTarget }}</span>
             <span>
               {{ $t('widgets.fireProgress.typeNumber', { type: targetName }) }}
               <b class="text-foreground">{{ compact({ amount: plan.target }) }}</b>
@@ -521,7 +538,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
           </p>
         </div>
 
-        <ReuseLedger v-if="showPath" :with-pct="true" class="hidden @2xl:block" />
+        <ReuseLedger v-if="showPath" class="hidden @2xl:block" />
       </div>
 
       <div

@@ -302,8 +302,11 @@ export async function setupDashboardSettings({
     (id): id is string => id !== undefined,
   );
 
+  const taxCategoryId = categoryMap.get('financial-expenses/taxes');
+
   const settings: SettingsSchema = {
     ...DEFAULT_SETTINGS,
+    ...(taxCategoryId && { taxCategoryIds: [taxCategoryId] }),
     dashboard: {
       widgets: [
         { widgetId: 'balance-trend', colSpan: 2, rowSpan: 1 },
@@ -314,6 +317,7 @@ export async function setupDashboardSettings({
         { widgetId: 'category-spending-tracker', colSpan: 1, rowSpan: 1, config: { selectedCategoryIds } },
         { widgetId: 'credit-utilization', colSpan: 1, rowSpan: 1 },
         { widgetId: 'subscriptions-overview', colSpan: 1, rowSpan: 1 },
+        { widgetId: 'taxes', colSpan: 1, rowSpan: 1 },
       ],
     },
   };

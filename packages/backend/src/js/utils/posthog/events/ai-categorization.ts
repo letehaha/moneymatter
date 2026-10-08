@@ -10,6 +10,7 @@ export function trackAiCategorization({
   categorizedCount,
   failedCount,
   provider,
+  modelId,
   usingUserKey,
   sessionId,
 }: {
@@ -17,6 +18,7 @@ export function trackAiCategorization({
   categorizedCount: number;
   failedCount: number;
   provider: AI_PROVIDER;
+  modelId: string;
   usingUserKey: boolean;
   sessionId?: string | null;
 }): void {
@@ -27,6 +29,7 @@ export function trackAiCategorization({
       categorized_count: categorizedCount,
       failed_count: failedCount,
       provider,
+      model_id: modelId,
       using_user_key: usingUserKey,
     },
     sessionId,

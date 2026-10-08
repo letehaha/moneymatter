@@ -16,11 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import type { endpointsTypes } from '@bt/shared/types';
+import type { CumulativeMetric } from '@bt/shared/types';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-export type MetricType = endpointsTypes.CumulativeMetric;
+export type MetricType = CumulativeMetric;
 
 defineProps<{
   modelValue: MetricType;

@@ -9,42 +9,31 @@ import {
 } from '@controllers/notifications.controller';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
+router.use(authenticateSession);
+
 // Get all notifications for the authenticated user
-router.get('/', authenticateSession, validateEndpoint(getNotifications.schema), getNotifications.handler);
+router.get('/', getNotifications);
 
 // Get unread count
-router.get('/unread-count', authenticateSession, validateEndpoint(getUnreadCount.schema), getUnreadCount.handler);
+router.get('/unread-count', getUnreadCount);
 
 // Get a specific notification
-router.get('/:id', authenticateSession, validateEndpoint(getNotificationById.schema), getNotificationById.handler);
+router.get('/:id', getNotificationById);
 
 // Create a notification (primarily for internal/admin use, but exposed for testing)
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createNotification.schema),
-  createNotification.handler,
-);
+router.post('/', checkBaseCurrencyLock, createNotification);
 
 // Mark a specific notification as read
-router.post('/:id/read', authenticateSession, validateEndpoint(markAsRead.schema), markAsRead.handler);
+router.post('/:id/read', markAsRead);
 
 // Mark all notifications as read
-router.post('/read-all', authenticateSession, validateEndpoint(markAllAsRead.schema), markAllAsRead.handler);
+router.post('/read-all', markAllAsRead);
 
 // Dismiss a notification
-router.post(
-  '/:id/dismiss',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(dismissNotification.schema),
-  dismissNotification.handler,
-);
+router.post('/:id/dismiss', checkBaseCurrencyLock, dismissNotification);
 
 export default router;

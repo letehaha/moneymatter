@@ -7,8 +7,5 @@ export const stuckPendingCheckCron = createScheduledSync({
   cronExpression: '0 7 * * *',
   timeZone: 'UTC',
   scheduleDescription: 'runs daily at 7:00 AM UTC',
-  run: async () => {
-    const { usersChecked, notified, failed, errors } = await notifyStuckPending();
-    return { totalProcessed: usersChecked, successfulUpdates: notified, failedUpdates: failed, errors };
-  },
+  run: notifyStuckPending,
 });

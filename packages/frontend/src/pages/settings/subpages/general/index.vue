@@ -88,6 +88,26 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="min-w-48 flex-1">
             <div class="text-sm font-medium">
+              {{ $t('settings.general.taxCategories.label') }}
+            </div>
+            <p class="text-muted-foreground mt-1 text-xs leading-relaxed">
+              {{ $t('settings.general.taxCategories.description') }}
+            </p>
+          </div>
+          <div class="w-64 shrink-0">
+            <CategoryMultiSelectField
+              :model-value="taxCategoryIds"
+              :disabled="isUpdating"
+              @update:model-value="handleTaxCategoriesChange"
+            />
+          </div>
+        </div>
+
+        <Separator />
+
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="min-w-48 flex-1">
+            <div class="text-sm font-medium">
               {{ $t('settings.general.accountDropdowns.defaultAccount.label') }}
             </div>
             <p class="text-muted-foreground mt-1 text-xs leading-relaxed">
@@ -294,6 +314,7 @@ const includeCreditLimitInStats = computed(() => userSettings.value?.includeCred
 const matchTransfersWithManualAccounts = computed(() => userSettings.value?.matchTransfersWithManualAccounts ?? false);
 const importPendingBankTransactions = computed(() => userSettings.value?.importPendingBankTransactions ?? false);
 const savingsCategoryIds = computed(() => userSettings.value?.savingsCategoryIds ?? []);
+const taxCategoryIds = computed(() => userSettings.value?.taxCategoryIds ?? []);
 const showUpcomingTransactions = computed(() => !userSettings.value?.ui?.transactionsList?.hideUpcoming);
 
 const defaultAccount = computed<AccountModel | null>(() =>
@@ -347,6 +368,19 @@ const handlePendingBankTransactionsToggle = async (value: boolean) => {
     addSuccessNotification(t('settings.general.pendingBankTransactions.successNotification'));
   } catch {
     addErrorNotification(t('settings.general.pendingBankTransactions.errorNotification'));
+  }
+};
+
+const handleTaxCategoriesChange = async (value: string[]) => {
+  try {
+    await mutateAsync({
+      ...userSettings.value,
+      taxCategoryIds: value,
+    });
+
+    addSuccessNotification(t('settings.general.taxCategories.successNotification'));
+  } catch {
+    addErrorNotification(t('settings.general.taxCategories.errorNotification'));
   }
 };
 

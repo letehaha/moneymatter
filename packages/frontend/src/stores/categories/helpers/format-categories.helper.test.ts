@@ -13,6 +13,8 @@ const category = (id: number) => ({
   userId: 1,
   parentId: null as RecordId | null,
   type: CATEGORY_TYPES.custom,
+  defaultTagIds: [] as RecordId[],
+  applyDefaultTagsOnAiCategorization: false,
 });
 
 describe('Categories formatting helper', () => {

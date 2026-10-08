@@ -5,6 +5,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { AI_MAX_OUTPUT_TOKENS, aiCallGuards, createAIClient, describeMissingAiConfiguration } from '@services/ai';
+import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { detectMimeType } from '@services/attachments/attachments.service';
 import { resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
 import { extractTextFromFile } from '@services/import-export/statement-parser';
@@ -135,7 +136,7 @@ export async function extractInvoice({
 
   let answer: z.infer<typeof aiAnswerSchema>;
   try {
-    const { output } = await generateText({
+    const { output, usage, finishReason } = await generateText({
       model: aiClient.model,
       output: Output.object({ schema: aiAnswerSchema, name: 'invoice' }),
       system: SYSTEM_PROMPT,
@@ -150,6 +151,14 @@ export async function extractInvoice({
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
     answer = output;
+    trackAiUsage({ userId, feature: AI_FEATURE.receiptParsing, aiClient, usage });
+    logger.info('[Invoice Matching] AI answered', {
+      modelId: aiClient.modelId,
+      usingUserKey: aiClient.usingUserKey,
+      inputTokens: usage.inputTokens,
+      outputTokens: usage.outputTokens,
+      finishReason,
+    });
   } catch (error) {
     const failure = await resolveAiExtractionFailure({ userId, aiClient, error, logPrefix: '[Invoice Matching]' });
     throw new ValidationError({ message: failure.error.message });

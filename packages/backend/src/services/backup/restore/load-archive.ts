@@ -1,15 +1,12 @@
-import {
-  BACKUP_FILE_NAMES,
-  BACKUP_FORMAT_VERSION,
-  BACKUP_REFERENCE_FILE_NAMES,
-  type BackupFileName,
-  type BackupManifest,
-} from '@bt/shared/types';
+import { BACKUP_FORMAT_VERSION, BACKUP_REFERENCE_FILE_NAMES, type BackupManifest } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import JSZip from 'jszip';
 import isPlainObject from 'lodash/isPlainObject';
 
+import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { sha256Hex } from '../sha256';
+
+const BACKUP_FILE_NAMES = BACKUP_TABLES.map((t) => t.fileName);
 
 type Row = Record<string, unknown>;
 
@@ -41,6 +38,7 @@ function assertUncompressedBudget({ zip, maxUncompressedBytes }: { zip: JSZip; m
   for (const name of Object.keys(zip.files)) {
     const entry = zip.files[name];
     if (!entry || entry.dir) continue;
+    // oxlint-disable-next-line no-underscore-dangle
     const size = (entry as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize;
     if (typeof size === 'number') declaredTotal += size;
   }

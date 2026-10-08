@@ -1,8 +1,5 @@
 import { api } from '@/api/_api';
-import type { Entitlements, Feature } from '@bt/shared/types';
-import { UserInfoResponse } from '@bt/shared/types/db-models';
-
-export type { WipeDataSharedResources } from '@bt/shared/types';
+import { type Entitlements, type Feature, UserInfoResponse } from '@bt/shared/types';
 
 export const loadUserData = async (): Promise<UserInfoResponse> => {
   const result = await api.get('/user');

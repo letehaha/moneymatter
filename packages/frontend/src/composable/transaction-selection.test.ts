@@ -8,7 +8,12 @@ import {
 import { describe, expect, it } from 'vitest';
 import { type Ref, nextTick, ref } from 'vue';
 
-import { getVanishedSelectedIds, sumSelectedTotals, useTransactionSelection } from './transaction-selection';
+import {
+  getVanishedSelectedIds,
+  subtractTotals,
+  sumSelectedTotals,
+  useTransactionSelection,
+} from './transaction-selection';
 
 const buildTx = (overrides: Partial<TransactionModel>): TransactionModel =>
   ({
@@ -163,11 +168,12 @@ describe('useTransactionSelection — pruning against loaded rows', () => {
 
   it('keeps the selection when the next page is appended', async () => {
     const transactions = ref<TransactionModel[]>([a, b]);
-    const { selectAll, selectedCount, isTransactionSelected } = useTransactionSelection({
+    const { toggleTransaction, selectedCount, isTransactionSelected } = useTransactionSelection({
       getTransactions: () => transactions.value,
     });
 
-    selectAll();
+    toggleTransaction({ value: true, id: a.id });
+    toggleTransaction({ value: true, id: b.id });
 
     transactions.value = [a, b, c];
     await nextTick();
@@ -215,17 +221,91 @@ describe('useTransactionSelection — scoped selection', () => {
     expect(isTransactionSelected(b.id)).toBe(false);
   });
 
-  it('keeps selections when the next page is appended within the same scope', async () => {
+  it('keeps a manual selection as is when the next page is appended', async () => {
     const transactions = ref<TransactionModel[]>([a, b]);
     const scopeKey = ref('time:desc');
-    const { selectAll, selectedCount } = buildScoped({ transactions, scopeKey });
+    const { toggleTransaction, selectedCount, isSelectAllActive } = buildScoped({ transactions, scopeKey });
 
-    selectAll();
+    toggleTransaction({ value: true, id: a.id });
+    toggleTransaction({ value: true, id: b.id });
 
     transactions.value = [a, b, c];
     await nextTick();
 
+    expect(isSelectAllActive.value).toBe(false);
     expect(selectedCount.value).toBe(2);
+  });
+
+  it('after select all, rows that load later arrive selected and unticked rows stay unticked', async () => {
+    const transactions = ref<TransactionModel[]>([a, b]);
+    const scopeKey = ref('time:desc');
+    const { selectAll, toggleTransaction, isTransactionSelected, isSelectAllActive } = buildScoped({
+      transactions,
+      scopeKey,
+    });
+
+    selectAll();
+    toggleTransaction({ value: false, id: a.id });
+
+    transactions.value = [a, b, c];
+    await nextTick();
+
+    expect(isSelectAllActive.value).toBe(true);
+    expect(isTransactionSelected(a.id)).toBe(false);
+    expect(isTransactionSelected(b.id)).toBe(true);
+    expect(isTransactionSelected(c.id)).toBe(true);
+  });
+
+  it('keeps a row unticked when it leaves the loaded list and returns, or the list is briefly empty', async () => {
+    const transactions = ref<TransactionModel[]>([a, b, c]);
+    const scopeKey = ref('time:desc');
+    const { selectAll, toggleTransaction, isTransactionSelected, excludedIds } = buildScoped({
+      transactions,
+      scopeKey,
+    });
+
+    selectAll();
+    toggleTransaction({ value: false, id: a.id });
+
+    transactions.value = [b, c];
+    await nextTick();
+    transactions.value = [];
+    await nextTick();
+    transactions.value = [a, b, c];
+    await nextTick();
+
+    expect(isTransactionSelected(a.id)).toBe(false);
+    expect(isTransactionSelected(b.id)).toBe(true);
+    expect([...excludedIds.value]).toEqual([a.id]);
+  });
+
+  it('drops select-all mode when the scope changes', async () => {
+    const transactions = ref<TransactionModel[]>([a, b]);
+    const scopeKey = ref('time:desc');
+    const { selectAll, isSelectAllActive, selectedCount } = buildScoped({ transactions, scopeKey });
+
+    selectAll();
+    scopeKey.value = 'amount:asc';
+    transactions.value = [c];
+    await nextTick();
+
+    expect(isSelectAllActive.value).toBe(false);
+    expect(selectedCount.value).toBe(0);
+  });
+
+  it('leaves select-all mode once the selection is cleared or emptied by hand', async () => {
+    const transactions = ref<TransactionModel[]>([a]);
+    const scopeKey = ref('time:desc');
+    const { selectAll, toggleTransaction, isSelectAllActive, selectedCount } = buildScoped({ transactions, scopeKey });
+
+    selectAll();
+    toggleTransaction({ value: false, id: a.id });
+    await nextTick();
+    expect(isSelectAllActive.value).toBe(false);
+
+    transactions.value = [a, b];
+    await nextTick();
+    expect(selectedCount.value).toBe(0);
   });
 
   it('keeps the selection while the list is transiently empty within the same scope', async () => {
@@ -334,5 +414,16 @@ describe('sumSelectedTotals', () => {
       net: 0,
       transfers: 0,
     });
+  });
+});
+
+describe('subtractTotals', () => {
+  it('removes the unticked rows from the whole-set totals and recomputes net', () => {
+    expect(
+      subtractTotals({
+        from: { income: 300, expense: 170, net: 130, transfers: 500 },
+        minus: { income: 100, expense: 20, net: 80, transfers: 500 },
+      }),
+    ).toEqual({ income: 200, expense: 150, net: 50, transfers: 0 });
   });
 });

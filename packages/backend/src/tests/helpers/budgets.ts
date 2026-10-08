@@ -1,4 +1,4 @@
-import { BUDGET_TYPES, BudgetModel, endpointsTypes } from '@bt/shared/types';
+import { BUDGET_TYPES, BudgetModel, type BudgetSpendingStatsResponse } from '@bt/shared/types';
 import addTransactionsToBudget from '@controllers/budgets/add-transaction-to-budget';
 import removeTransactionsFromBudget from '@controllers/budgets/remove-transaction-from-budget';
 import * as getBudgetService from '@root/services/budget.service';
@@ -134,7 +134,7 @@ export async function addTransactionToCustomBudget<R extends boolean | undefined
   payload: linkTransactionToBudgetPayload;
   raw?: R;
 }) {
-  return makeRequest<Awaited<ReturnType<typeof addTransactionsToBudget.handler>> | null, R>({
+  return makeRequest<Awaited<ReturnType<typeof addTransactionsToBudget>> | null, R>({
     method: 'post',
     url: `/budgets/${id}/transactions`,
     payload,
@@ -151,7 +151,7 @@ export async function removeTransactionFromCustomBudget<R extends boolean | unde
   payload: linkTransactionToBudgetPayload;
   raw?: R;
 }) {
-  return makeRequest<Awaited<ReturnType<typeof removeTransactionsFromBudget.handler>> | null, R>({
+  return makeRequest<Awaited<ReturnType<typeof removeTransactionsFromBudget>> | null, R>({
     method: 'delete',
     url: `/budgets/${id}/transactions`,
     payload,
@@ -234,7 +234,7 @@ export async function getSpendingStats<R extends boolean | undefined = undefined
   id: string;
   raw?: R;
 }) {
-  return makeRequest<endpointsTypes.BudgetSpendingStatsResponse, R>({
+  return makeRequest<BudgetSpendingStatsResponse, R>({
     method: 'get',
     url: `/budgets/${id}/spending-stats`,
     raw,

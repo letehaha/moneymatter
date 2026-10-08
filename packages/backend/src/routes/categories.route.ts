@@ -5,38 +5,16 @@ import getCategoryTransactionCount from '@controllers/categories.controller/get-
 import editCategory from '@controllers/categories.controller/update-category';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getCategories.schema), getCategories.handler);
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createCategory.schema),
-  createCategory.handler,
-);
-router.put(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(editCategory.schema),
-  editCategory.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteCategory.schema),
-  deleteCategory.handler,
-);
-router.get(
-  '/:id/transaction-count',
-  authenticateSession,
-  validateEndpoint(getCategoryTransactionCount.schema),
-  getCategoryTransactionCount.handler,
-);
+router.use(authenticateSession);
+
+router.get('/', getCategories);
+router.post('/', checkBaseCurrencyLock, createCategory);
+router.put('/:id', checkBaseCurrencyLock, editCategory);
+router.delete('/:id', checkBaseCurrencyLock, deleteCategory);
+router.get('/:id/transaction-count', getCategoryTransactionCount);
 
 export default router;

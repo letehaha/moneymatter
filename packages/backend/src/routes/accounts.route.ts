@@ -11,60 +11,20 @@ import getAccountTransactionCount from '@controllers/accounts/transaction-count'
 import unlinkAccountFromBankConnection from '@controllers/accounts/unlink-from-bunk-connection';
 import { authenticateSession } from '@middlewares/better-auth';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get('/', authenticateSession, validateEndpoint(getAccounts.schema), getAccounts.handler);
-router.get('/:id', authenticateSession, validateEndpoint(getAccountById.schema), getAccountById.handler);
-router.get(
-  '/:id/transaction-count',
-  authenticateSession,
-  validateEndpoint(getAccountTransactionCount.schema),
-  getAccountTransactionCount.handler,
-);
-router.post(
-  '/',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(createAccount.schema),
-  createAccount.handler,
-);
-router.put(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(updateAccount.schema),
-  updateAccount.handler,
-);
-router.delete(
-  '/:id',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(deleteAccount.schema),
-  deleteAccount.handler,
-);
-router.post(
-  '/:id/unlink',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(unlinkAccountFromBankConnection.schema),
-  unlinkAccountFromBankConnection.handler,
-);
-router.post(
-  '/:id/link',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(linkAccountToBankConnection.schema),
-  linkAccountToBankConnection.handler,
-);
-router.post(
-  '/:id/balance-adjustment',
-  authenticateSession,
-  checkBaseCurrencyLock,
-  validateEndpoint(balanceAdjustment.schema),
-  balanceAdjustment.handler,
-);
+router.use(authenticateSession);
+
+router.get('/', getAccounts);
+router.get('/:id', getAccountById);
+router.get('/:id/transaction-count', getAccountTransactionCount);
+router.post('/', checkBaseCurrencyLock, createAccount);
+router.put('/:id', checkBaseCurrencyLock, updateAccount);
+router.delete('/:id', checkBaseCurrencyLock, deleteAccount);
+router.post('/:id/unlink', checkBaseCurrencyLock, unlinkAccountFromBankConnection);
+router.post('/:id/link', checkBaseCurrencyLock, linkAccountToBankConnection);
+router.post('/:id/balance-adjustment', checkBaseCurrencyLock, balanceAdjustment);
 
 export default router;

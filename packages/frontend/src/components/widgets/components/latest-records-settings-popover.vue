@@ -40,6 +40,21 @@
                   @update:model-value="onTagsVariantChange"
                 />
               </div>
+
+              <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+                <span class="flex flex-col">
+                  <span class="text-sm font-medium">{{ $t('widgets.latestRecords.settings.showAccountTitle') }}</span>
+                  <span class="text-muted-foreground text-xs">
+                    {{ $t('widgets.latestRecords.settings.showAccountDescription') }}
+                  </span>
+                </span>
+                <Switch
+                  data-testid="lr-show-account-switch"
+                  :model-value="showAccount"
+                  :disabled="isUpdating"
+                  @update:model-value="(value) => setShowAccount({ value: !!value })"
+                />
+              </div>
             </div>
           </div>
         </template>
@@ -138,7 +153,11 @@ import { PillTabs, type PillTabItem } from '@/components/lib/ui/pill-tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useIncludePlannedConfig, useIncludePlannedSaveError } from '@/components/widgets/use-include-planned-config';
+import {
+  useIncludePlannedConfig,
+  useIncludePlannedSaveError,
+  useWidgetConfigFlag,
+} from '@/components/widgets/use-include-planned-config';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { ArrowLeftIcon, ChevronRightIcon, SettingsIcon } from '@lucide/vue';
 import type { Ref } from 'vue';
@@ -159,6 +178,10 @@ const view = ref<View>('main');
 
 const exclusions = computed(() => readLatestRecordsExclusions({ widgetConfig: widgetConfigRef?.value }));
 const tagsVariant = computed(() => readLatestRecordsTagsVariant({ widgetConfig: widgetConfigRef?.value }));
+const { isOn: showAccount, setFlag: setShowAccount } = useWidgetConfigFlag({
+  key: 'showAccount',
+  saveErrorKey: 'widgets.latestRecords.settings.showAccountSaveError',
+});
 const tagsVariantItems = computed<PillTabItem[]>(() => [
   { value: 'chips', label: t('widgets.latestRecords.settings.tagsStyleNames') },
   { value: 'rails', label: t('widgets.latestRecords.settings.tagsStyleBars') },

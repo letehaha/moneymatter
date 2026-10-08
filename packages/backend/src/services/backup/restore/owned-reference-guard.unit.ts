@@ -19,6 +19,7 @@ const EXPECTED_GUARDED_COLUMNS: Record<string, string[]> = {
   'budget-categories': ['budgetId', 'categoryId'],
   'budget-transactions': ['budgetId', 'transactionId'],
   categories: ['parentId'],
+  'category-tags': ['categoryId', 'tagId'],
   holdings: ['portfolioId'],
   'import-batch-account-effects': ['accountId', 'importBatchId'],
   'investment-transactions': ['portfolioId'],

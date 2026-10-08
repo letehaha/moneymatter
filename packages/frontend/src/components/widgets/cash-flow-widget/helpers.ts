@@ -1,4 +1,4 @@
-import { endpointsTypes } from '@bt/shared/types';
+import type { CashFlowPeriodData } from '@bt/shared/types';
 import { differenceInDays, endOfMonth, isSameMonth, parseISO, startOfMonth, subDays, subMonths } from 'date-fns';
 
 interface DatePeriod {
@@ -89,7 +89,7 @@ export function sliceCashFlowTotals({
   from,
   to,
 }: {
-  periods: endpointsTypes.CashFlowPeriodData[];
+  periods: CashFlowPeriodData[];
   from: Date;
   to: Date;
 }): CashFlowTotals {
@@ -108,7 +108,94 @@ export function sliceCashFlowTotals({
   }
 
   const netFlow = income - expenses;
-  const savingsRate = income > 0 ? Math.round((netFlow / income) * 100) : 0;
+  const savingsRate = computeSavingsRate({ income, netFlow }) ?? 0;
 
   return { income, expenses, netFlow, savingsRate };
+}
+
+/** Share of income kept, as a whole percentage. Null when there is no income to divide by. */
+export function computeSavingsRate({ income, netFlow }: { income: number; netFlow: number }): number | null {
+  return income > 0 ? Math.round((netFlow / income) * 100) : null;
+}
+
+// Rates beyond this are drawn at the limit, so one extreme bucket can't flatten the rest of the line.
+const SAVINGS_RATE_LIMIT = 100;
+// Headroom above the best bucket, so its marker isn't clipped by the plot edge.
+const SAVINGS_LINE_TOP_INSET_PERCENT = 8;
+
+interface SavingsRatePoint {
+  // Null for a bucket that spent without earning; such a point is always off-scale.
+  rate: number | null;
+  xPercent: number;
+  yPercent: number;
+  // Drawn at the scale limit instead of at its own value.
+  isOffScale: boolean;
+}
+
+/**
+ * Lays the per-bucket savings rate out as a line over the trend bars, in
+ * percentages of the plot box (x left to right, y top to bottom). The scale
+ * runs from 0% at the bottom to the best bucket at the top and extends below
+ * zero only when a bucket is negative.
+ *
+ * A finished bucket that spent without earning sits at the lower limit, so the
+ * line runs through the worst periods instead of hiding them. A bucket still in
+ * progress gets no point while it would sit at that limit: spending ahead of
+ * income is the normal state early in a period, and a point there would squash
+ * every other bucket.
+ */
+export function buildSavingsRateLine({
+  buckets,
+}: {
+  buckets: { income: number; netFlow: number; isInProgress: boolean }[];
+}): {
+  points: (SavingsRatePoint | null)[];
+  // SVG polyline `points` strings, one per unbroken run of two or more points.
+  segments: string[];
+  zeroYPercent: number | null;
+} {
+  const plotted = buckets.map(({ income, netFlow, isInProgress }) => {
+    const rate = computeSavingsRate({ income, netFlow });
+
+    if (rate === null && netFlow >= 0) return null;
+
+    const value = Math.max(-SAVINGS_RATE_LIMIT, Math.min(SAVINGS_RATE_LIMIT, rate ?? -SAVINGS_RATE_LIMIT));
+    if (isInProgress && value === -SAVINGS_RATE_LIMIT) return null;
+
+    return { rate, value };
+  });
+
+  const values = plotted.flatMap((p) => (p ? [p.value] : []));
+  const low = Math.min(0, ...values);
+  const high = Math.max(0, ...values);
+  const span = high - low;
+
+  const toY = (value: number) => {
+    if (span === 0) return 100;
+    return SAVINGS_LINE_TOP_INSET_PERCENT + ((100 - SAVINGS_LINE_TOP_INSET_PERCENT) * (high - value)) / span;
+  };
+
+  const points = plotted.map((p, index) =>
+    p
+      ? {
+          rate: p.rate,
+          xPercent: ((index + 0.5) / buckets.length) * 100,
+          yPercent: toY(p.value),
+          isOffScale: p.rate !== p.value,
+        }
+      : null,
+  );
+
+  const segments: string[] = [];
+  let run: string[] = [];
+  for (const point of [...points, null]) {
+    if (point) {
+      run.push(`${point.xPercent},${point.yPercent}`);
+      continue;
+    }
+    if (run.length > 1) segments.push(run.join(' '));
+    run = [];
+  }
+
+  return { points, segments, zeroYPercent: low < 0 ? toY(0) : null };
 }

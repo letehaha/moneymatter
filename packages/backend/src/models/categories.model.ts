@@ -1,11 +1,12 @@
 import { CATEGORY_TYPES, RecordId } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
-import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ValidationError } from '@js/errors';
 import { Op } from 'sequelize';
 import { Table, Column, Model, ForeignKey, DataType, BelongsToMany } from 'sequelize-typescript';
 
+import CategoryTags from './category-tags.model';
 import MerchantCategoryCodes from './merchant-category-codes.model';
+import Tags from './tags.model';
 import UserMerchantCategoryCodes from './user-merchant-category-codes.model';
 import Users from './users.model';
 
@@ -51,11 +52,22 @@ export default class Categories extends Model {
   @Column({ type: DataType.INTEGER })
   userId!: number;
 
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  applyDefaultTagsOnAiCategorization!: boolean;
+
   @BelongsToMany(() => MerchantCategoryCodes, {
     as: 'merchantCodes',
     through: () => UserMerchantCategoryCodes,
   })
   categoryId!: number;
+
+  @BelongsToMany(() => Tags, {
+    through: () => CategoryTags,
+    foreignKey: 'categoryId',
+    otherKey: 'tagId',
+    as: 'defaultTags',
+  })
+  defaultTags?: Tags[];
 }
 
 export const getCategories = async ({ userId }: { userId: number }) => {
@@ -94,6 +106,7 @@ export interface CreateCategoryPayload {
   color?: string;
   parentId?: string;
   type?: CATEGORY_TYPES;
+  applyDefaultTagsOnAiCategorization?: boolean;
 }
 
 export const createCategory = async ({ parentId, color, userId, ...params }: CreateCategoryPayload) => {
@@ -128,13 +141,10 @@ export interface EditCategoryPayload {
   icon?: string | null;
   color?: string;
   parentId?: RecordId | null;
+  applyDefaultTagsOnAiCategorization?: boolean;
 }
 
 export const editCategory = async ({ userId, categoryId, ...params }: EditCategoryPayload) => {
-  await findOrThrowNotFound({
-    query: Categories.findByPk(categoryId),
-    message: 'Category with provided id does not exist!',
-  });
   const [, categories] = await Categories.update(params, {
     where: {
       id: categoryId,

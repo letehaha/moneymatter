@@ -1,11 +1,11 @@
 import {
+  type GetCashFlowResponse,
   RESOURCE_TYPES,
   type RecordId,
   SHARE_PERMISSIONS,
   TRANSACTIONS_WRITE_SCOPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
-  endpointsTypes,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
@@ -843,7 +843,7 @@ describe('GET /stats/cash-flow — refunds and splits', () => {
 
       // `optionalCommaSeparatedIds` filters unparseable entries out rather than rejecting the
       // request, so one bad id must not take the rest of the exclusion list down with it.
-      const response = await helpers.makeRequest<endpointsTypes.GetCashFlowResponse, true>({
+      const response = await helpers.makeRequest<GetCashFlowResponse, true>({
         method: 'get',
         url: `/stats/cash-flow?from=${RANGE.from}&to=${RANGE.to}&granularity=monthly&excludedCategoryIds=not-a-uuid,${hiddenCategory.id}`,
         raw: true,

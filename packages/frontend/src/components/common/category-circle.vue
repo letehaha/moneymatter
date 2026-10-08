@@ -16,12 +16,12 @@
 import TagIcon from '@/components/common/icons/tag-icon.vue';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
-import { CategoryModel } from '@bt/shared/types';
+import { EmbeddedCategoryModel } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 const props = defineProps<{
-  category?: CategoryModel;
+  category?: EmbeddedCategoryModel;
   categoryId?: string;
   /**
    * Caller-supplied lookup map for the parent-walk that resolves an inherited icon.
@@ -30,7 +30,7 @@ const props = defineProps<{
    * owner's tree (the parent isn't in the recipient's store, so the walk silently fails
    * and the icon disappears). Pass the owner's map to fix that case.
    */
-  categoriesMap?: Record<string, CategoryModel>;
+  categoriesMap?: Record<string, EmbeddedCategoryModel>;
 }>();
 
 const { categoriesMap: storeCategoriesMap } = storeToRefs(useCategoriesStore());
@@ -47,7 +47,7 @@ const category = computed(() => {
 const effectiveIcon = computed(() => {
   if (!category.value) return null;
 
-  let current: CategoryModel | undefined = category.value;
+  let current: EmbeddedCategoryModel | undefined = category.value;
 
   while (current) {
     if (current.icon) return current.icon;

@@ -68,13 +68,18 @@
 </template>
 
 <script setup lang="ts">
-import type { SavedPivotView, SavedPivotViewConfig } from '@/api/user-settings';
 import { randomId } from '@/common/utils/random-id';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useUserSettings } from '@/composable/data-queries/user-settings';
 import type { Period } from '@/composable/use-period-navigation';
-import type { endpointsTypes } from '@bt/shared/types';
+import type {
+  PivotRowDimension,
+  PivotGranularity,
+  PivotMeasure,
+  SavedPivotView,
+  SavedPivotViewConfig,
+} from '@bt/shared/types';
 import { endOfMonth, parse, startOfMonth, subMonths } from 'date-fns';
 import { TableIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
@@ -86,9 +91,9 @@ import { buildSavedPivotConfig, usePivotReport } from './composables/use-pivot-r
 import { arePivotConfigsEqual, findMatchingViewId } from './composables/pivot-derivations';
 
 interface PivotPersistedConfig {
-  rowDimension: endpointsTypes.PivotRowDimension;
-  granularity: endpointsTypes.PivotGranularity;
-  measure: endpointsTypes.PivotMeasure;
+  rowDimension: PivotRowDimension;
+  granularity: PivotGranularity;
+  measure: PivotMeasure;
   accountIds: string[];
   categoryIds: string[];
   payeeIds: string[];

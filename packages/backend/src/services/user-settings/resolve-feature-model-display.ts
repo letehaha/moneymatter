@@ -23,20 +23,23 @@ export async function resolveFeatureStatus({
   feature,
   aiSettings,
   serverKeysAllowed,
+  paidPlus,
 }: {
   feature: AI_FEATURE;
   aiSettings: StoredAiSettings | null;
   serverKeysAllowed: boolean;
+  paidPlus: boolean;
 }): Promise<AIFeatureStatus> {
   const config = aiSettings?.featureConfigs?.find((candidate) => candidate.feature === feature) ?? null;
   const connections = aiSettings?.connections ?? [];
-  const serverModel = getServerModel({ feature, serverKeysAllowed });
+  const serverModel = getServerModel({ feature, serverKeysAllowed, paidPlus });
   const serverModelName = serverModel ? (await describeModel(serverModel)).modelName : null;
   const step = pickResolutionStep({
     feature,
     config,
     connections,
     serverKeysAllowed,
+    paidPlus,
     excludedConnectionIds: new Set(
       connections
         .filter((connection) => connection.provider !== AI_PROVIDER.custom && !connection.keyEncrypted)

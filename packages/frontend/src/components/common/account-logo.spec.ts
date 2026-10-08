@@ -18,12 +18,14 @@ const buildAccount = (overrides: Partial<LogoAccount> = {}): LogoAccount => ({
 const mountLogo = ({
   account,
   category,
+  solid,
   attrs,
 }: {
   account: LogoAccount;
   category?: ACCOUNT_CATEGORIES;
+  solid?: boolean;
   attrs?: Record<string, unknown>;
-}) => mount(AccountLogo, { props: { account, category }, attrs });
+}) => mount(AccountLogo, { props: { account, category, solid }, attrs });
 
 describe('AccountLogo', () => {
   describe('1. Brand branch', () => {
@@ -70,6 +72,13 @@ describe('AccountLogo', () => {
 
       expect(wrapper.classes()).toContain('bg-account-credit/15');
       expect(wrapper.find('svg').classes()).toContain('lucide-credit-card');
+    });
+
+    it('renders an opaque chip when solid', () => {
+      const wrapper = mountLogo({ account: buildAccount({ accountCategory: ACCOUNT_CATEGORIES.saving }), solid: true });
+
+      expect(wrapper.classes()).toEqual(expect.arrayContaining(['bg-account-saving', 'text-background']));
+      expect(wrapper.classes()).not.toContain('bg-account-saving/15');
     });
 
     it('passes the consumer class through to the chip', () => {

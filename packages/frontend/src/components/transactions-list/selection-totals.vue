@@ -3,7 +3,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { useFormatCurrency } from '@/composable/formatters';
 import type { SelectedTotals } from '@/composable/transaction-selection';
-import { ChevronDownIcon, SquareCheckBigIcon } from '@lucide/vue';
+import { ChevronDownIcon, ListIcon, SquareCheckBigIcon } from '@lucide/vue';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -14,10 +14,21 @@ interface Figure {
   colorClass: string;
 }
 
-const props = defineProps<{ totals: SelectedTotals; selectedCount: number }>();
+const props = defineProps<{
+  totals: SelectedTotals;
+  selectedCount: number;
+  /** The figures cover the whole filtered set, with nothing selected. */
+  matching?: boolean;
+}>();
 
 const { t } = useI18n();
 const { formatBaseCurrency } = useFormatCurrency();
+
+const countLabel = computed(() =>
+  t(props.matching ? 'transactions.bulkEdit.matchingCount' : 'transactions.bulkEdit.selectedCount', {
+    count: props.selectedCount,
+  }),
+);
 
 const net = computed<Figure>(() => ({
   key: 'net',
@@ -70,10 +81,10 @@ const inlineFigures = computed<Figure[]>(() => [
   <!--
     Breakpoints run on the toolbar's own width, not the viewport: the sidebar leaves the
     content area ~300px narrower, so a `sm:` breakpoint switches while the figures still clip.
-    Below @4xl the summary collapses into one chip, and both toolbars hide their own
-    "N selected" on the same query because the chip carries the count.
+    Below @4xl the summary collapses into one chip that carries the count.
   -->
   <div class="hidden items-center gap-x-4 @4xl/bulk-toolbar:flex">
+    <span class="text-muted-foreground text-sm whitespace-nowrap">{{ countLabel }}</span>
     <span v-for="figure in inlineFigures" :key="figure.key" class="flex items-baseline gap-1.5 whitespace-nowrap">
       <span class="text-muted-foreground text-sm">{{ figure.label }}</span>
       <span :class="figure.colorClass" class="text-sm tabular-nums">{{ formatBaseCurrency(figure.value) }}</span>
@@ -84,7 +95,7 @@ const inlineFigures = computed<Figure[]>(() => [
     <PopoverTrigger as-child>
       <Button variant="outline" size="sm" class="gap-2 @4xl/bulk-toolbar:hidden">
         <span class="text-muted-foreground flex items-center gap-1">
-          <SquareCheckBigIcon class="size-3.5" />
+          <component :is="matching ? ListIcon : SquareCheckBigIcon" class="size-3.5" />
           <span class="text-sm tabular-nums">{{ selectedCount }}</span>
         </span>
         <span :class="net.colorClass" class="text-sm tabular-nums">{{ formatBaseCurrency(net.value) }}</span>
@@ -95,7 +106,7 @@ const inlineFigures = computed<Figure[]>(() => [
     <PopoverContent align="start" class="w-auto min-w-56 p-3">
       <div class="flex flex-col">
         <span class="text-muted-foreground border-border mb-1 border-b pb-2 text-xs">
-          {{ $t('transactions.bulkEdit.selectedCount', { count: selectedCount }) }}
+          {{ countLabel }}
         </span>
 
         <span

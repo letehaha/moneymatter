@@ -5,8 +5,12 @@ import {
   updateTransactionTemplate,
 } from '@/api/transaction-templates';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { API_ERROR_CODES, type TransactionTemplateModel } from '@bt/shared/types';
-import type { CreateTransactionTemplateBody, UpdateTransactionTemplateBody } from '@bt/shared/types/endpoints';
+import {
+  API_ERROR_CODES,
+  type TransactionTemplateModel,
+  type CreateTransactionTemplateBody,
+  type UpdateTransactionTemplateBody,
+} from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { type MaybeRefOrGetter, computed, toValue } from 'vue';
 

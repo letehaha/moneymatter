@@ -13,6 +13,7 @@ import {
 } from '@services/ai';
 import { assignShortIds } from '@services/ai-categorization/utils/assign-short-ids';
 import { normalizeToken } from '@services/ai-categorization/utils/parse-response';
+import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
 import { generateText } from 'ai';
 import { createHash } from 'crypto';
@@ -150,6 +151,7 @@ Match each source name to the best existing category, or "none". Output one line
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
+    trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
 
     // A truncated answer silently loses the sources after the cut, which would
     // read as "the AI found no match" instead of an error.

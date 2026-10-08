@@ -106,7 +106,7 @@ describe('Share resource orphan cleanup', () => {
         acceptedAt: new Date(),
       });
 
-      await shareResourceOrphanCleanupCron.triggerManualCheck();
+      await shareResourceOrphanCleanupCron.triggerManualSync();
 
       const after = await ResourceShares.findByPk(orphan.id);
       expect(after).toBeNull();

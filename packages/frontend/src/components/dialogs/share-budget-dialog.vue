@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
-import { InputField, SelectField } from '@/components/fields';
+import InputField from '@/components/fields/input-field.vue';
+import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useShareInvitationDialog } from '@/composable/use-share-invitation-dialog';
 import { useUserStore } from '@/stores';

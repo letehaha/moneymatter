@@ -1,4 +1,4 @@
-import type { Cents, endpointsTypes } from '@bt/shared/types';
+import type { Cents, NetWorthAssetKind, NetWorthHistoryDegraded, NetWorthLiabilityKind } from '@bt/shared/types';
 
 /** One end-of-bucket snapshot, all money in base-currency cents. */
 export interface NetWorthHistoryPointCents {
@@ -10,7 +10,7 @@ export interface NetWorthHistoryPointCents {
    * positive balance; `investments` is portfolios (holdings + cash); `vehicles`
    * and `ventures` are their valued balances.
    */
-  assets: Record<endpointsTypes.NetWorthAssetKind, Cents>;
+  assets: Record<NetWorthAssetKind, Cents>;
   /** Sum of the `assets` values. */
   assetsTotal: Cents;
   /**
@@ -18,7 +18,7 @@ export interface NetWorthHistoryPointCents {
    * their owing accounts (values ≤ 0) — a positive balance on those accounts
    * counts as `assets.cash` instead; loan carries its whole signed value.
    */
-  liabilities: Record<endpointsTypes.NetWorthLiabilityKind, Cents>;
+  liabilities: Record<NetWorthLiabilityKind, Cents>;
   /** Sum of the `liabilities` values. */
   liabilitiesTotal: Cents;
   /** assetsTotal + liabilitiesTotal. */
@@ -28,5 +28,5 @@ export interface NetWorthHistoryPointCents {
 export interface NetWorthHistoryResultCents {
   points: NetWorthHistoryPointCents[];
   /** Absent when the range valued cleanly; never an empty object (see `buildDegraded`). */
-  degraded?: endpointsTypes.NetWorthHistoryDegraded;
+  degraded?: NetWorthHistoryDegraded;
 }

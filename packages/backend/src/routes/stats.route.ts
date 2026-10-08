@@ -1,87 +1,23 @@
 import * as statsController from '@controllers/stats.controller';
 import { authenticateSession } from '@middlewares/better-auth';
-import { validateEndpoint } from '@middlewares/validations';
 import { Router } from 'express';
 
 const router = Router({});
 
-router.get(
-  '/balance-history',
-  authenticateSession,
-  validateEndpoint(statsController.getBalanceHistory.schema),
-  statsController.getBalanceHistory.handler,
-);
-router.get(
-  '/total-balance',
-  authenticateSession,
-  validateEndpoint(statsController.getTotalBalance.schema),
-  statsController.getTotalBalance.handler,
-);
-router.get(
-  '/expenses-amount-for-period',
-  authenticateSession,
-  validateEndpoint(statsController.getExpensesAmountForPeriod.schema),
-  statsController.getExpensesAmountForPeriod.handler,
-);
-router.get(
-  '/spendings-by-categories',
-  authenticateSession,
-  validateEndpoint(statsController.getSpendingsByCategories.schema),
-  statsController.getSpendingsByCategories.handler,
-);
-router.get(
-  '/combined-balance-history',
-  authenticateSession,
-  validateEndpoint(statsController.getCombinedBalanceHistory.schema),
-  statsController.getCombinedBalanceHistory.handler,
-);
-router.get(
-  '/cash-flow',
-  authenticateSession,
-  validateEndpoint(statsController.getCashFlow.schema),
-  statsController.getCashFlow.handler,
-);
-router.get(
-  '/net-worth-drivers',
-  authenticateSession,
-  validateEndpoint(statsController.getNetWorthDrivers.schema),
-  statsController.getNetWorthDrivers.handler,
-);
-router.get(
-  '/net-worth-history',
-  authenticateSession,
-  validateEndpoint(statsController.getNetWorthHistory.schema),
-  statsController.getNetWorthHistory.handler,
-);
-router.get(
-  '/investment-contributions',
-  authenticateSession,
-  validateEndpoint(statsController.getInvestmentContributions.schema),
-  statsController.getInvestmentContributions.handler,
-);
-router.get(
-  '/venture-contributions',
-  authenticateSession,
-  validateEndpoint(statsController.getVentureContributions.schema),
-  statsController.getVentureContributions.handler,
-);
-router.get(
-  '/pivot',
-  authenticateSession,
-  validateEndpoint(statsController.getPivotReport.schema),
-  statsController.getPivotReport.handler,
-);
-router.get(
-  '/cumulative',
-  authenticateSession,
-  validateEndpoint(statsController.getCumulativeData.schema),
-  statsController.getCumulativeData.handler,
-);
-router.get(
-  '/earliest-transaction-date',
-  authenticateSession,
-  validateEndpoint(statsController.getEarliestTransactionDate.schema),
-  statsController.getEarliestTransactionDate.handler,
-);
+router.use(authenticateSession);
+
+router.get('/balance-history', statsController.getBalanceHistory);
+router.get('/total-balance', statsController.getTotalBalance);
+router.get('/expenses-amount-for-period', statsController.getExpensesAmountForPeriod);
+router.get('/spendings-by-categories', statsController.getSpendingsByCategories);
+router.get('/combined-balance-history', statsController.getCombinedBalanceHistory);
+router.get('/cash-flow', statsController.getCashFlow);
+router.get('/net-worth-drivers', statsController.getNetWorthDrivers);
+router.get('/net-worth-history', statsController.getNetWorthHistory);
+router.get('/investment-contributions', statsController.getInvestmentContributions);
+router.get('/venture-contributions', statsController.getVentureContributions);
+router.get('/pivot', statsController.getPivotReport);
+router.get('/cumulative', statsController.getCumulativeData);
+router.get('/earliest-transaction-date', statsController.getEarliestTransactionDate);
 
 export default router;

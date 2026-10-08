@@ -33,7 +33,7 @@ export async function buildExportTables({
   dateRange,
   accountIds,
 }: ExportBuildInput & { enabledFiles: Set<ExportFileName> }): Promise<ExportTable[]> {
-  const planned = EXPORT_DOMAINS.filter((domain) => enabledFiles.has(domain.name));
+  const planned = Object.values(EXPORT_DOMAINS).filter((domain) => enabledFiles.has(domain.name));
   const settled = await Promise.allSettled(
     planned.map(async (domain) => {
       const rows = await domain.build({ userId, dateRange, accountIds });

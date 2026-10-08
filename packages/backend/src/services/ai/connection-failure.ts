@@ -5,6 +5,7 @@ import { AI_PROVIDER } from '@bt/shared/types';
 import { getConnectionInfos, markConnectionInvalid } from '../user-settings/ai-connections';
 import type { AIClientResult } from './ai-client-factory';
 import { buildModelNotServedMessage } from './ai-error-classifiers';
+import { suspendAnthropicServerKey } from './resolution-ladder';
 
 /** Not translated: it surfaces in job error lists, where no request locale is available. */
 const CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE =
@@ -62,6 +63,16 @@ export async function markCustomEndpointUnreachable({
   return CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE;
 }
 
+/** The user owns neither the key nor the model here, and the shared model serves their next run. */
+const SERVER_MODEL_SUSPENDED_ERROR_MESSAGE = 'The AI model is temporarily unavailable. Please try again.';
+
+function suspendDeadServerKey({ aiClient, message }: { aiClient: AIClientResult; message: string }): string {
+  if (aiClient.usingUserKey || aiClient.provider !== AI_PROVIDER.anthropic) return message;
+
+  suspendAnthropicServerKey({ reason: message });
+  return SERVER_MODEL_SUSPENDED_ERROR_MESSAGE;
+}
+
 /** A saved model passed the live check, so the provider has since dropped or renamed it. */
 export async function markModelNotServed({
   userId,
@@ -76,7 +87,7 @@ export async function markModelNotServed({
     await markConnectionInvalid({ userId, connectionId: aiClient.connectionId, errorMessage: message });
   }
 
-  return message;
+  return suspendDeadServerKey({ aiClient, message });
 }
 
 /** Flags the connection that rejected the call and returns the copy that fits its provider. */
@@ -94,5 +105,5 @@ export async function markConnectionRejected({
     await markConnectionInvalid({ userId, connectionId: aiClient.connectionId, errorMessage: message });
   }
 
-  return message;
+  return suspendDeadServerKey({ aiClient, message });
 }

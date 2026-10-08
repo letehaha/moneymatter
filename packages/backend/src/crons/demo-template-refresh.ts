@@ -31,10 +31,6 @@ class DemoTemplateRefreshCronService {
       logger.info('Demo template refresh cron job stopped');
     }
   }
-
-  public isRunning(): boolean {
-    return this.cronJob?.running ?? false;
-  }
 }
 
 export const demoTemplateRefreshCron = new DemoTemplateRefreshCronService();

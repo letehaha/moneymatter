@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { getAccountTransactionCount } from '@/api';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { AlertDialog, ClickToCopy } from '@/components/common';
-import { InputField } from '@/components/fields';
+import AlertDialog from '@/components/common/alert-dialog.vue';
+import ClickToCopy from '@/components/common/click-to-copy.vue';
+import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { useNotificationCenter } from '@/components/notification-center';

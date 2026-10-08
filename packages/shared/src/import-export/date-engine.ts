@@ -1,5 +1,5 @@
 import { type SupportedLocale } from '../i18n/locales';
-import { type DateFieldOrder } from '../types/import-export';
+import type { DateFieldOrder } from '../types/import-export/core';
 
 /**
  * Timezone-agnostic normalized result of parsing a single raw date cell.

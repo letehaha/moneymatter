@@ -74,7 +74,7 @@ import CategoryCircle from '@/components/common/category-circle.vue';
 import { useFormatCurrency } from '@/composable';
 import { ROUTES_NAMES } from '@/routes';
 import { useCategoriesStore } from '@/stores';
-import { TRANSACTION_TYPES, type endpointsTypes } from '@bt/shared/types';
+import { TRANSACTION_TYPES, type BudgetSpendingByCategoryItem } from '@bt/shared/types';
 import * as d3 from 'd3';
 import { ChevronRightIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
@@ -83,7 +83,7 @@ import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const props = defineProps<{
-  data: endpointsTypes.BudgetSpendingByCategoryItem[];
+  data: BudgetSpendingByCategoryItem[];
 }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
@@ -165,17 +165,14 @@ const renderChart = () => {
   const innerRadius = radius * 0.7;
 
   const pie = d3
-    .pie<endpointsTypes.BudgetSpendingByCategoryItem>()
+    .pie<BudgetSpendingByCategoryItem>()
     .value((d) => d.amount)
     .sort(null);
 
-  const arc = d3
-    .arc<d3.PieArcDatum<endpointsTypes.BudgetSpendingByCategoryItem>>()
-    .innerRadius(innerRadius)
-    .outerRadius(radius);
+  const arc = d3.arc<d3.PieArcDatum<BudgetSpendingByCategoryItem>>().innerRadius(innerRadius).outerRadius(radius);
 
   const glowArc = d3
-    .arc<d3.PieArcDatum<endpointsTypes.BudgetSpendingByCategoryItem>>()
+    .arc<d3.PieArcDatum<BudgetSpendingByCategoryItem>>()
     .innerRadius(radius)
     .outerRadius(radius + glowSize);
 

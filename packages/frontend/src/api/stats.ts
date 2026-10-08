@@ -1,5 +1,25 @@
 import { api } from '@/api/_api';
-import { type TRANSACTION_TYPES, endpointsTypes } from '@bt/shared/types';
+import type {
+  TRANSACTION_TYPES,
+  GetBalanceHistoryPayload,
+  GetSpendingsByCategoriesReturnType,
+  GetSpendingsByCategoriesByTypeReturnType,
+  CashFlowGranularity,
+  GetCashFlowResponse,
+  NetWorthDriversGranularity,
+  GetNetWorthDriversResponse,
+  NetWorthHistoryGranularity,
+  GetNetWorthHistoryResponse,
+  InvestmentContributionsGranularity,
+  GetInvestmentContributionsResponse,
+  GetVentureContributionsResponse,
+  PivotGranularity,
+  PivotRowDimension,
+  PivotMeasure,
+  GetPivotReportResponse,
+  CumulativeMetric,
+  GetCumulativeResponse,
+} from '@bt/shared/types';
 import { format } from 'date-fns';
 
 const formatDate = (date: Date) => format(date, 'yyyy-MM-dd');
@@ -15,7 +35,7 @@ const commaJoinedIds = (lists: Record<string, string[] | undefined>): Record<str
 };
 
 interface Params {
-  accountId?: endpointsTypes.GetBalanceHistoryPayload['accountId'];
+  accountId?: GetBalanceHistoryPayload['accountId'];
   from?: Date;
   to?: Date;
 }
@@ -33,7 +53,7 @@ export const getExpensesAmountForPeriod = async ({
   excludePlanned,
   ...rest
 }: Params & { excludedCategoryIds?: string[]; excludePlanned?: boolean } = {}): Promise<number> => {
-  const params: endpointsTypes.GetBalanceHistoryPayload & { excludedCategoryIds?: string; excludePlanned?: string } = {
+  const params: GetBalanceHistoryPayload & { excludedCategoryIds?: string; excludePlanned?: string } = {
     ...rest,
   };
 
@@ -68,8 +88,8 @@ export const getSpendingsByCategories = async ({
   tagIds?: string[];
   excludedTagIds?: string[];
   excludePlanned?: boolean;
-} = {}): Promise<endpointsTypes.GetSpendingsByCategoriesReturnType> => {
-  const params: endpointsTypes.GetBalanceHistoryPayload & {
+} = {}): Promise<GetSpendingsByCategoriesReturnType> => {
+  const params: GetBalanceHistoryPayload & {
     type?: string;
     categoryIds?: string;
     excludedCategoryIds?: string;
@@ -115,7 +135,7 @@ export const getSpendingsByCategoriesByType = async ({
   categoryIds?: string[];
   excludedCategoryIds?: string[];
   excludePlanned?: boolean;
-} = {}): Promise<endpointsTypes.GetSpendingsByCategoriesByTypeReturnType> => {
+} = {}): Promise<GetSpendingsByCategoriesByTypeReturnType> => {
   const params: Record<string, string | boolean> = { groupByType: true };
 
   if (rest.accountId) params.accountId = rest.accountId;
@@ -156,7 +176,7 @@ export const getEarliestTransactionDate = async (): Promise<string | null> => {
 interface GetCashFlowParams {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.CashFlowGranularity;
+  granularity: CashFlowGranularity;
   accountId?: string;
   categoryIds?: string[];
   excludedCategoryIds?: string[];
@@ -181,7 +201,7 @@ export const getCashFlow = async ({
   tagIds,
   excludedTagIds,
   excludePlanned,
-}: GetCashFlowParams): Promise<endpointsTypes.GetCashFlowResponse> => {
+}: GetCashFlowParams): Promise<GetCashFlowResponse> => {
   const params: Record<string, string | number | boolean> = {
     from: formatDate(from),
     to: formatDate(to),
@@ -210,7 +230,7 @@ export const getCashFlow = async ({
 interface GetNetWorthDriversParams {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.NetWorthDriversGranularity;
+  granularity: NetWorthDriversGranularity;
   /** Subset of enabled portfolios to scope the investment slice to. Omitted/empty = all. */
   portfolioIds?: string[];
 }
@@ -220,7 +240,7 @@ export const getNetWorthDrivers = async ({
   to,
   granularity,
   portfolioIds,
-}: GetNetWorthDriversParams): Promise<endpointsTypes.GetNetWorthDriversResponse> => {
+}: GetNetWorthDriversParams): Promise<GetNetWorthDriversResponse> => {
   const params: Record<string, string> = {
     from: formatDate(from),
     to: formatDate(to),
@@ -235,7 +255,7 @@ export const getNetWorthDrivers = async ({
 interface GetNetWorthHistoryParams {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.NetWorthHistoryGranularity;
+  granularity: NetWorthHistoryGranularity;
 }
 
 /** Assets/liabilities/net-worth snapshots per bucket — signed decimals in base currency. */
@@ -243,7 +263,7 @@ export const getNetWorthHistory = async ({
   from,
   to,
   granularity,
-}: GetNetWorthHistoryParams): Promise<endpointsTypes.GetNetWorthHistoryResponse> => {
+}: GetNetWorthHistoryParams): Promise<GetNetWorthHistoryResponse> => {
   const params: Record<string, string> = {
     from: formatDate(from),
     to: formatDate(to),
@@ -256,7 +276,7 @@ export const getNetWorthHistory = async ({
 interface GetInvestmentContributionsParams {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.InvestmentContributionsGranularity;
+  granularity: InvestmentContributionsGranularity;
   /** Subset of enabled portfolios to scope the contributions to. Omitted/empty = all. */
   portfolioIds?: string[];
 }
@@ -266,7 +286,7 @@ export const getInvestmentContributions = async ({
   to,
   granularity,
   portfolioIds,
-}: GetInvestmentContributionsParams): Promise<endpointsTypes.GetInvestmentContributionsResponse> => {
+}: GetInvestmentContributionsParams): Promise<GetInvestmentContributionsResponse> => {
   const params: Record<string, string> = {
     from: formatDate(from),
     to: formatDate(to),
@@ -284,15 +304,15 @@ export const getVentureContributions = async ({
 }: {
   from: Date;
   to: Date;
-}): Promise<endpointsTypes.GetVentureContributionsResponse> =>
+}): Promise<GetVentureContributionsResponse> =>
   api.get('/stats/venture-contributions', { from: formatDate(from), to: formatDate(to) });
 
 interface GetPivotReportParams {
   from: Date;
   to: Date;
-  granularity: endpointsTypes.PivotGranularity;
-  rowDimension: endpointsTypes.PivotRowDimension;
-  measure: endpointsTypes.PivotMeasure;
+  granularity: PivotGranularity;
+  rowDimension: PivotRowDimension;
+  measure: PivotMeasure;
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
@@ -307,7 +327,7 @@ export const getPivotReport = async ({
   accountIds,
   categoryIds,
   payeeIds,
-}: GetPivotReportParams): Promise<endpointsTypes.GetPivotReportResponse> => {
+}: GetPivotReportParams): Promise<GetPivotReportResponse> => {
   const params: Record<string, string> = {
     from: formatDate(from),
     to: formatDate(to),
@@ -326,7 +346,7 @@ export const getPivotReport = async ({
 interface GetCumulativeDataParams {
   from: Date;
   to: Date;
-  metric: endpointsTypes.CumulativeMetric;
+  metric: CumulativeMetric;
   accountId?: string;
   categoryIds?: string[];
   excludedCategoryIds?: string[];
@@ -349,7 +369,7 @@ export const getCumulativeData = async ({
   excludedPayeeIds,
   tagIds,
   excludedTagIds,
-}: GetCumulativeDataParams): Promise<endpointsTypes.GetCumulativeResponse> => {
+}: GetCumulativeDataParams): Promise<GetCumulativeResponse> => {
   const params: Record<string, string | number | boolean> = {
     from: formatDate(from),
     to: formatDate(to),

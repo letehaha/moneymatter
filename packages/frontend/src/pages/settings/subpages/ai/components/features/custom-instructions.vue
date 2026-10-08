@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { TextareaField } from '@/components/fields';
+import TextareaField from '@/components/fields/textarea-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';

@@ -1,9 +1,15 @@
-import { ACCOUNT_CATEGORIES, endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  MAX_NET_WORTH_HISTORY_BUCKETS,
+  type NetWorthLiabilityKind,
+  type NetWorthAssetKind,
+  NET_WORTH_ASSET_KINDS,
+  type NetWorthHistoryPoint,
+} from '@bt/shared/types';
 import { addDays, addWeeks, startOfISOWeek } from 'date-fns';
 import { describe, expect, it } from 'vitest';
 
 import {
-  MAX_NET_WORTH_HISTORY_BUCKETS,
   annualizedGrowthPct,
   assetKindsWithActivity,
   autoGranularity,
@@ -17,14 +23,14 @@ import {
   resolveSelectedKinds,
 } from './net-worth-history-derivations';
 
-const CREDIT_CARD = ACCOUNT_CATEGORIES.creditCard as endpointsTypes.NetWorthLiabilityKind;
-const LOAN = ACCOUNT_CATEGORIES.loan as endpointsTypes.NetWorthLiabilityKind;
-const OVERDRAFT = ACCOUNT_CATEGORIES.overdraft as endpointsTypes.NetWorthLiabilityKind;
+const CREDIT_CARD = ACCOUNT_CATEGORIES.creditCard as NetWorthLiabilityKind;
+const LOAN = ACCOUNT_CATEGORIES.loan as NetWorthLiabilityKind;
+const OVERDRAFT = ACCOUNT_CATEGORIES.overdraft as NetWorthLiabilityKind;
 
-const CASH: endpointsTypes.NetWorthAssetKind = 'cash';
-const INVESTMENTS: endpointsTypes.NetWorthAssetKind = 'investments';
-const VEHICLES: endpointsTypes.NetWorthAssetKind = 'vehicles';
-const ALL_ASSET_KINDS: endpointsTypes.NetWorthAssetKind[] = [...endpointsTypes.NET_WORTH_ASSET_KINDS];
+const CASH: NetWorthAssetKind = 'cash';
+const INVESTMENTS: NetWorthAssetKind = 'investments';
+const VEHICLES: NetWorthAssetKind = 'vehicles';
+const ALL_ASSET_KINDS: NetWorthAssetKind[] = [...NET_WORTH_ASSET_KINDS];
 
 const buildPoint = ({
   date,
@@ -45,7 +51,7 @@ const buildPoint = ({
   creditCard?: number;
   loan?: number;
   overdraft?: number;
-}): endpointsTypes.NetWorthHistoryPoint => {
+}): NetWorthHistoryPoint => {
   const assetsByKind = { cash: assets, investments, vehicles, ventures };
   const assetsTotal = assets + investments + vehicles + ventures;
   const liabilitiesTotal = creditCard + loan + overdraft;

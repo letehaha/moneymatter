@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals
 import type { StoredConnection } from '@models/user-settings.model';
 
 import type { ModelProfile } from '../ai/model-catalog';
-import { SERVER_MODELS } from '../ai/resolution-ladder';
+import { PLUS_SERVER_MODELS, SERVER_MODELS } from '../ai/resolution-ladder';
 import { resolveFeatureStatus } from './resolve-feature-model-display';
 
 const mockSonnetProfile: ModelProfile = {
@@ -21,7 +21,7 @@ jest.mock('../ai/model-catalog', () => ({
   ),
 }));
 
-const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY'] as const;
+const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'ANTHROPIC_PLUS_API_KEY'] as const;
 
 const FEATURE = AI_FEATURE.categorization;
 const SERVER_MODEL = SERVER_MODELS[FEATURE];
@@ -53,15 +53,18 @@ function status({
   connections = [],
   config,
   serverKeysAllowed = true,
+  paidPlus = false,
 }: {
   connections?: StoredConnection[];
   config?: AIFeatureConfig;
   serverKeysAllowed?: boolean;
+  paidPlus?: boolean;
 } = {}) {
   return resolveFeatureStatus({
     feature: FEATURE,
     aiSettings: { connections, featureConfigs: config ? [config] : [] },
     serverKeysAllowed,
+    paidPlus,
   });
 }
 
@@ -81,6 +84,18 @@ describe('resolveFeatureStatus', () => {
       if (value === undefined) delete process.env[envVar];
       else process.env[envVar] = value;
     }
+  });
+
+  it('names the Plus model for a paying Plus user only', async () => {
+    process.env.GEMINI_API_KEY = 'server-key';
+    process.env.ANTHROPIC_PLUS_API_KEY = 'anthropic-plus-key';
+    const plusModelName = PLUS_SERVER_MODELS[FEATURE]!.model;
+
+    expect(await status({ paidPlus: true })).toMatchObject({
+      modelName: plusModelName,
+      serverModelName: plusModelName,
+    });
+    expect(await status()).toMatchObject({ modelName: SERVER_MODEL.model, serverModelName: SERVER_MODEL.model });
   });
 
   it('names the configured connection with its catalog model name and price', async () => {

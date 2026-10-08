@@ -1,4 +1,12 @@
-import { ACCOUNT_CATEGORIES, FIRE_TARGET_TYPES, type FireTargetType, type endpointsTypes } from '@bt/shared/types';
+import {
+  ACCOUNT_CATEGORIES,
+  FIRE_TARGET_TYPES,
+  type FireTargetType,
+  type NetWorthHistoryPoint,
+  type GetNetWorthHistoryResponse,
+  type CashFlowPeriodData,
+  type GetVentureContributionsResponse,
+} from '@bt/shared/types';
 import { addMonths, differenceInCalendarMonths, parseISO } from 'date-fns';
 import { sum } from 'lodash-es';
 
@@ -119,7 +127,7 @@ const ZERO_BUCKETS: FireBuckets = {
   loans: 0,
 };
 
-const toFireBuckets = ({ point }: { point: endpointsTypes.NetWorthHistoryPoint }): FireBuckets => ({
+const toFireBuckets = ({ point }: { point: NetWorthHistoryPoint }): FireBuckets => ({
   accounts:
     point.assets.cash +
     point.liabilities[ACCOUNT_CATEGORIES.creditCard] +
@@ -149,10 +157,10 @@ export const buildFirePlan = ({
   now,
 }: {
   settings: ResolvedFireSettings;
-  history: endpointsTypes.GetNetWorthHistoryResponse | undefined;
-  cashFlowPeriods: endpointsTypes.CashFlowPeriodData[];
-  filteredCashFlowPeriods: endpointsTypes.CashFlowPeriodData[];
-  ventureContributions: endpointsTypes.GetVentureContributionsResponse;
+  history: GetNetWorthHistoryResponse | undefined;
+  cashFlowPeriods: CashFlowPeriodData[];
+  filteredCashFlowPeriods: CashFlowPeriodData[];
+  ventureContributions: GetVentureContributionsResponse;
   hasOwnedAccounts: boolean;
   isLoading: boolean;
   now: Date;

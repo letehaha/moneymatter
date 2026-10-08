@@ -56,6 +56,14 @@ describe('analyticsPlan', () => {
     expect(analyticsPlan({ entitlements: base })).toBe('legacy');
   });
 
+  it('labels a paying early adopter by the paid tier', () => {
+    const paying = { ...base, plan: 'early_adopter' as const, subscriptions: [sub('active', inDays(10))] };
+    expect(analyticsPlan({ entitlements: paying })).toBe('plus');
+    expect(analyticsPlan({ entitlements: { ...paying, subscriptions: [sub('canceled', inDays(-1))] } })).toBe(
+      'early_adopter',
+    );
+  });
+
   it('ignores lapsed subscriptions and expired trials', () => {
     expect(
       analyticsPlan({

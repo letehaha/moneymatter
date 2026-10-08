@@ -1,4 +1,5 @@
 import { createController } from '@controllers/helpers/controller-factory';
+import { RequestShape } from '@middlewares/validations';
 import { z } from 'zod';
 
 /**
@@ -20,7 +21,7 @@ type ParseBody<S extends z.ZodType> = z.infer<S> extends { body: infer B } ? B :
  * envelope. Wallet and YNAB nest the value under `{ result }` (the default);
  * CSV returns it flat, so `wrap` is configurable.
  */
-export function createParseController<S extends z.ZodType, R>({
+export function createParseController<S extends z.ZodType<RequestShape>, R>({
   schema,
   parse,
   wrap = (result: R) => ({ result }),

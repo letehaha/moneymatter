@@ -8,7 +8,7 @@ import {
   loadCategoryBudgetTransactions,
 } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { AlertDialog } from '@/components/common';
+import AlertDialog from '@/components/common/alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import ActionButton from '@/components/lib/ui/action-button/action-button.vue';
 import Button from '@/components/lib/ui/button/Button.vue';

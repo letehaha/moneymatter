@@ -1,5 +1,9 @@
-import { LINKED_TRANSFER_NATURES } from '@bt/shared/const/transfers';
-import { ACCOUNT_CATEGORIES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  LINKED_TRANSFER_NATURES,
+  ACCOUNT_CATEGORIES,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';

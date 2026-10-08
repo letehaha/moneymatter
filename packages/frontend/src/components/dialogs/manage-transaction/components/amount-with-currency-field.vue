@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
-import { FieldLabel, InputField } from '@/components/fields';
+import FieldLabel from '@/components/fields/components/field-label.vue';
+import InputField from '@/components/fields/input-field.vue';
 import { buildSelectSections } from '@/components/fields/utils/select-sections';
 import { Button } from '@/components/lib/ui/button';
 import * as Select from '@/components/lib/ui/select';
