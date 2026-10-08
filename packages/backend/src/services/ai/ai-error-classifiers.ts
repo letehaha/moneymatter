@@ -162,8 +162,14 @@ export function isAuthError({ error }: { error: unknown }): boolean {
     // Billing refusals (DeepInfra: "please enter a payment method") don't use a consistent status,
     // but a 429 asking to add a payment method for a higher limit is still a rate limit.
     if (status !== 429 && text.includes('payment method')) return true;
-    // Gemini answers a bad key with a 400 carrying `API_KEY_INVALID`
-    return status === 400 && (text.includes('api_key_invalid') || text.includes('api key not valid'));
+    // Gemini answers a bad key with a 400 carrying `API_KEY_INVALID`; Anthropic answers spent
+    // credits and a reached spend limit with a 400.
+    return (
+      status === 400 &&
+      ['api_key_invalid', 'api key not valid', 'credit balance', 'api usage limits'].some((marker) =>
+        text.includes(marker),
+      )
+    );
   }
   if (error instanceof Error) {
     const message = error.message.toLowerCase();

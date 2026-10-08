@@ -49,13 +49,15 @@ export const setFeatureConfig = async ({
   feature,
   connectionId,
   serverKeysAllowed,
+  paidPlus,
 }: {
   userId: number;
   feature: AI_FEATURE;
   connectionId: string | null;
   serverKeysAllowed: boolean;
+  paidPlus: boolean;
 }): Promise<void> => {
-  if (connectionId === null && !getServerModel({ feature, serverKeysAllowed })) {
+  if (connectionId === null && !getServerModel({ feature, serverKeysAllowed, paidPlus })) {
     throw new ValidationError({ message: t({ key: 'ai.serverModelUnavailable' }) });
   }
 

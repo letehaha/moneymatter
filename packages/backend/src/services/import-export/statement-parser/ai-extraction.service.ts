@@ -17,6 +17,7 @@ import {
   describeMissingAiConfiguration,
   hitOutputCeiling,
 } from '@services/ai';
+import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { type AIExtractionError, resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
 import { generateText } from 'ai';
 
@@ -77,6 +78,7 @@ export async function extractTransactionsWithAI({
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
+    trackAiUsage({ userId, feature: AI_FEATURE.statementParsing, aiClient, usage });
 
     logger.info('[Statement Parser] AI answered', { responseLength: responseText.length, usage, finishReason });
 

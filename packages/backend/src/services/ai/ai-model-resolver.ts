@@ -57,11 +57,19 @@ export async function resolveAIConfiguration({
   const config = aiSettings?.featureConfigs?.find((candidate) => candidate.feature === feature) ?? null;
   const entitlements = await getEntitlementsByUserId({ userId });
   const serverKeysAllowed = allowOperatorKey || entitlements.features.includes(FEATURES.operator_ai);
+  const paidPlus = hasPaidPlus({ entitlements });
   const excludedConnectionIds = new Set<string>();
 
   // Every pass either returns or excludes one more connection, so the walk ends.
   for (let pass = 0; pass <= connections.length; pass++) {
-    const step = pickResolutionStep({ feature, config, connections, serverKeysAllowed, excludedConnectionIds });
+    const step = pickResolutionStep({
+      feature,
+      config,
+      connections,
+      serverKeysAllowed,
+      paidPlus,
+      excludedConnectionIds,
+    });
 
     if (pass === 0 && config && step.kind !== 'configured' && step.kind !== 'configured-server') {
       // Reachable by deleting the connection or losing the plan the config relies on: user state, not a bug.
@@ -102,7 +110,7 @@ export async function resolveAIConfiguration({
 
       case 'configured-server':
       case 'server-default': {
-        const apiKey = getServerApiKey({ paidPlus: hasPaidPlus({ entitlements }) });
+        const apiKey = getServerApiKey({ provider: step.model.provider, paidPlus });
         if (!apiKey) {
           logger.error('Server AI key vanished between pick and use', { feature, provider: step.model.provider });
           return null;

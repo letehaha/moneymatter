@@ -25,6 +25,7 @@ import {
   markCustomEndpointUnreachable,
   markModelNotServed,
 } from '@services/ai';
+import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { applyCategoryDefaultTagsOnAiCategorization } from '@services/categories/default-tags';
 import { sseManager } from '@services/common/sse';
 import { withTransaction } from '@services/common/with-transaction';
@@ -101,11 +102,13 @@ async function resolveStopReason({
  * Categorize a batch of transactions using AI
  */
 async function categorizeBatch({
+  userId,
   aiClient,
   transactions,
   categories,
   customInstructions,
 }: {
+  userId: number;
   aiClient: AIClientResult;
   transactions: TransactionForCategorization[];
   categories: Awaited<ReturnType<typeof getCategories>>;
@@ -137,6 +140,7 @@ async function categorizeBatch({
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
+    trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
 
     const inputTokens = usage?.inputTokens ?? 0;
     const outputTokens = usage?.outputTokens ?? 0;
@@ -520,6 +524,7 @@ export async function categorizeTransactions({
     await reportProcessing();
 
     const batchResult = await categorizeBatch({
+      userId,
       aiClient,
       transactions: batch,
       categories,
@@ -610,6 +615,7 @@ export async function categorizeTransactions({
       categorizedCount: allResults.successful.length,
       failedCount: allResults.failed.length,
       provider: aiClient.provider,
+      modelId: aiClient.modelId,
       usingUserKey: aiClient.usingUserKey,
     });
   }
