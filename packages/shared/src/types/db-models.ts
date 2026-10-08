@@ -427,6 +427,18 @@ export interface BudgetModel {
    * Read-only - for mutations, use `categoryIds`.
    */
   categories?: CategoryModel[];
+  /**
+   * Tag IDs for tag-based budgets.
+   * Use for CREATE/UPDATE requests.
+   * Not populated in GET responses (use `tags` array instead).
+   */
+  tagIds?: string[];
+  /**
+   * Full tag objects for tag-based budgets.
+   * Populated in GET responses when budget has associated tags.
+   * Read-only - for mutations, use `tagIds`.
+   */
+  tags?: TagModel[];
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
 }

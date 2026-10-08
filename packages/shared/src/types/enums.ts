@@ -240,6 +240,7 @@ export enum BUDGET_STATUSES {
 export enum BUDGET_TYPES {
   manual = 'manual',
   category = 'category',
+  tag = 'tag',
 }
 
 /**

@@ -133,6 +133,7 @@
     "transactionsAddedSuccessfully": "Transactions added successfully",
     "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based budgets. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
+    "someTagIdsInvalid": "Some tag IDs are invalid or do not exist",
     "notCategoryBudget": "This endpoint is only available for category-based budgets"
   },
   "tags": {

@@ -12,6 +12,7 @@ const schema = z.object({
         name: z.string().min(1, 'Name is required').max(200, 'The name must not exceed 200 characters').trim(),
         type: z.nativeEnum(BUDGET_TYPES).optional().default(BUDGET_TYPES.manual),
         categoryIds: recordArrayIds().optional(),
+        tagIds: recordArrayIds().optional(),
         startDate: dateBound({ precision: 'datetime' }).nullable().optional(),
         endDate: dateBound({ precision: 'datetime' }).nullable().optional(),
         autoInclude: z.boolean().optional().default(false),
@@ -23,6 +24,10 @@ const schema = z.object({
       .refine((data) => data.type !== BUDGET_TYPES.category || (data.categoryIds && data.categoryIds.length > 0), {
         message: 'Category budgets require at least one category',
         path: ['categoryIds'],
+      })
+      .refine((data) => data.type !== BUDGET_TYPES.tag || (data.tagIds && data.tagIds.length > 0), {
+        message: 'Tag budgets require at least one tag',
+        path: ['tagIds'],
       }),
     ['startDate', 'endDate'],
   ),
@@ -30,7 +35,7 @@ const schema = z.object({
 
 export default createController(schema, async ({ user, body }) => {
   const { id: userId } = user;
-  const { name, type, categoryIds, startDate, endDate, autoInclude, limitAmount } = body;
+  const { name, type, categoryIds, tagIds, startDate, endDate, autoInclude, limitAmount } = body;
 
   const budget = await budgetsService.createBudget({
     name,
@@ -38,6 +43,7 @@ export default createController(schema, async ({ user, body }) => {
     status: BUDGET_STATUSES.active,
     type,
     categoryIds,
+    tagIds,
     startDate: startDate ? new Date(startDate) : undefined,
     endDate: endDate ? new Date(endDate) : undefined,
     autoInclude,

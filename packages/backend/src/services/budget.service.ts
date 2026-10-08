@@ -1,6 +1,7 @@
 import { BUDGET_STATUSES, BudgetModel } from '@bt/shared/types';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import Users from '@models/users.model';
 import { Op } from 'sequelize';
 
@@ -14,6 +15,7 @@ import {
 
 type BudgetWithCategories = Budgets & {
   categories: Pick<Categories, 'id' | 'name' | 'color' | 'parentId'>[];
+  tags: Pick<Tags, 'id' | 'name' | 'color' | 'icon'>[];
 };
 
 type BudgetWithShareContext = BudgetWithCategories & { _shareContext?: BudgetShareContext };
@@ -22,6 +24,12 @@ const includeCategories = {
   model: Categories,
   as: 'categories',
   attributes: ['id', 'name', 'color', 'parentId'],
+};
+
+const includeTags = {
+  model: Tags,
+  as: 'tags',
+  attributes: ['id', 'name', 'color', 'icon'],
 };
 
 const filterByStatus = ({ statuses }: { statuses?: BUDGET_STATUSES[] }) =>
@@ -40,12 +48,12 @@ export const getBudgets = withTransaction(
     const [ownedBudgets, sharedBudgets, ownerUser] = await Promise.all([
       Budgets.findAll({
         where: { userId, ...statusWhere },
-        include: [includeCategories],
+        include: [includeCategories, includeTags],
       }),
       getSharedBudgetsForUser({
         userId,
         where: statusWhere,
-        include: [includeCategories],
+        include: [includeCategories, includeTags],
       }),
       Users.findByPk(userId),
     ]);
@@ -73,7 +81,7 @@ export const getBudgetById = withTransaction(
   }): Promise<BudgetWithShareContext | null> => {
     const owned = await Budgets.findOne({
       where: { userId, id },
-      include: [includeCategories],
+      include: [includeCategories, includeTags],
     });
 
     if (owned) {
@@ -86,7 +94,7 @@ export const getBudgetById = withTransaction(
 
     // Not owned — fall through to the shared lookup. `getSharedBudgetById` runs the
     // central auth check and returns the budget with a recipient share context attached.
-    const shared = await getSharedBudgetById({ userId, id, include: [includeCategories] });
+    const shared = await getSharedBudgetById({ userId, id, include: [includeCategories, includeTags] });
     return (shared as BudgetWithShareContext | null) ?? null;
   },
 );

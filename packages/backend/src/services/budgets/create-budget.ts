@@ -3,9 +3,11 @@ import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import BudgetCategories from '@models/budget-categories.model';
+import BudgetTags from '@models/budget-tags.model';
 import BudgetTransactions from '@models/budget-transactions.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import Tags from '@models/tags.model';
 import { findTransactions } from '@models/transactions-query';
 import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
@@ -19,6 +21,7 @@ interface CreateBudgetPayload {
   status: string;
   type?: BUDGET_TYPES;
   categoryIds?: string[];
+  tagIds?: string[];
   startDate?: Date | null;
   endDate?: Date | null;
   autoInclude?: boolean;
@@ -62,6 +65,22 @@ export const createBudget = withTransaction(async (payload: CreateBudgetPayload)
     }
   }
 
+  // Validate tagIds exist before creating budget
+  if (budgetType === BUDGET_TYPES.tag && payload.tagIds?.length) {
+    const existingTags = await Tags.findAll({
+      where: {
+        id: { [Op.in]: payload.tagIds },
+        userId: payload.userId,
+      },
+      attributes: ['id'],
+      raw: true,
+    });
+
+    if (existingTags.length !== payload.tagIds.length) {
+      throw new ValidationError({ message: t({ key: 'budgets.someTagIdsInvalid' }) });
+    }
+  }
+
   const budget = await createBudgetModel(budgetData);
 
   // For category-based budgets, create BudgetCategories entries
@@ -80,6 +99,16 @@ export const createBudget = withTransaction(async (payload: CreateBudgetPayload)
         })),
       );
     }
+  }
+
+  // For tag-based budgets, create BudgetTags entries
+  if (budgetType === BUDGET_TYPES.tag && payload.tagIds?.length) {
+    await BudgetTags.bulkCreate(
+      payload.tagIds.map((tagId) => ({
+        budgetId: budget.id,
+        tagId,
+      })),
+    );
   }
 
   // For manual budgets with autoInclude, link transactions by date range
@@ -109,13 +138,15 @@ export const createBudget = withTransaction(async (payload: CreateBudgetPayload)
     }
   }
 
-  // Reload budget with categories for category-based budgets
+  // Reload budget with categories/tags for category- or tag-based budgets
   const reloadedBudget = await Budgets.findByPk(budget.id, {
     attributes: { exclude: ['userId'] },
     include:
       budgetType === BUDGET_TYPES.category
         ? [{ model: Categories, as: 'categories', attributes: ['id', 'name', 'color', 'parentId'] }]
-        : [],
+        : budgetType === BUDGET_TYPES.tag
+          ? [{ model: Tags, as: 'tags', attributes: ['id', 'name', 'color', 'icon'] }]
+          : [],
   });
 
   return reloadedBudget!;
