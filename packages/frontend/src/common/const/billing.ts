@@ -28,12 +28,12 @@ export const liveSubscription = ({
 
 export type AnalyticsPlan = Plan | 'trial' | 'read_only' | 'legacy';
 
-/** One label per user for the PostHog `plan` person property. Mirrors the backend entitlement order. */
+/** One label per user for the PostHog `plan` person property. A paid tier outranks a granted plan. */
 export const analyticsPlan = ({ entitlements }: { entitlements: Entitlements }): AnalyticsPlan => {
   if (entitlements.readOnly) return 'read_only';
-  if (entitlements.plan) return entitlements.plan;
   const paid = entitlements.subscriptions.find((s) => isEntitledSubscription(s));
   if (paid) return paid.tier;
+  if (entitlements.plan) return entitlements.plan;
   if (entitlements.trialEndsAt && isFuture(new Date(entitlements.trialEndsAt))) return 'trial';
   return 'legacy';
 };
