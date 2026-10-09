@@ -1,8 +1,5 @@
-import { getCurrentLocale } from '@/i18n';
+import { getDateFnsLocale } from '@/composable/use-date-locale';
 import { format, parseISO } from 'date-fns';
-import { enUS, uk } from 'date-fns/locale';
-
-const localeMap = { en: enUS, uk } as const;
 
 /**
  * UTC calendar day of `date` as `yyyy-MM-dd` — exactly what SQL `DATE("time")`
@@ -23,8 +20,7 @@ export function formatShortDate(iso: string): string {
   try {
     const parsed = parseISO(iso);
     if (Number.isNaN(parsed.getTime())) return iso;
-    const localeKey = getCurrentLocale() as keyof typeof localeMap;
-    return format(parsed, 'dd MMM yyyy', { locale: localeMap[localeKey] ?? enUS });
+    return format(parsed, 'dd MMM yyyy', { locale: getDateFnsLocale() });
   } catch {
     return iso;
   }

@@ -8,30 +8,35 @@
  * @see https://github.com/date-fns/date-fns/blob/main/docs/i18n.md
  */
 import { getCurrentLocale } from '@/i18n';
+import { type SupportedLocale, getValidLocale } from '@bt/shared/i18n/locales';
 import {
   format as dateFnsFormat,
   formatDistance as dateFnsFormatDistance,
   formatDistanceToNow as dateFnsFormatDistanceToNow,
   formatRelative as dateFnsFormatRelative,
 } from 'date-fns';
-import { enUS, uk } from 'date-fns/locale';
+import { de, enUS, es, id, ru, sk, uk } from 'date-fns/locale';
 import { computed } from 'vue';
 
 // date-fns locale type
 type DateFnsLocale = typeof enUS;
 
-// Map app locale codes to date-fns locale objects
-const localeMap: Record<string, DateFnsLocale> = {
+// Keyed by SupportedLocale so adding an app locale without its date-fns counterpart fails type-check
+const localeMap: Record<SupportedLocale, DateFnsLocale> = {
   en: enUS,
-  uk: uk,
+  uk,
+  es,
+  de,
+  sk,
+  id,
+  ru,
 };
 
 /**
  * Get the date-fns locale object for the current app locale.
  */
-function getDateFnsLocale(): DateFnsLocale {
-  const currentLocale = getCurrentLocale();
-  return localeMap[currentLocale] ?? enUS;
+export function getDateFnsLocale(): DateFnsLocale {
+  return localeMap[getValidLocale(getCurrentLocale())];
 }
 
 /**
