@@ -1,7 +1,13 @@
-import { createVentureEvent, deleteVentureEvent, listVentureEvents } from '@/api/venture/events';
+import {
+  createVentureEvent,
+  deleteVentureEvent,
+  getTransactionVentureLink,
+  listVentureEvents,
+} from '@/api/venture/events';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { TRANSACTION_TRANSFER_NATURE, type TransactionModel } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { type MaybeRefOrGetter, toValue } from 'vue';
+import { type MaybeRefOrGetter, computed, toValue } from 'vue';
 
 type DealIdSource = MaybeRefOrGetter<string | undefined>;
 
@@ -54,5 +60,19 @@ export const useDeleteVentureEvent = () => {
   return useMutation({
     mutationFn: deleteVentureEvent,
     onSuccess: () => invalidateAllForDeal(queryClient),
+  });
+};
+
+/** Resolves the venture deal behind a venture-linked transaction; idle for any other transaction. */
+export const useTransactionVentureLink = (transaction: MaybeRefOrGetter<TransactionModel | undefined>) => {
+  const transactionId = computed(() => {
+    const tx = toValue(transaction);
+    return tx?.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_to_venture ? tx.id : undefined;
+  });
+
+  return useQuery({
+    queryFn: () => getTransactionVentureLink({ transactionId: transactionId.value! }),
+    queryKey: [...VUE_QUERY_CACHE_KEYS.transactionVentureLink, transactionId],
+    enabled: () => !!transactionId.value,
   });
 };

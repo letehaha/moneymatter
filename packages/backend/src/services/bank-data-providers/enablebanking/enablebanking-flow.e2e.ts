@@ -24,6 +24,8 @@ import { AED_PER_USD, EUR_PER_USD } from '@tests/mocks/exchange-rates/data';
 import { format } from 'date-fns';
 import { HttpResponse, http } from 'msw';
 
+import { SyncStatus } from '../sync/sync-status-tracker';
+
 // getExchangeRate pivots through USD and truncates the rate to 5 decimals.
 const EUR_TO_AED = Math.trunc((AED_PER_USD / EUR_PER_USD) * 100_000) / 100_000;
 const utcDateDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0]!;
@@ -1280,6 +1282,7 @@ describe('Enable Banking Data Provider E2E', () => {
           state,
         },
       });
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
 
       // Connection should be active again
       const { connection } = await helpers.bankDataProviders.getConnectionDetails({
@@ -1411,6 +1414,7 @@ describe('Enable Banking Data Provider E2E', () => {
           state,
         },
       });
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
 
       // Step 4: Verify externalIds remain STABLE (identification_hash doesn't change)
       const account1After = await helpers.getAccount({
@@ -1457,6 +1461,50 @@ describe('Enable Banking Data Provider E2E', () => {
       const connAccount2 = connection.accounts.find((a: { id: string }) => a.id === account2Id);
       expect(connAccount1?.externalId).toBe(MOCK_IDENTIFICATION_HASH_1);
       expect(connAccount2?.externalId).toBe(MOCK_IDENTIFICATION_HASH_2);
+    });
+
+    it('syncs an account re-linked to a new connection through the new session', async () => {
+      const connectAndLink = async () => {
+        const { connectionId } = await helpers.bankDataProviders.connectProvider({
+          providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
+          credentials: helpers.enablebanking.mockCredentials(),
+          raw: true,
+        });
+        await helpers.makeRequest({
+          method: 'post',
+          url: '/bank-data-providers/enablebanking/oauth-callback',
+          payload: {
+            connectionId,
+            code: helpers.enablebanking.mockAuthCode,
+            state: await helpers.enablebanking.getConnectionState(connectionId),
+          },
+        });
+        const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+          connectionId,
+          accountExternalIds: [MOCK_IDENTIFICATION_HASH_1],
+          raw: true,
+        });
+        return { connectionId, accountId: syncedAccounts[0]!.id };
+      };
+
+      const first = await connectAndLink();
+      await helpers.bankDataProviders.disconnectProvider({ connectionId: first.connectionId });
+
+      // The bank only knows the account uids of the live session.
+      const staleUids = getAllMockAccountUIDs();
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/transactions', ({ params }) =>
+          staleUids.includes(params.accountId as string)
+            ? HttpResponse.json({ message: 'No account found matching provided id' }, { status: 404 })
+            : undefined,
+        ),
+      );
+
+      const second = await connectAndLink();
+
+      expect(second.accountId).toBe(first.accountId);
+      const { accounts } = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+      expect(accounts.find((a) => a.accountId === second.accountId)?.status).toBe(SyncStatus.COMPLETED);
     });
 
     it('should allow transaction sync after reconnection (externalId stable)', async () => {
@@ -1513,6 +1561,7 @@ describe('Enable Banking Data Provider E2E', () => {
           state,
         },
       });
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
 
       // Verify account externalId remains stable (identification_hash doesn't change)
       const accountAfterReconnect = await helpers.getAccount({
@@ -1589,6 +1638,7 @@ describe('Enable Banking Data Provider E2E', () => {
           state,
         },
       });
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
 
       const accountAfter = await helpers.getAccount({
         id: accountId,
@@ -1762,6 +1812,7 @@ describe('Enable Banking Data Provider E2E', () => {
           state,
         },
       });
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
 
       // Trigger a sync to update balance from bank after reauthorization
       await helpers.makeRequest({
@@ -2741,6 +2792,9 @@ describe('Enable Banking Data Provider E2E', () => {
         url: `/bank-data-providers/connections/${connectionId}/reauthorize`,
       });
 
+      // The bank accepts the fresh session, so the sync queued by the callback succeeds.
+      global.mswMockServer.resetHandlers();
+
       // Complete OAuth callback with fresh state
       const newState = await helpers.enablebanking.getConnectionState(connectionId);
       await helpers.makeRequest({
@@ -2752,6 +2806,10 @@ describe('Enable Banking Data Provider E2E', () => {
           state: newState,
         },
       });
+
+      await helpers.bankDataProviders.waitForAccountsSyncToSettle();
+      const { accounts } = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+      expect(accounts.find((a) => a.accountId === accountId)?.status).toBe(SyncStatus.COMPLETED);
 
       const reactivated = await BankDataProviderConnections.findByPk(connectionId);
       expect(reactivated!.isActive).toBe(true);

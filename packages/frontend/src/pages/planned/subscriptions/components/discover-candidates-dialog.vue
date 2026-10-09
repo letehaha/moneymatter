@@ -13,7 +13,7 @@ import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subs
 import { captureException } from '@/lib/sentry';
 import type { SubscriptionModel } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { formatDistanceToNow } from 'date-fns';
+import { useDateLocale } from '@/composable/use-date-locale';
 import { SearchIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -60,6 +60,8 @@ const activeCandidates = computed(() => candidates.value.filter((c) => !c.isOutd
 const outdatedCandidates = computed(() => candidates.value.filter((c) => c.isOutdated));
 const lastRunAt = computed(() => detectionResult.value?.lastRunAt ?? null);
 const isFromCache = computed(() => detectionResult.value?.isFromCache ?? false);
+
+const { formatDistanceToNow } = useDateLocale();
 
 const lastRunLabel = computed(() => {
   if (!lastRunAt.value) return null;

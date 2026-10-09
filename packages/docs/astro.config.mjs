@@ -41,6 +41,7 @@ export default defineConfig({
         { label: 'Transfers & refunds', items: [{ autogenerate: { directory: 'transfers-and-refunds' } }] },
         { label: 'Stats & reports', items: [{ autogenerate: { directory: 'stats' } }] },
         { label: 'Import & bank connections', items: [{ autogenerate: { directory: 'import' } }] },
+        { label: 'AI', items: [{ autogenerate: { directory: 'ai' } }] },
         { label: 'Settings', items: [{ autogenerate: { directory: 'settings' } }] },
       ],
     }),

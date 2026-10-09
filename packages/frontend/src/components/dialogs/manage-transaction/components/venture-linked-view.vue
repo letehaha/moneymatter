@@ -1,17 +1,29 @@
 <script lang="ts" setup>
 import { Button } from '@/components/lib/ui/button';
+import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
 import { ROUTES_NAMES } from '@/routes';
 import type { TransactionModel } from '@bt/shared/types';
+import { RocketIcon } from '@lucide/vue';
 import { DialogClose, DialogTitle } from 'reka-ui';
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
 
-defineProps<{
+const props = defineProps<{
   transaction: TransactionModel;
 }>();
 
 const emit = defineEmits<{
   'close-modal': [];
 }>();
+
+const { data: ventureLink } = useTransactionVentureLink(() => props.transaction);
+
+// A soft-deleted deal has no detail page, so it falls back to the overview.
+const ventureRoute = computed(() =>
+  ventureLink.value && !ventureLink.value.isDealDeleted
+    ? { name: ROUTES_NAMES.ventureDealDetail, params: { dealId: ventureLink.value.dealId } }
+    : { name: ROUTES_NAMES.venture },
+);
 </script>
 
 <template>
@@ -33,6 +45,10 @@ const emit = defineEmits<{
 
     <div class="px-6 pb-6">
       <div class="bg-muted/30 border-border rounded-lg border p-4">
+        <p v-if="ventureLink" class="mb-2 flex items-center gap-1.5 font-medium">
+          <RocketIcon class="text-app-transfer-color size-4 shrink-0" />
+          <span class="truncate">{{ ventureLink.dealName }}</span>
+        </p>
         <p class="text-sm">
           {{ $t('dialogs.manageTransaction.ventureLinked.description') }}
         </p>
@@ -41,7 +57,7 @@ const emit = defineEmits<{
         </p>
       </div>
 
-      <RouterLink :to="{ name: ROUTES_NAMES.venture }" class="block" @click="emit('close-modal')">
+      <RouterLink :to="ventureRoute" class="block" @click="emit('close-modal')">
         <Button variant="outline" class="mt-4 w-full">
           {{ $t('dialogs.manageTransaction.ventureLinked.openVenture') }}
         </Button>

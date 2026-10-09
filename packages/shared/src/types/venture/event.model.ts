@@ -38,3 +38,10 @@ export interface VentureEventLinkModel {
   event?: VentureEventModel;
   transaction?: TransactionModel;
 }
+
+/** The deal a venture-linked transaction belongs to. */
+export interface TransactionVentureLink {
+  dealId: string;
+  dealName: string;
+  isDealDeleted: boolean;
+}

@@ -5,6 +5,7 @@ import { deleteVentureEvent as _deleteVentureEvent } from '@services/venture/eve
 import { getVentureEvent as _getVentureEvent } from '@services/venture/events/get.service';
 import { listVentureEvents as _listVentureEvents } from '@services/venture/events/list.service';
 import { updateVentureEvent as _updateVentureEvent } from '@services/venture/events/update.service';
+import { getTransactionVentureLink as _getTransactionVentureLink } from '@services/venture/linking/get-transaction-venture-link.service';
 
 import { makeRequest } from '../common';
 
@@ -160,6 +161,20 @@ export async function deleteEventLink<R extends boolean | undefined = false>({
   return makeRequest<{ success: boolean }, R>({
     method: 'delete',
     url: `/venture/events/${eventId}/links/${linkId}`,
+    raw,
+  });
+}
+
+export async function getTransactionVentureLink<R extends boolean | undefined = false>({
+  transactionId,
+  raw,
+}: {
+  transactionId: string;
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof _getTransactionVentureLink>>, R>({
+    method: 'get',
+    url: `/transactions/${transactionId}/venture-link`,
     raw,
   });
 }

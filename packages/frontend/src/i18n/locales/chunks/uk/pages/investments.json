@@ -22,7 +22,7 @@
       "title": "Смітник",
       "retentionHint": "Елементи тут безповоротно видаляються через {days} днів",
       "loadError": "Не вдалося завантажити видалені портфелі.",
-      "deletedAgo": "Видалено {time} тому",
+      "deletedAgo": "Видалено {time}",
       "restoreButton": "Відновити",
       "restoringButton": "Відновлення…",
       "purgeButton": "Видалити зараз",
