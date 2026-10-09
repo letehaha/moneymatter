@@ -1,0 +1,191 @@
+---
+title: Connect Claude or ChatGPT to MoneyMatter
+description: Connect Claude, ChatGPT or Claude Code to your MoneyMatter account over MCP, choose what the assistant may read, edit or delete, and revoke access when you're done.
+sidebar:
+  order: 1
+  label: Connect Claude or ChatGPT
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+MoneyMatter has an MCP server. MCP (Model Context Protocol) is the standard way AI assistants such as Claude and ChatGPT connect to other apps. Once connected, you can ask the assistant about your money in plain language, and let it add or fix records if you allow that.
+
+The assistant signs in through MoneyMatter itself. You never paste a password or an API key into it.
+
+## What you need
+
+- A MoneyMatter account. The MCP server is included in every plan and in the free trial.
+- An AI app that can add a remote MCP server by URL. This page covers Claude, ChatGPT and Claude Code.
+- The MoneyMatter MCP address:
+
+  ```
+  https://mcp.moneymatter.app/mcp
+  ```
+
+A self-hosted MoneyMatter has its own address. See [Self-hosted MoneyMatter](#self-hosted-moneymatter).
+
+## Find the address in the app
+
+<Steps>
+
+1. Click the gear button (**Settings**) at the top right of the app.
+2. Under **Workspace**, choose **AI**.
+3. Open the **Connectors (MCP)** tab.
+
+</Steps>
+
+The **MCP Server** section shows the address with a copy button. Under **Quick Connect**, **Open Settings** takes you to the right page in Claude or ChatGPT, and the arrow next to it shows short steps. **Active connectors** lists every app that has access.
+
+## Connect Claude
+
+This works in Claude on the web, in the Claude desktop app and in the mobile apps. You add the connector once and it's available in all of them.
+
+<Steps>
+
+1. In Claude, open **Customize**, then **Connectors**, or go straight to [claude.ai/customize/connectors](https://claude.ai/customize/connectors).
+2. Click **Add custom connector**. In some accounts you click **+ Add** first.
+3. Enter a name, for example `MoneyMatter`.
+4. In the server URL field, paste `https://mcp.moneymatter.app/mcp`.
+5. If Claude asks how to sign in, choose **Sign in now**. Leave the other options as they are.
+6. Click **Add**.
+7. If the connector shows a **Connect** button, click it.
+8. MoneyMatter opens in your browser. Sign in if asked, choose what Claude may do, then click **Approve**. See [Choose what the assistant can do](#choose-what-the-assistant-can-do).
+
+</Steps>
+
+To use it, start a chat, click **+** in the message box, choose **Connectors** and turn MoneyMatter on.
+
+<Aside type="note" title="Plans and work accounts">
+  Claude's Free plan allows one custom connector. In a Team or Enterprise
+  organization, only an owner can add a custom connector, under **Organization
+  settings**, then **Connectors**. Everyone else then finds it under
+  **Customize**, then **Connectors**, and clicks **Connect**.
+</Aside>
+
+Claude's own guide: [Get started with custom connectors using remote MCP](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp).
+
+## Connect ChatGPT
+
+Use ChatGPT on the web for the setup.
+
+<Steps>
+
+1. Open [chatgpt.com/plugins](https://chatgpt.com/plugins).
+2. Click the plus button, then **Add custom MCP server**.
+3. Enter a name, for example `MoneyMatter`.
+4. Under **Connection**, paste `https://mcp.moneymatter.app/mcp` as the **Server URL**.
+5. For authentication, choose **OAuth**.
+6. Read the warning and select **I understand and want to continue**.
+7. Click **Create as a plugin**.
+8. MoneyMatter opens in your browser. Sign in if asked, choose what ChatGPT may do, then click **Approve**.
+9. Check the list of tools ChatGPT found, then install the plugin.
+
+</Steps>
+
+To use it, start a new chat, type `@` and pick MoneyMatter.
+
+<Aside type="caution" title="ChatGPT's setup depends on your plan">
+  OpenAI has changed this screen several times, and it can look different in
+  your account. Depending on your plan or workspace you may need to turn on
+  Developer mode first, and some plans let a custom MCP server read your data
+  but not change it. OpenAI's pages have the current rules: [Developer mode and
+  MCP apps in
+  ChatGPT](https://help.openai.com/en/articles/12584461-developer-mode-and-mcp-apps-in-chatgpt)
+  and [the setup
+  guide](https://developers.openai.com/api/docs/guides/custom-mcp-server).
+</Aside>
+
+ChatGPT asks you to confirm before it runs a tool that changes data.
+
+## Connect Claude Code
+
+<Steps>
+
+1. In your terminal, run:
+
+   ```bash
+   claude mcp add --transport http moneymatter https://mcp.moneymatter.app/mcp
+   ```
+
+   Add `--scope user` to make it available in every project, not only the current one.
+
+2. Start `claude` and run `/mcp`.
+3. Select `moneymatter`, press Enter and choose **Authenticate**.
+4. MoneyMatter opens in your browser. Sign in if asked, choose what Claude Code may do, then click **Approve**.
+
+</Steps>
+
+Until you finish step 4, `claude mcp list` shows the server as needing authentication. That's expected.
+
+## Other AI apps
+
+Any app that supports remote MCP servers with OAuth sign-in can connect. Add a server with the address `https://mcp.moneymatter.app/mcp`, and the app sends you to MoneyMatter to approve access. The full list of tools is in the [server card](https://moneymatter.app/.well-known/mcp/server-card.json).
+
+## Choose what the assistant can do
+
+Before an app gets access, MoneyMatter shows a page titled "[app name] wants access to your MoneyMatter data". It lists the permissions the app asked for. You can turn two of them on or off:
+
+| Permission                              | On this page                                 | What it allows                                                                |
+| --------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------- |
+| **View your financial data**            | **Always granted**                           | Read accounts, transactions, budgets, categories, tags, portfolios and stats. |
+| **Create and edit your financial data** | **Optional**, ticked when the page opens     | Add and update transactions, budgets, subscriptions, investments and more.    |
+| **Delete your financial data**          | **Optional**, not ticked when the page opens | Permanently remove records.                                                   |
+| **View your profile**                   | **Always granted**                           | See your name, email and base currency.                                       |
+| **Stay connected in the background**    | **Always granted**                           | Keep access without asking you to approve again each session.                 |
+
+Click **Approve** to connect, or **Deny** to cancel.
+
+For questions and reports only, untick **Create and edit your financial data** before you approve. The assistant can then read your data but can't change anything.
+
+<Aside type="caution" title="Deleting can't be undone">
+  Tick **Delete your financial data** only for an app you fully trust. A deleted
+  record is gone for good.
+</Aside>
+
+To change the access level later, [revoke the app](#disconnect-an-app) and connect it again.
+
+If your account is in [read-only mode](/settings/plans-and-billing/#read-only-mode), a connected assistant can still read your data, but every change it tries is refused, whatever you approved.
+
+## What you can ask
+
+The assistant can work with your accounts, transactions, categories, tags, payees, budgets, subscriptions, automation rules, investments, venture deals and spending stats. Some things to try:
+
+- "Compare my dining out spending this month to my 3-month average."
+- "Which of my subscriptions got more expensive this year?"
+- "Show every transaction over $100 last quarter that wasn't a subscription."
+- "What's my average weekly grocery spend, and how has it changed?"
+- "I want to save $500 a month. Where could I realistically cut?"
+
+With edit access you can also ask it to do things, for example "Categorize last week's uncategorized transactions" or "Create a budget of $400 for groceries this month".
+
+## Disconnect an app
+
+<Steps>
+
+1. Open **Settings**, choose **AI**, then the **Connectors (MCP)** tab.
+2. Under **Active connectors**, find the app. Each one shows when it was connected, when it was last used and what it's allowed to do.
+3. Click **Revoke**, then confirm with **Revoke Access**.
+
+</Steps>
+
+The app loses access immediately. You can connect it again later.
+
+## Self-hosted MoneyMatter
+
+A self-hosted MoneyMatter runs its own MCP server, and nothing goes through moneymatter.app.
+
+- Set `MCP_BASE_URL` on your server. The [environment reference](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/environment-reference.md) explains which value to use.
+- Use the address shown under **Settings**, **AI**, **Connectors (MCP)** in your own install in place of `https://mcp.moneymatter.app/mcp`.
+- Claude and ChatGPT connect from their own servers, so your install has to be reachable from the internet over HTTPS. Claude Code connects from your computer.
+
+## If something goes wrong
+
+- **The assistant says it can't change or delete something.** You didn't grant that permission, or your account is in read-only mode. Revoke the app and connect it again with the permission ticked.
+- **You can't add a connector in Claude at work.** Ask an owner of your organization to add it.
+- **You need to change how a Claude connector signs in.** Claude doesn't let you edit that. Remove the connector and add it again.
+- **Claude Code doesn't return from the browser after you approve.** Copy the full address from the browser's address bar and paste it into the prompt Claude Code shows.
+
+## Related
+
+- [Plans and billing](/settings/plans-and-billing/)
+- [Security and account](/settings/security-and-account/)
