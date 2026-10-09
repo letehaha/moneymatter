@@ -117,7 +117,8 @@ onMounted(async () => {
     // success state and bounce the user back to the "OAuth failed" screen —
     // the server-side reconnect already succeeded by this point.
     const refreshResults = await Promise.allSettled([
-      syncStatus.fetchStatus(),
+      // A reconnect queues a sync server-side, so watch it; triggering one here would double-sync.
+      syncStatus.watchSync(),
       queryClient.invalidateQueries({
         predicate: (query) => (query.queryKey as string[]).includes(VUE_QUERY_GLOBAL_PREFIXES.bankConnectionChange),
       }),
