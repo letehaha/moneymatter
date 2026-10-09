@@ -43,5 +43,9 @@ done
 robots_tag() { curl -sS -o /dev/null -D - "$BASE$1" | tr -d '\r' | grep -i '^x-robots-tag:' || true; }
 [ -n "$(robots_tag /dashboard)" ] || { echo "FAIL /dashboard: app shell is not noindex"; fail=1; }
 [ -z "$(robots_tag /sign-in)" ] || { echo "FAIL /sign-in: must stay indexable"; fail=1; }
+case "$(curl -sS -w '\n%{http_code}' "$BASE/demo")" in
+  *'<meta name="robots" content="noindex'*200) ;;
+  *) echo "FAIL /demo: not the noindex landing page"; fail=1 ;;
+esac
 
 exit "$fail"

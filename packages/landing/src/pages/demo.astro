@@ -1,0 +1,21 @@
+---
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import TryDemoButton from '@/components/try-demo-button.vue';
+import BaseLayout from '@/layouts/base-layout.astro';
+---
+
+<BaseLayout
+  title="Live Demo | MoneyMatter"
+  description="Open a MoneyMatter demo account filled with sample data. No signup required."
+  noindex
+>
+  <BackgroundOrbs />
+  <main class="relative z-10 flex min-h-screen flex-col items-center justify-center gap-6 px-4 text-center">
+    <h1 class="text-3xl font-bold tracking-tight sm:text-4xl">MoneyMatter live demo</h1>
+    <p class="text-muted-foreground max-w-md">
+      Opens a demo account filled with sample data. If it doesn't start by itself, use the button.
+    </p>
+    <TryDemoButton client:load location="demo_link" autoStart />
+    <a href="/" class="text-primary-text text-sm hover:underline">Back to moneymatter.app</a>
+  </main>
+</BaseLayout>

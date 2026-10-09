@@ -35,8 +35,14 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue';
 
+import type { DemoStartLocation } from '../lib/posthog';
 import { startDemo } from '../lib/start-demo';
 import DemoLoadingOverlay from './demo-loading-overlay.vue';
+
+const props = withDefaults(defineProps<{ location?: DemoStartLocation; autoStart?: boolean }>(), {
+  location: 'hero',
+  autoStart: false,
+});
 
 const isDemoLoading = ref(false);
 const errorMessage = ref('');
@@ -48,7 +54,9 @@ async function handleTryDemo() {
   errorMessage.value = '';
 
   await startDemo({
-    location: 'hero',
+    location: props.location,
+    // An auto-started page left in history would start another demo on Back.
+    replaceHistory: props.autoStart,
     onError: ({ message }) => {
       errorMessage.value = message;
       isDemoLoading.value = false;
@@ -66,6 +74,7 @@ function handlePageShow(event: PageTransitionEvent) {
 
 onMounted(() => {
   window.addEventListener('pageshow', handlePageShow);
+  if (props.autoStart) handleTryDemo();
 });
 
 onBeforeUnmount(() => {
