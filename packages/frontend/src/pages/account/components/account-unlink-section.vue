@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AlertDialog from '@/components/common/alert-dialog.vue';
+import ClickToCopy from '@/components/common/click-to-copy.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
@@ -83,6 +84,11 @@ const unlinkAccount = async () => {
         </p>
       </template>
       <template #content>
+        <div class="mb-3">
+          <p class="text-muted-foreground mb-1 text-xs">{{ t('pages.account.deletion.accountNameLabel') }}</p>
+          <ClickToCopy :value="account.name" />
+        </div>
+
         <p class="mb-2 text-sm">{{ t('pages.account.unlink.confirmAccountName') }}</p>
         <InputField
           v-model="confirmAccountName"
