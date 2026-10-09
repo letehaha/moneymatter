@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.letehaha/moneymatter",
+  "title": "MoneyMatter",
+  "description": "Personal finance tracker: accounts, transactions, budgets, investments and analytics over OAuth.",
+  "websiteUrl": "https://moneymatter.app",
+  "repository": {
+    "url": "https://github.com/letehaha/moneymatter",
+    "source": "github"
+  },
+  "version": "1.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.moneymatter.app/mcp"
+    }
+  ]
+}
