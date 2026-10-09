@@ -3,7 +3,7 @@ import posthog from 'posthog-js';
 import type { FaqOutcome } from './ask-faq';
 import { config } from './config';
 
-export type DemoStartLocation = 'hero' | 'hero_screenshot';
+export type DemoStartLocation = 'hero' | 'hero_screenshot' | 'demo_link';
 
 type LandingAnalyticsEvent =
   | {
@@ -68,8 +68,13 @@ export function trackAnalyticsEvent(eventData: LandingAnalyticsEvent): void {
 
   const { event, properties } = eventData;
 
-  posthog.capture(event, {
-    source: 'landing',
-    ...properties,
-  });
+  // Tracking runs inside user flows such as starting the demo, which must not fail with it.
+  try {
+    posthog.capture(event, {
+      source: 'landing',
+      ...properties,
+    });
+  } catch (error) {
+    console.error('Failed to track analytics event:', error);
+  }
 }
