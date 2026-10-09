@@ -1463,6 +1463,50 @@ describe('Enable Banking Data Provider E2E', () => {
       expect(connAccount2?.externalId).toBe(MOCK_IDENTIFICATION_HASH_2);
     });
 
+    it('syncs an account re-linked to a new connection through the new session', async () => {
+      const connectAndLink = async () => {
+        const { connectionId } = await helpers.bankDataProviders.connectProvider({
+          providerType: BANK_PROVIDER_TYPE.ENABLE_BANKING,
+          credentials: helpers.enablebanking.mockCredentials(),
+          raw: true,
+        });
+        await helpers.makeRequest({
+          method: 'post',
+          url: '/bank-data-providers/enablebanking/oauth-callback',
+          payload: {
+            connectionId,
+            code: helpers.enablebanking.mockAuthCode,
+            state: await helpers.enablebanking.getConnectionState(connectionId),
+          },
+        });
+        const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
+          connectionId,
+          accountExternalIds: [MOCK_IDENTIFICATION_HASH_1],
+          raw: true,
+        });
+        return { connectionId, accountId: syncedAccounts[0]!.id };
+      };
+
+      const first = await connectAndLink();
+      await helpers.bankDataProviders.disconnectProvider({ connectionId: first.connectionId });
+
+      // The bank only knows the account uids of the live session.
+      const staleUids = getAllMockAccountUIDs();
+      global.mswMockServer.use(
+        http.get('https://api.enablebanking.com/accounts/:accountId/transactions', ({ params }) =>
+          staleUids.includes(params.accountId as string)
+            ? HttpResponse.json({ message: 'No account found matching provided id' }, { status: 404 })
+            : undefined,
+        ),
+      );
+
+      const second = await connectAndLink();
+
+      expect(second.accountId).toBe(first.accountId);
+      const { accounts } = await helpers.bankDataProviders.getAccountsSyncStatus({ raw: true });
+      expect(accounts.find((a) => a.accountId === second.accountId)?.status).toBe(SyncStatus.COMPLETED);
+    });
+
     it('should allow transaction sync after reconnection (externalId stable)', async () => {
       // Create connection and connect an account
       const connectResult = await helpers.bankDataProviders.connectProvider({

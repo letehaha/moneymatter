@@ -169,6 +169,8 @@ const createAccountsForConnection = withTransaction(
           type: PROVIDER_TO_ACCOUNT_TYPE[connection.providerType as BANK_PROVIDER_TYPE],
           bankDataProviderConnectionId: connectionId,
           externalId: providerAccount.externalId,
+          // Provider metadata can carry session-bound ids, so the stored copy must follow the new connection.
+          externalData: { ...existingAccount.externalData, ...providerAccount.metadata },
         });
         await Subscriptions.update(
           { autoRecord: false },
