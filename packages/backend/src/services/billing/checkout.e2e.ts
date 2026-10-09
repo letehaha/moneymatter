@@ -65,6 +65,7 @@ describe('Billing checkout (POST /billing/checkout)', () => {
     expect(params.get('success_url')).toContain(`${RETURN_PATH}?checkout=success`);
     expect(params.get('customer')).toBeNull();
     expect(params.get('discounts[0][coupon]')).toBeNull();
+    expect(params.get('allow_promotion_codes')).toBe('true');
   });
 
   it('rejects checkout while a subscription is entitled, without calling Stripe', async () => {

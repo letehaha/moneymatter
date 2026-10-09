@@ -78,7 +78,10 @@ export async function createCheckoutSession({
     client_reference_id: String(userId),
     subscription_data: { metadata: { userId: String(userId) } },
     ...customerParams,
-    ...(plan === PLANS.early_adopter ? { discounts: [{ coupon: EARLY_ADOPTER_COUPON_ID }] } : {}),
+    // Stripe rejects a session that carries both `discounts` and `allow_promotion_codes`.
+    ...(plan === PLANS.early_adopter
+      ? { discounts: [{ coupon: EARLY_ADOPTER_COUPON_ID }] }
+      : { allow_promotion_codes: true }),
     success_url: `${PLAN_BILLING_URL}?checkout=success`,
     cancel_url: PLAN_BILLING_URL,
   });
