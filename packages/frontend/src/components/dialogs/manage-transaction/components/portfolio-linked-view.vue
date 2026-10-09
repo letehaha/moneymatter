@@ -96,7 +96,7 @@ const handleUnlink = () => {
               v-if="!linkData.affectsCash"
               class="bg-muted text-muted-foreground ml-2 rounded-full px-2 py-0.5 text-xs font-medium tracking-wide uppercase"
             >
-              {{ $t('portfolioDetail.cashBalances.cashTransactions.noCashBadge') }}
+              {{ $t('dialogs.manageTransaction.portfolioLinked.noCashBadge') }}
             </span>
           </p>
         </div>

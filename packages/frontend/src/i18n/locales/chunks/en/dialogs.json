@@ -386,6 +386,7 @@
         "unlinkButton": "Unlink from Portfolio",
         "unlinkWarning": "Unlinking will reduce the cash balance of {portfolio} portfolio.",
         "unlinkWarningNoCash": "This transfer never changed {portfolio}'s cash balance, so unlinking leaves the balance untouched.",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "Original transaction details will be restored.",
         "cancelButton": "Cancel",
         "confirmUnlink": "Confirm Unlink"
