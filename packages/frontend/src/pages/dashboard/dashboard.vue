@@ -18,7 +18,7 @@
               ? 'max-md:bottom-[calc(var(--bottom-navbar-height)-env(safe-area-inset-bottom)-1px)]'
               : 'max-md:bottom-[calc(var(--bottom-navbar-height-content-rect)-env(safe-area-inset-bottom)-1px)]'
             : 'max-md:bottom-[calc(env(safe-area-inset-bottom)-1px)]',
-          'md:order-first md:mx-0 md:mt-0 md:mb-3 md:border-t-0 md:py-0',
+          'md:order-first md:mx-0 md:-mt-1 md:mb-2 md:border-t-0 md:py-1',
         ])
       "
     >
