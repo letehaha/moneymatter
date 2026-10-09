@@ -33,8 +33,8 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Switching monthly to yearly or Essential to Plus: Settings > Plan & billing opens the Stripe
   billing portal, which shows the charge or credit before you confirm.
 - Prices are in USD. Taxes are calculated at checkout. Cancel anytime.
-- No promo codes at checkout and no lifetime deal. "Early Adopter" is a grant for accounts that
-  existed before paid plans launched; new signups cannot get it.
+- Promo codes can be entered at checkout. No lifetime deal. "Early Adopter" is a grant for
+  accounts that existed before paid plans launched; new signups cannot get it.
 
 ## Payments, taxes, refunds
 
@@ -187,7 +187,8 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 ## Self-hosting
 
 - Same app as the cloud, free, every feature unlocked, no plans or trial. Deployed with Docker
-  Compose. Runs on a $5 VPS or a Raspberry Pi. 2 GB RAM minimum.
+  Compose. Runs on a $5 VPS. 2 GB RAM minimum. Published images are amd64; ARM hosts such as a
+  Raspberry Pi build from source.
 - Stack: Postgres, Redis and a bundled exchange-rate service. Docker Compose is the only
   supported setup: no Kubernetes, Helm or Unraid templates, no install without Docker.
 - No domain or HTTPS needed for a local or LAN trial. For public access there are recipes for

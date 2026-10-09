@@ -1,15 +1,15 @@
 # MoneyMatter
 
-> Open-source budget tracking and personal finance app. Self-host it for free with full data ownership, or use the cloud version from $5/month (40-day free trial, no card required). Supports AI integration via MCP (Model Context Protocol) for querying your finances with Claude, ChatGPT, or any MCP-compatible client.
+> Open-source budget tracking and personal finance app. Self-host it for free with full data ownership, or use the cloud version from $30/year (40-day free trial, no card required). Supports AI integration via MCP (Model Context Protocol) for querying your finances with Claude, ChatGPT, or any MCP-compatible client.
 
 MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is AGPL-3.0-licensed, free to self-host, and designed for people who want control over their financial data. The app runs as a web application with a Node.js/Express backend and Vue.js frontend, deployable via Docker.
 
 ## Key Features
 
-- Bank account synchronization (Monobank, EnableBanking, LunchFlow, with more integrations planned)
+- Bank account synchronization (LunchFlow, SimpleFIN, Monobank and Walutomat, plus Enable Banking on self-hosted)
 - AI-powered transaction categorization that learns your spending patterns
 - Budget tracking with visual progress indicators
-- Investment portfolio tracking with real-time market data
+- Investment portfolio tracking with automatic price updates
 - Multi-currency support with automatic exchange rates
 - CSV and bank statement import (including AI-assisted parsing)
 - Custom categories, tags, and notes for transactions

@@ -1,7 +1,7 @@
 # MoneyMatter – Self-Hosting
 
 Run MoneyMatter on your own server with Docker Compose. The stack pulls
-published multi-arch images and exposes the whole app on **one host port** –
+published Docker images (amd64) and exposes the whole app on **one host port** –
 put whatever reverse proxy you already run in front of it (Nginx Proxy
 Manager, npmplus, Caddy, Traefik), or nothing at all for a LAN / localhost
 trial.
