@@ -1,6 +1,6 @@
 # MoneyMatter
 
-> Open-source budget tracking and personal finance app. Self-host it for free with full data ownership, or use the cloud version from $5/month (40-day free trial, no card required). Supports AI integration via MCP (Model Context Protocol) for querying your finances with Claude, ChatGPT, or any MCP-compatible client.
+> Open-source budget tracking and personal finance app. Self-host it for free with full data ownership, or use the cloud version from $30/year (40-day free trial, no card required). Supports AI integration via MCP (Model Context Protocol) for querying your finances with Claude, ChatGPT, or any MCP-compatible client.
 
 ## About
 
@@ -22,7 +22,7 @@ License: AGPL-3.0
 
 ### Bank Account Synchronization
 
-Connect bank accounts to automatically sync transactions. Currently supports Monobank, EnableBanking, and LunchFlow, with more banking integrations planned. Transactions are pulled automatically so you always have an up-to-date view of your finances.
+Connect bank accounts to automatically sync transactions. Currently supports LunchFlow, SimpleFIN, Monobank and Walutomat, plus Enable Banking on self-hosted. Transactions are pulled automatically so you always have an up-to-date view of your finances.
 
 ### AI-Powered Transaction Categorization
 
@@ -32,9 +32,9 @@ MoneyMatter uses AI to learn your spending patterns. Categorize a transaction on
 
 Set budgets by category and track your progress with visual indicators. See at a glance whether you're on track, approaching your limit, or over budget. Budgets support custom time periods and flexible category groupings.
 
-### Investment Portfolio Tracking (Beta)
+### Investment Portfolio Tracking
 
-Track investment portfolios alongside your regular budget. Monitor performance, gains/losses, and asset allocation in one place. Supports real-time market data for securities pricing.
+Track investment portfolios alongside your regular budget. Monitor performance, gains/losses, and asset allocation in one place. Security prices update automatically.
 
 ### Multi-Currency Support
 
@@ -121,7 +121,7 @@ Setup guide and Docker configuration: https://github.com/letehaha/moneymatter
 
 | Feature | Mint & others | YNAB | MoneyMatter |
 |---|---|---|---|
-| Price | Free (you're the product) | $99/year | Self-host free; cloud from $30/year |
+| Price | Free (you're the product) | $109/year | Self-host free; cloud from $30/year |
 | Open Source | No | No | Yes (AGPL-3.0) |
 | Self-Hostable | No | No | Yes |
 | Data Privacy | Sells data | Stored on their servers | You own it 100% |

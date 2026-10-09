@@ -81,6 +81,8 @@ jobs:
         uses: ./.github/actions/frontend-docker-build
       - name: Image digest
         run: echo ${{ steps.frontend-docker-build.outputs.docker-build-digest }}
+      - name: Smoke test
+        run: ./self-hosting/frontend/smoke-test.sh local/budget-tracker-fe:latest
 
   backend:
     name: Backend tasks

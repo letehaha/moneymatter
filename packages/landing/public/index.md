@@ -13,10 +13,10 @@ MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is ope
 
 ## Features
 
-- Bank account synchronization (LunchFlow, SimpleFIN, Monobank, more coming)
+- Bank account synchronization (LunchFlow, SimpleFIN, Monobank and Walutomat, plus Enable Banking on self-hosted)
 - AI-powered transaction categorization that learns your spending patterns
 - Budget tracking with visual progress indicators
-- Investment portfolio tracking with real-time market data
+- Investment portfolio tracking with automatic price updates
 - Multi-currency support with automatic exchange rates
 - CSV and bank statement import (with AI-assisted parsing)
 - Custom categories, tags, and notes for transactions

@@ -23,7 +23,7 @@ export const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "Self-hosted or cloud, what's the difference?",
     answer:
-      'Both run the same app. Self-host for free with Docker on your own server, and we never see your data. You run the updates and plug in your own API keys for price data. On the cloud, we do that work for you: we host the app, ship updates and security patches, and pay for the data feeds behind stock and crypto prices, exchange rates and merchant logos.',
+      'Both run the same app. Self-host for free with Docker on your own server, and we never see your data. You run the updates and plug in your own API key for crypto prices. On the cloud, we do that work for you: we host the app, ship updates and security patches, and pay for the data feeds behind stock and crypto prices, exchange rates and merchant logos.',
   },
   {
     question: 'Can I move between the cloud and my own server?',
