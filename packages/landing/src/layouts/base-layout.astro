@@ -72,11 +72,36 @@ const fullOgImage = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}
 <script>
   // Expose landing-page actions to browser-based AI agents via WebMCP
   // (draft API). Safe no-op where unsupported.
-  import { initPostHog } from '@/lib/posthog';
+  import { initPostHog, trackAnalyticsEvent } from '@/lib/posthog';
   import { initWebMcp } from '@/lib/webmcp';
 
   initPostHog();
   initWebMcp();
+
+  // Attach click tracking to all [data-track] elements
+  document.querySelectorAll('[data-track]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const event = el.getAttribute('data-track');
+      const location = el.getAttribute('data-track-location');
+
+      if (event === 'landing_cta_clicked' && location) {
+        trackAnalyticsEvent({
+          event: 'landing_cta_clicked',
+          properties: { location: location as 'header' | 'hero' | 'cta_section' | 'self_host' | 'pricing', action: 'sign_up' },
+        });
+      } else if (event === 'landing_roadmap_clicked' && location) {
+        trackAnalyticsEvent({
+          event: 'landing_roadmap_clicked',
+          properties: { location: location as 'hero' | 'pricing' | 'community' },
+        });
+      } else if (event === 'landing_github_clicked' && location) {
+        trackAnalyticsEvent({
+          event: 'landing_github_clicked',
+          properties: { location: location as 'header_nav' | 'header_star' | 'hero' | 'self_host' | 'cta_section' | 'footer' | 'community' },
+        });
+      }
+    });
+  });
 </script>
 
 <style is:global>

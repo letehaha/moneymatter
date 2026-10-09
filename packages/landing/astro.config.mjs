@@ -10,9 +10,9 @@ export default defineConfig({
   integrations: [
     vue(),
     sitemap({
-      // Legal pages render <meta name="robots" content="noindex"> via legal-layout.
+      // Legal pages and /demo render <meta name="robots" content="noindex">.
       // Sitemaps must only contain canonical, indexable URLs (Google docs).
-      filter: (page) => !page.includes('/privacy-policy') && !page.includes('/terms-of-use'),
+      filter: (page) => !['/privacy-policy', '/terms-of-use', '/demo'].some((path) => page.endsWith(path)),
     }),
   ],
   vite: {

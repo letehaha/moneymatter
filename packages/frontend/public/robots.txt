@@ -1,6 +1,7 @@
 User-agent: *
 Content-Signal: search=yes, ai-input=yes, ai-train=no
-Disallow:
+Disallow: /demo$
+Disallow: /demo?
 
 Sitemap: https://moneymatter.app/sitemap-index.xml
 LLMs-txt: https://moneymatter.app/llms.txt

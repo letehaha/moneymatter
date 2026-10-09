@@ -216,6 +216,29 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - MoneyMatter: from $30/year, open source and self-hostable, bank sync in 30+ countries,
   investments including crypto, multi-currency, full export and backup.
 
+## Moving from Wallet by BudgetBakers
+
+- The importer is under Settings, Import/Export, "Wallet (BudgetBakers)". It reads the CSV export
+  from Wallet. Several files can be uploaded at once, up to about 10 MB and 100,000 rows together.
+- Imported: every record with its category and payee. Labels become tags. Transfers between
+  Wallet accounts are joined back into one transfer when the two records share a date and time,
+  sit in different accounts and their amounts are within 1% of each other. A transfer record with
+  no partner is imported as money moved outside the tracked accounts.
+- During the import each Wallet account is created as new, linked to an existing account or
+  skipped, and each Wallet category is mapped to an existing one or created. A review step lists
+  possible duplicates before anything is saved. An import can be undone from Import History.
+- Not imported: budgets, planned payments and goals.
+- Not supported: Wallet exports in a language other than English or Spanish. Set Wallet to
+  English or Spanish before exporting.
+- Wallet's CSV export needs Wallet Premium, and the Wallet iOS app has no export; use Wallet's
+  web app. (Checked October 2026.)
+- Compared with Wallet (checked October 2026): Wallet is closed source and cloud only, does not
+  list its price on its website, and has native iOS and Android apps with offline mode and a free
+  plan for manual tracking. MoneyMatter is open source and self-hostable, lists its price, links
+  refunds to purchases, tracks loans, vehicles and venture deals, has pivot reports and a FIRE
+  planner, and offers a full backup and restore.
+- Full comparison: https://moneymatter.app/alternatives/wallet-by-budgetbakers
+
 ## Contact and community
 
 - Support: support@moneymatter.app

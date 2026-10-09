@@ -6,9 +6,11 @@ const TOO_MANY_REQUESTS = 429;
 
 export async function startDemo({
   location,
+  replaceHistory = false,
   onError,
 }: {
   location: DemoStartLocation;
+  replaceHistory?: boolean;
   onError: (payload: { message: string }) => void;
 }): Promise<void> {
   trackAnalyticsEvent({ event: 'demo_started', properties: { location } });
@@ -53,6 +55,9 @@ export async function startDemo({
   } finally {
     // Backend sets session cookies automatically via Set-Cookie headers.
     // Full page load so the Vue SPA picks up the session.
-    window.location.href = `${config.appUrl}/dashboard`;
+    const dashboardUrl = `${config.appUrl}/dashboard`;
+
+    if (replaceHistory) window.location.replace(dashboardUrl);
+    else window.location.href = dashboardUrl;
   }
 }

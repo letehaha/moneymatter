@@ -26,7 +26,7 @@ Connect bank accounts to automatically sync transactions. Currently supports Lun
 
 ### AI-Powered Transaction Categorization
 
-MoneyMatter uses AI to learn your spending patterns. Categorize a transaction once, and the AI will automatically categorize similar future transactions. No more manual sorting of every purchase.
+MoneyMatter uses AI to categorize new transactions after every bank sync and import, using your category list, the payee, the note and any instructions you write for it. Rules and a default category per payee handle the repeat cases.
 
 ### Budget Tracking
 

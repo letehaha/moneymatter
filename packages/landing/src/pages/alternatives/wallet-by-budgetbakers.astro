@@ -1,0 +1,461 @@
+---
+import BaseLayout from '@/layouts/base-layout.astro';
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import Screenshot from '@/components/screenshot.astro';
+import FaqAsk from '@/components/faq-ask.vue';
+import TryDemoButton from '@/components/try-demo-button.vue';
+import CheckIcon from '@/components/icons/check-icon.astro';
+import { GITHUB_URL } from '@/lib/github-api';
+
+const checkedOn = '9 October 2026';
+const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#wallet-by-budgetbakers';
+const DOCS_TRANSFERS_URL = 'https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/';
+
+const ROADMAP_URL = 'https://moneymatter.featurebase.app/dashboard/roadmap';
+
+const AT_A_GLANCE = [
+  { value: 'AGPL-3.0', label: 'Open source' },
+  { value: '$30/yr', label: 'Cloud, from' },
+  { value: '$0', label: 'Self-hosted' },
+  { value: '100+', label: 'Tools for your AI assistant' },
+];
+
+const HIGHLIGHTS: { title: string; items: { lead: string; text: string }[] }[] = [
+  {
+    title: 'AI that does the sorting',
+    items: [
+      {
+        lead: 'Auto-categorization',
+        text: 'AI categorizes new transactions after every bank sync and import, and follows instructions you write for it.',
+      },
+      {
+        lead: 'Statement parsing',
+        text: 'Upload a bank statement as PDF, CSV or text and AI turns it into transactions. Password-protected PDFs work too.',
+      },
+      {
+        lead: 'Your own model',
+        text: 'Use Anthropic, OpenAI, Google or any OpenAI-compatible endpoint, on every plan.',
+      },
+      {
+        lead: 'MCP server',
+        text: 'Connect Claude or ChatGPT with 100+ tools and three access levels: read, write, or write and delete.',
+      },
+    ],
+  },
+  {
+    title: 'Reports that answer questions',
+    items: [
+      {
+        lead: 'Pivot tables',
+        text: 'Slice by category, payee or tag across weeks, months, quarters or years, and save the views you reuse.',
+      },
+      {
+        lead: 'Cash flow',
+        text: 'Income against expenses, with a money-flow diagram from each income source to each category.',
+      },
+      { lead: 'Trends comparison', text: 'This period against the previous one, category by category.' },
+      { lead: 'FIRE planner', text: 'Built on your real spending and savings rate. On the Plus plan.' },
+    ],
+  },
+  {
+    title: 'Your whole net worth',
+    items: [
+      { lead: 'Loans', text: 'A payoff projection, and what an overpayment changes.' },
+      { lead: 'Vehicles', text: 'Value drops on a depreciation schedule you can override.' },
+      { lead: 'Venture deals', text: 'Capital calls, distributions, TVPI, DPI and IRR for angel and SPV investments.' },
+      { lead: 'Portfolios', text: 'Stocks, ETFs and crypto with cost basis and returns.' },
+    ],
+  },
+  {
+    title: 'Tools to keep the books clean',
+    items: [
+      { lead: 'Refunds', text: 'Link a refund to its purchase, so spending goes down and income stays honest.' },
+      {
+        lead: 'Splits and groups',
+        text: 'Split one transaction across categories, including bank-synced ones, and bundle related ones into a group.',
+      },
+      {
+        lead: 'Automations',
+        text: 'Rules with ten kinds of conditions. Preview a rule, then apply it to past transactions.',
+      },
+      {
+        lead: 'Transfer matching',
+        text: 'Turn two existing transactions into a transfer, with suggestions for likely pairs.',
+      },
+      { lead: 'Reconciliation', text: 'One page for duplicate, unwanted and stuck pending bank transactions.' },
+      { lead: 'Categories', text: 'Three levels deep. Create, rename and move them at any level.' },
+    ],
+  },
+  {
+    title: 'Built in the open',
+    items: [
+      { lead: 'Public roadmap', text: 'Vote on what gets built next.' },
+      { lead: 'Frequent releases', text: '21 shipped in September 2026, each one listed on GitHub.' },
+      { lead: 'Self-hosting', text: 'Free with Docker, with every feature on.' },
+    ],
+  },
+  {
+    title: 'Your data stays yours',
+    items: [
+      {
+        lead: 'Backup and restore',
+        text: 'Download a full backup of your account and restore it later, on the cloud or on your own server.',
+      },
+      { lead: 'Export, always', text: 'On every plan, and still there after a trial or plan ends.' },
+      { lead: 'Published price', text: '$30 or $55 a year, before tax. It is on the website.' },
+    ],
+  },
+];
+
+const COMPARISON: { feature: string; wallet: string; moneymatter: string }[] = [
+  {
+    feature: 'Source code and hosting',
+    wallet: 'Not published. Cloud only',
+    moneymatter: 'Open source. Use the cloud or self-host for free',
+  },
+  {
+    feature: 'Price',
+    wallet: 'Not listed on the website. Shown in the app, and it differs by country and app store',
+    moneymatter: '$30 a year for Essential, $55 a year for Plus, after a 40-day trial without a card',
+  },
+  {
+    feature: 'Getting your data out',
+    wallet: 'CSV and XLS export of transactions, on Premium',
+    moneymatter: 'Export on every plan, plus a full account backup you can restore',
+  },
+  {
+    feature: 'Refunds',
+    wallet: 'Recorded as separate income',
+    moneymatter: 'Linked to the original purchase',
+  },
+  {
+    feature: 'AI',
+    wallet: 'Automatic categorization, receipt scanning, and an MCP server for your own assistant',
+    moneymatter: 'Categorization, statement parsing, an MCP server, and your own model inside the app',
+  },
+  {
+    feature: 'Beyond bank accounts',
+    wallet: 'Stocks, ETFs and crypto. Simple debts you lent or borrowed',
+    moneymatter: 'Stocks, ETFs and crypto. Loans with payoff projections, vehicles and venture deals',
+  },
+  {
+    feature: 'Bank sync',
+    wallet: 'Premium. Wallet says it connects to over 15,000 institutions',
+    moneymatter:
+      'Plus plan, through LunchFlow, SimpleFIN, Monobank and Walutomat. LunchFlow and SimpleFIN need their own account',
+  },
+  {
+    feature: 'Apps',
+    wallet: 'iOS, Android and web, with offline mode on mobile',
+    moneymatter: 'Web app built for phones too; add it to your home screen. No native apps, no offline mode',
+  },
+  {
+    feature: 'Free use',
+    wallet: 'Free plan for manual tracking',
+    moneymatter: 'Free when self-hosted. On the cloud, the trial is followed by a paid plan',
+  },
+];
+
+const STEPS = [
+  "Set Wallet's language to English or Spanish, then export your records as CSV. On the web app, select the records and choose Export. The iOS app has no export.",
+  'In MoneyMatter, open Settings, then Import/Export, and pick Wallet (BudgetBakers). Upload the file, or several files at once.',
+  'For each Wallet account, create a new account, link it to one you already have, or skip it.',
+  'Map each Wallet category to one of yours, or create it during the import.',
+  'Review the possible duplicates and confirm.',
+];
+
+const IMPORTED = [
+  'Every record, with its category and payee.',
+  'Labels, as tags. A record with several labels gets several tags.',
+  'Transfers between your Wallet accounts, joined back into one transfer each.',
+  'Several export files in one go, up to about 10 MB and 100,000 rows together.',
+];
+
+const IMPORT_LIMITS = [
+  'The Wallet export must be in English or Spanish. Other languages stop the import.',
+  'Budgets, planned payments and goals are not imported.',
+  'Duplicates are checked only in accounts you link to existing ones, and joined transfers are not checked.',
+  'Skipping an account also drops every transfer to or from it, so balances can differ from Wallet.',
+];
+
+const STAY_ON_WALLET = [
+  'You want a native phone app that works offline.',
+  'You only track by hand and the free plan covers it.',
+  'You export Wallet in a language other than English or Spanish. MoneyMatter cannot read those files yet.',
+];
+
+const FAQ = [
+  {
+    question: 'Do I need Wallet Premium to move my data?',
+    answer:
+      "Yes, for the export. Wallet's CSV export is a Premium feature, and MoneyMatter imports that CSV file. If you are on the free plan, you would need Premium for long enough to export.",
+  },
+  {
+    question: 'Are my budgets and planned payments imported?',
+    answer:
+      'No. The importer brings in records, categories, payees, labels and transfers. Budgets and recurring payments are set up again in MoneyMatter.',
+  },
+  {
+    question: 'What happens to transfers between my accounts?',
+    answer:
+      'Wallet stores a transfer as two records. MoneyMatter joins them into one transfer when both have the same date and time, sit in different accounts, and their amounts are within 1% of each other. A transfer record with no partner comes in as money moved outside the accounts you track.',
+  },
+  {
+    question: 'Can I check the result before anything is saved?',
+    answer:
+      'Yes. You map each Wallet account and category first, then a review step lists possible duplicates. Nothing is written until you confirm.',
+  },
+  {
+    question: 'Is there a MoneyMatter mobile app?',
+    answer:
+      'Not a native one. MoneyMatter is a web app with a phone layout, and you can add it to your home screen. It needs a connection to work.',
+  },
+];
+
+const SOURCES = [
+  { label: 'Wallet product page', href: 'https://budgetbakers.com/en/products/wallet/' },
+  { label: 'Wallet downloads', href: 'https://budgetbakers.com/en/products/wallet/download' },
+  { label: 'Wallet bank sync', href: 'https://budgetbakers.com/en/products/wallet/features/bank-sync/' },
+  { label: 'Wallet MCP server', href: 'https://budgetbakers.com/en/products/wallet/integrations/mcp/' },
+  { label: 'BudgetBakers security', href: 'https://budgetbakers.com/en/security/' },
+  { label: 'BudgetBakers help: export', href: 'https://support.budgetbakers.com/hc/en-us/articles/7151606064018' },
+  { label: 'BudgetBakers help: plans', href: 'https://support.budgetbakers.com/hc/en-us/articles/7151349344018' },
+  { label: 'BudgetBakers help: backups', href: 'https://support.budgetbakers.com/hc/en-us/articles/10105401036690' },
+  { label: 'BudgetBakers feedback: linking refunds', href: 'https://feedback.budgetbakers.com/191' },
+];
+---
+
+<BaseLayout
+  title="Wallet by BudgetBakers Alternative, Open Source | MoneyMatter"
+  description="MoneyMatter is an open-source, self-hostable alternative to Wallet by BudgetBakers. Import your Wallet records, labels and transfers from a CSV export."
+>
+  <div class="bg-background text-foreground landing-page min-h-screen">
+    <BackgroundOrbs />
+    <LandingHeader />
+
+    <main class="relative z-10 mx-auto max-w-5xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
+      <h1 class="mx-auto max-w-4xl text-center text-3xl font-bold tracking-tight sm:text-5xl">
+        An open-source alternative to Wallet by BudgetBakers
+      </h1>
+      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
+        MoneyMatter is an open-source personal finance tracker with AI categorization, pivot reports, and tracking for
+        loans, vehicles and venture deals. It has an importer built for Wallet exports, so your records, labels and
+        transfers come with you.
+      </p>
+
+      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-center">
+        <div class="flex flex-col items-center gap-2">
+          <a
+            href="/sign-up"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center rounded-xl border-2 border-transparent px-8 py-3.5 text-base font-semibold transition-all sm:w-auto"
+            data-track="landing_cta_clicked"
+            data-track-location="hero"
+          >
+            Start Free Trial
+          </a>
+          <span class="text-muted-foreground text-xs">40-day free trial, no card needed</span>
+        </div>
+        <TryDemoButton client:load />
+      </div>
+
+      <dl class="border-border/50 divide-border/50 mt-14 grid grid-cols-2 divide-x divide-y border-y sm:grid-cols-4 sm:divide-y-0">
+        {
+          AT_A_GLANCE.map((fact) => (
+            <div class="flex flex-col-reverse gap-1 px-4 py-6 text-center">
+              <dt class="text-muted-foreground text-xs">{fact.label}</dt>
+              <dd class="text-2xl font-bold tracking-tight sm:text-3xl">{fact.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      <section class="mt-20">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">What you get with MoneyMatter</h2>
+        <div class="mt-8 space-y-4">
+          {
+            HIGHLIGHTS.map((group, index) => (
+              <div class="border-border/50 bg-card overflow-hidden rounded-2xl border">
+                <div class="border-border/50 bg-primary/5 flex items-baseline gap-3 border-b px-5 py-3">
+                  <span class="text-primary-text text-sm font-semibold tabular-nums">{String(index + 1).padStart(2, '0')}</span>
+                  <h3 class="font-semibold tracking-tight">{group.title}</h3>
+                </div>
+                <dl class="divide-border/40 divide-y">
+                  {group.items.map((item) => (
+                    <div class="grid sm:grid-cols-[13rem_1fr]">
+                      <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
+                        {item.lead}
+                      </dt>
+                      <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))
+          }
+        </div>
+        <p class="text-muted-foreground mt-4 text-sm">
+          See what is planned on the <a href={ROADMAP_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">public roadmap</a>,
+          read the code on <a href={GITHUB_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>,
+          or see how <a href="/#self-host" class="text-primary-text hover:underline">self-hosting</a> works.
+        </p>
+      </section>
+
+      <section class="mt-20">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Wallet and MoneyMatter side by side</h2>
+        <div class="border-border/50 bg-card mt-8 overflow-hidden rounded-2xl border text-sm">
+          <div class="border-border/50 hidden border-b md:grid md:grid-cols-[12rem_1fr_1fr]">
+            <span></span>
+            <span class="text-muted-foreground px-5 py-3 font-medium">Wallet by BudgetBakers</span>
+            <span class="bg-primary/5 text-primary-text px-5 py-3 font-semibold">MoneyMatter</span>
+          </div>
+          <div class="divide-border/50 divide-y">
+            {
+              COMPARISON.map((row) => (
+                <div class="md:grid md:grid-cols-[12rem_1fr_1fr]">
+                  <h3 class="px-5 pt-4 font-semibold md:py-4">{row.feature}</h3>
+                  <p class="text-muted-foreground px-5 py-2 md:py-4">
+                    <span class="mb-0.5 block text-xs font-medium tracking-wide uppercase opacity-70 md:hidden">Wallet</span>
+                    {row.wallet}
+                  </p>
+                  <p class="bg-primary/5 px-5 py-3 md:py-4">
+                    <span class="text-primary-text mb-0.5 block text-xs font-medium tracking-wide uppercase md:hidden">MoneyMatter</span>
+                    {row.moneymatter}
+                  </p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+        <p class="text-muted-foreground mt-3 text-xs">
+          Wallet details checked on {checkedOn} against the sources at the end of this page. MoneyMatter plans are on
+          the <a href="/#pricing" class="text-primary-text hover:underline">pricing section</a>.
+        </p>
+      </section>
+
+      <section class="mt-20">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Move your Wallet history</h2>
+        <p class="text-muted-foreground mt-4 max-w-2xl">
+          The import takes a few minutes. The <a href={DOCS_IMPORT_URL} class="text-primary-text hover:underline"
+            >Wallet import guide</a
+          > covers every option.
+        </p>
+
+        <div class="mt-8 grid items-start gap-10 lg:grid-cols-2">
+          <ol>
+            {
+              STEPS.map((step, index) => (
+                <li class="relative flex gap-4 pb-6 last:pb-0">
+                  {index < STEPS.length - 1 && <span class="bg-border/60 absolute top-8 bottom-0 left-4 w-px" aria-hidden="true" />}
+                  <span class="border-primary/40 text-primary-text bg-background relative flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums">
+                    {index + 1}
+                  </span>
+                  <p class="text-muted-foreground pt-1 text-sm leading-relaxed">{step}</p>
+                </li>
+              ))
+            }
+          </ol>
+          <div class="border-border/50 overflow-hidden rounded-2xl border">
+            <Screenshot
+              name="import-sources"
+              width={1344}
+              height={1082}
+              alt="MoneyMatter import options, including the Wallet (BudgetBakers) importer"
+            />
+          </div>
+        </div>
+
+        <div class="border-border/50 mt-12 grid gap-10 border-t pt-10 sm:grid-cols-2">
+          <div>
+            <h3 class="text-lg font-semibold">What comes across</h3>
+            <ul class="mt-4 space-y-3">
+              {
+                IMPORTED.map((item) => (
+                  <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
+                    <CheckIcon class="text-primary-text mt-0.5 shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold">Limits of the import</h3>
+            <ul class="mt-4 space-y-3">
+              {
+                IMPORT_LIMITS.map((item) => (
+                  <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
+                    <span class="bg-muted-foreground/60 mt-2 h-px w-4 shrink-0" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+        <p class="text-muted-foreground mt-8 max-w-2xl text-sm">
+          Two records are joined into one transfer when they share a date and time, sit in different accounts, and
+          their amounts are within 1% of each other. See <a href={DOCS_TRANSFERS_URL} class="text-primary-text hover:underline"
+            >how transfers work</a
+          >.
+        </p>
+      </section>
+
+      <section class="mx-auto mt-20 max-w-3xl">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Questions about switching</h2>
+        <div class="mt-6 space-y-3">
+          {
+            FAQ.map((item) => (
+              <details class="group border-border/50 bg-card rounded-xl border px-5 py-4">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+                </summary>
+                <p class="text-muted-foreground mt-3 text-sm leading-relaxed">{item.answer}</p>
+              </details>
+            ))
+          }
+          <FaqAsk client:visible />
+        </div>
+
+        <div class="border-primary/40 mt-12 border-l-2 pl-5">
+          <h2 class="text-lg font-semibold">When Wallet is the better fit</h2>
+          <ul class="text-muted-foreground mt-3 space-y-2 text-sm">
+            {STAY_ON_WALLET.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+
+        <div class="mt-12">
+          <h2 class="text-sm font-semibold">Sources</h2>
+          <p class="text-muted-foreground mt-2 text-xs">
+            Checked on {checkedOn}. Wallet and BudgetBakers are trademarks of BudgetBakers; MoneyMatter is not
+            affiliated with them.
+          </p>
+          <ul class="text-muted-foreground mt-3 flex flex-wrap gap-x-5 gap-y-1 text-xs">
+            {
+              SOURCES.map((source) => (
+                <li>
+                  <a href={source.href} class="hover:text-foreground underline" target="_blank" rel="noopener noreferrer nofollow">
+                    {source.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <CtaSection />
+    <LandingFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  .landing-page {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-y: auto;
+  }
+</style>
