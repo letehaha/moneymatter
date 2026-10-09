@@ -1,0 +1,146 @@
+---
+title: Self-host MoneyMatter with Docker
+description: Run MoneyMatter on your own server with Docker Compose. What you get, what you need, a quickstart, how to update and back up, and how to move your data between the cloud and your own server.
+sidebar:
+  order: 4
+  label: Self-hosting
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+MoneyMatter is open source, and you can run the whole app on your own server for free. Your data stays in your own database and nothing is sent to moneymatter.app.
+
+This page is the short version. The full guides live next to the code on GitHub and are linked from each section.
+
+## What you get
+
+- **The same app as the cloud.** Every feature is on for every user. There are no plans, no trial and no billing.
+- **As many users as you like.** You can cap the number of sign-ups or close them.
+- **Exchange rates and stock prices** work without any API key.
+- **No analytics.** A self-hosted install sends none.
+
+Some features need a key or an account of your own. They stay off until you set them up:
+
+| Feature                        | What you need                                                                       |
+| ------------------------------ | ----------------------------------------------------------------------------------- |
+| Bank connections               | Your own account with the provider. See [Bank connections](/import/bank-connections/). |
+| AI features                    | Your own AI key, or a model running on your own network.                            |
+| Crypto prices                  | A CoinGecko API key.                                                                |
+| Email (invitations, verification) | A Resend API key. Without it, you share invitation links by hand.                |
+| Google or GitHub sign-in       | Your own OAuth app with that provider.                                              |
+| Payee logos                    | A logo.dev key.                                                                     |
+
+The [environment reference](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/environment-reference.md) lists every setting.
+
+On the cloud, hosting, updates, security patches and these data feeds are handled for you. See [Plans and billing](/settings/plans-and-billing/).
+
+## What you need
+
+- A machine with Docker Engine and the Compose plugin. A small VPS running Ubuntu or Debian is the common choice, but any Docker host works.
+- At least 2 GB of RAM.
+- An `amd64` (x86-64) processor for the published images. On an ARM machine, such as a Raspberry Pi, build the images from source or run them under emulation, which is slower.
+- For access from the internet: a domain and a reverse proxy that handles HTTPS. You don't need either to try it on your own computer or home network.
+
+Docker Compose is the only supported setup.
+
+## Quickstart
+
+<Steps>
+
+1. Get the files:
+
+   ```bash
+   git clone https://github.com/letehaha/moneymatter.git
+   cd moneymatter/self-hosting
+   cp .env.example .env
+   ```
+
+2. Open `.env` and fill in the **REQUIRED** section. Four values must be replaced with secrets of your own: `APPLICATION_JWT_SECRET`, `APP_SESSION_ID_SECRET`, `BETTER_AUTH_SECRET` and `APPLICATION_DB_PASSWORD`. Generate each one separately with:
+
+   ```bash
+   openssl rand -base64 32
+   ```
+
+3. Start the app:
+
+   ```bash
+   docker compose up -d
+   ```
+
+4. Wait about a minute. On the first start the app sets up its database before it responds.
+5. Open `http://<your-server>:8080` and create your account.
+
+</Steps>
+
+To use a different port, set `HTTP_PORT` in `.env`.
+
+The [setup guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/setup-guide.md) walks through each step in detail. To deploy from the Portainer UI instead, see the [Portainer guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/portainer.md).
+
+## Put it on the internet
+
+<Steps>
+
+1. Point your reverse proxy at `http://<your-server>:8080`.
+2. In `.env`, set `BETTER_AUTH_URL` and `AUTH_ORIGIN` to the address people type in the browser, for example `https://budget.example.com`. Both always hold the same value.
+3. Run `docker compose up -d` again.
+4. Close direct access to port 8080, so the app is only reachable through the proxy.
+
+</Steps>
+
+<Aside type="caution" title="Sign-in only works at the address you set">
+If `BETTER_AUTH_URL` and `AUTH_ORIGIN` don't match the address in the browser, signing in fails or loops. This is the most common setup problem.
+</Aside>
+
+The [reverse proxy guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/reverse-proxies.md) has recipes for Nginx Proxy Manager, Caddy, Traefik and plain nginx, and explains how to close the port. If you don't run a proxy, the [Traefik overlay](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/traefik-overlay.md) adds one with free Let's Encrypt certificates.
+
+## Update
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Both commands are needed: `up -d` on its own doesn't download a newer version. Take a backup first.
+
+## Back up your server
+
+Two things hold your data: the database and the files attached to transactions. Back up both.
+
+```bash
+docker compose exec -T db \
+  sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' \
+  | gzip > "backup-$(date +%F).sql.gz"
+```
+
+The [setup guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/setup-guide.md#5-backups) has the command for attachments and for restoring. The same backup moves your install to another server.
+
+## Move between the cloud and your own server
+
+You can move in either direction with a backup file from inside the app. It carries one account's data.
+
+<Steps>
+
+1. On the install you're leaving, open **Settings**, then **Security**, then the **Backup & restore** tab, and click **Download**.
+2. On the install you're moving to, create an account.
+3. Open the same tab there, click **Select backup file** and choose the zip.
+
+</Steps>
+
+A few things to know first:
+
+- **Restoring replaces everything** in the account you restore into.
+- **Bank connections, your AI keys and transaction attachments aren't in the backup.** Reconnect your banks and enter your keys again afterwards.
+- **Moving to the cloud:** the cloud account must use the same email address as the account the backup came from, and restoring needs a paid plan. It isn't available during the free trial.
+- **Moving to your own server:** there's no email check, and after the restore your stocks and crypto get their past prices fetched again.
+
+See [Backup and restore](/settings/security-and-account/#backup-and-restore) for the full steps.
+
+## If something goes wrong
+
+The [troubleshooting guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/troubleshooting.md) covers the usual problems: sign-in loops, a `502` error, large imports failing and missing exchange rates. For anything else, [open an issue on GitHub](https://github.com/letehaha/moneymatter/issues).
+
+## Related
+
+- [What is MoneyMatter?](/getting-started/what-is-moneymatter/)
+- [Connect Claude or ChatGPT](/ai/connect-claude-chatgpt-mcp/#self-hosted-moneymatter)
+- [Bank connections](/import/bank-connections/)
