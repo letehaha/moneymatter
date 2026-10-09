@@ -1,5 +1,10 @@
 import { api } from '@/api/_api';
-import type { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE, VentureEventModel } from '@bt/shared/types';
+import type {
+  TransactionVentureLink,
+  VENTURE_CASH_FLOW_MODE,
+  VENTURE_EVENT_TYPE,
+  VentureEventModel,
+} from '@bt/shared/types';
 
 interface CreateEventPayload {
   type: VENTURE_EVENT_TYPE;
@@ -34,4 +39,8 @@ export const deleteVentureEvent = async (params: {
     query.deleteLinkedTransactions = String(params.deleteLinkedTransactions);
   }
   return api.delete(`/venture/events/${params.eventId}`, { query });
+};
+
+export const getTransactionVentureLink = async (params: { transactionId: string }): Promise<TransactionVentureLink> => {
+  return api.get(`/transactions/${params.transactionId}/venture-link`);
 };

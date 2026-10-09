@@ -14,6 +14,7 @@ import getPortfolioLink from '@controllers/transactions.controller/get-portfolio
 import getTransactions from '@controllers/transactions.controller/get-transaction';
 import getTransactionsByIds from '@controllers/transactions.controller/get-transactions-by-ids';
 import getTransactionsSummary from '@controllers/transactions.controller/get-transactions-summary';
+import getVentureLink from '@controllers/transactions.controller/get-venture-link';
 import linkToPortfolio from '@controllers/transactions.controller/link-to-portfolio';
 import matchInvoice from '@controllers/transactions.controller/match-invoice';
 import * as reconciliation from '@controllers/transactions.controller/reconciliation';
@@ -103,6 +104,7 @@ router.delete('/splits/:splitId', checkBaseCurrencyLock, deleteSplit);
 router.post('/:transactionId/link-to-portfolio', checkBaseCurrencyLock, linkToPortfolio);
 router.post('/:transactionId/unlink-from-portfolio', checkBaseCurrencyLock, unlinkFromPortfolio);
 router.get('/:transactionId/portfolio-link', getPortfolioLink);
+router.get('/:transactionId/venture-link', getVentureLink);
 
 // Listing stays ungated so a lapsed user can still reach their own files.
 router.get('/:transactionId/attachments', listAttachmentsController);
