@@ -1,9 +1,9 @@
 /**
  * Composable for locale-aware date-fns functions.
  *
- * date-fns requires manually passing locale to each function call.
- * This composable provides wrapper functions that automatically use
- * the current app locale.
+ * main.ts sets the app locale as the date-fns default, which localizes plain
+ * date-fns calls but is read only at call time. These wrappers read the locale
+ * reactively, so a computed using them recomputes when the language changes.
  *
  * @see https://github.com/date-fns/date-fns/blob/main/docs/i18n.md
  */

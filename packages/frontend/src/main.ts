@@ -4,6 +4,7 @@ import './registerServiceWorker';
 import { installChunkReloadHandler } from '@/common/utils/chunk-reload-handler';
 import { identifyCurrentTheme } from '@/common/utils/color-theme';
 import { patchMetaViewportMaxScaleForiOS } from '@/common/utils/meta-viewport-max-scale';
+import { getDateFnsLocale } from '@/composable/use-date-locale';
 import { i18n, initializeLocale, loadChunks } from '@/i18n';
 import { initPostHog, trackPageviews } from '@/lib/posthog';
 import { queryClient } from '@/lib/query-client';
@@ -13,7 +14,8 @@ import { store } from '@/stores/setup';
 import type { SupportedLocale } from '@bt/shared/i18n/locales';
 import { VueQueryPlugin } from '@tanstack/vue-query';
 import { createHead } from '@unhead/vue/client';
-import { createApp } from 'vue';
+import { setDefaultOptions } from 'date-fns';
+import { createApp, watchEffect } from 'vue';
 
 import App from './app.vue';
 
@@ -22,6 +24,10 @@ patchMetaViewportMaxScaleForiOS();
 if (!import.meta.env.DEV) {
   installChunkReloadHandler({ router });
 }
+
+// Localizes every date-fns call that passes no explicit locale. The default is read at call
+// time, so a value cached in a computed keeps the previous language until it recomputes.
+watchEffect(() => setDefaultOptions({ locale: getDateFnsLocale() }), { flush: 'sync' });
 
 // Initialize locale from localStorage/browser
 const initialLocale = initializeLocale();

@@ -1,4 +1,3 @@
-import { getDateFnsLocale } from '@/composable/use-date-locale';
 import { format, parseISO } from 'date-fns';
 
 /**
@@ -20,7 +19,7 @@ export function formatShortDate(iso: string): string {
   try {
     const parsed = parseISO(iso);
     if (Number.isNaN(parsed.getTime())) return iso;
-    return format(parsed, 'dd MMM yyyy', { locale: getDateFnsLocale() });
+    return format(parsed, 'dd MMM yyyy');
   } catch {
     return iso;
   }
