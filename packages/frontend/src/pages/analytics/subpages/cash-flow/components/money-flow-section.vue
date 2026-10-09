@@ -104,11 +104,20 @@
             <span class="size-2 rounded-xs" :style="{ background: item.color }" />
             {{ item.label }}
           </span>
-          <span :class="cn('leading-tight font-extrabold tabular-nums', isCompact ? 'text-base' : 'text-[22px]')">
+          <span
+            :class="
+              cn(
+                'flex flex-wrap items-baseline gap-x-1.5 leading-tight font-extrabold tabular-nums',
+                isCompact ? 'justify-end text-base' : 'text-[22px]',
+              )
+            "
+          >
             {{ formatBaseCurrency(item.value) }}
             <span
               v-if="item.hint"
-              :class="cn('text-muted-foreground ml-1 font-semibold', isCompact ? 'text-xs' : 'text-[13px]')"
+              :class="
+                cn('text-muted-foreground font-semibold whitespace-nowrap', isCompact ? 'text-xs' : 'text-[13px]')
+              "
             >
               {{ item.hint }}
             </span>
