@@ -108,35 +108,6 @@ const starsLabel = await getGitHubStarsLabel();
   </div>
 </BaseLayout>
 
-<script>
-  import { trackAnalyticsEvent } from '@/lib/posthog';
-
-  // Attach click tracking to all [data-track] elements
-  document.querySelectorAll('[data-track]').forEach((el) => {
-    el.addEventListener('click', () => {
-      const event = el.getAttribute('data-track');
-      const location = el.getAttribute('data-track-location');
-
-      if (event === 'landing_cta_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_cta_clicked',
-          properties: { location: location as 'header' | 'hero' | 'cta_section' | 'self_host' | 'pricing', action: 'sign_up' },
-        });
-      } else if (event === 'landing_roadmap_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_roadmap_clicked',
-          properties: { location: location as 'hero' | 'pricing' | 'community' },
-        });
-      } else if (event === 'landing_github_clicked' && location) {
-        trackAnalyticsEvent({
-          event: 'landing_github_clicked',
-          properties: { location: location as 'header_nav' | 'header_star' | 'hero' | 'self_host' | 'cta_section' | 'footer' | 'community' },
-        });
-      }
-    });
-  });
-</script>
-
 <style>
   .landing-page {
     font-family: 'Montserrat', system-ui, sans-serif;
