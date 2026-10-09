@@ -109,10 +109,7 @@ const starsLabel = await getGitHubStarsLabel();
 </BaseLayout>
 
 <script>
-  import { initPostHog, trackAnalyticsEvent } from '@/lib/posthog';
-
-  // Initialize PostHog
-  initPostHog();
+  import { trackAnalyticsEvent } from '@/lib/posthog';
 
   // Attach click tracking to all [data-track] elements
   document.querySelectorAll('[data-track]').forEach((el) => {
