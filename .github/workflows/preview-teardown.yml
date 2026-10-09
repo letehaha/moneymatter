@@ -73,6 +73,27 @@ jobs:
               echo "No preview environment found for PR #$PR_NUMBER"
             fi
 
+      # Non-blocking: a failed delete only leaves a stale tag behind, so it
+      # warns instead of failing the teardown.
+      - name: Delete preview image tags from Docker Hub
+        env:
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+        run: |
+          TOKEN=$(jq -n --arg u "$DOCKER_HUB_USERNAME" --arg p "$DOCKER_HUB_ACCESS_TOKEN" '{username: $u, password: $p}' \
+            | curl -sS -H 'Content-Type: application/json' -d @- https://hub.docker.com/v2/users/login \
+            | jq -r '.token // empty')
+
+          for repo in budget-tracker-fe budget-tracker-be budget-tracker-docs; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -X DELETE \
+              -H "Authorization: Bearer $TOKEN" \
+              "https://hub.docker.com/v2/repositories/letehaha/$repo/tags/pr-$PR_NUMBER/")
+            case "$status" in
+              204|404) echo "$repo:pr-$PR_NUMBER -> HTTP $status" ;;
+              *) echo "::warning::Could not delete $repo:pr-$PR_NUMBER from Docker Hub (HTTP $status)" ;;
+            esac
+          done
+
       - name: Update PR comment
         uses: marocchino/sticky-pull-request-comment@5770ad5eb8f42dd2c4f34da00c94c5381e49af88 # v3.0.5
         with:
