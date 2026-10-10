@@ -5,10 +5,12 @@ import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveMenu from '@/components/common/responsive-menu.vue';
 import { Button } from '@/components/lib/ui/button';
+import { Checkbox } from '@/components/lib/ui/checkbox';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { useQueryClient } from '@tanstack/vue-query';
 import { cn } from '@/lib/utils';
 import { useCategoriesStore } from '@/stores';
 import type {
@@ -27,6 +29,7 @@ import {
   PlusIcon,
   SparklesIcon,
   TargetIcon,
+  XIcon,
 } from '@lucide/vue';
 import { createReusableTemplate } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
@@ -53,54 +56,98 @@ import GoalEditorDialog from './goal-editor-dialog.vue';
 import GoalPeekPopover from './goal-peek-popover.vue';
 import GroupNameDialog from './group-name-dialog.vue';
 
-type GoalDisplay = ReturnType<typeof goalStatusDisplay> & { caption: ReturnType<typeof goalCaption> };
+type GoalDisplay = ReturnType<typeof goalStatusDisplay> & {
+  caption: ReturnType<typeof goalCaption>;
+};
 
 const props = defineProps<{
   planId: string;
   view: BudgetPlanPeriodView;
   archivedLines: BudgetPlanLineEntry[];
   historyLineIds: Set<string>;
-  selectedLineId: string | null;
+  /** In row order; two or more selected lines show the bulk-action bar. */
+  selectedIds: string[];
   /** Groups that still hold a live line and so cannot be deleted. */
   liveGroupIds: Set<string>;
   unit: GoalPeriodUnit;
   rowBars: RowBarMode;
   compactRows: boolean;
+  /** Mobile list rows instead of the table; decided by the page so it matches the panel layout. */
+  narrow: boolean;
+  /** Narrow layout only: rows show checkboxes and tapping a row toggles it. */
+  selectMode: boolean;
 }>();
 const emit = defineEmits<{
   edit: [line: BudgetPlanPeriodViewLine];
   select: [lineId: string];
+  toggle: [{ lineId: string; range: boolean }];
+  toggleMany: [lineIds: string[]];
+  clearSelection: [];
+  /** Narrow layout: open the selection's details in the drawer. */
+  openPanel: [];
   addLine: [groupId: string | null];
 }>();
 
-const GRID_ROW_CLASS = 'grid grid-cols-[minmax(0,1fr)_repeat(3,7rem)_2.5rem] gap-2 px-4';
+const GRID_ROW_CLASS = 'grid grid-cols-[1.25rem_minmax(0,1fr)_repeat(3,7rem)_2.5rem] items-center gap-2 px-3';
 
-const [DefineLineMenu, LineMenu] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine; menuKey: string }>();
+const [DefineLineMenu, LineMenu] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+  menuKey: string;
+}>();
 const [DefineAssignTrigger, AssignTrigger] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   compact?: boolean;
 }>();
 const [DefineArchivedTrigger, ArchivedTrigger] = createReusableTemplate();
 const [DefineGroupsHeader, GroupsHeader] = createReusableTemplate();
-const [DefineGroupControls, GroupControls] = createReusableTemplate<{ group: BudgetPlanLineGroup }>();
-const [DefineGroupMenu, GroupMenu] = createReusableTemplate<{ group: BudgetPlanLineGroup; menuKey: string }>();
-const [DefineLineRow, LineRow] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
-const [DefineLineCard, LineCard] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
-const [DefineSelectTrigger, SelectTrigger] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
-const [DefineGoalButton, GoalButton] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
-const [DefineLineName, LineName] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
+const [DefineGroupControls, GroupControls] = createReusableTemplate<{
+  group: BudgetPlanLineGroup;
+}>();
+const [DefineGroupMenu, GroupMenu] = createReusableTemplate<{
+  group: BudgetPlanLineGroup;
+  menuKey: string;
+}>();
+const [DefineLineRow, LineRow] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+}>();
+const [DefineLineCard, LineCard] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+}>();
+const [DefineSelectTrigger, SelectTrigger] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+  toggle?: boolean;
+}>();
+const [DefineGoalButton, GoalButton] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+}>();
+const [DefineLineName, LineName] = createReusableTemplate<{
+  line: BudgetPlanPeriodViewLine;
+}>();
 const [DefineGoalCaption, GoalCaption] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   display?: GoalDisplay;
+  bars?: boolean;
 }>();
 
 const { t } = useI18n();
+const queryClient = useQueryClient();
 const { addSuccessNotification, addInfoNotification } = useNotificationCenter();
 const { formatBaseCurrency } = useFormatCurrency();
 const { goalText } = useGoalText();
 const { categoriesMap } = storeToRefs(useCategoriesStore());
 
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
+
+const selectedSet = computed(() => new Set(props.selectedIds));
+const selectionAvailable = computed(() =>
+  props.view.lines.reduce((sum, line) => (selectedSet.value.has(line.lineId) ? sum + line.available : sum), 0),
+);
+const allLineIds = computed(() => props.view.lines.map((line) => line.lineId));
+const checkState = ({ lineIds }: { lineIds: string[] }): boolean | 'indeterminate' => {
+  const hits = lineIds.filter((id) => selectedSet.value.has(id)).length;
+  if (hits === 0) return false;
+  return hits === lineIds.length ? true : 'indeterminate';
+};
 
 const goalDisplays = computed(() => {
   const displays = new Map<string, GoalDisplay>();
@@ -114,10 +161,20 @@ const goalDisplays = computed(() => {
   return displays;
 });
 
+const CHECKBOX_CLASS =
+  'border-muted-foreground/50 data-[state=checked]:border-primary data-[state=indeterminate]:border-primary size-[18px] rounded-[4px]';
+
 const availableClass = ({ line }: { line: BudgetPlanPeriodViewLine }) =>
-  goalDisplays.value.get(line.lineId)?.kind === 'underfunded'
-    ? 'bg-warning/15 text-warning-text rounded-full px-2 py-0.5'
-    : amountToneClass({ amount: line.available });
+  cn(
+    'inline-block rounded-full px-2 py-0.5 text-sm font-medium tabular-nums',
+    goalDisplays.value.get(line.lineId)?.kind === 'underfunded'
+      ? 'bg-warning/15 text-warning-text'
+      : line.available > 0
+        ? 'bg-success-text/15 text-success-text'
+        : line.available < 0
+          ? 'bg-app-expense-color/15 text-app-expense-color'
+          : 'bg-muted text-muted-foreground',
+  );
 
 const isGoalEditorOpen = ref(false);
 const goalLineId = ref<string | null>(null);
@@ -138,19 +195,30 @@ const targetHasHistory = ref(false);
 const openMenuKey = ref<string | null>(null);
 
 const sections = computed(() => {
-  const { ungrouped, groups } = groupLines({ lines: props.view.lines, groups: props.view.groups });
+  const { ungrouped, groups } = groupLines({
+    lines: props.view.lines,
+    groups: props.view.groups,
+  });
   return {
     ungrouped,
-    groups: groups.map((section) => ({ ...section, totals: sumLineTotals({ lines: section.lines }) })),
+    groups: groups.map((section) => ({
+      ...section,
+      totals: sumLineTotals({ lines: section.lines }),
+    })),
   };
 });
 
-const { collapsedIds, setCollapsed, toggleGroup } = useCollapsedGroups({ planId: () => props.planId });
+const { collapsedIds, setCollapsed, toggleGroup } = useCollapsedGroups({
+  planId: () => props.planId,
+});
 const areAllCollapsed = computed(
   () => props.view.groups.length > 0 && props.view.groups.every((group) => collapsedIds.value.has(group.id)),
 );
 const toggleAllGroups = () =>
-  setCollapsed({ groupIds: props.view.groups.map((group) => group.id), collapsed: !areAllCollapsed.value });
+  setCollapsed({
+    groupIds: props.view.groups.map((group) => group.id),
+    collapsed: !areAllCollapsed.value,
+  });
 
 const isGroupDialogOpen = ref(false);
 const isGroupDeleteOpen = ref(false);
@@ -238,10 +306,44 @@ const archiveTargetLine = () => {
   if (!targetLine.value || isArchiving.value) return;
   archive({ planId: props.planId, lineId: targetLine.value.lineId });
 };
+
+const isArchiveManyOpen = ref(false);
+const archivableSelectedIds = computed(() => props.selectedIds.filter((id) => !archivedLineIds.value.has(id)));
+const { isPending: isArchivingMany, mutate: archiveMany } = useInvalidatingMutation({
+  mutationFn: async ({ lineIds }: { lineIds: string[] }) => {
+    const results = await Promise.allSettled(
+      lineIds.map((lineId) => archiveBudgetPlanLine({ planId: props.planId, lineId })),
+    );
+    const failed = results.find((result) => result.status === 'rejected');
+    if (failed) throw failed.reason;
+  },
+  invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
+  errorKey: 'budgetPlans.line.archiveError',
+});
+
+const archiveSelected = () => {
+  if (isArchivingMany.value) return;
+  const lineIds = archivableSelectedIds.value;
+  archiveMany(
+    { lineIds },
+    {
+      onSuccess: () => {
+        isArchiveManyOpen.value = false;
+        addSuccessNotification(t('budgetPlans.line.archivedMany', lineIds.length));
+        emit('clearSelection');
+      },
+      // A partial failure still archived some lines, so the list must refetch either way.
+      onError: () =>
+        queryClient.invalidateQueries({
+          queryKey: VUE_QUERY_CACHE_KEYS.budgetPlans,
+        }),
+    },
+  );
+};
 </script>
 
 <template>
-  <div class="@container/lines">
+  <div>
     <DefineLineMenu v-slot="{ line, menuKey }">
       <DesktopOnlyTooltip :content="$t('budgetPlans.grid.lineActions')">
         <span class="inline-flex">
@@ -290,7 +392,10 @@ const archiveTargetLine = () => {
           variant="outline"
           size="sm"
           :aria-label="
-            $t('budgetPlans.grid.assignAmountFor', { name: line.name, amount: formatBaseCurrency(line.assigned) })
+            $t('budgetPlans.grid.assignAmountFor', {
+              name: line.name,
+              amount: formatBaseCurrency(line.assigned),
+            })
           "
           :class="
             cn(
@@ -305,24 +410,19 @@ const archiveTargetLine = () => {
       </AssignPopover>
     </DefineAssignTrigger>
 
-    <DefineSelectTrigger v-slot="{ line, $slots }">
+    <DefineSelectTrigger v-slot="{ line, toggle, $slots }">
       <Button
         variant="ghost"
-        :aria-pressed="selectedLineId === line.lineId"
-        :class="
-          cn(
-            '-mx-2 h-auto min-w-0 flex-1 flex-col items-stretch gap-0 px-2 text-left font-normal',
-            compactRows ? 'py-0.5' : 'py-1',
-          )
-        "
-        @click="emit('select', line.lineId)"
+        :aria-pressed="selectedSet.has(line.lineId)"
+        class="-mx-2 h-auto min-w-0 flex-1 flex-col items-stretch gap-0 px-2 py-0 text-left font-normal"
+        @click="toggle ? emit('toggle', { lineId: line.lineId, range: false }) : emit('select', line.lineId)"
       >
         <component :is="$slots.default" />
       </Button>
     </DefineSelectTrigger>
 
     <DefineGoalButton v-slot="{ line }">
-      <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center">
+      <span class="flex size-5 shrink-0 items-center justify-center">
         <GoalPeekPopover
           v-if="line.goal"
           :plan-id="planId"
@@ -345,8 +445,8 @@ const archiveTargetLine = () => {
       </span>
     </DefineGoalButton>
 
-    <DefineGoalCaption v-slot="{ line, display }">
-      <span class="flex min-w-0 items-center justify-between gap-2 text-xs">
+    <DefineGoalCaption v-slot="{ line, display, bars = true }">
+      <span class="flex min-w-0 items-center justify-between gap-2 text-xs leading-4">
         <span class="text-muted-foreground truncate">{{ categoriesCaption({ line }) }}</span>
         <span v-if="display" :class="cn('flex shrink-0 items-center gap-1 tabular-nums', display.textClass)">
           <CheckIcon v-if="display.caption.icon === 'check'" class="size-3" />
@@ -362,12 +462,12 @@ const archiveTargetLine = () => {
           }}
         </span>
       </span>
-      <BudgetLineBars :line="line" :goal="display" :mode="rowBars" :compact="compactRows" />
+      <BudgetLineBars v-if="bars" :line="line" :goal="display" :mode="rowBars" />
     </DefineGoalCaption>
 
     <DefineLineName v-slot="{ line }">
-      <span class="flex items-center gap-2">
-        <span class="min-w-0 truncate font-semibold">{{ line.name }}</span>
+      <span class="flex items-center gap-2 leading-5">
+        <span class="min-w-0 truncate text-sm font-semibold">{{ line.name }}</span>
         <span
           v-if="!view.pool && line.assignedSource === 'override'"
           class="text-primary-text bg-primary/10 rounded-full px-1.5 py-0.5 text-[10px] font-medium"
@@ -406,7 +506,7 @@ const archiveTargetLine = () => {
             <ChevronDownIcon :class="cn('size-4 transition-transform', areAllCollapsed && '-rotate-90')" />
           </Button>
         </DesktopOnlyTooltip>
-        <span class="truncate tracking-wide uppercase">{{ $t('budgetPlans.groups.headerLabel') }}</span>
+        <span class="truncate">{{ $t('budgetPlans.groups.headerLabel') }}</span>
         <DesktopOnlyTooltip :content="$t('budgetPlans.groups.add')">
           <Button
             variant="ghost"
@@ -499,27 +599,33 @@ const archiveTargetLine = () => {
         :class="
           cn(
             GRID_ROW_CLASS,
-            'group/line border-border items-center border-t',
-            compactRows ? 'py-1' : 'py-2.5',
-            selectedLineId === line.lineId && 'bg-accent',
+            'group/line border-border hover:bg-accent/40 border-t select-none',
+            compactRows ? 'py-2' : 'py-1',
+            selectedSet.has(line.lineId) && 'bg-accent hover:bg-accent',
           )
         "
       >
-        <div class="flex min-w-0 items-start gap-2">
+        <Checkbox
+          :model-value="selectedSet.has(line.lineId)"
+          :class="CHECKBOX_CLASS"
+          :aria-label="$t('budgetPlans.grid.selectLine', { name: line.name })"
+          @click="(event: MouseEvent) => emit('toggle', { lineId: line.lineId, range: event.shiftKey })"
+        />
+        <div class="flex min-w-0 items-center gap-2">
           <GoalButton :line="line" />
           <SelectTrigger :line="line">
             <LineName :line="line" />
-            <GoalCaption :line="line" :display="goalDisplays.get(line.lineId)" />
+            <GoalCaption v-if="!compactRows" :line="line" :display="goalDisplays.get(line.lineId)" />
           </SelectTrigger>
         </div>
 
         <AssignTrigger :line="line" />
 
-        <span class="text-right text-sm tabular-nums">{{ formatBaseCurrency(line.activity) }}</span>
+        <span class="text-muted-foreground text-right text-sm tabular-nums">{{
+          formatBaseCurrency(line.activity)
+        }}</span>
         <span class="text-right">
-          <span :class="cn('text-sm font-medium tabular-nums', availableClass({ line }))">
-            {{ formatBaseCurrency(line.available) }}
-          </span>
+          <span :class="availableClass({ line })">{{ formatBaseCurrency(line.available) }}</span>
         </span>
 
         <span v-if="archivedLineIds.has(line.lineId)" />
@@ -531,37 +637,32 @@ const archiveTargetLine = () => {
       <div
         :class="
           cn(
-            'group/line border-border bg-muted/40 rounded-lg border',
-            compactRows ? 'p-2' : 'p-3',
-            selectedLineId === line.lineId && 'border-primary',
+            'group/line border-border flex min-h-[46px] items-center gap-3 border-t px-3 py-1',
+            selectedSet.has(line.lineId) && 'bg-accent',
           )
         "
       >
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex min-w-0 flex-1 items-start gap-2">
-            <GoalButton :line="line" />
-            <SelectTrigger :line="line">
-              <LineName :line="line" />
-              <GoalCaption :line="line" :display="goalDisplays.get(line.lineId)" />
-            </SelectTrigger>
-          </div>
-          <div class="flex shrink-0 items-center gap-1">
-            <span :class="cn('text-lg font-bold tabular-nums', availableClass({ line }))">
-              {{ formatBaseCurrency(line.available) }}
-            </span>
-            <LineMenu v-if="!archivedLineIds.has(line.lineId)" :line="line" :menu-key="`card-${line.lineId}`" />
-          </div>
-        </div>
-
-        <div :class="cn('flex items-center justify-between gap-3', compactRows ? 'mt-1' : 'mt-2')">
-          <span v-if="line.goal" class="text-muted-foreground text-xs tabular-nums">
-            {{ $t('budgetPlans.grid.spentAmount', { amount: formatBaseCurrency(spentOf({ line })) }) }}
+        <Checkbox
+          v-if="selectMode"
+          :model-value="selectedSet.has(line.lineId)"
+          :class="CHECKBOX_CLASS"
+          :aria-label="$t('budgetPlans.grid.selectLine', { name: line.name })"
+          @click="emit('toggle', { lineId: line.lineId, range: false })"
+        />
+        <GoalButton v-else :line="line" />
+        <SelectTrigger :line="line" :toggle="selectMode">
+          <LineName :line="line" />
+          <GoalCaption :line="line" :display="goalDisplays.get(line.lineId)" :bars="false" />
+          <span v-if="line.goal" class="text-muted-foreground text-xs leading-4 tabular-nums">
+            {{
+              $t('budgetPlans.grid.spentAmount', {
+                amount: formatBaseCurrency(spentOf({ line })),
+              })
+            }}
           </span>
-          <div class="ml-auto flex items-center gap-2">
-            <span class="text-muted-foreground text-xs">{{ $t('budgetPlans.grid.assigned') }}</span>
-            <AssignTrigger :line="line" :compact="true" />
-          </div>
-        </div>
+        </SelectTrigger>
+        <span :class="availableClass({ line })">{{ formatBaseCurrency(line.available) }}</span>
+        <LineMenu v-if="!archivedLineIds.has(line.lineId)" :line="line" :menu-key="`card-${line.lineId}`" />
       </div>
     </DefineLineCard>
 
@@ -575,19 +676,27 @@ const archiveTargetLine = () => {
         @click="isArchivedListOpen = true"
       >
         <ArchiveIcon class="size-3.5" />
-        {{ $t('budgetPlans.archivedLines.trigger', { count: archivedLines.length }) }}
+        {{
+          $t('budgetPlans.archivedLines.trigger', {
+            count: archivedLines.length,
+          })
+        }}
       </Button>
     </DefineArchivedTrigger>
 
     <div
       v-if="!view.lines.length && !view.groups.length"
-      class="border-border flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center"
+      class="border-border m-4 flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center"
     >
       <div class="bg-primary/10 text-primary-text flex size-12 items-center justify-center rounded-full">
         <ListPlusIcon class="size-6" />
       </div>
-      <h2 class="text-lg font-semibold">{{ $t('budgetPlans.grid.noLines') }}</h2>
-      <p class="text-muted-foreground max-w-sm text-sm">{{ $t('budgetPlans.grid.noLinesDescription') }}</p>
+      <h2 class="text-lg font-semibold">
+        {{ $t('budgetPlans.grid.noLines') }}
+      </h2>
+      <p class="text-muted-foreground max-w-sm text-sm">
+        {{ $t('budgetPlans.grid.noLinesDescription') }}
+      </p>
       <Button
         v-if="view.period.isCurrent"
         variant="soft-primary"
@@ -602,8 +711,15 @@ const archiveTargetLine = () => {
     </div>
 
     <template v-else>
-      <div class="border-border bg-muted/40 hidden overflow-hidden rounded-lg border @2xl/lines:block">
-        <div :class="cn(GRID_ROW_CLASS, 'text-muted-foreground items-center py-2 text-xs font-medium')">
+      <div v-if="!narrow" class="relative">
+        <div :class="cn(GRID_ROW_CLASS, 'text-muted-foreground py-2 text-[11px] font-medium tracking-wide uppercase')">
+          <Checkbox
+            :model-value="checkState({ lineIds: allLineIds })"
+            :class="CHECKBOX_CLASS"
+            :disabled="!allLineIds.length"
+            :aria-label="$t('budgetPlans.grid.selectAll')"
+            @click="emit('toggleMany', allLineIds)"
+          />
           <GroupsHeader />
           <span class="text-right">{{ $t('budgetPlans.grid.assigned') }}</span>
           <span class="text-right">{{ $t('budgetPlans.grid.activity') }}</span>
@@ -611,16 +727,64 @@ const archiveTargetLine = () => {
           <span />
         </div>
 
+        <div
+          v-if="selectedIds.length > 1"
+          class="sticky top-[calc(var(--header-height)+0.5rem)] z-[var(--z-over-default)] h-0"
+        >
+          <div
+            class="border-border bg-popover text-popover-foreground absolute top-1 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-lg border py-0.5 pr-1 pl-3 text-xs font-medium shadow-md"
+          >
+            <span class="pr-2 whitespace-nowrap">{{ $t('budgetPlans.grid.selectedCount', selectedIds.length) }}</span>
+            <Button variant="ghost" size="sm" class="h-7 px-2 text-xs" @click="isArchiveManyOpen = true">
+              <ArchiveIcon class="size-3.5" />
+              {{ $t('budgetPlans.grid.archiveLine') }}
+            </Button>
+            <DesktopOnlyTooltip :content="$t('budgetPlans.grid.clearSelection')">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                class="size-7"
+                :aria-label="$t('budgetPlans.grid.clearSelection')"
+                @click="emit('clearSelection')"
+              >
+                <XIcon class="size-3.5" />
+              </Button>
+            </DesktopOnlyTooltip>
+          </div>
+        </div>
+
         <LineRow v-for="line in sections.ungrouped" :key="line.lineId" :line="line" />
 
         <template v-for="section in sections.groups" :key="section.group.id">
           <div
-            :class="cn(GRID_ROW_CLASS, 'border-border bg-muted items-center border-t py-1.5 text-sm font-medium')"
+            :class="cn(GRID_ROW_CLASS, 'border-border bg-muted border-t py-1.5 text-sm font-medium')"
             @contextmenu.prevent="openMenuKey = `group-row-${section.group.id}`"
           >
+            <Checkbox
+              :model-value="
+                checkState({
+                  lineIds: section.lines.map((line) => line.lineId),
+                })
+              "
+              :class="CHECKBOX_CLASS"
+              :disabled="!section.lines.length"
+              :aria-label="
+                $t('budgetPlans.groups.selectLines', {
+                  name: section.group.name,
+                })
+              "
+              @click="
+                emit(
+                  'toggleMany',
+                  section.lines.map((line) => line.lineId),
+                )
+              "
+            />
             <GroupControls :group="section.group" />
             <span class="text-right tabular-nums">{{ formatBaseCurrency(section.totals.assigned) }}</span>
-            <span class="text-right tabular-nums">{{ formatBaseCurrency(section.totals.activity) }}</span>
+            <span class="text-muted-foreground text-right tabular-nums">{{
+              formatBaseCurrency(section.totals.activity)
+            }}</span>
             <span :class="cn('text-right tabular-nums', amountToneClass({ amount: section.totals.available }))">
               {{ formatBaseCurrency(section.totals.available) }}
             </span>
@@ -632,15 +796,22 @@ const archiveTargetLine = () => {
           </template>
         </template>
 
-        <div :class="cn(GRID_ROW_CLASS, 'border-border items-center border-t py-2.5 text-sm font-medium')">
+        <div :class="cn(GRID_ROW_CLASS, 'border-border border-t py-2.5 text-sm font-medium')">
+          <span />
           <div class="flex min-w-0 items-center gap-2">
             <span class="text-muted-foreground truncate">
-              {{ $t('budgetPlans.grid.totalWithLines', { count: view.lines.length }) }}
+              {{
+                $t('budgetPlans.grid.totalWithLines', {
+                  count: view.lines.length,
+                })
+              }}
             </span>
             <ArchivedTrigger />
           </div>
           <span class="text-right tabular-nums">{{ formatBaseCurrency(view.header.totalAssigned) }}</span>
-          <span class="text-right tabular-nums">{{ formatBaseCurrency(view.header.totalActivity) }}</span>
+          <span class="text-muted-foreground text-right tabular-nums">{{
+            formatBaseCurrency(view.header.totalActivity)
+          }}</span>
           <span :class="cn('text-right tabular-nums', amountToneClass({ amount: view.header.totalAvailable }))">
             {{ formatBaseCurrency(view.header.totalAvailable) }}
           </span>
@@ -648,8 +819,8 @@ const archiveTargetLine = () => {
         </div>
       </div>
 
-      <div class="grid gap-2 @2xl/lines:hidden">
-        <div class="text-muted-foreground px-1 text-xs font-medium">
+      <div v-else class="relative">
+        <div class="text-muted-foreground flex items-center px-3 py-1 text-[11px] font-medium tracking-wide uppercase">
           <GroupsHeader />
         </div>
 
@@ -657,29 +828,43 @@ const archiveTargetLine = () => {
 
         <template v-for="section in sections.groups" :key="section.group.id">
           <div
-            class="bg-muted mt-2 rounded-lg px-3 py-2"
+            class="border-border bg-muted flex items-center gap-3 border-t px-3 py-1.5 text-sm font-medium"
             @contextmenu.prevent="openMenuKey = `group-card-${section.group.id}`"
           >
-            <div class="flex items-center justify-between gap-2">
+            <Checkbox
+              v-if="selectMode"
+              :model-value="
+                checkState({
+                  lineIds: section.lines.map((line) => line.lineId),
+                })
+              "
+              :class="CHECKBOX_CLASS"
+              :disabled="!section.lines.length"
+              :aria-label="
+                $t('budgetPlans.groups.selectLines', {
+                  name: section.group.name,
+                })
+              "
+              @click="
+                emit(
+                  'toggleMany',
+                  section.lines.map((line) => line.lineId),
+                )
+              "
+            />
+            <span class="flex min-w-0 flex-1 flex-col">
               <GroupControls :group="section.group" />
-              <GroupMenu :group="section.group" :menu-key="`group-card-${section.group.id}`" />
-            </div>
-            <dl class="mt-1 grid grid-cols-3 gap-2 text-xs">
-              <div>
-                <dt class="text-muted-foreground">{{ $t('budgetPlans.grid.assigned') }}</dt>
-                <dd class="font-medium tabular-nums">{{ formatBaseCurrency(section.totals.assigned) }}</dd>
-              </div>
-              <div>
-                <dt class="text-muted-foreground">{{ $t('budgetPlans.grid.activity') }}</dt>
-                <dd class="font-medium tabular-nums">{{ formatBaseCurrency(section.totals.activity) }}</dd>
-              </div>
-              <div>
-                <dt class="text-muted-foreground">{{ $t('budgetPlans.grid.available') }}</dt>
-                <dd :class="cn('font-medium tabular-nums', amountToneClass({ amount: section.totals.available }))">
-                  {{ formatBaseCurrency(section.totals.available) }}
-                </dd>
-              </div>
-            </dl>
+              <span class="text-muted-foreground pl-6 text-[11px] font-normal tabular-nums">
+                {{ $t('budgetPlans.grid.assigned') }}
+                {{ formatBaseCurrency(section.totals.assigned) }} ·
+                {{ $t('budgetPlans.grid.activity') }}
+                {{ formatBaseCurrency(section.totals.activity) }}
+              </span>
+            </span>
+            <span :class="cn('tabular-nums', amountToneClass({ amount: section.totals.available }))">
+              {{ formatBaseCurrency(section.totals.available) }}
+            </span>
+            <GroupMenu :group="section.group" :menu-key="`group-card-${section.group.id}`" />
           </div>
 
           <template v-if="!collapsedIds.has(section.group.id)">
@@ -687,8 +872,29 @@ const archiveTargetLine = () => {
           </template>
         </template>
 
-        <div v-if="archivedLines.length" class="flex justify-end">
+        <div v-if="archivedLines.length" class="border-border flex justify-end border-t px-2 py-1">
           <ArchivedTrigger />
+        </div>
+
+        <div
+          v-if="selectMode"
+          class="border-border bg-card sticky bottom-0 z-10 flex flex-wrap items-center gap-2 border-t px-3 py-2"
+        >
+          <span class="flex min-w-0 flex-1 flex-col">
+            <span class="text-muted-foreground text-[11px] font-medium uppercase">
+              {{ $t('budgetPlans.grid.selectionAvailable') }}
+            </span>
+            <span :class="cn('text-base font-bold tabular-nums', amountToneClass({ amount: selectionAvailable }))">
+              {{ formatBaseCurrency(selectionAvailable) }}
+            </span>
+          </span>
+          <Button variant="outline" size="sm" :disabled="!selectedIds.length" @click="isArchiveManyOpen = true">
+            <ArchiveIcon class="size-4" />
+            {{ $t('budgetPlans.grid.archiveLine') }}
+          </Button>
+          <Button size="sm" :disabled="!selectedIds.length" @click="emit('openPanel')">
+            {{ $t('budgetPlans.panel.breakdown') }}
+          </Button>
         </div>
       </div>
     </template>
@@ -702,6 +908,17 @@ const archiveTargetLine = () => {
     >
       <template #title>{{ $t('budgetPlans.grid.archiveTitle', { name: targetLine?.name }) }}</template>
       <template #description>{{ $t('budgetPlans.grid.archiveDescription') }}</template>
+    </ResponsiveAlertDialog>
+
+    <ResponsiveAlertDialog
+      v-model:open="isArchiveManyOpen"
+      :confirm-label="$t('budgetPlans.grid.archiveLine')"
+      confirm-variant="destructive"
+      :confirm-disabled="isArchivingMany"
+      @confirm="archiveSelected"
+    >
+      <template #title>{{ $t('budgetPlans.grid.archiveManyTitle', archivableSelectedIds.length) }}</template>
+      <template #description>{{ $t('budgetPlans.grid.archiveManyDescription') }}</template>
     </ResponsiveAlertDialog>
 
     <DeleteLineDialog

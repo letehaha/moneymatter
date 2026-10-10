@@ -34,8 +34,9 @@ import {
   lineBarsOf,
   lineIdsWithHistory,
   pickTakeBackLine,
-  scheduledForLine,
+  scheduledForLines,
   setGoalFrequency,
+  periodProgress,
   spendingPace,
   trendPaddingStarts,
   trendSummary,
@@ -412,6 +413,16 @@ describe('takeBackCandidates', () => {
   });
 });
 
+describe('periodProgress', () => {
+  const period = { startDate: '2026-09-01', endDate: '2026-10-01' };
+
+  it('counts today as elapsed and clamps to the period', () => {
+    expect(periodProgress({ ...period, now: new Date(2026, 8, 27) })).toEqual({ day: 27, totalDays: 30, daysLeft: 3 });
+    expect(periodProgress({ ...period, now: new Date(2026, 7, 20) })).toEqual({ day: 0, totalDays: 30, daysLeft: 30 });
+    expect(periodProgress({ ...period, now: new Date(2026, 9, 5) })).toEqual({ day: 30, totalDays: 30, daysLeft: 0 });
+  });
+});
+
 describe('spendingPace', () => {
   const period = { startDate: '2026-09-01', endDate: '2026-10-01' };
 
@@ -476,15 +487,31 @@ describe('trendValues', () => {
     }),
     trendPeriod({ assigned: 600, activity: 40 }),
   ];
+  const withTwoLines = [
+    trendPeriod({
+      assigned: 500,
+      activity: -200,
+      lines: [
+        { lineId: 'food', assigned: 100, activity: -80, available: 20 },
+        { lineId: 'fun', assigned: 50, activity: -10, available: 40 },
+        { lineId: 'rent', assigned: 300, activity: -100, available: 200 },
+      ],
+    }),
+  ];
 
   it('reads assigned for budgeting and spent for spending, with income counting as no spend', () => {
-    expect(trendValues({ periods, lineId: null, kind: 'budgeting' })).toEqual([500, 600]);
-    expect(trendValues({ periods, lineId: null, kind: 'spending' })).toEqual([200, 0]);
+    expect(trendValues({ periods, lineIds: [], kind: 'budgeting' })).toEqual([500, 600]);
+    expect(trendValues({ periods, lineIds: [], kind: 'spending' })).toEqual([200, 0]);
   });
 
   it('reads the line values and treats a period without the line as 0', () => {
-    expect(trendValues({ periods, lineId: 'food', kind: 'budgeting' })).toEqual([100, 0]);
-    expect(trendValues({ periods, lineId: 'food', kind: 'spending' })).toEqual([80, 0]);
+    expect(trendValues({ periods, lineIds: ['food'], kind: 'budgeting' })).toEqual([100, 0]);
+    expect(trendValues({ periods, lineIds: ['food'], kind: 'spending' })).toEqual([80, 0]);
+  });
+
+  it('sums the selected lines and ignores the rest', () => {
+    expect(trendValues({ periods: withTwoLines, lineIds: ['food', 'fun'], kind: 'budgeting' })).toEqual([150]);
+    expect(trendValues({ periods: withTwoLines, lineIds: ['food', 'fun'], kind: 'spending' })).toEqual([90]);
   });
 });
 
@@ -517,7 +544,7 @@ describe('isPastPeriod', () => {
   });
 });
 
-describe('scheduledForLine', () => {
+describe('scheduledForLines', () => {
   const item = ({ id, date, amount, lineId }: Pick<BudgetPlanScheduledItem, 'id' | 'date' | 'amount' | 'lineId'>) =>
     ({
       id,
@@ -545,11 +572,11 @@ describe('scheduledForLine', () => {
   };
 
   it('returns the whole period untouched without a line', () => {
-    expect(scheduledForLine({ scheduled, lineId: null })).toBe(scheduled);
+    expect(scheduledForLines({ scheduled, lineIds: [] })).toBe(scheduled);
   });
 
   it('keeps only the line items and re-sums them', () => {
-    expect(scheduledForLine({ scheduled, lineId: 'fun' })).toEqual({
+    expect(scheduledForLines({ scheduled, lineIds: ['fun'] })).toEqual({
       items: scheduled.items.slice(1),
       outflows: { total: -100, count: 2 },
       inflows: { total: 15, count: 1 },
@@ -558,11 +585,20 @@ describe('scheduledForLine', () => {
   });
 
   it('returns the empty shape when the line has nothing scheduled', () => {
-    expect(scheduledForLine({ scheduled, lineId: 'car' })).toEqual({
+    expect(scheduledForLines({ scheduled, lineIds: ['car'] })).toEqual({
       items: [],
       outflows: { total: 0, count: 0 },
       inflows: { total: 0, count: 0 },
       nextDate: null,
+    });
+  });
+
+  it('unions the items of several lines', () => {
+    expect(scheduledForLines({ scheduled, lineIds: ['home', 'car'] })).toEqual({
+      items: scheduled.items.slice(0, 1),
+      outflows: { total: -1000, count: 1 },
+      inflows: { total: 0, count: 0 },
+      nextDate: '2026-09-24',
     });
   });
 });
@@ -1061,15 +1097,15 @@ describe('sumLineTotals', () => {
     expect(
       sumLineTotals({
         lines: [
-          { assigned: 100, activity: -40, available: 60 },
-          { assigned: 50, activity: -80, available: -30 },
+          { carriedIn: 10, assigned: 100, activity: -40, available: 60 },
+          { carriedIn: 0, assigned: 50, activity: -80, available: -30 },
         ],
       }),
-    ).toEqual({ assigned: 150, activity: -120, available: 30 });
+    ).toEqual({ carriedIn: 10, assigned: 150, activity: -120, available: 30 });
   });
 
   it('returns zeros for no lines', () => {
-    expect(sumLineTotals({ lines: [] })).toEqual({ assigned: 0, activity: 0, available: 0 });
+    expect(sumLineTotals({ lines: [] })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
   });
 });
 

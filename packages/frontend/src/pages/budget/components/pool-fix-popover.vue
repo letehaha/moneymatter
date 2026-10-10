@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import DocsLink from '@/components/common/docs-link.vue';
 import ResponsivePopover from '@/components/common/responsive-popover.vue';
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
@@ -99,5 +100,7 @@ const submit = () => {
         {{ $t('budgetPlans.pool.fixSubmit', { amount: formatBaseCurrency(amount ?? 0) }) }}
       </Button>
     </form>
+
+    <DocsLink path="/budgeting/ready-to-assign/#over-assigned" class="mt-3 text-xs" />
   </ResponsivePopover>
 </template>

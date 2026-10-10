@@ -15,7 +15,7 @@ const { locale } = useDateLocale();
 
 const periods = computed(() => props.context.trends?.periods ?? []);
 const summary = computed(() =>
-  trendSummary({ values: trendValues({ periods: periods.value, lineId: props.context.lineId, kind: props.kind }) }),
+  trendSummary({ values: trendValues({ periods: periods.value, lineIds: props.context.lineIds, kind: props.kind }) }),
 );
 
 const formatLabel = ({ startDate }: { startDate: string }) =>

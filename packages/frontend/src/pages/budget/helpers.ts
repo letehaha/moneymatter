@@ -11,6 +11,7 @@ import {
   type BudgetPlanCarryPolicy,
   type BudgetPlanLineEntry,
   type BudgetPlanPeriod,
+  type BudgetPlanPeriodView,
   type BudgetPlanPeriodViewLine,
   type BudgetPlanPeriodViewLineGoal,
   type BudgetPlanScheduled,
@@ -103,9 +104,19 @@ export const buildCreatePlanPayload = ({
         secondAnchorDay: day < HALF_MONTH_DAYS ? day + HALF_MONTH_DAYS : day - (HALF_MONTH_DAYS - 1),
       };
     case 'biweekly':
-      return { ...base, cadence: 'days', intervalN: BIWEEKLY_INTERVAL_DAYS, anchorDate };
+      return {
+        ...base,
+        cadence: 'days',
+        intervalN: BIWEEKLY_INTERVAL_DAYS,
+        anchorDate,
+      };
     case 'weekly':
-      return { ...base, cadence: 'days', intervalN: WEEKLY_INTERVAL_DAYS, anchorDate };
+      return {
+        ...base,
+        cadence: 'days',
+        intervalN: WEEKLY_INTERVAL_DAYS,
+        anchorDate,
+      };
   }
 };
 
@@ -115,11 +126,17 @@ export const CARRY_POLICY_OPTIONS = BUDGET_PLAN_CARRY_POLICIES.map((value) => ({
 }));
 
 export const buildCarryOptions = ({ t }: { t: (key: string) => string }) =>
-  CARRY_POLICY_OPTIONS.map((option) => ({ value: option.value, label: t(option.labelKey) }));
+  CARRY_POLICY_OPTIONS.map((option) => ({
+    value: option.value,
+    label: t(option.labelKey),
+  }));
 
 export const isAttachableAccount = (account: AccountModel) =>
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(account.accountCategory) &&
   (!account.share || account.share.isOwner);
+
+/** Pool / zero-sum UI is held back from the first release; flip to re-expose the plan switches. */
+export const BUDGET_POOL_ENABLED = false;
 
 export const cadenceLabel = ({
   cadence,
@@ -146,6 +163,40 @@ export const sumOverspent = ({ lines }: { lines: { available: number }[] }): { t
   return {
     total: overspent.reduce((sum, line) => sum + line.available, 0),
     lineCount: overspent.length,
+  };
+};
+
+/** The four period figures shown in the summary strip and the mobile overview. */
+export const headerStats = ({ view }: { view: Pick<BudgetPlanPeriodView, 'header' | 'lines'> }) => {
+  const overspent = sumOverspent({ lines: view.lines });
+  return {
+    overspentLineCount: overspent.lineCount,
+    stats: [
+      {
+        key: 'assigned',
+        labelKey: 'budgetPlans.tiles.assigned',
+        amount: view.header.totalAssigned,
+        toned: false,
+      },
+      {
+        key: 'spent',
+        labelKey: 'budgetPlans.tiles.spent',
+        amount: -view.header.totalActivity,
+        toned: false,
+      },
+      {
+        key: 'available',
+        labelKey: 'budgetPlans.tiles.available',
+        amount: view.header.totalAvailable,
+        toned: true,
+      },
+      {
+        key: 'overspent',
+        labelKey: 'budgetPlans.tiles.overspent',
+        amount: overspent.total,
+        toned: true,
+      },
+    ],
   };
 };
 
@@ -262,8 +313,14 @@ export const lineBarsOf = ({
     carried,
     assigned,
     spentPercent: clampedPercent({ part: spent, whole: carried + assigned }),
-    carriedSpentPercent: clampedPercent({ part: Math.min(spent, carried), whole: carried }),
-    assignedSpentPercent: clampedPercent({ part: spent - carried, whole: assigned }),
+    carriedSpentPercent: clampedPercent({
+      part: Math.min(spent, carried),
+      whole: carried,
+    }),
+    assignedSpentPercent: clampedPercent({
+      part: spent - carried,
+      whole: assigned,
+    }),
     isOverspent: line.available < 0,
   };
 };
@@ -299,17 +356,34 @@ export const spendingPace = ({
   const spent = Math.max(0, -activity);
   const total = carriedIn + assigned;
   const spentPercent = total > 0 ? (spent / total) * 100 : spent > 0 ? 100 : 0;
-
-  const totalDays = differenceInCalendarDays(parseISO(endDate), parseISO(startDate));
-  const elapsedDays = Math.min(totalDays, Math.max(0, differenceInCalendarDays(now, parseISO(startDate)) + 1));
+  const { day, totalDays, daysLeft } = periodProgress({
+    startDate,
+    endDate,
+    now,
+  });
 
   return {
     spent,
     total,
     spentPercent,
-    elapsedPercent: totalDays > 0 ? (elapsedDays / totalDays) * 100 : 0,
-    daysLeft: totalDays - elapsedDays,
+    elapsedPercent: totalDays > 0 ? (day / totalDays) * 100 : 0,
+    daysLeft,
   };
+};
+
+/** `day` counts today as elapsed and is clamped to the period, so it reads as "Day 12 of 30". */
+export const periodProgress = ({
+  startDate,
+  endDate,
+  now = new Date(),
+}: {
+  startDate: string;
+  endDate: string;
+  now?: Date;
+}) => {
+  const totalDays = differenceInCalendarDays(parseISO(endDate), parseISO(startDate));
+  const day = Math.min(totalDays, Math.max(0, differenceInCalendarDays(now, parseISO(startDate)) + 1));
+  return { day, totalDays, daysLeft: totalDays - day };
 };
 
 export interface PanelContext {
@@ -317,11 +391,11 @@ export interface PanelContext {
   cadence: BudgetPlanCadence;
   unit: GoalPeriodUnit;
   period: BudgetPlanPeriod;
-  /** `null` for the whole-period overview. */
-  lineId: string | null;
+  /** Empty for the whole-period overview; several ids aggregate the selection. */
+  lineIds: string[];
   figures: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>;
   trends?: BudgetPlanTrends;
-  /** Already narrowed to `lineId` in line mode. */
+  /** Already narrowed to `lineIds`. */
   scheduled?: BudgetPlanScheduled;
 }
 
@@ -363,18 +437,22 @@ export const trendPaddingStarts = ({
 /** A line missing from a period (not active yet) counts as 0. */
 export const trendValues = ({
   periods,
-  lineId,
+  lineIds,
   kind,
 }: {
   periods: BudgetPlanTrendPeriod[];
-  lineId: string | null;
+  lineIds: string[];
   kind: TrendKind;
-}): number[] =>
-  periods.map((period) => {
-    const source = lineId ? period.lines.find((line) => line.lineId === lineId) : period;
-    if (!source) return 0;
-    return kind === 'budgeting' ? source.assigned : Math.max(0, -source.activity);
-  });
+}): number[] => {
+  const ids = new Set(lineIds);
+  const valueOf = (source: { assigned: number; activity: number }) =>
+    kind === 'budgeting' ? source.assigned : Math.max(0, -source.activity);
+  return periods.map((period) =>
+    ids.size
+      ? period.lines.filter((line) => ids.has(line.lineId)).reduce((sum, line) => sum + valueOf(line), 0)
+      : valueOf(period),
+  );
+};
 
 /** The last value is the current period. `changePercent` is `null` when the previous value is 0 or missing. */
 export const trendSummary = ({ values }: { values: number[] }) => {
@@ -395,18 +473,22 @@ export const trendSummary = ({ values }: { values: number[] }) => {
 export const isPastPeriod = ({ period, now = new Date() }: { period: Pick<BudgetPlanPeriod, 'endDate'>; now?: Date }) =>
   period.endDate <= format(now, 'yyyy-MM-dd');
 
-export const scheduledForLine = ({
+export const scheduledForLines = ({
   scheduled,
-  lineId,
+  lineIds,
 }: {
   scheduled: BudgetPlanScheduled;
-  lineId: string | null;
+  lineIds: string[];
 }): BudgetPlanScheduled => {
-  if (!lineId) return scheduled;
-  const items = scheduled.items.filter((item) => item.lineId === lineId);
+  if (!lineIds.length) return scheduled;
+  const ids = new Set(lineIds);
+  const items = scheduled.items.filter((item) => item.lineId !== null && ids.has(item.lineId));
   const sum = ({ outflow }: { outflow: boolean }) => {
     const matching = items.filter((item) => (outflow ? item.amount < 0 : item.amount >= 0));
-    return { total: matching.reduce((total, item) => total + item.amount, 0), count: matching.length };
+    return {
+      total: matching.reduce((total, item) => total + item.amount, 0),
+      count: matching.length,
+    };
   };
   return {
     items,
@@ -423,7 +505,10 @@ const GOAL_DISPLAY_TONES: Record<GoalDisplayKind, { textClass: string; barClass:
   funded: { textClass: 'text-success-text', barClass: 'bg-success-text' },
   achieved: { textClass: 'text-success-text', barClass: 'bg-success-text' },
   progress: { textClass: 'text-primary-text', barClass: 'bg-primary' },
-  snoozed: { textClass: 'text-muted-foreground', barClass: 'bg-muted-foreground/40' },
+  snoozed: {
+    textClass: 'text-muted-foreground',
+    barClass: 'bg-muted-foreground/40',
+  },
 };
 
 /** An open-ended goal never asks, so instead of "funded" it shows how far along it is. */
@@ -487,7 +572,10 @@ export const goalSubtitle = ({
     case 'every_period':
       return { key: `budgetPlans.goals.unit.${unit}.frequency` };
     case 'weekly':
-      return { key: 'budgetPlans.goals.subtitle.weeklyOn', params: { weekday: { weekday: goal.weekday ?? 0 } } };
+      return {
+        key: 'budgetPlans.goals.subtitle.weeklyOn',
+        params: { weekday: { weekday: goal.weekday ?? 0 } },
+      };
     case 'biweekly':
       return { key: 'budgetPlans.goals.subtitle.biweekly' };
     case 'yearly':
@@ -496,7 +584,10 @@ export const goalSubtitle = ({
         params: { date: { date, pattern: GOAL_DAY_MONTH_PATTERN } },
       };
     case 'by_date':
-      return { key: 'budgetPlans.goals.dueBy', params: { date: { date, pattern: GOAL_FULL_DATE_PATTERN } } };
+      return {
+        key: 'budgetPlans.goals.dueBy',
+        params: { date: { date, pattern: GOAL_FULL_DATE_PATTERN } },
+      };
     case 'open_ended':
       return { key: 'budgetPlans.goals.subtitle.noDeadline' };
   }
@@ -515,7 +606,11 @@ export const goalCaption = ({
 }): { part: GoalTextPart; icon: 'check' | 'moon' | null } => {
   const display = goalStatusDisplay({ goal });
   if (display.kind === 'snoozed') return { part: { key: 'budgetPlans.goals.status.snoozed' }, icon: 'moon' };
-  if (display.kind === 'achieved') return { part: { key: 'budgetPlans.goals.status.achieved' }, icon: 'check' };
+  if (display.kind === 'achieved')
+    return {
+      part: { key: 'budgetPlans.goals.status.achieved' },
+      icon: 'check',
+    };
   if (display.kind === 'funded') return { part: { key: 'budgetPlans.goals.status.funded' }, icon: 'check' };
   if (display.kind === 'progress') {
     return {
@@ -536,7 +631,9 @@ export const goalCaption = ({
     return {
       part: {
         key: 'budgetPlans.goals.fundedThrough',
-        params: { date: { date: goal.fundedThrough, pattern: GOAL_ORDINAL_DAY_PATTERN } },
+        params: {
+          date: { date: goal.fundedThrough, pattern: GOAL_ORDINAL_DAY_PATTERN },
+        },
       },
       icon: null,
     };
@@ -547,13 +644,22 @@ export const goalCaption = ({
         key: 'budgetPlans.goals.needBy',
         params: {
           amount: { money: goal.ask },
-          date: { date: goal.nextNeededDate, pattern: GOAL_ORDINAL_DAY_PATTERN },
+          date: {
+            date: goal.nextNeededDate,
+            pattern: GOAL_ORDINAL_DAY_PATTERN,
+          },
         },
       },
       icon: null,
     };
   }
-  return { part: { key: `budgetPlans.goals.unit.${unit}.need`, params: { amount: { money: goal.ask } } }, icon: null };
+  return {
+    part: {
+      key: `budgetPlans.goals.unit.${unit}.need`,
+      params: { amount: { money: goal.ask } },
+    },
+    icon: null,
+  };
 };
 
 /** The goal peek's figures, by behaviour. */
@@ -566,12 +672,18 @@ export const goalPeekStats = ({
   line: Pick<BudgetPlanPeriodViewLine, 'assigned'>;
   unit: GoalPeriodUnit;
 }): { labelKey: string; amount: number }[] => {
-  const need = { labelKey: `budgetPlans.goals.unit.${unit}.needLabel`, amount: goal.ask };
+  const need = {
+    labelKey: `budgetPlans.goals.unit.${unit}.needLabel`,
+    amount: goal.ask,
+  };
   if (goal.behavior === 'reach_balance') {
     return [
       { labelKey: 'budgetPlans.goals.stats.saved', amount: goal.progress },
       { labelKey: 'budgetPlans.goals.stats.target', amount: goal.target },
-      { labelKey: 'budgetPlans.goals.stats.leftToSave', amount: Math.max(0, goal.target - goal.progress) },
+      {
+        labelKey: 'budgetPlans.goals.stats.leftToSave',
+        amount: Math.max(0, goal.target - goal.progress),
+      },
       need,
     ];
   }
@@ -583,8 +695,14 @@ export const goalPeekStats = ({
     ];
   }
   return [
-    { labelKey: `budgetPlans.goals.unit.${unit}.budgeted`, amount: line.assigned },
-    { labelKey: `budgetPlans.goals.unit.${unit}.target`, amount: goal.periodTarget },
+    {
+      labelKey: `budgetPlans.goals.unit.${unit}.budgeted`,
+      amount: line.assigned,
+    },
+    {
+      labelKey: `budgetPlans.goals.unit.${unit}.target`,
+      amount: goal.periodTarget,
+    },
     need,
   ];
 };
@@ -599,7 +717,10 @@ export const GOAL_EDITOR_FREQUENCIES = [
 ] as const satisfies readonly BudgetLineGoalFrequency[];
 
 const GOAL_ANCHORED_FREQUENCIES: readonly BudgetLineGoalFrequency[] = ['biweekly', 'yearly', 'by_date'];
-export const GOAL_REPEAT_MAX: Record<BudgetLineGoalRepeatUnit, number> = { months: 11, years: 5 };
+export const GOAL_REPEAT_MAX: Record<BudgetLineGoalRepeatUnit, number> = {
+  months: 11,
+  years: 5,
+};
 const MONDAY = 1;
 
 const defaultGoalBehavior = ({ frequency }: { frequency: BudgetLineGoalFrequency }): BudgetLineGoalBehavior =>
@@ -657,7 +778,11 @@ export const setGoalFrequency = ({
 }: {
   state: GoalEditorState;
   frequency: BudgetLineGoalFrequency;
-}): GoalEditorState => ({ ...state, frequency, behavior: defaultGoalBehavior({ frequency }) });
+}): GoalEditorState => ({
+  ...state,
+  frequency,
+  behavior: defaultGoalBehavior({ frequency }),
+});
 
 /** Which optional fields the current frequency and behaviour use. */
 export const goalEditorFields = ({ state }: { state: Pick<GoalEditorState, 'frequency' | 'behavior'> }) => {
@@ -760,7 +885,10 @@ export const goalSummary = ({ state, unit }: { state: GoalEditorState; unit: Goa
       when = { key: `budgetPlans.goals.unit.${unit}.each` };
       break;
     case 'weekly':
-      when = { key: 'budgetPlans.goals.when.eachWeekOn', params: { weekday: { weekday: state.weekday } } };
+      when = {
+        key: 'budgetPlans.goals.when.eachWeekOn',
+        params: { weekday: { weekday: state.weekday } },
+      };
       break;
     case 'biweekly':
       when = { key: 'budgetPlans.goals.when.everyTwoWeeks' };
@@ -770,9 +898,15 @@ export const goalSummary = ({ state, unit }: { state: GoalEditorState; unit: Goa
       break;
     case 'by_date': {
       if (!state.anchorDate || !isValid(state.anchorDate)) return null;
-      const date = { date: format(state.anchorDate, 'yyyy-MM-dd'), pattern: GOAL_FULL_DATE_PATTERN };
+      const date = {
+        date: format(state.anchorDate, 'yyyy-MM-dd'),
+        pattern: GOAL_FULL_DATE_PATTERN,
+      };
       if (state.behavior === 'reach_balance')
-        return { key: 'budgetPlans.goals.summary.by_date', params: { amount, date } };
+        return {
+          key: 'budgetPlans.goals.summary.by_date',
+          params: { amount, date },
+        };
       when =
         state.repeats && state.repeatEvery
           ? {
@@ -784,7 +918,10 @@ export const goalSummary = ({ state, unit }: { state: GoalEditorState; unit: Goa
     }
   }
   const behavior = state.behavior === 'refill_up_to' ? 'refill_up_to' : 'budget_another';
-  return { key: `budgetPlans.goals.summary.${behavior}`, params: { amount, when: { part: when } } };
+  return {
+    key: `budgetPlans.goals.summary.${behavior}`,
+    params: { amount, when: { part: when } },
+  };
 };
 
 /** Keeps the input order inside each section. A line pointing at an unknown group counts as ungrouped. */
@@ -801,21 +938,28 @@ export const groupLines = <T extends { groupId: string | null }, G extends { id:
     const bucket = line.groupId ? linesByGroup.get(line.groupId) : undefined;
     (bucket ?? ungrouped).push(line);
   }
-  return { ungrouped, groups: groups.map((group) => ({ group, lines: linesByGroup.get(group.id)! })) };
+  return {
+    ungrouped,
+    groups: groups.map((group) => ({
+      group,
+      lines: linesByGroup.get(group.id)!,
+    })),
+  };
 };
 
 export const sumLineTotals = ({
   lines,
 }: {
-  lines: Pick<BudgetPlanPeriodViewLine, 'assigned' | 'activity' | 'available'>[];
+  lines: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>[];
 }) =>
   lines.reduce(
     (sum, line) => ({
+      carriedIn: sum.carriedIn + line.carriedIn,
       assigned: sum.assigned + line.assigned,
       activity: sum.activity + line.activity,
       available: sum.available + line.available,
     }),
-    { assigned: 0, activity: 0, available: 0 },
+    { carriedIn: 0, assigned: 0, activity: 0, available: 0 },
   );
 
 export interface LayoutLine {
@@ -850,6 +994,9 @@ export const layoutStateFrom = ({
 };
 
 export const buildLayoutPayload = ({ state }: { state: LayoutState }): SetBudgetPlanLayoutPayload => ({
-  groups: state.groups.map((group) => ({ id: group.id, lineIds: group.lines.map((line) => line.id) })),
+  groups: state.groups.map((group) => ({
+    id: group.id,
+    lineIds: group.lines.map((line) => line.id),
+  })),
   ungroupedLineIds: state.ungrouped.map((line) => line.id),
 });

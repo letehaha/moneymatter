@@ -25,6 +25,8 @@ const props = defineProps<{
   groups: BudgetPlanLineGroup[];
   /** Preselected group for a new line. */
   groupId?: string | null;
+  /** Preselected categories for a new line. */
+  initialCategoryIds?: string[];
 }>();
 const isOpen = defineModel<boolean>('open', { required: true });
 
@@ -49,7 +51,7 @@ watch(
     name.value = props.line?.name ?? '';
     selectedGroupId.value = (props.line ? props.line.groupId : props.groupId) ?? NO_GROUP;
     categoryIds.value = expandCategoryIds({
-      categoryIds: props.line?.categoryIds ?? [],
+      categoryIds: props.line?.categoryIds ?? props.initialCategoryIds ?? [],
       categories: formattedCategories.value,
     });
   },

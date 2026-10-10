@@ -7,7 +7,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanPeriod } from '@bt/shared/types';
-import { CalendarIcon, CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue';
+import { CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import { formatPeriodLabel } from '../helpers';
@@ -64,9 +64,11 @@ watch([isOpen, listRef], ([open, list]) => {
       content-class="w-max min-w-48 p-1"
     >
       <template #trigger>
-        <Button variant="outline" size="sm" class="min-w-40" :disabled="!selectedPeriod">
-          <CalendarIcon class="text-muted-foreground size-4" />
+        <Button variant="ghost" size="sm" class="px-2 text-base font-semibold" :disabled="!selectedPeriod">
           <span class="truncate tabular-nums">{{ selectedPeriod ? labelOf({ period: selectedPeriod }) : '' }}</span>
+          <StatusBadge v-if="selectedPeriod?.isCurrent" variant="info">
+            {{ $t('budgetPlans.period.current') }}
+          </StatusBadge>
           <ChevronDownIcon class="text-muted-foreground size-4" />
         </Button>
       </template>

@@ -29,6 +29,7 @@ import {
   buildCarryOptions,
   buildCreatePlanPayload,
   isAttachableAccount,
+  BUDGET_POOL_ENABLED,
 } from '../helpers';
 
 const isOpen = defineModel<boolean>('open', { required: true });
@@ -51,7 +52,9 @@ const startsOn = computed(() => {
   const today = new Date();
   return preset.value === 'monthly' || preset.value === 'semiMonthly'
     ? startOfMonth(today)
-    : startOfWeek(today, { weekStartsOn: locale.value.options?.weekStartsOn ?? 1 });
+    : startOfWeek(today, {
+        weekStartsOn: locale.value.options?.weekStartsOn ?? 1,
+      });
 });
 
 // DateField emits every model change back, so only a different day counts as a user edit.
@@ -73,7 +76,10 @@ watch([isOpen, isAccountsFetched], ([open], [wasOpen]) => {
 });
 
 const presetItems = computed(() =>
-  BUDGET_CADENCE_PRESETS.map((value) => ({ value, label: t(`budgetPlans.cadence.${value}`) })),
+  BUDGET_CADENCE_PRESETS.map((value) => ({
+    value,
+    label: t(`budgetPlans.cadence.${value}`),
+  })),
 );
 
 const carryOptions = computed(() => buildCarryOptions({ t }));
@@ -86,7 +92,12 @@ const { isPending, mutate } = useInvalidatingMutation({
   onSuccess: () => {
     isOpen.value = false;
     // The first plan starts the early adopter budget trial, which the user payload carries.
-    userStore.loadUser().catch((error) => captureException({ error, context: { scope: 'create-plan:user-refresh' } }));
+    userStore.loadUser().catch((error) =>
+      captureException({
+        error,
+        context: { scope: 'create-plan:user-refresh' },
+      }),
+    );
   },
 });
 
@@ -108,7 +119,13 @@ const submit = () => {
         poolEnabled: poolEnabled.value,
       },
     },
-    { onSuccess: ({ plan }) => router.replace({ name: ROUTES_NAMES.budgetPlan, params: { planId: plan.id } }) },
+    {
+      onSuccess: ({ plan }) =>
+        router.replace({
+          name: ROUTES_NAMES.budgetPlan,
+          params: { planId: plan.id },
+        }),
+    },
   );
 };
 </script>
@@ -164,14 +181,16 @@ const submit = () => {
         </template>
       </SelectField>
 
-      <div class="grid gap-1">
+      <div v-if="BUDGET_POOL_ENABLED" class="grid gap-1">
         <div class="flex items-center justify-between gap-3">
           <Label for="budget-create-pool" class="cursor-pointer text-sm font-normal">
             {{ $t('budgetPlans.pool.settingLabel') }}
           </Label>
           <Switch id="budget-create-pool" v-model="poolEnabled" />
         </div>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.createHint') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.pool.createHint') }}
+        </p>
       </div>
 
       <div class="grid gap-1">
@@ -181,7 +200,9 @@ const submit = () => {
           </Label>
           <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
         </div>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.create.suggestedLinesHint') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.create.suggestedLinesHint') }}
+        </p>
       </div>
 
       <Button type="submit" :disabled="isSubmitDisabled">{{ $t('budgetPlans.create.submit') }}</Button>

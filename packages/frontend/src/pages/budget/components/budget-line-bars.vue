@@ -10,7 +10,6 @@ const props = defineProps<{
   line: BudgetPlanPeriodViewLine;
   goal?: ReturnType<typeof goalStatusDisplay>;
   mode: RowBarMode;
-  compact: boolean;
 }>();
 
 const bars = computed(() => lineBarsOf({ line: props.line }));
@@ -26,7 +25,7 @@ const spentClass = computed(() =>
 </script>
 
 <template>
-  <span v-if="showGoal || showSpending || showSplit" :class="cn('grid', compact ? 'mt-1 gap-0.5' : 'mt-1.5 gap-1')">
+  <span v-if="showGoal || showSpending || showSplit" class="mt-0.5 grid gap-0.5">
     <span v-if="showGoal && goal" class="bg-foreground/10 block h-1 overflow-hidden rounded-full">
       <span :class="cn('block h-full rounded-full', goal.barClass)" :style="{ width: `${goal.percent}%` }" />
     </span>

@@ -29,7 +29,7 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import { CARRY_POLICY_OPTIONS, cadenceLabel, isAttachableAccount } from '../helpers';
+import { BUDGET_POOL_ENABLED, CARRY_POLICY_OPTIONS, cadenceLabel, isAttachableAccount } from '../helpers';
 
 // Each save returns the full plan into the cache, so one scope runs them in order and the last response wins.
 const SETTINGS_MUTATION_SCOPE = { id: 'budget-plan-settings' };
@@ -67,12 +67,17 @@ watch(
 const planId = computed(() => props.plan.plan.id);
 
 const periodLabel = computed(() => {
-  const { key, params } = cadenceLabel({ cadence: props.plan.plan.cadence, intervalN: props.plan.plan.intervalN });
+  const { key, params } = cadenceLabel({
+    cadence: props.plan.plan.cadence,
+    intervalN: props.plan.plan.intervalN,
+  });
   return t(key, params);
 });
 
 const startsOnLabel = computed(() =>
-  t('budgetPlans.settings.startsOn', { date: format(parseISO(props.plan.plan.epochDate), 'd MMM yyyy') }),
+  t('budgetPlans.settings.startsOn', {
+    date: format(parseISO(props.plan.plan.epochDate), 'd MMM yyyy'),
+  }),
 );
 
 const onSaved = ({ details }: { details: BudgetPlanDetails }) => {
@@ -162,7 +167,10 @@ const enablePool = () => {
 };
 
 const setCarryPolicy = ({ value }: { value: unknown }) =>
-  patchPlan({ planId: planId.value, payload: { carryPolicy: value as BudgetPlanCarryPolicy } });
+  patchPlan({
+    planId: planId.value,
+    payload: { carryPolicy: value as BudgetPlanCarryPolicy },
+  });
 
 const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
   if (!accountIds.length) {
@@ -197,7 +205,9 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
         <Label>{{ $t('budgetPlans.settings.periodLabel') }}</Label>
         <p class="text-sm">{{ periodLabel }}</p>
         <p class="text-sm">{{ startsOnLabel }}</p>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.cadenceLocked') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.settings.cadenceLocked') }}
+        </p>
       </div>
 
       <Separator />
@@ -222,14 +232,20 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
             id="budget-auto-attach"
             :model-value="plan.plan.autoAttachAccounts"
             :disabled="isPatching"
-            @update:model-value="(value) => patchPlan({ planId, payload: { autoAttachAccounts: Boolean(value) } })"
+            @update:model-value="
+              (value) =>
+                patchPlan({
+                  planId,
+                  payload: { autoAttachAccounts: Boolean(value) },
+                })
+            "
           />
         </div>
       </div>
 
-      <Separator />
+      <Separator v-if="BUDGET_POOL_ENABLED" />
 
-      <div class="grid gap-3">
+      <div v-if="BUDGET_POOL_ENABLED" class="grid gap-3">
         <div class="grid gap-1">
           <div class="flex items-center justify-between gap-3">
             <Label for="budget-pool" class="cursor-pointer text-sm font-normal">
@@ -242,7 +258,9 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
               @update:model-value="(value) => setPoolEnabled({ value: Boolean(value) })"
             />
           </div>
-          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.pool.settingHint') }}</p>
+          <p class="text-muted-foreground text-xs">
+            {{ $t('budgetPlans.pool.settingHint') }}
+          </p>
         </div>
 
         <div v-if="plan.plan.poolFrom !== null" class="grid gap-1">
@@ -298,7 +316,9 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
             {{ $t('budgetPlans.settings.delete') }}
           </Button>
         </div>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.deleteCaption') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t('budgetPlans.settings.deleteCaption') }}
+        </p>
       </div>
     </div>
   </ResponsiveDialog>
