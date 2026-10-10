@@ -40,7 +40,20 @@
       <p v-if="isLoading" class="text-muted-foreground mt-3 animate-pulse text-sm">Thinking…</p>
       <p v-else-if="error" class="text-destructive-text mt-3 text-sm">{{ error }}</p>
       <template v-else-if="answer">
-        <p class="text-muted-foreground mt-3 text-sm leading-relaxed whitespace-pre-line">{{ answer }}</p>
+        <p class="text-muted-foreground mt-3 text-sm leading-relaxed wrap-break-word whitespace-pre-line">
+          <template v-for="(part, index) in answerParts" :key="index">
+            <a
+              v-if="index % 2"
+              :href="part.includes('://') ? part : `mailto:${part}`"
+              :target="part.includes('://') ? '_blank' : undefined"
+              rel="noopener noreferrer nofollow"
+              class="text-primary hover:underline"
+            >
+              {{ part }}
+            </a>
+            <template v-else>{{ part }}</template>
+          </template>
+        </p>
         <p class="text-muted-foreground/60 mt-2 text-xs">
           AI-generated, may be wrong. For anything important, email us at
           <a href="mailto:support@moneymatter.app" class="text-primary hover:underline">support@moneymatter.app</a>.
@@ -52,12 +65,18 @@
 
 <script setup lang="ts">
 import { askFaq } from '@/lib/ask-faq';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
+
+// Punctuation and non-ASCII text right after a URL or email stay out of the link.
+const LINK_PATTERN = /(https?:\/\/[^\s<>"')\u0080-￿]*[^\s<>"').,;:!?*_\]}\u0080-￿]|[\w.+-]+@[\w-]+(?:\.[\w-]+)+)/;
 
 const question = ref('');
 const answer = ref('');
 const error = ref('');
 const isLoading = ref(false);
+
+// Splitting on a capturing group puts the links at the odd indexes.
+const answerParts = computed(() => answer.value.split(LINK_PATTERN));
 
 async function submit() {
   if (isLoading.value) return;

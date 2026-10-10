@@ -47,23 +47,21 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 ## Bank connections
 
 - Bank sync is part of Plus (also in the trial and on self-hosted). Essential does not include it.
-- Providers by region: Monobank (Ukraine). LunchFlow (US, Canada, EU, UK, Australia, New Zealand).
-  SimpleFIN (US, Canada). Enable Banking (6000+ EU and UK banks through PSD2 open banking,
-  including Revolut, Wise and N26). Walutomat (Poland).
+- Providers by region: Monobank (Ukraine). LunchFlow (US, Canada, EU, UK, Australia, New Zealand
+  and more countries worldwide). SimpleFIN (US, Canada). Walutomat (Poland).
 - LunchFlow and SimpleFIN are separate paid services: you open an account with them and pay them
-  directly, on top of Plus. Monobank, Enable Banking and Walutomat cost nothing extra.
-- Whether one specific bank is covered depends on the provider; check the provider's own bank list.
+  directly, on top of Plus. Monobank and Walutomat cost nothing extra.
+- Banks in the EU, the UK and any other country not named above connect through LunchFlow. To
+  see whether a country or one specific bank is covered, search LunchFlow's coverage list:
+  https://www.lunchflow.app/coverage
 - Read-only: sync can view accounts, balances and transactions. It can never move money.
 - Your bank password is never stored. Only provider tokens and keys are kept, encrypted with
   AES-256-GCM.
 - Sync runs automatically while you use the app, at most once every 12 hours, and you can start a
   sync by hand anytime. Balances update with every sync.
-- History on first connect: up to 3 years with Enable Banking (depends on the bank), 12 months
-  with Walutomat, about 6 months with SimpleFIN, 31 days with Monobank (Monobank's own limit),
-  and whatever LunchFlow has already collected for LunchFlow.
-- Only Enable Banking needs re-authorization, every 90 to 360 days depending on the bank. The
-  other providers do not expire. A broken connection is flagged and you reconnect it.
-- Pending transactions come through with Enable Banking only; the others import settled ones.
+- History on first connect: 12 months with Walutomat, about 6 months with SimpleFIN, 31 days with
+  Monobank (Monobank's own limit), and whatever LunchFlow has already collected for LunchFlow.
+- A broken connection is flagged and you reconnect it.
 - You can connect several banks, providers and countries at once, and several accounts per bank.
 - Bank-synced transactions: category, note, tags, payee and splits are editable; amount, date,
   type and account are locked.
