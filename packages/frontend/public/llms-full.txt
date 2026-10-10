@@ -22,7 +22,7 @@ License: AGPL-3.0
 
 ### Bank Account Synchronization
 
-Connect bank accounts to automatically sync transactions. Currently supports LunchFlow, SimpleFIN, Monobank and Walutomat, plus Enable Banking on self-hosted. Transactions are pulled automatically so you always have an up-to-date view of your finances.
+Connect bank accounts to automatically sync transactions. Currently supports LunchFlow, SimpleFIN, Monobank and Walutomat. Transactions are pulled automatically so you always have an up-to-date view of your finances.
 
 ### AI-Powered Transaction Categorization
 

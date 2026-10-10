@@ -50,7 +50,7 @@ Self-host it for free, or use the cloud.
   </tr>
   <tr>
     <td width="50%">
-      <img src="packages/landing/public/img/landing/screenshots/bank-providers@2x.webp" alt="Bank provider picker listing LunchFlow, SimpleFIN, Monobank, Enable Banking and Walutomat">
+      <img src="packages/landing/public/img/landing/screenshots/bank-providers@2x.webp" alt="Bank provider picker listing LunchFlow, SimpleFIN, Monobank and Walutomat">
       <br><sub>Bank connections</sub>
     </td>
     <td width="50%">
@@ -81,7 +81,7 @@ MoneyMatter shows you where your money is and where it goes. Add accounts by han
 
 ## Features
 
-- **Accounts** in any currency, manual or [synced from your bank](https://docs.moneymatter.app/import/bank-connections/) through Monobank, SimpleFIN, LunchFlow, Enable Banking and Walutomat
+- **Accounts** in any currency, manual or [synced from your bank](https://docs.moneymatter.app/import/bank-connections/) through Monobank, SimpleFIN, LunchFlow and Walutomat
 - **Transactions** with categories, payees, tags, splits, attachments, [transfers and refunds](https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/), and automation rules for new ones
 - **Budgets**, subscriptions and bills with reminders, and loans with a payoff projection
 - **Investments**: portfolios of stocks, ETFs and crypto with daily prices, plus venture deals and [vehicles](https://docs.moneymatter.app/accounts/vehicles/), all counted in your net worth
