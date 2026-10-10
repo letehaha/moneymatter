@@ -20,6 +20,7 @@ export * from './user-settings';
 export * from './budgets';
 export * from './import-export';
 export * from './resource-leases';
+export * from './client-logs';
 export * from './notifications';
 export * from './webhooks';
 export * from './tags';

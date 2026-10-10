@@ -253,6 +253,12 @@ export const attachmentUploadRateLimit = perUserNonDevRateLimit({
 });
 
 /**
+ * Client-log rate limit. Every accepted call becomes a Loki line, so this bounds
+ * how much log volume one session can generate.
+ */
+export const clientLogRateLimit = perUserNonDevRateLimit({ prefix: 'client-log', windowSeconds: 60, maxAttempts: 30 });
+
+/**
  * Resource-lease refresh rate limit (per user, 150 refreshes per 5 minutes).
  *
  * A refresh rewrites a few bytes of lease metadata, so the concern is call
