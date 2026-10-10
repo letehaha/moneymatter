@@ -9,6 +9,16 @@
           <h1 class="text-xl font-semibold">
             {{ $t('oauth.authorize.title', { name: clientName }) }}
           </h1>
+          <i18n-t
+            v-if="redirectTarget"
+            keypath="oauth.authorize.redirect_notice"
+            tag="p"
+            class="text-muted-foreground mt-2 text-sm"
+          >
+            <template #host>
+              <span class="text-foreground font-medium break-all">{{ redirectTarget }}</span>
+            </template>
+          </i18n-t>
         </CardHeader>
 
         <CardContent class="flex flex-col gap-6">
@@ -168,6 +178,14 @@ const clientId = computed(() => (route.query.client_id as string) || '');
 const clientName = computed(() => {
   if (fetchedClientName.value) return fetchedClientName.value;
   return clientId.value || t('oauth.authorize.unknown_app');
+});
+
+// The client name is chosen by whoever registered the client, so the redirect
+// host is the only thing on this screen that identifies where the code goes.
+const redirectTarget = computed(() => {
+  const raw = route.query.redirect_uri;
+  if (typeof raw !== 'string' || !URL.canParse(raw)) return '';
+  return new URL(raw).host || raw;
 });
 
 const requestedScopes = computed<string[]>(() => {
