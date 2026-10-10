@@ -3,8 +3,7 @@
     <MultiFileDropzone
       :model-value="dropzoneFiles"
       accept=".pdf,.csv,.txt,application/pdf,text/csv,text/plain"
-      :max-size="MAX_FILE_SIZE"
-      :validator="validateExtension"
+      :validator="validateSizeAndExtension"
       :disabled="isBusy"
       :idle-text="$t('pages.statementParser.uploadExtract.clickOrDragStatements')"
       @update:model-value="handleSelectionChange"
@@ -245,6 +244,8 @@
 </template>
 
 <script setup lang="ts">
+import { logClientEvent } from '@/api/client-logs';
+import { formatBytes } from '@/common/utils/format-bytes';
 import AiEstimatedCost from '@/components/common/ai-estimated-cost.vue';
 import ApiKeySourceBadge from '@/components/common/api-key-source-badge.vue';
 import { MultiFileDropzone } from '@/components/common/dropzone';
@@ -269,7 +270,12 @@ import {
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { MAX_FILE_SIZE, SUPPORTED_EXTENSIONS, validateStatementFile } from '../utils/file-validation';
+import {
+  type FileRejectionReason,
+  MAX_FILE_SIZE,
+  SUPPORTED_EXTENSIONS,
+  validateStatementFile,
+} from '../utils/file-validation';
 import CostEstimateWarnings from './cost-estimate-warnings.vue';
 
 const { t } = useI18n();
@@ -406,13 +412,40 @@ function scheduleStatusMessages() {
   );
 }
 
-/** Sync extension gate for the dropzone; the async magic-byte check runs in `handleSelectionChange`. */
-function validateExtension(file: File): string | null {
+/** Sync size and extension gate for the dropzone; the async magic-byte check runs in `handleSelectionChange`. */
+function validateSizeAndExtension(file: File): string | null {
+  if (file.size > MAX_FILE_SIZE) {
+    logFileRejection({ file, reason: 'too_large' });
+    return t('fileDropzone.fileTooLargeNamed', { name: file.name, max: formatBytes({ bytes: MAX_FILE_SIZE }) });
+  }
   const ext = '.' + (file.name.toLowerCase().split('.').pop() || '');
   if (!SUPPORTED_EXTENSIONS.includes(ext)) {
+    logFileRejection({ file, reason: 'unsupported_extension' });
     return t('pages.statementParser.uploadExtract.unsupportedFileNamed', { name: file.name });
   }
   return null;
+}
+
+function logFileRejection({
+  file,
+  reason,
+  headerHex,
+}: {
+  file: File;
+  reason: FileRejectionReason;
+  headerHex?: string;
+}) {
+  logClientEvent({
+    event: 'statement_import.file_rejected',
+    level: 'warn',
+    context: {
+      reason,
+      fileName: file.name.slice(0, 200),
+      sizeBytes: file.size,
+      mimeType: file.type.slice(0, 200) || null,
+      headerHex: headerHex ?? null,
+    },
+  });
 }
 
 async function handleSelectionChange(files: File[]) {
@@ -429,13 +462,22 @@ async function handleSelectionChange(files: File[]) {
         continue;
       }
       const validation = await validateStatementFile({ file });
-      if (validation.valid) accepted.push(file);
-      else rejections.push(`${file.name} — ${validation.error!}`);
+      if (validation.valid) {
+        accepted.push(file);
+        continue;
+      }
+      rejections.push(`${file.name} — ${validation.error}`);
+      logFileRejection({ file, reason: validation.reason, headerHex: validation.headerHex });
     }
 
     const { unreadable } = await store.setFiles({ files: accepted });
+    for (const file of unreadable) logFileRejection({ file, reason: 'unreadable' });
     if (unreadable.length) {
-      rejections.push(t('pages.statementParser.uploadExtract.unreadableFiles', { files: unreadable.join(', ') }));
+      rejections.push(
+        t('pages.statementParser.uploadExtract.unreadableFiles', {
+          files: unreadable.map((file) => file.name).join(', '),
+        }),
+      );
     }
 
     if (rejections.length) fileError.value = rejections.join(' · ');

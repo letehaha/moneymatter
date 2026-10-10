@@ -14,6 +14,9 @@ const PDF_MAGIC_BYTES = Buffer.from([0x25, 0x50, 0x44, 0x46]); // %PDF
 /** PKCS#7 signature container magic bytes (ASN.1 SEQUENCE tag) */
 const PKCS7_MAGIC_BYTE_START = 0x30;
 
+/** PDF readers accept the %PDF header anywhere within this many leading bytes */
+const PDF_HEADER_SEARCH_BYTES = 1024;
+
 interface FileValidationResult {
   valid: boolean;
   /** Detected file type */
@@ -197,6 +200,17 @@ export function validateFileBuffer({ buffer }: { buffer: Buffer }): FileValidati
         };
       }
     }
+  }
+
+  // PDF cross-reference offsets are relative to the header, so the parser
+  // must receive a buffer that starts at %PDF.
+  const pdfHeaderOffset = buffer.subarray(0, PDF_HEADER_SEARCH_BYTES).indexOf(PDF_MAGIC_BYTES);
+  if (pdfHeaderOffset > 0) {
+    return {
+      valid: true,
+      fileType: 'pdf',
+      fileBuffer: buffer.subarray(pdfHeaderOffset),
+    };
   }
 
   // Try to detect text-based formats

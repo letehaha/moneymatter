@@ -340,8 +340,8 @@ export const useStatementParserStore = defineStore('statementParser', () => {
   }
 
   // Entries for files still selected are kept as-is so their paid-for estimate/extraction survives.
-  // Returns names of files that could not be read; the store emits no user-facing strings.
-  async function setFiles({ files }: { files: File[] }): Promise<{ unreadable: string[] }> {
+  // Returns the files that could not be read; the store emits no user-facing strings.
+  async function setFiles({ files }: { files: File[] }): Promise<{ unreadable: File[] }> {
     const existing = new Map(fileEntries.value.map((entry) => [entry.id, entry]));
 
     // The upload step re-validates the same list on every dropzone emit; resetting
@@ -352,7 +352,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
     if (unchanged) return { unreadable: [] };
 
     const next: StatementFileEntry[] = [];
-    const unreadable: string[] = [];
+    const unreadable: File[] = [];
 
     for (const file of files) {
       const id = fileKey({ file });
@@ -375,7 +375,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
           extractionError: null,
         });
       } catch {
-        unreadable.push(file.name);
+        unreadable.push(file);
       }
     }
 

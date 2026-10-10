@@ -174,4 +174,25 @@ describe('Statement parser cost estimation', () => {
       expect(estimate.estimatedInputTokens).toBeGreaterThan(0);
     });
   });
+
+  // PDF readers accept the `%PDF` header anywhere in the first 1024 bytes, and
+  // bank exports do ship with a BOM or blank lines in front of it.
+  it('reads a PDF whose header is preceded by junk bytes the same as the clean file', async () => {
+    await createGeminiConnection({ model: CATALOG_MODEL });
+
+    const clean = readStatementPdfFixture({ file: STATEMENT_PDF_FIXTURES.encrypted });
+    const prefixed = Buffer.concat([Buffer.from([0xef, 0xbb, 0xbf]), Buffer.from('\r\n\r\n'), clean]);
+
+    const [cleanEstimate, prefixedEstimate] = await Promise.all(
+      [clean, prefixed].map((buffer) =>
+        helpers.statementEstimateCost({
+          payload: { fileBase64: buffer.toString('base64'), password: ENCRYPTED_STATEMENT_PASSWORD },
+          raw: true,
+        }),
+      ),
+    );
+
+    expect(cleanEstimate!.textExtraction.success).toBe(true);
+    expect(prefixedEstimate!.textExtraction).toEqual(cleanEstimate!.textExtraction);
+  });
 });
