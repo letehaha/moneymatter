@@ -49,6 +49,10 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   // drop the user's upload for nothing.
   'POST /api/v1/resource-leases/refresh',
 
+  // Client diagnostics only reach the log stream, and they must keep flowing
+  // while a migration holds the lock.
+  'POST /api/v1/client-logs',
+
   // User profile / settings / AI settings / data-export — authenticated but touch no
   // monetary data; blocking them for the duration of a migration is user-hostile.
   'DELETE /api/v1/user/settings/ai/connections/:id',
