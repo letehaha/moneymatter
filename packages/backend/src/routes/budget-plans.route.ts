@@ -98,8 +98,7 @@ router.post(
   authenticateSession,
   requireFeature(FEATURES.budget_plan),
   checkBaseCurrencyLock,
-  validateEndpoint(addSuggestedLines.schema),
-  addSuggestedLines.handler,
+  addSuggestedLines,
 );
 router.patch(
   '/:planId/lines/:lineId',

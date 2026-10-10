@@ -19,6 +19,8 @@ const makeCategory = ({
   parentId: null,
   type: CATEGORY_TYPES.custom,
   userId: 1,
+  defaultTagIds: [],
+  applyDefaultTagsOnAiCategorization: false,
   subCategories,
 });
 
