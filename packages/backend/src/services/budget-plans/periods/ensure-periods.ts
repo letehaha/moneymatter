@@ -1,5 +1,6 @@
 import { toUtcDateString } from '@common/utils/date';
 import { UnexpectedError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
@@ -7,6 +8,17 @@ import BudgetPlans from '@models/budget-plans.model';
 import { FUTURE_PERIODS, MAX_PLAN_PERIODS, boundaryAtOrBefore, nextBoundary } from './period-enumerator';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+const malformedPlanError = ({ plan, reason }: { plan: BudgetPlans; reason: string }) => {
+  logger.error(`[Budget plans] ensurePeriods: ${reason}`, {
+    planId: plan.id,
+    cadence: plan.cadence,
+    intervalN: plan.intervalN,
+    anchorDate: plan.anchorDate,
+    epochDate: plan.epochDate,
+  });
+  return new UnexpectedError({ message: `Budget plan ${plan.id}: ${reason}` });
+};
 
 export const loadPeriods = ({ planId }: { planId: BudgetPlans['id'] }) =>
   BudgetPeriods.findAll({ where: { planId }, order: [['startDate', 'ASC']] });
@@ -35,7 +47,9 @@ export const ensurePeriods = async ({
   today: string;
 }): Promise<BudgetPeriods[]> => {
   const lastStart = nextBoundary({ plan, after: today, steps: FUTURE_PERIODS });
-  if (!ISO_DATE.test(lastStart)) throw new UnexpectedError();
+  if (!ISO_DATE.test(lastStart)) {
+    throw malformedPlanError({ plan, reason: `last future boundary is not a valid date (${lastStart})` });
+  }
   const stored = await loadPeriods({ planId: plan.id });
 
   let lastEnd = toUtcDateString(stored.at(-1)?.endDate ?? plan.epochDate);
@@ -44,11 +58,15 @@ export const ensurePeriods = async ({
   // Past the JS Date range a boundary turns into NaN or a 5-digit year and stops advancing.
   while (lastEnd <= lastStart && stored.length + missing.length <= MAX_PLAN_PERIODS) {
     const endDate = nextBoundary({ plan, after: lastEnd });
-    if (!ISO_DATE.test(endDate) || endDate <= lastEnd) throw new UnexpectedError();
+    if (!ISO_DATE.test(endDate) || endDate <= lastEnd) {
+      throw malformedPlanError({ plan, reason: `period boundary stopped advancing after ${lastEnd} (${endDate})` });
+    }
     missing.push({ planId: plan.id, startDate: lastEnd, endDate });
     lastEnd = endDate;
   }
-  if (stored.length + missing.length > MAX_PLAN_PERIODS) throw new UnexpectedError();
+  if (stored.length + missing.length > MAX_PLAN_PERIODS) {
+    throw malformedPlanError({ plan, reason: `period count exceeds ${MAX_PLAN_PERIODS}` });
+  }
 
   if (!missing.length) return stored;
 

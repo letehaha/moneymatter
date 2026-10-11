@@ -43,7 +43,7 @@ describe('Budget plans purge cron', () => {
       { where: { id: planId }, paranoid: false },
     );
 
-    expect(await budgetPlansPurgeCron.triggerManualCheck()).toBe(1);
+    expect(await budgetPlansPurgeCron.triggerManualSync()).toEqual({ purged: 1 });
 
     expect(await BudgetPlans.findByPk(planId, { paranoid: false })).toBeNull();
     expect(await BudgetPlanAccounts.count({ where: { planId } })).toBe(0);

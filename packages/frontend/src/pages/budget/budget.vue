@@ -6,9 +6,11 @@ import PageWrapper from '@/components/common/page-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore, useUserStore } from '@/stores';
 import { FEATURES, PLANS } from '@bt/shared/types';
+import { TriangleAlertIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { compareDesc } from 'date-fns';
 import { storeToRefs } from 'pinia';
@@ -16,14 +18,19 @@ import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 import BudgetEmptyState from './components/budget-empty-state.vue';
+import BudgetPlanSkeleton from './components/budget-plan-skeleton.vue';
+import BudgetSidePanelSkeleton from './components/budget-side-panel-skeleton.vue';
 import BudgetTrialNotice from './components/budget-trial-notice.vue';
 import CreatePlanDialog from './components/create-plan-dialog.vue';
+import { useFrameLayout } from './composables/use-panel-layout';
 
 const router = useRouter();
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { entitlements } = storeToRefs(useUserStore());
 
 const isCreateOpen = ref(false);
+const frameRef = ref<HTMLElement | null>(null);
+const { panelWidth, isNarrow, isPanelAttached, isPanelTab } = useFrameLayout({ frameRef });
 
 const {
   data: plans,
@@ -51,7 +58,11 @@ const trashedPlan = computed(() => {
 watch(
   activePlan,
   (plan) => {
-    if (plan) router.replace({ name: ROUTES_NAMES.budgetPlan, params: { planId: plan.id } });
+    if (plan)
+      router.replace({
+        name: ROUTES_NAMES.budgetPlan,
+        params: { planId: plan.id },
+      });
   },
   { immediate: true },
 );
@@ -66,9 +77,53 @@ const { isPending: isRestoring, mutate: restore } = useInvalidatingMutation({
 
 <template>
   <PageWrapper class="grid gap-6">
-    <h1 class="text-2xl font-semibold tracking-tight">{{ $t('budgetPlans.title') }}</h1>
+    <div class="flex items-center justify-between gap-4">
+      <h1 class="text-2xl font-semibold tracking-tight">{{ $t('budgetPlans.title') }}</h1>
+      <Button
+        v-if="trashedPlan && !activePlan"
+        variant="outline"
+        size="sm"
+        class="text-warning-text"
+        :disabled="isRestoring"
+        @click="restore({ planId: trashedPlan.id })"
+      >
+        <TriangleAlertIcon class="size-4" />
+        {{ $t('budgetPlans.trashed.restoreAction') }}
+      </Button>
+    </div>
 
-    <div v-if="isLoading" class="bg-muted mx-auto h-64 w-full max-w-lg animate-pulse rounded-xl" />
+    <section
+      v-if="isLoading"
+      ref="frameRef"
+      :class="
+        cn(
+          'border-border bg-card grid min-w-0 overflow-clip rounded-lg border',
+          isPanelAttached && 'grid-cols-[minmax(0,1fr)_var(--panel-width)]',
+          isPanelTab && 'grid-cols-[minmax(0,1fr)_2.75rem]',
+        )
+      "
+      :style="{ '--panel-width': `${panelWidth}px` }"
+      aria-hidden="true"
+    >
+      <div class="min-w-0">
+        <div class="border-border flex animate-pulse items-center gap-4 border-b px-4 py-2">
+          <template v-if="!isNarrow">
+            <div v-for="stat in 4" :key="stat" class="grid flex-1 gap-1.5 py-0.5">
+              <div class="bg-muted h-2.5 w-16 rounded" />
+              <div class="bg-muted h-5 w-24 rounded" />
+            </div>
+          </template>
+          <div class="ml-auto flex gap-2">
+            <div v-for="button in isNarrow ? 1 : 3" :key="button" class="bg-muted size-8 rounded-md" />
+          </div>
+        </div>
+        <BudgetPlanSkeleton :narrow="isNarrow" />
+      </div>
+      <div v-if="isPanelAttached" class="border-border border-l p-4">
+        <BudgetSidePanelSkeleton />
+      </div>
+      <div v-else-if="isPanelTab" class="border-border bg-muted/40 border-l" />
+    </section>
 
     <Callout v-else-if="isError" variant="destructive" class="mx-auto max-w-lg">
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -79,21 +134,14 @@ const { isPending: isRestoring, mutate: restore } = useInvalidatingMutation({
       </div>
     </Callout>
 
-    <div v-else-if="!activePlan" class="mx-auto grid w-full max-w-lg gap-6">
+    <div v-else-if="!activePlan" class="grid gap-6">
       <PlanRestricted
         :feature="FEATURES.budget_plan"
         :hint="entitlements?.plan === PLANS.early_adopter ? $t('budgetPlans.trialNotice.offer') : undefined"
       >
-        <BudgetTrialNotice />
-
-        <Callout v-if="trashedPlan" :title="$t('budgetPlans.trashed.title')">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <span>{{ $t('budgetPlans.trashed.description') }}</span>
-            <Button size="sm" variant="outline" :disabled="isRestoring" @click="restore({ planId: trashedPlan.id })">
-              {{ $t('budgetPlans.trashed.restore') }}
-            </Button>
-          </div>
-        </Callout>
+        <div class="mx-auto w-full max-w-lg empty:hidden">
+          <BudgetTrialNotice />
+        </div>
 
         <BudgetEmptyState @start="isCreateOpen = true" />
       </PlanRestricted>

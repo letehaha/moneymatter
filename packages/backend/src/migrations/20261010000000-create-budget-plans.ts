@@ -230,6 +230,12 @@ module.exports = {
             defaultValue: [],
             comment: 'Categories an archived line held at its end, which a restore brings back',
           },
+          origin: {
+            type: DataTypes.STRING(16),
+            allowNull: false,
+            defaultValue: 'manual',
+            comment: "What created the line: 'manual', 'rules' (spending-based suggestion) or 'ai'",
+          },
           createdAt: {
             type: DataTypes.DATE,
             allowNull: false,
@@ -249,7 +255,8 @@ module.exports = {
 
       await queryInterface.sequelize.query(
         `ALTER TABLE "BudgetLines" ADD CONSTRAINT "BudgetLines_lifetime_check"
-         CHECK ("activeUntil" IS NULL OR "activeUntil" >= "activeFrom");`,
+         CHECK ("activeUntil" IS NULL OR "activeUntil" >= "activeFrom"),
+         ADD CONSTRAINT "BudgetLines_origin_check" CHECK ("origin" IN ('manual', 'rules', 'ai'));`,
         { transaction },
       );
 

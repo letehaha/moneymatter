@@ -1,4 +1,4 @@
-import { BudgetPlanCadence } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BudgetPlanCadence } from '@bt/shared/types/budget-plans';
 import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
@@ -43,16 +43,22 @@ const isDate = ({ value }: { value: unknown }) => dateBound().safeParse(value).s
 export const isRestorablePlanRow = ({ row }: { row: Record<string, unknown> }): boolean => {
   const plan = row as unknown as PeriodCadenceConfig & {
     epochDate: string;
+    carryPolicy: string;
     zeroSum?: boolean;
     poolFrom?: string | null;
   };
+  if (!BUDGET_PLAN_CADENCES.includes(plan.cadence)) return false;
+  if (!(BUDGET_PLAN_CARRY_POLICIES as readonly string[]).includes(plan.carryPolicy)) return false;
+  if (!Number.isInteger(plan.intervalN) || plan.intervalN < 1) return false;
+  if (plan.secondAnchorDay !== null && !(plan.secondAnchorDay >= 1 && plan.secondAnchorDay <= 31)) return false;
   if (!isDate({ value: plan.anchorDate }) || !isDate({ value: plan.epochDate })) return false;
   // A row the zeroSum CHECK would reject aborts the whole restore transaction, so it is dropped here instead.
   if (plan.zeroSum && !plan.poolFrom) return false;
 
   try {
     validateCadence(plan);
-  } catch {
+  } catch (e) {
+    if (!(e instanceof ValidationError)) throw e;
     return false;
   }
   // Leaves room for the periods ensurePeriods creates ahead of today, which count toward the same ceiling.

@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { trackEvent } from '@js/utils/posthog';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { findLine, findPlan } from './find-plan';
@@ -16,6 +17,7 @@ const deleteLineImpl = async ({
   const plan = await findPlan({ planId, userId, lock: true });
   const line = await findLine({ planId: plan.id, lineId });
   await line.destroy();
+  trackEvent({ userId, event: 'budget_line_deleted', properties: { origin: line.origin } });
 };
 
 export const deleteLine = withTransaction(deleteLineImpl);

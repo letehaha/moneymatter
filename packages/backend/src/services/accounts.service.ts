@@ -348,11 +348,12 @@ export const updateAccount = withTransaction(
       await performArchiveSideEffects({ account: accountData, userId: accountData.userId });
     }
 
-    if (
-      payload.accountCategory !== undefined &&
-      payload.accountCategory !== accountData.accountCategory &&
-      !BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory)
-    ) {
+    const wasAttachable = BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(accountData.accountCategory);
+    const isAttachable =
+      payload.accountCategory === undefined
+        ? wasAttachable
+        : BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory);
+    if (wasAttachable && !isAttachable) {
       await BudgetPlanAccounts.destroy({ where: { accountId: accountData.id } });
     }
 
@@ -430,11 +431,7 @@ export const updateAccount = withTransaction(
       throw new UnexpectedError({ message: t({ key: 'accounts.accountUpdateFailed' }) });
     }
 
-    if (
-      payload.accountCategory !== undefined &&
-      BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory) &&
-      !BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(accountData.accountCategory)
-    ) {
+    if (!wasAttachable && isAttachable) {
       await attachEligibleAccounts({ userId: accountData.userId, accountIds: [accountData.id] });
     }
 

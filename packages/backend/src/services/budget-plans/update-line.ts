@@ -3,6 +3,7 @@ import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
+import { trackEvent } from '@js/utils/posthog';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import { withTransaction } from '@services/common/with-transaction';
 
@@ -103,10 +104,19 @@ const updateLineImpl = async ({
   }
 
   const regroup = groupId !== undefined && groupId !== line.groupId;
+  const renamed = name !== undefined && name !== line.name;
   const endOfGroup = regroup ? await endOfGroupSortOrder({ planId: plan.id, groupId }) : undefined;
   await line.update(
     removeUndefinedKeys({ name, groupId: regroup ? groupId : undefined, sortOrder: sortOrder ?? endOfGroup }),
   );
+
+  if (renamed || regroup || categoryIds) {
+    trackEvent({
+      userId,
+      event: 'budget_line_edited',
+      properties: { origin: line.origin, renamed, regrouped: regroup, recategorized: categoryIds !== undefined },
+    });
+  }
 
   const lineCategories = await BudgetLineCategories.findAll({ where: { lineId: line.id } });
   return toLineEntry({ line, lineCategories, currentStart });

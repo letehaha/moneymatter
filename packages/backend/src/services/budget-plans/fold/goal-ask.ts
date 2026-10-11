@@ -1,9 +1,4 @@
-import {
-  BudgetLineGoalBehavior,
-  BudgetLineGoalFrequency,
-  BudgetLineGoalRepeatUnit,
-  BudgetLineGoalStatus,
-} from '@bt/shared/types/budget-plans';
+import { BudgetLineGoal, BudgetLineGoalStatus } from '@bt/shared/types/budget-plans';
 
 import { countPeriodsBetween, nextBoundary, type PeriodCadenceConfig } from '../periods/period-enumerator';
 import { biweeklyDates, dueCycle, weeklyDates } from './goal-schedule';
@@ -27,21 +22,7 @@ interface GoalAskResult {
 const ceilDiv = ({ value, by }: { value: number; by: number }): number => Math.ceil(value / by);
 
 /** Money in integer cents, dates `yyyy-MM-dd`. */
-export interface GoalSpec {
-  frequency: BudgetLineGoalFrequency;
-  behavior: BudgetLineGoalBehavior;
-  amount: number;
-  /** 0 is Sunday. Weekly only: biweekly dates come from `anchorDate`. */
-  weekday: number | null;
-  /** Biweekly: a first occurrence. Yearly: the first due date. By date: the due date. */
-  anchorDate: string | null;
-  repeatEvery: number | null;
-  repeatUnit: BudgetLineGoalRepeatUnit | null;
-  stopAtBalance: number | null;
-  fundingCap: number | null;
-  startPeriodStart: string;
-  snoozedPeriodStart: string | null;
-}
+export type GoalSpec = Omit<BudgetLineGoal, 'lineId'>;
 
 /** One entry per plan period with this line's assigned; entries outside the active cycle are ignored. */
 export interface GoalPeriodAssigned {

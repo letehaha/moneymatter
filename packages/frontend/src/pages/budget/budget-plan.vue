@@ -41,7 +41,8 @@ import {
   SlidersHorizontalIcon,
 } from '@lucide/vue';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { createReusableTemplate, onKeyStroke, useElementSize } from '@vueuse/core';
+import { createReusableTemplate, onKeyStroke } from '@vueuse/core';
+import { upperFirst } from 'lodash-es';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -58,9 +59,9 @@ import LineDialog from './components/line-dialog.vue';
 import ManageLayoutDialog from './components/manage-layout-dialog.vue';
 import PeriodPicker from './components/period-picker.vue';
 import PlanSettingsSheet from './components/plan-settings-sheet.vue';
-import { type RowBarMode, useGridDisplayOptions } from './composables/use-grid-display-options';
+import { ROW_BAR_MODES, type RowBarMode, useGridDisplayOptions } from './composables/use-grid-display-options';
 import { useLineSelection } from './composables/use-line-selection';
-import { usePanelLayout } from './composables/use-panel-layout';
+import { useFrameLayout } from './composables/use-panel-layout';
 import {
   amountToneClass,
   goalPeriodUnit,
@@ -68,6 +69,7 @@ import {
   headerStats,
   lineIdsWithHistory,
   periodProgress,
+  sumLineTotals,
 } from './helpers';
 
 const { t } = useI18n();
@@ -88,25 +90,14 @@ const isLayoutOpen = ref(false);
 const isPanelSheetOpen = ref(false);
 const frameRef = ref<HTMLElement | null>(null);
 const { rowBars, compactRows } = useGridDisplayOptions();
-// Tailwind's @5xl and @2xl container steps: the panel sits beside the lines, floats over them, or opens as a drawer.
-const PANEL_ATTACHED_MIN_WIDTH = 1024;
-const LINES_TABLE_MIN_WIDTH = 672;
-const FLOATING_PANEL_INSET = 20;
-const { width: frameWidth } = useElementSize(frameRef, {
-  width: PANEL_ATTACHED_MIN_WIDTH,
-  height: 0,
+const { panelWidth, panelOpen, startResize, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } = useFrameLayout({
+  frameRef,
 });
-const isWide = computed(() => frameWidth.value >= PANEL_ATTACHED_MIN_WIDTH);
-const isNarrow = computed(() => frameWidth.value < LINES_TABLE_MIN_WIDTH);
-// The attached panel never squeezes the table below the width it needs; the floating one only stays inside the frame.
-const { panelWidth, panelOpen, startResize } = usePanelLayout({
-  maxWidth: () => (isWide.value ? frameWidth.value - LINES_TABLE_MIN_WIDTH : frameWidth.value - FLOATING_PANEL_INSET),
-});
-const isPanelAttached = computed(() => isWide.value && panelOpen.value);
-const isPanelFloating = computed(() => !isWide.value && !isNarrow.value && panelOpen.value);
-const isPanelTab = computed(() => !isWide.value && !isNarrow.value && !panelOpen.value);
 
 const selectMode = ref(false);
+watch(isNarrow, (narrow) => {
+  if (!narrow) selectMode.value = false;
+});
 
 const [DefineOptionsMenu, OptionsMenu] = createReusableTemplate();
 const [DefineSettingsButton, SettingsButton] = createReusableTemplate();
@@ -117,13 +108,10 @@ const togglePanel = () => {
   else panelOpen.value = !panelOpen.value;
 };
 
-const ROW_BAR_OPTIONS: { value: RowBarMode; labelKey: string }[] = [
-  { value: 'spending', labelKey: 'budgetPlans.options.rowBarSpending' },
-  { value: 'goal', labelKey: 'budgetPlans.options.rowBarGoal' },
-  { value: 'combined', labelKey: 'budgetPlans.options.rowBarCombined' },
-  { value: 'split', labelKey: 'budgetPlans.options.rowBarSplit' },
-  { value: 'none', labelKey: 'budgetPlans.options.rowBarNone' },
-];
+const ROW_BAR_OPTIONS = ROW_BAR_MODES.map((value) => ({
+  value,
+  labelKey: `budgetPlans.options.rowBar${upperFirst(value)}`,
+}));
 
 const {
   data: plan,
@@ -274,6 +262,11 @@ const toggleLine = ({ lineId }: { lineId: string }) => {
   openPanelIfHidden();
 };
 
+const openOverviewSheet = () => {
+  if (!selectMode.value) selection.clear();
+  isPanelSheetOpen.value = true;
+};
+
 const exitSelectMode = () => {
   selectMode.value = false;
   selection.clear();
@@ -285,10 +278,9 @@ watch(isPanelSheetOpen, (open) => {
 });
 
 const selectedLine = computed(() => (selectedLines.value.length === 1 ? selectedLines.value[0] : undefined));
-const selectionAvailable = computed(() =>
-  selectedLines.value.length
-    ? selectedLines.value.reduce((sum, line) => sum + line.available, 0)
-    : (view.value?.header.totalAvailable ?? 0),
+const selectionAvailable = computed(() => sumLineTotals({ lines: selectedLines.value }).available);
+const panelTabAvailable = computed(() =>
+  selectedLines.value.length ? selectionAvailable.value : (view.value?.header.totalAvailable ?? 0),
 );
 const overviewStats = computed(() => (view.value ? headerStats({ view: view.value }) : undefined));
 
@@ -384,7 +376,7 @@ const openLineDialog = ({
               size="icon-sm"
               :disabled="!view"
               :aria-label="$t('budgetPlans.panel.overview')"
-              @click="(!selectMode && selection.clear(), (isPanelSheetOpen = true))"
+              @click="openOverviewSheet"
             >
               <PieChartIcon class="size-4" />
             </Button>
@@ -547,7 +539,7 @@ const openLineDialog = ({
             </Button>
           </Callout>
 
-          <BudgetPlanSkeleton v-else-if="!view" class="p-4" />
+          <BudgetPlanSkeleton v-else-if="!view" :narrow="isNarrow" />
 
           <div
             v-else
@@ -610,6 +602,8 @@ const openLineDialog = ({
               :archived-lines="archivedLines"
               :history-line-ids="historyLineIds"
               :selected-ids="selection.selectedIds.value"
+              :selection-available="selectionAvailable"
+              :state-of="selection.stateOf"
               :live-group-ids="liveGroupIds"
               :unit="goalUnit"
               :row-bars="rowBars"
@@ -724,11 +718,11 @@ const openLineDialog = ({
               :class="
                 cn(
                   'rotate-180 text-xs font-semibold tabular-nums [writing-mode:vertical-rl]',
-                  amountToneClass({ amount: selectionAvailable }),
+                  amountToneClass({ amount: panelTabAvailable }),
                 )
               "
             >
-              {{ formatBaseCurrency(selectionAvailable) }} ·
+              {{ formatBaseCurrency(panelTabAvailable) }} ·
               {{ $t('budgetPlans.grid.available') }}
             </span>
           </span>

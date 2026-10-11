@@ -1,3 +1,5 @@
+import { createShortIds } from '@services/ai/short-ids';
+
 import { CategoryForCategorization, TransactionForCategorization } from '../types';
 
 /** Aliases sent to the model in place of UUIDs, plus maps to translate its answer back. */
@@ -20,29 +22,26 @@ export function assignShortIds({
   transactions: TransactionForCategorization[];
   categories: CategoryForCategorization[];
 }): ShortIdMapping {
-  const transactionIdByAlias = new Map<string, string>();
-  const categoryIdByAlias = new Map<string, string>();
-  const categoryAliasById = new Map<string, string>();
+  const transactionIds = createShortIds({ ids: transactions.map((transaction) => transaction.id), prefix: 't' });
+  const categoryIds = createShortIds({ ids: categories.map((category) => category.id), prefix: 'c' });
 
-  categories.forEach((category, index) => {
-    const alias = `c${index + 1}`;
-    categoryIdByAlias.set(alias, category.id);
-    categoryAliasById.set(category.id, alias);
-  });
-
-  const aliasedTransactions = transactions.map((transaction, index) => {
-    const alias = `t${index + 1}`;
-    transactionIdByAlias.set(alias, transaction.id);
-    return { ...transaction, id: alias };
-  });
+  const aliasedTransactions = transactions.map((transaction) => ({
+    ...transaction,
+    id: transactionIds.aliasOf({ id: transaction.id })!,
+  }));
 
   const aliasedCategories = categories.map((category) => ({
     ...category,
-    id: categoryAliasById.get(category.id)!,
+    id: categoryIds.aliasOf({ id: category.id })!,
     // A parent outside the list has no alias; presenting the category as
     // top-level beats leaking a raw UUID into the prompt.
-    parentId: category.parentId ? (categoryAliasById.get(category.parentId) ?? null) : null,
+    parentId: category.parentId ? (categoryIds.aliasOf({ id: category.parentId }) ?? null) : null,
   }));
 
-  return { aliasedTransactions, aliasedCategories, transactionIdByAlias, categoryIdByAlias };
+  return {
+    aliasedTransactions,
+    aliasedCategories,
+    transactionIdByAlias: transactionIds.idByAlias,
+    categoryIdByAlias: categoryIds.idByAlias,
+  };
 }

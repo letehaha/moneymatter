@@ -1,7 +1,12 @@
 import { toUtcDateString } from '@common/utils/date';
 
+import { DAY_MS } from './periods/period-enumerator';
+
 export const utcInstant = ({ date }: { date: string | Date }): Date =>
   new Date(`${toUtcDateString(date)}T00:00:00.000Z`);
+
+export const addUtcDays = ({ date, days }: { date: string; days: number }): string =>
+  toUtcDateString(new Date(utcInstant({ date }).getTime() + days * DAY_MS));
 
 /** Half-open day ranges `[from, until)`, `until: null` = open end. */
 export interface DateRange {

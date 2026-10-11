@@ -14,7 +14,7 @@ export function trackAiUsage({
   usage,
 }: {
   userId: string | number;
-  feature: AI_FEATURE;
+  feature: AI_FEATURE | 'budget_suggestions';
   aiClient: { provider: AI_PROVIDER; modelId: string; usingUserKey: boolean };
   usage: { inputTokens?: number; outputTokens?: number } | undefined;
 }): void {

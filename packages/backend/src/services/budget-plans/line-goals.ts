@@ -19,7 +19,7 @@ interface LineGoalParams {
   lineId: RecordId;
 }
 
-const dateOrNull = (value: string | null): string | null => (value ? toUtcDateString(value) : null);
+const dateOrNull = ({ value }: { value: string | null }): string | null => (value ? toUtcDateString(value) : null);
 
 export const toGoalSpec = ({ row }: { row: BudgetLineGoals }): GoalSpec & { lineId: RecordId } => ({
   lineId: row.lineId,
@@ -27,24 +27,23 @@ export const toGoalSpec = ({ row }: { row: BudgetLineGoals }): GoalSpec & { line
   behavior: row.behavior,
   amount: row.amount.toCents(),
   weekday: row.weekday,
-  anchorDate: dateOrNull(row.anchorDate),
+  anchorDate: dateOrNull({ value: row.anchorDate }),
   repeatEvery: row.repeatEvery,
   repeatUnit: row.repeatUnit,
   stopAtBalance: row.stopAtBalance?.toCents() ?? null,
   fundingCap: row.fundingCap?.toCents() ?? null,
   startPeriodStart: toUtcDateString(row.startPeriodStart),
-  snoozedPeriodStart: dateOrNull(row.snoozedPeriodStart),
+  snoozedPeriodStart: dateOrNull({ value: row.snoozedPeriodStart }),
 });
 
-const toGoal = ({ row }: { row: BudgetLineGoals }): BudgetLineGoal => {
-  const goal = toGoalSpec({ row });
-  return {
-    ...goal,
-    amount: centsToApiDecimal(goal.amount),
-    stopAtBalance: centsToApiDecimalOrNull(goal.stopAtBalance),
-    fundingCap: centsToApiDecimalOrNull(goal.fundingCap),
-  };
-};
+export const goalSpecToApi = ({ goal }: { goal: GoalSpec & { lineId: RecordId } }): BudgetLineGoal => ({
+  ...goal,
+  amount: centsToApiDecimal(goal.amount),
+  stopAtBalance: centsToApiDecimalOrNull(goal.stopAtBalance),
+  fundingCap: centsToApiDecimalOrNull(goal.fundingCap),
+});
+
+const toGoal = ({ row }: { row: BudgetLineGoals }): BudgetLineGoal => goalSpecToApi({ goal: toGoalSpec({ row }) });
 
 const findPeriod = ({ planId, periodId }: { planId: RecordId; periodId: RecordId }) =>
   findOrThrowNotFound({
@@ -111,7 +110,7 @@ const snoozeLineGoalImpl = async ({ periodId, ...params }: LineGoalParams & { pe
   const period = await findPeriod({ planId: params.planId, periodId });
 
   const start = toUtcDateString(period.startDate);
-  const current = dateOrNull(goal.snoozedPeriodStart);
+  const current = dateOrNull({ value: goal.snoozedPeriodStart });
   await goal.update({ snoozedPeriodStart: current === start ? null : start });
 
   return toGoal({ row: goal });

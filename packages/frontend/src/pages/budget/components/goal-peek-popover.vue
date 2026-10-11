@@ -59,7 +59,6 @@ const openEditor = () => {
 
         <div class="grid gap-3 text-sm">
           <div class="min-w-0">
-            <p class="text-muted-foreground truncate text-xs">{{ line.name }}</p>
             <p class="font-semibold wrap-break-word">{{ goalText({ part: goalTitle({ goal }) }) }}</p>
             <p class="text-muted-foreground text-xs">{{ goalText({ part: goalSubtitle({ goal, unit }) }) }}</p>
           </div>

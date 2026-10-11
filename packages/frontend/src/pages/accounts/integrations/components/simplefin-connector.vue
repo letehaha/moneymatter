@@ -7,7 +7,7 @@
           <ResponsivePopover
             :title="t('pages.integrations.simplefin.brokerageNotice.title')"
             align="start"
-            popover-class="w-90 max-w-[calc(100vw-2rem)]"
+            content-class="w-90 max-w-[calc(100vw-2rem)]"
           >
             <template #trigger>
               <UiButton variant="link" class="inline h-auto p-0 text-left font-medium whitespace-normal text-inherit">

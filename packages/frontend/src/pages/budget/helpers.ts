@@ -4,9 +4,12 @@ import {
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES,
   BUDGET_PLAN_CARRY_POLICIES,
   type BudgetAssignmentScope,
+  BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES,
+  BUDGET_LINE_GOAL_REPEAT_MAX,
   type BudgetLineGoalBehavior,
   type BudgetLineGoalFrequency,
   type BudgetLineGoalRepeatUnit,
+  type BudgetLineGoalStatus,
   type BudgetPlanCadence,
   type BudgetPlanCarryPolicy,
   type BudgetPlanLineEntry,
@@ -125,17 +128,11 @@ export const CARRY_POLICY_OPTIONS = BUDGET_PLAN_CARRY_POLICIES.map((value) => ({
   labelKey: `budgetPlans.carryPolicy.${value}`,
 }));
 
-export const buildCarryOptions = ({ t }: { t: (key: string) => string }) =>
-  CARRY_POLICY_OPTIONS.map((option) => ({
-    value: option.value,
-    label: t(option.labelKey),
-  }));
-
-export const isAttachableAccount = (account: AccountModel) =>
+export const isAttachableAccount = ({ account }: { account: AccountModel }) =>
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(account.accountCategory) &&
   (!account.share || account.share.isOwner);
 
-/** Pool / zero-sum UI is held back from the first release; flip to re-expose the plan switches. */
+/** Shows the pool / zero-sum switches in plan creation and plan settings. */
 export const BUDGET_POOL_ENABLED = false;
 
 export const cadenceLabel = ({
@@ -205,6 +202,18 @@ export const amountToneClass = ({ amount }: { amount: number }): string =>
     amount > 0 && 'text-app-income-color',
     amount < 0 && 'text-app-expense-color',
     amount === 0 && 'text-muted-foreground',
+  );
+
+export const GRID_ROW_CLASS = 'grid grid-cols-[1.25rem_minmax(0,1fr)_repeat(3,7rem)_2.5rem] items-center gap-2 px-3';
+
+/** An underfunded goal outranks the amount's sign. */
+export const availablePillClass = ({ amount, underfunded = false }: { amount: number; underfunded?: boolean }) =>
+  cn(
+    'inline-block rounded-full px-2 py-0.5 text-sm font-medium tabular-nums',
+    underfunded && 'bg-warning/15 text-warning-text',
+    !underfunded && amount > 0 && 'bg-success-text/15 text-success-text',
+    !underfunded && amount < 0 && 'bg-app-expense-color/15 text-app-expense-color',
+    !underfunded && amount === 0 && 'bg-muted text-muted-foreground',
   );
 
 export const defaultAssignmentScope = ({
@@ -300,7 +309,11 @@ const clampedPercent = ({ part, whole }: { part: number; whole: number }) => {
   return Math.min(100, Math.max(0, (part / whole) * 100));
 };
 
-/** Percents are of the funded amount. A negative carry-in funds nothing, so it counts as 0. */
+/** A negative carry-in funds nothing, so it counts as 0. */
+const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number }) =>
+  Math.max(0, carriedIn) + Math.max(0, assigned);
+
+/** Percents are of the funded amount. */
 export const lineBarsOf = ({
   line,
 }: {
@@ -312,7 +325,7 @@ export const lineBarsOf = ({
   return {
     carried,
     assigned,
-    spentPercent: clampedPercent({ part: spent, whole: carried + assigned }),
+    spentPercent: clampedPercent({ part: spent, whole: fundedOf(line) }),
     carriedSpentPercent: clampedPercent({
       part: Math.min(spent, carried),
       whole: carried,
@@ -337,7 +350,7 @@ export const lineIdsWithHistory = ({
   return new Set(lines.filter((line) => !currentStart || line.activeFrom < currentStart).map((line) => line.id));
 };
 
-/** Today counts as elapsed. Spent is measured against carried-in plus assigned money. */
+/** Today counts as elapsed. Spent is measured against the funded amount and can pass 100%. */
 export const spendingPace = ({
   activity,
   carriedIn,
@@ -353,9 +366,9 @@ export const spendingPace = ({
   endDate: string;
   now?: Date;
 }) => {
-  const spent = Math.max(0, -activity);
-  const total = carriedIn + assigned;
-  const spentPercent = total > 0 ? (spent / total) * 100 : spent > 0 ? 100 : 0;
+  const spent = spentOf({ line: { activity } });
+  const total = fundedOf({ carriedIn, assigned });
+  const spentPercent = total > 0 ? (spent / total) * 100 : clampedPercent({ part: spent, whole: total });
   const { day, totalDays, daysLeft } = periodProgress({
     startDate,
     endDate,
@@ -402,24 +415,22 @@ export interface PanelContext {
 export type TrendKind = 'budgeting' | 'spending';
 
 const TREND_AVERAGE_WINDOW = 5;
-const TREND_SLOT_COUNT = 6;
+export const TREND_PERIOD_COUNT = 6;
 
 /**
- * Start dates for the empty slots left of `oldest`, oldest first, so the chart always has `slotCount` columns.
+ * Start dates for the empty slots left of `oldest`, oldest first, so the chart always has `TREND_PERIOD_COUNT` columns.
  * Extrapolated from the oldest period's length; `null` for semi-monthly, whose halves differ in length.
  */
 export const trendPaddingStarts = ({
   oldest,
   cadence,
   periodCount,
-  slotCount = TREND_SLOT_COUNT,
 }: {
   oldest: Pick<BudgetPlanTrendPeriod, 'startDate' | 'endDate'> | undefined;
   cadence: BudgetPlanCadence;
   periodCount: number;
-  slotCount?: number;
 }): (string | null)[] => {
-  const padCount = Math.max(0, slotCount - periodCount);
+  const padCount = Math.max(0, TREND_PERIOD_COUNT - periodCount);
   const offsets = Array.from({ length: padCount }, (_, index) => padCount - index);
   if (!oldest || cadence === 'semi_monthly') return offsets.map(() => null);
 
@@ -446,7 +457,7 @@ export const trendValues = ({
 }): number[] => {
   const ids = new Set(lineIds);
   const valueOf = (source: { assigned: number; activity: number }) =>
-    kind === 'budgeting' ? source.assigned : Math.max(0, -source.activity);
+    kind === 'budgeting' ? source.assigned : spentOf({ line: source });
   return periods.map((period) =>
     ids.size
       ? period.lines.filter((line) => ids.has(line.lineId)).reduce((sum, line) => sum + valueOf(line), 0)
@@ -498,7 +509,7 @@ export const scheduledForLines = ({
   };
 };
 
-type GoalDisplayKind = 'underfunded' | 'funded' | 'achieved' | 'snoozed' | 'progress';
+type GoalDisplayKind = BudgetLineGoalStatus | 'progress';
 
 const GOAL_DISPLAY_TONES: Record<GoalDisplayKind, { textClass: string; barClass: string }> = {
   underfunded: { textClass: 'text-warning-text', barClass: 'bg-warning' },
@@ -716,11 +727,6 @@ export const GOAL_EDITOR_FREQUENCIES = [
   'open_ended',
 ] as const satisfies readonly BudgetLineGoalFrequency[];
 
-const GOAL_ANCHORED_FREQUENCIES: readonly BudgetLineGoalFrequency[] = ['biweekly', 'yearly', 'by_date'];
-export const GOAL_REPEAT_MAX: Record<BudgetLineGoalRepeatUnit, number> = {
-  months: 11,
-  years: 5,
-};
 const MONDAY = 1;
 
 const defaultGoalBehavior = ({ frequency }: { frequency: BudgetLineGoalFrequency }): BudgetLineGoalBehavior =>
@@ -789,7 +795,7 @@ export const goalEditorFields = ({ state }: { state: Pick<GoalEditorState, 'freq
   const { frequency, behavior } = state;
   return {
     weekday: frequency === 'weekly',
-    anchorDate: GOAL_ANCHORED_FREQUENCIES.includes(frequency),
+    anchorDate: BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES.includes(frequency),
     repeat: frequency === 'by_date' && behavior !== 'reach_balance',
     stopAtBalance: behavior === 'budget_another',
     fundingCap: behavior === 'refill_up_to',
@@ -834,7 +840,7 @@ export const validateGoalEditor = ({
     repeatEvery !== null &&
     Number.isInteger(repeatEvery) &&
     repeatEvery >= 1 &&
-    repeatEvery <= GOAL_REPEAT_MAX[state.repeatUnit];
+    repeatEvery <= BUDGET_LINE_GOAL_REPEAT_MAX[state.repeatUnit];
 
   return {
     amount: isPositive({ value: state.amount }) ? null : amountError,
@@ -951,18 +957,19 @@ export const sumLineTotals = ({
   lines,
 }: {
   lines: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>[];
-}) =>
-  lines.reduce(
-    (sum, line) => ({
-      carriedIn: sum.carriedIn + line.carriedIn,
-      assigned: sum.assigned + line.assigned,
-      activity: sum.activity + line.activity,
-      available: sum.available + line.available,
-    }),
-    { carriedIn: 0, assigned: 0, activity: 0, available: 0 },
-  );
+}) => {
+  // Rounds off float residue; `|| 0` turns -0 into 0, which would format as "−$0.00".
+  const sum = ({ key }: { key: 'carriedIn' | 'assigned' | 'activity' | 'available' }) =>
+    Math.round(lines.reduce((total, line) => total + line[key], 0) * 100) / 100 || 0;
+  return {
+    carriedIn: sum({ key: 'carriedIn' }),
+    assigned: sum({ key: 'assigned' }),
+    activity: sum({ key: 'activity' }),
+    available: sum({ key: 'available' }),
+  };
+};
 
-export interface LayoutLine {
+interface LayoutLine {
   id: string;
   name: string;
 }

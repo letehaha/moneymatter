@@ -59,7 +59,7 @@ const submit = () => {
 </script>
 
 <template>
-  <ResponsivePopover v-model:open="isOpen" :title="$t('budgetPlans.pool.fixTitle')" content-class="w-80">
+  <ResponsivePopover align="end" v-model:open="isOpen" :title="$t('budgetPlans.pool.fixTitle')" content-class="w-80">
     <template #trigger>
       <Button v-show="visible" size="sm" variant="outline">
         {{ $t('budgetPlans.pool.fix') }}

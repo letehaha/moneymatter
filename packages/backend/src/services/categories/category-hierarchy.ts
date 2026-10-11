@@ -51,6 +51,27 @@ export const getAncestorIds = <T extends { id: string; parentId: string | null }
   return ancestors;
 };
 
+/** Categories handed out one by one; a category overlaps when it, an ancestor or a descendant is already taken. */
+export const createCategoryClaims = <T extends { id: string; parentId: string | null }>({
+  byId,
+}: {
+  byId: Map<string, T>;
+}) => {
+  const taken = new Set<string>();
+  const takenAncestors = new Set<string>();
+
+  return {
+    take: ({ categoryId }: { categoryId: string }) => {
+      taken.add(categoryId);
+      for (const ancestorId of getAncestorIds({ categoryId, byId })) takenAncestors.add(ancestorId);
+    },
+    overlaps: ({ categoryId }: { categoryId: string }) =>
+      taken.has(categoryId) ||
+      takenAncestors.has(categoryId) ||
+      getAncestorIds({ categoryId, byId }).some((ancestorId) => taken.has(ancestorId)),
+  };
+};
+
 /**
  * A memoized `getRootCategoryId` bound to one category map. Stats aggregations resolve the same
  * category's root many times per request; the cache turns each repeat into an O(1) lookup.

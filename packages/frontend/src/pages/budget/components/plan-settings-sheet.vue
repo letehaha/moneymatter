@@ -12,9 +12,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { Separator } from '@/components/lib/ui/separator';
 import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
-import { isHandledByApiClient, useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { notifyMutationError, useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
-import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
   ACCOUNT_STATUSES,
@@ -41,7 +40,7 @@ const isOpen = defineModel<boolean>('open', { required: true });
 const { t } = useI18n();
 const router = useRouter();
 const queryClient = useQueryClient();
-const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+const { addSuccessNotification } = useNotificationCenter();
 const { format } = useDateLocale();
 
 const name = ref(props.plan.plan.name);
@@ -86,16 +85,11 @@ const onSaved = ({ details }: { details: BudgetPlanDetails }) => {
   addSuccessNotification(t('budgetPlans.settings.saved'));
 };
 
-const notifySaveError = ({ error }: { error: Error }) => {
-  if (isHandledByApiClient(error)) return;
-  addErrorNotification(extractApiErrorMessage(error) || t('budgetPlans.settings.error'));
-};
-
 const { isPending: isPatching, mutate: patchPlan } = useMutation({
   mutationFn: updateBudgetPlan,
   scope: SETTINGS_MUTATION_SCOPE,
   onSuccess: (details) => onSaved({ details }),
-  onError: (error) => notifySaveError({ error }),
+  onError: (error) => notifyMutationError({ error, fallbackKey: 'budgetPlans.settings.error' }),
 });
 
 const { isPending: isRenaming, mutate: renamePlan } = useMutation({
@@ -105,7 +99,7 @@ const { isPending: isRenaming, mutate: renamePlan } = useMutation({
   onError: (error) => {
     name.value = props.plan.plan.name;
     submittedName.value = props.plan.plan.name;
-    notifySaveError({ error });
+    notifyMutationError({ error, fallbackKey: 'budgetPlans.settings.error' });
   },
 });
 
@@ -115,7 +109,7 @@ const { isPending: isSavingAccounts, mutate: saveAccounts } = useMutation({
   onSuccess: (details) => onSaved({ details }),
   onError: (error) => {
     selectedAccountIds.value = props.plan.accountIds;
-    notifySaveError({ error });
+    notifyMutationError({ error, fallbackKey: 'budgetPlans.settings.error' });
   },
 });
 
@@ -127,8 +121,8 @@ watch(
   },
 );
 
-const isOfferedAccount = (account: AccountModel) =>
-  isAttachableAccount(account) &&
+const isOfferedAccount = ({ account }: { account: AccountModel }) =>
+  isAttachableAccount({ account }) &&
   (account.status === ACCOUNT_STATUSES.active || props.plan.accountIds.includes(account.id));
 
 const { isPending: isDeleting, mutate: removePlan } = useInvalidatingMutation({
@@ -218,7 +212,7 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
           :label="$t('budgetPlans.settings.accountsLabel')"
           :placeholder="$t('budgetPlans.settings.accountsPlaceholder')"
           :error-message="accountsError"
-          :filter-accounts="isOfferedAccount"
+          :filter-accounts="(account) => isOfferedAccount({ account })"
           include-archived
           :disabled="isSavingAccounts"
           @update:model-value="(accountIds) => submitAccounts({ accountIds })"

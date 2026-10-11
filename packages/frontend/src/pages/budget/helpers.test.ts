@@ -28,6 +28,7 @@ import {
   goalSummary,
   goalTitle,
   groupLines,
+  headerStats,
   isAttachableAccount,
   isPastPeriod,
   layoutStateFrom,
@@ -146,16 +147,16 @@ describe('isAttachableAccount', () => {
     ({ accountCategory: ACCOUNT_CATEGORIES.general, share }) as AccountModel;
 
   it('accepts own accounts and shares the user owns', () => {
-    expect(isAttachableAccount(buildAccount())).toBe(true);
-    expect(isAttachableAccount(buildAccount({ share: { isOwner: true } }))).toBe(true);
+    expect(isAttachableAccount({ account: buildAccount() })).toBe(true);
+    expect(isAttachableAccount({ account: buildAccount({ share: { isOwner: true } }) })).toBe(true);
   });
 
   it('rejects accounts shared with the user by someone else', () => {
-    expect(isAttachableAccount(buildAccount({ share: { isOwner: false } }))).toBe(false);
+    expect(isAttachableAccount({ account: buildAccount({ share: { isOwner: false } }) })).toBe(false);
   });
 
   it('rejects categories a plan cannot attach', () => {
-    expect(isAttachableAccount({ accountCategory: ACCOUNT_CATEGORIES.loan } as AccountModel)).toBe(false);
+    expect(isAttachableAccount({ account: { accountCategory: ACCOUNT_CATEGORIES.loan } as AccountModel })).toBe(false);
   });
 });
 
@@ -440,6 +441,13 @@ describe('spendingPace', () => {
 
   it('ignores income when counting spent', () => {
     expect(spendingPace({ ...period, activity: 50, carriedIn: 0, assigned: 100 }).spent).toBe(0);
+  });
+
+  it('counts a negative carry-in as 0, matching the row bar', () => {
+    const figures = { activity: -50, carriedIn: -40, assigned: 100 };
+    const pace = spendingPace({ ...period, ...figures });
+    expect(pace).toMatchObject({ total: 100, spentPercent: 50 });
+    expect(lineBarsOf({ line: { ...figures, available: 10 } }).spentPercent).toBe(pace.spentPercent);
   });
 
   it('reports full spend when there is no money to spend but something was spent', () => {
@@ -1092,6 +1100,24 @@ describe('groupLines', () => {
   });
 });
 
+describe('headerStats', () => {
+  it('lists assigned, spent, available and overspent with the overspent line count', () => {
+    const result = headerStats({
+      view: {
+        header: { totalAssigned: 500, totalActivity: -320, totalAvailable: 180 },
+        lines: [{ available: -20 }, { available: 250 }, { available: -50 }],
+      } as Parameters<typeof headerStats>[0]['view'],
+    });
+    expect(result.overspentLineCount).toBe(2);
+    expect(result.stats.map(({ key, amount, toned }) => ({ key, amount, toned }))).toEqual([
+      { key: 'assigned', amount: 500, toned: false },
+      { key: 'spent', amount: 320, toned: false },
+      { key: 'available', amount: 180, toned: true },
+      { key: 'overspent', amount: -70, toned: true },
+    ]);
+  });
+});
+
 describe('sumLineTotals', () => {
   it('sums assigned, activity and available', () => {
     expect(
@@ -1106,6 +1132,18 @@ describe('sumLineTotals', () => {
 
   it('returns zeros for no lines', () => {
     expect(sumLineTotals({ lines: [] })).toEqual({ carriedIn: 0, assigned: 0, activity: 0, available: 0 });
+  });
+
+  it('rounds float residue to a positive zero', () => {
+    const line = { carriedIn: 0, assigned: 0, activity: 0 };
+    const { available } = sumLineTotals({
+      lines: [
+        { ...line, available: 10.1 },
+        { ...line, available: 20.2 },
+        { ...line, available: -30.3 },
+      ],
+    });
+    expect(Object.is(available, 0)).toBe(true);
   });
 });
 

@@ -18,6 +18,7 @@ vi.mock('@/components/notification-center', () => ({
 
 // Echoes the key so an assertion reads as the key the UI renders.
 vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }));
+vi.mock('@/i18n', () => ({ i18n: { global: { t: (key: string) => key } } }));
 
 const KEY_A: QueryKey = ['invalidating-mutation', 'a'];
 const KEY_B: QueryKey = ['invalidating-mutation', 'b'];

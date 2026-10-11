@@ -55,13 +55,3 @@ const spentClass = computed(() =>
     </span>
   </span>
 </template>
-
-<style scoped>
-.spent-stripes {
-  background-image: repeating-linear-gradient(
-    -45deg,
-    color-mix(in oklab, var(--background) 55%, transparent) 0 2px,
-    transparent 2px 4px
-  );
-}
-</style>

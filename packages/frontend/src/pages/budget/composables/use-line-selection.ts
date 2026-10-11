@@ -8,8 +8,6 @@ export const useLineSelection = ({ orderedIds }: { orderedIds: MaybeRefOrGetter<
   const selectedIds = computed(() => toValue(orderedIds).filter((id) => selected.value.has(id)));
   const count = computed(() => selectedIds.value.length);
 
-  const isSelected = ({ lineId }: { lineId: string }) => selected.value.has(lineId);
-
   const clear = () => {
     selected.value = new Set();
     anchorId.value = null;
@@ -56,5 +54,5 @@ export const useLineSelection = ({ orderedIds }: { orderedIds: MaybeRefOrGetter<
     return hits === lineIds.length ? true : 'indeterminate';
   };
 
-  return { selectedIds, count, isSelected, select, toggle, toggleMany, stateOf, clear };
+  return { selectedIds, count, select, toggle, toggleMany, stateOf, clear };
 };

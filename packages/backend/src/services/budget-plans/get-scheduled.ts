@@ -3,7 +3,8 @@ import { BudgetPlanScheduled, BudgetPlanScheduledItem } from '@bt/shared/types/b
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
-import { NotFoundError } from '@js/errors';
+import { ExchangeRateUnavailableError, NotFoundError } from '@js/errors';
+import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
@@ -125,19 +126,29 @@ export const getScheduled = async ({
           .filter((date) => !coveredOccurrences.has(`${sub.id}:${date}`))
           .map((date) => ({ sub, date })),
       )
-      .map(async ({ sub, date }): Promise<BudgetPlanScheduledItem> => {
+      .map(async ({ sub, date }): Promise<BudgetPlanScheduledItem | null> => {
         const currencyCode = sub.expectedCurrencyCode ?? plan.currencyCode;
         const native = signed({ amount: sub.expectedAmount!, type: sub.transactionType });
-        const base =
-          currencyCode === plan.currencyCode
-            ? native
-            : await calculateRefAmount({
-                userId: plan.userId,
-                amount: native,
-                baseCode: currencyCode,
-                quoteCode: plan.currencyCode,
-                date: today,
-              });
+        let base = native;
+        if (currencyCode !== plan.currencyCode) {
+          try {
+            base = await calculateRefAmount({
+              userId: plan.userId,
+              amount: native,
+              baseCode: currencyCode,
+              quoteCode: plan.currencyCode,
+              date: today,
+            });
+          } catch (e) {
+            if (!(e instanceof ExchangeRateUnavailableError)) throw e;
+            logger.warn('[Budget plans] Scheduled subscription skipped: no exchange rate', {
+              planId: plan.id,
+              subscriptionId: sub.id,
+              currencyCode,
+            });
+            return null;
+          }
+        }
 
         return {
           source: 'subscription',
@@ -152,7 +163,7 @@ export const getScheduled = async ({
           accountId: sub.accountId,
         };
       }),
-  );
+  ).then((results) => results.filter((item) => item !== null));
 
   const plannedItems = planned.map(
     (tx): BudgetPlanScheduledItem => ({

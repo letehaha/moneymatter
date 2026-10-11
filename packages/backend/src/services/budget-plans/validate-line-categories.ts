@@ -24,6 +24,37 @@ export const ownerCategories = async ({ userId }: { userId: number }) => {
   return { categories, byId: new Map(categories.map((category) => [category.id, category])) };
 };
 
+/** The categories the plan's lines hold over any part of `range`; an archived line still owns the periods inside its lifetime. */
+export const ownedCategoryIds = async ({
+  planId,
+  exceptLineId = null,
+  range,
+}: {
+  planId: RecordId;
+  exceptLineId?: RecordId | null;
+  range: DateRange;
+}): Promise<RecordId[]> => {
+  const lines = await BudgetLines.findAll({
+    where: { planId, ...(exceptLineId === null ? {} : { id: { [Op.ne]: exceptLineId } }) },
+  });
+  if (!lines.length) return [];
+
+  const lifetimes = new Map(
+    lines.map((line) => [line.id, toRange({ from: line.activeFrom, until: line.activeUntil })]),
+  );
+  const rows = await BudgetLineCategories.findAll({ where: { lineId: { [Op.in]: lines.map((line) => line.id) } } });
+
+  return rows
+    .filter((row) => {
+      const clipped = clipRange({
+        range: toRange({ from: row.fromDate, until: row.untilDate }),
+        bounds: lifetimes.get(row.lineId)!,
+      });
+      return clipped !== null && rangesIntersect({ a: clipped, b: range });
+    })
+    .map((row) => row.categoryId);
+};
+
 /**
  * A membership row covers its category plus every descendant, so a descendant
  * listed next to its ancestor is dropped, and two lines clash when one category
@@ -67,27 +98,9 @@ export const validateLineCategories = async ({
   const covered = new Set(expandCategoryIdsWithDescendants({ categoryIds: addedIds, categories, byId }));
   const ancestors = new Set(addedIds.flatMap((categoryId) => getAncestorIds({ categoryId, byId })));
 
-  const otherLines = await BudgetLines.findAll({
-    where: { planId: plan.id, ...(lineId === null ? {} : { id: { [Op.ne]: lineId } }) },
-  });
-  if (!otherLines.length) return topMostIds;
-
-  // An archived line still owns the periods inside its lifetime.
-  const lifetimes = new Map(
-    otherLines.map((line) => [line.id, toRange({ from: line.activeFrom, until: line.activeUntil })]),
-  );
-  const rows = await BudgetLineCategories.findAll({
-    where: { lineId: { [Op.in]: otherLines.map((line) => line.id) } },
-  });
-
-  for (const row of rows) {
-    if (!covered.has(row.categoryId) && !ancestors.has(row.categoryId)) continue;
-
-    const bounds = lifetimes.get(row.lineId)!;
-    const clipped = clipRange({ range: toRange({ from: row.fromDate, until: row.untilDate }), bounds });
-    if (clipped && rangesIntersect({ a: clipped, b: range })) {
-      throw new ConflictError({ message: t({ key: 'budgetPlans.lineCategoriesOverlap' }) });
-    }
+  const held = await ownedCategoryIds({ planId: plan.id, exceptLineId: lineId, range });
+  if (held.some((categoryId) => covered.has(categoryId) || ancestors.has(categoryId))) {
+    throw new ConflictError({ message: t({ key: 'budgetPlans.lineCategoriesOverlap' }) });
   }
 
   return topMostIds;

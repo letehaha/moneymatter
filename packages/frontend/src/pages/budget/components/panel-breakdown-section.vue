@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { useFormatCurrency } from '@/composable';
-import { cn } from '@/lib/utils';
 import { computed } from 'vue';
 
-import { type PanelContext, amountToneClass } from '../helpers';
+import { type PanelContext, availablePillClass } from '../helpers';
 
 const props = defineProps<{ context: PanelContext }>();
 
@@ -31,16 +30,7 @@ const rows = computed(() => [
         <span class="text-muted-foreground w-3 text-xs">=</span>
         <span class="truncate">{{ $t('budgetPlans.grid.available') }}</span>
       </span>
-      <span
-        :class="
-          cn(
-            'rounded-full px-2 py-0.5 tabular-nums',
-            context.figures.available > 0
-              ? 'bg-success-text/15 text-success-text'
-              : amountToneClass({ amount: context.figures.available }),
-          )
-        "
-      >
+      <span :class="availablePillClass({ amount: context.figures.available })">
         {{ formatBaseCurrency(context.figures.available) }}
       </span>
     </div>

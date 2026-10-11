@@ -59,6 +59,7 @@ watch([isOpen, listRef], ([open, list]) => {
     </DesktopOnlyTooltip>
 
     <ResponsivePopover
+      align="end"
       v-model:open="isOpen"
       :title="$t('budgetPlans.period.pickerTitle')"
       content-class="w-max min-w-48 p-1"

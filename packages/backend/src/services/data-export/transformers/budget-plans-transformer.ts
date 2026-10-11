@@ -11,13 +11,13 @@ import BudgetLineGoals from '@models/budget-line-goals.model';
 import BudgetLineGroups from '@models/budget-line-groups.model';
 import BudgetLines from '@models/budget-lines.model';
 import Categories from '@models/categories.model';
-import { utcInstant } from '@services/budget-plans/date-ranges';
+import { addUtcDays } from '@services/budget-plans/date-ranges';
 import { foldPlan } from '@services/budget-plans/fold/fold-plan';
 import type { GoalSpec } from '@services/budget-plans/fold/goal-ask';
 import { loadFoldInput } from '@services/budget-plans/get-period-view';
 import { listPlans, toLineEntry } from '@services/budget-plans/get-plan';
 import { toGoalSpec } from '@services/budget-plans/line-goals';
-import { DAY_MS, boundaryAtOrBefore } from '@services/budget-plans/periods/period-enumerator';
+import { boundaryAtOrBefore } from '@services/budget-plans/periods/period-enumerator';
 import { Op } from 'sequelize';
 
 import type { BudgetLineRow, BudgetPeriodRow, ExportDateRange } from '../types';
@@ -52,9 +52,6 @@ const goalText = ({ goal }: { goal: GoalSpec }): string =>
   ]
     .filter(Boolean)
     .join(' ');
-
-const dayBefore = ({ date }: { date: string }): string =>
-  toUtcDateString(new Date(utcInstant({ date }).getTime() - DAY_MS));
 
 const loadGroupsByPlan = async ({ planIds }: { planIds: RecordId[] }) =>
   Map.groupBy(
@@ -169,7 +166,7 @@ export async function transformBudgetPeriods({
       const keepThrough = lastAssignedStart && lastAssignedStart > today ? lastAssignedStart : today;
 
       return folded.flatMap(({ period, lines }) => {
-        const periodEndInclusive = dayBefore({ date: period.endDate });
+        const periodEndInclusive = addUtcDays({ date: period.endDate, days: -1 });
         const kept =
           period.startDate <= keepThrough &&
           (!dateRange?.from || periodEndInclusive >= dateRange.from) &&

@@ -8,6 +8,8 @@ import {
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
+import { logger } from '@js/utils/logger';
+import { invalidateAppUserCache } from '@middlewares/better-auth';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
@@ -43,7 +45,11 @@ export const asOnlyActivePlan = <T>({ write }: { write: Promise<T> }): Promise<T
 
 /** Starts the early adopter budget trial. Later plans and restores keep the first anchor. */
 export const recordFirstBudgetPlan = async ({ userId }: { userId: number }): Promise<void> => {
-  await Users.update({ firstBudgetPlanAt: new Date() }, { where: { id: userId, firstBudgetPlanAt: null } });
+  const [count, rows] = await Users.update(
+    { firstBudgetPlanAt: new Date() },
+    { where: { id: userId, firstBudgetPlanAt: null }, returning: true },
+  );
+  if (count && rows[0]?.authUserId) await invalidateAppUserCache({ authUserId: rows[0].authUserId });
 };
 
 interface CreatePlanParams {
@@ -75,8 +81,7 @@ const createPlanImpl = async ({
   autoAttachAccounts = false,
   carryPolicy = 'none',
   poolEnabled = false,
-  withSuggestedLines = false,
-}: CreatePlanParams): Promise<BudgetPlanDetails> => {
+}: Omit<CreatePlanParams, 'withSuggestedLines'>): Promise<BudgetPlans> => {
   const cadenceConfig: PeriodCadenceConfig = { cadence, intervalN, anchorDate, secondAnchorDay };
   validateCadence(cadenceConfig);
 
@@ -114,9 +119,24 @@ const createPlanImpl = async ({
   await recordFirstBudgetPlan({ userId });
 
   await BudgetPlanAccounts.bulkCreate(accountIds.map((accountId) => ({ planId: plan.id, accountId })));
-  if (withSuggestedLines) await addSuggestedLines({ userId, planId: plan.id });
 
-  return getPlan({ userId, planId: plan.id });
+  return plan;
 };
 
-export const createPlan = withTransaction(createPlanImpl);
+const createPlanRow = withTransaction(createPlanImpl);
+
+/** Suggestions run after the plan commits: they may wait on a model, and a failure leaves a usable empty plan. */
+export const createPlan = async ({
+  withSuggestedLines = false,
+  ...params
+}: CreatePlanParams): Promise<BudgetPlanDetails> => {
+  const { id: planId, userId } = await createPlanRow(params);
+
+  if (withSuggestedLines) {
+    await addSuggestedLines({ userId, planId }).catch((error: unknown) =>
+      logger.error('[Budget plans] Suggested lines failed for a new plan', { userId, planId, error: error as Error }),
+    );
+  }
+
+  return getPlan({ userId, planId });
+};

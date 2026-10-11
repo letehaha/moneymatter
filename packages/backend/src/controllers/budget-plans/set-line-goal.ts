@@ -1,7 +1,9 @@
 import {
+  BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES,
   BUDGET_LINE_GOAL_BEHAVIORS,
   BUDGET_LINE_GOAL_BEHAVIORS_BY_FREQUENCY,
   BUDGET_LINE_GOAL_FREQUENCIES,
+  BUDGET_LINE_GOAL_REPEAT_MAX,
   BUDGET_LINE_GOAL_REPEAT_UNITS,
 } from '@bt/shared/types/budget-plans';
 import { boundedDecimalAmount, dateBound, recordId } from '@common/lib/zod/custom-types';
@@ -9,9 +11,6 @@ import { toUtcDateString } from '@common/utils/date';
 import { createController } from '@controllers/helpers/controller-factory';
 import { setLineGoal } from '@services/budget-plans/line-goals';
 import { z } from 'zod';
-
-const ANCHORED_FREQUENCIES = ['biweekly', 'yearly', 'by_date'];
-const MAX_REPEAT_EVERY = { months: 11, years: 5 } as const;
 
 // Mirrors the BudgetLineGoals CHECK constraints so a bad combination is a 422, not a DB error.
 const schema = z.object({
@@ -45,7 +44,7 @@ const schema = z.object({
         fail({ path: 'weekday', message: 'Only a weekly goal takes a weekday.' });
       }
 
-      const anchored = ANCHORED_FREQUENCIES.includes(frequency);
+      const anchored = BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES.includes(frequency);
       if (anchored && body.anchorDate == null) {
         fail({ path: 'anchorDate', message: `A ${frequency} goal needs an anchor date.` });
       }
@@ -57,10 +56,10 @@ const schema = z.object({
       if (repeats) {
         if (body.repeatEvery == null || body.repeatUnit == null) {
           fail({ path: 'repeatEvery', message: 'repeatEvery and repeatUnit go together.' });
-        } else if (body.repeatEvery > MAX_REPEAT_EVERY[body.repeatUnit]) {
+        } else if (body.repeatEvery > BUDGET_LINE_GOAL_REPEAT_MAX[body.repeatUnit]) {
           fail({
             path: 'repeatEvery',
-            message: `Repeat every 1 to ${MAX_REPEAT_EVERY[body.repeatUnit]} ${body.repeatUnit}.`,
+            message: `Repeat every 1 to ${BUDGET_LINE_GOAL_REPEAT_MAX[body.repeatUnit]} ${body.repeatUnit}.`,
           });
         }
         if (frequency !== 'by_date' || behavior === 'reach_balance') {

@@ -1,26 +1,21 @@
-import { useSidePanelSections } from '@/components/lib/ui/side-panel';
+import { useLocalStorage } from '@vueuse/core';
 
-export type PanelSection =
-  | 'breakdown'
-  | 'coverage'
-  | 'goals'
-  | 'scheduled'
-  | 'budgetingTrend'
-  | 'spendingTrend'
-  | 'pace'
-  | 'goal';
+const PANEL_SECTIONS = [
+  'breakdown',
+  'coverage',
+  'goals',
+  'scheduled',
+  'budgetingTrend',
+  'spendingTrend',
+  'pace',
+  'goal',
+] as const;
+
+export type PanelSection = (typeof PANEL_SECTIONS)[number];
 
 export const usePanelSections = () =>
-  useSidePanelSections<PanelSection>({
-    storageKey: 'budget-plan:panel-open-sections',
-    defaults: {
-      breakdown: true,
-      coverage: true,
-      goals: true,
-      scheduled: true,
-      budgetingTrend: true,
-      spendingTrend: true,
-      pace: true,
-      goal: true,
-    },
-  });
+  useLocalStorage<Record<PanelSection, boolean>>(
+    'budget-plan:panel-open-sections',
+    Object.fromEntries(PANEL_SECTIONS.map((section) => [section, true])) as Record<PanelSection, boolean>,
+    { mergeDefaults: true },
+  );

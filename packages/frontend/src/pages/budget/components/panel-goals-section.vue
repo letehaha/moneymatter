@@ -93,7 +93,12 @@ const submitIncome = ({ value }: { value: number | null }) => {
       </div>
     </div>
 
-    <ResponsivePopover v-model:open="isIncomeOpen" :title="$t('budgetPlans.goals.expectedIncome')" content-class="w-72">
+    <ResponsivePopover
+      align="end"
+      v-model:open="isIncomeOpen"
+      :title="$t('budgetPlans.goals.expectedIncome')"
+      content-class="w-72"
+    >
       <template #trigger>
         <Button
           v-if="goals.expectedIncome === null"

@@ -2,7 +2,7 @@ import { RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import BudgetLineCategories from '@models/budget-line-categories.model';
-import BudgetLines from '@models/budget-lines.model';
+import BudgetLines, { BudgetLineOrigin } from '@models/budget-lines.model';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { findPlan } from './find-plan';
@@ -19,6 +19,7 @@ const createLineImpl = async ({
   sortOrder,
   groupId = null,
   activeFrom,
+  origin = 'manual',
 }: {
   userId: number;
   planId: RecordId;
@@ -27,6 +28,7 @@ const createLineImpl = async ({
   sortOrder?: number;
   groupId?: RecordId | null;
   activeFrom?: string;
+  origin?: BudgetLineOrigin;
 }) => {
   const plan = await findPlan({ planId, userId, lock: true });
   const { startsThroughCurrent, currentStart } = await ensureCurrentPeriods({ plan });
@@ -45,6 +47,7 @@ const createLineImpl = async ({
     groupId,
     sortOrder: sortOrder ?? endOfGroup,
     activeFrom: from,
+    origin,
   });
   const lineCategories = await BudgetLineCategories.bulkCreate(
     topMostIds.map((categoryId) => ({ lineId: line.id, categoryId, fromDate: from, untilDate: null })),

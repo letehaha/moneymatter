@@ -40,8 +40,10 @@ import { useCollapsedGroups } from '../composables/use-collapsed-groups';
 import type { RowBarMode } from '../composables/use-grid-display-options';
 import { useGoalText } from '../composables/use-goal-text';
 import {
+  GRID_ROW_CLASS,
   type GoalPeriodUnit,
   amountToneClass,
+  availablePillClass,
   goalCaption,
   goalStatusDisplay,
   groupLines,
@@ -67,6 +69,8 @@ const props = defineProps<{
   historyLineIds: Set<string>;
   /** In row order; two or more selected lines show the bulk-action bar. */
   selectedIds: string[];
+  selectionAvailable: number;
+  stateOf: (args: { lineIds: string[] }) => boolean | 'indeterminate';
   /** Groups that still hold a live line and so cannot be deleted. */
   liveGroupIds: Set<string>;
   unit: GoalPeriodUnit;
@@ -87,8 +91,6 @@ const emit = defineEmits<{
   openPanel: [];
   addLine: [groupId: string | null];
 }>();
-
-const GRID_ROW_CLASS = 'grid grid-cols-[1.25rem_minmax(0,1fr)_repeat(3,7rem)_2.5rem] items-center gap-2 px-3';
 
 const [DefineLineMenu, LineMenu] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
@@ -139,15 +141,7 @@ const { categoriesMap } = storeToRefs(useCategoriesStore());
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
 
 const selectedSet = computed(() => new Set(props.selectedIds));
-const selectionAvailable = computed(() =>
-  props.view.lines.reduce((sum, line) => (selectedSet.value.has(line.lineId) ? sum + line.available : sum), 0),
-);
 const allLineIds = computed(() => props.view.lines.map((line) => line.lineId));
-const checkState = ({ lineIds }: { lineIds: string[] }): boolean | 'indeterminate' => {
-  const hits = lineIds.filter((id) => selectedSet.value.has(id)).length;
-  if (hits === 0) return false;
-  return hits === lineIds.length ? true : 'indeterminate';
-};
 
 const goalDisplays = computed(() => {
   const displays = new Map<string, GoalDisplay>();
@@ -165,16 +159,10 @@ const CHECKBOX_CLASS =
   'border-muted-foreground/50 data-[state=checked]:border-primary data-[state=indeterminate]:border-primary size-[18px] rounded-[4px]';
 
 const availableClass = ({ line }: { line: BudgetPlanPeriodViewLine }) =>
-  cn(
-    'inline-block rounded-full px-2 py-0.5 text-sm font-medium tabular-nums',
-    goalDisplays.value.get(line.lineId)?.kind === 'underfunded'
-      ? 'bg-warning/15 text-warning-text'
-      : line.available > 0
-        ? 'bg-success-text/15 text-success-text'
-        : line.available < 0
-          ? 'bg-app-expense-color/15 text-app-expense-color'
-          : 'bg-muted text-muted-foreground',
-  );
+  availablePillClass({
+    amount: line.available,
+    underfunded: goalDisplays.value.get(line.lineId)?.kind === 'underfunded',
+  });
 
 const isGoalEditorOpen = ref(false);
 const goalLineId = ref<string | null>(null);
@@ -315,7 +303,10 @@ const { isPending: isArchivingMany, mutate: archiveMany } = useInvalidatingMutat
       lineIds.map((lineId) => archiveBudgetPlanLine({ planId: props.planId, lineId })),
     );
     const failed = results.find((result) => result.status === 'rejected');
-    if (failed) throw failed.reason;
+    if (!failed) return;
+    const archivedIds = lineIds.filter((_, index) => results[index]?.status === 'fulfilled');
+    if (archivedIds.length) emit('toggleMany', archivedIds);
+    throw failed.reason;
   },
   invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
   errorKey: 'budgetPlans.line.archiveError',
@@ -714,7 +705,7 @@ const archiveSelected = () => {
       <div v-if="!narrow" class="relative">
         <div :class="cn(GRID_ROW_CLASS, 'text-muted-foreground py-2 text-[11px] font-medium tracking-wide uppercase')">
           <Checkbox
-            :model-value="checkState({ lineIds: allLineIds })"
+            :model-value="stateOf({ lineIds: allLineIds })"
             :class="CHECKBOX_CLASS"
             :disabled="!allLineIds.length"
             :aria-label="$t('budgetPlans.grid.selectAll')"
@@ -735,7 +726,13 @@ const archiveSelected = () => {
             class="border-border bg-popover text-popover-foreground absolute top-1 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-lg border py-0.5 pr-1 pl-3 text-xs font-medium shadow-md"
           >
             <span class="pr-2 whitespace-nowrap">{{ $t('budgetPlans.grid.selectedCount', selectedIds.length) }}</span>
-            <Button variant="ghost" size="sm" class="h-7 px-2 text-xs" @click="isArchiveManyOpen = true">
+            <Button
+              v-if="archivableSelectedIds.length"
+              variant="ghost"
+              size="sm"
+              class="h-7 px-2 text-xs"
+              @click="isArchiveManyOpen = true"
+            >
               <ArchiveIcon class="size-3.5" />
               {{ $t('budgetPlans.grid.archiveLine') }}
             </Button>
@@ -762,7 +759,7 @@ const archiveSelected = () => {
           >
             <Checkbox
               :model-value="
-                checkState({
+                stateOf({
                   lineIds: section.lines.map((line) => line.lineId),
                 })
               "
@@ -834,7 +831,7 @@ const archiveSelected = () => {
             <Checkbox
               v-if="selectMode"
               :model-value="
-                checkState({
+                stateOf({
                   lineIds: section.lines.map((line) => line.lineId),
                 })
               "
@@ -888,7 +885,12 @@ const archiveSelected = () => {
               {{ formatBaseCurrency(selectionAvailable) }}
             </span>
           </span>
-          <Button variant="outline" size="sm" :disabled="!selectedIds.length" @click="isArchiveManyOpen = true">
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="!archivableSelectedIds.length"
+            @click="isArchiveManyOpen = true"
+          >
             <ArchiveIcon class="size-4" />
             {{ $t('budgetPlans.grid.archiveLine') }}
           </Button>

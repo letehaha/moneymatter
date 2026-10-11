@@ -34,6 +34,7 @@ import {
   isPastPeriod,
   scheduledForLines,
   sumLineTotals,
+  TREND_PERIOD_COUNT,
 } from '../helpers';
 import PanelBreakdownSection from './panel-breakdown-section.vue';
 import PanelCoverageSection from './panel-coverage-section.vue';
@@ -43,8 +44,6 @@ import PanelPaceSection from './panel-pace-section.vue';
 import PanelScheduledSection from './panel-scheduled-section.vue';
 import { type PanelSection, usePanelSections } from '../composables/use-panel-sections';
 import PanelTrendSection from './panel-trend-section.vue';
-
-const TREND_PERIOD_COUNT = 6;
 
 type SectionEntry = {
   key: PanelSection;

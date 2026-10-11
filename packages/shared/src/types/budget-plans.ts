@@ -40,6 +40,14 @@ export const BUDGET_LINE_GOAL_BEHAVIORS_BY_FREQUENCY: Record<
 export const BUDGET_LINE_GOAL_REPEAT_UNITS = ['months', 'years'] as const;
 export type BudgetLineGoalRepeatUnit = (typeof BUDGET_LINE_GOAL_REPEAT_UNITS)[number];
 
+/** Frequencies that need an anchor date. */
+export const BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES: readonly BudgetLineGoalFrequency[] = [
+  'biweekly',
+  'yearly',
+  'by_date',
+];
+export const BUDGET_LINE_GOAL_REPEAT_MAX: Record<BudgetLineGoalRepeatUnit, number> = { months: 11, years: 5 };
+
 export type BudgetLineGoalStatus = 'snoozed' | 'achieved' | 'funded' | 'underfunded';
 
 export type BudgetPlanCoverageState = 'prepared' | 'left_to_cover' | 'over_committed' | 'nothing_tracked';

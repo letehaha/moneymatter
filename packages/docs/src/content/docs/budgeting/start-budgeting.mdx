@@ -47,15 +47,15 @@ The [Early Adopter plan](/settings/plans-and-billing/#early-adopter-plan) doesn'
 5. Check **Accounts**. Every account that can be budgeted is already selected. Remove the ones you don't want counted.
 6. Pick a **Rollover** rule for money left in a line at the end of a period. **Carry surplus** is selected by default.
 7. Turn on **Fund from a pool** if you want income to go into a **Ready to Assign** pool that you hand out to lines. It's off by default.
-8. Leave **Start with suggested lines** on to get a first set of lines, or turn it off to start empty.
+8. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty. Building them takes a few seconds.
 9. Click **Create budget**.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/budgeting/create-budget-dialog.png"
-  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, two accounts selected, Carry surplus as the Rollover rule, and the Fund from a pool and Start with suggested lines switches."
-  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus', Fund from a pool off and Start with suggested lines on. Crop to the window."
+  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, two accounts selected, Carry surplus as the Rollover rule, and the Fund from a pool and Smart pre-fill switches."
+  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus', Fund from a pool off and Smart pre-fill on. Crop to the window."
 />
 
 Your new budget is called "Budget". You can rename it in **Budget settings**.
@@ -70,16 +70,20 @@ Your new budget is called "Budget". You can rename it in **Budget settings**.
 
 ## Suggested lines
 
-With **Start with suggested lines** on, your budget starts with up to 8 lines instead of an empty grid. Which lines you get depends on whether the budget's accounts have spending history.
+With **Smart pre-fill** on, your budget starts with a first set of lines instead of an empty grid. Which lines you get depends on whether the budget's accounts have spending history.
 
 ### If you have spending history
 
-MoneyMatter looks at the last 3 full calendar months of spending on the budget's accounts. Refunds are subtracted, and income and the **Other** category are left out. Then:
+MoneyMatter looks at the last 3 full calendar months of spending on the budget's accounts. Refunds are subtracted, and income and the **Other** category are left out.
+
+On MoneyMatter Cloud, an AI model then arranges those categories into named groups and lines: it merges categories that mean the same thing into one line, folds small ones into a related line, and names the groups and lines in your language. You get up to 15 lines. This takes a few seconds. The amounts never come from the model; they are calculated as described below.
+
+Without the AI step (self-hosted without an AI key, or when the model doesn't answer), MoneyMatter builds the lines itself:
 
 - It picks up to **8 categories you spent the most on** and makes a line for each, named after the category. A category and its own subcategory never both get a line.
 - It sets each line's amount to your **average monthly spending** in that category and its subcategories, converted to your budget's period length and **rounded up to the next 10**. For example, an average of 342.60 a month becomes 350 on a monthly budget.
 - The amount is set **From now on**, starting with the current period, so it repeats every period until you change it. See [This period only or from now on](/budgeting/assigning-and-rollover/#this-period-only-or-from-now-on).
-- The lines are sorted into three groups by their top-level category:
+- Without the AI step, the lines are sorted into three groups by their top-level category:
 
 | Group | Top-level categories |
 |---|---|
@@ -104,7 +108,7 @@ Each line uses your own category, with the name it has in your account. If you r
 <Screenshot
   src="/screenshots/budgeting/suggested-lines.png"
   alt="A new monthly budget filled with suggested lines in the Bills, Everyday and Life groups, each with an assigned amount rounded up to a multiple of 10."
-  hint="Make sure the budget's accounts have categorized expenses (not Other) in the last 3 full calendar months, for example by categorizing some seeded SimpleFIN demo transactions. Create a Monthly budget with Start with suggested lines on and Fund from a pool off. On the budget page, show the header tiles and the grid with the Bills, Everyday and Life group rows and their lines. Close the side panel selection so the period overview shows. Crop to the header tiles and the grid."
+  hint="Make sure the budget's accounts have categorized expenses (not Other) in the last 3 full calendar months, for example by categorizing some seeded SimpleFIN demo transactions. Create a Monthly budget with Smart pre-fill on and Fund from a pool off. On the budget page, show the header tiles and the grid with the Bills, Everyday and Life group rows and their lines. Close the side panel selection so the period overview shows. Crop to the header tiles and the grid."
 />
 
 <Aside type="tip" title="Nothing is set in stone">

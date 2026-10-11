@@ -553,5 +553,7 @@ describe('Category delete: budget line merge', () => {
     const transport = await helpers.addCustomCategory({ name: 'Transport', color: '#444444', raw: true });
 
     await deleteCategory({ categoryId: transport.id });
+
+    expect(await helpers.listBudgetPlans({ includeDeleted: true, raw: true })).toEqual([]);
   });
 });

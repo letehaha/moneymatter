@@ -16,7 +16,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useSetAssignment } from '../composables/use-set-assignment';
-import { buildAssignmentPayload, buildCarryOptions, defaultAssignmentScope } from '../helpers';
+import { CARRY_POLICY_OPTIONS, buildAssignmentPayload, defaultAssignmentScope } from '../helpers';
 
 const props = defineProps<{ planId: string; periodId: string; line: BudgetPlanPeriodViewLine }>();
 
@@ -33,8 +33,6 @@ const scopeItems = computed(() => [
   { value: 'this_period', label: t('budgetPlans.assign.scopeThisPeriod') },
   { value: 'from_here', label: t('budgetPlans.assign.scopeFromNow') },
 ]);
-
-const carryOptions = computed(() => buildCarryOptions({ t }));
 
 watch(isOpen, async (open) => {
   if (!open) return;
@@ -74,7 +72,7 @@ const resetToBaseline = () => submit({ payload: { scope: 'this_period', amount: 
 </script>
 
 <template>
-  <ResponsivePopover v-model:open="isOpen" :title="line.name" content-class="w-80">
+  <ResponsivePopover align="end" v-model:open="isOpen" :title="line.name" content-class="w-80">
     <template #trigger>
       <slot />
     </template>
@@ -113,8 +111,9 @@ const resetToBaseline = () => submit({ payload: { scope: 'this_period', amount: 
 
       <div class="grid gap-1.5">
         <SelectField
-          :model-value="carryOptions.find((option) => option.value === carryPolicy) ?? null"
-          :values="carryOptions"
+          :model-value="CARRY_POLICY_OPTIONS.find((option) => option.value === carryPolicy) ?? null"
+          :values="CARRY_POLICY_OPTIONS"
+          :label-key="(option) => $t(option.labelKey)"
           :label="$t('budgetPlans.assign.rolloverLabel')"
           :placeholder="$t('budgetPlans.assign.rolloverPlaceholder')"
           @update:model-value="(option) => option && (carryPolicy = option.value)"

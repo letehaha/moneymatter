@@ -11,13 +11,13 @@ const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 const props = withDefaults(
   defineProps<{
     open?: boolean;
-    /** Drawer heading and the popover's accessible name; without one the drawer's title is sr-only. */
-    title?: string;
+    /** Drawer heading and the popover's accessible name. */
+    title: string;
     /** Popover variant only; the drawer always spans the screen width. */
     contentClass?: HTMLAttributes['class'];
     align?: 'start' | 'center' | 'end';
   }>(),
-  { open: undefined, title: undefined, contentClass: undefined, align: 'end' },
+  { open: undefined, contentClass: undefined, align: 'center' },
 );
 
 const emit = defineEmits<{ 'update:open': [value: boolean] }>();
@@ -35,9 +35,7 @@ const isOpen = useVModel(props, 'open', emit, { passive: true });
       <slot name="trigger" />
     </Drawer.DrawerTrigger>
     <Drawer.DrawerContent class="px-4 pb-4">
-      <Drawer.DrawerTitle :class="title ? 'pt-4 pb-2 text-base font-medium' : 'sr-only'">
-        {{ title }}
-      </Drawer.DrawerTitle>
+      <Drawer.DrawerTitle class="pt-4 pb-2 text-base font-medium">{{ title }}</Drawer.DrawerTitle>
       <SlotContent />
     </Drawer.DrawerContent>
   </Drawer.Drawer>

@@ -1,15 +1,14 @@
 import { setBudgetPlanAssignment } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useNotificationCenter } from '@/components/notification-center';
-import { isHandledByApiClient } from '@/composable/data-queries/use-invalidating-mutation';
-import { extractApiErrorMessage } from '@/js/errors';
+import { notifyMutationError } from '@/composable/data-queries/use-invalidating-mutation';
 import { hashKey, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
 
 export const useSetAssignment = ({ onSuccess }: { onSuccess?: () => void } = {}) => {
   const { t } = useI18n();
   const queryClient = useQueryClient();
-  const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+  const { addSuccessNotification } = useNotificationCenter();
 
   return useMutation({
     mutationFn: setBudgetPlanAssignment,
@@ -24,9 +23,6 @@ export const useSetAssignment = ({ onSuccess }: { onSuccess?: () => void } = {})
       addSuccessNotification(t('budgetPlans.assign.saved'));
       onSuccess?.();
     },
-    onError: (error) => {
-      if (isHandledByApiClient(error)) return;
-      addErrorNotification(extractApiErrorMessage(error) || t('budgetPlans.assign.error'));
-    },
+    onError: (error) => notifyMutationError({ error, fallbackKey: 'budgetPlans.assign.error' }),
   });
 };

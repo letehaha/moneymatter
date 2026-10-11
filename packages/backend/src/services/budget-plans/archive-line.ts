@@ -2,6 +2,7 @@ import { RecordId } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
+import { trackEvent } from '@js/utils/posthog';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLines from '@models/budget-lines.model';
@@ -68,6 +69,7 @@ const archiveLineImpl = async ({
   }
 
   await archiveLineFrom({ line, periods, currentStart });
+  trackEvent({ userId, event: 'budget_line_archived', properties: { origin: line.origin } });
 };
 
 export const archiveLine = withTransaction(archiveLineImpl);

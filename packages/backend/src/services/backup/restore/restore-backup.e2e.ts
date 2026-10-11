@@ -1010,6 +1010,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         { cadence: 'days', intervalN: 1, anchorDate: '1000-01-01', epochDate: '1000-01-01' },
       ],
       ['zeroSum without a pool', { zeroSum: true, poolFrom: null }],
+      ['an unknown cadence', { cadence: 'weeks' }],
     ])(
       'drops a plan with %s and the plan endpoints still answer',
       async (_, forged) => {

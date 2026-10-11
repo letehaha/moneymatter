@@ -6,10 +6,12 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
+import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Label } from '@/components/lib/ui/label';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
+import { InfoIcon } from '@lucide/vue';
 import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
@@ -26,7 +28,7 @@ import { useRouter } from 'vue-router';
 import {
   BUDGET_CADENCE_PRESETS,
   type BudgetCadencePreset,
-  buildCarryOptions,
+  CARRY_POLICY_OPTIONS,
   buildCreatePlanPayload,
   isAttachableAccount,
   BUDGET_POOL_ENABLED,
@@ -63,7 +65,7 @@ const setStartsOn = ({ value }: { value: Date }) => {
 };
 
 const eligibleAccountIds = computed(() =>
-  activeAccounts.value.filter(isAttachableAccount).map((account) => account.id),
+  activeAccounts.value.filter((account) => isAttachableAccount({ account })).map((account) => account.id),
 );
 const hasNoEligibleAccounts = computed(
   () => isAccountsFetched.value && !isAccountsError.value && eligibleAccountIds.value.length === 0,
@@ -81,8 +83,6 @@ const presetItems = computed(() =>
     label: t(`budgetPlans.cadence.${value}`),
   })),
 );
-
-const carryOptions = computed(() => buildCarryOptions({ t }));
 
 const { isPending, mutate } = useInvalidatingMutation({
   mutationFn: createBudgetPlan,
@@ -165,13 +165,14 @@ const submit = () => {
         :model-value="accountIds"
         :label="$t('budgetPlans.create.accountsLabel')"
         :placeholder="$t('budgetPlans.create.accountsPlaceholder')"
-        :filter-accounts="isAttachableAccount"
+        :filter-accounts="(account) => isAttachableAccount({ account })"
         @update:model-value="(value) => (accountIds = value)"
       />
 
       <SelectField
-        :model-value="carryOptions.find((option) => option.value === carryPolicy) ?? null"
-        :values="carryOptions"
+        :model-value="CARRY_POLICY_OPTIONS.find((option) => option.value === carryPolicy) ?? null"
+        :values="CARRY_POLICY_OPTIONS"
+        :label-key="(option) => $t(option.labelKey)"
         :label="$t('budgetPlans.create.rolloverLabel')"
         :placeholder="$t('budgetPlans.create.rolloverPlaceholder')"
         @update:model-value="(option) => option && (carryPolicy = option.value)"
@@ -193,19 +194,21 @@ const submit = () => {
         </p>
       </div>
 
-      <div class="grid gap-1">
-        <div class="flex items-center justify-between gap-3">
+      <div class="flex items-center justify-between gap-3">
+        <span class="flex items-center gap-1.5">
           <Label for="budget-create-suggested" class="cursor-pointer text-sm font-normal">
             {{ $t('budgetPlans.create.suggestedLinesLabel') }}
           </Label>
-          <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
-        </div>
-        <p class="text-muted-foreground text-xs">
-          {{ $t('budgetPlans.create.suggestedLinesHint') }}
-        </p>
+          <ResponsiveTooltip :content="$t('budgetPlans.create.suggestedLinesHint')" content-class-name="max-w-72">
+            <InfoIcon class="text-muted-foreground size-3.5 shrink-0 cursor-help" />
+          </ResponsiveTooltip>
+        </span>
+        <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
       </div>
 
-      <Button type="submit" :disabled="isSubmitDisabled">{{ $t('budgetPlans.create.submit') }}</Button>
+      <Button type="submit" :disabled="isSubmitDisabled">
+        {{ $t(isPending && withSuggestedLines ? 'budgetPlans.create.building' : 'budgetPlans.create.submit') }}
+      </Button>
     </form>
   </ResponsiveDialog>
 </template>

@@ -518,6 +518,15 @@
   );
 }
 
+/* Stripes over a budget bar's spent portion; layers over a bg color */
+@utility spent-stripes {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklab, var(--background) 55%, transparent) 0 2px,
+    transparent 2px 4px
+  );
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 @utility no-scrollbar {
   -ms-overflow-style: none;

@@ -20,20 +20,16 @@ import { Op } from 'sequelize';
 
 import { getPlanActivity } from './activity/get-plan-activity';
 import { getPlanCash } from './activity/get-plan-cash';
-import { utcInstant } from './date-ranges';
+import { addUtcDays } from './date-ranges';
 import { findPlan } from './find-plan';
 import { FoldedPeriodView, foldPlan } from './fold/fold-plan';
 import { foldPool } from './fold/fold-pool';
 import { GoalEvaluation, GoalPeriodAssigned, GoalSpec, evaluateGoal } from './fold/goal-ask';
 import { assignmentCents } from './fold/resolve-assigned';
-import { toGoalSpec } from './line-goals';
+import { goalSpecToApi, toGoalSpec } from './line-goals';
 import { loadGroups } from './line-groups';
 import { ensurePeriods, loadLines } from './periods/ensure-periods';
-import { DAY_MS } from './periods/period-enumerator';
 import { ownerCategories } from './validate-line-categories';
-
-const dayAfter = ({ date }: { date: string }): string =>
-  toUtcDateString(new Date(utcInstant({ date }).getTime() + DAY_MS));
 
 const poolToApi = ({ pool }: { pool: BudgetPlanPool }): BudgetPlanPool => ({
   readyToAssign: centsToApiDecimal(pool.readyToAssign),
@@ -70,7 +66,7 @@ const periodPool = async ({
   if (view.period.startDate < poolFrom) return null;
 
   const poolViews = views.filter((entry) => entry.period.startDate >= poolFrom);
-  const tomorrow = dayAfter({ date: today });
+  const tomorrow = addUtcDays({ date: today, days: 1 });
   const { opening, closing: cash } = await getPlanCash({
     plan,
     opening: poolFrom,
@@ -95,7 +91,7 @@ const periodPool = async ({
   };
 };
 
-type LineGoal = GoalSpec & { lineId: string };
+type LineGoal = GoalSpec & { lineId: RecordId };
 
 const goalHistories = ({
   views,
@@ -210,34 +206,28 @@ const nextCoverage = ({
   };
 };
 
-const goalToApi = ({ goal, result }: { goal: LineGoal; result: GoalEvaluation }): BudgetPlanPeriodViewLineGoal => ({
-  frequency: goal.frequency,
-  behavior: goal.behavior,
-  amount: centsToApiDecimal(goal.amount),
-  weekday: goal.weekday,
-  anchorDate: goal.anchorDate,
-  repeatEvery: goal.repeatEvery,
-  repeatUnit: goal.repeatUnit,
-  stopAtBalance: centsToApiDecimalOrNull(goal.stopAtBalance),
-  fundingCap: centsToApiDecimalOrNull(goal.fundingCap),
-  startPeriodStart: goal.startPeriodStart,
-  dueDate: result.dueDate,
-  ask: centsToApiDecimal(result.ask),
-  target: centsToApiDecimal(result.target),
-  periodTarget: centsToApiDecimal(result.periodTarget),
-  progress: centsToApiDecimal(result.progress),
-  status: result.status,
-  budgetAmount: centsToApiDecimal(result.budgetAmount),
-  occurrences: result.occurrences,
-  fundedThrough: result.fundedThrough,
-  nextNeededDate: result.nextNeededDate,
-  fundingPlan:
-    result.fundingPlan?.map((row) => ({
-      periodStart: row.periodStart,
-      amount: centsToApiDecimal(row.amount),
-      leftAfter: centsToApiDecimal(row.leftAfter),
-    })) ?? null,
-});
+const goalToApi = ({ goal, result }: { goal: LineGoal; result: GoalEvaluation }): BudgetPlanPeriodViewLineGoal => {
+  const { lineId: _lineId, snoozedPeriodStart: _snoozedPeriodStart, ...settings } = goalSpecToApi({ goal });
+  return {
+    ...settings,
+    dueDate: result.dueDate,
+    ask: centsToApiDecimal(result.ask),
+    target: centsToApiDecimal(result.target),
+    periodTarget: centsToApiDecimal(result.periodTarget),
+    progress: centsToApiDecimal(result.progress),
+    status: result.status,
+    budgetAmount: centsToApiDecimal(result.budgetAmount),
+    occurrences: result.occurrences,
+    fundedThrough: result.fundedThrough,
+    nextNeededDate: result.nextNeededDate,
+    fundingPlan:
+      result.fundingPlan?.map((row) => ({
+        periodStart: row.periodStart,
+        amount: centsToApiDecimal(row.amount),
+        leftAfter: centsToApiDecimal(row.leftAfter),
+      })) ?? null,
+  };
+};
 
 const toApi = ({
   view,

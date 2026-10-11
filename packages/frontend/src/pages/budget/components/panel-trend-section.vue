@@ -10,6 +10,11 @@ import { type PanelContext, type TrendKind, trendPaddingStarts, trendSummary, tr
 
 const props = defineProps<{ context: PanelContext; kind: TrendKind }>();
 
+const BAR_CLASSES: Record<TrendKind, { current: string; past: string }> = {
+  budgeting: { current: 'bg-primary', past: 'bg-muted-foreground/30' },
+  spending: { current: 'bg-app-expense-color', past: 'bg-app-expense-color/30' },
+};
+
 const { formatBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
 
@@ -54,18 +59,7 @@ const isGood = computed(() => {
           <div v-if="bar.height === 0" class="bg-muted-foreground/30 h-0.5 w-full rounded-sm" />
           <div
             v-else-if="bar.height !== null"
-            :class="
-              cn(
-                'w-full rounded-sm',
-                kind === 'budgeting'
-                  ? bar.isCurrent
-                    ? 'bg-primary'
-                    : 'bg-muted-foreground/30'
-                  : bar.isCurrent
-                    ? 'bg-app-expense-color'
-                    : 'bg-app-expense-color/30',
-              )
-            "
+            :class="cn('w-full rounded-sm', BAR_CLASSES[kind][bar.isCurrent ? 'current' : 'past'])"
             :style="{ height: `${bar.height}%` }"
           />
         </div>
@@ -87,11 +81,9 @@ const isGood = computed(() => {
           :class="
             cn(
               'flex items-center tabular-nums',
-              summary.changePercent === 0
-                ? 'text-muted-foreground'
-                : isGood
-                  ? 'text-app-income-color'
-                  : 'text-app-expense-color',
+              summary.changePercent === 0 && 'text-muted-foreground',
+              summary.changePercent !== 0 && isGood && 'text-app-income-color',
+              summary.changePercent !== 0 && !isGood && 'text-app-expense-color',
             )
           "
         >

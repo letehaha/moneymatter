@@ -44,20 +44,6 @@ const groupOptions = computed(() => [
   ...props.groups.map((group) => ({ value: group.id, label: group.name })),
 ]);
 
-watch(
-  isOpen,
-  (open) => {
-    if (!open) return;
-    name.value = props.line?.name ?? '';
-    selectedGroupId.value = (props.line ? props.line.groupId : props.groupId) ?? NO_GROUP;
-    categoryIds.value = expandCategoryIds({
-      categoryIds: props.line?.categoryIds ?? props.initialCategoryIds ?? [],
-      categories: formattedCategories.value,
-    });
-  },
-  { immediate: true },
-);
-
 const takenBy = computed(() =>
   buildTakenCategories({
     lines: [
@@ -66,6 +52,31 @@ const takenBy = computed(() =>
     ],
     categories: formattedCategories.value,
   }),
+);
+
+// Keeps the picker equal to what save stores: a parent with an unchecked child gets unchecked.
+const setCategoryIds = ({ value }: { value: string[] }) => {
+  const categories = formattedCategories.value;
+  categoryIds.value = expandCategoryIds({
+    categoryIds: collapseCategoryIds({ categoryIds: value, categories }),
+    categories,
+  });
+};
+
+// A prefilled category can cover children another line already holds; those stay out of a new line.
+watch(
+  isOpen,
+  (open) => {
+    if (!open) return;
+    name.value = props.line?.name ?? '';
+    selectedGroupId.value = (props.line ? props.line.groupId : props.groupId) ?? NO_GROUP;
+    const prefilled = expandCategoryIds({
+      categoryIds: props.line?.categoryIds ?? props.initialCategoryIds ?? [],
+      categories: formattedCategories.value,
+    });
+    setCategoryIds({ value: props.line ? prefilled : prefilled.filter((id) => !takenBy.value[id]) });
+  },
+  { immediate: true },
 );
 
 const close = () => {
@@ -87,21 +98,18 @@ const update = useInvalidatingMutation({
   onSuccess: close,
 });
 
-// Keeps the picker equal to what save stores: a parent with an unchecked child gets unchecked.
-const setCategoryIds = ({ value }: { value: string[] }) => {
-  const categories = formattedCategories.value;
-  categoryIds.value = expandCategoryIds({
-    categoryIds: collapseCategoryIds({ categoryIds: value, categories }),
-    categories,
-  });
-};
-
 const collapsedIds = computed(() =>
   collapseCategoryIds({ categoryIds: categoryIds.value, categories: formattedCategories.value }),
 );
 
 const isPending = computed(() => create.isPending.value || update.isPending.value);
-const isSubmitDisabled = computed(() => isPending.value || !name.value.trim() || collapsedIds.value.length === 0);
+const hasTakenCategory = computed(() => {
+  const own = new Set(props.line?.categoryIds);
+  return collapsedIds.value.some((id) => takenBy.value[id] && !own.has(id));
+});
+const isSubmitDisabled = computed(
+  () => isPending.value || !name.value.trim() || collapsedIds.value.length === 0 || hasTakenCategory.value,
+);
 
 const submit = () => {
   if (isSubmitDisabled.value) return;

@@ -22,7 +22,6 @@ export enum AI_FEATURE {
   receiptParsing = 'receipt_parsing',
   // Future features:
   // insights = 'insights',
-  // budgetSuggestions = 'budget_suggestions',
 }
 
 export interface AIModelPricing {

@@ -3,6 +3,7 @@ import { setBudgetLineGoal } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
+import DateField from '@/components/fields/date-field.vue';
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
@@ -15,6 +16,7 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import {
   BUDGET_LINE_GOAL_BEHAVIORS_BY_FREQUENCY,
+  BUDGET_LINE_GOAL_REPEAT_MAX,
   BUDGET_LINE_GOAL_REPEAT_UNITS,
   type BudgetLineGoalBehavior,
   type BudgetLineGoalFrequency,
@@ -30,14 +32,13 @@ import {
   RepeatIcon,
   TargetIcon,
 } from '@lucide/vue';
-import { format as formatDate, isValid, parseISO, setDay } from 'date-fns';
+import { parseISO, setDay } from 'date-fns';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { useGoalText } from '../composables/use-goal-text';
 import {
   GOAL_EDITOR_FREQUENCIES,
-  GOAL_REPEAT_MAX,
   type GoalEditorState,
   type GoalPeriodUnit,
   buildGoalPayload,
@@ -93,10 +94,10 @@ const hasErrors = computed(() => Object.values(errors.value).some(Boolean));
 const summary = computed(() => goalSummary({ state: state.value, unit: props.unit }));
 const errorFor = ({ key }: { key: keyof typeof errors.value }) =>
   showErrors.value && errors.value[key]
-    ? t(errors.value[key], { max: GOAL_REPEAT_MAX[state.value.repeatUnit] })
+    ? t(errors.value[key], { max: BUDGET_LINE_GOAL_REPEAT_MAX[state.value.repeatUnit] })
     : undefined;
 
-const patch = (changes: Partial<GoalEditorState>) => {
+const patch = ({ changes }: { changes: Partial<GoalEditorState> }) => {
   state.value = { ...state.value, ...changes };
 };
 
@@ -142,14 +143,9 @@ const startedLabel = computed(() =>
   props.line.goal ? format(parseISO(props.line.goal.startPeriodStart), 'LLLL yyyy') : '',
 );
 
-const setAnchorDate = ({ value }: { value: string | number | null }) => {
-  const parsed = value ? parseISO(String(value)) : null;
-  patch({ anchorDate: parsed && isValid(parsed) ? parsed : null });
-};
-
 const setRepeatEvery = ({ value }: { value: string | number | null }) => {
   const parsed = value === null || value === '' ? null : Number(value);
-  patch({ repeatEvery: parsed !== null && Number.isFinite(parsed) ? parsed : null });
+  patch({ changes: { repeatEvery: parsed !== null && Number.isFinite(parsed) ? parsed : null } });
 };
 
 const { isPending, mutate } = useInvalidatingMutation({
@@ -219,7 +215,7 @@ const submit = () => {
         </div>
         <RadioGroup
           :model-value="state.behavior"
-          @update:model-value="(value) => patch({ behavior: value as BudgetLineGoalBehavior })"
+          @update:model-value="(value) => patch({ changes: { behavior: value as BudgetLineGoalBehavior } })"
         >
           <Label
             v-for="option in BUDGET_LINE_GOAL_BEHAVIORS_BY_FREQUENCY[state.frequency]"
@@ -250,7 +246,7 @@ const submit = () => {
           :label="amountLabel"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"
           :error-message="errorFor({ key: 'amount' })"
-          @update:model-value="(value) => patch({ amount: value })"
+          @update:model-value="(value) => patch({ changes: { amount: value } })"
         />
         <p v-if="amountHint" class="text-muted-foreground text-xs">{{ amountHint }}</p>
       </div>
@@ -263,17 +259,15 @@ const submit = () => {
         value-key="value"
         :label="$t('budgetPlans.goals.repeatsOnLabel')"
         :placeholder="$t('budgetPlans.goals.weekdayPlaceholder')"
-        @update:model-value="(option) => option && patch({ weekday: option.value })"
+        @update:model-value="(option) => option && patch({ changes: { weekday: option.value } })"
       />
 
       <div v-if="fields.anchorDate" class="grid gap-1">
-        <InputField
-          type="date"
-          :model-value="state.anchorDate ? formatDate(state.anchorDate, 'yyyy-MM-dd') : ''"
+        <DateField
+          :model-value="state.anchorDate ?? undefined"
           :label="anchorLabel"
-          :placeholder="$t('budgetPlans.goals.datePlaceholder')"
           :error-message="errorFor({ key: 'anchorDate' })"
-          @update:model-value="setAnchorDate({ value: $event })"
+          @update:model-value="(value) => patch({ changes: { anchorDate: value } })"
         />
         <p v-if="state.frequency === 'yearly'" class="text-muted-foreground text-xs">
           {{ $t('budgetPlans.goals.firstDueDateHint') }}
@@ -289,7 +283,7 @@ const submit = () => {
           <Switch
             id="goal-repeat"
             :model-value="state.repeats"
-            @update:model-value="(value: boolean) => patch({ repeats: value })"
+            @update:model-value="(value: boolean) => patch({ changes: { repeats: value } })"
           />
         </div>
         <div v-if="state.repeats" class="grid grid-cols-2 gap-3">
@@ -308,7 +302,9 @@ const submit = () => {
             value-key="value"
             :label="$t('budgetPlans.goals.repeatUnitLabel')"
             :placeholder="$t('budgetPlans.goals.repeatUnitPlaceholder')"
-            @update:model-value="(option) => option && patch({ repeatUnit: option.value as BudgetLineGoalRepeatUnit })"
+            @update:model-value="
+              (option) => option && patch({ changes: { repeatUnit: option.value as BudgetLineGoalRepeatUnit } })
+            "
           />
         </div>
       </div>
@@ -322,7 +318,7 @@ const submit = () => {
           <Switch
             id="goal-stop-at-balance"
             :model-value="state.hasStopAtBalance"
-            @update:model-value="(value: boolean) => patch({ hasStopAtBalance: value })"
+            @update:model-value="(value: boolean) => patch({ changes: { hasStopAtBalance: value } })"
           />
         </div>
         <FormattedAmountField
@@ -331,7 +327,7 @@ const submit = () => {
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"
           :error-message="errorFor({ key: 'stopAtBalance' })"
-          @update:model-value="(value) => patch({ stopAtBalance: value })"
+          @update:model-value="(value) => patch({ changes: { stopAtBalance: value } })"
         />
       </div>
 
@@ -341,7 +337,7 @@ const submit = () => {
           <Switch
             id="goal-funding-cap"
             :model-value="state.hasFundingCap"
-            @update:model-value="(value: boolean) => patch({ hasFundingCap: value })"
+            @update:model-value="(value: boolean) => patch({ changes: { hasFundingCap: value } })"
           />
         </div>
         <FormattedAmountField
@@ -350,7 +346,7 @@ const submit = () => {
           class="[&_input]:text-right"
           :placeholder="$t('budgetPlans.goals.amountPlaceholder')"
           :error-message="errorFor({ key: 'fundingCap' })"
-          @update:model-value="(value) => patch({ fundingCap: value })"
+          @update:model-value="(value) => patch({ changes: { fundingCap: value } })"
         />
       </div>
 

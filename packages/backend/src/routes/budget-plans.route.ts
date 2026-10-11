@@ -30,6 +30,7 @@ import { requireFeature } from '@middlewares/entitlements';
 import { Router } from 'express';
 
 const router = Router({});
+const gatedWrite = [authenticateSession, requireFeature(FEATURES.budget_plan), checkBaseCurrencyLock];
 
 // Reads stay ungated: a lapsed user keeps reading their budget, and
 // `enforceReadOnly` stops their writes like everywhere else.
@@ -40,121 +41,25 @@ router.get('/:planId/periods', authenticateSession, listPeriods);
 router.get('/:planId/periods/:periodId', authenticateSession, getPeriodView);
 router.get('/:planId/periods/:periodId/scheduled', authenticateSession, getScheduled);
 
-router.post('/', authenticateSession, requireFeature(FEATURES.budget_plan), checkBaseCurrencyLock, createPlan);
-router.patch('/:planId', authenticateSession, requireFeature(FEATURES.budget_plan), checkBaseCurrencyLock, updatePlan);
+router.post('/', ...gatedWrite, createPlan);
+router.patch('/:planId', ...gatedWrite, updatePlan);
 // Ungated: an active plan blocks base-currency changes, so a lapsed user must be able to drop it.
 router.delete('/:planId', authenticateSession, checkBaseCurrencyLock, deletePlan);
-router.post(
-  '/:planId/restore',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  restorePlan,
-);
-router.put(
-  '/:planId/accounts',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  setPlanAccounts,
-);
-router.post(
-  '/:planId/groups',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  createGroup,
-);
-router.patch(
-  '/:planId/groups/:groupId',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  updateGroup,
-);
-router.delete(
-  '/:planId/groups/:groupId',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  deleteGroup,
-);
-router.put(
-  '/:planId/layout',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  setLayout,
-);
-router.post(
-  '/:planId/lines',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  createLine,
-);
-router.post(
-  '/:planId/suggested-lines',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  addSuggestedLines,
-);
-router.patch(
-  '/:planId/lines/:lineId',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  updateLine,
-);
-router.delete(
-  '/:planId/lines/:lineId',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  deleteLine,
-);
-router.post(
-  '/:planId/lines/:lineId/archive',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  archiveLine,
-);
-router.post(
-  '/:planId/lines/:lineId/restore',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  restoreLine,
-);
-router.put(
-  '/:planId/lines/:lineId/goal',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  setLineGoal,
-);
-router.delete(
-  '/:planId/lines/:lineId/goal',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  deleteLineGoal,
-);
-router.post(
-  '/:planId/lines/:lineId/goal/snooze',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  snoozeLineGoal,
-);
-router.put(
-  '/:planId/periods/:periodId/lines/:lineId/assignment',
-  authenticateSession,
-  requireFeature(FEATURES.budget_plan),
-  checkBaseCurrencyLock,
-  setAssignment,
-);
+router.post('/:planId/restore', ...gatedWrite, restorePlan);
+router.put('/:planId/accounts', ...gatedWrite, setPlanAccounts);
+router.post('/:planId/groups', ...gatedWrite, createGroup);
+router.patch('/:planId/groups/:groupId', ...gatedWrite, updateGroup);
+router.delete('/:planId/groups/:groupId', ...gatedWrite, deleteGroup);
+router.put('/:planId/layout', ...gatedWrite, setLayout);
+router.post('/:planId/lines', ...gatedWrite, createLine);
+router.post('/:planId/suggested-lines', ...gatedWrite, addSuggestedLines);
+router.patch('/:planId/lines/:lineId', ...gatedWrite, updateLine);
+router.delete('/:planId/lines/:lineId', ...gatedWrite, deleteLine);
+router.post('/:planId/lines/:lineId/archive', ...gatedWrite, archiveLine);
+router.post('/:planId/lines/:lineId/restore', ...gatedWrite, restoreLine);
+router.put('/:planId/lines/:lineId/goal', ...gatedWrite, setLineGoal);
+router.delete('/:planId/lines/:lineId/goal', ...gatedWrite, deleteLineGoal);
+router.post('/:planId/lines/:lineId/goal/snooze', ...gatedWrite, snoozeLineGoal);
+router.put('/:planId/periods/:periodId/lines/:lineId/assignment', ...gatedWrite, setAssignment);
 
 export default router;

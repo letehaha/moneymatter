@@ -7,6 +7,9 @@ import BudgetLineCategories from './budget-line-categories.model';
 import BudgetLineGroups from './budget-line-groups.model';
 import BudgetPlans from './budget-plans.model';
 
+/** What created the line; drives the analytics on how suggested lines get edited. */
+export type BudgetLineOrigin = 'manual' | 'rules' | 'ai';
+
 @Table({
   tableName: 'BudgetLines',
   timestamps: true,
@@ -47,6 +50,9 @@ export default class BudgetLines extends Model {
    */
   @Column({ type: DataType.ARRAY(DataType.UUID), allowNull: false, defaultValue: [] })
   archivedCategoryIds!: RecordId[];
+
+  @Column({ type: DataType.STRING(16), allowNull: false, defaultValue: 'manual' })
+  origin!: BudgetLineOrigin;
 
   declare createdAt: Date;
   declare updatedAt: Date;
