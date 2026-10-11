@@ -52,7 +52,13 @@ jobs:
           labels: |
             org.opencontainers.image.source=https://github.com/elwin/moneymatter
       - name: Trigger Dokploy deployment
+        env:
+          DOKPLOY_DOCS_URL: ${{ secrets.DOKPLOY_DOCS_DEPLOY_WEBHOOK_URL }}
         run: |
+          if [ -z "$DOKPLOY_DOCS_URL" ]; then
+            echo "DOKPLOY_DOCS_DEPLOY_WEBHOOK_URL is not set. Skipping Dokploy deployment."
+            exit 0
+          fi
           curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.DOKPLOY_DOCS_DEPLOY_WEBHOOK_URL }}" | grep -q "200" \
+            "$DOKPLOY_DOCS_URL" | grep -q "200" \
             || (echo "Dokploy docs deploy webhook failed" && exit 1)

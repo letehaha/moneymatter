@@ -99,7 +99,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Dokploy deployment
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}
         run: |
+          if [ -z "$DOKPLOY_URL" ]; then
+            echo "DOKPLOY_DEPLOY_WEBHOOK_URL is not set. Skipping Dokploy deployment."
+            exit 0
+          fi
           curl -s -o /dev/null -w "%{http_code}" \
-            "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}" | grep -q "200" \
+            "$DOKPLOY_URL" | grep -q "200" \
             || (echo "Dokploy deploy webhook failed" && exit 1)
