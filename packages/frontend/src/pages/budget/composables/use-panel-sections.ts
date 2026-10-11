@@ -13,9 +13,10 @@ const PANEL_SECTIONS = [
 
 export type PanelSection = (typeof PANEL_SECTIONS)[number];
 
-export const usePanelSections = () =>
+// The mobile drawer keeps its own state, so sections collapsed on desktop still start open there.
+export const usePanelSections = ({ drawer }: { drawer?: boolean } = {}) =>
   useLocalStorage<Record<PanelSection, boolean>>(
-    'budget-plan:panel-open-sections',
+    drawer ? 'budget-plan:drawer-open-sections' : 'budget-plan:panel-open-sections',
     Object.fromEntries(PANEL_SECTIONS.map((section) => [section, true])) as Record<PanelSection, boolean>,
     { mergeDefaults: true },
   );

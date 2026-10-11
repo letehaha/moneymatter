@@ -33,6 +33,7 @@ import {
   differenceInCalendarMonths,
   format,
   getDate,
+  isLastDayOfMonth,
   isSameMonth,
   isSameYear,
   isValid,
@@ -65,6 +66,27 @@ export const formatPeriodLabel = ({
   if (isSameMonth(start, last)) return `${fmt({ date: start, pattern: 'd' })} – ${end}`;
   if (isSameYear(start, last)) return `${fmt({ date: start, pattern: 'd MMM' })} – ${end}`;
   return `${fmt({ date: start, pattern: 'd MMM yyyy' })} – ${end}`;
+};
+
+/** Compact label for narrow headers: a whole calendar month drops its day range, every period drops the year when it has days. */
+export const formatPeriodShortLabel = ({
+  startDate,
+  endDate,
+  locale,
+}: {
+  startDate: string;
+  endDate: string;
+  locale?: Locale;
+}): string => {
+  const start = parseISO(startDate);
+  const last = subDays(parseISO(endDate), 1);
+  const fmt = ({ date, pattern }: { date: Date; pattern: string }) => format(date, pattern, { locale });
+
+  if (!isSameMonth(start, last)) {
+    return `${fmt({ date: start, pattern: 'd MMM' })} – ${fmt({ date: last, pattern: 'd MMM' })}`;
+  }
+  if (getDate(start) === 1 && isLastDayOfMonth(last)) return fmt({ date: last, pattern: 'LLL yyyy' });
+  return `${fmt({ date: start, pattern: 'd' })} – ${fmt({ date: last, pattern: 'd MMM' })}`;
 };
 
 export const buildCreatePlanPayload = ({

@@ -18,6 +18,7 @@ import {
   cadenceLabel,
   defaultAssignmentScope,
   formatPeriodLabel,
+  formatPeriodShortLabel,
   type GoalEditorState,
   goalCaption,
   goalEditorStateFrom,
@@ -65,6 +66,24 @@ describe('formatPeriodLabel', () => {
     expect(formatPeriodLabel({ startDate: '2026-09-16', endDate: '2026-10-16', locale: uk })).toBe(
       '16 верес. – 15 жовт. 2026',
     );
+  });
+});
+
+describe('formatPeriodShortLabel', () => {
+  it('shows only the month and year for a whole calendar month', () => {
+    expect(formatPeriodShortLabel({ startDate: '2026-10-01', endDate: '2026-11-01' })).toBe('Oct 2026');
+  });
+
+  it('keeps the days and drops the year for part of a month', () => {
+    expect(formatPeriodShortLabel({ startDate: '2026-10-01', endDate: '2026-10-15' })).toBe('1 – 14 Oct');
+  });
+
+  it('repeats the month when the period crosses one', () => {
+    expect(formatPeriodShortLabel({ startDate: '2026-09-16', endDate: '2026-10-16' })).toBe('16 Sep – 15 Oct');
+  });
+
+  it('formats month names in the passed locale', () => {
+    expect(formatPeriodShortLabel({ startDate: '2026-10-01', endDate: '2026-11-01', locale: uk })).toBe('жовт. 2026');
   });
 });
 

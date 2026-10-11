@@ -1,21 +1,44 @@
 <script setup lang="ts">
 import { Button } from '@/components/lib/ui/button';
 import { CollapsibleTrigger } from '@/components/lib/ui/collapsible';
+import { cn } from '@/lib/utils';
 import { ChevronDownIcon } from '@lucide/vue';
-import type { Component } from 'vue';
+import { type Component, inject } from 'vue';
 
-defineProps<{ icon: Component }>();
+import { SIDE_PANEL_VARIANT } from './context';
+
+defineProps<{
+  icon: Component;
+  /** Cards variant: background and text colour of the icon tile. */
+  iconClass?: string;
+}>();
+
+const isCards = inject(SIDE_PANEL_VARIANT, 'list') === 'cards';
 </script>
 
 <template>
-  <!-- The hover background bleeds past the column while the icon tile stays aligned with the content. -->
+  <!-- The hover background bleeds past the column (to the card edges in the cards variant) while the icon tile stays aligned with the content. -->
   <CollapsibleTrigger as-child>
     <Button
       variant="ghost"
-      class="group/side-panel-trigger -mx-2 h-auto min-h-11 w-[calc(100%+1rem)] justify-start gap-3 px-2 py-2 text-left whitespace-normal"
+      :class="
+        cn(
+          'group/side-panel-trigger h-auto min-h-11 justify-start gap-3 py-2 text-left whitespace-normal',
+          isCards
+            ? '-mx-3 w-[calc(100%+1.5rem)] rounded-none px-3 font-semibold focus-visible:ring-inset'
+            : '-mx-2 w-[calc(100%+1rem)] px-2',
+        )
+      "
     >
       <span
-        class="bg-muted text-muted-foreground group-data-[state=open]/side-panel-trigger:bg-primary/15 group-data-[state=open]/side-panel-trigger:text-primary-text flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors"
+        :class="
+          cn(
+            'flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors',
+            isCards
+              ? (iconClass ?? 'bg-primary/15 text-primary-text')
+              : 'bg-muted text-muted-foreground group-data-[state=open]/side-panel-trigger:bg-primary/15 group-data-[state=open]/side-panel-trigger:text-primary-text',
+          )
+        "
       >
         <component :is="icon" class="size-4" />
       </span>

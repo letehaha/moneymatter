@@ -50,6 +50,7 @@ type SectionEntry = {
   titleKey: string;
   icon: Component;
   component: Component;
+  iconClass?: string;
   props?: Record<string, unknown>;
   hidden?: boolean;
 };
@@ -61,12 +62,14 @@ const props = defineProps<{
   view: BudgetPlanPeriodView;
   /** Empty → period overview, one → line details, several → aggregated selection. */
   lines: BudgetPlanPeriodViewLine[];
+  /** Mobile drawer: always shows the close button and keeps its own open sections. */
+  drawer?: boolean;
 }>();
 const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
-const openSections = usePanelSections();
+const openSections = usePanelSections({ drawer: props.drawer });
 
 const line = computed(() => (props.lines.length === 1 ? props.lines[0] : undefined));
 const lineIds = computed(() => props.lines.map((entry) => entry.lineId));
@@ -114,6 +117,7 @@ const sections = computed(() => {
       key: 'breakdown',
       titleKey: 'budgetPlans.panel.breakdown',
       icon: CalculatorIcon,
+      iconClass: 'bg-sky-500/15 text-sky-500',
       component: PanelBreakdownSection,
     },
     {
@@ -150,6 +154,7 @@ const sections = computed(() => {
     {
       key: 'spendingTrend',
       icon: TrendingUpIcon,
+      iconClass: 'bg-app-expense-color/15 text-app-expense-color',
       titleKey: 'budgetPlans.panel.spendingTrend',
       component: PanelTrendSection,
       props: { kind: 'spending' },
@@ -158,6 +163,7 @@ const sections = computed(() => {
     {
       key: 'pace',
       icon: GaugeIcon,
+      iconClass: 'bg-warning-text/15 text-warning-text',
       titleKey: 'budgetPlans.panel.pace',
       component: PanelPaceSection,
       hidden: !props.view.period.isCurrent,
@@ -165,6 +171,7 @@ const sections = computed(() => {
     {
       key: 'goal',
       icon: TargetIcon,
+      iconClass: 'bg-success-text/15 text-success-text',
       titleKey: 'budgetPlans.panel.goal',
       component: PanelGoalSection,
       props: { line: line.value },
@@ -177,7 +184,14 @@ const sections = computed(() => {
 
 <template>
   <div class="grid grid-cols-1 gap-4">
-    <div class="flex min-w-0 items-start justify-between gap-2">
+    <div
+      :class="
+        cn(
+          'flex min-w-0 items-start justify-between gap-2',
+          drawer && 'bg-dialog sticky top-0 z-10 -mx-4 px-4 pt-3 pb-2',
+        )
+      "
+    >
       <div class="min-w-0">
         <h2 class="truncate font-semibold">
           <template v-if="line">{{ line.name }}</template>
@@ -186,16 +200,24 @@ const sections = computed(() => {
         </h2>
         <p class="text-muted-foreground text-xs">{{ periodLabel }}</p>
       </div>
-      <DesktopOnlyTooltip v-if="lines.length" :content="$t('budgetPlans.panel.closeLine')">
-        <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
-          <XIcon class="size-4" />
-        </Button>
-      </DesktopOnlyTooltip>
+      <div class="flex shrink-0 items-center gap-1">
+        <slot name="actions" />
+        <DesktopOnlyTooltip v-if="lines.length || drawer" :content="$t('budgetPlans.panel.closeLine')">
+          <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
+            <XIcon class="size-4" />
+          </Button>
+        </DesktopOnlyTooltip>
+      </div>
     </div>
 
-    <div v-if="lines.length" class="border-border bg-muted/40 rounded-lg border p-4">
-      <p class="text-muted-foreground text-xs font-medium uppercase">{{ $t('budgetPlans.grid.available') }}</p>
-      <p :class="cn('text-3xl font-bold tabular-nums', amountToneClass({ amount: figures.available }))">
+    <div
+      v-if="lines.length"
+      class="border-border bg-muted/40 flex min-w-0 flex-wrap items-center justify-between gap-x-3 rounded-xl border px-4 py-3"
+    >
+      <p class="text-muted-foreground text-xs font-medium tracking-wider uppercase">
+        {{ $t('budgetPlans.grid.available') }}
+      </p>
+      <p :class="cn('text-2xl font-bold tabular-nums', amountToneClass({ amount: figures.available }))">
         {{ formatBaseCurrency(figures.available) }}
       </p>
     </div>
@@ -210,9 +232,11 @@ const sections = computed(() => {
       <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.goals.askHint') }}</p>
     </div>
 
-    <SidePanelSections>
+    <SidePanelSections variant="cards">
       <SidePanelSection v-for="section in sections" :key="section.key" v-model:open="openSections[section.key]">
-        <SidePanelSectionTrigger :icon="section.icon">{{ $t(section.titleKey) }}</SidePanelSectionTrigger>
+        <SidePanelSectionTrigger :icon="section.icon" :icon-class="section.iconClass">{{
+          $t(section.titleKey)
+        }}</SidePanelSectionTrigger>
         <SidePanelSectionContent>
           <component
             :is="section.component"

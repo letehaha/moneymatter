@@ -1,7 +1,12 @@
 <script setup lang="ts">
 import { cn } from '@/lib/utils';
+import { inject } from 'vue';
+
+import { SIDE_PANEL_VARIANT } from './context';
 
 defineProps<{ open: boolean; labelClass: string; summary?: boolean }>();
+
+const isCards = inject(SIDE_PANEL_VARIANT, 'list') === 'cards';
 </script>
 
 <template>
@@ -15,7 +20,7 @@ defineProps<{ open: boolean; labelClass: string; summary?: boolean }>();
       <div v-else :class="cn('bg-muted h-3 rounded', labelClass)" />
       <div class="bg-muted ml-auto size-4 shrink-0 rounded" />
     </div>
-    <div v-if="open" class="pt-3 pb-2">
+    <div v-if="open" :class="isCards ? 'border-border border-t py-3' : 'pt-3 pb-2'">
       <slot />
     </div>
   </div>

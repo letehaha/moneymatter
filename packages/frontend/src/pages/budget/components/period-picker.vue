@@ -10,9 +10,14 @@ import type { BudgetPlanPeriod } from '@bt/shared/types';
 import { CheckIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import { formatPeriodLabel } from '../helpers';
+import { formatPeriodLabel, formatPeriodShortLabel } from '../helpers';
 
-const props = defineProps<{ periods: BudgetPlanPeriod[]; selectedId?: string }>();
+const props = defineProps<{
+  periods: BudgetPlanPeriod[];
+  selectedId?: string;
+  /** Narrow headers: short trigger label and a dot for the current period. The list keeps full labels. */
+  compact?: boolean;
+}>();
 const emit = defineEmits<{ select: [periodId: string] }>();
 
 const { locale } = useDateLocale();
@@ -44,7 +49,7 @@ watch([isOpen, listRef], ([open, list]) => {
 </script>
 
 <template>
-  <div class="flex min-w-0 items-center gap-1">
+  <div :class="cn('flex min-w-0 items-center', compact ? 'gap-0' : 'gap-1')">
     <DesktopOnlyTooltip :content="$t('budgetPlans.period.previous')">
       <Button
         variant="ghost"
@@ -66,10 +71,20 @@ watch([isOpen, listRef], ([open, list]) => {
     >
       <template #trigger>
         <Button variant="ghost" size="sm" class="px-2 text-base font-semibold" :disabled="!selectedPeriod">
-          <span class="truncate tabular-nums">{{ selectedPeriod ? labelOf({ period: selectedPeriod }) : '' }}</span>
-          <StatusBadge v-if="selectedPeriod?.isCurrent" variant="info">
-            {{ $t('budgetPlans.period.current') }}
-          </StatusBadge>
+          <template v-if="compact">
+            <span class="truncate tabular-nums">
+              {{ selectedPeriod ? formatPeriodShortLabel({ ...selectedPeriod, locale }) : '' }}
+            </span>
+            <span v-if="selectedPeriod?.isCurrent" class="bg-primary size-1.5 shrink-0 rounded-full">
+              <span class="sr-only">{{ $t('budgetPlans.period.current') }}</span>
+            </span>
+          </template>
+          <template v-else>
+            <span class="truncate tabular-nums">{{ selectedPeriod ? labelOf({ period: selectedPeriod }) : '' }}</span>
+            <StatusBadge v-if="selectedPeriod?.isCurrent" variant="info">
+              {{ $t('budgetPlans.period.current') }}
+            </StatusBadge>
+          </template>
           <ChevronDownIcon class="text-muted-foreground size-4" />
         </Button>
       </template>

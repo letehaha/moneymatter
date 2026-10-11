@@ -18,7 +18,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/lib/ui/collapsible';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
-import { Sheet, SheetContent, SheetTitle } from '@/components/lib/ui/sheet';
+import { Drawer, DrawerContent, DrawerTitle } from '@/components/lib/ui/drawer';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
 import { isResourceMissingError } from '@/js/errors';
@@ -41,7 +41,7 @@ import {
   SlidersHorizontalIcon,
 } from '@lucide/vue';
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { createReusableTemplate, onKeyStroke } from '@vueuse/core';
+import { createReusableTemplate, onKeyStroke, useElementSize } from '@vueuse/core';
 import { upperFirst } from 'lodash-es';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -58,6 +58,7 @@ import AssignPopover from './components/assign-popover.vue';
 import LineDialog from './components/line-dialog.vue';
 import ManageLayoutDialog from './components/manage-layout-dialog.vue';
 import PeriodPicker from './components/period-picker.vue';
+import LineActionsMenu from './components/line-actions-menu.vue';
 import PlanSettingsSheet from './components/plan-settings-sheet.vue';
 import { ROW_BAR_MODES, type RowBarMode, useGridDisplayOptions } from './composables/use-grid-display-options';
 import { useLineSelection } from './composables/use-line-selection';
@@ -89,10 +90,16 @@ const lineCategoryIds = ref<string[]>([]);
 const isLayoutOpen = ref(false);
 const isPanelSheetOpen = ref(false);
 const frameRef = ref<HTMLElement | null>(null);
+// The desktop stats strip wraps at some widths, so everything sticking below it reads its measured height.
+const stripRef = ref<HTMLElement | null>(null);
+const { height: stripHeight } = useElementSize(stripRef, undefined, { box: 'border-box' });
 const { rowBars, compactRows } = useGridDisplayOptions();
 const { panelWidth, panelOpen, startResize, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } = useFrameLayout({
   frameRef,
 });
+
+// Sits right under the sticky page title row, which is h-11.
+const FRAME_STICKY_CLASS = 'sticky top-[calc(var(--header-height)+2.75rem)]';
 
 const selectMode = ref(false);
 watch(isNarrow, (narrow) => {
@@ -102,6 +109,7 @@ watch(isNarrow, (narrow) => {
 const [DefineOptionsMenu, OptionsMenu] = createReusableTemplate();
 const [DefineSettingsButton, SettingsButton] = createReusableTemplate();
 const [DefineMobileToolbar, MobileToolbar] = createReusableTemplate();
+const [DefineProgressLabel, ProgressLabel] = createReusableTemplate();
 
 const togglePanel = () => {
   if (isNarrow.value) isPanelSheetOpen.value = true;
@@ -278,6 +286,16 @@ watch(isPanelSheetOpen, (open) => {
 });
 
 const selectedLine = computed(() => (selectedLines.value.length === 1 ? selectedLines.value[0] : undefined));
+
+const gridRef = ref<InstanceType<typeof BudgetLinesGrid> | null>(null);
+// Archive and delete confirm in their own dialog, so the drawer steps aside for them.
+const pickDrawerLineAction = ({ action }: { action: 'edit' | 'archive' | 'delete' }) => {
+  const line = selectedLine.value;
+  if (!line) return;
+  if (action !== 'edit') isPanelSheetOpen.value = false;
+  gridRef.value?.pickMenuAction({ line, action });
+};
+
 const selectionAvailable = computed(() => sumLineTotals({ lines: selectedLines.value }).available);
 const panelTabAvailable = computed(() =>
   selectedLines.value.length ? selectionAvailable.value : (view.value?.header.totalAvailable ?? 0),
@@ -365,36 +383,38 @@ const openLineDialog = ({
       </DefineOptionsMenu>
 
       <DefineMobileToolbar>
-        <div class="border-border bg-muted/40 flex items-center gap-1.5 border-b px-2 py-1.5">
-          <Button size="sm" :disabled="!view" @click="openLineDialog({})">
-            <PlusIcon class="size-4" />
-            {{ $t('budgetPlans.grid.addLine') }}
-          </Button>
-          <DesktopOnlyTooltip :content="$t('budgetPlans.panel.overview')">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              :disabled="!view"
-              :aria-label="$t('budgetPlans.panel.overview')"
-              @click="openOverviewSheet"
-            >
-              <PieChartIcon class="size-4" />
+        <div :class="cn('bg-card z-10', !selectMode && FRAME_STICKY_CLASS)">
+          <div class="border-border bg-muted/40 flex items-center gap-1.5 border-b px-2 py-1.5">
+            <Button size="sm" :disabled="!view" @click="openLineDialog({})">
+              <PlusIcon class="size-4" />
+              {{ $t('budgetPlans.grid.addLine') }}
             </Button>
-          </DesktopOnlyTooltip>
-          <span class="flex-1" />
-          <DesktopOnlyTooltip v-if="!selectMode" :content="$t('budgetPlans.grid.selectMode')">
-            <Button
-              variant="outline"
-              size="icon-sm"
-              :disabled="!view"
-              :aria-label="$t('budgetPlans.grid.selectMode')"
-              @click="selectMode = true"
-            >
-              <ListChecksIcon class="size-4" />
-            </Button>
-          </DesktopOnlyTooltip>
-          <OptionsMenu />
-          <SettingsButton />
+            <DesktopOnlyTooltip :content="$t('budgetPlans.panel.overview')">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                :disabled="!view"
+                :aria-label="$t('budgetPlans.panel.overview')"
+                @click="openOverviewSheet"
+              >
+                <PieChartIcon class="size-4" />
+              </Button>
+            </DesktopOnlyTooltip>
+            <span class="flex-1" />
+            <DesktopOnlyTooltip v-if="!selectMode" :content="$t('budgetPlans.grid.selectMode')">
+              <Button
+                variant="outline"
+                size="icon-sm"
+                :disabled="!view"
+                :aria-label="$t('budgetPlans.grid.selectMode')"
+                @click="selectMode = true"
+              >
+                <ListChecksIcon class="size-4" />
+              </Button>
+            </DesktopOnlyTooltip>
+            <OptionsMenu />
+            <SettingsButton />
+          </div>
         </div>
       </DefineMobileToolbar>
 
@@ -412,21 +432,35 @@ const openLineDialog = ({
         </DesktopOnlyTooltip>
       </DefineSettingsButton>
 
-      <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-        <h1 class="text-2xl font-semibold tracking-tight wrap-break-word">
+      <DefineProgressLabel>
+        <span v-if="progress" class="text-muted-foreground min-w-0 truncate text-sm">
+          {{ $t('budgetPlans.period.dayOf', progress) }} ·
+          {{ $t('budgetPlans.panel.daysLeft', { n: progress.daysLeft }) }}
+        </span>
+      </DefineProgressLabel>
+
+      <div
+        :class="
+          cn(
+            'bg-background sticky top-(--header-height) z-20 -mx-4 flex h-11 min-w-0 items-center px-4 md:-mx-6 md:px-6',
+            isNarrow ? 'gap-x-1.5' : 'gap-x-3',
+          )
+        "
+      >
+        <h1 :class="cn('min-w-0 truncate font-semibold tracking-tight', isNarrow ? 'text-xl' : 'text-2xl')">
           {{ plan?.plan.name ?? $t('budgetPlans.title') }}
         </h1>
         <span aria-hidden="true" class="text-muted-foreground/50 text-2xl font-light select-none">/</span>
         <PeriodPicker
+          class="shrink-0"
+          :compact="isNarrow"
           :periods="periods ?? []"
           :selected-id="selectedPeriodId"
           @select="(periodId) => selectPeriod({ periodId })"
         />
-        <span v-if="progress" class="text-muted-foreground text-sm">
-          {{ $t('budgetPlans.period.dayOf', progress) }} ·
-          {{ $t('budgetPlans.panel.daysLeft', { n: progress.daysLeft }) }}
-        </span>
+        <ProgressLabel v-if="!isNarrow" />
       </div>
+      <div v-if="isNarrow && progress" class="-mt-5"><ProgressLabel /></div>
 
       <BudgetTrialNotice />
 
@@ -434,17 +468,22 @@ const openLineDialog = ({
         ref="frameRef"
         :class="
           cn(
-            'border-border bg-card grid min-w-0 overflow-clip rounded-lg border',
+            'border-border bg-card grid min-w-0 overflow-clip rounded-lg border max-md:-mx-4 max-md:rounded-none max-md:border-x-0',
             isPanelAttached && 'grid-cols-[minmax(0,1fr)_var(--panel-width)]',
             isPanelTab && 'grid-cols-[minmax(0,1fr)_2.75rem]',
           )
         "
-        :style="{ '--panel-width': `${panelWidth}px` }"
+        :style="{ '--panel-width': `${panelWidth}px`, '--strip-h': `${stripHeight}px` }"
       >
         <div class="relative min-w-0">
           <div
             v-if="isNarrow && selectMode"
-            class="border-border flex items-center justify-between gap-2 border-b px-2 py-1.5"
+            :class="
+              cn(
+                'border-border bg-card z-10 flex items-center justify-between gap-2 border-b px-2 py-1.5',
+                FRAME_STICKY_CLASS,
+              )
+            "
           >
             <Button variant="ghost" size="sm" @click="exitSelectMode">{{ $t('common.actions.cancel') }}</Button>
             <span class="text-sm font-semibold">{{ $t('budgetPlans.grid.selectedCount', selection.count.value) }}</span>
@@ -458,7 +497,13 @@ const openLineDialog = ({
             </Button>
           </div>
 
-          <div v-else-if="!isNarrow" class="border-border flex min-w-0 items-center gap-4 border-b px-4 py-2">
+          <div
+            v-else-if="!isNarrow"
+            ref="stripRef"
+            :class="
+              cn('border-border bg-card z-10 flex min-w-0 items-center gap-4 border-b px-4 py-2', FRAME_STICKY_CLASS)
+            "
+          >
             <BudgetSummaryStrip
               v-if="view?.pool"
               :plan-id="planId"
@@ -555,9 +600,9 @@ const openLineDialog = ({
 
             <MobileToolbar v-if="isNarrow" />
 
-            <div v-if="isPanelFloating" class="sticky top-[calc(var(--header-height)+1rem)] z-20 h-0">
+            <div v-if="isPanelFloating" class="sticky top-[calc(var(--header-height)+2.75rem+var(--strip-h))] z-20 h-0">
               <aside
-                class="border-border bg-card absolute top-2.5 right-2.5 flex max-h-[calc(100dvh-var(--header-height)-2rem)] w-[var(--panel-width)] max-w-[calc(100%-1.25rem)] overflow-hidden rounded-lg border shadow-2xl"
+                class="border-border bg-card absolute top-2.5 right-2.5 flex max-h-[calc(100dvh-var(--header-height)-3.75rem-var(--strip-h))] w-[var(--panel-width)] max-w-[calc(100%-1.25rem)] overflow-hidden rounded-lg border shadow-2xl"
               >
                 <div
                   class="border-border bg-muted/40 hover:bg-primary/20 flex w-6 shrink-0 cursor-col-resize touch-none flex-col items-center justify-center border-r transition-colors"
@@ -579,7 +624,10 @@ const openLineDialog = ({
                     </Button>
                   </DesktopOnlyTooltip>
                 </div>
-                <ScrollArea class="min-w-0 flex-1" viewport-class="max-h-[calc(100dvh-var(--header-height)-2rem)] p-4">
+                <ScrollArea
+                  class="min-w-0 flex-1"
+                  viewport-class="max-h-[calc(100dvh-var(--header-height)-3.75rem-var(--strip-h))] p-4"
+                >
                   <BudgetSidePanel
                     v-if="plan"
                     :plan-id="planId"
@@ -595,6 +643,7 @@ const openLineDialog = ({
             </div>
 
             <BudgetLinesGrid
+              ref="gridRef"
               :plan-id="planId"
               :view="view"
               :archived-lines="archivedLines"
@@ -682,8 +731,8 @@ const openLineDialog = ({
             class="hover:bg-primary/40 active:bg-primary/60 absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize touch-none transition-colors"
             @pointerdown="startResize"
           />
-          <div class="sticky top-[calc(var(--header-height)+1rem)]">
-            <ScrollArea viewport-class="max-h-[calc(100dvh-var(--header-height)-2rem)] p-4">
+          <div class="sticky top-[calc(var(--header-height)+2.75rem)]">
+            <ScrollArea viewport-class="max-h-[calc(100dvh-var(--header-height)-3.75rem)] p-4">
               <BudgetSidePanel
                 v-if="view && plan"
                 :plan-id="planId"
@@ -706,7 +755,7 @@ const openLineDialog = ({
           :aria-label="$t('budgetPlans.panel.open')"
           @click="panelOpen = true"
         >
-          <span class="sticky top-[calc(var(--header-height)+1rem)] flex flex-col items-center gap-3">
+          <span class="sticky top-[calc(var(--header-height)+3.25rem)] flex flex-col items-center gap-3">
             <PanelRightOpenIcon class="text-muted-foreground size-4" />
             <span
               v-if="selection.count.value"
@@ -729,12 +778,12 @@ const openLineDialog = ({
         </Button>
       </section>
 
-      <Sheet v-model:open="isPanelSheetOpen">
-        <SheetContent side="bottom" class="h-[88dvh] rounded-t-xl px-0 pt-3 pb-4">
-          <SheetTitle class="sr-only">{{ $t('budgetPlans.panel.summary') }}</SheetTitle>
-          <ScrollArea viewport-class="max-h-[calc(88dvh-2rem)] px-4">
+      <Drawer v-model:open="isPanelSheetOpen">
+        <DrawerContent class="h-[88dvh]">
+          <DrawerTitle class="sr-only">{{ $t('budgetPlans.panel.summary') }}</DrawerTitle>
+          <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <template v-if="view && plan">
-              <dl v-if="!selectedLines.length && overviewStats" class="mb-4 grid grid-cols-2 gap-3">
+              <dl v-if="!selectedLines.length && overviewStats" class="mt-3 mb-1 grid grid-cols-2 gap-3">
                 <div
                   v-for="stat in overviewStats.stats"
                   :key="stat.key"
@@ -759,12 +808,8 @@ const openLineDialog = ({
                   </dd>
                 </div>
               </dl>
-              <div v-if="selectedLine" class="mb-3 flex justify-end pr-10">
-                <AssignPopover :plan-id="planId" :period-id="view.period.id" :line="selectedLine">
-                  <Button size="sm">{{ $t('budgetPlans.pool.assign') }}</Button>
-                </AssignPopover>
-              </div>
               <BudgetSidePanel
+                drawer
                 :plan-id="planId"
                 :cadence="plan.plan.cadence"
                 :unit="goalUnit"
@@ -772,11 +817,21 @@ const openLineDialog = ({
                 :lines="selectedLines"
                 @close="isPanelSheetOpen = false"
                 @select-line="(lineId) => toggleLine({ lineId })"
-              />
+              >
+                <template v-if="selectedLine" #actions>
+                  <AssignPopover :plan-id="planId" :period-id="view.period.id" :line="selectedLine">
+                    <Button size="sm">{{ $t('budgetPlans.pool.assign') }}</Button>
+                  </AssignPopover>
+                  <LineActionsMenu
+                    v-if="!archivedLines.some((line) => line.id === selectedLine?.lineId)"
+                    @pick="(action) => pickDrawerLineAction({ action })"
+                  />
+                </template>
+              </BudgetSidePanel>
             </template>
-          </ScrollArea>
-        </SheetContent>
-      </Sheet>
+          </div>
+        </DrawerContent>
+      </Drawer>
 
       <LineDialog
         v-model:open="isLineDialogOpen"

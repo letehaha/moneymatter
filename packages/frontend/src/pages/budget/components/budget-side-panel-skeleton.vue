@@ -24,7 +24,7 @@ const openSections = usePanelSections();
       <div class="bg-muted my-0.5 h-3 w-24 rounded" />
     </div>
 
-    <SidePanelSections>
+    <SidePanelSections variant="cards">
       <SidePanelSectionSkeleton
         v-for="section in SECTIONS"
         :key="section.key"
