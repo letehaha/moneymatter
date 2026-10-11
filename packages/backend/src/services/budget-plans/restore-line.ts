@@ -15,8 +15,8 @@ import { ensureCurrentPeriods } from './periods/ensure-periods';
 import { validateLineCategories } from './validate-line-categories';
 
 /**
- * The periods spent archived read 0 as one-off overrides. A 0 baseline would keep
- * recurring past them once a later archive drops whatever was written at `currentStart`.
+ * The periods spent archived read 0 as one-off overrides, which leaves the baseline
+ * in force at the archive, the archive period's own included, to resume by itself.
  */
 const zeroArchivedPeriods = async ({
   lineId,
@@ -30,19 +30,58 @@ const zeroArchivedPeriods = async ({
   currentStart: string;
 }): Promise<void> => {
   const rows = await BudgetAssignments.findAll({ where: { lineId } });
+  const rowOf = ({ period }: { period: BudgetPeriods }) => rows.find((row) => row.periodId === period.id);
   const baseline = periods
-    .filter((period) => toUtcDateString(period.startDate) < archivedAt)
-    .map((period) => rows.find((row) => row.periodId === period.id)?.baselineAmount)
+    .filter((period) => toUtcDateString(period.startDate) <= archivedAt)
+    .map((period) => rowOf({ period })?.baselineAmount)
     .findLast((amount) => amount != null);
-  if (!baseline || baseline.isZero()) return;
+  const recurs = !!baseline && !baseline.isZero();
+
+  const archived = periods.filter((period) =>
+    covers({ range: { from: archivedAt, until: currentStart }, start: toUtcDateString(period.startDate) }),
+  );
+  for (const period of archived) {
+    const row = rowOf({ period });
+    if (row && (recurs || row.overrideAmount)) await row.update({ overrideAmount: Money.zero() });
+  }
+  if (!recurs) return;
 
   await BudgetAssignments.bulkCreate(
-    periods
-      .filter((period) =>
-        covers({ range: { from: archivedAt, until: currentStart }, start: toUtcDateString(period.startDate) }),
-      )
+    archived
+      .filter((period) => !rowOf({ period }))
       .map((period) => ({ periodId: period.id, lineId, overrideAmount: Money.zero() })),
   );
+};
+
+/**
+ * A line that never owned a period starts over at `currentStart`, so the baseline
+ * and carry policy of its archive period move there; that period's one-off does not.
+ */
+const moveArchivePeriodRow = async ({
+  lineId,
+  periods,
+  archivedAt,
+  currentStart,
+}: {
+  lineId: RecordId;
+  periods: BudgetPeriods[];
+  archivedAt: string;
+  currentStart: string;
+}): Promise<void> => {
+  const periodAt = ({ start }: { start: string }) =>
+    periods.find((period) => toUtcDateString(period.startDate) === start);
+  const from = periodAt({ start: archivedAt });
+  const to = periodAt({ start: currentStart });
+  if (!from || !to) return;
+
+  const row = await BudgetAssignments.findOne({ where: { lineId, periodId: from.id } });
+  if (!row) return;
+
+  const { baselineAmount, carryPolicy } = row;
+  await row.destroy();
+  if (baselineAmount !== null || carryPolicy !== null) {
+    await BudgetAssignments.create({ periodId: to.id, lineId, baselineAmount, carryPolicy });
+  }
 };
 
 /**
@@ -76,10 +115,13 @@ const restoreLineImpl = async ({ userId, planId, lineId }: { userId: number; pla
   }
 
   const archivedAt = toUtcDateString(line.activeUntil);
-  if (archivedAt < currentStart) await zeroArchivedPeriods({ lineId: line.id, periods, archivedAt, currentStart });
-
   // A line that never owned a period starts over here, not in empty periods behind it.
   const neverOwned = archivedAt === toUtcDateString(line.activeFrom);
+  if (archivedAt < currentStart) {
+    const gap = { lineId: line.id, periods, archivedAt, currentStart };
+    await (neverOwned ? moveArchivePeriodRow(gap) : zeroArchivedPeriods(gap));
+  }
+
   await line.update({
     activeFrom: neverOwned ? currentStart : line.activeFrom,
     activeUntil: null,

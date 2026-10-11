@@ -138,6 +138,7 @@
       "lineActions": "Line actions",
       "editLine": "Edit line",
       "archiveLine": "Archive line",
+      "archiveSelected": "Archive",
       "archiveTitle": "Archive \"{name}\"?",
       "archiveDescription": "It stops counting from this period on. Past periods keep their numbers. You can restore it later from \"Archived\".",
       "selectLine": "Select {name}",

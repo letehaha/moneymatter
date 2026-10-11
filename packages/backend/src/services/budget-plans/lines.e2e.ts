@@ -687,6 +687,72 @@ describe('Budget plan line restore', () => {
     ]);
   });
 
+  it('keeps a baseline rewritten in the period it was archived and restored in', async () => {
+    const { planId, food, line, periods } = await setupLine();
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[3]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 250 },
+      raw: true,
+    });
+    await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    expect(await lineInPeriods({ planId, lineId: line.id, periods: periods.slice(2, 5) })).toEqual([
+      { assigned: 100, categoryIds: [food.id] },
+      { assigned: 250, categoryIds: [food.id] },
+      { assigned: 250, categoryIds: [food.id] },
+    ]);
+  });
+
+  it('keeps the baseline of a line created, archived and restored in the same period', async () => {
+    const { planId, food } = await setup();
+    const line = await helpers.createBudgetPlanLine({
+      planId,
+      payload: { name: 'Food', categoryIds: [food.id] },
+      raw: true,
+    });
+    const periods = (await helpers.listBudgetPlanPeriods({ planId, raw: true })).filter((period) =>
+      [CURRENT, NEXT].includes(period.startDate),
+    );
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[0]!.id,
+      lineId: line.id,
+      payload: { scope: 'from_here', amount: 510 },
+      raw: true,
+    });
+    await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    expect(await lineInPeriods({ planId, lineId: line.id, periods })).toEqual([
+      { assigned: 510, categoryIds: [food.id] },
+      { assigned: 510, categoryIds: [food.id] },
+    ]);
+  });
+
+  it('keeps a one-off amount set in the period it was archived and restored in', async () => {
+    const { planId, food, line, periods } = await setupLine();
+    await helpers.setBudgetAssignment({
+      planId,
+      periodId: periods[3]!.id,
+      lineId: line.id,
+      payload: { scope: 'this_period', amount: 175 },
+      raw: true,
+    });
+    await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    expect(await lineInPeriods({ planId, lineId: line.id, periods: periods.slice(3, 5) })).toEqual([
+      { assigned: 175, categoryIds: [food.id] },
+      { assigned: 100, categoryIds: [food.id] },
+    ]);
+  });
+
   it('resumes from the current period after a gap, with the archived periods at 0 and uncovered', async () => {
     const { planId, food, line, periods } = await setupLine();
     const archived = await atMonthsAgo({
@@ -709,6 +775,61 @@ describe('Budget plan line restore', () => {
       { assigned: 100, categoryIds: [food.id] },
       { assigned: 100, categoryIds: [food.id] },
     ]);
+  });
+
+  it('resumes after a gap with the baseline set in the archive period, without its one-off', async () => {
+    const { planId, food, line, periods } = await setupLine();
+    await atMonthsAgo({
+      monthsAgo: 2,
+      fn: async () => {
+        for (const payload of [
+          { scope: 'from_here', amount: 250 },
+          { scope: 'this_period', amount: 300 },
+        ] as const) {
+          await helpers.setBudgetAssignment({ planId, periodId: periods[1]!.id, lineId: line.id, payload, raw: true });
+        }
+        await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+      },
+    });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    expect(await lineInPeriods({ planId, lineId: line.id, periods: periods.slice(0, 5) })).toEqual([
+      { assigned: 100, categoryIds: [food.id] },
+      { assigned: 0, categoryIds: [] },
+      { assigned: 0, categoryIds: [] },
+      { assigned: 250, categoryIds: [food.id] },
+      { assigned: 250, categoryIds: [food.id] },
+    ]);
+  });
+
+  it('keeps a one-off of the archive period out of the gap when the line has no baseline', async () => {
+    const { planId, food } = await setup({ monthsAgo: 3 });
+    const line = await helpers.createBudgetPlanLine({
+      planId,
+      payload: { name: 'Food', categoryIds: [food.id], activeFrom: THREE_AGO },
+      raw: true,
+    });
+    const periods = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+    await atMonthsAgo({
+      monthsAgo: 2,
+      fn: async () => {
+        await helpers.setBudgetAssignment({
+          planId,
+          periodId: periods[1]!.id,
+          lineId: line.id,
+          payload: { scope: 'this_period', amount: 300 },
+          raw: true,
+        });
+        await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
+      },
+    });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    expect(
+      (await lineInPeriods({ planId, lineId: line.id, periods: periods.slice(0, 4) })).map((entry) => entry.assigned),
+    ).toEqual([0, 0, 0, 0]);
   });
 
   it('undoes a same-period archive of a line resumed in that period', async () => {
@@ -796,6 +917,41 @@ describe('Budget plan line restore', () => {
       periods.slice(0, 2).map((period) => helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true })),
     );
     expect(views.map((view) => view.lines)).toEqual([[], []]);
+  });
+
+  it('moves the baseline of a line archived in its first period to the period it is restored in', async () => {
+    const { planId, food } = await setup({ monthsAgo: 2 });
+    const periods = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+    const line = await atMonthsAgo({
+      monthsAgo: 2,
+      fn: async () => {
+        const created = await helpers.createBudgetPlanLine({
+          planId,
+          payload: { name: 'Food', categoryIds: [food.id] },
+          raw: true,
+        });
+        await helpers.setBudgetAssignment({
+          planId,
+          periodId: periods[0]!.id,
+          lineId: created.id,
+          payload: { scope: 'from_here', amount: 510 },
+          raw: true,
+        });
+        await helpers.archiveBudgetPlanLine({ planId, lineId: created.id });
+        return created;
+      },
+    });
+
+    await helpers.restoreBudgetPlanLine({ planId, lineId: line.id, raw: true });
+
+    const views = await Promise.all(
+      periods.slice(0, 2).map((period) => helpers.getBudgetPlanPeriodView({ planId, periodId: period.id, raw: true })),
+    );
+    expect(views.map((view) => view.lines)).toEqual([[], []]);
+    expect(await lineInPeriods({ planId, lineId: line.id, periods: periods.slice(2, 4) })).toEqual([
+      { assigned: 510, categoryIds: [food.id] },
+      { assigned: 510, categoryIds: [food.id] },
+    ]);
   });
 
   it('refuses when another line took one of its categories after the archive, and changes nothing', async () => {

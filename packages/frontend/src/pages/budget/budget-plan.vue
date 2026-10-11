@@ -382,6 +382,17 @@ const openLineDialog = ({
             </Button>
           </DesktopOnlyTooltip>
           <span class="flex-1" />
+          <DesktopOnlyTooltip v-if="!selectMode" :content="$t('budgetPlans.grid.selectMode')">
+            <Button
+              variant="outline"
+              size="icon-sm"
+              :disabled="!view"
+              :aria-label="$t('budgetPlans.grid.selectMode')"
+              @click="selectMode = true"
+            >
+              <ListChecksIcon class="size-4" />
+            </Button>
+          </DesktopOnlyTooltip>
           <OptionsMenu />
           <SettingsButton />
         </div>
@@ -447,16 +458,16 @@ const openLineDialog = ({
             </Button>
           </div>
 
-          <div v-else class="border-border flex min-w-0 items-center gap-4 border-b px-4 py-2">
+          <div v-else-if="!isNarrow" class="border-border flex min-w-0 items-center gap-4 border-b px-4 py-2">
             <BudgetSummaryStrip
-              v-if="view?.pool && !isNarrow"
+              v-if="view?.pool"
               :plan-id="planId"
               :view="view"
               :previous-period="previousPeriod"
               :zero-sum="plan?.plan.zeroSum ?? false"
             />
             <dl
-              v-if="overviewStats && !isNarrow"
+              v-if="overviewStats"
               :class="
                 cn(
                   'min-w-0',
@@ -473,16 +484,16 @@ const openLineDialog = ({
                   cn('min-w-0', view?.pool ? 'flex items-baseline justify-between gap-3' : 'flex-1 px-4 first:pl-0')
                 "
               >
-                <dt class="text-muted-foreground truncate text-[11px] font-medium tracking-wide uppercase">
-                  {{ $t(stat.labelKey) }}
-                  <template v-if="stat.key === 'overspent'">
+                <dt class="text-muted-foreground flex min-w-0 gap-1 text-[11px] font-medium tracking-wide uppercase">
+                  <span class="truncate">{{ $t(stat.labelKey) }}</span>
+                  <span v-if="stat.key === 'overspent'" class="shrink-0">
                     ·
                     {{
                       $t('budgetPlans.tiles.overspentLines', {
                         count: overviewStats.overspentLineCount,
                       })
                     }}
-                  </template>
+                  </span>
                 </dt>
                 <dd
                   :class="
@@ -498,20 +509,7 @@ const openLineDialog = ({
               </div>
             </dl>
 
-            <DesktopOnlyTooltip v-if="isNarrow" :content="$t('budgetPlans.grid.selectMode')">
-              <Button
-                variant="outline"
-                size="icon-sm"
-                class="ml-auto"
-                :disabled="!view"
-                :aria-label="$t('budgetPlans.grid.selectMode')"
-                @click="selectMode = true"
-              >
-                <ListChecksIcon class="size-4" />
-              </Button>
-            </DesktopOnlyTooltip>
-
-            <div v-else class="ml-auto flex shrink-0 items-center gap-2">
+            <div class="ml-auto flex shrink-0 items-center gap-2">
               <OptionsMenu />
               <SettingsButton />
               <DesktopOnlyTooltip :content="$t('budgetPlans.panel.summary')">
@@ -655,7 +653,9 @@ const openLineDialog = ({
                     }"
                   />
                   <span class="min-w-0 flex-1 truncate">{{ categoriesMap[entry.categoryId]?.name }}</span>
-                  <span class="text-muted-foreground tabular-nums">{{ formatBaseCurrency(entry.activity) }}</span>
+                  <span class="text-muted-foreground tabular-nums">
+                    {{ formatBaseCurrency(Math.abs(entry.activity)) }}
+                  </span>
                   <Button
                     variant="ghost"
                     size="sm"

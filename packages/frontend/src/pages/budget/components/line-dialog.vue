@@ -31,7 +31,7 @@ const props = defineProps<{
 const isOpen = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
-const { formattedCategories } = storeToRefs(useCategoriesStore());
+const { categoriesMap, formattedCategories } = storeToRefs(useCategoriesStore());
 
 const NO_GROUP = 'none';
 
@@ -68,7 +68,9 @@ watch(
   isOpen,
   (open) => {
     if (!open) return;
-    name.value = props.line?.name ?? '';
+    const [onlyCategoryId, ...otherCategoryIds] = props.initialCategoryIds ?? [];
+    const categoryName = onlyCategoryId && !otherCategoryIds.length ? categoriesMap.value[onlyCategoryId]?.name : '';
+    name.value = props.line?.name ?? categoryName?.slice(0, BUDGET_PLAN_NAME_MAX_LENGTH) ?? '';
     selectedGroupId.value = (props.line ? props.line.groupId : props.groupId) ?? NO_GROUP;
     const prefilled = expandCategoryIds({
       categoryIds: props.line?.categoryIds ?? props.initialCategoryIds ?? [],

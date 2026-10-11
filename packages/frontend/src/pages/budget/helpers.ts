@@ -558,7 +558,7 @@ export interface GoalTextPart {
   params?: Record<string, GoalTextParam>;
 }
 
-const GOAL_FULL_DATE_PATTERN = 'P';
+const GOAL_FULL_DATE_PATTERN = 'PP';
 const GOAL_DAY_MONTH_PATTERN = 'd MMM';
 const GOAL_ORDINAL_DAY_PATTERN = 'do';
 

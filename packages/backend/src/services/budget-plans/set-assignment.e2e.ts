@@ -392,7 +392,7 @@ describe('Budget plan assignment guards', () => {
     expect((await write({ periodId: periods[3]!.id })).statusCode).toBe(ERROR_CODES.ConflictError);
   });
 
-  it('deletes the current and future rows when the line is archived', async () => {
+  it('keeps the current row and deletes the future ones when the line is archived', async () => {
     const { planId, periods, line } = await setup();
 
     await helpers.setBudgetAssignment({
@@ -420,7 +420,9 @@ describe('Budget plan assignment guards', () => {
 
     await helpers.archiveBudgetPlanLine({ planId, lineId: line.id });
 
-    expect((await storedRows({ lineId: line.id })).map((row) => row.periodId)).toEqual([periods[0]!.id]);
+    expect((await storedRows({ lineId: line.id })).map((row) => row.periodId).toSorted()).toEqual(
+      [periods[0]!.id, periods[2]!.id].toSorted(),
+    );
     expect((await helpers.getBudgetPlanPeriodView({ planId, periodId: periods[2]!.id, raw: true })).lines).toEqual([]);
     expect((await helpers.getBudgetPlanPeriodView({ planId, periodId: periods[3]!.id, raw: true })).lines).toEqual([]);
     expect(

@@ -9,7 +9,7 @@ import { ChevronDownIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import { useSetAssignment } from '../composables/use-set-assignment';
-import { buildPoolAssignPayload } from '../helpers';
+import { buildPoolAssignPayload, groupLines } from '../helpers';
 
 const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; prominent?: boolean }>();
 
@@ -19,7 +19,13 @@ const isOpen = ref(false);
 const lineId = ref<string | null>(null);
 const amount = ref<number | null>(null);
 
-const lineOptions = computed(() => props.view.lines.map((line) => ({ value: line.lineId, label: line.name })));
+const lineOptions = computed(() => {
+  const { ungrouped, groups } = groupLines({ lines: props.view.lines, groups: props.view.groups });
+  return [...ungrouped, ...groups.flatMap((section) => section.lines)].map((line) => ({
+    value: line.lineId,
+    label: line.name,
+  }));
+});
 const selectedLine = computed(() => props.view.lines.find((line) => line.lineId === lineId.value));
 
 watch(isOpen, (open) => {

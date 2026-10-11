@@ -15,8 +15,9 @@
           <!-- Without a 4-digit-year max, Chrome accepts 6-digit years and never auto-advances past the year segment. -->
           <input
             :value="inputValue"
-            type="datetime-local"
-            max="9999-12-31T23:59"
+            :type="mode === 'date' ? 'date' : 'datetime-local'"
+            :max="nativeMax"
+            :min="nativeMin"
             :disabled="disabled"
             :class="
               cn(
@@ -52,7 +53,7 @@
         </div>
         <FieldError :error-message="errorMessage" />
         <Popover.PopoverContent class="w-87.5">
-          <Calendar v-model="localValue" v-bind="calendarOptions" mode="dateTime" is24hr type="single" />
+          <Calendar v-model="localValue" v-bind="calendarOptions" :mode="mode" is24hr type="single" />
         </Popover.PopoverContent>
       </FieldLabel>
     </Popover.Popover>
@@ -67,9 +68,9 @@ import { Calendar } from '@/components/lib/ui/calendar';
 import * as Popover from '@/components/lib/ui/popover';
 import { useSafariDetection } from '@/composable/detect-safari';
 import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { CalendarClockIcon } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 defineOptions({ inheritAttrs: false });
 
@@ -86,6 +87,7 @@ const props = withDefaults(
       minDate?: Date;
       maxDate?: Date;
     };
+    mode?: 'date' | 'dateTime';
   }>(),
   {
     label: undefined,
@@ -96,6 +98,7 @@ const props = withDefaults(
     inputFieldStyles: undefined,
     disabled: false,
     calendarOptions: undefined,
+    mode: 'dateTime',
   },
 );
 
@@ -108,7 +111,23 @@ const MIN_DATE = new Date('2000-01-01T00:00:00');
 const isValidDate = (value: unknown): value is Date =>
   value instanceof Date && !isNaN(value.getTime()) && value >= MIN_DATE;
 
-const formatToInput = (value: Date) => format(value, 'yyyy-MM-dd HH:mm');
+const DATE_PATTERN = 'yyyy-MM-dd';
+
+const formatToInput = (value: Date) => format(value, props.mode === 'date' ? DATE_PATTERN : 'yyyy-MM-dd HH:mm');
+
+// `new Date('yyyy-MM-dd')` is UTC midnight, the previous day in negative-offset timezones.
+const parseInput = (value: string) =>
+  props.mode === 'date' ? parse(value, DATE_PATTERN, new Date()) : new Date(value);
+
+const nativeMax = computed(() => {
+  if (props.mode !== 'date') return '9999-12-31T23:59';
+  const maxDate = props.calendarOptions?.maxDate;
+  return maxDate ? format(maxDate, DATE_PATTERN) : '9999-12-31';
+});
+const nativeMin = computed(() => {
+  const minDate = props.mode === 'date' ? props.calendarOptions?.minDate : undefined;
+  return minDate ? format(minDate, DATE_PATTERN) : undefined;
+});
 
 const inputValue = ref(props.modelValue ? formatToInput(props.modelValue) : '');
 
@@ -132,8 +151,8 @@ const handleLocalInputUpdate = (event: Event) => {
   inputValue.value = inputVal;
 
   // Only emit the date if it's a valid date string
-  if (inputVal && isValidDate(new Date(inputVal))) {
-    emit('update:modelValue', new Date(inputVal));
+  if (inputVal && isValidDate(parseInput(inputVal))) {
+    emit('update:modelValue', parseInput(inputVal));
   }
   // For invalid intermediate states, don't emit anything
   // This prevents validation errors during typing
@@ -143,9 +162,9 @@ const handleBlur = (event: FocusEvent) => {
   const inputVal = (event.target as HTMLInputElement).value;
 
   // On blur, validate the final input value
-  if (inputVal && isValidDate(new Date(inputVal))) {
+  if (inputVal && isValidDate(parseInput(inputVal))) {
     // Valid date - emit it
-    emit('update:modelValue', new Date(inputVal));
+    emit('update:modelValue', parseInput(inputVal));
   } else if (inputVal) {
     // Invalid date - revert to last valid value
     inputValue.value = props.modelValue ? formatToInput(props.modelValue) : '';

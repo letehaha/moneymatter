@@ -19,7 +19,7 @@ import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useUserStore } from '@/stores';
 import { type BudgetPlanCarryPolicy } from '@bt/shared/types';
-import { isSameDay, startOfMonth, startOfWeek } from 'date-fns';
+import { endOfDay, isAfter, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -101,7 +101,9 @@ const { isPending, mutate } = useInvalidatingMutation({
   },
 });
 
-const isSubmitDisabled = computed(() => isPending.value || accountIds.value.length === 0);
+const isSubmitDisabled = computed(
+  () => isPending.value || accountIds.value.length === 0 || isAfter(startsOn.value, endOfDay(new Date())),
+);
 
 const submit = () => {
   if (isSubmitDisabled.value) return;
@@ -156,6 +158,7 @@ const submit = () => {
 
       <DateField
         :model-value="startsOn"
+        mode="date"
         :label="$t('budgetPlans.create.startsOnLabel')"
         :calendar-options="{ maxDate: new Date() }"
         @update:model-value="(value) => setStartsOn({ value })"

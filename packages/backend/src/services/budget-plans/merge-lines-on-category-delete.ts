@@ -232,11 +232,12 @@ const mergePlanLines = async ({
       }
     }
 
-    // The archive below ends everything at `currentStart`, so only an earlier
-    // membership or assignment row leaves the line with anything to own.
+    // The archive below ends everything at `currentStart`, so only a membership row or
+    // an assignment row in an earlier period of its lifetime leaves the line anything to own.
+    const rows = rowsOf({ lineId: line.id });
     if (
       !kept.length &&
-      ![...rowsOf({ lineId: line.id }).keys()].some((periodId) => startById.get(periodId)! < currentStart)
+      !sourcePeriodIds.some((periodId) => rows.has(periodId) && startById.get(periodId)! < currentStart)
     ) {
       await line.destroy();
       continue;

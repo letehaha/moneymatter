@@ -95,41 +95,41 @@ const emit = defineEmits<{
 const [DefineLineMenu, LineMenu] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   menuKey: string;
-}>();
+}>({ inheritAttrs: false });
 const [DefineAssignTrigger, AssignTrigger] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   compact?: boolean;
-}>();
+}>({ inheritAttrs: false });
 const [DefineArchivedTrigger, ArchivedTrigger] = createReusableTemplate();
 const [DefineGroupsHeader, GroupsHeader] = createReusableTemplate();
 const [DefineGroupControls, GroupControls] = createReusableTemplate<{
   group: BudgetPlanLineGroup;
-}>();
+}>({ inheritAttrs: false });
 const [DefineGroupMenu, GroupMenu] = createReusableTemplate<{
   group: BudgetPlanLineGroup;
   menuKey: string;
-}>();
+}>({ inheritAttrs: false });
 const [DefineLineRow, LineRow] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
-}>();
+}>({ inheritAttrs: false });
 const [DefineLineCard, LineCard] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
-}>();
+}>({ inheritAttrs: false });
 const [DefineSelectTrigger, SelectTrigger] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   toggle?: boolean;
-}>();
+}>({ inheritAttrs: false });
 const [DefineGoalButton, GoalButton] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
-}>();
+}>({ inheritAttrs: false });
 const [DefineLineName, LineName] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
-}>();
+}>({ inheritAttrs: false });
 const [DefineGoalCaption, GoalCaption] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   display?: GoalDisplay;
   bars?: boolean;
-}>();
+}>({ inheritAttrs: false });
 
 const { t } = useI18n();
 const queryClient = useQueryClient();
@@ -448,7 +448,7 @@ const archiveSelected = () => {
           {{
             $t('budgetPlans.grid.spentOf', {
               spent: formatBaseCurrency(spentOf({ line })),
-              total: formatBaseCurrency(line.carriedIn + line.assigned),
+              total: formatBaseCurrency(Math.max(0, line.carriedIn + line.assigned)),
             })
           }}
         </span>
@@ -734,7 +734,7 @@ const archiveSelected = () => {
               @click="isArchiveManyOpen = true"
             >
               <ArchiveIcon class="size-3.5" />
-              {{ $t('budgetPlans.grid.archiveLine') }}
+              {{ $t('budgetPlans.grid.archiveSelected') }}
             </Button>
             <DesktopOnlyTooltip :content="$t('budgetPlans.grid.clearSelection')">
               <Button
@@ -892,7 +892,7 @@ const archiveSelected = () => {
             @click="isArchiveManyOpen = true"
           >
             <ArchiveIcon class="size-4" />
-            {{ $t('budgetPlans.grid.archiveLine') }}
+            {{ $t('budgetPlans.grid.archiveSelected') }}
           </Button>
           <Button size="sm" :disabled="!selectedIds.length" @click="emit('openPanel')">
             {{ $t('budgetPlans.panel.breakdown') }}
@@ -914,7 +914,7 @@ const archiveSelected = () => {
 
     <ResponsiveAlertDialog
       v-model:open="isArchiveManyOpen"
-      :confirm-label="$t('budgetPlans.grid.archiveLine')"
+      :confirm-label="$t('budgetPlans.grid.archiveSelected')"
       confirm-variant="destructive"
       :confirm-disabled="isArchivingMany"
       @confirm="archiveSelected"

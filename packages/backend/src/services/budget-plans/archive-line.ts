@@ -43,8 +43,10 @@ export const archiveLineFrom = async ({
       .map((row) => row.categoryId),
   });
 
+  // The row at `currentStart` stays, unread while the line is archived, so a
+  // restore in this period brings its amounts back.
   const periodIds = periods
-    .filter((period) => toUtcDateString(period.startDate) >= currentStart)
+    .filter((period) => toUtcDateString(period.startDate) > currentStart)
     .map((period) => period.id);
   await BudgetAssignments.destroy({ where: { lineId: line.id, periodId: { [Op.in]: periodIds } } });
 

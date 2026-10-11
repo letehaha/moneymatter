@@ -265,6 +265,7 @@ const submit = () => {
       <div v-if="fields.anchorDate" class="grid gap-1">
         <DateField
           :model-value="state.anchorDate ?? undefined"
+          mode="date"
           :label="anchorLabel"
           :error-message="errorFor({ key: 'anchorDate' })"
           @update:model-value="(value) => patch({ changes: { anchorDate: value } })"

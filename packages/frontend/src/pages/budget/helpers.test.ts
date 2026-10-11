@@ -735,7 +735,7 @@ describe('goalTitle / goalSubtitle', () => {
     const byDate = { ...goal, frequency: 'by_date' as const, anchorDate: '2027-03-28' };
     expect(goalSubtitle({ goal: byDate, unit: 'month' })).toEqual({
       key: 'budgetPlans.goals.dueBy',
-      params: { date: { date: '2027-03-28', pattern: 'P' } },
+      params: { date: { date: '2027-03-28', pattern: 'PP' } },
     });
     const yearly = { ...goal, frequency: 'yearly' as const, anchorDate: '2026-03-28', dueDate: '2027-03-28' };
     expect(goalSubtitle({ goal: yearly, unit: 'month' }).params?.date).toEqual({
@@ -1044,7 +1044,7 @@ describe('goalSummary', () => {
       }),
     ).toEqual({
       key: 'budgetPlans.goals.summary.by_date',
-      params: { amount: { money: 100 }, date: { date: '2027-03-28', pattern: 'P' } },
+      params: { amount: { money: 100 }, date: { date: '2027-03-28', pattern: 'PP' } },
     });
     expect(
       goalSummary({ state: editorState({ frequency: 'open_ended', behavior: 'reach_balance' }), unit: 'month' }),
@@ -1056,11 +1056,11 @@ describe('goalSummary', () => {
     expect(goalSummary({ state, unit: 'month' })?.params?.when).toEqual({
       part: {
         key: 'budgetPlans.goals.when.byDateRepeating.years',
-        params: { date: { date: '2027-03-28', pattern: 'P' }, count: { value: 1 } },
+        params: { date: { date: '2027-03-28', pattern: 'PP' }, count: { value: 1 } },
       },
     });
     expect(goalSummary({ state: { ...state, repeats: false }, unit: 'month' })?.params?.when).toEqual({
-      part: { key: 'budgetPlans.goals.when.byDate', params: { date: { date: '2027-03-28', pattern: 'P' } } },
+      part: { key: 'budgetPlans.goals.when.byDate', params: { date: { date: '2027-03-28', pattern: 'PP' } } },
     });
   });
 

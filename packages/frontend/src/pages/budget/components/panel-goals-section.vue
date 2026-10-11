@@ -8,7 +8,7 @@ import { useFormatCurrency } from '@/composable';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanGoalsSummary, BudgetPlanPeriodViewLine } from '@bt/shared/types';
-import { CircleCheckIcon, ChevronRightIcon, PlusIcon, TargetIcon, TriangleAlertIcon } from '@lucide/vue';
+import { CircleCheckIcon, ChevronRightIcon, MoonIcon, PlusIcon, TargetIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
 import { type PanelContext, amountToneClass } from '../helpers';
@@ -35,6 +35,8 @@ const underfunded = computed(() =>
     name: props.lines.find((line) => line.lineId === entry.lineId)?.name ?? '',
   })),
 );
+
+const hasSnoozedGoal = computed(() => props.lines.some((line) => line.goal?.status === 'snoozed'));
 
 const { isPending: isSavingIncome, mutate: saveIncome } = useInvalidatingMutation({
   mutationFn: updateBudgetPlan,
@@ -66,6 +68,13 @@ const submitIncome = ({ value }: { value: number | null }) => {
       >
         <TriangleAlertIcon class="size-3" />
         {{ $t('budgetPlans.goals.toFund', { n: underfunded.length }) }}
+      </span>
+      <span
+        v-else-if="hasSnoozedGoal"
+        class="bg-muted text-muted-foreground flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+      >
+        <MoonIcon class="size-3" />
+        {{ $t('budgetPlans.goals.status.snoozed') }}
       </span>
       <span
         v-else
