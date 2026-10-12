@@ -14,7 +14,7 @@ This page walks you through creating a budget and filling it for the first time.
 
 ## How a budget works
 
-- **Periods.** Your budget resets on a schedule: monthly, twice a month, every two weeks or every week. Each reset starts a new period, and every period has its own numbers.
+- **Periods.** Your budget resets on a schedule: monthly, twice a month, every two weeks, every week, or every few days or months that you pick. Each reset starts a new period, and every period has its own numbers.
 - **Lines.** A line groups one or more [categories](/transactions/categories/). Spending in those categories counts against the line.
 - **Assigned, Activity, Available.** What you plan to spend on a line is its **Assigned** amount. What you actually spent is its **Activity**. What's left is **Available**, and depending on your [rollover](/budgeting/assigning-and-rollover/#rollover) rule it moves on to the next period.
 - **Accounts.** A budget only watches the accounts you choose, for example your checking account and credit card, but not your savings.
@@ -42,43 +42,80 @@ The [Early Adopter plan](/settings/plans-and-billing/#early-adopter-plan) doesn'
 
 1. Click **Budget** in the sidebar.
 2. On the **Give your money a job** card, click **Start budgeting**.
-3. Under **Resets**, choose how often a new period starts: **Monthly**, **Semi-monthly**, **Biweekly** or **Weekly**.
+3. Under **Resets**, choose how often a new period starts: **Monthly**, **Semi-monthly**, **Biweekly**, **Weekly** or **Custom**.
 4. Check **Starts on**, the first day of your first period.
 5. Check **Accounts**. Every account that can be budgeted is already selected. Remove the ones you don't want counted.
 6. Pick a **Rollover** rule for money left in a line at the end of a period. **Carry surplus** is selected by default.
-7. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty. Building them takes a few seconds.
-8. Click **Create budget**.
+7. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty.
+8. With **Smart pre-fill** on, **Ask me a few questions first** is on too. Leave it on to shape the lines with a few [setup questions](#setup-questions), or turn it off to skip them.
+9. Click **Next** and answer the questions. If you turned the questions or **Smart pre-fill** off, the button reads **Create budget** instead. Building the lines takes a few seconds.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/budgeting/create-budget-dialog.png"
-  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, three accounts selected, Carry surplus as the Rollover rule, and the Smart pre-fill switch."
-  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus' and Smart pre-fill on. Crop to the window."
+  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, three accounts selected, Carry surplus as the Rollover rule, the Smart pre-fill and Ask me a few questions first switches turned on, and the Next button."
+  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus', and both Smart pre-fill and Ask me a few questions first on. Crop to the window."
 />
 
 Your new budget is called "Budget". You can rename it in **Budget settings**.
 
 ### Choosing the fields
 
-- **Resets.** **Semi-monthly** has two periods a month: one from the start day and one about half a month later, for example the 1st and the 16th. You can't change how often the budget resets once it's created, so pick the schedule your income follows.
-- **Starts on.** For **Monthly** and **Semi-monthly**, it starts on the first day of this month. For **Biweekly** and **Weekly**, it starts on the first day of this week. You can pick an earlier date, but not a future one. An earlier date adds the periods before today to your budget, and a line you add while one of them is open starts from that period.
+- **Resets.** **Semi-monthly** has two periods a month: one from the start day and one about half a month later, for example the 1st and the 16th. **Custom** adds two fields: type a whole number under **Every** and pick **Days** (1 to 366) or **Months** (1 to 12) under **Unit**, for example every 10 days or every 3 months. You can't change how often the budget resets once it's created, so pick the schedule your income follows.
+- **Starts on.** For **Monthly**, **Semi-monthly** and a custom number of months, it starts on the first day of this month. For **Biweekly**, **Weekly** and a custom number of days, it starts on the first day of this week. You can pick an earlier date, but not a future one. An earlier date adds the periods before today to your budget, and a line you add while one of them is open starts from that period.
 - **Accounts.** A budget can hold current, savings, cash, credit card, overdraft and general accounts that you own. Accounts someone shared with you aren't offered. If you have none, you'll see **No accounts to budget yet** with a **Go to accounts** button. Add an account first (see [Create an account](/accounts/create-an-account/)).
 - **Rollover.** See [Rollover](/budgeting/assigning-and-rollover/#rollover) for what each rule does. You can change it later, and every line can have its own.
 
 ## Suggested lines
 
-With **Smart pre-fill** on, your budget starts with a first set of lines instead of an empty grid. Which lines you get depends on whether the budget's accounts have spending history.
+With **Smart pre-fill** on, your budget starts with a first set of lines instead of an empty grid. Which lines you get depends on whether the budget's accounts have spending history, and on your answers to the setup questions.
+
+### Setup questions
+
+With **Ask me a few questions first** on, **Next** opens **Shape your lines**. Every question is optional: click **Next** to skip one, and **Back** to change an earlier answer. The last step's button creates the budget.
+
+If the budget's accounts have spending history, there are two steps:
+
+<Steps>
+
+1. **What do you want to watch closely?** Pick any of your top spending categories. Each shows its monthly average over the last 3 months, and each one you pick gets more detailed lines.
+2. **How detailed should your budget be?** **Compact** (6–8 lines), **Balanced** (10–12 lines, selected by default) or **Detailed** (up to 20 lines).
+
+</Steps>
+
+With no spending history, your answers stand in for it, so there are four steps:
+
+<Steps>
+
+1. **What's your housing situation?** and **How do you usually get around?**
+2. **Do you have pets?**, **How often do you eat out or order food?** and **Paid subscriptions?**
+3. **What else do you spend on?** Pick from **Kids**, **Active sport, fitness**, **Holiday, trips, hotels**, **Hobbies**, **Gifts, joy** and **Education, development**. Each one you pick gets its own line.
+4. **How detailed should your budget be?**
+
+</Steps>
+
+<Screenshot
+  src="/screenshots/budgeting/setup-questions.png"
+  alt="The Shape your lines window on step 1 of 2, asking What do you want to watch closely, with category tiles that show a monthly average and two of them selected, and the Back, Use defaults and Next buttons."
+  hint="As the docs test user with 3 months of categorized expenses and no budget, open Start budgeting, keep both switches on and click Next. On the first step select two category tiles. Crop to the window."
+/>
+
+To drop your answers, click **Use defaults** and confirm with **Use defaults** again. You get the same lines as with the questions turned off.
+
+<Aside type="note" title="Answers need the AI step">
+Only the AI model reads your answers. Without it (self-hosted without an AI key, or when the model doesn't answer), you get the default lines and only the detail level is kept. You'll see "Smart suggestions weren't available, so your answers weren't used. You got the default lines."
+</Aside>
 
 ### If you have spending history
 
 MoneyMatter looks at the last 3 full calendar months of spending on the budget's accounts. Refunds are subtracted, and income and the **Other** category are left out.
 
-On MoneyMatter Cloud, an AI model then arranges those categories into named groups and lines: it merges categories that mean the same thing into one line, folds small ones into a related line, and names the groups and lines in your language. You get up to 15 lines. This takes a few seconds. The amounts never come from the model; they are calculated as described below.
+On MoneyMatter Cloud, an AI model then arranges those categories into named groups and lines: it merges categories that mean the same thing into one line, folds small ones into a related line, and names the groups and lines in your language. You get up to 15 lines, or as many as the detail level you picked in the setup questions allows. This takes a few seconds. The amounts never come from the model; they are calculated as described below.
 
 Without the AI step (self-hosted without an AI key, or when the model doesn't answer), MoneyMatter builds the lines itself:
 
-- It picks up to **8 categories you spent the most on** and makes a line for each, named after the category. A category and its own subcategory never both get a line.
+- It picks up to **8 categories you spent the most on** (up to 12 for **Balanced** and 20 for **Detailed**) and makes a line for each, named after the category. A category and its own subcategory never both get a line.
 - It sets each line's amount to your **average monthly spending** in that category and its subcategories, converted to your budget's period length and **rounded up to the next 10**. For example, an average of 342.60 a month becomes 350 on a monthly budget.
 - The amount is set **From now on**, starting with the current period, so it repeats every period until you change it. See [This period only or from now on](/budgeting/assigning-and-rollover/#this-period-only-or-from-now-on).
 - Without the AI step, the lines are sorted into three groups by their top-level category:
@@ -93,7 +130,9 @@ A line whose top-level category is one you created yourself stays outside these 
 
 ### If you have no spending history
 
-You get a starter set of 8 lines, all at 0, so you fill in the amounts yourself:
+On MoneyMatter Cloud, if you answered the setup questions, the AI model builds your lines from those answers and the essentials most households pay for. Every line starts at 0, so you fill in the amounts yourself.
+
+Otherwise you get a starter set of 8 lines, also at 0:
 
 | Group | Lines |
 |---|---|
@@ -115,7 +154,7 @@ Suggested lines are ordinary lines. Rename them, change their categories or amou
 
 ### Add suggested lines later
 
-If you started empty, or removed every line and group, the empty grid of the current period shows an **Add suggested lines** button. It works the same way as the switch, and skips any category that a line already covers. The new lines start in the current period.
+If you started empty, or removed every line and group, the empty grid of the current period shows an **Add suggested lines** button. It opens the same [setup questions](#setup-questions), then adds the lines, skipping any category that a line already covers. The new lines start in the current period.
 
 When it's done, you'll see how many lines were added. If every suggested category already has a line, you'll see "Nothing to suggest: the suggested categories already have lines."
 
