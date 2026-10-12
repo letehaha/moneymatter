@@ -1,0 +1,337 @@
+---
+import BaseLayout from './base-layout.astro';
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import Screenshot from '@/components/screenshot.astro';
+import FaqAsk from '@/components/faq-ask.vue';
+import TryDemoButton from '@/components/try-demo-button.vue';
+import CheckIcon from '@/components/icons/check-icon.astro';
+import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
+import { GITHUB_URL } from '@/lib/github-api';
+
+interface Props {
+  title: string;
+  description: string;
+  competitor: string;
+  competitorShort?: string;
+  heading: string;
+  intro: string;
+  checkedOn: string;
+  comparisonNote?: string;
+  atAGlance: { value: string; label: string }[];
+  highlights: { title: string; items: { lead: string; text: string }[] }[];
+  comparison: { feature: string; competitor: string; moneymatter: string }[];
+  importGuideUrl: string;
+  importGuideLabel?: string;
+  steps: string[];
+  screenshot?: { name: string; alt: string; width: number; height: number };
+  imported: string[];
+  importLimits: string[];
+  faq: { question: string; answer: string }[];
+  betterFit: string[];
+  trademarkNote: string;
+  sources: { label: string; href: string }[];
+  importFirst?: boolean;
+  importLead?: string;
+  whyCloud?: { heading: string; items: { lead: string; text: string }[] };
+}
+
+const {
+  title,
+  description,
+  competitor,
+  competitorShort: short = competitor,
+  heading,
+  intro,
+  checkedOn,
+  comparisonNote = `${short} details checked on ${checkedOn} against the sources at the end of this page.`,
+  atAGlance,
+  highlights,
+  comparison,
+  importGuideUrl,
+  importGuideLabel = `${short} import guide`,
+  steps,
+  screenshot,
+  imported,
+  importLimits,
+  faq,
+  betterFit,
+  trademarkNote,
+  sources,
+  importFirst = false,
+  importLead,
+  whyCloud,
+} = Astro.props;
+
+const sectionOrder = importFirst
+  ? ['import', 'comparison', 'highlights']
+  : ['highlights', 'comparison', 'import'];
+
+const otherAlternatives = ALTERNATIVE_PAGES.filter((page) => page.href !== Astro.url.pathname.replace(/\/$/, ''));
+
+const ROADMAP_URL = 'https://moneymatter.featurebase.app/dashboard/roadmap';
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="bg-background text-foreground landing-page min-h-screen">
+    <BackgroundOrbs />
+    <LandingHeader />
+
+    <main class="relative z-10 mx-auto max-w-5xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
+      <h1 class="mx-auto max-w-4xl text-center text-3xl font-bold tracking-tight sm:text-5xl">
+        {heading}
+      </h1>
+      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
+        {intro}
+      </p>
+
+      <div class="mt-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-center">
+        <div class="flex flex-col items-center gap-2">
+          <a
+            href="/sign-up"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 flex w-full items-center justify-center rounded-xl border-2 border-transparent px-8 py-3.5 text-base font-semibold transition-all sm:w-auto"
+            data-track="landing_cta_clicked"
+            data-track-location="hero"
+          >
+            Start Free Trial
+          </a>
+          <span class="text-muted-foreground text-xs">40-day free trial, no card needed</span>
+        </div>
+        <TryDemoButton client:load />
+      </div>
+
+      <dl class="border-border/50 divide-border/50 mt-14 grid grid-cols-2 divide-x divide-y border-y sm:grid-cols-4 sm:divide-y-0">
+        {
+          atAGlance.map((fact) => (
+            <div class="flex flex-col-reverse gap-1 px-4 py-6 text-center">
+              <dt class="text-muted-foreground text-xs">{fact.label}</dt>
+              <dd class="text-2xl font-bold tracking-tight sm:text-3xl">{fact.value}</dd>
+            </div>
+          ))
+        }
+      </dl>
+
+      {
+        sectionOrder.map((key) =>
+          key === 'highlights' ? (
+            <section class="mt-20">
+              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">What you get with MoneyMatter</h2>
+              <div class="mt-8 space-y-4">
+                {
+                  highlights.map((group, index) => (
+                    <div class="border-border/50 bg-card overflow-hidden rounded-2xl border">
+                      <div class="border-border/50 bg-primary/5 flex items-baseline gap-3 border-b px-5 py-3">
+                        <span class="text-primary-text text-sm font-semibold tabular-nums">{String(index + 1).padStart(2, '0')}</span>
+                        <h3 class="font-semibold tracking-tight">{group.title}</h3>
+                      </div>
+                      <dl class="divide-border/40 divide-y">
+                        {group.items.map((item) => (
+                          <div class="grid sm:grid-cols-[13rem_1fr]">
+                            <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
+                              {item.lead}
+                            </dt>
+                            <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  ))
+                }
+              </div>
+              <p class="text-muted-foreground mt-4 text-sm">
+                See what is planned on the <a href={ROADMAP_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">public roadmap</a>,
+                read the code on <a href={GITHUB_URL} class="text-primary-text hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>,
+                or see how <a href="/#self-host" class="text-primary-text hover:underline">self-hosting</a> works.
+              </p>
+            </section>
+          ) : key === 'comparison' ? (
+            <section class="mt-20">
+              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{short} and MoneyMatter side by side</h2>
+              <div class="border-border/50 bg-card mt-8 overflow-hidden rounded-2xl border text-sm">
+                <div class="border-border/50 hidden border-b md:grid md:grid-cols-[12rem_1fr_1fr]">
+                  <span></span>
+                  <span class="text-muted-foreground px-5 py-3 font-medium">{competitor}</span>
+                  <span class="bg-primary/5 text-primary-text px-5 py-3 font-semibold">MoneyMatter</span>
+                </div>
+                <div class="divide-border/50 divide-y">
+                  {
+                    comparison.map((row) => (
+                      <div class="md:grid md:grid-cols-[12rem_1fr_1fr]">
+                        <h3 class="px-5 pt-4 font-semibold md:py-4">{row.feature}</h3>
+                        <p class="text-muted-foreground px-5 py-2 md:py-4">
+                          <span class="mb-0.5 block text-xs font-medium tracking-wide uppercase opacity-70 md:hidden">{short}</span>
+                          {row.competitor}
+                        </p>
+                        <p class="bg-primary/5 px-5 py-3 md:py-4">
+                          <span class="text-primary-text mb-0.5 block text-xs font-medium tracking-wide uppercase md:hidden">MoneyMatter</span>
+                          {row.moneymatter}
+                        </p>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+              <p class="text-muted-foreground mt-3 text-xs">
+                {comparisonNote} MoneyMatter plans are on
+                the <a href="/#pricing" class="text-primary-text hover:underline">pricing section</a>.
+              </p>
+            </section>
+          ) : (
+            <section class="mt-20">
+              <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Move your {short} history</h2>
+              <p class="text-muted-foreground mt-4 max-w-2xl">
+                {importLead} The <a href={importGuideUrl} class="text-primary-text hover:underline"
+                  >{importGuideLabel}</a
+                > covers every option.
+              </p>
+
+              <div class:list={['mt-8 grid items-start gap-10', screenshot && 'lg:grid-cols-2']}>
+                <ol class:list={[!screenshot && 'max-w-2xl']}>
+                  {
+                    steps.map((step, index) => (
+                      <li class="relative flex gap-4 pb-6 last:pb-0">
+                        {index < steps.length - 1 && <span class="bg-border/60 absolute top-8 bottom-0 left-4 w-px" aria-hidden="true" />}
+                        <span class="border-primary/40 text-primary-text bg-background relative flex size-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold tabular-nums">
+                          {index + 1}
+                        </span>
+                        <p class="text-muted-foreground pt-1 text-sm leading-relaxed">{step}</p>
+                      </li>
+                    ))
+                  }
+                </ol>
+                {
+                  screenshot && (
+                    <div class="border-border/50 overflow-hidden rounded-2xl border">
+                      <Screenshot {...screenshot} />
+                    </div>
+                  )
+                }
+              </div>
+
+              <div class="border-border/50 mt-12 grid gap-10 border-t pt-10 sm:grid-cols-2">
+                <div>
+                  <h3 class="text-lg font-semibold">What comes across</h3>
+                  <ul class="mt-4 space-y-3">
+                    {
+                      imported.map((item) => (
+                        <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
+                          <CheckIcon class="text-primary-text mt-0.5 shrink-0" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+                <div>
+                  <h3 class="text-lg font-semibold">Limits of the import</h3>
+                  <ul class="mt-4 space-y-3">
+                    {
+                      importLimits.map((item) => (
+                        <li class="text-muted-foreground flex gap-3 text-sm leading-relaxed">
+                          <span class="bg-muted-foreground/60 mt-2 h-px w-4 shrink-0" aria-hidden="true" />
+                          <span>{item}</span>
+                        </li>
+                      ))
+                    }
+                  </ul>
+                </div>
+              </div>
+              <slot name="import-note" />
+            </section>
+          ),
+        )
+      }
+
+      <slot />
+
+      {
+        whyCloud && (
+          <section class="mt-20">
+            <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">{whyCloud.heading}</h2>
+            <p class="text-muted-foreground mt-4 max-w-2xl">
+              <slot name="why-cloud-intro" />
+            </p>
+            <dl class="border-border/50 bg-card divide-border/40 mt-8 divide-y overflow-hidden rounded-2xl border">
+              {whyCloud.items.map((item) => (
+                <div class="grid sm:grid-cols-[13rem_1fr]">
+                  <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
+                    {item.lead}
+                  </dt>
+                  <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        )
+      }
+
+      <section class="mx-auto mt-20 max-w-3xl">
+        <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Questions about switching</h2>
+        <div class="mt-6 space-y-3">
+          {
+            faq.map((item) => (
+              <details class="group border-border/50 bg-card rounded-xl border px-5 py-4">
+                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
+                  {item.question}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
+                </summary>
+                <p class="text-muted-foreground mt-3 text-sm leading-relaxed">{item.answer}</p>
+              </details>
+            ))
+          }
+          <FaqAsk client:visible />
+        </div>
+
+        <div class="border-primary/40 mt-12 border-l-2 pl-5">
+          <h2 class="text-lg font-semibold">When {short} is the better fit</h2>
+          <ul class="text-muted-foreground mt-3 space-y-2 text-sm">
+            {betterFit.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+
+        <p class="text-muted-foreground mt-8 text-sm">
+          Other comparisons:{' '}
+          {
+            otherAlternatives.map((page, index) => (
+              <>
+                {index > 0 && ', '}
+                <a href={page.href} class="text-primary-text hover:underline">
+                  {page.label.replace(' alternative', '')}
+                </a>
+              </>
+            ))
+          }
+          . <a href="/alternatives" class="text-primary-text hover:underline">All of them are on one page</a>.
+        </p>
+
+        <p class="text-muted-foreground mt-12 text-xs">{trademarkNote}</p>
+        <details class="text-muted-foreground mt-3 text-xs">
+          <summary class="hover:text-foreground cursor-pointer">Sources, checked on {checkedOn}</summary>
+          <ul class="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+            {
+              sources.map((source) => (
+                <li>
+                  <a href={source.href} class="hover:text-foreground underline" target="_blank" rel="noopener noreferrer nofollow">
+                    {source.label}
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </details>
+      </section>
+    </main>
+
+    <CtaSection />
+    <LandingFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  .landing-page {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-y: auto;
+  }
+</style>

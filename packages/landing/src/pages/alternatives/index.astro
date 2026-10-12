@@ -1,0 +1,59 @@
+---
+import BaseLayout from '@/layouts/base-layout.astro';
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
+---
+
+<BaseLayout
+  title="Compare MoneyMatter With Other Finance Apps | MoneyMatter"
+  description="How MoneyMatter compares with Wallet by BudgetBakers, YNAB, Microsoft Money and Monarch Money: who should switch, who should stay, and how import works."
+>
+  <div class="bg-background text-foreground landing-page min-h-screen">
+    <BackgroundOrbs />
+    <LandingHeader />
+
+    <main class="relative z-10 mx-auto max-w-3xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
+      <h1 class="text-center text-3xl font-bold tracking-tight sm:text-5xl">MoneyMatter compared with other finance apps</h1>
+      <p class="text-muted-foreground mx-auto mt-6 max-w-2xl text-center text-lg">
+        MoneyMatter is an open-source personal finance tracker: try the cloud free for 40 days with no card, or host it
+        yourself for free. Each page below compares it with one app, shows how your history moves over, and names the
+        cases where the other app is the better fit.
+      </p>
+
+      <ul class="mt-14 space-y-4">
+        {
+          ALTERNATIVE_PAGES.map((page) => (
+            <li class="border-border/50 bg-card rounded-2xl border px-5 py-5">
+              <h2 class="text-lg font-semibold">
+                <a href={page.href} class="text-primary-text hover:underline">
+                  MoneyMatter as a {page.label}
+                </a>
+              </h2>
+              <p class="text-muted-foreground mt-2 text-sm leading-relaxed">{page.verdict}</p>
+              <p class="text-muted-foreground mt-2 text-sm leading-relaxed">
+                <span class="text-foreground font-medium">Import:</span> {page.importer}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="text-muted-foreground mt-8 text-xs">
+        Each page lists the sources for what it says about the other app and the date they were checked.
+      </p>
+    </main>
+
+    <CtaSection />
+    <LandingFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  .landing-page {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-y: auto;
+  }
+</style>

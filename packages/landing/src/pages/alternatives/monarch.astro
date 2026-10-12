@@ -1,0 +1,402 @@
+---
+import AlternativeLayout from '@/layouts/alternative-layout.astro';
+
+const checkedOn = '12 October 2026';
+const DOCS_CSV_IMPORT_URL = 'https://docs.moneymatter.app/import/import-from-csv/';
+const DOCS_MCP_URL = 'https://docs.moneymatter.app/ai/connect-claude-chatgpt-mcp/';
+const DOCS_LINK_TRANSFERS_URL = 'https://docs.moneymatter.app/transfers-and-refunds/link-existing-transactions/';
+const DOCS_SELF_HOSTING_URL = 'https://docs.moneymatter.app/getting-started/self-hosting/';
+const MONARCH_MCP_URL = 'https://help.monarch.com/hc/en-us/articles/50207234679956-Monarch-MCP-Connector';
+
+const AT_A_GLANCE = [
+  { value: '40 days', label: 'Cloud trial, no card' },
+  { value: 'AGPL-3.0', label: 'Open source' },
+  { value: '$0', label: 'Self-hosted' },
+  { value: 'CSV', label: 'How you import from Monarch' },
+];
+
+const HIGHLIGHTS = [
+  {
+    title: 'More than one currency, not limited to the US and Canada',
+    items: [
+      {
+        lead: 'Accounts',
+        text: 'Each account keeps its own currency. You can keep a USD checking account, a CAD savings account and a EUR card in one profile.',
+      },
+      {
+        lead: 'Totals',
+        text: 'Balances, the dashboard and reports are converted into a base currency you choose. Exchange rates update automatically, and you can set your own rate for any currency.',
+      },
+      {
+        lead: 'Securities',
+        text: 'Stocks, ETFs and crypto are holdings you record yourself. Price lookup works for US listings and for many European ones, including UCITS ETFs; coverage of a given exchange is not guaranteed. Each security keeps its own trading currency.',
+      },
+    ],
+  },
+  {
+    title: 'Open code and your own server',
+    items: [
+      { lead: 'Licence', text: 'The code is public under AGPL-3.0.' },
+      {
+        lead: 'Self-hosting',
+        text: 'Run it with Docker on your own server for free, with every feature included. Your data stays on that server.',
+      },
+      {
+        lead: 'Backups',
+        text: 'Export a backup on the cloud and restore it on your own server, or the other way round.',
+      },
+    ],
+  },
+  {
+    title: 'Trial and price',
+    items: [
+      { lead: 'Trial', text: '40 days with no card on file, so nothing can be charged when it ends.' },
+      {
+        lead: 'After the trial',
+        text: 'Without a subscription the account turns read-only. You can still sign in, view and export your data. Nothing is deleted.',
+      },
+      {
+        lead: 'Plans',
+        text: 'Essential is $30 a year or $5 a month. Plus is $55 a year or $8 a month. Prices are in USD, before tax.',
+      },
+    ],
+  },
+  {
+    title: 'Bank data and AI assistants',
+    items: [
+      {
+        lead: 'Bank sync',
+        text: 'On the Plus plan, through LunchFlow, SimpleFIN, Monobank or Walutomat. LunchFlow and SimpleFIN are separate paid services with their own account.',
+      },
+      {
+        lead: 'Files',
+        text: 'CSV, OFX and QFX imports on every plan, for banks you do not connect.',
+      },
+      {
+        lead: 'MCP server',
+        text: 'Built in, on every plan and in the trial. You approve read access, write access, or write and delete.',
+      },
+      {
+        lead: 'AI features',
+        text: 'On Essential they run on your own API key. On Plus they can run on ours, with a fair-use cap.',
+      },
+    ],
+  },
+];
+
+const COMPARISON = [
+  {
+    feature: 'Price',
+    competitor: 'Core is $14.99 a month or $99.99 a year. Plus is $199.99 a year, billed annually. In USD, plus tax where it applies',
+    moneymatter: 'Essential is $5 a month or $30 a year. Plus is $8 a month or $55 a year. In USD, before tax',
+  },
+  {
+    feature: 'Free trial',
+    competitor:
+      '7 days. A payment method is required, and you are billed when the trial ends unless you cancel at least 24 hours before',
+    moneymatter: '40 days, no card. If you do not subscribe, the account turns read-only and nothing is charged',
+  },
+  {
+    feature: 'Free option',
+    competitor: 'None. Monarch offers paid subscriptions only',
+    moneymatter: 'Self-hosting is free. There is no free cloud plan',
+  },
+  {
+    feature: 'Countries and currencies',
+    competitor:
+      'Available in the US and Canada only. Every amount is shown with a $ sign and nothing is converted, so 10,000 CAD plus 10,000 USD shows as $20,000',
+    moneymatter: 'Each account has its own currency. Totals are converted into the base currency you choose',
+  },
+  {
+    feature: 'Bank sync',
+    competitor: 'Included in Core and Plus. 13,000+ institutions through Plaid, Finicity and MX',
+    moneymatter:
+      'On the Plus plan, through LunchFlow, SimpleFIN, Monobank or Walutomat. LunchFlow and SimpleFIN charge separately',
+  },
+  {
+    feature: 'Investments',
+    competitor:
+      'Holdings from connected accounts or added by hand. Prices only for securities on US exchanges, shown in USD',
+    moneymatter:
+      "Holdings you record yourself. Price lookup works for US listings and for many European ones, including UCITS ETFs; coverage of a given exchange is not guaranteed. Prices are in each security's own currency",
+  },
+  {
+    feature: 'File import',
+    competitor: 'CSV, on the web only. A CSV import cannot be undone',
+    moneymatter:
+      'CSV, OFX and QFX, plus importers for YNAB, Wallet and Microsoft Money. A CSV import can be deleted from Import History',
+  },
+  {
+    feature: 'Getting your data out',
+    competitor: 'CSV of transactions and account balances. It works after a subscription or trial ends',
+    moneymatter: 'Data export on every plan, and in read-only mode after a trial or plan ends. Plus a backup you can restore',
+  },
+  {
+    feature: 'AI assistants',
+    competitor: `An official MCP connector. Its help page, read on ${checkedOn}, says it is temporarily paused`,
+    moneymatter: 'A built-in MCP server on every plan, with read, write, or write and delete access',
+  },
+  {
+    feature: 'Apps',
+    competitor: 'Web, iPhone, iPad and Android',
+    moneymatter: 'A web app that runs in the browser on a computer or a phone. No native apps',
+  },
+  {
+    feature: 'Sharing',
+    competitor: 'Household members join one subscription at no extra cost. Accounts and transactions cannot be hidden from them',
+    moneymatter: '2 household seats on Essential, 5 on Plus. Each member needs their own trial or plan to make changes',
+  },
+  {
+    feature: 'Refunds',
+    competitor: 'A refund for the remaining time on the subscription. Apple App Store subscriptions are not eligible',
+    moneymatter: 'A full refund within 14 days of the first payment',
+  },
+];
+
+const STEPS = [
+  'In Monarch, open Settings, then Data, and select Download Transactions. You get one CSV file with the transactions of all your accounts. Monarch says this download keeps working after a subscription or trial ends.',
+  'In MoneyMatter, open Settings, then Import/Export, and click Import CSV. Drop the file and continue to the mapping.',
+  'On Map Columns, pick the date column and the amount column. If your file has a merchant or payee column, map it to Payee; map one notes or description column to Description. If the dates are not written year-first, choose day-first or month-first.',
+  'Under Assignments, if the file has category and account columns, take Category and Account from them. Pick one currency for the whole file. Keep Transaction type on From Amount Sign if your file writes spending as negative amounts.',
+  'On Accounts, link each account name to an account you already have, create it, or skip it. For a new account, enter what it holds today and MoneyMatter works out the starting balance. On Categories, link each name to a category of yours or create it.',
+  'On Review, check the invalid rows and the possible duplicates. Nothing is saved before you start the import.',
+];
+
+const IMPORTED = [
+  'The date, the amount, and whether each row is income or an expense.',
+  'A payee, if you map a column to it. A payee you already have under the same name is reused.',
+  'One text column, as the transaction note.',
+  'Categories, linked to yours or created. AI can suggest the closest existing category on Plus, in the trial, or with your own API key.',
+  'Accounts, each one linked, created or skipped. A new account ends at the current balance you enter.',
+  'Up to about 10 MB and 50,000 rows in one import. Several files are combined when they have exactly the same header row.',
+  'An undo. Delete the whole import from Import History, as long as its accounts have not been connected to a bank since.',
+];
+
+const IMPORT_LIMITS = [
+  'This is the general CSV import, not a Monarch importer.',
+  'One currency for the whole file. Monarch does not tell currencies apart, so if you have both USD and CAD accounts, import each currency as its own file.',
+  'A transfer between two accounts arrives as two separate transactions, an expense and an income. Link the pairs afterwards with Transfer matching.',
+  "A tags column or an ID column has no field to map to. The importer reads a date, an amount, a description, a payee, a category, an account, a currency and a type.",
+  'There is one Description field, so only one text column of the file becomes the transaction note.',
+  "New categories are created at the top level. Monarch's category groups are not rebuilt.",
+  "Only transactions are imported. Budgets, goals, rules and investment holdings have to be set up again, and Monarch's balance history file has no importer.",
+  'Duplicates are checked only against accounts you already have. Rows going into an account the import creates, and repeated rows inside one file, are not checked.',
+  'A comma with no dot is read as a decimal point, so 1,234 would be imported as 1.23. Look at how amounts over 999 are written in your file.',
+  'Dates with month names, such as Jan 5, 2026, are not recognised, and those rows are marked invalid.',
+];
+
+const WHY_CLOUD = [
+  {
+    lead: 'Running it',
+    text: 'On the cloud we host the app and ship updates and security patches. On your own server you run the updates.',
+  },
+  {
+    lead: 'Market data',
+    text: 'The cloud plan pays for the feeds behind stock and crypto prices, exchange rates and merchant logos. Self-hosted, crypto prices need your own API key.',
+  },
+  {
+    lead: 'Who holds the data',
+    text: 'Self-hosted, your data stays on your server and we never see it. On the cloud it is stored with us, and bank credentials and AI keys are encrypted with AES-256-GCM.',
+  },
+  {
+    lead: 'Changing your mind',
+    text: 'A backup exported on one can be restored on the other. Backup export works during the cloud trial. Restoring onto the cloud needs a paid plan.',
+  },
+];
+
+const STAY_ON_MONARCH = [
+  'You bank in the US or Canada and want sync included in the price. Monarch connects 13,000+ institutions on both plans. In MoneyMatter, bank sync needs the Plus plan and, for US and Canadian banks, a separate paid LunchFlow or SimpleFIN account.',
+  'You want native apps. Monarch has iPhone, iPad and Android apps, and receipt scanning and Apple Card sync are mobile features. MoneyMatter is a web app with no native apps.',
+  'You budget month by month with rollovers. Monarch has Flex and category budgeting, and a category can carry its surplus or shortfall into the next month. A MoneyMatter budget is a spending limit over a date range, with no rollover and no repeating monthly budgets.',
+  'You share with a whole household. Monarch adds household members to one subscription at no extra cost. MoneyMatter cloud plans have 2 or 5 seats, and each member needs their own trial or plan to make changes.',
+  "You want an AI assistant with nothing to set up on the lower plan. Monarch's AI Assistant is part of Core. On MoneyMatter's Essential plan, AI features need your own API key.",
+  "All your accounts are in US dollars, your securities trade on US exchanges, and Monarch's price is fine with you. In that case MoneyMatter adds open code and self-hosting.",
+];
+
+const FAQ = [
+  {
+    question: 'Does MoneyMatter have a Monarch importer?',
+    answer:
+      'No. There are dedicated importers for YNAB, Wallet by BudgetBakers and Microsoft Money, and none for Monarch. Monarch exports transactions as a CSV file, and MoneyMatter imports CSV files with column mapping, so that is the route. It has not been tested with a real Monarch export.',
+  },
+  {
+    question: 'Is bank sync included, as it is in Monarch?',
+    answer:
+      'Not in every plan. Monarch includes bank sync in Core and Plus. In MoneyMatter it is part of the Plus plan and runs through a provider: LunchFlow, SimpleFIN, Monobank or Walutomat. LunchFlow and SimpleFIN are separate services that charge for their own account. Without bank sync you add transactions by hand or import CSV, OFX or QFX files.',
+  },
+  {
+    question: 'Can I use MoneyMatter outside the US and Canada, or with several currencies?',
+    answer:
+      'Yes. Each account has its own currency, and totals are converted into a base currency you pick at sign-up, with exchange rates that update automatically. Monarch says it is available only in the US and Canada and does not convert currencies.',
+  },
+  {
+    question: 'Can an AI assistant move my Monarch data for me?',
+    answer:
+      "For a short history, yes. Connect an assistant that supports remote MCP servers, such as Claude, ChatGPT or Claude Code, allow it to create and edit data, and give it your CSV. The MCP section above lists the limits. For a long history use the CSV import.",
+  },
+  {
+    question: 'What happens when the 40-day trial ends?',
+    answer:
+      "Nothing is charged, because the trial starts without a card. If you do not subscribe, the account turns read-only: you can sign in, view and export your data, or delete the account. Monarch's 7-day trial needs a payment method and bills you when it ends unless you cancel first.",
+  },
+];
+
+const SOURCES = [
+  { label: 'Monarch pricing', href: 'https://www.monarch.com/pricing' },
+  { label: 'Monarch download', href: 'https://www.monarch.com/download' },
+  { label: 'Monarch help: FAQs', href: 'https://help.monarch.com/hc/en-us/articles/19985735202068-Monarch-FAQs' },
+  { label: 'Monarch help: pricing', href: 'https://help.monarch.com/hc/en-us/articles/9136169422996-Pricing' },
+  {
+    label: 'Monarch help: money-back guarantee',
+    href: 'https://help.monarch.com/hc/en-us/articles/30368325619732-Monarch-s-Money-back-Guarantee',
+  },
+  {
+    label: 'Monarch help: international accounts and currency',
+    href: 'https://help.monarch.com/hc/en-us/articles/360048393552-International-Accounts-and-Currency',
+  },
+  {
+    label: 'Monarch help: data providers and connections',
+    href: 'https://help.monarch.com/hc/en-us/articles/33707613533972-Understanding-Data-Providers-and-Connections',
+  },
+  {
+    label: 'Monarch help: investments',
+    href: 'https://help.monarch.com/hc/en-us/articles/41855507661076-Investments-in-Monarch',
+  },
+  {
+    label: 'Monarch help: downloading transaction or account history',
+    href: 'https://help.monarch.com/hc/en-us/articles/15526600975764-Downloading-Transaction-or-Account-History',
+  },
+  {
+    label: 'Monarch help: importing transactions manually',
+    href: 'https://help.monarch.com/hc/en-us/articles/4409682789908-Importing-Transactions-Manually',
+  },
+  { label: 'Monarch help: MCP connector', href: MONARCH_MCP_URL },
+  {
+    label: 'Monarch help: getting started',
+    href: 'https://help.monarch.com/hc/en-us/articles/360048393272-Getting-Started-with-Monarch',
+  },
+  {
+    label: 'Monarch help: creating your budget',
+    href: 'https://help.monarch.com/hc/en-us/articles/360048883631-Creating-Your-Budget-in-Monarch',
+  },
+  {
+    label: 'Monarch help: Flex budgeting',
+    href: 'https://help.monarch.com/hc/en-us/articles/32125337244052-Using-Flex-Budgeting',
+  },
+  {
+    label: 'Monarch help: couples and households',
+    href: 'https://help.monarch.com/hc/en-us/articles/20926382202004-Monarch-for-Couples-and-Households',
+  },
+];
+---
+
+<AlternativeLayout
+  title="Open Source Monarch Money Alternative | MoneyMatter"
+  description="MoneyMatter is an open-source alternative to Monarch Money: multi-currency accounts, a 40-day trial with no card, free self-hosting, and CSV import."
+  competitor="Monarch Money"
+  competitorShort="Monarch"
+  heading="An open-source alternative to Monarch Money"
+  intro="MoneyMatter is an open-source personal finance tracker. Try the cloud free for 40 days with no card, or host it yourself for free. It keeps every account in its own currency and is not limited to the US and Canada. You import Monarch's CSV export with the general CSV importer."
+  checkedOn={checkedOn}
+  atAGlance={AT_A_GLANCE}
+  highlights={HIGHLIGHTS}
+  comparison={COMPARISON}
+  importGuideUrl={DOCS_CSV_IMPORT_URL}
+  importGuideLabel="CSV import guide"
+  importLead="MoneyMatter has no dedicated Monarch importer. Monarch exports your transactions as a CSV file, and MoneyMatter imports CSV files with column mapping. This route has not been tested with a real Monarch export, so check each step against your own file."
+  steps={STEPS}
+  screenshot={{
+    name: 'csv-map-columns',
+    width: 1744,
+    height: 1800,
+    alt: 'The Map Columns step of the CSV importer: Date, Amount, Description and Payee each matched to a column of the file, a date format preview, and the Category, Account, Currency and Transaction type assignments',
+  }}
+  imported={IMPORTED}
+  importLimits={IMPORT_LIMITS}
+  faq={FAQ}
+  betterFit={STAY_ON_MONARCH}
+  trademarkNote="Monarch and Monarch Money are trademarks of their owner; MoneyMatter is not affiliated with it."
+  sources={SOURCES}
+  whyCloud={{ heading: 'Cloud account or your own server', items: WHY_CLOUD }}
+>
+  <p slot="import-note" class="text-muted-foreground mt-8 max-w-2xl text-sm">
+    After the import, open <a
+      href={DOCS_LINK_TRANSFERS_URL}
+      class="text-primary-text hover:underline"
+      target="_blank"
+      rel="noopener noreferrer">Transfer matching</a
+    > to join the two sides of each transfer. Until they are linked, a transfer counts once as spending and once as income.
+  </p>
+
+  <section class="mt-20">
+    <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Second route: an AI assistant over MCP</h2>
+    <p class="text-muted-foreground mt-4 max-w-2xl">
+      MoneyMatter has a built-in MCP server, included in every plan and in the trial. It works with assistants that
+      support remote MCP servers with OAuth sign-in. The <a
+        href={DOCS_MCP_URL}
+        class="text-primary-text hover:underline"
+        target="_blank"
+        rel="noopener noreferrer">connection guide</a
+      > covers Claude, ChatGPT and Claude Code. You connect the assistant, give it your Monarch CSV, and it creates the
+      records through the server's tools. Monarch's own <a
+        href={MONARCH_MCP_URL}
+        class="text-primary-text hover:underline"
+        target="_blank"
+        rel="noopener noreferrer nofollow">help page</a
+      > says you can upload your export to an AI model of your choice.
+    </p>
+    <dl class="border-border/50 bg-card divide-border/40 mt-8 divide-y overflow-hidden rounded-2xl border">
+      {
+        [
+          {
+            lead: 'Access level',
+            text: 'Keep "Create and edit your financial data" ticked when you approve the connection. With view access only, the assistant can read and cannot add anything. "Delete your financial data" can stay off.',
+          },
+          {
+            lead: 'Accounts first',
+            text: 'Create your accounts in MoneyMatter before you start. The server has no tool that creates an account.',
+          },
+          {
+            lead: 'What it creates',
+            text: 'Categories and tags, then transactions, each with its account, date, amount, category, tags and note. It can also record a move between two accounts as one linked transfer.',
+          },
+          {
+            lead: 'Speed',
+            text: "There is no bulk-create tool. Every transaction is its own tool call, so a history of several thousand rows is slow and can stop partway at the assistant's usage or context limits.",
+          },
+          {
+            lead: 'Checking',
+            text: 'An assistant can skip or repeat rows. Compare the count and the account balances with your file when it finishes.',
+          },
+          {
+            lead: 'ChatGPT',
+            text: 'Whether a custom MCP server may change data depends on your ChatGPT plan. Some plans allow reading only.',
+          },
+          {
+            lead: 'Best use',
+            text: 'A short history, or tidying up after the CSV import: linking transfer pairs, adding tags, fixing categories. For a long history the CSV import is the better route.',
+          },
+        ].map((item) => (
+          <div class="grid sm:grid-cols-[13rem_1fr]">
+            <dt class="border-border/40 sm:bg-background/60 px-5 pt-2.5 text-sm font-medium sm:border-r sm:py-2.5">
+              {item.lead}
+            </dt>
+            <dd class="text-muted-foreground px-5 pt-0.5 pb-2.5 text-sm leading-relaxed sm:py-2.5">{item.text}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="text-muted-foreground mt-3 text-xs">
+      A self-hosted MoneyMatter runs its own MCP server. Claude and ChatGPT connect from their own servers, so the
+      install has to be reachable from the internet over HTTPS.
+    </p>
+  </section>
+
+  <Fragment slot="why-cloud-intro">
+    Both run the same app. Self-host if you want your data on your own machine. Use the cloud if you would rather not
+    run a server. The <a
+      href={DOCS_SELF_HOSTING_URL}
+      class="text-primary-text hover:underline">self-hosting guide</a
+    > lists what a server needs.
+  </Fragment>
+</AlternativeLayout>

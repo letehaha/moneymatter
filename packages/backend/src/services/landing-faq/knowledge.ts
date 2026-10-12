@@ -71,8 +71,10 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 ## Importing and exporting
 
 - Direct importers for YNAB, Wallet by BudgetBakers and Microsoft Money.
-- CSV import with column mapping, plus OFX and QFX. Every import detects and skips duplicates and
-  reconciles the account balance.
+- CSV import with column mapping, plus OFX and QFX.
+- Duplicates: the CSV, OFX/QFX, Wallet and Microsoft Money importers flag possible duplicates when
+  you import into an account you already have, and skip them unless you choose otherwise. Nothing
+  is flagged in accounts the import creates. The YNAB importer has no duplicate check.
 - Paste a bank statement or an email and AI turns it into transactions.
 - Export everything to CSV or Excel: transactions, accounts, categories, tags, payees, budgets,
   subscriptions, templates and investments. Full backup export and restore too.
@@ -115,7 +117,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   rate of its own date. Crypto is tracked as an investment holding, not as an account currency.
 - Net worth: cash, investments, vehicles, venture deals and loans on one chart in your base
   currency, filterable by asset type and period.
-- Loans you owe: mortgage, auto, student, personal, with amortization and a payment schedule.
+- Loans you owe: mortgage, auto, student, personal, with a projected payoff date, the interest still to pay, and a balance projection chart. No amortization table and no principal/interest split per payment.
 - Vehicles with depreciation. Venture and private deals.
 - Not supported: a real-estate asset type, tracking money you lent to someone.
 
@@ -130,7 +132,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 ## Reports and dashboard
 
 - Cash flow (income against expenses by month), money flow (income sources to categories), pivot
-  tables by category, payee, account or period, net worth and balance history.
+  tables by category, payee or tag per week, month, quarter or year, net worth and balance history.
 - The dashboard is a grid of widgets you add, remove and rearrange.
 - Not supported: a free-form custom report builder.
 
@@ -236,6 +238,52 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   refunds to purchases, tracks loans, vehicles and venture deals, has pivot reports and a FIRE
   planner, and offers a full backup and restore.
 - Full comparison: https://moneymatter.app/alternatives/wallet-by-budgetbakers
+
+## Moving from YNAB
+
+- The importer is under Settings, Import/Export, "Import from YNAB". It reads the register file
+  (the one with your transactions) from the Export Plan download in the YNAB web app. One .csv
+  file, up to 10 MB and 100,000 rows.
+- Imported: every account as a new account, with YNAB's Starting Balance as its initial balance.
+  "Group: Category" becomes a category with a subcategory. Payees, memos as notes, and flags as
+  tags such as "YNAB Red". Transfers between two of your accounts are joined into one transfer
+  when both sides share a date and an amount. An import can be undone from Import History.
+- Not imported: assigned amounts, targets and Ready to Assign. Only the register is read.
+- Limits: every import creates new accounts, so YNAB history cannot be added to an existing
+  account, and importing the same file twice creates a second set of accounts. A split arrives as
+  separate transactions. A transfer between two currencies keeps the same number on both sides.
+- Not supported: .tsv files. YNAB exports tab-separated files instead of CSV for currencies that
+  use a decimal comma. (Checked October 2026.)
+- If you budget the zero-based way with Ready to Assign and targets, YNAB is the better fit.
+- Full comparison: https://moneymatter.app/alternatives/ynab
+
+## Moving from Microsoft Money
+
+- The importer is under Settings, Import/Export, "Microsoft Money". It reads the .mny file
+  itself, password-protected ones too. No QIF or CSV export is needed. Up to 50 MB and 100,000
+  transactions.
+- Imported: banking, credit card, cash, asset and liability accounts. Transactions with category,
+  payee and memo. Categories. Each line of a split as its own transaction. Transfers between two
+  imported accounts, once each. Voided transactions only if you tick the box. An import can be
+  undone from Import History.
+- During the import each account is created as new, linked to an existing account in the same
+  currency, or skipped.
+- Not imported: investment and loan accounts (skipped with a warning), budgets, bills and reports.
+- Tested with sample files from Money 2001, 2002, 2004, 2005, 2008 and Money Plus Sunset. Only
+  the Money 2005 and Sunset samples contain a full ledger. The Money 2001 and 2002 samples have no
+  payee column, so payees are not read from files laid out that way.
+- Full comparison: https://moneymatter.app/alternatives/microsoft-money
+
+## Moving from Monarch Money
+
+- There is no dedicated Monarch importer. Monarch exports transactions as a CSV file, and the
+  CSV import with column mapping (Settings, Import/Export, "Import CSV") takes CSV files. This
+  route has not been tested with a real Monarch export.
+- One currency per file. A transfer arrives as two transactions; link the pair afterwards with
+  Transfer matching. Only transactions are imported, not budgets, goals, rules or holdings.
+- Second route for a short history: an AI assistant connected to the MCP server with write
+  access. Every transaction is its own tool call, so a long history is slow.
+- Full comparison: https://moneymatter.app/alternatives/monarch
 
 ## Contact and community
 

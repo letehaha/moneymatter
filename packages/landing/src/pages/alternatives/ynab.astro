@@ -1,0 +1,292 @@
+---
+import AlternativeLayout from '@/layouts/alternative-layout.astro';
+
+const checkedOn = '12 October 2026';
+const DOCS_IMPORT_URL = 'https://docs.moneymatter.app/import/other-import-sources/#ynab';
+const DOCS_SELF_HOSTING_URL = 'https://docs.moneymatter.app/getting-started/self-hosting/';
+
+const AT_A_GLANCE = [
+  { value: 'AGPL-3.0', label: 'Open source' },
+  { value: '40 days', label: 'Cloud trial, no card' },
+  { value: '$0', label: 'Self-hosted' },
+  { value: '150+', label: 'Currencies with automatic rates' },
+];
+
+const STEPS = [
+  "In the YNAB web app, click your plan's name and choose Export Plan. The export is only in the web version. From the download, keep the register file, the one with your transactions, not the plan file.",
+  'In MoneyMatter, open Settings, then Import/Export, and pick Import from YNAB. Drop the register file and continue.',
+  'On the Review step, confirm the currency of each account. An account with a code such as (EUR) in its YNAB name is filled in for you. Skip any account you want to leave out.',
+  'Check the Categories, Payees, Tags, Transactions and Transfers tabs, and read the warnings.',
+  'Click Start import. Nothing is saved before that.',
+];
+
+const IMPORTED = [
+  "Every account, as a new MoneyMatter account. YNAB's Starting Balance entry becomes its initial balance.",
+  'Categories. YNAB\'s "Group: Category" becomes a category with a subcategory, and categories you already have under the same names are reused.',
+  'Payees, reused when one with the same name exists. Memos become transaction notes.',
+  'Flags, as tags named after the colour, such as "YNAB Red".',
+  'Transfers between two of your accounts, joined into one transfer when both sides share a date and an amount.',
+  'One register file of up to 10 MB and 100,000 rows.',
+  'An undo. Remove the whole import from Import History, as long as its accounts have not been connected to a bank since.',
+];
+
+const IMPORT_LIMITS = [
+  'Only .csv files are accepted. For currencies that use a decimal comma, YNAB exports a tab-separated .tsv file instead, and the importer does not take it.',
+  'Every import creates new accounts. YNAB history cannot be added to an account you already have.',
+  'There is no duplicate check. Importing the same file twice gives you a second set of accounts.',
+  'A transfer between two currencies keeps the same number on both sides. Fix one side after the import.',
+  'A split transaction arrives as separate transactions, one for each part.',
+  'Only the register is read. Assigned amounts, targets and Ready to Assign are not imported, and "Inflow: Ready to Assign" does not become a category.',
+  'A transfer side without a match comes in as a regular expense or income, with a warning.',
+  'Skipping an account also drops every transfer to or from it.',
+];
+
+const COMPARISON = [
+  {
+    feature: 'Price',
+    competitor: '$14.99 a month, or $109 a year, plus tax',
+    moneymatter: 'From $30 a year on the cloud, before tax. Free when self-hosted',
+  },
+  {
+    feature: 'Free trial',
+    competitor: '34 days, no credit card when you sign up on ynab.com. College students get 365 days',
+    moneymatter: '40 days, no card needed. Self-hosting is free with no time limit',
+  },
+  {
+    feature: 'Budgeting method',
+    competitor:
+      'Zero-based. Ready to Assign is the money not yet added to a category, and each category can have a target',
+    moneymatter:
+      'A spending limit over any date range, for categories you choose or transactions you attach. No zero-based or envelope budgeting',
+  },
+  {
+    feature: 'Currencies',
+    competitor: 'One currency in a plan. YNAB recommends a separate plan for each extra currency',
+    moneymatter: 'About 158 fiat currencies side by side, each transaction converted at the rate of its own date',
+  },
+  {
+    feature: 'Investments',
+    competitor: 'A tracking account whose balance you update by reconciling',
+    moneymatter:
+      'Stocks, ETFs and crypto as holdings, with cost basis, returns and dividends. Prices update daily, crypto hourly',
+  },
+  {
+    feature: 'Loans',
+    competitor: 'Loan accounts, with a Loan Planner that shows the time and interest an extra payment saves',
+    moneymatter: 'Loan accounts with a projected payoff date, the interest still to pay, and a balance projection chart',
+  },
+  {
+    feature: 'Refunds',
+    competitor: 'Categorized back to the original spending category',
+    moneymatter: 'Linked to the purchase they refund, and counted back in budgets',
+  },
+  {
+    feature: 'Bank sync',
+    competitor: 'Select US, Canadian, UK and EU banks. In Europe, at least one bank in each of 18 countries',
+    moneymatter:
+      'On the Plus plan, through LunchFlow, SimpleFIN, Monobank or Walutomat. LunchFlow and SimpleFIN are separate paid services',
+  },
+  {
+    feature: 'AI assistants',
+    competitor: 'A REST API. The MCP servers listed on its API page are third-party',
+    moneymatter: 'A built-in MCP server with three access levels. No public REST API',
+  },
+  {
+    feature: 'Sharing',
+    competitor: 'Up to six people on one subscription, with edit access to the plans shared with them',
+    moneymatter: '2 seats on Essential, 5 on Plus. Read-only or write access, set per account or budget',
+  },
+  {
+    feature: 'Apps',
+    competitor: 'Web, iOS and Android, with offline access',
+    moneymatter: 'A web app with a phone layout that you can add to your home screen. No native apps, and it needs a connection',
+  },
+  {
+    feature: 'Getting your data out',
+    competitor: 'CSV export of the plan and the transaction history, from the web app. Targets and category notes are left out',
+    moneymatter: 'CSV or Excel export, on every plan',
+  },
+];
+
+const HIGHLIGHTS = [
+  {
+    title: 'Investments, loans and net worth',
+    items: [
+      {
+        lead: 'Portfolios',
+        text: 'Stocks, ETFs and crypto as holdings, with average-cost basis, realized and unrealized return, and dividends.',
+      },
+      { lead: 'Prices', text: 'Stocks and ETFs update once a day, crypto hourly. Nothing is real-time.' },
+      {
+        lead: 'Loans',
+        text: 'Mortgage, auto, student and personal loans with a projected payoff date, the interest still to pay, and what an overpayment changes.',
+      },
+      {
+        lead: 'Net worth',
+        text: 'Cash, investments, loans, vehicles and venture deals on one chart, in your base currency.',
+      },
+    ],
+  },
+  {
+    title: 'Several currencies in one place',
+    items: [
+      { lead: 'Accounts', text: 'About 158 fiat currencies with automatic exchange rates.' },
+      { lead: 'Conversion', text: 'Each transaction is converted at the rate of its own date.' },
+      { lead: 'Transfers', text: 'A transfer between two currencies is one linked pair.' },
+      { lead: 'Budgets', text: 'Spending in other currencies is converted into your base currency.' },
+    ],
+  },
+  {
+    title: 'Refunds, splits, rules and subscriptions',
+    items: [
+      {
+        lead: 'Refund linking',
+        text: 'Link a refund or reimbursement to the original purchase. Budgets count it back automatically.',
+      },
+      { lead: 'Splits', text: 'Split one transaction across several categories.' },
+      {
+        lead: 'Automation rules',
+        text: 'Match on payee, note text, amount, account, type or day of month, and set the category, tags, payee or note. Run a rule over past transactions too.',
+      },
+      {
+        lead: 'Subscriptions',
+        text: 'Recurring payments are detected from your history and suggested for you to confirm.',
+      },
+    ],
+  },
+  {
+    title: 'AI assistants and self-hosting',
+    items: [
+      {
+        lead: 'MCP server',
+        text: 'Connect Claude or ChatGPT through OAuth and pick an access level: read, write, or write and delete.',
+      },
+      {
+        lead: 'Your own model',
+        text: 'AI categorization and statement parsing run on your own key: OpenAI, Anthropic, Google Gemini or any OpenAI-compatible server, local models included.',
+      },
+      { lead: 'Self-hosting', text: 'Free with Docker Compose, with every feature on and no analytics sent.' },
+    ],
+  },
+];
+
+const WHY_CLOUD = [
+  {
+    lead: 'No server to run',
+    text: 'We host the app and ship the updates and security patches. On your own server, you pull each update and back up the database and attachments yourself.',
+  },
+  {
+    lead: 'Data feeds included',
+    text: 'We pay for the feeds behind stock and crypto prices, exchange rates and merchant logos. Self-hosted, crypto prices and logos need your own API keys.',
+  },
+  {
+    lead: 'A trial without a card',
+    text: 'You start without a card, so nothing is charged when the 40 days end. Skip the subscription and the account turns read-only: you can still view and export your data, and nothing is deleted.',
+  },
+  {
+    lead: 'A refund window',
+    text: 'Email support@moneymatter.app within 14 days of your first payment and you get the full amount back.',
+  },
+  {
+    lead: 'Moving between cloud and your own server',
+    text: 'Export a backup on the cloud and restore it on your own server, or the other way round. Restoring onto the cloud needs a paid plan. Bank connections, AI keys and attachments are not in the backup.',
+  },
+];
+
+const STAY_ON_YNAB = [
+  'You budget the zero-based way and rely on Ready to Assign. A MoneyMatter budget is a spending limit over a date range. It has no zero-based or envelope budgeting, and unspent money does not roll over.',
+  'You use targets to save toward goals. MoneyMatter has no savings goals and no repeating monthly budgets.',
+  'You want native iOS and Android apps, or offline access. MoneyMatter is a web app you can add to your home screen, and it needs a connection.',
+  'You want bank sync in one subscription. YNAB lists no extra charge for direct import. MoneyMatter needs the Plus plan and, for most banks, a separate paid LunchFlow or SimpleFIN account.',
+  'You share with six people. YNAB allows six on one subscription; MoneyMatter cloud plans have two or five seats.',
+];
+
+const FAQ = [
+  {
+    question: 'Does MoneyMatter do zero-based budgeting like YNAB?',
+    answer:
+      'No. MoneyMatter has no Ready to Assign and no envelopes. A budget is one spending limit over a date range you choose, for a set of categories or for transactions you attach. Going over the limit is shown in red and nothing is blocked. If giving every dollar a job is why you use YNAB, YNAB is the better fit.',
+  },
+  {
+    question: 'Which YNAB file does MoneyMatter import?',
+    answer:
+      'The register file, the one with your transactions, from the Export Plan download in the YNAB web app. It must be a .csv file of up to 10 MB and 100,000 rows. For currencies that use a decimal comma, YNAB exports .tsv files instead, and the importer does not take those. Your plan file with assigned amounts and targets is not read.',
+  },
+  {
+    question: 'What happens to my YNAB categories and flags?',
+    answer:
+      'A YNAB "Group: Category" becomes a category with a subcategory, and categories you already have with the same names are reused. Each flag colour becomes a tag, such as "YNAB Red". "Inflow: Ready to Assign" is not turned into a category.',
+  },
+  {
+    question: 'Can I undo the import?',
+    answer:
+      'Yes. Every import creates new accounts and can be removed from Import History, as long as those accounts have not been connected to a bank since. Importing the same file twice creates a second set of accounts, because there is no duplicate check.',
+  },
+  {
+    question: 'Is MoneyMatter really free?',
+    answer:
+      'Self-hosted, yes: you run it with Docker Compose on your own server, with every feature on. On the cloud there is a 40-day trial with no card, then a paid plan from $30 a year. There is no free cloud plan.',
+  },
+];
+
+const SOURCES = [
+  { label: 'YNAB pricing', href: 'https://www.ynab.com/pricing' },
+  { label: 'YNAB features', href: 'https://www.ynab.com/features' },
+  { label: 'YNAB help: glossary', href: 'https://support.ynab.com/en_us/ynab-glossary-a-guide-BJd80SORq' },
+  { label: 'YNAB help: export', href: 'https://support.ynab.com/en_us/how-to-export-plan-data-Sy_CouWA9' },
+  {
+    label: 'YNAB help: multiple currencies',
+    href: 'https://support.ynab.com/en_us/using-multiple-currencies-in-ynab-a-guide-SyBF6PHno',
+  },
+  {
+    label: 'YNAB help: investment accounts',
+    href: 'https://support.ynab.com/en_us/tracking-investment-accounts-a-guide-r1Bzjxd05',
+  },
+  { label: 'YNAB help: account types', href: 'https://support.ynab.com/en_us/account-types-an-overview-BkmGM0qCq' },
+  {
+    label: 'YNAB help: refunds and other inflows',
+    href: 'https://support.ynab.com/en_us/how-to-add-income-and-other-inflows-H1ZNjfZJi',
+  },
+  {
+    label: 'YNAB help: direct import in Europe',
+    href: 'https://support.ynab.com/en_us/direct-import-in-europe-Syae1z_A9',
+  },
+  { label: 'YNAB help: YNAB Together', href: 'https://support.ynab.com/en_us/ynab-together-B1nS78Cki' },
+  { label: 'YNAB Loan Planner', href: 'https://www.ynab.com/ynab-loan-planner/' },
+  { label: 'YNAB API', href: 'https://api.ynab.com' },
+];
+---
+
+<AlternativeLayout
+  title="Free, Open Source YNAB Alternative | MoneyMatter"
+  description="Move from YNAB to MoneyMatter: import your YNAB export with categories, payees, flags and transfers. Self-host it free, or try the cloud for 40 days."
+  competitor="YNAB"
+  heading="A free, open-source alternative to YNAB"
+  intro="MoneyMatter is an open-source personal finance tracker. Try the cloud free for 40 days with no card, or self-host it for free. Its YNAB importer brings your accounts, categories, payees, flags and transfers with you."
+  checkedOn={checkedOn}
+  atAGlance={AT_A_GLANCE}
+  highlights={HIGHLIGHTS}
+  comparison={COMPARISON}
+  importGuideUrl={DOCS_IMPORT_URL}
+  steps={STEPS}
+  imported={IMPORTED}
+  importLimits={IMPORT_LIMITS}
+  faq={FAQ}
+  betterFit={STAY_ON_YNAB}
+  trademarkNote="YNAB is a trademark of its owner; MoneyMatter is not affiliated with it."
+  sources={SOURCES}
+  importFirst
+  whyCloud={{ heading: 'What the cloud plan adds over self-hosting', items: WHY_CLOUD }}
+>
+  <p slot="import-note" class="text-muted-foreground mt-8 max-w-2xl text-sm">
+    Dates are read the same way for the whole file. When no row settles whether they are day-first or month-first,
+    MoneyMatter reads them as MM/DD/YYYY and warns you, so check a few transactions afterwards.
+  </p>
+
+  <Fragment slot="why-cloud-intro">
+    Both run the same app. The cloud is for when you would rather not run a server. The <a
+      href={DOCS_SELF_HOSTING_URL}
+      class="text-primary-text hover:underline">self-hosting guide</a
+    > shows what running it yourself takes.
+  </Fragment>
+</AlternativeLayout>

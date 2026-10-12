@@ -1,4 +1,5 @@
 ---
+import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
 import { GITHUB_URL } from '@/lib/github-api';
 
 const currentYear = new Date().getFullYear();
@@ -16,7 +17,7 @@ const columns = [
   },
   {
     title: 'Compare',
-    links: [{ label: 'Wallet by BudgetBakers alternative', href: '/alternatives/wallet-by-budgetbakers' }],
+    links: [...ALTERNATIVE_PAGES, { label: 'All comparisons', href: '/alternatives' }],
   },
   {
     title: 'Resources',
