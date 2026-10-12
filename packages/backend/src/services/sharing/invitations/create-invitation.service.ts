@@ -80,11 +80,11 @@ const resolveOwnedResource = async ({
   if (resourceType === RESOURCE_TYPES.budget) {
     const budget = await Budgets.findOne({ where: { id: resourceId } });
     if (!budget) {
-      throw new NotFoundError({ message: 'Budget not found' });
+      throw new NotFoundError({ message: 'Tracker not found' });
     }
     if (budget.userId !== ownerUserId) {
       // Don't leak existence — anyone other than the owner sees a 404.
-      throw new NotFoundError({ message: 'Budget not found' });
+      throw new NotFoundError({ message: 'Tracker not found' });
     }
     // Budgets are denominated in the owner's base currency (limitAmount + spending
     // stats), not a per-budget currency. Recipient base currency is locked against

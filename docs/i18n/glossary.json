@@ -524,16 +524,17 @@
   {
     "term": "budget",
     "partOfSpeech": "noun",
-    "definition": "A user-created tracker of spending against an optional limit; it holds transactions added by hand or matched by category.",
+    "definition": "The period-based plan: lines with assigned amounts per period, rollover and Ready to Assign. Not a tracker (the date-range spending watcher).",
     "translatable": true,
-    "uk": "бюджет"
+    "uk": "бюджет",
+    "ukAvoid": ["трекер"]
   },
   {
-    "term": "budget limit",
+    "term": "tracker limit",
     "partOfSpeech": "noun",
-    "definition": "The optional spending cap set for a budget; spending is shown against it as a percentage.",
+    "definition": "The optional spending cap set for a tracker; spending is shown against it as a percentage.",
     "translatable": true,
-    "uk": "ліміт бюджету",
+    "uk": "ліміт трекера",
     "ukAvoid": ["обмеження видатків"],
     "ukNote": "Standalone 'Limit' = «Ліміт»."
   },
@@ -677,14 +678,14 @@
     "uk": "розбивка за категоріями"
   },
   {
-    "term": "category budget",
+    "term": "category tracker",
     "partOfSpeech": "noun",
-    "definition": "A budget type that automatically tracks every transaction in the chosen categories, as opposed to a manual budget with hand-picked transactions.",
+    "definition": "A tracker type that automatically tracks every transaction in the chosen categories, as opposed to a manual tracker with hand-picked transactions.",
     "translatable": true,
-    "uk": "бюджет за категоріями",
-    "ukAvoid": ["бюджет на основі категорій"],
+    "uk": "трекер за категоріями",
+    "ukAvoid": ["трекер на основі категорій", "бюджет за категоріями"],
     "ukNote": "Type label 'Category-based' = «За категоріями».",
-    "variants": ["category-based budget"]
+    "variants": ["category-based tracker"]
   },
   {
     "term": "charge",
@@ -3568,6 +3569,15 @@
     "translatable": true,
     "uk": "загальна вартість",
     "ukNote": "'Total Cost' in the holdings table (portfolioDetail.holdingsTable.headers.totalCost) is currently also «Загальна вартість», although it is the summed cost basis (базова вартість, uk.md §5)."
+  },
+  {
+    "term": "tracker",
+    "partOfSpeech": "noun",
+    "definition": "A user-created watcher of spending over a date range against an optional limit; it holds transactions added by hand or matched by category. Not the budget (the period-based plan).",
+    "translatable": true,
+    "uk": "трекер",
+    "ukAvoid": ["бюджет"],
+    "ukNote": "Masculine: трекера, трекеру, трекером, у трекері; plural трекери, трекерів."
   },
   {
     "term": "trade",

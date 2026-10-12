@@ -1,7 +1,7 @@
 {
   "planned": {
     "budgets": {
-      "backToList": "Назад до бюджетів"
+      "backToList": "Назад до трекерів"
     },
     "subscriptions": {
       "notFound": "Регулярний платіж не знайдено",

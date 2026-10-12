@@ -13,6 +13,7 @@ import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
 import { Router } from 'express';
 
+// `/budgets` serves the user-facing "Trackers"; the "Budget" lives in budget-plans.route.ts.
 const router = Router({});
 
 router.use(authenticateSession);

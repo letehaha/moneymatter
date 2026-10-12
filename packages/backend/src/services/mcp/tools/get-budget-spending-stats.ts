@@ -7,7 +7,7 @@ import { getBudgetSpendingStats } from '@services/budgets/spending-stats';
 import { getUserId, jsonContent } from './helpers';
 
 const inputSchema = {
-  budgetId: recordId().describe('ID of the budget to retrieve spending stats for'),
+  budgetId: recordId().describe('ID of the tracker to retrieve spending stats for'),
 };
 
 export function registerGetBudgetSpendingStats(server: McpServer) {
@@ -15,7 +15,7 @@ export function registerGetBudgetSpendingStats(server: McpServer) {
     'get_budget_spending_stats',
     {
       description:
-        'Get spending statistics for a budget: spending broken down by category and a time-series of expense vs income over the budget period. Granularity is weekly for ranges ≤60 days, monthly otherwise. Amounts are decimals.',
+        'Get spending statistics for a tracker (a "budget" in tool and field names): spending broken down by category and a time-series of expense vs income over the tracker period. Granularity is weekly for ranges ≤60 days, monthly otherwise. Amounts are decimals.',
       inputSchema,
     },
     async (args, extra) => {

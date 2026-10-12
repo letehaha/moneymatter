@@ -114,7 +114,7 @@
       "survivorPending": "Pick the booked transaction as the one to keep. A pending survivor would stay stuck as pending.",
       "survivorNotSelected": "The transaction to keep must be one of the selected transactions.",
       "differentAccounts": "Only transactions from the same account can be merged.",
-      "budgetConflict": "The selected transactions belong to different budgets. Align their budgets before merging.",
+      "budgetConflict": "The selected transactions belong to different trackers. Align their trackers before merging.",
       "groupConflict": "The selected transactions belong to different transaction groups. Align their groups before merging.",
       "subscriptionConflict": "The selected transactions are linked to different subscriptions. Align their subscriptions before merging.",
       "accountDisconnected": "Can't restore: the account is no longer connected to the bank.",
@@ -128,12 +128,12 @@
     }
   },
   "budgets": {
-    "budgetNotFound": "Budget not found",
+    "budgetNotFound": "Tracker not found",
     "someTransactionIdsInvalid": "Some transactions IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added successfully",
-    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based budgets. Transactions are tracked automatically by category.",
+    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based trackers. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
-    "notCategoryBudget": "This endpoint is only available for category-based budgets"
+    "notCategoryBudget": "This endpoint is only available for category-based trackers"
   },
   "budgetPlans": {
     "planNotFound": "Budget plan not found.",

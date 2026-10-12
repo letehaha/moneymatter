@@ -9,24 +9,24 @@ import { z } from 'zod';
 import { getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  name: z.string().describe('Budget name'),
+  name: z.string().describe('Tracker name'),
   status: z
     .enum([BUDGET_STATUSES.active, BUDGET_STATUSES.archived, BUDGET_STATUSES.closed])
     .optional()
-    .describe('Budget status (default: active)'),
+    .describe('Tracker status (default: active)'),
   type: z
     .enum([BUDGET_TYPES.manual, BUDGET_TYPES.category])
     .optional()
     .describe(
-      'Budget type: manual (transactions linked explicitly) or category (auto-tracks by category). Default: manual',
+      'Tracker type: manual (transactions linked explicitly) or category (auto-tracks by category). Default: manual',
     ),
   categoryIds: z.array(recordId()).optional().describe('Category IDs to link (only used when type is "category")'),
-  startDate: z.string().optional().describe('Budget start date (ISO 8601)'),
-  endDate: z.string().optional().describe('Budget end date (ISO 8601)'),
+  startDate: z.string().optional().describe('Tracker start date (ISO 8601)'),
+  endDate: z.string().optional().describe('Tracker end date (ISO 8601)'),
   autoInclude: z
     .boolean()
     .optional()
-    .describe('Auto-include transactions in the date range when creating (manual budgets only)'),
+    .describe('Auto-include transactions in the date range when creating (manual trackers only)'),
   limitAmount: z
     .number()
     .optional()
@@ -38,7 +38,7 @@ export function registerCreateBudget(server: McpServer) {
     'create_budget',
     {
       description:
-        'Create a new budget with an optional spending limit, date range, and linked categories. Returns the created budget with its ID, status, type, and associated categories.',
+        'Create a tracker (a "budget" in tool and field names) with an optional spending limit, date range, and linked categories. It does not create or change the period-based Budget plan. Returns the created tracker with its ID, status, type, and associated categories.',
       inputSchema,
     },
     async (args, extra) => {

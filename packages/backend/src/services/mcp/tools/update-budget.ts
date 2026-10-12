@@ -8,8 +8,8 @@ import { z } from 'zod';
 import { getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  budgetId: recordId().describe('ID of the budget to update'),
-  name: z.string().optional().describe('New budget name'),
+  budgetId: recordId().describe('ID of the tracker to update'),
+  name: z.string().optional().describe('New tracker name'),
   startDate: z.string().optional().describe('New start date (ISO 8601)'),
   endDate: z.string().optional().describe('New end date (ISO 8601)'),
   limitAmount: z
@@ -20,7 +20,7 @@ const inputSchema = {
   categoryIds: z
     .array(recordId())
     .optional()
-    .describe('Replace the linked category IDs (only applies to category-type budgets)'),
+    .describe('Replace the linked category IDs (only applies to category-type trackers)'),
 };
 
 export function registerUpdateBudget(server: McpServer) {
@@ -28,7 +28,7 @@ export function registerUpdateBudget(server: McpServer) {
     'update_budget',
     {
       description:
-        "Update an existing budget's name, date range, spending limit, or linked categories. Returns the updated budget record.",
+        'Update the name, date range, spending limit, or linked categories of an existing tracker (a "budget" in tool and field names). Returns the updated tracker record.',
       inputSchema,
     },
     async (args, extra) => {

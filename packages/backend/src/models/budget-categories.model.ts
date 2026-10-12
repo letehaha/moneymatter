@@ -6,6 +6,7 @@ import Categories from './categories.model';
 
 /**
  * Junction table for many-to-many relationship between Budgets and Categories.
+ * `Budgets` are the user-facing "Trackers"; budget plans use `BudgetLineCategories`.
  *
  * This table allows category-based budgets to track multiple categories, and
  * importantly, allows the SAME category to be tracked by MULTIPLE budgets.

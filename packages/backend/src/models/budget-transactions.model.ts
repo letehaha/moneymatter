@@ -18,6 +18,7 @@ export interface BudgetTransactionMetadata {
   addedByUserId: number;
 }
 
+/** Transactions hand-picked into a `Budgets` row, the user-facing "Tracker". Budget plans link nothing here. */
 @Table({ tableName: 'BudgetTransactions', timestamps: false })
 export default class BudgetTransactions extends Model {
   @ForeignKey(() => Budgets)

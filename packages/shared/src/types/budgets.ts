@@ -2,6 +2,8 @@ import type { EmbeddedCategoryModel } from './categories';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
 
+// Everything in this file belongs to the user-facing "Trackers" (`Budgets` table).
+// The user-facing "Budget" is typed in budget-plans.ts.
 export enum BUDGET_STATUSES {
   active = 'active',
   closed = 'closed',

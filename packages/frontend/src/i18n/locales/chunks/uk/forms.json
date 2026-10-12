@@ -366,12 +366,12 @@
       "blankOption": "Без отримувача"
     },
     "budgetMultiSelect": {
-      "label": "Всі бюджети",
-      "selectedMany": "{n} бюджетів вибрано",
-      "searchPlaceholder": "Пошук бюджетів",
-      "noResults": "Бюджетів не знайдено",
-      "unknownBudget": "Невідомий бюджет",
-      "loadError": "Не вдалося завантажити бюджети. Спробуйте ще раз."
+      "label": "Всі трекери",
+      "selectedMany": "{n} трекерів вибрано",
+      "searchPlaceholder": "Пошук трекерів",
+      "noResults": "Трекерів не знайдено",
+      "unknownBudget": "Невідомий трекер",
+      "loadError": "Не вдалося завантажити трекери. Спробуйте ще раз."
     },
     "payeeSelect": {
       "placeholder": "Виберіть отримувача платежу",

@@ -7,8 +7,8 @@ import { z } from 'zod';
 import { getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  budgetId: recordId().describe('ID of the budget to unlink transactions from'),
-  transactionIds: z.array(recordId()).describe('IDs of the transactions to remove from the budget'),
+  budgetId: recordId().describe('ID of the tracker to unlink transactions from'),
+  transactionIds: z.array(recordId()).describe('IDs of the transactions to remove from the tracker'),
 };
 
 export function registerRemoveTransactionsFromBudget(server: McpServer) {
@@ -16,7 +16,7 @@ export function registerRemoveTransactionsFromBudget(server: McpServer) {
     'remove_transactions_from_budget',
     {
       description:
-        'Unlink one or more transactions from a budget. Does not delete the transactions themselves. Returns nothing on success.',
+        'Unlink one or more transactions from a tracker (a "budget" in tool and field names). Does not delete the transactions themselves. Returns nothing on success.',
       inputSchema,
     },
     async (args, extra) => {

@@ -150,7 +150,7 @@
         "error": "Не вдалося відв'язати транзакції!"
       },
       "record": {
-        "addedByTooltip": "Цю транзакцію додав до бюджету {handle}",
+        "addedByTooltip": "Цю транзакцію додав до трекера {handle}",
         "externalLinkTooltip": "Відкрити зовнішнє посилання",
         "locationTooltip": "Відкрити місце на карті",
         "attachmentsTooltip": "Є вкладення",

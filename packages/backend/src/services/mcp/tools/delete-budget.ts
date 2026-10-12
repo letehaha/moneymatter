@@ -6,7 +6,7 @@ import { deleteBudget } from '@services/budgets/delete-budget';
 import { getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  budgetId: recordId().describe('ID of the budget to delete'),
+  budgetId: recordId().describe('ID of the tracker to delete'),
 };
 
 export function registerDeleteBudget(server: McpServer) {
@@ -14,7 +14,7 @@ export function registerDeleteBudget(server: McpServer) {
     'delete_budget',
     {
       description:
-        'Permanently delete a budget and all its transaction links. This action cannot be undone. Returns { success: true } on completion.',
+        'Permanently delete a tracker (a "budget" in tool and field names) and all its transaction links. This action cannot be undone. Returns { success: true } on completion.',
       inputSchema,
     },
     async (args, extra) => {

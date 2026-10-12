@@ -11,7 +11,7 @@ const inputSchema = {
   status: z
     .enum([BUDGET_STATUSES.active, BUDGET_STATUSES.archived, BUDGET_STATUSES.closed])
     .optional()
-    .describe('Filter by budget status. Default: active'),
+    .describe('Filter by tracker status. Default: active'),
 };
 
 export function registerGetBudgets(server: McpServer) {
@@ -19,7 +19,7 @@ export function registerGetBudgets(server: McpServer) {
     'get_budgets',
     {
       description:
-        'List budgets with their spending limits and associated categories. Filter by status (active, archived, closed). Returns budget name, limit amount, status, date range, and linked categories.',
+        'List trackers: spending watchers over a date range, by linked categories or hand-picked transactions, with an optional limit. The app shows them as "Trackers"; tool and field names call them "budget". They are not the period-based Budget plan (lines, assigned amounts, Ready to Assign), which no tool exposes. Filter by status (active, archived, closed). Returns tracker name, limit amount, status, date range, and linked categories.',
       inputSchema,
     },
     async (args, extra) => {

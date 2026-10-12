@@ -10,6 +10,10 @@ import { Table, Column, Model, ForeignKey, DataType, BelongsToMany } from 'seque
 import BudgetCategories from './budget-categories.model';
 import BudgetTransactions from './budget-transactions.model';
 
+/**
+ * Shown to users as a "Tracker": watches spending over a date range, by linked
+ * categories or hand-picked transactions. The user-facing "Budget" is `BudgetPlans`.
+ */
 @Table({
   timestamps: false,
 })

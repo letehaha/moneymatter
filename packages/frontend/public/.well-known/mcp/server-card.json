@@ -3,7 +3,7 @@
     "name": "MoneyMatter Finance Tracker",
     "version": "1.0.0",
     "title": "MoneyMatter — Personal Finance MCP Server",
-    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), budgets, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances.",
+    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), trackers, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances.",
     "website": "https://moneymatter.app",
     "documentation": "https://moneymatter.app/llms-full.txt",
     "vendor": {
@@ -64,35 +64,35 @@
     },
     {
       "name": "get_budgets",
-      "description": "Retrieve active and historical budgets with progress and overspending details."
+      "description": "Retrieve active and historical trackers (called budgets in tool names) with progress and overspending details."
     },
     {
       "name": "create_budget",
-      "description": "Create a new budget with an optional spending limit, date range, and linked categories."
+      "description": "Create a new tracker with an optional spending limit, date range, and linked categories."
     },
     {
       "name": "update_budget",
-      "description": "Update an existing budget's name, date range, spending limit, or linked categories."
+      "description": "Update an existing tracker's name, date range, spending limit, or linked categories."
     },
     {
       "name": "delete_budget",
-      "description": "Permanently delete a budget and all its transaction links."
+      "description": "Permanently delete a tracker and all its transaction links."
     },
     {
       "name": "archive_budget",
-      "description": "Archive or restore a budget (sets status to archived or active)."
+      "description": "Archive or restore a tracker (sets status to archived or active)."
     },
     {
       "name": "add_transactions_to_budget",
-      "description": "Manually link transactions to a manual-type budget."
+      "description": "Manually link transactions to a manual-type tracker."
     },
     {
       "name": "remove_transactions_from_budget",
-      "description": "Unlink transactions from a budget without deleting them."
+      "description": "Unlink transactions from a tracker without deleting them."
     },
     {
       "name": "get_budget_spending_stats",
-      "description": "Spending breakdown by category and time-series of expense vs income for a budget."
+      "description": "Spending breakdown by category and time-series of expense vs income for a tracker."
     },
     {
       "name": "get_spending_by_categories",

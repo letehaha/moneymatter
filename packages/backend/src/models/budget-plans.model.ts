@@ -15,6 +15,10 @@ import BudgetPeriods from './budget-periods.model';
 import BudgetPlanAccounts from './budget-plan-accounts.model';
 import Users from './users.model';
 
+/**
+ * Shown to users as the "Budget". The `Budgets` table (`budget.model.ts`) is a
+ * different feature, shown as "Trackers".
+ */
 @Table({
   tableName: 'BudgetPlans',
   timestamps: true,

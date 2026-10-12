@@ -366,12 +366,12 @@
       "blankOption": "No payee"
     },
     "budgetMultiSelect": {
-      "label": "All budgets",
-      "selectedMany": "{n} budgets selected",
-      "searchPlaceholder": "Search budgets",
-      "noResults": "No budgets found",
-      "unknownBudget": "Unknown budget",
-      "loadError": "Couldn't load budgets. Please try again."
+      "label": "All trackers",
+      "selectedMany": "{n} trackers selected",
+      "searchPlaceholder": "Search trackers",
+      "noResults": "No trackers found",
+      "unknownBudget": "Unknown tracker",
+      "loadError": "Couldn't load trackers. Please try again."
     },
     "payeeSelect": {
       "placeholder": "Select a payee",

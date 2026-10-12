@@ -185,7 +185,7 @@ export function createMcpServer(): McpServer {
   registerDeletePayee(server);
   registerMergePayees(server);
 
-  // Budgets
+  // Trackers: the tool ids keep the "budget" name
   registerGetBudgets(server);
   registerCreateBudget(server);
   registerUpdateBudget(server);

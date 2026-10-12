@@ -51,7 +51,7 @@ The **Transactions reconciliation** page has three tabs: **Transactions**, **Stu
 When you merge:
 
 - **One transaction stays, the rest are removed.** Removed transactions disappear from your lists and stop counting in your stats. The account's balance still comes from your bank.
-- **Links move to the one you keep.** If a removed transaction was in a budget or a [transaction group](/transactions/groups/), or linked to a subscription, the kept transaction takes that link over. If the kept transaction already belongs to a different budget, group or subscription than a removed one, the merge is refused. Put them in the same one first.
+- **Links move to the one you keep.** If a removed transaction was in a tracker or a [transaction group](/transactions/groups/), or linked to a subscription, the kept transaction takes that link over. If the kept transaction already belongs to a different budget, group or subscription than a removed one, the merge is refused. Put them in the same one first.
 - **Category, payee, note and tags aren't copied.** The kept transaction keeps its own. If the removed one had the better category or note, pick it as the one to keep, or copy the details over before merging.
 
 <Aside type="note" title="Keep the booked one">
@@ -82,7 +82,7 @@ If your selection doesn't qualify, the **Merge** button is disabled. Hover it to
 
 Removed transactions disappear from your lists and stop counting in your stats. The account's balance still comes from your bank. The same rules as for merging apply, except that the transactions can come from different accounts.
 
-Removing also takes a transaction out of any budget, transaction group or subscription it was linked to.
+Removing also takes a transaction out of any tracker, transaction group or subscription it was linked to.
 
 <Aside type="note" title="Removed transactions don't come back on the next sync">
 MoneyMatter remembers what you removed, so your bank syncing the same transaction again doesn't bring it back. Only [restoring it](#restore-from-history) does. The one exception is a pending transaction you removed that your bank later books: it comes back as a booked transaction, because the charge turned out to be real.
@@ -156,7 +156,7 @@ The **History** tab lists every merge and removal, newest first. Each entry show
 Restoring brings back every transaction removed in that entry. They count in your stats again. Keep in mind:
 
 - **A merge is undone only on the removed side.** The kept transaction stays as it is, so you'll see the duplicates again.
-- **Links don't come back.** Budgets, transaction groups and subscriptions that were detached when the transaction was removed have to be set up again.
+- **Links don't come back.** Trackers, transaction groups and subscriptions that were detached when the transaction was removed have to be set up again.
 - **The account must still be connected.** If you've since disconnected the account from the bank, restoring fails with "Can't restore: the account is no longer connected to the bank."
 
 ## Related
