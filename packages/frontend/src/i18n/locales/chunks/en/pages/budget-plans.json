@@ -116,7 +116,16 @@
       "suggestedLinesFailed": "Suggested lines couldn't be added. You can add them from the budget.",
       "error": "Could not create the budget",
       "suggestedLinesLabel": "Smart pre-fill",
-      "suggestedLinesHint": "Turns your last 3 months of spending into named groups and lines, with the average as each amount. With no history, adds a starter set. Takes a few seconds. Change or remove any of them later."
+      "suggestedLinesHint": "Turns your last 3 months of spending into named groups and lines, with the average as each amount. With no history, adds a starter set. Takes a few seconds. Change or remove any of them later.",
+      "customEveryLabel": "Every",
+      "customEveryPlaceholder": "e.g. 10",
+      "customUnitLabel": "Unit",
+      "customUnitPlaceholder": "Select a unit",
+      "customUnits": {
+        "days": "Days",
+        "months": "Months"
+      },
+      "customEveryError": "Enter a whole number from 1 to {max}."
     },
     "cadence": {
       "monthly": "Monthly",
@@ -124,7 +133,8 @@
       "biweekly": "Biweekly",
       "weekly": "Weekly",
       "everyNDays": "Every {n} days",
-      "everyNMonths": "Every {n} months"
+      "everyNMonths": "Every {n} months",
+      "custom": "Custom"
     },
     "carryPolicy": {
       "floor": "Carry surplus",

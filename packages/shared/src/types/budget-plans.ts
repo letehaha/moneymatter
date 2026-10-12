@@ -3,6 +3,7 @@ import { RecordId } from './record-id';
 
 export const BUDGET_PLAN_CADENCES = ['days', 'months', 'semi_monthly'] as const;
 export type BudgetPlanCadence = (typeof BUDGET_PLAN_CADENCES)[number];
+export const BUDGET_PLAN_MAX_INTERVAL_N: Record<BudgetPlanCadence, number> = { days: 366, months: 12, semi_monthly: 1 };
 
 export const BUDGET_PLAN_TRASH_RETENTION_DAYS = 30;
 

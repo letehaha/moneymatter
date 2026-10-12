@@ -1,4 +1,8 @@
-import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BudgetPlanCadence } from '@bt/shared/types/budget-plans';
+import {
+  BUDGET_PLAN_CADENCES,
+  BUDGET_PLAN_CARRY_POLICIES,
+  BUDGET_PLAN_MAX_INTERVAL_N,
+} from '@bt/shared/types/budget-plans';
 import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
@@ -14,11 +18,9 @@ import {
   validateSemiMonthlyDays,
 } from './periods/period-enumerator';
 
-const MAX_INTERVAL_N: Record<BudgetPlanCadence, number> = { days: 366, months: 12, semi_monthly: 1 };
-
 /** "Last day of the month" is `anchorDate.day = 31`; the enumerator clamps it. */
 export const validateCadence = ({ cadence, intervalN, anchorDate, secondAnchorDay }: PeriodCadenceConfig): void => {
-  if (intervalN > MAX_INTERVAL_N[cadence]) {
+  if (intervalN > BUDGET_PLAN_MAX_INTERVAL_N[cadence]) {
     throw new ValidationError({ message: t({ key: 'budgetPlans.intervalOutOfRange' }) });
   }
 

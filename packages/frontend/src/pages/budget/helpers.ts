@@ -3,6 +3,7 @@ import {
   type AccountModel,
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES,
   BUDGET_PLAN_CARRY_POLICIES,
+  BUDGET_PLAN_MAX_INTERVAL_N,
   BUDGET_PLAN_TRASH_RETENTION_DAYS,
   type BudgetAssignmentScope,
   BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES,
@@ -43,8 +44,19 @@ import {
   subDays,
 } from 'date-fns';
 
-export const BUDGET_CADENCE_PRESETS = ['monthly', 'semiMonthly', 'biweekly', 'weekly'] as const;
+export const BUDGET_CADENCE_PRESETS = ['monthly', 'semiMonthly', 'biweekly', 'weekly', 'custom'] as const;
 export type BudgetCadencePreset = (typeof BUDGET_CADENCE_PRESETS)[number];
+
+export const BUDGET_CUSTOM_CADENCE_UNITS = ['days', 'months'] as const satisfies readonly BudgetPlanCadence[];
+export type BudgetCustomCadenceUnit = (typeof BUDGET_CUSTOM_CADENCE_UNITS)[number];
+
+export const isValidCustomInterval = ({
+  unit,
+  every,
+}: {
+  unit: BudgetCustomCadenceUnit;
+  every: number | null;
+}): boolean => every !== null && Number.isInteger(every) && every >= 1 && every <= BUDGET_PLAN_MAX_INTERVAL_N[unit];
 
 const BIWEEKLY_INTERVAL_DAYS = 14;
 const WEEKLY_INTERVAL_DAYS = 7;
@@ -94,6 +106,7 @@ export const formatPeriodShortLabel = ({
 export const buildCreatePlanPayload = ({
   name,
   preset,
+  custom,
   startsOn,
   accountIds,
   carryPolicy,
@@ -101,6 +114,8 @@ export const buildCreatePlanPayload = ({
 }: {
   name: string;
   preset: BudgetCadencePreset;
+  /** Required by the `custom` preset. */
+  custom?: { unit: BudgetCustomCadenceUnit; every: number };
   startsOn: Date;
   accountIds: string[];
   carryPolicy: BudgetPlanCarryPolicy;
@@ -144,6 +159,9 @@ export const buildCreatePlanPayload = ({
         intervalN: WEEKLY_INTERVAL_DAYS,
         anchorDate,
       };
+    case 'custom':
+      if (!custom) throw new Error('The custom cadence preset needs an interval');
+      return { ...base, cadence: custom.unit, intervalN: custom.every, anchorDate };
   }
 };
 

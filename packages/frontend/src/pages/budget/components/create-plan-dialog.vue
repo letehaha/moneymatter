@@ -5,6 +5,7 @@ import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
+import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -19,7 +20,7 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useUserStore } from '@/stores';
-import { type BudgetPlanCarryPolicy } from '@bt/shared/types';
+import { BUDGET_PLAN_MAX_INTERVAL_N, type BudgetPlanCarryPolicy } from '@bt/shared/types';
 import { endOfDay, isAfter, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -28,10 +29,13 @@ import { useRouter } from 'vue-router';
 
 import {
   BUDGET_CADENCE_PRESETS,
+  BUDGET_CUSTOM_CADENCE_UNITS,
   type BudgetCadencePreset,
+  type BudgetCustomCadenceUnit,
   CARRY_POLICY_OPTIONS,
   buildCreatePlanPayload,
   isAttachableAccount,
+  isValidCustomInterval,
   BUDGET_POOL_ENABLED,
 } from '../helpers';
 
@@ -45,6 +49,8 @@ const userStore = useUserStore();
 const { locale } = useDateLocale();
 
 const preset = ref<BudgetCadencePreset>('monthly');
+const customUnit = ref<BudgetCustomCadenceUnit>('days');
+const customEvery = ref<number | null>(null);
 const editedStartsOn = ref<Date>();
 const accountIds = ref<string[]>([]);
 const carryPolicy = ref<BudgetPlanCarryPolicy>('floor');
@@ -54,7 +60,11 @@ const withSuggestedLines = ref(true);
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
   const today = new Date();
-  return preset.value === 'monthly' || preset.value === 'semiMonthly'
+  const isMonthBased =
+    preset.value === 'monthly' ||
+    preset.value === 'semiMonthly' ||
+    (preset.value === 'custom' && customUnit.value === 'months');
+  return isMonthBased
     ? startOfMonth(today)
     : startOfWeek(today, {
         weekStartsOn: locale.value.options?.weekStartsOn ?? 1,
@@ -86,6 +96,24 @@ const presetItems = computed(() =>
   })),
 );
 
+const customUnitOptions = computed(() =>
+  BUDGET_CUSTOM_CADENCE_UNITS.map((value) => ({ value, label: t(`budgetPlans.create.customUnits.${value}`) })),
+);
+
+const setCustomEvery = ({ value }: { value: string | number | null }) => {
+  const parsed = value === null || value === '' ? null : Number(value);
+  customEvery.value = parsed !== null && Number.isFinite(parsed) ? parsed : null;
+};
+
+const isCustomValid = computed(
+  () => preset.value !== 'custom' || isValidCustomInterval({ unit: customUnit.value, every: customEvery.value }),
+);
+const customEveryError = computed(() =>
+  customEvery.value !== null && !isCustomValid.value
+    ? t('budgetPlans.create.customEveryError', { max: BUDGET_PLAN_MAX_INTERVAL_N[customUnit.value] })
+    : undefined,
+);
+
 const { isPending, mutate } = useInvalidatingMutation({
   mutationFn: createBudgetPlan,
   invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
@@ -104,7 +132,11 @@ const { isPending, mutate } = useInvalidatingMutation({
 });
 
 const isSubmitDisabled = computed(
-  () => isPending.value || accountIds.value.length === 0 || isAfter(startsOn.value, endOfDay(new Date())),
+  () =>
+    isPending.value ||
+    accountIds.value.length === 0 ||
+    !isCustomValid.value ||
+    isAfter(startsOn.value, endOfDay(new Date())),
 );
 
 const submit = () => {
@@ -115,6 +147,7 @@ const submit = () => {
         ...buildCreatePlanPayload({
           name: t('budgetPlans.defaultName'),
           preset: preset.value,
+          custom: customEvery.value === null ? undefined : { unit: customUnit.value, every: customEvery.value },
           startsOn: startsOn.value,
           accountIds: accountIds.value,
           carryPolicy: carryPolicy.value,
@@ -157,6 +190,26 @@ const submit = () => {
           :model-value="preset"
           :items="presetItems"
           @update:model-value="(value) => (preset = value as BudgetCadencePreset)"
+        />
+      </div>
+
+      <div v-if="preset === 'custom'" class="grid grid-cols-2 gap-3">
+        <InputField
+          type="number"
+          :model-value="customEvery"
+          :label="$t('budgetPlans.create.customEveryLabel')"
+          :placeholder="$t('budgetPlans.create.customEveryPlaceholder')"
+          :error-message="customEveryError"
+          @update:model-value="setCustomEvery({ value: $event })"
+        />
+        <SelectField
+          :model-value="customUnitOptions.find((option) => option.value === customUnit) ?? null"
+          :values="customUnitOptions"
+          label-key="label"
+          value-key="value"
+          :label="$t('budgetPlans.create.customUnitLabel')"
+          :placeholder="$t('budgetPlans.create.customUnitPlaceholder')"
+          @update:model-value="(option) => option && (customUnit = option.value)"
         />
       </div>
 

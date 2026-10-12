@@ -34,6 +34,7 @@ import {
   headerStats,
   isAttachableAccount,
   isPastPeriod,
+  isValidCustomInterval,
   layoutStateFrom,
   lineBarsOf,
   lineIdsWithHistory,
@@ -92,6 +93,7 @@ describe('formatPeriodShortLabel', () => {
 });
 
 describe('buildCreatePlanPayload', () => {
+  const custom = { unit: 'days' as const, every: 10 };
   const base = { name: 'Budget', accountIds: ['acc-1'], carryPolicy: 'floor' as const, withSuggestedLines: true };
 
   beforeEach(() => {
@@ -153,6 +155,24 @@ describe('buildCreatePlanPayload', () => {
     ).toMatchObject({ withSuggestedLines: false });
   });
 
+  it('maps custom to the picked unit and interval', () => {
+    expect(buildCreatePlanPayload({ ...base, custom, preset: 'custom', startsOn: new Date(2026, 8, 5) })).toMatchObject(
+      {
+        cadence: 'days',
+        intervalN: 10,
+        anchorDate: '2026-09-05',
+      },
+    );
+    expect(
+      buildCreatePlanPayload({
+        ...base,
+        custom: { unit: 'months', every: 3 },
+        preset: 'custom',
+        startsOn: new Date(2026, 8, 5),
+      }),
+    ).toMatchObject({ cadence: 'months', intervalN: 3 });
+  });
+
   it('maps biweekly and weekly to day cadences', () => {
     expect(buildCreatePlanPayload({ ...base, preset: 'biweekly', startsOn: new Date(2026, 8, 5) })).toMatchObject({
       cadence: 'days',
@@ -209,6 +229,18 @@ describe('trashedPlansOf', () => {
 
   it('returns nothing when no plan is deleted', () => {
     expect(trashedPlansOf({ plans: [{ id: 'active', deletedAt: null }] as BudgetPlanModel[] })).toEqual([]);
+  });
+});
+
+describe('isValidCustomInterval', () => {
+  it('accepts only whole intervals within the cadence limit', () => {
+    expect(isValidCustomInterval({ unit: 'days', every: 366 })).toBe(true);
+    expect(isValidCustomInterval({ unit: 'days', every: 367 })).toBe(false);
+    expect(isValidCustomInterval({ unit: 'months', every: 12 })).toBe(true);
+    expect(isValidCustomInterval({ unit: 'months', every: 13 })).toBe(false);
+    expect(isValidCustomInterval({ unit: 'days', every: 0 })).toBe(false);
+    expect(isValidCustomInterval({ unit: 'days', every: 1.5 })).toBe(false);
+    expect(isValidCustomInterval({ unit: 'days', every: null })).toBe(false);
   });
 });
 
