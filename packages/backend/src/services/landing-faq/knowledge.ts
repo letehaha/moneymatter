@@ -210,7 +210,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 ## Compared with other apps
 
-- Monarch, Copilot and similar: $70-200/year, closed source, US/CA bank aggregators only,
+- Monarch, Copilot and similar: about $100-200/year, closed source, US/CA bank aggregators only,
   balances-only investments, USD/CAD only.
 - YNAB: $109/year, closed source, US/CA plus limited EU bank sync, one currency per budget.
 - MoneyMatter: from $30/year, open source and self-hostable, bank sync in 30+ countries,
