@@ -150,4 +150,46 @@ describe('sanitizeLayout', () => {
 
     expect(layout.groups[0]!.lines).toHaveLength(MAX_AI_LINES);
   });
+
+  it('caps the lines at `maxLines` when given', () => {
+    const layout = sanitizeLayout({
+      byId,
+      candidates,
+      maxLines: 1,
+      layout: {
+        groups: [
+          {
+            name: 'All',
+            lines: [
+              { name: 'Rent', categoryIds: ['rent'] },
+              { name: 'Food', categoryIds: ['food'] },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(layout.groups[0]!.lines).toEqual([{ name: 'Rent', categoryIds: ['rent'] }]);
+  });
+
+  it('keeps a zero-spend line without `requireSpend`, but never an empty one', () => {
+    const layout = sanitizeLayout({
+      byId,
+      candidates,
+      requireSpend: false,
+      layout: {
+        groups: [
+          {
+            name: 'Everyday',
+            lines: [
+              { name: 'Car', categoryIds: ['fuel'] },
+              { name: 'Nothing', categoryIds: ['bogus'] },
+            ],
+          },
+        ],
+      },
+    });
+
+    expect(layout).toEqual({ groups: [{ name: 'Everyday', lines: [{ name: 'Car', categoryIds: ['fuel'] }] }] });
+  });
 });

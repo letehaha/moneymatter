@@ -2,6 +2,7 @@ import { RecordId } from '@bt/shared/types';
 import {
   BudgetPlanCadence,
   BudgetPlanCarryPolicy,
+  BudgetSuggestionAnswers,
   CreateBudgetPlanResponse,
   BudgetPlanTypeKey,
 } from '@bt/shared/types/budget-plans';
@@ -66,6 +67,7 @@ interface CreatePlanParams {
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
   withSuggestedLines?: boolean;
+  suggestionAnswers?: BudgetSuggestionAnswers;
 }
 
 const createPlanImpl = async ({
@@ -81,7 +83,7 @@ const createPlanImpl = async ({
   autoAttachAccounts = false,
   carryPolicy = 'none',
   poolEnabled = false,
-}: Omit<CreatePlanParams, 'withSuggestedLines'>): Promise<BudgetPlans> => {
+}: Omit<CreatePlanParams, 'withSuggestedLines' | 'suggestionAnswers'>): Promise<BudgetPlans> => {
   const cadenceConfig: PeriodCadenceConfig = { cadence, intervalN, anchorDate, secondAnchorDay };
   validateCadence(cadenceConfig);
 
@@ -128,20 +130,24 @@ const createPlanRow = withTransaction(createPlanImpl);
 /** Suggestions run after the plan commits: they may wait on a model, and a failure leaves a usable empty plan. */
 export const createPlan = async ({
   withSuggestedLines = false,
+  suggestionAnswers,
   ...params
 }: CreatePlanParams): Promise<CreateBudgetPlanResponse> => {
   const { id: planId, userId } = await createPlanRow(params);
 
-  const suggestedLinesFailed =
-    withSuggestedLines &&
-    (await addSuggestedLines({ userId, planId }).then(
-      () => false,
-      (error: unknown) => {
-        logger.error('[Budget plans] Suggested lines failed for a new plan', { userId, planId, error: error as Error });
-        return true;
-      },
-    ));
+  const outcome = withSuggestedLines
+    ? await addSuggestedLines({ userId, planId, answers: suggestionAnswers }).then(
+        ({ answersIgnored }) => (answersIgnored ? { suggestionAnswersIgnored: true } : {}),
+        (error: unknown) => {
+          logger.error('[Budget plans] Suggested lines failed for a new plan', {
+            userId,
+            planId,
+            error: error as Error,
+          });
+          return { suggestedLinesFailed: true };
+        },
+      )
+    : {};
 
-  const details = await getPlan({ userId, planId });
-  return suggestedLinesFailed ? { ...details, suggestedLinesFailed } : details;
+  return { ...(await getPlan({ userId, planId })), ...outcome };
 };

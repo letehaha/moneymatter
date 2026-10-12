@@ -3,6 +3,7 @@ import { addSuggestedBudgetLines, archiveBudgetPlanLine, deleteBudgetLineGroup }
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
+import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import ResponsiveMenu from '@/components/common/responsive-menu.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
@@ -17,6 +18,7 @@ import type {
   BudgetPlanLineGroup,
   BudgetPlanPeriodView,
   BudgetPlanPeriodViewLine,
+  BudgetSuggestionAnswers,
 } from '@bt/shared/types';
 import {
   ArchiveIcon,
@@ -58,6 +60,7 @@ import GoalEditorDialog from './goal-editor-dialog.vue';
 import GoalPeekPopover from './goal-peek-popover.vue';
 import GroupNameDialog from './group-name-dialog.vue';
 import LineActionsMenu from './line-actions-menu.vue';
+import SuggestionWizard from './suggestion-wizard.vue';
 
 type GoalDisplay = ReturnType<typeof goalStatusDisplay> & {
   caption: ReturnType<typeof goalCaption>;
@@ -65,6 +68,7 @@ type GoalDisplay = ReturnType<typeof goalStatusDisplay> & {
 
 const props = defineProps<{
   planId: string;
+  accountIds: string[];
   view: BudgetPlanPeriodView;
   archivedLines: BudgetPlanLineEntry[];
   historyLineIds: Set<string>;
@@ -278,15 +282,19 @@ const { isPending: isAddingSuggested, mutate: addSuggested } = useInvalidatingMu
   errorKey: 'budgetPlans.line.error',
 });
 
-const addSuggestedLines = () => {
+const isSuggestOpen = ref(false);
+
+const addSuggestedLines = ({ answers }: { answers?: BudgetSuggestionAnswers }) => {
   if (isAddingSuggested.value) return;
   addSuggested(
-    { planId: props.planId },
+    { planId: props.planId, answers },
     {
-      onSuccess: ({ created }) =>
-        created
-          ? addSuccessNotification(t('budgetPlans.grid.suggestedAdded', created))
-          : addInfoNotification(t('budgetPlans.grid.noSuggestions')),
+      onSuccess: ({ created, answersIgnored }) => {
+        isSuggestOpen.value = false;
+        if (answersIgnored) addInfoNotification(t('budgetPlans.suggest.answersIgnored'));
+        if (created) addSuccessNotification(t('budgetPlans.grid.suggestedAdded', created));
+        else addInfoNotification(t('budgetPlans.grid.noSuggestions'));
+      },
     },
   );
 };
@@ -678,7 +686,7 @@ const archiveSelected = () => {
         v-if="view.period.isCurrent"
         variant="soft-primary"
         :disabled="isAddingSuggested"
-        @click="addSuggestedLines"
+        @click="isSuggestOpen = true"
       >
         <SparklesIcon class="size-4" />
         {{ $t('budgetPlans.grid.addSuggested') }}
@@ -693,7 +701,7 @@ const archiveSelected = () => {
           :class="
             cn(
               GRID_ROW_CLASS,
-              'text-muted-foreground bg-card border-border sticky top-[calc(var(--header-height)+2.75rem+var(--strip-h,0px))] z-10 -mb-px border-b py-2 text-[11px] font-medium tracking-wide uppercase',
+              'text-muted-foreground bg-card border-border sticky top-[calc(var(--header-height)+2.75rem+var(--strip-h,0))] z-10 -mb-px border-b py-2 text-[11px] font-medium tracking-wide uppercase',
             )
           "
         >
@@ -713,7 +721,7 @@ const archiveSelected = () => {
 
         <div
           v-if="selectedIds.length > 1"
-          class="sticky top-[calc(var(--header-height)+5.75rem+var(--strip-h,0px))] z-[var(--z-over-default)] h-0"
+          class="sticky top-[calc(var(--header-height)+5.75rem+var(--strip-h,0))] z-(--z-over-default) h-0"
         >
           <div
             class="border-border bg-popover text-popover-foreground absolute top-1 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-lg border py-0.5 pr-1 pl-3 text-xs font-medium shadow-md"
@@ -895,6 +903,18 @@ const archiveSelected = () => {
         </div>
       </div>
     </template>
+
+    <ResponsiveDialog v-model:open="isSuggestOpen">
+      <template #title>{{ $t('budgetPlans.suggest.title') }}</template>
+      <SuggestionWizard
+        v-if="isSuggestOpen"
+        :account-ids="accountIds"
+        :submit-label="$t('budgetPlans.grid.addSuggested')"
+        :is-submitting="isAddingSuggested"
+        @back="isSuggestOpen = false"
+        @submit="(answers) => addSuggestedLines({ answers })"
+      />
+    </ResponsiveDialog>
 
     <ResponsiveAlertDialog
       v-model:open="isArchiveOpen"

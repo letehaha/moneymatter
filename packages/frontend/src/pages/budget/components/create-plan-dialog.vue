@@ -13,14 +13,14 @@ import { Callout } from '@/components/lib/ui/callout';
 import { Label } from '@/components/lib/ui/label';
 import { useNotificationCenter } from '@/components/notification-center';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
-import { InfoIcon } from '@lucide/vue';
+import { ArrowRightIcon, InfoIcon } from '@lucide/vue';
 import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useUserStore } from '@/stores';
-import { BUDGET_PLAN_MAX_INTERVAL_N, type BudgetPlanCarryPolicy } from '@bt/shared/types';
+import { BUDGET_PLAN_MAX_INTERVAL_N, type BudgetPlanCarryPolicy, type BudgetSuggestionAnswers } from '@bt/shared/types';
 import { endOfDay, isAfter, isSameDay, startOfMonth, startOfWeek } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -38,11 +38,12 @@ import {
   isValidCustomInterval,
   BUDGET_POOL_ENABLED,
 } from '../helpers';
+import SuggestionWizard from './suggestion-wizard.vue';
 
 const isOpen = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
-const { addWarningNotification } = useNotificationCenter();
+const { addInfoNotification, addWarningNotification } = useNotificationCenter();
 const router = useRouter();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(useAccountsStore());
 const userStore = useUserStore();
@@ -56,6 +57,9 @@ const accountIds = ref<string[]>([]);
 const carryPolicy = ref<BudgetPlanCarryPolicy>('floor');
 const poolEnabled = ref(false);
 const withSuggestedLines = ref(true);
+const askQuestions = ref(true);
+const isAskingQuestions = ref(false);
+const opensQuestions = computed(() => withSuggestedLines.value && askQuestions.value);
 
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
@@ -85,7 +89,10 @@ const hasNoEligibleAccounts = computed(
 
 watch([isOpen, isAccountsFetched], ([open], [wasOpen]) => {
   if (!open) return;
-  if (!wasOpen) editedStartsOn.value = undefined;
+  if (!wasOpen) {
+    editedStartsOn.value = undefined;
+    isAskingQuestions.value = false;
+  }
   accountIds.value = eligibleAccountIds.value;
 });
 
@@ -139,7 +146,7 @@ const isSubmitDisabled = computed(
     isAfter(startsOn.value, endOfDay(new Date())),
 );
 
-const submit = () => {
+const create = ({ answers }: { answers?: BudgetSuggestionAnswers } = {}) => {
   if (isSubmitDisabled.value) return;
   mutate(
     {
@@ -154,11 +161,13 @@ const submit = () => {
           withSuggestedLines: withSuggestedLines.value,
         }),
         poolEnabled: poolEnabled.value,
+        suggestionAnswers: answers,
       },
     },
     {
-      onSuccess: ({ plan, suggestedLinesFailed }) => {
+      onSuccess: ({ plan, suggestedLinesFailed, suggestionAnswersIgnored }) => {
         if (suggestedLinesFailed) addWarningNotification(t('budgetPlans.create.suggestedLinesFailed'));
+        if (suggestionAnswersIgnored) addInfoNotification(t('budgetPlans.suggest.answersIgnored'));
         router.replace({
           name: ROUTES_NAMES.budgetPlan,
           params: { planId: plan.id },
@@ -167,12 +176,20 @@ const submit = () => {
     },
   );
 };
+
+const submit = () => {
+  if (isSubmitDisabled.value) return;
+  if (opensQuestions.value) isAskingQuestions.value = true;
+  else create();
+};
 </script>
 
 <template>
   <ResponsiveDialog v-model:open="isOpen">
-    <template #title>{{ $t('budgetPlans.create.title') }}</template>
-    <template #description>{{ $t('budgetPlans.create.description') }}</template>
+    <template #title>
+      {{ $t(isAskingQuestions ? 'budgetPlans.suggest.title' : 'budgetPlans.create.title') }}
+    </template>
+    <template v-if="!isAskingQuestions" #description>{{ $t('budgetPlans.create.description') }}</template>
 
     <Callout v-if="hasNoEligibleAccounts" variant="info" :title="$t('budgetPlans.create.noAccountsTitle')">
       <p>{{ $t('budgetPlans.create.noAccountsDescription') }}</p>
@@ -182,6 +199,15 @@ const submit = () => {
         </RouterLink>
       </Button>
     </Callout>
+
+    <SuggestionWizard
+      v-else-if="isAskingQuestions"
+      :account-ids="accountIds"
+      :submit-label="$t('budgetPlans.create.submit')"
+      :is-submitting="isPending"
+      @back="isAskingQuestions = false"
+      @submit="(answers) => create({ answers })"
+    />
 
     <form v-else class="grid gap-4" @submit.prevent="submit">
       <div class="grid gap-2">
@@ -266,8 +292,24 @@ const submit = () => {
         <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
       </div>
 
+      <div v-if="withSuggestedLines" class="grid gap-1">
+        <div class="flex items-center justify-between gap-3">
+          <Label for="budget-create-questions" class="cursor-pointer text-sm font-normal">
+            {{ $t('budgetPlans.create.askQuestionsLabel') }}
+          </Label>
+          <Switch id="budget-create-questions" v-model="askQuestions" />
+        </div>
+        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.create.askQuestionsHint') }}</p>
+      </div>
+
       <Button type="submit" :disabled="isSubmitDisabled">
-        {{ $t(isPending && withSuggestedLines ? 'budgetPlans.create.building' : 'budgetPlans.create.submit') }}
+        <template v-if="opensQuestions">
+          {{ $t('budgetPlans.suggest.next') }}
+          <ArrowRightIcon class="size-4" />
+        </template>
+        <template v-else>
+          {{ $t(isPending && withSuggestedLines ? 'budgetPlans.create.building' : 'budgetPlans.create.submit') }}
+        </template>
       </Button>
     </form>
   </ResponsiveDialog>

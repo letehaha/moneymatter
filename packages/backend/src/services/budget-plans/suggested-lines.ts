@@ -1,5 +1,10 @@
 import { RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
-import { AddSuggestedBudgetLinesResponse, BudgetPlanCadence } from '@bt/shared/types/budget-plans';
+import {
+  AddSuggestedBudgetLinesResponse,
+  BudgetPlanCadence,
+  BudgetSuggestionAnswers,
+  BudgetSuggestionContext,
+} from '@bt/shared/types/budget-plans';
 import { requestContext } from '@common/request-context';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
@@ -25,11 +30,12 @@ import { findPlan } from './find-plan';
 import { createGroup } from './line-groups';
 import { ensureCurrentPeriods } from './periods/ensure-periods';
 import { currentPeriodStart } from './periods/period-enumerator';
-import { type LineCandidate, organizeLinesWithAi } from './suggested-lines-ai';
+import { type LineCandidate, hasGuidance, maxLinesFor, organizeLinesWithAi } from './suggested-lines-ai';
 import { ownedCategoryIds } from './validate-line-categories';
 
 const MAX_LINES = 8;
 const HISTORY_MONTHS = 3;
+const FOCUS_OPTIONS = 6;
 const ROUND_UP_TO_CENTS = 1000;
 
 const GROUPS = ['bills', 'everyday', 'life'] as const;
@@ -60,6 +66,38 @@ const STARTER_TEMPLATE: { parentKey: string | null; key: string; group: Suggeste
   { parentKey: 'shopping', key: 'free-time', group: 'life' },
 ];
 
+/** Offered as the "what else do you spend on" choices when there is no history to rank by. */
+const STARTER_FOCUS: { parentKey: string; key: string }[] = [
+  { parentKey: 'shopping', key: 'kids' },
+  { parentKey: 'life', key: 'active-sport-fitness' },
+  { parentKey: 'life', key: 'holiday-trips-hotels' },
+  { parentKey: 'life', key: 'hobbies' },
+  { parentKey: 'shopping', key: 'gifts-joy' },
+  { parentKey: 'life', key: 'education-development' },
+];
+
+const loadCategories = async ({ userId }: { userId: number }) => {
+  const categories = await Categories.findAll({ where: { userId }, attributes: ['id', 'parentId', 'key', 'name'] });
+  return { categories, byId: new Map<string, Categories>(categories.map((category) => [category.id, category])) };
+};
+
+const findByKey = ({
+  categories,
+  byId,
+  parentKey,
+  key,
+}: {
+  categories: Categories[];
+  byId: Map<string, Categories>;
+  parentKey: string | null;
+  key: string;
+}) =>
+  categories.find(
+    (entry) =>
+      entry.key === key &&
+      (parentKey === null ? entry.parentId === null : byId.get(entry.parentId ?? '')?.key === parentKey),
+  );
+
 interface Suggestion {
   category: Categories;
   group: SuggestedGroup | null;
@@ -68,10 +106,15 @@ interface Suggestion {
 }
 
 /** Expense cents per exact category over the full calendar months before the current one (UTC). */
-const historySpend = async ({ plan, categories }: { plan: BudgetPlans; categories: Categories[] }) => {
-  const accountIds = (await BudgetPlanAccounts.findAll({ where: { planId: plan.id }, attributes: ['accountId'] })).map(
-    (row) => row.accountId,
-  );
+const historySpend = async ({
+  userId,
+  accountIds,
+  categories,
+}: {
+  userId: number;
+  accountIds: RecordId[];
+  categories: Categories[];
+}) => {
   // An empty `accountIds` would widen the stats scope to every account.
   if (!accountIds.length) return {};
 
@@ -80,7 +123,7 @@ const historySpend = async ({ plan, categories }: { plan: BudgetPlans; categorie
   const month = now.getUTCMonth();
 
   return getSpendingsByCategories({
-    userId: plan.userId,
+    userId,
     from: toUtcDateString(new Date(Date.UTC(year, month - HISTORY_MONTHS, 1))),
     to: toUtcDateString(new Date(Date.UTC(year, month, 0))),
     accountIds,
@@ -153,10 +196,12 @@ const rulesPicks = ({
   rootKeyOf,
   take,
   overlaps,
+  maxLines,
 }: {
   categories: Categories[];
   byId: Map<string, Categories>;
   spend: Awaited<ReturnType<typeof historySpend>>;
+  maxLines: number;
   rootKeyOf: (params: { categoryId: string }) => string;
   take: (params: { categoryId: string }) => void;
   overlaps: (params: { categoryId: string }) => boolean;
@@ -170,17 +215,13 @@ const rulesPicks = ({
     .toSorted((a, b) => b.totalCents - a.totalCents);
 
   const template: Suggestion[] = STARTER_TEMPLATE.flatMap(({ parentKey, key, group }) => {
-    const category = categories.find(
-      (entry) =>
-        entry.key === key &&
-        (parentKey === null ? entry.parentId === null : byId.get(entry.parentId ?? '')?.key === parentKey),
-    );
+    const category = findByKey({ categories, byId, parentKey, key });
     return category ? [{ category, group, totalCents: 0 }] : [];
   });
 
   const picks: Suggestion[] = [];
   for (const suggestion of history.length ? history : template) {
-    if (picks.length === MAX_LINES) break;
+    if (picks.length === maxLines) break;
     if (overlaps({ categoryId: suggestion.category.id })) continue;
 
     take({ categoryId: suggestion.category.id });
@@ -191,6 +232,23 @@ const rulesPicks = ({
   return picks.toSorted((a, b) => rank(a) - rank(b));
 };
 
+/** A line covers its categories' whole subtrees; the expansion dedupes a parent listed with its child. */
+const subtreeSpendCents = ({
+  categoryIds,
+  categories,
+  byId,
+  spend,
+}: {
+  categoryIds: string[];
+  categories: Categories[];
+  byId: Map<string, Categories>;
+  spend: Awaited<ReturnType<typeof historySpend>>;
+}) =>
+  expandCategoryIdsWithDescendants({ categoryIds, categories, byId }).reduce(
+    (sum, id) => sum + Math.max(spend[id]?.amount ?? 0, 0),
+    0,
+  );
+
 const categoryPath = ({ category, byId }: { category: Categories; byId: Map<string, Categories> }): string =>
   [...getAncestorIds({ categoryId: category.id, byId }).toReversed(), category.id]
     .map((id) => byId.get(id)!.name)
@@ -198,23 +256,25 @@ const categoryPath = ({ category, byId }: { category: Categories; byId: Map<stri
 
 /**
  * Lines for the plan's spending categories, arranged by a model when one is
- * available and by spend rank otherwise, or a starter set when there is no
- * spending history. Categories another line already covers, directly or
- * through an ancestor or descendant, are skipped. The model call runs before
- * the plan lock is taken; `createLine` rechecks overlaps under it.
+ * available and has spending or the user's answers to go on, and by spend rank
+ * or a fixed starter set otherwise; the fallback honours only the answers'
+ * detail level. Categories another line already covers, directly or through an
+ * ancestor or descendant, are skipped. The model call runs before the plan lock
+ * is taken; `createLine` rechecks overlaps under it.
  */
 export const addSuggestedLines = async ({
   userId,
   planId,
+  answers = {},
 }: {
   userId: number;
   planId: RecordId;
+  answers?: BudgetSuggestionAnswers;
 }): Promise<AddSuggestedBudgetLinesResponse> => {
   const plan = await findPlan({ planId, userId });
   const currentStart = currentPeriodStart({ plan });
 
-  const categories = await Categories.findAll({ where: { userId }, attributes: ['id', 'parentId', 'key', 'name'] });
-  const byId = new Map<string, Categories>(categories.map((category) => [category.id, category]));
+  const { categories, byId } = await loadCategories({ userId });
   const rootKeyOf = ({ categoryId }: { categoryId: string }) =>
     byId.get(getRootCategoryId({ categoryId, byId }))!.key ?? '';
 
@@ -223,13 +283,12 @@ export const addSuggestedLines = async ({
     take({ categoryId });
   }
 
-  const spend = await historySpend({ plan, categories });
-  // A line covers its categories' whole subtrees; the expansion dedupes a parent listed with its child.
+  const accountIds = (await BudgetPlanAccounts.findAll({ where: { planId: plan.id }, attributes: ['accountId'] })).map(
+    (row) => row.accountId,
+  );
+  const spend = await historySpend({ userId, accountIds, categories });
   const subtreeCents = ({ categoryIds }: { categoryIds: string[] }) =>
-    expandCategoryIdsWithDescendants({ categoryIds, categories, byId }).reduce(
-      (sum, id) => sum + Math.max(spend[id]?.amount ?? 0, 0),
-      0,
-    );
+    subtreeSpendCents({ categoryIds, categories, byId, spend });
 
   const candidates = categories.flatMap((category): LineCandidate[] =>
     EXCLUDED_ROOT_KEYS.has(rootKeyOf({ categoryId: category.id })) || overlaps({ categoryId: category.id })
@@ -244,9 +303,14 @@ export const addSuggestedLines = async ({
   );
 
   const locale = requestContext.getLocale();
-  const ai = candidates.some((candidate) => candidate.totalCents > 0)
-    ? await organizeLinesWithAi({ userId, candidates, byId, locale, currencyCode: plan.currencyCode })
-    : null;
+  const ai = await organizeLinesWithAi({
+    userId,
+    candidates,
+    byId,
+    locale,
+    currencyCode: plan.currencyCode,
+    answers,
+  });
 
   const toDraft = ({ groupName, name, categoryIds }: Omit<LineDraft, 'baselineCents'>): LineDraft => ({
     groupName,
@@ -257,7 +321,15 @@ export const addSuggestedLines = async ({
 
   const drafts = ai
     ? ai.layout.groups.flatMap((group) => group.lines.map((line) => toDraft({ groupName: group.name, ...line })))
-    : rulesPicks({ categories, byId, spend, rootKeyOf, take, overlaps }).map(({ category, group }) =>
+    : rulesPicks({
+        categories,
+        byId,
+        spend,
+        rootKeyOf,
+        take,
+        overlaps,
+        maxLines: maxLinesFor({ detail: answers.detail, fallback: MAX_LINES }),
+      }).map(({ category, group }) =>
         toDraft({
           groupName: group && t({ key: `budgetPlans.suggestedGroups.${group}`, locale }),
           name: category.name,
@@ -278,5 +350,45 @@ export const addSuggestedLines = async ({
       groups: new Set(drafts.flatMap(({ groupName }) => (groupName ? [groupName] : []))).size,
     },
   });
-  return { created: drafts.length };
+  return { created: drafts.length, ...(!ai && hasGuidance({ answers }) && { answersIgnored: true }) };
+};
+
+/**
+ * What the setup questions need before a plan exists: whether the accounts have spending
+ * to build on, and the categories to offer as focus choices.
+ */
+export const getSuggestionContext = async ({
+  userId,
+  accountIds,
+}: {
+  userId: number;
+  accountIds: RecordId[];
+}): Promise<BudgetSuggestionContext> => {
+  const { categories, byId } = await loadCategories({ userId });
+  const spend = await historySpend({ userId, accountIds, categories });
+
+  const topRoots = categories
+    .filter((category) => category.parentId === null && !EXCLUDED_ROOT_KEYS.has(category.key ?? ''))
+    .map(({ id }) => ({ id, totalCents: subtreeSpendCents({ categoryIds: [id], categories, byId, spend }) }))
+    .filter(({ totalCents }) => totalCents > 0)
+    .toSorted((a, b) => b.totalCents - a.totalCents)
+    .slice(0, FOCUS_OPTIONS);
+
+  if (topRoots.length) {
+    return {
+      hasHistory: true,
+      categories: topRoots.map(({ id, totalCents }) => ({
+        id,
+        monthlyAvg: Money.fromCents(Math.round(totalCents / HISTORY_MONTHS)).toNumber(),
+      })),
+    };
+  }
+
+  return {
+    hasHistory: false,
+    categories: STARTER_FOCUS.flatMap(({ parentKey, key }) => {
+      const category = findByKey({ categories, byId, parentKey, key });
+      return category ? [{ id: category.id, monthlyAvg: null }] : [];
+    }),
+  };
 };

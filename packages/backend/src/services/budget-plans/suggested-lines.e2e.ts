@@ -16,6 +16,8 @@ import { HttpResponse, http } from 'msw';
 
 import { MS_PER_DAY } from './periods/period-enumerator';
 
+const SOME_ID = generateRandomRecordId();
+
 const TEMPLATE = [
   { parentKey: 'housing', key: 'rent', group: 'Bills' },
   { parentKey: 'housing', key: 'energy-utilities', group: 'Bills' },
@@ -115,19 +117,48 @@ const seedHistory = async () => {
   return { attached, rent, groceries, restaurant, hobby };
 };
 
+const MANY_CATEGORIES = [
+  { parentKey: 'housing', key: 'rent' },
+  { parentKey: 'housing', key: 'energy-utilities' },
+  { parentKey: 'communication', key: 'phone-cell-phone' },
+  { parentKey: 'food', key: 'groceries' },
+  { parentKey: 'food', key: 'restaurant' },
+  { parentKey: 'life', key: 'health-care-doctor' },
+  { parentKey: 'life', key: 'hobbies' },
+  { parentKey: 'shopping', key: 'free-time' },
+  { parentKey: 'shopping', key: 'kids' },
+  { parentKey: 'vehicle', key: 'fuel' },
+];
+
+/** One expense last month on each of ten categories: more than the default line caps hold. */
+const seedManyCategories = async () => {
+  const all = await helpers.getCategoriesList();
+  const account = await helpers.createAccount({ raw: true });
+  const categories = MANY_CATEGORIES.map((entry) => findCategory({ categories: all, ...entry }));
+  for (const category of categories) {
+    await createTx({ accountId: account.id, categoryId: category.id, amount: 100, monthsAgo: 1 });
+  }
+  return { account, categories };
+};
+
 interface LayoutByName {
   groups: { name: string; lines: { name: string; categories: string[] }[] }[];
 }
 
 /**
  * Answers with the layout, swapping each category name for the `c<n>` alias the prompt gave it;
- * an unknown name is sent as is. Returns the category paths each request listed.
+ * an unknown name is sent as is. Returns the category paths each request listed, and
+ * collects each request's system prompt into `systemPrompts`.
  */
-const mockLayout = ({ layout }: { layout: LayoutByName }) => {
+const mockLayout = ({ layout, systemPrompts = [] }: { layout: LayoutByName; systemPrompts?: string[] }) => {
   const requests: string[][] = [];
   global.mswMockServer.use(
     http.post(GEMINI_API_URL, async ({ request }) => {
-      const body = (await request.json()) as { contents: { parts: { text: string }[] }[] };
+      const body = (await request.json()) as {
+        contents: { parts: { text: string }[] }[];
+        systemInstruction?: { parts: { text: string }[] };
+      };
+      systemPrompts.push((body.systemInstruction?.parts ?? []).map((part) => part.text).join('\n'));
       const rows = body.contents
         .flatMap((content) => content.parts)
         .flatMap((part) => part.text.split('\n'))
@@ -376,6 +407,233 @@ describe('Suggested budget lines', () => {
     });
   });
 
+  describe('GET /budget-plans/suggestion-context', () => {
+    it('ranks the top-level categories with spending by monthly average', async () => {
+      const { attached, rent, groceries, hobby } = await seedHistory();
+
+      const context = await helpers.getBudgetSuggestionContext({ accountIds: attached.id, raw: true });
+
+      expect(context).toEqual({
+        hasHistory: true,
+        categories: [
+          { id: groceries.parentId, monthlyAvg: 350 },
+          { id: rent.parentId, monthlyAvg: 333.33 },
+          { id: hobby.id, monthlyAvg: 8.33 },
+        ],
+      });
+    });
+
+    it('offers the starter choices when the accounts have no spending', async () => {
+      const categories = await helpers.getCategoriesList();
+      const account = await helpers.createAccount({ raw: true });
+
+      const context = await helpers.getBudgetSuggestionContext({ accountIds: account.id, raw: true });
+
+      expect(context).toEqual({
+        hasHistory: false,
+        categories: [
+          { parentKey: 'shopping', key: 'kids' },
+          { parentKey: 'life', key: 'active-sport-fitness' },
+          { parentKey: 'life', key: 'holiday-trips-hotels' },
+          { parentKey: 'life', key: 'hobbies' },
+          { parentKey: 'shopping', key: 'gifts-joy' },
+          { parentKey: 'life', key: 'education-development' },
+        ].map((entry) => ({ id: findCategory({ categories, ...entry }).id, monthlyAvg: null })),
+      });
+    });
+
+    it("sees no history on another user's account", async () => {
+      const { attached } = await seedHistory();
+      const other = await helpers.provisionSecondUserWithBaseCurrency();
+
+      const context = await helpers.asUser({
+        cookies: other.cookies,
+        fn: () => helpers.getBudgetSuggestionContext({ accountIds: attached.id, raw: true }),
+      });
+
+      expect(context.hasHistory).toBe(false);
+    });
+
+    it('offers the starter choices without any account', async () => {
+      const context = await helpers.getBudgetSuggestionContext({ raw: true });
+
+      expect(context.hasHistory).toBe(false);
+      expect(context.categories).toHaveLength(6);
+    });
+
+    it('422s on a malformed account id', async () => {
+      expect((await helpers.getBudgetSuggestionContext({ accountIds: 'nope' })).statusCode).toBe(
+        ERROR_CODES.ValidationError,
+      );
+    });
+  });
+
+  describe('with setup answers', () => {
+    useSelfHostWithoutServerAiKeys();
+
+    it('tells the model the answers and builds a starter budget without history or amounts', async () => {
+      enableServerModel();
+      const categories = await helpers.getCategoriesList();
+      const rent = findCategory({ categories, parentKey: 'housing', key: 'rent' });
+      const pets = findCategory({ categories, parentKey: 'shopping', key: 'pets-animals' });
+      const hobbies = findCategory({ categories, parentKey: 'life', key: 'hobbies' });
+      const systemPrompts: string[] = [];
+      mockLayout({
+        systemPrompts,
+        layout: {
+          groups: [
+            { name: 'Home', lines: [{ name: 'Rent', categories: [rent.name] }] },
+            {
+              name: 'Life',
+              lines: [
+                { name: 'Pets', categories: [pets.name] },
+                { name: 'Hobbies', categories: [hobbies.name] },
+              ],
+            },
+          ],
+        },
+      });
+
+      const { plan, lines } = await helpers.createBudgetPlan({
+        payload: {
+          withSuggestedLines: true,
+          suggestionAnswers: {
+            detail: 'compact',
+            housing: 'rent',
+            transport: 'transit',
+            pets: 'dog',
+            eatsOut: 'rarely',
+            subscriptions: 'none',
+            focusCategoryIds: [hobbies.id],
+          },
+        },
+        raw: true,
+      });
+
+      expect(lines.map((line) => line.name)).toEqual(['Rent', 'Pets', 'Hobbies']);
+      const view = await currentView({ planId: plan.id });
+      for (const line of view.lines) expect(line).toMatchObject({ assigned: 0, assignedSource: 'none' });
+
+      const [prompt] = systemPrompts;
+      expect(prompt).toContain('There is no spending history');
+      expect(prompt).toContain('Aim for 6 to 8 lines');
+      expect(prompt).toContain('Rents their home.');
+      expect(prompt).toContain('Has a dog.');
+      expect(prompt).toContain('Has no paid subscriptions.');
+      expect(prompt).toContain('The user also spends on these; give each its own line:');
+      expect(prompt).toContain(`› ${hobbies.name}.`);
+    });
+
+    it('builds on the spending, not the lifestyle answers, when there is history', async () => {
+      enableServerModel();
+      const { attached, rent, groceries } = await seedHistory();
+      const pets = findCategory({
+        categories: await helpers.getCategoriesList(),
+        parentKey: 'shopping',
+        key: 'pets-animals',
+      });
+      const systemPrompts: string[] = [];
+      mockLayout({
+        systemPrompts,
+        layout: {
+          groups: [
+            { name: 'Home', lines: [{ name: 'Rent', categories: [rent.name] }] },
+            {
+              name: 'Everyday',
+              lines: [
+                { name: 'Groceries', categories: [groceries.name] },
+                { name: 'Pets', categories: [pets.name] },
+              ],
+            },
+          ],
+        },
+      });
+
+      const { plan } = await helpers.createBudgetPlan({ payload: { accountIds: [attached.id] }, raw: true });
+      const result = await helpers.addSuggestedBudgetLines({
+        planId: plan.id,
+        payload: { detail: 'balanced', pets: 'dog', focusCategoryIds: [groceries.parentId] },
+        raw: true,
+      });
+
+      expect(result).toEqual({ created: 2 });
+      const view = await currentView({ planId: plan.id });
+      expect(view.lines.map((line) => line.name)).toEqual(['Rent', 'Groceries']);
+      expect(systemPrompts[0]).toContain('The user wants to watch these closely');
+      expect(systemPrompts[0]).toContain('Aim for 10 to 12 lines');
+      expect(systemPrompts[0]).not.toContain('About the user');
+    });
+
+    it('caps the model at the detail level', async () => {
+      enableServerModel();
+      const { account, categories } = await seedManyCategories();
+      mockLayout({
+        layout: {
+          groups: [{ name: 'All', lines: categories.map(({ name }) => ({ name, categories: [name] })) }],
+        },
+      });
+
+      const { lines } = await helpers.createBudgetPlan({
+        payload: { accountIds: [account.id], withSuggestedLines: true, suggestionAnswers: { detail: 'compact' } },
+        raw: true,
+      });
+
+      expect(lines).toHaveLength(8);
+    });
+
+    it('raises the rule-based cap to the detail level when no model is available', async () => {
+      const { account, categories } = await seedManyCategories();
+
+      const { lines } = await helpers.createBudgetPlan({
+        payload: { accountIds: [account.id], withSuggestedLines: true, suggestionAnswers: { detail: 'balanced' } },
+        raw: true,
+      });
+
+      expect(lines).toHaveLength(categories.length);
+    });
+
+    it('falls back to the starter template and says the answers were ignored when no model is available', async () => {
+      const created = await helpers.createBudgetPlan({
+        payload: { withSuggestedLines: true, suggestionAnswers: { housing: 'rent', pets: 'other' } },
+        raw: true,
+      });
+
+      expect(created.lines).toHaveLength(8);
+      expect(created.suggestionAnswersIgnored).toBe(true);
+    });
+
+    it('skips the model when the detail level is the only answer and there is no history', async () => {
+      enableServerModel();
+      const requests = mockLayout({ layout: { groups: [] } });
+
+      const created = await helpers.createBudgetPlan({
+        payload: { withSuggestedLines: true, suggestionAnswers: { detail: 'detailed', focusCategoryIds: [] } },
+        raw: true,
+      });
+
+      expect(requests).toHaveLength(0);
+      expect(created.lines).toHaveLength(8);
+      expect(created.suggestionAnswersIgnored).toBeUndefined();
+    });
+
+    it.each([
+      { name: 'an unknown answer', payload: { housing: 'castle' } },
+      { name: 'an unknown key', payload: { mood: 'fine' } },
+      { name: 'a repeated focus category', payload: { focusCategoryIds: [SOME_ID, SOME_ID] } },
+      { name: 'a malformed focus category', payload: { focusCategoryIds: ['nope'] } },
+    ])('422s on $name', async ({ payload }) => {
+      const { plan } = await helpers.createBudgetPlan({ raw: true });
+
+      expect((await helpers.addSuggestedBudgetLines({ planId: plan.id, payload })).statusCode).toBe(
+        ERROR_CODES.ValidationError,
+      );
+      const created = await helpers.createBudgetPlan({
+        payload: { withSuggestedLines: true, suggestionAnswers: payload as never },
+      });
+      expect(created.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+  });
+
   describe('with the AI organiser', () => {
     useSelfHostWithoutServerAiKeys();
 
@@ -440,10 +698,11 @@ describe('Suggested budget lines', () => {
 
     it('leaves the starter template alone when there is no history', async () => {
       enableServerModel();
-      mockLayout({ layout: { groups: [{ name: 'Should not be used', lines: [] }] } });
+      const requests = mockLayout({ layout: { groups: [{ name: 'Should not be used', lines: [] }] } });
 
       const { plan, lines } = await helpers.createBudgetPlan({ payload: { withSuggestedLines: true }, raw: true });
 
+      expect(requests).toHaveLength(0);
       expect(lines).toHaveLength(8);
       const view = await currentView({ planId: plan.id });
       expect(view.groups.map((group) => group.name)).toEqual(['Bills', 'Everyday', 'Life']);

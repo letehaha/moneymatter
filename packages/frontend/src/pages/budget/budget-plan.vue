@@ -644,6 +644,7 @@ const openLineDialog = ({
             <BudgetLinesGrid
               ref="gridRef"
               :plan-id="planId"
+              :account-ids="plan?.accountIds ?? []"
               :view="view"
               :archived-lines="archivedLines"
               :history-line-ids="historyLineIds"

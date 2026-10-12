@@ -1,5 +1,15 @@
 import type { RecordId } from '@bt/shared/types';
-import { BUDGET_PLAN_NAME_MAX_LENGTH } from '@bt/shared/types/budget-plans';
+import {
+  type BudgetSuggestionAnswers,
+  BUDGET_PLAN_NAME_MAX_LENGTH,
+  BUDGET_SUGGESTION_DETAILS,
+  BUDGET_SUGGESTION_EATS_OUT,
+  BUDGET_SUGGESTION_HOUSING,
+  BUDGET_SUGGESTION_MAX_FOCUS_CATEGORIES,
+  BUDGET_SUGGESTION_PETS,
+  BUDGET_SUGGESTION_SUBSCRIPTIONS,
+  BUDGET_SUGGESTION_TRANSPORT,
+} from '@bt/shared/types/budget-plans';
 import { Money } from '@common/types/money';
 import cc from 'currency-codes';
 import { z } from 'zod';
@@ -57,6 +67,17 @@ export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean 
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);
+
+export const budgetSuggestionAnswers = () =>
+  z.strictObject({
+    detail: z.enum(BUDGET_SUGGESTION_DETAILS).optional(),
+    housing: z.enum(BUDGET_SUGGESTION_HOUSING).optional(),
+    transport: z.enum(BUDGET_SUGGESTION_TRANSPORT).optional(),
+    pets: z.enum(BUDGET_SUGGESTION_PETS).optional(),
+    eatsOut: z.enum(BUDGET_SUGGESTION_EATS_OUT).optional(),
+    subscriptions: z.enum(BUDGET_SUGGESTION_SUBSCRIPTIONS).optional(),
+    focusCategoryIds: uniqueRecordIds({ max: BUDGET_SUGGESTION_MAX_FOCUS_CATEGORIES }).optional(),
+  }) satisfies z.ZodType<BudgetSuggestionAnswers>;
 
 /**
  * Canonical currency-code validator for API input.

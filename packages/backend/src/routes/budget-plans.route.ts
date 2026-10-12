@@ -11,6 +11,7 @@ import deletePlan from '@controllers/budget-plans/delete-plan';
 import getPeriodView from '@controllers/budget-plans/get-period-view';
 import getPlan from '@controllers/budget-plans/get-plan';
 import getScheduled from '@controllers/budget-plans/get-scheduled';
+import getSuggestionContext from '@controllers/budget-plans/get-suggestion-context';
 import getTrends from '@controllers/budget-plans/get-trends';
 import listPeriods from '@controllers/budget-plans/list-periods';
 import listPlans from '@controllers/budget-plans/list-plans';
@@ -36,6 +37,7 @@ const gatedWrite = [authenticateSession, requireFeature(FEATURES.budget_plan), c
 // Reads stay ungated: a lapsed user keeps reading their budget, and
 // `enforceReadOnly` stops their writes like everywhere else.
 router.get('/', authenticateSession, listPlans);
+router.get('/suggestion-context', authenticateSession, getSuggestionContext);
 router.get('/:planId', authenticateSession, getPlan);
 router.get('/:planId/trends', authenticateSession, getTrends);
 router.get('/:planId/periods', authenticateSession, listPeriods);

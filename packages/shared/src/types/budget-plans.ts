@@ -121,6 +121,7 @@ export interface BudgetPlanDetails {
 
 export interface CreateBudgetPlanResponse extends BudgetPlanDetails {
   suggestedLinesFailed?: boolean;
+  suggestionAnswersIgnored?: boolean;
 }
 
 export interface BudgetPlanPeriod {
@@ -321,8 +322,36 @@ export interface CreateBudgetPlanPayload {
   carryPolicy?: BudgetPlanCarryPolicy;
   poolEnabled?: boolean;
   withSuggestedLines?: boolean;
+  suggestionAnswers?: BudgetSuggestionAnswers;
+}
+
+export const BUDGET_SUGGESTION_DETAILS = ['compact', 'balanced', 'detailed'] as const;
+export const BUDGET_SUGGESTION_HOUSING = ['mortgage', 'rent', 'family', 'owned'] as const;
+export const BUDGET_SUGGESTION_TRANSPORT = ['car', 'transit', 'bikeWalk', 'multiple'] as const;
+export const BUDGET_SUGGESTION_PETS = ['none', 'dog', 'cat', 'other'] as const;
+export const BUDGET_SUGGESTION_EATS_OUT = ['often', 'sometimes', 'rarely'] as const;
+export const BUDGET_SUGGESTION_SUBSCRIPTIONS = ['many', 'few', 'none'] as const;
+export const BUDGET_SUGGESTION_MAX_FOCUS_CATEGORIES = 20;
+
+/** What the user told the setup questions; every answer is optional. */
+export interface BudgetSuggestionAnswers {
+  detail?: (typeof BUDGET_SUGGESTION_DETAILS)[number];
+  housing?: (typeof BUDGET_SUGGESTION_HOUSING)[number];
+  transport?: (typeof BUDGET_SUGGESTION_TRANSPORT)[number];
+  pets?: (typeof BUDGET_SUGGESTION_PETS)[number];
+  eatsOut?: (typeof BUDGET_SUGGESTION_EATS_OUT)[number];
+  subscriptions?: (typeof BUDGET_SUGGESTION_SUBSCRIPTIONS)[number];
+  focusCategoryIds?: string[];
+}
+
+export interface BudgetSuggestionContext {
+  hasHistory: boolean;
+  /** Top spending categories with history, a fixed starter set without; `monthlyAvg` is null without history. */
+  categories: { id: string; monthlyAvg: number | null }[];
 }
 
 export interface AddSuggestedBudgetLinesResponse {
   created: number;
+  /** No model was available, so the lines ignore the answers beyond the detail level. */
+  answersIgnored?: boolean;
 }

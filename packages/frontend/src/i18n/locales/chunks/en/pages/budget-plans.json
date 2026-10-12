@@ -117,6 +117,8 @@
       "error": "Could not create the budget",
       "suggestedLinesLabel": "Smart pre-fill",
       "suggestedLinesHint": "Turns your last 3 months of spending into named groups and lines, with the average as each amount. With no history, adds a starter set. Takes a few seconds. Change or remove any of them later.",
+      "askQuestionsLabel": "Ask me a few questions first",
+      "askQuestionsHint": "A few short steps for a closer fit.",
       "customEveryLabel": "Every",
       "customEveryPlaceholder": "e.g. 10",
       "customUnitLabel": "Unit",
@@ -126,6 +128,72 @@
         "months": "Months"
       },
       "customEveryError": "Enter a whole number from 1 to {max}."
+    },
+    "suggest": {
+      "title": "Shape your lines",
+      "descriptionHistory": "We combine your answers with your last three months of spending.",
+      "descriptionNoHistory": "No spending yet, so your lines come from these answers.",
+      "step": "Step {current} of {total}",
+      "back": "Back",
+      "next": "Next",
+      "useDefaults": "Use defaults",
+      "defaultsConfirm": {
+        "title": "Use default lines?",
+        "description": "Your selections will be ignored and default lines will be created.",
+        "cancel": "Keep answering"
+      },
+      "housing": {
+        "question": "What's your housing situation?",
+        "mortgage": "Paying a mortgage",
+        "rent": "Renting",
+        "family": "Living with family",
+        "owned": "Own home outright"
+      },
+      "transport": {
+        "question": "How do you usually get around?",
+        "car": "I own a car",
+        "transit": "Public transit",
+        "bikeWalk": "Bike or walk",
+        "multiple": "Several of these"
+      },
+      "pets": {
+        "question": "Do you have pets?",
+        "kindQuestion": "What kind? (Optional)",
+        "dog": "Dog",
+        "cat": "Cat",
+        "other": "Other"
+      },
+      "eatsOut": {
+        "question": "How often do you eat out or order food?",
+        "often": "Often",
+        "sometimes": "Sometimes",
+        "rarely": "Rarely"
+      },
+      "subscriptions": {
+        "question": "Paid subscriptions?",
+        "many": "Many",
+        "few": "A few",
+        "none": "None"
+      },
+      "focus": {
+        "questionHistory": "What do you want to watch closely?",
+        "hintHistory": "Select all that apply. Each gets more detailed lines.",
+        "questionNoHistory": "What else do you spend on?",
+        "hintNoHistory": "Select all that apply. Each gets its own line.",
+        "perMonth": "{amount}/mo"
+      },
+      "detail": {
+        "question": "How detailed should your budget be?",
+        "compact": "Compact",
+        "compactHint": "6–8 lines",
+        "balanced": "Balanced",
+        "balancedHint": "10–12 lines",
+        "detailed": "Detailed",
+        "detailedHint": "Up to 20 lines"
+      },
+      "contextError": "Couldn't load your spending. Try again.",
+      "retry": "Try again",
+      "answersIgnored": "Smart suggestions weren't available, so your answers weren't used. You got the default lines."
     },
     "cadence": {
       "monthly": "Monthly",

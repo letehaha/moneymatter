@@ -13,7 +13,10 @@ import { restoreLine as _restoreLine } from '@services/budget-plans/restore-line
 import { restorePlan as _restorePlan } from '@services/budget-plans/restore-plan';
 import { setAssignment as _setAssignment } from '@services/budget-plans/set-assignment';
 import { setPlanAccounts as _setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
-import { addSuggestedLines as _addSuggestedLines } from '@services/budget-plans/suggested-lines';
+import {
+  addSuggestedLines as _addSuggestedLines,
+  getSuggestionContext as _getSuggestionContext,
+} from '@services/budget-plans/suggested-lines';
 import { updateLine as _updateLine } from '@services/budget-plans/update-line';
 import { updatePlan as _updatePlan } from '@services/budget-plans/update-plan';
 
@@ -139,7 +142,7 @@ export function setBudgetPlanAccounts<R extends boolean | undefined = false>({
   return makeRequest<Awaited<ReturnType<typeof _setPlanAccounts>>, R>({
     method: 'put',
     url: `/budget-plans/${planId}/accounts`,
-    payload: { accountIds },
+    payload: accountIds === undefined ? null : { accountIds },
     raw,
   });
 }
@@ -180,17 +183,35 @@ export function createBudgetPlanLine<R extends boolean | undefined = false>({
 
 export function addSuggestedBudgetLines<R extends boolean | undefined = false>({
   planId,
+  payload,
   headers,
   raw,
 }: {
   planId: string;
+  payload?: object;
   headers?: object;
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _addSuggestedLines>>, R>({
     method: 'post',
     url: `/budget-plans/${planId}/suggested-lines`,
+    payload,
     headers,
+    raw,
+  });
+}
+
+export function getBudgetSuggestionContext<R extends boolean | undefined = false>({
+  accountIds,
+  raw,
+}: {
+  accountIds?: string;
+  raw?: R;
+} = {}) {
+  return makeRequest<Awaited<ReturnType<typeof _getSuggestionContext>>, R>({
+    method: 'get',
+    url: '/budget-plans/suggestion-context',
+    payload: accountIds === undefined ? null : { accountIds },
     raw,
   });
 }

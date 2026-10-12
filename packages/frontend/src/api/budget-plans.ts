@@ -10,6 +10,8 @@ import type {
   BudgetPlanPeriod,
   BudgetPlanPeriodView,
   BudgetPlanScheduled,
+  BudgetSuggestionAnswers,
+  BudgetSuggestionContext,
   BudgetPlanTrends,
   CreateBudgetPlanPayload,
   CreateBudgetPlanResponse,
@@ -77,9 +79,18 @@ export const createBudgetPlanLine = async ({
 
 export const addSuggestedBudgetLines = async ({
   planId,
+  answers,
 }: {
   planId: string;
-}): Promise<AddSuggestedBudgetLinesResponse> => api.post(`/budget-plans/${planId}/suggested-lines`);
+  answers?: BudgetSuggestionAnswers;
+}): Promise<AddSuggestedBudgetLinesResponse> => api.post(`/budget-plans/${planId}/suggested-lines`, answers);
+
+export const loadBudgetSuggestionContext = async ({
+  accountIds,
+}: {
+  accountIds: string[];
+}): Promise<BudgetSuggestionContext> =>
+  api.get('/budget-plans/suggestion-context', { accountIds: accountIds.join(',') });
 
 export const updateBudgetPlanLine = async ({
   planId,
