@@ -192,6 +192,7 @@
       "archivedFrom": "Archived from {date}",
       "restore": "Restore",
       "restoreLine": "Restore {name}",
+      "deleteLine": "Delete {name}",
       "restored": "Line restored",
       "restoreError": "Couldn't restore the line"
     },

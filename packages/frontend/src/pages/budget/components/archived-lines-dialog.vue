@@ -6,9 +6,11 @@ import { Button } from '@/components/lib/ui/button';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
 import type { BudgetPlanLineEntry } from '@bt/shared/types';
-import { ArchiveRestoreIcon, Loader2Icon } from '@lucide/vue';
+import { ArchiveRestoreIcon, Loader2Icon, Trash2Icon } from '@lucide/vue';
 import { parseISO } from 'date-fns';
-import { watch } from 'vue';
+import { ref, watch } from 'vue';
+
+import DeleteLineDialog from './delete-line-dialog.vue';
 
 const props = defineProps<{ planId: string; lines: BudgetPlanLineEntry[] }>();
 const isOpen = defineModel<boolean>('open', { required: true });
@@ -27,6 +29,13 @@ const {
 });
 
 const isRestoring = ({ lineId }: { lineId: string }) => isPending.value && variables.value?.lineId === lineId;
+
+const isDeleteOpen = ref(false);
+const deleteTarget = ref<{ lineId: string; name: string } | null>(null);
+const askDelete = ({ line }: { line: BudgetPlanLineEntry }) => {
+  deleteTarget.value = { lineId: line.id, name: line.name };
+  isDeleteOpen.value = true;
+};
 
 watch(
   () => props.lines.length,
@@ -56,20 +65,40 @@ watch(
           </p>
         </div>
 
-        <Button
-          variant="outline"
-          size="sm"
-          class="shrink-0"
-          :disabled="isPending"
-          :aria-busy="isRestoring({ lineId: line.id })"
-          :aria-label="$t('budgetPlans.archivedLines.restoreLine', { name: line.name })"
-          @click="restore({ planId, lineId: line.id })"
-        >
-          <Loader2Icon v-if="isRestoring({ lineId: line.id })" class="size-4 animate-spin" />
-          <ArchiveRestoreIcon v-else class="size-4" />
-          {{ $t('budgetPlans.archivedLines.restore') }}
-        </Button>
+        <div class="flex shrink-0 items-center gap-1">
+          <Button
+            variant="outline"
+            size="sm"
+            :disabled="isPending"
+            :aria-busy="isRestoring({ lineId: line.id })"
+            :aria-label="$t('budgetPlans.archivedLines.restoreLine', { name: line.name })"
+            @click="restore({ planId, lineId: line.id })"
+          >
+            <Loader2Icon v-if="isRestoring({ lineId: line.id })" class="size-4 animate-spin" />
+            <ArchiveRestoreIcon v-else class="size-4" />
+            {{ $t('budgetPlans.archivedLines.restore') }}
+          </Button>
+          <Button
+            variant="ghost-destructive"
+            size="icon"
+            class="size-9"
+            :disabled="isPending"
+            :aria-label="$t('budgetPlans.archivedLines.deleteLine', { name: line.name })"
+            @click="askDelete({ line })"
+          >
+            <Trash2Icon class="size-4" />
+          </Button>
+        </div>
       </li>
     </ul>
+
+    <DeleteLineDialog
+      v-model:open="isDeleteOpen"
+      :plan-id="planId"
+      :line="deleteTarget"
+      has-history
+      is-archived
+      :is-archiving="false"
+    />
   </ResponsiveDialog>
 </template>

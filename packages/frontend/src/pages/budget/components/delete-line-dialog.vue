@@ -12,6 +12,7 @@ const props = defineProps<{
   line: { lineId: string; name: string } | null;
   hasHistory: boolean;
   isArchiving: boolean;
+  isArchived?: boolean;
 }>();
 const emit = defineEmits<{ archive: [] }>();
 const isOpen = defineModel<boolean>('open', { required: true });
@@ -45,7 +46,7 @@ const confirmDelete = () => {
       {{ hasHistory ? $t('budgetPlans.grid.deleteHistoryDescription') : $t('budgetPlans.grid.deleteDescription') }}
     </template>
 
-    <Callout v-if="hasHistory" variant="info">
+    <Callout v-if="hasHistory && !isArchived" variant="info">
       <p>{{ $t('budgetPlans.grid.deleteArchiveHint') }}</p>
       <Button variant="outline" size="sm" class="mt-3" :disabled="isDeleting || isArchiving" @click="emit('archive')">
         <ArchiveIcon class="size-4" />

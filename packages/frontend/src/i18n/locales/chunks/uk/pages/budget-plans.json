@@ -192,6 +192,7 @@
       "archivedFrom": "Заархівовано з {date}",
       "restore": "Відновити",
       "restoreLine": "Відновити {name}",
+      "deleteLine": "Видалити {name}",
       "restored": "Статтю відновлено",
       "restoreError": "Не вдалося відновити статтю"
     },
