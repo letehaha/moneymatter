@@ -3,16 +3,16 @@ import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import { CalendarClockIcon, RepeatIcon } from '@lucide/vue';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 
 import { type PanelContext, amountToneClass } from '../helpers';
 
 defineProps<{ context: PanelContext }>();
 
 const { formatBaseCurrency } = useFormatCurrency();
-const { locale } = useDateLocale();
+const { format } = useDateLocale();
 
-const formatDate = ({ date }: { date: string }) => format(parseISO(date), 'd MMM', { locale: locale.value });
+const formatDate = ({ date }: { date: string }) => format(parseISO(date), 'd MMM');
 </script>
 
 <template>

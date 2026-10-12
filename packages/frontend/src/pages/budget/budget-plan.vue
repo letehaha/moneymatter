@@ -731,7 +731,7 @@ const openLineDialog = ({
             class="hover:bg-primary/40 active:bg-primary/60 absolute inset-y-0 -left-1 z-10 w-2 cursor-col-resize touch-none transition-colors"
             @pointerdown="startResize"
           />
-          <div class="sticky top-[calc(var(--header-height)+2.75rem)]">
+          <div :class="FRAME_STICKY_CLASS">
             <ScrollArea viewport-class="max-h-[calc(100dvh-var(--header-height)-3.75rem)] p-4">
               <BudgetSidePanel
                 v-if="view && plan"

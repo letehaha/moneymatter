@@ -21,7 +21,10 @@ import Users from './users.model';
   paranoid: true,
   freezeTableName: true,
 })
-export default class BudgetPlans extends Model implements Omit<BudgetPlanModel, 'expectedIncome'> {
+export default class BudgetPlans
+  extends Model
+  implements Omit<BudgetPlanModel, 'expectedIncome' | 'createdAt' | 'updatedAt' | 'deletedAt'>
+{
   @Column(IdColumn())
   declare id: RecordId;
 

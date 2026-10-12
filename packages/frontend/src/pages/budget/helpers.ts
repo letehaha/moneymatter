@@ -3,6 +3,7 @@ import {
   type AccountModel,
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES,
   BUDGET_PLAN_CARRY_POLICIES,
+  BUDGET_PLAN_TRASH_RETENTION_DAYS,
   type BudgetAssignmentScope,
   BUDGET_LINE_GOAL_ANCHORED_FREQUENCIES,
   BUDGET_LINE_GOAL_REPEAT_MAX,
@@ -13,6 +14,7 @@ import {
   type BudgetPlanCadence,
   type BudgetPlanCarryPolicy,
   type BudgetPlanLineEntry,
+  type BudgetPlanModel,
   type BudgetPlanPeriod,
   type BudgetPlanPeriodView,
   type BudgetPlanPeriodViewLine,
@@ -153,6 +155,18 @@ export const CARRY_POLICY_OPTIONS = BUDGET_PLAN_CARRY_POLICIES.map((value) => ({
 export const isAttachableAccount = ({ account }: { account: AccountModel }) =>
   BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(account.accountCategory) &&
   (!account.share || account.share.isOwner);
+
+/** Whole days before the purge sweep may remove a trashed plan. */
+export const trashDaysLeft = ({ deletedAt, now = new Date() }: { deletedAt: string; now?: Date }): number =>
+  Math.max(0, BUDGET_PLAN_TRASH_RETENTION_DAYS - differenceInCalendarDays(now, parseISO(deletedAt)));
+
+export type TrashedBudgetPlan = BudgetPlanModel & { deletedAt: string };
+
+/** Soft-deleted plans, most recently deleted first. */
+export const trashedPlansOf = ({ plans }: { plans: BudgetPlanModel[] }): TrashedBudgetPlan[] =>
+  plans
+    .filter((plan): plan is TrashedBudgetPlan => Boolean(plan.deletedAt))
+    .sort((a, b) => b.deletedAt.localeCompare(a.deletedAt));
 
 /** Shows the pool / zero-sum switches in plan creation and plan settings. */
 export const BUDGET_POOL_ENABLED = false;
@@ -332,7 +346,7 @@ const clampedPercent = ({ part, whole }: { part: number; whole: number }) => {
 };
 
 /** A negative carry-in funds nothing, so it counts as 0. */
-const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number }) =>
+export const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number }) =>
   Math.max(0, carriedIn) + Math.max(0, assigned);
 
 /** Percents are of the funded amount. */

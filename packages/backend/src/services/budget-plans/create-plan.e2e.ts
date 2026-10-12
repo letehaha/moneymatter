@@ -12,7 +12,7 @@ import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
-import { DAY_MS } from './periods/period-enumerator';
+import { MS_PER_DAY } from './periods/period-enumerator';
 
 describe('Budget plan CRUD', () => {
   it('returns an empty list before anything is created', async () => {
@@ -71,7 +71,7 @@ describe('Budget plan CRUD', () => {
 
   it('rejects an epoch in the future', async () => {
     const response = await helpers.createBudgetPlan({
-      payload: { epochDate: toUtcDateString(new Date(Date.now() + DAY_MS)) },
+      payload: { epochDate: toUtcDateString(new Date(Date.now() + MS_PER_DAY)) },
     });
 
     expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
@@ -82,7 +82,7 @@ describe('Budget plan CRUD', () => {
       payload: {
         cadence: 'days',
         intervalN: 1,
-        epochDate: toUtcDateString(new Date(Date.now() - 600 * DAY_MS)),
+        epochDate: toUtcDateString(new Date(Date.now() - 600 * MS_PER_DAY)),
       },
     });
 
@@ -178,6 +178,8 @@ describe('Budget plan CRUD', () => {
         (await helpers.updateBudgetPlan({ planId, payload: { name: 'Stolen' } })).statusCode,
         (await helpers.setBudgetPlanAccounts({ planId, accountIds: [] })).statusCode,
         (await helpers.getBudgetPlanPeriodView({ planId, periodId: period!.id })).statusCode,
+        (await helpers.getBudgetPlanTrends({ planId })).statusCode,
+        (await helpers.getBudgetPlanScheduled({ planId, periodId: period!.id })).statusCode,
         (
           await helpers.setBudgetAssignment({
             planId,
@@ -194,6 +196,24 @@ describe('Budget plan CRUD', () => {
     for (const statusCode of statusCodes) {
       expect(statusCode).toBe(ERROR_CODES.NotFoundError);
     }
+  });
+
+  it("keeps a user's active and trashed plans out of another user's list", async () => {
+    const trashed = await helpers.createBudgetPlan({ raw: true });
+    await helpers.deleteBudgetPlan({ planId: trashed.plan.id });
+    await helpers.createBudgetPlan({ raw: true });
+    expect(await helpers.listBudgetPlans({ includeDeleted: true, raw: true })).toHaveLength(2);
+    const other = await helpers.provisionSecondUserWithBaseCurrency();
+
+    const lists = await helpers.asUser({
+      cookies: other.cookies,
+      fn: async () => [
+        await helpers.listBudgetPlans({ raw: true }),
+        await helpers.listBudgetPlans({ includeDeleted: true, raw: true }),
+      ],
+    });
+
+    expect(lists).toEqual([[], []]);
   });
 
   it('patches only the mutable fields', async () => {
@@ -218,6 +238,13 @@ describe('Budget plan CRUD', () => {
   it('soft-deletes a plan out of the list, out of GET and out of every write', async () => {
     const created = await helpers.createBudgetPlan({ raw: true });
     const planId = created.plan.id;
+    const [period] = await helpers.listBudgetPlanPeriods({ planId, raw: true });
+    const categoryId = (await helpers.getCategoriesList())[0]!.id;
+    const line = await helpers.createBudgetPlanLine({
+      planId,
+      payload: { name: 'Food', categoryIds: [categoryId] },
+      raw: true,
+    });
 
     expect((await helpers.deleteBudgetPlan({ planId })).statusCode).toBe(200);
     expect(await helpers.listBudgetPlans({ raw: true })).toEqual([]);
@@ -228,6 +255,31 @@ describe('Budget plan CRUD', () => {
     expect((await helpers.setBudgetPlanAccounts({ planId, accountIds: [] })).statusCode).toBe(
       ERROR_CODES.NotFoundError,
     );
+
+    const target = { planId, lineId: line.id };
+    const statusCodes = [
+      (await helpers.getBudgetPlanPeriodView({ planId, periodId: period!.id })).statusCode,
+      (await helpers.getBudgetPlanTrends({ planId })).statusCode,
+      (await helpers.createBudgetPlanLine({ planId, payload: { name: 'Late', categoryIds: [categoryId] } })).statusCode,
+      (
+        await helpers.setBudgetAssignment({
+          ...target,
+          periodId: period!.id,
+          payload: { scope: 'from_here', amount: 10 },
+        })
+      ).statusCode,
+      (await helpers.createBudgetLineGroup({ planId, name: 'Late' })).statusCode,
+      (
+        await helpers.setBudgetLineGoal({
+          ...target,
+          payload: { frequency: 'every_period', behavior: 'budget_another', amount: 10 },
+        })
+      ).statusCode,
+      (await helpers.deleteBudgetPlan({ planId })).statusCode,
+    ];
+    for (const statusCode of statusCodes) {
+      expect(statusCode).toBe(ERROR_CODES.NotFoundError);
+    }
   });
 
   it('404s on an unknown plan', async () => {
@@ -243,12 +295,20 @@ describe('Budget plan CRUD', () => {
 
 describe('Budget plans without the feature', () => {
   it('keeps reads and delete open and answers other writes with 402', async () => {
+    const trashed = await helpers.createBudgetPlan({ raw: true });
+    await helpers.deleteBudgetPlan({ planId: trashed.plan.id });
     const created = await helpers.createBudgetPlan({ raw: true });
+    const line = await helpers.createBudgetPlanLine({
+      planId: created.plan.id,
+      payload: { name: 'Food', categoryIds: [(await helpers.getCategoriesList())[0]!.id] },
+      raw: true,
+    });
+    const group = await helpers.createBudgetLineGroup({ planId: created.plan.id, name: 'Bills', raw: true });
 
     await helpers.setUserBilling({
       plan: PLANS.early_adopter,
       trialEndsAt: null,
-      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * DAY_MS),
+      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * MS_PER_DAY),
     });
 
     expect((await helpers.listBudgetPlans()).statusCode).toBe(200);
@@ -270,6 +330,41 @@ describe('Budget plans without the feature', () => {
     expect(
       (await helpers.createBudgetPlan({ payload: { accountIds: created.accountIds as RecordId[] } })).statusCode,
     ).toBe(ERROR_CODES.PaymentRequired);
+
+    const planId = created.plan.id;
+    const target = { planId, lineId: line.id };
+    const gatedStatusCodes = [
+      (
+        await helpers.setBudgetAssignment({
+          ...target,
+          periodId: period!.id,
+          payload: { scope: 'from_here', amount: 10 },
+        })
+      ).statusCode,
+      (
+        await helpers.setBudgetLineGoal({
+          ...target,
+          payload: { frequency: 'every_period', behavior: 'budget_another', amount: 10 },
+        })
+      ).statusCode,
+      (await helpers.deleteBudgetLineGoal(target)).statusCode,
+      (await helpers.snoozeBudgetLineGoal({ ...target, periodId: period!.id })).statusCode,
+      (await helpers.createBudgetLineGroup({ planId, name: 'More' })).statusCode,
+      (await helpers.updateBudgetLineGroup({ planId, groupId: group.id, name: 'Renamed' })).statusCode,
+      (await helpers.deleteBudgetLineGroup({ planId, groupId: group.id })).statusCode,
+      (await helpers.setBudgetPlanLayout({ planId, payload: { groups: [], ungroupedLineIds: [line.id] } })).statusCode,
+      (await helpers.setBudgetPlanAccounts({ planId, accountIds: created.accountIds })).statusCode,
+      (await helpers.updateBudgetPlanLine({ ...target, payload: { name: 'Nope' } })).statusCode,
+      (await helpers.archiveBudgetPlanLine(target)).statusCode,
+      (await helpers.restoreBudgetPlanLine(target)).statusCode,
+      (await helpers.deleteBudgetPlanLine(target)).statusCode,
+      (await helpers.restoreBudgetPlan({ planId: trashed.plan.id })).statusCode,
+    ];
+    for (const statusCode of gatedStatusCodes) {
+      expect(statusCode).toBe(ERROR_CODES.PaymentRequired);
+    }
+
+    expect((await helpers.deleteBudgetPlan({ planId: trashed.plan.id, permanent: true })).statusCode).toBe(200);
     expect((await helpers.deleteBudgetPlan({ planId: created.plan.id })).statusCode).toBe(200);
   });
 });

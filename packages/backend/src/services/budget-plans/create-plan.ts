@@ -2,7 +2,7 @@ import { RecordId } from '@bt/shared/types';
 import {
   BudgetPlanCadence,
   BudgetPlanCarryPolicy,
-  BudgetPlanDetails,
+  CreateBudgetPlanResponse,
   BudgetPlanTypeKey,
 } from '@bt/shared/types/budget-plans';
 import { toUtcDateString } from '@common/utils/date';
@@ -129,14 +129,19 @@ const createPlanRow = withTransaction(createPlanImpl);
 export const createPlan = async ({
   withSuggestedLines = false,
   ...params
-}: CreatePlanParams): Promise<BudgetPlanDetails> => {
+}: CreatePlanParams): Promise<CreateBudgetPlanResponse> => {
   const { id: planId, userId } = await createPlanRow(params);
 
-  if (withSuggestedLines) {
-    await addSuggestedLines({ userId, planId }).catch((error: unknown) =>
-      logger.error('[Budget plans] Suggested lines failed for a new plan', { userId, planId, error: error as Error }),
-    );
-  }
+  const suggestedLinesFailed =
+    withSuggestedLines &&
+    (await addSuggestedLines({ userId, planId }).then(
+      () => false,
+      (error: unknown) => {
+        logger.error('[Budget plans] Suggested lines failed for a new plan', { userId, planId, error: error as Error });
+        return true;
+      },
+    ));
 
-  return getPlan({ userId, planId });
+  const details = await getPlan({ userId, planId });
+  return suggestedLinesFailed ? { ...details, suggestedLinesFailed } : details;
 };

@@ -7,6 +7,7 @@ import { t } from '@i18n/index';
 import { trackEvent } from '@js/utils/posthog';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineGroups from '@models/budget-line-groups.model';
+import type { BudgetLineOrigin } from '@models/budget-lines.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Categories from '@models/categories.model';
@@ -23,7 +24,7 @@ import { createLine } from './create-line';
 import { findPlan } from './find-plan';
 import { createGroup } from './line-groups';
 import { ensureCurrentPeriods } from './periods/ensure-periods';
-import { boundaryAtOrBefore } from './periods/period-enumerator';
+import { currentPeriodStart } from './periods/period-enumerator';
 import { type LineCandidate, organizeLinesWithAi } from './suggested-lines-ai';
 import { ownedCategoryIds } from './validate-line-categories';
 
@@ -120,7 +121,7 @@ const writeLines = withTransaction(
     userId: number;
     planId: RecordId;
     drafts: LineDraft[];
-    origin: 'rules' | 'ai';
+    origin: Exclude<BudgetLineOrigin, 'manual'>;
   }) => {
     const plan = await findPlan({ planId, userId, lock: true });
     const { periods, currentStart } = await ensureCurrentPeriods({ plan });
@@ -210,7 +211,7 @@ export const addSuggestedLines = async ({
   planId: RecordId;
 }): Promise<AddSuggestedBudgetLinesResponse> => {
   const plan = await findPlan({ planId, userId });
-  const currentStart = boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
+  const currentStart = currentPeriodStart({ plan });
 
   const categories = await Categories.findAll({ where: { userId }, attributes: ['id', 'parentId', 'key', 'name'] });
   const byId = new Map<string, Categories>(categories.map((category) => [category.id, category]));

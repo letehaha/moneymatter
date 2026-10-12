@@ -11,7 +11,7 @@ import { Op } from 'sequelize';
 import { covers, toRange } from './date-ranges';
 import { findPlan } from './find-plan';
 import { loadLines } from './periods/ensure-periods';
-import { boundaryAtOrBefore } from './periods/period-enumerator';
+import { currentPeriodStart } from './periods/period-enumerator';
 
 /** A line entry as every line endpoint returns it: its categories in `currentStart`'s period. */
 export const toLineEntry = ({
@@ -51,7 +51,7 @@ export const getPlan = async ({ userId, planId }: { userId: number; planId: Reco
     : [];
 
   // Computed, not read from BudgetPeriods, so a GET stays a read.
-  const currentStart = boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
+  const currentStart = currentPeriodStart({ plan });
 
   return {
     plan: { ...plan.get({ plain: true }), expectedIncome: centsToApiDecimalOrNull(plan.expectedIncome) },

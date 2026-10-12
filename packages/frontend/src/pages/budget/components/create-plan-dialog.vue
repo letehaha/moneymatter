@@ -10,6 +10,7 @@ import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Label } from '@/components/lib/ui/label';
+import { useNotificationCenter } from '@/components/notification-center';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { InfoIcon } from '@lucide/vue';
 import { Switch } from '@/components/lib/ui/switch';
@@ -37,6 +38,7 @@ import {
 const isOpen = defineModel<boolean>('open', { required: true });
 
 const { t } = useI18n();
+const { addWarningNotification } = useNotificationCenter();
 const router = useRouter();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(useAccountsStore());
 const userStore = useUserStore();
@@ -122,11 +124,13 @@ const submit = () => {
       },
     },
     {
-      onSuccess: ({ plan }) =>
+      onSuccess: ({ plan, suggestedLinesFailed }) => {
+        if (suggestedLinesFailed) addWarningNotification(t('budgetPlans.create.suggestedLinesFailed'));
         router.replace({
           name: ROUTES_NAMES.budgetPlan,
           params: { planId: plan.id },
-        }),
+        });
+      },
     },
   );
 };

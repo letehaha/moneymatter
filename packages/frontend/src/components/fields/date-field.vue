@@ -116,7 +116,7 @@ const DATE_PATTERN = 'yyyy-MM-dd';
 const formatToInput = (value: Date) => format(value, props.mode === 'date' ? DATE_PATTERN : 'yyyy-MM-dd HH:mm');
 
 // `new Date('yyyy-MM-dd')` is UTC midnight, the previous day in negative-offset timezones.
-const parseInput = (value: string) =>
+const parseInput = ({ value }: { value: string }) =>
   props.mode === 'date' ? parse(value, DATE_PATTERN, new Date()) : new Date(value);
 
 const nativeMax = computed(() => {
@@ -151,8 +151,8 @@ const handleLocalInputUpdate = (event: Event) => {
   inputValue.value = inputVal;
 
   // Only emit the date if it's a valid date string
-  if (inputVal && isValidDate(parseInput(inputVal))) {
-    emit('update:modelValue', parseInput(inputVal));
+  if (inputVal && isValidDate(parseInput({ value: inputVal }))) {
+    emit('update:modelValue', parseInput({ value: inputVal }));
   }
   // For invalid intermediate states, don't emit anything
   // This prevents validation errors during typing
@@ -162,9 +162,9 @@ const handleBlur = (event: FocusEvent) => {
   const inputVal = (event.target as HTMLInputElement).value;
 
   // On blur, validate the final input value
-  if (inputVal && isValidDate(parseInput(inputVal))) {
+  if (inputVal && isValidDate(parseInput({ value: inputVal }))) {
     // Valid date - emit it
-    emit('update:modelValue', parseInput(inputVal));
+    emit('update:modelValue', parseInput({ value: inputVal }));
   } else if (inputVal) {
     // Invalid date - revert to last valid value
     inputValue.value = props.modelValue ? formatToInput(props.modelValue) : '';

@@ -1,7 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
 import { Money } from '@common/types/money';
-import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
@@ -9,7 +8,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { findPlan } from './find-plan';
 import { getPlan } from './get-plan';
-import { boundaryAtOrBefore } from './periods/period-enumerator';
+import { currentPeriodStart } from './periods/period-enumerator';
 
 /**
  * A new plan default reaches every period of every line without its own
@@ -40,7 +39,7 @@ const updatePlanImpl = async ({
 
   let poolFrom: string | null | undefined;
   if (poolEnabled === false) poolFrom = null;
-  else if (poolEnabled && !plan.poolFrom) poolFrom = boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
+  else if (poolEnabled && !plan.poolFrom) poolFrom = currentPeriodStart({ plan });
 
   const poolOn = (poolFrom === undefined ? plan.poolFrom : poolFrom) !== null;
   if (zeroSum && !poolOn) throw new ConflictError({ message: t({ key: 'budgetPlans.zeroSumNeedsPool' }) });

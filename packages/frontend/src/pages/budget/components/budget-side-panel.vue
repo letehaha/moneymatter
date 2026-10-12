@@ -2,6 +2,7 @@
 import { loadBudgetPlanScheduled, loadBudgetPlanTrends } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { Button } from '@/components/lib/ui/button';
+import { Callout } from '@/components/lib/ui/callout';
 import {
   SidePanelSection,
   SidePanelSectionContent,
@@ -84,16 +85,23 @@ const periodLabel = computed(() => formatPeriodLabel({ ...props.view.period, loc
 const periodId = computed(() => props.view.period.id);
 const isPast = computed(() => isPastPeriod({ period: props.view.period }));
 
-const { data: trends } = useQuery({
+const trendsQuery = useQuery({
   queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanTrends, props.planId, periodId.value]),
   queryFn: () => loadBudgetPlanTrends({ planId: props.planId, until: periodId.value, count: TREND_PERIOD_COUNT }),
 });
 
-const { data: scheduledData } = useQuery({
+const scheduledQuery = useQuery({
   queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanScheduled, props.planId, periodId.value]),
   queryFn: () => loadBudgetPlanScheduled({ planId: props.planId, periodId: periodId.value }),
   enabled: computed(() => !isPast.value),
 });
+
+const { data: trends } = trendsQuery;
+const { data: scheduledData } = scheduledQuery;
+
+const failedQueries = computed(() => [trendsQuery, scheduledQuery].filter((query) => query.isError.value));
+const isRetrying = computed(() => failedQueries.value.some((query) => query.isFetching.value));
+const retryFailed = () => failedQueries.value.forEach((query) => query.refetch());
 
 const scheduled = computed(() =>
   scheduledData.value ? scheduledForLines({ scheduled: scheduledData.value, lineIds: lineIds.value }) : undefined,
@@ -117,7 +125,7 @@ const sections = computed(() => {
       key: 'breakdown',
       titleKey: 'budgetPlans.panel.breakdown',
       icon: CalculatorIcon,
-      iconClass: 'bg-sky-500/15 text-sky-500',
+      iconClass: 'bg-app-savings-color/15 text-app-savings-color',
       component: PanelBreakdownSection,
     },
     {
@@ -247,5 +255,14 @@ const sections = computed(() => {
         </SidePanelSectionContent>
       </SidePanelSection>
     </SidePanelSections>
+
+    <Callout v-if="failedQueries.length" variant="destructive">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span>{{ $t('budgetPlans.loadError') }}</span>
+        <Button size="sm" variant="outline" :disabled="isRetrying" @click="retryFailed">
+          {{ $t('common.actions.retry') }}
+        </Button>
+      </div>
+    </Callout>
   </div>
 </template>

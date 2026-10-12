@@ -19,9 +19,9 @@ export type PeriodCadenceConfig = {
   secondAnchorDay: number | null;
 };
 
-export const DAY_MS = 86_400_000;
+export const MS_PER_DAY = 86_400_000;
 
-const dateParts = ({ date }: { date: string }) => {
+export const dateParts = ({ date }: { date: string }) => {
   const iso = toUtcDateString(date);
   return { year: Number(iso.slice(0, 4)), month: Number(iso.slice(5, 7)) - 1, day: Number(iso.slice(8, 10)) };
 };
@@ -39,7 +39,7 @@ export const anchorParts = ({ plan }: { plan: Pick<PeriodCadenceConfig, 'anchorD
 const boundaryMsAtIndex = ({ plan, index }: { plan: PeriodCadenceConfig; index: number }): number => {
   const { year, month, day } = anchorParts({ plan });
 
-  if (plan.cadence === 'days') return Date.UTC(year, month, day) + index * plan.intervalN * DAY_MS;
+  if (plan.cadence === 'days') return Date.UTC(year, month, day) + index * plan.intervalN * MS_PER_DAY;
   if (plan.cadence === 'months') return dayOfMonthMs({ year, month: month + index * plan.intervalN, day });
 
   const second = plan.secondAnchorDay ?? day;
@@ -57,7 +57,7 @@ const indexAtOrBefore = ({ plan, date }: { plan: PeriodCadenceConfig; date: stri
   const anchor = anchorParts({ plan });
 
   if (plan.cadence === 'days') {
-    return Math.floor((dateMs - Date.UTC(anchor.year, anchor.month, anchor.day)) / DAY_MS / plan.intervalN);
+    return Math.floor((dateMs - Date.UTC(anchor.year, anchor.month, anchor.day)) / MS_PER_DAY / plan.intervalN);
   }
 
   const monthDiff = (target.year - anchor.year) * 12 + (target.month - anchor.month);
@@ -80,6 +80,9 @@ export const nextBoundary = ({
 
 export const boundaryAtOrBefore = ({ plan, date }: { plan: PeriodCadenceConfig; date: string }): string =>
   nextBoundary({ plan, after: date, steps: 0 });
+
+export const currentPeriodStart = ({ plan }: { plan: PeriodCadenceConfig }): string =>
+  boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
 
 /** Boundaries crossed from `from` to `to`; for two period starts, the periods between them. */
 export const countPeriodsBetween = ({

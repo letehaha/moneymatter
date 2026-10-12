@@ -3,7 +3,7 @@ import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import { ArrowDownRightIcon, ArrowUpRightIcon } from '@lucide/vue';
-import { format, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { computed } from 'vue';
 
 import { type PanelContext, type TrendKind, trendPaddingStarts, trendSummary, trendValues } from '../helpers';
@@ -16,7 +16,7 @@ const BAR_CLASSES: Record<TrendKind, { current: string; past: string }> = {
 };
 
 const { formatBaseCurrency } = useFormatCurrency();
-const { locale } = useDateLocale();
+const { format } = useDateLocale();
 
 const periods = computed(() => props.context.trends?.periods ?? []);
 const summary = computed(() =>
@@ -24,7 +24,7 @@ const summary = computed(() =>
 );
 
 const formatLabel = ({ startDate }: { startDate: string }) =>
-  format(parseISO(startDate), props.context.cadence === 'months' ? 'MMM' : 'd MMM', { locale: locale.value });
+  format(parseISO(startDate), props.context.cadence === 'months' ? 'MMM' : 'd MMM');
 
 const slots = computed(() => [
   ...trendPaddingStarts({

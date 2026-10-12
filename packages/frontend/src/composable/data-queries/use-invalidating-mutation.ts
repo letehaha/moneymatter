@@ -9,11 +9,11 @@ import { useI18n } from 'vue-i18n';
  * The API client already logs out on 401 and toasts a 402 with a "See plans" action,
  * so a second toast would blame the operation for it.
  */
-const isHandledByApiClient = (error: unknown) =>
+const isHandledByApiClient = ({ error }: { error: unknown }) =>
   isApiErrorWithCode(error, API_ERROR_CODES.unauthorized) || isApiErrorWithCode(error, API_ERROR_CODES.planRequired);
 
 export const notifyMutationError = ({ error, fallbackKey }: { error: unknown; fallbackKey: string }) => {
-  if (isHandledByApiClient(error)) return;
+  if (isHandledByApiClient({ error })) return;
   useNotificationCenter().addErrorNotification(extractApiErrorMessage(error) || i18n.global.t(fallbackKey));
 };
 
@@ -62,7 +62,7 @@ export const useInvalidatingMutation = <TData, TVariables>({
     onError: (error) => {
       if (silentErrorCodes?.some((code) => isApiErrorWithCode(error, code))) return;
       if (!persistentErrorId) return notifyMutationError({ error, fallbackKey: errorKey });
-      if (isHandledByApiClient(error)) return;
+      if (isHandledByApiClient({ error })) return;
       const text = extractApiErrorMessage(error) || t(errorKey);
       addNotification({ id: persistentErrorId, text, type: NotificationType.error, persistent: true });
     },

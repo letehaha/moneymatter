@@ -1,10 +1,9 @@
+import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types/budget-plans';
 import BudgetPlans from '@models/budget-plans.model';
 import { subDays } from 'date-fns';
 import { Op } from 'sequelize';
 
 import { createScheduledSync } from './lib/create-scheduled-sync';
-
-export const BUDGET_PLAN_TRASH_RETENTION_DAYS = 30;
 
 /**
  * One statement on purpose: find-the-ids-then-delete could race a restore

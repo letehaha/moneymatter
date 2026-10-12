@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import { loadBudgetPlanPeriods } from '@/api/budget-plans';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
 import type { BudgetPlanCoverage, BudgetPlanCoverageState } from '@bt/shared/types';
 import { CalendarIcon } from '@lucide/vue';
-import { useQuery } from '@tanstack/vue-query';
-import { format, parseISO } from 'date-fns';
 import { computed } from 'vue';
 
 import { type PanelContext, formatPeriodLabel } from '../helpers';
@@ -24,17 +20,13 @@ const props = defineProps<{ context: PanelContext; coverage: BudgetPlanCoverage 
 const { formatBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
 
-const { data: periods } = useQuery({
-  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetPlanPeriods, props.context.planId]),
-  queryFn: () => loadBudgetPlanPeriods({ planId: props.context.planId }),
-});
-
-const periodLabel = computed(() => {
-  const next = periods.value?.find((period) => period.id === props.coverage.periodId);
-  return next
-    ? formatPeriodLabel({ ...next, locale: locale.value })
-    : format(parseISO(props.coverage.startDate), 'd MMM yyyy', { locale: locale.value });
-});
+const periodLabel = computed(() =>
+  formatPeriodLabel({
+    startDate: props.coverage.startDate,
+    endDate: props.coverage.endDate,
+    locale: locale.value,
+  }),
+);
 
 const tone = computed(() => STATE_TONES[props.coverage.state]);
 </script>

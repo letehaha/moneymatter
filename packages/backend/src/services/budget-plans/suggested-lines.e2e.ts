@@ -14,7 +14,7 @@ import { ANTHROPIC_API_URL } from '@tests/mocks/anthropic/mock-api';
 import { GEMINI_API_URL, createGeminiMock } from '@tests/mocks/gemini/mock-api';
 import { HttpResponse, http } from 'msw';
 
-import { DAY_MS } from './periods/period-enumerator';
+import { MS_PER_DAY } from './periods/period-enumerator';
 
 const TEMPLATE = [
   { parentKey: 'housing', key: 'rent', group: 'Bills' },
@@ -369,7 +369,7 @@ describe('Suggested budget lines', () => {
       await helpers.setUserBilling({
         plan: PLANS.early_adopter,
         trialEndsAt: null,
-        firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * DAY_MS),
+        firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * MS_PER_DAY),
       });
 
       expect((await helpers.addSuggestedBudgetLines({ planId: plan.id })).statusCode).toBe(ERROR_CODES.PaymentRequired);

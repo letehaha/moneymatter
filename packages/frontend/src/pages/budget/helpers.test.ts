@@ -1,6 +1,7 @@
 import {
   ACCOUNT_CATEGORIES,
   type AccountModel,
+  type BudgetPlanModel,
   type BudgetPlanScheduled,
   type BudgetPlanScheduledItem,
   type BudgetPlanTrendPeriod,
@@ -21,6 +22,7 @@ import {
   formatPeriodShortLabel,
   type GoalEditorState,
   goalCaption,
+  goalEditorFields,
   goalEditorStateFrom,
   goalPeekStats,
   goalPeriodUnit,
@@ -40,6 +42,8 @@ import {
   setGoalFrequency,
   periodProgress,
   spendingPace,
+  trashDaysLeft,
+  trashedPlansOf,
   trendPaddingStarts,
   trendSummary,
   trendValues,
@@ -176,6 +180,35 @@ describe('isAttachableAccount', () => {
 
   it('rejects categories a plan cannot attach', () => {
     expect(isAttachableAccount({ account: { accountCategory: ACCOUNT_CATEGORIES.loan } as AccountModel })).toBe(false);
+  });
+});
+
+describe('trashDaysLeft', () => {
+  it('counts down from the retention window by calendar day', () => {
+    const now = new Date(2026, 9, 12, 9);
+    expect(trashDaysLeft({ deletedAt: new Date(2026, 9, 12, 8).toISOString(), now })).toBe(30);
+    expect(trashDaysLeft({ deletedAt: new Date(2026, 9, 10, 23).toISOString(), now })).toBe(28);
+  });
+
+  it('stops at zero once the window has passed', () => {
+    expect(trashDaysLeft({ deletedAt: new Date(2026, 7, 1).toISOString(), now: new Date(2026, 9, 12) })).toBe(0);
+  });
+});
+
+describe('trashedPlansOf', () => {
+  it('keeps only deleted plans, most recently deleted first', () => {
+    const plans = [
+      { id: 'old', deletedAt: '2026-10-01T10:00:00.000Z' },
+      { id: 'active', deletedAt: null },
+      { id: 'recent', deletedAt: '2026-10-11T10:00:00.000Z' },
+    ] as BudgetPlanModel[];
+
+    expect(trashedPlansOf({ plans }).map((plan) => plan.id)).toEqual(['recent', 'old']);
+    expect(plans.map((plan) => plan.id)).toEqual(['old', 'active', 'recent']);
+  });
+
+  it('returns nothing when no plan is deleted', () => {
+    expect(trashedPlansOf({ plans: [{ id: 'active', deletedAt: null }] as BudgetPlanModel[] })).toEqual([]);
   });
 });
 
@@ -909,6 +942,49 @@ describe('setGoalFrequency', () => {
     });
     expect(setGoalFrequency({ state, frequency: 'open_ended' }).behavior).toBe('reach_balance');
     expect(setGoalFrequency({ state, frequency: 'weekly' }).behavior).toBe('budget_another');
+  });
+});
+
+describe('goalEditorFields', () => {
+  const fields = ({ frequency, behavior }: Pick<GoalEditorState, 'frequency' | 'behavior'>) =>
+    goalEditorFields({ state: { frequency, behavior } });
+
+  it('asks for a weekday only on a weekly goal', () => {
+    expect(fields({ frequency: 'weekly', behavior: 'budget_another' }).weekday).toBe(true);
+    for (const frequency of ['biweekly', 'every_period', 'yearly', 'by_date', 'open_ended'] as const) {
+      expect(fields({ frequency, behavior: 'budget_another' }).weekday).toBe(false);
+    }
+  });
+
+  it('asks for an anchor date on biweekly, yearly and by-date goals', () => {
+    for (const frequency of ['biweekly', 'yearly', 'by_date'] as const) {
+      expect(fields({ frequency, behavior: 'budget_another' }).anchorDate).toBe(true);
+    }
+    for (const frequency of ['weekly', 'every_period', 'open_ended'] as const) {
+      expect(fields({ frequency, behavior: 'budget_another' }).anchorDate).toBe(false);
+    }
+  });
+
+  it('offers repeat on a by-date goal unless it saves up to a balance', () => {
+    expect(fields({ frequency: 'by_date', behavior: 'budget_another' }).repeat).toBe(true);
+    expect(fields({ frequency: 'by_date', behavior: 'refill_up_to' }).repeat).toBe(true);
+    expect(fields({ frequency: 'by_date', behavior: 'reach_balance' }).repeat).toBe(false);
+    expect(fields({ frequency: 'yearly', behavior: 'budget_another' }).repeat).toBe(false);
+  });
+
+  it('ties the stop-at balance to budget_another and the funding cap to refill_up_to', () => {
+    expect(fields({ frequency: 'every_period', behavior: 'budget_another' })).toMatchObject({
+      stopAtBalance: true,
+      fundingCap: false,
+    });
+    expect(fields({ frequency: 'every_period', behavior: 'refill_up_to' })).toMatchObject({
+      stopAtBalance: false,
+      fundingCap: true,
+    });
+    expect(fields({ frequency: 'open_ended', behavior: 'reach_balance' })).toMatchObject({
+      stopAtBalance: false,
+      fundingCap: false,
+    });
   });
 });
 

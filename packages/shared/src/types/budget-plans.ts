@@ -4,6 +4,8 @@ import { RecordId } from './record-id';
 export const BUDGET_PLAN_CADENCES = ['days', 'months', 'semi_monthly'] as const;
 export type BudgetPlanCadence = (typeof BUDGET_PLAN_CADENCES)[number];
 
+export const BUDGET_PLAN_TRASH_RETENTION_DAYS = 30;
+
 export const BUDGET_PLAN_CARRY_POLICIES = ['floor', 'signed', 'none'] as const;
 export type BudgetPlanCarryPolicy = (typeof BUDGET_PLAN_CARRY_POLICIES)[number];
 
@@ -88,9 +90,9 @@ export interface BudgetPlanModel {
   /** Keep Ready to Assign at 0. Only `true` while the pool is on. */
   zeroSum: boolean;
   expectedIncome: number | null;
-  createdAt: Date;
-  updatedAt: Date;
-  deletedAt: Date | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
 }
 
 export interface BudgetPlanLineEntry {
@@ -114,6 +116,10 @@ export interface BudgetPlanDetails {
   plan: BudgetPlanModel;
   accountIds: string[];
   lines: BudgetPlanLineEntry[];
+}
+
+export interface CreateBudgetPlanResponse extends BudgetPlanDetails {
+  suggestedLinesFailed?: boolean;
 }
 
 export interface BudgetPlanPeriod {
@@ -201,6 +207,8 @@ export interface BudgetPlanGoalsSummary {
 export interface BudgetPlanCoverage {
   periodId: string;
   startDate: string;
+  /** 'yyyy-MM-dd', exclusive. */
+  endDate: string;
   target: number;
   linedUp: number;
   percent: number;

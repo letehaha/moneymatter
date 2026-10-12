@@ -94,18 +94,35 @@ export function updateBudgetPlan<R extends boolean | undefined = false>({
   });
 }
 
-export function deleteBudgetPlan<R extends boolean | undefined = false>({ planId, raw }: { planId: string; raw?: R }) {
+export function deleteBudgetPlan<R extends boolean | undefined = false>({
+  planId,
+  permanent = false,
+  raw,
+}: {
+  planId: string;
+  permanent?: boolean;
+  raw?: R;
+}) {
   return makeRequest<undefined, R>({
     method: 'delete',
-    url: `/budget-plans/${planId}`,
+    url: `/budget-plans/${planId}${permanent ? '?permanent=true' : ''}`,
     raw,
   });
 }
 
-export function restoreBudgetPlan<R extends boolean | undefined = false>({ planId, raw }: { planId: string; raw?: R }) {
+export function restoreBudgetPlan<R extends boolean | undefined = false>({
+  planId,
+  replace,
+  raw,
+}: {
+  planId: string;
+  replace?: boolean;
+  raw?: R;
+}) {
   return makeRequest<Awaited<ReturnType<typeof _restorePlan>>, R>({
     method: 'post',
     url: `/budget-plans/${planId}/restore`,
+    payload: replace === undefined ? null : { replace },
     raw,
   });
 }

@@ -8,7 +8,7 @@ import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import * as helpers from '@tests/helpers';
 
-import { DAY_MS } from './periods/period-enumerator';
+import { MS_PER_DAY } from './periods/period-enumerator';
 
 const CURRENT = helpers.budgetPeriodStart();
 const PREVIOUS = helpers.budgetPeriodStart({ monthsAgo: 1 });
@@ -503,12 +503,46 @@ describe('Budget plan line update', () => {
             })
           ).statusCode,
           (await helpers.archiveBudgetPlanLine(target)).statusCode,
+          (await helpers.restoreBudgetPlanLine(target)).statusCode,
           (await helpers.deleteBudgetPlanLine(target)).statusCode,
         ];
       },
     });
 
     expect(statusCodes).toEqual([
+      ERROR_CODES.NotFoundError,
+      ERROR_CODES.NotFoundError,
+      ERROR_CODES.NotFoundError,
+      ERROR_CODES.NotFoundError,
+      ERROR_CODES.NotFoundError,
+    ]);
+    expect((await helpers.getBudgetPlan({ planId, raw: true })).lines).toEqual([line]);
+  });
+
+  it("404s on every line write against another user's plan and line", async () => {
+    const { planId, food } = await setup();
+    const line = await helpers.createBudgetPlanLine({
+      planId,
+      payload: { name: 'Food', categoryIds: [food.id] },
+      raw: true,
+    });
+    const target = { planId, lineId: line.id };
+
+    const other = await helpers.provisionSecondUserWithBaseCurrency();
+    const statusCodes = await helpers.asUser({
+      cookies: other.cookies,
+      fn: async () => [
+        (await helpers.createBudgetPlanLine({ planId, payload: { name: 'Planted', categoryIds: [food.id] } }))
+          .statusCode,
+        (await helpers.updateBudgetPlanLine({ ...target, payload: { name: 'Stolen' } })).statusCode,
+        (await helpers.archiveBudgetPlanLine(target)).statusCode,
+        (await helpers.restoreBudgetPlanLine(target)).statusCode,
+        (await helpers.deleteBudgetPlanLine(target)).statusCode,
+      ],
+    });
+
+    expect(statusCodes).toEqual([
+      ERROR_CODES.NotFoundError,
       ERROR_CODES.NotFoundError,
       ERROR_CODES.NotFoundError,
       ERROR_CODES.NotFoundError,
@@ -1097,7 +1131,7 @@ describe('Budget plan lines without the feature', () => {
     await helpers.setUserBilling({
       plan: PLANS.early_adopter,
       trialEndsAt: null,
-      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * DAY_MS),
+      firstBudgetPlanAt: new Date(Date.now() - (EARLY_ADOPTER_BUDGET_TRIAL_DAYS + 1) * MS_PER_DAY),
     });
 
     const response = await helpers.createBudgetPlanLine({ planId, payload: { name: 'X', categoryIds: [food.id] } });

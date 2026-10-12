@@ -11,7 +11,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { findLine, findPlan } from './find-plan';
 import { GoalSpec } from './fold/goal-ask';
-import { boundaryAtOrBefore } from './periods/period-enumerator';
+import { currentPeriodStart } from './periods/period-enumerator';
 
 interface LineGoalParams {
   userId: number;
@@ -90,7 +90,7 @@ const setLineGoalImpl = async ({
 
   const startPeriodStart = periodId
     ? toUtcDateString((await findPeriod({ planId: plan.id, periodId })).startDate)
-    : boundaryAtOrBefore({ plan, date: toUtcDateString(new Date()) });
+    : currentPeriodStart({ plan });
   const row = await BudgetLineGoals.create({ lineId, ...values, startPeriodStart });
 
   return toGoal({ row });

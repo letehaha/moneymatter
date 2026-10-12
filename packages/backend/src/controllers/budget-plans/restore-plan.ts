@@ -5,10 +5,11 @@ import { z } from 'zod';
 
 const schema = z.object({
   params: z.object({ planId: recordId() }),
+  body: z.strictObject({ replace: z.boolean().optional() }).optional(),
 });
 
-export default createController(schema, async ({ user, params }) => {
-  const data = await restorePlan({ userId: user.id, planId: params.planId });
+export default createController(schema, async ({ user, params, body }) => {
+  const data = await restorePlan({ userId: user.id, planId: params.planId, replace: body?.replace });
 
   return { data };
 });

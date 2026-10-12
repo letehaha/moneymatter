@@ -11,7 +11,7 @@ import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 
-import { DAY_MS } from './periods/period-enumerator';
+import { MS_PER_DAY } from './periods/period-enumerator';
 
 type Period = { id: string; startDate: string; endDate: string };
 
@@ -83,8 +83,9 @@ const goalOf = ({ result, lineId }: { result: Awaited<ReturnType<typeof view>>; 
   result.lines.find((entry) => entry.lineId === lineId)!.goal;
 
 const addDays = ({ date, days }: { date: string; days: number }) =>
-  new Date(Date.parse(date) + days * DAY_MS).toISOString().slice(0, 10);
-const daysIn = ({ period }: { period: Period }) => (Date.parse(period.endDate) - Date.parse(period.startDate)) / DAY_MS;
+  new Date(Date.parse(date) + days * MS_PER_DAY).toISOString().slice(0, 10);
+const daysIn = ({ period }: { period: Period }) =>
+  (Date.parse(period.endDate) - Date.parse(period.startDate)) / MS_PER_DAY;
 
 describe('Budget line goals: CRUD', () => {
   it('returns goal: null and goals: null when no line has a goal', async () => {
@@ -746,6 +747,7 @@ describe('Budget plan next-period coverage', () => {
     expect((await view({ planId, period: periods[CURRENT]! })).coverage).toEqual({
       periodId: periods[CURRENT + 1]!.id,
       startDate: periods[CURRENT + 1]!.startDate,
+      endDate: periods[CURRENT + 1]!.endDate,
       target: 0,
       linedUp: 700,
       percent: 0,
@@ -760,6 +762,7 @@ describe('Budget plan next-period coverage', () => {
     expect((await view({ planId, period: periods[CURRENT]! })).coverage).toEqual({
       periodId: periods[CURRENT + 1]!.id,
       startDate: periods[CURRENT + 1]!.startDate,
+      endDate: periods[CURRENT + 1]!.endDate,
       target: 260,
       linedUp: 40,
       percent: 15,

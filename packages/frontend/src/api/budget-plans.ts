@@ -12,6 +12,7 @@ import type {
   BudgetPlanScheduled,
   BudgetPlanTrends,
   CreateBudgetPlanPayload,
+  CreateBudgetPlanResponse,
   SetBudgetLineGoalPayload,
   SetBudgetPlanAssignmentPayload,
   SetBudgetPlanLayoutPayload,
@@ -23,11 +24,19 @@ export const loadBudgetPlans = async (): Promise<BudgetPlanModel[]> =>
 export const loadBudgetPlan = async ({ planId }: { planId: string }): Promise<BudgetPlanDetails> =>
   api.get(`/budget-plans/${planId}`);
 
-export const createBudgetPlan = async ({ payload }: { payload: CreateBudgetPlanPayload }): Promise<BudgetPlanDetails> =>
-  api.post('/budget-plans', payload);
+export const createBudgetPlan = async ({
+  payload,
+}: {
+  payload: CreateBudgetPlanPayload;
+}): Promise<CreateBudgetPlanResponse> => api.post('/budget-plans', payload);
 
-export const restoreBudgetPlan = async ({ planId }: { planId: string }): Promise<BudgetPlanDetails> =>
-  api.post(`/budget-plans/${planId}/restore`);
+export const restoreBudgetPlan = async ({
+  planId,
+  replace,
+}: {
+  planId: string;
+  replace?: boolean;
+}): Promise<BudgetPlanDetails> => api.post(`/budget-plans/${planId}/restore`, replace ? { replace: true } : undefined);
 
 export const loadBudgetPlanPeriods = async ({ planId }: { planId: string }): Promise<BudgetPlanPeriod[]> =>
   api.get(`/budget-plans/${planId}/periods`);
@@ -133,6 +142,9 @@ export const setBudgetPlanAccounts = async ({
 }): Promise<BudgetPlanDetails> => api.put(`/budget-plans/${planId}/accounts`, { accountIds });
 
 export const deleteBudgetPlan = async ({ planId }: { planId: string }) => api.delete(`/budget-plans/${planId}`);
+
+export const purgeBudgetPlan = async ({ planId }: { planId: string }) =>
+  api.delete(`/budget-plans/${planId}`, { query: { permanent: 'true' } });
 
 export const setBudgetLineGoal = async ({
   planId,

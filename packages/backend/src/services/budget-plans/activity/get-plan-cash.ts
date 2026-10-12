@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
@@ -115,7 +116,14 @@ export const getPlanCash = async ({
         quoteCode: baseCurrency!.currencyCode,
         date: openingUtc,
       });
-      if (rate === null) return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+      if (rate === null) {
+        logger.info('[Budget plans] No stored rate for an opening balance, using the current-rate value', {
+          planId: plan.id,
+          accountId: row.accountId,
+          currency: row.currencyCode,
+        });
+        return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+      }
 
       const nativeLimit = limits.has(row.accountId) ? Number(row.nativeLimit) : 0;
       return roundHalfToEven((Number(row.nativeOpening) - nativeLimit) * rate);

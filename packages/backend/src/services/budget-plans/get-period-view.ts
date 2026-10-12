@@ -198,6 +198,7 @@ const nextCoverage = ({
   return {
     periodId: next.period.id,
     startDate: next.period.startDate,
+    endDate: next.period.endDate,
     target: centsToApiDecimal(target),
     linedUp: centsToApiDecimal(linedUp),
     percent: target > 0 ? Math.min(100, Math.floor((linedUp * 100) / target)) : 0,

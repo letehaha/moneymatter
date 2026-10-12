@@ -3,6 +3,7 @@ import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
+import { z } from 'zod';
 
 import {
   FUTURE_PERIODS,
@@ -37,23 +38,25 @@ export const validateCadence = ({ cadence, intervalN, anchorDate, secondAnchorDa
   }
 };
 
-const isDate = ({ value }: { value: unknown }) => dateBound().safeParse(value).success;
+const restorablePlanRow = z
+  .object({
+    cadence: z.enum(BUDGET_PLAN_CADENCES),
+    carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES),
+    intervalN: z.number().int().min(1),
+    anchorDate: dateBound(),
+    secondAnchorDay: z.number().int().min(1).max(31).nullable(),
+    epochDate: dateBound(),
+    zeroSum: z.boolean().nullish(),
+    poolFrom: z.string().nullish(),
+  })
+  // A row the zeroSum CHECK would reject aborts the whole restore transaction, so it is dropped here instead.
+  .refine((plan) => !plan.zeroSum || !!plan.poolFrom);
 
 /** Restore skips createPlan, so a stored row gets its cadence rules and an epoch bound here. */
 export const isRestorablePlanRow = ({ row }: { row: Record<string, unknown> }): boolean => {
-  const plan = row as unknown as PeriodCadenceConfig & {
-    epochDate: string;
-    carryPolicy: string;
-    zeroSum?: boolean;
-    poolFrom?: string | null;
-  };
-  if (!BUDGET_PLAN_CADENCES.includes(plan.cadence)) return false;
-  if (!(BUDGET_PLAN_CARRY_POLICIES as readonly string[]).includes(plan.carryPolicy)) return false;
-  if (!Number.isInteger(plan.intervalN) || plan.intervalN < 1) return false;
-  if (plan.secondAnchorDay !== null && !(plan.secondAnchorDay >= 1 && plan.secondAnchorDay <= 31)) return false;
-  if (!isDate({ value: plan.anchorDate }) || !isDate({ value: plan.epochDate })) return false;
-  // A row the zeroSum CHECK would reject aborts the whole restore transaction, so it is dropped here instead.
-  if (plan.zeroSum && !plan.poolFrom) return false;
+  const parsed = restorablePlanRow.safeParse(row);
+  if (!parsed.success) return false;
+  const plan = parsed.data;
 
   try {
     validateCadence(plan);

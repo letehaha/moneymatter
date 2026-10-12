@@ -8,7 +8,8 @@ import BudgetLineGroups from './budget-line-groups.model';
 import BudgetPlans from './budget-plans.model';
 
 /** What created the line; drives the analytics on how suggested lines get edited. */
-export type BudgetLineOrigin = 'manual' | 'rules' | 'ai';
+export const BUDGET_LINE_ORIGINS = ['manual', 'rules', 'ai'] as const;
+export type BudgetLineOrigin = (typeof BUDGET_LINE_ORIGINS)[number];
 
 @Table({
   tableName: 'BudgetLines',

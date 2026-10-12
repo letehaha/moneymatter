@@ -46,6 +46,7 @@ import {
   type GoalPeriodUnit,
   amountToneClass,
   availablePillClass,
+  fundedOf,
   goalCaption,
   goalStatusDisplay,
   groupLines,
@@ -414,7 +415,7 @@ const archiveSelected = () => {
           {{
             $t('budgetPlans.grid.spentOf', {
               spent: formatBaseCurrency(spentOf({ line })),
-              total: formatBaseCurrency(Math.max(0, line.carriedIn + line.assigned)),
+              total: formatBaseCurrency(fundedOf(line)),
             })
           }}
         </span>
@@ -428,7 +429,7 @@ const archiveSelected = () => {
           {{
             $t('budgetPlans.grid.spentOf', {
               spent: formatBaseCurrency(spentOf({ line })),
-              total: formatBaseCurrency(Math.max(0, line.carriedIn + line.assigned)),
+              total: formatBaseCurrency(fundedOf(line)),
             })
           }}
         </span>
@@ -498,20 +499,28 @@ const archiveSelected = () => {
 
     <DefineGroupControls v-slot="{ group }">
       <div class="flex min-w-0 items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          class="-ml-1.5 size-6 shrink-0"
-          :aria-label="
+        <DesktopOnlyTooltip
+          :content="
             collapsedIds.has(group.id)
               ? $t('budgetPlans.groups.expand', { name: group.name })
               : $t('budgetPlans.groups.collapse', { name: group.name })
           "
-          :aria-expanded="!collapsedIds.has(group.id)"
-          @click="toggleGroup({ groupId: group.id })"
         >
-          <ChevronDownIcon :class="cn('size-4 transition-transform', collapsedIds.has(group.id) && '-rotate-90')" />
-        </Button>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            class="-ml-1.5 size-6 shrink-0"
+            :aria-label="
+              collapsedIds.has(group.id)
+                ? $t('budgetPlans.groups.expand', { name: group.name })
+                : $t('budgetPlans.groups.collapse', { name: group.name })
+            "
+            :aria-expanded="!collapsedIds.has(group.id)"
+            @click="toggleGroup({ groupId: group.id })"
+          >
+            <ChevronDownIcon :class="cn('size-4 transition-transform', collapsedIds.has(group.id) && '-rotate-90')" />
+          </Button>
+        </DesktopOnlyTooltip>
         <span class="min-w-0 truncate text-xs font-semibold tracking-wide uppercase">{{ group.name }}</span>
         <GroupMenu v-if="narrow" :group="group" :menu-key="`group-card-${group.id}`" />
         <DesktopOnlyTooltip v-else :content="$t('budgetPlans.groups.addLine', { name: group.name })">

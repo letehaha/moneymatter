@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { loadBudgetPlans, restoreBudgetPlan } from '@/api/budget-plans';
+import { loadBudgetPlans } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import PlanRestricted from '@/components/billing/plan-restricted.vue';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
-import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { useCurrenciesStore, useUserStore } from '@/stores';
+import { useUserStore } from '@/stores';
 import { FEATURES, PLANS } from '@bt/shared/types';
-import { TriangleAlertIcon } from '@lucide/vue';
+import { Trash2Icon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { compareDesc } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -22,13 +20,15 @@ import BudgetPlanSkeleton from './components/budget-plan-skeleton.vue';
 import BudgetSidePanelSkeleton from './components/budget-side-panel-skeleton.vue';
 import BudgetTrialNotice from './components/budget-trial-notice.vue';
 import CreatePlanDialog from './components/create-plan-dialog.vue';
+import DeletedPlansDialog from './components/deleted-plans-dialog.vue';
 import { useFrameLayout } from './composables/use-panel-layout';
+import { trashedPlansOf } from './helpers';
 
 const router = useRouter();
-const { baseCurrency } = storeToRefs(useCurrenciesStore());
 const { entitlements } = storeToRefs(useUserStore());
 
 const isCreateOpen = ref(false);
+const isDeletedOpen = ref(false);
 const frameRef = ref<HTMLElement | null>(null);
 const { panelWidth, isNarrow, isPanelAttached, isPanelTab } = useFrameLayout({ frameRef });
 
@@ -45,14 +45,7 @@ const {
 
 const activePlan = computed(() => plans.value?.find((plan) => !plan.deletedAt));
 
-// Restore fails once the base currency moved away from the plan's, so the offer is hidden then.
-const trashedPlan = computed(() => {
-  if (activePlan.value) return undefined;
-  const [latest] = (plans.value ?? [])
-    .filter((plan) => plan.deletedAt)
-    .sort((a, b) => compareDesc(a.deletedAt!, b.deletedAt!));
-  return latest && latest.currencyCode === baseCurrency.value?.currencyCode ? latest : undefined;
-});
+const trashedPlans = computed(() => trashedPlansOf({ plans: plans.value ?? [] }));
 
 // ponytail: v1 allows a single plan, so the first active one wins; a plan picker replaces this when that changes.
 watch(
@@ -66,29 +59,16 @@ watch(
   },
   { immediate: true },
 );
-
-const { isPending: isRestoring, mutate: restore } = useInvalidatingMutation({
-  mutationFn: restoreBudgetPlan,
-  invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
-  successKey: 'budgetPlans.trashed.restored',
-  errorKey: 'budgetPlans.trashed.restoreError',
-});
 </script>
 
 <template>
   <PageWrapper class="grid gap-6">
     <div class="flex items-center justify-between gap-4">
       <h1 class="text-2xl font-semibold tracking-tight">{{ $t('budgetPlans.title') }}</h1>
-      <Button
-        v-if="trashedPlan && !activePlan"
-        variant="outline"
-        size="sm"
-        class="text-warning-text"
-        :disabled="isRestoring"
-        @click="restore({ planId: trashedPlan.id })"
-      >
-        <TriangleAlertIcon class="size-4" />
-        {{ $t('budgetPlans.trashed.restoreAction') }}
+      <Button v-if="trashedPlans.length && !activePlan" variant="outline" size="sm" @click="isDeletedOpen = true">
+        <Trash2Icon class="size-4" />
+        {{ $t('budgetPlans.trashed.open') }}
+        <span class="bg-muted rounded-full px-1.5 text-xs tabular-nums">{{ trashedPlans.length }}</span>
       </Button>
     </div>
 
@@ -148,5 +128,6 @@ const { isPending: isRestoring, mutate: restore } = useInvalidatingMutation({
     </div>
 
     <CreatePlanDialog v-model:open="isCreateOpen" />
+    <DeletedPlansDialog v-model:open="isDeletedOpen" :plans="trashedPlans" />
   </PageWrapper>
 </template>

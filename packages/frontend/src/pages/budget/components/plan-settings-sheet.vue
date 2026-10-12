@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { deleteBudgetPlan, setBudgetPlanAccounts, updateBudgetPlan } from '@/api/budget-plans';
+import { deleteBudgetPlan, loadBudgetPlans, setBudgetPlanAccounts, updateBudgetPlan } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
@@ -19,16 +19,25 @@ import {
   ACCOUNT_STATUSES,
   type AccountModel,
   BUDGET_PLAN_NAME_MAX_LENGTH,
+  BUDGET_PLAN_TRASH_RETENTION_DAYS,
   type BudgetPlanCarryPolicy,
   type BudgetPlanDetails,
 } from '@bt/shared/types';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
+import { ChevronRightIcon, Trash2Icon } from '@lucide/vue';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { parseISO } from 'date-fns';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import { BUDGET_POOL_ENABLED, CARRY_POLICY_OPTIONS, cadenceLabel, isAttachableAccount } from '../helpers';
+import {
+  BUDGET_POOL_ENABLED,
+  CARRY_POLICY_OPTIONS,
+  cadenceLabel,
+  isAttachableAccount,
+  trashedPlansOf,
+} from '../helpers';
+import DeletedPlansDialog from './deleted-plans-dialog.vue';
 
 // Each save returns the full plan into the cache, so one scope runs them in order and the last response wins.
 const SETTINGS_MUTATION_SCOPE = { id: 'budget-plan-settings' };
@@ -50,6 +59,15 @@ const selectedAccountIds = ref(props.plan.accountIds);
 const accountsError = ref('');
 const isDeleteOpen = ref(false);
 const isPoolConfirmOpen = ref(false);
+const isTrashOpen = ref(false);
+
+const { data: allPlans } = useQuery({
+  queryKey: VUE_QUERY_CACHE_KEYS.budgetPlansList,
+  queryFn: loadBudgetPlans,
+  enabled: isOpen,
+});
+
+const trashedPlans = computed(() => trashedPlansOf({ plans: allPlans.value ?? [] }));
 
 watch(isOpen, () => {
   accountsError.value = '';
@@ -125,17 +143,22 @@ const isOfferedAccount = ({ account }: { account: AccountModel }) =>
   isAttachableAccount({ account }) &&
   (account.status === ACCOUNT_STATUSES.active || props.plan.accountIds.includes(account.id));
 
+const leaveTrashedPlan = () => {
+  // Removed, not invalidated: the budget page would read the cached list and redirect back to this plan.
+  queryClient.removeQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetPlans });
+  isTrashOpen.value = false;
+  isOpen.value = false;
+  router.push({ name: ROUTES_NAMES.budget });
+};
+
 const { isPending: isDeleting, mutate: removePlan } = useInvalidatingMutation({
   mutationFn: deleteBudgetPlan,
   invalidateKeys: [],
   successKey: 'budgetPlans.settings.deleted',
   errorKey: 'budgetPlans.settings.deleteError',
   onSuccess: () => {
-    // Removed, not invalidated: the budget page would read the cached list and redirect back to this plan.
-    queryClient.removeQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetPlans });
     isDeleteOpen.value = false;
-    isOpen.value = false;
-    router.push({ name: ROUTES_NAMES.budget });
+    leaveTrashedPlan();
   },
 });
 
@@ -301,21 +324,51 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
         </p>
       </div>
 
+      <template v-if="trashedPlans.length">
+        <Separator />
+
+        <Button
+          variant="outline"
+          class="h-auto w-full justify-start gap-3 px-3 py-2.5 text-left whitespace-normal"
+          @click="isTrashOpen = true"
+        >
+          <Trash2Icon class="text-muted-foreground size-4 shrink-0" />
+          <span class="grid min-w-0 flex-1 gap-0.5">
+            <span class="text-sm font-medium">{{ $t('budgetPlans.trashed.settingsRow') }}</span>
+            <span class="text-muted-foreground text-xs font-normal">
+              {{
+                $t(
+                  'budgetPlans.trashed.settingsRowHint',
+                  { count: trashedPlans.length, days: BUDGET_PLAN_TRASH_RETENTION_DAYS },
+                  trashedPlans.length,
+                )
+              }}
+            </span>
+          </span>
+          <ChevronRightIcon class="text-muted-foreground size-4 shrink-0" />
+        </Button>
+      </template>
+
       <Separator />
 
-      <div class="border-destructive grid gap-2 rounded-lg border p-3">
-        <Label class="text-destructive-text">{{ $t('budgetPlans.settings.dangerZone') }}</Label>
-        <div>
-          <Button variant="destructive" size="sm" :disabled="isDeleting" @click="isDeleteOpen = true">
-            {{ $t('budgetPlans.settings.delete') }}
-          </Button>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="grid min-w-0 gap-0.5">
+          <p class="text-sm font-medium">{{ $t('budgetPlans.settings.deleteTitle') }}</p>
+          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.deleteCaption') }}</p>
         </div>
-        <p class="text-muted-foreground text-xs">
-          {{ $t('budgetPlans.settings.deleteCaption') }}
-        </p>
+        <Button variant="destructive" size="sm" class="shrink-0" :disabled="isDeleting" @click="isDeleteOpen = true">
+          {{ $t('budgetPlans.settings.delete') }}
+        </Button>
       </div>
     </div>
   </ResponsiveDialog>
+
+  <DeletedPlansDialog
+    v-model:open="isTrashOpen"
+    :plans="trashedPlans"
+    :active-plan="plan.plan"
+    @replaced="leaveTrashedPlan"
+  />
 
   <ResponsiveAlertDialog
     v-model:open="isPoolConfirmOpen"

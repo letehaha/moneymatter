@@ -22,7 +22,7 @@
         "signed": "Both leftovers and overspending move to the next period.",
         "none": "Every line starts at zero, whatever happened before."
       },
-      "dangerZone": "Danger zone",
+      "deleteTitle": "Delete this budget",
       "delete": "Move to trash",
       "deleteCaption": "Kept for 30 days, then deleted.",
       "deleteConfirmTitle": "Move this budget to trash?",
@@ -76,12 +76,27 @@
       }
     },
     "trashed": {
-      "title": "Your budget is in the trash",
-      "description": "Restore it to pick up where you left off.",
+      "open": "Deleted",
+      "title": "Recently deleted budgets",
+      "description": "Kept for {days} days, then removed for good.",
+      "deletedOn": "Deleted {date}",
+      "daysLeft": "{n} day left | {n} days left",
       "restore": "Restore",
+      "restorePlan": "Restore {name}",
       "restored": "Budget restored",
-      "restoreAction": "Restore budget from trash",
-      "restoreError": "Could not restore the budget"
+      "restoreError": "Could not restore the budget",
+      "currencyMismatch": "Budgeted in {planCurrency}. Your base currency is now {baseCurrency}, so it can't be restored.",
+      "purge": "Delete forever",
+      "purgePlan": "Delete {name} forever",
+      "purgeTitle": "Delete {name} forever?",
+      "purgeDescription": "Its lines, goals and assigned amounts are removed for good. Your transactions are not touched.",
+      "purged": "Budget deleted for good",
+      "purgeError": "Couldn't delete the budget",
+      "settingsRow": "Recently deleted",
+      "settingsRowHint": "{count} budget, kept for {days} days | {count} budgets, kept for {days} days",
+      "replaceTitle": "Replace your current budget?",
+      "replaceDescription": "You can have one budget at a time. {restored} becomes your budget, and {current} moves to Recently deleted for 30 days.",
+      "replaceConfirm": "Replace"
     },
     "create": {
       "title": "Start budgeting",
@@ -98,6 +113,7 @@
       "submit": "Create budget",
       "building": "Building your lines…",
       "success": "Budget created",
+      "suggestedLinesFailed": "Suggested lines couldn't be added. You can add them from the budget.",
       "error": "Could not create the budget",
       "suggestedLinesLabel": "Smart pre-fill",
       "suggestedLinesHint": "Turns your last 3 months of spending into named groups and lines, with the average as each amount. With no history, adds a starter set. Takes a few seconds. Change or remove any of them later."
