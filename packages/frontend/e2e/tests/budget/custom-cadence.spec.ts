@@ -23,6 +23,8 @@ const openCustomCadence = async ({ page }: { page: Page }): Promise<Locator> => 
   await expect(dialog).toBeVisible();
 
   await dialog.getByRole('button', { name: 'Custom', exact: true }).click();
+  // With pre-fill on the submit button reads "Next" and opens the setup questions.
+  await dialog.getByRole('switch', { name: 'Smart pre-fill' }).setChecked(false);
   return dialog;
 };
 
@@ -85,7 +87,6 @@ test.describe('Budget custom cadence', () => {
 
     await dialog.getByPlaceholder(EVERY_PLACEHOLDER).fill(String(CUSTOM_MONTHS));
     await pickDialogSelect({ page, nth: 0, optionName: 'Months' });
-    await dialog.getByRole('switch', { name: 'Smart pre-fill' }).setChecked(false);
 
     const createRequest = page.waitForRequest(
       (request) => request.method() === 'POST' && /\/budget-plans$/.test(new URL(request.url()).pathname),
