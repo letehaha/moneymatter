@@ -94,8 +94,30 @@ jobs:
           image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }}
           push: 'true'
 
+  build-combined:
+    needs: [backup, prepare]
+    runs-on: ubuntu-latest
+    if: ${{ always() && needs.prepare.result == 'success' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+
+      - uses: ./.github/actions/combined-docker-build
+        with:
+          sentry-auth-token: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          sentry-org: ${{ secrets.SENTRY_ORG }}
+          sentry-project: ${{ secrets.SENTRY_PROJECT }}
+          sentry-release: ${{ needs.prepare.outputs.sha }}
+          app-commit-hash: ${{ needs.prepare.outputs.sha }}
+          image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }}
+          push: 'true'
+
   deploy:
-    needs: [build-frontend, build-backend]
+    needs: [build-frontend, build-backend, build-combined]
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Dokploy deployment

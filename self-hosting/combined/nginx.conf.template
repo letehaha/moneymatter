@@ -1,0 +1,312 @@
+worker_processes  1;
+error_log  /dev/stderr warn;
+pid        /tmp/nginx.pid;
+
+events {
+  worker_connections  1024;
+}
+
+http {
+  # Temp paths for non-root user
+  client_body_temp_path /tmp/client_temp;
+  proxy_temp_path       /tmp/proxy_temp;
+  fastcgi_temp_path     /tmp/fastcgi_temp;
+  uwsgi_temp_path       /tmp/uwsgi_temp;
+  scgi_temp_path        /tmp/scgi_temp;
+
+  include       /etc/nginx/mime.types;
+  # Register markdown extension for agent content negotiation.
+  types {
+    text/markdown md;
+  }
+  default_type  application/octet-stream;
+
+  # Markdown-for-Agents content negotiation: serve .md variant when
+  # Accept: text/markdown is present; fall back to HTML otherwise.
+  map $http_accept $landing_index_file {
+    default           /index.html;
+    "~*text/markdown" /index.md;
+  }
+  map $http_accept $landing_privacy_file {
+    default           /privacy-policy/index.html;
+    "~*text/markdown" /privacy-policy.md;
+  }
+  map $http_accept $landing_terms_file {
+    default           /terms-of-use/index.html;
+    "~*text/markdown" /terms-of-use.md;
+  }
+
+  log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_user_agent" "$http_x_forwarded_for"';
+  access_log  /dev/stdout  main;
+
+  sendfile        on;
+  keepalive_timeout  65;
+
+  # Hide nginx version
+  server_tokens off;
+
+  # Gzip compression
+  gzip on;
+  gzip_vary on;
+  gzip_min_length 1024;
+  gzip_proxied any;
+  gzip_comp_level 6;
+  gzip_types text/plain text/css text/xml text/javascript
+             application/javascript application/json application/xml
+             application/xml+rss image/svg+xml;
+
+  server {
+    # envsubst'd by the container entrypoint from LISTEN_PORT (default 80).
+    listen       ${LISTEN_PORT};
+    server_name  _;
+    absolute_redirect off;
+
+    # Content-Security-Policy for the SPA.
+    set $csp_policy "default-src 'self'; script-src 'self' 'unsafe-eval' https://*.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ${CSP_EXTRA_CONNECT} ${CSP_EXTRA_ANALYTICS} https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com; worker-src 'self' blob:; frame-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' ${CSP_EXTRA_FORM_ACTION}; object-src 'none'";
+
+    # CSP for the static Astro landing pages (/, /privacy-policy, /terms-of-use).
+    set $csp_policy_landing "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' ${CSP_EXTRA_CONNECT} ${CSP_EXTRA_ANALYTICS} https://api.iconify.design https://api.simplesvg.com https://api.unisvg.com; worker-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self' ${CSP_EXTRA_FORM_ACTION}; object-src 'none'";
+
+    # Security headers
+    add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=()" always;
+    add_header Content-Security-Policy $csp_policy always;
+
+    client_max_body_size 15m;
+
+    # Entrypoint-generated /api and OAuth/MCP reverse proxy includes
+    include /etc/nginx/includes/*.conf;
+
+    # PostHog reverse proxy
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 5s;
+    set $posthog_api_host eu.i.posthog.com;
+    set $posthog_assets_host eu-assets.i.posthog.com;
+
+    location ^~ /helper/static/ {
+      rewrite ^/helper/static/(.*)$ /static/$1 break;
+      proxy_pass https://$posthog_assets_host;
+      proxy_set_header Host $posthog_assets_host;
+      proxy_ssl_verify on;
+      proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+      proxy_ssl_server_name on;
+      proxy_ssl_name $posthog_assets_host;
+    }
+
+    location ^~ /helper/ {
+      rewrite ^/helper/(.*)$ /$1 break;
+      proxy_pass https://$posthog_api_host;
+      proxy_set_header Host $posthog_api_host;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_ssl_verify on;
+      proxy_ssl_trusted_certificate /etc/ssl/certs/ca-certificates.crt;
+      proxy_ssl_server_name on;
+      proxy_ssl_name $posthog_api_host;
+    }
+
+    # --- Astro landing pages ---
+    location = / {
+      ${LANDING_REDIRECT}
+
+      root   /landing;
+      try_files $landing_index_file =404;
+
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=()" always;
+      add_header Content-Security-Policy $csp_policy_landing always;
+
+      add_header Link '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"' always;
+      add_header Link '</.well-known/mcp/server-card.json>; rel="service-desc"; type="application/json"' always;
+      add_header Link '</terms-of-use>; rel="terms-of-service"' always;
+      add_header Link '</privacy-policy>; rel="privacy-policy"' always;
+
+      add_header Vary "Accept" always;
+    }
+
+    location = /privacy-policy {
+      root   /landing;
+      try_files $landing_privacy_file =404;
+
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=()" always;
+      add_header Content-Security-Policy $csp_policy_landing always;
+
+      add_header Link '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"' always;
+      add_header Link '</terms-of-use>; rel="terms-of-service"' always;
+
+      add_header Vary "Accept" always;
+    }
+
+    location = /terms-of-use {
+      root   /landing;
+      try_files $landing_terms_file =404;
+
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=()" always;
+      add_header Content-Security-Policy $csp_policy_landing always;
+
+      add_header Link '</.well-known/api-catalog>; rel="api-catalog"; type="application/linkset+json"' always;
+      add_header Link '</privacy-policy>; rel="privacy-policy"' always;
+
+      add_header Vary "Accept" always;
+    }
+
+    # --- Agent discovery well-known paths ---
+    location = /.well-known/api-catalog {
+      root /frontend;
+      default_type "application/linkset+json";
+      add_header Access-Control-Allow-Origin "*" always;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /.well-known/mcp/server-card.json {
+      root /frontend;
+      add_header Access-Control-Allow-Origin "*" always;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /.well-known/security.txt {
+      root /frontend;
+      default_type "text/plain";
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /security.txt {
+      root /frontend;
+      try_files /.well-known/security.txt =404;
+      default_type "text/plain";
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /.well-known/agent-skills/index.json {
+      root /frontend;
+      add_header Access-Control-Allow-Origin "*" always;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location ^~ /skills/ {
+      root /frontend;
+      add_header Access-Control-Allow-Origin "*" always;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # Serve Astro static assets
+    location ^~ /_astro/ {
+      root   /landing;
+      expires 1y;
+      add_header Cache-Control "public, max-age=31536000, immutable";
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # Sitemap
+    location = /sitemap-index.xml {
+      root /landing;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+    location ~ ^/sitemap-\d+\.xml$ {
+      root /landing;
+      add_header Cache-Control "public, max-age=3600" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+    location = /sitemap.xml {
+      return 301 /sitemap-index.xml;
+    }
+
+    # Images: try landing first, then frontend
+    location ^~ /img/ {
+      root   /landing;
+      try_files $uri @frontend_img;
+    }
+    location @frontend_img {
+      root   /frontend;
+      try_files $uri =404;
+      expires 7d;
+      add_header Cache-Control "public, max-age=604800";
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # --- SPA static assets ---
+    location ~* \.(?:js|css)$ {
+      root   /frontend;
+      expires 1y;
+      add_header Cache-Control "public, max-age=31536000, immutable";
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location ~* \.(?:woff2?|ttf|otf|eot)$ {
+      root   /frontend;
+      expires 1y;
+      add_header Cache-Control "public, max-age=31536000, immutable";
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location ~* \.(?:png|jpg|jpeg|gif|webp|svg|ico)$ {
+      root   /frontend;
+      expires 7d;
+      add_header Cache-Control "public, max-age=604800";
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /version.json {
+      root /frontend;
+      add_header Cache-Control "no-store" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    location = /config.js {
+      root /frontend;
+      add_header Cache-Control "no-store" always;
+      add_header X-Content-Type-Options "nosniff" always;
+    }
+
+    # SPA fallback
+    location / {
+      root   /frontend;
+      index  index.html;
+      try_files $uri $uri/ /index.html;
+      add_header Cache-Control "no-store" always;
+      add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload" always;
+      add_header X-Frame-Options "SAMEORIGIN" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+      add_header Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=()" always;
+      add_header Content-Security-Policy $csp_policy always;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+      root   /usr/share/nginx/html;
+    }
+  }
+}

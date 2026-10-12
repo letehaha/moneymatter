@@ -1,0 +1,110 @@
+name: Build combined Docker image
+description: Build and optionally push the combined (Frontend + Backend + embedded Redis) Docker image
+
+inputs:
+  sentry-auth-token:
+    description: 'SENTRY_AUTH_TOKEN - Sentry auth token for source map upload'
+    required: false
+    default: ''
+  sentry-org:
+    description: 'SENTRY_ORG - Sentry organization slug'
+    required: false
+    default: ''
+  sentry-project:
+    description: 'SENTRY_PROJECT - Sentry project slug'
+    required: false
+    default: ''
+  sentry-release:
+    description: 'VITE_SENTRY_RELEASE - Release version (git SHA) for Sentry'
+    required: false
+    default: ''
+  app-commit-hash:
+    description: 'VITE_APP_COMMIT_HASH - Git SHA baked into the bundle for stale-version detection (polled against /version.json)'
+    required: false
+    default: ''
+  registry:
+    description: 'Container registry to log in to (e.g. ghcr.io)'
+    required: false
+    default: 'ghcr.io'
+  registry-username:
+    description: 'Username for container registry login'
+    required: false
+    default: ''
+  registry-token:
+    description: 'Password or token for container registry login'
+    required: false
+    default: ''
+  image-name:
+    description: 'Docker image name (without tag)'
+    required: false
+    default: 'ghcr.io/elwin/moneymatter/combined'
+  image-tag:
+    description: 'Docker image tag(s). Comma/space-separated for multiple (e.g. "latest,sha-abc1234"); each becomes a full ref.'
+    required: false
+    default: 'latest'
+  platforms:
+    description: 'Target platforms for the build (e.g. "linux/amd64" or "linux/amd64,linux/arm64"). Multi-arch requires push=true.'
+    required: false
+    default: 'linux/amd64'
+  push:
+    description: Specifies if docker result should be pushed
+    required: false
+    default: 'false'
+
+outputs:
+  docker-build-digest:
+    description: Docker build digest
+    value: ${{ steps.docker-build.outputs.digest }}
+
+runs:
+  using: composite
+  steps:
+    - name: Login to Container Registry
+      if: inputs.push == 'true'
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+      with:
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry-username || github.actor }}
+        password: ${{ inputs.registry-token || github.token }}
+
+    - name: Set up QEMU
+      if: inputs.platforms != 'linux/amd64'
+      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+
+    - name: Compose image tags
+      id: tags
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image-name }}
+        TAG_LIST: ${{ inputs.image-tag }}
+      run: |
+        {
+          echo "refs<<EOF"
+          IFS=', ' read -ra parts <<< "$TAG_LIST"
+          for tag in "${parts[@]}"; do
+            [ -n "$tag" ] && echo "${IMAGE}:${tag}"
+          done
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Build
+      id: docker-build
+      uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6.19.2
+      with:
+        context: ./
+        file: ./self-hosting/combined/Dockerfile
+        push: ${{ inputs.push == 'true' }}
+        load: ${{ inputs.push != 'true' }}
+        platforms: ${{ inputs.platforms }}
+        tags: ${{ steps.tags.outputs.refs }}
+        labels: |
+          org.opencontainers.image.source=https://github.com/elwin/moneymatter
+        build-args: |
+          VITE_SENTRY_RELEASE=${{ inputs.sentry-release }}
+          VITE_APP_COMMIT_HASH=${{ inputs.app-commit-hash }}
+          SENTRY_AUTH_TOKEN=${{ inputs.sentry-auth-token }}
+          SENTRY_ORG=${{ inputs.sentry-org }}
+          SENTRY_PROJECT=${{ inputs.sentry-project }}

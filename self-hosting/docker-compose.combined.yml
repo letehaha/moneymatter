@@ -1,0 +1,85 @@
+# MoneyMatter Combined Compose Stack
+#
+# Runs MoneyMatter with just 2 containers:
+#   1. app (Frontend + Backend + embedded Redis in a single container)
+#   2. db  (PostgreSQL database)
+#
+# Usage:
+#   cp .env.example .env   # fill in REQUIRED database and auth secrets
+#   docker compose -f docker-compose.combined.yml up -d
+#
+# Access the application at: http://localhost:${HTTP_PORT:-8080}
+
+name: moneymatter-combined
+
+services:
+  app:
+    image: ghcr.io/elwin/moneymatter/combined:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    ports:
+      - '${HTTP_PORT:-8080}:${LISTEN_PORT:-80}'
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+      - path: stack.env
+        required: false
+    environment:
+      # Database connection (points to the db service container)
+      APPLICATION_DB_HOST: db
+      APPLICATION_DB_PORT: 5432
+      APPLICATION_DB_USERNAME: ${APPLICATION_DB_USERNAME:-moneymatter}
+      APPLICATION_DB_PASSWORD: ${APPLICATION_DB_PASSWORD:?not set - copy .env.example to .env and fill in secrets}
+      APPLICATION_DB_DATABASE: ${APPLICATION_DB_DATABASE:-moneymatter}
+      APPLICATION_DB_DIALECT: postgres
+
+      # Redis (embedded inside this container on localhost)
+      APPLICATION_REDIS_HOST: 127.0.0.1
+      APPLICATION_HOST: 127.0.0.1
+      APPLICATION_PORT: 8081
+
+      # Auth secrets & URLs
+      APPLICATION_JWT_SECRET: ${APPLICATION_JWT_SECRET}
+      APP_SESSION_ID_SECRET: ${APP_SESSION_ID_SECRET}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      AUTH_ORIGIN: ${AUTH_ORIGIN:-http://localhost:${HTTP_PORT:-8080}}
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:${HTTP_PORT:-8080}}
+
+      # Optional configuration
+      IS_SELF_HOST: 'true'
+      SKIP_LANDING: ${SKIP_LANDING:-true}
+      LISTEN_PORT: ${LISTEN_PORT:-80}
+      POSTHOG_KEY: ${VITE_POSTHOG_KEY:-}
+      POSTHOG_HOST: ${VITE_POSTHOG_HOST:-}
+      LOGO_DEV_TOKEN: ${VITE_LOGO_DEV_TOKEN:-}
+      SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+      SENTRY_RELEASE: ${VITE_SENTRY_RELEASE:-}
+    volumes:
+      - ${ATTACHMENTS_PATH:-attachments_data}:/app/packages/backend/data/attachments
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://127.0.0.1:${LISTEN_PORT:-80}/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${APPLICATION_DB_USERNAME:-moneymatter}
+      POSTGRES_PASSWORD: ${APPLICATION_DB_PASSWORD:?not set - fill in .env}
+      POSTGRES_DB: ${APPLICATION_DB_DATABASE:-moneymatter}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db_data:
+  attachments_data:
