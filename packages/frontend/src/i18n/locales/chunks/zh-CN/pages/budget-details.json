@@ -44,7 +44,7 @@
       },
       "statistics": {
         "tabs": {
-          "categories": "Categories",
+          "categories": "分类",
           "timeline": "Timeline"
         },
         "errorTitle": "Failed to load statistics",

@@ -174,6 +174,11 @@
         "loadingButton": "加载中……",
         "createButton": "创建",
         "editButton": "编辑",
+        "duplicateButton": "Duplicate",
+        "createMore": {
+          "label": "Create more",
+          "createdToast": "Transaction created"
+        },
         "fromAccountLabel": "从账户",
         "toAccountLabel": "到账户",
         "accountLabel": "账户",
@@ -381,6 +386,7 @@
         "unlinkButton": "取消链接到投资组合",
         "unlinkWarning": "取消链接将减少投资组合 {portfolio} 的余额。",
         "unlinkWarningNoCash": "此转账未改变 {portfolio} 的余额，因此取消链接不会影响余额。",
+        "noCashBadge": "No cash impact",
         "unlinkDescription": "原始交易详情将被恢复。",
         "cancelButton": "取消",
         "confirmUnlink": "确认取消链接"
@@ -520,6 +526,11 @@
       "inheritParentColor": "使用上级颜色",
       "iconLabel": "图标",
       "iconPlaceholder": "选择图标",
+      "defaultTagsLabel": "Default tags",
+      "defaultTagsPlaceholder": "Select tags",
+      "defaultTagsHint": "Added to a transaction when you pick this category.",
+      "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
+      "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
       "settingsDivider": "设置",
       "saveButton": "保存",
       "createButton": "创建",
@@ -762,7 +773,6 @@
       "chooseDescription": "您想要如何为 {name} 记录付款？",
       "amountLabel": "金额",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "正在加载估算…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} （估算）",
       "dateLabel": "付款日期",
       "accountLabel": "账户",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "仅更新计划——不创建交易记录。",
       "recordModeTransactionTitle": "创建交易",
       "recordModeTransactionDescription": "在账户中记录一笔实际支出，同时关联该账户以便用于未来的付款。",
+      "useExistingTitle": "Use the existing payment",
+      "useExistingDescription": "A transaction linked to this subscription is already recorded in this period. Nothing new is added to your account.",
+      "recordNewTitle": "Record a new payment",
+      "recordNewDescription": "Adds another transaction for this period. The existing payment stays as it is.",
+      "linkedPaymentDescription": "{name} already has a payment in this period. Choose how to mark it paid.",
+      "confirmUseExisting": "Use this payment",
+      "previewUnavailable": "Couldn't check for payments already recorded in this period. Review the details before recording a new one.",
       "notifications": {
         "markedAsPaid": "已记录付款",
         "markAsPaidFailed": "无法记录付款"

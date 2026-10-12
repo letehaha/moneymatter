@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Field is required",
     "minLength": "Panjang minimal adalah {length}.",
     "emailInvalid": "Silakan masukkan alamat email yang valid.",
     "passwordsNoMatch": "Kata sandi tidak cocok"

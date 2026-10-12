@@ -9,7 +9,7 @@
         "emptyDescription": "Keď importujete transakcie, zobrazia sa tu.",
         "emptyAction": "Importovať údaje",
         "transactionCount": "{count} transakcia | {count} transakcií",
-        "accountCount": "{count} účet | {count} účtov",
+        "accountCount": "{count} účet | {count} účty | {count} účtov",
         "deleteButton": "Zmazať import",
         "deleteConfirmTitle": "Zmazať túto dávku importu?",
         "deleteConfirmDescription": "Toto natrvalo zmaže {count} transakciu z tohto importu. Túto akciu nie je možné vrátiť späť. | Toto natrvalo zmaže {count} transakcií z tohto importu. Túto akciu nie je možné vrátiť späť.",

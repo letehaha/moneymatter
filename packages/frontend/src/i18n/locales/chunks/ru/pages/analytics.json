@@ -61,6 +61,7 @@
         "totalIncome": "Общий доход",
         "incomePlusDeficit": "Доход + дефицит",
         "savings": "Сбережения",
+        "taxes": "Налоги",
         "deficit": "Дефицит",
         "other": "Другое",
         "noData": "За этот период нет транзакций",

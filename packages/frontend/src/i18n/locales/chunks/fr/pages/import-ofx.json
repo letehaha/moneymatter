@@ -27,7 +27,7 @@
         },
         "resolve": {
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Comptes",
             "nameLabel": "Account name",
             "namePlaceholder": "Enter an account name",
             "currentBalanceLabel": "Current balance",

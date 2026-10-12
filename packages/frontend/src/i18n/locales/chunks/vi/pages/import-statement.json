@@ -8,7 +8,7 @@
           "upload": "Upload",
           "account": "Account",
           "review": "Xem xét",
-          "results": "Import"
+          "results": "Nhập"
         }
       },
       "steps": {
@@ -40,11 +40,11 @@
           "estimated": "Ready",
           "estimateFailed": "Could not analyze",
           "extracting": "Parsing...",
-          "extracted": "{count} transaction | {count} transactions",
+          "extracted": "{count} giao dịch | {count} giao dịch",
           "failed": "Failed"
         },
         "analyzeButton": "Analyze File | Analyze {count} Files",
-        "tryAgain": "Try Again",
+        "tryAgain": "Thử lại",
         "modelLabel": "Mô hình",
         "estimatedCostLabel": "Estimated Cost",
         "estimatedTokensLabel": "Estimated Tokens",
@@ -114,7 +114,7 @@
         "title": "Create Account for Import",
         "description": "Create a new account to import your statement transactions.",
         "accountNameLabel": "Account name",
-        "currencyLabel": "Currency",
+        "currencyLabel": "Đơn vị tiền tệ",
         "fromStatement": "(from statement)",
         "currencyLocked": "Currency is locked to match the statement ({currency}).",
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
@@ -140,7 +140,7 @@
         "legendDuplicate": "Duplicate",
         "legendExisting": "Already in account",
         "statusDup": "Duplicate",
-        "statusImport": "Import",
+        "statusImport": "Nhập",
         "statusExists": "In account",
         "duplicateInfoSkipped": "{count} transactions will be skipped as duplicates.",
         "duplicateInfoOverridden": "{count} duplicates have been overridden and will be imported.",
@@ -165,7 +165,7 @@
         "failedTitle": "Import Failed",
         "failedDescription": "Nothing was imported. The details below come from the server.",
         "jobFailedDescription": "The import stopped before it finished. Some transactions may already have been created. Check your transactions before importing this statement again.",
-        "tryAgainButton": "Try Again",
+        "tryAgainButton": "Thử lại",
         "completeTitle": "Import Complete!",
         "completeWithIssuesTitle": "Import Completed with Issues",
         "successDescription": "Your transactions have been successfully imported.",

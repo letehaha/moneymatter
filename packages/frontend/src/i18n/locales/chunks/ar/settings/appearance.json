@@ -12,6 +12,10 @@
         "description": "Pick which sections appear in the sidebar.",
         "alwaysVisibleTooltip": "This section is always visible."
       },
+      "sidebarNav": {
+        "title": "Sidebar navigation",
+        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+      },
       "header": {
         "title": "Header",
         "description": "Choose which header actions are visible.",

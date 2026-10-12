@@ -29,13 +29,13 @@
       "selectTarget": "Chọn tài khoản",
       "noMatchingCurrency": "Không có tài khoản dùng tiền tệ {currency}",
       "willCreate": "Sẽ tạo {name} ({currency})",
-      "empty": "Không có tài khoản nào để ánh xạ",
+      "empty": "Không có tài khoản nào để ghép",
       "willSkip": "Sẽ không được nhập"
     },
     "category": {
       "selectTarget": "Chọn danh mục",
       "willCreate": "Sẽ tạo {name}",
-      "empty": "Không có danh mục nào để ánh xạ"
+      "empty": "Không có danh mục nào để ghép"
     },
     "recalculateBalance": {
       "label": "Cập nhật số dư tài khoản từ các giao dịch đã nhập",
@@ -57,16 +57,16 @@
     "duplicatesTable": {
       "columnHeaders": {
         "row": "Dòng",
-        "match": "Trùng",
+        "match": "Kiểu khớp",
         "csvTransaction": "Giao dịch trong CSV",
         "existingTransaction": "Giao dịch hiện có",
         "csvShort": "CSV",
         "existingShort": "Hiện có"
       },
       "matchTypeLabels": {
-        "exact": "Chính xác",
+        "exact": "Khớp chính xác",
         "idMatch": "Khớp ID",
-        "fuzzy": "Gần đúng"
+        "fuzzy": "Khớp gần đúng"
       },
       "fieldLabels": {
         "amount": "Số tiền",
@@ -77,19 +77,19 @@
       "importAnywayAriaLabel": "Vẫn nhập dòng {row}"
     },
     "aiMapping": {
-      "action": "Đối sánh bằng AI",
+      "action": "Khớp bằng AI",
       "tooltipCategories": "Cho phép AI liên kết từng danh mục nguồn với danh mục hiện có phù hợp nhất. Các dòng bạn đã liên kết với danh mục sẽ được giữ nguyên.",
-      "failed": "AI không thể đối sánh. Vui lòng thử lại.",
-      "inProgress": "Đang đối sánh bằng AI…"
+      "failed": "Không thể khớp bằng AI. Vui lòng thử lại.",
+      "inProgress": "Đang khớp bằng AI…"
     },
     "categoryPreset": {
-      "menuTrigger": "Áp dụng ánh xạ",
+      "menuTrigger": "Áp dụng cách ghép",
       "currentLayout": "Bố cục của tệp này",
       "savedTemplates": "Mẫu đã lưu",
-      "lastUsed": "Ánh xạ đã dùng gần đây nhất",
-      "namePlaceholder": "Đặt tên cho ánh xạ này",
-      "renameAria": "Đổi tên ánh xạ",
-      "deleteAria": "Xóa ánh xạ",
+      "lastUsed": "Cách ghép dùng gần nhất",
+      "namePlaceholder": "Đặt tên cho cách ghép này",
+      "renameAria": "Đổi tên cách ghép",
+      "deleteAria": "Xóa cách ghép",
       "confirmRenameAria": "Lưu tên"
     }
   }

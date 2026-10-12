@@ -55,7 +55,7 @@
           "stepTitle": "Priradiť stĺpce",
           "description": "Priraďte svoje stĺpce CSV k požadovaným poliam",
           "file": "Súbor",
-          "filesCount": "{count} súbor | {count} súborov",
+          "filesCount": "{count} súbor | {count} súbory | {count} súborov",
           "totalRows": "Celkový počet riadkov",
           "delimiter": "Oddeľovač",
           "extracting": "Vyťažovanie...",
@@ -318,7 +318,7 @@
           "isoDetected": "Rozpoznaný formát dátumu ISO — dátumy v tomto stĺpci začínajú rokom, preto netreba voliť poradie dňa a mesiaca.",
           "previewLabel": "Náhľad",
           "previewUnrecognized": "nerozpoznané",
-          "mismatchWarning": "{count} riadok tomuto formátu nezodpovedá a bude označený ako neplatný. | {count} riadkov tomuto formátu nezodpovedá a bude označených ako neplatné."
+          "mismatchWarning": "{count} riadok tomuto formátu nezodpovedá a bude označený ako neplatný. | {count} riadky tomuto formátu nezodpovedajú a budú označené ako neplatné. | {count} riadkov tomuto formátu nezodpovedá a bude označených ako neplatné."
         }
       },
       "importResults": {

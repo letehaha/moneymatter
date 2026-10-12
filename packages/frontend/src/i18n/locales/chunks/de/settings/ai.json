@@ -17,7 +17,7 @@
       "features": {
         "title": "KI-Funktionen",
         "description": "Konfiguriere, welches Modell für die jeweiligen KI-gestützten Funktionen verwendet werden soll",
-        "howItWorks": "So funktioniert's",
+        "howItWorks": "Wie es funktioniert",
         "loadError": "Deine KI-Funktionen konnten nicht geladen werden."
       },
       "categorization": {
@@ -225,7 +225,7 @@
           "modelListEmpty": "Keine Modelle zur Auswahl. Gib den Modellnamen ein, den dein Server verwendet.",
           "modelListNoMatch": "Kein aufgelistetes Modell passt. Du kannst den eingegebenen Namen trotzdem verwenden.",
           "testButton": "Verbindung testen",
-          "saveButton": "Änderungen speichern",
+          "saveButton": "Speichern",
           "localNetworkOnly": "MoneyMatter kann keinen Server auf deinem eigenen Computer wie {hostname} oder {ip} erreichen. Gib ihn über einen Tunnel wie ngrok oder Cloudflare Tunnel frei und füge die URL des Tunnels hier ein.",
           "dockerHost": "Wenn du diese App in Docker auf demselben Gerät wie den Modell-Server ausführst, verwende {dockerHost} anstelle von {ip}."
         },

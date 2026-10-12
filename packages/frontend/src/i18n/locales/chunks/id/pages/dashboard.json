@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Pantauan Kategori",
         "addCategory": "Tambah kategori",
-        "selectCategories": "Pilih Kategori"
+        "selectCategories": "Pilih Kategori",
+        "sort": {
+          "title": "Urutkan berdasarkan",
+          "custom": "Custom order",
+          "spendDesc": "Highest spend first",
+          "spendAsc": "Lowest spend first"
+        }
       },
       "cashFlow": {
         "title": "Arus Kas",
@@ -131,7 +137,10 @@
         "expenses": "Pengeluaran",
         "saved": "Ditabung",
         "previousPeriodsTrend": "Tren periode sebelumnya",
-        "viewDetails": "Lihat detail"
+        "viewDetails": "Lihat detail",
+        "savingsRateLine": "Show savings rate line",
+        "savingsRate": "Savings rate",
+        "noIncome": "no income"
       },
       "netWorth": {
         "title": "Kekayaan Bersih",
@@ -172,6 +181,39 @@
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Tidak dapat memuat transaksi terencana"
+      },
+      "taxes": {
+        "title": "Average Tax Rate",
+        "description": "Spending in your tax categories as a share of income, averaged over the period chosen in the widget settings. Bars show the last 12 months.",
+        "ofIncome": "of income",
+        "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
+        "average": "avg {amount}",
+        "amount": "Pajak",
+        "shareOfIncome": "Share of income",
+        "shareOfTaxes": "Share of taxes",
+        "other": "Lainnya",
+        "moreCategories": "{count} lainnya",
+        "viewDetails": "View cash flow",
+        "loadFailed": "Couldn't load tax data.",
+        "noCategories": {
+          "title": "No tax categories yet",
+          "description": "Choose which categories count as taxes to see your tax rate.",
+          "action": "Choose categories"
+        },
+        "config": {
+          "months": {
+            "label": "Averaging period",
+            "saveError": "Could not save the averaging period. Try again.",
+            "m3": "3 mo",
+            "m6": "6 mo",
+            "m12": "12 mo"
+          }
+        },
+        "lastMonths": {
+          "m3": "3 bulan terakhir",
+          "m6": "6 bulan terakhir",
+          "m12": "12 bulan terakhir"
+        }
       },
       "emptyState": "Tidak ada data dalam interval waktu yang dipilih.",
       "registry": {
@@ -214,6 +256,10 @@
         "fireProgress": {
           "name": "FIRE progress",
           "description": "How close you are to financial independence"
+        },
+        "taxes": {
+          "name": "Average Tax Rate",
+          "description": "Share of income paid in taxes, with a 12-month trend"
         }
       }
     },
@@ -263,7 +309,10 @@
         "tagsStyleTitle": "Tag",
         "tagsStyleNames": "Names",
         "tagsStyleBars": "Bars",
-        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again.",
+        "showAccountTitle": "Akun",
+        "showAccountDescription": "Show the account logo on each transaction",
+        "showAccountSaveError": "Couldn't save the account setting. Please try again."
       },
       "overdueBadge": "Terlambat",
       "scheduledBadge": "Terjadwal",

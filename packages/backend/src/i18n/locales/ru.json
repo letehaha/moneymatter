@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Транзакция с указанным `id` не существует!",
     "notAuthorizedToEdit": "У вас нет прав на редактирование этой транзакции.",
     "cannotDeleteExternal": "Внешние транзакции нельзя удалять вручную",
+    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
     "unexpectedDeleteIssue": "Возникла непредвиденная ошибка при удалении транзакции",
     "linkSelfNotAllowed": "Нельзя связать транзакцию саму с собой.",
     "linkSameTypeNotAllowed": "Нельзя связать транзакцию с другой транзакцией с тем же \"transactionType\".",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Счёт {{accountId}} не найден",
     "providerTypeMismatch": "Подключение {{connectionId}} относится к провайдеру {{actualType}}, а не {{expectedType}}",
     "providerAlreadyRegistered": "Провайдер {{providerType}} уже зарегистрирован. Нельзя регистрировать дубликаты провайдеров.",
-    "providerNotRegistered": "Провайдер {{providerType}} не зарегистрирован. Доступные провайдеры: {{available}}",
-    "missingRequiredProviders": "Отсутствуют обязательные провайдеры банковских данных: {{missing}}. Убедитесь, что эти провайдеры зарегистрированы при запуске приложения."
+    "providerNotRegistered": "Провайдер {{providerType}} не зарегистрирован. Доступные провайдеры: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" содержит некорректную дату."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "Провайдер не вернул транзакций за этот период.",
     "apiError": "Ошибка API {{provider}}: {{message}}",
     "currencySelectionRequired": "Банк не сообщил валюту счёта \"{{account}}\" — выберите валюту перед подключением.",
+    "providerNotAvailable": "This bank provider is not available for new connections.",
     "monobank": {
       "invalidCredentialsFormat": "Некорректный формат учётных данных Monobank",
       "invalidApiToken": "Некорректный API-токен Monobank",

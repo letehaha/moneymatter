@@ -210,7 +210,7 @@
           "titleDuplicate": "Duplicate AI model",
           "providerLabel": "Provider",
           "providerPlaceholder": "Select a provider",
-          "nameLabel": "Name",
+          "nameLabel": "Tên",
           "baseUrlLabel": "Base URL",
           "baseUrlPlaceholder": "https://example.com/v1",
           "apiKeyLabel": "API key",

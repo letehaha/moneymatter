@@ -209,9 +209,9 @@
         "expired": "{resource} bol uvoľnený."
       },
       "duration": {
-        "seconds": "{count} sekunda | {count} sekúnd",
-        "minutes": "{count} minúta | {count} minút",
-        "hours": "{count} hodina | {count} hodín"
+        "seconds": "{count} sekunda | {count} sekundy | {count} sekúnd",
+        "minutes": "{count} minúta | {count} minúty | {count} minút",
+        "hours": "{count} hodina | {count} hodiny | {count} hodín"
       }
     },
     "logo": {
@@ -253,8 +253,8 @@
       "dismiss": "Zavrieť"
     },
     "duration": {
-      "years": "{n} r. | {n} r.",
-      "months": "{n} mes. | {n} mes."
+      "years": "{n} r. | {n} r. | {n} r.",
+      "months": "{n} mes. | {n} mes. | {n} mes."
     },
     "fire": {
       "targets": {
@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Toto pole je povinné",
     "minLength": "Minimálna dĺžka je {length}.",
     "emailInvalid": "Zadajte platnú emailovú adresu, prosím.",
     "passwordsNoMatch": "Heslá sa nezhodujú"
@@ -301,7 +302,7 @@
     "newRelease": "Nová verzia",
     "tagReminder": {
       "thresholdMessage": "minuté {amount} (hranica: {threshold})",
-      "existenceMessage": "{count} transakcia | {count} transakcií"
+      "existenceMessage": "{count} transakcia | {count} transakcie | {count} transakcií"
     },
     "share": {
       "sendFailedHint": "Ak chcete odoslať znova, otvorte panel zdieľania."
@@ -375,7 +376,7 @@
     "removeFile": "Odstrániť súbor",
     "fileTooLarge": "Súbor je príliš veľký. Maximálna veľkosť je {max}.",
     "fileTooLargeNamed": "{name} je väčší než {max}",
-    "filesSelected": "Vybraný súbor: {count} | Vybrané súbory: {count}",
+    "filesSelected": "{count} vybraný súbor | {count} vybrané súbory | {count} vybraných súborov",
     "clearAll": "Vymazať všetko",
     "onlyFirstFileTaken": "Bolo pretiahnutých viac súborov — použil sa len prvý."
   },
@@ -406,7 +407,7 @@
       "hint": "Váš súčasný plán túto funkciu neobsahuje. Ak ju chcete odomknúť, prejdite na vyšší plán."
     },
     "banner": {
-      "trial": "V skúšobnej verzii zostáva {count} deň · {link} | V skúšobnej verzii zostáva {count} dní · {link}",
+      "trial": "V skúšobnej verzii zostáva {count} deň · {link} | V skúšobnej verzii zostávajú {count} dni · {link} | V skúšobnej verzii zostáva {count} dní · {link}",
       "readOnly": "Vaša skúšobná verzia sa skončila. Údaje si môžete prezerať a exportovať; na ich ďalšiu úpravu si predplaťte plán. {link}",
       "subscriptionEnded": "Vaše predplatné sa skončilo. {link}, ak chcete pokračovať v úprave svojich údajov.",
       "pastDue": "Vaša posledná platba zlyhala. {link}, ak si chcete plán zachovať."

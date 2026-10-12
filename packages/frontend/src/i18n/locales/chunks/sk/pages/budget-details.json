@@ -36,7 +36,7 @@
       },
       "noTransactionsYet": "Zatiaľ žiadne transakcie",
       "transactions": "Transakcie",
-      "transactionsLinked": "S týmto rozpočtom je prepojená {count} transakcia | S týmto rozpočtom je prepojených {count} transakcií",
+      "transactionsLinked": "S týmto rozpočtom je prepojená {count} transakcia | S týmto rozpočtom sú prepojené {count} transakcie | S týmto rozpočtom je prepojených {count} transakcií",
       "tabs": {
         "statistics": "Štatistiky",
         "transactions": "Transakcie",

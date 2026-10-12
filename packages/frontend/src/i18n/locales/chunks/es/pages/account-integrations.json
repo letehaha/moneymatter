@@ -228,6 +228,13 @@
           "step2": "Genere un nuevo token de configuración en el panel de Bridge.",
           "step3": "Pegue el token en el campo."
         },
+        "brokerageNotice": {
+          "trigger": "Solo se admiten cuentas bancarias: las cuentas de broker no",
+          "title": "Lo que SimpleFIN puede importar",
+          "supported": "Las cuentas bancarias – cheques, ahorros, tarjetas de crédito – son totalmente compatibles. Los saldos y transacciones se sincronizan automáticamente.",
+          "unsupported": "Las cuentas de broker y retiro (acciones, ETFs, crypto, 401k, IRA) no están soportadas. SimpleFIN en sí mismo tampoco los soporta, no dice qué cuenta es de corretaje y las existencias se presentan en un formato no oficial que puede cambiar en cualquier momento.",
+          "tryAnyway": "Todavía puede intentar conectarlos - serán importados como cuentas regulares con cualquier saldo y transacciones en efectivo que facilite SimpleFIN, pero sus posiciones no aparecerán. Puede que no funcione correctamente."
+        },
         "connectButton": "Conectar",
         "connectingButton": "Conectando…",
         "backButton": "Atrás",

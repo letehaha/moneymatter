@@ -15,7 +15,7 @@
     "linkPayments": {
       "title": "Link previous payments",
       "description": "Select transactions you've already paid toward this loan to record them as payments.",
-      "emptyTitle": "No matching transactions",
+      "emptyTitle": "Không tìm thấy giao dịch phù hợp",
       "emptyDescription": "No transactions match these filters. Try widening the date range or clearing filters.",
       "selectedCount": "{count} selected",
       "clearSelection": "Clear",
@@ -110,7 +110,7 @@
       "heloc": "HELOC",
       "business": "Business",
       "medical": "Medical",
-      "other": "Other"
+      "other": "Khác"
     },
     "warnings": {
       "no_planned_payment": "No planned payment set – projected payoff unavailable.",
@@ -171,7 +171,7 @@
         "plannedPayment": "Planned payment"
       },
       "events": {
-        "title": "Timeline",
+        "title": "Dòng thời gian",
         "empty": "No history yet – rate changes, balance corrections, and notes will appear here.",
         "rateChange": "Rate changed from {from}% to {to}%",
         "termChange": "Term changed from {from} to {to} months",

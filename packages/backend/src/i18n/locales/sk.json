@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Transakcia so zadaným id neexistuje!",
     "notAuthorizedToEdit": "Nemáte oprávnenie upravovať túto transakciu.",
     "cannotDeleteExternal": "Ručné mazanie externých transakcií nie je povolené",
+    "bulkDeleteLimitExceeded": "Naraz môžete zmazať najviac 500 transakcií. Zúžte výber a skúste to znova.",
     "unexpectedDeleteIssue": "Pri pokuse o zmazanie transakcie nastal neočakávaný problém",
     "linkSelfNotAllowed": "Pokus o prepojenie transakcie so sebou samou.",
     "linkSameTypeNotAllowed": "Pokus o prepojenie s transakciou rovnakého „transactionType\".",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Účet {{accountId}} sa nenašiel",
     "providerTypeMismatch": "Pripojenie {{connectionId}} je pre poskytovateľa {{actualType}}, nie {{expectedType}}",
     "providerAlreadyRegistered": "Poskytovateľ {{providerType}} je už zaregistrovaný. Duplicitných poskytovateľov nemožno registrovať.",
-    "providerNotRegistered": "Poskytovateľ {{providerType}} nie je zaregistrovaný. Dostupní poskytovatelia: {{available}}",
-    "missingRequiredProviders": "Chýbajú povinní poskytovatelia bankových údajov: {{missing}}. Uistite sa, že sú títo poskytovatelia zaregistrovaní pri spustení aplikácie."
+    "providerNotRegistered": "Poskytovateľ {{providerType}} nie je zaregistrovaný. Dostupní poskytovatelia: {{available}}"
   },
   "validation": {
     "dateInvalid": "„date\" je neplatný dátum."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "Poskytovateľ za toto obdobie nevrátil žiadne transakcie.",
     "apiError": "Chyba {{provider}} API: {{message}}",
     "currencySelectionRequired": "Účet „{{account}}\" nemá od banky uvedenú menu — pred pripojením mu menu vyberte.",
+    "providerNotAvailable": "Tento bankový poskytovateľ nie je pre nové pripojenia dostupný.",
     "monobank": {
       "invalidCredentialsFormat": "Neplatný formát prístupových údajov pre Monobank",
       "invalidApiToken": "Neplatný API token pre Monobank",

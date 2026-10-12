@@ -12,6 +12,10 @@
         "description": "Выберите разделы, отображаемые на боковой панели.",
         "alwaysVisibleTooltip": "Этот раздел отображается всегда."
       },
+      "sidebarNav": {
+        "title": "Sidebar navigation",
+        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+      },
       "header": {
         "title": "Верхняя панель",
         "description": "Выберите действия, отображаемые в верхней панели.",

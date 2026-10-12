@@ -25,7 +25,7 @@
       "deletedAgo": "Gelöscht {time}",
       "restoreButton": "Wiederherstellen",
       "restoringButton": "Wird wiederhergestellt…",
-      "purgeButton": "Jetzt löschen",
+      "purgeButton": "Löschen",
       "purgingButton": "Wird gelöscht…",
       "confirmPurgeTitle": "Portfolio dauerhaft löschen?",
       "confirmPurge": "\"{name}\" dauerhaft löschen? Dies kann nicht rückgängig gemacht werden.",

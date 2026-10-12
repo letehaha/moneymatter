@@ -12,6 +12,10 @@
         "description": "Scegli quali sezioni appaiono nella barra laterale.",
         "alwaysVisibleTooltip": "Questa sezione è sempre visibile."
       },
+      "sidebarNav": {
+        "title": "Sidebar navigation",
+        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+      },
       "header": {
         "title": "Intestazione",
         "description": "Scegli quali azioni d'intestazione sono visibili.",

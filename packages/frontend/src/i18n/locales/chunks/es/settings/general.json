@@ -17,7 +17,7 @@
       },
       "pendingBankTransactions": {
         "label": "Importar transacciones bancarias pendientes",
-        "description": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
+        "description": "Almacenar Enable Banking transacciones antes de que el banco las reserve. Están marcadas como pendientes, nunca cambiar el saldo de la cuenta, y a menudo carecen de datos de comerciante hasta reservar. Otros proveedores no se ven afectados: SimpleFIN y LunchFlow siempre importan transacciones reservadas únicamente, y Monobank importa cada transacción como una regular.",
         "successNotification": "Configuración de transacciones pendientes actualizada",
         "errorNotification": "Error al actualizar la configuración de transacciones pendientes"
       },
@@ -30,6 +30,12 @@
         "description": "El gasto en estas categorías (y sus subcategorías) se excluye de los gastos en el análisis de flujo de caja, por lo que cuenta para el ahorro mensual y la tasa de ahorro.",
         "successNotification": "Categorías de ahorro actualizadas",
         "errorNotification": "Error al actualizar las categorías de ahorro"
+      },
+      "taxCategories": {
+        "label": "Categorías de impuestos",
+        "description": "El gasto en estas categorías se muestra como impuestos en el gráfico de flujo de dinero en lugar de como un gasto. Las subcategorías están incluidas.",
+        "successNotification": "Categorías de impuestos actualizadas",
+        "errorNotification": "Error al actualizar las categorías de impuestos"
       },
       "accountDropdowns": {
         "defaultAccount": {
@@ -79,11 +85,11 @@
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Tipo de pago por defecto",
+        "description": "Preseleccionado al agregar una nueva transacción.",
+        "placeholder": "Seleccione tipo de pago",
+        "successNotification": "Tipo de pago por defecto actualizado",
+        "errorNotification": "Error al actualizar el tipo de pago predeterminado"
       }
     }
   }

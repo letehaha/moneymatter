@@ -17,7 +17,7 @@
       },
       "pendingBankTransactions": {
         "label": "Nhập giao dịch ngân hàng đang chờ xử lý",
-        "description": "Lưu giao dịch Enable Banking trước khi ngân hàng ghi sổ. Các giao dịch này được đánh dấu đang chờ xử lý, không làm thay đổi số dư tài khoản và thường chưa có thông tin người bán cho đến khi được ghi sổ. Cài đặt này không ảnh hưởng đến các nhà cung cấp khác: SimpleFIN và LunchFlow chỉ nhập giao dịch đã ghi sổ, còn Monobank nhập mọi giao dịch dưới dạng giao dịch thông thường.",
+        "description": "Lưu các giao dịch từ Enable Banking trước khi ngân hàng hạch toán. Các giao dịch này được đánh dấu là đang chờ xử lý, không làm thay đổi số dư tài khoản và thường chưa có thông tin người bán cho đến khi được hạch toán. Cài đặt này không ảnh hưởng đến các nhà cung cấp khác: SimpleFIN và LunchFlow chỉ nhập giao dịch đã hạch toán, còn Monobank nhập mọi giao dịch như giao dịch thông thường.",
         "successNotification": "Đã cập nhật cài đặt giao dịch đang chờ xử lý",
         "errorNotification": "Không cập nhật được cài đặt giao dịch đang chờ xử lý"
       },
@@ -30,6 +30,12 @@
         "description": "Khoản chi trong các danh mục này (và danh mục con) sẽ không được tính là chi tiêu trong phân tích dòng tiền, nhờ đó được tính vào khoản tiết kiệm hàng tháng và tỷ lệ tiết kiệm.",
         "successNotification": "Đã cập nhật danh mục tiết kiệm",
         "errorNotification": "Không cập nhật được danh mục tiết kiệm"
+      },
+      "taxCategories": {
+        "label": "Tax categories",
+        "description": "Spending in these categories is shown as taxes in the money flow chart instead of as an expense. Subcategories are included.",
+        "successNotification": "Tax categories updated",
+        "errorNotification": "Failed to update tax categories"
       },
       "accountDropdowns": {
         "defaultAccount": {

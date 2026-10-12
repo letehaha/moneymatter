@@ -31,6 +31,12 @@
         "successNotification": "Kategórie úspor aktualizované",
         "errorNotification": "Kategórie úspor sa nepodarilo aktualizovať"
       },
+      "taxCategories": {
+        "label": "Daňové kategórie",
+        "description": "Výdavky v týchto kategóriách sa v grafe peňažného toku zobrazujú ako dane namiesto výdavku. Zahrnuté sú aj podkategórie.",
+        "successNotification": "Daňové kategórie aktualizované",
+        "errorNotification": "Daňové kategórie sa nepodarilo aktualizovať"
+      },
       "accountDropdowns": {
         "defaultAccount": {
           "label": "Predvolený účet",

@@ -92,6 +92,7 @@
       "cancelSelection": "Cancelar selección",
       "editButton": "Editar",
       "selectedCount": "{count} seleccionadas",
+      "matchingCount": "Total: {count}",
       "dialogTitle": "Editar {count} transacciones",
       "dialogDescription": "Los cambios se aplicarán a todas las transacciones seleccionadas. Solo se actualizarán los campos completados.",
       "categoryLabel": "Categoría",
@@ -197,7 +198,7 @@
       },
       "outOfWallet": "Desde cartera",
       "hint": "Haga clic en una fila para ver los detalles. Seleccione filas para edición masiva.",
-      "plannedRows": "{count} planned transactions",
+      "plannedRows": "{count} transacciones planeadas",
       "emptyTitle": "Ninguna transacción coincide con estos filtros",
       "emptyDescription": "Intente ajustar o restablecer los filtros.",
       "columnConfig": {
@@ -206,8 +207,8 @@
         "visibleCount": "{count} visibles",
         "resetDefaults": "Restablecer valores por defecto",
         "alwaysShowLockedCells": {
-          "label": "Always show locked cells",
-          "description": "Shade cells you can't edit here on every row, not only on hover."
+          "label": "Mostrar siempre celdas bloqueadas",
+          "description": "Celdas sombreadas que no puedes editar aquí en cada fila, no sólo en el hover."
         }
       },
       "categorizationSourceValues": {
@@ -237,14 +238,14 @@
       "unexpectedError": "No se pudieron eliminar las transacciones. Por favor, intente de nuevo."
     },
     "inlineEdit": {
-      "saveFailed": "Couldn't save {field}. Try again.",
-      "bankTitle": "Set by your bank",
-      "bankDescription": "Date, account and amount sync from your bank connection. Everything else on this transaction is yours to change.",
-      "managedTitle": "Managed elsewhere",
-      "managedDescription": "This transaction belongs to a portfolio, investment, vehicle or loan. Change it from its own page so balances stay correct.",
+      "saveFailed": "No se pudo guardar {field}. Inténtelo de nuevo.",
+      "bankTitle": "Establecido por tu banco",
+      "bankDescription": "Fecha, cuenta y cantidad sincronizada desde tu conexión bancaria. Todo lo demás en esta transacción es tuyo para cambiar.",
+      "managedTitle": "Administrado en otro lugar",
+      "managedDescription": "Esta transacción pertenece a un portafolio, inversión, vehículo o préstamo. Cambia desde su propia página para que los balances permanezcan correctos.",
       "gotIt": "Entendido",
-      "openDetails": "Open details",
-      "tooManyTags": "Up to {max} tags per transaction"
+      "openDetails": "Abrir detalles",
+      "tooManyTags": "Hasta {max} etiquetas por transacción"
     }
   },
   "records": {

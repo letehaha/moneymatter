@@ -12,6 +12,10 @@
         "description": "Chọn những mục sẽ hiển thị trên thanh bên.",
         "alwaysVisibleTooltip": "Mục này luôn hiển thị."
       },
+      "sidebarNav": {
+        "title": "Sidebar navigation",
+        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+      },
       "header": {
         "title": "Tiêu đề",
         "description": "Chọn những thao tác hiển thị trên thanh tiêu đề.",

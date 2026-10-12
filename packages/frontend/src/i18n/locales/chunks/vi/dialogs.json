@@ -48,7 +48,7 @@
           "investment": "Investment",
           "retirement": "Retirement",
           "savings": "Savings",
-          "other": "Other"
+          "other": "Khác"
         },
         "descriptionLabel": "Description (optional)",
         "descriptionPlaceholder": "A brief description of this portfolio...",
@@ -94,7 +94,7 @@
       "typeSelector": {
         "expense": "Expense",
         "income": "Income",
-        "transfer": "Transfer",
+        "transfer": "Chuyển tiền",
         "selectExpense": "Select expense",
         "selectIncome": "Select income",
         "selectTransfer": "Select transfer"
@@ -142,12 +142,12 @@
         "originalAmountPlaceholder": "Amount in foreign currency",
         "originalAmountTooltip": "When a transaction was made in a currency different from the account's, this is the actual amount paid in that currency. The main amount stays in the account's currency. Doesn't affect statistics.",
         "originalCurrencyLabel": "Original currency",
-        "originalCurrencyTriggerEmpty": "Currency",
+        "originalCurrencyTriggerEmpty": "Đơn vị tiền tệ",
         "originalCurrencyNone": "No currency",
         "originalAmountSuggestHint": "{amount} — rate for {date}",
         "originalAmountSuggestApply": "Apply",
-        "amountLabel": "Amount",
-        "amountPlaceholder": "Amount",
+        "amountLabel": "Số tiền",
+        "amountPlaceholder": "Số tiền",
         "categoryLabel": "Category",
         "selectCategoryPlaceholder": "Select a category",
         "targetAmountLabel": "Target amount",
@@ -166,7 +166,7 @@
         "moreOptionsButton": "More options",
         "closeButton": "Close",
         "deleteButton": "Xóa",
-        "deleteAriaLabel": "Delete transaction",
+        "deleteAriaLabel": "Xóa giao dịch",
         "deleteConfirmTitle": "Delete this transaction?",
         "deleteConfirmDescription": "This can't be undone. Any splits and refund links attached to it will be removed too.",
         "createAriaLabel": "Create transaction",
@@ -174,6 +174,11 @@
         "loadingButton": "Đang tải...",
         "createButton": "Create",
         "editButton": "Edit",
+        "duplicateButton": "Duplicate",
+        "createMore": {
+          "label": "Create more",
+          "createdToast": "Transaction created"
+        },
         "fromAccountLabel": "From account",
         "toAccountLabel": "To account",
         "accountLabel": "Account",
@@ -235,7 +240,7 @@
           "viewer": {
             "loadFailed": "Could not load this file.",
             "openInNewTab": "Open in new tab",
-            "download": "Download"
+            "download": "Tải xuống"
           }
         }
       },
@@ -314,7 +319,7 @@
         "linkWordRefundedBy": "refunded by",
         "slotEmptyRefunds": "Select the original transaction below",
         "slotEmptyRefundedBy": "Select the refunding transactions below",
-        "slotSelectedCount": "{count} transaction | {count} transactions",
+        "slotSelectedCount": "{count} giao dịch | {count} giao dịch",
         "clearSelection": "Clear selection",
         "linkedAmountLabel": "{amount} linked",
         "linkedOfLimit": "of {amount}",
@@ -381,6 +386,7 @@
         "unlinkButton": "Unlink from Portfolio",
         "unlinkWarning": "Unlinking will reduce the cash balance of {portfolio} portfolio.",
         "unlinkWarningNoCash": "This transfer never changed {portfolio}'s cash balance, so unlinking leaves the balance untouched.",
+        "noCashBadge": "Không ảnh hưởng đến tiền mặt",
         "unlinkDescription": "Original transaction details will be restored.",
         "cancelButton": "Hủy",
         "confirmUnlink": "Confirm Unlink"
@@ -434,9 +440,9 @@
           "titleNew": "New template",
           "titleEdit": "Edit template",
           "titleSaveCurrent": "Save as template",
-          "nameLabel": "Name",
+          "nameLabel": "Tên",
           "namePlaceholder": "e.g. Morning coffee",
-          "typeLabel": "Type",
+          "typeLabel": "Loại",
           "keepAccount": "Keep whichever account is selected when I use it",
           "noAmount": "Don’t save an amount — I’ll type it each time",
           "delete": "Delete template",
@@ -479,12 +485,12 @@
       "clearSearch": "Clear search",
       "endOfList": "That's all",
       "assetClass": {
-        "crypto": "Crypto"
+        "crypto": "Tiền mã hóa"
       },
       "filters": {
         "all": "All",
-        "stocks": "Stocks",
-        "crypto": "Crypto"
+        "stocks": "Cổ phiếu",
+        "crypto": "Tiền mã hóa"
       },
       "marketCapRank": "#{rank}",
       "notifications": {
@@ -520,6 +526,11 @@
       "inheritParentColor": "Use parent's color",
       "iconLabel": "Icon",
       "iconPlaceholder": "Select icon",
+      "defaultTagsLabel": "Default tags",
+      "defaultTagsPlaceholder": "Select tags",
+      "defaultTagsHint": "Added to a transaction when you pick this category.",
+      "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
+      "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
       "settingsDivider": "Settings",
       "saveButton": "Lưu",
       "createButton": "Create",
@@ -544,7 +555,7 @@
       "createDialog": {
         "title": "Create group",
         "nameLabel": "Group name",
-        "namePlaceholder": "Investments",
+        "namePlaceholder": "Đầu tư",
         "createButton": "Create"
       }
     },
@@ -582,7 +593,7 @@
         "customerPlaceholder": "Who the invoice is billed to",
         "total": "Total",
         "totalPlaceholder": "0.00",
-        "currency": "Currency",
+        "currency": "Đơn vị tiền tệ",
         "currencyPlaceholder": "EUR",
         "issued": "Invoice date",
         "submit": "Search again"
@@ -760,9 +771,8 @@
       "title": "Mark Payment",
       "description": "Record a payment for {name}",
       "chooseDescription": "How do you want to record this payment for {name}?",
-      "amountLabel": "Amount",
+      "amountLabel": "Số tiền",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "Loading estimate…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (estimated)",
       "dateLabel": "Payment date",
       "accountLabel": "Account",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "Updates the schedule only — no transaction is created.",
       "recordModeTransactionTitle": "Create a transaction",
       "recordModeTransactionDescription": "Book a real expense in an account. It's linked for future payments too.",
+      "useExistingTitle": "Use the existing payment",
+      "useExistingDescription": "A transaction linked to this subscription is already recorded in this period. Nothing new is added to your account.",
+      "recordNewTitle": "Record a new payment",
+      "recordNewDescription": "Adds another transaction for this period. The existing payment stays as it is.",
+      "linkedPaymentDescription": "{name} already has a payment in this period. Choose how to mark it paid.",
+      "confirmUseExisting": "Use this payment",
+      "previewUnavailable": "Couldn't check for payments already recorded in this period. Review the details before recording a new one.",
       "notifications": {
         "markedAsPaid": "Payment recorded",
         "markAsPaidFailed": "Failed to record payment"
@@ -786,7 +803,7 @@
       "payingTo": "Paying to",
       "fromAccountLabel": "From account",
       "fromAccountPlaceholder": "Select account",
-      "amountLabel": "Amount",
+      "amountLabel": "Số tiền",
       "amountPlaceholder": "0.00",
       "targetAmountLabel": "Amount applied to loan",
       "targetAmountPlaceholder": "0.00",
@@ -799,7 +816,7 @@
       "deleteConfirmTitle": "Delete this payment?",
       "deleteConfirmDescription": "Both sides of the transfer will be removed and the loan balance will be restored. This cannot be undone.",
       "preAnchorHint": "This date is before the loan's balance snapshot, so this payment won't change the outstanding balance – it's already included in the opening balance.",
-      "unlinkButton": "Unlink",
+      "unlinkButton": "Gỡ liên kết",
       "unlinkConfirmTitle": "Unlink this payment?",
       "unlinkConfirmDescription": "The transaction will be kept as a regular expense but removed from this loan. The loan balance will be recalculated.",
       "unlinkSuccess": "Payment unlinked",

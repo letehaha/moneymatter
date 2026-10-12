@@ -2,6 +2,7 @@
   "oauth": {
     "authorize": {
       "title": "{name} žiada o prístup k vašim údajom v MoneyMatter",
+      "redirect_notice": "Po schválení budete presmerovaní na {host}. Pokračujte len vtedy, ak túto adresu poznáte.",
       "description": "Táto aplikácia žiada o tieto oprávnenia:",
       "approve": "Schváliť",
       "deny": "Zamietnuť",

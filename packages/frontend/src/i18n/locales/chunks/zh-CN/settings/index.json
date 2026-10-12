@@ -2,7 +2,7 @@
   "settings": {
     "navigation": {
       "currencies": "Currencies",
-      "categories": "Categories",
+      "categories": "分类",
       "tags": "Tags",
       "accountsGroups": "Accounts groups",
       "importData": "Import/Export",
@@ -13,7 +13,7 @@
       "household": "Household",
       "personalGroup": "Personal",
       "workspaceGroup": "Workspace",
-      "appearance": "Appearance",
+      "appearance": "外观",
       "language": "语言",
       "general": "General",
       "payees": "Payees",

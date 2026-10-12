@@ -6,7 +6,7 @@
       "reset": "Zurücksetzen",
       "apply": "Anwenden",
       "dateRange": {
-        "placeholder": "Datum oder Bereich",
+        "placeholder": "Datum oder Zeitraum",
         "presets": {
           "thisMonth": "Diesen Monat",
           "last3Months": "Letzte 3 Monate",
@@ -18,7 +18,7 @@
         "label": "Transaktionstyp:",
         "income": "Einnahmen",
         "expense": "Ausgaben",
-        "allTypes": "Alle Typen"
+        "allTypes": "Alle Arten"
       },
       "amountRange": {
         "from": "Betrag von (>=)",
@@ -42,12 +42,12 @@
       },
       "filterOperation": {
         "all": "Alle",
-        "exclude": "Ausschließen",
+        "exclude": "Ohne",
         "only": "Nur"
       },
       "noteIncludes": {
-        "label": "Notiz enthält (kommagetrennt):",
-        "placeholder": "Amazon,nike",
+        "label": "Notiz enthält (kommagetrennt)",
+        "placeholder": "Amazon, Nike",
         "compactPlaceholder": "In Notizen suchen"
       },
       "tags": {
@@ -72,12 +72,12 @@
         "note": "Notizen"
       },
       "transferNature": {
-        "label": "Umbuchungsarten",
+        "label": "Alle Umbuchungsarten",
         "disabledTooltip": "Umbuchungen sind durch den obigen Filter ausgeschlossen, daher haben Umbuchungsarten keine Auswirkung.",
         "commonTransfer": "Zwischen Konten",
         "outOfWallet": "Extern",
-        "toPortfolio": "Zielportfolio",
-        "toVenture": "Zur Beteiligung",
+        "toPortfolio": "Portfolio",
+        "toVenture": "Beteiligung",
         "selectedCount": "{n} ausgewählt"
       }
     },
@@ -92,6 +92,7 @@
       "cancelSelection": "Auswahl aufheben",
       "editButton": "Bearbeiten",
       "selectedCount": "{count} ausgewählt",
+      "matchingCount": "Gesamt: {count}",
       "dialogTitle": "{count} Transaktionen bearbeiten",
       "dialogDescription": "Änderungen werden auf alle ausgewählten Transaktionen angewendet. Nur ausgefüllte Felder werden aktualisiert.",
       "categoryLabel": "Kategorie",

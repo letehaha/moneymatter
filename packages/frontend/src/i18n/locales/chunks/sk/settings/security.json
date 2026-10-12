@@ -65,8 +65,8 @@
         },
         "timeAgo": {
           "justNow": "Práve teraz",
-          "minutesAgo": "pred {count} minútou | pred {count} minútami",
-          "hoursAgo": "pred {count} hodinou | pred {count} hodinami",
+          "minutesAgo": "pred {count} minútou | pred {count} minútami | pred {count} minútami",
+          "hoursAgo": "pred {count} hodinou | pred {count} hodinami | pred {count} hodinami",
           "daysAgo": "pred {count} dňom | pred {count} dňami"
         },
         "notifications": {

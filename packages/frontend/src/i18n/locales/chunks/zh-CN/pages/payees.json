@@ -26,7 +26,7 @@
       "menu": "Actions",
       "rename": "Rename",
       "merge": "Merge into…",
-      "delete": "Delete",
+      "delete": "删除",
       "deleteAndIgnore": "Delete & ignore"
     },
     "bulk": {

@@ -6,7 +6,7 @@
     "searchPlaceholder": "Zahlungsempfänger suchen…",
     "columns": {
       "name": "Name",
-      "transactionCount": "Anz. Trans.",
+      "transactionCount": "Anzahl",
       "netFlow": "Nettofluss",
       "category": "Kategorie",
       "categoryHint": "Effektive Kategorie für diesen Zahlungsempfänger. Zeigt den Standardwert an, falls du einen festgelegt hast — ansonsten die Kategorie, die in vergangenen Transaktionen am häufigsten verwendet wurde. Wird beim Erstellen einer neuen Transaktion automatisch ausgefüllt.",

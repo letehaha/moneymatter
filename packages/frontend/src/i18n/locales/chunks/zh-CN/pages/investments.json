@@ -1,40 +1,40 @@
 {
   "investments": {
-    "title": "Investments",
+    "title": "投资",
     "createButton": "创建投资组合",
-    "loadError": "Failed to load portfolios",
-    "tryAgain": "Try Again",
+    "loadError": "加载投资组合失败",
+    "tryAgain": "重试",
     "menu": {
-      "view": "View",
-      "delete": "Delete"
+      "view": "查看",
+      "delete": "删除"
     },
     "card": {
-      "hidden": "Hidden",
-      "portfolioType": "{type} Portfolio",
-      "costBasis": "Cost basis"
+      "hidden": "隐藏",
+      "portfolioType": "{type} 投资组合",
+      "costBasis": "成本基础"
     },
     "empty": {
-      "title": "No Portfolios Yet",
-      "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
-      "createFirstButton": "Create Your First Portfolio"
+      "title": "无投资组合",
+      "description": "创建您的第一个投资组合来开始追踪您的持有、交易和表现。",
+      "createFirstButton": "创建您的第一个组合"
     },
     "trash": {
-      "title": "Trash",
-      "retentionHint": "Items here are permanently deleted after {days} days",
-      "loadError": "Couldn't load trashed portfolios.",
-      "deletedAgo": "Deleted {time}",
-      "restoreButton": "Restore",
-      "restoringButton": "Restoring…",
-      "purgeButton": "Delete now",
-      "purgingButton": "Deleting…",
-      "confirmPurgeTitle": "Delete portfolio permanently?",
-      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
-      "tryAgain": "Try again",
+      "title": "回收站",
+      "retentionHint": "在这里的组合将会在 {days} 天后永久删除",
+      "loadError": "无法加载已删除的组合。",
+      "deletedAgo": "删除于{time}",
+      "restoreButton": "恢复",
+      "restoringButton": "恢复中……",
+      "purgeButton": "立即删除",
+      "purgingButton": "正在删除……",
+      "confirmPurgeTitle": "永久删除投资组合？",
+      "confirmPurge": "永久删除“{name}”？此操作不可撤销。",
+      "tryAgain": "重试",
       "notifications": {
-        "restored": "Portfolio restored",
-        "restoreError": "Failed to restore portfolio",
-        "purged": "Portfolio permanently deleted",
-        "purgeError": "Failed to delete portfolio"
+        "restored": "已恢复投资组合",
+        "restoreError": "恢复投资组合失败",
+        "purged": "已永久删除投资组合",
+        "purgeError": "删除投资组合失败"
       }
     }
   }

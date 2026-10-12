@@ -21,7 +21,7 @@
     "budgetDetails": {
       "notSet": "Nicht festgelegt",
       "saving": "Speichern...",
-      "saveChanges": "Änderungen speichern",
+      "saveChanges": "Speichern",
       "loading": "Laden...",
       "uncategorized": "Unkategorisiert",
       "stats": {

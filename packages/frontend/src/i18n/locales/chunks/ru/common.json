@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Field is required",
     "minLength": "Минимальная длина — {length}.",
     "emailInvalid": "Введите корректный адрес электронной почты.",
     "passwordsNoMatch": "Пароли не совпадают"

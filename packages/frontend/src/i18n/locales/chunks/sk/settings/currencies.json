@@ -24,7 +24,7 @@
         "custom": "Vlastné",
         "live": "Živý kurz",
         "unused": "Nepoužívaná",
-        "accountsCount": "{count} účet | {count} účtov"
+        "accountsCount": "{count} účet | {count} účty | {count} účtov"
       },
       "empty": {
         "title": "Zatiaľ žiadne ďalšie meny",
@@ -80,8 +80,8 @@
         "successMessage": "Základná mena bola úspešne zmenená.",
         "errors": {
           "changeFailed": "Neočakávaná chyba. Základnú menu sa nepodarilo zmeniť.",
-          "lockedHousehold": "Máte {count} aktívne členstvo v domácnosti. Najprv ho opustite v Nastavenia → Domácnosť. | Máte {count} aktívnych členstiev v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť.",
-          "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte."
+          "lockedHousehold": "Máte {count} aktívne členstvo v domácnosti. Najprv ho opustite v Nastavenia → Domácnosť. | Máte {count} aktívne členstvá v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť. | Máte {count} aktívnych členstiev v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť.",
+          "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívne zdieľania účtov. Najprv ich odoberte pri každom účte. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte."
         }
       }
     }

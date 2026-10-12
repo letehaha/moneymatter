@@ -2,118 +2,118 @@
   "pages": {
     "importExport": {
       "ofxImport": {
-        "pageTitle": "Import an OFX or QFX file",
-        "pageDescription": "Import bank and credit card transactions from an OFX or QFX file.",
+        "pageTitle": "Nhập tệp OFX hoặc QFX",
+        "pageDescription": "Nhập giao dịch ngân hàng và thẻ tín dụng từ tệp OFX hoặc QFX.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Map accounts",
+            "upload": "Tải lên",
+            "resolve": "Ghép tài khoản",
             "review": "Xem xét",
-            "results": "Done"
+            "results": "Xong"
           }
         },
         "fileUpload": {
-          "stepTitle": "Upload your OFX or QFX file",
-          "description": "Select a statement file that you downloaded from your bank or credit card provider.",
-          "maxSize": ".ofx or .qfx file, up to 10 MB",
-          "parsing": "Reading file…",
-          "continue": "Continue",
+          "stepTitle": "Tải tệp OFX hoặc QFX lên",
+          "description": "Chọn tệp sao kê bạn đã tải xuống từ ngân hàng hoặc nhà cung cấp thẻ tín dụng.",
+          "maxSize": "Tệp .ofx hoặc .qfx, tối đa 10 MB",
+          "parsing": "Đang đọc tệp…",
+          "continue": "Tiếp tục",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not an OFX or QFX file."
+            "invalidFormatNamed": "\"{name}\" không phải là tệp OFX hoặc QFX."
           }
         },
         "errors": {
-          "uploadUnavailable": "The uploaded file is no longer available. Upload your OFX or QFX file again."
+          "uploadUnavailable": "Tệp đã tải lên không còn khả dụng. Hãy tải lại tệp OFX hoặc QFX."
         },
         "resolve": {
           "accounts": {
             "sectionTitle": "Tài khoản",
-            "nameLabel": "Account name",
-            "namePlaceholder": "Enter an account name",
-            "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the sum of imported transactions",
-            "ledgerBalanceHint": "Statement balance: {balance} on {date}",
-            "transactionCount": "{count} transaction | {count} transactions",
-            "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",
+            "nameLabel": "Tên tài khoản",
+            "namePlaceholder": "Nhập tên tài khoản",
+            "currentBalanceLabel": "Số dư hiện tại",
+            "currentBalancePlaceholder": "Để trống để dùng tổng số tiền của các giao dịch đã nhập.",
+            "ledgerBalanceHint": "Số dư trên sao kê: {balance} vào ngày {date}",
+            "transactionCount": "{count} giao dịch | {count} giao dịch",
+            "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Các giao dịch của tài khoản đó sẽ không được nhập. | {count} tài khoản sẽ bị bỏ qua. Các giao dịch của những tài khoản đó sẽ không được nhập.",
             "statementType": {
-              "bank": "Bank account",
-              "credit-card": "Credit card"
+              "bank": "Tài khoản ngân hàng",
+              "credit-card": "Thẻ tín dụng"
             }
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Ghép các tài khoản khớp chính xác",
+            "createNewForUnmatched": "Tạo tài khoản mới cho những tài khoản chưa khớp",
+            "reset": "Đặt lại",
             "tooltips": {
-              "mapExactMatches": "Link each account to an existing account that has the same name and currency.",
-              "createNewForUnmatched": "Set each account that is not linked to an existing account to create a new account.",
-              "reset": "Clear all choices and match again."
+              "mapExactMatches": "Liên kết từng tài khoản với tài khoản hiện có có cùng tên và loại tiền tệ.",
+              "createNewForUnmatched": "Chọn tạo tài khoản mới cho mỗi tài khoản chưa được liên kết với tài khoản hiện có.",
+              "reset": "Xóa tất cả lựa chọn và ghép lại."
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Quay lại",
+            "continue": "Tiếp tục"
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "accountsSkipped": "Accounts skipped",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "dateRange": "Date range: {from} — {to}",
-          "warningsTitle": "Check these file details",
-          "warningsHint": "The import can continue, but some transactions need special handling.",
+          "transactions": "Giao dịch",
+          "accountsSkipped": "Tài khoản bị bỏ qua",
+          "duplicatesSkipped": "Giao dịch trùng lặp bị bỏ qua",
+          "willImport": "Sẽ nhập",
+          "dateRange": "Khoảng thời gian: {from} — {to}",
+          "warningsTitle": "Kiểm tra thông tin tệp này",
+          "warningsHint": "Bạn vẫn có thể tiếp tục nhập, nhưng một số giao dịch cần được xử lý đặc biệt.",
           "warnings": {
-            "dateUserFallback": "{count} transaction used the file's fallback time zone | {count} transactions used the file's fallback time zone",
-            "fitidMissing": "{count} transaction had no bank transaction ID | {count} transactions had no bank transaction ID",
-            "fitidDuplicate": "{count} duplicate bank transaction ID was found in the file | {count} duplicate bank transaction IDs were found in the file"
+            "dateUserFallback": "{count} giao dịch dùng múi giờ dự phòng của tệp | {count} giao dịch dùng múi giờ dự phòng của tệp",
+            "fitidMissing": "{count} giao dịch không có mã giao dịch ngân hàng | {count} giao dịch không có mã giao dịch ngân hàng",
+            "fitidDuplicate": "Tìm thấy {count} mã giao dịch ngân hàng bị trùng trong tệp | Tìm thấy {count} mã giao dịch ngân hàng bị trùng trong tệp"
           },
-          "duplicatesTitle": "{count} possible duplicate | {count} possible duplicates",
-          "duplicatesHint": "These transactions look like transactions that you already have. Check a row to import it anyway; unchecked duplicates are skipped.",
-          "back": "Back",
-          "importing": "Starting import…",
-          "importButton": "Import {count} transaction | Import {count} transactions"
+          "duplicatesTitle": "{count} giao dịch có thể bị trùng | {count} giao dịch có thể bị trùng",
+          "duplicatesHint": "Những giao dịch này có vẻ trùng với giao dịch bạn đã có. Đánh dấu một dòng để vẫn nhập giao dịch đó; các giao dịch trùng không được đánh dấu sẽ bị bỏ qua.",
+          "back": "Quay lại",
+          "importing": "Đang bắt đầu nhập…",
+          "importButton": "Nhập {count} giao dịch | Nhập {count} giao dịch"
         },
         "execute": {
           "starting": "Đang bắt đầu nhập…",
-          "progressCount": "{processed} of {total}",
-          "failed": "The import failed.",
-          "partialImportNote": "Some transactions might already be imported.",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing",
-          "statusCompleted": "Completed",
-          "statusFailed": "Failed"
+          "progressCount": "{processed} trên {total}",
+          "failed": "Không thể nhập dữ liệu.",
+          "partialImportNote": "Một số giao dịch có thể đã được nhập.",
+          "statusQueued": "Đang chờ",
+          "statusRunning": "Đang nhập",
+          "statusCompleted": "Hoàn tất",
+          "statusFailed": "Thất bại"
         },
         "done": {
-          "successTitle": "Import finished",
-          "successDescription": "Your OFX or QFX transactions are now in your account.",
-          "partialTitle": "Imported with {count} issue | Imported with {count} issues",
-          "partialDescription": "Most transactions were imported. The list below shows what was not imported.",
-          "emptyTitle": "Nothing new to import",
-          "emptyDescription": "Each transaction was skipped or was already in your ledger.",
-          "failedTitle": "Nothing was imported",
-          "failedDescription": "No transactions could be created. Review the errors below.",
+          "successTitle": "Nhập xong",
+          "successDescription": "Giao dịch OFX hoặc QFX hiện đã có trong tài khoản của bạn.",
+          "partialTitle": "Đã nhập nhưng có {count} lỗi | Đã nhập nhưng có {count} lỗi",
+          "partialDescription": "Hầu hết giao dịch đã được nhập. Danh sách bên dưới cho biết những giao dịch chưa được nhập.",
+          "emptyTitle": "Không có giao dịch mới để nhập",
+          "emptyDescription": "Tất cả giao dịch đều đã bị bỏ qua hoặc đã có trong sổ giao dịch của bạn.",
+          "failedTitle": "Không có giao dịch nào được nhập",
+          "failedDescription": "Không thể tạo giao dịch nào. Hãy xem lại các lỗi bên dưới.",
           "accountsCreated": "Tài khoản đã tạo",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
+          "accountsLinked": "Tài khoản đã liên kết",
+          "accountsSkipped": "Tài khoản bị bỏ qua",
           "payeesCreated": "Người nhận đã tạo",
           "transactionsImported": "Giao dịch đã nhập",
-          "duplicatesSkipped": "Duplicates skipped",
-          "mergedIntoPlanned": "Merged into planned",
-          "balanceWarningTitle": "Some balances might be incorrect",
-          "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
-          "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
-          "errorsOverflow": "…and {count} more",
+          "duplicatesSkipped": "Giao dịch trùng lặp bị bỏ qua",
+          "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
+          "balanceWarningTitle": "Một số số dư có thể không chính xác",
+          "balanceWarningBody": "Không thể đặt số dư cuối cùng cho một số tài khoản. Hãy kiểm tra và điều chỉnh số dư nếu cần.",
+          "errorsTitle": "Không thể nhập {count} giao dịch | Không thể nhập {count} giao dịch",
+          "errorsOverflow": "…và {count} mục khác",
           "rowPrefix": "Dòng {rowIndex}:",
-          "viewTransactions": "View transactions",
+          "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"
         },
         "leaseExpired": {
-          "title": "Your uploaded file is no longer available",
-          "description": "The parsed copy of your OFX or QFX file was released after a period of inactivity. Your mapping choices could not be kept. Start the import again.",
+          "title": "Tệp bạn đã tải lên không còn khả dụng",
+          "description": "Bản đã phân tích của tệp OFX hoặc QFX không còn khả dụng sau một thời gian không hoạt động. Các lựa chọn ghép của bạn không được lưu. Hãy bắt đầu nhập lại.",
           "action": "Bắt đầu lại"
         },
-        "leaseResourceLabel": "Your uploaded file"
+        "leaseResourceLabel": "Tệp bạn đã tải lên"
       }
     }
   }

@@ -33,7 +33,7 @@
         "resolve": {
           "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Comptes",
             "currentBalanceLabel": "Current balance",
             "currentBalancePlaceholder": "Leave blank to use the imported total",
             "willCreateHint": "Will be created in {currency}.",

@@ -2,6 +2,7 @@
   "oauth": {
     "authorize": {
       "title": "{name} solicita acceso a sus datos de MoneyMatter",
+      "redirect_notice": "Después de la aprobación serás redirigido a {host}. Solo continúa si reconoces esta dirección.",
       "description": "Esta aplicación solicita los siguientes permisos:",
       "approve": "Aprobar",
       "deny": "Denegar",

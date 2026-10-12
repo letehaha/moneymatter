@@ -34,7 +34,7 @@
       "close": "Close",
       "actions": "Actions",
       "chooseAction": "Choose an action",
-      "other": "Other",
+      "other": "Khác",
       "refund": "Refund",
       "split": "Split",
       "deletedBadge": "Deleted"
@@ -92,7 +92,7 @@
       "loan": "Loan",
       "mortgage": "Mortgage",
       "overdraft": "Overdraft",
-      "crypto": "Crypto",
+      "crypto": "Tiền mã hóa",
       "vehicle": "Vehicle"
     },
     "paymentTypes": {
@@ -111,7 +111,7 @@
       "luxury": "Luxury",
       "ev": "Electric vehicle",
       "motorcycle": "Motorcycle",
-      "other": "Other"
+      "other": "Khác"
     },
     "depreciationPresets": {
       "classDefault": "Class default",
@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Field is required",
     "minLength": "Minimal length is {length}.",
     "emailInvalid": "Please enter a valid email address.",
     "passwordsNoMatch": "Passwords don't match"
@@ -301,7 +302,7 @@
     "newRelease": "New release",
     "tagReminder": {
       "thresholdMessage": "spent {amount} (threshold: {threshold})",
-      "existenceMessage": "{count} transaction | {count} transactions"
+      "existenceMessage": "{count} giao dịch | {count} giao dịch"
     },
     "share": {
       "sendFailedHint": "Open the sharing panel to resend."
@@ -448,7 +449,7 @@
   "transactionGroups": {
     "groupDialog": {
       "editTitle": "Edit Group",
-      "nameLabel": "Name",
+      "nameLabel": "Tên",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Optional note...",
       "loadingText": "Đang tải...",
@@ -456,7 +457,7 @@
       "cancelButton": "Hủy",
       "editAction": "Edit",
       "deleteAction": "Delete Group",
-      "transactionsLabel": "Transactions",
+      "transactionsLabel": "Giao dịch",
       "deleteGroupTitle": "Xóa nhóm",
       "deleteGroupDescription": "Are you sure you want to delete \"{groupName}\"? The transactions will not be deleted.",
       "removeTransactionTitle": "Remove transaction from group",
@@ -465,8 +466,8 @@
       "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Remove & Delete Group",
       "summary": {
-        "transactions": "Transactions",
-        "net": "Net",
+        "transactions": "Giao dịch",
+        "net": "Thu chi ròng",
         "moneyIn": "Money in",
         "moneyOut": "Money out"
       }

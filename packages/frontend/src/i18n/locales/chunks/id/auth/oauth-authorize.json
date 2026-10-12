@@ -2,6 +2,7 @@
   "oauth": {
     "authorize": {
       "title": "{name} ingin mengakses data MoneyMatter Anda",
+      "redirect_notice": "After approval you will be redirected to {host}. Only continue if you recognize this address.",
       "description": "Aplikasi ini meminta izin berikut:",
       "approve": "Setujui",
       "deny": "Tolak",

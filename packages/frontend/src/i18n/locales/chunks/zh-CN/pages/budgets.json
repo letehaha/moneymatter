@@ -30,7 +30,7 @@
       "tabCategory": "Category Budgets",
       "tabManual": "Manual Budgets",
       "edit": "编辑",
-      "delete": "Delete",
+      "delete": "删除",
       "deleteSuccess": "Budget deleted successfully!",
       "deleteError": "Unexpected error!",
       "updateSuccess": "Budget updated successfully!",

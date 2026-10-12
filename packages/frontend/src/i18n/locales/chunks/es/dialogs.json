@@ -102,7 +102,7 @@
       "recordList": {},
       "form": {
         "payeeLabel": "Beneficiario",
-        "outOfWalletDocsLink": "What is Out of Wallet?",
+        "outOfWalletDocsLink": "¿Qué está fuera de billetera?",
         "destinationGroupLabel": "Adónde va el dinero",
         "paymentTypeLabel": "Tipo de pago",
         "noteLabel": "Nota (opcional)",
@@ -174,6 +174,11 @@
         "loadingButton": "Cargando...",
         "createButton": "Crear",
         "editButton": "Editar",
+        "duplicateButton": "Duplicado",
+        "createMore": {
+          "label": "Crear más",
+          "createdToast": "Transacción creada"
+        },
         "fromAccountLabel": "Cuenta de origen",
         "toAccountLabel": "Cuenta de destino",
         "accountLabel": "Cuenta",
@@ -203,38 +208,38 @@
           "httpUrl": "Introduzca una URL válida"
         },
         "attachments": {
-          "label": "Attachments",
-          "loading": "Loading attachments…",
-          "listLoadFailed": "Couldn't load attachments. Close and reopen this dialog to try again.",
-          "hint": "Up to {max} files, {size} each. JPEG, PNG, WebP or PDF.",
+          "label": "Adjuntos",
+          "loading": "Cargando archivos adjuntos…",
+          "listLoadFailed": "No se pudo cargar los archivos adjuntos. Cierre y vuelva a abrir este cuadro de diálogo para intentarlo de nuevo.",
+          "hint": "Hasta {max} archivos, de {size} cada uno. JPEG, PNG, WebP o PDF.",
           "trigger": {
-            "empty": "Add attachments",
-            "count": "{count} attachment | {count} attachments",
-            "uploading": "Uploading…"
+            "empty": "Agregar adjuntos",
+            "count": "{count} archivo adjunto | {count} archivos adjuntos",
+            "uploading": "Cargando…"
           },
           "dropzone": {
-            "idle": "Drop files here or click to browse",
-            "drag": "Drop to attach"
+            "idle": "Suelta archivos aquí o haz clic para explorar",
+            "drag": "Soltar para adjuntar"
           },
           "errors": {
-            "unsupportedType": "Some files were skipped: only JPEG, PNG, WebP and PDF files can be attached.",
-            "tooMany": "A transaction can have at most {max} attachments.",
-            "tooLarge": "\"{filename}\" is larger than {max} and was not uploaded.",
-            "upload": "Failed to upload the attachment.",
-            "delete": "Failed to delete the attachment."
+            "unsupportedType": "Se omitieron algunos archivos: sólo se pueden adjuntar archivos JPEG, PNG, WebP y PDF.",
+            "tooMany": "Una transacción puede contener como máximo {{max}} archivos adjuntos.",
+            "tooLarge": "\"{filename}\" es más largo que {max} y no se subió.",
+            "upload": "Error al cargar el archivo adjunto.",
+            "delete": "Error al eliminar el archivo adjunto."
           },
           "deleteConfirm": {
-            "title": "Delete attachment?",
-            "description": "\"{filename}\" will be permanently deleted. This action cannot be undone."
+            "title": "¿Eliminar archivo adjunto?",
+            "description": "\"{filename}\" se eliminará permanentemente. Esta acción no se puede deshacer."
           },
-          "deleteAll": "Delete all",
+          "deleteAll": "Eliminar todo",
           "deleteAllConfirm": {
-            "title": "Delete all attachments?",
-            "description": "All {count} files will be permanently deleted. This action cannot be undone."
+            "title": "¿Borrar todos los archivos adjuntos?",
+            "description": "Los {count} archivos se eliminarán permanentemente. Esta acción no se puede deshacer."
           },
           "viewer": {
-            "loadFailed": "Could not load this file.",
-            "openInNewTab": "Open in new tab",
+            "loadFailed": "No se pudo cargar este archivo.",
+            "openInNewTab": "Abrir en una nueva pestaña",
             "download": "Descargar"
           }
         }
@@ -381,6 +386,7 @@
         "unlinkButton": "Desvincular de la cartera",
         "unlinkWarning": "Desvincular reducirá el saldo en efectivo de la cartera {portfolio}.",
         "unlinkWarningNoCash": "Esta transferencia nunca modificó el saldo en efectivo de {portfolio}, así que desvincularla deja el saldo intacto.",
+        "noCashBadge": "Sin impacto en efectivo",
         "unlinkDescription": "Se restaurarán los detalles originales de la transacción.",
         "cancelButton": "Cancelar",
         "confirmUnlink": "Confirmar desvinculación"
@@ -520,6 +526,11 @@
       "inheritParentColor": "Usar el color de la categoría padre",
       "iconLabel": "Icono",
       "iconPlaceholder": "Seleccionar icono",
+      "defaultTagsLabel": "Etiquetas por defecto",
+      "defaultTagsPlaceholder": "Seleccionar etiquetas",
+      "defaultTagsHint": "Añadido a una transacción al elegir esta categoría.",
+      "applyTagsOnAiLabel": "También aplicar cuando la IA categorice una transacción",
+      "applyTagsOnAiHint": "Las etiquetas permanecen en la transacción si usted cambia su categoría más adelante.",
       "settingsDivider": "Ajustes",
       "saveButton": "Guardar",
       "createButton": "Crear",
@@ -557,84 +568,84 @@
     },
     "attachInvoice": {
       "title": "Adjuntar factura",
-      "description": "Drop an invoice or receipt. We read the total, date and merchant, then find the transaction it belongs to.",
-      "resultsTitle": "Pick the transaction",
-      "resultsDescription": "No transactions match this invoice. | {count} transaction could belong to this invoice. | {count} transactions could belong to this invoice.",
-      "analyzing": "Reading the invoice and searching your transactions…",
-      "attaching": "Attaching the invoice to the transaction…",
-      "privacyNote": "The file goes to the AI provider for reading only. Nothing is saved until you link it to a transaction.",
+      "description": "Soltar una factura o recibo. Leemos el total, la fecha y el comerciante, y luego encontramos la transacción a la que pertenece.",
+      "resultsTitle": "Seleccionar una transacción",
+      "resultsDescription": "Ninguna transacción coincide con esta factura. | La transacción {count} podría pertenecer a esta factura. | Las transacciones {count} podrían pertenecer a esta factura.",
+      "analyzing": "Leyendo la factura y buscando sus transacciones…",
+      "attaching": "Adjuntar la factura a la transacción…",
+      "privacyNote": "El archivo va al proveedor de IA sólo para lectura. Nada se guarda hasta que lo vincule a una transacción.",
       "direction": {
-        "paid": "I paid this",
-        "gotPaid": "I got paid",
-        "paidHint": "We search your expenses for the payment.",
-        "gotPaidHint": "We search your income for the payment."
+        "paid": "Pagué esto",
+        "gotPaid": "Recibí pago",
+        "paidHint": "Buscamos sus gastos para el pago.",
+        "gotPaidHint": "Buscamos su ingreso para el pago."
       },
       "invoice": {
-        "number": "Invoice №",
-        "issued": "Issued",
+        "number": "Factura Nº",
+        "issued": "Emitido",
         "total": "Total"
       },
-      "fixDetails": "Fix details",
+      "fixDetails": "Detalles de corrección",
       "form": {
         "vendor": "Comercio",
-        "vendorPlaceholder": "Enter the merchant name",
-        "customer": "Customer",
-        "customerPlaceholder": "Who the invoice is billed to",
+        "vendorPlaceholder": "Introduzca el nombre del comerciante",
+        "customer": "Cliente",
+        "customerPlaceholder": "A quién se le cobra la factura",
         "total": "Total",
         "totalPlaceholder": "0.00",
         "currency": "Moneda",
         "currencyPlaceholder": "EUR",
-        "issued": "Invoice date",
-        "submit": "Search again"
+        "issued": "Fecha de la factura",
+        "submit": "Buscar de nuevo"
       },
       "signals": {
-        "amountExact": "Amount exact",
-        "amountClose": "{diff} off",
-        "amountConverted": "Matches after conversion",
-        "amountUnknown": "Amount not compared",
-        "sameDay": "Same day as invoice",
-        "daysAfter": "{count} day after invoice | {count} days after invoice",
-        "daysBefore": "{count} day before invoice | {count} days before invoice",
+        "amountExact": "Cantidad exacta",
+        "amountClose": "{diff} de descuento",
+        "amountConverted": "Partidas tras la conversión",
+        "amountUnknown": "Importe no comparado",
+        "sameDay": "El mismo día que la factura",
+        "daysAfter": "{count} día después de la factura | {count} días después de la factura",
+        "daysBefore": "{count} día antes de la factura | {count} días antes de la factura",
         "merchant": {
-          "match": "Merchant matches",
-          "partial": "Merchant looks similar",
-          "none": "Different merchant",
-          "unknown": "No payee set"
+          "match": "Partidas del comerciante",
+          "partial": "El comerciante se ve similar",
+          "none": "Diferentes comerciantes",
+          "unknown": "Todavía no hay beneficiarios"
         },
         "customer": {
-          "match": "Customer matches",
-          "partial": "Customer looks similar",
-          "none": "Different customer",
-          "unknown": "No payee set"
+          "match": "Partidas del cliente",
+          "partial": "El cliente se ve similar",
+          "none": "Cliente diferente",
+          "unknown": "Todavía no hay beneficiarios"
         }
       },
-      "alreadyHasFile": "Already has a file",
-      "bestMatch": "Best match · {score}%",
+      "alreadyHasFile": "Ya tienes un archivo",
+      "bestMatch": "Mejor resultado · {score}%",
       "empty": {
-        "title": "No matching transaction",
-        "description": "We looked for about {total} from 14 days before to 30 days after the invoice date, in all accounts. The payment may not be imported yet, or the invoice was read wrong."
+        "title": "Ninguna transacción coincide",
+        "description": "Buscamos alrededor de {total} desde 14 días antes de 30 días después de la fecha de la factura, en todas las cuentas. El pago puede no ser importado todavía, o la factura fue leída mal."
       },
-      "searchManually": "Search manually",
+      "searchManually": "Buscar manualmente",
       "createTransaction": "Crear transacción",
-      "link": "Link invoice",
-      "linked": "Invoice linked to the transaction",
-      "created": "Transaction created and invoice attached",
-      "openTransaction": "Open transaction",
+      "link": "Vincular factura",
+      "linked": "Factura vinculada a la transacción",
+      "created": "Transacción creada y factura adjuntada",
+      "openTransaction": "Abrir transacción",
       "confirm": {
-        "title": "Link invoice to this transaction?",
-        "description": "{filename} will be attached to the {amount} transaction from {date}. You can remove it from the transaction later."
+        "title": "¿Vincular factura a esta transacción?",
+        "description": "{filename} se adjuntará a la transacción {amount} del {date}. Puedes eliminarla de la transacción más adelante."
       },
       "errors": {
-        "match": "Could not read the invoice. Try again or use a clearer file.",
-        "link": "Could not link the invoice. Try again.",
-        "detailsNotFilled": "Invoice attached, but its details couldn't be copied to the transaction. Add them manually if you need them.",
-        "createdNotAttached": "Transaction created, but the invoice wasn't attached. Pick it from the list to attach it.",
-        "rematch": "Could not search again. Check the details and retry.",
-        "openTransaction": "Couldn't open the transaction. Find it in your transactions list."
+        "match": "No se pudo leer la factura. Inténtalo de nuevo o utiliza un archivo más claro.",
+        "link": "No se pudo guardar la configuración. Inténtalo de nuevo.",
+        "detailsNotFilled": "Factura adjunta, pero sus detalles no pudieron copiarse a la transacción. Añádelos manualmente si los necesita.",
+        "createdNotAttached": "Transacción creada, pero la factura no fue adjuntada. Escojala de la lista para adjuntarla.",
+        "rematch": "No se pudo buscar de nuevo. Compruebe los detalles y vuelva a intentarlo.",
+        "openTransaction": "No se pudo abrir la transacción. Encuéntrala en tu lista de transacciones."
       },
       "trial": {
-        "left": "1 free try left of {limit} | {count} free tries left of {limit}",
-        "spent": "You've used all your free tries. Upgrade to Plus to keep attaching invoices with AI."
+        "left": "1 intento libre restante de {limit} | {count} intentos libres restantes de {limit}",
+        "spent": "Has usado todos tus intentos gratis. Actualiza a Plus para seguir adjuntando facturas con IA"
       }
     },
     "exchangeCurrency": {
@@ -762,7 +773,6 @@
       "chooseDescription": "¿Cómo quieres registrar este pago para {name}?",
       "amountLabel": "Importe",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "Cargando estimación…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (estimado)",
       "dateLabel": "Fecha de pago",
       "accountLabel": "Cuenta",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "Actualiza solo el calendario — no se crea ninguna transacción.",
       "recordModeTransactionTitle": "Crear una transacción",
       "recordModeTransactionDescription": "Registra un gasto real en una cuenta. También quedará vinculada a pagos futuros.",
+      "useExistingTitle": "Utilizar el pago existente",
+      "useExistingDescription": "Una transacción vinculada a esta suscripción ya está registrada en este período. No se ha añadido nada nuevo a tu cuenta.",
+      "recordNewTitle": "Registrar un nuevo pago",
+      "recordNewDescription": "Añade otra transacción para este período. El pago existente se mantiene como está.",
+      "linkedPaymentDescription": "{name} ya tiene un pago en este período. Elige como marcar el pago.",
+      "confirmUseExisting": "Utilizar este pago",
+      "previewUnavailable": "No se pudo comprobar los pagos ya registrados en este período. Revise los detalles antes de registrar uno nuevo.",
       "notifications": {
         "markedAsPaid": "Pago registrado",
         "markAsPaidFailed": "Error al registrar el pago"

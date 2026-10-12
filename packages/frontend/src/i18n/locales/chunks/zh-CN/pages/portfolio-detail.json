@@ -11,7 +11,7 @@
     "actions": {
       "transfer": "Transfer",
       "edit": "编辑",
-      "delete": "Delete",
+      "delete": "删除",
       "exchangeCurrency": "兑换货币"
     },
     "balance": {

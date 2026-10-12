@@ -1,155 +1,155 @@
 {
   "portfolioDetail": {
     "loading": "Đang tải...",
-    "loadingDetails": "Loading portfolio details...",
-    "loadError": "Failed to load portfolio details.",
-    "tryAgain": "Try Again",
-    "notFoundTitle": "Portfolio not found",
-    "notFoundDescription": "We couldn't find this portfolio. It may have been deleted or you might not have access to it.",
-    "backToInvestments": "Back to Investments",
-    "subtitle": "Portfolio Overview",
+    "loadingDetails": "Đang tải thông tin danh mục đầu tư…",
+    "loadError": "Không thể tải thông tin danh mục đầu tư.",
+    "tryAgain": "Thử lại",
+    "notFoundTitle": "Không tìm thấy danh mục đầu tư",
+    "notFoundDescription": "Không tìm thấy danh mục đầu tư này. Có thể danh mục đã bị xóa hoặc bạn không có quyền truy cập.",
+    "backToInvestments": "Quay lại mục Đầu tư",
+    "subtitle": "Tổng quan danh mục đầu tư",
     "actions": {
-      "transfer": "Transfer",
-      "edit": "Edit",
+      "transfer": "Chuyển tiền",
+      "edit": "Chỉnh sửa",
       "delete": "Xóa",
-      "exchangeCurrency": "Exchange Currency"
+      "exchangeCurrency": "Đổi đơn vị tiền tệ"
     },
     "balance": {
-      "totalValue": "Total Value",
-      "baseCurrencyEquivalent": "≈ {value} in {code}",
-      "loadError": "Failed to load portfolio summary.",
+      "totalValue": "Tổng giá trị",
+      "baseCurrencyEquivalent": "≈ {value} theo {code}",
+      "loadError": "Không thể tải thông tin tổng quan danh mục đầu tư.",
       "metrics": {
-        "costBasis": "Cost Basis",
-        "unrealized": "Unrealized",
-        "realized": "Realized",
-        "totalReturn": "Total Return"
+        "costBasis": "Giá vốn",
+        "unrealized": "Lãi/lỗ chưa thực hiện",
+        "realized": "Lãi/lỗ đã thực hiện",
+        "totalReturn": "Tổng lợi nhuận"
       }
     },
     "cashBalances": {
-      "title": "Cash Balances",
-      "emptyState": "No cash balances",
+      "title": "Số dư tiền mặt",
+      "emptyState": "Chưa có số dư tiền mặt",
       "tabs": {
-        "balances": "Balances",
-        "cashTransactions": "Transactions",
-        "buysSells": "Buys & Sells"
+        "balances": "Số dư",
+        "cashTransactions": "Giao dịch",
+        "buysSells": "Mua và bán"
       },
       "cashTransactions": {
-        "addButton": "Add Cash Transaction",
-        "emptyState": "No cash transactions yet",
-        "deposit": "Deposit",
-        "withdrawal": "Withdrawal",
-        "transferIn": "Transfer In",
-        "transferOut": "Transfer Out",
-        "exchange": "Currency Exchange",
-        "deleteConfirm": "Delete this cash transaction?",
-        "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
-        "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
-        "deleteLinkedTransaction": "Also delete the linked account transaction",
-        "adjustmentBadge": "Adjustment",
-        "noCashBadge": "No cash impact",
-        "markedAsAdjustment": "Marked as a balance correction",
-        "markedAsContribution": "Marked as a real contribution",
-        "adjustmentError": "Failed to update this transfer",
-        "rowActions": "Transaction actions",
-        "emptyStateDescription": "Deposits, withdrawals and transfers for this portfolio will appear here.",
-        "edit": "Edit",
+        "addButton": "Thêm giao dịch tiền mặt",
+        "emptyState": "Chưa có giao dịch tiền mặt",
+        "deposit": "Nạp tiền",
+        "withdrawal": "Rút tiền",
+        "transferIn": "Chuyển vào",
+        "transferOut": "Chuyển ra",
+        "exchange": "Đổi tiền tệ",
+        "deleteConfirm": "Xóa giao dịch tiền mặt này?",
+        "linkedTransactionNote": "Giao dịch chuyển tiền này được liên kết với một giao dịch tài khoản. Bạn muốn xử lý giao dịch đó thế nào?",
+        "keepLinkedTransaction": "Giữ giao dịch tài khoản. Thông tin ban đầu của giao dịch sẽ được khôi phục.",
+        "deleteLinkedTransaction": "Xóa cả giao dịch tài khoản được liên kết",
+        "adjustmentBadge": "Điều chỉnh",
+        "noCashBadge": "Không ảnh hưởng đến tiền mặt",
+        "markedAsAdjustment": "Được đánh dấu là khoản điều chỉnh số dư",
+        "markedAsContribution": "Được đánh dấu là khoản góp vốn thực tế",
+        "adjustmentError": "Không thể cập nhật giao dịch chuyển tiền này",
+        "rowActions": "Thao tác giao dịch",
+        "emptyStateDescription": "Các khoản nạp, rút và chuyển tiền của danh mục đầu tư sẽ hiển thị ở đây.",
+        "edit": "Chỉnh sửa",
         "editDialog": {
-          "title": "Edit cash transaction",
-          "description": "Change how this transaction is treated in reports.",
-          "save": "Save changes"
+          "title": "Chỉnh sửa giao dịch tiền mặt",
+          "description": "Thay đổi cách tính giao dịch này trong báo cáo.",
+          "save": "Lưu thay đổi"
         }
       },
       "buysSells": {
-        "emptyState": "No buy/sell transactions",
-        "shares": "shares"
+        "emptyState": "Chưa có giao dịch mua/bán",
+        "shares": "cổ phiếu"
       }
     },
     "holdings": {
-      "title": "Holdings",
-      "subtitle": "{count} symbols",
-      "filterPlaceholder": "Filter by symbol or name...",
-      "addButton": "Add Symbol",
-      "importButton": "Import transactions",
-      "importButtonShort": "Import"
+      "title": "Vị thế",
+      "subtitle": "{count} mã chứng khoán",
+      "filterPlaceholder": "Lọc theo mã hoặc tên...",
+      "addButton": "Thêm mã chứng khoán",
+      "importButton": "Nhập giao dịch",
+      "importButtonShort": "Nhập"
     },
     "holdingsTable": {
-      "loadError": "Could not load holdings",
-      "empty": "No holdings yet",
-      "noFilterResults": "No matching holdings",
-      "noFilterResultsDescription": "No holdings match your search. Try a different symbol or name.",
-      "clearFilterButton": "Clear search",
+      "loadError": "Không thể tải các vị thế",
+      "empty": "Chưa có vị thế nào",
+      "noFilterResults": "Không có vị thế phù hợp",
+      "noFilterResultsDescription": "Không có vị thế nào khớp với nội dung tìm kiếm. Hãy thử mã hoặc tên khác.",
+      "clearFilterButton": "Xóa tìm kiếm",
       "headers": {
-        "symbol": "Symbol",
-        "name": "Name",
-        "shares": "Shares",
-        "price": "Price",
-        "avgCostPerShare": "AC/Share",
-        "totalCost": "Total Cost",
-        "marketValue": "Market Value",
-        "unrealizedGain": "Unrealized Gain",
-        "realizedGain": "Realized Gain"
+        "symbol": "Mã chứng khoán",
+        "name": "Tên",
+        "shares": "Cổ phiếu",
+        "price": "Giá",
+        "avgCostPerShare": "Giá vốn TB/cổ phiếu",
+        "totalCost": "Tổng giá vốn",
+        "marketValue": "Giá trị thị trường",
+        "unrealizedGain": "Lãi/lỗ chưa thực hiện",
+        "realizedGain": "Lãi/lỗ đã thực hiện"
       },
       "transactions": {
-        "loading": "Loading transactions…",
-        "empty": "No transactions found.",
-        "addFirstButton": "Add first Transaction"
+        "loading": "Đang tải giao dịch…",
+        "empty": "Không tìm thấy giao dịch nào.",
+        "addFirstButton": "Thêm giao dịch đầu tiên"
       },
-      "closedPositions": "Closed positions ({count})",
-      "stalePrice": "Last available price. Market value and gains may be outdated.",
+      "closedPositions": "Vị thế đã đóng ({count})",
+      "stalePrice": "Giá gần nhất hiện có. Giá trị thị trường và lãi/lỗ có thể đã lỗi thời.",
       "deleteHolding": {
-        "ariaLabel": "Delete holding",
-        "title": "Delete holding",
-        "description": "This will permanently delete the {symbol} holding and all of its transactions. This action cannot be undone.",
-        "confirmLabel": "Delete holding",
-        "success": "Holding deleted.",
-        "error": "Failed to delete the holding."
+        "ariaLabel": "Xóa vị thế",
+        "title": "Xóa vị thế",
+        "description": "Vị thế {symbol} cùng toàn bộ giao dịch của vị thế đó sẽ bị xóa vĩnh viễn. Bạn không thể hoàn tác thao tác này.",
+        "confirmLabel": "Xóa vị thế",
+        "success": "Đã xóa vị thế.",
+        "error": "Không thể xóa vị thế."
       },
       "addTransactionDialog": {
-        "title": "Add Transaction",
-        "description": "Add a new transaction to your portfolio."
+        "title": "Thêm giao dịch",
+        "description": "Thêm giao dịch mới vào danh mục đầu tư của bạn."
       },
-      "tryAgainLater": "Please try again later",
-      "emptyDescription": "Add your first transaction to start tracking your investments",
-      "addFirstHolding": "Add first holding",
-      "importTransactions": "Or import from a file"
+      "tryAgainLater": "Vui lòng thử lại sau",
+      "emptyDescription": "Thêm giao dịch đầu tiên để bắt đầu theo dõi khoản đầu tư của bạn",
+      "addFirstHolding": "Thêm vị thế đầu tiên",
+      "importTransactions": "Hoặc nhập từ tệp"
     },
     "transactionsList": {
-      "title": "Transactions",
-      "addButton": "Add transaction",
-      "loadingMore": "Loading more transactions…",
+      "title": "Giao dịch",
+      "addButton": "Thêm giao dịch",
+      "loadingMore": "Đang tải thêm giao dịch…",
       "headers": {
-        "date": "Date",
-        "type": "Type",
-        "note": "Note",
-        "quantity": "Quantity",
-        "price": "Price",
-        "fees": "Fees",
-        "amount": "Amount",
-        "refAmount": "Base amount",
-        "refFees": "Base fees",
-        "settlementAmount": "Cash",
-        "settlementCurrency": "Cash ccy",
-        "settlementFees": "Cash fees",
-        "settlementRate": "FX rate",
-        "createdAt": "Added on"
+        "date": "Ngày",
+        "type": "Loại",
+        "note": "Ghi chú",
+        "quantity": "Số lượng",
+        "price": "Giá",
+        "fees": "Phí",
+        "amount": "Số tiền",
+        "refAmount": "Số tiền quy đổi",
+        "refFees": "Phí quy đổi",
+        "settlementAmount": "Tiền mặt",
+        "settlementCurrency": "ĐVTT tiền mặt",
+        "settlementFees": "Phí tiền mặt",
+        "settlementRate": "Tỷ giá",
+        "createdAt": "Ngày thêm"
       },
       "categories": {
-        "buy": "Buy",
-        "sell": "Sell",
-        "dividend": "Dividend",
-        "transfer": "Transfer",
-        "tax": "Tax",
-        "fee": "Fee",
+        "buy": "Mua",
+        "sell": "Bán",
+        "dividend": "Cổ tức",
+        "transfer": "Chuyển tiền",
+        "tax": "Thuế",
+        "fee": "Phí",
         "cancel": "Hủy",
-        "other": "Other"
+        "other": "Khác"
       },
       "headerTooltips": {
-        "amount": "Transaction total in the security's trading currency.",
-        "refAmount": "Transaction total converted to your base currency.",
-        "settlementAmount": "Cash actually paid or received in your account, in its settlement currency."
+        "amount": "Tổng giao dịch theo đơn vị tiền tệ giao dịch của chứng khoán.",
+        "refAmount": "Tổng giao dịch đã quy đổi sang đơn vị tiền tệ cơ sở của bạn.",
+        "settlementAmount": "Số tiền mặt thực tế đã trả hoặc nhận vào tài khoản, theo đơn vị tiền tệ dùng để thanh toán."
       },
       "deleteTransaction": {
-        "tooltip": "Delete transaction"
+        "tooltip": "Xóa giao dịch"
       }
     }
   }

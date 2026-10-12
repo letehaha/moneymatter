@@ -7,7 +7,7 @@
       "noGroupDescription": "Ponechať tento účet mimo skupiny",
       "current": "Aktuálne",
       "syncHint": "Skupiny slúžia len na organizáciu účtov — presun účtu nikdy neovplyvní bankovú synchronizáciu.",
-      "accountsCount": "{count} účet | {count} účtov"
+      "accountsCount": "{count} účet | {count} účty | {count} účtov"
     },
     "reassignCategory": {
       "title": "Priradiť transakcie inam",
@@ -29,8 +29,8 @@
       "cancel": "Zrušiť",
       "timeUnits": {
         "someTime": "pred chvíľou",
-        "hours": "{count} hodina | {count} hodín",
-        "minutes": "{count} minúta | {count} minút"
+        "hours": "{count} hodina | {count} hodiny | {count} hodín",
+        "minutes": "{count} minúta | {count} minúty | {count} minút"
       }
     },
     "createPortfolio": {
@@ -174,6 +174,11 @@
         "loadingButton": "Načítavanie...",
         "createButton": "Vytvoriť",
         "editButton": "Upraviť",
+        "duplicateButton": "Duplicita",
+        "createMore": {
+          "label": "Vytvoriť ďalšiu",
+          "createdToast": "Transakcia vytvorená"
+        },
         "fromAccountLabel": "Z účtu",
         "toAccountLabel": "Na účet",
         "accountLabel": "Účet",
@@ -209,7 +214,7 @@
           "hint": "Najviac {max} súborov, každý do {size}. JPEG, PNG, WebP alebo PDF.",
           "trigger": {
             "empty": "Pridať prílohy",
-            "count": "{count} príloha | {count} príloh",
+            "count": "{count} príloha | {count} prílohy | {count} príloh",
             "uploading": "Nahrávanie…"
           },
           "dropzone": {
@@ -314,7 +319,7 @@
         "linkWordRefundedBy": "vrátené prostredníctvom",
         "slotEmptyRefunds": "Nižšie vyberte pôvodnú transakciu",
         "slotEmptyRefundedBy": "Nižšie vyberte transakcie vrátenia platby",
-        "slotSelectedCount": "{count} transakcia | {count} transakcií",
+        "slotSelectedCount": "{count} transakcia | {count} transakcie | {count} transakcií",
         "clearSelection": "Zrušiť výber",
         "linkedAmountLabel": "Prepojené: {amount}",
         "linkedOfLimit": "z {amount}",
@@ -381,6 +386,7 @@
         "unlinkButton": "Odpojiť od portfólia",
         "unlinkWarning": "Odpojením sa zníži hotovostný zostatok portfólia {portfolio}.",
         "unlinkWarningNoCash": "Tento prevod nikdy nezmenil hotovostný zostatok portfólia {portfolio}, preto odpojenie zostatok nezmení.",
+        "noCashBadge": "Bez vplyvu na hotovosť",
         "unlinkDescription": "Obnovia sa pôvodné údaje transakcie.",
         "cancelButton": "Zrušiť",
         "confirmUnlink": "Potvrdiť odpojenie"
@@ -418,11 +424,11 @@
           "accountUnavailable": "účet nedostupný"
         },
         "removeAriaLabel": "Odstrániť šablónu, obnoviť formulár",
-        "announceApplied": "Použitá šablóna {name} — vyplnené pole: {count}. Suma je prázdna. | Použitá šablóna {name} — vyplnené polia: {count}. Suma je prázdna.",
-        "announceAppliedWithAmount": "Použitá šablóna {name} — vyplnené pole: {count}. Suma nastavená na {amount}. | Použitá šablóna {name} — vyplnené polia: {count}. Suma nastavená na {amount}.",
+        "announceApplied": "Použitá šablóna {name} — {count} vyplnené pole. Suma je prázdna. | Použitá šablóna {name} — {count} vyplnené polia. Suma je prázdna. | Použitá šablóna {name} — {count} vyplnených polí. Suma je prázdna.",
+        "announceAppliedWithAmount": "Použitá šablóna {name} — {count} vyplnené pole. Suma nastavená na {amount}. | Použitá šablóna {name} — {count} vyplnené polia. Suma nastavená na {amount}. | Použitá šablóna {name} — {count} vyplnených polí. Suma nastavená na {amount}.",
         "categoryDeletedHint": "Kategória tejto šablóny bola zmazaná — vyberte inú.",
         "alsoSet": "Šablóna zároveň nastavila: {fields}",
-        "tagsCount": "{count} štítok | {count} štítkov",
+        "tagsCount": "{count} štítok | {count} štítky | {count} štítkov",
         "applyConfirmTitle": "Použiť šablónu?",
         "applyConfirmDescription": "Použitím sa nahradí vaše rozdelenie aj prepojenie na vrátenie platby.",
         "toasts": {
@@ -520,6 +526,11 @@
       "inheritParentColor": "Použiť farbu nadradenej kategórie",
       "iconLabel": "Ikona",
       "iconPlaceholder": "Vyberte ikonu",
+      "defaultTagsLabel": "Predvolené štítky",
+      "defaultTagsPlaceholder": "Vyberte štítky",
+      "defaultTagsHint": "Pridá sa k transakcii, keď vyberiete túto kategóriu.",
+      "applyTagsOnAiLabel": "Použiť aj vtedy, keď AI zaraďuje transakciu",
+      "applyTagsOnAiHint": "Štítky zostanú pri transakcii aj po neskoršej zmene kategórie.",
       "settingsDivider": "Nastavenia",
       "saveButton": "Uložiť",
       "createButton": "Vytvoriť",
@@ -593,8 +604,8 @@
         "amountConverted": "Zhoda po prepočte",
         "amountUnknown": "Suma nebola porovnaná",
         "sameDay": "V rovnaký deň ako faktúra",
-        "daysAfter": "{count} deň po faktúre | {count} dní po faktúre",
-        "daysBefore": "{count} deň pred faktúrou | {count} dní pred faktúrou",
+        "daysAfter": "{count} deň po faktúre | {count} dni po faktúre | {count} dní po faktúre",
+        "daysBefore": "{count} deň pred faktúrou | {count} dni pred faktúrou | {count} dní pred faktúrou",
         "merchant": {
           "match": "Obchodník sa zhoduje",
           "partial": "Obchodník vyzerá podobne",
@@ -633,7 +644,7 @@
         "openTransaction": "Transakciu sa nepodarilo otvoriť. Nájdite ju v zozname transakcií."
       },
       "trial": {
-        "left": "Zostáva 1 bezplatný pokus z {limit} | Zostáva {count} bezplatných pokusov z {limit}",
+        "left": "Zostáva 1 bezplatný pokus z {limit} | Zostávajú {count} bezplatné pokusy z {limit} | Zostáva {count} bezplatných pokusov z {limit}",
         "spent": "Minuli ste všetky bezplatné pokusy. Ak chcete pokračovať v prikladaní faktúr pomocou AI, prejdite na Plus."
       }
     },
@@ -751,10 +762,10 @@
       "nothingExcluded": "Nič nie je vylúčené. Do tohto widgetu sa počítajú všetky kategórie.",
       "excludedTag": "Vylúčené",
       "stopExcluding": "Prestať vylučovať {name}",
-      "badgeTooltip": "1 kategória vylúčená z tohto widgetu | {count} kategórií vylúčených z tohto widgetu",
+      "badgeTooltip": "1 kategória vylúčená z tohto widgetu | {count} kategórie vylúčené z tohto widgetu | {count} kategórií vylúčených z tohto widgetu",
       "andMore": "a ďalších {count}",
       "clearAll": "Vymazať všetko",
-      "countExcluded": "1 kategória vylúčená | {count} kategórií vylúčených"
+      "countExcluded": "1 kategória vylúčená | {count} kategórie vylúčené | {count} kategórií vylúčených"
     },
     "subscriptionMarkPaid": {
       "title": "Označiť platbu",
@@ -762,7 +773,6 @@
       "chooseDescription": "Ako chcete zaznamenať túto platbu pre {name}?",
       "amountLabel": "Suma",
       "amountPlaceholder": "0,00",
-      "estimateLoading": "Načítavanie odhadu...",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (odhad)",
       "dateLabel": "Dátum platby",
       "accountLabel": "Účet",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "Aktualizuje len harmonogram — transakcia sa nevytvorí.",
       "recordModeTransactionTitle": "Vytvoriť transakciu",
       "recordModeTransactionDescription": "Zaúčtujte skutočný výdavok na účte. Prepojí sa aj s budúcimi platbami.",
+      "useExistingTitle": "Použiť existujúcu platbu",
+      "useExistingDescription": "Transakcia prepojená s týmto predplatným je za toto obdobie už zaznamenaná. Na váš účet sa nič nové nepridá.",
+      "recordNewTitle": "Zaznamenať novú platbu",
+      "recordNewDescription": "Pridá ďalšiu transakciu za toto obdobie. Existujúca platba zostane nezmenená.",
+      "linkedPaymentDescription": "{name} už má za toto obdobie zaznamenanú platbu. Vyberte, ako ju chcete označiť ako zaplatenú.",
+      "confirmUseExisting": "Použiť túto platbu",
+      "previewUnavailable": "Platby zaznamenané za toto obdobie sa nepodarilo overiť. Pred zaznamenaním novej skontrolujte podrobnosti.",
       "notifications": {
         "markedAsPaid": "Platba zaznamenaná",
         "markAsPaidFailed": "Platbu sa nepodarilo zaznamenať"

@@ -1,104 +1,104 @@
 {
   "settings": {
     "dataManagement": {
-      "title": "Import Data",
-      "description": "Import your financial data from various sources",
+      "title": "Nhập dữ liệu",
+      "description": "Nhập dữ liệu tài chính từ nhiều nguồn khác nhau",
       "tabs": {
-        "import": "Import",
-        "export": "Export"
+        "import": "Nhập",
+        "export": "Xuất"
       },
       "textSource": {
-        "title": "Import from any Text Source",
-        "aiBadge": "AI-powered",
-        "listDescription": "Bank statements, emails, or any text source"
+        "title": "Nhập từ nguồn văn bản bất kỳ",
+        "aiBadge": "Được hỗ trợ bởi AI",
+        "listDescription": "Sao kê ngân hàng, email hoặc bất kỳ nguồn văn bản nào"
       },
       "csv": {
-        "title": "Import CSV",
-        "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
-        "button": "Import CSV File",
-        "cta": "Import CSV file",
-        "listDescription": "Map columns and handle duplicates"
+        "title": "Nhập CSV",
+        "description": "Nhập giao dịch từ tệp CSV. Bạn có thể ghép cột, xử lý giao dịch trùng lặp và tạo tài khoản hoặc danh mục mới khi cần.",
+        "button": "Nhập tệp CSV",
+        "cta": "Nhập tệp CSV",
+        "listDescription": "Ghép cột và xử lý giao dịch trùng lặp"
       },
       "ofx": {
-        "title": "OFX or QFX statement",
-        "listDescription": "Import bank and credit card transactions"
+        "title": "Sao kê OFX hoặc QFX",
+        "listDescription": "Nhập giao dịch ngân hàng và thẻ tín dụng"
       },
       "ynab": {
-        "title": "Import from YNAB",
-        "listDescription": "Accounts, transactions, categories, and payees"
+        "title": "Nhập từ YNAB",
+        "listDescription": "Tài khoản, giao dịch, danh mục và người nhận"
       },
       "budget-bakers-wallet": {
         "title": "Wallet (BudgetBakers)",
-        "listDescription": "Multi-currency with automatic transfer pairing"
+        "listDescription": "Hỗ trợ nhiều loại tiền tệ, tự động ghép các giao dịch chuyển tiền"
       },
       "ms-money": {
         "title": "Microsoft Money",
-        "listDescription": "Import a .mny file from Microsoft Money"
+        "listDescription": "Nhập tệp .mny từ Microsoft Money"
       },
       "importHistory": {
-        "title": "Import History",
-        "listDescription": "View past imports and what they created"
+        "title": "Lịch sử nhập dữ liệu",
+        "listDescription": "Xem các lần nhập trước và dữ liệu mà chúng đã tạo"
       },
       "import": {
-        "back": "Back to Import",
-        "whichImporterHint": "Not sure which one to use?",
+        "back": "Quay lại mục Nhập",
+        "whichImporterHint": "Chưa biết nên chọn mục nào?",
         "groups": {
-          "filesAndText": "Files & text",
-          "fromOtherApps": "From other apps",
-          "history": "History"
+          "filesAndText": "Tệp và văn bản",
+          "fromOtherApps": "Từ ứng dụng khác",
+          "history": "Lịch sử"
         },
         "requestMore": {
-          "title": "Want more options? Request here"
+          "title": "Muốn có thêm lựa chọn? Gửi yêu cầu tại đây."
         }
       },
       "export": {
-        "cardTitle": "Export your data",
-        "backupOrExportHint": "Not sure whether you need Export or Backup?",
+        "cardTitle": "Xuất dữ liệu của bạn",
+        "backupOrExportHint": "Chưa biết nên chọn Xuất hay Sao lưu?",
         "form": {
-          "title": "Export your data",
-          "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
-          "confirmLabel": "Download",
-          "confirmLoading": "Preparing…",
-          "back": "Back to Export"
+          "title": "Xuất dữ liệu của bạn",
+          "description": "Chọn định dạng và những phần dữ liệu bạn muốn xuất. Tệp sẽ bắt đầu tải xuống ngay sau khi bạn xác nhận.",
+          "confirmLabel": "Tải xuống",
+          "confirmLoading": "Đang chuẩn bị…",
+          "back": "Quay lại mục Xuất"
         },
         "format": {
-          "label": "Format",
+          "label": "Định dạng",
           "json": "JSON",
           "csv": "CSV",
           "xlsx": "Excel"
         },
         "groups": {
-          "label": "What to include",
-          "selectAll": "Select all",
-          "deselectAll": "Deselect all",
-          "transactions": "Transactions & accounts",
-          "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
-          "budgets": "Budgets",
-          "budgetsDescription": "Custom budgets with linked categories and spending totals",
-          "subscriptions": "Subscriptions & reminders",
-          "subscriptionsDescription": "Recurring subscriptions and bill reminders",
-          "investments": "Investments",
-          "investmentsDescription": "Portfolios, holdings, investment transactions, transfers"
+          "label": "Nội dung cần xuất",
+          "selectAll": "Chọn tất cả",
+          "deselectAll": "Bỏ chọn tất cả",
+          "transactions": "Giao dịch và tài khoản",
+          "transactionsDescription": "Giao dịch, tài khoản, lịch sử số dư, danh mục, thẻ và phương tiện",
+          "budgets": "Ngân sách",
+          "budgetsDescription": "Ngân sách tùy chỉnh kèm danh mục được liên kết và tổng chi tiêu",
+          "subscriptions": "Khoản định kỳ và lời nhắc",
+          "subscriptionsDescription": "Khoản định kỳ và lời nhắc thanh toán hóa đơn",
+          "investments": "Đầu tư",
+          "investmentsDescription": "Danh mục đầu tư, tài sản nắm giữ, giao dịch đầu tư và chuyển khoản"
         },
         "notifications": {
-          "success": "Export ready – your download should start in a moment.",
-          "successWithCount": "Export ready – {count} rows exported.",
-          "failed": "Could not export your data. Please try again.",
-          "downloadBlocked": "Export ready, but your browser blocked the download. Check the address bar for a download prompt.",
-          "tooLarge": "Your data is too large for a single export. Please contact support."
+          "success": "Đã chuẩn bị xong dữ liệu xuất – tệp sẽ bắt đầu tải xuống trong giây lát.",
+          "successWithCount": "Đã xuất dữ liệu – {count} bản ghi.",
+          "failed": "Không thể xuất dữ liệu của bạn. Vui lòng thử lại.",
+          "downloadBlocked": "Đã sẵn sàng xuất dữ liệu, nhưng trình duyệt đã chặn tải xuống. Hãy kiểm tra thanh địa chỉ để xem lời nhắc tải xuống.",
+          "tooLarge": "Dữ liệu của bạn quá lớn để xuất trong một lần. Vui lòng liên hệ bộ phận hỗ trợ."
         },
         "dateRange": {
-          "label": "Date range (optional)",
-          "helper": "Only event tables (transactions, balance history, investment activity) get filtered. Accounts, categories, and other reference tables stay complete.",
-          "placeholder": "All time",
-          "clear": "Clear date range"
+          "label": "Khoảng thời gian (không bắt buộc)",
+          "helper": "Chỉ các bảng dữ liệu sự kiện (giao dịch, lịch sử số dư, hoạt động đầu tư) được lọc. Tài khoản, danh mục và các bảng dữ liệu tham chiếu khác vẫn được xuất đầy đủ.",
+          "placeholder": "Toàn bộ thời gian",
+          "clear": "Xóa khoảng thời gian"
         },
         "accounts": {
           "label": "Tài khoản",
-          "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "All accounts"
+          "helper": "Chỉ xuất các tài khoản được chọn cùng các giao dịch và lịch sử số dư của chúng. Để trống để xuất tất cả tài khoản.",
+          "placeholder": "Tất cả tài khoản"
         },
-        "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
+        "listDescription": "Tải tệp ZIP để dùng với bảng tính, khai thuế hoặc chuyển dữ liệu sang ứng dụng khác."
       }
     }
   }

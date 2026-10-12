@@ -2,101 +2,101 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "selectionModeWarning": "Selection mode — choose transactions to unlink",
-        "selectAll": "Select all",
-        "selected": "{count} selected",
-        "unlink": "Unlink",
+        "selectionModeWarning": "Chế độ chọn — chọn giao dịch muốn gỡ liên kết",
+        "selectAll": "Chọn tất cả",
+        "selected": "Đã chọn {count}",
+        "unlink": "Gỡ liên kết",
         "cancel": "Hủy",
-        "unlinkSelected": "Unlink Selected",
-        "noMatchingTransactions": "No matching transactions",
-        "noTransactionsLinked": "No transactions linked",
-        "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
-        "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
-        "resetFilters": "Reset Filters",
-        "addTransactions": "Add Transactions",
+        "unlinkSelected": "Gỡ liên kết các giao dịch đã chọn",
+        "noMatchingTransactions": "Không tìm thấy giao dịch phù hợp",
+        "noTransactionsLinked": "Chưa có giao dịch nào được liên kết",
+        "filterAdjustmentHint": "Hãy thử điều chỉnh bộ lọc để xem thêm giao dịch.",
+        "addTransactionsHint": "Thêm giao dịch vào ngân sách này để bắt đầu theo dõi chi tiêu.",
+        "resetFilters": "Đặt lại bộ lọc",
+        "addTransactions": "Thêm giao dịch",
         "add": "Thêm",
-        "loadingMore": "Loading more..."
+        "loadingMore": "Đang tải thêm…"
       }
     },
     "budgetDetails": {
-      "notSet": "Not set",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
+      "notSet": "Chưa đặt",
+      "saving": "Đang lưu…",
+      "saveChanges": "Lưu thay đổi",
       "loading": "Đang tải...",
-      "uncategorized": "Uncategorized",
+      "uncategorized": "Chưa phân loại",
       "stats": {
-        "income": "Income",
-        "expenses": "Expenses",
-        "netBalance": "Net Balance"
+        "income": "Thu nhập",
+        "expenses": "Chi tiêu",
+        "netBalance": "Thu chi ròng"
       },
       "utilization": {
-        "title": "Budget Utilization",
-        "summary": "{spent} of {limit} limit",
-        "na": "N/A"
+        "title": "Mức sử dụng ngân sách",
+        "summary": "Đã chi {spent} trên hạn mức {limit}",
+        "na": "Không áp dụng"
       },
-      "noTransactionsYet": "No transactions yet",
-      "transactions": "Transactions",
-      "transactionsLinked": "{count} transaction linked to this budget | {count} transactions linked to this budget",
+      "noTransactionsYet": "Chưa có giao dịch nào",
+      "transactions": "Giao dịch",
+      "transactionsLinked": "{count} giao dịch được liên kết với ngân sách này | {count} giao dịch được liên kết với ngân sách này",
       "tabs": {
         "statistics": "Thống Kê",
-        "transactions": "Transactions",
-        "sharing": "Sharing"
+        "transactions": "Giao dịch",
+        "sharing": "Chia sẻ"
       },
       "statistics": {
         "tabs": {
           "categories": "Danh mục",
-          "timeline": "Timeline"
+          "timeline": "Dòng thời gian"
         },
-        "errorTitle": "Failed to load statistics",
-        "errorDescription": "Something went wrong while loading the data. Please try again later.",
-        "noDataTitle": "No spending data",
-        "noDataDescription": "There's no spending data available for this budget yet.",
-        "noCategoryData": "No category spending data.",
-        "noTimelineData": "No timeline data.",
-        "total": "Total",
-        "income": "Income",
-        "expenses": "Expenses",
-        "incomeLabel": "Income:",
-        "expensesLabel": "Expenses:"
+        "errorTitle": "Không thể tải số liệu thống kê.",
+        "errorDescription": "Đã xảy ra lỗi khi tải dữ liệu. Vui lòng thử lại sau.",
+        "noDataTitle": "Chưa có dữ liệu chi tiêu",
+        "noDataDescription": "Ngân sách này chưa có dữ liệu chi tiêu.",
+        "noCategoryData": "Chưa có dữ liệu chi tiêu theo danh mục.",
+        "noTimelineData": "Chưa có dữ liệu theo dòng thời gian.",
+        "total": "Tổng",
+        "income": "Thu nhập",
+        "expenses": "Chi tiêu",
+        "incomeLabel": "Thu nhập:",
+        "expensesLabel": "Chi tiêu:"
       },
       "sharing": {
-        "title": "Sharing",
-        "description": "Manage who can see this budget and contribute to it.",
-        "inviteAnother": "Invite someone",
-        "membersHeading": "Members",
+        "title": "Chia sẻ",
+        "description": "Quản lý những người được phép xem và đóng góp vào ngân sách này.",
+        "inviteAnother": "Mời người khác",
+        "membersHeading": "Thành viên",
         "pendingHeading": "Lời mời đang chờ",
-        "loadError": "Couldn't load members.",
+        "loadError": "Không thể tải danh sách thành viên.",
         "permissions": {
-          "read": "View only",
-          "write": "Attach own transactions",
+          "read": "Chỉ xem",
+          "write": "Liên kết giao dịch của riêng bạn",
           "manage": "Quản lý"
         },
         "member": {
-          "you": "you",
-          "roleOwner": "Owner",
-          "roleRecipient": "Member",
-          "ownerHint": "Full control of this budget",
+          "you": "Bạn",
+          "roleOwner": "Chủ sở hữu",
+          "roleRecipient": "Thành viên",
+          "ownerHint": "Toàn quyền kiểm soát ngân sách này",
           "updateSuccess": "Đã cập nhật quyền.",
           "updateError": "Không cập nhật được quyền.",
-          "revoke": "Revoke access",
-          "revokeConfirm": "Revoke",
-          "revokeTitle": "Revoke access?",
-          "revokeDescription": "{user} will lose access to {budget}.",
-          "revokeSuccess": "Access revoked.",
-          "revokeError": "Couldn't revoke access."
+          "revoke": "Thu hồi quyền truy cập",
+          "revokeConfirm": "Thu hồi",
+          "revokeTitle": "Thu hồi quyền truy cập?",
+          "revokeDescription": "{user} sẽ mất quyền truy cập vào {budget}.",
+          "revokeSuccess": "Đã thu hồi quyền truy cập.",
+          "revokeError": "Không thể thu hồi quyền truy cập."
         },
         "pending": {
-          "empty": "No pending invitations.",
+          "empty": "Không có lời mời nào đang chờ xử lý.",
           "resend": "Gửi lại",
           "resendSuccess": "Đã gửi lại lời mời.",
-          "resendError": "Couldn't resend invitation.",
-          "resendDeliveryFailed": "Resent, but the email couldn't be delivered.",
+          "resendError": "Không thể gửi lại lời mời.",
+          "resendDeliveryFailed": "Đã gửi lại lời mời nhưng không gửi được email.",
           "cancel": "Hủy",
           "cancelConfirm": "Hủy lời mời",
           "cancelTitle": "Hủy lời mời?",
-          "cancelDescription": "The invitation to {email} will be cancelled.",
+          "cancelDescription": "Lời mời gửi đến {email} sẽ bị hủy.",
           "cancelSuccess": "Đã hủy lời mời.",
-          "cancelError": "Couldn't cancel invitation."
+          "cancelError": "Không thể hủy lời mời."
         }
       }
     }

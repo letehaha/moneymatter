@@ -61,6 +61,7 @@
         "totalIncome": "Celkové príjmy",
         "incomePlusDeficit": "Príjmy + schodok",
         "savings": "Úspory",
+        "taxes": "Dane",
         "deficit": "Schodok",
         "other": "Ostatné",
         "noData": "Za toto obdobie nie sú žiadne transakcie",
@@ -206,7 +207,7 @@
         "spendingLabel": "Ročné výdavky v dôchodku",
         "spendingPlaceholder": "napr. 40000",
         "requiredBadge": "Povinné",
-        "autoSpendingHint": "Priemer za posledný {n} celý mesiac × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték. | Priemer za posledných {n} celých mesiacov × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték.",
+        "autoSpendingHint": "Priemer za posledný {n} celý mesiac × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték. | Priemer za posledné {n} celé mesiace × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték. | Priemer za posledných {n} celých mesiacov × 12, len účty, ktoré vlastníte, prevody a kategórie úspor sú vylúčené. Typický mesiac: {typical}. Zahŕňa splátky pôžičiek a hypoték.",
         "backToAuto": "Späť na automatické ({amount})",
         "excludedLabel": "Nepočíta sa ako výdavok",
         "excludedPlaceholder": "Vylúčiť kategórie",
@@ -214,7 +215,7 @@
         "savingsNoteLink": "Upraviť",
         "contributionLabel": "Mesačný vklad",
         "contributionPlaceholder": "napr. 1500",
-        "autoContributionHint": "Priemerný čistý tok za rovnaký {n} mesiac. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos). | Priemerný čistý tok za rovnakých {n} mesiacov. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos).",
+        "autoContributionHint": "Priemerný čistý tok za rovnaký {n} mesiac. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos). | Priemerný čistý tok za rovnaké {n} mesiace. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos). | Priemerný čistý tok za rovnakých {n} mesiacov. Vklady priamo do portfólia nie sú súčasťou peňažného toku, preto ich pridajte sem. Dividendy vyplatené na bankový účet sa počítajú dvakrát (ako príjem aj ako výnos).",
         "savingsRate": "Sporíte {pct} svojho príjmu",
         "countsTitle": "Čo sa počíta do FIRE",
         "countsCash": "Hotovosť a bankové účty",
@@ -223,7 +224,7 @@
         "countsVehicles": "Vozidlá",
         "countsLoans": "Pôžičky",
         "countsHint": "Hotovosť a portfóliá sa počítajú vždy. Splátky pôžičiek sa už počítajú ako výdavok, preto sú pôžičky predvolene vypnuté.",
-        "archivedNote": "{count} archivovaný účet vylúčený zo štatistík stále drží {amount}. {link} | {count} archivovaných účtov vylúčených zo štatistík stále drží {amount}. {link}",
+        "archivedNote": "{count} archivovaný účet vylúčený zo štatistík stále drží {amount}. {link} | {count} archivované účty vylúčené zo štatistík stále držia {amount}. {link} | {count} archivovaných účtov vylúčených zo štatistík stále drží {amount}. {link}",
         "archivedNoteLink": "Kontrola",
         "presetLabel": "{label} · ≈{real} reálne ({nominal} nominálne, {inflation} inflácia v USA)",
         "inflationLabel": "Inflácia",
@@ -366,7 +367,7 @@
         "addAccount": "Pridať účet"
       },
       "trial": {
-        "daysLeft": "Skúšobná verzia plánovača FIRE · zostáva {n} deň | Skúšobná verzia plánovača FIRE · zostáva {n} dní",
+        "daysLeft": "Skúšobná verzia plánovača FIRE · zostáva {n} deň | Skúšobná verzia plánovača FIRE · zostávajú {n} dni | Skúšobná verzia plánovača FIRE · zostáva {n} dní",
         "ended": "Vaša 14-dňová skúšobná verzia plánovača FIRE sa skončila. Ak chcete pokračovať v plánovaní cesty k FIRE, prejdite na Plus.",
         "startFailed": "Skúšobnú verziu plánovača FIRE sa nepodarilo spustiť. Načítajte stránku znova a skúste to opäť."
       }

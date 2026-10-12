@@ -151,7 +151,7 @@
           "principal": "Tilgung",
           "interest": "Zinsen (geschätzt)",
           "estimateFootnote": "Zinsen sind eine Schätzung anhand des Tilgungsplans – Zahlungen werden als Tilgung erfasst, daher wird keine genaue Zinsaufteilung gespeichert.",
-          "effectiveCost": "Effektive Kosten: {cents}¢ Zinsen pro 1 $ geliehen"
+          "effectiveCost": "Effektive Kosten: {cents} Cent Zinsen pro 1€ geliehen"
         },
         "chart": {
           "title": "Saldoverlauf",

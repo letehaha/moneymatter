@@ -9,7 +9,7 @@
       "cancel": "取消",
       "back": "Back",
       "accept": "接受",
-      "delete": "Delete",
+      "delete": "删除",
       "edit": "编辑",
       "addSubcategory": "Add subcategory",
       "settings": "设置",
@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Field is required",
     "minLength": "Minimal length is {length}.",
     "emailInvalid": "Please enter a valid email address.",
     "passwordsNoMatch": "Passwords don't match"

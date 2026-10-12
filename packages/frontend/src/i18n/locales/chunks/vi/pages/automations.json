@@ -7,7 +7,7 @@
     "dragHint": "Drag to reorder",
     "toggleAriaLabel": "Enable automation",
     "menuAriaLabel": "Automation actions",
-    "disabledPill": "Disabled",
+    "disabledPill": "Đã tắt",
     "mcpTip": {
       "trigger": "Tips",
       "text": "You can manage automations with AI through an MCP connection — ask it to reorganize your rules, or check for duplicates and conflicts.",
@@ -34,8 +34,8 @@
       "then": "Then",
       "not": "not",
       "day": "day",
-      "more": "+{count} more",
-      "less": "Show less",
+      "more": "+{count} mục nữa",
+      "less": "Thu gọn",
       "noteReplace": "set note",
       "noteAppend": "append",
       "notePrepend": "prepend",
@@ -86,12 +86,12 @@
       "note": "Note",
       "merchant": "Merchant",
       "payee": "Payee",
-      "amount": "Amount",
+      "amount": "Số tiền",
       "transactionType": "Transaction type",
       "account": "Account",
       "accountGroup": "Account group",
       "bankConnection": "Bank connection",
-      "dayOfMonth": "Day of month"
+      "dayOfMonth": "Ngày trong tháng"
     },
     "operators": {
       "contains_any": "contains any of",
@@ -122,8 +122,8 @@
       "titleNew": "New automation",
       "titleEdit": "Edit automation",
       "back": "Back to automations",
-      "enabled": "Enabled",
-      "nameLabel": "Name",
+      "enabled": "Đã bật",
+      "nameLabel": "Tên",
       "namePlaceholder": "e.g. Groceries from Biedronka",
       "conditionsHeader": "Match {match} of these conditions",
       "matchAll": "all",
@@ -169,11 +169,11 @@
         "confirm": "Discard changes"
       },
       "preview": {
-        "title": "Preview",
+        "title": "Bản xem trước",
         "run": "Preview matches",
         "hint": "Finish the rule to preview which transactions it would match.",
         "summary": "{matched} of the last {scanned} transactions this rule could apply to",
-        "empty": "No matches",
+        "empty": "Không có kết quả phù hợp",
         "stale": "Conditions changed since this preview ran.",
         "error": "Could not run the preview. Please try again."
       },

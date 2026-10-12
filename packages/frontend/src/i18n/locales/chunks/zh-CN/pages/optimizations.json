@@ -188,7 +188,7 @@
       "restoreDialog": {
         "title": "Restore {count} transaction? | Restore {count} transactions?",
         "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
-        "confirm": "Restore"
+        "confirm": "恢复"
       },
       "notifications": {
         "removed": "Removed {count} transaction | Removed {count} transactions",
@@ -248,7 +248,7 @@
           "merge": "Merged",
           "remove": "Removed"
         },
-        "restore": "Restore",
+        "restore": "恢复",
         "kept": "Kept",
         "removedRows": "{count} removed transaction | {count} removed transactions"
       }

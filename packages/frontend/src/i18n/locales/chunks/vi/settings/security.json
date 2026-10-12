@@ -184,7 +184,7 @@
         "download": {
           "title": "Download backup",
           "description": "Save a complete, restorable copy of all your data as a zip file.",
-          "button": "Download",
+          "button": "Tải xuống",
           "loading": "Preparing...",
           "success": "Backup downloaded",
           "failed": "Could not create backup. Please try again.",
@@ -244,7 +244,7 @@
             "title": "Restore complete",
             "description": "Your data has been restored from the backup.",
             "recordsHeading": "Restored records",
-            "warningsHeading": "Warnings",
+            "warningsHeading": "Cảnh báo",
             "noRecords": "No records were restored.",
             "doneButton": "Done"
           },
@@ -257,7 +257,7 @@
           "overlay": {
             "title": "Restoring your data",
             "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
-            "preparing": "Preparing…",
+            "preparing": "Đang chuẩn bị…",
             "finishing": "Finishing up",
             "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
             "unreachableTitle": "Can't reach the server",

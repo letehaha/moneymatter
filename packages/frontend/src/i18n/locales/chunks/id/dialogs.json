@@ -174,6 +174,11 @@
         "loadingButton": "Memuat...",
         "createButton": "Buat",
         "editButton": "Sunting",
+        "duplicateButton": "Duplikat",
+        "createMore": {
+          "label": "Create more",
+          "createdToast": "Transaction created"
+        },
         "fromAccountLabel": "Dari akun",
         "toAccountLabel": "Ke akun",
         "accountLabel": "Akun",
@@ -381,6 +386,7 @@
         "unlinkButton": "Lepas dari Portofolio",
         "unlinkWarning": "Melepas tautan akan mengurangi saldo kas portofolio {portfolio}.",
         "unlinkWarningNoCash": "Transfer ini tidak pernah mengubah saldo kas {portfolio}, jadi melepas tautan tidak akan memengaruhi saldo tersebut.",
+        "noCashBadge": "Tidak ada dampak kas",
         "unlinkDescription": "Detail transaksi asli akan dipulihkan.",
         "cancelButton": "Batal",
         "confirmUnlink": "Konfirmasi Lepas Tautan"
@@ -520,6 +526,11 @@
       "inheritParentColor": "Gunakan warna induk",
       "iconLabel": "Ikon",
       "iconPlaceholder": "Pilih ikon",
+      "defaultTagsLabel": "Default tags",
+      "defaultTagsPlaceholder": "Pilih tag",
+      "defaultTagsHint": "Added to a transaction when you pick this category.",
+      "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
+      "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
       "settingsDivider": "Pengaturan",
       "saveButton": "Simpan",
       "createButton": "Buat",
@@ -762,7 +773,6 @@
       "chooseDescription": "Bagaimana Anda ingin mencatat pembayaran ini untuk {name}?",
       "amountLabel": "Jumlah",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "Memuat perkiraan…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (perkiraan)",
       "dateLabel": "Tanggal pembayaran",
       "accountLabel": "Akun",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "Memperbarui jadwal saja — tidak ada transaksi yang dibuat.",
       "recordModeTransactionTitle": "Buat transaksi",
       "recordModeTransactionDescription": "Catat pengeluaran nyata di akun. Ini akan ditautkan untuk pembayaran mendatang juga.",
+      "useExistingTitle": "Use the existing payment",
+      "useExistingDescription": "A transaction linked to this subscription is already recorded in this period. Nothing new is added to your account.",
+      "recordNewTitle": "Record a new payment",
+      "recordNewDescription": "Adds another transaction for this period. The existing payment stays as it is.",
+      "linkedPaymentDescription": "{name} already has a payment in this period. Choose how to mark it paid.",
+      "confirmUseExisting": "Use this payment",
+      "previewUnavailable": "Couldn't check for payments already recorded in this period. Review the details before recording a new one.",
       "notifications": {
         "markedAsPaid": "Pembayaran tercatat",
         "markAsPaidFailed": "Gagal mencatat pembayaran"

@@ -5,7 +5,7 @@
     "newPayeeButton": "New Payee",
     "searchPlaceholder": "Search payees…",
     "columns": {
-      "name": "Name",
+      "name": "Tên",
       "transactionCount": "# tx",
       "netFlow": "Net flow",
       "category": "Category",
@@ -18,7 +18,7 @@
       "label": "Sort by",
       "transactionCount": "Tx amount",
       "netFlow": "Net flow",
-      "name": "Name",
+      "name": "Tên",
       "lastSeen": "Recent activity",
       "defaultTags": "Default tags"
     },
@@ -112,7 +112,7 @@
       "unlinked": "Transaction unlinked from payee",
       "unlinkConfirmTitle": "Unlink transaction?",
       "unlinkConfirmDescription": "This transaction will no longer be linked to {name}. Future bank syncs won't re-link it automatically.",
-      "unlinkConfirmLabel": "Unlink"
+      "unlinkConfirmLabel": "Gỡ liên kết"
     },
     "toasts": {
       "created": "Payee created",

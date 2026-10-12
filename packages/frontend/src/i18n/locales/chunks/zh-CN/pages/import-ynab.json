@@ -24,7 +24,7 @@
         "preview": {
           "emptyList": "Nothing to import here.",
           "accounts": "Accounts",
-          "categories": "Categories",
+          "categories": "分类",
           "payees": "Payees",
           "tags": "Tags",
           "transactions": "Transactions",

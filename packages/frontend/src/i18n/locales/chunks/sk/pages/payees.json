@@ -35,9 +35,9 @@
       "clearSelection": "Zrušiť výber",
       "selectAll": "Vybrať všetky načítané protistrany",
       "selectRow": "Vybrať {name}",
-      "deleteTitle": "Zmazať {count} protistranu? | Zmazať {count} protistrán?",
+      "deleteTitle": "Zmazať {count} protistranu? | Zmazať {count} protistrany? | Zmazať {count} protistrán?",
       "deleteDescription": "Ich transakcie zostanú zachované, no stratia prepojenie na protistranu. Túto akciu nie je možné vrátiť späť.",
-      "deleteAndIgnoreTitle": "Zmazať a ignorovať {count} protistranu? | Zmazať a ignorovať {count} protistrán?",
+      "deleteAndIgnoreTitle": "Zmazať a ignorovať {count} protistranu? | Zmazať a ignorovať {count} protistrany? | Zmazať a ignorovať {count} protistrán?",
       "deleteAndIgnoreDescription": "Ich názvy sa pridajú na zoznam ignorovaných, takže ich importy a bankové synchronizácie znova nevytvoria. Ich transakcie zostanú zachované, no stratia prepojenie na protistranu."
     },
     "emptyState": {
@@ -123,8 +123,8 @@
       "aliasAdded": "Alias pridaný",
       "deletedAndIgnored": "Protistrana zmazaná a pridaná na zoznam ignorovaných názvov",
       "tagsAppliedToExisting": "Štítky priradené k {count} transakciám",
-      "bulkDeleted": "Zmazaná {count} protistrana | Zmazaných {count} protistrán",
-      "bulkDeletedAndIgnored": "Zmazaná a ignorovaná {count} protistrana | Zmazaných a ignorovaných {count} protistrán"
+      "bulkDeleted": "Zmazaná {count} protistrana | Zmazané {count} protistrany | Zmazaných {count} protistrán",
+      "bulkDeletedAndIgnored": "Zmazaná a ignorovaná {count} protistrana | Zmazané a ignorované {count} protistrany | Zmazaných a ignorovaných {count} protistrán"
     },
     "errors": {
       "collision": "Protistrana s týmto názvom už existuje. Namiesto toho ju zlúčte.",

@@ -9,7 +9,7 @@
           "steps": {
             "upload": "Upload",
             "map": "Map Columns",
-            "resolveAccounts": "Accounts",
+            "resolveAccounts": "Comptes",
             "resolveCategories": "Categories",
             "review": "Review",
             "results": "Done"

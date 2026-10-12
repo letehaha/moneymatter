@@ -67,7 +67,7 @@
       "displayCurrencyBaseOption": "Basiswährung ({code})",
       "displayCurrencyDescription": "Portfoliowert und Statistiken werden zum aktuellen Wechselkurs in diese Währung umgerechnet.",
       "cancelButton": "Abbrechen",
-      "submitButton": "Änderungen speichern",
+      "submitButton": "Speichern",
       "submitButtonLoading": "Speichern...",
       "notifications": {
         "success": "Portfolio erfolgreich aktualisiert.",
@@ -239,7 +239,7 @@
       }
     },
     "editVehicle": {
-      "submitButton": "Änderungen speichern",
+      "submitButton": "Speichern",
       "submitButtonLoading": "Speichern...",
       "notifications": {
         "success": "Fahrzeug aktualisiert",
@@ -283,7 +283,7 @@
       "currentBalanceLabel": "Aktueller offener Saldo",
       "balanceAsOfLabel": "Saldo vom",
       "balanceAsOfPlaceholder": "TT/MM/JJJJ",
-      "saveButton": "Änderungen speichern",
+      "saveButton": "Speichern",
       "submitButton": "Kredit erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "cancelButton": "Abbrechen",

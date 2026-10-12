@@ -1,52 +1,52 @@
 {
   "settings": {
     "categories": {
-      "title": "Categories",
-      "description": "Organize your transactions into categories and subcategories. Drag a category to move it under a different parent or to the top level.",
-      "addButton": "Add Category",
-      "organizeButton": "Organize",
-      "empty": "No categories yet. Create your first category to get started.",
-      "categoriesCount": "{n} category | {n} categories",
-      "organizeHint": "Drag onto a new parent, or drop here for top-level.",
-      "dropToTopLevel": "Drop here to make “{name}” a top-level category",
-      "movesQueued": "{n} move queued | {n} moves queued",
-      "unqueueMove": "Remove this move",
-      "topLevel": "Top level",
-      "saveChanges": "Save changes",
+      "title": "分类",
+      "description": "使用分类和子分类管理您的交易。拖动一个类别以将其移动到其他父级分类下，或移动到顶层。",
+      "addButton": "添加分类",
+      "organizeButton": "整理",
+      "empty": "尚无类别。创建您的第一个类别以开始操作。",
+      "categoriesCount": "{n} 个分类 | {n} 个分类",
+      "organizeHint": "拖动到一个新的父级，或拖放此处为顶层。",
+      "dropToTopLevel": "将“{name}”拖放到此处，使其成为顶层分类",
+      "movesQueued": "已准备 {n} 个操作 | 已准备 {n} 个操作",
+      "unqueueMove": "删除此操作",
+      "topLevel": "顶层",
+      "saveChanges": "保存更改",
       "parentField": {
-        "label": "Parent category",
-        "placeholder": "Select a parent category",
-        "hiddenHint": "Categories that can't be used as the parent are hidden from the list."
+        "label": "上级分类",
+        "placeholder": "选择上级分类",
+        "hiddenHint": "不能用作父类的分类已在列表中隐藏。"
       },
       "moveDialog": {
-        "title": "Move “{name}”",
-        "description": "Choose a new parent category.",
-        "moveButton": "Move"
+        "title": "移动 “{name}”",
+        "description": "选择一个新的父类。",
+        "moveButton": "移动"
       },
       "delete": {
-        "title": "Delete category?",
-        "description": "This will permanently delete \"{name}\". This action cannot be undone.",
-        "deleteButton": "Delete",
+        "title": "删除分类？",
+        "description": "永久删除“{name}”？此操作不可撤销。",
+        "deleteButton": "删除",
         "cancelButton": "取消"
       },
       "errors": {
-        "cannotLoad": "Cannot load categories"
+        "cannotLoad": "无法加载分类"
       },
       "notifications": {
-        "deleteSuccess": "Category deleted",
-        "deleteFailed": "Failed to delete category",
-        "checkFailed": "Failed to check category",
-        "moveFailed": "Failed to move category.",
-        "saveSuccess": "Changes saved.",
-        "staleMovesRemoved": "Removed {n} queued move that no longer applies | Removed {n} queued moves that no longer apply"
+        "deleteSuccess": "分类已删除",
+        "deleteFailed": "删除分类失败",
+        "checkFailed": "检查分类失败",
+        "moveFailed": "移动分类失败。",
+        "saveSuccess": "更改已保存。",
+        "staleMovesRemoved": "已撤销 {n} 个不可用的操作 | 已撤销 {n} 个不可用的操作"
       },
       "dropErrors": {
-        "currentParent": "Already inside this category",
-        "insideItself": "A category can't be moved inside its own subcategory",
-        "internalTarget": "System categories can't contain other categories",
-        "tooDeep": "Categories can only be nested {max} levels deep",
-        "childrenTooDeep": "Its subcategories would end up deeper than {max} levels",
-        "alreadyTopLevel": "Already a top-level category"
+        "currentParent": "已经在此分类内",
+        "insideItself": "分类不能移动到自己的子分类中",
+        "internalTarget": "系统分类不能包含其他分类",
+        "tooDeep": "分类只能嵌套 {max} 层",
+        "childrenTooDeep": "该分类的子分类将会嵌套深过 {max} 层",
+        "alreadyTopLevel": "已经是顶层分类"
       }
     }
   }

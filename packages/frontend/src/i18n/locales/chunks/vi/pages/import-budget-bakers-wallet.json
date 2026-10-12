@@ -2,131 +2,131 @@
   "pages": {
     "importExport": {
       "budgetBakersWalletImport": {
-        "pageTitle": "Import from Wallet (BudgetBakers)",
-        "pageDescription": "Import your transactions exported from the Wallet app by BudgetBakers.",
+        "pageTitle": "Nhập từ Wallet (BudgetBakers)",
+        "pageDescription": "Nhập các giao dịch đã xuất từ ứng dụng Wallet của BudgetBakers.",
         "fileUpload": {
-          "stepTitle": "Upload your Wallet CSV file",
-          "description": "Upload one or more Wallet CSV export files to import transactions. All files must have the same columns.",
-          "maxSize": "Maximum file size: 10 MB",
-          "parsing": "Parsing…",
+          "stepTitle": "Tải tệp CSV Wallet lên",
+          "description": "Tải lên một hoặc nhiều tệp CSV được xuất từ Wallet để nhập giao dịch. Tất cả các tệp phải có cùng cột.",
+          "maxSize": "Kích thước tệp tối đa: 10 MB",
+          "parsing": "Đang phân tích…",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not a CSV file.",
-            "parseFailed": "Failed to parse file. Please check the format and try again.",
+            "invalidFormatNamed": "\"{name}\" không phải là tệp CSV.",
+            "parseFailed": "Không thể phân tích tệp. Vui lòng kiểm tra định dạng và thử lại.",
             "merge": {
-              "emptySelection": "Select at least one CSV file",
-              "fileReadFailed": "Couldn't read \"{file}\"",
-              "fileEmpty": "\"{file}\" is empty",
-              "fileNoDataRows": "\"{file}\" has no data rows",
-              "headerMismatch": "Columns in \"{file}\" don't match the first file. All files must have the same columns in the same order.",
-              "forbiddenHeader": "\"{file}\" uses a reserved column name",
-              "tooManyRows": "Selected files total more than {max} rows. Remove some files or rows and try again.",
-              "parseError": "Couldn't parse \"{file}\". Make sure it's a valid CSV."
+              "emptySelection": "Chọn ít nhất một tệp CSV",
+              "fileReadFailed": "Không thể đọc \"{file}\"",
+              "fileEmpty": "\"{file}\" trống",
+              "fileNoDataRows": "\"{file}\" không có hàng dữ liệu",
+              "headerMismatch": "Các cột trong \"{file}\" không khớp với tệp đầu tiên. Tất cả các tệp phải có cùng cột theo cùng thứ tự.",
+              "forbiddenHeader": "\"{file}\" dùng tên cột không được phép sử dụng.",
+              "tooManyRows": "Tổng số hàng trong các tệp đã chọn vượt quá {max}. Hãy xóa bớt tệp hoặc hàng rồi thử lại.",
+              "parseError": "Không thể phân tích \"{file}\". Hãy đảm bảo đây là tệp CSV hợp lệ."
             }
           },
-          "continue": "Continue"
+          "continue": "Tiếp tục"
         },
         "preview": {
-          "accountsHelper": "Configure how each detected account will be handled during import.",
+          "accountsHelper": "Cấu hình cách xử lý từng tài khoản được phát hiện khi nhập.",
           "accounts": "Tài khoản",
-          "transactions": "Transactions",
-          "rowPrefix": "Row {rowIndex}: "
+          "transactions": "Giao dịch",
+          "rowPrefix": "Hàng {rowIndex}: "
         },
         "accountRow": {
-          "transactionsCount": "{count} transactions | {count} transaction | {count} transactions",
-          "modeLabel": "Action",
-          "modePlaceholder": "Select action",
-          "modeCreateNew": "Create new account",
-          "modeLinkExisting": "Link to existing account",
-          "currentBalanceLabel": "Current balance (optional)",
-          "currentBalancePlaceholder": "e.g. 1234.56",
-          "currentBalanceHint": "Leave blank to start from the sum of imported transactions.",
-          "linkTargetLabel": "Existing account",
-          "linkTargetPlaceholder": "Select account",
-          "keepBalanceNote": "The existing account's current balance will be preserved. History will be back-filled."
+          "transactionsCount": "{count} giao dịch | {count} giao dịch | {count} giao dịch",
+          "modeLabel": "Thao tác",
+          "modePlaceholder": "Chọn thao tác",
+          "modeCreateNew": "Tạo tài khoản mới",
+          "modeLinkExisting": "Liên kết với tài khoản hiện có",
+          "currentBalanceLabel": "Số dư hiện tại (không bắt buộc)",
+          "currentBalancePlaceholder": "ví dụ: 1234.56",
+          "currentBalanceHint": "Để trống để bắt đầu bằng tổng số tiền của các giao dịch được nhập.",
+          "linkTargetLabel": "Tài khoản hiện có",
+          "linkTargetPlaceholder": "Chọn tài khoản",
+          "keepBalanceNote": "Số dư hiện tại của tài khoản sẽ được giữ nguyên. Lịch sử giao dịch sẽ được bổ sung."
         },
         "execute": {
-          "starting": "Starting import…",
+          "starting": "Đang bắt đầu nhập…",
           "progressCount": "{processed} / {total}",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing…",
-          "statusCompleted": "Complete",
-          "statusFailed": "Failed",
-          "failed": "Import failed.",
-          "partialImportNote": "Some rows may have already been imported before this failure. Re-importing could create duplicates."
+          "statusQueued": "Đang chờ",
+          "statusRunning": "Đang nhập…",
+          "statusCompleted": "Hoàn tất",
+          "statusFailed": "Thất bại",
+          "failed": "Không thể nhập.",
+          "partialImportNote": "Một số hàng có thể đã được nhập trước khi xảy ra lỗi này. Nhập lại có thể tạo giao dịch trùng lặp."
         },
         "done": {
           "successTitle": "Nhập dữ liệu hoàn tất",
-          "successDescription": "Your Wallet data has been successfully imported.",
-          "partialTitle": "Imported with {count} error(s)",
-          "partialDescription": "Some rows were imported successfully, but others encountered errors.",
-          "allFailedTitle": "Import failed",
-          "allFailedDescription": "No rows were imported. Review the errors below and try again.",
+          "successDescription": "Đã nhập dữ liệu Wallet thành công.",
+          "partialTitle": "Đã nhập nhưng có {count} lỗi",
+          "partialDescription": "Một số hàng đã được nhập thành công nhưng một số khác gặp lỗi.",
+          "allFailedTitle": "Không thể nhập",
+          "allFailedDescription": "Không có hàng nào được nhập. Hãy xem lại các lỗi bên dưới rồi thử lại.",
           "accountsCreated": "Tài khoản đã tạo",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
+          "accountsLinked": "Tài khoản đã liên kết",
+          "accountsSkipped": "Đã bỏ qua tài khoản",
           "categoriesCreated": "Danh mục đã tạo",
           "tagsCreated": "Thẻ đã tạo",
           "transactionsImported": "Giao dịch đã nhập",
           "transfersImported": "Giao dịch chuyển khoản đã nhập",
-          "outOfWalletImported": "Out-of-wallet imported",
-          "mergedIntoPlanned": "Merged into planned",
-          "duplicatesSkipped": "Duplicates skipped",
-          "errorsTitle": "{count} row(s) failed | {count} row failed | {count} rows failed",
-          "errorsOverflow": "+{count} more",
-          "balanceWarningTitle": "Some account balances may be incorrect",
-          "balanceWarningBody": "We couldn't reset the balance on one or more existing accounts after import. Review the affected accounts.",
-          "viewTransactions": "View transactions",
+          "outOfWalletImported": "Đã nhập giao dịch ngoài Wallet",
+          "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
+          "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
+          "errorsTitle": "{count} hàng thất bại | {count} hàng thất bại | {count} hàng thất bại",
+          "errorsOverflow": "+{count} mục nữa",
+          "balanceWarningTitle": "Một số số dư tài khoản có thể không chính xác",
+          "balanceWarningBody": "Không thể đặt lại số dư của một hoặc nhiều tài khoản hiện có sau khi nhập. Hãy kiểm tra các tài khoản bị ảnh hưởng.",
+          "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"
         },
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Resolve",
+            "upload": "Tải lên",
+            "resolve": "Xử lý",
             "review": "Xem xét",
-            "results": "Done"
+            "results": "Hoàn tất"
           }
         },
         "resolve": {
-          "resolvedCounterWord": "resolved",
+          "resolvedCounterWord": "đã xử lý",
           "accounts": {
             "sectionTitle": "Tài khoản",
-            "currentBalanceLabel": "Current balance (optional)",
-            "currentBalancePlaceholder": "Leave blank to use imported total",
-            "willCreateHint": "Will create a new {currency} account",
-            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+            "currentBalanceLabel": "Số dư hiện tại (không bắt buộc)",
+            "currentBalancePlaceholder": "Để trống để dùng tổng số tiền đã nhập",
+            "willCreateHint": "Sẽ tạo tài khoản {currency} mới",
+            "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Giao dịch của các tài khoản này — cùng mọi khoản chuyển đến hoặc từ những tài khoản đó — sẽ không được nhập."
           },
           "categories": {
             "sectionTitle": "Danh mục"
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Ghép các mục khớp chính xác",
+            "createNewForUnmatched": "Tạo mục mới cho các mục chưa khớp",
+            "reset": "Đặt lại",
             "tooltips": {
-              "mapExactMatchesAccounts": "Link every account whose name exactly matches an existing account",
-              "mapExactMatchesCategories": "Link every category whose name exactly matches an existing category",
-              "createNewForUnmatched": "Set all still-unresolved rows to create a new entry",
-              "reset": "Clear all choices and auto-match by name again"
+              "mapExactMatchesAccounts": "Liên kết mọi tài khoản có tên khớp chính xác với tài khoản hiện có",
+              "mapExactMatchesCategories": "Liên kết mọi danh mục có tên khớp chính xác với danh mục hiện có",
+              "createNewForUnmatched": "Đặt tất cả các hàng chưa được xử lý thành tạo mục mới",
+              "reset": "Xóa mọi lựa chọn rồi tự động khớp lại theo tên"
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Quay lại",
+            "continue": "Tiếp tục"
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "transfersDetected": "Transfers detected",
-          "outOfWallet": "Out of wallet",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "warningsTitle": "{count} warning(s)",
+          "transactions": "Giao dịch",
+          "transfersDetected": "Đã phát hiện giao dịch chuyển tiền",
+          "outOfWallet": "Ngoài Wallet",
+          "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
+          "willImport": "Sẽ nhập",
+          "warningsTitle": "{count} cảnh báo",
           "rowPrefix": "Dòng {rowIndex}:",
-          "duplicatesTitle": "{count} possible duplicate(s)",
-          "duplicatesHint": "Checked rows will be imported anyway; unchecked duplicates are skipped.",
-          "back": "Back",
-          "importButton": "Import {count} transactions",
-          "importing": "Importing…"
+          "duplicatesTitle": "{count} giao dịch có thể bị trùng lặp",
+          "duplicatesHint": "Các hàng được chọn vẫn sẽ được nhập; các mục trùng lặp không được chọn sẽ bị bỏ qua.",
+          "back": "Quay lại",
+          "importButton": "Nhập {count} giao dịch",
+          "importing": "Đang nhập…"
         }
       }
     }

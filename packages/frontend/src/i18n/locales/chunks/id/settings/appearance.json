@@ -12,6 +12,10 @@
         "description": "Pilih bagian mana yang muncul di sidebar.",
         "alwaysVisibleTooltip": "Bagian ini selalu terlihat."
       },
+      "sidebarNav": {
+        "title": "Sidebar navigation",
+        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+      },
       "header": {
         "title": "Header",
         "description": "Pilih tindakan header mana yang terlihat.",

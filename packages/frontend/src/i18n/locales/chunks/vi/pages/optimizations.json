@@ -49,7 +49,7 @@
         "backToRuns": "Back to all runs",
         "runEmptyTitle": "Nothing left from this run",
         "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "transactionCount": "{count} giao dịch | {count} giao dịch",
         "trigger": {
           "manual": "Manual",
           "import": "Data import",
@@ -139,7 +139,7 @@
     "reconciliation": {
       "title": "Transactions reconciliation",
       "tabs": {
-        "transactions": "Transactions",
+        "transactions": "Giao dịch",
         "stuckPending": "Stuck pending",
         "history": "History"
       },
@@ -223,10 +223,10 @@
         "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
         "columns": {
           "account": "Account",
-          "date": "Date",
+          "date": "Ngày",
           "category": "Category",
           "pendingFor": "Pending for",
-          "amount": "Amount",
+          "amount": "Số tiền",
           "status": "Status",
           "actions": "Actions"
         },
@@ -234,7 +234,7 @@
         "status": {
           "tooOld": "Too old to check",
           "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Possible duplicate",
+          "duplicate": "Có thể bị trùng lặp",
           "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
           "notFound": "Not found at bank",
           "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."

@@ -228,6 +228,13 @@
           "step2": "Generate a new setup token on the Bridge dashboard.",
           "step3": "Paste the token into the field."
         },
+        "brokerageNotice": {
+          "trigger": "Only bank accounts are supported – brokerage accounts are not",
+          "title": "What SimpleFIN can import",
+          "supported": "Bank accounts – checking, savings, credit cards – are fully supported. Balances and transactions sync automatically.",
+          "unsupported": "Brokerage and retirement accounts (stocks, ETFs, crypto, 401k, IRA) are not supported. SimpleFIN itself doesn't truly support them either – it doesn't say which account is a brokerage one, and holdings come in an unofficial format that can change at any time.",
+          "tryAnyway": "You can still try to connect them – they'll be imported as regular accounts with whatever balance and cash transactions SimpleFIN provides, but your positions won't show up. No promises it works correctly."
+        },
         "connectButton": "Connect",
         "connectingButton": "Connecting…",
         "backButton": "Back",

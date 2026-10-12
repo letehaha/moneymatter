@@ -79,12 +79,12 @@
     "categorization": {
       "title": "Kategorizácia pomocou AI",
       "categorizing": "Kategorizovanie...",
-      "completed": "AI zaradila {count} transakciu | AI zaradila {count} transakcií",
+      "completed": "AI zaradila {count} transakciu | AI zaradila {count} transakcie | AI zaradila {count} transakcií",
       "completedShort": "Kategorizácia dokončená",
-      "completedWithSkipped": "Zaradená {count} transakcia (preskočených: {skipped}) | Zaradených {count} transakcií (preskočených: {skipped})",
+      "completedWithSkipped": "Zaradená {count} transakcia (preskočené: {skipped}) | Zaradené {count} transakcie (preskočené: {skipped}) | Zaradených {count} transakcií (preskočené: {skipped})",
       "failed": "Kategorizácia zlyhala",
       "failedShort": "Zlyhalo",
-      "allSkipped": "AI nedokázala transakciu spoľahlivo zaradiť | AI nedokázala spoľahlivo zaradiť žiadnu z {count} transakcií",
+      "allSkipped": "AI nedokázala transakciu spoľahlivo zaradiť | AI nedokázala spoľahlivo zaradiť žiadnu z {count} transakcií | AI nedokázala spoľahlivo zaradiť žiadnu z {count} transakcií",
       "queued": "Čaká sa na spustenie...",
       "transactions": "transakcie"
     }
@@ -145,12 +145,12 @@
     "needsReauthTitle": "Pripojenia je potrebné obnoviť",
     "needsReauthDescription": "Platnosť týchto bankových relácií vypršala. Ak chcete obnoviť synchronizáciu, pripojte sa znova.",
     "reconnectButton": "Pripojiť znova",
-    "affectedAccounts": "1 účet | {count} účtov",
+    "affectedAccounts": "1 účet | {count} účty | {count} účtov",
     "timeAgo": {
       "justNow": "Práve teraz",
-      "secondsAgo": "pred {count} sekundou | pred {count} sekundami",
-      "minutesAgo": "pred {count} minútou | pred {count} minútami",
-      "hoursAgo": "pred {count} hodinou | pred {count} hodinami",
+      "secondsAgo": "pred {count} sekundou | pred {count} sekundami | pred {count} sekundami",
+      "minutesAgo": "pred {count} minútou | pred {count} minútami | pred {count} minútami",
+      "hoursAgo": "pred {count} hodinou | pred {count} hodinami | pred {count} hodinami",
       "daysAgo": "pred {count} dňom | pred {count} dňami",
       "weeksAgo": "pred {count} týždňom | pred {count} týždňami",
       "monthsAgo": "pred {count} mesiacom | pred {count} mesiacmi",

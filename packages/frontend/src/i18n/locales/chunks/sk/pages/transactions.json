@@ -92,6 +92,7 @@
       "cancelSelection": "Zrušiť výber",
       "editButton": "Upraviť",
       "selectedCount": "Vybraných: {count}",
+      "matchingCount": "Spolu: {count}",
       "dialogTitle": "Upraviť {count} transakcií",
       "dialogDescription": "Zmeny sa použijú na všetky vybrané transakcie. Aktualizujú sa len vyplnené polia.",
       "categoryLabel": "Kategória",

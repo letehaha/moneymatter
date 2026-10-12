@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Отслеживаемые категории",
         "addCategory": "Добавить категорию",
-        "selectCategories": "Выберите категории"
+        "selectCategories": "Выберите категории",
+        "sort": {
+          "title": "Сортировать по",
+          "custom": "Custom order",
+          "spendDesc": "Highest spend first",
+          "spendAsc": "Lowest spend first"
+        }
       },
       "cashFlow": {
         "title": "Денежный поток",
@@ -131,7 +137,10 @@
         "expenses": "Расходы",
         "saved": "Сбережено",
         "previousPeriodsTrend": "Тренд предыдущих периодов",
-        "viewDetails": "Подробнее"
+        "viewDetails": "Подробнее",
+        "savingsRateLine": "Show savings rate line",
+        "savingsRate": "Savings rate",
+        "noIncome": "no income"
       },
       "netWorth": {
         "title": "Чистый капитал",
@@ -172,6 +181,39 @@
         "projectedBy": "Projected by {date}",
         "upcoming": "Upcoming · {count}",
         "loadFailed": "Не удалось загрузить запланированные транзакции"
+      },
+      "taxes": {
+        "title": "Average Tax Rate",
+        "description": "Spending in your tax categories as a share of income, averaged over the period chosen in the widget settings. Bars show the last 12 months.",
+        "ofIncome": "of income",
+        "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
+        "average": "avg {amount}",
+        "amount": "Налоги",
+        "shareOfIncome": "Доля дохода",
+        "shareOfTaxes": "Share of taxes",
+        "other": "Другое",
+        "moreCategories": "ещё {count}",
+        "viewDetails": "View cash flow",
+        "loadFailed": "Couldn't load tax data.",
+        "noCategories": {
+          "title": "No tax categories yet",
+          "description": "Choose which categories count as taxes to see your tax rate.",
+          "action": "Choose categories"
+        },
+        "config": {
+          "months": {
+            "label": "Averaging period",
+            "saveError": "Could not save the averaging period. Try again.",
+            "m3": "3 mo",
+            "m6": "6 mo",
+            "m12": "12 mo"
+          }
+        },
+        "lastMonths": {
+          "m3": "Последние 3 месяца",
+          "m6": "Последние 6 месяцев",
+          "m12": "Последние 12 месяцев"
+        }
       },
       "emptyState": "За выбранный период данных нет.",
       "registry": {
@@ -214,6 +256,10 @@
         "fireProgress": {
           "name": "FIRE progress",
           "description": "How close you are to financial independence"
+        },
+        "taxes": {
+          "name": "Average Tax Rate",
+          "description": "Share of income paid in taxes, with a 12-month trend"
         }
       }
     },
@@ -263,7 +309,10 @@
         "tagsStyleTitle": "Теги",
         "tagsStyleNames": "Names",
         "tagsStyleBars": "Bars",
-        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
+        "tagsStyleSaveError": "Couldn't save the tag style. Please try again.",
+        "showAccountTitle": "Счёт",
+        "showAccountDescription": "Show the account logo on each transaction",
+        "showAccountSaveError": "Couldn't save the account setting. Please try again."
       },
       "overdueBadge": "Просрочено",
       "scheduledBadge": "Запланировано",

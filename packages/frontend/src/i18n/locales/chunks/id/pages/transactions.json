@@ -92,6 +92,7 @@
       "cancelSelection": "Batalkan pilihan",
       "editButton": "Sunting",
       "selectedCount": "{count} dipilih",
+      "matchingCount": "Total: {count}",
       "dialogTitle": "Edit {count} transaksi",
       "dialogDescription": "Perubahan akan diterapkan ke semua transaksi yang dipilih. Hanya bidang yang diisi yang akan diperbarui.",
       "categoryLabel": "Kategori",

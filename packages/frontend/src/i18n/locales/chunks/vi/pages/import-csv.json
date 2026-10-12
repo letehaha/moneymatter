@@ -54,7 +54,7 @@
         "columnMapping": {
           "stepTitle": "Map Columns",
           "description": "Map your CSV columns to the required fields",
-          "file": "File",
+          "file": "Tệp",
           "filesCount": "{count} file | {count} files",
           "totalRows": "Total rows",
           "delimiter": "Delimiter",
@@ -100,7 +100,7 @@
           "unpriceableTitle": "{count} row(s) cannot be priced — no exchange rate found",
           "unpriceableDescription": "These rows use a currency that has no stored exchange rate and cannot be converted to your base currency. You must skip them or cancel the import.",
           "unpriceableWillBeSkipped": "unpriceable will be skipped",
-          "currency": "Currency",
+          "currency": "Đơn vị tiền tệ",
           "skipAndImport": "Skip & import",
           "cancelImport": "Cancel import",
           "noInvalidRows": "No invalid rows",
@@ -116,7 +116,7 @@
           "imported": "Imported",
           "skippedDuplicates": "Skipped (Duplicates)",
           "accountsCreated": "Accounts Created",
-          "accountsSkipped": "Accounts skipped",
+          "accountsSkipped": "Đã bỏ qua tài khoản",
           "categoriesCreated": "Categories Created",
           "tagsCreated": "Tags Created",
           "payeesCreated": "Payees Created",
@@ -139,7 +139,7 @@
       "columnMapping": {
         "stepTitle": "Map Columns",
         "description": "Map your CSV columns to the required fields",
-        "file": "File",
+        "file": "Tệp",
         "totalRows": "Total rows",
         "delimiter": "Delimiter",
         "detecting": "Detecting duplicates…"
@@ -196,7 +196,7 @@
         "title": "Account Mapping",
         "description": "Map CSV account names to your existing accounts or create new ones. Only accounts with matching currency will be shown.",
         "csvAccountName": "CSV Account Name",
-        "currency": "Currency",
+        "currency": "Đơn vị tiền tệ",
         "action": "Action",
         "targetAccount": "Target Account",
         "actions": {
@@ -247,7 +247,7 @@
           "sectionTitle": "Account Mapping",
           "resolvedCount": "{resolved} of {total} resolved",
           "csvName": "CSV Account",
-          "currency": "Currency",
+          "currency": "Đơn vị tiền tệ",
           "action": "Action",
           "target": "Target Account",
           "selectTarget": "Select an account",
@@ -300,12 +300,12 @@
         "next": "Next",
         "missingHint": "Still needed: {fields}",
         "fields": {
-          "date": "Date",
-          "amount": "Amount",
+          "date": "Ngày",
+          "amount": "Số tiền",
           "description": "Description",
           "category": "Category",
           "account": "Account",
-          "currency": "Currency",
+          "currency": "Đơn vị tiền tệ",
           "transactionType": "Transaction type",
           "payee": "Payee"
         },
@@ -316,7 +316,7 @@
           "monthFirstOption": "Month first — {example}",
           "suggestedBadge": "Suggested",
           "isoDetected": "ISO date format detected — dates in this column are year-first, so no day/month choice is needed.",
-          "previewLabel": "Preview",
+          "previewLabel": "Bản xem trước",
           "previewUnrecognized": "unrecognized",
           "mismatchWarning": "{count} row doesn't match this format and will be flagged as invalid. | {count} rows don't match this format and will be flagged as invalid."
         }

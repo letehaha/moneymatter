@@ -34,7 +34,7 @@
       "alreadyPicked": "už vybraný",
       "duplicateSecurity": "Rovnaký cenný papier je vybraný na inom riadku",
       "willMerge": "Zlúči sa s existujúcou pozíciou",
-      "txns": "{count} transakcia | {count} transakcií",
+      "txns": "{count} transakcia | {count} transakcie | {count} transakcií",
       "expand": "Rozbaliť",
       "collapse": "Zbaliť",
       "deleteHolding": "Zmazať pozíciu",
@@ -60,7 +60,7 @@
       "tooltips": {
         "security": "Cenný papier sme vybrali automaticky na základe tikeru vyťaženého AI. Ak zhoda nie je správna, kliknutím na pole ju zmeňte.",
         "currency": "Mena, v ktorej sa vyrovnala hotovostná strana obchodu (napr. USD, EUR). Nemení spôsob, akým sa pozícia ukladá — sumy sa prepočítavajú na vašu základnú menu pomocou historických výmenných kurzov k dátumu obchodu.",
-        "parentRowDuplicates": "{count} možný duplikát v tejto pozícii sa importuje ako nová transakcia, pokiaľ ho nepreskočíte. | {count} možných duplicít v tejto pozícii sa importuje ako nové transakcie, pokiaľ ich nepreskočíte."
+        "parentRowDuplicates": "{count} možný duplikát v tejto pozícii sa importuje ako nová transakcia, pokiaľ ho nepreskočíte. | {count} možné duplicity v tejto pozícii sa importujú ako nové transakcie, pokiaľ ich nepreskočíte. | {count} možných duplicít v tejto pozícii sa importuje ako nové transakcie, pokiaľ ich nepreskočíte."
       }
     },
     "done": {

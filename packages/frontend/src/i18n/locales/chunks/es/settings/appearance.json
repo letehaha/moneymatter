@@ -12,6 +12,10 @@
         "description": "Elija qué secciones aparecen en la barra lateral.",
         "alwaysVisibleTooltip": "Esta sección siempre es visible."
       },
+      "sidebarNav": {
+        "title": "Navegación en la barra lateral",
+        "description": "Escoja qué páginas aparecen en Cuentas en la barra lateral de navegación."
+      },
       "header": {
         "title": "Encabezado",
         "description": "Elija qué acciones del encabezado son visibles.",

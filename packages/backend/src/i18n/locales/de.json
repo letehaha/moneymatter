@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Transaktion mit der angegebenen ID existiert nicht!",
     "notAuthorizedToEdit": "Du bist nicht berechtigt, diese Transaktion zu bearbeiten.",
     "cannotDeleteExternal": "Manuelles Löschen externer Transaktionen ist nicht erlaubt",
+    "bulkDeleteLimitExceeded": "Du kannst maximal 500 Transaktionen gleichzeitig löschen. Grenze die Auswahl ein und versuche es erneut.",
     "unexpectedDeleteIssue": "Unerwartetes Problem beim Versuch, die Transaktion zu löschen",
     "linkSelfNotAllowed": "Versuch, die Transaktion mit sich selbst zu verknüpfen.",
     "linkSameTypeNotAllowed": "Versuch, eine Verknüpfung mit einer Transaktion desselben „transactionType“ herzustellen.",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Konto {{accountId}} nicht gefunden",
     "providerTypeMismatch": "Verbindung {{connectionId}} gilt für Anbieter {{actualType}}, nicht {{expectedType}}",
     "providerAlreadyRegistered": "Anbieter {{providerType}} ist bereits registriert. Anlegen von Duplikaten nicht möglich.",
-    "providerNotRegistered": "Anbieter {{providerType}} ist nicht registriert. Verfügbare Anbieter: {{available}}",
-    "missingRequiredProviders": "Erforderliche Bankdatenanbieter fehlen: {{missing}}. Bitte stelle sicher, dass diese Anbieter beim App-Start registriert werden."
+    "providerNotRegistered": "Anbieter {{providerType}} ist nicht registriert. Verfügbare Anbieter: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" ist ein ungültiges Datum."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "Der Anbieter hat für diesen Zeitraum keine Transaktionen zurückgemeldet.",
     "apiError": "{{provider}} API-Fehler: {{message}}",
     "currencySelectionRequired": "Für Konto \"{{account}}\" wurde von der Bank keine Währung übermittelt – wähle eine Währung aus, bevor du es verbindest.",
+    "providerNotAvailable": "Dieser Bankanbieter ist für neue Verbindungen nicht verfügbar.",
     "monobank": {
       "invalidCredentialsFormat": "Ungültiges Format der Zugangsdaten für Monobank",
       "invalidApiToken": "Ungültiger Monobank API-Schlüssel",

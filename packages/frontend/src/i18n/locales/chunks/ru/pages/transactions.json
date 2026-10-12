@@ -92,6 +92,7 @@
       "cancelSelection": "Отменить выбор",
       "editButton": "Изменить",
       "selectedCount": "Выбрано: {count}",
+      "matchingCount": "Total: {count}",
       "dialogTitle": "Изменить транзакции: {count}",
       "dialogDescription": "Изменения будут применены ко всем выбранным транзакциям. Обновятся только заполненные поля.",
       "categoryLabel": "Категория",

@@ -346,10 +346,10 @@
       "overrideHistory": {
         "title": "Override history",
         "empty": "No manual overrides yet. Override the value to record one.",
-        "delete": "Delete",
+        "delete": "删除",
         "deleteTitle": "Delete this override?",
         "deleteDescription": "Removing this override re-anchors the depreciation to the previous override (or original purchase if none). The associated transaction will be deleted.",
-        "deleteConfirm": "Delete",
+        "deleteConfirm": "删除",
         "deleteSuccess": "Override removed",
         "deleteError": "Failed to remove override"
       },

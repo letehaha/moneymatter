@@ -60,6 +60,7 @@
     "transactionIdNotExist": "La transazione con `id` fornito non esiste!",
     "notAuthorizedToEdit": "Non sei autorizzato a modificare questa transazione.",
     "cannotDeleteExternal": "Non è consentito eliminare manualmente le transazioni esterne",
+    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
     "unexpectedDeleteIssue": "Problema inatteso durante l'eliminazione della transazione",
     "linkSelfNotAllowed": "Si sta tentando di collegare la transazione a se stessa.",
     "linkSameTypeNotAllowed": "Si sta tentando di collegare la transazione con un'altra con lo stesso \"transactionType\".",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Account {{accountId}} not found",
     "providerTypeMismatch": "Connection {{connectionId}} is for provider {{actualType}}, not {{expectedType}}",
     "providerAlreadyRegistered": "Provider {{providerType}} is already registered. Cannot register duplicate providers.",
-    "providerNotRegistered": "Provider {{providerType}} is not registered. Available providers: {{available}}",
-    "missingRequiredProviders": "Missing required bank data providers: {{missing}}. Please ensure these providers are registered at app startup."
+    "providerNotRegistered": "Provider {{providerType}} is not registered. Available providers: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" is invalid date."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "The provider returned no transactions for this period.",
     "apiError": "{{provider}} API error: {{message}}",
     "currencySelectionRequired": "Account \"{{account}}\" has no currency reported by the bank — choose a currency for it before connecting.",
+    "providerNotAvailable": "This bank provider is not available for new connections.",
     "monobank": {
       "invalidCredentialsFormat": "Invalid credentials format for Monobank",
       "invalidApiToken": "Invalid Monobank API token",

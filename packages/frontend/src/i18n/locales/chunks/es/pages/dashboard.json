@@ -4,7 +4,7 @@
       "customize": "Personalizar",
       "addWidgets": "Añadir widgets",
       "emptyState": "Haga clic en Personalizar para añadir widgets",
-      "removeWidget": "Remove widget"
+      "removeWidget": "Eliminar widget"
     },
     "widgets": {
       "common": {
@@ -114,13 +114,19 @@
             "6": "Últimos 6 meses",
             "12": "Últimos 12 meses"
           },
-          "showStrip": "Show 30-day chart"
+          "showStrip": "Mostrar gráfico de 30 días"
         }
       },
       "categoryTracker": {
         "title": "Lista de seguimiento de categorías",
         "addCategory": "Añadir categoría",
-        "selectCategories": "Seleccionar categorías"
+        "selectCategories": "Seleccionar categorías",
+        "sort": {
+          "title": "Ordenar por",
+          "custom": "Orden personalizado",
+          "spendDesc": "Mayor gasto primero",
+          "spendAsc": "Menor gasto primero"
+        }
       },
       "cashFlow": {
         "title": "Flujo de caja",
@@ -131,7 +137,10 @@
         "expenses": "Gastos",
         "saved": "Ahorrado",
         "previousPeriodsTrend": "Tendencia de períodos anteriores",
-        "viewDetails": "Ver detalles"
+        "viewDetails": "Ver detalles",
+        "savingsRateLine": "Mostrar línea de tasa de ahorro",
+        "savingsRate": "Tasa de ahorro",
+        "noIncome": "sin ingresos"
       },
       "netWorth": {
         "title": "Patrimonio neto",
@@ -169,9 +178,42 @@
       },
       "plannedOverview": {
         "title": "Planificadas",
-        "projectedBy": "Projected by {date}",
-        "upcoming": "Upcoming · {count}",
+        "projectedBy": "Proyectado por {date}",
+        "upcoming": "Próximas ({count}",
         "loadFailed": "No se pudieron cargar las transacciones planificadas"
+      },
+      "taxes": {
+        "title": "Tasa de impuestos promedio",
+        "description": "Gastar en sus categorías de impuestos como porcentaje de ingresos, promediado en el período elegido en la configuración del widget. Las barras muestran los últimos 12 meses.",
+        "ofIncome": "de ingreso",
+        "vsTrailingRate": "{delta} pp vs tasa de 12 meses {rate}",
+        "average": "Máx.: {amount}",
+        "amount": "Impuestos",
+        "shareOfIncome": "Porcentaje del ingreso",
+        "shareOfTaxes": "Porcentaje de impuestos",
+        "other": "Otro",
+        "moreCategories": "{count} más",
+        "viewDetails": "Ver flujo de caja",
+        "loadFailed": "No se pudo cargar los datos de impuestos.",
+        "noCategories": {
+          "title": "No hay categorías de impuestos aún",
+          "description": "Elija qué categorías cuentan como impuestos para ver su tasa.",
+          "action": "Seleccionar categorías"
+        },
+        "config": {
+          "months": {
+            "label": "Período medio",
+            "saveError": "No se pudo guardar la configuración. Inténtalo de nuevo.",
+            "m3": "3 meses",
+            "m6": "6 meses",
+            "m12": "12 meses"
+          }
+        },
+        "lastMonths": {
+          "m3": "Últimos 3 meses",
+          "m6": "Últimos 6 meses",
+          "m12": "Últimos 12 meses"
+        }
       },
       "emptyState": "No hay datos en el intervalo de tiempo seleccionado.",
       "registry": {
@@ -212,8 +254,12 @@
           "description": "Transacciones planificadas pendientes y su saldo previsto"
         },
         "fireProgress": {
-          "name": "FIRE progress",
-          "description": "How close you are to financial independence"
+          "name": "Progreso de FIRE",
+          "description": "Planifique su camino hacia la independencia financiera"
+        },
+        "taxes": {
+          "name": "Tasa de impuestos promedio",
+          "description": "Porcentaje de ingresos pagados en impuestos, con una tendencia de 12 meses"
         }
       }
     },
@@ -232,16 +278,16 @@
     "subscriptionsOverview": {
       "payAction": "Marcar como pagado",
       "listTitle": "Próximo",
-      "dueCount": "{count} due",
-      "nothingDue": "Nothing due in 3 days",
-      "overdueHint": "Overdue since {date}",
-      "dueSoonHint": "Due in the next 3 days",
+      "dueCount": "{count} más",
+      "nothingDue": "Nada en 3 días",
+      "overdueHint": "Vencido desde %date%",
+      "dueSoonHint": "Vence en los próximos 30 días",
       "strip": {
         "title": "Próximos 30 días",
-        "goingOut": "{amount} going out",
+        "goingOut": "{amount} saliendo",
         "today": "Hoy"
       },
-      "loadFailed": "Couldn't load recurring payments"
+      "loadFailed": "No se pudo cargar los pagos recurrientes"
     },
     "latestRecords": {
       "config": {
@@ -261,62 +307,65 @@
         "excludePlannedDescription": "Ocultar de la lista las transacciones planificadas pendientes",
         "nothingExcluded": "Nada excluido",
         "tagsStyleTitle": "Etiquetas",
-        "tagsStyleNames": "Names",
-        "tagsStyleBars": "Bars",
-        "tagsStyleSaveError": "Couldn't save the tag style. Please try again."
+        "tagsStyleNames": "Nombres",
+        "tagsStyleBars": "Barras",
+        "tagsStyleSaveError": "No se pudo guardar la plantilla. Inténtelo de nuevo.",
+        "showAccountTitle": "Cuenta",
+        "showAccountDescription": "Mostrar el logo de la cuenta en cada transacción",
+        "showAccountSaveError": "No se pudo guardar la automatización. Inténtelo de nuevo."
       },
       "overdueBadge": "Vencido",
       "scheduledBadge": "Programado",
       "payAction": "Marcar como pagado"
     },
     "fireProgress": {
-      "title": "FIRE progress",
+      "title": "Progreso de FIRE",
       "config": {
         "style": {
-          "label": "Style",
-          "ring": "Ring",
-          "numbers": "Numbers"
+          "label": "Estilo",
+          "ring": "Anillo",
+          "numbers": "Números"
         }
       },
-      "openPlan": "Open FIRE plan",
-      "loadFailed": "Couldn't load FIRE progress.",
-      "toType": "to {type}",
-      "ringLabelFor": "{pct}% of {type} target reached, {duration} left",
-      "ringLabelReachedFor": "{type} target reached",
-      "ringLabelUnreachableFor": "{pct}% of {type} target reached, not reachable at your current pace",
-      "timeTo": "Time to {type}",
-      "unitYears": "{n} yrs | {n} yr | {n} yrs",
-      "unitMonths": "{n} mos | {n} mo | {n} mos",
-      "atAge": "at age {age}",
-      "nextMilestone": "Next milestone",
+      "openPlan": "Abrir plan FIRE",
+      "loadFailed": "No se pudo cargar el progreso de FIRE.",
+      "toType": "a {type}",
+      "ringLabelFor": "{pct}% del objetivo {type} alcanzado, {duration} restante",
+      "ringLabelReachedFor": "{type} objetivo alcanzado",
+      "ringLabelUnreachableFor": "{pct}% del objetivo de {type} alcanzado, no alcanzable a tu ritmo actual",
+      "timeTo": "Tiempo hasta {type}",
+      "unitYears": "{n} años | {n} año | {n} años",
+      "unitMonths": "{n} meses | {n} mes | {n} meses",
+      "atAge": "a la edad de {age}",
+      "nextMilestone": "Siguiente meta",
       "saved": "Ahorrado",
       "progress": "Progreso",
       "coastFire": "Coast FIRE",
       "reached": "Alcanzado",
-      "milestoneIn": "{pct}% in {duration}",
-      "typeNumber": "{type} number",
-      "atRate": "at {rate}%",
-      "milestonesReached": "{n} of {total} milestones",
-      "balanceOfTarget": "{balance} of {target}",
-      "reachedType": "{type} reached",
-      "supports": "Supports {amount}/mo",
-      "pctOfSpending": "{pct}% of spending",
-      "unreachable": "Not reachable at current savings",
-      "needs": "Needs about {amount}/mo to get there in {duration}",
+      "milestoneIn": "{pct}% en {duration}",
+      "typeNumber": "Número de {type}",
+      "atRate": "en {rate}%",
+      "milestonesReached": "{n} de {total} metas",
+      "balanceOfTarget": "{balance} de {target}",
+      "reachedType": "{type} alcanzado",
+      "supports": "Soporta {amount}/mes",
+      "pctOfSpending": "{pct}% de tus gastos",
+      "unreachable": "No se puede alcanzar con ahorros actuales",
+      "needs": "Necesita cerca de {amount}/mes para llegar en {duration}",
       "chart": {
         "today": "Hoy",
         "typeTarget": "{type} · {amount}",
-        "ariaLabel": "Net worth path: actual history up to today, projected toward your FIRE number"
+        "ariaLabel": "Ruta del valor neto: historia real hasta hoy, proyectada hacia su número de FIRE"
       },
       "setup": {
-        "title": "Plan your path to FIRE",
-        "description": "Uses your accounts and spending. Two numbers if you have no data yet.",
-        "action": "Set up"
+        "title": "Planifica tu camino a FIRE",
+        "description": "Usa tus cuentas y gastos. Dos números si aún no tienes datos.",
+        "action": "Configurar"
       },
       "locked": {
-        "title": "Plan your path to FIRE",
-        "description": "Plus feature",
-        "action": "Unlock"
+        "title": "Planifica tu camino a FIRE",
+        "description": "Característica Plus",
+        "action": "Desbloquear"
       }
     }
   }

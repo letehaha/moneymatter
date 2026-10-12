@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Field is required",
     "minLength": "Minimal length is {length}.",
     "emailInvalid": "Please enter a valid email address.",
     "passwordsNoMatch": "Passwords don't match"

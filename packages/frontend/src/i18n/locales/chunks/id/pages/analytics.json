@@ -61,6 +61,7 @@
         "totalIncome": "Total income",
         "incomePlusDeficit": "Income + deficit",
         "savings": "Tabungan",
+        "taxes": "Pajak",
         "deficit": "Deficit",
         "other": "Lainnya",
         "noData": "No transactions in this period",

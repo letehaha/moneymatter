@@ -10,9 +10,9 @@
       "netWorthDrivers": "Net Worth Drivers",
       "investmentContributions": "Contributions",
       "netWorthHistory": "Net Worth History",
-      "collapse": "Collapse",
+      "collapse": "Thu gọn",
       "sections": {
-        "investments": "Investments"
+        "investments": "Đầu tư"
       },
       "fire": "FIRE"
     },
@@ -61,12 +61,13 @@
         "totalIncome": "Total income",
         "incomePlusDeficit": "Income + deficit",
         "savings": "Savings",
+        "taxes": "Taxes",
         "deficit": "Deficit",
-        "other": "Other",
+        "other": "Khác",
         "noData": "No transactions in this period",
         "noDataHint": "Pick another period or click a bar in the chart above",
         "loadError": "Failed to load composition",
-        "amount": "Amount",
+        "amount": "Số tiền",
         "shareOfIncome": "Share of income",
         "shareOfExpenses": "Share of expenses",
         "saved": "Saved",
@@ -77,7 +78,7 @@
         "deficitOverspend": "Expenses exceeded income by {amount}. The gap was covered from existing account balances.",
         "deficitInvested": "Portfolio contributions ({invested}) exceeded this period's net savings ({saved}). The difference came from existing account balances.",
         "deficitBoth": "Expenses exceeded income by {overspend}, and {invested} was still moved into portfolios. Both were covered from existing account balances.",
-        "andMore": "+{count} more",
+        "andMore": "+{count} mục nữa",
         "settings": "Chart settings"
       }
     },
@@ -439,8 +440,8 @@
       "total": "Total",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
-      "expandRow": "Expand",
-      "collapseRow": "Collapse"
+      "expandRow": "Mở rộng",
+      "collapseRow": "Thu gọn"
     },
     "states": {
       "emptyTitle": "No data for this selection",
@@ -468,7 +469,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "yearly": "Hằng năm"
     },
     "chart": {
       "title": "Saved vs. grown",
@@ -536,7 +537,7 @@
     "granularity": {
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "yearly": "Hằng năm"
     },
     "cards": {
       "totalContributed": "Total contributed",
@@ -561,7 +562,7 @@
       "weekly": "Weekly",
       "monthly": "Monthly",
       "quarterly": "Quarterly",
-      "yearly": "Yearly"
+      "yearly": "Hằng năm"
     },
     "kindFilter": {
       "all": "All liabilities",
@@ -571,7 +572,7 @@
     },
     "assetKinds": {
       "cash": "Cash & accounts",
-      "investments": "Investments",
+      "investments": "Đầu tư",
       "vehicles": "Phương tiện",
       "ventures": "Ventures"
     },

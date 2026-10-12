@@ -12,6 +12,10 @@
         "description": "Wähle aus, welche Abschnitte in der Seitenleiste angezeigt werden.",
         "alwaysVisibleTooltip": "Dieser Abschnitt ist immer sichtbar."
       },
+      "sidebarNav": {
+        "title": "Seitenleisten-Navigation",
+        "description": "Wähle, welche Seiten unter \"Konten\" in der Seitenleisten-Navigation angezeigt werden."
+      },
       "header": {
         "title": "Kopfzeile",
         "description": "Wähle aus, welche Aktionen in der Kopfzeile sichtbar sind.",

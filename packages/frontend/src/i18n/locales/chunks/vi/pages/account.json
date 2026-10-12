@@ -40,7 +40,7 @@
         "adjustByAmount": "Adjust by amount",
         "newBalance": "New balance",
         "enterTargetBalance": "Enter target balance",
-        "amount": "Amount",
+        "amount": "Số tiền",
         "enterAmount": "Enter amount",
         "income": "Income",
         "expense": "Expense",
@@ -152,10 +152,10 @@
         "residualHint": "The final amount is set after the first sync, so it can differ a little from this preview."
       },
       "tabs": {
-        "details": "Details",
+        "details": "Chi tiết",
         "settings": "Settings",
         "integrations": "Data Connection",
-        "sharing": "Sharing"
+        "sharing": "Chia sẻ"
       },
       "details": {
         "creditLimit": "Credit Limit:",
@@ -179,8 +179,8 @@
         "main": "(main)",
         "exchangeRate": "Exchange Rate:",
         "exchangeRateLiveUpdate": "Exchange Rate Live Update:",
-        "enabled": "Enabled",
-        "disabled": "Disabled"
+        "enabled": "Đã bật",
+        "disabled": "Đã tắt"
       },
       "group": {
         "label": "Account group",
@@ -203,7 +203,7 @@
         "loading": "Đang tải...",
         "selectPeriod": "Select period",
         "loadButton": "Load transactions",
-        "failed": "Failed to load transactions",
+        "failed": "Không thể tải giao dịch.",
         "notSupportedByProvider": "Not supported by this provider"
       },
       "syncTransactions": {
@@ -235,11 +235,11 @@
         "connectionSettings": "Connection Settings",
         "settings": "Settings",
         "ifPersists": ". If the issue persists, use",
-        "unlink": "Unlink",
+        "unlink": "Gỡ liên kết",
         "belowThenLink": "below, then link it again."
       },
       "rightPanel": {
-        "transactions": "Transactions",
+        "transactions": "Giao dịch",
         "analyticsSoon": "Analytics (soon)"
       },
       "integrations": {
@@ -251,10 +251,10 @@
         }
       },
       "sharing": {
-        "title": "Sharing",
+        "title": "Chia sẻ",
         "description": "Manage who can see and edit this account.",
         "inviteAnother": "Invite another",
-        "membersHeading": "Members",
+        "membersHeading": "Thành viên",
         "pendingHeading": "Lời mời đang chờ",
         "loadError": "Failed to load sharing details.",
         "permissions": {
@@ -267,8 +267,8 @@
           "own": "Own transactions only"
         },
         "member": {
-          "you": "you",
-          "roleOwner": "Owner",
+          "you": "Bạn",
+          "roleOwner": "Chủ sở hữu",
           "roleRecipient": "Recipient",
           "ownerHint": "Full control",
           "revoke": "Remove access",
@@ -281,7 +281,7 @@
           "revokeError": "Could not remove access."
         },
         "pending": {
-          "empty": "No pending invitations.",
+          "empty": "Không có lời mời nào đang chờ xử lý.",
           "resend": "Gửi lại",
           "cancel": "Hủy lời mời",
           "cancelTitle": "Hủy lời mời?",

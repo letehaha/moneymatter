@@ -1,116 +1,116 @@
 {
   "settings": {
     "admin": {
-      "title": "Admin Panel",
-      "description": "Administrative tools and system management",
+      "title": "Bảng quản trị",
+      "description": "Công cụ quản trị và quản lý hệ thống",
       "priceSync": {
-        "title": "Securities Price Sync",
-        "description": "Manually trigger price synchronization for all securities with holdings",
-        "button": "Trigger Price Sync",
-        "buttonLoading": "Syncing...",
+        "title": "Đồng bộ giá chứng khoán",
+        "description": "Bắt đầu đồng bộ giá theo cách thủ công cho tất cả chứng khoán đang có tài sản nắm giữ.",
+        "button": "Đồng bộ giá ngay",
+        "buttonLoading": "Đang đồng bộ…",
         "notifications": {
-          "success": "Securities prices sync completed successfully",
-          "failed": "Failed to trigger price sync",
-          "rateLimited": "Not allowed. Try again in {time}.",
-          "adminRequired": "Admin privileges required for this action"
+          "success": "Đã đồng bộ giá chứng khoán thành công.",
+          "failed": "Không thể bắt đầu đồng bộ giá chứng khoán.",
+          "rateLimited": "Bạn chưa thể thực hiện thao tác này. Hãy thử lại sau {time}.",
+          "adminRequired": "Cần có quyền quản trị để thực hiện thao tác này."
         }
       },
       "priceUpload": {
-        "title": "Manual Security Price Upload",
-        "description": "Upload historical price data for securities via CSV or JSON files",
-        "button": "Upload Security Prices",
-        "dialogTitle": "Upload Security Prices",
+        "title": "Tải dữ liệu giá chứng khoán lên thủ công",
+        "description": "Tải dữ liệu giá lịch sử của chứng khoán lên bằng tệp CSV hoặc JSON.",
+        "button": "Tải giá chứng khoán lên",
+        "dialogTitle": "Tải giá chứng khoán lên",
         "selectSecurity": {
-          "searchLabel": "Search symbol or name",
+          "searchLabel": "Tìm theo mã hoặc tên",
           "searchPlaceholder": "AAPL",
-          "searching": "Searching…",
-          "failed": "Failed to search securities.",
-          "noResults": "No results.",
-          "changeButton": "Change"
+          "searching": "Đang tìm…",
+          "failed": "Không thể tìm kiếm chứng khoán.",
+          "noResults": "Không có kết quả.",
+          "changeButton": "Thay đổi"
         },
         "dateRangeInfo": {
-          "loading": "Loading date range information...",
-          "title": "Available Exchange Rates Date Range ({currency}):",
-          "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
+          "loading": "Đang tải thông tin khoảng thời gian…",
+          "title": "Khoảng ngày có sẵn tỷ giá ({currency}):",
+          "tooltipText": "Bạn chỉ có thể tải lên giá chứng khoán cho những ngày đã có tỷ giá. Nếu không có tỷ giá, sẽ không thể quy đổi giá sang các loại tiền tệ khác. Nếu cần dữ liệu cũ hơn, hãy tải tỷ giá lên trước. Nếu không, tùy chọn bạn chọn ở các bước tiếp theo sẽ quyết định các bản ghi bị tự động lọc bỏ hay yêu cầu tải lên bị thất bại."
         },
         "fileUpload": {
-          "title": "Upload File",
-          "supportedFormats": "CSV or JSON files supported",
+          "title": "Tải tệp lên",
+          "supportedFormats": "Hỗ trợ tệp CSV hoặc JSON",
           "errors": {
-            "unsupportedFormat": "Unsupported file format. Please upload CSV or JSON file.",
-            "parseFailed": "Failed to parse {fileType} file: {error}"
+            "unsupportedFormat": "Định dạng tệp không được hỗ trợ. Vui lòng tải lên tệp CSV hoặc JSON.",
+            "parseFailed": "Không thể đọc tệp {fileType}: {error}"
           }
         },
         "fieldMapper": {
-          "title": "Map Fields",
-          "description": "Match your file's fields to the required fields below.",
-          "selectField": "Select field...",
-          "dateFormatLabel": "Date Format",
-          "dateFormatDescription": "Select the date format used in your file",
+          "title": "Ghép các trường",
+          "description": "Ghép các trường trong tệp với các trường bắt buộc bên dưới.",
+          "selectField": "Chọn trường…",
+          "dateFormatLabel": "Định dạng ngày",
+          "dateFormatDescription": "Chọn định dạng ngày được dùng trong tệp của bạn",
           "dateFormats": {
-            "ddMMyyyySlash": "DD/MM/YYYY (e.g., 31/12/2024)",
-            "MMddyyyySlash": "MM/DD/YYYY (e.g., 12/31/2024)",
-            "yyyyMMddDash": "YYYY-MM-DD (e.g., 2024-12-31)",
-            "ddMMyyyyDash": "DD-MM-YYYY (e.g., 31-12-2024)",
-            "MMddyyyyDash": "MM-DD-YYYY (e.g., 12-31-2024)"
+            "ddMMyyyySlash": "DD/MM/YYYY (ví dụ: 31/12/2024)",
+            "MMddyyyySlash": "MM/DD/YYYY (ví dụ: 12/31/2024)",
+            "yyyyMMddDash": "YYYY-MM-DD (ví dụ: 2024-12-31)",
+            "ddMMyyyyDash": "DD-MM-YYYY (ví dụ: 31-12-2024)",
+            "MMddyyyyDash": "MM-DD-YYYY (ví dụ: 12-31-2024)"
           },
-          "mappingComplete": "All required fields mapped",
-          "mappingIncomplete": "Please map all required fields to continue",
-          "fileInfo": "File:",
-          "records": "{count} records",
-          "changeFileButton": "Change File",
-          "continueButton": "Continue to Preview"
+          "mappingComplete": "Đã ghép đủ các trường bắt buộc",
+          "mappingIncomplete": "Hãy ghép tất cả trường bắt buộc để tiếp tục.",
+          "fileInfo": "Tệp:",
+          "records": "{count} bản ghi",
+          "changeFileButton": "Thay đổi tệp",
+          "continueButton": "Tiếp tục để xem trước"
         },
         "preview": {
-          "title": "Data Preview",
-          "recordsCount": "{count} record will be uploaded | {count} records will be uploaded",
-          "recordsPeriod": "for period between {oldest} and {newest}",
-          "loadingExisting": "Loading existing prices for comparison...",
+          "title": "Xem trước dữ liệu",
+          "recordsCount": "{count} bản ghi sẽ được tải lên | {count} bản ghi sẽ được tải lên",
+          "recordsPeriod": "trong khoảng thời gian từ {oldest} đến {newest}",
+          "loadingExisting": "Đang tải giá hiện có để so sánh…",
           "warnings": {
-            "significantDifferences": "Significant price differences detected",
-            "differencesDetails": "{count} record has a price difference greater than 4% compared to existing data. Please review carefully. | {count} records have a price difference greater than 4% compared to existing data. Please review carefully."
+            "significantDifferences": "Phát hiện chênh lệch giá đáng kể",
+            "differencesDetails": "{count} bản ghi có giá chênh lệch hơn 4% so với dữ liệu hiện có. Vui lòng kiểm tra kỹ. | {count} bản ghi có giá chênh lệch hơn 4% so với dữ liệu hiện có. Vui lòng kiểm tra kỹ."
           },
-          "filterCheckbox": "Show only records with significant differences (>4%)",
+          "filterCheckbox": "Chỉ hiển thị bản ghi có chênh lệch đáng kể (>4%)",
           "tableHeaders": {
-            "date": "Date",
-            "newPrice": "New Price",
-            "existingPrice": "Existing Price",
-            "difference": "Difference (%)"
+            "date": "Ngày",
+            "newPrice": "Giá mới",
+            "existingPrice": "Giá hiện có",
+            "difference": "Chênh lệch (%)"
           },
-          "noExistingPrice": "N/A",
-          "scrollForMore": "Scroll for more...",
-          "noDifferences": "No records with significant differences found.",
-          "backButton": "Back to Mapping",
-          "continueButton": "Continue to Options"
+          "noExistingPrice": "Không có",
+          "scrollForMore": "Cuộn để xem thêm…",
+          "noDifferences": "Không tìm thấy bản ghi nào có chênh lệch đáng kể.",
+          "backButton": "Quay lại bước ghép",
+          "continueButton": "Tiếp tục đến tùy chọn"
         },
         "options": {
-          "title": "Upload Options",
+          "title": "Tùy chọn tải lên",
           "autoFilter": {
-            "title": "Auto-filter dates outside available range",
-            "description": "Automatically remove dates that are outside the available exchange rate range"
+            "title": "Tự động lọc ngày ngoài khoảng có tỷ giá",
+            "description": "Tự động loại bỏ ngày nằm ngoài khoảng có tỷ giá."
           },
           "override": {
-            "title": "Override existing records",
-            "description": "Update existing price records instead of skipping duplicates"
+            "title": "Ghi đè bản ghi hiện có",
+            "description": "Cập nhật bản ghi giá hiện có thay vì bỏ qua bản ghi trùng lặp."
           },
-          "backButton": "Back",
-          "uploadButton": "Upload Prices",
-          "uploadingButton": "Uploading..."
+          "backButton": "Quay lại",
+          "uploadButton": "Tải giá lên",
+          "uploadingButton": "Đang tải lên…"
         },
         "result": {
-          "title": "Upload Complete!",
-          "inserted": "✓ {count} new record inserted | ✓ {count} new records inserted",
-          "duplicates": "• {count} duplicate {action}",
-          "duplicatesUpdated": "updated",
-          "duplicatesSkipped": "skipped",
-          "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
-          "closeButton": "Close",
-          "uploadMoreButton": "Upload More"
+          "title": "Tải lên hoàn tất!",
+          "inserted": "✓ Đã thêm {count} bản ghi mới | ✓ Đã thêm {count} bản ghi mới",
+          "duplicates": "• {count} bản ghi trùng lặp: {action}",
+          "duplicatesUpdated": "đã cập nhật",
+          "duplicatesSkipped": "đã bỏ qua",
+          "filtered": "• Đã lọc {count} ngày (ngoài khoảng) | • Đã lọc {count} ngày (ngoài khoảng)",
+          "closeButton": "Đóng",
+          "uploadMoreButton": "Tải thêm"
         },
         "notifications": {
-          "dateInfoLoadFailed": "Failed to load date info: {error}",
-          "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
-          "uploadFailed": "Upload failed: {error}"
+          "dateInfoLoadFailed": "Không thể tải thông tin ngày: {error}",
+          "uploadSuccess": "Đã tải lên thành công {count} bản ghi giá | Đã tải lên thành công {count} bản ghi giá",
+          "uploadFailed": "Không thể tải lên: {error}"
         }
       }
     }

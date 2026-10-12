@@ -29,7 +29,7 @@
         "error": "Something went wrong"
       },
       "form": {
-        "nameLabel": "Name",
+        "nameLabel": "Tên",
         "namePlaceholder": "Acme Ventures",
         "nameRequired": "Name is required",
         "websiteLabel": "Website",
@@ -152,14 +152,14 @@
         "error": "Something went wrong"
       },
       "form": {
-        "nameLabel": "Name",
+        "nameLabel": "Tên",
         "namePlaceholder": "SK 116 — Founder Factor YC W26",
         "nameRequired": "Name is required",
         "platformLabel": "Platform",
         "platformPlaceholder": "Select platform (optional)",
         "noPlatform": "No platform",
-        "currencyLabel": "Currency",
-        "currencyPlaceholder": "Currency",
+        "currencyLabel": "Đơn vị tiền tệ",
+        "currencyPlaceholder": "Đơn vị tiền tệ",
         "subtypeLabel": "SPV type",
         "subtypeMulti": "Multi-company",
         "subtypeSingle": "Single-company",

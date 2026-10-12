@@ -32,7 +32,7 @@
           "writeAll": "Kann Transaktionen bearbeiten",
           "manage": "Verwalter"
         },
-        "projectedBalance": "Prognostizierter Saldo {amount} · {count} geplanter Eintrag durch {date} | Prognostizierter Saldo {amount} · {count} geplante Einträge durch {date}"
+        "projectedBalance": "Prognostizierter Saldo {amount} · {count} geplanter Eintrag bis {date} | Prognostizierter Saldo {amount} · {count} geplante Einträge bis {date}"
       },
       "balanceAdjustmentDialog": {
         "title": "Kontostand anpassen",
@@ -219,7 +219,7 @@
       "reconcileDuplicates": {
         "title": "Doppelte Transaktionen zusammenführen",
         "description": "Führt verbliebene ausstehende Einträge mit den gebuchten Transaktionen zusammen, die sie ersetzt haben.",
-        "button": "Duplikate zusammenführen",
+        "button": "Zusammenführen",
         "running": "Wird zusammengeführt…",
         "confirm": "Zusammenführen",
         "confirmTitle": "Doppelte Transaktionen zusammenführen?",

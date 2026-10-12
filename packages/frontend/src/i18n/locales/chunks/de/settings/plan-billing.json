@@ -13,19 +13,19 @@
       "previousPlan": "Vorheriger Tarif",
       "yourPlan": "Dein Tarif",
       "planned": "Geplant",
-      "voteOnRoadmap": "Stimme über die Roadmap ab",
-      "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, wenn es verfügbar ist.",
+      "voteOnRoadmap": "Über Roadmap abstimmen",
+      "roadmapNote": "Kostenlos. Stimme dafür ab und wir informieren dich, sobald es verfügbar ist.",
       "saveUpTo": "Spare bis zu {percent}%",
       "portalFailed": "Abrechnungsportal konnte nicht geöffnet werden. Bitte versuche es erneut.",
       "pastDueNote": "Deine letzte Zahlung ist fehlgeschlagen. Stripe wird deine Karte in den nächsten Tagen automatisch erneut belasten. Aktualisiere deine Zahlungsmethode über \"Abrechnung verwalten\", um den Zugriff nach dem {date} zu behalten.",
       "priceNote": "Preise sind in USD, exklusive Steuern. Deine lokale Währung und alle anfallenden Steuern werden beim Checkout angezeigt.",
       "cycleHint": {
-        "year": "Jährlich entspricht 6 Monaten der monatlichen Zahlung. Die Abrechnung erfolgt einmal im Jahr.",
-        "month": "Jeden Monat kündbar. Jährlich kostet die Hälfte."
+        "year": "Jährlich entspricht 6 Monate. Jährliche Abrechnung.",
+        "month": "Monatlich kündbar. Jährlich kostet die Hälfte."
       },
       "price": {
         "yearFootnote": "{amount} / Monat · {struck} · {save}",
-        "monthFootnote": "oder {amount} / Jahr · {save}",
+        "monthFootnote": "oder {amount}/Jahr · {save}",
         "save": "{amount} sparen"
       },
       "current": {
@@ -125,7 +125,7 @@
           "priceNote": "Preisgestaltung erfolgt, sobald die Kosten für die Bank-Synchronisierung feststehen.",
           "features": {
             "everythingInPlus": "Alles aus Plus",
-            "builtInBankSync": "In die App integrierte Bank-Synchronisierung – kein Drittanbieter-Konto einzurichten",
+            "builtInBankSync": "In die App integrierte Bank-Synchronisierung – kein Drittanbieter-Konto erforderlich",
             "realtimePrices": "Echtzeit-Kurse für Wertpapiere",
             "higherAiCap": "KI-Funktionen mit unserem Schlüssel, höheres Limit",
             "seats": "10 Haushaltsplätze"

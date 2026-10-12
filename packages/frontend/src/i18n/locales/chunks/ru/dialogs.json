@@ -174,6 +174,11 @@
         "loadingButton": "Загрузка...",
         "createButton": "Создать",
         "editButton": "Изменить",
+        "duplicateButton": "Дубликат",
+        "createMore": {
+          "label": "Create more",
+          "createdToast": "Transaction created"
+        },
         "fromAccountLabel": "Со счёта",
         "toAccountLabel": "На счёт",
         "accountLabel": "Счёт",
@@ -381,6 +386,7 @@
         "unlinkButton": "Отвязать от портфеля",
         "unlinkWarning": "Отвязка уменьшит денежный баланс портфеля {portfolio}.",
         "unlinkWarningNoCash": "Этот перевод не изменял денежный баланс портфеля {portfolio}, поэтому при отвязке баланс останется прежним.",
+        "noCashBadge": "Без влияния на деньги",
         "unlinkDescription": "Исходные данные транзакции будут восстановлены.",
         "cancelButton": "Отмена",
         "confirmUnlink": "Подтвердить отвязку"
@@ -520,6 +526,11 @@
       "inheritParentColor": "Использовать цвет родительской категории",
       "iconLabel": "Значок",
       "iconPlaceholder": "Выберите значок",
+      "defaultTagsLabel": "Default tags",
+      "defaultTagsPlaceholder": "Выберите теги",
+      "defaultTagsHint": "Added to a transaction when you pick this category.",
+      "applyTagsOnAiLabel": "Also apply when AI categorizes a transaction",
+      "applyTagsOnAiHint": "Tags stay on the transaction if you change its category later.",
       "settingsDivider": "Настройки",
       "saveButton": "Сохранить",
       "createButton": "Создать",
@@ -762,7 +773,6 @@
       "chooseDescription": "Как вы хотите записать этот платёж для {name}?",
       "amountLabel": "Сумма",
       "amountPlaceholder": "0.00",
-      "estimateLoading": "Загрузка расчёта…",
       "crossCurrencyEstimate": "~{sourceAmount} {sourceCurrency} → {accountCurrency} (оценка)",
       "dateLabel": "Дата платежа",
       "accountLabel": "Счёт",
@@ -773,6 +783,13 @@
       "recordModeMarkDescription": "Обновляет только расписание — транзакция не создаётся.",
       "recordModeTransactionTitle": "Создать транзакцию",
       "recordModeTransactionDescription": "Записывает реальный расход на счёте. Этот счёт также будет использоваться для будущих платежей.",
+      "useExistingTitle": "Use the existing payment",
+      "useExistingDescription": "A transaction linked to this subscription is already recorded in this period. Nothing new is added to your account.",
+      "recordNewTitle": "Record a new payment",
+      "recordNewDescription": "Adds another transaction for this period. The existing payment stays as it is.",
+      "linkedPaymentDescription": "{name} already has a payment in this period. Choose how to mark it paid.",
+      "confirmUseExisting": "Use this payment",
+      "previewUnavailable": "Couldn't check for payments already recorded in this period. Review the details before recording a new one.",
       "notifications": {
         "markedAsPaid": "Платёж записан",
         "markAsPaidFailed": "Не удалось записать платёж"

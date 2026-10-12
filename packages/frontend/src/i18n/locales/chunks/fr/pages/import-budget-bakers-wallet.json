@@ -27,7 +27,7 @@
         },
         "preview": {
           "accountsHelper": "Configure how each detected account will be handled during import.",
-          "accounts": "Accounts",
+          "accounts": "Comptes",
           "transactions": "Transactions",
           "rowPrefix": "Row {rowIndex}: "
         },
@@ -89,7 +89,7 @@
         "resolve": {
           "resolvedCounterWord": "resolved",
           "accounts": {
-            "sectionTitle": "Accounts",
+            "sectionTitle": "Comptes",
             "currentBalanceLabel": "Current balance (optional)",
             "currentBalancePlaceholder": "Leave blank to use imported total",
             "willCreateHint": "Will create a new {currency} account",

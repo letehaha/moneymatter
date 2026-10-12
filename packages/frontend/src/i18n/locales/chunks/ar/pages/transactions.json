@@ -92,6 +92,7 @@
       "cancelSelection": "Cancel selection",
       "editButton": "Edit",
       "selectedCount": "{count} selected",
+      "matchingCount": "Total: {count}",
       "dialogTitle": "Edit {count} transactions",
       "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
       "categoryLabel": "Category",

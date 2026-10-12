@@ -2,137 +2,137 @@
   "pages": {
     "importExport": {
       "msMoneyImport": {
-        "pageTitle": "Import from Microsoft Money",
-        "pageDescription": "Bring your accounts, categories and transactions across from a Microsoft Money .mny file.",
+        "pageTitle": "Nhập từ Microsoft Money",
+        "pageDescription": "Chuyển tài khoản, danh mục và giao dịch từ tệp .mny của Microsoft Money.",
         "stepper": {
           "steps": {
-            "upload": "Upload",
-            "resolve": "Map data",
+            "upload": "Tải lên",
+            "resolve": "Ghép dữ liệu",
             "review": "Xem xét",
-            "execute": "Import",
-            "done": "Done"
+            "execute": "Nhập",
+            "done": "Hoàn tất"
           }
         },
         "fileUpload": {
-          "stepTitle": "Upload your Money file",
-          "description": "Pick the .mny file Microsoft Money saved on your computer.",
-          "maxSize": ".mny file, up to 50 MB",
-          "passwordLabel": "File password (optional)",
-          "passwordPlaceholder": "Enter the file password",
-          "passwordHint": "Leave blank unless you set a password in Microsoft Money.",
-          "parsing": "Reading file…",
-          "continue": "Continue",
+          "stepTitle": "Tải tệp Money lên",
+          "description": "Chọn tệp .mny được Microsoft Money lưu trên máy tính của bạn.",
+          "maxSize": "Tệp .mny, tối đa 50 MB",
+          "passwordLabel": "Mật khẩu tệp (không bắt buộc)",
+          "passwordPlaceholder": "Nhập mật khẩu tệp",
+          "passwordHint": "Để trống nếu bạn không đặt mật khẩu trong Microsoft Money.",
+          "parsing": "Đang đọc tệp…",
+          "continue": "Tiếp tục",
           "errors": {
-            "invalidFormatNamed": "\"{name}\" is not a .mny file.",
-            "passwordUnsupportedChars": "This password contains characters we can't send. Try a password without emoji or non-Latin letters."
+            "invalidFormatNamed": "\"{name}\" không phải là tệp .mny.",
+            "passwordUnsupportedChars": "Mật khẩu này chứa ký tự không thể gửi. Hãy thử mật khẩu không có biểu tượng cảm xúc hoặc chữ ngoài hệ chữ La-tinh."
           }
         },
         "errors": {
-          "uploadUnavailable": "The uploaded file is no longer available. Please upload your Money file again."
+          "uploadUnavailable": "Tệp đã tải lên không còn khả dụng. Vui lòng tải lại tệp Money."
         },
         "resolve": {
-          "prepareFailed": "Could not prepare the account and category mapping. Reload the page and try again.",
+          "prepareFailed": "Không thể chuẩn bị ghép tài khoản và danh mục. Hãy tải lại trang rồi thử lại.",
           "accounts": {
             "sectionTitle": "Tài khoản",
-            "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the imported total",
-            "willCreateHint": "Will be created in {currency}.",
-            "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
+            "currentBalanceLabel": "Số dư hiện tại",
+            "currentBalancePlaceholder": "Để trống để dùng tổng số tiền đã nhập",
+            "willCreateHint": "Sẽ được tạo bằng đơn vị tiền tệ {currency}.",
+            "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Giao dịch của các tài khoản này — cùng mọi khoản chuyển đến hoặc từ những tài khoản đó — sẽ không được nhập."
           },
           "categories": {
             "sectionTitle": "Danh mục"
           },
           "quickActions": {
-            "mapExactMatches": "Map exact matches",
-            "createNewForUnmatched": "Create new for unmatched",
-            "reset": "Reset",
+            "mapExactMatches": "Ghép các mục khớp chính xác",
+            "createNewForUnmatched": "Tạo mục mới cho các mục chưa khớp",
+            "reset": "Đặt lại",
             "tooltips": {
-              "mapExactMatchesAccounts": "Link every account whose name exactly matches one you already have.",
-              "mapExactMatchesCategories": "Link every category whose name exactly matches one you already have.",
-              "createNewForUnmatched": "Set every undecided row to \"create new\".",
-              "reset": "Clear all choices and match again."
+              "mapExactMatchesAccounts": "Liên kết mọi tài khoản có tên khớp chính xác với tài khoản hiện có.",
+              "mapExactMatchesCategories": "Liên kết mọi danh mục có tên khớp chính xác với danh mục hiện có.",
+              "createNewForUnmatched": "Đặt mọi hàng chưa được quyết định thành “tạo mới”.",
+              "reset": "Xóa mọi lựa chọn rồi ghép lại."
             }
           },
           "footer": {
-            "back": "Back",
-            "continue": "Continue"
+            "back": "Quay lại",
+            "continue": "Tiếp tục"
           }
         },
         "review": {
-          "transactions": "Transactions",
-          "transfersDetected": "Transfers",
-          "outOfWallet": "Out-of-wallet",
-          "duplicatesSkipped": "Duplicates skipped",
-          "willImport": "Will import",
-          "dateRange": "Date range: {from} — {to}",
-          "warningsTitle": "Some things were left out",
-          "warningsHint": "These rows are not part of the import.",
+          "transactions": "Giao dịch",
+          "transfersDetected": "Giao dịch chuyển tiền",
+          "outOfWallet": "Giao dịch ngoài Wallet",
+          "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
+          "willImport": "Sẽ nhập",
+          "dateRange": "Khoảng thời gian: {from} — {to}",
+          "warningsTitle": "Một số mục đã bị loại khỏi quá trình nhập",
+          "warningsHint": "Các hàng này không nằm trong dữ liệu được nhập.",
           "warnings": {
-            "accountTypeUnsupported": "{count} account(s) skipped",
-            "orphanRowSkipped": "{count} transaction(s) skipped",
-            "transferCounterpartNotImported": "{count} transfer leg(s) imported as out-of-wallet",
-            "rowLimitReached": "{count} transaction(s) over the limit were dropped",
-            "accountCurrencyDefaulted": "{count} account(s) had no currency in the file, so USD was assumed — check the currency on the accounts step before continuing",
-            "rowMissingDate": "{count} transaction(s) with no readable date were skipped",
-            "accountNameMissing": "{count} account(s) had no name",
-            "accountNameDuplicated": "{count} account(s) shared a name",
-            "rowAmountUnreadable": "{count} transaction(s) with no readable amount were skipped",
-            "fileSchemaUnexpected": "{count} unexpected file structure issue(s) found"
+            "accountTypeUnsupported": "Đã bỏ qua {count} tài khoản",
+            "orphanRowSkipped": "Đã bỏ qua {count} giao dịch",
+            "transferCounterpartNotImported": "Đã nhập {count} vế giao dịch chuyển tiền dưới dạng giao dịch ngoài Wallet",
+            "rowLimitReached": "Đã loại bỏ {count} giao dịch vượt quá giới hạn",
+            "accountCurrencyDefaulted": "{count} tài khoản không có đơn vị tiền tệ trong tệp nên được mặc định là USD — hãy kiểm tra đơn vị tiền tệ ở bước tài khoản trước khi tiếp tục",
+            "rowMissingDate": "Đã bỏ qua {count} giao dịch không có ngày hợp lệ",
+            "accountNameMissing": "{count} tài khoản không có tên",
+            "accountNameDuplicated": "{count} tài khoản trùng tên",
+            "rowAmountUnreadable": "Đã bỏ qua {count} giao dịch không có số tiền hợp lệ",
+            "fileSchemaUnexpected": "Phát hiện {count} vấn đề về cấu trúc tệp không mong đợi"
           },
           "includeVoided": {
-            "label": "Import {count} voided transaction(s)",
-            "hint": "Microsoft Money keeps voided entries in the register but never applies them to your balance, so they're imported at zero and tagged \"Void\" — keeping their date, payee, category, memo and cheque number."
+            "label": "Nhập {count} giao dịch đã hủy",
+            "hint": "Microsoft Money giữ các mục đã hủy trong sổ giao dịch nhưng không tính chúng vào số dư. Vì vậy, các mục này được nhập với số tiền bằng 0 và gắn nhãn “Void”, đồng thời giữ nguyên ngày, người nhận, danh mục, ghi chú và số séc."
           },
-          "duplicatesTitle": "{count} possible duplicate(s)",
-          "duplicatesHint": "These already look like transactions you have. Check a row to import it anyway; unchecked duplicates are skipped.",
-          "back": "Back",
-          "importing": "Starting import…",
-          "importButton": "Import {count} transactions"
+          "duplicatesTitle": "{count} giao dịch có thể bị trùng lặp",
+          "duplicatesHint": "Các giao dịch này có vẻ đã có trong tài khoản của bạn. Chọn một hàng để vẫn nhập giao dịch đó; các mục trùng lặp không được chọn sẽ bị bỏ qua.",
+          "back": "Quay lại",
+          "importing": "Đang bắt đầu nhập…",
+          "importButton": "Nhập {count} giao dịch"
         },
         "execute": {
           "starting": "Đang bắt đầu nhập…",
-          "progressCount": "{processed} of {total}",
-          "failed": "The import failed.",
-          "partialImportNote": "Some transactions may already have been imported.",
-          "statusQueued": "Queued",
-          "statusRunning": "Importing",
-          "statusCompleted": "Completed",
-          "statusFailed": "Failed"
+          "progressCount": "{processed} / {total}",
+          "failed": "Không thể nhập.",
+          "partialImportNote": "Một số giao dịch có thể đã được nhập.",
+          "statusQueued": "Đang chờ",
+          "statusRunning": "Đang nhập",
+          "statusCompleted": "Đã hoàn tất",
+          "statusFailed": "Thất bại"
         },
         "done": {
-          "successTitle": "Import finished",
-          "successDescription": "Everything from your Money file is now in your account.",
-          "partialTitle": "Imported with {count} issue(s)",
-          "partialDescription": "Most rows landed. The list below shows what didn't.",
-          "emptyTitle": "Nothing new to import",
-          "emptyDescription": "Every row was either skipped or already in your ledger, so no transactions were created.",
-          "allFailedTitle": "Nothing was imported",
-          "allFailedDescription": "No transactions could be created. See the errors below.",
+          "successTitle": "Đã nhập xong",
+          "successDescription": "Mọi dữ liệu trong tệp Money hiện đã có trong tài khoản của bạn.",
+          "partialTitle": "Đã nhập nhưng có {count} vấn đề",
+          "partialDescription": "Phần lớn các hàng đã được nhập. Danh sách bên dưới cho biết những mục chưa nhập được.",
+          "emptyTitle": "Không có dữ liệu mới để nhập",
+          "emptyDescription": "Mọi hàng đều đã bị bỏ qua hoặc đã có trong sổ giao dịch, nên không có giao dịch nào được tạo.",
+          "allFailedTitle": "Không có dữ liệu nào được nhập",
+          "allFailedDescription": "Không thể tạo giao dịch nào. Hãy xem các lỗi bên dưới.",
           "accountsCreated": "Tài khoản đã tạo",
-          "accountsLinked": "Accounts linked",
-          "accountsSkipped": "Accounts skipped",
+          "accountsLinked": "Tài khoản đã liên kết",
+          "accountsSkipped": "Đã bỏ qua tài khoản",
           "categoriesCreated": "Danh mục đã tạo",
           "payeesCreated": "Người nhận đã tạo",
           "transactionsImported": "Giao dịch đã nhập",
           "transfersImported": "Giao dịch chuyển khoản đã nhập",
-          "outOfWalletImported": "Out-of-wallet transfers",
-          "duplicatesSkipped": "Duplicates skipped",
-          "voidedImported": "Voided imported",
-          "mergedIntoPlanned": "Merged into planned",
-          "balanceWarningTitle": "Some balances may be off",
-          "balanceWarningBody": "We couldn't set the final balance on every account. Check them and adjust if needed.",
-          "errorsTitle": "{count} row(s) could not be imported",
-          "errorsOverflow": "…and {count} more",
+          "outOfWalletImported": "Đã nhập giao dịch chuyển tiền ngoài Wallet",
+          "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
+          "voidedImported": "Đã nhập giao dịch đã hủy",
+          "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
+          "balanceWarningTitle": "Một số số dư có thể không chính xác",
+          "balanceWarningBody": "Không thể đặt số dư cuối cùng cho tất cả tài khoản. Hãy kiểm tra và điều chỉnh nếu cần.",
+          "errorsTitle": "Không thể nhập {count} hàng",
+          "errorsOverflow": "…và {count} mục nữa",
           "rowPrefix": "Dòng {rowIndex}:",
-          "viewTransactions": "View transactions",
+          "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"
         },
         "leaseExpired": {
-          "title": "Your uploaded file is no longer available",
-          "description": "The parsed copy of your Money file was released after a period of inactivity. Your mapping choices could not be kept, so the import needs to start from the upload step again.",
+          "title": "Tệp bạn đã tải lên không còn khả dụng",
+          "description": "Bản đã phân tích của tệp Money đã bị xóa sau một thời gian không hoạt động. Các lựa chọn ghép của bạn không được giữ lại, vì vậy cần bắt đầu nhập lại từ bước tải tệp lên.",
           "action": "Bắt đầu lại"
         },
-        "leaseResourceLabel": "Your uploaded file"
+        "leaseResourceLabel": "Tệp bạn đã tải lên"
       }
     }
   }

@@ -6,10 +6,10 @@
       "addButton": "Pridať kategóriu",
       "organizeButton": "Usporiadať",
       "empty": "Zatiaľ žiadne kategórie. Vytvorte prvú kategóriu a začnite.",
-      "categoriesCount": "{n} kategória | {n} kategórií",
+      "categoriesCount": "{n} kategória | {n} kategórie | {n} kategórií",
       "organizeHint": "Presuňte na novú nadradenú kategóriu, alebo pustite sem pre najvyššiu úroveň.",
       "dropToTopLevel": "Pustite sem a „{name}\" sa stane kategóriou najvyššej úrovne",
-      "movesQueued": "{n} presun čaká | {n} presunov čaká",
+      "movesQueued": "{n} presun čaká | {n} presuny čakajú | {n} presunov čaká",
       "unqueueMove": "Odstrániť tento presun",
       "topLevel": "Najvyššia úroveň",
       "saveChanges": "Ulož zmeny",
@@ -38,7 +38,7 @@
         "checkFailed": "Kategóriu sa nepodarilo skontrolovať",
         "moveFailed": "Kategóriu sa nepodarilo presunúť.",
         "saveSuccess": "Zmeny uložené.",
-        "staleMovesRemoved": "Odstránený {n} čakajúci presun, ktorý už neplatí | Odstránených {n} čakajúcich presunov, ktoré už neplatia"
+        "staleMovesRemoved": "Odstránený {n} čakajúci presun, ktorý už neplatí | Odstránené {n} čakajúce presuny, ktoré už neplatia | Odstránených {n} čakajúcich presunov, ktoré už neplatia"
       },
       "dropErrors": {
         "currentParent": "Už je v tejto kategórii",

@@ -1,7 +1,7 @@
 {
   "navigation": {
     "dashboard": "Dashboard",
-    "accounts": "Accounts",
+    "accounts": "Comptes",
     "accountsList": "All Accounts",
     "investments": "Investments",
     "loans": "Loans",
@@ -39,7 +39,7 @@
       }
     },
     "accountsView": {
-      "title": "Accounts",
+      "title": "Comptes",
       "bankAccounts": "Bank Accounts",
       "newAccount": "New account",
       "newAccountsGroup": "New accounts group",
@@ -47,7 +47,7 @@
       "newPortfolio": "New portfolio",
       "noPortfolios": "No portfolios yet",
       "ventures": "Ventures",
-      "cars": "Cars",
+      "cars": "Véhicules",
       "loans": "Loans",
       "collapseNavigation": "Collapse navigation",
       "viaHousehold": "Partagé via le foyer de {handle}",

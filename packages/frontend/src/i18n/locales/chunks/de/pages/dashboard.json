@@ -44,7 +44,7 @@
           "showMarkersTooltip": "Farbige Markierungen im Diagramm ein-/ausschalten, die deutliche Saldoänderungen hervorheben.",
           "percentThreshold": "Min. Änderung %",
           "percentThresholdTooltip": "Mindestprozentsatz der Saldoänderung zwischen zwei aufeinanderfolgenden Tagen für eine Markierung. Entweder dieser oder der absolute Schwellenwert muss überschritten werden. Niedrige Werte zeigen mehr Markierungen an.",
-          "absoluteThreshold": "Min. Änderung $",
+          "absoluteThreshold": "Min. Änderung €",
           "absoluteThresholdTooltip": "Mindeständerung des absoluten Saldos (in deiner Basiswährung), damit ein Ausschlag vorliegt. Entweder dieser Wert oder der prozentuale Schwellwert muss überschritten werden.",
           "maxMarkers": "Max. Markierungen",
           "maxMarkersTooltip": "Maximale Anzahl der angezeigten Markierungen im Diagramm. Gibt es mehr Ausschläge als dieses Limit, werden nur die bedeutendsten angezeigt.",
@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Kategorien-Beobachtungsliste",
         "addCategory": "Kategorie hinzufügen",
-        "selectCategories": "Kategorien auswählen"
+        "selectCategories": "Kategorien auswählen",
+        "sort": {
+          "title": "Sortieren nach",
+          "custom": "Benutzerdefinierte Reihenfolge",
+          "spendDesc": "Höchste Ausgaben zuerst",
+          "spendAsc": "Niedrigste Ausgaben zuerst"
+        }
       },
       "cashFlow": {
         "title": "Cashflow",
@@ -131,7 +137,10 @@
         "expenses": "Ausgaben",
         "saved": "Gespart",
         "previousPeriodsTrend": "Trend vorheriger Zeiträume",
-        "viewDetails": "Details anzeigen"
+        "viewDetails": "Details anzeigen",
+        "savingsRateLine": "Sparquoten-Linie anzeigen",
+        "savingsRate": "Sparquote",
+        "noIncome": "kein Einkommen"
       },
       "netWorth": {
         "title": "Nettovermögen",
@@ -173,6 +182,39 @@
         "upcoming": "Anstehend · {count}",
         "loadFailed": "Geplante Transaktionen konnten nicht geladen werden"
       },
+      "taxes": {
+        "title": "Steuerquote",
+        "description": "Ausgaben in deinen Steuerkategorien als Anteil am Einkommen, gemittelt über den in den Widget-Einstellungen gewählten Zeitraum. Die Balken zeigen die letzten 12 Monate.",
+        "ofIncome": "vom Einkommen",
+        "vsTrailingRate": "{delta} Prozentpunkte ggü. 12-Monats-Satz {rate}",
+        "average": "Ø {amount}",
+        "amount": "Steuern",
+        "shareOfIncome": "Anteil an Einnahmen",
+        "shareOfTaxes": "Steueranteil",
+        "other": "Sonstiges",
+        "moreCategories": "{count} weitere",
+        "viewDetails": "Cashflow anzeigen",
+        "loadFailed": "Steuerdaten konnten nicht geladen werden.",
+        "noCategories": {
+          "title": "Noch keine Steuerkategorien",
+          "description": "Wähle aus, welche Kategorien als Steuern zählen, um deine Steuerquote zu sehen.",
+          "action": "Kategorien auswählen"
+        },
+        "config": {
+          "months": {
+            "label": "Durchschnittszeitraum",
+            "saveError": "Der Durchschnittszeitraum konnte nicht gespeichert werden. Versuche es erneut.",
+            "m3": "3 Mon.",
+            "m6": "6 Mon.",
+            "m12": "12 Mon."
+          }
+        },
+        "lastMonths": {
+          "m3": "Letzte 3 Monate",
+          "m6": "Letzte 6 Monate",
+          "m12": "Letzte 12 Monate"
+        }
+      },
       "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
       "registry": {
         "balanceTrend": {
@@ -197,7 +239,7 @@
         },
         "cashFlow": {
           "name": "Cashflow",
-          "description": "Einkommen vs. Ausgaben mit Sparquote"
+          "description": "Einkommen gegenüber Ausgaben mit Sparquote"
         },
         "netWorth": {
           "name": "Nettovermögen",
@@ -214,6 +256,10 @@
         "fireProgress": {
           "name": "FIRE-Fortschritt",
           "description": "Wie nah du der finanziellen Unabhängigkeit bist"
+        },
+        "taxes": {
+          "name": "Steuerquote",
+          "description": "Anteil des Einkommens, der für Steuern aufgewendet wird, mit 12-Monats-Trend"
         }
       }
     },
@@ -263,7 +309,10 @@
         "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Namen",
         "tagsStyleBars": "Balken",
-        "tagsStyleSaveError": "Tag-Stil konnte nicht gespeichert werden. Bitte versuche es erneut."
+        "tagsStyleSaveError": "Tag-Stil konnte nicht gespeichert werden. Bitte versuche es erneut.",
+        "showAccountTitle": "Konto",
+        "showAccountDescription": "Kontologo bei jeder Transaktion anzeigen",
+        "showAccountSaveError": "Die Kontoeinstellung konnte nicht gespeichert werden. Bitte versuche es erneut."
       },
       "overdueBadge": "Überfällig",
       "scheduledBadge": "Geplant",

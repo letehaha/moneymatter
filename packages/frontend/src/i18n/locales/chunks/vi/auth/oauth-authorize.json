@@ -2,6 +2,7 @@
   "oauth": {
     "authorize": {
       "title": "{name} muốn truy cập dữ liệu MoneyMatter của bạn",
+      "redirect_notice": "After approval you will be redirected to {host}. Only continue if you recognize this address.",
       "description": "Ứng dụng này đang yêu cầu các quyền sau:",
       "approve": "Chấp nhận",
       "deny": "Từ chối",

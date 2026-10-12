@@ -60,6 +60,7 @@
     "transactionIdNotExist": "Transaksi dengan `id` yang diberikan tidak ada!",
     "notAuthorizedToEdit": "Anda tidak memiliki wewenang untuk mengedit transaksi ini.",
     "cannotDeleteExternal": "Tidak diizinkan menghapus transaksi eksternal secara manual",
+    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
     "unexpectedDeleteIssue": "Masalah tak terduga saat mencoba menghapus transaksi",
     "linkSelfNotAllowed": "Mencoba menautkan transaksi ke dirinya sendiri.",
     "linkSameTypeNotAllowed": "Mencoba menautkan dengan transaksi yang memiliki \"transactionType\" yang sama.",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Akun {{accountId}} tidak ditemukan",
     "providerTypeMismatch": "Koneksi {{connectionId}} adalah untuk provider {{actualType}}, bukan {{expectedType}}",
     "providerAlreadyRegistered": "Provider {{providerType}} sudah terdaftar. Tidak dapat mendaftarkan provider duplikat.",
-    "providerNotRegistered": "Provider {{providerType}} belum terdaftar. Provider yang tersedia: {{available}}",
-    "missingRequiredProviders": "Provider data bank yang diperlukan tidak ada: {{missing}}. Pastikan provider ini terdaftar saat aplikasi dimulai."
+    "providerNotRegistered": "Provider {{providerType}} belum terdaftar. Provider yang tersedia: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" adalah tanggal tidak valid."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "Provider tidak mengembalikan transaksi untuk periode ini.",
     "apiError": "Kesalahan API {{provider}}: {{message}}",
     "currencySelectionRequired": "Akun \"{{account}}\" tidak memiliki mata uang yang dilaporkan oleh bank — pilih mata uang untuknya sebelum menghubungkan.",
+    "providerNotAvailable": "This bank provider is not available for new connections.",
     "monobank": {
       "invalidCredentialsFormat": "Format kredensial tidak valid untuk Monobank",
       "invalidApiToken": "Token API Monobank tidak valid",

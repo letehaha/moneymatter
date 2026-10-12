@@ -1,134 +1,134 @@
 {
   "settings": {
     "planBilling": {
-      "title": "Plan & billing",
-      "description": "Choose a plan and manage your billing.",
-      "checkoutSuccess": "Your plan is now active.",
-      "checkoutFailed": "Could not open checkout. Please try again.",
-      "currentPlanEyebrow": "Current plan",
-      "updatePaymentMethod": "Update payment method",
-      "manageBilling": "Manage billing",
-      "currentPlan": "Current plan",
-      "recommended": "Recommended",
-      "previousPlan": "Previous plan",
-      "yourPlan": "Your plan",
-      "planned": "Planned",
-      "voteOnRoadmap": "Vote on the roadmap",
-      "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
-      "saveUpTo": "Save up to {percent}%",
-      "portalFailed": "Could not open the billing portal. Please try again.",
-      "pastDueNote": "Your last payment failed. Stripe will retry your card automatically over the next few days. Update your payment method via Manage billing to keep access after {date}.",
-      "priceNote": "Prices are in USD, excluding tax. Your local currency and any applicable tax are shown at checkout.",
+      "title": "Gói và thanh toán",
+      "description": "Chọn gói và quản lý thanh toán của bạn.",
+      "checkoutSuccess": "Gói của bạn hiện đã được kích hoạt.",
+      "checkoutFailed": "Không thể mở trang thanh toán. Vui lòng thử lại.",
+      "currentPlanEyebrow": "Gói hiện tại",
+      "updatePaymentMethod": "Cập nhật phương thức thanh toán",
+      "manageBilling": "Quản lý thanh toán",
+      "currentPlan": "Gói hiện tại",
+      "recommended": "Được đề xuất",
+      "previousPlan": "Gói trước đây",
+      "yourPlan": "Gói của bạn",
+      "planned": "Đang lên kế hoạch",
+      "voteOnRoadmap": "Bình chọn cho lộ trình phát triển",
+      "roadmapNote": "Không mất phí. Hãy bình chọn ủng hộ, chúng tôi sẽ báo cho bạn khi tính năng được phát hành.",
+      "saveUpTo": "Tiết kiệm đến {percent}%",
+      "portalFailed": "Không thể mở cổng thanh toán. Vui lòng thử lại.",
+      "pastDueNote": "Lần thanh toán gần nhất của bạn thất bại. Stripe sẽ tự động thử lại thẻ trong vài ngày tới. Hãy cập nhật phương thức thanh toán trong mục Quản lý thanh toán để tiếp tục sử dụng sau {date}.",
+      "priceNote": "Giá được tính bằng USD và chưa bao gồm thuế. Đơn vị tiền tệ địa phương và các khoản thuế áp dụng sẽ hiển thị khi thanh toán.",
       "cycleHint": {
-        "year": "Yearly is 6 months of monthly. Billed once a year.",
-        "month": "Cancel any month. Yearly costs half."
+        "year": "Gói năm chỉ bằng giá 6 tháng của gói tháng. Thanh toán một lần mỗi năm.",
+        "month": "Hủy bất cứ lúc nào. Gói năm có giá bằng một nửa."
       },
       "price": {
-        "yearFootnote": "{amount} / mo · {struck} · {save}",
-        "monthFootnote": "or {amount} / year · {save}",
-        "save": "save {amount}"
+        "yearFootnote": "{amount} / tháng · {struck} · {save}",
+        "monthFootnote": "hoặc {amount} / năm · {save}",
+        "save": "tiết kiệm {amount}"
       },
       "current": {
-        "lifetime": "{plan} · lifetime",
-        "lifetimeMeta": "Everything in Plus. No renewal, no card on file.",
-        "earlyAdopterNote": "Thank you for being here early. Everything in Plus as it exists today is yours for life. Features we add from here on, and anything that costs us per user to run, belong to the paid plans. Want them? 50% off any plan, forever, applied automatically at checkout.",
-        "seats": "1 household seat | {count} household seats",
+        "lifetime": "{plan} · trọn đời",
+        "lifetimeMeta": "Có tất cả tính năng của Plus. Không gia hạn, không cần lưu thẻ.",
+        "earlyAdopterNote": "Cảm ơn bạn đã đồng hành từ những ngày đầu. Bạn sẽ được dùng trọn đời mọi tính năng Plus hiện có. Các tính năng được bổ sung sau này và những tính năng phát sinh chi phí theo từng người dùng sẽ thuộc các gói trả phí. Muốn sử dụng? Bạn được giảm 50% vĩnh viễn cho mọi gói; ưu đãi sẽ tự động áp dụng khi thanh toán.",
+        "seats": "1 thành viên hộ gia đình | {count} thành viên hộ gia đình",
         "subscription": "{tier} · {cycle}",
-        "trial": "{count} day left in your trial | {count} days left in your trial",
-        "trialProgress": "Day {used} of {total}",
-        "trialEnded": "Trial ended",
-        "trialEndedMeta": "Your {days}-day trial is over. Pick a plan to keep adding to it.",
-        "trialEndsOn": "Ends {date}",
-        "trialExcluded": "Backup restore isn't available during the trial",
-        "subscriptionEnded": "Subscription ended",
-        "endedMeta": "Your data is safe. Pick a plan to keep adding to it.",
-        "renewsOn": "Renews on {date}",
-        "activating": "Activating your plan",
-        "activatingNote": "Payment received. Stripe usually confirms within a few seconds.",
-        "activationTimedOut": "Your payment went through but the plan is still being set up. Refresh in a minute; if nothing changes, contact support.",
-        "activationUnreachable": "We could not reach the server to confirm your payment. Reload the page; if the plan is still missing, contact support.",
-        "accessContinuesUntil": "Access continues until {date}",
-        "accessUntil": "Access until {date}, then read-only",
-        "resumesOn": "Resumes automatically on {date}",
-        "pausedNote": "While paused the account is read-only.",
-        "noFurtherCharges": "No further charges",
-        "cancelNote": "Changed your mind? Renew in the billing portal and your renewal date stays the same.",
-        "monthlyHint": "Switch to yearly and save {amount} a year.",
-        "noCard": "No card on file",
-        "readOnlyHelp": "What does read-only mean?"
+        "trial": "Còn {count} ngày dùng thử | Còn {count} ngày dùng thử",
+        "trialProgress": "Ngày {used}/{total}",
+        "trialEnded": "Đã hết thời gian dùng thử",
+        "trialEndedMeta": "Thời gian dùng thử {days} ngày đã kết thúc. Hãy chọn một gói để tiếp tục bổ sung dữ liệu.",
+        "trialEndsOn": "Kết thúc vào {date}",
+        "trialExcluded": "Không thể khôi phục bản sao lưu trong thời gian dùng thử",
+        "subscriptionEnded": "Gói đăng ký đã kết thúc",
+        "endedMeta": "Dữ liệu của bạn vẫn an toàn. Hãy chọn một gói để tiếp tục bổ sung dữ liệu.",
+        "renewsOn": "Gia hạn vào {date}",
+        "activating": "Đang kích hoạt gói của bạn",
+        "activatingNote": "Đã nhận thanh toán. Stripe thường xác nhận trong vài giây.",
+        "activationTimedOut": "Thanh toán đã thành công nhưng gói vẫn đang được thiết lập. Hãy làm mới trang sau một phút; nếu trạng thái không thay đổi, vui lòng liên hệ bộ phận hỗ trợ.",
+        "activationUnreachable": "Chúng tôi không thể kết nối với máy chủ để xác nhận thanh toán. Hãy tải lại trang; nếu gói vẫn chưa hiển thị, vui lòng liên hệ bộ phận hỗ trợ.",
+        "accessContinuesUntil": "Bạn có thể tiếp tục sử dụng đến {date}",
+        "accessUntil": "Bạn có thể sử dụng đến {date}, sau đó tài khoản sẽ chỉ có quyền xem",
+        "resumesOn": "Tự động tiếp tục vào {date}",
+        "pausedNote": "Trong thời gian tạm dừng, tài khoản chỉ có quyền xem.",
+        "noFurtherCharges": "Không phát sinh thêm khoản phí nào",
+        "cancelNote": "Đổi ý rồi? Hãy gia hạn trong cổng thanh toán; ngày gia hạn của bạn sẽ không thay đổi.",
+        "monthlyHint": "Chuyển sang gói năm để tiết kiệm {amount} mỗi năm.",
+        "noCard": "Chưa lưu phương thức thanh toán",
+        "readOnlyHelp": "Quyền chỉ xem nghĩa là gì?"
       },
       "status": {
-        "pastDue": "Payment failed",
-        "active": "Active",
-        "paused": "Paused",
-        "readOnly": "Read-only",
-        "trial": "Plus features",
-        "processing": "Processing",
-        "earlyAdopter": "Early adopter",
-        "endsOn": "Ends {date}"
+        "pastDue": "Thanh toán thất bại",
+        "active": "Đang hoạt động",
+        "paused": "Đã tạm dừng",
+        "readOnly": "Chỉ có quyền xem",
+        "trial": "Tính năng Plus",
+        "processing": "Đang xử lý",
+        "earlyAdopter": "Người dùng từ những ngày đầu",
+        "endsOn": "Kết thúc vào {date}"
       },
       "cta": {
-        "activating": "Activating…",
-        "switchTo": "Switch to {tier}",
-        "switchToCycle": "Switch to {cycle} billing",
-        "subscribeAgain": "Subscribe again",
-        "getTier": "Get {tier}"
+        "activating": "Đang kích hoạt…",
+        "switchTo": "Chuyển sang gói {tier}",
+        "switchToCycle": "Chuyển sang thanh toán theo {cycle}",
+        "subscribeAgain": "Đăng ký lại",
+        "getTier": "Đăng ký gói {tier}"
       },
       "ctaNote": {
-        "keepIt": "Update your payment method to keep it.",
-        "viaPortal": "Changed in the billing portal.",
-        "billedToday": "Billed today. Cancel anytime.",
-        "earlyAdopter": "50% off for life, applied at checkout"
+        "keepIt": "Hãy cập nhật phương thức thanh toán để tiếp tục sử dụng gói.",
+        "viaPortal": "Đã thay đổi trong cổng thanh toán.",
+        "billedToday": "Thanh toán ngay hôm nay. Có thể hủy bất cứ lúc nào.",
+        "earlyAdopter": "Giảm 50% trọn đời, tự động áp dụng khi thanh toán"
       },
       "plans": {
         "essential": "Essential",
         "plus": "Plus",
         "premium": "Premium",
-        "early_adopter": "Early Adopter"
+        "early_adopter": "Người dùng từ những ngày đầu"
       },
       "cycle": {
-        "month": "Monthly",
-        "year": "Yearly"
+        "month": "Hàng tháng",
+        "year": "Hằng năm"
       },
       "perCycle": {
-        "month": "/month",
-        "year": "/year"
+        "month": "/tháng",
+        "year": "/năm"
       },
       "tiers": {
         "essential": {
           "name": "Essential",
-          "tagline": "Manual entry and everything that's local math.",
+          "tagline": "Nhập liệu thủ công và mọi tính năng tính toán ngay trên thiết bị.",
           "features": {
-            "imports": "CSV, OFX, YNAB, Wallet, MS Money imports",
-            "investments": "Investments, loans, vehicles",
-            "ownAiKey": "AI features on your own API key",
-            "backup": "Backup export and restore",
-            "mcp": "MCP server access",
-            "seats": "2 household seats"
+            "imports": "Nhập dữ liệu từ CSV, OFX, YNAB, Wallet và MS Money",
+            "investments": "Danh mục đầu tư, khoản vay, phương tiện",
+            "ownAiKey": "Tính năng AI bằng khóa API của riêng bạn",
+            "backup": "Xuất và khôi phục bản sao lưu",
+            "mcp": "Quyền truy cập máy chủ MCP",
+            "seats": "2 thành viên hộ gia đình"
           }
         },
         "plus": {
           "name": "Plus",
-          "tagline": "Everything around bring-your-own bank connections.",
+          "tagline": "Mọi tính năng xoay quanh việc bạn tự kết nối ngân hàng.",
           "features": {
-            "everythingInEssential": "Everything in Essential",
-            "bankProviders": "Bank connections (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
-            "ourAiKey": "AI features on our key, fair-use capped",
-            "firePlanner": "FIRE planner",
-            "seats": "5 household seats"
+            "everythingInEssential": "Mọi tính năng của Essential",
+            "bankProviders": "Kết nối ngân hàng (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
+            "ourAiKey": "Tính năng AI dùng khóa API của chúng tôi, có giới hạn sử dụng hợp lý",
+            "firePlanner": "Công cụ lập kế hoạch FIRE",
+            "seats": "5 thành viên hộ gia đình"
           }
         },
         "premium": {
           "name": "Premium",
-          "tagline": "Bank sync we run for you. Planned – help us prioritise it.",
-          "priceTba": "Price to be announced",
-          "priceNote": "Priced once bank-sync costs are known.",
+          "tagline": "Đồng bộ ngân hàng do chúng tôi vận hành. Đang lên kế hoạch — hãy giúp chúng tôi ưu tiên tính năng này.",
+          "priceTba": "Giá sẽ được công bố sau",
+          "priceNote": "Giá sẽ được xác định sau khi biết chi phí đồng bộ ngân hàng.",
           "features": {
-            "everythingInPlus": "Everything in Plus",
-            "builtInBankSync": "Bank sync built into the app – no third-party account to set up",
-            "realtimePrices": "Realtime security prices",
-            "higherAiCap": "AI features on our key, higher cap",
-            "seats": "10 household seats"
+            "everythingInPlus": "Mọi tính năng của Plus",
+            "builtInBankSync": "Đồng bộ ngân hàng tích hợp trong ứng dụng — không cần thiết lập tài khoản bên thứ ba",
+            "realtimePrices": "Giá chứng khoán theo thời gian thực",
+            "higherAiCap": "Tính năng AI dùng khóa API của chúng tôi, với hạn mức cao hơn",
+            "seats": "10 thành viên hộ gia đình"
           }
         }
       }

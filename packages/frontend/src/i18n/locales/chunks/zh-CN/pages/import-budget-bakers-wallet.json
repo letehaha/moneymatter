@@ -96,7 +96,7 @@
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },
           "categories": {
-            "sectionTitle": "Categories"
+            "sectionTitle": "分类"
           },
           "quickActions": {
             "mapExactMatches": "Map exact matches",

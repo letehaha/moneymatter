@@ -3,15 +3,15 @@
     "investmentTransaction": {
       "typeLabel": "Transaction Type",
       "types": {
-        "buy": "Buy",
-        "sell": "Sell",
-        "dividend": "Dividend",
-        "fee": "Fee",
-        "tax": "Tax"
+        "buy": "Mua",
+        "sell": "Bán",
+        "dividend": "Cổ tức",
+        "fee": "Phí",
+        "tax": "Thuế"
       },
-      "securityLabel": "Security",
+      "securityLabel": "Chứng khoán",
       "securityPlaceholder": "Select a security",
-      "quantityLabel": "Quantity",
+      "quantityLabel": "Số lượng",
       "quantityPlaceholder": "0.00",
       "priceLabel": "Price per Share",
       "pricePlaceholder": "0.00",
@@ -90,16 +90,16 @@
       "toPortfolioPlaceholder": "Select destination portfolio",
       "toAccountLabel": "To Account",
       "toAccountPlaceholder": "Select destination account",
-      "currencyLabel": "Currency",
+      "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
-      "amountLabel": "Amount",
+      "amountLabel": "Số tiền",
       "amountLabelWithCurrency": "Amount ({currency})",
       "amountPlaceholder": "0.00",
-      "dateLabel": "Date",
+      "dateLabel": "Ngày",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this transfer...",
       "cancelButton": "Hủy",
-      "submitButton": "Transfer",
+      "submitButton": "Chuyển tiền",
       "submitButtonLoading": "Đang xử lý...",
       "confirmDialog": {
         "title": "Confirm Transfer",
@@ -126,7 +126,7 @@
     "createAccount": {
       "nameLabel": "Account name",
       "namePlaceholder": "Account name",
-      "currencyLabel": "Currency",
+      "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
       "addCurrencyButton": "Add new currency +",
       "initialBalanceLabel": "Initial balance",
@@ -146,11 +146,11 @@
     "directCashTransaction": {
       "methodTypes": {
         "direct": "Direct",
-        "transfer": "Transfer"
+        "transfer": "Chuyển tiền"
       },
       "operationTypes": {
-        "deposit": "Deposit",
-        "withdrawal": "Withdrawal"
+        "deposit": "Nạp tiền",
+        "withdrawal": "Rút tiền"
       },
       "fromAccountLabel": "From Account",
       "toAccountLabel": "To Account",
@@ -158,11 +158,11 @@
       "orSeparator": "or",
       "linkExistingTransaction": "Link existing transaction",
       "linkedTransactionLabel": "Linked transaction",
-      "amountLabel": "Amount",
+      "amountLabel": "Số tiền",
       "amountPlaceholder": "Enter amount",
-      "currencyLabel": "Currency",
+      "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
-      "dateLabel": "Date",
+      "dateLabel": "Ngày",
       "descriptionLabel": "Description",
       "adjustmentLabel": "This is a balance correction",
       "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the Investment Contributions report.",
@@ -218,7 +218,7 @@
     "createVehicle": {
       "nameLabel": "Vehicle name",
       "namePlaceholder": "e.g. My Camry",
-      "currencyLabel": "Currency",
+      "currencyLabel": "Đơn vị tiền tệ",
       "makeLabel": "Make",
       "modelLabel": "Mô hình",
       "trimLabel": "Trim (optional)",
@@ -251,7 +251,7 @@
       "namePlaceholder": "e.g. Primary mortgage",
       "loanTypeLabel": "Loan type",
       "loanTypePlaceholder": "Select loan type",
-      "currencyLabel": "Currency",
+      "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
       "originalPrincipalLabel": "Original principal",
       "originalPrincipalPlaceholder": "e.g. 320000",

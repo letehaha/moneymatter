@@ -85,7 +85,7 @@
           "loading": "Načítavanie...",
           "next": "Ďalej",
           "syncing": "Synchronizácia...",
-          "sync": "Synchronizovať {count} účet | Synchronizovať {count} účtov"
+          "sync": "Synchronizovať {count} účet | Synchronizovať {count} účty | Synchronizovať {count} účtov"
         },
         "errors": {
           "loadCountriesFailed": "Krajiny sa nepodarilo načítať. Skontrolujte prístupové údaje, prosím.",
@@ -212,7 +212,7 @@
         "noCurrencyBadge": "Bez meny",
         "currencyPicker": {
           "placeholder": "Vyberte menu",
-          "missingCount": "{count} vybraný účet ešte potrebuje menu — po importe sa už nedá zmeniť. | {count} vybraných účtov ešte potrebuje menu — po importe sa už nedá zmeniť."
+          "missingCount": "{count} vybraný účet ešte potrebuje menu — po importe sa už nedá zmeniť. | {count} vybrané účty ešte potrebujú menu — po importe sa už nedá zmeniť. | {count} vybraných účtov ešte potrebuje menu — po importe sa už nedá zmeniť."
         }
       },
       "help": {
@@ -227,6 +227,13 @@
           "step1": "Vytvorte si účet SimpleFIN Bridge na {link} a pripojte svoju banku.",
           "step2": "Vygenerujte nový setup token na paneli Bridge.",
           "step3": "Vložte token do poľa."
+        },
+        "brokerageNotice": {
+          "trigger": "Podporované sú len bankové účty – maklérske účty nie",
+          "title": "Čo SimpleFIN dokáže importovať",
+          "supported": "Bankové účty – bežné, sporiace, kreditné karty – sú plne podporované. Zostatky a transakcie sa synchronizujú automaticky.",
+          "unsupported": "Maklérske a dôchodkové účty (akcie, ETF, kryptomeny, 401k, IRA) nie sú podporované. Samotný SimpleFIN ich v skutočnosti plne nepodporuje – neuvádza, ktorý účet je maklérsky, a pozície prichádzajú v neoficiálnom formáte, ktorý sa môže kedykoľvek zmeniť.",
+          "tryAnyway": "Napriek tomu ich môžete skúsiť pripojiť – importujú sa ako bežné účty so zostatkom a hotovostnými transakciami, aké SimpleFIN poskytne, vaše pozície sa však nezobrazia. Nezaručujeme, že to bude fungovať správne."
         },
         "connectButton": "Pripojiť",
         "connectingButton": "Pripájanie...",
@@ -309,7 +316,7 @@
         "connectionValidity": {
           "statusExpired": "Vypršané",
           "statusActive": "Aktívne",
-          "daysCount": "{count} deň | {count} dní",
+          "daysCount": "{count} deň | {count} dni | {count} dní",
           "notAvailable": "Nedostupné",
           "reconnectButton": "Pripojiť znova"
         },
@@ -324,7 +331,7 @@
           "currencyFallbackChip": "Mena: {currency}",
           "syncNow": "Synchronizovať teraz",
           "connectRemainingWithCount": "Pripojiť zostávajúce účty ({count})",
-          "needsAttention": "{count} vyžaduje pozornosť | {count} vyžadujú pozornosť",
+          "needsAttention": "{count} vyžaduje pozornosť | {count} vyžadujú pozornosť | {count} vyžaduje pozornosť",
           "totalLabel": "Spolu: {amount}",
           "syncStarted": "Synchronizácia začala",
           "syncFailed": "Synchronizáciu sa nepodarilo spustiť"
@@ -363,10 +370,10 @@
           "autoSyncOff": "Vyp.",
           "connectedOf": "{connected} z {total}",
           "connectedSub": "pripojené",
-          "accountsFailed": "{count} účet zlyhal | {count} účtov zlyhalo"
+          "accountsFailed": "{count} účet zlyhal | {count} účty zlyhali | {count} účtov zlyhalo"
         },
         "consentStrip": {
-          "expiring": "Súhlas vyprší o {days} deň · {date} | Súhlas vyprší o {days} dní · {date}",
+          "expiring": "Súhlas vyprší o {days} deň · {date} | Súhlas vyprší o {days} dni · {date} | Súhlas vyprší o {days} dní · {date}",
           "expired": "Súhlas vypršal. Pripojte sa znova a obnovte synchronizáciu."
         },
         "relativeTime": {

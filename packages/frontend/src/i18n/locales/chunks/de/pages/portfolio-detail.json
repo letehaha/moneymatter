@@ -56,7 +56,7 @@
         "editDialog": {
           "title": "Cash-Transaktion bearbeiten",
           "description": "Ändere, wie diese Transaktion in Berichten behandelt wird.",
-          "save": "Änderungen speichern"
+          "save": "Speichern"
         }
       },
       "buysSells": {

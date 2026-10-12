@@ -22,7 +22,7 @@
       "assets": "Aktíva",
       "liabilities": "Záväzky",
       "vehicles": "Vozidlá",
-      "projected": "Výhľad: {amount} · {count} plánovaný záznam do {date} | Výhľad: {amount} · {count} plánovaných záznamov do {date}"
+      "projected": "Výhľad: {amount} · {count} plánovaný záznam do {date} | Výhľad: {amount} · {count} plánované záznamy do {date} | Výhľad: {amount} · {count} plánovaných záznamov do {date}"
     },
     "sharedBy": "Zdieľané {handle}",
     "viaHousehold": "Zdieľané cez domácnosť používateľa {handle}",
@@ -31,7 +31,7 @@
     "noBanksConnected": "Zatiaľ nie je pripojená žiadna banka — pripojte ju a zostatky sa budú synchronizovať automaticky.",
     "reconnect": "Obnoviť pripojenie",
     "manageConnection": "Spravovať pripojenie",
-    "accountsCount": "{count} účet | {count} účtov",
+    "accountsCount": "{count} účet | {count} účty | {count} účtov",
     "inGroupSubtitle": "v {name}",
     "sort": {
       "auto": "Automaticky",

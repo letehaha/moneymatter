@@ -49,7 +49,7 @@
         "backToRuns": "Späť na všetky spustenia",
         "runEmptyTitle": "Z tohto spustenia nič neostalo",
         "runEmptyDescription": "Všetky transakcie, ktoré toto spustenie zaradilo do kategórie, boli odvtedy znova zaradené inde alebo zmazané.",
-        "transactionCount": "{count} transakcia | {count} transakcií",
+        "transactionCount": "{count} transakcia | {count} transakcie | {count} transakcií",
         "trigger": {
           "manual": "Ručne",
           "import": "Import údajov",
@@ -84,11 +84,11 @@
       },
       "confirm": {
         "title": "Zaradiť všetky nezaradené transakcie?",
-        "description": "AI sa pozrie na {count} transakciu, ktorá je stále v predvolenej kategórii, a vyberie pre ňu kategóriu. Neskôr ju môžete zmeniť. | AI sa pozrie na {count} transakcií, ktoré sú stále v predvolenej kategórii, a pre každú z nich vyberie kategóriu. Ktorúkoľvek z nich môžete neskôr zmeniť.",
+        "description": "AI sa pozrie na {count} transakciu, ktorá je stále v predvolenej kategórii, a vyberie pre ňu kategóriu. Neskôr ju môžete zmeniť. | AI sa pozrie na {count} transakcie, ktoré sú stále v predvolenej kategórii, a pre každú z nich vyberie kategóriu. Ktorúkoľvek z nich môžete neskôr zmeniť. | AI sa pozrie na {count} transakcií, ktoré sú stále v predvolenej kategórii, a pre každú z nich vyberie kategóriu. Ktorúkoľvek z nich môžete neskôr zmeniť.",
         "action": "Zaradiť všetko"
       },
       "notifications": {
-        "started": "Zaraďovanie {count} transakcie pomocou AI | Zaraďovanie {count} transakcií pomocou AI",
+        "started": "Zaraďovanie {count} transakcie pomocou AI | Zaraďovanie {count} transakcií pomocou AI | Zaraďovanie {count} transakcií pomocou AI",
         "nothingToCategorize": "Všetko je už zaradené — pre AI nezostáva nič na spracovanie",
         "alreadyRunning": "Kategorizácia AI už prebieha",
         "rateLimited": "Dosiahli ste limit ručnej kategorizácie. Skúste to znova o {time}.",
@@ -181,28 +181,28 @@
         "confirm": "Zlúčiť a odstrániť {count} | Zlúčiť a odstrániť {count}"
       },
       "remove": {
-        "title": "Odstrániť {count} transakciu? | Odstrániť {count} transakcií?",
+        "title": "Odstrániť {count} transakciu? | Odstrániť {count} transakcie? | Odstrániť {count} transakcií?",
         "description": "Odstránené transakcie sa prestanú počítať do zostatkov a štatistík. Prepojenia s rozpočtom, skupinou a predplatným sa odpoja. Môžete ich obnoviť z Histórie, prepojenia sa však už nevrátia.",
         "confirm": "Odstrániť"
       },
       "restoreDialog": {
-        "title": "Obnoviť {count} transakciu? | Obnoviť {count} transakcií?",
+        "title": "Obnoviť {count} transakciu? | Obnoviť {count} transakcie? | Obnoviť {count} transakcií?",
         "description": "Obnovené transakcie sa opäť počítajú do zostatkov a štatistík. Ak boli zlúčené, ponechaná transakcia zostáva, takže sa môžu znova objaviť duplicity. Prepojenia s rozpočtom, skupinou a predplatným, ktoré sa pri odstránení odpojili, sa nevrátia.",
         "confirm": "Obnoviť"
       },
       "notifications": {
-        "removed": "Odstránená {count} transakcia | Odstránených {count} transakcií",
-        "merged": "Zlúčené, odstránený {count} duplikát | Zlúčené, odstránených {count} duplikátov",
-        "restored": "Obnovená {count} transakcia | Obnovených {count} transakcií",
+        "removed": "Odstránená {count} transakcia | Odstránené {count} transakcie | Odstránených {count} transakcií",
+        "merged": "Zlúčené, odstránený {count} duplikát | Zlúčené, odstránené {count} duplikáty | Zlúčené, odstránených {count} duplikátov",
+        "restored": "Obnovená {count} transakcia | Obnovené {count} transakcie | Obnovených {count} transakcií",
         "keptAsBooked": "Označené ako zaúčtované",
         "checkedWithBank": "Overené v banke",
         "unexpectedError": "Niečo sa pokazilo. Skúste to znova, prosím.",
         "bankCheck": {
-          "allBooked": "Vaša banka transakciu zaúčtovala | Vaša banka zaúčtovala všetkých {count} transakcií",
-          "someBooked": "Vaša banka zaúčtovala {count} transakciu | Vaša banka zaúčtovala {count} transakcií",
+          "allBooked": "Vaša banka transakciu zaúčtovala | Vaša banka zaúčtovala {count} transakcie | Vaša banka zaúčtovala všetkých {count} transakcií",
+          "someBooked": "Vaša banka zaúčtovala {count} transakciu | Vaša banka zaúčtovala {count} transakcie | Vaša banka zaúčtovala {count} transakcií",
           "noneBooked": "Vaša banka zatiaľ nezaúčtovala žiadnu z nich",
-          "stillPending": "{count} stále čaká. | {count} stále čaká.",
-          "someFailed": "Banku pre {count} účet sa nepodarilo osloviť. | Banku pre {count} účtov sa nepodarilo osloviť."
+          "stillPending": "{count} stále čaká. | {count} stále čakajú. | {count} stále čaká.",
+          "someFailed": "Banku pre {count} účet sa nepodarilo osloviť. | Banku pre {count} účty sa nepodarilo osloviť. | Banku pre {count} účtov sa nepodarilo osloviť."
         }
       },
       "stuckPending": {
@@ -210,14 +210,14 @@
         "emptyTitle": "Žiadne zaseknuté čakajúce transakcie",
         "emptyDescription": "Čakajúce transakcie staršie než 7 dní sa zobrazujú tu, aby ste ich mohli vyriešiť.",
         "checkWithBank": "Overiť v banke",
-        "summaryTooOld": "{count} riadok stále čaká už týždeň. Je príliš starý na overenie v banke. | {count} riadkov stále čaká už týždeň. Sú príliš staré na overenie v banke.",
+        "summaryTooOld": "{count} riadok stále čaká už týždeň. Je príliš starý na overenie v banke. | {count} riadky stále čakajú už týždeň. Sú príliš staré na overenie v banke. | {count} riadkov stále čaká už týždeň. Sú príliš staré na overenie v banke.",
         "checking": "Overovanie v banke...",
         "checkAgain": "Overiť znova",
         "keepAsBooked": "Ponechať ako zaúčtované",
         "header": {
-          "title": "{count} transakcia zaseknutá v čakajúcich | {count} transakcií zaseknutých v čakajúcich",
-          "description": "Čaká viac než týždeň na {count} účte. | Čaká viac než týždeň na {count} účtoch.",
-          "titleChecked": "{count} transakcia stále čaká | {count} transakcií stále čaká",
+          "title": "{count} transakcia zaseknutá v čakajúcich | {count} transakcie zaseknuté v čakajúcich | {count} transakcií zaseknutých v čakajúcich",
+          "description": "Čaká viac než týždeň na {count} účte. | Čaká viac než týždeň na {count} účtoch. | Čaká viac než týždeň na {count} účtoch.",
+          "titleChecked": "{count} transakcia stále čaká | {count} transakcie stále čakajú | {count} transakcií stále čaká",
           "descriptionChecked": "Overené vo vašej banke. Rozhodnite, čo urobiť s každou z nich."
         },
         "checkFirstHint": "Najprv overte v banke. Transakcie, ktoré medzičasom zaúčtovala, zmiznú z tohto zoznamu.",
@@ -250,7 +250,7 @@
         },
         "restore": "Obnoviť",
         "kept": "Ponechané",
-        "removedRows": "{count} odstránená transakcia | {count} odstránených transakcií"
+        "removedRows": "{count} odstránená transakcia | {count} odstránené transakcie | {count} odstránených transakcií"
       }
     }
   }

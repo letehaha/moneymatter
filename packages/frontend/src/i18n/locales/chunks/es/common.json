@@ -253,8 +253,8 @@
       "dismiss": "Descartar"
     },
     "duration": {
-      "years": "{n} yr | {n} yrs",
-      "months": "{n} mo | {n} mos"
+      "years": "{n} año | {n} años",
+      "months": "{n} mes | {n} meses"
     },
     "fire": {
       "targets": {
@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Campo obligatorio",
     "minLength": "La longitud mínima es {length}.",
     "emailInvalid": "Introduzca una dirección de correo electrónico válida.",
     "passwordsNoMatch": "Las contraseñas no coinciden"

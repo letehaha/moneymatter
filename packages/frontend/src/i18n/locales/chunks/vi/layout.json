@@ -3,10 +3,10 @@
     "dashboard": "Dashboard",
     "accounts": "Tài khoản",
     "accountsList": "All Accounts",
-    "investments": "Investments",
+    "investments": "Đầu tư",
     "loans": "Loans",
     "allTransactions": "All Transactions",
-    "transactions": "Transactions",
+    "transactions": "Giao dịch",
     "transactionGroups": "Groups",
     "analytics": "Analytics",
     "optimizations": "Optimizations",
@@ -19,7 +19,7 @@
     "planned": {
       "planned": "Planned",
       "subscriptions": "Recurring Payments",
-      "budgets": "Budgets"
+      "budgets": "Ngân sách"
     },
     "venture": "Venture"
   },
@@ -47,7 +47,7 @@
       "newPortfolio": "New portfolio",
       "noPortfolios": "No portfolios yet",
       "ventures": "Ventures",
-      "cars": "Cars",
+      "cars": "Phương tiện",
       "loans": "Loans",
       "collapseNavigation": "Collapse navigation",
       "viaHousehold": "Được chia sẻ qua hộ gia đình của {handle}",
@@ -63,7 +63,7 @@
     "attachInvoice": "Attach invoice",
     "attachInvoiceHint": "We find the transaction it belongs to",
     "language": "Ngôn ngữ",
-    "newTransaction": "Add transaction",
+    "newTransaction": "Thêm giao dịch",
     "settings": "Settings",
     "feedback": "Send feedback",
     "support": "Support",
@@ -98,7 +98,7 @@
     "dialog": {
       "title": "Leave feedback",
       "description": "Tell us what is working and what is not.",
-      "typeLabel": "Type",
+      "typeLabel": "Loại",
       "typePlaceholder": "Choose a type",
       "types": {
         "bug": "Something is broken",
@@ -173,7 +173,7 @@
     "connectionValiditySection": "Connection Validity",
     "connectionLabel": "Connection #{id}",
     "step2Full": "If any accounts remain listed below after reconnection, go to each account and manually {unlink} then {link} again.",
-    "unlinkAction": "Unlink",
+    "unlinkAction": "Gỡ liên kết",
     "linkAction": "Link"
   },
   "pages": {

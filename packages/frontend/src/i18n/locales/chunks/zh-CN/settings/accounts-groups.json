@@ -2,31 +2,31 @@
   "settings": {
     "accountGroups": {
       "page": {
-        "title": "Account groups",
-        "description": "Organize accounts into groups. Bank connections create and manage their own groups automatically.",
-        "addButton": "Add group"
+        "title": "账户组",
+        "description": "将账户整理成群组。银行链接会自动创建和管理群组。",
+        "addButton": "新增群组"
       },
       "empty": {
-        "title": "No account groups yet",
-        "description": "Group accounts by bank, currency or purpose to keep your accounts list tidy."
+        "title": "尚无账户组",
+        "description": "按银行、货币或用途对帐户分组，让您的帐户列表整洁有序。"
       },
       "loadError": {
-        "title": "Couldn't load your groups",
-        "description": "Something went wrong while fetching your account groups. Check your connection and try again.",
-        "retry": "Try again"
+        "title": "无法加载群组",
+        "description": "加载账户组时出现问题。请检查您的网络连接后重试。",
+        "retry": "重试"
       },
       "row": {
-        "bankBadge": "Created by bank connection",
-        "bankBadgeShort": "Connection",
-        "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
-        "accountsCount": "{count} account | {count} accounts",
-        "noAccounts": "No accounts",
+        "bankBadge": "由银行链接创建",
+        "bankBadgeShort": "链接",
+        "bankBadgeTooltip": "此分组是在您连接银行时自动创建的，但它并不代表银行链接本身。您可以自由重命名、移动账户或删除分组，账户仍会继续同步，不受影响。",
+        "accountsCount": "{count} 个账号 | {count} 个账号",
+        "noAccounts": "无账户",
         "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
         "inParent": "in {name}",
         "manageConnection": "Manage connection"
       },
       "update": {
-        "label": "分组名",
+        "label": "组名",
         "placeholder": "Enter group name",
         "saveButton": "Save",
         "emptyNameError": "Group name can't be empty"

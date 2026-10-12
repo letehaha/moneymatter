@@ -120,7 +120,13 @@
       "categoryTracker": {
         "title": "Sledované kategórie",
         "addCategory": "Pridať kategóriu",
-        "selectCategories": "Vybrať kategórie"
+        "selectCategories": "Vybrať kategórie",
+        "sort": {
+          "title": "Zoradiť podľa",
+          "custom": "Vlastné poradie",
+          "spendDesc": "Najvyššie výdavky prvé",
+          "spendAsc": "Najnižšie výdavky prvé"
+        }
       },
       "cashFlow": {
         "title": "Peňažný tok",
@@ -131,7 +137,10 @@
         "expenses": "Výdavky",
         "saved": "Ušetrené",
         "previousPeriodsTrend": "Trend predchádzajúcich období",
-        "viewDetails": "Zobraziť podrobnosti"
+        "viewDetails": "Zobraziť podrobnosti",
+        "savingsRateLine": "Zobraziť krivku miery úspor",
+        "savingsRate": "Miera úspor",
+        "noIncome": "žiadny príjem"
       },
       "netWorth": {
         "title": "Čistá hodnota majetku",
@@ -172,6 +181,39 @@
         "projectedBy": "Predpokladané do {date}",
         "upcoming": "Nadchádzajúce · {count}",
         "loadFailed": "Plánované transakcie sa nepodarilo načítať"
+      },
+      "taxes": {
+        "title": "Priemerná daňová sadzba",
+        "description": "Výdavky vo vašich daňových kategóriách ako podiel z príjmu, spriemerovaný za obdobie zvolené v nastaveniach widgetu. Stĺpce zobrazujú posledných 12 mesiacov.",
+        "ofIncome": "z príjmu",
+        "vsTrailingRate": "{delta} p. b. oproti 12-mesačnej sadzbe {rate}",
+        "average": "priem. {amount}",
+        "amount": "Dane",
+        "shareOfIncome": "Podiel na príjmoch",
+        "shareOfTaxes": "Podiel daní",
+        "other": "Ostatné",
+        "moreCategories": "{count} ďalších",
+        "viewDetails": "Zobraziť peňažný tok",
+        "loadFailed": "Daňové údaje sa nepodarilo načítať.",
+        "noCategories": {
+          "title": "Zatiaľ žiadne daňové kategórie",
+          "description": "Vyberte, ktoré kategórie sa počítajú ako dane, a zobrazí sa vám daňová sadzba.",
+          "action": "Vyberte kategórie"
+        },
+        "config": {
+          "months": {
+            "label": "Obdobie na spriemerovanie",
+            "saveError": "Obdobie na spriemerovanie sa nepodarilo uložiť. Skúste to znova.",
+            "m3": "3 mes.",
+            "m6": "6 mes.",
+            "m12": "12 mes."
+          }
+        },
+        "lastMonths": {
+          "m3": "Posledné 3 mesiace",
+          "m6": "Posledných 6 mesiacov",
+          "m12": "Posledných 12 mesiacov"
+        }
       },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
       "registry": {
@@ -214,6 +256,10 @@
         "fireProgress": {
           "name": "Priebeh FIRE",
           "description": "Ako blízko ste k finančnej nezávislosti"
+        },
+        "taxes": {
+          "name": "Priemerná daňová sadzba",
+          "description": "Podiel príjmu zaplatený na daniach, s 12-mesačným trendom"
         }
       }
     },
@@ -263,7 +309,10 @@
         "tagsStyleTitle": "Štítky",
         "tagsStyleNames": "Názvy",
         "tagsStyleBars": "Pruhy",
-        "tagsStyleSaveError": "Štýl štítkov sa nepodarilo uložiť. Skúste to znova, prosím."
+        "tagsStyleSaveError": "Štýl štítkov sa nepodarilo uložiť. Skúste to znova, prosím.",
+        "showAccountTitle": "Účet",
+        "showAccountDescription": "Zobraziť logo účtu pri každej transakcii",
+        "showAccountSaveError": "Nastavenie účtu sa nepodarilo uložiť. Skúste to znova, prosím."
       },
       "overdueBadge": "Po splatnosti",
       "scheduledBadge": "Naplánované",

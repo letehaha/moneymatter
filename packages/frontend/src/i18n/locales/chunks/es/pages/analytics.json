@@ -61,6 +61,7 @@
         "totalIncome": "Ingreso total",
         "incomePlusDeficit": "Ingreso + déficit",
         "savings": "Ahorro",
+        "taxes": "Impuestos",
         "deficit": "Déficit",
         "other": "Otro",
         "noData": "No se registraron transacciones para este período",
@@ -160,13 +161,13 @@
       "hideInputs": "Ocultar",
       "portfolioReturnOption": "{name} (su ~{rate}%/año)",
       "portfolioNoHistoryOption": "{name} — historial insuficiente",
-      "presetReturnOption": "{label} (~{rate}%/yr)",
+      "presetReturnOption": "{label} (~{rate}%/año)",
       "rangeMin": "Mín.",
       "rangeMax": "Máx.",
       "indicators": {
-        "worldStock": "Total World Stock",
-        "usTreasury": "US Treasury Bonds",
-        "corporateBonds": "Corporate Bonds"
+        "worldStock": "Stock total mundial",
+        "usTreasury": "Bonos de Tesorería de Estados Unidos",
+        "corporateBonds": "Bonos corporativos"
       }
     },
     "portfolioFilter": {
@@ -177,198 +178,198 @@
       "noResults": "Ninguna cartera coincide con su búsqueda"
     },
     "fire": {
-      "subtitle": "When your savings could cover your spending for good",
-      "planLink": "Plan for FIRE",
-      "addToDashboard": "Add to dashboard",
-      "addedToDashboard": "FIRE progress added to your dashboard",
-      "addToDashboardFailed": "Couldn't add the widget. Try again.",
-      "saveFailed": "Couldn't save your FIRE assumptions. Try again to keep your changes.",
-      "loading": "Loading FIRE plan",
-      "loadFailed": "Couldn't load the data for your FIRE plan.",
-      "adjustAssumptions": "Adjust assumptions",
-      "disclaimer": "Projections use historical market averages and your recent spending. They are estimates, not advice. Returns will vary.",
+      "subtitle": "Cuando tus ahorros podrían cubrir tus gastos para siempre",
+      "planLink": "Plan para FIRE",
+      "addToDashboard": "Agregar al dashboard",
+      "addedToDashboard": "Progreso de FIRE añadido al panel de control",
+      "addToDashboardFailed": "No se pudo agregar el widget. Vuelve a intentarlo.",
+      "saveFailed": "No se han podido guardar los supuestos de FIRE. Inténtalo de nuevo para mantener los cambios.",
+      "loading": "Cargando plan de FIRE",
+      "loadFailed": "No se han podido cargar los datos de su plan FIRE.",
+      "adjustAssumptions": "Ajustar supuestos",
+      "disclaimer": "Las proyecciones utilizan promedios históricos del mercado y su gasto reciente. Son estimaciones, no consejos. Las devoluciones variarán.",
       "callouts": {
-        "contributionClamped": "You spent more than you earned over the last 12 months, so the projection assumes no new savings.",
-        "enterContribution": "Enter a contribution",
-        "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
-        "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
-        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to World stocks.",
-        "customMissing": "Enter a custom return. Until then, the plan uses World stocks.",
-        "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
-        "hide": "Hide warning",
-        "hideTitle": "Hide this warning?",
-        "hideDescription": "It comes back the next time you open the planner.",
-        "dontShowAgain": "Don't show again",
+        "contributionClamped": "Has gastado más de lo que has ganado en los últimos 12 meses, por lo que la proyección no supone nuevos ahorros.",
+        "enterContribution": "Ingrese una contribución",
+        "returnBelowInflation": "Tu supuesto de retorno no supera la inflación ({real} real), así que el balance se reduce en el dinero de hoy.",
+        "portfolioShortHistory": "El retorno de tu portafolio se basa en solo {years} años. Rara vez se repite el historial corto o de bolso. Considera un ajuste del mercado.",
+        "portfolioUnavailable": "El portafolio que utiliza este plan ha desaparecido o tiene poca historia. Volver a las acciones mundiales.",
+        "customMissing": "Introduzca una devolución personalizada. Hasta entonces, el plan utiliza existencias mundiales.",
+        "historyDegraded": "Algunas existencias se valoran a costo, o falta un tipo de cambio. Su saldo puede subestirarse hasta que los precios se sincronicen.",
+        "hide": "Ocultar advertencias",
+        "hideTitle": "¿Ocultar esta advertencia?",
+        "hideDescription": "Regresa la próxima vez que abra el planificador.",
+        "dontShowAgain": "No mostrar de nuevo",
         "hideConfirm": "Ocultar"
       },
       "assumptions": {
         "title": "Supuestos",
-        "spendingLabel": "Yearly spending in retirement",
-        "spendingPlaceholder": "e.g. 40000",
-        "requiredBadge": "Required",
-        "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
-        "backToAuto": "Back to Auto ({amount})",
-        "excludedLabel": "Not counted as spending",
+        "spendingLabel": "Gastos anuales en jubilación",
+        "spendingPlaceholder": "Ej.: 40000",
+        "requiredBadge": "Obligatorio",
+        "autoSpendingHint": "Promedio del último mes completo {n} × 12, solo las cuentas que posees y las categorías de ahorro excluidas. Mes típico: {typical}. Incluye préstamos y pagos de hipoteca. | Promedio de los últimos {n} meses completos × 12, sólo las cuentas que usted posee, las transferencias y categorías de ahorro excluidos. Mes típico: {typical}. Incluye préstamos y pagos de mortalidad.",
+        "backToAuto": "Regresar a Auto ({amount})",
+        "excludedLabel": "No contabilizar como gasto",
         "excludedPlaceholder": "Excluir categorías",
-        "savingsNote": "Savings categories are excluded too. {link}",
+        "savingsNote": "Las categorías de ahorro también están excluidas. {link}",
         "savingsNoteLink": "Editar",
         "contributionLabel": "Aportación mensual",
-        "contributionPlaceholder": "e.g. 1500",
-        "autoContributionHint": "Average net flow over the same {n} month. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return). | Average net flow over the same {n} months. Deposits made straight into a portfolio aren't in cash flow, so add them here. Dividends paid to a bank account count twice (income and return).",
-        "savingsRate": "You save {pct} of your income",
-        "countsTitle": "What counts toward FIRE",
-        "countsCash": "Cash & bank accounts",
-        "countsPortfolios": "Investment portfolios",
+        "contributionPlaceholder": "Ej.: 1500",
+        "autoContributionHint": "El flujo neto promedio a lo largo del mismo {n} mes. Los depósitos realizados directamente a un portafolio no están en el flujo de efectivo, así que añádelos aquí. Dividendas pagadas a una cuenta bancaria dos veces (ingresos y devolución). | Un flujo neto promedio a lo largo de los mismos {n} meses. Los depósitos realizados directamente en un portafolio no están en flujo de efectivo, así que añádelos aquí. Dividendas pagadas a una cuenta bancaria dos veces (ingresos y devolución).",
+        "savingsRate": "Ahorras {pct} de tus ingresos",
+        "countsTitle": "Qué cuenta para FIRE",
+        "countsCash": "Cuentas bancarias y en efectivo",
+        "countsPortfolios": "Carteras de inversión",
         "countsVentures": "Ventures",
         "countsVehicles": "Vehículos",
         "countsLoans": "Préstamos",
-        "countsHint": "Cash and portfolios always count. Loan payments already count as spending, so loans are off by default.",
-        "archivedNote": "{count} archived account excluded from stats still holds {amount}. {link} | {count} archived accounts excluded from stats still hold {amount}. {link}",
+        "countsHint": "El efectivo y las carteras siempre se contabilizan. Los pagos de préstamos ya se consideran gastos, por lo que los préstamos están excluidos por defecto.",
+        "archivedNote": "Cuenta archivada de {count} excluido de estadísticas todavía tiene {amount}. {link} | Cuentas archivadas de {count} excluidas de estadísticas todavía mantienen {amount}. {link}",
         "archivedNoteLink": "Revisar",
-        "presetLabel": "{label} · ≈{real} real ({nominal} nominal, {inflation} US inflation)",
-        "inflationLabel": "Inflation",
-        "inflationBuiltIn": "{pct}% · built into this preset",
-        "inflationBuiltInHint": "Market presets are US and global nominal returns, so they come with US inflation. Pairing them with your local inflation would give misleading numbers. Pick a custom return or your portfolio to set inflation yourself.",
-        "withdrawalLabel": "Withdrawal rate",
+        "presetLabel": "{label} ·{real} real ({nominal} nominal, {inflation} inflación estadounidense)",
+        "inflationLabel": "Inflación",
+        "inflationBuiltIn": "{pct}% · incorporado en este ajuste",
+        "inflationBuiltInHint": "Los ajustes preestablecidos del mercado son rendimientos nominales globales y estadounidenses, por lo que vienen con inflación estadounidense. Emparejarlos con tu inflación local daría números engañosos. Elige un retorno personalizado o tu cartera para establecer la inflación tú mismo.",
+        "withdrawalLabel": "Tasa de retiro",
         "withdrawalCustom": "Personalizado",
-        "withdrawalPlaceholder": "e.g. 3.8",
-        "withdrawalHint": "The share of your savings you withdraw each year. A higher rate means a smaller FIRE number but a bigger risk of running out. The 4% rule comes from US data for 30-year retirements.",
+        "withdrawalPlaceholder": "Ej.: 3.8",
+        "withdrawalHint": "La parte de sus ahorros que usted retira cada año. Una tarifa más alta significa un número de FIRE más pequeño pero un mayor riesgo de agotarse. La regla del 4% proviene de datos estadounidenses para jubilaciones de 30 años.",
         "more": "Más",
-        "moreSummary": "Lean {lean}× · Fat {fat}× · coast at {age}",
-        "leanLabel": "Lean FIRE multiplier",
-        "leanPlaceholder": "e.g. 0.7",
-        "fatLabel": "Fat FIRE multiplier",
-        "fatPlaceholder": "e.g. 1.5",
-        "baristaLabel": "Part-time income per month",
-        "baristaPlaceholder": "e.g. 1000",
-        "birthYearLabel": "Birth year",
-        "birthYearPlaceholder": "e.g. 1990",
-        "coastAgeLabel": "Coast FIRE target age",
-        "coastAgePlaceholder": "e.g. 65"
+        "moreSummary": "Lean {lean}× · Fat {fat}× · Coast en {age}",
+        "leanLabel": "Multiplicador de Lean FIRE",
+        "leanPlaceholder": "Ej.: 0.7",
+        "fatLabel": "Multiplicador de Fast FIRE",
+        "fatPlaceholder": "Ej.: 1.5",
+        "baristaLabel": "Ingresos a tiempo parcial por mes",
+        "baristaPlaceholder": "Ej.: 1000",
+        "birthYearLabel": "Fecha Nacim.",
+        "birthYearPlaceholder": "Ej.: 1990",
+        "coastAgeLabel": "Edad objetivo de Coast FIRE",
+        "coastAgePlaceholder": "Ej.: 65"
       },
       "auto": "Auto",
-      "perYear": "{amount}/yr",
-      "perMonth": "{amount}/mo",
-      "notWithinHorizon": "not within 50 yrs",
+      "perYear": "{amount}/año",
+      "perMonth": "{amount}/mes",
+      "notWithinHorizon": "no dentro de los 50 años",
       "hero": {
-        "timeTo": "Time to {type}",
-        "unitYears": "{n} yrs | {n} yr | {n} yrs",
-        "unitMonths": "{n} mos | {n} mo | {n} mos",
-        "atAge": "at age {age}",
-        "alwaysCounted": "Always counted",
-        "range": "{earliest} to {latest} if returns run 2 points higher or lower",
-        "rangeOpen": "{earliest} to after {year} if returns run 2 points higher or lower",
+        "timeTo": "Tiempo hasta {type}",
+        "unitYears": "{n} años | {n} año | {n} años",
+        "unitMonths": "{n} meses | {n} mes | {n} meses",
+        "atAge": "a la edad de {age}",
+        "alwaysCounted": "Siempre contabilizado",
+        "range": "{earliest} a {latest} si devuelve 2 puntos más o menos",
+        "rangeOpen": "{earliest} para después de {year} si devuelve 2 puntos más o menos",
         "basedOn": {
-          "spending": "Spending: {amount}",
-          "saving": "Saving: {amount}",
-          "counting": "Counting: {buckets}"
+          "spending": "Gastado: {amount}",
+          "saving": "Ahorrar: {amount}",
+          "counting": "Contando: {buckets}"
         },
         "reached": {
-          "eyebrowFor": "{type} reached",
-          "title": "You're financially independent",
-          "supports": "Your money supports {amount}/mo",
-          "pctOfSpending": "{pct}% of your spending · at {rate}% withdrawal",
-          "yearsCovered": "Less than a year of spending covered | 1 year of spending covered | {n} years of spending covered",
-          "drawdown": "You're drawing down about {amount}/mo.",
-          "noNewSavings": "Projections assume no new savings."
+          "eyebrowFor": "{type} alcanzado",
+          "title": "Eres independiente financieramente",
+          "supports": "Tu dinero soporta {amount}/mes",
+          "pctOfSpending": "{pct}% de tus gastos · a {rate}% de retirada",
+          "yearsCovered": "Menos de un año de gasto cubierto | 1 año de gasto cubierto | {n} años de gasto cubiertos",
+          "drawdown": "Estás dibujando sobre {amount}/mes.",
+          "noNewSavings": "Las proyecciones no suponen nuevos ahorros."
         },
         "unreachable": {
-          "title": "Not reachable at current savings",
-          "noSavingsTitle": "No new savings.",
-          "noSavingsClamped": "You spent more than you earned over the last 12 months, so the contribution is set to 0.",
-          "noSavings": "Your monthly contribution is 0 or less.",
-          "enterContribution": "Enter a contribution",
-          "lowReturnTitle": "Return doesn't beat inflation.",
-          "lowReturn": "The balance shrinks in today's money.",
-          "tooSlow": "At this pace it takes more than 50 years.",
-          "whatItTakes": "What it would take",
-          "whatItTakesDetail": "to reach {target} in {duration} at the current return."
+          "title": "No se puede alcanzar con ahorros actuales",
+          "noSavingsTitle": "No hay nuevos ahorros.",
+          "noSavingsClamped": "Has gastado más de lo que has ganado en los últimos 12 meses, por lo que la proyección no supone nuevos ahorros.",
+          "noSavings": "Tu contribución mensual es 0 o menos.",
+          "enterContribution": "Ingrese una contribución",
+          "lowReturnTitle": "El retorno no supera la inflación.",
+          "lowReturn": "El equilibrio se contrae en el dinero de hoy.",
+          "tooSlow": "A este ritmo tarda más de 50 años.",
+          "whatItTakes": "Lo que tomaría",
+          "whatItTakesDetail": "para llegar a {target} en {duration} en la devolución actual."
         }
       },
       "progress": {
-        "progressTo": "Progress to {type}",
-        "amountOfTarget": "{balance} of {target}",
-        "next": "Next: {goal} · {date}",
-        "nextGoal": "{goal} in {duration}",
-        "nextUnreachable": "Next: {goal} · not reached at these numbers",
-        "targetReached": "FIRE target reached",
-        "supportsToday": "Supports {amount}/mo today",
-        "negativeNetWorth": "Net worth is below zero. Your contributions pay down the gap first, then grow."
+        "progressTo": "Progreso de {type}",
+        "amountOfTarget": "{balance} de {target}",
+        "next": "Siguiente: {goal} · {date}",
+        "nextGoal": "{goal} en {duration}",
+        "nextUnreachable": "Siguiente: {goal} · no se alcanza en estos números",
+        "targetReached": "Objetivo FIRE alcanzado",
+        "supportsToday": "Soporta {amount}/mes hoy",
+        "negativeNetWorth": "El valor neto está por debajo de cero. Sus contribuciones pagan primero el desfase y luego crecen."
       },
       "chips": {
         "lean": {
           "name": "Lean FIRE",
-          "description": "{pct}% of your spending"
+          "description": "{pct}% de tus gastos"
         },
         "regular": {
           "name": "Regular FIRE",
-          "description": "current lifestyle"
+          "description": "estilo de vida actual"
         },
         "fat": {
           "name": "Fat FIRE",
-          "description": "{pct}% of your spending"
+          "description": "{pct}% de tus gastos"
         },
         "barista": {
           "name": "Barista FIRE",
-          "description": "part-time income covers part",
-          "withIncome": "with {amount}/mo part-time"
+          "description": "ingresos a tiempo parcial por mes",
+          "withIncome": "con {amount}/mes a tiempo parcial"
         },
         "coast": {
           "name": "Coast FIRE",
-          "description": "needed today to retire at {age}",
-          "needsBirthYear": "needs your birth year",
-          "pastAge": "you're past your coast age of {age}",
-          "notMeaningful": "growth alone can't get there at 0% real return or less"
+          "description": "necesario hoy para jubilarse en {age}",
+          "needsBirthYear": "necesita tu año de nacimiento",
+          "pastAge": "has pasado la edad de tu coast de {age}",
+          "notMeaningful": "el crecimiento por sí solo no puede llegar al 0% de retorno real o menos"
         },
         "others": "Otros",
-        "nextGoal": "{name} · next",
-        "eta": "in {duration}",
-        "growthOnly": "growth only",
+        "nextGoal": "{name} · siguiente",
+        "eta": "en {duration}",
+        "growthOnly": "solo crecimiento",
         "reached": "Alcanzado",
-        "reachedCoast": "Reached · saving is optional now",
-        "reachedBaristaCovers": "Part-time income covers your spending",
+        "reachedCoast": "Alcanzado · guardar es opcional ahora",
+        "reachedBaristaCovers": "Los ingresos a tiempo parcial cubren sus gastos",
         "actions": {
-          "enterSpending": "enter spending first",
-          "changeCoastAge": "Change coast age",
-          "changeReturn": "Change return",
-          "addPartTimeIncome": "Add part-time income",
-          "addBirthYear": "Add birth year"
+          "enterSpending": "introducir gasto primero",
+          "changeCoastAge": "Cambiar edad de Coast",
+          "changeReturn": "Cambiar retorno",
+          "addPartTimeIncome": "Añadir ingreso a tiempo parcial",
+          "addBirthYear": "Añadir año de nacimiento"
         }
       },
       "chart": {
-        "ariaLabel": "Net worth history and projected path to your FIRE number",
+        "ariaLabel": "Historial de valor neto y ruta proyectada a su número de FIRE",
         "actual": "Actual",
-        "projected": "Projected",
-        "range": "±2 pts return",
+        "projected": "Proyectado",
+        "range": "±2 pts de retorno",
         "today": "Hoy",
         "typeTarget": "{type} · {amount}",
         "typeLabel": "{type} · {date}"
       },
       "milestones": {
         "reached": "Alcanzado",
-        "reachedOn": "Reached {date}",
-        "eta": "in {duration} · {date}"
+        "reachedOn": "Alcanzo {date}",
+        "eta": "en {duration} · {date}"
       },
       "empty": {
         "noData": {
-          "title": "Plan your path to financial independence",
-          "description": "This page fills in from your accounts and transactions. Nothing is tracked yet, so start with your yearly spending. Once you add accounts, the plan switches to live figures."
+          "title": "Planifique su camino hacia la independencia financiera",
+          "description": "Esta página rellena tus cuentas y transacciones. Nada se rastrea todavía, así que empieza con tu gasto anual. Una vez que añade cuentas, el plan cambia a cifras en vivo."
         },
         "shortHistory": {
-          "title": "No full months of transactions yet | Only 1 full month of transactions | Only {n} full months of transactions",
-          "description": "Spending can't be worked out yet. It switches to Auto after 3 full months. Until then, enter it by hand."
+          "title": "No hay meses completos de transacciones aún | Solo 1 mes completo de transacciones | Solo {n} meses completos de transacciones",
+          "description": "El gasto no se puede calcular todavía. Cambia a Auto después de 3 meses completos. Hasta entonces, ingresa a mano."
         },
         "noSpending": {
-          "title": "No spending recorded yet",
-          "description": "Your recent months have no expenses we can use. Enter your yearly spending to see your plan."
+          "title": "Aún no hay gastos registrados",
+          "description": "Sus últimos meses no tienen ningún gasto que podamos utilizar. Introduzca su gasto anual para ver su plan."
         },
-        "enterSpending": "Enter spending",
-        "addAccount": "Add an account"
+        "enterSpending": "Ingresar gastos",
+        "addAccount": "Añadir una cuenta"
       },
       "trial": {
-        "daysLeft": "FIRE planner trial · {n} day left | FIRE planner trial · {n} days left",
-        "ended": "Your 14-day FIRE planner trial has ended. Upgrade to Plus to keep planning your path to FIRE.",
-        "startFailed": "Couldn't start the FIRE planner trial. Reload the page to try again."
+        "daysLeft": "Prueba de planificador FIRE · {n} día restante | FIRE prueba de planificador · {n} días restantes",
+        "ended": "Su prueba de planificador de 14 días ha terminado. Actualice a Plus para seguir planificando su camino a FIRE.",
+        "startFailed": "No se pudo iniciar la prueba del planificador de FIRE. Recarga la página para intentarlo de nuevo."
       }
     }
   },

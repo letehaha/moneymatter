@@ -17,7 +17,7 @@
       "viewTransactions": "Transaktionen anzeigen",
       "viewAnalytics": "Analysen anzeigen",
       "saving": "Speichern...",
-      "saveChanges": "Änderungen speichern",
+      "saveChanges": "Speichern",
       "done": "Fertig",
       "failed": "Fehlgeschlagen",
       "viewAll": "Alle anzeigen",
@@ -161,7 +161,7 @@
         }
       }
     },
-    "outOfWallet": "Aus eigener Tasche",
+    "outOfWallet": "Extern",
     "dateSelector": {
       "dialogTitle": "Datumsbereich",
       "dueDate": "Fälligkeitsdatum",
@@ -286,6 +286,7 @@
     }
   },
   "validation": {
+    "required": "Dieses Feld ist erforderlich",
     "minLength": "Mindestlänge beträgt {length}.",
     "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein.",
     "passwordsNoMatch": "Passwörter stimmen nicht überein"

@@ -30,15 +30,15 @@
       "deleteAndIgnore": "Eliminar e ignorar"
     },
     "bulk": {
-      "select": "Select",
+      "select": "Seleccionar",
       "selectedCount": "{count} seleccionadas",
       "clearSelection": "Limpiar selección",
-      "selectAll": "Select all loaded payees",
-      "selectRow": "Select {name}",
-      "deleteTitle": "Delete {count} payee? | Delete {count} payees?",
-      "deleteDescription": "Their transactions stay, but lose the payee link. This can't be undone.",
-      "deleteAndIgnoreTitle": "Delete and ignore {count} payee? | Delete and ignore {count} payees?",
-      "deleteAndIgnoreDescription": "Their names go on the ignored list, so imports and bank syncs won't recreate them. Their transactions stay, but lose the payee link."
+      "selectAll": "Seleccionar todos los beneficiarios cargados",
+      "selectRow": "Seleccionar {name}",
+      "deleteTitle": "¿Eliminar {count} beneficiario? | ¿Eliminar {count} beneficiarios?",
+      "deleteDescription": "Las transacciones vinculadas conservan su categoría pero pierden el vínculo con el beneficiario. Esta acción no se puede deshacer.",
+      "deleteAndIgnoreTitle": "¿Eliminar e ignorar {count} beneficiario? | ¿Eliminar e ignorar a los {count} beneficiarios?",
+      "deleteAndIgnoreDescription": "Sus nombres aparecen en la lista ignorada, por lo que las importaciones y las sincronizaciones bancarias no los recrearán. Sus transacciones permanecen, pero pierden el enlace del beneficiario."
     },
     "emptyState": {
       "title": "Aún no hay beneficiarios",
@@ -123,8 +123,8 @@
       "aliasAdded": "Alias añadido",
       "deletedAndIgnored": "Beneficiario eliminado y añadido a la lista de nombres ignorados",
       "tagsAppliedToExisting": "Etiquetas aplicadas a {count} transacciones",
-      "bulkDeleted": "Deleted {count} payee | Deleted {count} payees",
-      "bulkDeletedAndIgnored": "Deleted and ignored {count} payee | Deleted and ignored {count} payees"
+      "bulkDeleted": "Beneficiario {count} eliminado | Beneficiarios {count} eliminados",
+      "bulkDeletedAndIgnored": "Borrado e ignorado {count} beneficiario | Borrados e ignorados {count} beneficiarios"
     },
     "errors": {
       "collision": "Ya existe un beneficiario con este nombre. Combínelos en su lugar.",
@@ -177,6 +177,6 @@
       "forceConfirm": "Eliminar beneficiario e ignorar"
     },
     "loadingMore": "Cargando más…",
-    "txCount": "{count} tx"
+    "txCount": "{count} más"
   }
 }

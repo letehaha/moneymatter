@@ -31,6 +31,12 @@
         "successNotification": "Spar-Kategorien aktualisiert",
         "errorNotification": "Spar-Kategorien konnten nicht aktualisiert werden"
       },
+      "taxCategories": {
+        "label": "Steuerkategorien",
+        "description": "Ausgaben in diesen Kategorien werden im Geldfluss-Diagramm als Steuern statt als Ausgabe angezeigt. Unterkategorien sind enthalten.",
+        "successNotification": "Steuerkategorien aktualisiert",
+        "errorNotification": "Steuerkategorien konnten nicht aktualisiert werden"
+      },
       "accountDropdowns": {
         "defaultAccount": {
           "label": "Standardkonto",

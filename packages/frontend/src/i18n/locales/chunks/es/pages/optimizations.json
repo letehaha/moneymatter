@@ -17,8 +17,8 @@
         "description": "Elige una de tus automatizaciones y ejecútalas sobre las transacciones que ya tienes."
       },
       "reconciliation": {
-        "title": "Reconciliation",
-        "description": "Merge duplicate bank transactions, remove wrong ones, and resolve pending transactions the bank never booked."
+        "title": "Reconciliación",
+        "description": "Combinar las transacciones bancarias duplicadas, eliminar las erróneas y resolver las transacciones pendientes que el banco nunca ha reservado."
       }
     },
     "aiCategorization": {
@@ -137,14 +137,14 @@
       }
     },
     "reconciliation": {
-      "title": "Transactions reconciliation",
+      "title": "Conciliación de transacciones",
       "tabs": {
         "transactions": "Transacciones",
-        "stuckPending": "Stuck pending",
+        "stuckPending": "Pendiente",
         "history": "Historial"
       },
       "table": {
-        "hint": "Select bank transactions to merge duplicates or remove extras"
+        "hint": "Seleccione transacciones bancarias para fusionar duplicados o eliminar extras"
       },
       "actions": {
         "merge": "Combinar",
@@ -152,105 +152,105 @@
       },
       "blockReasons": {
         "header": {
-          "merge": "Can't merge for {count} reasons:",
-          "remove": "Can't remove for {count} reasons:"
+          "merge": "No se puede combinar por {count} razones:",
+          "remove": "No se puede eliminar por {count} razones:"
         },
-        "notBankConnected": "Only bank-connected transactions can be reconciled.",
-        "planned": "Planned transactions can't be reconciled.",
-        "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
-        "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
-        "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
-        "differentAccounts": "All transactions must belong to the same account."
+        "notBankConnected": "Sólo las transacciones conectadas con el banco pueden ser fusionadas o eliminadas.",
+        "planned": "Las transacciones planeadas no pueden ser fusionadas o eliminadas.",
+        "linkedTransfer": "Las transferencias vinculadas no pueden ser fusionadas o eliminadas. Desvincule la transferencia primero.",
+        "refundLinked": "Las transacciones vinculadas con reembolsos no pueden ser fusionadas o eliminadas. Desvincule el reembolso primero.",
+        "tooFew": "Seleccione al menos 2 transacciones para fusionar.",
+        "tooMany": "Demasiadas transacciones seleccionadas (combinación: hasta {mergeMax}, eliminar: hasta {removeMax}).",
+        "differentAccounts": "Todas las transacciones deben pertenecer a la misma cuenta."
       },
       "merge": {
-        "title": "Merge transactions",
-        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
+        "title": "Combinar transacciones",
+        "description": "Escoja la transacción a guardar. Los demás son eliminados y pueden ser restaurados del historial.",
         "fields": {
           "payee": "Beneficiario",
-          "status": "Status",
-          "time": "Time"
+          "status": "Estado",
+          "time": "Tiempo"
         },
         "status": {
           "pending": "Pendiente",
-          "booked": "Booked"
+          "booked": "Reservado"
         },
-        "keep": "Keep",
+        "keep": "Mantener",
         "remove": "Eliminar",
-        "sameInAll": "Same in all:",
-        "confirm": "Merge and remove {count} | Merge and remove {count}"
+        "sameInAll": "Lo mismo en todo:",
+        "confirm": "Fusionar y eliminar {count} | Fusionar y quitar {count}"
       },
       "remove": {
-        "title": "Remove {count} transaction? | Remove {count} transactions?",
-        "description": "Removed transactions stop counting toward balances and stats. Budget, group and subscription links are detached. You can restore them from History, but the links won't come back.",
+        "title": "Importar {count} transacción | Importar {count} transacciones?",
+        "description": "Las transacciones eliminadas dejan de contar hacia saldos y estadísticas. Los enlaces de presupuesto, grupo y suscripción se desprenden. Puede restaurarlos desde el historial, pero los enlaces no volverán.",
         "confirm": "Eliminar"
       },
       "restoreDialog": {
-        "title": "Restore {count} transaction? | Restore {count} transactions?",
-        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
+        "title": "¿Restaurar {count}  transacción? | ¿Restaurar las {count} transacciones?",
+        "description": "Las transacciones restauradas cuentan para saldos y estadísticas de nuevo. Si fueron fusionadas, la transacción guardada se queda, así que puede ver duplicados de nuevo. Los enlaces de grupo y de suscripción desconectados al eliminar no vuelven.",
         "confirm": "Restaurar"
       },
       "notifications": {
-        "removed": "Removed {count} transaction | Removed {count} transactions",
-        "merged": "Merged, removed {count} duplicate | Merged, removed {count} duplicates",
-        "restored": "Restored {count} transaction | Restored {count} transactions",
-        "keptAsBooked": "Marked as booked",
-        "checkedWithBank": "Checked with bank",
+        "removed": "Se eliminó {count} transacción | Se eliminaron {count} transacciones",
+        "merged": "Fusionado, eliminado {count} duplicado | Fusionado, eliminado {count} duplicados",
+        "restored": "Restaurada {count} transaccion | Restuarar {count} transacciones",
+        "keptAsBooked": "Marcado como reservado",
+        "checkedWithBank": "Verificado con banco",
         "unexpectedError": "Algo salió mal. Por favor, inténtelo de nuevo.",
         "bankCheck": {
-          "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
-          "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
-          "noneBooked": "Your bank hasn't booked any of them yet",
-          "stillPending": "{count} is still pending. | {count} are still pending.",
-          "someFailed": "Couldn't reach the bank for {count} account. | Couldn't reach the bank for {count} accounts."
+          "allBooked": "Tu banco ha reservado la transacción | Tu banco ha reservado todas las {count} transacciones",
+          "someBooked": "Tu banco ha reservado {count} transacción | Tu banco ha reservado {count} transacciones ",
+          "noneBooked": "Tu banco no ha reservado ninguno de ellos aún",
+          "stillPending": "{count} todavía está pendiente. | {count} todavía están pendientes.",
+          "someFailed": "No se pudo acceder al banco para la cuenta {count} . | No se pudo acceder al banco para cuentas {count}."
         }
       },
       "stuckPending": {
-        "loadError": "Couldn't load stuck pending transactions.",
-        "emptyTitle": "No stuck pending transactions",
-        "emptyDescription": "Pending transactions older than 7 days show up here so you can resolve them.",
-        "checkWithBank": "Check with bank",
-        "summaryTooOld": "{count} row is still pending after a week. It's too old to check with your bank. | {count} rows are still pending after a week. They're too old to check with your bank.",
-        "checking": "Checking with bank…",
-        "checkAgain": "Check again",
-        "keepAsBooked": "Keep as booked",
+        "loadError": "No se pudieron cargar las transacciones de esta ejecución.",
+        "emptyTitle": "No hay transacciones pendientes",
+        "emptyDescription": "Las transacciones pendientes de más de 7 días de antigüedad aparecen aquí para que puedas resolverlas.",
+        "checkWithBank": "Verificación con banco",
+        "summaryTooOld": "{count} fila todavía está pendiente después de una semana. Es demasiado viejo para comprobar con tu banco. | {count} filas todavía están pendientes después de una semana. Son demasiado viejas para comprobar con tu banco.",
+        "checking": "Comprobando con el banco…",
+        "checkAgain": "Comprobar de nuevo",
+        "keepAsBooked": "Mantener reservado",
         "header": {
-          "title": "{count} transaction stuck in pending | {count} transactions stuck in pending",
-          "description": "Pending for more than a week in {count} account. | Pending for more than a week in {count} accounts.",
-          "titleChecked": "{count} transaction still pending | {count} transactions still pending",
-          "descriptionChecked": "Checked with your bank. Decide what to do with each one."
+          "title": "Transacción {count} atascada en espera | {count} transacciones atascadas en espera",
+          "description": "Pendiente de más de una semana en la cuenta {count} . | Pendiente de más de una semana en cuentas {count}.",
+          "titleChecked": "{count} transaccion está pendiente | {count} transacciones están pendientes",
+          "descriptionChecked": "Verificado con su banco. Decida qué hacer con cada uno."
         },
-        "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
+        "checkFirstHint": "Primero chequee con su banco. Las transacciones que ha reservado desde entonces desaparecen de esta lista.",
         "columns": {
           "account": "Cuenta",
           "date": "Fecha",
           "category": "Categoría",
-          "pendingFor": "Pending for",
+          "pendingFor": "Pendiente por",
           "amount": "Importe",
-          "status": "Status",
+          "status": "Estado",
           "actions": "Acciones"
         },
-        "pendingDaysShort": "{count}d",
+        "pendingDaysShort": "{count} más",
         "status": {
-          "tooOld": "Too old to check",
-          "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
+          "tooOld": "Demasiado viejo para comprobar",
+          "tooOldHint": "Su banco sólo comparte alrededor de 90 días de historia, por lo que esta transacción no puede ser verificada. Manténgalo si el cargo ocurrió, eliminarlo si no lo hizo.",
           "duplicate": "Posible duplicado",
-          "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
-          "notFound": "Not found at bank",
-          "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
+          "duplicateHint": "Una transacción reservada del mismo beneficiario el {date} parece el mismo pago. Combínalos para mantener uno.",
+          "notFound": "No encontrado en el banco",
+          "notFoundHint": "Su banco no tiene una copia reservada de esta transacción, por lo que puede ser una reserva liberada. Manténgalo si el cargo ocurrió, eliminarlo si no lo hizo."
         }
       },
       "history": {
-        "loadError": "Couldn't load reconciliation history.",
-        "emptyTitle": "No reconciliation history yet",
-        "emptyDescription": "Merged and removed transactions appear here so you can restore them.",
+        "loadError": "No se pudo cargar el historial de reconciliación.",
+        "emptyTitle": "No hay historial de reconciliación todavía",
+        "emptyDescription": "Las transacciones fusionadas y eliminadas aparecen aquí para que puedas restaurarlas.",
         "type": {
-          "merge": "Merged",
-          "remove": "Removed"
+          "merge": "Fusionado",
+          "remove": "Eliminado"
         },
         "restore": "Restaurar",
-        "kept": "Kept",
-        "removedRows": "{count} removed transaction | {count} removed transactions"
+        "kept": "Guardado",
+        "removedRows": "{count} transacción eliminada | {count} transacciones eliminadas"
       }
     }
   }

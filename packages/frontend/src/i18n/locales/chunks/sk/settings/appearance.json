@@ -12,6 +12,10 @@
         "description": "Vyberte, ktoré sekcie sa majú zobrazovať v bočnom paneli.",
         "alwaysVisibleTooltip": "Táto sekcia je vždy viditeľná."
       },
+      "sidebarNav": {
+        "title": "Navigácia v bočnom paneli",
+        "description": "Vyberte stránky, ktoré sa majú zobrazovať pod položkou Účty v navigácii bočného panela."
+      },
       "header": {
         "title": "Hlavička",
         "description": "Vyberte, ktoré akcie sa budú zobrazovať v hlavičke.",

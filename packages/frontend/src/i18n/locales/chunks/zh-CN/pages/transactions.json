@@ -92,6 +92,7 @@
       "cancelSelection": "Cancel selection",
       "editButton": "编辑",
       "selectedCount": "{count} selected",
+      "matchingCount": "Total: {count}",
       "dialogTitle": "Edit {count} transactions",
       "dialogDescription": "Changes will be applied to all selected transactions. Only filled fields will be updated.",
       "categoryLabel": "Category",
@@ -228,9 +229,9 @@
       }
     },
     "bulkDelete": {
-      "button": "Delete",
+      "button": "删除",
       "externalTooltip": "Selection contains bank-synced transactions, which cannot be deleted.",
-      "confirmButton": "Delete",
+      "confirmButton": "删除",
       "confirmTitle": "Delete {count} transactions?",
       "confirmDescription": "This action cannot be undone. Transfers will have both sides removed.",
       "successMessage": "{count} transactions deleted",

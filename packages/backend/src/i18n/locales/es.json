@@ -2,7 +2,7 @@
   "common": {
     "processAlreadyLocked": "El proceso de sincronización para \"{{lockKey}}\" ya está bloqueado.",
     "serviceTemporarilyUnavailable": "Servicio no disponible temporalmente. Inténtelo de nuevo.",
-    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
+    "jobInterruptedByServerUpdate": "Una actualización del servidor interrumpió esto antes de que terminara, por lo que nada cambió."
   },
   "accounts": {
     "groupNotFound": "Grupo o cuenta no encontrados",
@@ -16,8 +16,8 @@
     "loanBalanceUseUpdateLoan": "Cambie el saldo pendiente de un préstamo desde su página de préstamo, no desde la configuración de la cuenta.",
     "loanCategoryImmutable": "La categoría de una cuenta de préstamo no se puede cambiar.",
     "dedicatedFlowCategoryNotAllowed": "Las cuentas de préstamos y vehículos deben crearse a través de sus puntos finales dedicados, no a través del punto final genérico de cuentas.",
-    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialBalanceOnlySystem": "El saldo inicial solo puede ser cambiado para cuentas manuales",
+    "initialAndCurrentBalanceTogether": "El saldo inicial y el saldo actual no pueden ser cambiados en la misma solicitud"
   },
   "balanceAdjustment": {
     "defaultNote": "Ajuste de saldo",
@@ -60,6 +60,7 @@
     "transactionIdNotExist": "¡La transacción con el `id` proporcionado no existe!",
     "notAuthorizedToEdit": "No está autorizado para editar esta transacción.",
     "cannotDeleteExternal": "No está permitido eliminar manualmente transacciones externas",
+    "bulkDeleteLimitExceeded": "Puede eliminar hasta 500 transacciones a la vez. Seleccione la selección y vuelva a intentarlo.",
     "unexpectedDeleteIssue": "Error inesperado al intentar eliminar la transacción",
     "linkSelfNotAllowed": "Intentando vincular la transacción consigo misma.",
     "linkSameTypeNotAllowed": "Intentando vincular con una transacción que tiene el mismo \"transactionType\".",
@@ -106,23 +107,23 @@
       "cannotReduceBelowRefunded": "Esta división tiene reembolsos por un total de {{refundsText}}. No puede reducirla por debajo del importe reembolsado. Para reducir más, primero desvincule los reembolsos."
     },
     "reconciliation": {
-      "systemNotAllowed": "Only bank-connected transactions can be merged or removed.",
-      "plannedNotAllowed": "Planned transactions can't be merged or removed.",
-      "transferNotAllowed": "Linked transfers can't be merged or removed. Unlink the transfer first.",
-      "refundNotAllowed": "Refund-linked transactions can't be merged or removed. Unlink the refund first.",
-      "survivorPending": "Pick the booked transaction as the one to keep. A pending survivor would stay stuck as pending.",
-      "survivorNotSelected": "The transaction to keep must be one of the selected transactions.",
-      "differentAccounts": "Only transactions from the same account can be merged.",
-      "budgetConflict": "The selected transactions belong to different budgets. Align their budgets before merging.",
-      "groupConflict": "The selected transactions belong to different transaction groups. Align their groups before merging.",
-      "subscriptionConflict": "The selected transactions are linked to different subscriptions. Align their subscriptions before merging.",
-      "accountDisconnected": "Can't restore: the account is no longer connected to the bank.",
-      "bankCheckUnsupported": "Checking with the bank is only available for Enable Banking accounts.",
-      "notPending": "Only pending transactions can be kept as booked.",
+      "systemNotAllowed": "Sólo las transacciones conectadas con el banco pueden ser fusionadas o eliminadas.",
+      "plannedNotAllowed": "Las transacciones planeadas no pueden ser fusionadas o eliminadas.",
+      "transferNotAllowed": "Las transferencias vinculadas no pueden ser fusionadas o eliminadas. Desvincule la transferencia primero.",
+      "refundNotAllowed": "Las transacciones vinculadas con reembolsos no pueden ser fusionadas o eliminadas. Desvincule el reembolso primero.",
+      "survivorPending": "Escoja la transacción reservada como la que desea mantener. Un superviviente pendiente permanecería atascado como pendiente.",
+      "survivorNotSelected": "La transacción a mantener debe ser una de las transacciones seleccionadas.",
+      "differentAccounts": "Solo transacciones de la misma cuenta pueden ser fusionadas.",
+      "budgetConflict": "Las transacciones seleccionadas pertenecen a diferentes presupuestos. Alinee sus presupuestos antes de fusionar.",
+      "groupConflict": "Las transacciones seleccionadas pertenecen a diferentes grupos de transacciones. Alinee sus grupos antes de fusionar.",
+      "subscriptionConflict": "Las transacciones seleccionadas están vinculadas a diferentes suscripciones. Alinee sus suscripciones antes de fusionar.",
+      "accountDisconnected": "No se puede restaurar: la cuenta ya no está conectada al banco.",
+      "bankCheckUnsupported": "Comprobar con el banco solo está disponible para cuentas de Enable Banking.",
+      "notPending": "Solo las transacciones pendientes pueden ser guardadas como reservadas.",
       "stuckPendingNotification": {
-        "title": "Some card payments haven't cleared",
-        "message_one": "1 transaction has been pending for over a week. Check it with your bank so your balance stays accurate.",
-        "message_other": "{{count}} transactions have been pending for over a week. Check them with your bank so your balance stays accurate."
+        "title": "Algunos pagos con tarjeta aún no se han procesado",
+        "message_one": "1 transacción ha estado pendiente por más de una semana. Compruébala con tu banco para que tu saldo sea correcto.",
+        "message_other": "{{count}} transacciones han estado pendientes por más de una semana. Compruébalas con tu banco para que tu saldo sea correcto."
       }
     }
   },
@@ -198,7 +199,7 @@
     "exchangeCurrenciesMustDiffer": "Las monedas de cambio deben ser diferentes"
   },
   "landingFaq": {
-    "unavailable": "The assistant is unavailable right now. Please try again later or email support@moneymatter.app."
+    "unavailable": "El asistente no está disponible en este momento. Por favor, inténtalo de nuevo más tarde o envía un correo electrónico a support@moneymatter.app."
   },
   "loans": {
     "loanNotFound": "Préstamo no encontrado.",
@@ -220,8 +221,7 @@
     "accountIdNotFound": "Cuenta {{accountId}} no encontrada",
     "providerTypeMismatch": "La conexión {{connectionId}} es para el proveedor {{actualType}}, no {{expectedType}}",
     "providerAlreadyRegistered": "El proveedor {{providerType}} ya está registrado. No se pueden registrar proveedores duplicados.",
-    "providerNotRegistered": "El proveedor {{providerType}} no está registrado. Proveedores disponibles: {{available}}",
-    "missingRequiredProviders": "Faltan proveedores de datos bancarios requeridos: {{missing}}. Asegúrese de que estos proveedores estén registrados al iniciar la aplicación."
+    "providerNotRegistered": "El proveedor {{providerType}} no está registrado. Proveedores disponibles: {{available}}"
   },
   "validation": {
     "dateInvalid": "\"date\" es una fecha no válida."
@@ -257,6 +257,7 @@
     "transactionsNoneInPeriod": "El proveedor no devolvió transacciones para este período.",
     "apiError": "Error de API de {{provider}}: {{message}}",
     "currencySelectionRequired": "La cuenta \"{{account}}\" no tiene una moneda reportada por el banco — elija una moneda para ella antes de conectarla.",
+    "providerNotAvailable": "Este proveedor bancario no está disponible para nuevas conexiones.",
     "monobank": {
       "invalidCredentialsFormat": "Formato de credenciales no válido para Monobank",
       "invalidApiToken": "Token de API de Monobank no válido",
@@ -331,10 +332,10 @@
     "batchDeleteBankLinkedAccount": "Esta importación ya no se puede deshacer porque su cuenta ahora está conectada a un banco. Eliminar estas transacciones podría desajustar el saldo sincronizado.",
     "batchDeleteLinkedLoanTransfer": "Esta importación está vinculada a un pago de préstamo y no se puede deshacer por sí sola. Active \"también eliminar las transacciones de transferencia vinculadas\" para eliminarla.",
     "batchDeleteInProgress": "Un lote de importación ya está siendo eliminado. Espere a que termine antes de iniciar otro.",
-    "batchDeleteImportStillRunning": "This import is still running. Wait for it to finish before undoing it.",
-    "importIntoBankLinkedAccount": "Account \"{{accountName}}\" is connected to a bank, so transactions cannot be imported into it. Choose another account or create a new one.",
+    "batchDeleteImportStillRunning": "Esta importación todavía se está ejecutando. Espera a que termine antes de deshacerla.",
+    "importIntoBankLinkedAccount": "La cuenta \"{{accountName}}\" está conectada a un banco, así que las transacciones no pueden ser importadas en ella. Elige otra cuenta o crea una nueva.",
     "statementImportInProgress": "Ya se está ejecutando una importación de sentencias. Espere a que termine antes de comenzar otra.",
-    "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
+    "importInterruptedByServerUpdate": "Una actualización del servidor interrumpió esta importación. Las transacciones ya guardadas se conservaron. Elimina esta importación en \"Historial de importación\" antes de importar el archivo de nuevo, o se duplicarán."
   },
   "statementParser": {
     "invalidFile": "Archivo no válido",
@@ -377,23 +378,23 @@
     "defaultCurrencyNotPresent": "No se puede eliminar la moneda. La moneda predeterminada no está presente en el sistema"
   },
   "ai": {
-    "connectionNotFound": "AI model not found.",
-    "connectionNameTaken": "You already have an AI model with this name.",
-    "connectionLimitReached": "You can add up to {{max}} AI models.",
-    "connectionNameInvalidLength": "Name must be between 1 and {{max}} characters.",
-    "connectionModelRequired": "Enter a model name.",
-    "connectionBaseUrlRequired": "Enter the base URL of your OpenAI-compatible server.",
-    "connectionBaseUrlNotAllowed": "This provider always uses its official API address, so it doesn't take a base URL.",
-    "connectionApiKeyRequired": "Enter the API key.",
-    "connectionProviderMismatch": "That AI model uses a different provider.",
-    "connectionKeySourceMissing": "The AI model you're copying from has no API key. Enter one.",
-    "connectionStoredKeyUnreadable": "The API key saved for this AI model can no longer be read. Enter it again.",
-    "connectionKeyRejected": "The provider rejected this API key. Check that it's correct, active, and has credits.",
-    "connectionModelNotAvailable": "This API key can't use the model \"{{model}}\". Check the model name.",
-    "connectionProviderUnreachable": "Couldn't reach the provider. Try again in a moment.",
-    "connectionValidationFailed": "The provider refused the test request: {{reason}}",
-    "serverModelUnavailable": "The included MoneyMatter AI model isn't available on your plan.",
-    "connectionKeyNotInBackup": "API key isn't included in backups. Edit this model and enter the key again.",
+    "connectionNotFound": "Modelo de IA no encontrado.",
+    "connectionNameTaken": "Ya tienes un modelo de IA con este nombre.",
+    "connectionLimitReached": "Puedes agregar un máximo de {{max}} modelos de IA.",
+    "connectionNameInvalidLength": "El nombre debe tener entre 1 y {{max}} caracteres.",
+    "connectionModelRequired": "Introduce un nombre de modelo.",
+    "connectionBaseUrlRequired": "Ingresa la URL base de tu servidor compatible con OpenAI.",
+    "connectionBaseUrlNotAllowed": "Este proveedor siempre utiliza su dirección de API oficial, por lo que no toma una URL base.",
+    "connectionApiKeyRequired": "Introduce la llave API.",
+    "connectionProviderMismatch": "Ese modelo de IA utiliza un proveedor diferente.",
+    "connectionKeySourceMissing": "El modelo de IA del que estás copiando no tiene ninguna llave API. Introduce una.",
+    "connectionStoredKeyUnreadable": "La llave API guardada para este modelo IA ya no puede ser leída. Ingrésala de nuevo.",
+    "connectionKeyRejected": "El proveedor rechazó esta llave API. Comprueba que es correcta, está activa y tiene créditos.",
+    "connectionModelNotAvailable": "Esta llave API no puede usar el modelo \"{{model}}\". Comprueba el nombre del modelo.",
+    "connectionProviderUnreachable": "No se pudo contactar con el proveedor. Inténtalo de nuevo en un momento.",
+    "connectionValidationFailed": "El proveedor rechazó la solicitud de prueba: {{reason}}",
+    "serverModelUnavailable": "El modelo de IA de MoneyMatter incluido no está disponible en tu plan.",
+    "connectionKeyNotInBackup": "La llave API no está incluida en las copias de seguridad. Edita este modelo e introduce la llave de nuevo.",
     "customEndpointUnreachable": "No se pudo conectar con el endpoint. Verifique la URL base y asegúrese de que el servidor esté en ejecución y sea accesible desde internet.",
     "customEndpointAuthFailed": "El endpoint rechazó la clave de API. Verifique que la clave sea correcta y tenga los permisos necesarios.",
     "customEndpointModelNotFound": "El endpoint no ofrece ningún modelo llamado \"{{model}}\".",
@@ -403,7 +404,7 @@
     "customEndpointValidationFailed": "El endpoint no devolvió una respuesta utilizable. Verifique la URL base, el nombre del modelo y la clave de API.",
     "categorizationAlreadyRunning": "La categorización con IA ya está en curso. Espere a que finalice antes de iniciar otra ejecución.",
     "categorizationRateLimited": "Ha iniciado la categorización con IA demasiadas veces recientemente. Inténtelo de nuevo más tarde.",
-    "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
+    "customInstructionsNeedConnection": "Añade un modelo de IA en Ajustes → IA para usar instrucciones personalizadas."
   },
   "middleware": {
     "tooManyRequests": "Demasiadas solicitudes. Por favor, inténtelo de nuevo más tarde."
@@ -582,19 +583,19 @@
     "staleReference": "Esta automatización hace referencia a un elemento que ya no existe."
   },
   "attachments": {
-    "transactionNotFound": "Transaction not found.",
-    "attachmentNotFound": "Attachment not found.",
-    "fileNotFound": "Attachment file not found.",
-    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF file.",
-    "tooManyAttachments": "A transaction can hold at most {{max}} attachments.",
-    "quotaExceeded": "Attachment storage quota exceeded.",
-    "noFileUploaded": "No file was uploaded."
+    "transactionNotFound": "Transacción no encontrada.",
+    "attachmentNotFound": "Adjunto no encontrado.",
+    "fileNotFound": "Archivo adjunto no encontrado.",
+    "unsupportedFileType": "Tipo de archivo no soportado. Sube un archivo JPEG, PNG, WebP o PDF.",
+    "tooManyAttachments": "Una transacción puede contener como máximo {{max}} archivos adjuntos.",
+    "quotaExceeded": "Cuota de almacenamiento de archivos adjuntos excedida.",
+    "noFileUploaded": "No se subió ningún archivo."
   },
   "invoiceMatching": {
-    "unsupportedFileType": "Unsupported file type. Upload a JPEG, PNG, WebP or PDF invoice.",
-    "notAnInvoice": "This document does not look like an invoice or a receipt.",
-    "incompleteInvoice": "Could not read a vendor, total amount and date from this invoice.",
-    "pdfWithoutText": "Custom AI connections can't receive PDF files directly, and this one couldn't be opened to convert it (for example, it's password-protected). Convert it to an image (PNG or JPEG), such as a screenshot of the invoice, and upload that instead.",
-    "noFileUploaded": "No file was uploaded."
+    "unsupportedFileType": "Tipo de archivo no soportado. Sube una factura JPEG, PNG, WebP o PDF.",
+    "notAnInvoice": "Este documento no parece una factura o un recibo.",
+    "incompleteInvoice": "No se pudo leer un proveedor, el importe total y la fecha de esta factura.",
+    "pdfWithoutText": "Conexiones personalizadas de IA no pueden recibir archivos PDF directamente, y éste no puede abrirse para convertirlo (por ejemplo, está protegido por contraseña). Conviértelo a una imagen (PNG o JPEG), como una captura de pantalla de la factura y súbela en su lugar.",
+    "noFileUploaded": "No se subió ningún archivo."
   }
 }
