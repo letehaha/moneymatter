@@ -62,7 +62,7 @@ const props = defineProps<{
   view: BudgetPlanPeriodView;
   /** Empty → period overview, one → line details, several → aggregated selection. */
   lines: BudgetPlanPeriodViewLine[];
-  /** Mobile drawer: always shows the close button and keeps its own open sections. */
+  /** Mobile drawer: closes by swipe, so no close button, and keeps its own open sections. */
   drawer?: boolean;
 }>();
 const emit = defineEmits<{ close: []; selectLine: [lineId: string] }>();
@@ -199,13 +199,15 @@ const sections = computed(() => {
       </div>
       <div class="flex shrink-0 items-center gap-1">
         <slot name="actions" />
-        <DesktopOnlyTooltip v-if="lines.length || drawer" :content="$t('budgetPlans.panel.closeLine')">
+        <DesktopOnlyTooltip v-if="lines.length && !drawer" :content="$t('budgetPlans.panel.closeLine')">
           <Button variant="ghost" size="icon-sm" :aria-label="$t('budgetPlans.panel.closeLine')" @click="emit('close')">
             <XIcon class="size-4" />
           </Button>
         </DesktopOnlyTooltip>
       </div>
     </div>
+
+    <slot name="summary" />
 
     <div
       v-if="lines.length"

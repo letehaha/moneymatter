@@ -341,6 +341,7 @@ const openLineDialog = ({
             <Button
               variant="outline"
               :size="isNarrow ? 'sm' : 'default'"
+              :class="isNarrow && '@max-lg/budget-plan:w-9 @max-lg/budget-plan:px-0'"
               :disabled="!plan || !view"
               :aria-label="$t('budgetPlans.options.title')"
             >
@@ -388,6 +389,7 @@ const openLineDialog = ({
               <Button
                 variant="outline"
                 size="icon-sm"
+                class="size-9"
                 :disabled="!view"
                 :aria-label="$t('budgetPlans.panel.overview')"
                 @click="openOverviewSheet"
@@ -400,6 +402,7 @@ const openLineDialog = ({
               <Button
                 variant="outline"
                 size="icon-sm"
+                class="size-9"
                 :disabled="!view"
                 :aria-label="$t('budgetPlans.grid.selectMode')"
                 @click="selectMode = true"
@@ -418,6 +421,7 @@ const openLineDialog = ({
           <Button
             variant="outline"
             :size="isNarrow ? 'icon-sm' : 'icon'"
+            :class="isNarrow && 'size-9'"
             :disabled="!plan"
             :aria-label="$t('budgetPlans.settings.title')"
             @click="isSettingsOpen = true"
@@ -777,31 +781,6 @@ const openLineDialog = ({
           <DrawerTitle class="sr-only">{{ $t('budgetPlans.panel.summary') }}</DrawerTitle>
           <div class="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
             <template v-if="view && plan">
-              <dl v-if="!selectedLines.length && overviewStats" class="mt-3 mb-1 grid grid-cols-2 gap-3">
-                <div
-                  v-for="stat in overviewStats.stats"
-                  :key="stat.key"
-                  class="border-border bg-muted/40 rounded-lg border px-3 py-2"
-                >
-                  <dt class="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
-                    {{ $t(stat.labelKey) }}
-                  </dt>
-                  <dd
-                    :class="
-                      cn('text-lg font-bold tabular-nums', stat.toned && amountToneClass({ amount: stat.amount }))
-                    "
-                  >
-                    {{ formatBaseCurrency(stat.amount) }}
-                  </dd>
-                  <dd v-if="stat.key === 'overspent'" class="text-muted-foreground text-[11px]">
-                    {{
-                      $t('budgetPlans.tiles.overspentLines', {
-                        count: overviewStats.overspentLineCount,
-                      })
-                    }}
-                  </dd>
-                </div>
-              </dl>
               <BudgetSidePanel
                 drawer
                 :plan-id="planId"
@@ -809,9 +788,35 @@ const openLineDialog = ({
                 :unit="goalUnit"
                 :view="view"
                 :lines="selectedLines"
-                @close="isPanelSheetOpen = false"
                 @select-line="(lineId) => toggleLine({ lineId })"
               >
+                <template v-if="!selectedLines.length && overviewStats" #summary>
+                  <dl class="grid grid-cols-2 gap-3">
+                    <div
+                      v-for="stat in overviewStats.stats"
+                      :key="stat.key"
+                      class="border-border bg-muted/40 rounded-lg border px-3 py-2"
+                    >
+                      <dt class="text-muted-foreground text-[11px] font-medium tracking-wide uppercase">
+                        {{ $t(stat.labelKey) }}
+                      </dt>
+                      <dd
+                        :class="
+                          cn('text-lg font-bold tabular-nums', stat.toned && amountToneClass({ amount: stat.amount }))
+                        "
+                      >
+                        {{ formatBaseCurrency(stat.amount) }}
+                      </dd>
+                      <dd v-if="stat.key === 'overspent'" class="text-muted-foreground text-[11px]">
+                        {{
+                          $t('budgetPlans.tiles.overspentLines', {
+                            count: overviewStats.overspentLineCount,
+                          })
+                        }}
+                      </dd>
+                    </div>
+                  </dl>
+                </template>
                 <template v-if="selectedLine" #actions>
                   <AssignPopover :plan-id="planId" :period-id="view.period.id" :line="selectedLine">
                     <Button size="sm">{{ $t('budgetPlans.pool.assign') }}</Button>

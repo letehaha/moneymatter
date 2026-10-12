@@ -5,11 +5,12 @@ import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
+import FieldLabel from '@/components/fields/components/field-label.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
+import { Callout } from '@/components/lib/ui/callout';
 import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
-import { Separator } from '@/components/lib/ui/separator';
 import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
 import { notifyMutationError, useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
@@ -23,7 +24,7 @@ import {
   type BudgetPlanCarryPolicy,
   type BudgetPlanDetails,
 } from '@bt/shared/types';
-import { ChevronRightIcon, Trash2Icon } from '@lucide/vue';
+import { ChevronRightIcon, LockIcon } from '@lucide/vue';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
 import { parseISO } from 'date-fns';
 import { computed, ref, watch } from 'vue';
@@ -205,29 +206,28 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
     <template #title>{{ $t('budgetPlans.settings.title') }}</template>
     <template #description>{{ $t('budgetPlans.settings.description') }}</template>
 
-    <div class="grid gap-5">
-      <InputField
-        v-model="name"
-        :label="$t('budgetPlans.settings.nameLabel')"
-        :placeholder="$t('budgetPlans.settings.namePlaceholder')"
-        :maxlength="BUDGET_PLAN_NAME_MAX_LENGTH"
-        :disabled="isRenaming"
-        @blur="submitName"
-        @keydown.enter.prevent="submitName"
-      />
+    <div class="grid gap-6">
+      <div class="grid gap-2">
+        <InputField
+          v-model="name"
+          :label="$t('budgetPlans.settings.nameLabel')"
+          :placeholder="$t('budgetPlans.settings.namePlaceholder')"
+          :maxlength="BUDGET_PLAN_NAME_MAX_LENGTH"
+          :disabled="isRenaming"
+          @blur="submitName"
+          @keydown.enter.prevent="submitName"
+        />
 
-      <Separator />
-
-      <div class="grid gap-1">
-        <Label>{{ $t('budgetPlans.settings.periodLabel') }}</Label>
-        <p class="text-sm">{{ periodLabel }}</p>
-        <p class="text-sm">{{ startsOnLabel }}</p>
-        <p class="text-muted-foreground text-xs">
-          {{ $t('budgetPlans.settings.cadenceLocked') }}
-        </p>
+        <Callout variant="info" :icon="LockIcon">
+          <div class="flex flex-wrap items-baseline gap-x-3">
+            <p class="text-foreground">
+              <span class="sr-only">{{ $t('budgetPlans.settings.periodLabel') }}:</span>
+              {{ periodLabel }} · {{ startsOnLabel }}
+            </p>
+            <p class="text-xs">{{ $t('budgetPlans.settings.cadenceLocked') }}</p>
+          </div>
+        </Callout>
       </div>
-
-      <Separator />
 
       <div class="grid gap-3">
         <AccountMultiSelectField
@@ -259,8 +259,6 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
           />
         </div>
       </div>
-
-      <Separator v-if="BUDGET_POOL_ENABLED" />
 
       <div v-if="BUDGET_POOL_ENABLED" class="grid gap-3">
         <div class="grid gap-1">
@@ -299,41 +297,38 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
         </div>
       </div>
 
-      <Separator />
-
       <div class="grid gap-2">
-        <Label>{{ $t('budgetPlans.settings.rolloverLabel') }}</Label>
-        <RadioGroup
-          :model-value="plan.plan.carryPolicy"
-          :disabled="isPatching"
-          @update:model-value="(value) => setCarryPolicy({ value })"
-        >
-          <div v-for="option in CARRY_POLICY_OPTIONS" :key="option.value" class="flex items-start gap-2">
-            <RadioGroupItem :id="`budget-carry-${option.value}`" :value="option.value" class="mt-0.5" />
-            <Label :for="`budget-carry-${option.value}`" class="grid cursor-pointer gap-0.5 font-normal">
-              <span class="text-sm">{{ $t(option.labelKey) }}</span>
-              <span class="text-muted-foreground text-xs">
-                {{ $t(`budgetPlans.settings.carryDescription.${option.value}`) }}
-              </span>
-            </Label>
-          </div>
-        </RadioGroup>
+        <FieldLabel :label="$t('budgetPlans.settings.rolloverLabel')" only-template>
+          <RadioGroup
+            :model-value="plan.plan.carryPolicy"
+            :disabled="isPatching"
+            @update:model-value="(value) => setCarryPolicy({ value })"
+          >
+            <div v-for="option in CARRY_POLICY_OPTIONS" :key="option.value" class="flex items-start gap-2">
+              <RadioGroupItem :id="`budget-carry-${option.value}`" :value="option.value" class="mt-0.5" />
+              <Label :for="`budget-carry-${option.value}`" class="grid cursor-pointer gap-0.5 font-normal">
+                <span class="text-sm">{{ $t(option.labelKey) }}</span>
+                <span class="text-muted-foreground text-xs">
+                  {{ $t(`budgetPlans.settings.carryDescription.${option.value}`) }}
+                </span>
+              </Label>
+            </div>
+          </RadioGroup>
+        </FieldLabel>
         <p class="text-muted-foreground text-xs">
           {{ $t('budgetPlans.settings.rolloverNote') }}
           <DocsLink path="/budgeting/assigning-and-rollover/#rollover" class="text-xs" />
         </p>
       </div>
 
-      <template v-if="trashedPlans.length">
-        <Separator />
-
+      <div class="grid gap-4 border-t pt-4">
         <Button
-          variant="outline"
-          class="h-auto w-full justify-start gap-3 px-3 py-2.5 text-left whitespace-normal"
+          v-if="trashedPlans.length"
+          variant="ghost"
+          class="-mx-2 h-auto justify-between gap-3 px-2 py-1.5 text-left whitespace-normal"
           @click="isTrashOpen = true"
         >
-          <Trash2Icon class="text-muted-foreground size-4 shrink-0" />
-          <span class="grid min-w-0 flex-1 gap-0.5">
+          <span class="grid min-w-0 gap-0.5">
             <span class="text-sm font-medium">{{ $t('budgetPlans.trashed.settingsRow') }}</span>
             <span class="text-muted-foreground text-xs font-normal">
               {{
@@ -347,18 +342,22 @@ const submitAccounts = ({ accountIds }: { accountIds: string[] }) => {
           </span>
           <ChevronRightIcon class="text-muted-foreground size-4 shrink-0" />
         </Button>
-      </template>
 
-      <Separator />
-
-      <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="grid min-w-0 gap-0.5">
-          <p class="text-sm font-medium">{{ $t('budgetPlans.settings.deleteTitle') }}</p>
-          <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.deleteCaption') }}</p>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div class="grid min-w-0 gap-0.5">
+            <p class="text-sm font-medium">{{ $t('budgetPlans.settings.deleteTitle') }}</p>
+            <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.settings.deleteCaption') }}</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            class="text-destructive-text hover:text-destructive-text shrink-0"
+            :disabled="isDeleting"
+            @click="isDeleteOpen = true"
+          >
+            {{ $t('budgetPlans.settings.delete') }}
+          </Button>
         </div>
-        <Button variant="destructive" size="sm" class="shrink-0" :disabled="isDeleting" @click="isDeleteOpen = true">
-          {{ $t('budgetPlans.settings.delete') }}
-        </Button>
       </div>
     </div>
   </ResponsiveDialog>
