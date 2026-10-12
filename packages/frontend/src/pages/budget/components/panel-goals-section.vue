@@ -11,7 +11,7 @@ import type { BudgetPlanGoalsSummary, BudgetPlanPeriodViewLine } from '@bt/share
 import { CircleCheckIcon, ChevronRightIcon, MoonIcon, PlusIcon, TargetIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 
-import { type PanelContext, amountToneClass } from '../helpers';
+import { BUDGET_POOL_ENABLED, type PanelContext, amountToneClass } from '../helpers';
 
 const props = defineProps<{
   context: PanelContext;
@@ -103,6 +103,7 @@ const submitIncome = ({ value }: { value: number | null }) => {
     </div>
 
     <ResponsivePopover
+      v-if="BUDGET_POOL_ENABLED"
       align="end"
       v-model:open="isIncomeOpen"
       :title="$t('budgetPlans.goals.expectedIncome')"
