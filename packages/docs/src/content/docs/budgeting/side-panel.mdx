@@ -1,6 +1,6 @@
 ---
 title: The side panel
-description: See the breakdown, next period coverage, goals, scheduled payments, trends and spending pace for your whole budget or for one line.
+description: See the breakdown, goals, scheduled payments, trends and spending pace for your whole budget or for one line.
 sidebar:
   order: 6
 ---
@@ -31,7 +31,6 @@ Every section folds away with a click on its title. The panel remembers which se
 | Section | Period overview | Line details |
 |---|---|---|
 | [Breakdown](#breakdown) | Yes | Yes |
-| [Next period coverage](#next-period-coverage) | With a pool | No |
 | [Goals](#goals) | When any line has a goal | No |
 | [Scheduled](#scheduled) | Current and later periods | Current and later periods, when the line has something scheduled |
 | [Assigned vs spent](#assigned-vs-spent) | Yes | Yes |
@@ -42,8 +41,8 @@ Line details also start with the line's **Available** amount in large type. If t
 
 <Screenshot
   src="/screenshots/budgeting/side-panel-overview.png"
-  alt="The side panel in Period overview with the Breakdown, Next period coverage, Goals and Scheduled sections."
-  hint="On /budget at about 1440 px wide, with Fund from a pool on, two lines with goals (one underfunded) and one upcoming recurring payment this month. Don't select a line. Crop to the side panel column from 'Period overview' down to the Scheduled section."
+  alt="The side panel in Period overview with the Breakdown, Goals and Scheduled sections."
+  hint="On /budget at about 1440 px wide, with two lines with goals (one underfunded) and one upcoming recurring payment this month. Don't select a line. Crop to the side panel column from 'Period overview' down to the Scheduled section."
 />
 
 ## Breakdown
@@ -51,20 +50,6 @@ Line details also start with the line's **Available** amount in large type. If t
 How the period's **Available** amount is made up: **Carried over** from the last period, plus **Assigned**, plus **Activity**, equals **Available**. In the overview it adds up every line. For a line, it's that line alone.
 
 See [How Available is worked out](/budgeting/assigning-and-rollover/#how-available-is-worked-out).
-
-## Next period coverage
-
-How ready you already are for the next period. It shows only when your budget [funds from a pool](/budgeting/ready-to-assign/).
-
-- **The target** is what the next period will need: what your goals ask for, plus, for each line without a goal, the average it was assigned over the last 3 periods.
-- **Lined up** is the money already assigned in the next period, plus the **Ready to Assign** that will carry over into it. An amount repeating **From now on** from an earlier period doesn't count until that period arrives.
-
-The section shows the percentage prepared, "X of Y", and one of these:
-
-- "X left to cover" the next period, when you're partway there.
-- "Fully prepared for" the next period.
-- "Over-committed": the next period's **Ready to Assign** is already negative.
-- "Nothing tracked" for the next period yet, when there's no target to cover.
 
 ## Goals
 
@@ -131,4 +116,3 @@ Start a period in the overview: **Goals** tells you what your goals need, and **
 
 - [Budget lines and groups](/budgeting/lines-and-groups/)
 - [Goals](/budgeting/goals/)
-- [Ready to Assign](/budgeting/ready-to-assign/)

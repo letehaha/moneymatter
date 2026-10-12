@@ -46,16 +46,15 @@ The [Early Adopter plan](/settings/plans-and-billing/#early-adopter-plan) doesn'
 4. Check **Starts on**, the first day of your first period.
 5. Check **Accounts**. Every account that can be budgeted is already selected. Remove the ones you don't want counted.
 6. Pick a **Rollover** rule for money left in a line at the end of a period. **Carry surplus** is selected by default.
-7. Turn on **Fund from a pool** if you want income to go into a **Ready to Assign** pool that you hand out to lines. It's off by default.
-8. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty. Building them takes a few seconds.
-9. Click **Create budget**.
+7. Leave **Smart pre-fill** on to get a first set of lines, or turn it off to start empty. Building them takes a few seconds.
+8. Click **Create budget**.
 
 </Steps>
 
 <Screenshot
   src="/screenshots/budgeting/create-budget-dialog.png"
-  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, two accounts selected, Carry surplus as the Rollover rule, and the Fund from a pool and Smart pre-fill switches."
-  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus', Fund from a pool off and Smart pre-fill on. Crop to the window."
+  alt="The Start budgeting window with Monthly selected under Resets, the Starts on date, three accounts selected, Carry surplus as the Rollover rule, and the Smart pre-fill switch."
+  hint="Sign in as the docs test user with no budget (move any existing budget to trash first). Click Budget in the sidebar, then Start budgeting. Keep Monthly and the default Starts on date, keep the preselected accounts (Everyday Checking and the SimpleFIN demo accounts), Rollover 'Carry surplus' and Smart pre-fill on. Crop to the window."
 />
 
 Your new budget is called "Budget". You can rename it in **Budget settings**.
@@ -66,7 +65,6 @@ Your new budget is called "Budget". You can rename it in **Budget settings**.
 - **Starts on.** For **Monthly** and **Semi-monthly**, it starts on the first day of this month. For **Biweekly** and **Weekly**, it starts on the first day of this week. You can pick an earlier date, but not a future one. An earlier date adds the periods before today to your budget, and a line you add while one of them is open starts from that period.
 - **Accounts.** A budget can hold current, savings, cash, credit card, overdraft and general accounts that you own. Accounts someone shared with you aren't offered. If you have none, you'll see **No accounts to budget yet** with a **Go to accounts** button. Add an account first (see [Create an account](/accounts/create-an-account/)).
 - **Rollover.** See [Rollover](/budgeting/assigning-and-rollover/#rollover) for what each rule does. You can change it later, and every line can have its own.
-- **Fund from a pool.** See [Ready to Assign](/budgeting/ready-to-assign/). You can turn it on later in **Budget settings**.
 
 ## Suggested lines
 
@@ -108,15 +106,11 @@ Each line uses your own category, with the name it has in your account. If you r
 <Screenshot
   src="/screenshots/budgeting/suggested-lines.png"
   alt="A new monthly budget filled with suggested lines in the Bills, Everyday and Life groups, each with an assigned amount rounded up to a multiple of 10."
-  hint="Make sure the budget's accounts have categorized expenses (not Other) in the last 3 full calendar months, for example by categorizing some seeded SimpleFIN demo transactions. Create a Monthly budget with Smart pre-fill on and Fund from a pool off. On the budget page, show the header tiles and the grid with the Bills, Everyday and Life group rows and their lines. Close the side panel selection so the period overview shows. Crop to the header tiles and the grid."
+  hint="Make sure the budget's accounts have categorized expenses (not Other) in the last 3 full calendar months, for example by categorizing some seeded SimpleFIN demo transactions. Create a Monthly budget with Smart pre-fill on. On the budget page, show the header tiles and the grid with the Bills, Everyday and Life group rows and their lines. Close the side panel selection so the period overview shows. Crop to the header tiles and the grid."
 />
 
 <Aside type="tip" title="Nothing is set in stone">
 Suggested lines are ordinary lines. Rename them, change their categories or amounts, move them between groups, or archive the ones you don't need. See [Budget lines and groups](/budgeting/lines-and-groups/).
-</Aside>
-
-<Aside type="note" title="Using a pool?">
-If **Fund from a pool** is on, the suggested amounts are assigned in the current period, so they come out of **Ready to Assign** right away. Check it after you create the budget. See [Ready to Assign](/budgeting/ready-to-assign/).
 </Aside>
 
 ### Add suggested lines later
@@ -138,8 +132,6 @@ Every line needs an amount to spend. To set one:
 
 </Steps>
 
-If you use a pool, you can also hand out money with the **Assign** button next to **Ready to Assign**. See [Assign from Ready to Assign](/budgeting/ready-to-assign/#assign-from-ready-to-assign).
-
 For everything the assign window can do, see [Assigning and rollover](/budgeting/assigning-and-rollover/).
 
 ## Each period
@@ -149,10 +141,9 @@ Amounts you set **From now on** repeat by themselves, so a period that goes to p
 <Steps>
 
 1. Open **Budget**. It always opens on the current period.
-2. If you use a pool, assign whatever is in **Ready to Assign**.
-3. Look for lines with a red **Available**. They're overspent. Move money to them from a line that has some left.
-4. Open **Spending outside your lines** below the grid, if it's there, and add a line or a category for anything that should be budgeted.
-5. Check your goals in the side panel. See [The side panel](/budgeting/side-panel/).
+2. Look for lines with a red **Available**. They're overspent. Move money to them from a line that has some left.
+3. Open **Spending outside your lines** below the grid, if it's there, and add a line or a category for anything that should be budgeted.
+4. Check your goals in the side panel. See [The side panel](/budgeting/side-panel/).
 
 </Steps>
 
@@ -162,7 +153,6 @@ Click **Budget settings** at the top right of the budget to change:
 
 - **Name** of the budget. It saves when you leave the field or press Enter.
 - **Accounts on budget.** Keep at least one. Turn on **Add new accounts automatically** to add accounts you create later.
-- **Fund from a pool** and **Keep Ready to Assign at 0**. See [Ready to Assign](/budgeting/ready-to-assign/).
 - **Rollover default**. See [Rollover](/budgeting/assigning-and-rollover/#rollover).
 
 **Period** shows how often the budget resets and when it started. It can't be changed.
@@ -180,13 +170,12 @@ Until then, the **Budget** page shows "Your budget is in the trash" with a **Res
 - **Only real transactions count.** [Planned transactions](/stats/how-stats-are-calculated/#planned-transactions) don't add to a line's activity until they happen, but they appear under **Scheduled** in the [side panel](/budgeting/side-panel/#scheduled).
 - **Accounts excluded from statistics are ignored**, even if they're on your budget. See [Exclude an account from statistics](/accounts/manage-accounts/#exclude-an-account-from-statistics).
 - **A split transaction counts per part.** Each part counts toward the line that covers its category. See [Split a transaction](/transactions/split-a-transaction/).
-- **Transfers between your own accounts aren't spending.** See [how transfers work](/transfers-and-refunds/how-transfers-work/). With a pool, money moving between a budgeted and an unbudgeted account does count. See [What goes in and out](/budgeting/ready-to-assign/#what-goes-in-and-out).
+- **Transfers between your own accounts aren't spending.** See [how transfers work](/transfers-and-refunds/how-transfers-work/).
 - **Your base currency is locked while you have a budget.** To change it, move the budget to trash first. See [Base currency and currencies](/settings/base-currency-and-currencies/).
 
 ## Related
 
 - [Budget lines and groups](/budgeting/lines-and-groups/)
 - [Assigning and rollover](/budgeting/assigning-and-rollover/)
-- [Ready to Assign](/budgeting/ready-to-assign/)
 - [Goals](/budgeting/goals/)
 - [The side panel](/budgeting/side-panel/)
