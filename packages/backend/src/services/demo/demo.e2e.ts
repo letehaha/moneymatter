@@ -11,6 +11,7 @@ import {
   USER_ROLES,
   VEHICLE_CLASS,
 } from '@bt/shared/types';
+import type { BudgetPlanCarryPolicy, BudgetPlanPeriod, BudgetPlanPeriodView } from '@bt/shared/types/budget-plans';
 import { ASSET_CLASS } from '@bt/shared/types/investments';
 import { VENTURE_DEAL_STATUS } from '@bt/shared/types/venture';
 import { authPool } from '@config/auth';
@@ -676,6 +677,59 @@ describe('Demo Mode', () => {
         // years of history against a one-month limit and blows far past this.
         expect(stats.summary.utilizationRate).toBeLessThan(400);
       }
+
+      const plans = await makeRequest({ method: 'get', url: '/budget-plans', raw: true });
+      expect(plans.length).toBe(1);
+
+      const planPeriods: BudgetPlanPeriod[] = await makeRequest({
+        method: 'get',
+        url: `/budget-plans/${plans[0].id}/periods`,
+        raw: true,
+      });
+      const currentIndex = planPeriods.findIndex((period) => period.isCurrent);
+      // Backdated, so the visitor can page into periods that already closed.
+      expect(currentIndex).toBeGreaterThanOrEqual(3);
+
+      const viewOf = ({ index }: { index: number }): Promise<BudgetPlanPeriodView> =>
+        makeRequest({
+          method: 'get',
+          url: `/budget-plans/${plans[0].id}/periods/${planPeriods[index]!.id}`,
+          raw: true,
+        });
+
+      const closedViews: BudgetPlanPeriodView[] = [];
+      for (let index = 0; index < currentIndex; index += 1) closedViews.push(await viewOf({ index }));
+      const currentView = await viewOf({ index: currentIndex });
+
+      for (const view of [...closedViews, currentView]) {
+        expect(view.groups.length).toBe(3);
+        expect(view.lines.length).toBe(12);
+        expect(view.lines.every((line) => line.assigned > 0)).toBe(true);
+      }
+      // The current period may be a day old, so only closed ones must hold spending.
+      for (const view of closedViews) expect(view.header.totalActivity).toBeLessThan(0);
+
+      // Carry-over is the point of backdating: leftovers reach the current period,
+      // a deficit follows the one line set to carry it, and a fresh-start line never carries.
+      const carriedBy = ({ policy }: { policy: BudgetPlanCarryPolicy }) => {
+        const carried = currentView.lines.filter((line) => line.carryPolicy === policy).map((line) => line.carriedIn);
+        expect(carried.length).toBeGreaterThan(0);
+        return carried;
+      };
+      expect(carriedBy({ policy: 'floor' }).filter((carried) => carried > 0).length).toBeGreaterThanOrEqual(3);
+      expect(carriedBy({ policy: 'floor' }).every((carried) => carried >= 0)).toBe(true);
+      expect(carriedBy({ policy: 'signed' }).every((carried) => carried < 0)).toBe(true);
+      expect(carriedBy({ policy: 'none' }).every((carried) => carried === 0)).toBe(true);
+
+      const lastClosed = closedViews.at(-1)!;
+      expect(lastClosed.lines.some((line) => line.assignedSource === 'override')).toBe(true);
+      expect(closedViews.some((view) => view.lines.some((line) => line.available < 0))).toBe(true);
+
+      expect(
+        currentView.lines
+          .flatMap((line) => (line.goal ? [`${line.goal.frequency}/${line.goal.behavior}`] : []))
+          .toSorted(),
+      ).toEqual(['by_date/reach_balance', 'every_period/budget_another', 'every_period/refill_up_to']);
 
       const accountGroups = await makeRequest({
         method: 'get',

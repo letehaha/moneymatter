@@ -11,6 +11,7 @@ import { DEMO_CONFIG, type DemoAccountKey } from './demo-config';
 import { getDemoTemplate } from './demo-template-cache.service';
 import { setupAccountGroups } from './seed-account-groups.service';
 import { setupAutomations } from './seed-automations.service';
+import { setupBudgetPlan } from './seed-budget-plan.service';
 import {
   createAccounts,
   createBudgets,
@@ -280,6 +281,18 @@ export async function applyDemoTemplate({
     }),
     windowStart: subDays(referenceDate, BUDGET_WINDOW_DAYS),
     windowEnd: referenceDate,
+  });
+
+  // A showcase extra: a failure here costs the visitor the Budget page, not the whole demo.
+  await setupBudgetPlan({
+    userId,
+    accountIds: accounts.map((account) => account.id),
+    categoryMap,
+    template,
+    currencyByAccountKey: accountKeyToCurrency,
+    referenceDate,
+  }).catch((error: unknown) => {
+    logger.error('Demo budget seeding failed', { userId, error: error as Error });
   });
 
   const mainCheckingAccountId = accountKeyToId['main_checking'];
