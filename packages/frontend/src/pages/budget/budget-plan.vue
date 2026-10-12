@@ -4,7 +4,6 @@ import { config } from '@/common/config';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -93,7 +92,7 @@ const frameRef = ref<HTMLElement | null>(null);
 // The desktop stats strip wraps at some widths, so everything sticking below it reads its measured height.
 const stripRef = ref<HTMLElement | null>(null);
 const { height: stripHeight } = useElementSize(stripRef, undefined, { box: 'border-box' });
-const { rowBars, compactRows } = useGridDisplayOptions();
+const { rowBars } = useGridDisplayOptions();
 const { panelWidth, panelOpen, startResize, isNarrow, isPanelAttached, isPanelFloating, isPanelTab } = useFrameLayout({
   frameRef,
 });
@@ -341,7 +340,7 @@ const openLineDialog = ({
           <DropdownMenuTrigger as-child>
             <Button
               variant="outline"
-              size="sm"
+              :size="isNarrow ? 'sm' : 'default'"
               :disabled="!plan || !view"
               :aria-label="$t('budgetPlans.options.title')"
             >
@@ -362,10 +361,6 @@ const openLineDialog = ({
                 {{ $t(option.labelKey) }}
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuCheckboxItem v-model="compactRows">
-              {{ $t('budgetPlans.options.compactRows') }}
-            </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem @select="isLayoutOpen = true">
               <LayoutListIcon class="size-4" />
@@ -422,7 +417,7 @@ const openLineDialog = ({
         <DesktopOnlyTooltip :content="$t('budgetPlans.settings.title')">
           <Button
             variant="outline"
-            size="icon-sm"
+            :size="isNarrow ? 'icon-sm' : 'icon'"
             :disabled="!plan"
             :aria-label="$t('budgetPlans.settings.title')"
             @click="isSettingsOpen = true"
@@ -560,7 +555,7 @@ const openLineDialog = ({
               <DesktopOnlyTooltip :content="$t('budgetPlans.panel.summary')">
                 <Button
                   variant="outline"
-                  size="icon-sm"
+                  size="icon"
                   :class="cn(panelOpen && 'text-primary-text')"
                   :disabled="!view"
                   :aria-label="$t('budgetPlans.panel.summary')"
@@ -654,7 +649,6 @@ const openLineDialog = ({
               :live-group-ids="liveGroupIds"
               :unit="goalUnit"
               :row-bars="rowBars"
-              :compact-rows="compactRows"
               :narrow="isNarrow"
               :select-mode="isNarrow && selectMode"
               @edit="(line) => openLineDialog({ line })"
@@ -668,7 +662,7 @@ const openLineDialog = ({
 
             <Collapsible v-slot="{ open }" class="border-border border-t">
               <div class="flex min-w-0 flex-wrap items-center gap-1 px-2 py-1">
-                <Button v-if="!isNarrow" variant="ghost" size="sm" @click="openLineDialog({})">
+                <Button v-if="!isNarrow" variant="secondary" size="sm" @click="openLineDialog({})">
                   <PlusIcon class="size-4" />
                   {{ $t('budgetPlans.grid.addLine') }}
                 </Button>

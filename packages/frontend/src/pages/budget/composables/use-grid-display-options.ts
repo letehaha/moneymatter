@@ -11,7 +11,6 @@ const isRowBarMode = (value: string): value is RowBarMode => (ROW_BAR_MODES as r
 // useLocalStorage catches storage errors, so blocked storage keeps the options in memory for the session.
 export const useGridDisplayOptions = () => {
   const storedRowBars = useLocalStorage<string>('budget-plan:row-bars', DEFAULT_ROW_BARS);
-  const compactRows = useLocalStorage('budget-plan:compact-rows', false);
 
   const rowBars = computed<RowBarMode>({
     get: () => (isRowBarMode(storedRowBars.value) ? storedRowBars.value : DEFAULT_ROW_BARS),
@@ -20,5 +19,5 @@ export const useGridDisplayOptions = () => {
     },
   });
 
-  return { rowBars, compactRows };
+  return { rowBars };
 };

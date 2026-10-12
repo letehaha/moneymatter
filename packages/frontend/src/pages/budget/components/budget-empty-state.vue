@@ -16,6 +16,8 @@ import {
 } from '@lucide/vue';
 
 import { GRID_ROW_CLASS, amountToneClass, availablePillClass } from '../helpers';
+import BudgetLineBars from './budget-line-bars.vue';
+import BudgetLineSpentText from './budget-line-spent-text.vue';
 
 defineEmits<{ start: [] }>();
 
@@ -32,7 +34,12 @@ const PANEL_SECTIONS = [
 ] as const;
 
 const withTotals = ({ lines }: { lines: { key: string; assigned: number; spent: number }[] }) => {
-  const rows = lines.map((line) => ({ ...line, available: line.assigned - line.spent }));
+  const rows = lines.map((line) => ({
+    ...line,
+    carriedIn: 0,
+    activity: -line.spent,
+    available: line.assigned - line.spent,
+  }));
   return {
     rows,
     assigned: rows.reduce((sum, line) => sum + line.assigned, 0),
@@ -149,21 +156,9 @@ const CHECKBOX_CLASS = 'border-muted-foreground/50 size-[18px] rounded-[4px] bor
                   {{ $t(`budgetPlans.empty.example.lines.${line.key}`) }}
                 </span>
                 <span class="text-muted-foreground flex justify-end text-xs leading-4">
-                  <span class="tabular-nums">
-                    {{
-                      $t('budgetPlans.grid.spentOf', {
-                        spent: formatBaseCurrency(line.spent),
-                        total: formatBaseCurrency(line.assigned),
-                      })
-                    }}
-                  </span>
+                  <BudgetLineSpentText :line="line" />
                 </span>
-                <span class="bg-success-text relative mt-0.5 block h-1 overflow-hidden rounded-full">
-                  <span
-                    :class="cn('spent-stripes absolute inset-y-0 left-0', line.available < 0 && 'bg-app-expense-color')"
-                    :style="{ width: `${Math.min((line.spent / line.assigned) * 100, 100)}%` }"
-                  />
-                </span>
+                <BudgetLineBars :line="line" mode="spending" />
               </span>
               <span
                 class="border-input bg-input-background h-9 rounded-md border px-2.5 text-right text-sm leading-8 tabular-nums"

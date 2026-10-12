@@ -12,7 +12,6 @@ import { useFormatCurrency } from '@/composable';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useQueryClient } from '@tanstack/vue-query';
 import { cn } from '@/lib/utils';
-import { useCategoriesStore } from '@/stores';
 import type {
   BudgetPlanLineEntry,
   BudgetPlanLineGroup,
@@ -34,7 +33,6 @@ import {
   XIcon,
 } from '@lucide/vue';
 import { createReusableTemplate } from '@vueuse/core';
-import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -46,16 +44,15 @@ import {
   type GoalPeriodUnit,
   amountToneClass,
   availablePillClass,
-  fundedOf,
   goalCaption,
   goalStatusDisplay,
   groupLines,
-  spentOf,
   sumLineTotals,
 } from '../helpers';
 import ArchivedLinesDialog from './archived-lines-dialog.vue';
 import AssignPopover from './assign-popover.vue';
 import BudgetLineBars from './budget-line-bars.vue';
+import BudgetLineSpentText from './budget-line-spent-text.vue';
 import DeleteLineDialog from './delete-line-dialog.vue';
 import GoalEditorDialog from './goal-editor-dialog.vue';
 import GoalPeekPopover from './goal-peek-popover.vue';
@@ -79,7 +76,6 @@ const props = defineProps<{
   liveGroupIds: Set<string>;
   unit: GoalPeriodUnit;
   rowBars: RowBarMode;
-  compactRows: boolean;
   /** Mobile list rows instead of the table; decided by the page so it matches the panel layout. */
   narrow: boolean;
   /** Narrow layout only: rows show checkboxes and tapping a row toggles it. */
@@ -129,9 +125,12 @@ const [DefineMobileCaption, MobileCaption] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   display?: GoalDisplay;
 }>({ inheritAttrs: false });
-const [DefineGoalCaption, GoalCaption] = createReusableTemplate<{
+const [DefineNameCell, NameCell] = createReusableTemplate<{
   line: BudgetPlanPeriodViewLine;
   display?: GoalDisplay;
+}>({ inheritAttrs: false });
+const [DefineGoalStatus, GoalStatus] = createReusableTemplate<{
+  display: GoalDisplay;
 }>({ inheritAttrs: false });
 
 const { t } = useI18n();
@@ -139,7 +138,6 @@ const queryClient = useQueryClient();
 const { addSuccessNotification, addInfoNotification } = useNotificationCenter();
 const { formatBaseCurrency } = useFormatCurrency();
 const { goalText } = useGoalText();
-const { categoriesMap } = storeToRefs(useCategoriesStore());
 
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
 
@@ -246,12 +244,6 @@ const deleteTargetGroup = () => {
   if (!targetGroup.value || isDeletingGroup.value) return;
   deleteGroup({ planId: props.planId, groupId: targetGroup.value.id });
 };
-
-const categoriesCaption = ({ line }: { line: BudgetPlanPeriodViewLine }) =>
-  line.categoryIds
-    .map((id) => categoriesMap.value[id]?.name)
-    .filter(Boolean)
-    .join(' · ');
 
 const { isPending: isArchiving, mutate: archive } = useInvalidatingMutation({
   mutationFn: archiveBudgetPlanLine,
@@ -403,41 +395,27 @@ const archiveSelected = () => {
       </span>
     </DefineGoalButton>
 
-    <DefineGoalCaption v-slot="{ line, display }">
-      <span class="flex min-w-0 items-center justify-between gap-2 text-xs leading-4">
-        <span class="text-muted-foreground truncate">{{ categoriesCaption({ line }) }}</span>
-        <span v-if="display" :class="cn('flex shrink-0 items-center gap-1 tabular-nums', display.textClass)">
-          <CheckIcon v-if="display.caption.icon === 'check'" class="size-3" />
-          <MoonIcon v-else-if="display.caption.icon === 'moon'" class="size-3" />
-          {{ goalText({ part: display.caption.part }) }}
-        </span>
-        <span v-else class="text-muted-foreground shrink-0 tabular-nums">
-          {{
-            $t('budgetPlans.grid.spentOf', {
-              spent: formatBaseCurrency(spentOf({ line })),
-              total: formatBaseCurrency(fundedOf(line)),
-            })
-          }}
-        </span>
+    <DefineGoalStatus v-slot="{ display }">
+      <span :class="cn('flex shrink-0 items-center gap-1 text-xs leading-4 tabular-nums', display.textClass)">
+        <CheckIcon v-if="display.caption.icon === 'check'" class="size-3" />
+        <MoonIcon v-else-if="display.caption.icon === 'moon'" class="size-3" />
+        {{ goalText({ part: display.caption.part }) }}
+      </span>
+    </DefineGoalStatus>
+
+    <DefineNameCell v-slot="{ line, display }">
+      <span class="flex min-w-0 items-center justify-between gap-2">
+        <span class="min-w-0"><LineName :line="line" /></span>
+        <GoalStatus v-if="display" :display="display" />
+        <BudgetLineSpentText v-else :line="line" class="min-w-0 truncate text-xs leading-4" />
       </span>
       <BudgetLineBars :line="line" :goal="display" :mode="rowBars" />
-    </DefineGoalCaption>
+    </DefineNameCell>
 
     <DefineMobileCaption v-slot="{ line, display }">
       <span class="text-muted-foreground mt-1 flex min-w-0 items-center justify-between gap-2 text-xs leading-4">
-        <span class="truncate tabular-nums">
-          {{
-            $t('budgetPlans.grid.spentOf', {
-              spent: formatBaseCurrency(spentOf({ line })),
-              total: formatBaseCurrency(fundedOf(line)),
-            })
-          }}
-        </span>
-        <span v-if="display" :class="cn('flex shrink-0 items-center gap-1 tabular-nums', display.textClass)">
-          <CheckIcon v-if="display.caption.icon === 'check'" class="size-3" />
-          <MoonIcon v-else-if="display.caption.icon === 'moon'" class="size-3" />
-          {{ goalText({ part: display.caption.part }) }}
-        </span>
+        <BudgetLineSpentText :line="line" class="truncate" />
+        <GoalStatus v-if="display" :display="display" />
       </span>
     </DefineMobileCaption>
 
@@ -601,8 +579,7 @@ const archiveSelected = () => {
         :class="
           cn(
             GRID_ROW_CLASS,
-            'group/line border-border hover:bg-accent/40 border-t select-none',
-            compactRows ? 'py-2' : 'py-1',
+            'group/line border-border hover:bg-accent/40 border-t py-1 select-none',
             selectedSet.has(line.lineId) && 'bg-accent hover:bg-accent',
           )
         "
@@ -616,8 +593,7 @@ const archiveSelected = () => {
         <div class="flex min-w-0 items-center gap-2">
           <GoalButton :line="line" />
           <SelectTrigger :line="line">
-            <LineName :line="line" />
-            <GoalCaption v-if="!compactRows" :line="line" :display="goalDisplays.get(line.lineId)" />
+            <NameCell :line="line" :display="goalDisplays.get(line.lineId)" />
           </SelectTrigger>
         </div>
 

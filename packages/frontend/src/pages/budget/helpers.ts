@@ -338,7 +338,7 @@ export const pickTakeBackLine = <T extends Pick<BudgetPlanPeriodViewLine, 'avail
     undefined,
   );
 
-export const spentOf = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'activity'> }) => Math.max(0, -line.activity);
+const spentOf = ({ line }: { line: Pick<BudgetPlanPeriodViewLine, 'activity'> }) => Math.max(0, -line.activity);
 
 const clampedPercent = ({ part, whole }: { part: number; whole: number }) => {
   if (whole <= 0) return part > 0 ? 100 : 0;
@@ -346,22 +346,54 @@ const clampedPercent = ({ part, whole }: { part: number; whole: number }) => {
 };
 
 /** A negative carry-in funds nothing, so it counts as 0. */
-export const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number }) =>
+const fundedOf = ({ carriedIn, assigned }: { carriedIn: number; assigned: number }) =>
   Math.max(0, carriedIn) + Math.max(0, assigned);
 
-/** Percents are of the funded amount. */
-export const lineBarsOf = ({
-  line,
-}: {
-  line: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>;
-}) => {
+export type LineAmounts = Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>;
+
+/** "Anything left" comes from `available`: `used` is a float sum that can land a hair under `funded`. */
+const usedPercentLabel = ({ used, funded, available }: { used: number; funded: number; available: number }) => {
+  const rounded = Math.round((used / funded) * 100);
+  if (used > 0 && rounded === 0) return '<1';
+  if (available > 0 && rounded === 100) return '99';
+  return String(rounded);
+};
+
+/** Net activity plus any deficit carried in: what has eaten into the funded amount. */
+const usedOf = ({ line }: { line: Pick<LineAmounts, 'activity' | 'carriedIn'> }) =>
+  Math.max(0, -(line.activity + Math.min(0, line.carriedIn)));
+
+const overspendOf = ({ line }: { line: Pick<LineAmounts, 'available'> }) => Math.max(0, -line.available);
+
+export const spentSummaryOf = ({ line }: { line: LineAmounts }) => {
+  const used = usedOf({ line });
+  const funded = fundedOf(line);
+  const overBy = overspendOf({ line });
+  if (overBy > 0) return { kind: 'overspent' as const, used, funded, overBy };
+  if (funded <= 0) return { kind: 'unfunded' as const };
+  return {
+    kind: 'used' as const,
+    used,
+    funded,
+    percent: usedPercentLabel({ used, funded, available: line.available }),
+  };
+};
+
+/** Percents are of the funded amount, except `overspentFundedPercent`: funded as a share of funded plus overspend. */
+export const lineBarsOf = ({ line }: { line: LineAmounts }) => {
   const carried = Math.max(0, line.carriedIn);
   const assigned = Math.max(0, line.assigned);
   const spent = spentOf({ line });
+  const used = usedOf({ line });
+  const funded = fundedOf(line);
+  const overspend = overspendOf({ line });
+  const deficitPercent = clampedPercent({ part: Math.min(-Math.min(0, line.carriedIn), used), whole: funded });
   return {
     carried,
     assigned,
-    spentPercent: clampedPercent({ part: spent, whole: fundedOf(line) }),
+    deficitPercent,
+    spendPercent: clampedPercent({ part: used, whole: funded }) - deficitPercent,
+    overspentFundedPercent: clampedPercent({ part: funded, whole: funded + overspend }),
     carriedSpentPercent: clampedPercent({
       part: Math.min(spent, carried),
       whole: carried,
@@ -370,7 +402,7 @@ export const lineBarsOf = ({
       part: spent - carried,
       whole: assigned,
     }),
-    isOverspent: line.available < 0,
+    isOverspent: overspend > 0,
   };
 };
 
@@ -442,7 +474,7 @@ export interface PanelContext {
   period: BudgetPlanPeriod;
   /** Empty for the whole-period overview; several ids aggregate the selection. */
   lineIds: string[];
-  figures: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>;
+  figures: LineAmounts;
   trends?: BudgetPlanTrends;
   /** Already narrowed to `lineIds`. */
   scheduled?: BudgetPlanScheduled;
@@ -989,13 +1021,9 @@ export const groupLines = <T extends { groupId: string | null }, G extends { id:
   };
 };
 
-export const sumLineTotals = ({
-  lines,
-}: {
-  lines: Pick<BudgetPlanPeriodViewLine, 'carriedIn' | 'assigned' | 'activity' | 'available'>[];
-}) => {
+export const sumLineTotals = ({ lines }: { lines: LineAmounts[] }) => {
   // Rounds off float residue; `|| 0` turns -0 into 0, which would format as "−$0.00".
-  const sum = ({ key }: { key: 'carriedIn' | 'assigned' | 'activity' | 'available' }) =>
+  const sum = ({ key }: { key: keyof LineAmounts }) =>
     Math.round(lines.reduce((total, line) => total + line[key], 0) * 100) / 100 || 0;
   return {
     carriedIn: sum({ key: 'carriedIn' }),

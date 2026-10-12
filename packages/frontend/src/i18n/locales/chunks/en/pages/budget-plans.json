@@ -181,7 +181,9 @@
       "assignAmountFor": "Assigned for {name}: {amount}. Change",
       "archivedBadge": "archived",
       "spentAmount": "spent {amount}",
-      "spentOf": "Spent {spent} of {total}"
+      "percentUsed": "{percent}% used",
+      "overBy": "Over by {amount}",
+      "notFunded": "Not funded"
     },
     "archivedLines": {
       "trigger": "Archived {count}",
@@ -341,8 +343,7 @@
       "rowBarGoal": "Goal bar",
       "rowBarCombined": "Combined bar",
       "rowBarSplit": "Split bars",
-      "rowBarNone": "No bar",
-      "compactRows": "Compact rows"
+      "rowBarNone": "No bar"
     },
     "goals": {
       "askHint": "Assign this amount here to stay on track.",

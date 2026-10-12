@@ -181,7 +181,9 @@
       "assignAmountFor": "Заплановано для {name}: {amount}. Змінити",
       "archivedBadge": "заархівовано",
       "spentAmount": "витрачено {amount}",
-      "spentOf": "Витрачено {spent} з {total}"
+      "percentUsed": "{percent}% використано",
+      "overBy": "Перевищено на {amount}",
+      "notFunded": "Не профінансовано"
     },
     "archivedLines": {
       "trigger": "Архівовано: {count}",
@@ -341,8 +343,7 @@
       "rowBarGoal": "Смужка цілі",
       "rowBarCombined": "Комбінована смужка",
       "rowBarSplit": "Розділені смужки",
-      "rowBarNone": "Без смужки",
-      "compactRows": "Компактні рядки"
+      "rowBarNone": "Без смужки"
     },
     "goals": {
       "askHint": "Розподіліть цю суму сюди, щоб не відставати від плану.",

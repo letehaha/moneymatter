@@ -39,6 +39,7 @@ import {
   lineIdsWithHistory,
   pickTakeBackLine,
   scheduledForLines,
+  spentSummaryOf,
   setGoalFrequency,
   periodProgress,
   spendingPace,
@@ -303,18 +304,33 @@ describe('lineBarsOf', () => {
     expect(lineBarsOf({ line: line({}) })).toEqual({
       carried: 0,
       assigned: 0,
-      spentPercent: 0,
+      spendPercent: 0,
+      deficitPercent: 0,
+      overspentFundedPercent: 0,
       carriedSpentPercent: 0,
       assignedSpentPercent: 0,
       isOverspent: false,
     });
   });
 
+  it('splits an overspent bar into its funded share and the excess', () => {
+    expect(lineBarsOf({ line: line({ assigned: 20, activity: -80 }) }).overspentFundedPercent).toBe(25);
+    expect(lineBarsOf({ line: line({ activity: -30 }) }).overspentFundedPercent).toBe(0);
+    expect(lineBarsOf({ line: line({ assigned: 100, activity: -40 }) }).overspentFundedPercent).toBe(100);
+  });
+
+  it('sizes the excess by the deficit, not by spend, when a deficit is carried in', () => {
+    expect(
+      lineBarsOf({ line: line({ carriedIn: -100, assigned: 100, activity: -50 }) }).overspentFundedPercent,
+    ).toBeCloseTo(66.67, 2);
+    expect(lineBarsOf({ line: line({ carriedIn: -100, assigned: 40 }) }).overspentFundedPercent).toBe(40);
+  });
+
   it('measures spend against carried-in plus assigned', () => {
     expect(lineBarsOf({ line: line({ carriedIn: 50, assigned: 150, activity: -50 }) })).toMatchObject({
       carried: 50,
       assigned: 150,
-      spentPercent: 25,
+      spendPercent: 25,
       isOverspent: false,
     });
   });
@@ -334,7 +350,7 @@ describe('lineBarsOf', () => {
     expect(lineBarsOf({ line: line({ carriedIn: -100, assigned: 100, activity: -50 }) })).toMatchObject({
       carried: 0,
       assigned: 100,
-      spentPercent: 50,
+      spendPercent: 0,
       assignedSpentPercent: 50,
       isOverspent: true,
     });
@@ -342,18 +358,106 @@ describe('lineBarsOf', () => {
 
   it('clamps at 100% and flags the line once it is overspent', () => {
     expect(lineBarsOf({ line: line({ assigned: 100, activity: -150 }) })).toMatchObject({
-      spentPercent: 100,
+      spendPercent: 100,
       assignedSpentPercent: 100,
       isOverspent: true,
     });
   });
 
   it('fills the whole track when spending happens with nothing funded', () => {
-    expect(lineBarsOf({ line: line({ activity: -30 }) })).toMatchObject({ spentPercent: 100, isOverspent: true });
+    expect(lineBarsOf({ line: line({ activity: -30 }) })).toMatchObject({ spendPercent: 100, isOverspent: true });
+  });
+
+  it("counts a carried-in deficit as used, ahead of this period's spend", () => {
+    const bars = lineBarsOf({ line: line({ carriedIn: -100, assigned: 150, activity: -40 }) });
+    expect(bars.isOverspent).toBe(false);
+    expect(bars.deficitPercent).toBeCloseTo(66.67, 2);
+    expect(bars.spendPercent).toBeCloseTo(26.67, 2);
+  });
+
+  it('lets income on the line pay down a carried-in deficit', () => {
+    expect(lineBarsOf({ line: line({ carriedIn: -100, assigned: 200, activity: 30 }) })).toMatchObject({
+      deficitPercent: 35,
+      spendPercent: 0,
+    });
   });
 
   it('ignores income on the line', () => {
-    expect(lineBarsOf({ line: line({ assigned: 100, activity: 40 }) }).spentPercent).toBe(0);
+    expect(lineBarsOf({ line: line({ assigned: 100, activity: 40 }) }).spendPercent).toBe(0);
+  });
+});
+
+describe('spentSummaryOf', () => {
+  const line = ({ carriedIn = 0, assigned = 0, activity = 0 }) => ({
+    carriedIn,
+    assigned,
+    activity,
+    available: carriedIn + assigned + activity,
+  });
+
+  it('reports the used share of the funded amount', () => {
+    expect(spentSummaryOf({ line: line({ carriedIn: 80, assigned: 500, activity: -441.76 }) })).toEqual({
+      kind: 'used',
+      used: 441.76,
+      funded: 580,
+      percent: '76',
+    });
+    expect(spentSummaryOf({ line: line({ assigned: 550 }) })).toMatchObject({ kind: 'used', percent: '0' });
+    expect(spentSummaryOf({ line: line({ assigned: 100, activity: -100 }) })).toMatchObject({ percent: '100' });
+  });
+
+  it('counts a carried-in deficit as used', () => {
+    expect(spentSummaryOf({ line: line({ carriedIn: -100, assigned: 150, activity: -40 }) })).toEqual({
+      kind: 'used',
+      used: 140,
+      funded: 150,
+      percent: '93',
+    });
+    expect(spentSummaryOf({ line: line({ carriedIn: -100, assigned: 200, activity: 30 }) })).toMatchObject({
+      used: 70,
+      percent: '35',
+    });
+  });
+
+  it('reads 100% once nothing is available, despite float drift in the deficit sum', () => {
+    expect(spentSummaryOf({ line: { carriedIn: -0.1, assigned: 0.8, activity: -0.7, available: 0 } })).toMatchObject({
+      kind: 'used',
+      percent: '100',
+    });
+  });
+
+  it('never rounds a partly spent line to 0% or 100%', () => {
+    expect(spentSummaryOf({ line: line({ assigned: 960, activity: -1 }) })).toMatchObject({ percent: '<1' });
+    expect(spentSummaryOf({ line: line({ assigned: 1000, activity: -999 }) })).toMatchObject({ percent: '99' });
+  });
+
+  it('reports the overspend by the negative available amount', () => {
+    expect(spentSummaryOf({ line: line({ assigned: 20, activity: -50 }) })).toEqual({
+      kind: 'overspent',
+      used: 50,
+      funded: 20,
+      overBy: 30,
+    });
+    expect(spentSummaryOf({ line: line({ carriedIn: -100, assigned: 100, activity: -50 }) })).toEqual({
+      kind: 'overspent',
+      used: 150,
+      funded: 100,
+      overBy: 50,
+    });
+  });
+
+  it('reports spending on a line with nothing funded as overspent', () => {
+    expect(spentSummaryOf({ line: line({ activity: -30 }) })).toEqual({
+      kind: 'overspent',
+      used: 30,
+      funded: 0,
+      overBy: 30,
+    });
+  });
+
+  it('flags a line with nothing funded and nothing owed', () => {
+    expect(spentSummaryOf({ line: line({}) })).toEqual({ kind: 'unfunded' });
+    expect(spentSummaryOf({ line: line({ activity: 40 }) })).toEqual({ kind: 'unfunded' });
   });
 });
 
@@ -495,11 +599,12 @@ describe('spendingPace', () => {
     expect(spendingPace({ ...period, activity: 50, carriedIn: 0, assigned: 100 }).spent).toBe(0);
   });
 
-  it('counts a negative carry-in as 0, matching the row bar', () => {
+  it('counts a negative carry-in as 0, matching the spend segment of the row bar', () => {
     const figures = { activity: -50, carriedIn: -40, assigned: 100 };
     const pace = spendingPace({ ...period, ...figures });
     expect(pace).toMatchObject({ total: 100, spentPercent: 50 });
-    expect(lineBarsOf({ line: { ...figures, available: 10 } }).spentPercent).toBe(pace.spentPercent);
+    const bars = lineBarsOf({ line: { ...figures, available: 10 } });
+    expect(bars.spendPercent).toBe(pace.spentPercent);
   });
 
   it('reports full spend when there is no money to spend but something was spent', () => {
