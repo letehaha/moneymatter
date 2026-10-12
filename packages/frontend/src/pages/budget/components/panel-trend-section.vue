@@ -1,27 +1,33 @@
 <script setup lang="ts">
+import { ChartTooltipHeader, ChartTooltipRow } from '@/components/common/charts/chart-tooltip';
+import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { useFormatCurrency } from '@/composable';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
-import { ArrowDownRightIcon, ArrowUpRightIcon } from '@lucide/vue';
 import { parseISO } from 'date-fns';
 import { computed } from 'vue';
 
-import { type PanelContext, type TrendKind, trendPaddingStarts, trendSummary, trendValues } from '../helpers';
+import { type PanelContext, formatPeriodLabel, trendBars, trendPaddingStarts } from '../helpers';
 
-const props = defineProps<{ context: PanelContext; kind: TrendKind }>();
+const props = defineProps<{ context: PanelContext }>();
 
-const BAR_CLASSES: Record<TrendKind, { current: string; past: string }> = {
-  budgeting: { current: 'bg-primary', past: 'bg-muted-foreground/30' },
-  spending: { current: 'bg-app-expense-color', past: 'bg-app-expense-color/30' },
-};
+const SERIES = [
+  { key: 'assigned', swatchClass: 'bg-muted-foreground/25', color: 'var(--muted-foreground)', valueClass: undefined },
+  { key: 'spent', swatchClass: 'bg-primary', color: 'var(--primary)', valueClass: undefined },
+  {
+    key: 'over',
+    swatchClass: 'bg-app-expense-color',
+    color: 'var(--app-expense-color)',
+    valueClass: 'text-app-expense-color',
+  },
+] as const;
 
 const { formatBaseCurrency } = useFormatCurrency();
-const { format } = useDateLocale();
+const { format, locale } = useDateLocale();
 
 const periods = computed(() => props.context.trends?.periods ?? []);
-const summary = computed(() =>
-  trendSummary({ values: trendValues({ periods: periods.value, lineIds: props.context.lineIds, kind: props.kind }) }),
-);
+const trend = computed(() => trendBars({ periods: periods.value, lineIds: props.context.lineIds }));
+const current = computed(() => trend.value.bars.at(-1));
 
 const formatLabel = ({ startDate }: { startDate: string }) =>
   format(parseISO(startDate), props.context.cadence === 'months' ? 'MMM' : 'd MMM');
@@ -34,71 +40,103 @@ const slots = computed(() => [
   }).map((startDate, index) => ({
     key: `pad-${index}`,
     label: startDate ? formatLabel({ startDate }) : '',
-    height: null,
+    title: '',
+    bar: undefined,
     isCurrent: false,
   })),
   ...periods.value.map((period, index) => ({
     key: period.periodId,
     label: formatLabel({ startDate: period.startDate }),
-    height: summary.value.heights[index] ?? 0,
+    title: formatPeriodLabel({ ...period, locale: locale.value }),
+    bar: trend.value.bars[index],
     isCurrent: index === periods.value.length - 1,
   })),
 ]);
-
-const isGood = computed(() => {
-  const change = summary.value.changePercent ?? 0;
-  return props.kind === 'budgeting' ? change > 0 : change < 0;
-});
 </script>
 
 <template>
   <div class="grid gap-3">
-    <div class="flex h-20 min-w-0 items-end gap-1.5">
-      <div v-for="bar in slots" :key="bar.key" class="flex h-full min-w-0 flex-1 flex-col items-center gap-1">
-        <div class="flex w-full flex-1 items-end">
-          <div v-if="bar.height === 0" class="bg-muted-foreground/30 h-0.5 w-full rounded-sm" />
-          <div
-            v-else-if="bar.height !== null"
-            :class="cn('w-full rounded-sm', BAR_CLASSES[kind][bar.isCurrent ? 'current' : 'past'])"
-            :style="{ height: `${bar.height}%` }"
-          />
-        </div>
-        <span
-          :class="
-            cn('w-full truncate text-center text-[10px]', bar.isCurrent ? 'text-primary-text' : 'text-muted-foreground')
-          "
-        >
-          {{ bar.label }}
-        </span>
-      </div>
+    <div class="text-muted-foreground flex flex-wrap gap-x-3 gap-y-1 text-[10px]">
+      <span v-for="item in SERIES" :key="item.key" class="flex items-center gap-1.5">
+        <span :class="cn('size-2 rounded-xs', item.swatchClass)" />
+        {{ $t(`budgetPlans.panel.trend.${item.key}`) }}
+      </span>
     </div>
 
-    <div class="flex min-w-0 items-center justify-between gap-3 text-xs">
-      <span class="flex min-w-0 items-center gap-2">
-        <span class="text-sm font-medium tabular-nums">{{ formatBaseCurrency(summary.current) }}</span>
-        <span
-          v-if="summary.changePercent !== null"
-          :class="
-            cn(
-              'flex items-center tabular-nums',
-              summary.changePercent === 0 && 'text-muted-foreground',
-              summary.changePercent !== 0 && isGood && 'text-app-income-color',
-              summary.changePercent !== 0 && !isGood && 'text-app-expense-color',
-            )
-          "
-        >
-          <ArrowUpRightIcon v-if="summary.changePercent >= 0" class="size-3.5" />
-          <ArrowDownRightIcon v-else class="size-3.5" />
-          {{ Math.round(Math.abs(summary.changePercent)) }}%
-        </span>
+    <div class="flex h-24 min-w-0 gap-1.5">
+      <ResponsiveTooltip
+        v-for="slot in slots"
+        :key="slot.key"
+        variant="chart"
+        :delay-duration="100"
+        :disabled="!slot.bar"
+      >
+        <div class="flex h-full min-w-0 flex-1 flex-col gap-1">
+          <div class="relative flex-1">
+            <div
+              v-if="!slot.bar || (!slot.bar.assignedPercent && !slot.bar.spent)"
+              class="bg-muted-foreground/25 absolute inset-x-0 bottom-0 h-0.5 rounded-sm"
+            />
+            <template v-else>
+              <div
+                class="bg-muted-foreground/25 absolute inset-x-0 bottom-0 rounded-t-sm"
+                :style="{ height: `${slot.bar.assignedPercent}%` }"
+              />
+              <div :class="cn('absolute inset-x-1/4 inset-y-0', !slot.isCurrent && 'opacity-60')">
+                <div
+                  :class="cn('bg-primary absolute inset-x-0 bottom-0', !slot.bar.over && 'rounded-t-sm')"
+                  :style="{ height: `${slot.bar.withinPercent}%` }"
+                />
+                <div
+                  v-if="slot.bar.over"
+                  class="bg-app-expense-color absolute inset-x-0 rounded-t-sm"
+                  :style="{ bottom: `${slot.bar.withinPercent}%`, height: `${slot.bar.overPercent}%` }"
+                />
+              </div>
+            </template>
+          </div>
+          <span
+            :class="
+              cn(
+                'w-full truncate text-center text-[10px]',
+                slot.isCurrent ? 'text-primary-text' : 'text-muted-foreground',
+              )
+            "
+          >
+            {{ slot.label }}
+          </span>
+        </div>
+
+        <template v-if="slot.bar" #content>
+          <ChartTooltipHeader>{{ slot.title }}</ChartTooltipHeader>
+          <template v-for="item in SERIES" :key="item.key">
+            <ChartTooltipRow
+              v-if="item.key !== 'over' || slot.bar.over"
+              :color="item.color"
+              :label="$t(`budgetPlans.panel.trend.${item.key}`)"
+              :value="formatBaseCurrency(slot.bar[item.key])"
+              :value-class="item.valueClass"
+            />
+          </template>
+        </template>
+      </ResponsiveTooltip>
+    </div>
+
+    <div
+      v-if="current"
+      class="text-muted-foreground flex min-w-0 flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs tabular-nums"
+    >
+      <span>
+        <i18n-t keypath="budgetPlans.panel.trend.spentOfAssigned" tag="span">
+          <template #spent>
+            <span class="text-foreground text-sm font-medium">{{ formatBaseCurrency(current.spent) }}</span>
+          </template>
+          <template #assigned>{{ formatBaseCurrency(current.assigned) }}</template>
+        </i18n-t>
+        <template v-if="trend.usedPercent !== null"> · {{ Math.round(trend.usedPercent) }}%</template>
       </span>
-      <span v-if="summary.average !== null" class="text-muted-foreground truncate">
-        {{
-          $t('budgetPlans.panel.periodAvg', {
-            n: summary.averageCount,
-            amount: formatBaseCurrency(summary.average),
-          })
-        }}
+      <span v-if="trend.averageUsedPercent !== null">
+        {{ $t('budgetPlans.panel.trend.averageUsed', { percent: Math.round(trend.averageUsedPercent) }) }}
       </span>
     </div>
   </div>

@@ -21,7 +21,6 @@ import {
   ChartColumnIcon,
   GaugeIcon,
   TargetIcon,
-  TrendingUpIcon,
   XIcon,
 } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
@@ -152,20 +151,10 @@ const sections = computed(() => {
       hidden: isPast.value || !scheduled.value || (props.lines.length > 0 && !scheduled.value.items.length),
     },
     {
-      key: 'budgetingTrend',
+      key: 'trend',
       icon: ChartColumnIcon,
-      titleKey: 'budgetPlans.panel.budgetingTrend',
+      titleKey: 'budgetPlans.panel.trend.title',
       component: PanelTrendSection,
-      props: { kind: 'budgeting' },
-      hidden: !hasTrends,
-    },
-    {
-      key: 'spendingTrend',
-      icon: TrendingUpIcon,
-      iconClass: 'bg-app-expense-color/15 text-app-expense-color',
-      titleKey: 'budgetPlans.panel.spendingTrend',
-      component: PanelTrendSection,
-      props: { kind: 'spending' },
       hidden: !hasTrends,
     },
     {

@@ -9,8 +9,7 @@ const SECTIONS: { key: PanelSection; labelClass: string; contentClass: string }[
   { key: 'coverage', labelClass: 'w-36', contentClass: 'h-34' },
   { key: 'goals', labelClass: 'w-14', contentClass: 'h-37' },
   { key: 'scheduled', labelClass: 'w-20', contentClass: 'h-40' },
-  { key: 'budgetingTrend', labelClass: 'w-28', contentClass: 'h-28' },
-  { key: 'spendingTrend', labelClass: 'w-28', contentClass: 'h-28' },
+  { key: 'trend', labelClass: 'w-28', contentClass: 'h-38' },
   { key: 'pace', labelClass: 'w-12', contentClass: 'h-25' },
 ];
 

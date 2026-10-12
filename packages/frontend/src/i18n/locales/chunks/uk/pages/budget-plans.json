@@ -295,9 +295,14 @@
       "inflows": "Надходження",
       "transactionCount": "{count} операція | {count} операції | {count} операцій",
       "nothingScheduled": "Нічого не заплановано",
-      "budgetingTrend": "Тренд бюджетування",
-      "spendingTrend": "Тренд витрат",
-      "periodAvg": "Середнє за {n} пер.: {amount}",
+      "trend": {
+        "title": "Заплановано та витрачено",
+        "assigned": "Заплановано",
+        "spent": "Витрачено",
+        "over": "Перевитрата",
+        "spentOfAssigned": "{spent} із {assigned}",
+        "averageUsed": "у середньому використано {percent}%"
+      },
       "nextPeriodCoverage": "Покриття наступного періоду",
       "goals": "Цілі",
       "goal": "Ціль"

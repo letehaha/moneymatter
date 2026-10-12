@@ -12,7 +12,6 @@ import {
   EllipsisIcon,
   GaugeIcon,
   PlusIcon,
-  TrendingUpIcon,
 } from '@lucide/vue';
 
 import { GRID_ROW_CLASS, amountToneClass, availablePillClass } from '../helpers';
@@ -26,11 +25,10 @@ const { formatBaseCurrency } = useFormatCurrency();
 const STEPS = ['accounts', 'suggested', 'available'] as const;
 
 const PANEL_SECTIONS = [
-  { key: 'breakdown', icon: CalculatorIcon },
-  { key: 'scheduled', icon: CalendarClockIcon },
-  { key: 'budgetingTrend', icon: ChartColumnIcon },
-  { key: 'spendingTrend', icon: TrendingUpIcon },
-  { key: 'pace', icon: GaugeIcon },
+  { titleKey: 'budgetPlans.panel.breakdown', icon: CalculatorIcon },
+  { titleKey: 'budgetPlans.panel.scheduled', icon: CalendarClockIcon },
+  { titleKey: 'budgetPlans.panel.trend.title', icon: ChartColumnIcon },
+  { titleKey: 'budgetPlans.panel.pace', icon: GaugeIcon },
 ] as const;
 
 const withTotals = ({ lines }: { lines: { key: string; assigned: number; spent: number }[] }) => {
@@ -197,11 +195,15 @@ const CHECKBOX_CLASS = 'border-muted-foreground/50 size-[18px] rounded-[4px] bor
             <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.empty.exampleBadge') }}</p>
           </div>
           <div class="divide-border divide-y">
-            <div v-for="section in PANEL_SECTIONS" :key="section.key" class="flex min-h-11 items-center gap-3 py-2">
+            <div
+              v-for="section in PANEL_SECTIONS"
+              :key="section.titleKey"
+              class="flex min-h-11 items-center gap-3 py-2"
+            >
               <span class="bg-muted text-muted-foreground flex size-7 shrink-0 items-center justify-center rounded-lg">
                 <component :is="section.icon" class="size-4" />
               </span>
-              <span class="text-sm font-medium">{{ $t(`budgetPlans.panel.${section.key}`) }}</span>
+              <span class="text-sm font-medium">{{ $t(section.titleKey) }}</span>
               <ChevronDownIcon class="ml-auto size-4" />
             </div>
           </div>

@@ -480,8 +480,6 @@ export interface PanelContext {
   scheduled?: BudgetPlanScheduled;
 }
 
-export type TrendKind = 'budgeting' | 'spending';
-
 const TREND_AVERAGE_WINDOW = 5;
 export const TREND_PERIOD_COUNT = 6;
 
@@ -513,39 +511,38 @@ export const trendPaddingStarts = ({
   });
 };
 
-/** A line missing from a period (not active yet) counts as 0. */
-export const trendValues = ({
-  periods,
-  lineIds,
-  kind,
-}: {
-  periods: BudgetPlanTrendPeriod[];
-  lineIds: string[];
-  kind: TrendKind;
-}): number[] => {
+/**
+ * Assigned vs spent per period for `lineIds` (the whole plan when empty), with bar heights as percentages of one
+ * shared scale. The last period is the current one; a line missing from a period (not active yet) counts as 0.
+ * `over` is the spending that left lines with a negative `available`, so carried-in money offsets it.
+ */
+export const trendBars = ({ periods, lineIds }: { periods: BudgetPlanTrendPeriod[]; lineIds: string[] }) => {
   const ids = new Set(lineIds);
-  const valueOf = (source: { assigned: number; activity: number }) =>
-    kind === 'budgeting' ? source.assigned : spentOf({ line: source });
-  return periods.map((period) =>
-    ids.size
-      ? period.lines.filter((line) => ids.has(line.lineId)).reduce((sum, line) => sum + valueOf(line), 0)
-      : valueOf(period),
-  );
-};
+  const totals = periods.map((period) => {
+    const lines = ids.size ? period.lines.filter((line) => ids.has(line.lineId)) : period.lines;
+    const sources = ids.size ? lines : [period];
+    const assigned = sources.reduce((sum, source) => sum + source.assigned, 0);
+    const spent = sources.reduce((sum, source) => sum + spentOf({ line: source }), 0);
+    const overspent = lines.reduce((sum, line) => sum + overspendOf({ line }), 0);
+    return { assigned, spent, over: Math.min(spent, overspent) };
+  });
 
-/** The last value is the current period. `changePercent` is `null` when the previous value is 0 or missing. */
-export const trendSummary = ({ values }: { values: number[] }) => {
-  const current = values.at(-1) ?? 0;
-  const previous = values.at(-2);
-  const earlier = values.slice(0, -1).slice(-TREND_AVERAGE_WINDOW);
-  const max = Math.max(0, ...values);
+  const max = Math.max(0, ...totals.flatMap(({ assigned, spent }) => [assigned, spent]));
+  const percentOfMax = (value: number) => (max > 0 ? (Math.max(0, value) / max) * 100 : 0);
+  const usedPercent = ({ items }: { items: typeof totals }) => {
+    const assigned = items.reduce((sum, item) => sum + Math.max(0, item.assigned), 0);
+    return assigned > 0 ? (items.reduce((sum, item) => sum + item.spent, 0) / assigned) * 100 : null;
+  };
 
   return {
-    current,
-    heights: values.map((value) => (max > 0 ? (Math.max(0, value) / max) * 100 : 0)),
-    changePercent: previous ? ((current - previous) / Math.abs(previous)) * 100 : null,
-    average: earlier.length ? earlier.reduce((sum, value) => sum + value, 0) / earlier.length : null,
-    averageCount: earlier.length,
+    bars: totals.map((total) => ({
+      ...total,
+      assignedPercent: percentOfMax(total.assigned),
+      withinPercent: percentOfMax(total.spent - total.over),
+      overPercent: percentOfMax(total.over),
+    })),
+    usedPercent: usedPercent({ items: totals.slice(-1) }),
+    averageUsedPercent: usedPercent({ items: totals.slice(0, -1).slice(-TREND_AVERAGE_WINDOW) }),
   };
 };
 

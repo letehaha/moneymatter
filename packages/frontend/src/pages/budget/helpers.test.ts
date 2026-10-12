@@ -46,8 +46,7 @@ import {
   trashDaysLeft,
   trashedPlansOf,
   trendPaddingStarts,
-  trendSummary,
-  trendValues,
+  trendBars,
   sumLineTotals,
   sumOverspent,
   takeBackCandidates,
@@ -624,7 +623,7 @@ describe('spendingPace', () => {
   });
 });
 
-describe('trendValues', () => {
+describe('trendBars', () => {
   const trendPeriod = ({
     assigned,
     activity,
@@ -644,59 +643,139 @@ describe('trendValues', () => {
     lines,
   });
 
-  const periods = [
-    trendPeriod({
-      assigned: 500,
-      activity: -200,
-      lines: [{ lineId: 'food', assigned: 100, activity: -80, available: 20 }],
-    }),
-    trendPeriod({ assigned: 600, activity: 40 }),
-  ];
-  const withTwoLines = [
-    trendPeriod({
-      assigned: 500,
-      activity: -200,
-      lines: [
-        { lineId: 'food', assigned: 100, activity: -80, available: 20 },
-        { lineId: 'fun', assigned: 50, activity: -10, available: 40 },
-        { lineId: 'rent', assigned: 300, activity: -100, available: 200 },
+  it('puts assigned and spent on one scale when assigned varies between periods', () => {
+    const { bars } = trendBars({
+      periods: [
+        trendPeriod({ assigned: 200, activity: -100 }),
+        trendPeriod({ assigned: 400, activity: -300 }),
+        trendPeriod({ assigned: 100, activity: -50 }),
       ],
-    }),
+      lineIds: [],
+    });
+    expect(bars.map((bar) => bar.assignedPercent)).toEqual([50, 100, 25]);
+    expect(bars.map((bar) => bar.withinPercent)).toEqual([25, 75, 12.5]);
+    expect(bars.map((bar) => bar.over)).toEqual([0, 0, 0]);
+  });
+
+  const line = ({ assigned, activity, available }: { assigned: number; activity: number; available: number }) => [
+    { lineId: 'food', assigned, activity, available },
   ];
 
-  it('reads assigned for budgeting and spent for spending, with income counting as no spend', () => {
-    expect(trendValues({ periods, lineIds: [], kind: 'budgeting' })).toEqual([500, 600]);
-    expect(trendValues({ periods, lineIds: [], kind: 'spending' })).toEqual([200, 0]);
+  it('splits overspending into an over part that sets the scale', () => {
+    const { bars } = trendBars({
+      periods: [
+        trendPeriod({ assigned: 300, activity: -400, lines: line({ assigned: 300, activity: -400, available: -100 }) }),
+        trendPeriod({ assigned: 0, activity: -100, lines: line({ assigned: 0, activity: -100, available: -100 }) }),
+      ],
+      lineIds: [],
+    });
+    expect(bars[0]).toMatchObject({ over: 100, assignedPercent: 75, withinPercent: 75, overPercent: 25 });
+    expect(bars[1]).toMatchObject({ over: 100, assignedPercent: 0, withinPercent: 0, overPercent: 25 });
   });
 
-  it('reads the line values and treats a period without the line as 0', () => {
-    expect(trendValues({ periods, lineIds: ['food'], kind: 'budgeting' })).toEqual([100, 0]);
-    expect(trendValues({ periods, lineIds: ['food'], kind: 'spending' })).toEqual([80, 0]);
+  it('has no over when carried-in money covers spending above assigned', () => {
+    const { bars } = trendBars({
+      periods: [
+        trendPeriod({ assigned: 100, activity: -200, lines: line({ assigned: 100, activity: -200, available: 0 }) }),
+      ],
+      lineIds: [],
+    });
+    expect(bars[0]).toMatchObject({ over: 0, assignedPercent: 50, withinPercent: 100, overPercent: 0 });
   });
 
-  it('sums the selected lines and ignores the rest', () => {
-    expect(trendValues({ periods: withTwoLines, lineIds: ['food', 'fun'], kind: 'budgeting' })).toEqual([150]);
-    expect(trendValues({ periods: withTwoLines, lineIds: ['food', 'fun'], kind: 'spending' })).toEqual([90]);
-  });
-});
-
-describe('trendSummary', () => {
-  it('scales bars to the max and compares the current value with the previous one', () => {
-    const summary = trendSummary({ values: [100, 200, 400, 300, 500, 250] });
-    expect(summary.heights).toEqual([20, 40, 80, 60, 100, 50]);
-    expect(summary).toMatchObject({ current: 250, changePercent: -50, average: 300, averageCount: 5 });
+  it('caps over at the spending of the period, so a carried-in deficit alone is not over', () => {
+    const { bars } = trendBars({
+      periods: [
+        trendPeriod({ assigned: 0, activity: 0, lines: line({ assigned: 0, activity: 0, available: -40 }) }),
+        trendPeriod({ assigned: 0, activity: -10, lines: line({ assigned: 0, activity: -10, available: -50 }) }),
+      ],
+      lineIds: [],
+    });
+    expect(bars.map((bar) => bar.over)).toEqual([0, 10]);
   });
 
-  it('averages only the periods before the current one', () => {
-    expect(trendSummary({ values: [100, 300] })).toMatchObject({ average: 100, averageCount: 1, changePercent: 200 });
+  it('counts income as no spend and has no heights when everything is 0', () => {
+    const result = trendBars({
+      periods: [trendPeriod({ assigned: 0, activity: 40 }), trendPeriod({ assigned: 0, activity: 0 })],
+      lineIds: [],
+    });
+    expect(result.bars.map((bar) => [bar.spent, bar.assignedPercent, bar.withinPercent])).toEqual([
+      [0, 0, 0],
+      [0, 0, 0],
+    ]);
+    expect(result).toMatchObject({ usedPercent: null, averageUsedPercent: null });
   });
 
-  it('has no change or average for a single period', () => {
-    expect(trendSummary({ values: [80] })).toMatchObject({ changePercent: null, average: null, heights: [100] });
+  it('sums the selected lines, ignores the rest and treats a period without the line as 0', () => {
+    const lines = [
+      { lineId: 'food', assigned: 100, activity: -80, available: 20 },
+      { lineId: 'fun', assigned: 50, activity: -10, available: 40 },
+      { lineId: 'rent', assigned: 300, activity: -100, available: 200 },
+    ];
+    const { bars } = trendBars({
+      periods: [trendPeriod({ assigned: 600, activity: 0 }), trendPeriod({ assigned: 500, activity: -200, lines })],
+      lineIds: ['food', 'fun'],
+    });
+    expect(bars.map(({ assigned, spent }) => ({ assigned, spent }))).toEqual([
+      { assigned: 0, spent: 0 },
+      { assigned: 150, spent: 90 },
+    ]);
   });
 
-  it('has no change when the previous value is 0 and no bar heights when everything is 0', () => {
-    expect(trendSummary({ values: [0, 0] })).toMatchObject({ changePercent: null, heights: [0, 0] });
+  it('reports the current period usage and the usage across the earlier funded periods', () => {
+    const result = trendBars({
+      periods: [
+        trendPeriod({ assigned: 0, activity: 0 }),
+        trendPeriod({ assigned: 100, activity: -50 }),
+        trendPeriod({ assigned: 300, activity: -250 }),
+        trendPeriod({ assigned: 200, activity: -50 }),
+      ],
+      lineIds: [],
+    });
+    expect(result).toMatchObject({ usedPercent: 25, averageUsedPercent: 75 });
+  });
+
+  it('takes over from each overspent line, limited to the selected lines', () => {
+    const lines = [
+      { lineId: 'food', assigned: 100, activity: -80, available: 20 },
+      { lineId: 'fun', assigned: 50, activity: -55, available: -5 },
+      { lineId: 'rent', assigned: 300, activity: -400, available: -100 },
+    ];
+    const period = trendPeriod({ assigned: 450, activity: -535, lines });
+    expect(trendBars({ periods: [period], lineIds: [] }).bars[0]!.over).toBe(105);
+    expect(trendBars({ periods: [period], lineIds: ['food', 'fun'] }).bars[0]!.over).toBe(5);
+    expect(trendBars({ periods: [period], lineIds: ['food'] }).bars[0]!.over).toBe(0);
+  });
+
+  it('treats negative assigned as nothing assigned', () => {
+    const result = trendBars({
+      periods: [
+        trendPeriod({ assigned: -50, activity: -50 }),
+        trendPeriod({ assigned: 100, activity: 0 }),
+        trendPeriod({ assigned: 0, activity: -30 }),
+      ],
+      lineIds: [],
+    });
+    expect(result.bars[0]).toMatchObject({ assigned: -50, assignedPercent: 0, withinPercent: 50 });
+    expect(result).toMatchObject({ usedPercent: null, averageUsedPercent: 50 });
+  });
+
+  it('averages only the 5 periods before the current one', () => {
+    const periods = [1000, 100, 100, 100, 100, 100, 100].map((spent) =>
+      trendPeriod({ assigned: 100, activity: -spent }),
+    );
+    expect(trendBars({ periods, lineIds: [] }).averageUsedPercent).toBe(100);
+  });
+
+  it('has no bars or usage without periods', () => {
+    expect(trendBars({ periods: [], lineIds: [] })).toEqual({ bars: [], usedPercent: null, averageUsedPercent: null });
+  });
+
+  it('has no average for a single period', () => {
+    expect(trendBars({ periods: [trendPeriod({ assigned: 80, activity: -20 })], lineIds: [] })).toMatchObject({
+      usedPercent: 25,
+      averageUsedPercent: null,
+    });
   });
 });
 

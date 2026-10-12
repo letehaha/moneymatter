@@ -295,9 +295,14 @@
       "inflows": "Inflows",
       "transactionCount": "{count} transaction | {count} transactions",
       "nothingScheduled": "Nothing scheduled",
-      "budgetingTrend": "Budgeting trend",
-      "spendingTrend": "Spending trend",
-      "periodAvg": "{n}-period avg {amount}",
+      "trend": {
+        "title": "Assigned vs spent",
+        "assigned": "Assigned",
+        "spent": "Spent",
+        "over": "Over",
+        "spentOfAssigned": "{spent} of {assigned}",
+        "averageUsed": "avg {percent}% used"
+      },
       "nextPeriodCoverage": "Next period coverage",
       "goals": "Goals",
       "goal": "Goal"
