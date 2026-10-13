@@ -7,7 +7,7 @@ import { type LineAmounts, spentSummaryOf } from '../helpers';
 
 const props = defineProps<{ line: LineAmounts }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatShortBaseCurrency } = useFormatCurrency();
 
 const summary = computed(() => spentSummaryOf({ line: props.line }));
 </script>
@@ -26,15 +26,15 @@ const summary = computed(() => spentSummaryOf({ line: props.line }));
       >
         {{
           summary.kind === 'overspent'
-            ? $t('budgetPlans.grid.overBy', { amount: formatBaseCurrency(summary.overBy) })
+            ? $t('budgetPlans.grid.overBy', { amount: formatShortBaseCurrency({ amount: summary.overBy }) })
             : $t('budgetPlans.grid.percentUsed', { percent: summary.percent })
         }}
       </span>
       ·
       {{
         $t('budgetPlans.panel.spentOfTotal', {
-          spent: formatBaseCurrency(summary.used),
-          total: formatBaseCurrency(summary.funded),
+          spent: formatShortBaseCurrency({ amount: summary.used }),
+          total: formatShortBaseCurrency({ amount: summary.funded }),
         })
       }}
     </template>

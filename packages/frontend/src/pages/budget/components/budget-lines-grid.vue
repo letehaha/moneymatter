@@ -140,7 +140,7 @@ const [DefineGoalStatus, GoalStatus] = createReusableTemplate<{
 const { t } = useI18n();
 const queryClient = useQueryClient();
 const { addSuccessNotification, addInfoNotification } = useNotificationCenter();
-const { formatBaseCurrency } = useFormatCurrency();
+const { formatBaseCurrency, formatShortBaseCurrency } = useFormatCurrency();
 const { goalText } = useGoalText();
 
 const archivedLineIds = computed(() => new Set(props.archivedLines.map((line) => line.id)));
@@ -363,7 +363,7 @@ const archiveSelected = () => {
             )
           "
         >
-          {{ formatBaseCurrency(line.assigned) }}
+          {{ formatShortBaseCurrency({ amount: line.assigned }) }}
         </Button>
       </AssignPopover>
     </DefineAssignTrigger>
@@ -608,10 +608,10 @@ const archiveSelected = () => {
         <AssignTrigger :line="line" />
 
         <span class="text-muted-foreground text-right text-sm tabular-nums">{{
-          formatBaseCurrency(line.activity)
+          formatShortBaseCurrency({ amount: line.activity })
         }}</span>
         <span class="text-right">
-          <span :class="availableClass({ line })">{{ formatBaseCurrency(line.available) }}</span>
+          <span :class="availableClass({ line })">{{ formatShortBaseCurrency({ amount: line.available }) }}</span>
         </span>
 
         <span v-if="archivedLineIds.has(line.lineId)" />
@@ -639,10 +639,10 @@ const archiveSelected = () => {
           <span class="flex min-w-0 items-center gap-3">
             <span class="min-w-0 flex-1"><LineName :line="line" /></span>
             <span :class="cn(MOBILE_ASSIGNED_CLASS, 'text-muted-foreground text-sm')">
-              {{ formatBaseCurrency(line.assigned) }}
+              {{ formatShortBaseCurrency({ amount: line.assigned }) }}
             </span>
             <span :class="MOBILE_AVAILABLE_CLASS">
-              <span :class="availableClass({ line })">{{ formatBaseCurrency(line.available) }}</span>
+              <span :class="availableClass({ line })">{{ formatShortBaseCurrency({ amount: line.available }) }}</span>
             </span>
           </span>
           <BudgetLineBars :line="line" :goal="goalDisplays.get(line.lineId)" :mode="rowBars" />
@@ -779,12 +779,14 @@ const archiveSelected = () => {
               "
             />
             <GroupControls :group="section.group" />
-            <span class="text-right tabular-nums">{{ formatBaseCurrency(section.totals.assigned) }}</span>
+            <span class="text-right tabular-nums">{{
+              formatShortBaseCurrency({ amount: section.totals.assigned })
+            }}</span>
             <span class="text-muted-foreground text-right tabular-nums">{{
-              formatBaseCurrency(section.totals.activity)
+              formatShortBaseCurrency({ amount: section.totals.activity })
             }}</span>
             <span :class="cn('text-right tabular-nums', amountToneClass({ amount: section.totals.available }))">
-              {{ formatBaseCurrency(section.totals.available) }}
+              {{ formatShortBaseCurrency({ amount: section.totals.available }) }}
             </span>
             <GroupMenu :group="section.group" :menu-key="`group-row-${section.group.id}`" />
           </div>
@@ -806,12 +808,14 @@ const archiveSelected = () => {
             </span>
             <ArchivedTrigger />
           </div>
-          <span class="text-right tabular-nums">{{ formatBaseCurrency(view.header.totalAssigned) }}</span>
+          <span class="text-right tabular-nums">{{
+            formatShortBaseCurrency({ amount: view.header.totalAssigned })
+          }}</span>
           <span class="text-muted-foreground text-right tabular-nums">{{
-            formatBaseCurrency(view.header.totalActivity)
+            formatShortBaseCurrency({ amount: view.header.totalActivity })
           }}</span>
           <span :class="cn('text-right tabular-nums', amountToneClass({ amount: view.header.totalAvailable }))">
-            {{ formatBaseCurrency(view.header.totalAvailable) }}
+            {{ formatShortBaseCurrency({ amount: view.header.totalAvailable }) }}
           </span>
           <span />
         </div>
@@ -855,14 +859,14 @@ const archiveSelected = () => {
               <span class="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                 {{ $t('budgetPlans.grid.assigned') }}
               </span>
-              <span>{{ formatBaseCurrency(section.totals.assigned) }}</span>
+              <span>{{ formatShortBaseCurrency({ amount: section.totals.assigned }) }}</span>
             </span>
             <span :class="cn(MOBILE_AVAILABLE_CLASS, 'flex flex-col')">
               <span class="text-muted-foreground text-[10px] font-medium tracking-wide uppercase">
                 {{ $t('budgetPlans.grid.available') }}
               </span>
               <span :class="amountToneClass({ amount: section.totals.available })">
-                {{ formatBaseCurrency(section.totals.available) }}
+                {{ formatShortBaseCurrency({ amount: section.totals.available }) }}
               </span>
             </span>
           </div>
