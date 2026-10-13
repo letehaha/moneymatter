@@ -527,6 +527,20 @@
   }
 }
 
+@keyframes overscroll-contain {
+  from,
+  to {
+    overscroll-behavior: contain;
+  }
+}
+
+/* A scroll timeline is inactive while the element has nothing to scroll, so a
+   list that fits passes the gesture to the page instead of rubber-banding. */
+@utility overscroll-contain-if-scrollable {
+  animation: overscroll-contain linear both;
+  animation-timeline: scroll(self);
+}
+
 .datetime-raw-input::-webkit-inner-spin-button,
 .datetime-raw-input::-webkit-calendar-picker-indicator,
 .date-raw-input::-webkit-inner-spin-button,

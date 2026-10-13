@@ -189,7 +189,7 @@ const isDataEmpty = computed(() => !isTxFetching.value && pastTransactions.value
         <ListIcon class="size-32" />
       </EmptyState>
     </template>
-    <ScrollArea v-else class="-mx-2 min-h-0 flex-1" viewport-class="px-2 md:overscroll-contain">
+    <ScrollArea v-else class="-mx-2 min-h-0 flex-1" viewport-class="px-2 md:overscroll-contain-if-scrollable">
       <!-- Scheduled payment rows: one row per item, overdue first, sorted by dueDate -->
       <template v-if="includeScheduled && scheduledRows.length > 0">
         <div

@@ -149,7 +149,7 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
             {{ $t('dashboard.widgets.creditUtilization.noAccounts') }}
           </div>
         </template>
-        <ScrollArea v-else class="min-h-0 flex-1" viewport-class="md:overscroll-contain">
+        <ScrollArea v-else class="min-h-0 flex-1" viewport-class="md:overscroll-contain-if-scrollable">
           <div class="-mx-2 flex flex-col">
             <router-link
               v-for="account in creditAccounts"

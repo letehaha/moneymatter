@@ -246,7 +246,7 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
           !arrivedState.bottom && '[mask-image:linear-gradient(to_bottom,black_calc(100%-1.75rem),transparent)]',
         )
       "
-      viewport-class="px-2 md:overscroll-contain"
+      viewport-class="px-2 md:overscroll-contain-if-scrollable"
     >
       <div ref="headlineRef" class="flex items-center gap-5 pb-3">
         <div

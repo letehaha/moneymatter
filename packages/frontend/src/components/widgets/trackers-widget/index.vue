@@ -115,7 +115,7 @@ const retry = () => {
       </router-link>
     </div>
 
-    <ScrollArea v-else class="-mx-2 min-h-0 flex-1" viewport-class="px-2 md:overscroll-contain">
+    <ScrollArea v-else class="-mx-2 min-h-0 flex-1" viewport-class="px-2 md:overscroll-contain-if-scrollable">
       <div class="divide-border/60 divide-y">
         <router-link
           v-for="row in rows"
