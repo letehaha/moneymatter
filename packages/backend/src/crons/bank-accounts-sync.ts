@@ -12,11 +12,11 @@ import { createScheduledSync } from './lib/create-scheduled-sync';
 
 const ACTIVE_WITHIN_DAYS = 7;
 
-type DueUser = Pick<Users, 'id' | 'role' | 'plan' | 'trialEndsAt'>;
+type DueUser = Pick<Users, 'id' | 'role' | 'plan' | 'trialEndsAt' | 'firstBudgetPlanAt'>;
 
 const loadDueUsers = async ({ now }: { now: Date }): Promise<DueUser[]> =>
   (await connection.sequelize.query(
-    `SELECT DISTINCT u."id", u."role", u."plan", u."trialEndsAt"
+    `SELECT DISTINCT u."id", u."role", u."plan", u."trialEndsAt", u."firstBudgetPlanAt"
        FROM "Users" u
        JOIN "BankDataProviderConnections" c ON c."userId" = u."id" AND c."isActive" = true
        JOIN ba_session s ON s."userId" = u."authUserId" AND s."updatedAt" >= :activeSince
