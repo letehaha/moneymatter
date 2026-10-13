@@ -227,6 +227,15 @@
         "empty": "No budget yet",
         "create": "Set up a budget"
       },
+      "trackers": {
+        "spentOfLimit": "{spent} of {limit}",
+        "inOut": "{income} in, {expense} out",
+        "net": "Net",
+        "noLimit": "No limit",
+        "empty": "No trackers yet",
+        "ended": "Ended",
+        "create": "Create a tracker"
+      },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
         "balanceTrend": {
@@ -276,6 +285,10 @@
         "budget": {
           "name": "Budget",
           "description": "What is left in the current budget period, line by line"
+        },
+        "trackers": {
+          "name": "Trackers",
+          "description": "Each active tracker with how much of its limit is used and its net"
         }
       }
     },

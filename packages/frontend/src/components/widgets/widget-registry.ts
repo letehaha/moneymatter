@@ -197,6 +197,19 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
       ),
     needsPeriod: false,
   },
+  trackers: {
+    id: 'trackers',
+    name: 'dashboard.widgets.registry.trackers.name',
+    description: 'dashboard.widgets.registry.trackers.description',
+    defaultColSpan: 1,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 1, rowSpan: 2, label: '1×2' },
+    ],
+    component: () => import('@/components/widgets/trackers-widget/index.vue'),
+    needsPeriod: false,
+  },
   [FIRE_WIDGET_ID]: {
     id: FIRE_WIDGET_ID,
     name: 'dashboard.widgets.registry.fireProgress.name',
