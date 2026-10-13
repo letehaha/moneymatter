@@ -3,6 +3,7 @@ import { restoreBudgetPlanLine } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useDateLocale } from '@/composable/use-date-locale';
 import type { BudgetPlanLineEntry } from '@bt/shared/types';
@@ -78,16 +79,18 @@ watch(
             <ArchiveRestoreIcon v-else class="size-4" />
             {{ $t('budgetPlans.archivedLines.restore') }}
           </Button>
-          <Button
-            variant="ghost-destructive"
-            size="icon"
-            class="size-9"
-            :disabled="isPending"
-            :aria-label="$t('budgetPlans.archivedLines.deleteLine', { name: line.name })"
-            @click="askDelete({ line })"
-          >
-            <Trash2Icon class="size-4" />
-          </Button>
+          <DesktopOnlyTooltip :content="$t('budgetPlans.archivedLines.deleteLine', { name: line.name })">
+            <Button
+              variant="ghost-destructive"
+              size="icon"
+              class="size-9"
+              :disabled="isPending"
+              :aria-label="$t('budgetPlans.archivedLines.deleteLine', { name: line.name })"
+              @click="askDelete({ line })"
+            >
+              <Trash2Icon class="size-4" />
+            </Button>
+          </DesktopOnlyTooltip>
         </div>
       </li>
     </ul>

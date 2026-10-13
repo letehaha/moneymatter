@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanDetails, BudgetPlanLineEntry } from '@bt/shared/types/budget-plans';
+import { BudgetPlanDetails, BudgetPlanLineEntry } from '@bt/shared/types';
 import { centsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetLineCategories from '@models/budget-line-categories.model';

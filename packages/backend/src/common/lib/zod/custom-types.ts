@@ -9,7 +9,7 @@ import {
   BUDGET_SUGGESTION_PETS,
   BUDGET_SUGGESTION_SUBSCRIPTIONS,
   BUDGET_SUGGESTION_TRANSPORT,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import cc from 'currency-codes';
 import { z } from 'zod';

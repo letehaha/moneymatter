@@ -1,7 +1,7 @@
 import type { AnthropicProviderOptions } from '@ai-sdk/anthropic';
 import type { GoogleGenerativeAIProviderOptions } from '@ai-sdk/google';
 import { AI_PROVIDER, RecordId } from '@bt/shared/types';
-import type { BudgetSuggestionAnswers } from '@bt/shared/types/budget-plans';
+import type { BudgetSuggestionAnswers } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import { createProviderModel } from '@services/ai/ai-client-factory';
@@ -257,7 +257,14 @@ export const organizeLinesWithAi = async ({
     DAY_SECONDS,
     CALLS_PER_USER_PER_DAY,
   );
-  if (!userCap.allowed || userCap.serviceUnavailable) return null;
+  if (userCap.serviceUnavailable) {
+    logger.warn('[Budget suggestions] Rate limiter unavailable, skipping the AI layout', { userId });
+    return null;
+  }
+  if (!userCap.allowed) {
+    logger.warn('[Budget suggestions] Daily AI cap reached, skipping the AI layout', { userId });
+    return null;
+  }
 
   const shortIds = createShortIds({ ids: candidates.map((candidate) => candidate.id), prefix: 'c' });
   const prompt = candidates

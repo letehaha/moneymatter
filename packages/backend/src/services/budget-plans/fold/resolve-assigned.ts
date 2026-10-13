@@ -1,4 +1,4 @@
-import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
+import { BudgetPlanCarryPolicy } from '@bt/shared/types';
 import type BudgetAssignments from '@models/budget-assignments.model';
 
 /** Integer cents. */

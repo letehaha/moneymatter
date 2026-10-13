@@ -1,4 +1,4 @@
-import { BUDGET_ASSIGNMENT_SCOPES, BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types/budget-plans';
+import { BUDGET_ASSIGNMENT_SCOPES, BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types';
 import { boundedDecimalAmount, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { setAssignment } from '@services/budget-plans/set-assignment';

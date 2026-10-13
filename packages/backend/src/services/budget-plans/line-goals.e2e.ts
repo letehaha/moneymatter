@@ -5,7 +5,7 @@ import {
   BUDGET_LINE_GOAL_FREQUENCIES,
   type BudgetLineGoalFrequency,
   type SetBudgetLineGoalPayload,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';

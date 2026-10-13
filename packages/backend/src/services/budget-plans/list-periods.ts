@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanPeriod } from '@bt/shared/types/budget-plans';
+import { BudgetPlanPeriod } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 
 import { findPlan } from './find-plan';

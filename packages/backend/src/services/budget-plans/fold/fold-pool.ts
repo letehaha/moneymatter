@@ -1,4 +1,4 @@
-import { BudgetPlanPool } from '@bt/shared/types/budget-plans';
+import { BudgetPlanPool } from '@bt/shared/types';
 
 export interface PoolPeriodInput {
   header: { totalAssigned: number; totalAvailable: number; totalCarriedIn: number };

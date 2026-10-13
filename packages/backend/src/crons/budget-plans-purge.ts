@@ -1,4 +1,4 @@
-import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types';
 import BudgetPlans from '@models/budget-plans.model';
 import { subDays } from 'date-fns';
 import { Op } from 'sequelize';

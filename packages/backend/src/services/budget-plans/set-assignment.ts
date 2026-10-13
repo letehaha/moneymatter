@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { SetBudgetPlanAssignmentPayload } from '@bt/shared/types/budget-plans';
+import { SetBudgetPlanAssignmentPayload } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';

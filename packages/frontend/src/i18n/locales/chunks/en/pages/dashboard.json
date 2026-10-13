@@ -215,6 +215,18 @@
           "m12": "Last 12 months"
         }
       },
+      "budget": {
+        "spent": "spent",
+        "ringLabel": "{percent}% of the budget is spent",
+        "leftOf": "left of {total}",
+        "overOf": "over the {total} budget",
+        "headerLeft": "{amount} left",
+        "headerOver": "{amount} over",
+        "daysLeft": "{count} day left | {count} days left",
+        "lastDay": "Last day of the period",
+        "empty": "No budget yet",
+        "create": "Set up a budget"
+      },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
         "balanceTrend": {
@@ -260,6 +272,10 @@
         "taxes": {
           "name": "Average Tax Rate",
           "description": "Share of income paid in taxes, with a 12-month trend"
+        },
+        "budget": {
+          "name": "Budget",
+          "description": "What is left in the current budget period, line by line"
         }
       }
     },

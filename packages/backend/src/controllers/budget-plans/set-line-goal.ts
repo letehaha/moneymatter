@@ -5,7 +5,7 @@ import {
   BUDGET_LINE_GOAL_FREQUENCIES,
   BUDGET_LINE_GOAL_REPEAT_MAX,
   BUDGET_LINE_GOAL_REPEAT_UNITS,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { boundedDecimalAmount, dateBound, recordId } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { createController } from '@controllers/helpers/controller-factory';

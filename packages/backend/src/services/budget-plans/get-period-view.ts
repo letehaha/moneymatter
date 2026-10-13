@@ -6,7 +6,7 @@ import {
   BudgetPlanPeriodView,
   BudgetPlanPeriodViewLineGoal,
   BudgetPlanPool,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';

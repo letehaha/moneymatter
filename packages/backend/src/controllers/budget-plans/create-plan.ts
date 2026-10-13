@@ -1,4 +1,4 @@
-import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BUDGET_PLAN_TYPE_KEYS } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BUDGET_PLAN_TYPE_KEYS } from '@bt/shared/types';
 import { budgetPlanName, budgetSuggestionAnswers, dateBound, uniqueRecordIds } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { createPlan } from '@services/budget-plans/create-plan';

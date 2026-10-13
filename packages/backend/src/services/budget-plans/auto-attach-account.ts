@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
 import BudgetPlanAccounts from '@models/budget-plan-accounts.model';
 import BudgetPlans from '@models/budget-plans.model';

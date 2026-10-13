@@ -1,3 +1,4 @@
+import { ensureChunkLoaded } from '@/i18n';
 import type { Component } from 'vue';
 
 export interface WidgetSize {
@@ -177,6 +178,23 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
       { colSpan: 2, rowSpan: 1, label: '2×1' },
     ],
     component: () => import('@/components/widgets/subscriptions-overview.vue'),
+    needsPeriod: false,
+  },
+  budget: {
+    id: 'budget',
+    name: 'dashboard.widgets.registry.budget.name',
+    description: 'dashboard.widgets.registry.budget.description',
+    defaultColSpan: 1,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 1, rowSpan: 2, label: '1×2' },
+    ],
+    // The line rows reuse budget page components, whose copy lives outside the dashboard chunk.
+    component: () =>
+      Promise.all([import('@/components/widgets/budget-widget.vue'), ensureChunkLoaded('pages/budget-plans')]).then(
+        ([component]) => component,
+      ),
     needsPeriod: false,
   },
   [FIRE_WIDGET_ID]: {

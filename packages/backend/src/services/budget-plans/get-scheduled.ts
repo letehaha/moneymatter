@@ -1,5 +1,5 @@
 import { RecordId, SUBSCRIPTION_LINK_STATUS, TRANSACTION_TYPES } from '@bt/shared/types';
-import { BudgetPlanScheduled, BudgetPlanScheduledItem } from '@bt/shared/types/budget-plans';
+import { BudgetPlanScheduled, BudgetPlanScheduledItem } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';

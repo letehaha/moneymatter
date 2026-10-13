@@ -4,7 +4,7 @@ import {
   BudgetPlanCadence,
   BudgetSuggestionAnswers,
   BudgetSuggestionContext,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { requestContext } from '@common/request-context';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';

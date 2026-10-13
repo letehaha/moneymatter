@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanDetails } from '@bt/shared/types/budget-plans';
+import { BudgetPlanDetails } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
 import BudgetPlans from '@models/budget-plans.model';

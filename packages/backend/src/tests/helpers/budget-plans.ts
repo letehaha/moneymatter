@@ -1,4 +1,4 @@
-import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/shared/types/budget-plans';
+import type { SetBudgetLineGoalPayload, SetBudgetPlanLayoutPayload } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { createLine as _createLine } from '@services/budget-plans/create-line';
 import { createPlan as _createPlan } from '@services/budget-plans/create-plan';

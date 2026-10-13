@@ -1,4 +1,4 @@
-import { BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_CARRY_POLICIES } from '@bt/shared/types';
 import { boundedDecimalAmount, budgetPlanName, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { updatePlan } from '@services/budget-plans/update-plan';

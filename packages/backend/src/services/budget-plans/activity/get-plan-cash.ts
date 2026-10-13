@@ -117,7 +117,7 @@ export const getPlanCash = async ({
         date: openingUtc,
       });
       if (rate === null) {
-        logger.info('[Budget plans] No stored rate for an opening balance, using the current-rate value', {
+        logger.warn('[Budget plans] No stored rate for an opening balance, using the current-rate value', {
           planId: plan.id,
           accountId: row.accountId,
           currency: row.currencyCode,

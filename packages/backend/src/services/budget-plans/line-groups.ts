@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanLineGroup } from '@bt/shared/types/budget-plans';
+import { BudgetPlanLineGroup } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import BudgetLineGroups from '@models/budget-line-groups.model';

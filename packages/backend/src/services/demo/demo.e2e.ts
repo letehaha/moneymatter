@@ -11,7 +11,7 @@ import {
   USER_ROLES,
   VEHICLE_CLASS,
 } from '@bt/shared/types';
-import type { BudgetPlanCarryPolicy, BudgetPlanPeriod, BudgetPlanPeriodView } from '@bt/shared/types/budget-plans';
+import type { BudgetPlanCarryPolicy, BudgetPlanPeriod, BudgetPlanPeriodView } from '@bt/shared/types';
 import { ASSET_CLASS } from '@bt/shared/types/investments';
 import { VENTURE_DEAL_STATUS } from '@bt/shared/types/venture';
 import { authPool } from '@config/auth';

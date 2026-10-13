@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetLineGoal, SetBudgetLineGoalPayload } from '@bt/shared/types/budget-plans';
+import { BudgetLineGoal, SetBudgetLineGoalPayload } from '@bt/shared/types';
 import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';

@@ -10,6 +10,7 @@ import { uk } from 'date-fns/locale';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  availablePillClass,
   buildAssignmentPayload,
   buildCreatePlanPayload,
   buildLayoutPayload,
@@ -43,6 +44,7 @@ import {
   spentSummaryOf,
   setGoalFrequency,
   periodProgress,
+  periodSpend,
   spendingPace,
   trashDaysLeft,
   trashedPlansOf,
@@ -261,6 +263,41 @@ describe('cadenceLabel', () => {
       key: 'budgetPlans.cadence.everyNMonths',
       params: { n: 3 },
     });
+  });
+});
+
+describe('periodSpend', () => {
+  it('measures spent against spent plus what is left', () => {
+    expect(periodSpend({ header: { totalActivity: -750, totalAvailable: 250 } })).toEqual({
+      funded: 1000,
+      percent: 75,
+    });
+  });
+
+  it('reads as 100 percent when the period is overspent, with funded as spent minus the overspend', () => {
+    expect(periodSpend({ header: { totalActivity: -500, totalAvailable: -40 } })).toEqual({
+      funded: 460,
+      percent: 100,
+    });
+  });
+
+  it('ignores net-positive activity and never reports a negative funded amount', () => {
+    expect(periodSpend({ header: { totalActivity: 30, totalAvailable: 200 } })).toEqual({ funded: 200, percent: 0 });
+    expect(periodSpend({ header: { totalActivity: 0, totalAvailable: -50 } })).toEqual({ funded: 0, percent: 0 });
+    expect(periodSpend({ header: { totalActivity: 0, totalAvailable: 0 } })).toEqual({ funded: 0, percent: 0 });
+  });
+});
+
+describe('availablePillClass', () => {
+  it('lets an underfunded goal outrank the sign of the amount', () => {
+    expect(availablePillClass({ amount: 50, underfunded: true })).toContain('text-warning-text');
+    expect(availablePillClass({ amount: 50, underfunded: true })).not.toContain('text-success-text');
+  });
+
+  it('tones by sign otherwise, with zero muted', () => {
+    expect(availablePillClass({ amount: 50 })).toContain('text-success-text');
+    expect(availablePillClass({ amount: -50 })).toContain('text-app-expense-color');
+    expect(availablePillClass({ amount: 0 })).toContain('text-muted-foreground');
   });
 });
 

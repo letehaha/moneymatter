@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanTrends } from '@bt/shared/types/budget-plans';
+import { BudgetPlanTrends } from '@bt/shared/types';
 import { centsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';

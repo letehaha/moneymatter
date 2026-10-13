@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { BudgetPlanCarryPolicy } from '@bt/shared/types/budget-plans';
+import { BudgetPlanCarryPolicy } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';

@@ -14,7 +14,7 @@ import {
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
 } from '@bt/shared/types';
-import type { BudgetPlanPeriodView } from '@bt/shared/types/budget-plans';
+import type { BudgetPlanPeriodView } from '@bt/shared/types';
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';

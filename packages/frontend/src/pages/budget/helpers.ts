@@ -424,6 +424,19 @@ export const lineBarsOf = ({ line }: { line: LineAmounts }) => {
   };
 };
 
+/** `funded` is spent plus what is left; an overspent period reads as 100 percent. */
+export const periodSpend = ({
+  header,
+}: {
+  header: Pick<BudgetPlanPeriodView['header'], 'totalActivity' | 'totalAvailable'>;
+}) => {
+  const spent = spentOf({ line: { activity: header.totalActivity } });
+  return {
+    funded: Math.max(0, spent + header.totalAvailable),
+    percent: clampedPercent({ part: spent, whole: spent + Math.max(0, header.totalAvailable) }),
+  };
+};
+
 /** Lines that started before the current period. Without a current period every line counts, so delete keeps its warning. */
 export const lineIdsWithHistory = ({
   lines,
@@ -546,7 +559,7 @@ export const trendBars = ({ periods, lineIds }: { periods: BudgetPlanTrendPeriod
   });
 
   const max = Math.max(0, ...totals.flatMap(({ assigned, spent }) => [assigned, spent]));
-  const percentOfMax = (value: number) => (max > 0 ? (Math.max(0, value) / max) * 100 : 0);
+  const percentOfMax = ({ value }: { value: number }) => (max > 0 ? (Math.max(0, value) / max) * 100 : 0);
   const usedPercent = ({ items }: { items: typeof totals }) => {
     const assigned = items.reduce((sum, item) => sum + Math.max(0, item.assigned), 0);
     return assigned > 0 ? (items.reduce((sum, item) => sum + item.spent, 0) / assigned) * 100 : null;
@@ -555,9 +568,9 @@ export const trendBars = ({ periods, lineIds }: { periods: BudgetPlanTrendPeriod
   return {
     bars: totals.map((total) => ({
       ...total,
-      assignedPercent: percentOfMax(total.assigned),
-      withinPercent: percentOfMax(total.spent - total.over),
-      overPercent: percentOfMax(total.over),
+      assignedPercent: percentOfMax({ value: total.assigned }),
+      withinPercent: percentOfMax({ value: total.spent - total.over }),
+      overPercent: percentOfMax({ value: total.over }),
     })),
     usedPercent: usedPercent({ items: totals.slice(-1) }),
     averageUsedPercent: usedPercent({ items: totals.slice(0, -1).slice(-TREND_AVERAGE_WINDOW) }),

@@ -1,8 +1,4 @@
-import {
-  BUDGET_PLAN_CADENCES,
-  BUDGET_PLAN_CARRY_POLICIES,
-  BUDGET_PLAN_MAX_INTERVAL_N,
-} from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BUDGET_PLAN_MAX_INTERVAL_N } from '@bt/shared/types';
 import { dateBound } from '@common/lib/zod/custom-types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';

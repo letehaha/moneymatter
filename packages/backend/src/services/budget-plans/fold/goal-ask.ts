@@ -1,4 +1,4 @@
-import { BudgetLineGoal, BudgetLineGoalStatus } from '@bt/shared/types/budget-plans';
+import { BudgetLineGoal, BudgetLineGoalStatus } from '@bt/shared/types';
 
 import { countPeriodsBetween, nextBoundary, type PeriodCadenceConfig } from '../periods/period-enumerator';
 import { biweeklyDates, dueCycle, weeklyDates } from './goal-schedule';

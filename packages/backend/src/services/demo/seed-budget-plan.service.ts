@@ -1,5 +1,5 @@
 import type { RecordId } from '@bt/shared/types';
-import type { BudgetPlanCarryPolicy, SetBudgetLineGoalPayload } from '@bt/shared/types/budget-plans';
+import type { BudgetPlanCarryPolicy, SetBudgetLineGoalPayload } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { logger } from '@js/utils/logger';

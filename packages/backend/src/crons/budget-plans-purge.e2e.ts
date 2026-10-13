@@ -1,4 +1,4 @@
-import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types/budget-plans';
+import { BUDGET_PLAN_TRASH_RETENTION_DAYS } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import BudgetAssignments from '@models/budget-assignments.model';
 import BudgetLineCategories from '@models/budget-line-categories.model';

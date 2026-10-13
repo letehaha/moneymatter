@@ -1,4 +1,4 @@
-import { type BudgetPlanCadence } from '@bt/shared/types/budget-plans';
+import { type BudgetPlanCadence } from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 
 /**

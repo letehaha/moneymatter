@@ -3,7 +3,7 @@ import {
   BudgetPlanPeriod,
   BudgetPlanPeriodView,
   BudgetPlanPeriodViewLine,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { createRootCategoryResolver, getAncestorIds } from '@services/categories/category-hierarchy';
 

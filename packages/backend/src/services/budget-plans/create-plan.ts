@@ -5,7 +5,7 @@ import {
   BudgetSuggestionAnswers,
   CreateBudgetPlanResponse,
   BudgetPlanTypeKey,
-} from '@bt/shared/types/budget-plans';
+} from '@bt/shared/types';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
