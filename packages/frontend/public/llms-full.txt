@@ -30,7 +30,7 @@ MoneyMatter uses AI to categorize new transactions after every bank sync and imp
 
 ### Budget Tracking
 
-Set budgets by category and track your progress with visual indicators. See at a glance whether you're on track, approaching your limit, or over budget. Budgets support custom time periods and flexible category groupings.
+Build a budget with a line per category and an amount for each period. Leftovers roll into the next period, and overspending can too. Add goals for bills and savings, and group lines your way. Budgets reset monthly, weekly, or on a schedule you pick.
 
 ### Investment Portfolio Tracking
 

@@ -10,7 +10,7 @@ export const ALTERNATIVE_PAGES = [
     label: 'YNAB alternative',
     href: '/alternatives/ynab',
     verdict:
-      'Switch if you want an open-source tracker you can host yourself for free, with your YNAB accounts, categories, payees, flags and transfers kept. Stay on YNAB if you budget the zero-based way: a MoneyMatter budget is a spending limit over a date range, with no envelopes and no rollover.',
+      'Switch if you want an open-source tracker you can host yourself for free, with your YNAB accounts, categories, payees, flags and transfers kept. Stay on YNAB if you budget the zero-based way: a MoneyMatter budget has a line per category with rollover and goals, but no Ready to Assign.',
     importer:
       'Dedicated importer for the YNAB register export: accounts, categories, payees, flags and transfers. It takes .csv files only.',
   },

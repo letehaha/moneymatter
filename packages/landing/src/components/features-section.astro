@@ -29,6 +29,19 @@ const SHOWCASES = [
     alt: 'Investment portfolio with total value, total return, and gains per holding',
   },
   {
+    title: 'Budgeting',
+    text: 'A plan for every category that carries on from one month to the next.',
+    bullets: [
+      'A line per category with what is assigned, spent, and left',
+      'Leftovers roll into the next period, and overspending can too',
+      'Goals for bills and savings, and starting amounts suggested from your own history',
+    ],
+    iconClass: 'from-teal-500/10 to-teal-600/10 text-teal-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>`,
+    image: { name: 'budget', width: 1692, height: 1456 },
+    alt: 'Monthly budget with Bills, Everyday, and Life groups, each line showing assigned, activity, and available amounts, goals, and one overspent line',
+  },
+  {
     title: 'FIRE Planner',
     text: 'When you could stop working, based on what you actually spend and save.',
     bullets: [
@@ -148,7 +161,7 @@ const SHOWCASES = [
         </p>
       </div>
 
-      <!-- Budgets -->
+      <!-- Trackers -->
       <div
         class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
       >
@@ -158,10 +171,10 @@ const SHOWCASES = [
           <!-- BarChart3 -->
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
         </div>
-        <h3 class="mb-2 text-lg font-semibold">Budgets</h3>
+        <h3 class="mb-2 text-lg font-semibold">Trackers</h3>
         <p class="text-muted-foreground text-sm">
-          Set a limit per category for each period and roll leftovers over. Add goals for bills and savings, and
-          see how fast you're spending.
+          One spending limit for a trip, a renovation, or any project. Pick a date range and the categories, or
+          attach the transactions yourself.
         </p>
       </div>
 

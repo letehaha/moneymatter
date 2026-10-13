@@ -81,15 +81,28 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 ## Budgets
 
-- A budget is one spending limit over a date range you choose freely. It is either a category
-  budget (tracks one or more categories automatically) or a manual budget (you attach
-  transactions). Going over the limit is shown in red; nothing is blocked.
-- Transfers between your own accounts never count. Refunds count back automatically. Budgets can
-  be shared with a partner. Spending in other currencies is converted into your base currency.
-- Envelope budgeting is in development and not available yet.
-- Not supported today: zero-based budgeting, rollover of unspent amounts, repeating monthly
-  budgets, copying a budget, savings goals, "safe to spend", balance forecasts, percentage rules
-  like 50/30/20, budgets by tag or payee, a budget limited to one account.
+- A budget is split into lines. Each line covers one or more categories and has an assigned
+  amount for the period; it shows what is assigned, spent and left. Lines can be put in groups
+  such as Bills or Everyday. Going over a line is shown in red; nothing is blocked.
+- The budget resets on a schedule: monthly, semi-monthly, biweekly, weekly, or every few days or
+  months. The schedule cannot be changed after the budget is created.
+- Rollover: carry leftovers into the next period, carry overspending too, or start fresh. Set for
+  the budget, and each line can have its own rule.
+- Goals on a line: fund it every period, refill it up to an amount, or save up to a balance by a
+  date.
+- A new budget can be pre-filled with lines and amounts from your own spending history, and you
+  choose which accounts it counts.
+- Trackers are separate: one spending limit over a date range you choose freely, for a set of
+  categories or for transactions you attach. Use one for a trip or a project. A tracker can be
+  shared with a partner.
+- Transfers between your own accounts never count. Refunds count back automatically. Spending in
+  other currencies is converted into your base currency.
+- You can have one budget at a time, and it always uses your base currency.
+- Budgeting is included in Essential and Plus. The Early Adopter grant does not include it:
+  early adopters can try it for 40 days from their first budget, then the budget turns read-only
+  until they subscribe.
+- Not supported today: zero-based budgeting with a "Ready to Assign" pool, balance forecasts,
+  "safe to spend", percentage rules like 50/30/20, budgets by tag or payee.
 - Debt payoff: the Loans feature projects the payoff date and remaining balance.
 
 ## Transactions
@@ -138,7 +151,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 
 ## Family sharing
 
-- Invite people by email with read-only or write access, per account or budget. Write access can
+- Invite people by email with read-only or write access, per account or tracker. Write access can
   be limited to their own transactions. Access can be revoked, and the invitee can leave.
 
 ## Apps, languages, sign-in
@@ -254,7 +267,8 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   separate transactions. A transfer between two currencies keeps the same number on both sides.
 - Not supported: .tsv files. YNAB exports tab-separated files instead of CSV for currencies that
   use a decimal comma. (Checked October 2026.)
-- If you budget the zero-based way with Ready to Assign and targets, YNAB is the better fit.
+- If you budget the zero-based way with Ready to Assign, YNAB is the better fit. MoneyMatter has
+  category lines with rollover and goals, but no Ready to Assign.
 - Full comparison: https://moneymatter.app/alternatives/ynab
 
 ## Moving from Microsoft Money

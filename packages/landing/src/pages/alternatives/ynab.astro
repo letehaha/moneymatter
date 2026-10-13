@@ -57,7 +57,7 @@ const COMPARISON = [
     competitor:
       'Zero-based. Ready to Assign is the money not yet added to a category, and each category can have a target',
     moneymatter:
-      'A spending limit over any date range, for categories you choose or transactions you attach. No zero-based or envelope budgeting',
+      'A line per category with an amount for each period, rollover of leftovers or overspending, and goals. No Ready to Assign, so nothing checks the plan against the money you have',
   },
   {
     feature: 'Currencies',
@@ -94,7 +94,7 @@ const COMPARISON = [
   {
     feature: 'Sharing',
     competitor: 'Up to six people on one subscription, with edit access to the plans shared with them',
-    moneymatter: '2 seats on Essential, 5 on Plus. Read-only or write access, set per account or budget',
+    moneymatter: '2 seats on Essential, 5 on Plus. Read-only or write access, set per account or tracker',
   },
   {
     feature: 'Apps',
@@ -124,6 +124,21 @@ const HIGHLIGHTS = [
       {
         lead: 'Net worth',
         text: 'Cash, investments, loans, vehicles and venture deals on one chart, in your base currency.',
+      },
+    ],
+  },
+  {
+    title: 'Budgeting',
+    items: [
+      { lead: 'Lines', text: 'One line per category or group of categories, with what is assigned, spent and left.' },
+      {
+        lead: 'Rollover',
+        text: 'Carry leftovers into the next period, carry overspending too, or start fresh. Set it for the budget or per line.',
+      },
+      { lead: 'Goals', text: 'Fund a line every period, refill it up to an amount, or save up to a balance by a date.' },
+      {
+        lead: 'Periods',
+        text: 'Monthly, semi-monthly, biweekly, weekly, or every few days or months that you pick.',
       },
     ],
   },
@@ -194,8 +209,8 @@ const WHY_CLOUD = [
 ];
 
 const STAY_ON_YNAB = [
-  'You budget the zero-based way and rely on Ready to Assign. A MoneyMatter budget is a spending limit over a date range. It has no zero-based or envelope budgeting, and unspent money does not roll over.',
-  'You use targets to save toward goals. MoneyMatter has no savings goals and no repeating monthly budgets.',
+  'You budget the zero-based way and rely on Ready to Assign. A MoneyMatter budget has a line per category with rollover and goals, but it does not check what you assign against the money in your accounts.',
+  'You want your plan to come with you. Assigned amounts and targets are not imported, so you set the budget up again.',
   'You want native iOS and Android apps, or offline access. MoneyMatter is a web app you can add to your home screen, and it needs a connection.',
   'You want bank sync in one subscription. YNAB lists no extra charge for direct import. MoneyMatter needs the Plus plan and, for most banks, a separate paid LunchFlow or SimpleFIN account.',
   'You share with six people. YNAB allows six on one subscription; MoneyMatter cloud plans have two or five seats.',
@@ -205,7 +220,7 @@ const FAQ = [
   {
     question: 'Does MoneyMatter do zero-based budgeting like YNAB?',
     answer:
-      'No. MoneyMatter has no Ready to Assign and no envelopes. A budget is one spending limit over a date range you choose, for a set of categories or for transactions you attach. Going over the limit is shown in red and nothing is blocked. If giving every dollar a job is why you use YNAB, YNAB is the better fit.',
+      'Not quite. A MoneyMatter budget has a line per category with an amount for each period, rollover of leftovers or overspending, and goals for bills and savings. It has no Ready to Assign, so nothing stops you from assigning more than you have. Going over a line is shown in red and nothing is blocked. If giving every dollar a job is why you use YNAB, YNAB is the better fit.',
   },
   {
     question: 'Which YNAB file does MoneyMatter import?',
