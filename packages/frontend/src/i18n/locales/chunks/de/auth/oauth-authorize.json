@@ -17,15 +17,15 @@
     "scopes": {
       "finance_read": {
         "label": "Finanzdaten einsehen",
-        "desc": "Konten, Transaktionen, Budgets, Kategorien, Tags, Portfolios und Ausgabenstatistiken lesen."
+        "desc": "Konten, Transaktionen, Tracker, Kategorien, Tags, Portfolios und Ausgabenstatistiken lesen."
       },
       "finance_write": {
         "label": "Deine Finanzdaten erstellen und bearbeiten",
-        "desc": "Transaktionen, Budgets, Abonnements, Investmentpositionen und mehr hinzufügen und aktualisieren."
+        "desc": "Transaktionen, Tracker, Abonnements, Investmentpositionen und mehr hinzufügen und aktualisieren."
       },
       "finance_delete": {
         "label": "Deine Finanzdaten löschen",
-        "desc": "Transaktionen, Konten, Budgets und andere Datensätze dauerhaft entfernen."
+        "desc": "Transaktionen, Konten, Tracker und andere Datensätze dauerhaft löschen."
       },
       "profile_read": {
         "label": "Dein Profil ansehen",

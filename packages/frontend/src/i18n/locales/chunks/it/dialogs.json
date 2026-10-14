@@ -677,8 +677,8 @@
       "emailSendFailedWarning": "Invitation saved, but the email could not be sent. The recipient may not have received a notification – try again later."
     },
     "shareBudgetDialog": {
-      "title": "Share budget",
-      "description": "Invite someone to view this budget and contribute their own transactions to it. {name}.",
+      "title": "Share tracker",
+      "description": "Invite someone to view this tracker and contribute their own transactions to it. {name}.",
       "emailLabel": "Email",
       "emailPlaceholder": "Recipient email",
       "permissionLabel": "Permission",
@@ -726,7 +726,7 @@
       "decline": "Decline",
       "close": "Close",
       "goToAccount": "Go to account",
-      "goToBudget": "Go to budget",
+      "goToBudget": "Go to tracker",
       "updateBaseCurrency": "Update base currency",
       "acceptSuccess": "You're now part of this shared resource.",
       "acceptError": "Couldn't accept the invitation. Try again.",

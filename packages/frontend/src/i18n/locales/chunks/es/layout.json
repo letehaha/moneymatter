@@ -21,7 +21,8 @@
       "subscriptions": "Cargos recurrentes",
       "budgets": "Presupuestos"
     },
-    "venture": "Venture"
+    "venture": "Venture",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Contraer barra lateral",

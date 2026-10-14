@@ -10,7 +10,7 @@
       "sections": {
         "account": "Accounts",
         "household": "Households",
-        "budget": "Budgets shared with you"
+        "budget": "Trackers shared with you"
       },
       "sharedBy": "Shared by {handle}",
       "viaHousehold": "Via {handle} household",

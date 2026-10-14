@@ -40,11 +40,11 @@
           "seeAllTransactions": "Alle Transaktionen anzeigen"
         },
         "spikeSettings": {
-          "showMarkers": "Ausschlag-Markierungen anzeigen",
+          "showMarkers": "Marker anzeigen",
           "showMarkersTooltip": "Farbige Markierungen im Diagramm ein-/ausschalten, die deutliche Saldoänderungen hervorheben.",
           "percentThreshold": "Min. Änderung %",
           "percentThresholdTooltip": "Mindestprozentsatz der Saldoänderung zwischen zwei aufeinanderfolgenden Tagen für eine Markierung. Entweder dieser oder der absolute Schwellenwert muss überschritten werden. Niedrige Werte zeigen mehr Markierungen an.",
-          "absoluteThreshold": "Min. Änderung €",
+          "absoluteThreshold": "Min. Änderung {symbol}",
           "absoluteThresholdTooltip": "Mindeständerung des absoluten Saldos (in deiner Basiswährung), damit ein Ausschlag vorliegt. Entweder dieser Wert oder der prozentuale Schwellwert muss überschritten werden.",
           "maxMarkers": "Max. Markierungen",
           "maxMarkersTooltip": "Maximale Anzahl der angezeigten Markierungen im Diagramm. Gibt es mehr Ausschläge als dieses Limit, werden nur die bedeutendsten angezeigt.",
@@ -57,7 +57,7 @@
         },
         "settings": {
           "title": "Einstellungen",
-          "spikeMarkers": "Ausschlag-Markierungen",
+          "spikeMarkers": "Ausschlag-Marker",
           "fitToLatestData": "An neueste Daten anpassen",
           "fitToLatestDataTooltip": "Wenn aktiviert, reicht das Diagramm nur bis zum neuesten Datenpunkt. Wenn deaktiviert, deckt die X-Achse den gesamten gewählten Zeitraum ab und lässt Platz für zukünftige Daten.",
           "fitToLatestDataLockedTooltip": "Deaktiviere geplante Transaktionen, um dies zu ändern – deren Prognose erweitert das Diagramm immer bis zum Ende des Zeitraums.",
@@ -215,6 +215,27 @@
           "m12": "Letzte 12 Monate"
         }
       },
+      "budget": {
+        "spent": "ausgegeben",
+        "ringLabel": "{percent}% des Budgets ausgegeben",
+        "leftOf": "übrig von {total}",
+        "overOf": "über dem Budget von {total}",
+        "headerLeft": "{amount} übrig",
+        "headerOver": "{amount} drüber",
+        "daysLeft": "Noch {count} Tag | Noch {count} Tage",
+        "lastDay": "Letzter Tag des Zeitraums",
+        "empty": "Noch kein Budget",
+        "create": "Budget einrichten"
+      },
+      "trackers": {
+        "spentOfLimit": "{spent} von {limit}",
+        "inOut": "{income} Einnahmen, {expense} Ausgaben",
+        "net": "Netto",
+        "noLimit": "Kein Limit",
+        "empty": "Noch keine Tracker",
+        "ended": "Beendet",
+        "create": "Tracker erstellen"
+      },
       "emptyState": "Keine Daten im ausgewählten Zeitintervall vorhanden.",
       "registry": {
         "balanceTrend": {
@@ -260,6 +281,14 @@
         "taxes": {
           "name": "Steuerquote",
           "description": "Anteil des Einkommens, der für Steuern aufgewendet wird, mit 12-Monats-Trend"
+        },
+        "budget": {
+          "name": "Budget",
+          "description": "Zeile für Zeile, was im aktuellen Budgetzeitraum noch übrig ist"
+        },
+        "trackers": {
+          "name": "Tracker",
+          "description": "Jeder aktive Tracker mit genutztem Limit und Netto-Saldo"
         }
       }
     },

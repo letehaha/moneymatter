@@ -89,6 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Vybrať všetko",
+      "selectAllShort": "Všetko",
       "cancelSelection": "Zrušiť výber",
       "editButton": "Upraviť",
       "selectedCount": "Vybraných: {count}",
@@ -246,6 +247,31 @@
       "gotIt": "Rozumiem",
       "openDetails": "Otvoriť podrobnosti",
       "tooManyTags": "Najviac {max} štítkov na transakciu"
+    },
+    "savedViews": {
+      "trigger": "Pohľady",
+      "empty": "Zatiaľ žiadne uložené pohľady. Nastavte filtre a potom ich uložte ako pohľad.",
+      "modified": "Filtre sa zmenili",
+      "update": "Aktualizovať „{name}” aktuálnymi filtrami",
+      "updateShort": "Aktualizovať pohľad",
+      "revert": "Vrátiť",
+      "saveNew": "Uložiť ako nový pohľad",
+      "actions": "Akcie pohľadu",
+      "rename": "Premenovať",
+      "moveUp": "Posunúť vyššie",
+      "moveDown": "Posunúť nižšie",
+      "saveTitle": "Uložiť pohľad",
+      "renameTitle": "Premenovať pohľad",
+      "dialogDescription": "Pohľad uchová aktuálne filtre a zoradenie, aby ste ich mohli jedným kliknutím znova použiť.",
+      "nameLabel": "Názov",
+      "namePlaceholder": "napr. Potraviny, posledné 3 mesiace",
+      "savedToast": "Pohľad uložený",
+      "updatedToast": "Pohľad aktualizovaný",
+      "deletedToast": "Pohľad zmazaný",
+      "saveError": "Vaše pohľady sa nepodarilo uložiť. Skúste to znova.",
+      "deleteTitle": "Zmazať pohľad „{name}”?",
+      "deleteDescription": "Vaše transakcie nie sú dotknuté. Túto akciu nie je možné vrátiť späť.",
+      "filtersCount": "{count} filter | {count} filtre | {count} filtrov"
     }
   },
   "records": {

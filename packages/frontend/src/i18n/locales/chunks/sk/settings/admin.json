@@ -63,12 +63,12 @@
         },
         "preview": {
           "title": "Náhľad údajov",
-          "recordsCount": "Nahrá sa {count} záznam | Nahrá sa {count} záznamov",
+          "recordsCount": "Nahrá sa {count} záznam | Nahrajú sa {count} záznamy | Nahrá sa {count} záznamov",
           "recordsPeriod": "za obdobie od {oldest} do {newest}",
           "loadingExisting": "Načítavanie existujúcich cien na porovnanie...",
           "warnings": {
             "significantDifferences": "Zistené výrazné cenové rozdiely",
-            "differencesDetails": "{count} záznam má cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ho skontrolujte. | {count} záznamy majú cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ich skontrolujte."
+            "differencesDetails": "{count} záznam má cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ho skontrolujte. | {count} záznamy majú cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ich skontrolujte. | {count} záznamov má cenový rozdiel väčší než 4 % oproti existujúcim údajom. Dôkladne ich skontrolujte."
           },
           "filterCheckbox": "Zobraziť len záznamy s výrazným rozdielom (>4 %)",
           "tableHeaders": {
@@ -99,17 +99,17 @@
         },
         "result": {
           "title": "Nahrávanie dokončené!",
-          "inserted": "✓ Vložený {count} nový záznam | ✓ Vložených {count} nových záznamov",
+          "inserted": "✓ Vložený {count} nový záznam | ✓ Vložené {count} nové záznamy | ✓ Vložených {count} nových záznamov",
           "duplicates": "• {count} duplicít {action}",
           "duplicatesUpdated": "aktualizovaných",
           "duplicatesSkipped": "preskočených",
-          "filtered": "• {count} dátum odfiltrovaný (mimo rozsahu) | • {count} dátumov odfiltrovaných (mimo rozsahu)",
+          "filtered": "• {count} dátum odfiltrovaný (mimo rozsahu) | • {count} dátumy odfiltrované (mimo rozsahu) | • {count} dátumov odfiltrovaných (mimo rozsahu)",
           "closeButton": "Zavrieť",
           "uploadMoreButton": "Nahrať ďalšie"
         },
         "notifications": {
           "dateInfoLoadFailed": "Informácie o dátume sa nepodarilo načítať: {error}",
-          "uploadSuccess": "Úspešne nahraný {count} cenový záznam | Úspešne nahraných {count} cenových záznamov",
+          "uploadSuccess": "Úspešne nahraný {count} cenový záznam | Úspešne nahrané {count} cenové záznamy | Úspešne nahraných {count} cenových záznamov",
           "uploadFailed": "Nahrávanie zlyhalo: {error}"
         }
       }

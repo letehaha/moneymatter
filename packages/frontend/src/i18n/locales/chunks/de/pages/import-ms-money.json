@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Aktueller Saldo",
             "currentBalancePlaceholder": "Leer lassen, um die importierte Gesamtsumme zu verwenden",
             "willCreateHint": "Wird in {currency} erstellt.",
+            "currencyNotInFile": "Nicht in der Datei",
             "skippedNote": "{count} Konto/Konten werden übersprungen. Ihre Transaktionen – und alle Umbuchungen zu oder von ihnen – werden nicht importiert."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "{count} Transaktion(en) übersprungen",
             "transferCounterpartNotImported": "{count} Buchungsteil(e) als extern importiert",
             "rowLimitReached": "{count} Transaktion(en) über dem Limit wurden verworfen",
-            "accountCurrencyDefaulted": "{count} Konto/Konten hatten keine Währung in der Datei, daher wurde USD angenommen – überprüfe die Währung im Schritt Konten, bevor du fortfährst",
+            "accountCurrencyMissing": "Bei {count} Konto/Konten fehlte die Währung in der Datei, daher wurde deine Basiswährung verwendet – ändere sie im Schritt \"Konten\", falls das falsch ist",
             "rowMissingDate": "{count} Transaktion(en) ohne lesbares Datum wurden übersprungen",
             "accountNameMissing": "{count} Konto/Konten hatten keinen Namen",
             "accountNameDuplicated": "{count} Konto/Konten teilten sich einen Namen",

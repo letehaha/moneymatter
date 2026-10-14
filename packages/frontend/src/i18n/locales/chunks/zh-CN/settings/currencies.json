@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "未知错误。更改基本货币失败。",
           "lockedHousehold": "您仍在 {count} 个家庭账户内。请先在设置 → 家庭内退出家庭账户。 | 您仍在 {count} 个家庭账户内。请先在设置 → 家庭内退出家庭账户。",
-          "lockedShares": "您仍有 {count} 个共享账户。请先从帐号内撤销共享。 | 您仍有 {count} 个共享账户。请先从帐号内撤销共享。"
+          "lockedShares": "您仍有 {count} 个共享账户。请先从帐号内撤销共享。 | 您仍有 {count} 个共享账户。请先从帐号内撤销共享。",
+          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
       }
     }

@@ -151,7 +151,7 @@
           "principal": "Principal",
           "interest": "Interest (est.)",
           "estimateFootnote": "Interest is an amortization-schedule estimate — payments are recorded as principal, so no exact interest split is stored.",
-          "effectiveCost": "Effective cost: {cents}¢ of interest per $1 borrowed"
+          "effectiveCost": "Effective cost: {percent} interest on the amount borrowed"
         },
         "chart": {
           "title": "Balance journey",

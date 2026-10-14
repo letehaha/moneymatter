@@ -33,8 +33,8 @@
             "currentBalanceLabel": "Aktuálny zostatok",
             "currentBalancePlaceholder": "Nechajte prázdne, ak chcete použiť súčet importovaných transakcií",
             "ledgerBalanceHint": "Zostatok podľa výpisu: {balance} k {date}",
-            "transactionCount": "{count} transakcia | {count} transakcií",
-            "skippedNote": "Preskočí sa {count} účet. Jeho transakcie sa neimportujú. | Preskočí sa {count} účtov. Ich transakcie sa neimportujú.",
+            "transactionCount": "{count} transakcia | {count} transakcie | {count} transakcií",
+            "skippedNote": "Preskočí sa {count} účet. Jeho transakcie sa neimportujú. | Preskočia sa {count} účty. Ich transakcie sa neimportujú. | Preskočí sa {count} účtov. Ich transakcie sa neimportujú.",
             "statementType": {
               "bank": "Bankový účet",
               "credit-card": "Kreditná karta"
@@ -64,15 +64,15 @@
           "warningsTitle": "Skontrolujte tieto podrobnosti súboru",
           "warningsHint": "Import môže pokračovať, no niektoré transakcie vyžadujú osobitné zaobchádzanie.",
           "warnings": {
-            "dateUserFallback": "{count} transakcia použila náhradné časové pásmo súboru | {count} transakcií použilo náhradné časové pásmo súboru",
-            "fitidMissing": "{count} transakcia nemala ID bankovej transakcie | {count} transakcií nemalo ID bankovej transakcie",
-            "fitidDuplicate": "V súbore sa našlo {count} duplicitné ID bankovej transakcie | V súbore sa našlo {count} duplicitných ID bankových transakcií"
+            "dateUserFallback": "{count} transakcia použila náhradné časové pásmo súboru | {count} transakcie použili náhradné časové pásmo súboru | {count} transakcií použilo náhradné časové pásmo súboru",
+            "fitidMissing": "{count} transakcia nemala ID bankovej transakcie | {count} transakcie nemali ID bankovej transakcie | {count} transakcií nemalo ID bankovej transakcie",
+            "fitidDuplicate": "V súbore sa našlo {count} duplicitné ID bankovej transakcie | V súbore sa našli {count} duplicitné ID bankové transakcie | V súbore sa našlo {count} duplicitných ID bankových transakcií"
           },
-          "duplicatesTitle": "{count} možný duplikát | {count} možných duplicít",
+          "duplicatesTitle": "{count} možný duplikát | {count} možné duplicity | {count} možných duplicít",
           "duplicatesHint": "Tieto transakcie vyzerajú ako transakcie, ktoré už máte. Označte riadok, ak ho chcete napriek tomu importovať; neoznačené duplicity sa preskočia.",
           "back": "Späť",
           "importing": "Spúšťanie importu…",
-          "importButton": "Importovať {count} transakciu | Importovať {count} transakcií"
+          "importButton": "Importovať {count} transakciu | Importovať {count} transakcie | Importovať {count} transakcií"
         },
         "execute": {
           "starting": "Spúšťanie importu…",
@@ -87,7 +87,7 @@
         "done": {
           "successTitle": "Import dokončený",
           "successDescription": "Vaše transakcie z OFX alebo QFX sú teraz vo vašom účte.",
-          "partialTitle": "Importované s {count} problémom | Importované s {count} problémami",
+          "partialTitle": "Importované s {count} problémom | Importované s {count} problémami | Importované s {count} problémami",
           "partialDescription": "Väčšina transakcií sa importovala. Zoznam nižšie ukazuje, čo sa neimportovalo.",
           "emptyTitle": "Nie je čo nové importovať",
           "emptyDescription": "Každá transakcia bola buď preskočená, alebo už bola vo vašich záznamoch.",
@@ -102,7 +102,7 @@
           "mergedIntoPlanned": "Zlúčené s plánovanými",
           "balanceWarningTitle": "Niektoré zostatky môžu byť nesprávne",
           "balanceWarningBody": "Konečný zostatok sa nepodarilo nastaviť pri každom účte. Skontrolujte tieto účty a v prípade potreby upravte ich zostatky.",
-          "errorsTitle": "{count} transakciu sa nepodarilo importovať | {count} transakcií sa nepodarilo importovať",
+          "errorsTitle": "{count} transakciu sa nepodarilo importovať | {count} transakcie sa nepodarilo importovať | {count} transakcií sa nepodarilo importovať",
           "errorsOverflow": "…a {count} ďalších",
           "rowPrefix": "Riadok {rowIndex}:",
           "viewTransactions": "Zobraziť transakcie",

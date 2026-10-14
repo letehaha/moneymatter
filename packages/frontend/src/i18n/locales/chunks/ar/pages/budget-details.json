@@ -11,7 +11,7 @@
         "noMatchingTransactions": "No matching transactions",
         "noTransactionsLinked": "No transactions linked",
         "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
-        "addTransactionsHint": "Add transactions to this budget to start tracking your spending.",
+        "addTransactionsHint": "Add transactions to this tracker to start tracking your spending.",
         "resetFilters": "Reset Filters",
         "addTransactions": "Add Transactions",
         "add": "Add",
@@ -30,13 +30,13 @@
         "netBalance": "Net Balance"
       },
       "utilization": {
-        "title": "Budget Utilization",
+        "title": "Tracker Utilization",
         "summary": "{spent} of {limit} limit",
         "na": "N/A"
       },
       "noTransactionsYet": "No transactions yet",
       "transactions": "Transactions",
-      "transactionsLinked": "{count} transaction linked to this budget | {count} transactions linked to this budget",
+      "transactionsLinked": "{count} transaction linked to this tracker | {count} transactions linked to this tracker",
       "tabs": {
         "statistics": "Statistics",
         "transactions": "Transactions",
@@ -50,7 +50,7 @@
         "errorTitle": "Failed to load statistics",
         "errorDescription": "Something went wrong while loading the data. Please try again later.",
         "noDataTitle": "No spending data",
-        "noDataDescription": "There's no spending data available for this budget yet.",
+        "noDataDescription": "There's no spending data available for this tracker yet.",
         "noCategoryData": "No category spending data.",
         "noTimelineData": "No timeline data.",
         "total": "Total",
@@ -61,7 +61,7 @@
       },
       "sharing": {
         "title": "Sharing",
-        "description": "Manage who can see this budget and contribute to it.",
+        "description": "Manage who can see this tracker and contribute to it.",
         "inviteAnother": "Invite someone",
         "membersHeading": "Members",
         "pendingHeading": "Pending invitations",
@@ -75,7 +75,7 @@
           "you": "you",
           "roleOwner": "Owner",
           "roleRecipient": "Member",
-          "ownerHint": "Full control of this budget",
+          "ownerHint": "Full control of this tracker",
           "updateSuccess": "Permission updated.",
           "updateError": "Couldn't update permission.",
           "revoke": "Revoke access",

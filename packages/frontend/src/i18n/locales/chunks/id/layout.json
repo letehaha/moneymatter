@@ -21,7 +21,8 @@
       "subscriptions": "Biaya Berulang",
       "budgets": "Anggaran"
     },
-    "venture": "Venture"
+    "venture": "Venture",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",

@@ -221,7 +221,7 @@
       "currencyLabel": "Währung",
       "makeLabel": "Marke",
       "modelLabel": "Modell",
-      "trimLabel": "Ausstattungsvariante (optional)",
+      "trimLabel": "Ausstattungslinie (optional)",
       "yearLabel": "Baujahr",
       "vehicleClassLabel": "Fahrzeugklasse",
       "purchasePriceLabel": "Kaufpreis",
@@ -314,6 +314,7 @@
       "clearSelectionLabel": "Auswahl löschen",
       "searchPlaceholder": "Suchen...",
       "sharedOwnerNotice": "Kategorien von {owner} werden angezeigt",
+      "unlistedNotice": "Suche nach einer beliebigen Kategorie",
       "sharedOwnerNoticeTooltip": "Transaktionen auf einem geteilten Konto verwenden immer die Kategorien des Eigentümers. Alles, was du hier speicherst, wird unter dem Satz von {owner} abgelegt, damit ihr beide einheitliche Summen seht.",
       "sharedOwnerCategoriesLoadError": "Kategorien für das geteilte Konto konnten nicht geladen werden. Bitte versuche es erneut."
     },
@@ -352,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Kategorien auswählen...",
       "searchPlaceholder": "Kategorien suchen...",
-      "noCategoriesFound": "Keine Kategorien gefunden"
+      "noCategoriesFound": "Keine Kategorien gefunden",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "Alle Zahlungsempfänger",
@@ -364,12 +366,12 @@
       "blankOption": "Kein ZahlungsempfängerEmpfänger"
     },
     "budgetMultiSelect": {
-      "label": "Alle Budgets",
-      "selectedMany": "{n} Budgets ausgewählt",
-      "searchPlaceholder": "Budgets suchen",
-      "noResults": "Keine Budgets gefunden",
-      "unknownBudget": "Unbekanntes Budget",
-      "loadError": "Budgets konnten nicht geladen werden. Bitte versuche es erneut."
+      "label": "Alle Tracker",
+      "selectedMany": "{n} Tracker ausgewählt",
+      "searchPlaceholder": "Tracker suchen",
+      "noResults": "Keine Tracker gefunden",
+      "unknownBudget": "Unbekannter Tracker",
+      "loadError": "Tracker konnten nicht geladen werden. Bitte versuche es erneut."
     },
     "payeeSelect": {
       "placeholder": "Zahlungsempfänger auswählen",

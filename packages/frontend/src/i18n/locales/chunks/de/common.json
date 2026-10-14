@@ -150,7 +150,7 @@
         "error": "Fehler beim Aufheben der Transaktionsverknüpfung!"
       },
       "record": {
-        "addedByTooltip": "Diese Transaktion wurde dem Budget hinzugefügt von {handle}",
+        "addedByTooltip": "Diese Transaktion wurde dem Tracker von {handle} hinzugefügt",
         "externalLinkTooltip": "Externen Link öffnen",
         "locationTooltip": "Standort auf Karte öffnen",
         "attachmentsTooltip": "Enthält Anhänge",

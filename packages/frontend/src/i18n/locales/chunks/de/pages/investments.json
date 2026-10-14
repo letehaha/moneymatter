@@ -24,7 +24,7 @@
       "loadError": "Gelöschte Portfolios konnten nicht geladen werden.",
       "deletedAgo": "Gelöscht {time}",
       "restoreButton": "Wiederherstellen",
-      "restoringButton": "Wird wiederhergestellt…",
+      "restoringButton": "Wiederherstellen…",
       "purgeButton": "Löschen",
       "purgingButton": "Wird gelöscht…",
       "confirmPurgeTitle": "Portfolio dauerhaft löschen?",

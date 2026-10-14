@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Saldo actual",
             "currentBalancePlaceholder": "Déjelo en blanco para usar el total importado",
             "willCreateHint": "Se creará en {currency}.",
+            "currencyNotInFile": "Not in file",
             "skippedNote": "{count} cuenta(s) se omitirán. Sus transacciones — y cualquier transferencia hacia o desde ellas — no se importarán."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "{count} transacción(es) omitidas",
             "transferCounterpartNotImported": "{count} lado(s) de transferencia importados como fuera de cartera",
             "rowLimitReached": "{count} transacción(es) por encima del límite se descartaron",
-            "accountCurrencyDefaulted": "{count} cuenta(s) no tenían moneda en el archivo, así que se asumió USD — compruebe la moneda en el paso de cuentas antes de continuar",
+            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
             "rowMissingDate": "{count} transacción(es) sin fecha legible se omitieron",
             "accountNameMissing": "{count} cuenta(s) no tenían nombre",
             "accountNameDuplicated": "{count} cuenta(s) compartían el mismo nombre",

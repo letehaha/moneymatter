@@ -20,8 +20,8 @@
       "selectedCount": "Vybraných: {count}",
       "clearSelection": "Vymazať",
       "linkSelected": "Prepojiť {count}",
-      "success": "K pôžičke prepojená {count} platba. | K pôžičke prepojených {count} platieb.",
-      "preAnchorWarning": "{count} vybraná platba je datovaná pred referenčným dátumom zostatku pôžičky ({date}) — prepojí sa len ako história a nezníži nesplatený zostatok. | {count} vybraných platieb je datovaných pred referenčným dátumom zostatku pôžičky ({date}) — prepoja sa len ako história a nezníži sa nesplatený zostatok.",
+      "success": "K pôžičke prepojená {count} platba. | K pôžičke prepojené {count} platby. | K pôžičke prepojených {count} platieb.",
+      "preAnchorWarning": "{count} vybraná platba je datovaná pred referenčným dátumom zostatku pôžičky ({date}) — prepojí sa len ako história a nezníži nesplatený zostatok. | {count} vybrané platby sú datované pred referenčným dátumom zostatku pôžičky ({date}) — prepoja sa len ako história a nezníži sa nesplatený zostatok. | {count} vybraných platieb je datovaných pred referenčným dátumom zostatku pôžičky ({date}) — prepoja sa len ako história a nezníži sa nesplatený zostatok.",
       "error": "Vybrané platby sa nepodarilo prepojiť. Skúste to znova, prosím.",
       "overpayTitle": "Platby prevyšujú zostatok",
       "overpayDescription": "Vybrané platby v súčte prevyšujú zostávajúci zostatok pôžičky o {amount}. Napriek tomu ich prepojiť?",
@@ -126,7 +126,7 @@
         "apr": "RPMN",
         "originalPrincipal": "Pôvodná istina",
         "term": "Doba splácania",
-        "termMonths": "{count} mesiac | {count} mesiacov",
+        "termMonths": "{count} mesiac | {count} mesiace | {count} mesiacov",
         "startDate": "Dátum začiatku",
         "paymentDay": "Deň splátky",
         "dayOfMonth": "{day}. deň každého mesiaca",
@@ -151,7 +151,7 @@
           "principal": "Istina",
           "interest": "Úrok (odhad)",
           "estimateFootnote": "Úrok je odhad podľa amortizačného plánu — platby sa zaznamenávajú ako istina, presné rozdelenie úroku sa neukladá.",
-          "effectiveCost": "Efektívna cena: {cents} centov úroku na každé požičané euro"
+          "effectiveCost": "Efektívna cena: úrok {percent} zo zapožičanej sumy"
         },
         "chart": {
           "title": "Vývoj zostatku",

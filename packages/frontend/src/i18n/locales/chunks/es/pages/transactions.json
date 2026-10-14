@@ -89,6 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Seleccionar todo",
+      "selectAllShort": "Todas",
       "cancelSelection": "Cancelar selección",
       "editButton": "Editar",
       "selectedCount": "{count} seleccionadas",
@@ -246,6 +247,31 @@
       "gotIt": "Entendido",
       "openDetails": "Abrir detalles",
       "tooManyTags": "Hasta {max} etiquetas por transacción"
+    },
+    "savedViews": {
+      "trigger": "Vistas",
+      "empty": "No saved views yet. Set up filters, then save them as a view.",
+      "modified": "Filters changed",
+      "update": "Update “{name}” with current filters",
+      "updateShort": "Update view",
+      "revert": "Revertir",
+      "saveNew": "Save as new view",
+      "actions": "View actions",
+      "rename": "Renombrar",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "saveTitle": "Guardar vista",
+      "renameTitle": "Rename view",
+      "dialogDescription": "A view keeps the current filters and sorting so you can apply them again in one click.",
+      "nameLabel": "Nombre",
+      "namePlaceholder": "e.g. Groceries, last 3 months",
+      "savedToast": "Vista guardada",
+      "updatedToast": "View updated",
+      "deletedToast": "Vista eliminada",
+      "saveError": "Couldn't save your views. Try again.",
+      "deleteTitle": "Delete view “{name}”?",
+      "deleteDescription": "Your transactions are not affected. This can't be undone.",
+      "filtersCount": "{count} filter | {count} filters"
     }
   },
   "records": {

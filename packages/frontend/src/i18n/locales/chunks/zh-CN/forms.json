@@ -314,6 +314,7 @@
       "clearSelectionLabel": "Clear selection",
       "searchPlaceholder": "Search...",
       "sharedOwnerNotice": "Showing {owner}'s categories",
+      "unlistedNotice": "Search to find any category",
       "sharedOwnerNoticeTooltip": "Transactions on a shared account always use the owner's categories. Anything you save here will be filed under {owner}'s set so both of you see consistent totals.",
       "sharedOwnerCategoriesLoadError": "Couldn't load categories for the shared account. Please try again."
     },
@@ -352,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Select categories...",
       "searchPlaceholder": "Search categories...",
-      "noCategoriesFound": "No categories found"
+      "noCategoriesFound": "No categories found",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "All payees",
@@ -364,12 +366,12 @@
       "blankOption": "No payee"
     },
     "budgetMultiSelect": {
-      "label": "All budgets",
-      "selectedMany": "{n} budgets selected",
-      "searchPlaceholder": "Search budgets",
-      "noResults": "No budgets found",
-      "unknownBudget": "Unknown budget",
-      "loadError": "Couldn't load budgets. Please try again."
+      "label": "All trackers",
+      "selectedMany": "{n} trackers selected",
+      "searchPlaceholder": "Search trackers",
+      "noResults": "No trackers found",
+      "unknownBudget": "Unknown tracker",
+      "loadError": "Couldn't load trackers. Please try again."
     },
     "payeeSelect": {
       "placeholder": "Select a payee",

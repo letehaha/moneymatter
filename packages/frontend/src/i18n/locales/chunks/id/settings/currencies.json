@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "Kesalahan tak terduga. Gagal mengubah mata uang dasar.",
           "lockedHousehold": "Anda berada di {count} keanggotaan rumah tangga aktif. Keluar dari Pengaturan → Rumah Tangga terlebih dahulu. | Anda berada di {count} keanggotaan rumah tangga aktif. Keluar dari Pengaturan → Rumah Tangga terlebih dahulu.",
-          "lockedShares": "Anda memiliki {count} pembagian akun aktif. Cabut dari akun terlebih dahulu. | Anda memiliki {count} pembagian akun aktif. Cabut dari masing-masing akun terlebih dahulu."
+          "lockedShares": "Anda memiliki {count} pembagian akun aktif. Cabut dari akun terlebih dahulu. | Anda memiliki {count} pembagian akun aktif. Cabut dari masing-masing akun terlebih dahulu.",
+          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
       }
     }

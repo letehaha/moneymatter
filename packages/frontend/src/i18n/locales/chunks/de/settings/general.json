@@ -18,8 +18,16 @@
       "pendingBankTransactions": {
         "label": "Ausstehende Banktransaktionen importieren",
         "description": "Speichere Enable Banking-Transaktionen, bevor die Bank sie bucht. Sie werden als ausstehend markiert, verändern nie den Kontostand und enthalten oft bis zur Buchung keine Händlerdetails. Andere Anbieter sind nicht betroffen: SimpleFIN und LunchFlow importieren immer nur gebuchte Transaktionen, und Monobank importiert jede Transaktion als reguläre Transaktion.",
+        "descriptionSelfHost": "Transaktionen von Enable Banking speichern, bevor die Bank sie bucht. Sie werden als ausstehend markiert, verändern nie den Kontostand und enthalten oft erst nach der Buchung Händlerdetails. Andere Anbieter sind davon nicht betroffen: SimpleFIN und LunchFlow importieren immer nur gebuchte Transaktionen, und Monobank importiert jede Transaktions als reguläre Buchung.",
         "successNotification": "Einstellung für ausstehende Transaktionen aktualisiert",
         "errorNotification": "Einstellung für ausstehende Transaktionen konnte nicht aktualisiert werden"
+      },
+      "bankSyncSchedule": {
+        "label": "Zeitplan für Bank-Synchronisierung",
+        "description": "Verknüpfte Bankkonten werden zu diesen Zeiten automatisch synchronisiert (angezeigt in deiner Ortszeit). Wähle zweimal dieselbe Uhrzeit, um einmal täglich zu synchronisieren.",
+        "placeholder": "Uhrzeit auswählen",
+        "successNotification": "Zeitplan für Bank-Synchronisierung aktualisiert",
+        "errorNotification": "Zeitplan für Bank-Synchronisierung konnte nicht aktualisiert werden"
       },
       "quickStart": {
         "label": "Schnellstart-Leitfaden",
@@ -36,6 +44,18 @@
         "description": "Ausgaben in diesen Kategorien werden im Geldfluss-Diagramm als Steuern statt als Ausgabe angezeigt. Unterkategorien sind enthalten.",
         "successNotification": "Steuerkategorien aktualisiert",
         "errorNotification": "Steuerkategorien konnten nicht aktualisiert werden"
+      },
+      "filterCategoriesByType": {
+        "label": "Kategorien an Transaktionstyp anpassen",
+        "description": "Das Transaktionsformular listet bei Einnahmen nur Einnahmekategorien und bei Ausgaben alle anderen Kategorien auf. Nutze die Suche, um alle Kategorien zu finden.",
+        "successNotification": "Einstellung für Kategorienliste aktualisiert",
+        "errorNotification": "Einstellung für Kategorienliste konnte nicht aktualisiert werden"
+      },
+      "incomeCategories": {
+        "label": "Einnahmekategorien",
+        "description": "Kategorien, die als Einnahme zählen. Inklusive Unterkategorien.",
+        "successNotification": "Einnahmekategorien aktualisiert",
+        "errorNotification": "Einnahmekategorien konnten nicht aktualisiert werden"
       },
       "accountDropdowns": {
         "defaultAccount": {

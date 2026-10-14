@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "Error inesperado. No se pudo cambiar la moneda base.",
           "lockedHousehold": "Usted pertenece a {count} membresía de hogar activa. Abandónela desde Ajustes → Hogar primero. | Usted pertenece a {count} membresías de hogar activas. Abandónelas desde Ajustes → Hogar primero.",
-          "lockedShares": "Tiene {count} cuenta compartida activa. Revóquela desde la cuenta primero. | Tiene {count} cuentas compartidas activas. Revóquelas desde cada cuenta primero."
+          "lockedShares": "Tiene {count} cuenta compartida activa. Revóquela desde la cuenta primero. | Tiene {count} cuentas compartidas activas. Revóquelas desde cada cuenta primero.",
+          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
       }
     }

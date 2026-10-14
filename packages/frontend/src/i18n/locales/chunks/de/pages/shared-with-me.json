@@ -10,7 +10,7 @@
       "sections": {
         "account": "Konten",
         "household": "Haushalte",
-        "budget": "Für dich freigegebene Budgets"
+        "budget": "Mit dir geteilte Tracker"
       },
       "sharedBy": "Geteilt von {handle}",
       "viaHousehold": "Über {handle} Haushalt",

@@ -314,6 +314,7 @@
       "clearSelectionLabel": "Очистить выбор",
       "searchPlaceholder": "Поиск...",
       "sharedOwnerNotice": "Показаны категории пользователя {owner}",
+      "unlistedNotice": "Search to find any category",
       "sharedOwnerNoticeTooltip": "Транзакции на общем счёте всегда используют категории владельца. Всё, что вы сохраните здесь, будет отнесено к набору категорий {owner}, чтобы итоговые суммы были одинаковыми для обоих пользователей.",
       "sharedOwnerCategoriesLoadError": "Не удалось загрузить категории общего счёта. Попробуйте снова."
     },
@@ -352,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Выберите категории...",
       "searchPlaceholder": "Поиск категорий...",
-      "noCategoriesFound": "Категории не найдены"
+      "noCategoriesFound": "Категории не найдены",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "Все получатели",

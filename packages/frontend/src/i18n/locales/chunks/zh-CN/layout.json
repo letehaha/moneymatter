@@ -21,7 +21,8 @@
       "subscriptions": "定期付款",
       "budgets": "预算"
     },
-    "venture": "风险投资"
+    "venture": "风险投资",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",

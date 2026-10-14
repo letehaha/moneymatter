@@ -134,7 +134,7 @@
           "list": {
             "accounts": "Konten und Kontostände",
             "transactions": "Transaktionen, Rückerstattungen und Umbuchungen",
-            "budgets": "Budgets, Tags und Kategorien",
+            "budgets": "Budgets, Tracker, Tags und Kategorien",
             "portfolios": "Investments, Portfolios und Positionen",
             "settings": "Benutzereinstellungen, KI-Schlüssel und Onboarding-Status",
             "baseCurrency": "Basiswährung und Wechselkurse"
@@ -166,7 +166,7 @@
           "description": "Diese Aktion kann nicht rückgängig gemacht werden. Dadurch wird dein Konto dauerhaft gelöscht und alle deine Daten werden entfernt, einschließlich:",
           "dataList": {
             "accounts": "Alle Konten und Transaktionen",
-            "categories": "Alle Kategorien und Budgets",
+            "categories": "Alle Kategorien, Budgets und Tracker",
             "portfolios": "Alle Investment-Portfolios",
             "settings": "Alle Einstellungen und Präferenzen"
           },
@@ -199,7 +199,7 @@
               "aiKeysTerm": "KI-API-Schlüssel",
               "aiKeys": "{term} — verschlüsselt gespeichert, daher musst du sie nach der Wiederherstellung erneut eingeben."
             },
-            "included": "Alles andere — Konten, Transaktionen, Kategorien, Budgets, Investitionen, Kredite, Tags, Zahlungsempfänger und geplante Zahlungen — ist enthalten."
+            "included": "Alles andere — Konten, Transaktionen, Kategorien, Budgets, Tracker, Investitionen, Kredite, Tags, Zahlungsempfänger und geplante Zahlungen — ist enthalten."
           }
         },
         "restore": {

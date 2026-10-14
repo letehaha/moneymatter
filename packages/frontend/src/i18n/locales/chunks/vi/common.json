@@ -150,7 +150,7 @@
         "error": "Failed to unlink transactions!"
       },
       "record": {
-        "addedByTooltip": "This transaction was attached to the budget by {handle}",
+        "addedByTooltip": "This transaction was attached to the tracker by {handle}",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",

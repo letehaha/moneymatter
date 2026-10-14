@@ -67,7 +67,7 @@
           "justNow": "Práve teraz",
           "minutesAgo": "pred {count} minútou | pred {count} minútami | pred {count} minútami",
           "hoursAgo": "pred {count} hodinou | pred {count} hodinami | pred {count} hodinami",
-          "daysAgo": "pred {count} dňom | pred {count} dňami"
+          "daysAgo": "pred {count} dňom | pred {count} dňami | pred {count} dňami"
         },
         "notifications": {
           "loadFailed": "Relácie sa nepodarilo načítať",
@@ -148,7 +148,7 @@
           "title": "Zdieľate údaje s inými používateľmi",
           "warning": "Ostatní okamžite stratia prístup",
           "description": "Vymazaním údajov sa odoberie prístup k týmto zdieľaným zdrojom:",
-          "householdsCount": "A prístup stratí {count} člen domácnosti. | A prístup stratí {count} členov domácnosti.",
+          "householdsCount": "A prístup stratí {count} člen domácnosti. | A prístup stratia {count} členovia domácnosti. | A prístup stratí {count} členov domácnosti.",
           "confirmLabel": "Aj tak vymazať"
         },
         "notifications": {
@@ -224,7 +224,7 @@
           "acknowledge": {
             "title": "Zdieľané zdroje stratia prístup",
             "description": "Vlastníte zdroje, ku ktorým majú aktuálne prístup iní ľudia. Obnovou sa tento prístup odoberie.",
-            "householdsCount": "{count} zdieľaná domácnosť | {count} zdieľaných domácností",
+            "householdsCount": "{count} zdieľaná domácnosť | {count} zdieľané domácností | {count} zdieľaných domácností",
             "checkbox": "Rozumiem, že tieto zdieľané zdroje stratia prístup.",
             "confirmLabel": "Aj tak obnoviť"
           },

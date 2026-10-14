@@ -7,9 +7,9 @@
       "trendsComparison": "Trendvergleich",
       "investmentCalculator": "Anlageprojektion",
       "pivotReport": "Pivot",
-      "netWorthDrivers": "Nettovermögens-Treiber",
+      "netWorthDrivers": "Vermögenstreiber",
       "investmentContributions": "Einzahlungen",
-      "netWorthHistory": "Nettovermögensverlauf",
+      "netWorthHistory": "Vermögensverlauf",
       "collapse": "Einklappen",
       "sections": {
         "investments": "Investments"
@@ -261,7 +261,7 @@
         "rangeOpen": "{earliest} bis nach {year}, wenn die Renditen 2 Punkte höher oder niedriger liegen",
         "basedOn": {
           "spending": "Ausgaben: {amount}",
-          "saving": "Ersparnis: {amount}",
+          "saving": "Sparrate: {amount}",
           "counting": "Berücksichtigt: {buckets}"
         },
         "reached": {

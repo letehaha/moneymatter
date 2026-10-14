@@ -89,6 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Pilih semua",
+      "selectAllShort": "Semua",
       "cancelSelection": "Batalkan pilihan",
       "editButton": "Sunting",
       "selectedCount": "{count} dipilih",
@@ -246,6 +247,31 @@
       "gotIt": "Mengerti",
       "openDetails": "Open details",
       "tooManyTags": "Up to {max} tags per transaction"
+    },
+    "savedViews": {
+      "trigger": "Tampilan",
+      "empty": "No saved views yet. Set up filters, then save them as a view.",
+      "modified": "Filters changed",
+      "update": "Update “{name}” with current filters",
+      "updateShort": "Update view",
+      "revert": "Kembalikan",
+      "saveNew": "Save as new view",
+      "actions": "View actions",
+      "rename": "Ubah nama",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "saveTitle": "Simpan tampilan",
+      "renameTitle": "Rename view",
+      "dialogDescription": "A view keeps the current filters and sorting so you can apply them again in one click.",
+      "nameLabel": "Nama",
+      "namePlaceholder": "e.g. Groceries, last 3 months",
+      "savedToast": "Tampilan disimpan",
+      "updatedToast": "View updated",
+      "deletedToast": "Tampilan dihapus",
+      "saveError": "Couldn't save your views. Try again.",
+      "deleteTitle": "Delete view “{name}”?",
+      "deleteDescription": "Your transactions are not affected. This can't be undone.",
+      "filtersCount": "{count} filter | {count} filters"
     }
   },
   "records": {

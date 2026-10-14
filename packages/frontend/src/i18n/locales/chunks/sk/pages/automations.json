@@ -21,7 +21,7 @@
     },
     "pausedMissingRef": "Pozastavené — {refType} „{label}\" bolo zmazané",
     "pausedMissingRefUnnamed": "Pozastavené: {refType}, na ktorý sa toto pravidlo odkazovalo, bol zmazaný",
-    "matchStats": "{count} zhoda · naposledy {date} | {count} zhôd · naposledy {date}",
+    "matchStats": "{count} zhoda · naposledy {date} | {count} zhody · naposledy {date} | {count} zhôd · naposledy {date}",
     "matchStatsNever": "Zatiaľ sa nezhodlo",
     "loadError": "Automatizácie sa nepodarilo načítať. Skontrolujte pripojenie a skúste to znova.",
     "reorderDisabledFiltered": "Ak chcete meniť poradie, zrušte filter stavu",
@@ -220,12 +220,12 @@
       "pickHint": "Vyberte pravidlo. Zodpovedajúce transakcie si prezriete ešte pred vykonaním akýchkoľvek zmien.",
       "title": "Použiť „{name}\" na minulé transakcie",
       "noRules": "Zatiaľ nemáte žiadne automatizácie.",
-      "summary": "Tomuto pravidlu zodpovedá {count} minulá transakcia | Tomuto pravidlu zodpovedá {count} minulých transakcií",
+      "summary": "Tomuto pravidlu zodpovedá {count} minulá transakcia | Tomuto pravidlu zodpovedjú {count} minulé transakcie | Tomuto pravidlu zodpovedá {count} minulých transakcií",
       "moreMatches": "Zobrazených je len {shown} najnovších zhôd. Použite ich a potom spustite znova.",
       "scanCapped": "Skontrolovaných bolo len vašich {limit} najnovších transakcií.",
       "emptyState": {
         "settledTitle": "Všetko vybavené",
-        "settledDescription": "Toto pravidlo už nemá čo zmeniť na jedinej zodpovedajúcej minulej transakcii. | Toto pravidlo už nemá čo zmeniť na {count} zodpovedajúcich minulých transakciách.",
+        "settledDescription": "Toto pravidlo už nemá čo zmeniť na jedinej zodpovedajúcej minulej transakcii. | Toto pravidlo už nemá čo zmeniť na {count} zodpovedajúcich minulých transakciách. | Toto pravidlo už nemá čo zmeniť na {count} zodpovedajúcich minulých transakciách.",
         "noneTitle": "Zatiaľ žiadne zhody",
         "noneDescription": "Žiadna minulá transakcia na vašich synchronizovaných ani importovaných účtoch nezodpovedá týmto podmienkam."
       },

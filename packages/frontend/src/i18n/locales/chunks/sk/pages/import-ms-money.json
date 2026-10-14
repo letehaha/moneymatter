@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Aktuálny zostatok",
             "currentBalancePlaceholder": "Nechajte prázdne, ak chcete použiť importovaný súčet",
             "willCreateHint": "Vytvorí sa v mene {currency}.",
+            "currencyNotInFile": "Nie je v súbore",
             "skippedNote": "Preskočí sa účtov: {count}. Ich transakcie — a akékoľvek prevody z nich alebo na ne — sa neimportujú."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "Preskočené transakcie: {count}",
             "transferCounterpartNotImported": "Strany prevodu importované ako mimo peňaženky: {count}",
             "rowLimitReached": "Vynechané transakcie nad limit: {count}",
-            "accountCurrencyDefaulted": "Účtov bez uvedenej meny v súbore: {count} — predpokladá sa USD, pred pokračovaním skontrolujte menu v kroku s účtami",
+            "accountCurrencyMissing": "Účty bez uvedenej meny v súbore: {count} — použila sa vaša základná mena, ak to nie je správne, zmeňte ju v kroku s účtami",
             "rowMissingDate": "Preskočené transakcie bez čitateľného dátumu: {count}",
             "accountNameMissing": "Účty bez názvu: {count}",
             "accountNameDuplicated": "Účty so zhodným názvom: {count}",

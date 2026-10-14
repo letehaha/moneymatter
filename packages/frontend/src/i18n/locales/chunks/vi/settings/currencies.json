@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "Đã xảy ra lỗi ngoài dự kiến. Không đổi được tiền tệ cơ sở.",
           "lockedHousehold": "Bạn đang là thành viên của {count} hộ gia đình đang hoạt động. Trước tiên, hãy rời khỏi hộ gia đình đó trong Cài đặt → Hộ gia đình. | Bạn đang là thành viên của {count} hộ gia đình đang hoạt động. Trước tiên, hãy rời khỏi các hộ gia đình đó trong Cài đặt → Hộ gia đình.",
-          "lockedShares": "Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi quyền đó trong tài khoản. | Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi từng quyền trong các tài khoản tương ứng."
+          "lockedShares": "Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi quyền đó trong tài khoản. | Bạn đang có {count} quyền chia sẻ tài khoản đang hoạt động. Trước tiên, hãy thu hồi từng quyền trong các tài khoản tương ứng.",
+          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
       }
     }

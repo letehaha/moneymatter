@@ -1,20 +1,20 @@
 {
   "budgets": {
-    "title": "Budgets",
+    "title": "Trackers",
     "description": "Track spending and monitor financial events",
-    "notFound": "Budget not found",
-    "notFoundDescription": "We couldn't find this budget. It may have been deleted or you might not have access to it.",
-    "backToList": "Back to budgets",
-    "newBudget": "New Budget",
-    "createBudget": "Create budget",
+    "notFound": "Tracker not found",
+    "notFoundDescription": "We couldn't find this tracker. It may have been deleted or you might not have access to it.",
+    "backToList": "Back to trackers",
+    "newBudget": "New Tracker",
+    "createBudget": "Create tracker",
     "creation": {
-      "success": "Budget created",
+      "success": "Tracker created",
       "error": "Unexpected error!",
-      "nameLabel": "Budget name",
+      "nameLabel": "Tracker name",
       "namePlaceholder": "Enter the name",
-      "typeLabel": "Budget type",
+      "typeLabel": "Tracker type",
       "typeManual": "Manual",
-      "typeManualDescription": "Manually add transactions to this budget",
+      "typeManualDescription": "Manually add transactions to this tracker",
       "typeCategory": "Category-based",
       "typeCategoryDescription": "Auto-track spending by categories",
       "categoriesLabel": "Categories to track",
@@ -22,23 +22,23 @@
       "fromDateLabel": "From date",
       "toDateLabel": "To date",
       "autoIncludeLabel": "Auto include transactions",
-      "limitLabel": "Budget limit",
+      "limitLabel": "Tracker limit",
       "limitPlaceholder": "Enter the limit",
-      "submitButton": "Add budget"
+      "submitButton": "Add tracker"
     },
     "list": {
-      "tabCategory": "Category Budgets",
-      "tabManual": "Manual Budgets",
+      "tabCategory": "Category Trackers",
+      "tabManual": "Manual Trackers",
       "edit": "Edit",
       "delete": "Delete",
-      "deleteSuccess": "Budget deleted successfully!",
+      "deleteSuccess": "Tracker deleted successfully!",
       "deleteError": "Unexpected error!",
-      "updateSuccess": "Budget updated successfully!",
-      "updateError": "Failed to update budget",
+      "updateSuccess": "Tracker updated successfully!",
+      "updateError": "Failed to update tracker",
       "unlinkTransactionsSuccess": "Transactions unlinked successfully!",
       "deleteDialog": {
-        "title": "Do you want to delete this budget?",
-        "description": "By clicking \"Accept\", all associated transactions will be unlinked from the budget but will remain in the system."
+        "title": "Do you want to delete this tracker?",
+        "description": "By clicking \"Accept\", all associated transactions will be unlinked from the tracker but will remain in the system."
       },
       "limitLabel": "Limit: {amount}",
       "transactionsCount": "{count} transactions",
@@ -66,21 +66,21 @@
       "showArchived": "Show archived",
       "hideArchived": "Hide archived",
       "emptyState": {
-        "title": "No budgets yet",
-        "description": "Create a budget to start tracking your spending or monitoring specific events."
+        "title": "No trackers yet",
+        "description": "Create a tracker to start tracking your spending or monitoring specific events."
       }
     },
     "settings": {
-      "nameLabel": "Budget name",
-      "namePlaceholder": "Enter budget name",
-      "limitLabel": "Budget limit",
+      "nameLabel": "Tracker name",
+      "namePlaceholder": "Enter tracker name",
+      "limitLabel": "Tracker limit",
       "limitPlaceholder": "Enter limit amount (optional)",
       "startDateLabel": "Start date",
       "endDateLabel": "End date",
       "notSet": "Not set"
     },
     "addTransactionsDialog": {
-      "title": "Add Transactions to Budget",
+      "title": "Add Transactions to Tracker",
       "addSelected": "Add Selected",
       "clearSelection": "Clear selection"
     },
@@ -95,7 +95,7 @@
       "transactionsLoadError": "Failed to load transactions",
       "categoryBreakdown": "Category Breakdown",
       "edit": "Edit",
-      "editTitle": "Edit Budget",
+      "editTitle": "Edit Tracker",
       "showMore": "Show more",
       "showLess": "Show less",
       "settings": {
@@ -104,7 +104,7 @@
     },
     "manualBudget": {
       "edit": "Edit",
-      "editTitle": "Edit Budget"
+      "editTitle": "Edit Tracker"
     },
     "share": {
       "sharedByBadge": "Shared by {handle}"

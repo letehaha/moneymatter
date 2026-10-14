@@ -21,7 +21,7 @@
         "bankBadgeTooltip": "Táto skupina vznikla pri pripojení banky, no nepredstavuje samotné pripojenie — môžete ju voľne premenovať, presúvať z nej účty alebo ju zmazať. Účty zostanú synchronizované bez ohľadu na to.",
         "accountsCount": "{count} účet | {count} účty | {count} účtov",
         "noAccounts": "Žiadne účty",
-        "accountsElsewhere": "{count} synchronizovaný účet v iných skupinách | {count} synchronizovaných účtov v iných skupinách",
+        "accountsElsewhere": "{count} synchronizovaný účet v iných skupinách | {count} synchronizované účty v iných skupinách | {count} synchronizovaných účtov v iných skupinách",
         "inParent": "v {name}",
         "manageConnection": "Spravovať pripojenie"
       },

@@ -21,7 +21,8 @@
       "subscriptions": "Регулярные платежи",
       "budgets": "Бюджеты"
     },
-    "venture": "Венчурные инвестиции"
+    "venture": "Венчурные инвестиции",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",

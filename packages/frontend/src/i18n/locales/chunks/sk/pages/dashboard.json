@@ -44,7 +44,7 @@
           "showMarkersTooltip": "Zapnutie alebo vypnutie farebných značiek v grafe, ktoré zvýrazňujú výrazné zmeny zostatku.",
           "percentThreshold": "Min. zmena v %",
           "percentThresholdTooltip": "Minimálna percentuálna zmena zostatku medzi dvoma po sebe nasledujúcimi dňami na označenie výkyvu. Musí byť prekročená táto alebo absolútna hranica. Nízke hodnoty zobrazia viac značiek.",
-          "absoluteThreshold": "Min. zmena $",
+          "absoluteThreshold": "Min. zmena {symbol}",
           "absoluteThresholdTooltip": "Minimálna absolútna zmena zostatku (vo vašej základnej mene) na označenie výkyvu. Musí byť prekročená táto alebo percentuálna hranica.",
           "maxMarkers": "Max. počet značiek",
           "maxMarkersTooltip": "Maximálny počet značiek výkyvov zobrazených v grafe. Ak je výkyvov viac než tento limit, zobrazia sa len najvýznamnejšie.",
@@ -76,7 +76,7 @@
           "excluding": "Bez: {items}"
         },
         "projection": {
-          "summary": "Plánované: {amount} · počet záznamov do {date}: {count} | Plánované: {amount} · počet záznamov do {date}: {count}"
+          "summary": "Výhľad: {amount} · {count} plánovaný záznam do {date} | Výhľad: {amount} · {count} plánované záznamy do {date} | Výhľad: {amount} · {count} plánovaných záznamov do {date}"
         }
       },
       "expensesStructure": {
@@ -215,6 +215,27 @@
           "m12": "Posledných 12 mesiacov"
         }
       },
+      "budget": {
+        "spent": "spent",
+        "ringLabel": "{percent}% of the budget is spent",
+        "leftOf": "left of {total}",
+        "overOf": "over the {total} budget",
+        "headerLeft": "{amount} left",
+        "headerOver": "{amount} over",
+        "daysLeft": "{count} day left | {count} days left",
+        "lastDay": "Last day of the period",
+        "empty": "No budget yet",
+        "create": "Set up a budget"
+      },
+      "trackers": {
+        "spentOfLimit": "{spent} of {limit}",
+        "inOut": "{income} in, {expense} out",
+        "net": "Čistý zostatok",
+        "noLimit": "No limit",
+        "empty": "Zatiaľ žiadne rozpočty",
+        "ended": "Ukončené",
+        "create": "Create a tracker"
+      },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
       "registry": {
         "balanceTrend": {
@@ -260,6 +281,14 @@
         "taxes": {
           "name": "Priemerná daňová sadzba",
           "description": "Podiel príjmu zaplatený na daniach, s 12-mesačným trendom"
+        },
+        "budget": {
+          "name": "Budget",
+          "description": "What is left in the current budget period, line by line"
+        },
+        "trackers": {
+          "name": "Rozpočty",
+          "description": "Each active tracker with how much of its limit is used and its net"
         }
       }
     },

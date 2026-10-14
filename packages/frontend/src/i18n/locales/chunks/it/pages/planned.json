@@ -1,7 +1,7 @@
 {
   "planned": {
     "budgets": {
-      "backToList": "Back to Budgets"
+      "backToList": "Back to Trackers"
     },
     "subscriptions": {
       "notFound": "Recurring payment not found",

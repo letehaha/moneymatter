@@ -1,20 +1,20 @@
 {
   "budgets": {
-    "title": "Budgets",
+    "title": "Tracker",
     "description": "Verfolge Ausgaben und überwache Finanzereignisse",
-    "notFound": "Budget nicht gefunden",
-    "notFoundDescription": "Wir konnten dieses Budget nicht finden. Es wurde möglicherweise gelöscht oder du hast keinen Zugriff darauf.",
-    "backToList": "Zurück zu den Budgets",
-    "newBudget": "Neues Budget",
-    "createBudget": "Budget erstellen",
+    "notFound": "Tracker nicht gefunden",
+    "notFoundDescription": "Wir konnten diesen Tracker nicht finden. Er wurde möglicherweise gelöscht oder du hast keinen Zugriff darauf.",
+    "backToList": "Zurück zu Tracker",
+    "newBudget": "Neuer Tracker",
+    "createBudget": "Tracker erstellen",
     "creation": {
-      "success": "Budget erstellt",
+      "success": "Tracker erstellt",
       "error": "Unerwarteter Fehler!",
-      "nameLabel": "Budgetname",
+      "nameLabel": "Tracker-Name",
       "namePlaceholder": "Name eingeben",
-      "typeLabel": "Budgettyp",
+      "typeLabel": "Tracker-Typ",
       "typeManual": "Manuell",
-      "typeManualDescription": "Füge Transaktionen manuell zu diesem Budget hinzu",
+      "typeManualDescription": "Transaktionen manuell zu diesem Tracker hinzufügen",
       "typeCategory": "Kategoriebasiert",
       "typeCategoryDescription": "Ausgaben automatisch nach Kategorien verfolgen",
       "categoriesLabel": "Zu verfolgende Kategorien",
@@ -22,23 +22,23 @@
       "fromDateLabel": "Startdatum",
       "toDateLabel": "Enddatum",
       "autoIncludeLabel": "Transaktionen automatisch einschließen",
-      "limitLabel": "Budgetlimit",
+      "limitLabel": "Tracker-Limit",
       "limitPlaceholder": "Limit eingeben",
-      "submitButton": "Budget hinzufügen"
+      "submitButton": "Tracker hinzufügen"
     },
     "list": {
-      "tabCategory": "Kategorie-Budgets",
-      "tabManual": "Manuelle Budgets",
+      "tabCategory": "Kategorie-Tracker",
+      "tabManual": "Manuelle Tracker",
       "edit": "Bearbeiten",
       "delete": "Löschen",
-      "deleteSuccess": "Budget erfolgreich gelöscht!",
+      "deleteSuccess": "Tracker erfolgreich gelöscht!",
       "deleteError": "Unerwarteter Fehler!",
-      "updateSuccess": "Budget erfolgreich aktualisiert!",
-      "updateError": "Budget konnte nicht aktualisiert werden",
+      "updateSuccess": "Tracker erfolgreich aktualisiert!",
+      "updateError": "Tracker konnte nicht aktualisiert werden",
       "unlinkTransactionsSuccess": "Verknüpfung der Transaktionen erfolgreich aufgehoben!",
       "deleteDialog": {
-        "title": "Möchtest du dieses Budget löschen?",
-        "description": "Durch Klicken auf \"Akzeptieren\" wird die Verknüpfung aller zugehörigen Transaktionen mit dem Budget aufgehoben, sie bleiben jedoch im System erhalten."
+        "title": "Möchtest du diesen Tracker löschen?",
+        "description": "Wenn du auf \"Akzeptieren\" klickst, werden alle verknüpften Transaktionen vom Tracker getrennt, bleiben aber im System erhalten."
       },
       "limitLabel": "Limit: {amount}",
       "transactionsCount": "{count} Transaktionen",
@@ -66,21 +66,21 @@
       "showArchived": "Archivierte anzeigen",
       "hideArchived": "Archivierte ausblenden",
       "emptyState": {
-        "title": "Noch keine Budgets",
-        "description": "Erstelle ein Budget, um deine Ausgaben zu verfolgen oder bestimmte Ereignisse zu überwachen."
+        "title": "Noch keine Tracker",
+        "description": "Erstelle einen Tracker, um deine Ausgaben zu verfolgen oder bestimmte Ereignisse zu überwachen."
       }
     },
     "settings": {
-      "nameLabel": "Budgetname",
-      "namePlaceholder": "Budgetname eingeben",
-      "limitLabel": "Budgetlimit",
+      "nameLabel": "Tracker-Name",
+      "namePlaceholder": "Tracker-Name eingeben",
+      "limitLabel": "Tracker-Limit",
       "limitPlaceholder": "Limitbetrag eingeben (optional)",
       "startDateLabel": "Startdatum",
       "endDateLabel": "Enddatum",
       "notSet": "Nicht festgelegt"
     },
     "addTransactionsDialog": {
-      "title": "Transaktionen zum Budget hinzufügen",
+      "title": "Transaktionen zum Tracker hinzufügen",
       "addSelected": "Ausgewählte hinzufügen",
       "clearSelection": "Auswahl aufheben"
     },
@@ -95,7 +95,7 @@
       "transactionsLoadError": "Transaktionen konnten nicht geladen werden",
       "categoryBreakdown": "Kategorie-Aufschlüsselung",
       "edit": "Bearbeiten",
-      "editTitle": "Budget bearbeiten",
+      "editTitle": "Tracker bearbeiten",
       "showMore": "Mehr anzeigen",
       "showLess": "Weniger anzeigen",
       "settings": {
@@ -104,7 +104,7 @@
     },
     "manualBudget": {
       "edit": "Bearbeiten",
-      "editTitle": "Budget bearbeiten"
+      "editTitle": "Tracker bearbeiten"
     },
     "share": {
       "sharedByBadge": "Geteilt von {handle}"

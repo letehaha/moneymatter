@@ -265,7 +265,7 @@
       "termPresetsAriaLabel": "Predvoľby doby splácania",
       "termPresetsHeader": "Bežné doby splácania",
       "termMonthsSuffix": "mes.",
-      "termPresetYears": "{count} rok | {count} rokov",
+      "termPresetYears": "{count} rok | {count} roky | {count} rokov",
       "termMonthsPlaceholder": "napr. 360 pre 30-ročnú pôžičku",
       "startDateLabel": "Dátum začiatku",
       "startDatePlaceholder": "DD/MM/YYYY",
@@ -314,6 +314,7 @@
       "clearSelectionLabel": "Zrušiť výber",
       "searchPlaceholder": "Hľadať...",
       "sharedOwnerNotice": "Zobrazujú sa kategórie používateľa {owner}",
+      "unlistedNotice": "Ktorúkoľvek kategóriu nájdete cez vyhľadávanie",
       "sharedOwnerNoticeTooltip": "Transakcie na zdieľanom účte vždy používajú kategórie vlastníka. Čokoľvek tu uložíte, sa zaradí do sady kategórií používateľa {owner}, aby ste obaja videli rovnaké súčty.",
       "sharedOwnerCategoriesLoadError": "Kategórie pre zdieľaný účet sa nepodarilo načítať. Skúste to znova, prosím."
     },
@@ -352,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Vyberte kategórie...",
       "searchPlaceholder": "Hľadať kategórie...",
-      "noCategoriesFound": "Nenašli sa žiadne kategórie"
+      "noCategoriesFound": "Nenašli sa žiadne kategórie",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "Všetky protistrany",

@@ -44,7 +44,7 @@
           "showMarkersTooltip": "Toggle colored markers on the chart that highlight significant balance changes.",
           "percentThreshold": "Min change %",
           "percentThresholdTooltip": "Minimum percentage change in balance between two consecutive days to mark as a spike. Either this or the absolute threshold must be exceeded. Low values show more markers.",
-          "absoluteThreshold": "Min change $",
+          "absoluteThreshold": "Min change {symbol}",
           "absoluteThresholdTooltip": "Minimum absolute balance change (in your base currency) to qualify as a spike. Either this or the % threshold must be exceeded.",
           "maxMarkers": "Max markers",
           "maxMarkersTooltip": "Maximum number of spike markers shown on the chart. When there are more spikes than this limit, only the most significant ones are displayed.",
@@ -215,6 +215,27 @@
           "m12": "Last 12 months"
         }
       },
+      "budget": {
+        "spent": "spent",
+        "ringLabel": "{percent}% of the budget is spent",
+        "leftOf": "left of {total}",
+        "overOf": "over the {total} budget",
+        "headerLeft": "{amount} left",
+        "headerOver": "{amount} over",
+        "daysLeft": "{count} day left | {count} days left",
+        "lastDay": "Last day of the period",
+        "empty": "No budget yet",
+        "create": "Set up a budget"
+      },
+      "trackers": {
+        "spentOfLimit": "{spent} of {limit}",
+        "inOut": "{income} in, {expense} out",
+        "net": "Thu chi ròng",
+        "noLimit": "No limit",
+        "empty": "Chưa có ngân sách nào",
+        "ended": "Đã kết thúc",
+        "create": "Create a tracker"
+      },
       "emptyState": "There are no data in selected time interval.",
       "registry": {
         "balanceTrend": {
@@ -260,6 +281,14 @@
         "taxes": {
           "name": "Average Tax Rate",
           "description": "Share of income paid in taxes, with a 12-month trend"
+        },
+        "budget": {
+          "name": "Budget",
+          "description": "What is left in the current budget period, line by line"
+        },
+        "trackers": {
+          "name": "Ngân sách",
+          "description": "Each active tracker with how much of its limit is used and its net"
         }
       }
     },

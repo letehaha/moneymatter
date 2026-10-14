@@ -182,12 +182,12 @@
       },
       "remove": {
         "title": "Remove {count} transaction? | Remove {count} transactions?",
-        "description": "Removed transactions stop counting toward balances and stats. Budget, group and subscription links are detached. You can restore them from History, but the links won't come back.",
+        "description": "Removed transactions stop counting toward balances and stats. Tracker, group and subscription links are detached. You can restore them from History, but the links won't come back.",
         "confirm": "Remove"
       },
       "restoreDialog": {
         "title": "Restore {count} transaction? | Restore {count} transactions?",
-        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Budget, group and subscription links detached on removal don't come back.",
+        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
         "confirm": "Pulihkan"
       },
       "notifications": {

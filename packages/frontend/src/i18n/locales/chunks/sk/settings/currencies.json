@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "Neočakávaná chyba. Základnú menu sa nepodarilo zmeniť.",
           "lockedHousehold": "Máte {count} aktívne členstvo v domácnosti. Najprv ho opustite v Nastavenia → Domácnosť. | Máte {count} aktívne členstvá v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť. | Máte {count} aktívnych členstiev v domácnosti. Najprv ich opustite v Nastavenia → Domácnosť.",
-          "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívne zdieľania účtov. Najprv ich odoberte pri každom účte. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte."
+          "lockedShares": "Máte {count} aktívne zdieľanie účtu. Najprv ho odoberte v nastaveniach účtu. | Máte {count} aktívne zdieľania účtov. Najprv ich odoberte pri každom účte. | Máte {count} aktívnych zdieľaní účtov. Najprv ich odoberte pri každom účte.",
+          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
         }
       }
     }

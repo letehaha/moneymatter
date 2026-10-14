@@ -314,6 +314,7 @@
       "clearSelectionLabel": "Limpiar selección",
       "searchPlaceholder": "Buscar...",
       "sharedOwnerNotice": "Mostrando las categorías de {owner}",
+      "unlistedNotice": "Search to find any category",
       "sharedOwnerNoticeTooltip": "Las transacciones en una cuenta compartida siempre usan las categorías del propietario. Todo lo que guarde aquí se archivará bajo el conjunto de {owner} para que ambos vean totales coherentes.",
       "sharedOwnerCategoriesLoadError": "No se pudieron cargar las categorías de la cuenta compartida. Inténtelo de nuevo."
     },
@@ -352,7 +353,8 @@
     "categoryMultiSelect": {
       "placeholder": "Seleccionar categorías...",
       "searchPlaceholder": "Buscar categorías...",
-      "noCategoriesFound": "No se encontraron categorías"
+      "noCategoriesFound": "No se encontraron categorías",
+      "takenBy": "In {name}"
     },
     "payeeMultiSelect": {
       "label": "Todos los beneficiarios",

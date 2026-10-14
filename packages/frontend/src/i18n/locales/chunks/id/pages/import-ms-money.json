@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Saldo saat ini",
             "currentBalancePlaceholder": "Kosongkan untuk menggunakan total impor",
             "willCreateHint": "Akan dibuat dalam {currency}.",
+            "currencyNotInFile": "Not in file",
             "skippedNote": "{count} akun akan dilewati. Transaksinya — dan transfer apa pun ke atau dari akun tersebut — tidak akan diimpor."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "{count} transaksi dilewati",
             "transferCounterpartNotImported": "{count} sisi transfer diimpor sebagai di luar dompet",
             "rowLimitReached": "{count} transaksi melebihi batas dihapus",
-            "accountCurrencyDefaulted": "{count} akun tidak memiliki mata uang dalam file, sehingga USD diasumsikan — periksa mata uang pada langkah akun sebelum melanjutkan",
+            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
             "rowMissingDate": "{count} transaksi tanpa tanggal yang dapat dibaca dilewati",
             "accountNameMissing": "{count} akun tidak memiliki nama",
             "accountNameDuplicated": "{count} akun memiliki nama yang sama",

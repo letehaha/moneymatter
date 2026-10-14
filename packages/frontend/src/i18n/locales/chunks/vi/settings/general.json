@@ -18,8 +18,16 @@
       "pendingBankTransactions": {
         "label": "Nhập giao dịch ngân hàng đang chờ xử lý",
         "description": "Lưu các giao dịch từ Enable Banking trước khi ngân hàng hạch toán. Các giao dịch này được đánh dấu là đang chờ xử lý, không làm thay đổi số dư tài khoản và thường chưa có thông tin người bán cho đến khi được hạch toán. Cài đặt này không ảnh hưởng đến các nhà cung cấp khác: SimpleFIN và LunchFlow chỉ nhập giao dịch đã hạch toán, còn Monobank nhập mọi giao dịch như giao dịch thông thường.",
+        "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
         "successNotification": "Đã cập nhật cài đặt giao dịch đang chờ xử lý",
         "errorNotification": "Không cập nhật được cài đặt giao dịch đang chờ xử lý"
+      },
+      "bankSyncSchedule": {
+        "label": "Bank sync schedule",
+        "description": "Connected bank accounts sync automatically at these times, shown in your local time. Pick the same time twice to sync once a day.",
+        "placeholder": "Select time",
+        "successNotification": "Bank sync schedule updated",
+        "errorNotification": "Failed to update bank sync schedule"
       },
       "quickStart": {
         "label": "Hướng dẫn bắt đầu nhanh",
@@ -36,6 +44,18 @@
         "description": "Spending in these categories is shown as taxes in the money flow chart instead of as an expense. Subcategories are included.",
         "successNotification": "Tax categories updated",
         "errorNotification": "Failed to update tax categories"
+      },
+      "filterCategoriesByType": {
+        "label": "Match categories to transaction type",
+        "description": "The transaction form lists only income categories for income and all other categories for expenses. Search still finds every category.",
+        "successNotification": "Category list setting updated",
+        "errorNotification": "Failed to update the category list setting"
+      },
+      "incomeCategories": {
+        "label": "Income categories",
+        "description": "Categories that count as income. Subcategories are included.",
+        "successNotification": "Income categories updated",
+        "errorNotification": "Failed to update income categories"
       },
       "accountDropdowns": {
         "defaultAccount": {

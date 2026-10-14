@@ -67,7 +67,7 @@
       "menu": {
         "type": "Type",
         "tags": "Etichette",
-        "budgets": "Budgets",
+        "budgets": "Trackers",
         "amount": "Amount range",
         "note": "Notes"
       },
@@ -89,6 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Select all",
+      "selectAllShort": "All",
       "cancelSelection": "Cancel selection",
       "editButton": "Edit",
       "selectedCount": "{count} selected",
@@ -246,6 +247,31 @@
       "gotIt": "Got it",
       "openDetails": "Open details",
       "tooManyTags": "Up to {max} tags per transaction"
+    },
+    "savedViews": {
+      "trigger": "Views",
+      "empty": "No saved views yet. Set up filters, then save them as a view.",
+      "modified": "Filters changed",
+      "update": "Update “{name}” with current filters",
+      "updateShort": "Update view",
+      "revert": "Revert",
+      "saveNew": "Save as new view",
+      "actions": "View actions",
+      "rename": "Rename",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "saveTitle": "Save view",
+      "renameTitle": "Rename view",
+      "dialogDescription": "A view keeps the current filters and sorting so you can apply them again in one click.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Groceries, last 3 months",
+      "savedToast": "View saved",
+      "updatedToast": "View updated",
+      "deletedToast": "View deleted",
+      "saveError": "Couldn't save your views. Try again.",
+      "deleteTitle": "Delete view “{name}”?",
+      "deleteDescription": "Your transactions are not affected. This can't be undone.",
+      "filtersCount": "{count} filter | {count} filters"
     }
   },
   "records": {

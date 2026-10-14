@@ -19,9 +19,10 @@
     "planned": {
       "planned": "Planned",
       "subscriptions": "Recurring Payments",
-      "budgets": "Budgets"
+      "budgets": "Trackers"
     },
-    "venture": "Venture"
+    "venture": "Venture",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",
@@ -270,7 +271,7 @@
             "description": "Add tags to group related transactions"
           },
           "create-budget": {
-            "title": "Set up a budget",
+            "title": "Set up a tracker",
             "description": "Create spending limits for categories"
           },
           "create-subscription": {

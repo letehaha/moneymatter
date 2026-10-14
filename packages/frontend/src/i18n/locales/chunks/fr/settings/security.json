@@ -134,7 +134,7 @@
           "list": {
             "accounts": "Accounts and balances",
             "transactions": "Transactions, refunds, and transfers",
-            "budgets": "Budgets, tags, and categories",
+            "budgets": "Budgets, trackers, tags, and categories",
             "portfolios": "Investments, portfolios, and holdings",
             "settings": "User settings, AI keys, and onboarding state",
             "baseCurrency": "Base currency and exchange rates"
@@ -166,7 +166,7 @@
           "description": "This action cannot be undone. This will permanently delete your account and remove all your data including:",
           "dataList": {
             "accounts": "All accounts and transactions",
-            "categories": "All categories and budgets",
+            "categories": "All categories, budgets, and trackers",
             "portfolios": "All investment portfolios",
             "settings": "All settings and preferences"
           },
@@ -199,7 +199,7 @@
               "aiKeysTerm": "AI API keys",
               "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
             },
-            "included": "Everything else — accounts, transactions, categories, budgets, investments, loans, tags, payees and subscriptions — is included."
+            "included": "Everything else — accounts, transactions, categories, budgets, trackers, investments, loans, tags, payees and subscriptions — is included."
           }
         },
         "restore": {

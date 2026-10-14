@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Current balance",
             "currentBalancePlaceholder": "Leave blank to use the imported total",
             "willCreateHint": "Will be created in {currency}.",
+            "currencyNotInFile": "Not in file",
             "skippedNote": "{count} account(s) will be skipped. Their transactions — and any transfers to or from them — will not be imported."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "{count} transaction(s) skipped",
             "transferCounterpartNotImported": "{count} transfer leg(s) imported as out-of-wallet",
             "rowLimitReached": "{count} transaction(s) over the limit were dropped",
-            "accountCurrencyDefaulted": "{count} account(s) had no currency in the file, so USD was assumed — check the currency on the accounts step before continuing",
+            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
             "rowMissingDate": "{count} transaction(s) with no readable date were skipped",
             "accountNameMissing": "{count} account(s) had no name",
             "accountNameDuplicated": "{count} account(s) shared a name",

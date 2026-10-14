@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Số dư hiện tại",
             "currentBalancePlaceholder": "Để trống để dùng tổng số tiền đã nhập",
             "willCreateHint": "Sẽ được tạo bằng đơn vị tiền tệ {currency}.",
+            "currencyNotInFile": "Not in file",
             "skippedNote": "{count} tài khoản sẽ bị bỏ qua. Giao dịch của các tài khoản này — cùng mọi khoản chuyển đến hoặc từ những tài khoản đó — sẽ không được nhập."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "Đã bỏ qua {count} giao dịch",
             "transferCounterpartNotImported": "Đã nhập {count} vế giao dịch chuyển tiền dưới dạng giao dịch ngoài Wallet",
             "rowLimitReached": "Đã loại bỏ {count} giao dịch vượt quá giới hạn",
-            "accountCurrencyDefaulted": "{count} tài khoản không có đơn vị tiền tệ trong tệp nên được mặc định là USD — hãy kiểm tra đơn vị tiền tệ ở bước tài khoản trước khi tiếp tục",
+            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
             "rowMissingDate": "Đã bỏ qua {count} giao dịch không có ngày hợp lệ",
             "accountNameMissing": "{count} tài khoản không có tên",
             "accountNameDuplicated": "{count} tài khoản trùng tên",

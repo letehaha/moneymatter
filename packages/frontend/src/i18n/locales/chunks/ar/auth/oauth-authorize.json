@@ -17,15 +17,15 @@
     "scopes": {
       "finance_read": {
         "label": "عرض بياناتك المالية",
-        "desc": "Read accounts, transactions, budgets, categories, tags, portfolios, and spending stats."
+        "desc": "Read accounts, transactions, trackers, categories, tags, portfolios, and spending stats."
       },
       "finance_write": {
         "label": "إنشاء وتعديل بياناتك المالية",
-        "desc": "Add and update transactions, budgets, subscriptions, investment positions, and more."
+        "desc": "Add and update transactions, trackers, subscriptions, investment positions, and more."
       },
       "finance_delete": {
         "label": "حذف بياناتك المالية",
-        "desc": "Permanently remove transactions, accounts, budgets, and other records."
+        "desc": "Permanently remove transactions, accounts, trackers, and other records."
       },
       "profile_read": {
         "label": "عرض ملفك الشخصي",

@@ -138,7 +138,7 @@
       "paidOff": {
         "bannerTitle": "{name} – vollständig abbezahlt",
         "bannerSubline": "{type} · Eröffnet {opened} · Geschlossen {closed}",
-        "took": "Dauerte",
+        "took": "Dauer",
         "monthsEarly": "{count} Mon. früher",
         "duration": {
           "full": "{years} J. {months} Mon.",
@@ -151,7 +151,7 @@
           "principal": "Tilgung",
           "interest": "Zinsen (geschätzt)",
           "estimateFootnote": "Zinsen sind eine Schätzung anhand des Tilgungsplans – Zahlungen werden als Tilgung erfasst, daher wird keine genaue Zinsaufteilung gespeichert.",
-          "effectiveCost": "Effektive Kosten: {cents} Cent Zinsen pro 1€ geliehen"
+          "effectiveCost": "Effektive Kosten: {percent} Zinsen auf den geliehenen Betrag"
         },
         "chart": {
           "title": "Saldoverlauf",

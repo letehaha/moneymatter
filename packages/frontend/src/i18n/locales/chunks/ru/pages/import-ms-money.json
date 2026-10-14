@@ -37,6 +37,7 @@
             "currentBalanceLabel": "Текущий баланс",
             "currentBalancePlaceholder": "Оставьте пустым, чтобы использовать импортированную сумму",
             "willCreateHint": "Будет создан в валюте {currency}.",
+            "currencyNotInFile": "Not in file",
             "skippedNote": "{count} счёт(а/ов) будет пропущено. Их транзакции, а также переводы на них и с них не будут импортированы."
           },
           "categories": {
@@ -72,7 +73,7 @@
             "orphanRowSkipped": "Пропущено транзакций: {count}",
             "transferCounterpartNotImported": "Частей перевода импортировано как «вне кошелька»: {count}",
             "rowLimitReached": "Транзакций сверх лимита отброшено: {count}",
-            "accountCurrencyDefaulted": "У {count} счёта(ов) в файле не было валюты, поэтому предполагается USD — проверьте валюту на шаге счетов перед продолжением",
+            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
             "rowMissingDate": "Пропущено транзакций без распознаваемой даты: {count}",
             "accountNameMissing": "Счетов без названия: {count}",
             "accountNameDuplicated": "Счетов с одинаковым названием: {count}",

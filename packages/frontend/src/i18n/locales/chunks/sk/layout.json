@@ -21,7 +21,8 @@
       "subscriptions": "Opakujúce sa platby",
       "budgets": "Rozpočty"
     },
-    "venture": "Rizikový kapitál"
+    "venture": "Rizikový kapitál",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Zbaliť bočný panel",
@@ -151,10 +152,10 @@
       "secondsAgo": "pred {count} sekundou | pred {count} sekundami | pred {count} sekundami",
       "minutesAgo": "pred {count} minútou | pred {count} minútami | pred {count} minútami",
       "hoursAgo": "pred {count} hodinou | pred {count} hodinami | pred {count} hodinami",
-      "daysAgo": "pred {count} dňom | pred {count} dňami",
-      "weeksAgo": "pred {count} týždňom | pred {count} týždňami",
-      "monthsAgo": "pred {count} mesiacom | pred {count} mesiacmi",
-      "yearsAgo": "pred {count} rokom | pred {count} rokmi"
+      "daysAgo": "pred {count} dňom | pred {count} dňami | pred {count} dňami",
+      "weeksAgo": "pred {count} týždňom | pred {count} týždňami | pred {count} týždňami",
+      "monthsAgo": "pred {count} mesiacom | pred {count} mesiacmi | pred {count} mesiacmi",
+      "yearsAgo": "pred {count} rokom | pred {count} rokmi | pred {count} rokmi"
     }
   },
   "banners": {
@@ -165,7 +166,7 @@
     }
   },
   "relinkWarning": {
-    "buttonLabel": "{count} účet vyžaduje pozornosť | {count} účtov vyžaduje pozornosť",
+    "buttonLabel": "{count} účet vyžaduje pozornosť | {count} účty vyžadujú pozornosť | {count} účtov vyžaduje pozornosť",
     "title": "Enable Banking: Vyžaduje sa akcia",
     "description": "Tieto účty Enable Banking je potrebné aktualizovať kvôli zmene dátovej schémy. Ide o jednorazovú akciu, ktorá zlepší spoľahlivosť synchronizácie.",
     "step1Full": "Ak chcete ušetriť čas, skúste najprv obnoviť celé bankové pripojenie. Tlačidlo {reconnect} nájdete v sekcii {connectionValidity} na stránke každého pripojenia:",

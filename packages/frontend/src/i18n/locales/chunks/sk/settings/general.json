@@ -18,8 +18,16 @@
       "pendingBankTransactions": {
         "label": "Importovať čakajúce bankové transakcie",
         "description": "Ukladá transakcie z Enable Banking ešte pred ich zaúčtovaním bankou. Sú označené ako čakajúce, nikdy nezmenia zostatok účtu a do zaúčtovania im často chýbajú údaje o obchodníkovi. Ostatných poskytovateľov sa to netýka: SimpleFIN a LunchFlow vždy importujú len zaúčtované transakcie a Monobank importuje každú transakciu ako bežnú.",
+        "descriptionSelfHost": "Ukladá transakcie z Enable Banking ešte pred ich zaúčtovaním bankou. Sú označené ako čakajúce, nikdy nezmenia zostatok účtu a do zaúčtovania im často chýbajú údaje o obchodníkovi. Ostatných poskytovateľov sa to netýka: SimpleFIN a LunchFlow vždy importujú len zaúčtované transakcie a Monobank importuje každú transakciu ako bežnú.",
         "successNotification": "Nastavenie čakajúcich transakcií aktualizované",
         "errorNotification": "Nastavenie čakajúcich transakcií sa nepodarilo aktualizovať"
+      },
+      "bankSyncSchedule": {
+        "label": "Harmonogram bankovej synchronizácie",
+        "description": "Pripojené bankové účty sa automaticky synchronizujú v týchto časoch, zobrazených vo vašom miestnom čase. Ak chcete synchronizovať len raz denne, vyberte dvakrát rovnaký čas.",
+        "placeholder": "Vyberte čas",
+        "successNotification": "Harmonogram bankovej synchronizácie aktualizovaný",
+        "errorNotification": "Harmonogram bankovej synchronizácie sa nepodarilo aktualizovať"
       },
       "quickStart": {
         "label": "Sprievodca Rýchlym štartom",
@@ -36,6 +44,18 @@
         "description": "Výdavky v týchto kategóriách sa v grafe peňažného toku zobrazujú ako dane namiesto výdavku. Zahrnuté sú aj podkategórie.",
         "successNotification": "Daňové kategórie aktualizované",
         "errorNotification": "Daňové kategórie sa nepodarilo aktualizovať"
+      },
+      "filterCategoriesByType": {
+        "label": "Priraďovať kategórie podľa typu transakcie",
+        "description": "Formulár transakcie zobrazuje pri príjme len príjmové kategórie a pri výdavku všetky ostatné kategórie. Vyhľadávanie stále nájde každú kategóriu.",
+        "successNotification": "Nastavenie zoznamu kategórií aktualizované",
+        "errorNotification": "Nastavenie zoznamu kategórií sa nepodarilo aktualizovať"
+      },
+      "incomeCategories": {
+        "label": "Príjmové kategórie",
+        "description": "Kategórie, ktoré sa počítajú ako príjem. Zahrnuté sú aj podkategórie.",
+        "successNotification": "Príjmové kategórie aktualizované",
+        "errorNotification": "Príjmové kategórie sa nepodarilo aktualizovať"
       },
       "accountDropdowns": {
         "defaultAccount": {

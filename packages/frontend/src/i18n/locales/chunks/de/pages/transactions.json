@@ -67,7 +67,7 @@
       "menu": {
         "type": "Typ",
         "tags": "Tags",
-        "budgets": "Budgets",
+        "budgets": "Tracker",
         "amount": "Betragsbereich",
         "note": "Notizen"
       },
@@ -89,6 +89,7 @@
     },
     "bulkEdit": {
       "selectAll": "Alles auswählen",
+      "selectAllShort": "Alle",
       "cancelSelection": "Auswahl aufheben",
       "editButton": "Bearbeiten",
       "selectedCount": "{count} ausgewählt",
@@ -246,6 +247,31 @@
       "gotIt": "Verstanden",
       "openDetails": "Details öffnen",
       "tooManyTags": "Bis zu {max} Tags pro Transaktion"
+    },
+    "savedViews": {
+      "trigger": "Ansichten",
+      "empty": "Noch keine gespeicherten Ansichten. Richte Filter ein und speichere sie dann als Ansicht.",
+      "modified": "Filter geändert",
+      "update": "\"{name}\" mit aktuellen Filtern aktualisieren",
+      "updateShort": "Ansicht aktualisieren",
+      "revert": "Zurücksetzen",
+      "saveNew": "Als neue Ansicht speichern",
+      "actions": "Aktionen für Ansicht",
+      "rename": "Umbenennen",
+      "moveUp": "Nach oben verschieben",
+      "moveDown": "Nach unten verschieben",
+      "saveTitle": "Ansicht speichern",
+      "renameTitle": "Ansicht umbenennen",
+      "dialogDescription": "Eine Ansicht speichert die aktuellen Filter und die Sortierung, damit du sie mit einem Klick wieder anwenden kannst.",
+      "nameLabel": "Name",
+      "namePlaceholder": "z.B. Lebensmittel, letzte 3 Monate",
+      "savedToast": "Ansicht gespeichert",
+      "updatedToast": "Ansicht aktualisiert",
+      "deletedToast": "Ansicht gelöscht",
+      "saveError": "Deine Ansichten konnten nicht gespeichert werden. Versuche es erneut.",
+      "deleteTitle": "Ansicht \"{name}\" löschen?",
+      "deleteDescription": "Deine Transaktionen sind davon nicht betroffen. Dies kann nicht rückgängig gemacht werden.",
+      "filtersCount": "{count} Filter | {count} Filter"
     }
   },
   "records": {

@@ -182,12 +182,12 @@
       },
       "remove": {
         "title": "{count} Transaktion entfernen? | {count} Transaktionen entfernen?",
-        "description": "Entfernte Transaktionen fließen nicht mehr in Kontostände und Statistiken ein. Verknüpfungen zu Budgets, Gruppen und Abonnements werden getrennt. Du kannst sie aus dem Verlauf wiederherstellen, aber die Verknüpfungen werden nicht wiederhergestellt.",
+        "description": "Entfernte Transaktionen werden nicht mehr für Kontostände und Statistiken berücksichtigt. Verknüpfungen zu Trackern, Gruppen und Abonnements werden getrennt. Du kannst sie aus dem Verlauf wiederherstellen, aber die Verknüpfungen werden nicht wiederhergestellt.",
         "confirm": "Entfernen"
       },
       "restoreDialog": {
         "title": "{count} Transaktion wiederherstellen? | {count} Transaktionen wiederherstellen?",
-        "description": "Wiederhergestellte Transaktionen fließen wieder in Kontostände und Statistiken ein. Wenn sie zusammengeführt wurden, bleibt die behaltene Transaktion bestehen, sodass du möglicherweise wieder Duplikate siehst. Beim Entfernen getrennte Verknüpfungen zu Budgets, Gruppen und Abonnements werden nicht wiederhergestellt.",
+        "description": "Wiederhergestellte Transaktionen werden wieder für Kontostände und Statistiken berücksichtigt. Falls sie zusammengeführt wurden, bleibt die behaltene Transaktion bestehen, sodass du möglicherweise wieder Duplikate siehst. Verknüpfungen zu Trackern, Gruppen und Abonnements, die beim Entfernen getrennt wurden, werden nicht wiederhergestellt.",
         "confirm": "Wiederherstellen"
       },
       "notifications": {

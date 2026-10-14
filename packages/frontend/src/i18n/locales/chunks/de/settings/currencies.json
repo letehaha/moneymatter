@@ -81,7 +81,8 @@
         "errors": {
           "changeFailed": "Unerwarteter Fehler. Basiswährung konnte nicht geändert werden.",
           "lockedHousehold": "Du bist Mitglied in {count} aktiven Haushalt. Verlasse diesen zuerst unter Einstellungen → Haushalt. | Du bist Mitglied in {count} aktiven Haushalten. Verlasse diese zuerst unter Einstellungen → Haushalt.",
-          "lockedShares": "Du hast {count} aktive Kontofreigabe. Widerrufe diese zuerst im Konto. | Du hast {count} aktive Kontofreigaben. Widerrufe diese zuerst in jedem Konto."
+          "lockedShares": "Du hast {count} aktive Kontofreigabe. Widerrufe diese zuerst im Konto. | Du hast {count} aktive Kontofreigaben. Widerrufe diese zuerst in jedem Konto.",
+          "lockedBudgetPlan": "Ein aktiver Budgetplan blockiert die Änderung. Lösche ihn zuerst. | {count} aktive Budgetpläne blockieren die Änderung. Lösche sie zuerst."
         }
       }
     }

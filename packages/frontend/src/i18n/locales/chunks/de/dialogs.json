@@ -677,8 +677,8 @@
       "emailSendFailedWarning": "Einladung gespeichert, aber die E-Mail konnte nicht gesendet werden. Der Empfänger hat möglicherweise keine Benachrichtigung erhalten — versuche es später erneut."
     },
     "shareBudgetDialog": {
-      "title": "Budget teilen",
-      "description": "Lade jemanden ein, dieses Budget anzusehen und eigene Transaktionen dazu beizutragen. {name}.",
+      "title": "Tracker teilen",
+      "description": "Lade jemanden ein, diesen Tracker einzusehen und eigene Transaktionen dazu beizutragen. {name}.",
       "emailLabel": "E-Mail",
       "emailPlaceholder": "Empfänger E-Mail",
       "permissionLabel": "Berechtigung",
@@ -726,7 +726,7 @@
       "decline": "Ablehnen",
       "close": "Schließen",
       "goToAccount": "Zum Konto gehen",
-      "goToBudget": "Zum Budget gehen",
+      "goToBudget": "Zum Tracker gehen",
       "updateBaseCurrency": "Basiswährung aktualisieren",
       "acceptSuccess": "Du bist jetzt Teil dieser geteilten Ressource.",
       "acceptError": "Einladung konnte nicht angenommen werden. Versuche es erneut.",

@@ -11,7 +11,7 @@
         "noMatchingTransactions": "Keine passenden Transaktionen",
         "noTransactionsLinked": "Keine Transaktionen verknüpft",
         "filterAdjustmentHint": "Versuche, deine Filter anzupassen, um mehr Transaktionen zu sehen.",
-        "addTransactionsHint": "Füge diesem Budget Transaktionen hinzu, um deine Ausgaben zu verfolgen.",
+        "addTransactionsHint": "Füge diesem Tracker Transaktionen hinzu, um deine Ausgaben zu verfolgen.",
         "resetFilters": "Filter zurücksetzen",
         "addTransactions": "Transaktionen hinzufügen",
         "add": "Hinzufügen",
@@ -30,13 +30,13 @@
         "netBalance": "Nettosaldo"
       },
       "utilization": {
-        "title": "Budgetauslastung",
+        "title": "Tracker-Auslastung",
         "summary": "{spent} von {limit} Limit",
         "na": "N/A"
       },
       "noTransactionsYet": "Noch keine Transaktionen",
       "transactions": "Transaktionen",
-      "transactionsLinked": "{count} Transaktion mit diesem Budget verknüpft | {count} Transaktionen mit diesem Budget verknüpft",
+      "transactionsLinked": "{count} Transaktion mit diesem Tracker verknüpft | {count} Transaktionen mit diesem Tracker verknüpft",
       "tabs": {
         "statistics": "Statistiken",
         "transactions": "Transaktionen",
@@ -50,7 +50,7 @@
         "errorTitle": "Statistiken konnten nicht geladen werden",
         "errorDescription": "Beim Laden der Daten ist etwas schiefgelaufen. Bitte versuche es später erneut.",
         "noDataTitle": "Keine Ausgabendaten",
-        "noDataDescription": "Für dieses Budget sind noch keine Ausgabendaten verfügbar.",
+        "noDataDescription": "Für diesen Tracker sind noch keine Ausgabendaten verfügbar.",
         "noCategoryData": "Keine Kategoriendaten für Ausgaben.",
         "noTimelineData": "Keine Verlaufsdaten.",
         "total": "Gesamt",
@@ -61,7 +61,7 @@
       },
       "sharing": {
         "title": "Freigabe",
-        "description": "Verwalte, wer dieses Budget sehen und dazu beitragen kann.",
+        "description": "Verwalte, wer diesen Tracker sehen und dazu beitragen kann.",
         "inviteAnother": "Jemanden einladen",
         "membersHeading": "Mitglieder",
         "pendingHeading": "Ausstehende Einladungen",
@@ -75,7 +75,7 @@
           "you": "Du",
           "roleOwner": "Eigentümer",
           "roleRecipient": "Mitglied",
-          "ownerHint": "Volle Kontrolle über dieses Budget",
+          "ownerHint": "Volle Kontrolle über diesen Tracker",
           "updateSuccess": "Berechtigung aktualisiert.",
           "updateError": "Berechtigung konnte nicht aktualisiert werden.",
           "revoke": "Zugriff entziehen",

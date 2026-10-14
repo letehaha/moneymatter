@@ -39,7 +39,7 @@
         "trialEnded": "Testzeitraum abgelaufen",
         "trialEndedMeta": "Dein {days}-tägiger Testzeitraum ist vorbei. Wähle einen Tarif, um fortzufahren.",
         "trialEndsOn": "Endet am {date}",
-        "trialExcluded": "Die Wiederherstellung aus einer Sicherung ist während des Testzeitraums nicht verfügbar",
+        "trialExcluded": "Keine Backup-Wiederherstellung in der Testphase",
         "subscriptionEnded": "Abonnement beendet",
         "endedMeta": "Deine Daten sind sicher. Wähle einen Tarif, um fortzufahren.",
         "renewsOn": "Verlängert sich am {date}",

@@ -21,7 +21,8 @@
       "subscriptions": "Pagamenti ricorrenti",
       "budgets": "Bilancio"
     },
-    "venture": "Investimenti"
+    "venture": "Investimenti",
+    "budget": "Budget"
   },
   "sidebar": {
     "collapse": "Nascondi barra laterale",

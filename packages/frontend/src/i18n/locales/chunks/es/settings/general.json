@@ -18,8 +18,16 @@
       "pendingBankTransactions": {
         "label": "Importar transacciones bancarias pendientes",
         "description": "Almacenar Enable Banking transacciones antes de que el banco las reserve. Están marcadas como pendientes, nunca cambiar el saldo de la cuenta, y a menudo carecen de datos de comerciante hasta reservar. Otros proveedores no se ven afectados: SimpleFIN y LunchFlow siempre importan transacciones reservadas únicamente, y Monobank importa cada transacción como una regular.",
+        "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
         "successNotification": "Configuración de transacciones pendientes actualizada",
         "errorNotification": "Error al actualizar la configuración de transacciones pendientes"
+      },
+      "bankSyncSchedule": {
+        "label": "Bank sync schedule",
+        "description": "Connected bank accounts sync automatically at these times, shown in your local time. Pick the same time twice to sync once a day.",
+        "placeholder": "Select time",
+        "successNotification": "Bank sync schedule updated",
+        "errorNotification": "Failed to update bank sync schedule"
       },
       "quickStart": {
         "label": "Guía de Inicio Rápido",
@@ -36,6 +44,18 @@
         "description": "El gasto en estas categorías se muestra como impuestos en el gráfico de flujo de dinero en lugar de como un gasto. Las subcategorías están incluidas.",
         "successNotification": "Categorías de impuestos actualizadas",
         "errorNotification": "Error al actualizar las categorías de impuestos"
+      },
+      "filterCategoriesByType": {
+        "label": "Match categories to transaction type",
+        "description": "The transaction form lists only income categories for income and all other categories for expenses. Search still finds every category.",
+        "successNotification": "Category list setting updated",
+        "errorNotification": "Failed to update the category list setting"
+      },
+      "incomeCategories": {
+        "label": "Income categories",
+        "description": "Categories that count as income. Subcategories are included.",
+        "successNotification": "Income categories updated",
+        "errorNotification": "Failed to update income categories"
       },
       "accountDropdowns": {
         "defaultAccount": {
