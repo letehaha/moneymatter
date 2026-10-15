@@ -170,6 +170,7 @@ const getPortfolioSummaryImpl = async ({
         date: conversionDate,
         baseCode: currencyCode,
         quoteCode: baseCurrencyCode,
+        requireUserConnection: false,
       }));
       baseRates.set(currencyCode, rate);
     }

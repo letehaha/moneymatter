@@ -1,6 +1,7 @@
 import { ASSET_CLASS, SECURITY_PROVIDER } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import Securities from '@models/investments/securities.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import * as helpers from '@tests/helpers';
 
 // Deposits come from a base-currency account, so the portfolio value in base equals `amount`.
@@ -122,6 +123,24 @@ describe('Portfolio Summaries (GET /investments/portfolios/summaries)', () => {
     expect(summaries.map((summary) => summary.portfolioId)).toEqual(
       expect.arrayContaining([healthyBefore.id, healthyAfter.id]),
     );
+  });
+
+  it('keeps a portfolio whose holding currency is no longer connected to the user', async () => {
+    const [eurSecurity] = await helpers.seedSecurities([{ symbol: 'ASML', name: 'ASML Holding', currencyCode: 'EUR' }]);
+    const portfolio = await helpers.createPortfolio({
+      payload: helpers.buildPortfolioPayload({ name: 'Orphan Currency Portfolio' }),
+      raw: true,
+    });
+    await helpers.createHolding({ payload: { portfolioId: portfolio.id, securityId: eurSecurity!.id } });
+
+    // The API guard blocks this disconnect; the orphan state exists in production data.
+    await UsersCurrencies.destroy({ where: { currencyCode: 'EUR' } });
+
+    const single = await helpers.getPortfolioSummary({ portfolioId: portfolio.id });
+    expect(single.statusCode).toBe(200);
+
+    const summaries = await helpers.getPortfolioSummaries({ raw: true });
+    expect(summaries.map((summary) => summary.portfolioId)).toEqual([portfolio.id]);
   });
 
   it('fails with the single-summary status when no portfolio summary can be computed', async () => {

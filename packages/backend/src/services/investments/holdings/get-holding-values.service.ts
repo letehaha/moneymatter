@@ -185,6 +185,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
           date: date || new Date(),
           baseCode: holdingCurrencyCode,
           quoteCode: baseCurrencyCode,
+          requireUserConnection: false,
         });
         baseRates.set(holdingCurrencyCode, rate);
       } catch (error) {
@@ -212,6 +213,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
           date: date || new Date(),
           baseCode: holdingCurrencyCode,
           quoteCode: displayCurrencyCode,
+          requireUserConnection: false,
         });
         displayRates.set(holdingCurrencyCode, rate);
       } catch (error) {
