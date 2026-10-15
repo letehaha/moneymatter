@@ -9,8 +9,16 @@ import {
   resolveTokenLimit,
 } from '@services/import-export/core/cost-estimation';
 
-import { STATEMENT_EXTRACTION_SYSTEM_PROMPT, createTextExtractionPrompt } from './extraction-prompt';
+import {
+  STATEMENT_EXTRACTION_SYSTEM_PROMPT,
+  createImageExtractionPrompt,
+  createTextExtractionPrompt,
+} from './extraction-prompt';
+import type { StatementContent } from './prepare-statement-content';
 import { estimateTokenCount } from './text-extractor';
+
+// ponytail: flat per-image guess; providers bill images by pixel count, each in its own way.
+const IMAGE_INPUT_TOKENS = 1600;
 
 /** Average output tokens per transaction (estimated) */
 const TOKENS_PER_TRANSACTION = 50;
@@ -23,7 +31,7 @@ const MAX_TRANSACTIONS_PER_PAGE = 30;
 
 interface CostEstimationParams {
   userId: number;
-  text: string;
+  content: StatementContent;
   pageCount: number;
   fileType: StatementFileType;
 }
@@ -43,7 +51,7 @@ type CostEstimationResultType =
  */
 export async function estimateExtractionCost({
   userId,
-  text,
+  content,
   pageCount,
   fileType,
 }: CostEstimationParams): Promise<CostEstimationResultType> {
@@ -55,9 +63,11 @@ export async function estimateExtractionCost({
 
   const { aiConfig, modelProfile } = prelude;
 
-  // Estimate input tokens (system prompt + user prompt with statement text)
   const systemPromptTokens = estimateTokenCount({ text: STATEMENT_EXTRACTION_SYSTEM_PROMPT });
-  const userPromptTokens = estimateTokenCount({ text: createTextExtractionPrompt({ text }) });
+  const userPromptTokens =
+    content.kind === 'text'
+      ? estimateTokenCount({ text: createTextExtractionPrompt({ text: content.text }) })
+      : estimateTokenCount({ text: createImageExtractionPrompt({ today: 'YYYY-MM-DD' }) }) + IMAGE_INPUT_TOKENS;
   const estimatedInputTokens = systemPromptTokens + userPromptTokens;
 
   // Estimate output tokens based on expected number of transactions
@@ -94,7 +104,7 @@ export async function estimateExtractionCost({
       usingUserKey: aiConfig.usingUserKey,
       textExtraction: {
         success: true,
-        characterCount: text.length,
+        characterCount: content.kind === 'text' ? content.text.length : 0,
         pageCount,
       },
       fileType,

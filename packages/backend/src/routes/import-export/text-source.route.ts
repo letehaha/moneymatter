@@ -15,7 +15,7 @@ const router = Router({});
  * Estimate the cost of extracting transactions from a statement file
  * POST /import/text-source/estimate-cost
  *
- * Supports PDF, CSV, and TXT files
+ * Supports PDF, CSV, TXT and image (JPEG, PNG, WebP) files
  * Body: { fileBase64: string, password?: string }
  * Returns: StatementCostEstimate
  */
@@ -25,7 +25,7 @@ router.post('/text-source/estimate-cost', authenticateSession, checkBaseCurrency
  * Extract transactions from a statement file using AI
  * POST /import/text-source/extract
  *
- * Supports PDF, CSV, and TXT files
+ * Supports PDF, CSV, TXT and image (JPEG, PNG, WebP) files
  * Body: { fileBase64: string, password?: string }
  * Returns: StatementExtractionResult
  */

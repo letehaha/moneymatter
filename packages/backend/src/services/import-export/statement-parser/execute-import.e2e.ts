@@ -1,10 +1,11 @@
 import type { ExtractedTransaction, TransactionImportDetails } from '@bt/shared/types';
-import { ACCOUNT_TYPES, ImportSource, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCOUNT_TYPES, ImportSource, TRANSACTION_TYPES, VEHICLE_CLASS } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
+import { format, subDays } from 'date-fns';
 
 const buildRows = ({ count }: { count: number }): ExtractedTransaction[] =>
   Array.from({ length: count }, (_, index) => ({
@@ -123,6 +124,98 @@ describe('Statement Parser - Execute Import endpoint', () => {
         expect(new Date(importDetails!.importedAt).toISOString()).toBe(importDetails!.importedAt);
       });
     }, 60_000);
+
+    it('stores the original amount and reference, dropping a pair in the account currency', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const result = await helpers.statementExecuteImportAndWait({
+        payload: {
+          accountId: account.id,
+          transactions: [
+            {
+              date: '2024-01-15 10:30:00',
+              description: 'Hotel abroad',
+              amount: 120.5,
+              type: 'expense',
+              originalAmount: 5000.55,
+              originalCurrencyCode: 'JPY',
+              externalReference: 'Ref 8F2K91',
+            },
+            {
+              date: '2024-01-16 10:30:00',
+              description: 'Local shop',
+              amount: 40,
+              type: 'expense',
+              originalAmount: 40,
+              originalCurrencyCode: account.currencyCode,
+              externalReference: 'AB12',
+            },
+            { date: '2024-01-17 10:30:00', description: 'Plain row', amount: 10, type: 'expense' },
+          ],
+          skipIndices: [],
+        },
+      });
+
+      expect(result.imported).toBe(3);
+      expect(result.errors).toHaveLength(0);
+
+      const imported = (await helpers.getTransactions({ raw: true })).filter((tx) =>
+        result.newTransactionIds.includes(tx.id),
+      );
+      const byNote = (note: string) => imported.find((tx) => tx.note === note);
+
+      expect(byNote('Hotel abroad')).toMatchObject({
+        amount: 120.5,
+        originalAmount: 5000.55,
+        originalCurrencyCode: 'JPY',
+        externalReference: 'Ref 8F2K91',
+      });
+      expect(byNote('Local shop')).toMatchObject({
+        originalAmount: null,
+        originalCurrencyCode: null,
+        externalReference: 'AB12',
+      });
+      expect(byNote('Plain row')).toMatchObject({
+        originalAmount: null,
+        originalCurrencyCode: null,
+        externalReference: null,
+      });
+    });
+
+    it('keeps the original amount pair when the row merges into a planned transaction', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [plan] = await helpers.createPlannedTransaction({
+        payload: { accountId: account.id, amount: 120.5, time: '2024-01-16T00:00:00.000Z', note: 'Hotel plan' },
+        raw: true,
+      });
+
+      const result = await helpers.statementExecuteImportAndWait({
+        payload: {
+          accountId: account.id,
+          transactions: [
+            {
+              date: '2024-01-15 10:30:00',
+              description: 'Hotel abroad',
+              amount: 120.5,
+              type: 'expense',
+              originalAmount: 5000.55,
+              originalCurrencyCode: 'JPY',
+            },
+          ],
+          skipIndices: [],
+        },
+      });
+
+      expect(result.merged).toBe(1);
+
+      const merged = (await helpers.getTransactions({ raw: true })).find((tx) => tx.id === plan.id);
+      expect(merged).toMatchObject({
+        isPlanned: false,
+        amount: 120.5,
+        originalAmount: 5000.55,
+        originalCurrencyCode: 'JPY',
+      });
+    });
 
     it('should have different batchIds for separate imports', async () => {
       const account = await helpers.createAccount({ raw: true });
@@ -261,6 +354,33 @@ describe('Statement Parser - Execute Import endpoint', () => {
         ['Date with time', 'Date without time', 'End of January', 'Start of February'].toSorted(),
       );
     });
+
+    it("reads extracted times in the importing user's timezone and puts a date-only row at local noon", async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const result = await helpers.statementExecuteImportAndWait({
+        payload: {
+          accountId: account.id,
+          transactions: [
+            { date: '2024-01-15 23:11:19', description: 'Late evening', amount: 10, type: 'expense' },
+            { date: '2024-01-16', description: 'No time', amount: 20, type: 'expense' },
+          ],
+          skipIndices: [],
+          timezone: 'Europe/Kyiv',
+        },
+      });
+
+      const storedTimes = Object.fromEntries(
+        (await helpers.getTransactions({ raw: true }))
+          .filter((tx) => result.newTransactionIds.includes(tx.id))
+          .map((tx) => [tx.note, new Date(tx.time).toISOString()]),
+      );
+
+      expect(storedTimes).toEqual({
+        'Late evening': '2024-01-15T21:11:19.000Z',
+        'No time': '2024-01-16T10:00:00.000Z',
+      });
+    });
   });
 
   describe('error handling', () => {
@@ -315,6 +435,23 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(negativeAmount.statusCode).toBe(ERROR_CODES.ValidationError);
     });
 
+    it('rejects half an original-amount pair', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const response = await helpers.statementExecuteImport({
+        payload: {
+          accountId: account.id,
+          transactions: [
+            { date: '2024-01-15', description: 'Half pair', amount: 100, type: 'expense', originalAmount: 12.99 },
+          ],
+          skipIndices: [],
+        },
+        raw: false,
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
     it('fails the job for a bank-linked target account, naming it and writing no row', async () => {
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ name: 'Monobank card', type: ACCOUNT_TYPES.monobank }),
@@ -332,6 +469,33 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(progress.error).toContain(account.name);
 
       expect(await helpers.getTransactions({ raw: true })).toHaveLength(0);
+    });
+
+    it('fails the job for a vehicle account, whose balance is derived, naming it and writing no row', async () => {
+      const vehicle = await helpers.createVehicle({
+        name: 'Family car',
+        currencyCode: global.BASE_CURRENCY_CODE,
+        make: 'Toyota',
+        model: 'Camry',
+        year: 2020,
+        vehicleClass: VEHICLE_CLASS.sedan,
+        purchasePrice: 25000,
+        purchaseDate: format(subDays(new Date(), 365), 'yyyy-MM-dd'),
+        raw: true,
+      });
+      const transactionsBefore = await helpers.getTransactions({ raw: true });
+
+      const { jobId } = await helpers.statementExecuteImport({
+        payload: { accountId: vehicle.accountId, transactions: createExtractedTransactions(), skipIndices: [] },
+        raw: true,
+      });
+      const progress = await helpers.waitForStatementImportCompletion({ jobId });
+
+      expect(progress.status).toBe('failed');
+      if (progress.status !== 'failed') throw new Error('unreachable');
+      expect(progress.error).toContain('Family car');
+
+      expect(await helpers.getTransactions({ raw: true })).toHaveLength(transactionsBefore.length);
     });
 
     it('reports per-row date and amount violations while importing the rows around them', async () => {

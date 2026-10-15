@@ -115,6 +115,96 @@ describe('parseAIResponse', () => {
     });
   });
 
+  describe('original amount and reference columns', () => {
+    it('reads the original amount, its currency and the reference', () => {
+      const result = parse({ rows: ['2026-06-16,Netflix,Netflix,520.40,E,,95,12.99,usd,Ref 8F2K91'] });
+
+      expect(result?.droppedRowCount).toBe(0);
+      expect(result?.transactions[0]).toEqual({
+        date: '2026-06-16',
+        description: 'Netflix',
+        merchant: 'Netflix',
+        amount: 520.4,
+        type: 'expense',
+        balance: undefined,
+        confidence: 0.95,
+        originalAmount: 12.99,
+        originalCurrencyCode: 'USD',
+        externalReference: 'Ref 8F2K91',
+      });
+    });
+
+    it('reads a 7-column row with the new fields left empty', () => {
+      const result = parse({ rows: ['2026-06-16,Shop,Shop,250,E,,90'] });
+
+      expect(result?.droppedRowCount).toBe(0);
+      expect(result?.transactions[0]?.amount).toBe(250);
+      expect(result?.transactions[0]?.originalAmount).toBeUndefined();
+      expect(result?.transactions[0]?.originalCurrencyCode).toBeUndefined();
+      expect(result?.transactions[0]?.externalReference).toBeUndefined();
+    });
+
+    it('reads a 9-column row whose trailing reference was left off', () => {
+      const result = parse({ rows: ['2026-06-16,Netflix,Netflix,520.40,E,,95,12.99,USD'] });
+
+      expect(result?.transactions[0]?.amount).toBe(520.4);
+      expect(result?.transactions[0]?.originalAmount).toBe(12.99);
+      expect(result?.transactions[0]?.originalCurrencyCode).toBe('USD');
+      expect(result?.transactions[0]?.externalReference).toBeUndefined();
+    });
+
+    it('reads an 8-column row with E/I fifth as a normal row, not a wide one', () => {
+      const result = parse({ rows: ['2026-06-16,Shop,Shop,250,E,,90,12.99'] });
+
+      expect(result?.droppedRowCount).toBe(0);
+      expect(result?.transactions[0]).toMatchObject({ description: 'Shop', merchant: 'Shop', amount: 250 });
+      expect(result?.transactions[0]?.originalAmount).toBeUndefined();
+    });
+
+    it.each([
+      ['an amount without a currency', '12.99,'],
+      ['a currency without an amount', ',USD'],
+      ['an unknown currency code', '12.99,ZZZ'],
+      ['a currency symbol instead of a code', '12.99,US$'],
+      ['a zero amount', '0,USD'],
+      ['an unreadable amount', '$12.99,USD'],
+    ])('keeps the row but drops the pair for %s', (_label, pair) => {
+      const result = parse({ rows: [`2026-06-16,Netflix,Netflix,520.40,E,,95,${pair},8F2K91`] });
+
+      expect(result?.droppedRowCount).toBe(0);
+      expect(result?.transactions[0]?.amount).toBe(520.4);
+      expect(result?.transactions[0]?.originalAmount).toBeUndefined();
+      expect(result?.transactions[0]?.originalCurrencyCode).toBeUndefined();
+      expect(result?.transactions[0]?.externalReference).toBe('8F2K91');
+    });
+
+    it('caps the reference at 255 characters', () => {
+      const result = parse({ rows: [`2026-06-16,Shop,Shop,250,E,,90,,,${'A'.repeat(300)}`] });
+
+      expect(result?.transactions[0]?.externalReference).toHaveLength(255);
+    });
+
+    it('maps a wide row that also carries the new columns', () => {
+      const result = parse({
+        rows: ['2026-06-14 12:49:08,Queseria Fama,,Queseria Fama,1115,E,,80,12.50,EUR,AB12'],
+      });
+
+      expect(result?.droppedRowCount).toBe(0);
+      expect(result?.transactions[0]).toEqual({
+        date: '2026-06-14 12:49:08',
+        description: 'Queseria Fama',
+        merchant: 'Queseria Fama',
+        amount: 1115,
+        type: 'expense',
+        balance: undefined,
+        confidence: 0.8,
+        originalAmount: 12.5,
+        originalCurrencyCode: 'EUR',
+        externalReference: 'AB12',
+      });
+    });
+  });
+
   describe('amounts', () => {
     it('drops a row whose amount is zero instead of passing it on to the import', () => {
       const result = parse({

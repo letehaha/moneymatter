@@ -43,6 +43,27 @@ describe('validateStatementFile', () => {
     });
   });
 
+  it('accepts JPG, PNG and WebP images and rejects an image extension over other bytes', async () => {
+    const webp = [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50];
+
+    expect(await validateStatementFile({ file: fileOf({ bytes: [0xff, 0xd8, 0xff, 0xe0], name: 'a.jpeg' }) })).toEqual({
+      valid: true,
+    });
+    expect(await validateStatementFile({ file: fileOf({ bytes: [0x89, 0x50, 0x4e, 0x47], name: 'a.PNG' }) })).toEqual({
+      valid: true,
+    });
+    expect(await validateStatementFile({ file: fileOf({ bytes: webp, name: 'a.webp' }) })).toEqual({ valid: true });
+    expect(await validateStatementFile({ file: fileOf({ bytes: PDF_HEADER, name: 'a.jpg' }) })).toMatchObject({
+      valid: false,
+      reason: 'invalid_image',
+    });
+    const wav = [0x52, 0x49, 0x46, 0x46, 0x00, 0x00, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45];
+    expect(await validateStatementFile({ file: fileOf({ bytes: wav, name: 'a.webp' }) })).toMatchObject({
+      valid: false,
+      reason: 'invalid_image',
+    });
+  });
+
   it('rejects an empty .pdf with an empty header', async () => {
     const result = await validateStatementFile({ file: fileOf({ bytes: [], name: 'empty.pdf' }) });
 

@@ -14,6 +14,7 @@ import type {
   StatementCostEstimate,
   StatementCostEstimateFailure,
   StatementExecuteImportQueuedResponse,
+  StatementExecuteImportRequest,
   StatementExtractionResult,
   StatementExtractRequest,
   StatementImportProgress,
@@ -140,12 +141,6 @@ export const detectStatementDuplicates = async (
 };
 
 // Statement Parser - Execute Import
-
-interface StatementExecuteImportRequest {
-  accountId: string;
-  transactions: StatementExtractionResult['transactions'];
-  skipIndices: number[];
-}
 
 export const executeStatementImport = async (
   payload: StatementExecuteImportRequest,

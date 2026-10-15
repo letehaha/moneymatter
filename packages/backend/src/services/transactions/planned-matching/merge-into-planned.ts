@@ -11,6 +11,8 @@ export interface IncomingTransactionData {
   externalData?: Record<string, unknown> | null;
   commissionRate?: Money;
   cashbackAmount?: Money;
+  originalAmount?: Money | null;
+  originalCurrencyCode?: string | null;
   accountType: ACCOUNT_TYPES;
   rawMerchantName?: string | null;
   externalUrl?: string | null;
@@ -79,6 +81,8 @@ export const mergeIntoPlanned = async ({
           logContext: { plannedTransactionId: planned.id, accountId: planned.accountId },
         }));
 
+  const originalSource = planned.originalCurrencyCode ? planned : incoming;
+
   await planned.update({
     refAmount,
     refCommissionRate,
@@ -91,6 +95,8 @@ export const mergeIntoPlanned = async ({
     externalUrl: planned.externalUrl ?? incoming.externalUrl ?? null,
     externalReference: planned.externalReference ?? incoming.externalReference ?? null,
     location: planned.location ?? incoming.location ?? null,
+    originalAmount: originalSource.originalAmount ?? null,
+    originalCurrencyCode: originalSource.originalCurrencyCode ?? null,
     externalData: {
       ...incoming.externalData,
       plannedMerge: { mergedAt: new Date().toISOString() },

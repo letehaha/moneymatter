@@ -19,6 +19,7 @@ interface StatementImportJobData extends SentryTraceData {
   accountId: string;
   transactions: ExtractedTransaction[];
   skipIndices: number[];
+  timezone?: string;
 }
 
 const {
@@ -31,8 +32,8 @@ const {
   sseEventType: SSE_EVENT_TYPES.STATEMENT_IMPORT_PROGRESS,
   logLabel: 'Statement Import',
   processJob: async ({ job, onProgress }) => {
-    const { userId, accountId, transactions, skipIndices } = job.data;
-    return executeImport({ userId, accountId, transactions, skipIndices, onProgress });
+    const { userId, accountId, transactions, skipIndices, timezone } = job.data;
+    return executeImport({ userId, accountId, transactions, skipIndices, timezone, onProgress });
   },
 });
 
@@ -47,11 +48,13 @@ export async function queueStatementImport({
   accountId,
   transactions,
   skipIndices,
+  timezone,
 }: {
   userId: number;
   accountId: string;
   transactions: ExtractedTransaction[];
   skipIndices: number[];
+  timezone?: string;
 }): Promise<string> {
   // Nothing deduplicates rows server-side, so a second submit of the same
   // payload (a retry after a timed-out response) would double every row.
@@ -78,7 +81,7 @@ export async function queueStatementImport({
 
   const jobId = `statement-import-${userId}-${randomUUID()}`;
   await redisClient.set(buildLastJobPointerKey({ userId }), jobId, 'EX', 24 * 3600);
-  await enqueue({ userId, jobId, data: { userId, accountId, transactions, skipIndices } });
+  await enqueue({ userId, jobId, data: { userId, accountId, transactions, skipIndices, timezone } });
 
   return jobId;
 }

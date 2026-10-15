@@ -128,7 +128,7 @@
       },
       "statementParsing": {
         "name": "Парсер виписок",
-        "description": "Вилучення транзакцій з банківських виписок (PDF, CSV, TXT) за допомогою AI"
+        "description": "Вилучення транзакцій з банківських виписок (PDF, CSV, TXT), чеків і знімків екрана за допомогою AI"
       },
       "investmentTransactionsParsing": {
         "name": "Імпорт інвестиційних транзакцій",

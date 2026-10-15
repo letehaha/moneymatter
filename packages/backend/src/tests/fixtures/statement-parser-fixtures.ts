@@ -23,5 +23,9 @@ export const STATEMENT_PDF_FIXTURES = {
   noTextLayer: 'no-text-layer-statement.pdf',
 } as const;
 
+/** Smallest valid 1x1 PNG. */
+export const PNG_1X1_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
 export const readStatementPdfFixture = ({ file }: { file: string }): Buffer =>
   fs.readFileSync(path.join(STATEMENT_PARSER_FIXTURES_DIR, file));

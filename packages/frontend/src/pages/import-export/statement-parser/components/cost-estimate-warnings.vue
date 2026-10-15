@@ -6,7 +6,7 @@
     </Callout>
 
     <!-- Free API access warning -->
-    <Callout v-if="!usingUserKey" variant="info" :icon="InfoIcon">
+    <Callout v-if="!usingUserKey && !hasPlus" variant="info" :icon="InfoIcon">
       <p class="text-warning-text">
         {{ $t('pages.statementParser.uploadExtract.freeApiWarning') }}
       </p>
@@ -20,7 +20,9 @@
 <script setup lang="ts">
 import { Callout } from '@/components/lib/ui/callout';
 import { ROUTES_NAMES } from '@/routes';
+import { useUserStore } from '@/stores';
 import { InfoIcon } from '@lucide/vue';
+import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -30,6 +32,7 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+const { hasPlus } = storeToRefs(useUserStore());
 
 // Token warning thresholds (input tokens)
 const TOKEN_THRESHOLDS = {

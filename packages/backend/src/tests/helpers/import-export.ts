@@ -385,7 +385,7 @@ export function statementExtract<R extends boolean | undefined = false>({
   payload,
   raw,
 }: {
-  payload: { fileBase64: string; password?: string };
+  payload: { fileBase64: string; password?: string; timezone?: string };
   raw?: R;
 }): UtilizeReturnType<() => StatementExtractionResult, R> {
   return makeRequest<StatementExtractionResult, R>({
@@ -428,6 +428,7 @@ interface StatementExecuteImportParams {
   accountId: string;
   transactions: ExtractedTransaction[];
   skipIndices: number[];
+  timezone?: string;
 }
 
 /**

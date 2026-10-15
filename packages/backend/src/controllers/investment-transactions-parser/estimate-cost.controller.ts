@@ -25,10 +25,8 @@ export const estimateCostController = createController(
 
     const rawBuffer = Buffer.from(fileBase64, 'base64');
     const validation = validateFileBuffer({ buffer: rawBuffer });
-    if (!validation.valid || !validation.fileBuffer || !validation.fileType) {
-      throw new UnexpectedError({
-        message: validation.error?.message ?? 'Invalid file',
-      });
+    if (!validation.valid) {
+      throw new UnexpectedError({ message: validation.error.message });
     }
 
     const textResult = await extractTextFromFile({

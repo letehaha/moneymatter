@@ -4,9 +4,8 @@ import { t } from '@i18n/index';
 import { UnexpectedError } from '@js/errors';
 import {
   estimateExtractionCost,
-  extractTextFromFile,
+  prepareStatementContent,
   resolveTextExtractionSuggestion,
-  validateFileBuffer,
 } from '@services/import-export/statement-parser';
 import { z } from 'zod';
 
@@ -16,7 +15,7 @@ import { documentPasswordSchema } from './shared-schemas';
  * Estimate the cost of extracting transactions from a statement file
  *
  * Expects file as base64 in request body
- * Supports PDF, CSV, and TXT files
+ * Supports PDF, CSV, TXT and image files
  */
 export const estimateCostController = createController(
   z.object({
@@ -29,23 +28,10 @@ export const estimateCostController = createController(
   async ({ user, body }) => {
     const { fileBase64, password } = body;
 
-    // Decode base64 to buffer
-    const rawBuffer = Buffer.from(fileBase64, 'base64');
+    const prepared = await prepareStatementContent({ buffer: Buffer.from(fileBase64, 'base64'), password });
 
-    // Validate file (and extract from PKCS#7 if needed for PDFs)
-    const validation = validateFileBuffer({ buffer: rawBuffer });
-    if (!validation.valid || !validation.fileBuffer || !validation.fileType) {
-      throw new UnexpectedError({
-        message: validation.error?.message ?? t({ key: 'statementParser.invalidFile' }),
-      });
-    }
-
-    const { fileBuffer, fileType } = validation;
-
-    // Extract text from file
-    const textResult = await extractTextFromFile({ buffer: fileBuffer, fileType, password });
-
-    if (!textResult.success) {
+    if (!prepared.success) {
+      const { fileType, textResult } = prepared;
       // Text extraction failed
       return {
         data: {
@@ -63,13 +49,8 @@ export const estimateCostController = createController(
       };
     }
 
-    // Estimate cost
-    const costResult = await estimateExtractionCost({
-      userId: user.id,
-      text: textResult.text!,
-      pageCount: textResult.pageCount!,
-      fileType,
-    });
+    const { content, pageCount, fileType } = prepared;
+    const costResult = await estimateExtractionCost({ userId: user.id, content, pageCount, fileType });
 
     if (!costResult.success) {
       // Check if it's a token limit error
@@ -80,8 +61,8 @@ export const estimateCostController = createController(
             error: costResult.error,
             textExtraction: {
               success: true,
-              characterCount: textResult.text!.length,
-              pageCount: textResult.pageCount!,
+              characterCount: content.kind === 'text' ? content.text.length : 0,
+              pageCount,
             },
             fileType,
             suggestion: costResult.error.details ?? costResult.error.message,

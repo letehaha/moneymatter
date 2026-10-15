@@ -2,10 +2,9 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import {
-  extractTextFromFile,
   extractTransactionsWithAI,
+  prepareStatementContent,
   resolveTextExtractionSuggestion,
-  validateFileBuffer,
 } from '@services/import-export/statement-parser';
 import { z } from 'zod';
 
@@ -15,7 +14,7 @@ import { documentPasswordSchema } from './shared-schemas';
  * Extract transactions from a statement file using AI
  *
  * Expects file as base64 in request body
- * Supports PDF, CSV, and TXT files
+ * Supports PDF, CSV, TXT and image files
  */
 export const extractController = createController(
   z.object({
@@ -23,28 +22,16 @@ export const extractController = createController(
       /** Base64 encoded file */
       fileBase64: z.string().min(1, t({ key: 'statementParser.fileContentRequired' })),
       password: documentPasswordSchema,
+      timezone: z.string().min(1).optional(),
     }),
   }),
   async ({ user, body }) => {
-    const { fileBase64, password } = body;
+    const { fileBase64, password, timezone } = body;
 
-    // Decode base64 to buffer
-    const rawBuffer = Buffer.from(fileBase64, 'base64');
+    const prepared = await prepareStatementContent({ buffer: Buffer.from(fileBase64, 'base64'), password });
 
-    // Validate file (and extract from PKCS#7 if needed for PDFs)
-    const validation = validateFileBuffer({ buffer: rawBuffer });
-    if (!validation.valid || !validation.fileBuffer || !validation.fileType) {
-      throw new UnexpectedError({
-        message: validation.error?.message ?? t({ key: 'statementParser.invalidFile' }),
-      });
-    }
-
-    const { fileBuffer, fileType } = validation;
-
-    // Extract text from file
-    const textResult = await extractTextFromFile({ buffer: fileBuffer, fileType, password });
-
-    if (!textResult.success) {
+    if (!prepared.success) {
+      const { fileType, textResult } = prepared;
       const message = resolveTextExtractionSuggestion({ fileType, errorCode: textResult.errorCode });
 
       // A missing or wrong password is fixed by the user retyping it, so it must
@@ -56,12 +43,13 @@ export const extractController = createController(
       throw new UnexpectedError({ message });
     }
 
-    // Extract transactions using AI
+    const { content, pageCount, fileType } = prepared;
     const extractionResult = await extractTransactionsWithAI({
       userId: user.id,
-      text: textResult.text!,
-      pageCount: textResult.pageCount!,
+      content,
+      pageCount,
       fileType,
+      timezone,
     });
 
     if (!extractionResult.success) {

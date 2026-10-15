@@ -1,13 +1,16 @@
 /**
  * Statement Parser types
- * Types for AI-powered bank statement extraction from PDF, CSV, TXT files
+ * Types for AI-powered bank statement extraction from PDF, CSV, TXT and image files
  */
 import type { Decimal } from '../money';
+
+/** The base64 of an image must stay under the AI provider's 5MB limit. */
+export const STATEMENT_IMAGE_MAX_BYTES = Math.floor((5 * 1024 * 1024 * 3) / 4);
 
 /**
  * Supported file types for statement parsing
  */
-export type StatementFileType = 'pdf' | 'csv' | 'txt';
+export type StatementFileType = 'pdf' | 'csv' | 'txt' | 'image';
 
 /**
  * Why text extraction produced nothing usable. The UI branches on this: a
@@ -64,6 +67,12 @@ export interface ExtractedTransaction {
   balance?: number;
   /** Extraction confidence score 0.0-1.0 (optional, only from AI extraction) */
   confidence?: number;
+  /** Amount in the currency the purchase was made in, when the source shows one other than the account's. Always set together with `originalCurrencyCode`. */
+  originalAmount?: number;
+  /** ISO 4217 code of `originalAmount` */
+  originalCurrencyCode?: string;
+  /** The bank's own reference / ID for the transaction, as printed on the statement */
+  externalReference?: string;
 }
 
 /**
@@ -161,6 +170,8 @@ export interface StatementExtractRequest {
   fileBase64: string;
   /** Document password, for encrypted PDFs */
   password?: string;
+  /** IANA timezone of the user's browser; anchors relative dates ("Today") in screenshots. */
+  timezone?: string;
 }
 
 /**
@@ -231,6 +242,8 @@ export interface StatementExecuteImportRequest {
   transactions: ExtractedTransaction[];
   /** Transaction indices to skip (confirmed duplicates) */
   skipIndices: number[];
+  /** IANA timezone of the importing user's browser; extracted wall-clock times are read in it. */
+  timezone?: string;
 }
 
 /**

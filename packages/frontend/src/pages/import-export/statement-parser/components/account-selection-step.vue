@@ -75,7 +75,7 @@
       <div class="xs:grid-cols-[minmax(0,1fr)_max-content] grid grid-cols-1 flex-wrap gap-3">
         <AccountSelectField
           :model-value="store.selectedAccount"
-          :accounts="activeAccounts"
+          :accounts="importTargetAccounts"
           :detected-currency="store.effectiveCurrency"
           :is-new-account="store.isNewAccount"
           :placeholder="$t('pages.statementParser.selectExistingAccount')"
@@ -136,7 +136,7 @@ import * as Select from '@/components/lib/ui/select';
 import { useCurrencyName } from '@/composable';
 import { useAccountsStore, useCurrenciesStore } from '@/stores';
 import { useStatementParserStore } from '@/stores/statement-parser';
-import type { AccountModel } from '@bt/shared/types';
+import { ACCOUNT_STATUSES, type AccountModel } from '@bt/shared/types';
 import { ArrowLeftIcon, PlusIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -147,11 +147,15 @@ import CreateAccountForImportDialog from './create-account-for-import-dialog.vue
 const store = useStatementParserStore();
 const accountsStore = useAccountsStore();
 const currenciesStore = useCurrenciesStore();
-const { activeAccounts } = storeToRefs(accountsStore);
+const { importLinkableAccounts } = storeToRefs(accountsStore);
 const { systemCurrenciesVerbose } = storeToRefs(currenciesStore);
 const { formatCurrencyLabel } = useCurrencyName();
 
 const showCreateDialog = ref(false);
+
+const importTargetAccounts = computed(() =>
+  importLinkableAccounts.value.filter((account) => account.status === ACCOUNT_STATUSES.active),
+);
 
 /** Names of the files that actually produced transactions, in selection order. */
 const parsedFileNames = computed(() => store.extractedEntries.map((entry) => entry.file.name).join(', '));

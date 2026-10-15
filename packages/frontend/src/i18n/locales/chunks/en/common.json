@@ -128,7 +128,7 @@
       },
       "statementParsing": {
         "name": "Statement Parser",
-        "description": "Extract transactions from bank statements (PDF, CSV, TXT) using AI"
+        "description": "Extract transactions from bank statements (PDF, CSV, TXT), receipts and screenshots using AI"
       },
       "investmentTransactionsParsing": {
         "name": "Investment transactions import",

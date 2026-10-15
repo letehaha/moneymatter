@@ -19,15 +19,46 @@ import {
 } from '@services/ai';
 import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { type AIExtractionError, resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
-import { generateText } from 'ai';
+import { type ModelMessage, generateText } from 'ai';
+import { format } from 'date-fns';
 
-import { STATEMENT_EXTRACTION_SYSTEM_PROMPT, createTextExtractionPrompt, parseAIResponse } from './extraction-prompt';
+import {
+  STATEMENT_EXTRACTION_SYSTEM_PROMPT,
+  createImageExtractionPrompt,
+  createTextExtractionPrompt,
+  parseAIResponse,
+} from './extraction-prompt';
+import type { StatementContent } from './prepare-statement-content';
 
 interface AIExtractionParams {
   userId: number;
-  text: string;
+  content: StatementContent;
   pageCount: number;
   fileType: StatementFileType;
+  /** IANA timezone the user's "today" is read in; the server's own zone when absent or unknown. */
+  timezone?: string;
+}
+
+function todayIn({ timezone }: { timezone?: string }): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: timezone }).format(new Date());
+  } catch {
+    return format(new Date(), 'yyyy-MM-dd');
+  }
+}
+
+function buildUserMessage({ content, today }: { content: StatementContent; today: string }): ModelMessage {
+  if (content.kind === 'text') {
+    return { role: 'user', content: createTextExtractionPrompt({ text: content.text }) };
+  }
+
+  return {
+    role: 'user',
+    content: [
+      { type: 'text', text: createImageExtractionPrompt({ today }) },
+      { type: 'file', data: content.image, mediaType: content.mediaType },
+    ],
+  };
 }
 
 type AIExtractionResultType =
@@ -39,9 +70,10 @@ type AIExtractionResultType =
  */
 export async function extractTransactionsWithAI({
   userId,
-  text,
+  content,
   pageCount,
   fileType,
+  timezone,
 }: AIExtractionParams): Promise<AIExtractionResultType> {
   // Get AI client for statement parsing feature
   const aiClient = await createAIClient({
@@ -62,7 +94,10 @@ export async function extractTransactionsWithAI({
   }
 
   try {
-    logger.info('[Statement Parser] Starting AI extraction', { modelId: aiClient.modelId, textLength: text.length });
+    logger.info('[Statement Parser] Starting AI extraction', {
+      modelId: aiClient.modelId,
+      ...(content.kind === 'text' ? { textLength: content.text.length } : { imageBytes: content.image.length }),
+    });
 
     const { abortSignal, maxRetries } = aiCallGuards({ provider: aiClient.provider });
 
@@ -73,7 +108,7 @@ export async function extractTransactionsWithAI({
     } = await generateText({
       model: aiClient.model,
       system: STATEMENT_EXTRACTION_SYSTEM_PROMPT,
-      prompt: createTextExtractionPrompt({ text }),
+      messages: [buildUserMessage({ content, today: todayIn({ timezone }) })],
       abortSignal,
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
@@ -147,7 +182,7 @@ export async function extractTransactionsWithAI({
       logger.info('[Statement Parser] AI extraction returned failure', {
         code: 'NO_TRANSACTIONS_FOUND',
         userId,
-        textLength: text.length,
+        contentKind: content.kind,
         pageCount,
         fileType,
       });
@@ -156,7 +191,8 @@ export async function extractTransactionsWithAI({
         success: false,
         error: {
           code: 'NO_TRANSACTIONS_FOUND',
-          message: 'No transactions found in the file. The document may not be a bank statement.',
+          message:
+            'No transactions found in the file. It may not be a bank statement, receipt or banking app screenshot.',
         },
       };
     }
@@ -170,6 +206,9 @@ export async function extractTransactionsWithAI({
       type: tx.type,
       balance: tx.balance ?? undefined,
       confidence: tx.confidence,
+      originalAmount: tx.originalAmount,
+      originalCurrencyCode: tx.originalCurrencyCode,
+      externalReference: tx.externalReference,
     }));
 
     const metadata: ExtractedMetadata = {

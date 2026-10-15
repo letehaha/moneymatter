@@ -4,6 +4,7 @@ import {
   FEATURES,
   FEATURE_TRIAL_LIMITS,
   SUBSCRIPTION_STATUSES,
+  hasPaidPlus,
   USER_ROLES,
   UserInfoResponse,
   isTerminalSubscription,
@@ -55,6 +56,9 @@ export const useUserStore = defineStore('user', () => {
 
   const isReadOnly = computed(() => Boolean(entitlements.value?.readOnly));
 
+  /** False while entitlements are still loading. */
+  const hasPlus = computed(() => entitlements.value !== null && hasPaidPlus({ entitlements: entitlements.value }));
+
   const hasSubscriptions = computed(() => Boolean(entitlements.value?.subscriptions.length));
 
   const isPastDue = computed(
@@ -95,6 +99,7 @@ export const useUserStore = defineStore('user', () => {
     featureTrialDaysLeft,
     startFeatureTrial,
     isReadOnly,
+    hasPlus,
     isPastDue,
     hasSubscriptions,
     trialDaysLeft,

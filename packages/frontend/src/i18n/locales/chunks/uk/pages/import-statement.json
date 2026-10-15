@@ -2,7 +2,7 @@
   "pages": {
     "statementParser": {
       "pageTitle": "Парсер виписок",
-      "pageDescription": "Завантажте банківську виписку (PDF, CSV або TXT) для вилучення транзакцій за допомогою AI. Додайте власну AI-модель у налаштуваннях для необмеженого доступу.",
+      "pageDescription": "Завантажте банківську виписку (PDF, CSV або TXT), фото чека або знімок екрана банківського застосунку для вилучення транзакцій за допомогою AI. Додайте власну AI-модель у налаштуваннях для необмеженого доступу.",
       "stepper": {
         "steps": {
           "upload": "Завантажити",
@@ -21,7 +21,7 @@
       "selectAccount": "Виберіть рахунок",
       "searchAccounts": "Шукати рахунки...",
       "uploadExtract": {
-        "supportedFormats": "Підтримувані формати: PDF, CSV, TXT (макс. 10МБ)",
+        "supportedFormats": "Підтримувані формати: PDF, CSV, TXT, JPG, PNG, WebP (макс. 10МБ)",
         "clickOrDragStatements": "Натисніть або перетягніть файли виписок сюди",
         "filesLabel": "Файли",
         "analyzingFiles": "Аналіз файлів...",
@@ -32,7 +32,12 @@
         "progressFile": "Розбір {name} ({current} з {total})",
         "acrossFiles": "у {count} файлах",
         "currencyConflict": "Вибрані виписки містять різні валюти ({currencies}). Усі вони будуть імпортовані на один рахунок з використанням валюти цього рахунку.",
-        "unsupportedFileNamed": "{name} не є файлом PDF, CSV або TXT",
+        "unsupportedFileNamed": "{name} не є файлом PDF, CSV, TXT, JPG, PNG або WebP",
+        "unreadableImageNamed": "Не вдалося прочитати {name} як зображення",
+        "pasteImageButton": "Вставити зображення",
+        "pasteShortcutHint": "або натисніть {shortcut}",
+        "clipboardNoImage": "У буфері обміну не знайдено зображення.",
+        "clipboardReadFailed": "Не вдалося прочитати буфер обміну. Дозвольте доступ до буфера обміну або вставте зображення комбінацією клавіш.",
         "unreadableFiles": "Не вдалося прочитати: {files}",
         "fileStatus": {
           "pending": "Не проаналізовано",

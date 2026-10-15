@@ -5,7 +5,11 @@
 
 /** Per-file. */
 export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-export const SUPPORTED_EXTENSIONS = ['.pdf', '.csv', '.txt'];
+const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'];
+export const SUPPORTED_EXTENSIONS = ['.pdf', '.csv', '.txt', ...IMAGE_EXTENSIONS];
+
+export const isImageFile = ({ file }: { file: File }): boolean =>
+  IMAGE_EXTENSIONS.includes('.' + (file.name.toLowerCase().split('.').pop() || ''));
 
 // Magic bytes for file type detection
 const PDF_MAGIC_BYTES = [0x25, 0x50, 0x44, 0x46]; // %PDF
@@ -14,7 +18,19 @@ const PKCS7_MAGIC_BYTE = 0x30; // ASN.1 SEQUENCE (signed PDF container)
 const PDF_HEADER_SEARCH_BYTES = 1024;
 const HEADER_HEX_BYTES = 16;
 
-export type FileRejectionReason = 'unsupported_extension' | 'too_large' | 'invalid_pdf' | 'invalid_text' | 'unreadable';
+const JPEG_MAGIC_BYTES = [0xff, 0xd8, 0xff];
+const PNG_MAGIC_BYTES = [0x89, 0x50, 0x4e, 0x47];
+const RIFF_MAGIC_BYTES = [0x52, 0x49, 0x46, 0x46]; // RIFF
+const WEBP_MAGIC_BYTES = [0x57, 0x45, 0x42, 0x50]; // WEBP, at offset 8
+
+export type FileRejectionReason =
+  | 'unsupported_extension'
+  | 'too_large'
+  | 'invalid_pdf'
+  | 'invalid_text'
+  | 'invalid_image'
+  | 'unreadable_image'
+  | 'unreadable';
 
 type FileValidationResult =
   | { valid: true }
@@ -46,6 +62,18 @@ function containsPdfMagicBytes({ header }: { header: Uint8Array }): boolean {
     if (PDF_MAGIC_BYTES.every((byte, j) => header[i + j] === byte)) return true;
   }
   return false;
+}
+
+function hasBytesAt({ header, bytes, offset = 0 }: { header: Uint8Array; bytes: number[]; offset?: number }): boolean {
+  return bytes.every((byte, i) => header[offset + i] === byte);
+}
+
+function isImageHeader({ header }: { header: Uint8Array }): boolean {
+  return (
+    hasBytesAt({ header, bytes: JPEG_MAGIC_BYTES }) ||
+    hasBytesAt({ header, bytes: PNG_MAGIC_BYTES }) ||
+    (hasBytesAt({ header, bytes: RIFF_MAGIC_BYTES }) && hasBytesAt({ header, bytes: WEBP_MAGIC_BYTES, offset: 8 }))
+  );
 }
 
 /**
@@ -92,6 +120,15 @@ async function validateFileContent({ file }: { file: File }): Promise<FileValida
         headerHex,
       };
     }
+  } else if (IMAGE_EXTENSIONS.includes(ext)) {
+    if (!isImageHeader({ header })) {
+      return {
+        valid: false,
+        error: 'File does not appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.',
+        reason: 'invalid_image',
+        headerHex,
+      };
+    }
   } else if (ext === '.csv' || ext === '.txt') {
     // For text files, verify content is actually text
     const isText = await isValidTextContent({ file });
@@ -120,7 +157,7 @@ export async function validateStatementFile({ file }: { file: File }): Promise<F
   if (!isValidExtension) {
     return {
       valid: false,
-      error: 'Unsupported file type. Please upload a PDF, CSV, or TXT file.',
+      error: 'Unsupported file type. Please upload a PDF, CSV, TXT, JPG, PNG or WebP file.',
       reason: 'unsupported_extension',
     };
   }

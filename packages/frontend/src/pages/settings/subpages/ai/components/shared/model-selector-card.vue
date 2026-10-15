@@ -128,7 +128,7 @@ import { useAiConnectionsList } from '@/composable/data-queries/use-ai-connectio
 import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes';
 import { useUserStore } from '@/stores';
-import { AIFeatureStatus, AIModelPricing, getModelNameFromModelId, hasPaidPlus } from '@bt/shared/types';
+import { AIFeatureStatus, AIModelPricing, getModelNameFromModelId } from '@bt/shared/types';
 import { BrainIcon, ChevronRightIcon, PlusIcon, TriangleAlertIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -146,11 +146,9 @@ const { t } = useI18n();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 const { setFeatureConfig, isSettingFeatureConfig, resetFeatureConfig, isResettingFeatureConfig } = useAiSettings();
 const { connections } = useAiConnectionsList();
-const { canSeeBilling, entitlements } = storeToRefs(useUserStore());
+const { canSeeBilling, entitlements, hasPlus } = storeToRefs(useUserStore());
 
-const isOnSharedPool = computed(
-  () => canSeeBilling.value && entitlements.value !== null && !hasPaidPlus({ entitlements: entitlements.value }),
-);
+const isOnSharedPool = computed(() => canSeeBilling.value && entitlements.value !== null && !hasPlus.value);
 
 const displayInfo = computed(() => getAIFeatureDisplayInfo({ feature: props.featureStatus.feature }));
 const isUpdating = computed(() => isSettingFeatureConfig.value || isResettingFeatureConfig.value);

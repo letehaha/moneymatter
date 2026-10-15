@@ -1,5 +1,6 @@
 import { AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { PNG_1X1_BASE64 } from '@tests/fixtures/statement-parser-fixtures';
 import * as helpers from '@tests/helpers';
 import { useSelfHostWithoutServerAiKeys } from '@tests/helpers/ai-test-env';
 import {
@@ -50,6 +51,14 @@ describe('Investment transactions parser cost estimation', () => {
     expect(estimate.estimatedInputTokens).toBeGreaterThan(0);
     expect(estimate.estimatedOutputTokens).toBeGreaterThan(0);
     expect(estimate.estimatedCostUsd).toBeNull();
+  });
+
+  it('rejects an image, which only the bank statement importer reads', async () => {
+    await createFirstConnection();
+    const response = await helpers.investmentImportEstimateCost({ payload: { fileBase64: PNG_1X1_BASE64 } });
+
+    expect(response.statusCode).not.toBe(200);
+    expect(errorMessage({ response })).toMatch(/unsupported file type/i);
   });
 
   it('prices a native connection running a catalog model from the catalog', async () => {

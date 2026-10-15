@@ -465,6 +465,8 @@ export const createTransaction = withTransaction(
             externalData: payload.externalData,
             commissionRate,
             cashbackAmount: payload.cashbackAmount,
+            originalAmount: payload.originalAmount,
+            originalCurrencyCode: payload.originalCurrencyCode,
             accountType,
             rawMerchantName,
             externalUrl: payload.externalUrl,

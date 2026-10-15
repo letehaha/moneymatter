@@ -113,10 +113,8 @@ async function extractHandler({ userId, body }: { userId: number; body: ExtractB
 async function extractFromAi({ userId, body }: { userId: number; body: z.infer<typeof aiBody> }) {
   const rawBuffer = Buffer.from(body.fileBase64, 'base64');
   const validation = validateFileBuffer({ buffer: rawBuffer });
-  if (!validation.valid || !validation.fileBuffer || !validation.fileType) {
-    throw new UnexpectedError({
-      message: validation.error?.message ?? 'Invalid file',
-    });
+  if (!validation.valid) {
+    throw new UnexpectedError({ message: validation.error.message });
   }
 
   const textResult = await extractTextFromFile({

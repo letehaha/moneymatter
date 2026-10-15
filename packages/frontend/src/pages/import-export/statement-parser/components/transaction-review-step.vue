@@ -154,6 +154,9 @@
                   :class="item.txType === 'expense' ? 'text-app-expense-color' : 'text-app-income-color'"
                 >
                   {{ item.txType === 'expense' ? '-' : '+' }}{{ item.amount.toFixed(2) }}
+                  <span v-if="item.originalAmount" class="text-muted-foreground block text-[10px] font-normal">
+                    {{ item.originalAmount }}
+                  </span>
                 </span>
               </div>
             </div>
@@ -224,6 +227,8 @@ interface TimelineItem {
   description: string;
   amount: number;
   txType: 'income' | 'expense';
+  /** e.g. "12.99 USD" when the purchase was made in another currency */
+  originalAmount?: string;
   /** Statement the row was extracted from. Unset for single-file imports and for existing rows. */
   sourceFile?: string;
   existingNote?: string;
@@ -251,6 +256,10 @@ const timelineItems = computed((): TimelineItem[] => {
     const isExcluded = store.excludedTransactionIndices.has(index);
     const isOverridden = store.overriddenDuplicateIndices.has(index);
     const sourceFile = showSources.value ? store.transactionSources[index] : undefined;
+    const originalAmount =
+      tx.originalAmount !== undefined && tx.originalCurrencyCode
+        ? `${tx.originalAmount.toFixed(2)} ${tx.originalCurrencyCode}`
+        : undefined;
 
     if (duplicate) {
       items.push({
@@ -260,6 +269,7 @@ const timelineItems = computed((): TimelineItem[] => {
         description: tx.description,
         amount: tx.amount,
         txType: tx.type,
+        originalAmount,
         sourceFile,
         existingNote: duplicate.existingTransaction.note,
         isOverridden,
@@ -272,6 +282,7 @@ const timelineItems = computed((): TimelineItem[] => {
         description: tx.description,
         amount: tx.amount,
         txType: tx.type,
+        originalAmount,
         sourceFile,
         isExcluded,
       });

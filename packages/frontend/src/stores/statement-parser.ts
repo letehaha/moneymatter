@@ -27,6 +27,7 @@ import {
   type TransactionModel,
 } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
+import { uniqBy } from 'lodash-es';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -341,7 +342,9 @@ export const useStatementParserStore = defineStore('statementParser', () => {
 
   // Entries for files still selected are kept as-is so their paid-for estimate/extraction survives.
   // Returns the files that could not be read; the store emits no user-facing strings.
-  async function setFiles({ files }: { files: File[] }): Promise<{ unreadable: File[] }> {
+  async function setFiles({ files: selected }: { files: File[] }): Promise<{ unreadable: File[] }> {
+    // An image fitted for upload again yields the same key as its stored copy; keeping both double-imports it.
+    const files = uniqBy(selected, (file) => fileKey({ file }));
     const existing = new Map(fileEntries.value.map((entry) => [entry.id, entry]));
 
     // The upload step re-validates the same list on every dropzone emit; resetting
@@ -453,6 +456,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
           entry.extraction = await extractStatementTransactions({
             fileBase64: entry.fileBase64,
             password: entry.password ?? undefined,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           });
           entry.extractionError = null;
           extractedSomething = true;
@@ -620,6 +624,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
         accountId: selectedAccount.value.id,
         transactions: mergedTransactions.value,
         skipIndices: skipIndices.value,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
 
       jobProgress.start({

@@ -3,6 +3,7 @@ import { AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import {
   ENCRYPTED_STATEMENT_PASSWORD,
+  PNG_1X1_BASE64,
   STATEMENT_PDF_FIXTURES,
   readStatementPdfFixture,
 } from '@tests/fixtures/statement-parser-fixtures';
@@ -87,6 +88,26 @@ describe('Statement parser cost estimation', () => {
     expect(estimate.estimatedInputTokens).toBeGreaterThan(0);
     expect(estimate.estimatedOutputTokens).toBeGreaterThan(0);
     expect(estimate.estimatedCostUsd).toBeNull();
+  });
+
+  it('estimates an image without reading any text from it', async () => {
+    await createFirstConnection();
+
+    const estimate = await helpers.statementEstimateCost({ payload: { fileBase64: PNG_1X1_BASE64 }, raw: true });
+
+    expect(estimate.fileType).toBe('image');
+    expect(estimate.textExtraction).toEqual({ success: true, characterCount: 0, pageCount: 1 });
+    expect(estimate.estimatedInputTokens).toBeGreaterThan(0);
+  });
+
+  it('answers 422 for an image over the 4MB cap', async () => {
+    await createFirstConnection();
+    const pngHeader = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    const oversized = Buffer.concat([pngHeader, Buffer.alloc(4 * 1024 * 1024)]);
+
+    const response = await helpers.statementEstimateCost({ payload: { fileBase64: oversized.toString('base64') } });
+
+    expect(response.statusCode).toBe(422);
   });
 
   it('estimates against the default connection when the feature has no config', async () => {
