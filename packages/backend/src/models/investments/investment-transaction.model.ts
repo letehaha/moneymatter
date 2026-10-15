@@ -81,7 +81,8 @@ export default class InvestmentTransaction extends Model {
   /**
    * The monetary value involved in the transaction. Depending on the context,
    * this could represent the cost, sale proceeds, or other financial values
-   * associated with the transaction. Calculated as quantity * price + fees
+   * associated with the transaction. Calculated as quantity * price + fees for
+   * buy/fee/tax and quantity * price - fees for sell/dividend.
    */
   @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })
   declare amount: Money;

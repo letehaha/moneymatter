@@ -37,6 +37,10 @@ export enum INVESTMENT_TRANSACTION_CATEGORY {
   other = 'other',
 }
 
+/** Sell and dividend bring cash in, so their fee is subtracted from the stored `amount` instead of added. */
+export const isCashInCategory = ({ category }: { category: `${INVESTMENT_TRANSACTION_CATEGORY}` }): boolean =>
+  category === 'sell' || category === 'dividend';
+
 export enum PORTFOLIO_TYPE {
   investment = 'investment',
   retirement = 'retirement',

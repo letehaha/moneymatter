@@ -5,7 +5,7 @@ export interface HoldingTotalsLeg {
   category: INVESTMENT_TRANSACTION_CATEGORY;
   /** Signed share count for the leg (always positive in this model; direction comes from `category`). */
   quantity: Big;
-  /** Total cost of the leg in the holding's own currency (price × quantity + fees). */
+  /** Cash moved by the leg in the holding's own currency; read only for buys, where it is price × quantity + fees. */
   amount: Big;
   /** Same as `amount`, expressed in the user's base currency. */
   refAmount: Big;

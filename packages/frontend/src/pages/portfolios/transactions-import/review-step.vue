@@ -7,7 +7,11 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useAllCurrencies } from '@/composable/data-queries/currencies';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import type { InvestmentImportHolding, InvestmentImportTransaction } from '@bt/shared/types/investments';
+import {
+  type InvestmentImportHolding,
+  type InvestmentImportTransaction,
+  isCashInCategory,
+} from '@bt/shared/types/investments';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { CircleDollarSignIcon, CoinsIcon, InfoIcon, Loader2Icon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -71,6 +75,7 @@ function isTransactionValid(tx: InvestmentImportTransaction): boolean {
   // consideration. The source's BUY/SELL classification is authoritative.
   if (!Number.isFinite(price) || price < 0) return false;
   if (!Number.isFinite(fees) || fees < 0) return false;
+  if (isCashInCategory({ category: tx.side }) && fees > qty * price) return false;
   return tx.side === 'buy' || tx.side === 'sell' || tx.side === 'dividend';
 }
 
@@ -107,7 +112,7 @@ function computeAmount(tx: InvestmentImportTransaction): string {
   const price = Number(tx.price || '0');
   const fees = Number(tx.fees || '0');
   if (!Number.isFinite(qty) || !Number.isFinite(price) || !Number.isFinite(fees)) return '0';
-  return (qty * price + fees).toFixed(10);
+  return (isCashInCategory({ category: tx.side }) ? qty * price - fees : qty * price + fees).toFixed(10);
 }
 
 watch(

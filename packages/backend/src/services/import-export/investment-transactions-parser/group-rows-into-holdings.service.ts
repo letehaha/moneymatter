@@ -7,13 +7,13 @@
  *   2. Majority-votes asset class per symbol.
  *   3. Resolves symbols to Security candidates.
  *   4. Normalises quote currencies.
- *   5. Computes amounts (`quantity * price + fees`).
+ *   5. Computes amounts (`quantity * price ± fees`, minus for sell/dividend).
  *   6. Flags possible duplicates against existing transactions.
  *
  * Output is the hierarchical `InvestmentImportExtractionResult['holdings']`
  * shape consumed by the review UI.
  */
-import { ASSET_CLASS, isTradeSide } from '@bt/shared/types/investments';
+import { ASSET_CLASS, isCashInCategory, isTradeSide } from '@bt/shared/types/investments';
 import type {
   InvestmentImportExtractionResult,
   InvestmentImportTradeSide,
@@ -133,7 +133,10 @@ export async function groupRowsIntoHoldings({
     const holdingTempId = uuidv4();
     const txns = symbolRows.map((row) => {
       const tempId = uuidv4();
-      const amount = new Big(row.quantity).times(new Big(row.price)).plus(new Big(row.fees)).toFixed(10);
+      const notional = new Big(row.quantity).times(new Big(row.price));
+      const amount = (
+        isCashInCategory({ category: row.side }) ? notional.minus(row.fees) : notional.plus(row.fees)
+      ).toFixed(10);
       // Dedup is only meaningful for trades — dividends/fees/etc. don't have a
       // price-based "is this the same event?" signal. Restrict the dedup batch
       // to buy/sell and rely on the same-value comparison in detect-duplicates.

@@ -26,10 +26,9 @@ const findBoundaryBucketIndex = ({ dayStr, boundaryDates }: { dayStr: string; bo
 /**
  * Per-bucket investment cash flows in base-currency cents.
  *
- * `refAmount` is `quantity * price + fees` for EVERY category — including sell
- * and dividend, where the cash actually received is `refAmount - 2 * refFees`
- * (see `resolveSettlement` / `calculateCashDelta`). So notional is always
- * `refAmount - refFees`, and every fee is collected once into `feesAndTaxes`.
+ * `refAmount` is the cash moved: `notional + fees` for buy, `notional - fees`
+ * for sell and dividend (see `resolveSettlement`). Each fee is collected once
+ * into `feesAndTaxes`.
  * A standalone fee/tax row carries its cost in `refAmount` (its notional is
  * zero), hence the whole `refAmount` there.
  *
@@ -60,19 +59,18 @@ export const accumulateInvestmentFlows = ({
     // the model getter applies, so cents come out identical to hydrated rows.
     const refAmount = Money.fromDecimal(tx.refAmount).toCents();
     const refFees = Money.fromDecimal(tx.refFees).toCents();
-    const notional = asCents(refAmount - refFees);
 
     switch (tx.category) {
       case INVESTMENT_TRANSACTION_CATEGORY.buy:
-        bucket.buyNotional = asCents(bucket.buyNotional + notional);
+        bucket.buyNotional = asCents(bucket.buyNotional + refAmount - refFees);
         bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.sell:
-        bucket.sellNotional = asCents(bucket.sellNotional + notional);
+        bucket.sellNotional = asCents(bucket.sellNotional + refAmount + refFees);
         bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.dividend:
-        bucket.dividendsGross = asCents(bucket.dividendsGross + notional);
+        bucket.dividendsGross = asCents(bucket.dividendsGross + refAmount + refFees);
         bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.fee:

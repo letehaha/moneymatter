@@ -124,6 +124,7 @@ describe('PUT /investments/transaction/:transactionId (update investment transac
     // Should change from expense to income, because `transactionType` is about
     // cash flow, and when stocks are `selled`, it means we got income for `cash`
     expect(response.transactionType).toBe(TRANSACTION_TYPES.income);
+    expect(response.amount).toBeNumericEqual(95); // (2 * 50) - 5 fees
   });
 
   it('should recalculate holding after transaction update', async () => {

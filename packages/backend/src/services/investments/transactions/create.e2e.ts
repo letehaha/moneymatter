@@ -214,7 +214,6 @@ describe('POST /transaction (create investment transaction)', () => {
   it('creates fee, tax and dividend transactions', async () => {
     // FEE and TAX record standalone broker/withholding events against the
     // holding without changing the share count; DIVIDEND records cash income.
-    // All three keep amount = quantity * price + fees.
     const feeResponse = await helpers.createInvestmentTransaction({
       payload: {
         portfolioId: investmentPortfolio.id,
@@ -263,6 +262,63 @@ describe('POST /transaction (create investment transaction)', () => {
     expect(dividendTx.category).toBe(INVESTMENT_TRANSACTION_CATEGORY.dividend);
     expect(dividendTx.price).toBeNumericEqual(25);
   }, 30000);
+
+  it('stores amount as cash paid for outflows and cash received for inflows', async () => {
+    const create = async ({
+      category,
+      quantity,
+      price,
+      fees,
+    }: {
+      category: INVESTMENT_TRANSACTION_CATEGORY;
+      quantity: string;
+      price: string;
+      fees: string;
+    }) =>
+      helpers.createInvestmentTransaction({
+        payload: { portfolioId: investmentPortfolio.id, securityId: vooSecurity.id, category, quantity, price, fees },
+        raw: true,
+      });
+
+    const buyTx = await create({
+      category: INVESTMENT_TRANSACTION_CATEGORY.buy,
+      quantity: '10',
+      price: '100',
+      fees: '5',
+    });
+    expect(buyTx.amount).toBeNumericEqual(1005);
+
+    const sellTx = await create({
+      category: INVESTMENT_TRANSACTION_CATEGORY.sell,
+      quantity: '2',
+      price: '150',
+      fees: '3',
+    });
+    expect(sellTx.amount).toBeNumericEqual(297);
+
+    const dividendTx = await create({
+      category: INVESTMENT_TRANSACTION_CATEGORY.dividend,
+      quantity: '1',
+      price: '1.51',
+      fees: '0.46',
+    });
+    expect(dividendTx.amount).toBeNumericEqual(1.05);
+  }, 30000);
+
+  it('rejects a dividend whose fees exceed the gross payout', async () => {
+    const response = await helpers.createInvestmentTransaction({
+      payload: {
+        portfolioId: investmentPortfolio.id,
+        securityId: vooSecurity.id,
+        category: INVESTMENT_TRANSACTION_CATEGORY.dividend,
+        quantity: '1',
+        price: '0.10',
+        fees: '0.46',
+      },
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
 
   it('stores a date-only input as UTC midnight', async () => {
     // A date-only string (no time component) must be stored as UTC midnight so

@@ -480,5 +480,75 @@ describe('GET /investments/portfolios/annualized-returns', () => {
       expect(entry.annualizedReturn).toBeLessThan(20);
       expect(entry.annualizedReturn).toBeCloseTo(6.1, 0);
     });
+
+    it('counts the buy fee once in the cost basis of an unpriced holding', async () => {
+      const buyDay = daysAgo({ days: 365 });
+      const security = await createBaseCurrencySecurity({ symbol: 'FEEBASIS' });
+      await helpers.createHolding({ payload: { portfolioId: portfolio.id, securityId: security.id } });
+      await helpers.createInvestmentTransaction({
+        payload: {
+          portfolioId: portfolio.id,
+          securityId: security.id,
+          category: INVESTMENT_TRANSACTION_CATEGORY.buy,
+          date: buyDay,
+          quantity: '1',
+          price: '100',
+          fees: '5',
+        },
+        raw: true,
+      });
+      await seedPrices({ securityId: security.id, points: [{ date: today(), price: '126' }] });
+
+      const result = await helpers.getPortfoliosAnnualizedReturns({ raw: true });
+      const entry = result.find((r) => r.portfolioId === portfolio.id)!;
+
+      // Unpriced at the buy → valued at cost basis 1 * 100 + 5 = 105; today 126.
+      // 126 / 105 = 1.2 over 365 days → 20%/yr. Fee counted twice: 126 / 110 → ~14.5%.
+      expect(entry.periodDays).toBe(365);
+      expect(entry.annualizedReturn).toBeCloseTo(20, 0);
+    });
+
+    it('adds a dividend to the period return at its amount net of fees', async () => {
+      const security = await createBaseCurrencySecurity({ symbol: 'DIVNET' });
+      await helpers.createHolding({ payload: { portfolioId: portfolio.id, securityId: security.id } });
+      await helpers.createInvestmentTransaction({
+        payload: {
+          portfolioId: portfolio.id,
+          securityId: security.id,
+          category: INVESTMENT_TRANSACTION_CATEGORY.buy,
+          date: daysAgo({ days: 365 }),
+          quantity: '1',
+          price: '100',
+        },
+        raw: true,
+      });
+      await helpers.createInvestmentTransaction({
+        payload: {
+          portfolioId: portfolio.id,
+          securityId: security.id,
+          category: INVESTMENT_TRANSACTION_CATEGORY.dividend,
+          date: daysAgo({ days: 182 }),
+          quantity: '1',
+          price: '10',
+          fees: '2',
+        },
+        raw: true,
+      });
+      await seedPrices({
+        securityId: security.id,
+        points: [
+          { date: daysAgo({ days: 365 }), price: '100' },
+          { date: today(), price: '100' },
+        ],
+      });
+
+      const result = await helpers.getPortfoliosAnnualizedReturns({ raw: true });
+      const entry = result.find((r) => r.portfolioId === portfolio.id)!;
+
+      // Flat price, dividend 1 * 10 - 2 = 8: (100 + 8) / 100 = 1.08 over 365 days → 8%/yr.
+      // Gross (10) would give 10%, gross plus fee (12) 12%.
+      expect(entry.periodDays).toBe(365);
+      expect(entry.annualizedReturn).toBeCloseTo(8, 0);
+    });
   });
 });

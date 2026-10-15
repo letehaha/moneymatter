@@ -102,7 +102,7 @@ export interface InvestmentImportTransaction {
   price: string;
   /** Decimal string. 0 if AI didn't extract a fee. */
   fees: string;
-  /** Computed convenience: `quantity * price + fees`, decimal string. */
+  /** Computed convenience: `quantity * price ± fees` (minus for sell/dividend), decimal string. */
   amount: string;
   /**
    * If this transaction is a possible duplicate of an existing one, the

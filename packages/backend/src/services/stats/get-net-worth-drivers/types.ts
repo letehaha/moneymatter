@@ -9,7 +9,7 @@ import type { TransactionRow } from '../get-combined-balance-history/types';
  * hydrating Money fields per row is avoidable memory pressure.
  */
 export type ReportTransactionRow = TransactionRow & {
-  /** DECIMAL(20,10) string. Fee already embedded in `refAmount`; split out per bucket. */
+  /** DECIMAL(20,10) string. Fee already folded into `refAmount`; split out per bucket. */
   refFees: string;
 };
 

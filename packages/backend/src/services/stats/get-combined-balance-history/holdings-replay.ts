@@ -68,8 +68,8 @@ export const computeHoldingsValueByDate = ({
         // Raw rows carry DECIMALs as strings (see `TransactionRow`); this replay
         // runs on floats anyway, so plain Number() conversion loses nothing.
         const quantity = Number(tx.quantity);
-        // `refAmount` is the leg's full cost in base currency — quantity × price
-        // *including* fees, as `resolveSettlement` composes it. That is exactly
+        // Read only for buys, where `refAmount` is the leg's full cost in base currency —
+        // quantity × price *including* fees, as `resolveSettlement` composes it. That is exactly
         // what `computeHoldingTotals` folds into the basis, so `refFees` must not
         // be added on top of it: the fee is already in there and would count twice.
         const totalAmount = Number(tx.refAmount);

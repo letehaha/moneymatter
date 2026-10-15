@@ -19,7 +19,7 @@ const buildTx = ({
 }: {
   category: INVESTMENT_TRANSACTION_CATEGORY;
   date: string;
-  /** Decimal, as `refAmount` is stored: quantity * price + fees. */
+  /** Decimal, as `refAmount` is stored: quantity * price + fees (buy) or - fees (sell/dividend). */
   amount: number;
   fees?: number;
 }): InvestmentFlowRow => ({
@@ -50,11 +50,11 @@ describe('accumulateInvestmentFlows', () => {
   const boundaryDates = ['2025-12-31', '2026-01-31', '2026-02-28'];
 
   it('takes fees out of buy and sell notional', () => {
-    // refAmount is quantity * price + fees, so a $600 purchase with a $10 fee is stored as 610.
+    // A $600 purchase with a $10 fee is stored as 610; a $200 sale with a $5 fee as 195.
     const flows = accumulateInvestmentFlows({
       transactions: [
         buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.buy, date: '2026-01-10', amount: 610, fees: 10 }),
-        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.sell, date: '2026-01-20', amount: 205, fees: 5 }),
+        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.sell, date: '2026-01-20', amount: 195, fees: 5 }),
       ],
       boundaryDates,
     });
@@ -70,7 +70,7 @@ describe('accumulateInvestmentFlows', () => {
   it('counts dividends gross and their fee once', () => {
     const flows = accumulateInvestmentFlows({
       transactions: [
-        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.dividend, date: '2026-01-15', amount: 52, fees: 2 }),
+        buildTx({ category: INVESTMENT_TRANSACTION_CATEGORY.dividend, date: '2026-01-15', amount: 48, fees: 2 }),
       ],
       boundaryDates,
     });

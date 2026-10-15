@@ -51,7 +51,7 @@ interface ParsedRowForDedup {
   side: 'buy' | 'sell';
   /** Decimal string. */
   price: string;
-  /** Decimal string (`quantity * price + fees`). */
+  /** Decimal string (`quantity * price ± fees`, minus for sell). */
   amount: string;
 }
 

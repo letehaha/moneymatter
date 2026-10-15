@@ -153,12 +153,14 @@ async function extractBtcDedupRow({
   side = 'B',
   importedQuantity = DEDUP_BASE_QUANTITY,
   importedPrice = DEDUP_BASE_PRICE,
+  fees,
 }: {
   portfolioId: RecordId;
   dayOffset: number;
   side?: 'B' | 'S';
   importedQuantity?: string;
   importedPrice?: string;
+  fees?: string;
 }) {
   installCoingeckoMock({
     coins: [{ id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', market_cap_rank: 1 }],
@@ -171,6 +173,7 @@ async function extractBtcDedupRow({
     side,
     quantity: importedQuantity,
     price: importedPrice,
+    fees,
   });
   global.mswMockServer.use(geminiCsvHandler({ csv }));
 
@@ -460,6 +463,28 @@ describe('Investment transactions AI import — E2E', () => {
       });
       expect(differentUnitPrice).toBeNull();
     }, 120_000);
+
+    it('flags an imported sell with fees as a duplicate of the stored sell (net amount on both sides)', async () => {
+      const portfolio = await seedBtcDedupState();
+      const btc = (await Securities.findOne({ where: { symbol: 'BTC' } }))!;
+
+      // 0.05 * 42000 - 10 = 2090 stored and computed for the imported row.
+      const sell = await helpers.createInvestmentTransaction({
+        payload: {
+          portfolioId: portfolio.id,
+          securityId: btc.id,
+          category: INVESTMENT_TRANSACTION_CATEGORY.sell,
+          date: DEDUP_BASE_DATE,
+          quantity: DEDUP_BASE_QUANTITY,
+          price: DEDUP_BASE_PRICE,
+          fees: '10',
+        },
+        raw: true,
+      });
+
+      const duplicateOf = await extractBtcDedupRow({ portfolioId: portfolio.id, dayOffset: 0, side: 'S', fees: '10' });
+      expect(duplicateOf).toBe(sell.id);
+    }, 60_000);
   });
 
   describe('execute', () => {
@@ -1097,9 +1122,9 @@ describe('Investment transactions AI import — E2E', () => {
       expect(holding.transactions.map((t) => t.side)).toEqual(['buy', 'sell', 'dividend']);
       expect(holding.transactions[0]!.price).toBe('42000');
       expect(holding.transactions[1]!.price).toBe('50000');
-      // amount = quantity * price + fees
+      // amount = quantity * price + fees for buys, - fees for sells
       expect(holding.transactions[0]!.amount).toBe('2105.2500000000');
-      expect(holding.transactions[1]!.amount).toBe('1002.1000000000');
+      expect(holding.transactions[1]!.amount).toBe('997.9000000000');
       expect(result.fileType).toBe('csv');
       expect(result.tokenCount).toEqual({ input: 0, output: 0 });
     });

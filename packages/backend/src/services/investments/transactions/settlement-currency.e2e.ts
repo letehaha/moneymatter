@@ -269,6 +269,8 @@ describe('Investment transaction settlement currency', () => {
 
       // gross = 70 + 5 = 75; rate = 75 / (10*2) = 3.75
       expect(tx.settlementRate).toBeNumericEqual(3.75);
+      // Net of the fee in USD: 20 - 5 / 3.75
+      expect(tx.amount).toBeNumericEqual(18.6666666667);
 
       const [plnBalance] = await helpers.getPortfolioBalance({
         portfolioId: portfolio.id,

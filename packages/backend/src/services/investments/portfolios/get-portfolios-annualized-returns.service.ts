@@ -45,7 +45,6 @@ interface GetPortfoliosAnnualizedReturnsParams {
 type TransactionRow = Pick<InvestmentTransaction, 'portfolioId' | 'securityId' | 'category' | 'date'> & {
   quantity: string;
   refAmount: string;
-  refFees: string;
 };
 
 /** Running per-security position used to value the portfolio over time. */
@@ -131,7 +130,7 @@ export const getPortfoliosAnnualizedReturns = async ({
       ['date', 'ASC'],
       ['createdAt', 'ASC'],
     ],
-    attributes: ['portfolioId', 'securityId', 'category', 'date', 'quantity', 'refAmount', 'refFees'],
+    attributes: ['portfolioId', 'securityId', 'category', 'date', 'quantity', 'refAmount'],
     raw: true,
   })) as unknown as TransactionRow[];
 
@@ -395,7 +394,7 @@ export const getPortfoliosAnnualizedReturns = async ({
       // no-price valuation fallback.
       for (const tx of tradesByDate.get(boundaryDate) ?? []) {
         const quantity = Number(tx.quantity);
-        const totalAmount = Number(tx.refAmount) + Number(tx.refFees);
+        const totalAmount = Number(tx.refAmount);
         const holding = holdings.get(tx.securityId) ?? { quantity: 0, costBasis: 0 };
 
         if (tx.category === INVESTMENT_TRANSACTION_CATEGORY.buy) {

@@ -1,14 +1,8 @@
-import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
+import { INVESTMENT_TRANSACTION_CATEGORY, isCashInCategory } from '@bt/shared/types/investments';
 import { ValidationError } from '@js/errors';
 import { Big } from 'big.js';
 
 const DECIMAL_SCALE = 10;
-
-/** Categories where cash enters the account; the rest of the cash-affecting categories pay cash out. */
-const CASH_IN_CATEGORIES: INVESTMENT_TRANSACTION_CATEGORY[] = [
-  INVESTMENT_TRANSACTION_CATEGORY.sell,
-  INVESTMENT_TRANSACTION_CATEGORY.dividend,
-];
 
 const NO_CASH_CATEGORIES: INVESTMENT_TRANSACTION_CATEGORY[] = [
   INVESTMENT_TRANSACTION_CATEGORY.transfer,
@@ -19,7 +13,10 @@ const NO_CASH_CATEGORIES: INVESTMENT_TRANSACTION_CATEGORY[] = [
 interface ResolvedSettlement {
   /** Fee in the security's currency (settlementFees converted at settlementRate). */
   fees: string;
-  /** Total in the security's currency: `quantity * price + fees`. */
+  /**
+   * Cash moved in the security's currency: buy/fee/tax — `quantity * price + fees`;
+   * sell/dividend — `quantity * price - fees`.
+   */
   amount: string;
   settlementCurrencyCode: string;
   /**
@@ -84,7 +81,7 @@ export function resolveSettlement(params: ResolveSettlementParams): ResolvedSett
 
   const settlementCurrencyCode = params.settlementCurrencyCode ?? holdingCurrencyCode;
   const notional = new Big(quantity || '0').times(new Big(price || '0'));
-  const isCashIn = CASH_IN_CATEGORIES.includes(category);
+  const isCashIn = isCashInCategory({ category });
 
   if (settlementAmount !== undefined && NO_CASH_CATEGORIES.includes(category)) {
     throw new ValidationError({
@@ -116,10 +113,15 @@ export function resolveSettlement(params: ResolveSettlementParams): ResolvedSett
 
     const feesStr = resolvedFees.toFixed(DECIMAL_SCALE);
     const cashMoved = isCashIn ? notional.minus(resolvedFees) : notional.plus(resolvedFees);
+    if (cashMoved.lt(0)) {
+      throw new ValidationError({
+        message: `Fees (${feesStr}) exceed quantity × price (${notional.toFixed(DECIMAL_SCALE)}) — the cash received would be negative.`,
+      });
+    }
 
     return {
       fees: feesStr,
-      amount: notional.plus(resolvedFees).toFixed(DECIMAL_SCALE),
+      amount: cashMoved.toFixed(DECIMAL_SCALE),
       settlementCurrencyCode,
       settlementAmount: cashMoved.toFixed(DECIMAL_SCALE),
       settlementFees: feesStr,
@@ -201,7 +203,7 @@ export function resolveSettlement(params: ResolveSettlementParams): ResolvedSett
 
   return {
     fees: resolvedFees.toFixed(DECIMAL_SCALE),
-    amount: notional.plus(resolvedFees).toFixed(DECIMAL_SCALE),
+    amount: (isCashIn ? notional.minus(resolvedFees) : notional.plus(resolvedFees)).toFixed(DECIMAL_SCALE),
     settlementCurrencyCode,
     settlementAmount: cashMoved.toFixed(DECIMAL_SCALE),
     settlementFees: feesInSettlement.toFixed(DECIMAL_SCALE),
