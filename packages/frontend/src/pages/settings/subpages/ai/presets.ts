@@ -1,4 +1,10 @@
-import { AIConnectionInfo, AI_PROVIDER, type CliAiAvailability, asAiCliProvider } from '@bt/shared/types';
+import {
+  AIConnectionInfo,
+  AI_PROVIDER,
+  CLI_AI_MODELS,
+  type CliAiAvailability,
+  asAiCliProvider,
+} from '@bt/shared/types';
 
 export type AiConnectionPresetId =
   | 'openai'
@@ -142,6 +148,13 @@ export const findPresetForConnection = ({
 
 export const isSubscriptionPreset = ({ preset }: { preset: AiConnectionPreset }): boolean =>
   preset.authKind === 'subscription';
+
+/** The model a new subscription connection starts with; empty for a preset that has no curated list. */
+export const getDefaultCliModel = ({ preset }: { preset: AiConnectionPreset }): string => {
+  const cliProvider = asAiCliProvider({ provider: preset.provider });
+  if (!cliProvider) return '';
+  return CLI_AI_MODELS[cliProvider].find((model) => model.isDefault)?.id ?? '';
+};
 
 const CLI_NOT_INSTALLED_REASON_KEY = 'settings.ai.connections.presets.cliNotInstalled';
 

@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import {
   AI_CONNECTION_PRESETS,
   findPresetForConnection,
+  getDefaultCliModel,
   getVisiblePresets,
   isSubscriptionPreset,
   matchPresetByBaseUrl,
@@ -139,5 +140,19 @@ describe('getVisiblePresets', () => {
     expect(presets.filter((preset) => !isSubscriptionPreset({ preset })).every((preset) => !preset.disabled)).toBe(
       true,
     );
+  });
+});
+
+describe('getDefaultCliModel', () => {
+  const findPreset = ({ id }: { id: string }) => AI_CONNECTION_PRESETS.find((preset) => preset.id === id)!;
+
+  it('picks the curated default of each subscription provider', () => {
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'claudeCode' }) })).toBe('sonnet');
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'codex' }) })).toBe('gpt-6-astra');
+  });
+
+  it('has no default for a preset without a curated list', () => {
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'anthropic' }) })).toBe('');
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'custom' }) })).toBe('');
   });
 });

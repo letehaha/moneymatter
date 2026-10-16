@@ -6,6 +6,7 @@ import {
   SERVER_OPTION,
   buildFeatureModelOptions,
   readFeatureSelectValue,
+  resolveCostDisplay,
 } from './feature-model-options';
 
 const CONNECTION_A = '3f1c9a2e-8b47-4d63-9d51-6c0f2a7e5b90';
@@ -122,5 +123,71 @@ describe('buildFeatureModelOptions', () => {
       model: 'claude-sonnet-5',
       needsAttention: false,
     });
+  });
+});
+
+describe('resolveCostDisplay', () => {
+  it('says a subscription connection is included in the plan, whatever the catalog prices it at', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'subscription' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toEqual({ kind: 'subscription' });
+  });
+
+  it('says it even when the feature has no unit to price in', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'subscription' },
+        formattedPrice: null,
+        hasUnitLabel: false,
+      }),
+    ).toEqual({ kind: 'subscription' });
+  });
+
+  it('shows the price of a per-token connection', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toEqual({ kind: 'price', price: '~$0.120' });
+  });
+
+  it('shows nothing for a per-token connection without a known price or unit', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: null,
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: false,
+      }),
+    ).toBeNull();
+  });
+
+  it('shows nothing when the server model or nothing answers', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'server', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: null, billing: 'per-token' },
+        formattedPrice: null,
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
   });
 });

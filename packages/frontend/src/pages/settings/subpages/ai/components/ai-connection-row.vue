@@ -33,6 +33,9 @@
                 : $t('settings.ai.connections.badges.default')
             }}
           </span>
+          <span v-if="isSubscription" class="bg-primary/10 text-primary-text shrink-0 rounded-full px-2 py-0.5 text-xs">
+            {{ $t('settings.ai.connections.badges.subscription') }}
+          </span>
           <span
             v-if="isInvalid"
             class="bg-destructive/10 text-destructive-text shrink-0 rounded-full px-2 py-0.5 text-xs"
@@ -46,6 +49,20 @@
             {{ connection.baseUrl }}
           </span>
         </DesktopOnlyTooltip>
+
+        <span
+          v-if="expiryText && expiry"
+          :class="
+            cn(
+              'min-w-0 text-xs @md/ai-connections:order-3 @md/ai-connections:w-full',
+              expiry.kind === 'expiring-soon' && 'text-warning-text',
+              expiry.kind === 'expired' && 'text-destructive-text',
+              expiry.kind === 'valid' && 'text-muted-foreground',
+            )
+          "
+        >
+          {{ expiryText }}
+        </span>
 
         <DesktopOnlyTooltip :content="modelLabel" only-when-truncated>
           <span
@@ -138,14 +155,34 @@
         {{ connection.lastError }}
       </p>
 
-      <!-- Nothing to retry without a key, so the way out is entering one. -->
-      <Button v-if="needsKey" variant="outline" size="sm" @click="emit('edit')">
-        <KeyIcon class="size-4" />
-        {{ $t('settings.ai.connections.actions.enterKey') }}
-      </Button>
-      <Button v-else variant="outline" size="sm" :disabled="isBusy" @click="runConnectionTest">
-        <RotateCwIcon class="size-4" :class="{ 'animate-spin': isTestingConnection }" />
-        {{ $t('settings.ai.connections.actions.reconnect') }}
+      <div class="flex flex-wrap gap-2">
+        <!-- A failed sign-in can only be fixed by signing in again, which the edit form hosts. -->
+        <Button v-if="isSubscription" variant="outline" size="sm" :disabled="isBusy" @click="emit('edit')">
+          <LogInIcon class="size-4" />
+          {{ $t('settings.ai.connections.actions.signInAgain') }}
+        </Button>
+        <!-- Nothing to retry without a key, so the way out is entering one. -->
+        <Button v-else-if="needsKey" variant="outline" size="sm" @click="emit('edit')">
+          <KeyIcon class="size-4" />
+          {{ $t('settings.ai.connections.actions.enterKey') }}
+        </Button>
+        <Button
+          v-if="!needsKey"
+          :variant="isSubscription ? 'ghost' : 'outline'"
+          size="sm"
+          :disabled="isBusy"
+          @click="runConnectionTest"
+        >
+          <RotateCwIcon class="size-4" :class="{ 'animate-spin': isTestingConnection }" />
+          {{ $t('settings.ai.connections.actions.reconnect') }}
+        </Button>
+      </div>
+    </div>
+
+    <div v-else-if="isSubscription && expiry && expiry.kind !== 'valid'" class="mt-2">
+      <Button variant="outline" size="sm" :disabled="isBusy" @click="emit('edit')">
+        <LogInIcon class="size-4" />
+        {{ $t('settings.ai.connections.actions.signInAgain') }}
       </Button>
     </div>
 
@@ -157,10 +194,26 @@
     >
       <template #title>{{ $t('settings.ai.connections.removeDialog.title') }}</template>
       <template #description>
-        {{ $t('settings.ai.connections.removeDialog.description', { name: connection.name }) }}
+        {{
+          isSubscription
+            ? $t('settings.ai.connections.removeDialog.descriptionSubscription', { name: connection.name })
+            : $t('settings.ai.connections.removeDialog.description', { name: connection.name })
+        }}
         <template v-if="pinnedFeatureNames.length">
           {{ $t('settings.ai.connections.removeDialog.pinnedFeatures', { features: pinnedFeatureNames.join(', ') }) }}
         </template>
+        <i18n-t v-if="isClaudeCode" keypath="settings.ai.connections.removeDialog.claudeRevokeHint" tag="span">
+          <template #link>
+            <a
+              :href="CLAUDE_ACCOUNT_SETTINGS_URL"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-primary-text hover:underline"
+            >
+              {{ $t('settings.ai.connections.removeDialog.claudeRevokeLink') }}
+            </a>
+          </template>
+        </i18n-t>
       </template>
     </ResponsiveAlertDialog>
   </div>
@@ -176,11 +229,13 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { useAiConnections } from '@/composable/data-queries/use-ai-connections';
 import { extractApiErrorMessage } from '@/js/errors';
 import { cn } from '@/lib/utils';
-import { AIConnectionInfo } from '@bt/shared/types';
+import { useDateLocale } from '@/composable/use-date-locale';
+import { AIConnectionInfo, AI_PROVIDER } from '@bt/shared/types';
 import {
   CopyIcon,
   KeyIcon,
   Loader2Icon,
+  LogInIcon,
   MoreVerticalIcon,
   PencilIcon,
   PlugZapIcon,
@@ -191,8 +246,12 @@ import {
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { findPresetForConnection } from '../presets';
+import { getCredentialExpiry } from '../credential-expiry';
+import { findPresetForConnection, isSubscriptionPreset } from '../presets';
 import CredentialStatus from './shared/credential-status.vue';
+
+/** Where a Claude Code sign-in token can be revoked; the CLI has no revoke command. */
+const CLAUDE_ACCOUNT_SETTINGS_URL = 'https://claude.ai/settings';
 
 const props = defineProps<{
   connection: AIConnectionInfo;
@@ -207,6 +266,7 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+const { format } = useDateLocale();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 
 const {
@@ -224,6 +284,19 @@ const isRemoveDialogOpen = ref(false);
 
 const isInvalid = computed(() => props.connection.status === 'invalid');
 const preset = computed(() => findPresetForConnection({ connection: props.connection }));
+const isSubscription = computed(() => isSubscriptionPreset({ preset: preset.value }));
+const isClaudeCode = computed(() => props.connection.provider === AI_PROVIDER.claudeCode);
+const expiry = computed(() =>
+  isSubscription.value ? getCredentialExpiry({ expiresAt: props.connection.credentialExpiresAt }) : null,
+);
+const EXPIRY_TEXT_KEYS = {
+  valid: 'settings.ai.connections.credential.validUntil',
+  'expiring-soon': 'settings.ai.connections.credential.expiresSoon',
+  expired: 'settings.ai.connections.credential.expired',
+} as const;
+const expiryText = computed(() =>
+  expiry.value ? t(EXPIRY_TEXT_KEYS[expiry.value.kind], { date: format(expiry.value.expiresAt, 'PP') }) : '',
+);
 const needsKey = computed(() => preset.value.keyRequired && !props.connection.hasApiKey);
 const isBusy = computed(
   () => isRemovingConnection.value || isTestingConnection.value || isSettingDefaultConnection.value,
