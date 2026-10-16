@@ -172,11 +172,11 @@ export default class Transactions extends Model {
   @Column(IdColumn())
   declare id: RecordId;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare refAmount: Money;
 
   @Length({ max: 2000 })
@@ -299,18 +299,18 @@ export default class Transactions extends Model {
   })
   externalData!: TransactionsAttributes['externalData'];
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare commissionRate: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare refCommissionRate: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare cashbackAmount: Money;
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)

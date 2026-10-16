@@ -68,22 +68,22 @@ export default class Accounts extends Model {
   @Column({ allowNull: false, type: DataType.STRING })
   name!: string;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare refInitialBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare refCurrentBalance: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare refCreditLimit: Money;
 
   @Column({

@@ -22,7 +22,7 @@ export default class ImportBatchAccountEffects extends Model {
   declare accountId: RecordId;
 
   /** Signed, in the account's own currency: how far the import shifted the account's opening balance. */
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare absorbedAmount: Money;
 
   @Column({
