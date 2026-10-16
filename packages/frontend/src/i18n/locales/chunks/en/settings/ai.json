@@ -260,7 +260,18 @@
           "custom": {
             "label": "Custom (OpenAI-compatible)",
             "namePlaceholder": "e.g. My server"
-          }
+          },
+          "claudeCode": {
+            "label": "Claude Code (subscription)",
+            "namePlaceholder": "e.g. My Claude plan",
+            "signInLabel": "Sign in with Claude"
+          },
+          "codex": {
+            "label": "Codex (ChatGPT subscription)",
+            "namePlaceholder": "e.g. My ChatGPT plan",
+            "signInLabel": "Sign in with ChatGPT"
+          },
+          "cliNotInstalled": "Not installed in this backend image"
         }
       },
       "customInstructions": {

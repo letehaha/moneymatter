@@ -1,6 +1,15 @@
-import { AIConnectionInfo, AI_PROVIDER } from '@bt/shared/types';
+import { AIConnectionInfo, AI_PROVIDER, type CliAiAvailability, asAiCliProvider } from '@bt/shared/types';
 
-export type AiConnectionPresetId = 'openai' | 'anthropic' | 'google' | 'openrouter' | 'ollama' | 'lmStudio' | 'custom';
+export type AiConnectionPresetId =
+  | 'openai'
+  | 'anthropic'
+  | 'google'
+  | 'openrouter'
+  | 'ollama'
+  | 'lmStudio'
+  | 'claudeCode'
+  | 'codex'
+  | 'custom';
 
 export interface AiConnectionPreset {
   id: AiConnectionPresetId;
@@ -13,6 +22,17 @@ export interface AiConnectionPreset {
   keyRequired: boolean;
   /** Runs on the user's machine, which only a self-hosted backend can reach. */
   isLocal?: boolean;
+  /** `subscription` signs in through the vendor's login page instead of taking an API key. Absent means API key. */
+  authKind?: 'subscription';
+  /** Label of the button that starts a subscription sign-in. */
+  signInLabelKey?: string;
+}
+
+/** A preset as the provider picker offers it. */
+export interface AiConnectionPresetOption extends AiConnectionPreset {
+  disabled: boolean;
+  /** Why a disabled preset can't be picked. */
+  disabledReasonKey?: string;
 }
 
 export const AI_CONNECTION_PRESETS: AiConnectionPreset[] = [
@@ -68,6 +88,24 @@ export const AI_CONNECTION_PRESETS: AiConnectionPreset[] = [
     isLocal: true,
   },
   {
+    id: 'claudeCode',
+    provider: AI_PROVIDER.claudeCode,
+    labelKey: 'settings.ai.connections.presets.claudeCode.label',
+    namePlaceholderKey: 'settings.ai.connections.presets.claudeCode.namePlaceholder',
+    keyRequired: false,
+    authKind: 'subscription',
+    signInLabelKey: 'settings.ai.connections.presets.claudeCode.signInLabel',
+  },
+  {
+    id: 'codex',
+    provider: AI_PROVIDER.codex,
+    labelKey: 'settings.ai.connections.presets.codex.label',
+    namePlaceholderKey: 'settings.ai.connections.presets.codex.namePlaceholder',
+    keyRequired: false,
+    authKind: 'subscription',
+    signInLabelKey: 'settings.ai.connections.presets.codex.signInLabel',
+  },
+  {
     id: 'custom',
     provider: AI_PROVIDER.custom,
     labelKey: 'settings.ai.connections.presets.custom.label',
@@ -101,3 +139,35 @@ export const findPresetForConnection = ({
   }
   return (connection.baseUrl && matchPresetByBaseUrl({ baseUrl: connection.baseUrl })) || CUSTOM_PRESET;
 };
+
+export const isSubscriptionPreset = ({ preset }: { preset: AiConnectionPreset }): boolean =>
+  preset.authKind === 'subscription';
+
+const CLI_NOT_INSTALLED_REASON_KEY = 'settings.ai.connections.presets.cliNotInstalled';
+
+/**
+ * The presets the provider picker lists. Subscription presets appear only once the backend reports the
+ * feature available (self-hosted instance, signed in as an admin); an unanswered or unavailable
+ * availability hides them, whatever the reason. When available, one whose CLI is missing from the
+ * backend image stays listed but disabled.
+ */
+export const getVisiblePresets = ({
+  availability,
+}: {
+  availability: CliAiAvailability | null | undefined;
+}): AiConnectionPresetOption[] =>
+  AI_CONNECTION_PRESETS.flatMap((preset): AiConnectionPresetOption[] => {
+    if (!isSubscriptionPreset({ preset })) return [{ ...preset, disabled: false }];
+    if (!availability?.available) return [];
+
+    const cliProvider = asAiCliProvider({ provider: preset.provider });
+    const isInstalled = availability.providers.some((entry) => entry.provider === cliProvider && entry.installed);
+
+    return [
+      {
+        ...preset,
+        disabled: !isInstalled,
+        disabledReasonKey: isInstalled ? undefined : CLI_NOT_INSTALLED_REASON_KEY,
+      },
+    ];
+  });

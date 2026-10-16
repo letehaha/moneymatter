@@ -260,7 +260,18 @@
           "custom": {
             "label": "Власний (сумісний з OpenAI)",
             "namePlaceholder": "напр., Мій сервер"
-          }
+          },
+          "claudeCode": {
+            "label": "Claude Code (підписка)",
+            "namePlaceholder": "напр., Моя підписка Claude",
+            "signInLabel": "Увійти через Claude"
+          },
+          "codex": {
+            "label": "Codex (підписка ChatGPT)",
+            "namePlaceholder": "напр., Моя підписка ChatGPT",
+            "signInLabel": "Увійти через ChatGPT"
+          },
+          "cliNotInstalled": "Не встановлено в цьому образі бекенду"
         }
       },
       "customInstructions": {

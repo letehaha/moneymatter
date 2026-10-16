@@ -1,9 +1,12 @@
 import { api } from '@/api/_api';
 import {
+  AICliProvider,
   AIConnectionInfo,
   AIFeatureStatus,
   type AIFeaturesStatusResponse,
   AI_FEATURE,
+  CliAiAvailability,
+  CliAuthSessionInfo,
   CreateAIConnectionBody,
   ListAIConnectionModelsBody,
   ListAIConnectionModelsResponse,
@@ -84,4 +87,30 @@ export const listAiConnectionModels = async (
   body: ListAIConnectionModelsBody,
 ): Promise<ListAIConnectionModelsResponse> => {
   return api.post('/user/settings/ai/connections/models', body);
+};
+
+// ===== Subscription (CLI) providers =====
+
+/** Answers every signed-in user; `available: false` carries the reason instead of an error. */
+export const getCliAiAvailability = async (): Promise<CliAiAvailability> => {
+  return api.get('/user/settings/ai/cli/availability');
+};
+
+/** Resolves once the sign-in page URL (and, for Codex, the device code) is known. */
+export const startCliAuthSession = async ({ provider }: { provider: AICliProvider }): Promise<CliAuthSessionInfo> => {
+  return api.post('/user/settings/ai/cli/auth-sessions', { provider });
+};
+
+/** Polled while a sign-in is running, so a failed poll must not toast. */
+export const getCliAuthSession = async ({ id }: { id: string }): Promise<CliAuthSessionInfo> => {
+  return api.get(`/user/settings/ai/cli/auth-sessions/${id}`, {}, { silent: true });
+};
+
+/** Claude only: the code the sign-in page showed. */
+export const submitCliAuthCode = async ({ id, code }: { id: string; code: string }): Promise<CliAuthSessionInfo> => {
+  return api.post(`/user/settings/ai/cli/auth-sessions/${id}/code`, { code });
+};
+
+export const cancelCliAuthSession = async ({ id }: { id: string }): Promise<void> => {
+  await api.delete(`/user/settings/ai/cli/auth-sessions/${id}`, undefined, { silent: true });
 };
