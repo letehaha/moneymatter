@@ -391,7 +391,7 @@ export default class Transactions extends Model {
       case TRANSACTION_TRANSFER_NATURE.transfer_to_venture: {
         // Single-leg transfer: no paired transferId, but ref fields must still be set so
         // downstream aggregations can find the row. `refAmount == null` matches both null
-        // and undefined returned by the Money getter when the underlying cents are null.
+        // and undefined returned by the Money getter when the underlying value is null.
         if (!refCurrencyCode || refAmount == null) {
           throw new ValidationError({
             message: t({ key: 'transactions.refFieldsRequiredForTransferToPortfolio' }),
@@ -572,19 +572,19 @@ export default class Transactions extends Model {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const prevData: Transactions = (instance as any)._previousDataValues;
 
-    // Must run while the money fields are still raw cents — the conversion below
+    // Must run while the money fields are still raw decimal strings — the conversion below
     // replaces them with Money instances, which no longer compare by value.
     if (!hasBalanceRelevantChange({ next: newData, prev: prevData })) return;
 
-    // dataValues/previousDataValues are raw DB values (cents integers), not Money.
+    // dataValues/previousDataValues are raw DB values (decimal strings), not Money.
     // Convert in-place so downstream code that expects Money objects works correctly.
     const MONEY_FIELDS = ['amount', 'refAmount', 'commissionRate', 'refCommissionRate', 'cashbackAmount'] as const;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const newRaw = newData as any,
       prevRaw = prevData as any;
     for (const field of MONEY_FIELDS) {
-      newRaw[field] = Money.fromCents(newRaw[field]);
-      prevRaw[field] = Money.fromCents(prevRaw[field]);
+      newRaw[field] = Money.fromDecimal(newRaw[field]);
+      prevRaw[field] = Money.fromDecimal(prevRaw[field]);
     }
 
     const wasPlanned = Boolean(prevData.isPlanned);
@@ -688,7 +688,7 @@ export default class Transactions extends Model {
     // When a balance-adjustment ("transfer_out_wallet") tx on a vehicle account
     // is deleted, the user's manual override is being undone. Re-derive the
     // vehicle's depreciation anchor by walking the REMAINING overrides forward
-    // from purchase. The cents-arithmetic Account.currentBalance decremented by
+    // from purchase. The flat Account.currentBalance decremented by
     // BeforeDestroy is not the right anchor value — once the override chain has
     // more than one entry, the prior override's post-tx value depends on the
     // curve between it and the deleted one, not on a flat subtraction.
@@ -792,6 +792,11 @@ export function buildOrderClause({
     ['id', SORT_DIRECTIONS.desc],
   ];
 }
+
+const MONEY_FILTER_SCALE = 18;
+
+/** Exact decimal bound for a money filter: the column is DECIMAL, so the bound keeps the user's own precision. */
+const toFilterBound = (money: Money): string => money.toDecimalString(MONEY_FILTER_SCALE);
 
 function buildRefundCondition(filter: FILTER_OPERATION | undefined): Record<string, unknown> | null {
   if (filter === FILTER_OPERATION.exclude) return { refundLinked: false };
@@ -1078,12 +1083,12 @@ export const findWithFilters = async ({
     whereClause.amount = {};
     if (amountGte && amountLte) {
       whereClause.amount = {
-        [Op.between]: [amountGte.toCents(), amountLte.toCents()],
+        [Op.between]: [toFilterBound(amountGte), toFilterBound(amountLte)],
       };
     } else if (amountGte) {
-      whereClause.amount[Op.gte] = amountGte.toCents();
+      whereClause.amount[Op.gte] = toFilterBound(amountGte);
     } else if (amountLte) {
-      whereClause.amount[Op.lte] = amountLte.toCents();
+      whereClause.amount[Op.lte] = toFilterBound(amountLte);
     }
   }
 
@@ -1091,12 +1096,12 @@ export const findWithFilters = async ({
     whereClause.refAmount = {};
     if (refAmountGte && refAmountLte) {
       whereClause.refAmount = {
-        [Op.between]: [refAmountGte.toCents(), refAmountLte.toCents()],
+        [Op.between]: [toFilterBound(refAmountGte), toFilterBound(refAmountLte)],
       };
     } else if (refAmountGte) {
-      whereClause.refAmount[Op.gte] = refAmountGte.toCents();
+      whereClause.refAmount[Op.gte] = toFilterBound(refAmountGte);
     } else if (refAmountLte) {
-      whereClause.refAmount[Op.lte] = refAmountLte.toCents();
+      whereClause.refAmount[Op.lte] = toFilterBound(refAmountLte);
     }
   }
 

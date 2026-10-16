@@ -235,7 +235,23 @@ export class Money {
 }
 
 /**
- * Convert a Money or raw cents integer (from `raw: true` queries) to an API-friendly decimal number.
+ * Convert a Money, or the exact decimal string a `raw: true` query returns for a DECIMAL money
+ * column, to an API-friendly decimal number.
+ *
+ * Use in serializers for model money fields, which are `Money` on hydrated rows and strings on raw rows.
+ */
+export function moneyToApiDecimal(val: Money | string): Decimal {
+  return Money.fromDecimal(val).toNumber();
+}
+
+/** Nullable-field variant of `moneyToApiDecimal`: null/undefined pass through as null. */
+export function moneyToApiDecimalOrNull(val: Money | string | null | undefined): Decimal | null {
+  return val == null ? null : moneyToApiDecimal(val);
+}
+
+/**
+ * Convert a Money or an integer cents number (the cents-domain sums that stats services compute in memory)
+ * to an API-friendly decimal number.
  * Handles both Money instances (via getter) and raw DB integers (from raw queries).
  *
  * Use in serializers when preparing money fields for API responses.

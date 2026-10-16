@@ -99,6 +99,24 @@ function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Raw SQL values
+// ---------------------------------------------------------------------------
+
+/** Scale of the DECIMAL(36,18) money columns. */
+const MONEY_COLUMN_SCALE = 18;
+
+/** Fixed decimals of every money column until the write paths round per currency (see `roundOnWrite`). */
+const TRANSITIONAL_MONEY_DECIMALS = 2;
+
+/**
+ * Decimal string for a money column in raw SQL (`literal`, `query` replacements, bulk inserts).
+ * Raw SQL bypasses the `@MoneyField` setters, so this applies the same rounding they do.
+ */
+export function toMoneyColumnValue({ money }: { money: Money }): string {
+  return money.round(TRANSITIONAL_MONEY_DECIMALS).toDecimalString(MONEY_COLUMN_SCALE);
+}
+
+// ---------------------------------------------------------------------------
 // Value conversion helpers used by the @MoneyField accessors
 // ---------------------------------------------------------------------------
 

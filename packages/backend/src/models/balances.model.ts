@@ -7,8 +7,7 @@ import {
 } from '@bt/shared/types';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
-import { MoneyField } from '@common/types/money-column';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
@@ -251,7 +250,8 @@ export default class Balances extends Model {
             baseCode: data.currencyCode,
             quoteCode: data.refCurrencyCode,
           });
-          const refBalance = Money.fromCents(roundHalfToEven(balance * exchangeRateData.rate));
+          // Monobank reports the balance in minor units (cents) of the account currency.
+          const refBalance = Money.fromCents(balance).multiply(exchangeRateData.rate).roundHalfEven(2);
 
           await this.updateAccountBalance({ accountId, date, refBalance });
         }
@@ -442,7 +442,7 @@ export default class Balances extends Model {
 
     // Update the amount of all balances for the account that come after the date
     await this.update(
-      { amount: Balances.sequelize!.literal(`amount + ${amount.toCents()}`) },
+      { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: amount })})`) },
       {
         where: {
           accountId,
@@ -481,7 +481,7 @@ export default class Balances extends Model {
 
       // Update history for all the records related to that account
       await this.update(
-        { amount: Balances.sequelize!.literal(`amount + ${diff.toCents()}`) },
+        { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: diff })})`) },
         {
           where: { accountId },
         },
@@ -516,7 +516,7 @@ export default class Balances extends Model {
        WHERE "accountId" = :accountId AND "date" = :date`,
       {
         replacements: {
-          delta: delta.toCents(),
+          delta: toMoneyColumnValue({ money: delta }),
           accountId,
           date,
         },
@@ -566,7 +566,7 @@ export default class Balances extends Model {
           id: uuidv7(),
           accountId,
           date: normalizedDate,
-          amount: refBalance.toCents(),
+          amount: toMoneyColumnValue({ money: refBalance }),
         },
       },
     );

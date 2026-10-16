@@ -9,6 +9,7 @@ import {
   RESOURCE_TYPES,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import { CacheClient } from '@js/utils/cache';
@@ -31,6 +32,7 @@ import { getBaseCurrency, updateCurrencies } from '@models/users-currencies.mode
 import { isRevaluedAccount, revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
+import { buildRefAmountCachePattern } from '@services/ref-amount-cache';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
 
@@ -134,7 +136,7 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
         acceptedAt: { [Op.not]: null },
       },
     }),
-    // Budgeted amounts are cents in the plan's stamped currency, so a silent
+    // Budgeted amounts are plain numbers in the plan's stamped currency, so a silent
     // switch would turn 300 UAH into 300 EUR. A soft-deleted plan (excluded by
     // the paranoid scope) doesn't lock: restore compares `currencyCode` instead.
     BudgetPlans.count({ where: { userId } }),
@@ -563,7 +565,7 @@ async function writeBalanceAmounts({
   rows,
   transaction,
 }: {
-  rows: { id: string; amountCents: number }[];
+  rows: { id: string; amount: Money }[];
   transaction: SequelizeTransaction;
 }): Promise<void> {
   for (let offset = 0; offset < rows.length; offset += ROWS_PER_UPDATE) {
@@ -571,8 +573,8 @@ async function writeBalanceAmounts({
     const replacements: Record<string, unknown> = {};
     const values = chunk.map((row, index) => {
       replacements[`id${index}`] = row.id;
-      replacements[`amount${index}`] = row.amountCents;
-      return `(:id${index}::uuid, :amount${index}::bigint)`;
+      replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
+      return `(:id${index}::uuid, :amount${index}::numeric)`;
     });
 
     await Transactions.sequelize!.query(
@@ -643,7 +645,7 @@ async function rebuildBalances(params: {
     transaction,
   });
 
-  const updates: { id: string; amountCents: number }[] = [];
+  const updates: { id: string; amount: Money }[] = [];
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -658,7 +660,7 @@ async function rebuildBalances(params: {
           })
         : calculateRefAmountFromParams({ amount: balance.amount, rate });
 
-    updates.push({ id: balance.id, amountCents: newAmount.toCents() });
+    updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
   }
 
@@ -921,10 +923,7 @@ async function clearUserCache(userId: number): Promise<void> {
   try {
     const cache = new CacheClient({ logPrefix: 'clearUserCache' });
 
-    // Delete all ref_amount cache keys for this user using pattern matching
-    // Pattern: ref_amount:${userId}:*
-    const pattern = `ref_amount:${userId}:*`;
-    await cache.delete(pattern, true); // isPattern=true triggers SCAN-based deletion
+    await cache.delete(buildRefAmountCachePattern({ userId }), true); // isPattern=true triggers key-pattern deletion
 
     logger.info(`Successfully cleared ref_amount cache for user ${userId}`);
   } catch (error) {

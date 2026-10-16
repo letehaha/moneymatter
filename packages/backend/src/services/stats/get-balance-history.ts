@@ -20,14 +20,23 @@ interface AccountCategoryFilter {
  * Balance row fetched without model hydration — a deliberate exception to the
  * "no raw on Money queries" rule: Balances has one row per account per day,
  * so per-row Sequelize instances + Money objects dominate dashboard-load memory.
- * `amount` is cents (BIGINT; the global INT8 parser in models/index.ts yields
- * JS numbers). Money is constructed only at the public `getBalanceHistory` boundary.
+ * `amount` is integer cents: the DECIMAL column arrives as a string and `toCentsRow`
+ * converts it right after the query. Money is constructed only at the public
+ * `getBalanceHistory` boundary.
  */
 interface BalanceHistoryRow {
   date: string | Date;
   amount: number;
   accountId: string;
 }
+
+/** Balance row as the database returns it: `amount` is the DECIMAL column's exact string. */
+type RawBalanceRow = Omit<BalanceHistoryRow, 'amount'> & { amount: string };
+
+const toCentsRow = <T extends { amount: string }>(row: T): Omit<T, 'amount'> & { amount: number } => ({
+  ...row,
+  amount: Money.fromDecimal(row.amount).toCents(),
+});
 
 /**
  * The account set a balance read runs over. Every caller states it and there is no default,
@@ -115,10 +124,10 @@ const getBalanceHistoryRows = async ({
       ],
       attributes: dataAttributes,
       raw: true,
-    }) as unknown as Promise<BalanceHistoryRow[]>,
+    }) as unknown as Promise<RawBalanceRow[]>,
   ]);
 
-  let data = balancesInRange;
+  let data = balancesInRange.map(toCentsRow);
   const allAccountIds = allUserAccounts.map((acc) => acc.id);
 
   const accountIdsWithRecordsInRange = new Set(balancesInRange.map((b) => b.accountId));
@@ -143,8 +152,8 @@ const getBalanceHistoryRows = async ({
              ORDER BY b."accountId", b."date" DESC
             `,
             { type: QueryTypes.SELECT, replacements: { accountIds: allAccountIds, from: formatDate(from) } },
-          ) as Promise<Pick<BalanceHistoryRow, 'accountId' | 'amount'>[]>)
-        : Promise.resolve<Pick<BalanceHistoryRow, 'accountId' | 'amount'>[]>([]),
+          ) as Promise<Pick<RawBalanceRow, 'accountId' | 'amount'>[]>)
+        : Promise.resolve<Pick<RawBalanceRow, 'accountId' | 'amount'>[]>([]),
       to && accountIdsWithNoRecords.length
         ? (Balances.default.findAll({
             where: {
@@ -153,12 +162,12 @@ const getBalanceHistoryRows = async ({
             },
             attributes: dataAttributes,
             raw: true,
-          }) as unknown as Promise<BalanceHistoryRow[]>)
-        : Promise.resolve<BalanceHistoryRow[]>([]),
+          }) as unknown as Promise<RawBalanceRow[]>)
+        : Promise.resolve<RawBalanceRow[]>([]),
     ]);
 
     const afterByAccount = new Map<string, BalanceHistoryRow[]>();
-    for (const b of balancesAfterTo) {
+    for (const b of balancesAfterTo.map(toCentsRow)) {
       const items = afterByAccount.get(b.accountId);
       if (items) {
         items.push(b);
@@ -172,7 +181,10 @@ const getBalanceHistoryRows = async ({
     }
 
     const overrideDate = new Date(from ?? to ?? new Date());
-    const latestBalances: BalanceHistoryRow[] = latestBalancesBeforeFrom.map((b) => ({ ...b, date: overrideDate }));
+    const latestBalances: BalanceHistoryRow[] = latestBalancesBeforeFrom.map((b) => ({
+      ...toCentsRow(b),
+      date: overrideDate,
+    }));
     const seededAccountIds = new Set(latestBalancesBeforeFrom.map((b) => b.accountId));
 
     // Accounts with no in-range and no pre-range row take their earliest post-range balance.

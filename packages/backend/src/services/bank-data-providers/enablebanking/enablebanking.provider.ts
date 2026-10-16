@@ -10,6 +10,7 @@ import {
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, NotFoundError, ValidationError } from '@js/errors';
@@ -1765,7 +1766,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       : (tx.metadata?.debtorAccount as string | undefined);
     const fingerprintBase = {
       accountId,
-      amount: Math.abs(tx.amount),
+      // `tx.amount` is in minor units (cents); the column holds decimals.
+      amount: toMoneyColumnValue({ money: Money.fromCents(Math.abs(tx.amount)) }),
       currencyCode: tx.currency,
       transactionType,
     };

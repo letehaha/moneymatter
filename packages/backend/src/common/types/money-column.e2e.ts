@@ -13,10 +13,11 @@ import Transactions from '@models/transactions.model';
 import * as helpers from '@tests/helpers';
 
 import { Money } from './money';
+import { toMoneyColumnValue } from './money-column';
 
 describe('MoneyField integration', () => {
-  describe('Transactions model (INTEGER cents storage)', () => {
-    it('exposes Money via getters, plain cents via raw: true, and decimals through toJSON and the API', async () => {
+  describe('Transactions model (DECIMAL storage)', () => {
+    it('exposes Money via getters, exact decimal strings via raw: true, and decimals through toJSON and the API', async () => {
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ initialBalance: 500 }),
         raw: true,
@@ -66,11 +67,11 @@ describe('MoneyField integration', () => {
       });
 
       expect(rawTx).not.toBeNull();
-      // raw: true bypasses getters, returns plain DB values (cents)
+      // raw: true bypasses getters, returns the DECIMAL column as an exact string
       expect(Money.isMoney(rawTx!.amount)).toBe(false);
-      expect(typeof rawTx!.amount).toBe('number');
-      expect(rawTx!.amount as unknown as number).toBe(2550); // 25.50 * 100 = 2550 cents
-      expect(rawTx!.commissionRate as unknown as number).toBe(0);
+      expect(typeof rawTx!.amount).toBe('string');
+      expect(Money.fromDecimal(rawTx!.amount as unknown as string).toNumber()).toBe(25.5);
+      expect(Money.fromDecimal(rawTx!.commissionRate as unknown as string).toNumber()).toBe(0);
 
       const response = await helpers.getTransactions({ raw: true });
 
@@ -107,9 +108,9 @@ describe('MoneyField integration', () => {
 
       // Re-read to verify stored correctly
       const raw = await Transactions.findByPk(tx.id, { raw: true });
-      expect(raw!.amount as unknown as number).toBe(4299); // stored as cents
-      expect(raw!.refAmount as unknown as number).toBe(4299);
-      expect(raw!.commissionRate as unknown as number).toBe(0);
+      expect(Money.fromDecimal(raw!.amount as unknown as string).toNumber()).toBe(42.99);
+      expect(Money.fromDecimal(raw!.refAmount as unknown as string).toNumber()).toBe(42.99);
+      expect(Money.fromDecimal(raw!.commissionRate as unknown as string).toNumber()).toBe(0);
 
       // Normal read returns Money
       const normal = await Transactions.findByPk(tx.id);
@@ -119,7 +120,7 @@ describe('MoneyField integration', () => {
     it('instance.save() persists Money via the setter for amount and refAmount', async () => {
       // Mirrors change-base-currency: set Money on the instance, then save.
       // Model.update() would instead trigger the getter during SQL generation and hand
-      // Sequelize a Money object it cannot serialize into an INTEGER column.
+      // Sequelize a Money object it cannot serialize into a DECIMAL column.
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ initialBalance: 500 }),
         raw: true,
@@ -145,13 +146,13 @@ describe('MoneyField integration', () => {
 
       // Verify via raw query
       const raw = await Transactions.findByPk(baseTx.id, { raw: true });
-      expect(raw!.amount as unknown as number).toBe(2050);
-      expect(raw!.refAmount as unknown as number).toBe(5517); // 55.17 * 100 = 5517 cents
+      expect(Money.fromDecimal(raw!.amount as unknown as string).toNumber()).toBe(20.5);
+      expect(Money.fromDecimal(raw!.refAmount as unknown as string).toNumber()).toBe(55.17);
     });
   });
 
-  describe('Balances model (INTEGER cents storage)', () => {
-    it('returns Money via getters, applies and accumulates literal updates, and sums raw cents', async () => {
+  describe('Balances model (DECIMAL storage)', () => {
+    it('returns Money via getters, applies and accumulates literal updates, and sums decimals', async () => {
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ initialBalance: 100 }),
         raw: true,
@@ -168,43 +169,40 @@ describe('MoneyField integration', () => {
       expect(initial!.amount.toNumber()).toBe(100);
 
       // Sequelize internally builds a temp instance and triggers setter then getter on the Literal.
-      await expect(applyLiteral('amount + 5000')).resolves.not.toThrow();
-      // 10000 cents + 5000 cents = 15000 cents = 150 decimal
+      await expect(applyLiteral('amount + 50')).resolves.not.toThrow();
       expect((await readBalance())!.amount.toNumber()).toBe(150);
 
-      await applyLiteral('amount - 5000');
-      // 15000 cents - 5000 cents = 10000 cents = 100 decimal
+      await applyLiteral('amount - 50');
       expect((await readBalance())!.amount.toNumber()).toBe(100);
 
       // This is the exact pattern used in Balances.updateBalanceIncremental()
       const incrementAmount = Money.fromDecimal(25.5);
-      await applyLiteral(`amount + ${incrementAmount.toCents()}`);
+      await applyLiteral(`amount + (${toMoneyColumnValue({ money: incrementAmount })})`);
       expect((await readBalance())!.amount.toNumber()).toBe(125.5);
 
-      // Pattern: amount.negate().toCents() for reversing a transaction
+      // Pattern: a negated amount reverses a transaction
       const amount = Money.fromDecimal(50);
-      await applyLiteral(`amount + ${amount.negate().toCents()}`);
+      await applyLiteral(`amount + (${toMoneyColumnValue({ money: amount.negate() })})`);
       expect((await readBalance())!.amount.toNumber()).toBe(75.5);
 
       // Simulate multiple transactions affecting the same balance record
-      await applyLiteral('amount + 1000');
-      await applyLiteral('amount + 2000');
-      await applyLiteral('amount - 500');
-      // 7550 + 1000 + 2000 - 500 = 10050 cents = 100.5 decimal
+      await applyLiteral('amount + 10');
+      await applyLiteral('amount + 20');
+      await applyLiteral('amount - 5');
       expect((await readBalance())!.amount.toNumber()).toBe(100.5);
 
       const result = await Balances.sum('amount', {
         where: { accountId: account.id },
       });
 
-      // Sequelize aggregates return raw DB values
+      // Sequelize aggregates over a DECIMAL column come back as plain numbers
       expect(typeof result).toBe('number');
-      expect(result).toBe(10050);
+      expect(result).toBe(100.5);
     });
   });
 
-  describe('Accounts model (INTEGER cents storage)', () => {
-    it('findOne returns Money for all money fields, raw: true returns plain cents', async () => {
+  describe('Accounts model (DECIMAL storage)', () => {
+    it('findOne returns Money for all money fields, raw: true returns exact decimal strings', async () => {
       const created = await helpers.createAccount({
         payload: helpers.buildAccountPayload({
           initialBalance: 250.75,
@@ -228,9 +226,9 @@ describe('MoneyField integration', () => {
 
       const rawAccount = await Accounts.findByPk(created.id, { raw: true });
 
-      expect(typeof (rawAccount!.initialBalance as unknown)).toBe('number');
-      expect(rawAccount!.initialBalance as unknown as number).toBe(25075); // 250.75 * 100
-      expect(rawAccount!.creditLimit as unknown as number).toBe(100000); // 1000 * 100
+      expect(typeof (rawAccount!.initialBalance as unknown)).toBe('string');
+      expect(Money.fromDecimal(rawAccount!.initialBalance as unknown as string).toNumber()).toBe(250.75);
+      expect(Money.fromDecimal(rawAccount!.creditLimit as unknown as string).toNumber()).toBe(1000);
     });
   });
 

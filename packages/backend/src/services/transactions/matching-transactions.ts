@@ -6,7 +6,7 @@ import {
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { Money, centsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 
@@ -32,21 +32,24 @@ interface MatchingRow {
   transactionType: TRANSACTION_TYPES;
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
-  /** Base-currency cents: the read is raw, so the `Money` getter never runs. */
+  /** Base-currency cents, converted from the exact decimal string the raw read returns. */
   refAmount: number;
 }
+
+type RawMatchingRow = Omit<MatchingRow, 'refAmount'> & { refAmount: string };
 
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
   // `getTransactions` reads raw exactly when no `include*` flag is passed, which is
-  // what makes `refAmount` a number here.
-  const rows = (await getTransactions({
+  // what makes `refAmount` the raw DECIMAL string here.
+  const rawRows = (await getTransactions({
     ...filters,
     limit: Infinity,
     attributes: ['id', 'userId', 'accountId', 'transactionType', 'transferNature', 'transferId', 'refAmount'],
-  })) as unknown as MatchingRow[];
+  })) as unknown as RawMatchingRow[];
+  const rows = rawRows.map((row): MatchingRow => ({ ...row, refAmount: Money.fromDecimal(row.refAmount).toCents() }));
 
   // The tag filter joins TransactionTags, which repeats a row per matching tag.
   return [...new Map(rows.map((row) => [row.id, row])).values()];

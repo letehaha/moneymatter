@@ -1,5 +1,6 @@
 import { ACCOUNT_TYPES, isDedicatedFlowAccountCategory, TRANSACTION_TYPES } from '@bt/shared/types';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/connection';
@@ -35,7 +36,7 @@ export const isRevaluedAccount = ({
   !isDedicatedFlowAccountCategory(account.accountCategory) &&
   account.currencyCode !== baseCurrencyCode;
 
-const signedCentsSql = `SUM(CASE WHEN "transactionType" = '${TRANSACTION_TYPES.income}' THEN "amount" ELSE -"amount" END)`;
+const signedAmountSql = `SUM(CASE WHEN "transactionType" = '${TRANSACTION_TYPES.income}' THEN "amount" ELSE -"amount" END)`;
 
 const loadTransactionBounds = async ({
   accountId,
@@ -70,17 +71,17 @@ const loadDailyNativeDeltas = async ({
   accountId: string;
   from: Date;
   toExclusive: Date;
-}): Promise<Map<string, number>> => {
+}): Promise<Map<string, Money>> => {
   const rows = (await connection.sequelize.query(
     `SELECT to_char(date_trunc('day', "time" AT TIME ZONE 'UTC'), 'YYYY-MM-DD') AS "day",
-            ${signedCentsSql}::bigint AS "cents"
+            ${signedAmountSql} AS "signedSum"
        FROM real_transactions
       WHERE "accountId" = :accountId AND "time" >= :from AND "time" < :toExclusive
       GROUP BY 1`,
     { type: QueryTypes.SELECT, replacements: { accountId, from, toExclusive } },
-  )) as { day: string; cents: string | number }[];
+  )) as { day: string; signedSum: string }[];
 
-  return new Map(rows.map((row) => [row.day, Number(row.cents)]));
+  return new Map(rows.map((row) => [row.day, Money.fromDecimal(row.signedSum)]));
 };
 
 /** Delete before insert: a day the rebuild no longer emits must not survive and be
@@ -93,7 +94,7 @@ const writeBalanceRows = async ({
 }: {
   accountId: string;
   fromDay: string;
-  rows: { date: string; amount: number }[];
+  rows: { date: string; amount: Money }[];
 }): Promise<void> => {
   if (!rows.length) return;
 
@@ -105,7 +106,7 @@ const writeBalanceRows = async ({
   const values = rows.map((row, index) => {
     replacements[`id${index}`] = uuidv7();
     replacements[`date${index}`] = row.date;
-    replacements[`amount${index}`] = row.amount;
+    replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
     return `(:id${index}, :accountId, :date${index}, :amount${index}, NOW(), NOW())`;
   });
 
@@ -200,13 +201,13 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
   const startKey = toDayKey(gridStart);
   const todayKey = toDayKey(today);
 
-  let nativeCents: number = account.initialBalance.toCents();
-  let lastEmitted: number | null = null;
-  const rows: { date: string; amount: number }[] = [];
+  let nativeBalance = account.initialBalance;
+  let lastEmitted = null as Money | null;
+  const rows: { date: string; amount: Money }[] = [];
 
   for (let time = +gridStart; time <= +gridEnd; time += MS_PER_DAY) {
     const dayKey = toDayKey(new Date(time));
-    nativeCents += dailyDeltas.get(dayKey) ?? 0;
+    nativeBalance = nativeBalance.add(dailyDeltas.get(dayKey) ?? Money.zero());
 
     const rate = flatCustomRate ?? resolveRate?.(dayKey) ?? null;
     if (rate == null) {
@@ -218,13 +219,13 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
       return 'skipped';
     }
 
-    const cents = roundHalfToEven(nativeCents * rate);
+    const amount = nativeBalance.multiply(rate).roundHalfEven(2);
     // The chart forward-fills, so a day repeating the previous value carries no
     // information. Today always gets a row so the series tracks the daily rate.
-    if (cents === lastEmitted && dayKey !== startKey && dayKey !== todayKey) continue;
+    if (lastEmitted?.equals(amount) && dayKey !== startKey && dayKey !== todayKey) continue;
 
-    lastEmitted = cents;
-    rows.push({ date: dayKey, amount: cents });
+    lastEmitted = amount;
+    rows.push({ date: dayKey, amount });
   }
 
   await writeBalanceRows({ accountId, fromDay: startKey, rows });

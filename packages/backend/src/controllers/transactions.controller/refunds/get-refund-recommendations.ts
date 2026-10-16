@@ -10,7 +10,7 @@ import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 // ±50 in base currency for refund recommendations
-const RECOMMENDATION_REF_AMOUNT_RANGE = 5000;
+const RECOMMENDATION_REF_AMOUNT_RANGE = Money.fromDecimal(50);
 const RECOMMENDATION_MONTHS_RANGE = 6;
 const RECOMMENDATION_LIMIT = 5;
 
@@ -89,9 +89,9 @@ export default createController(schema, async ({ user, query }) => {
   }
 
   // Calculate refAmount range
-  const centerCents = refAmountCenter.toCents();
-  const refAmountGte = Money.fromCents(Math.max(0, centerCents - RECOMMENDATION_REF_AMOUNT_RANGE));
-  const refAmountLte = Money.fromCents(centerCents + RECOMMENDATION_REF_AMOUNT_RANGE);
+  const lowerBound = refAmountCenter.subtract(RECOMMENDATION_REF_AMOUNT_RANGE);
+  const refAmountGte = lowerBound.isNegative() ? Money.zero() : lowerBound;
+  const refAmountLte = refAmountCenter.add(RECOMMENDATION_REF_AMOUNT_RANGE);
 
   // Calculate date range (last 6 months)
   const endDate = new Date();
