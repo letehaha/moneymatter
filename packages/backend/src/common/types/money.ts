@@ -128,6 +128,14 @@ export class Money {
     return new Money(this.value.round(dp, Big.roundHalfUp));
   }
 
+  /**
+   * Round to `dp` decimal places using ROUND_HALF_EVEN (banker's rounding).
+   * Used for converted amounts, where ties must not accumulate a bias.
+   */
+  roundHalfEven(dp = 2): Money {
+    return new Money(this.value.round(dp, Big.roundHalfEven));
+  }
+
   // ==========================================================================
   // Comparison
   // ==========================================================================
