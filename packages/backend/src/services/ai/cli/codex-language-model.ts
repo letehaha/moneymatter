@@ -97,7 +97,7 @@ interface CodexEvent {
 /** TOML basic string (the `-c` value is parsed as TOML), which JSON escaping satisfies apart from DEL. */
 const toTomlString = ({ value }: { value: string }) => JSON.stringify(value).replace(/\u007f/g, '\\u007f');
 
-export function buildCodexArgs({
+function buildCodexArgs({
   model,
   workdir,
   lastMessagePath,

@@ -1,4 +1,5 @@
 import { AICliProvider, AI_PROVIDER, CATEGORIZATION_SOURCE, type RecordId } from '@bt/shared/types';
+import { ASSET_CLASS } from '@bt/shared/types/investments';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { resetCliAuthSessions } from '@services/ai/cli/login/cli-auth-sessions';
 import { RateLimitService } from '@services/common/rate-limit.service';
@@ -230,6 +231,39 @@ describe('AI features on subscription CLI connections', () => {
       expect(result.response!.invoice.vendorName).toBe('Image Vendor');
       expect(fakes.readRuns().findLast((entry) => entry.bin === 'codex' && entry.argv[0] === 'exec')?.argv).toContain(
         '-i',
+      );
+    });
+
+    it('extracts investment transactions from a text export on a Codex connection', async () => {
+      await createSignedInConnection({ provider: CODEX });
+
+      const portfolio = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'Stocks' }),
+        raw: true,
+      });
+      const [aapl] = await helpers.seedSecurities([{ symbol: 'AAPL', name: 'Apple Inc.' }]);
+
+      await helpers.createHolding({ payload: { portfolioId: portfolio.id, securityId: aapl!.id } });
+
+      // symbol,name,date,side,quantity,price,fees,currency,assetClassHint,confidence
+      useFakeCliResponses({ responses: [{ text: 'AAPL,Apple Inc.,2024-05-01,B,10,180.25,0,USD,stocks,95' }] });
+
+      const result = await helpers.investmentImportExtract({
+        payload: {
+          fileBase64: Buffer.from('AAPL 10 @ 180.25 USD on 2024-05-01', 'utf-8').toString('base64'),
+          defaultPortfolioId: portfolio.id,
+        },
+        raw: true,
+      });
+
+      expect(result.holdings).toHaveLength(1);
+      expect(result.holdings[0]).toMatchObject({
+        parsedSymbol: 'AAPL',
+        resolvedSecurity: { securityId: aapl!.id, assetClass: ASSET_CLASS.stocks },
+      });
+      expect(result.holdings[0]!.transactions).toHaveLength(1);
+      expect(fakes.readRuns().findLast((entry) => entry.bin === 'codex' && entry.argv[0] === 'exec')?.stdin).toContain(
+        'AAPL 10 @ 180.25 USD on 2024-05-01',
       );
     });
   });

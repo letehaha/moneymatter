@@ -7,7 +7,7 @@ import { mapSpawnError } from './cli-errors';
 const STDERR_TAIL_BYTES = 8 * 1024;
 const KILL_GRACE_MS = 5 * 1000;
 
-export interface CliProcessResult {
+interface CliProcessResult {
   exitCode: number | null;
   termSignal: NodeJS.Signals | null;
   /** Last 8 KB of stderr, for failure messages. */
@@ -15,7 +15,7 @@ export interface CliProcessResult {
 }
 
 /** The signal's reason when it is an `AbortError`/`TimeoutError`, otherwise a plain `AbortError`. */
-export function getAbortReason({ signal }: { signal: AbortSignal }): Error {
+function getAbortReason({ signal }: { signal: AbortSignal }): Error {
   const { reason } = signal;
 
   // Duck-typed: a caller's reason may be a DOMException, which is not `instanceof Error` across realms (jest sandboxes).

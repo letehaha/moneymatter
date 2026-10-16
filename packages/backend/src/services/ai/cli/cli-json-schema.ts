@@ -24,13 +24,7 @@ function mapSchemaMap({ map, visit }: { map: SchemaMap; visit: (node: JSONSchema
  * Applies `visit` to a schema and every sub-schema, children first. Only schema positions are
  * visited, so a property that happens to be called `format` is left alone.
  */
-export function mapSchema({
-  schema,
-  visit,
-}: {
-  schema: JSONSchema7;
-  visit: (node: JSONSchema7) => JSONSchema7;
-}): JSONSchema7 {
+function mapSchema({ schema, visit }: { schema: JSONSchema7; visit: (node: JSONSchema7) => JSONSchema7 }): JSONSchema7 {
   const next: JSONSchema7 = { ...schema };
 
   if (schema.properties) next.properties = mapSchemaMap({ map: schema.properties, visit });
