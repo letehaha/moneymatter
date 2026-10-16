@@ -129,6 +129,33 @@ describe('convertV1MoneyToDecimal', () => {
     ]);
   });
 
+  it('converts the amount keys of the nested object a path points to', () => {
+    const data = new Map<BackupFileName, Row[]>([
+      [
+        'venture-event-links',
+        [
+          { metaData: { originalTransactionState: { amount: 250075, refAmount: 100, note: 'keep' }, amount: 5 } },
+          { metaData: null },
+          { metaData: { originalTransactionState: 'not-an-object' } },
+          { metaData: {} },
+        ],
+      ],
+      ['portfolio-transfers', [{ metaData: { originalTransactionState: { amount: 1999, refAmount: 1999 } } }]],
+    ]);
+
+    convertV1MoneyToDecimal({ data });
+
+    expect(data.get('venture-event-links')).toEqual([
+      { metaData: { originalTransactionState: { amount: 2500.75, refAmount: 1, note: 'keep' }, amount: 5 } },
+      { metaData: null },
+      { metaData: { originalTransactionState: 'not-an-object' } },
+      { metaData: {} },
+    ]);
+    expect(data.get('portfolio-transfers')).toEqual([
+      { metaData: { originalTransactionState: { amount: 19.99, refAmount: 19.99 } } },
+    ]);
+  });
+
   it('converts the amount keys of every element of an array field', () => {
     const data = new Map<BackupFileName, Row[]>([
       [

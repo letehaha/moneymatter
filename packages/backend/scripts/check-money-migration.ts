@@ -246,6 +246,25 @@ const JSON_SEEDS: Record<string, Record<string, unknown>[]> = {
     },
     { events: [] },
   ],
+  VentureEventLinks: [
+    {
+      metaData: {
+        originalTransactionState: {
+          transferNature: 'not_transfer',
+          amount: 250075,
+          refAmount: -100050,
+          note: 'amount stays text',
+        },
+        amount: 7,
+      },
+    },
+    { metaData: {} },
+    { metaData: { originalTransactionState: 'not-an-object' } },
+  ],
+  PortfolioTransfers: [
+    { metaData: { originalTransactionState: { amount: 1999, refAmount: 0, transferId: null } } },
+    { metaData: { somethingElse: { amount: 5 } } },
+  ],
 };
 
 const expectedJson = ({
@@ -270,6 +289,19 @@ const expectedJson = ({
           },
         }
       : { settings };
+  }
+
+  if (table === 'VentureEventLinks' || table === 'PortfolioTransfers') {
+    const metaData = seed.metaData as Record<string, unknown>;
+    const state = metaData.originalTransactionState;
+    if (typeof state !== 'object' || state === null) return { metaData };
+    const { amount, refAmount } = state as { amount: number; refAmount: number };
+    return {
+      metaData: {
+        ...metaData,
+        originalTransactionState: { ...state, amount: convert(amount), refAmount: convert(refAmount) },
+      },
+    };
   }
 
   const events = (seed.events as Record<string, unknown>[]).map((event) => {

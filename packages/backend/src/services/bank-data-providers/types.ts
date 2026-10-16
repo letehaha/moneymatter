@@ -78,7 +78,12 @@ export const PROVIDER_TO_ACCOUNT_TYPE: Record<BANK_PROVIDER_TYPE, ACCOUNT_TYPES>
 // ============================================================================
 
 /**
- * Bank account from external provider
+ * Bank account from external provider.
+ *
+ * Every provider normalizes its amounts to integer minor units (`Cents`, 2 decimals): Monobank
+ * speaks minor units natively, and the others convert their decimal amounts on the way in.
+ * Sync code turns them into `Money` with `Money.fromCents`, so nothing past the provider
+ * boundary handles cents as a storage format.
  */
 export interface ProviderAccount {
   /** Provider's unique identifier for this account */

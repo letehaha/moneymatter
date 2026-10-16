@@ -77,7 +77,15 @@ const convertedJsonObject = ({
 };
 
 const rewriteJsonFieldSql = ({ field, direction }: { field: MoneyJsonFieldSpec; direction: 'up' | 'down' }): string => {
-  const { table, column, shape, keys } = field;
+  const { table, column, shape, keys, path } = field;
+
+  if (shape === 'object' && path?.length) {
+    const pathSql = `'{${path.join(',')}}'`;
+    const nestedSql = `("${column}" #> ${pathSql})`;
+    return `UPDATE "${table}"
+      SET "${column}" = jsonb_set("${column}", ${pathSql}, ${convertedJsonObject({ objectSql: nestedSql, keys, direction })})
+      WHERE jsonb_typeof(${nestedSql}) = 'object';`;
+  }
 
   if (shape === 'object') {
     return `UPDATE "${table}"

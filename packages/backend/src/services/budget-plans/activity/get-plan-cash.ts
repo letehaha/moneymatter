@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
@@ -11,14 +12,17 @@ import { QueryTypes } from 'sequelize';
 
 import { utcInstant } from '../date-ranges';
 
+/** Money columns and SUMs arrive from the raw query as DECIMAL strings in major units. */
 interface CashRow {
   accountId: RecordId;
   currencyCode: string;
-  nativeLimit: string | number;
-  nativeOpening: string | number;
-  opening: string | number;
-  closing: string | number;
+  nativeLimit: string;
+  nativeOpening: string;
+  opening: string;
+  closing: string;
 }
+
+const decimalToCents = ({ value }: { value: string }): number => Money.fromDecimal(value).toCents();
 
 /**
  * The rate Balances revalue uses for a day: the user's manual rate, else the
@@ -52,7 +56,7 @@ const storedRate = async ({
 };
 
 /**
- * Base-currency cents held in the plan's accounts just before the `opening` and
+ * Base-currency cents (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
  * `closing` days start ('yyyy-MM-dd', UTC): the current balance minus every
  * transaction from then on, a card net of its credit limit. A foreign account's
  * opening is valued at the opening day's rate, so a later rate move shows as drift.
@@ -77,7 +81,7 @@ export const getPlanCash = async ({
       `
       WITH signed AS (
         SELECT t."accountId", t."time",
-               CASE WHEN t."transactionType" = 'income' THEN t."refAmount" ELSE -t."refAmount" END AS "cents",
+               CASE WHEN t."transactionType" = 'income' THEN t."refAmount" ELSE -t."refAmount" END AS "ref",
                CASE WHEN t."transactionType" = 'income' THEN t."amount" ELSE -t."amount" END AS "native"
         FROM real_transactions t
         JOIN "BudgetPlanAccounts" pa ON pa."accountId" = t."accountId" AND pa."planId" = :planId
@@ -85,8 +89,8 @@ export const getPlanCash = async ({
       )
       SELECT a.id AS "accountId", a."currencyCode", a."creditLimit" AS "nativeLimit",
              a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= :openingUtc), 0) AS "nativeOpening",
-             a."refCurrentBalance" - COALESCE(SUM(s."cents") FILTER (WHERE s."time" >= :openingUtc), 0) AS "opening",
-             a."refCurrentBalance" - COALESCE(SUM(s."cents") FILTER (WHERE s."time" >= :closingUtc), 0) AS "closing"
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :openingUtc), 0) AS "opening",
+             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :closingUtc), 0) AS "closing"
       FROM "BudgetPlanAccounts" pa
       JOIN "Accounts" a ON a.id = pa."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       LEFT JOIN signed s ON s."accountId" = a.id
@@ -108,7 +112,7 @@ export const getPlanCash = async ({
   const openings = await Promise.all(
     rows.map(async (row) => {
       if (row.currencyCode === baseCurrency?.currencyCode)
-        return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+        return decimalToCents({ value: row.opening }) - (limits.get(row.accountId) ?? 0);
 
       const rate = await storedRate({
         userId: plan.userId,
@@ -122,16 +126,19 @@ export const getPlanCash = async ({
           accountId: row.accountId,
           currency: row.currencyCode,
         });
-        return Number(row.opening) - (limits.get(row.accountId) ?? 0);
+        return decimalToCents({ value: row.opening }) - (limits.get(row.accountId) ?? 0);
       }
 
-      const nativeLimit = limits.has(row.accountId) ? Number(row.nativeLimit) : 0;
-      return roundHalfToEven((Number(row.nativeOpening) - nativeLimit) * rate);
+      const nativeLimit = limits.has(row.accountId) ? decimalToCents({ value: row.nativeLimit }) : 0;
+      return roundHalfToEven((decimalToCents({ value: row.nativeOpening }) - nativeLimit) * rate);
     }),
   );
 
   return {
     opening: openings.reduce((sum, cents) => sum + cents, 0),
-    closing: rows.reduce((sum, row) => sum + Number(row.closing) - (limits.get(row.accountId) ?? 0), 0),
+    closing: rows.reduce(
+      (sum, row) => sum + decimalToCents({ value: row.closing }) - (limits.get(row.accountId) ?? 0),
+      0,
+    ),
   };
 };

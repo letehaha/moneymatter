@@ -1,5 +1,7 @@
 /**
- * Parse amount string and return numeric value in cents (integer)
+ * Parse amount string and return numeric value in cents (integer).
+ * The rounding to 2 decimals happens here, whatever the row's currency is; callers build
+ * `Money` with `Money.fromCents`.
  * Supports various formats: 1234.56, 1,234.56, -1234.56, (1234.56)
  *
  * New code should use `parseDecimalAmount`, which rejects ambiguous tokens. This one always
@@ -54,7 +56,6 @@ export function parseAmount(amountStr: string): number | null {
   // Apply negative sign
   const finalValue = isNegativeParens || isNegativeSign ? -parsed : parsed;
 
-  // Convert to cents (integer) - amounts are stored as integers in the system
-  // Multiply by 100 and round to avoid floating point issues
+  // Convert to integer cents. Multiply by 100 and round to avoid floating point issues
   return Math.round(finalValue * 100);
 }
