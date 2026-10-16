@@ -47,6 +47,7 @@ export * from './venture/events';
 export * from './data-export';
 export * from './backup';
 export * from './ai-categorization';
+export * from './ai-cli-auth';
 export * from './billing';
 export * from './attachments';
 export * from './invoice-matching';
