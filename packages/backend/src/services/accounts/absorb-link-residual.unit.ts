@@ -119,8 +119,9 @@ function buildReconciliation({
   };
 }
 
-/** Sets the ledger sum the raw SELECT reports back, in cents. */
-const mockSignedSum = (cents: number) => queryMock.mockResolvedValue([{ signedSum: String(cents) }] as never);
+/** Sets the ledger sum the raw SELECT reports back; the argument is in cents, the DECIMAL column answers in decimals. */
+const mockSignedSum = (cents: number) =>
+  queryMock.mockResolvedValue([{ signedSum: Money.fromCents(cents).toDecimalString(18) }] as never);
 
 const lastUpdatePayload = () => accountsUpdateMock.mock.calls[0]![0] as unknown as { initialBalance: Money };
 

@@ -14,7 +14,12 @@ import type {
   TransactionLocation,
   TransactionPaymentPart,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import {
+  Money,
+  centsToApiDecimal,
+  moneyToApiDecimal,
+  moneyToApiDecimalOrNull,
+} from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
 import type TransactionSplits from '@models/transaction-splits.model';
@@ -219,8 +224,8 @@ function serializeTransactionSplit(split: SerializableSplit): TransactionSplitAp
   return {
     id: split.id,
     categoryId: split.categoryId,
-    amount: centsToApiDecimal(split.amount),
-    refAmount: centsToApiDecimal(split.refAmount),
+    amount: moneyToApiDecimal(split.amount),
+    refAmount: moneyToApiDecimal(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -261,12 +266,12 @@ export function serializeTransaction(
 
   return {
     id: tx.id,
-    amount: centsToApiDecimal(tx.amount),
-    refAmount: centsToApiDecimal(tx.refAmount),
-    commissionRate: centsToApiDecimal(tx.commissionRate),
-    refCommissionRate: centsToApiDecimal(tx.refCommissionRate),
-    cashbackAmount: centsToApiDecimal(tx.cashbackAmount),
-    originalAmount: centsToApiDecimalOrNull(tx.originalAmount),
+    amount: moneyToApiDecimal(tx.amount),
+    refAmount: moneyToApiDecimal(tx.refAmount),
+    commissionRate: moneyToApiDecimal(tx.commissionRate),
+    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
+    cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
+    originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
     note: tx.note,
     externalUrl: tx.externalUrl ?? null,

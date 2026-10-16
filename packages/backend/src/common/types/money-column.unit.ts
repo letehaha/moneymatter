@@ -2,7 +2,7 @@ import { describe, expect, it } from '@jest/globals';
 import { Column, DataType, Model, Sequelize, Table } from 'sequelize-typescript';
 
 import { Money } from './money';
-import { MoneyField } from './money-column';
+import { MoneyField, toMoneyColumnValue } from './money-column';
 
 @Table({ tableName: 'MoneyColumnUnitFixtures', timestamps: false })
 class RoundedFixture extends Model {
@@ -73,5 +73,22 @@ describe('@MoneyField decimal storage', () => {
       expect(row.getDataValue('exactAmount')).toBe('0.000406410000000000');
       expect(row.exactAmount.toDecimalString(8)).toBe('0.00040641');
     });
+  });
+});
+
+describe('toMoneyColumnValue', () => {
+  it('writes the exact string the setter stores, rounded half-up like roundOnWrite', () => {
+    const row = RoundedFixture.build({ id: 1 });
+    const money = Money.fromDecimal('12.345');
+
+    row.amount = money;
+
+    expect(toMoneyColumnValue({ money })).toBe(row.getDataValue('amount'));
+    expect(toMoneyColumnValue({ money })).toBe('12.350000000000000000');
+  });
+
+  it('keeps the sign and pads to the column scale', () => {
+    expect(toMoneyColumnValue({ money: Money.fromDecimal(-0.5) })).toBe('-0.500000000000000000');
+    expect(toMoneyColumnValue({ money: Money.zero() })).toBe('0.000000000000000000');
   });
 });

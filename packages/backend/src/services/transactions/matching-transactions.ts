@@ -6,7 +6,7 @@ import {
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { Money, centsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import { allocateTransaction, loadSplitsByTxId } from '@services/stats/category-allocation';
@@ -26,15 +26,18 @@ interface MatchingRow {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
   categoryId: string | null;
-  /** Base-currency cents: the read is raw, so the `Money` getter never runs. */
+  /** Base-currency cents, converted from the exact decimal string the raw read returns. */
   refAmount: number;
 }
+
+type RawMatchingRow = Omit<MatchingRow, 'refAmount'> & { refAmount: string };
 
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
-  return (await getTransactions({
+  // The raw read makes `refAmount` the DECIMAL column's exact string.
+  const rawRows = (await getTransactions({
     ...filters,
     isRaw: true,
     limit: Infinity,
@@ -48,7 +51,8 @@ const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> =>
       'categoryId',
       'refAmount',
     ],
-  })) as unknown as MatchingRow[];
+  })) as unknown as RawMatchingRow[];
+  return rawRows.map((row): MatchingRow => ({ ...row, refAmount: Money.fromDecimal(row.refAmount).toCents() }));
 };
 
 /** Under a category filter a split row counts only the share booked to those categories. */

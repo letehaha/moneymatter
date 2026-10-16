@@ -22,6 +22,23 @@ describe('calculateRefAmountFromParams', () => {
       expect(result.toCents()).toBe(0);
     });
 
+    it.each([
+      // 0.05 * 0.5 = 0.025 and 0.15 * 0.5 = 0.075 are exact ties: the even neighbour wins
+      ['0.05', 0.5, '0.02'],
+      ['0.15', 0.5, '0.08'],
+      ['-0.05', 0.5, '-0.02'],
+      ['-0.15', 0.5, '-0.08'],
+    ])('rounds the exact tie %s * %s to the even cent %s', (amount, rate, expected) => {
+      const result = calculateRefAmountFromParams({ amount: Money.fromDecimal(amount), rate });
+      expect(result.toDecimalString(2)).toBe(expected);
+    });
+
+    it('keeps the exact product of large amounts and small rates', () => {
+      // 123456789012.34 * 0.0000123 = 1518518.504851782: float arithmetic on cents would drift here
+      const result = calculateRefAmountFromParams({ amount: Money.fromDecimal('123456789012.34'), rate: 0.0000123 });
+      expect(result.toDecimalString(2)).toBe('1518518.50');
+    });
+
     it('preserves sign for negative amounts', () => {
       // -200 cents * 1.5 = -300 cents
       const result = calculateRefAmountFromParams({
@@ -33,11 +50,7 @@ describe('calculateRefAmountFromParams', () => {
   });
 
   describe('useFloorAbs=false (investments - DECIMAL precision)', () => {
-    // Reproduces FRONTEND-V2-XXX / MONEY-MATTER-BACKEND-5N:
-    // "Money.fromCents: expected integer, got 128479.5" thrown during base
-    // currency change for users with investment transactions whose
-    // amountCents * rate produces a fractional result.
-    it('does not throw when amountCents * rate produces a fractional cent', () => {
+    it('does not throw when amount * rate produces a fractional cent', () => {
       // 205 cents * 0.5 = 102.5 (fractional) — must not throw
       expect(() =>
         calculateRefAmountFromParams({

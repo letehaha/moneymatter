@@ -10,6 +10,7 @@ import {
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, NotFoundError, ValidationError } from '@js/errors';
@@ -1606,7 +1607,8 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
     const isBooked = getRawTransactionStatus({ externalData: tx.metadata }) === TransactionStatus.BOOK;
     const incomingRaw = getRawTransaction({ externalData: tx.metadata });
-    const sameMoney = { amount: Math.abs(tx.amount), transactionType };
+    // `tx.amount` is in minor units (cents); the column holds decimals.
+    const sameMoney = { amount: toMoneyColumnValue({ money: Money.fromCents(Math.abs(tx.amount)) }), transactionType };
 
     // A bank can reuse one entry_reference for a card capture and the release of its unused hold, so a booked
     // payload only matches a pending row, or one whose amount and direction (or stored booked payload's) agree.
