@@ -605,6 +605,15 @@
     "categorizationAlreadyRunning": "AI categorization is already running. Wait for it to finish before starting another run.",
     "categorizationRateLimited": "You've started AI categorization too many times recently. Please try again later.",
     "cliProvidersNotAllowed": "Claude Code and Codex subscriptions can only be used by an admin of a self-hosted instance.",
+    "cliLoginNoUrl": "The sign-in page did not appear in time. Try again.",
+    "cliLoginTimedOut": "Sign-in was not completed in time. Start again.",
+    "cliLoginFailed": "Sign-in did not complete. Last output of the CLI: {{output}}",
+    "cliLoginCouldNotStart": "The CLI could not be started. Check that it is installed in the backend image.",
+    "cliLoginCodeInvalid": "The code is empty or contains characters that can't be part of a sign-in code.",
+    "cliAuthSessionNotFound": "This sign-in was not found. It may have expired or been cancelled.",
+    "cliAuthSessionNotUsable": "This sign-in is missing, not finished, already used or for another provider. Sign in again.",
+    "cliAuthSessionNoCodeStep": "This sign-in is not waiting for a pasted code.",
+    "cliAuthTooManySessions": "Too many sign-ins are in progress. Try again in a minute.",
     "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
   },
   "middleware": {

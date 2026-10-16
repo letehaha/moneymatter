@@ -26,6 +26,83 @@ if (argv.includes('--version')) {
   process.exit(0);
 }
 
+const out = (text) => process.stdout.write(text);
+
+// `login --device-auth`: prints a verification URL and a one-time code, then writes `auth.json` into
+// `CODEX_HOME` and exits 0. Scenarios: `denied` exits 1 after the code, `split-chunks` writes the URL and the
+// code in pieces split mid-field with pauses, `no-url` never prints a URL.
+async function deviceAuthLogin() {
+  const home = process.env.CODEX_HOME;
+
+  if (!home) fail({ code: 2, message: 'fake-codex: login needs CODEX_HOME' });
+  if (!argv.includes('--device-auth')) fail({ code: 2, message: 'fake-codex: login without --device-auth' });
+  if (!flagValues({ argv, name: '-c' }).includes('cli_auth_credentials_store="file"')) {
+    fail({ code: 2, message: 'missing -c cli_auth_credentials_store="file"' });
+  }
+  if (process.env.OPENAI_API_KEY)
+    fail({ code: 2, message: 'an OpenAI API credential leaked into the CLI environment' });
+
+  const scenario = process.env.MM_FAKE_CLI_SCENARIO ?? '';
+  const url = 'https://auth.openai.com/codex/device';
+  const code = 'ABCD-EFGH1';
+
+  recordRun({ bin: 'codex', argv, stdin: '', extra: { mode: 'login', codexHome: home } });
+
+  out('Welcome to Codex [v0.160.1]\n\nFollow these steps to sign in with ChatGPT using device code authorization:\n\n');
+
+  if (scenario === 'no-url') {
+    setInterval(() => {}, 1000);
+    await new Promise(() => {});
+  }
+
+  out('1. Open this link in your browser and sign in to your account\n   ');
+
+  if (scenario === 'split-chunks') {
+    out(url.slice(0, 27));
+    await sleep(50);
+    out(url.slice(27));
+    await sleep(50);
+    out('\n\n2. Enter this one-time code (expires in 15 minutes)\n   ');
+    out(code.slice(0, 5));
+    await sleep(50);
+    out(code.slice(5));
+    await sleep(50);
+    out('\n\n');
+  } else {
+    out(`${url}\n\n2. Enter this one-time code (expires in 15 minutes)\n   ${code}\n\n`);
+  }
+
+  out('Device codes are a common phishing target. Never share this code.\n');
+  await sleep(200);
+
+  if (scenario === 'denied')
+    fail({ code: 1, message: 'Error logging in: device code authorization failed: access_denied' });
+
+  fs.mkdirSync(home, { recursive: true });
+  fs.writeFileSync(
+    path.join(home, 'auth.json'),
+    JSON.stringify(
+      {
+        auth_mode: 'chatgpt',
+        tokens: {
+          id_token: 'fake-id-token',
+          access_token: 'fake-access-token',
+          refresh_token: 'rt-fake-initial',
+          account_id: 'fake-account',
+        },
+        last_refresh: new Date().toISOString(),
+      },
+      null,
+      2,
+    ),
+    { mode: 0o600 },
+  );
+  out('Successfully logged in\n');
+  process.exit(0);
+}
+
+if (argv[0] === 'login') await deviceAuthLogin();
+
 if (argv[0] !== 'exec') {
   fail({ code: 2, message: `fake-codex: unsupported invocation: ${argv.join(' ')}` });
 }

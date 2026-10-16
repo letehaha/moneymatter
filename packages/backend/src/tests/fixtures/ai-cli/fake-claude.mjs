@@ -2,6 +2,8 @@
 // Fake `claude` for backend tests: answers `-p ... --output-format stream-json` runs from the canned
 // response channel (`MM_FAKE_CLI_RESPONSE_FILE`) and fails per scenario. Mirrors the real stream: with
 // `--json-schema` it emits a `StructuredOutput` tool_use before the `result` event that carries `structured_output`.
+import readline from 'node:readline';
+
 import {
   emit,
   fail,
@@ -19,6 +21,85 @@ if (argv.includes('--version')) {
   console.log('2.1.292 (Claude Code)');
   process.exit(0);
 }
+
+const out = (text) => process.stdout.write(text);
+
+// `setup-token`: an Ink TUI in the real CLI, so it insists on a TTY. Prints an authorize URL and a paste prompt,
+// then the token for any code except `bad-code`. Scenarios: `split-chunks` writes the URL and the token in
+// pieces split mid-field with pauses, `token-at-exit` prints the token as the very last bytes before exiting,
+// `no-url` never prints a URL, `no-token` takes the code and then never prints a token.
+async function setupToken() {
+  if (!process.stdin.isTTY) fail({ code: 2, message: 'fake-claude: setup-token needs a TTY' });
+  if (process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN) {
+    fail({ code: 2, message: 'an Anthropic API credential leaked into the CLI environment' });
+  }
+
+  const scenario = process.env.MM_FAKE_CLI_SCENARIO ?? '';
+  const url =
+    'https://claude.com/cai/oauth/authorize?code=true&client_id=fake-client&response_type=code' +
+    '&redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback&scope=user%3Ainference&state=fake-state';
+  const token = 'sk-ant-oat01-FAKE0123456789abcdefghijklmnopqrstuvwxyz';
+
+  out("\x1b[1mWelcome to Claude Code\x1b[0m\n\nBrowser didn't open? Use the url below to sign in\n\n");
+
+  if (scenario === 'no-url') {
+    setInterval(() => {}, 1000);
+    await new Promise(() => {});
+  }
+
+  if (scenario === 'split-chunks') {
+    const cut = url.indexOf('&scope=') + 4;
+
+    out(url.slice(0, cut));
+    await sleep(50);
+    out(url.slice(cut));
+    await sleep(50);
+    out('\n\n');
+  } else {
+    out(`\x1b[36m${url}\x1b[0m\n\n`);
+  }
+
+  out('Paste code here if prompted > ');
+
+  const code = await new Promise((resolve) => {
+    readline.createInterface({ input: process.stdin }).once('line', resolve);
+  });
+
+  recordRun({
+    bin: 'claude',
+    argv,
+    stdin: '',
+    extra: { mode: 'setup-token', code, browser: process.env.BROWSER, home: process.env.HOME },
+  });
+
+  if (scenario === 'no-token') {
+    setInterval(() => {}, 1000);
+    await new Promise(() => {});
+  }
+
+  if (code.trim() === 'bad-code') {
+    out('\nError: Invalid code. Please make sure the full code was copied\n');
+    process.exit(1);
+  }
+
+  out('\n\u2713 Long-lived authentication token created successfully!\n\nYour OAuth token (valid for 1 year):\n\n');
+
+  if (scenario === 'split-chunks') {
+    out(token.slice(0, 25));
+    await sleep(50);
+    out(token.slice(25));
+    await sleep(50);
+    out("\n\nStore this token securely. You won't be able to see it again.\n");
+  } else if (scenario === 'token-at-exit') {
+    out(token);
+  } else {
+    out(`${token}\n\nStore this token securely. You won't be able to see it again.\n`);
+  }
+
+  process.exit(0);
+}
+
+if (argv[0] === 'setup-token') await setupToken();
 
 if (!argv.includes('-p')) {
   fail({ code: 2, message: `fake-claude: unsupported invocation: ${argv.join(' ')}` });
