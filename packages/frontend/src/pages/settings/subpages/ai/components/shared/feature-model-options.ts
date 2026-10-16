@@ -63,7 +63,7 @@ export const buildFeatureModelOptions = ({
   return options;
 };
 
-export type CostDisplay = { kind: 'subscription' } | { kind: 'price'; price: string };
+type CostDisplay = { kind: 'subscription' } | { kind: 'price'; price: string };
 
 /**
  * The cost line of a feature's model card. A subscription connection has no per-token price, so it says

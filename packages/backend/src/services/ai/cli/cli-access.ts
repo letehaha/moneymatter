@@ -5,7 +5,7 @@ import { NotAllowedError } from '@js/errors';
 import { hasConfiguredAdmins, isAdminUsername } from '@middlewares/admin-only';
 import { getUsernameById } from '@models/users.model';
 
-export type CliAiAccess = { allowed: true; reason?: undefined } | { allowed: false; reason: CliAiUnavailableReason };
+type CliAiAccess = { allowed: true; reason?: undefined } | { allowed: false; reason: CliAiUnavailableReason };
 
 /**
  * Subscription CLI providers run vendor binaries under the backend's uid, so they are limited

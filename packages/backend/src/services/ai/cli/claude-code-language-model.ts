@@ -61,7 +61,7 @@ function buildStdinMessage({ prompt }: { prompt: CliPrompt }): string {
   return `${JSON.stringify({ type: 'user', message: { role: 'user', content } })}\n`;
 }
 
-export function buildClaudeArgs({
+function buildClaudeArgs({
   model,
   system,
   schema,

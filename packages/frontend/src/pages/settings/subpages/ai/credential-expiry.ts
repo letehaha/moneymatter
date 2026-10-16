@@ -1,11 +1,11 @@
 import { addDays, isAfter, isBefore } from 'date-fns';
 
 /** A stored sign-in turns into a warning this many days before it stops working. */
-export const CREDENTIAL_EXPIRY_WARNING_DAYS = 14;
+const CREDENTIAL_EXPIRY_WARNING_DAYS = 14;
 
-export type CredentialExpiryKind = 'valid' | 'expiring-soon' | 'expired';
+type CredentialExpiryKind = 'valid' | 'expiring-soon' | 'expired';
 
-export interface CredentialExpiry {
+interface CredentialExpiry {
   kind: CredentialExpiryKind;
   expiresAt: Date;
 }

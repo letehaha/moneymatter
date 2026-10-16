@@ -3,7 +3,7 @@ import { extractApiErrorMessage, isNotFoundError } from '@/js/errors';
 import type { AICliProvider, CliAuthSessionInfo } from '@bt/shared/types';
 import { type MaybeRefOrGetter, computed, onScopeDispose, readonly, ref, toValue, watch } from 'vue';
 
-export type CliSignInState = 'idle' | 'starting' | 'awaiting-user' | 'verifying' | 'succeeded' | 'failed' | 'expired';
+type CliSignInState = 'idle' | 'starting' | 'awaiting-user' | 'verifying' | 'succeeded' | 'failed' | 'expired';
 
 const POLL_INTERVAL_MS = 2000;
 /** A poll that keeps failing means the backend is unreachable; the sign-in can't be followed any more. */
