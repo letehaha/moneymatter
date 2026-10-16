@@ -15,6 +15,13 @@ import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exch
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
 import {
+  cancelCliAuthSessionController,
+  getCliAuthSessionController,
+  getCliAvailabilityController,
+  startCliAuthSessionController,
+  submitCliAuthCodeController,
+} from '@controllers/user-settings/ai-cli';
+import {
   createConnectionController,
   deleteConnectionController,
   getConnectionsController,
@@ -51,6 +58,7 @@ import {
   updateUser,
   wipeUserData,
 } from '@controllers/user.controller';
+import { adminOnly } from '@middlewares/admin-only';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
 import { checkBaseCurrencyLock } from '@middlewares/check-base-currency-lock';
@@ -62,6 +70,7 @@ import {
   backupRestoreRateLimit,
   dataExportRateLimit,
 } from '@middlewares/rate-limit';
+import { selfHostOnly } from '@middlewares/self-host-only';
 import { Router } from 'express';
 
 const router = Router({});
@@ -124,6 +133,26 @@ router.post('/settings/ai/connections/models', aiConnectionModelsRateLimit, list
 router.put('/settings/ai/connections/:id', aiConnectionProbeRateLimit, updateConnectionController);
 router.delete('/settings/ai/connections/:id', deleteConnectionController);
 router.post('/settings/ai/connections/:id/default', setDefaultConnectionController);
+
+// Subscription CLI providers (Claude Code, Codex): sign-in sessions for the instance admin of a self-hosted
+// deployment. Availability answers every signed-in user so the UI and API clients can tell why it is closed.
+router.get('/settings/ai/cli/availability', getCliAvailabilityController);
+router.post(
+  '/settings/ai/cli/auth-sessions',
+  selfHostOnly,
+  adminOnly,
+  aiConnectionProbeRateLimit,
+  startCliAuthSessionController,
+);
+router.get('/settings/ai/cli/auth-sessions/:id', selfHostOnly, adminOnly, getCliAuthSessionController);
+router.post(
+  '/settings/ai/cli/auth-sessions/:id/code',
+  selfHostOnly,
+  adminOnly,
+  aiConnectionProbeRateLimit,
+  submitCliAuthCodeController,
+);
+router.delete('/settings/ai/cli/auth-sessions/:id', selfHostOnly, adminOnly, cancelCliAuthSessionController);
 
 // AI Feature configuration
 router.get('/settings/ai/features', getFeaturesStatus);

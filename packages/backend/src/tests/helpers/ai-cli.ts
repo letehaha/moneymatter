@@ -3,6 +3,8 @@ import { mkdtempSync, existsSync, readFileSync, rmSync, writeFileSync } from 'fs
 import os from 'os';
 import path from 'path';
 
+import { formatCategorizationLines } from '../mocks/anthropic/mock-api';
+
 export const FAKE_CLAUDE_PATH = path.join(__dirname, '../fixtures/ai-cli/fake-claude.mjs');
 export const FAKE_CODEX_PATH = path.join(__dirname, '../fixtures/ai-cli/fake-codex.mjs');
 
@@ -92,5 +94,108 @@ export function useFakeAiClis() {
       process.env.MM_FAKE_CLI_RESPONSE_FILE = file;
     },
     getStateDir: () => stateDir,
+  };
+}
+
+/** Switches the current test's fake CLI runs to a failure mode; `useFakeAiClis` clears it after the test. */
+export function useFakeCliScenario({ scenario }: { scenario: string }) {
+  process.env.MM_FAKE_CLI_SCENARIO = scenario;
+}
+
+/**
+ * The Nth fake CLI run of the current test answers with the Nth entry (the last entry repeats). Needs
+ * `useFakeAiClis` in the file: the response file lives in its per-test state directory, which is removed
+ * after the test.
+ */
+export function useFakeCliResponses({ responses }: { responses: FakeCliResponse[] }) {
+  const stateDir = process.env.MM_FAKE_CLI_STATE_DIR;
+
+  if (!stateDir) throw new Error('useFakeCliResponses needs useFakeAiClis() in the test file');
+
+  const file = path.join(stateDir, 'responses.json');
+
+  writeFileSync(file, JSON.stringify({ responses }));
+  process.env.MM_FAKE_CLI_RESPONSE_FILE = file;
+}
+
+/** A categorization answer in the same "t<n>:c<n>" lines the Anthropic mock produces. */
+export function fakeCategorizationAnswer({
+  categorizations,
+}: {
+  categorizations: Record<number, number>;
+}): FakeCliResponse {
+  return { text: formatCategorizationLines({ categorizations }) || '# No categorizations' };
+}
+
+export interface FakeStatementTransaction {
+  /** `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS` */
+  date: string;
+  description: string;
+  merchant?: string;
+  amount: number;
+  type: 'income' | 'expense';
+  balance?: number;
+}
+
+const toCsvField = ({ value }: { value: string | number | undefined }) => {
+  const text = value === undefined ? '' : String(value);
+
+  return /[",\n]/.test(text) ? `"${text.replaceAll('"', '')}"` : text;
+};
+
+/**
+ * A statement-parser answer: the parser asks the model for CSV, a metadata line first, then one row per
+ * transaction (date, description, merchant, amount, E/I, balance, confidence).
+ */
+export function fakeStatementAnswer({
+  transactions,
+  bankName = 'Fake Bank',
+  accountNumberLast4 = '1234',
+  currencyCode = 'USD',
+}: {
+  transactions: FakeStatementTransaction[];
+  bankName?: string;
+  accountNumberLast4?: string;
+  currencyCode?: string;
+}): FakeCliResponse {
+  const metadata = [bankName, accountNumberLast4, '', '', currencyCode].map((value) => toCsvField({ value }));
+  const rows = transactions.map((tx) =>
+    [tx.date, tx.description, tx.merchant, tx.amount, tx.type === 'income' ? 'I' : 'E', tx.balance, 95]
+      .map((value) => toCsvField({ value }))
+      .join(','),
+  );
+
+  return { text: [metadata.join(','), ...rows].join('\n') };
+}
+
+/** An invoice-extraction answer that passes `invoiceSchema` (non-empty vendor, positive total, real ISO date). */
+export function fakeInvoiceAnswer({
+  vendorName = 'Fake Vendor Ltd',
+  customerName = null,
+  totalAmount = 120.5,
+  currencyCode = 'USD',
+  issueDate = '2026-01-15',
+  invoiceNumber = 'INV-001',
+  invoiceUrl = null,
+}: {
+  vendorName?: string;
+  customerName?: string | null;
+  totalAmount?: number;
+  currencyCode?: string;
+  issueDate?: string;
+  invoiceNumber?: string | null;
+  invoiceUrl?: string | null;
+} = {}): FakeCliResponse {
+  return {
+    structuredOutput: {
+      isInvoice: true,
+      vendorName,
+      customerName,
+      totalAmount,
+      currencyCode,
+      issueDate,
+      invoiceNumber,
+      invoiceUrl,
+    },
   };
 }
