@@ -5,7 +5,7 @@
     <form class="@container/connection-dialog flex flex-col gap-4" @submit.prevent="handleSave">
       <SelectField
         :model-value="selectedPreset"
-        :values="AI_CONNECTION_PRESETS"
+        :values="visiblePresets"
         :label-key="(preset: AiConnectionPreset) => t(preset.labelKey)"
         value-key="id"
         :label="$t('settings.ai.connections.form.providerLabel')"
@@ -173,6 +173,7 @@ import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useAiConnectionModels } from '@/composable/data-queries/use-ai-connection-models';
 import { useAiConnections } from '@/composable/data-queries/use-ai-connections';
+import { useCliAiAvailability } from '@/composable/data-queries/use-cli-ai-availability';
 import { extractApiErrorMessage } from '@/js/errors';
 import {
   AIConnectionInfo,
@@ -185,7 +186,7 @@ import { AlertCircleIcon, CheckCircleIcon, Loader2Icon, PlugZapIcon } from '@luc
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { AI_CONNECTION_PRESETS, type AiConnectionPreset, findPresetForConnection } from '../presets';
+import { AI_CONNECTION_PRESETS, type AiConnectionPreset, findPresetForConnection, getVisiblePresets } from '../presets';
 
 const props = defineProps<{
   /** Set when editing */
@@ -207,6 +208,12 @@ const {
   testConnection,
   isTestingConnection,
 } = useAiConnections();
+
+const { availability: cliAvailability } = useCliAiAvailability();
+// Subscription presets only show for an admin on a self-hosted backend that has the CLIs installed.
+const visiblePresets = computed(() =>
+  getVisiblePresets({ availability: cliAvailability.value }).filter((preset) => !preset.disabled),
+);
 
 const selectedPreset = ref<AiConnectionPreset>(AI_CONNECTION_PRESETS[0]!);
 const form = reactive({
