@@ -93,10 +93,18 @@ function acquireGate({
   });
 }
 
+/**
+ * A plain `Error` named `TimeoutError` rather than a `DOMException`: the classifiers require
+ * `instanceof Error`, which a `DOMException` created by the host fails inside a sandboxed realm (jest).
+ */
+function createTimeoutError(): Error {
+  return Object.assign(new Error('The operation timed out.'), { name: 'TimeoutError' });
+}
+
 /** A timeout signal driven by `setTimeout` (not `AbortSignal.timeout`), so it can be cleared and faked. */
 function createTimeout({ ms }: { ms: number }) {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(new DOMException('The operation timed out.', 'TimeoutError')), ms);
+  const timer = setTimeout(() => controller.abort(createTimeoutError()), ms);
 
   return { signal: controller.signal, clear: () => clearTimeout(timer) };
 }

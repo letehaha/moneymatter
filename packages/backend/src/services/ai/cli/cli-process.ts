@@ -18,12 +18,12 @@ export interface CliProcessResult {
 export function getAbortReason({ signal }: { signal: AbortSignal }): Error {
   const { reason } = signal;
 
-  // Duck-typed: the reason is a DOMException, which is not `instanceof Error` across realms (jest sandboxes).
+  // Duck-typed: a caller's reason may be a DOMException, which is not `instanceof Error` across realms (jest sandboxes).
   const name = (reason as { name?: unknown } | undefined)?.name;
 
   if (name === 'AbortError' || name === 'TimeoutError') return reason as Error;
 
-  return new DOMException('The CLI run was aborted', 'AbortError');
+  return Object.assign(new Error('The CLI run was aborted'), { name: 'AbortError' });
 }
 
 /**

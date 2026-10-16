@@ -1,12 +1,15 @@
 // Shared by every AI feature so a dead connection gets the same status and message.
 
-import { AI_PROVIDER, hasServerAiEntitlement } from '@bt/shared/types';
+import { AI_PROVIDER, type AICliProvider, asAiCliProvider, hasServerAiEntitlement } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { APICallError } from 'ai';
 
 import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.service';
 import { getConnectionInfos, markConnectionInvalid } from '../user-settings/ai-connections';
 import { isWithinAiAllowance } from './ai-allowance';
 import type { AIClientResult } from './ai-client-factory';
 import { buildModelNotServedMessage } from './ai-error-classifiers';
+import { CLI_PROVIDER_LABEL, isCliNotInstalledError } from './cli/cli-errors';
 import { PRIMARY_SERVER_MODEL, suspendPrimaryServerKey } from './resolution-ladder';
 
 /** Not translated: it surfaces in job error lists, where no request locale is available. */
@@ -33,6 +36,11 @@ const NO_AI_CONFIGURED_ERROR_MESSAGE = 'No AI model configured. Add one in Setti
 const AI_ALLOWANCE_REACHED_ERROR_MESSAGE =
   "You've used the AI included in your plan this month. Connect your own model in Settings → AI to keep going.";
 
+/** The CLI is part of the backend image, so the fix is on the operator's side, not a key the user can re-enter. */
+function buildCliNotInstalledMessage({ provider }: { provider: AICliProvider }): string {
+  return `The ${CLI_PROVIDER_LABEL[provider]} CLI is not installed in the backend image. Update the image, then sign in again in Settings → AI.`;
+}
+
 /**
  * A user whose every connection is flagged down does own credentials, so telling them to add
  * a model would send them to the wrong screen.
@@ -54,23 +62,34 @@ export async function describeMissingAiConfiguration({ userId }: { userId: numbe
   return NO_AI_CONFIGURED_ERROR_MESSAGE;
 }
 
-/** Only a custom connection can be down in a way the user fixes; a native provider outage is transient. */
-export async function markCustomEndpointUnreachable({
+/**
+ * A custom endpoint that stopped answering and a missing CLI binary are the two "endpoint down" outcomes the
+ * user or operator can fix. Every other one is transient: a native provider outage, and on CLI providers also
+ * aborts, run timeouts and queue-ceiling expiries, which would flag a healthy subscription connection if
+ * they counted.
+ */
+export function isUserFixableEndpointDown({ provider, error }: { provider: AI_PROVIDER; error: unknown }): boolean {
+  return provider === AI_PROVIDER.custom || isCliNotInstalledError({ error });
+}
+
+/** Flags a custom endpoint or a CLI connection that cannot run, and returns the copy that fits its provider. */
+export async function markEndpointUnreachable({
   userId,
   aiClient,
 }: {
   userId: number;
   aiClient: AIClientResult;
 }): Promise<string> {
-  if (aiClient.provider === AI_PROVIDER.custom && aiClient.connectionId) {
-    await markConnectionInvalid({
-      userId,
-      connectionId: aiClient.connectionId,
-      errorMessage: CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE,
-    });
+  const cliProvider = asAiCliProvider({ provider: aiClient.provider });
+  const message = cliProvider
+    ? buildCliNotInstalledMessage({ provider: cliProvider })
+    : CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE;
+
+  if ((cliProvider || aiClient.provider === AI_PROVIDER.custom) && aiClient.connectionId) {
+    await markConnectionInvalid({ userId, connectionId: aiClient.connectionId, errorMessage: message });
   }
 
-  return CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE;
+  return message;
 }
 
 /** The user owns neither the key nor the model here, and the shared model serves their next run. */
@@ -100,6 +119,17 @@ export async function markModelNotServed({
   return suspendDeadServerKey({ aiClient, message });
 }
 
+function buildRejectedMessage({ provider }: { provider: AI_PROVIDER }): string {
+  if (provider === AI_PROVIDER.custom) return CUSTOM_ENDPOINT_REJECTED_ERROR_MESSAGE;
+
+  const cliProvider = asAiCliProvider({ provider });
+  if (cliProvider) {
+    return `Your ${CLI_PROVIDER_LABEL[cliProvider]} sign-in is no longer valid. Sign in again in Settings → AI.`;
+  }
+
+  return INVALID_KEY_ERROR_MESSAGE;
+}
+
 /** Flags the connection that rejected the call and returns the copy that fits its provider. */
 export async function markConnectionRejected({
   userId,
@@ -108,12 +138,38 @@ export async function markConnectionRejected({
   userId: number;
   aiClient: AIClientResult;
 }): Promise<string> {
-  const message =
-    aiClient.provider === AI_PROVIDER.custom ? CUSTOM_ENDPOINT_REJECTED_ERROR_MESSAGE : INVALID_KEY_ERROR_MESSAGE;
+  const message = buildRejectedMessage({ provider: aiClient.provider });
 
   if (aiClient.connectionId) {
     await markConnectionInvalid({ userId, connectionId: aiClient.connectionId, errorMessage: message });
   }
 
   return suspendDeadServerKey({ aiClient, message });
+}
+
+/** `YYYY-MM-DD HH:mm UTC`: the message has no request locale or timezone to format against. */
+function formatResetTime({ resetsAt }: { resetsAt: unknown }): string | null {
+  if (typeof resetsAt !== 'string') return null;
+
+  const date = new Date(resetsAt);
+  if (Number.isNaN(date.getTime())) return null;
+
+  return `${date.toISOString().slice(0, 16).replace('T', ' ')} UTC`;
+}
+
+/**
+ * A subscription has a usage window rather than a per-minute limit, so the copy names the subscription and,
+ * when the CLI reported it, when the window resets. `cause` is the unwrapped error from `classifyAiCallFailure`.
+ */
+export function describeRateLimited({ aiClient, cause }: { aiClient: AIClientResult; cause: Error }): string {
+  const cliProvider = asAiCliProvider({ provider: aiClient.provider });
+  if (!cliProvider) return t({ key: 'importExport.aiRateLimited' });
+
+  const label = CLI_PROVIDER_LABEL[cliProvider];
+  const data = cause instanceof APICallError ? (cause.data as { resetsAt?: unknown } | undefined) : undefined;
+  const resetTime = formatResetTime({ resetsAt: data?.resetsAt });
+
+  return resetTime
+    ? t({ key: 'importExport.aiSubscriptionLimitResetsAt', variables: { label, resetTime } })
+    : t({ key: 'importExport.aiSubscriptionLimitReached', variables: { label } });
 }

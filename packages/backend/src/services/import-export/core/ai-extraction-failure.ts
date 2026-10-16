@@ -1,12 +1,13 @@
-import { AI_PROVIDER } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils';
 import {
   type AIClientResult,
   buildUnsupportedRequestMessage,
   classifyAiCallFailure,
+  describeRateLimited,
+  isUserFixableEndpointDown,
   markConnectionRejected,
-  markCustomEndpointUnreachable,
+  markEndpointUnreachable,
   markModelNotServed,
 } from '@services/ai';
 
@@ -40,10 +41,10 @@ export async function resolveAiExtractionFailure({
 }): Promise<{ error: AIExtractionError; cause: Error }> {
   const { kind, cause } = classifyAiCallFailure({ error });
   const details = cause.message;
-  const isCustomEndpoint = aiClient.provider === AI_PROVIDER.custom;
 
-  // Only a custom endpoint gets flagged: a native provider going quiet is transient.
-  if (kind === 'endpoint-down' && !isCustomEndpoint) {
+  // Only a custom endpoint or a missing CLI binary gets flagged. Any other connection going quiet (a native
+  // provider outage, a CLI abort or run timeout) is transient.
+  if (kind === 'endpoint-down' && !isUserFixableEndpointDown({ provider: aiClient.provider, error: cause })) {
     logger.info(`${logPrefix} AI provider connection failed`, { modelId: aiClient.modelId });
 
     return {
@@ -62,7 +63,7 @@ export async function resolveAiExtractionFailure({
 
     case 'endpoint-down': {
       logger.info(`${logPrefix} AI endpoint did not answer`, { modelId: aiClient.modelId });
-      const message = await markCustomEndpointUnreachable({ userId, aiClient });
+      const message = await markEndpointUnreachable({ userId, aiClient });
 
       return { error: { code: 'AI_ERROR', message, details }, cause };
     }
@@ -88,7 +89,7 @@ export async function resolveAiExtractionFailure({
       return {
         error: {
           code: 'RATE_LIMITED',
-          message: t({ key: 'importExport.aiRateLimited' }),
+          message: describeRateLimited({ aiClient, cause }),
           details,
         },
         cause,
