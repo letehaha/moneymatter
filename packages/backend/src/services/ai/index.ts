@@ -4,8 +4,11 @@ export { AI_MAX_OUTPUT_TOKENS, AI_OUTPUT_TRUNCATED_MESSAGE, hitOutputCeiling } f
 export { buildUnsupportedRequestMessage, classifyAiCallFailure, type AiCallFailureKind } from './ai-error-classifiers';
 export {
   describeMissingAiConfiguration,
+  describeRateLimited,
+  isUserFixableEndpointDown,
   markConnectionRejected,
-  markCustomEndpointUnreachable,
+  markEndpointUnreachable,
   markModelNotServed,
 } from './connection-failure';
+export { providerTakesPdfFileParts } from './provider-capabilities';
 export { resolveAIConfiguration } from './ai-model-resolver';

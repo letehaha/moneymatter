@@ -457,6 +457,8 @@
     "accountMappingMissing": "No mapping found for account \"{{accountName}}\"",
     "aiUnparseableResponse": "Failed to parse AI response. The output was not in expected format.",
     "aiTemporarilyUnavailable": "AI provider temporarily unavailable. Please try again later.",
+    "aiSubscriptionLimitResetsAt": "Your {{label}} subscription usage limit is reached. It resets at {{resetTime}}.",
+    "aiSubscriptionLimitReached": "Your {{label}} subscription usage limit is reached. Try again after it resets.",
     "aiRateLimited": "AI provider rate limit reached. Please try again in a few minutes.",
     "aiExtractionFailed": "AI extraction failed. Please try again.",
     "ynab": {
