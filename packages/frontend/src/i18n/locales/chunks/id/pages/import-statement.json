@@ -32,7 +32,12 @@
         "progressFile": "Parsing {name} ({current} of {total})",
         "acrossFiles": "across {count} files",
         "currencyConflict": "The selected statements report different currencies ({currencies}). They will all be imported into one account, using that account's currency.",
-        "unsupportedFileNamed": "{name} is not a PDF, CSV or TXT file",
+        "unsupportedFileNamed": "{name} is not a PDF, CSV, TXT, JPG, PNG or WebP file",
+        "unreadableImageNamed": "{name} could not be read as an image",
+        "pasteImageButton": "Paste image",
+        "pasteShortcutHint": "or press {shortcut}",
+        "clipboardNoImage": "No image found in the clipboard.",
+        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
         "unreadableFiles": "Could not read: {files}",
         "fileStatus": {
           "pending": "Not analyzed",

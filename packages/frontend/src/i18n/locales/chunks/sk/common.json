@@ -54,7 +54,8 @@
       }
     },
     "errors": {
-      "copyToClipboardFailed": "Kopírovanie do schránky zlyhalo"
+      "copyToClipboardFailed": "Kopírovanie do schránky zlyhalo",
+      "settingsSaveFailed": "Vaše nastavenia sa nepodarilo uložiť. Skúste to znova, prosím."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "Súhrn predplatných nedokáže prepočítať {currencies} na vašu základnú menu. Pripojte menu v Nastavenia → Meny.",
@@ -150,7 +151,7 @@
         "error": "Transakcie sa nepodarilo odpojiť!"
       },
       "record": {
-        "addedByTooltip": "Túto transakciu priradil k rozpočtu používateľ {handle}",
+        "addedByTooltip": "Túto transakciu priradil k sledovaču používateľ {handle}",
         "externalLinkTooltip": "Otvoriť externý odkaz",
         "locationTooltip": "Otvoriť polohu na mape",
         "attachmentsTooltip": "Obsahuje prílohy",

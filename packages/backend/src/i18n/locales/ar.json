@@ -371,8 +371,8 @@
     "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
-    "invalidFile": "Invalid file",
-    "textExtractionFailed": "Text extraction failed. The PDF may be a scanned document. Image-based extraction is not yet implemented.",
+    "imageTooLarge": "This image is over 3.75MB. Upload a smaller or lower-resolution image.",
+    "textExtractionFailed": "This PDF has no readable text, likely because it's a scan. Upload screenshots or photos of its pages instead (JPG, PNG or WebP).",
     "failedToExtractText": "Failed to extract text from file.",
     "fileContentRequired": "File content is required",
     "pdfPasswordRequired": "This PDF is password-protected. Enter the document password to continue.",

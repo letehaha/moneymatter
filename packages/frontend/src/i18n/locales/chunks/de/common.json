@@ -54,7 +54,8 @@
       }
     },
     "errors": {
-      "copyToClipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen"
+      "copyToClipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
+      "settingsSaveFailed": "Couldn't save your settings. Please try again."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "Die Abo-Übersicht kann {currencies} nicht in deine Basiswährung umrechnen. Verbinde die Währung unter Einstellungen → Währungen.",

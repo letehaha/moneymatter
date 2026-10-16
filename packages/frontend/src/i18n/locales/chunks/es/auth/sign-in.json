@@ -6,6 +6,7 @@
       "submitButton": "Iniciar sesión",
       "noAccount": "¿No tiene una cuenta?",
       "signupsDisabledTooltip": "Los nuevos registros están deshabilitados por el administrador de esta instancia",
+      "forgotPassword": "¿Has olvidado la contraseña?",
       "errors": {
         "incorrectEmailOrPassword": "Correo electrónico o contraseña incorrectos.",
         "incorrectPassword": "Contraseña incorrecta.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Iniciar sesión con {provider}",
         "signUp": "Registrarse con {provider}"
-      }
+      },
+      "lastUsed": "Último uso"
     }
   }
 }

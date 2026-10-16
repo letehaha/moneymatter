@@ -677,8 +677,8 @@
       "emailSendFailedWarning": "Pozvánka bola uložená, e-mail sa však nepodarilo odoslať. Príjemca nemusel dostať upozornenie — skúste to znova neskôr."
     },
     "shareBudgetDialog": {
-      "title": "Zdieľať rozpočet",
-      "description": "Pozvite niekoho, aby si mohol prezerať tento rozpočet a prispievať doň vlastnými transakciami. {name}.",
+      "title": "Zdieľať sledovač",
+      "description": "Pozvite niekoho, aby si mohol prezerať tento sledovač a prispievať doň vlastnými transakciami. {name}.",
       "emailLabel": "Email",
       "emailPlaceholder": "Email príjemcu",
       "permissionLabel": "Oprávnenia",
@@ -726,7 +726,7 @@
       "decline": "Odmietnuť",
       "close": "Zavrieť",
       "goToAccount": "Prejsť na účet",
-      "goToBudget": "Prejsť na rozpočet",
+      "goToBudget": "Prejsť na sledovač",
       "updateBaseCurrency": "Aktualizovať základnú menu",
       "acceptSuccess": "Teraz ste súčasťou tohto zdieľaného zdroja.",
       "acceptError": "Pozvánku sa nepodarilo prijať. Skúste to znova.",

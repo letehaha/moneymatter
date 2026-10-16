@@ -216,25 +216,25 @@
         }
       },
       "budget": {
-        "spent": "spent",
-        "ringLabel": "{percent}% of the budget is spent",
-        "leftOf": "left of {total}",
-        "overOf": "over the {total} budget",
-        "headerLeft": "{amount} left",
-        "headerOver": "{amount} over",
-        "daysLeft": "{count} day left | {count} days left",
-        "lastDay": "Last day of the period",
-        "empty": "No budget yet",
-        "create": "Set up a budget"
+        "spent": "minuté",
+        "ringLabel": "Minutých {percent} % rozpočtu",
+        "leftOf": "zostáva z {total}",
+        "overOf": "prečerpané z {total}",
+        "headerLeft": "zostáva {amount}",
+        "headerOver": "prečerpané o {amount}",
+        "daysLeft": "zostáva {count} deň | zostávajú {count} dni | zostáva {count} dní",
+        "lastDay": "Posledný deň obdobia",
+        "empty": "Zatiaľ žiadny rozpočet",
+        "create": "Nastavte si rozpočet"
       },
       "trackers": {
-        "spentOfLimit": "{spent} of {limit}",
-        "inOut": "{income} in, {expense} out",
+        "spentOfLimit": "{spent} z {limit}",
+        "inOut": "{income} príjem, {expense} výdavok",
         "net": "Čistý zostatok",
-        "noLimit": "No limit",
-        "empty": "Zatiaľ žiadne rozpočty",
+        "noLimit": "Bez limitu",
+        "empty": "Zatiaľ žiadne sledovače",
         "ended": "Ukončené",
-        "create": "Create a tracker"
+        "create": "Vytvoriť sledovač"
       },
       "emptyState": "Za vybraný časový interval nie sú žiadne údaje.",
       "registry": {
@@ -283,12 +283,12 @@
           "description": "Podiel príjmu zaplatený na daniach, s 12-mesačným trendom"
         },
         "budget": {
-          "name": "Budget",
-          "description": "What is left in the current budget period, line by line"
+          "name": "Rozpočet",
+          "description": "Čo zostáva v aktuálnom období rozpočtu, po jednotlivých položkách"
         },
         "trackers": {
-          "name": "Rozpočty",
-          "description": "Each active tracker with how much of its limit is used and its net"
+          "name": "Sledovače",
+          "description": "Každý aktívny sledovač s tým, koľko z jeho limitu je vyčerpané, a jeho bilancia"
         }
       }
     },

@@ -11,7 +11,7 @@
         "noMatchingTransactions": "Žiadne zodpovedajúce transakcie",
         "noTransactionsLinked": "Žiadne prepojené transakcie",
         "filterAdjustmentHint": "Skúste upraviť filtre a zobrazí sa vám viac transakcií.",
-        "addTransactionsHint": "Pridajte transakcie do tohto rozpočtu a začnite sledovať svoje výdavky.",
+        "addTransactionsHint": "Pridajte sledovače do tohto rozpočtu a začnite sledovať svoje výdavky.",
         "resetFilters": "Vynulovať filtre",
         "addTransactions": "Pridať transakcie",
         "add": "Pridať",
@@ -30,13 +30,13 @@
         "netBalance": "Čistý zostatok"
       },
       "utilization": {
-        "title": "Čerpanie rozpočtu",
+        "title": "Čerpanie sledovača",
         "summary": "{spent} z limitu {limit}",
         "na": "Nedostupné"
       },
       "noTransactionsYet": "Zatiaľ žiadne transakcie",
       "transactions": "Transakcie",
-      "transactionsLinked": "S týmto rozpočtom je prepojená {count} transakcia | S týmto rozpočtom sú prepojené {count} transakcie | S týmto rozpočtom je prepojených {count} transakcií",
+      "transactionsLinked": "S týmto sledovačom je prepojená {count} transakcia | S týmto sledovačom sú prepojené {count} transakcie | S týmto sledovačom je prepojených {count} transakcií",
       "tabs": {
         "statistics": "Štatistiky",
         "transactions": "Transakcie",
@@ -50,7 +50,7 @@
         "errorTitle": "Štatistiky sa nepodarilo načítať",
         "errorDescription": "Pri načítavaní údajov sa niečo pokazilo. Skúste to znova neskôr, prosím.",
         "noDataTitle": "Žiadne údaje o výdavkoch",
-        "noDataDescription": "Pre tento rozpočet zatiaľ nie sú dostupné žiadne údaje o výdavkoch.",
+        "noDataDescription": "Pre tento sledovač zatiaľ nie sú dostupné žiadne údaje o výdavkoch.",
         "noCategoryData": "Žiadne údaje o výdavkoch podľa kategórií.",
         "noTimelineData": "Žiadne údaje pre časovú os.",
         "total": "Spolu",
@@ -61,7 +61,7 @@
       },
       "sharing": {
         "title": "Zdieľanie",
-        "description": "Spravujte, kto môže tento rozpočet vidieť a prispievať doň.",
+        "description": "Spravujte, kto môže tento sledovač vidieť a prispievať doň.",
         "inviteAnother": "Pozvite niekoho",
         "membersHeading": "Členovia",
         "pendingHeading": "Čakajúce pozvánky",
@@ -75,7 +75,7 @@
           "you": "vy",
           "roleOwner": "Vlastník",
           "roleRecipient": "Člen",
-          "ownerHint": "Plná kontrola nad týmto rozpočtom",
+          "ownerHint": "Plná kontrola nad týmto sledovačom",
           "updateSuccess": "Oprávnenie aktualizované.",
           "updateError": "Oprávnenie sa nepodarilo aktualizovať.",
           "revoke": "Odobrať prístup",

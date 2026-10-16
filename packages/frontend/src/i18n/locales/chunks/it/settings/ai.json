@@ -32,7 +32,7 @@
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Upload a bank statement (PDF, CSV, or TXT) and AI will extract all transactions automatically.",
+            "upload": "Upload a bank statement (PDF, CSV or TXT), a receipt photo or a banking app screenshot and AI will extract all transactions automatically.",
             "analysis": "The AI analyzes the document structure to identify dates, descriptions, amounts, and transaction types.",
             "review": "You can review and correct any extracted data before importing into your account.",
             "cost": "Cost is estimated before processing, yet it only reflects the approximate cost."

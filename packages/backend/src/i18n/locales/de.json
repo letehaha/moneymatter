@@ -163,8 +163,8 @@
     "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
     "suggestedGroups": {
       "bills": "Rechnungen",
-      "everyday": "Everyday",
-      "life": "Life"
+      "everyday": "Alltag",
+      "life": "Leben"
     }
   },
   "tags": {
@@ -371,7 +371,7 @@
     "importInterruptedByServerUpdate": "Ein Server-Update hat diesen Import unterbrochen. Bereits gespeicherte Transaktionen wurden behalten. Lösche diesen Import im \"Importverlauf\", bevor du die Datei erneut importierst, da sie sonst dupliziert werden."
   },
   "statementParser": {
-    "invalidFile": "Ungültige Datei",
+    "imageTooLarge": "This image is over 3.75MB. Upload a smaller or lower-resolution image.",
     "textExtractionFailed": "Textextraktion fehlgeschlagen. Das PDF ist möglicherweise ein gescanntes Dokument. Bildbasierte Extraktion ist noch nicht implementiert.",
     "failedToExtractText": "Text konnte nicht aus der Datei extrahiert werden.",
     "fileContentRequired": "Dateiinhalt ist erforderlich",

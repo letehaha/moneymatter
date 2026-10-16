@@ -6,6 +6,7 @@
       "submitButton": "تسجيل الدخول",
       "noAccount": "ليس لديك حساب؟",
       "signupsDisabledTooltip": "تم تعطيل عمليات الاشتراك من قبل مسؤول هذه المرجلة",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "البريد الإلكتروني أو كلمة السر غير صحيحة.",
         "incorrectPassword": "كلمة السر غير الصحيحة.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "تسجيل الدخول من خلال {provider}",
         "signUp": "التسجيل بواسطة {provider}"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

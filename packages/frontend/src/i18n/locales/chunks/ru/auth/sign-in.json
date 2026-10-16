@@ -6,6 +6,7 @@
       "submitButton": "Войти",
       "noAccount": "Нет аккаунта?",
       "signupsDisabledTooltip": "Регистрация новых пользователей отключена администратором этого экземпляра",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Неверная электронная почта или пароль.",
         "incorrectPassword": "Неверный пароль.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Войти через {provider}",
         "signUp": "Зарегистрироваться через {provider}"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

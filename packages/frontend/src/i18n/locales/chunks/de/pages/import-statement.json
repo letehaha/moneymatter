@@ -33,6 +33,11 @@
         "acrossFiles": "über {count} Dateien",
         "currencyConflict": "Die ausgewählten Kontoauszüge weisen unterschiedliche Währungen aus ({currencies}). Sie werden alle in ein Konto mit der Währung dieses Kontos importiert.",
         "unsupportedFileNamed": "{name} ist keine PDF-, CSV- oder TXT-Datei",
+        "unreadableImageNamed": "{name} could not be read as an image",
+        "pasteImageButton": "Paste image",
+        "pasteShortcutHint": "or press {shortcut}",
+        "clipboardNoImage": "No image found in the clipboard.",
+        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
         "unreadableFiles": "Konnte nicht gelesen werden: {files}",
         "fileStatus": {
           "pending": "Nicht analysiert",

@@ -111,7 +111,7 @@
       "rolloverLabel": "Rollover",
       "rolloverPlaceholder": "Select a rollover rule",
       "submit": "Create budget",
-      "building": "Building your lines…",
+      "creating": "Creating…",
       "success": "Budget created",
       "suggestedLinesFailed": "Suggested lines couldn't be added. You can add them from the budget.",
       "error": "Could not create the budget",
@@ -127,13 +127,19 @@
         "days": "Days",
         "months": "Months"
       },
-      "customEveryError": "Enter a whole number from 1 to {max}."
+      "customEveryError": "Enter a whole number from 1 to {max}.",
+      "recommended": "推荐"
     },
     "suggest": {
       "title": "Shape your lines",
       "descriptionHistory": "We combine your answers with your last three months of spending.",
       "descriptionNoHistory": "No spending yet, so your lines come from these answers.",
-      "step": "Step {current} of {total}",
+      "steps": {
+        "home": "Home",
+        "life": "Lifestyle",
+        "focus": "Focus",
+        "detail": "Detail"
+      },
       "back": "Back",
       "next": "Next",
       "useDefaults": "Use defaults",

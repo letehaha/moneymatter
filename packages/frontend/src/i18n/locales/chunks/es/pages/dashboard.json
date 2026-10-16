@@ -216,25 +216,25 @@
         }
       },
       "budget": {
-        "spent": "spent",
-        "ringLabel": "{percent}% of the budget is spent",
-        "leftOf": "left of {total}",
-        "overOf": "over the {total} budget",
-        "headerLeft": "{amount} left",
-        "headerOver": "{amount} over",
-        "daysLeft": "{count} day left | {count} days left",
-        "lastDay": "Last day of the period",
-        "empty": "No budget yet",
-        "create": "Set up a budget"
+        "spent": "gastado",
+        "ringLabel": "{percent}% del presupuesto está gastado",
+        "leftOf": "quedan de {total}",
+        "overOf": "sobre el presupuesto de {total}",
+        "headerLeft": "{amount} restantes",
+        "headerOver": "{amount} más",
+        "daysLeft": "hace {count} día | hace {count} días",
+        "lastDay": "Último día del período",
+        "empty": "Aún no hay presupuestos",
+        "create": "Configurar un presupuesto"
       },
       "trackers": {
-        "spentOfLimit": "{spent} of {limit}",
-        "inOut": "{income} in, {expense} out",
+        "spentOfLimit": "{spent} de {limit}",
+        "inOut": "{ingresos} entran, {gastos} salen",
         "net": "Neto",
-        "noLimit": "No limit",
+        "noLimit": "Sin límite",
         "empty": "Aún no hay presupuestos",
         "ended": "Finalizado",
-        "create": "Create a tracker"
+        "create": "Crear un seguimiento"
       },
       "emptyState": "No hay datos en el intervalo de tiempo seleccionado.",
       "registry": {
@@ -283,12 +283,12 @@
           "description": "Porcentaje de ingresos pagados en impuestos, con una tendencia de 12 meses"
         },
         "budget": {
-          "name": "Budget",
-          "description": "What is left in the current budget period, line by line"
+          "name": "Presupuestos",
+          "description": "Lo que queda en el actual período presupuestario, línea por línea"
         },
         "trackers": {
           "name": "Presupuestos",
-          "description": "Each active tracker with how much of its limit is used and its net"
+          "description": "Cada rastreador activo con cuánto de su límite está usado y su neto"
         }
       }
     },

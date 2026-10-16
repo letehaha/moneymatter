@@ -6,6 +6,7 @@
       "submitButton": "登录",
       "noAccount": "没有帐号？",
       "signupsDisabledTooltip": "此实例的管理员禁止新用户注册",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "邮箱或密码错误。",
         "incorrectPassword": "密码错误。",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "使用 {provider} 登录",
         "signUp": "使用 {provider} 注册"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

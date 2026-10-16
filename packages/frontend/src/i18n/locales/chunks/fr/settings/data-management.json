@@ -10,7 +10,7 @@
       "textSource": {
         "title": "Import from any Text Source",
         "aiBadge": "AI-powered",
-        "listDescription": "Bank statements, emails, or any text source"
+        "listDescription": "Bank statements, receipts, screenshots, or any text"
       },
       "csv": {
         "title": "Import CSV",

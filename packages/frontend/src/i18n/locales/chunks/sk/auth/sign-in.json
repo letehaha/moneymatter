@@ -6,6 +6,7 @@
       "submitButton": "Prihlásiť sa",
       "noAccount": "Ešte nemáte účet?",
       "signupsDisabledTooltip": "Správca tejto inštancie zakázal registráciu nových používateľov",
+      "forgotPassword": "Zabudli ste heslo?",
       "errors": {
         "incorrectEmailOrPassword": "Nesprávny email alebo heslo.",
         "incorrectPassword": "Nesprávne heslo.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Prihlásiť sa cez {provider}",
         "signUp": "Zaregistrovať sa cez {provider}"
-      }
+      },
+      "lastUsed": "Naposledy použité"
     }
   }
 }

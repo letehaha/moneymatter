@@ -10,7 +10,7 @@
       "sections": {
         "account": "Účty",
         "household": "Domácnosti",
-        "budget": "Rozpočty zdieľané s vami"
+        "budget": "Sledovače zdieľané s vami"
       },
       "sharedBy": "Zdieľané {handle}",
       "viaHousehold": "Cez domácnosť {handle}",

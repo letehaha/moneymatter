@@ -6,6 +6,7 @@
       "submitButton": "Đăng nhập",
       "noAccount": "Chưa có tài khoản?",
       "signupsDisabledTooltip": "Quản trị viên của máy chủ này đã tắt chức năng đăng ký",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Email hoặc mật khẩu không đúng.",
         "incorrectPassword": "Mật khẩu không đúng.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Đăng nhập bằng {provider}",
         "signUp": "Đăng ký bằng {provider}"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

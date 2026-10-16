@@ -371,7 +371,7 @@
     "importInterruptedByServerUpdate": "A server update interrupted this import. Transactions already saved were kept. Delete this import in \"Import History\" before importing the file again, or they will be duplicated."
   },
   "statementParser": {
-    "invalidFile": "File tidak valid",
+    "imageTooLarge": "This image is over 3.75MB. Upload a smaller or lower-resolution image.",
     "textExtractionFailed": "Ekstraksi teks gagal. PDF mungkin merupakan dokumen hasil pindaian. Ekstraksi berbasis gambar belum diimplementasikan.",
     "failedToExtractText": "Gagal mengekstrak teks dari file.",
     "fileContentRequired": "Konten file diperlukan",

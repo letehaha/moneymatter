@@ -54,7 +54,8 @@
       }
     },
     "errors": {
-      "copyToClipboardFailed": "Gagal menyalin ke papan klip"
+      "copyToClipboardFailed": "Gagal menyalin ke papan klip",
+      "settingsSaveFailed": "Couldn't save your settings. Please try again."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "Ringkasan langganan tidak dapat mengonversi {currencies} ke mata uang dasar Anda. Hubungkan mata uang tersebut di Pengaturan → Mata Uang.",

@@ -6,6 +6,7 @@
       "submitButton": "Masuk",
       "noAccount": "Belum punya akun?",
       "signupsDisabledTooltip": "Pendaftaran baru dinonaktifkan oleh administrator instance ini",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Email atau kata sandi salah.",
         "incorrectPassword": "Kata sandi salah.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Masuk dengan {provider}",
         "signUp": "Daftar dengan {provider}"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

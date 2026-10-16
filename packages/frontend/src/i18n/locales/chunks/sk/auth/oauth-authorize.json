@@ -17,15 +17,15 @@
     "scopes": {
       "finance_read": {
         "label": "Zobraziť vaše finančné údaje",
-        "desc": "Čítanie účtov, transakcií, rozpočtov, kategórií, štítkov, portfólií a štatistík výdavkov."
+        "desc": "Čítanie účtov, transakcií, sledovačov, kategórií, štítkov, portfólií a štatistík výdavkov."
       },
       "finance_write": {
         "label": "Vytvárať a upravovať vaše finančné údaje",
-        "desc": "Pridávať a aktualizovať transakcie, rozpočty, predplatné, investičné pozície a ďalšie položky."
+        "desc": "Pridávať a aktualizovať transakcie, sledovače, predplatné, investičné pozície a ďalšie položky."
       },
       "finance_delete": {
         "label": "Vymazať vaše finančné údaje",
-        "desc": "Trvalo vymazať transakcie, účty, rozpočty a ďalšie záznamy."
+        "desc": "Trvalo vymazať transakcie, účty, sledovače a ďalšie záznamy."
       },
       "profile_read": {
         "label": "Zobraziť váš profil",

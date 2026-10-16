@@ -354,7 +354,7 @@
       "placeholder": "Vyberte kategórie...",
       "searchPlaceholder": "Hľadať kategórie...",
       "noCategoriesFound": "Nenašli sa žiadne kategórie",
-      "takenBy": "In {name}"
+      "takenBy": "V {name}"
     },
     "payeeMultiSelect": {
       "label": "Všetky protistrany",
@@ -366,12 +366,12 @@
       "blankOption": "Bez protistrany"
     },
     "budgetMultiSelect": {
-      "label": "Všetky rozpočty",
-      "selectedMany": "Vybrané rozpočty: {n}",
-      "searchPlaceholder": "Hľadať rozpočty",
-      "noResults": "Nenašli sa žiadne rozpočty",
-      "unknownBudget": "Neznámy rozpočet",
-      "loadError": "Rozpočty sa nepodarilo načítať. Skúste to znova, prosím."
+      "label": "Všetky sledovače",
+      "selectedMany": "Vybrané sledovače: {n}",
+      "searchPlaceholder": "Hľadať sledovače",
+      "noResults": "Nenašli sa žiadne sledovače",
+      "unknownBudget": "Neznámy sledovač",
+      "loadError": "Sledovače sa nepodarilo načítať. Skúste to znova, prosím."
     },
     "payeeSelect": {
       "placeholder": "Vyberte protistranu",

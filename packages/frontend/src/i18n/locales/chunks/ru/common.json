@@ -54,7 +54,8 @@
       }
     },
     "errors": {
-      "copyToClipboardFailed": "Не удалось скопировать в буфер обмена"
+      "copyToClipboardFailed": "Не удалось скопировать в буфер обмена",
+      "settingsSaveFailed": "Couldn't save your settings. Please try again."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "В сводке подписок невозможно конвертировать {currencies} в базовую валюту. Подключите валюту в разделе «Настройки → Валюты».",

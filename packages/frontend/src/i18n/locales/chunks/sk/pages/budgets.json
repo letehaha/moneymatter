@@ -1,20 +1,20 @@
 {
   "budgets": {
-    "title": "Rozpočty",
+    "title": "Sledovače",
     "description": "Sledujte výdavky a finančné udalosti",
-    "notFound": "Rozpočet sa nenašiel",
-    "notFoundDescription": "Tento rozpočet sa nepodarilo nájsť. Mohol byť zmazaný, alebo k nemu nemáte prístup.",
-    "backToList": "Späť na Rozpočty",
-    "newBudget": "Nový rozpočet",
-    "createBudget": "Vytvoriť rozpočet",
+    "notFound": "Sledovač sa nenašiel",
+    "notFoundDescription": "Tento sledovač sa nepodarilo nájsť. Mohol byť zmazaný, alebo k nemu nemáte prístup.",
+    "backToList": "Späť na Sledovače",
+    "newBudget": "Nový sledovač",
+    "createBudget": "Vytvoriť sledovač",
     "creation": {
-      "success": "Rozpočet vytvorený",
+      "success": "Sledovač vytvorený",
       "error": "Neočakávaná chyba!",
-      "nameLabel": "Názov rozpočtu",
+      "nameLabel": "Názov sledovača",
       "namePlaceholder": "Zadajte názov",
-      "typeLabel": "Typ rozpočtu",
+      "typeLabel": "Typ sledovača",
       "typeManual": "Manuálny",
-      "typeManualDescription": "Pridávajte transakcie do tohto rozpočtu ručne",
+      "typeManualDescription": "Pridávajte transakcie do tohto sledovača ručne",
       "typeCategory": "Podľa kategórií",
       "typeCategoryDescription": "Automatické sledovanie výdavkov podľa kategórií",
       "categoriesLabel": "Sledované kategórie",
@@ -22,23 +22,23 @@
       "fromDateLabel": "Od dátumu",
       "toDateLabel": "Do dátumu",
       "autoIncludeLabel": "Automaticky zahrnúť transakcie",
-      "limitLabel": "Limit rozpočtu",
+      "limitLabel": "Limit sledovača",
       "limitPlaceholder": "Zadajte limit",
-      "submitButton": "Pridať rozpočet"
+      "submitButton": "Pridať sledovač"
     },
     "list": {
-      "tabCategory": "Rozpočty podľa kategórií",
-      "tabManual": "Manuálne rozpočty",
+      "tabCategory": "Sledovače podľa kategórií",
+      "tabManual": "Manuálne sledovače",
       "edit": "Upraviť",
       "delete": "Zmazať",
-      "deleteSuccess": "Rozpočet bol úspešne zmazaný!",
+      "deleteSuccess": "Sledovač bol úspešne zmazaný!",
       "deleteError": "Neočakávaná chyba!",
-      "updateSuccess": "Rozpočet bol úspešne aktualizovaný!",
-      "updateError": "Rozpočet sa nepodarilo aktualizovať",
+      "updateSuccess": "Sledovač bol úspešne aktualizovaný!",
+      "updateError": "Sledovač sa nepodarilo aktualizovať",
       "unlinkTransactionsSuccess": "Transakcie boli úspešne odpojené!",
       "deleteDialog": {
-        "title": "Naozaj chcete zmazať tento rozpočet?",
-        "description": "Kliknutím na „Potvrdiť\" sa všetky priradené transakcie od rozpočtu odpoja, no v systéme zostanú zachované."
+        "title": "Naozaj chcete zmazať tento sledovač?",
+        "description": "Kliknutím na „Potvrdiť\" sa všetky priradené transakcie od sledovača odpoja, no v systéme zostanú zachované."
       },
       "limitLabel": "Limit: {amount}",
       "transactionsCount": "Transakcie: {count}",
@@ -66,21 +66,21 @@
       "showArchived": "Zobraziť archivované",
       "hideArchived": "Skryť archivované",
       "emptyState": {
-        "title": "Zatiaľ žiadne rozpočty",
-        "description": "Vytvorte rozpočet a začnite sledovať svoje výdavky alebo konkrétne udalosti."
+        "title": "Zatiaľ žiadne sledovače",
+        "description": "Vytvorte sledovač a začnite sledovať svoje výdavky alebo konkrétne udalosti."
       }
     },
     "settings": {
-      "nameLabel": "Názov rozpočtu",
-      "namePlaceholder": "Zadajte názov rozpočtu",
-      "limitLabel": "Limit rozpočtu",
+      "nameLabel": "Názov sledovača",
+      "namePlaceholder": "Zadajte názov sledovača",
+      "limitLabel": "Limit sledovača",
       "limitPlaceholder": "Zadajte sumu limitu (voliteľné)",
       "startDateLabel": "Dátum začiatku",
       "endDateLabel": "Dátum konca",
       "notSet": "Nenastavené"
     },
     "addTransactionsDialog": {
-      "title": "Pridať transakcie do rozpočtu",
+      "title": "Pridať transakcie do sledovača",
       "addSelected": "Pridať vybrané",
       "clearSelection": "Zrušiť výber"
     },
@@ -95,7 +95,7 @@
       "transactionsLoadError": "Transakcie sa nepodarilo načítať",
       "categoryBreakdown": "Rozdelenie podľa kategórií",
       "edit": "Upraviť",
-      "editTitle": "Upraviť rozpočet",
+      "editTitle": "Upraviť sledovač",
       "showMore": "Zobraziť viac",
       "showLess": "Zobraziť menej",
       "settings": {
@@ -104,7 +104,7 @@
     },
     "manualBudget": {
       "edit": "Upraviť",
-      "editTitle": "Upraviť rozpočet"
+      "editTitle": "Upraviť sledovač"
     },
     "share": {
       "sharedByBadge": "Zdieľané {handle}"

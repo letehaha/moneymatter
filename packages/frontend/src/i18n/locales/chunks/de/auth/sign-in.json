@@ -6,6 +6,7 @@
       "submitButton": "Anmelden",
       "noAccount": "Noch kein Konto?",
       "signupsDisabledTooltip": "Neue Registrierungen wurden vom Administrator dieser Instanz deaktiviert",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Ungültige E-Mail-Adresse oder falsches Passwort.",
         "incorrectPassword": "Falsches Passwort.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Mit {provider} anmelden",
         "signUp": "Mit {provider} registrieren"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

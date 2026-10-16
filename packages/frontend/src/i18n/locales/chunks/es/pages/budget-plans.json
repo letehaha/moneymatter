@@ -1,8 +1,8 @@
 {
   "budgetPlans": {
-    "title": "Budget",
+    "title": "Presupuestos",
     "loadError": "Couldn't load your budget.",
-    "defaultName": "Budget",
+    "defaultName": "Presupuestos",
     "settings": {
       "title": "Budget settings",
       "description": "Changes save and apply immediately.",
@@ -111,7 +111,7 @@
       "rolloverLabel": "Rollover",
       "rolloverPlaceholder": "Select a rollover rule",
       "submit": "Create budget",
-      "building": "Building your lines…",
+      "creating": "Creando…",
       "success": "Budget created",
       "suggestedLinesFailed": "Suggested lines couldn't be added. You can add them from the budget.",
       "error": "Could not create the budget",
@@ -127,13 +127,19 @@
         "days": "Days",
         "months": "Meses"
       },
-      "customEveryError": "Enter a whole number from 1 to {max}."
+      "customEveryError": "Enter a whole number from 1 to {max}.",
+      "recommended": "Recomendado"
     },
     "suggest": {
       "title": "Shape your lines",
       "descriptionHistory": "We combine your answers with your last three months of spending.",
       "descriptionNoHistory": "No spending yet, so your lines come from these answers.",
-      "step": "Paso {current} de {total}",
+      "steps": {
+        "home": "Home",
+        "life": "Lifestyle",
+        "focus": "Focus",
+        "detail": "Detalle"
+      },
       "back": "Atrás",
       "next": "Siguiente",
       "useDefaults": "Use defaults",

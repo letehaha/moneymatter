@@ -19,10 +19,10 @@
     "planned": {
       "planned": "Plánované",
       "subscriptions": "Opakujúce sa platby",
-      "budgets": "Rozpočty"
+      "budgets": "Sledovače"
     },
     "venture": "Rizikový kapitál",
-    "budget": "Budget"
+    "budget": "Rozpočet"
   },
   "sidebar": {
     "collapse": "Zbaliť bočný panel",
@@ -271,7 +271,7 @@
             "description": "Pridajte štítky a zoskupte súvisiace transakcie"
           },
           "create-budget": {
-            "title": "Nastavte si rozpočet",
+            "title": "Nastavte si sledovač",
             "description": "Vytvorte limity výdavkov pre kategórie"
           },
           "create-subscription": {

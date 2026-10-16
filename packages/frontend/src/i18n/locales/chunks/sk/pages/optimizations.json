@@ -182,12 +182,12 @@
       },
       "remove": {
         "title": "Odstrániť {count} transakciu? | Odstrániť {count} transakcie? | Odstrániť {count} transakcií?",
-        "description": "Odstránené transakcie sa prestanú počítať do zostatkov a štatistík. Prepojenia s rozpočtom, skupinou a predplatným sa odpoja. Môžete ich obnoviť z Histórie, prepojenia sa však už nevrátia.",
+        "description": "Odstránené transakcie sa prestanú počítať do zostatkov a štatistík. Prepojenia so sledovačom, skupinou a predplatným sa odpoja. Môžete ich obnoviť z Histórie, prepojenia sa však už nevrátia.",
         "confirm": "Odstrániť"
       },
       "restoreDialog": {
         "title": "Obnoviť {count} transakciu? | Obnoviť {count} transakcie? | Obnoviť {count} transakcií?",
-        "description": "Obnovené transakcie sa opäť počítajú do zostatkov a štatistík. Ak boli zlúčené, ponechaná transakcia zostáva, takže sa môžu znova objaviť duplicity. Prepojenia s rozpočtom, skupinou a predplatným, ktoré sa pri odstránení odpojili, sa nevrátia.",
+        "description": "Obnovené transakcie sa opäť počítajú do zostatkov a štatistík. Ak boli zlúčené, ponechaná transakcia zostáva, takže sa môžu znova objaviť duplicity. Prepojenia so sledovačom, skupinou a predplatným, ktoré sa pri odstránení odpojili, sa nevrátia.",
         "confirm": "Obnoviť"
       },
       "notifications": {

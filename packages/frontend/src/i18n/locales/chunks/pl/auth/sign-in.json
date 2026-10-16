@@ -6,6 +6,7 @@
       "submitButton": "Log in",
       "noAccount": "Don't have an account?",
       "signupsDisabledTooltip": "New signups are disabled by the administrator of this instance",
+      "forgotPassword": "Forgot password?",
       "errors": {
         "incorrectEmailOrPassword": "Incorrect email or password.",
         "incorrectPassword": "Incorrect password.",
@@ -30,7 +31,8 @@
       "oauthButton": {
         "signIn": "Sign in with {provider}",
         "signUp": "Sign up with {provider}"
-      }
+      },
+      "lastUsed": "Last used"
     }
   }
 }

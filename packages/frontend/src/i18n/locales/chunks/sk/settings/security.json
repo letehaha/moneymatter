@@ -134,7 +134,7 @@
           "list": {
             "accounts": "Účty a zostatky",
             "transactions": "Transakcie, vrátenia platby a prevody",
-            "budgets": "Rozpočty, štítky a kategórie",
+            "budgets": "Rozpočty, sledovače, štítky a kategórie",
             "portfolios": "Investície, portfóliá a pozície",
             "settings": "Používateľských nastavení, kľúčov AI a stavu úvodného nastavenia",
             "baseCurrency": "Základnej meny a výmenných kurzov"
@@ -166,7 +166,7 @@
           "description": "Túto akciu nie je možné vrátiť späť. Váš účet sa natrvalo zmaže spolu so všetkými vašimi údajmi:",
           "dataList": {
             "accounts": "Všetky účty a transakcie",
-            "categories": "Všetky kategórie a rozpočty",
+            "categories": "Všetky kategórie, rozpočty a sledovače",
             "portfolios": "Všetky investičné portfóliá",
             "settings": "Všetky nastavenia a predvoľby"
           },
@@ -199,7 +199,7 @@
               "aiKeysTerm": "API kľúče AI",
               "aiKeys": "{term} — uložené šifrovane, preto ich po obnove zadáte znova."
             },
-            "included": "Všetko ostatné — účty, transakcie, kategórie, rozpočty, investície, pôžičky, štítky, protistrany a predplatné — je zahrnuté."
+            "included": "Všetko ostatné — účty, transakcie, kategórie, rozpočty, sledovače, investície, pôžičky, štítky, protistrany a predplatné — je zahrnuté."
           }
         },
         "restore": {
