@@ -1,9 +1,9 @@
 # Setup Guide
 
 Run MoneyMatter on your own server. The stack pulls published Docker images
-(amd64) and exposes the whole app on **one host port**. You put whatever reverse
-proxy you already run in front of it – Nginx Proxy Manager, npmplus, Caddy,
-Traefik, or nothing at all for a LAN / localhost trial. A bundled Traefik
+(amd64 and arm64) and exposes the whole app on **one host port**. You put
+whatever reverse proxy you already run in front of it – Nginx Proxy Manager,
+npmplus, Caddy, Traefik, or nothing at all for a LAN / localhost trial. A bundled Traefik
 overlay is available if you'd rather the stack terminate TLS itself.
 
 This guide assumes:
@@ -51,11 +51,8 @@ there is no CORS to configure. Only the frontend's host port
 (`${HTTP_PORT:-8080}`) is published; Postgres, Redis, the backend, and the
 rate-data sidecar are reachable only from the `budget-tracker` network.
 
-> **Architecture**: the frontend, backend, and `currency-rates-api` images are
-> published as `amd64` only. On an `arm64` host (Hetzner ARM, Oracle Ampere,
-> AWS Graviton, Raspberry Pi) build the frontend and backend from source, or
-> let Docker run the `amd64` images under QEMU emulation – functional but
-> slower.
+> **Architecture**: all images are published for `amd64` and `arm64` (Hetzner
+> ARM, Oracle Ampere, AWS Graviton, Raspberry Pi with a 64-bit OS).
 
 ## Table of Contents
 

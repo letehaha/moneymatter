@@ -97,7 +97,7 @@ MoneyMatter shows you where your money is and where it goes. Add accounts by han
 
 **Try it.** The **Try demo** button on [moneymatter.app](https://moneymatter.app) opens a ready-made account with sample data. No sign-up required, and it expires after four hours.
 
-**Self-host.** The stack pulls published Docker images (amd64; ARM hosts can build from source) and exposes the whole app on one port, so you can put it behind whatever reverse proxy you already run, or use the optional Traefik + Let's Encrypt overlay.
+**Self-host.** The stack pulls published Docker images (amd64 and arm64) and exposes the whole app on one port, so you can put it behind whatever reverse proxy you already run, or use the optional Traefik + Let's Encrypt overlay.
 
 ```bash
 git clone https://github.com/letehaha/moneymatter.git

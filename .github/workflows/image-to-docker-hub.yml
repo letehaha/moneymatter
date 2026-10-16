@@ -8,6 +8,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Deploys run in push order so an older run can't overwrite a newer `latest`.
+# Never cancel in progress: that could cut off the database backup mid-dump.
+concurrency:
+  group: image-to-docker-hub
+  cancel-in-progress: false
+
 jobs:
   # Create database backup before deployment
   backup:
@@ -66,15 +72,21 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-access-token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }}
-          # Prod VPS is amd64, so build single-arch (fast, native, no QEMU). The
-          # actions still accept a `platforms` input — add linux/arm64 here to
-          # publish multi-arch images for ARM self-hosters when that's wanted.
+          # Only the small nginx stage runs per arch, so arm64 stays cheap here.
+          platforms: linux/amd64,linux/arm64
           push: 'true'
 
   build-backend:
     needs: [backup, prepare]
-    runs-on: ubuntu-latest
     if: ${{ always() && needs.prepare.result == 'success' }}
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -85,11 +97,30 @@ jobs:
           docker-hub-username: ${{ secrets.DOCKER_HUB_USERNAME }}
           docker-hub-access-token: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
           sentry-release: ${{ needs.prepare.outputs.sha }}
-          image-tag: latest,sha-${{ needs.prepare.outputs.sha_short }}
+          image-tag: sha-${{ needs.prepare.outputs.sha_short }}-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
           push: 'true'
 
+  # Each arch builds natively on its own runner; this stitches both into the
+  # multi-arch `latest` and `sha-*` tags.
+  merge-backend:
+    needs: [prepare, build-backend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+
+      - env:
+          IMAGE: ${{ secrets.DOCKER_HUB_USERNAME }}/budget-tracker-be
+          SHA_TAG: sha-${{ needs.prepare.outputs.sha_short }}
+        run: |
+          docker buildx imagetools create -t "$IMAGE:$SHA_TAG" -t "$IMAGE:latest" \
+            "$IMAGE:$SHA_TAG-amd64" "$IMAGE:$SHA_TAG-arm64"
+
   deploy:
-    needs: [build-frontend, build-backend]
+    needs: [build-frontend, merge-backend]
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Dokploy deployment

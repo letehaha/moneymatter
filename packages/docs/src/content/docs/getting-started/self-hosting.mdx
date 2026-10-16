@@ -38,7 +38,7 @@ On the cloud, hosting, updates, security patches and these data feeds are handle
 
 - A machine with Docker Engine and the Compose plugin. A small VPS running Ubuntu or Debian is the common choice, but any Docker host works.
 - At least 2 GB of RAM.
-- An `amd64` (x86-64) processor for the published images. On an ARM machine, such as a Raspberry Pi, build the images from source or run them under emulation, which is slower.
+- An `amd64` (x86-64) or `arm64` processor. On a Raspberry Pi, use a 64-bit OS.
 - For access from the internet: a domain and a reverse proxy that handles HTTPS. You don't need either to try it on your own computer or home network.
 
 Docker Compose is the only supported setup.
