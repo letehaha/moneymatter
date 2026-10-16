@@ -49,6 +49,15 @@ export type AICliProvider = AI_PROVIDER.claudeCode | AI_PROVIDER.codex;
 
 export const AI_CLI_PROVIDERS = [AI_PROVIDER.claudeCode, AI_PROVIDER.codex] as const satisfies readonly AICliProvider[];
 
+/** The provider itself when it is a CLI provider, else undefined. Narrows where a boolean guard can't (object params). */
+export function asAiCliProvider({ provider }: { provider: AI_PROVIDER }): AICliProvider | undefined {
+  return AI_CLI_PROVIDERS.find((candidate) => candidate === provider);
+}
+
+export function isAiCliProvider({ provider }: { provider: AI_PROVIDER }): boolean {
+  return asAiCliProvider({ provider }) !== undefined;
+}
+
 /** Pins `AI_CLI_PROVIDERS` to list every CLI provider. Exported only so the assertion isn't flagged as unused. */
 export type AiCliProvidersAreExhaustive = Expect<Equals<(typeof AI_CLI_PROVIDERS)[number], AICliProvider>>;
 

@@ -1,4 +1,4 @@
-import { AIFeatureStatus, AI_CLI_PROVIDERS, AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
+import { AIFeatureStatus, AI_FEATURE, AI_PROVIDER, isAiCliProvider } from '@bt/shared/types';
 import type { StoredAiSettings } from '@models/user-settings.model';
 
 import { getModelProfile } from '../ai/model-catalog';
@@ -61,7 +61,7 @@ export async function resolveFeatureStatus({
         modelId,
         ...(await describeModel(connection)),
         usingUserKey: true,
-        billing: AI_CLI_PROVIDERS.some((provider) => provider === connection.provider) ? 'subscription' : 'per-token',
+        billing: isAiCliProvider({ provider: connection.provider }) ? 'subscription' : 'per-token',
         connectionId: connection.id,
         connectionName: connection.name,
         serverModelName,

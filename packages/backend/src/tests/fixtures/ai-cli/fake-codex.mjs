@@ -101,7 +101,24 @@ async function deviceAuthLogin() {
   process.exit(0);
 }
 
+// `logout`: removes `auth.json` from `CODEX_HOME` and exits 0 (the real CLI also revokes the tokens). The
+// `logout-fail` scenario exits 1 without touching anything.
+function logout() {
+  const home = process.env.CODEX_HOME;
+
+  if (!home) fail({ code: 2, message: 'fake-codex: logout needs CODEX_HOME' });
+
+  recordRun({ bin: 'codex', argv, stdin: '', extra: { mode: 'logout', codexHome: home } });
+
+  if (process.env.MM_FAKE_CLI_SCENARIO === 'logout-fail') fail({ code: 1, message: 'fake-codex: logout failed' });
+
+  fs.rmSync(path.join(home, 'auth.json'), { force: true });
+  out('Successfully logged out\n');
+  process.exit(0);
+}
+
 if (argv[0] === 'login') await deviceAuthLogin();
+if (argv[0] === 'logout') logout();
 
 if (argv[0] !== 'exec') {
   fail({ code: 2, message: `fake-codex: unsupported invocation: ${argv.join(' ')}` });

@@ -10,6 +10,7 @@ const savedConnectionBody = z.object({
   model: modelField.optional(),
   baseUrl: baseUrlField.optional(),
   apiKey: apiKeyField.optional(),
+  cliAuthSessionId: z.uuid().optional(),
 });
 
 // Test a combination the user typed in, before it is saved anywhere.
@@ -19,6 +20,7 @@ const draftConnectionBody = z.object({
   baseUrl: baseUrlField.optional(),
   apiKey: apiKeyField.optional(),
   keyFromConnectionId: z.uuid().optional(),
+  cliAuthSessionId: z.uuid().optional(),
 });
 
 const schema = z.object({
