@@ -65,6 +65,7 @@
     "lodash": "^4.18.0",
     "mdb-reader": "^3.2.0",
     "morgan": "^1.10.1",
+    "node-pty": "1.1.0",
     "ofx-js": "1.1.1",
     "pg": "8.11.5",
     "posthog-node": "^5.20.0",
