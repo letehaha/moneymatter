@@ -1,0 +1,18 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000040",
+    "userId": 1,
+    "currencyCode": "AED",
+    "exchangeRate": 1,
+    "liveRateUpdate": true,
+    "isDefaultCurrency": true
+  },
+  {
+    "id": "0191a000-0000-7000-8000-000000000041",
+    "userId": 1,
+    "currencyCode": "USD",
+    "exchangeRate": null,
+    "liveRateUpdate": true,
+    "isDefaultCurrency": false
+  }
+]

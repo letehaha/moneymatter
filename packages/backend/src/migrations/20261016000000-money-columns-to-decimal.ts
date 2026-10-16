@@ -34,8 +34,11 @@ const columnsByTable = (): Map<string, string[]> => {
   return byTable;
 };
 
+// `Array.from` rather than spreading the Map: the e2e template runner transpiles migrations
+// with ts-node's default target, where spreading a Map silently yields an empty array and the
+// migration would be recorded as applied without altering a single column.
 const alterColumnTypesSql = ({ direction }: { direction: 'up' | 'down' }): string[] =>
-  [...columnsByTable()].map(([table, columns]) => {
+  Array.from(columnsByTable(), ([table, columns]) => {
     const clauses = columns.map((column) =>
       direction === 'up'
         ? `ALTER COLUMN "${column}" TYPE ${DECIMAL_TYPE} USING "${column}"::numeric / 100`

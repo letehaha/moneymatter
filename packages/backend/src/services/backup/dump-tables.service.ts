@@ -129,8 +129,8 @@ async function dumpTable({
   }
 
   // raw:true is the sanctioned exception to the "no raw on Money" rule: a
-  // backup must carry exact DB storage values (cents integers, decimal
-  // strings, JSONB, arrays) and bypassing the @MoneyField getters is the point.
+  // backup must carry exact DB storage values (decimal strings for money,
+  // JSONB, arrays) and bypassing the @MoneyField getters is the point.
   const rows = (await def.model.findAll({ where, raw: true, paranoid: false })) as unknown as Row[];
 
   if (def.stripSecret === 'aiKeys') stripAiKeys({ rows });

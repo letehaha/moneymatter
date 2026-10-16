@@ -12,8 +12,14 @@
 /**
  * On-disk backup shape version. Restore hard-fails a manifest whose
  * `formatVersion` is greater than this (app too old for the backup).
+ *
+ * - 1: money columns are integer cents (BIGINT storage); trackers carry the older "budget" names.
+ * - 2: trackers use their current names; money is still integer cents.
+ * - 3: money columns are exact decimal strings (DECIMAL storage) and the money
+ *   fields inside JSON columns are decimals. A version 1 or 2 archive is
+ *   converted to this shape on restore.
  */
-export const BACKUP_FORMAT_VERSION = 2;
+export const BACKUP_FORMAT_VERSION = 3;
 
 /**
  * Global-catalog subset embedded under `reference/`. Only the security
