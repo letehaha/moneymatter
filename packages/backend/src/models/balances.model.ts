@@ -45,7 +45,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
   declare amount: Money;
 
   @ForeignKey(() => Accounts)

@@ -74,7 +74,7 @@ export default class BudgetPlans
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   zeroSum!: boolean;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
   declare expectedIncome: Money | null;
 
   declare createdAt: Date;
