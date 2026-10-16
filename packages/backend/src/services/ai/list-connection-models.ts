@@ -40,6 +40,10 @@ async function fetchModelIds({
     return outcome.kind === 'listed' ? outcome.modelIds : [];
   }
 
+  if (provider === AI_PROVIDER.claudeCode || provider === AI_PROVIDER.codex) {
+    throw new Error('not wired');
+  }
+
   if (!apiKey) return [];
   const root = NATIVE_PROVIDER_BASE_URLS[provider];
 

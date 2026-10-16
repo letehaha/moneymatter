@@ -4,12 +4,15 @@ import type { Equals, Expect } from '../type-testing';
  * Supported AI providers for features like transaction categorization.
  *
  * `custom` is any OpenAI-compatible endpoint (OpenRouter, Ollama, a proxy).
+ * `claudeCode` and `codex` run the vendor CLI on the owner's subscription instead of an API key.
  */
 export enum AI_PROVIDER {
   anthropic = 'anthropic',
   openai = 'openai',
   google = 'google',
   custom = 'custom',
+  claudeCode = 'claude-code',
+  codex = 'codex',
 }
 
 /**
@@ -41,8 +44,16 @@ export interface AIModelCapabilities {
   structuredOutput: boolean | null;
 }
 
+/** Providers that run a vendor CLI signed in with a subscription; no API key, no base URL. */
+export type AICliProvider = AI_PROVIDER.claudeCode | AI_PROVIDER.codex;
+
+export const AI_CLI_PROVIDERS = [AI_PROVIDER.claudeCode, AI_PROVIDER.codex] as const satisfies readonly AICliProvider[];
+
+/** Pins `AI_CLI_PROVIDERS` to list every CLI provider. Exported only so the assertion isn't flagged as unused. */
+export type AiCliProvidersAreExhaustive = Expect<Equals<(typeof AI_CLI_PROVIDERS)[number], AICliProvider>>;
+
 /** Providers served through their native SDK at the official API; need an API key, take no base URL. */
-export type AINativeProvider = Exclude<AI_PROVIDER, AI_PROVIDER.custom>;
+export type AINativeProvider = Exclude<AI_PROVIDER, AI_PROVIDER.custom | AICliProvider>;
 
 export const AI_NATIVE_PROVIDERS = [
   AI_PROVIDER.openai,
@@ -55,6 +66,42 @@ export const AI_NATIVE_PROVIDERS = [
  * does not. Exported only so the assertion isn't flagged as unused.
  */
 export type AiNativeProvidersAreExhaustive = Expect<Equals<(typeof AI_NATIVE_PROVIDERS)[number], AINativeProvider>>;
+
+export interface CliAiModel {
+  /** Passed to the CLI verbatim as `--model` */
+  id: string;
+  /** Public catalog model (without the provider prefix) used for capability lookup */
+  catalogId: string;
+  isDefault?: boolean;
+}
+
+/**
+ * Curated models per CLI provider. Neither CLI can list models without a signed-in session, so
+ * the picker offers this list plus free-text entry; the create/test probe confirms the pick.
+ * Aliases (`sonnet`) resolve to a `catalogId` only for capability display.
+ */
+export const CLI_AI_MODELS: Record<AICliProvider, CliAiModel[]> = {
+  [AI_PROVIDER.claudeCode]: [
+    { id: 'sonnet', catalogId: 'claude-sonnet-5-5', isDefault: true },
+    { id: 'opus', catalogId: 'claude-opus-5-5' },
+    { id: 'haiku', catalogId: 'claude-haiku-5-5' },
+    { id: 'fable', catalogId: 'claude-fable-5-1' },
+    { id: 'claude-sonnet-5-5', catalogId: 'claude-sonnet-5-5' },
+    { id: 'claude-opus-5-5', catalogId: 'claude-opus-5-5' },
+    { id: 'claude-haiku-5-5', catalogId: 'claude-haiku-5-5' },
+    { id: 'claude-fable-5-1', catalogId: 'claude-fable-5-1' },
+  ],
+  [AI_PROVIDER.codex]: [
+    { id: 'gpt-6-astra', catalogId: 'gpt-6-astra', isDefault: true },
+    { id: 'gpt-6-sol', catalogId: 'gpt-6-sol' },
+    { id: 'gpt-6-luna', catalogId: 'gpt-6-luna' },
+    { id: 'gpt-5.6-sol', catalogId: 'gpt-5.6-sol' },
+    { id: 'gpt-5.6-terra', catalogId: 'gpt-5.6-terra' },
+    { id: 'gpt-5.6-luna', catalogId: 'gpt-5.6-luna' },
+    { id: 'gpt-5.5', catalogId: 'gpt-5.5' },
+    { id: 'gpt-5.3-codex', catalogId: 'gpt-5.3-codex' },
+  ],
+};
 
 export const MAX_AI_CONNECTIONS = 20;
 
@@ -75,6 +122,8 @@ export interface AIConnectionInfo {
   lastValidatedAt: string;
   lastError?: string;
   invalidatedAt?: string;
+  /** CLI providers only: when the stored sign-in token stops working (ISO datetime) */
+  credentialExpiresAt?: string;
 }
 
 /** Stored per feature. `connectionId: null` = explicitly the included server model. */
@@ -103,6 +152,8 @@ export interface AIFeatureStatus {
   /** Of what answers, null when the public model catalog doesn't know it */
   capabilities: AIModelCapabilities | null;
   usingUserKey: boolean;
+  /** `subscription` when the answering connection runs a CLI on the owner's plan: no per-token price */
+  billing: 'per-token' | 'subscription';
   /** The answering connection; the first connection when all of them are down */
   connectionId?: string;
   connectionName?: string;
@@ -137,6 +188,8 @@ export interface CreateAIConnectionBody {
   apiKey?: string;
   /** Reuse the stored key of another connection of the same provider */
   keyFromConnectionId?: string;
+  /** CLI providers: the finished sign-in session whose credential this connection stores */
+  cliAuthSessionId?: string;
 }
 
 /** PUT /user/settings/ai/connections/:id. `apiKey` omitted keeps the key, `null` clears it (`custom` only). */
@@ -145,6 +198,8 @@ export interface UpdateAIConnectionBody {
   model?: string;
   baseUrl?: string;
   apiKey?: string | null;
+  /** CLI providers: re-authenticate with a finished sign-in session of the same provider */
+  cliAuthSessionId?: string;
 }
 
 /** POST /user/settings/ai/connections/test. With `connectionId`, omitted fields fall back to the stored ones. */
@@ -155,6 +210,7 @@ export type TestAIConnectionBody =
       model?: string;
       baseUrl?: string;
       apiKey?: string;
+      cliAuthSessionId?: string;
     };
 
 export type TestAIConnectionResponse = { isValid: true; error?: undefined } | { isValid: false; error: string };
@@ -174,6 +230,31 @@ export interface ListAIConnectionModelsResponse {
 
 /** PUT /user/settings/ai/features/:feature */
 export type SetAIFeatureConfigBody = Pick<AIFeatureConfig, 'connectionId'>;
+
+export type CliAuthSessionStatus = 'starting' | 'awaiting-user' | 'verifying' | 'succeeded' | 'failed' | 'expired';
+
+/** In-progress CLI sign-in, polled by the frontend. Never carries the credential. */
+export interface CliAuthSessionInfo {
+  id: string;
+  provider: AICliProvider;
+  status: CliAuthSessionStatus;
+  /** The login page the user opens */
+  authUrl?: string;
+  /** Codex device-auth code the user types on the login page */
+  userCode?: string;
+  expiresAt: string;
+  error?: string;
+}
+
+export type CliAiUnavailableReason = 'not-self-host' | 'not-admin' | 'admin-not-configured';
+
+/** GET /user/settings/ai/cli/availability */
+export interface CliAiAvailability {
+  available: boolean;
+  /** Set when `available` is false */
+  reason?: CliAiUnavailableReason;
+  providers: { provider: AICliProvider; installed: boolean; version: string | null }[];
+}
 
 /** Maximum character length for custom AI categorization instructions */
 export const AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH = 2000;

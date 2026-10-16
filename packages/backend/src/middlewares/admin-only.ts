@@ -17,12 +17,15 @@ const parseAdminUsers = (): string[] =>
 export const isAdminUsername = ({ username }: { username?: string | null }): boolean =>
   Boolean(username) && parseAdminUsers().includes(username as string);
 
+/** Whether `ADMIN_USERS` names at least one admin. */
+export const hasConfiguredAdmins = (): boolean => parseAdminUsers().length > 0;
+
 /**
  * Middleware to ensure an endpoint is only accessible by admin users.
  * Returns a 401 Unauthorized error when the caller is not an admin.
  */
 export const adminOnly = (req: Request, res: Response, next: NextFunction) => {
-  if (parseAdminUsers().length === 0) {
+  if (!hasConfiguredAdmins()) {
     return res.status(ERROR_CODES.Unauthorized).json({
       status: API_RESPONSE_STATUS.error,
       response: {
