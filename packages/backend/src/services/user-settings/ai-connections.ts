@@ -108,6 +108,7 @@ function toConnectionInfo({ connection }: { connection: StoredConnection }): AIC
     lastValidatedAt: connection.lastValidatedAt,
     lastError: connection.lastError,
     invalidatedAt: connection.invalidatedAt,
+    credentialExpiresAt: connection.credentialExpiresAt,
   };
 }
 

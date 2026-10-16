@@ -20,6 +20,7 @@ const buildStatus = (overrides: Partial<AIFeatureStatus> = {}): AIFeatureStatus 
   pricing: null,
   capabilities: null,
   usingUserKey: false,
+  billing: 'per-token',
   serverModelName: 'Gemini Flash',
   ...overrides,
 });

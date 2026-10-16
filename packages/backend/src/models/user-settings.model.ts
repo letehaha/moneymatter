@@ -65,6 +65,8 @@ const ZodAiConnectionSchema = z
     lastValidatedAt: z.string().datetime(),
     lastError: z.string().optional(),
     invalidatedAt: z.string().datetime().optional(),
+    /** CLI providers: when the stored sign-in token stops working */
+    credentialExpiresAt: z.string().datetime().optional(),
   })
   .superRefine((connection, ctx) => {
     // Native providers always dial their official API, so a stored base URL would be dead weight.

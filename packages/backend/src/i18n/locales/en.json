@@ -604,6 +604,7 @@
     "customEndpointValidationFailed": "The endpoint did not return a usable response. Check the base URL, model name and API key.",
     "categorizationAlreadyRunning": "AI categorization is already running. Wait for it to finish before starting another run.",
     "categorizationRateLimited": "You've started AI categorization too many times recently. Please try again later.",
+    "cliProvidersNotAllowed": "Claude Code and Codex subscriptions can only be used by an admin of a self-hosted instance.",
     "customInstructionsNeedConnection": "Add an AI model in Settings → AI to use custom instructions."
   },
   "middleware": {

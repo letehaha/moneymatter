@@ -95,6 +95,12 @@ export const getUserDefaultCategory = async ({ id }: { id: number }) => {
   return user!.defaultCategoryId;
 };
 
+export const getUsernameById = async ({ id }: { id: number }): Promise<string | null> => {
+  const user = await Users.findOne({ where: { id }, attributes: ['username'], raw: true });
+
+  return user?.username ?? null;
+};
+
 export const createUser = async ({
   username,
   firstName,

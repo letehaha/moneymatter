@@ -315,6 +315,10 @@ export function validateConnection({
   /** Required for `custom`, ignored otherwise */
   baseUrl?: string;
 }): Promise<TestAIConnectionResponse> {
+  if (provider === AI_PROVIDER.claudeCode || provider === AI_PROVIDER.codex) {
+    throw new Error('not wired');
+  }
+
   if (provider !== AI_PROVIDER.custom) {
     return validateNativeConnection({ provider, model, apiKey });
   }

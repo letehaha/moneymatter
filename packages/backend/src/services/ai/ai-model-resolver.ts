@@ -26,6 +26,10 @@ function toProviderModelSpec({
 }): ProviderModelSpec | null {
   if (connection.keyEncrypted && apiKey === null) return null;
 
+  if (connection.provider === AI_PROVIDER.claudeCode || connection.provider === AI_PROVIDER.codex) {
+    throw new Error('not wired');
+  }
+
   if (connection.provider !== AI_PROVIDER.custom) {
     return apiKey ? { provider: connection.provider, model: connection.model, apiKey } : null;
   }
