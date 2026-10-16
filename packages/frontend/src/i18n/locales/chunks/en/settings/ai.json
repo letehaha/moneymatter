@@ -50,13 +50,16 @@
           "yourKey": "Your key",
           "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
           "server": "Server",
-          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
+          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply.",
+          "subscription": "Subscription",
+          "subscriptionTooltip": "Runs on your own Claude or ChatGPT subscription. There are no per-token charges, and your plan's usage limits apply."
         },
         "modelLabel": "Model",
         "modelInfo": {
           "estimatedCost": "Est. cost:",
           "per100Transactions": "per 100 txns",
-          "per100Pairs": "per 100 pairs"
+          "per100Pairs": "per 100 pairs",
+          "includedInSubscription": "Included in your subscription"
         },
         "notifications": {
           "updateSuccess": "Model updated successfully",
@@ -167,7 +170,8 @@
         },
         "badges": {
           "default": "Default",
-          "defaultSkipped": "Default · skipped while it needs attention"
+          "defaultSkipped": "Default · skipped while it needs attention",
+          "subscription": "Subscription"
         },
         "status": {
           "model": "{provider} · {model}"
@@ -178,13 +182,17 @@
           "setDefault": "Set as default",
           "remove": "Remove",
           "reconnect": "Reconnect",
-          "enterKey": "Enter API key"
+          "enterKey": "Enter API key",
+          "signInAgain": "Sign in again"
         },
         "removeDialog": {
           "title": "Remove this AI model?",
           "description": "\"{name}\" and its saved API key will be removed.",
           "pinnedFeatures": "These features will switch to automatic: {features}.",
-          "confirm": "Remove"
+          "confirm": "Remove",
+          "descriptionSubscription": "\"{name}\" and its saved sign-in will be removed.",
+          "claudeRevokeHint": "Removing it doesn't revoke the Claude token. To revoke it, open {link} and remove the Claude Code access.",
+          "claudeRevokeLink": "your Claude account settings"
         },
         "removeKeyDialog": {
           "title": "Remove the API key?",
@@ -271,7 +279,41 @@
             "namePlaceholder": "e.g. My ChatGPT plan",
             "signInLabel": "Sign in with ChatGPT"
           },
-          "cliNotInstalled": "Not installed in this backend image"
+          "cliNotInstalled": "Not installed in this backend image",
+          "disabledOption": "{label} · {reason}"
+        },
+        "credential": {
+          "validUntil": "Sign-in valid until {date}",
+          "expiresSoon": "Sign-in expires on {date}",
+          "expired": "Sign-in expired on {date}"
+        },
+        "cli": {
+          "personalUse": {
+            "claudeCode": "For your own personal use with your own Claude subscription, under Anthropic's terms.",
+            "codex": "For your own personal use with your own ChatGPT subscription, under OpenAI's terms."
+          },
+          "editHint": "Already signed in. Sign in again only to replace the saved sign-in.",
+          "starting": "Starting the sign-in…",
+          "openSignInPage": "Open sign-in page",
+          "codeLabel": "Sign-in code",
+          "codePlaceholder": "Paste the code from the sign-in page",
+          "submitCode": "Submit code",
+          "cancel": "Cancel sign-in",
+          "retry": "Try again",
+          "verifying": "Verifying the sign-in…",
+          "succeeded": "Signed in.",
+          "succeededSave": "Signed in. Save the model to keep the sign-in.",
+          "failed": "The sign-in didn't finish.",
+          "expired": "The sign-in expired. Start it again.",
+          "claudeCode": {
+            "awaiting": "Sign in on the page that opened, then paste the code it shows."
+          },
+          "codex": {
+            "awaiting": "Open the sign-in page and enter this code:",
+            "copyCode": "Copy the sign-in code",
+            "waiting": "Waiting for you to approve the sign-in…",
+            "deviceCodeHint": "Codex sign-in needs device code login turned on in ChatGPT under Settings → Security."
+          }
         }
       },
       "customInstructions": {

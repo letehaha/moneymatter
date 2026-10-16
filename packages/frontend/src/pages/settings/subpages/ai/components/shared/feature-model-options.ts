@@ -62,3 +62,24 @@ export const buildFeatureModelOptions = ({
 
   return options;
 };
+
+export type CostDisplay = { kind: 'subscription' } | { kind: 'price'; price: string };
+
+/**
+ * The cost line of a feature's model card. A subscription connection has no per-token price, so it says
+ * the plan covers it; a priced model needs both its price and a unit to price it in.
+ */
+export const resolveCostDisplay = ({
+  status,
+  formattedPrice,
+  hasUnitLabel,
+}: {
+  status: Pick<AIFeatureStatus, 'servedBy' | 'billing'>;
+  formattedPrice: string | null;
+  hasUnitLabel: boolean;
+}): CostDisplay | null => {
+  if (status.servedBy !== 'connection') return null;
+  if (status.billing === 'subscription') return { kind: 'subscription' };
+  if (formattedPrice && hasUnitLabel) return { kind: 'price', price: formattedPrice };
+  return null;
+};
