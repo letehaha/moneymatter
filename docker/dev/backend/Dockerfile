@@ -5,6 +5,15 @@ ARG OFFLINE_MODE=false
 
 WORKDIR /app
 
+# CLIs the backend drives for the Claude Code and Codex subscription providers.
+# Bump a version here only.
+ARG CLAUDE_CODE_VERSION=2.1.292
+ARG CODEX_VERSION=0.160.1
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} \
+    && npm cache clean --force \
+    && claude --version \
+    && codex --version
+
 # Copy package files first for better caching
 COPY package*.json ./
 COPY post-install.sh ./
