@@ -13,6 +13,7 @@ jest.mock('@models/currencies.model', () => ({
 /* eslint-disable import/first */
 import Currencies from '@models/currencies.model';
 
+import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
 import { getCurrencyDecimals, roundToCurrency } from './currency-precision';
 /* eslint-enable import/first */
 
@@ -36,6 +37,8 @@ const round = ({
 
 describe('currency precision helpers', () => {
   beforeEach(() => {
+    invalidateCurrencyDecimalsCache();
+    (Currencies.findOne as jest.Mock).mockClear();
     (Currencies.findOne as jest.Mock<(...args: unknown[]) => Promise<unknown>>).mockImplementation(async (options) => {
       const code = (options as { where: { code: string } }).where.code;
       const digits = DIGITS_BY_CODE[code];
@@ -58,6 +61,45 @@ describe('currency precision helpers', () => {
 
     it('throws for an unknown code', async () => {
       await expect(getCurrencyDecimals({ userId: USER_ID, code: 'ZZZ' })).rejects.toThrow();
+    });
+
+    it('reads the database once per user and code', async () => {
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      expect(Currencies.findOne).toHaveBeenCalledTimes(1);
+
+      await getCurrencyDecimals({ userId: 2, code: 'JPY' });
+      expect(Currencies.findOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not cache an unknown code', async () => {
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'ZZZ' })).rejects.toThrow();
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'ZZZ' })).rejects.toThrow();
+      expect(Currencies.findOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('reads again after the cache is invalidated', async () => {
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      invalidateCurrencyDecimalsCache({ code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      expect(Currencies.findOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('keeps entries of other codes and users when one code is invalidated', async () => {
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'KWD' });
+      invalidateCurrencyDecimalsCache({ userId: USER_ID, code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'KWD' });
+      expect(Currencies.findOne).toHaveBeenCalledTimes(2);
+    });
+
+    it('drops every code of a user when only the user is given', async () => {
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'KWD' });
+      invalidateCurrencyDecimalsCache({ userId: USER_ID });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'JPY' });
+      await getCurrencyDecimals({ userId: USER_ID, code: 'KWD' });
+      expect(Currencies.findOne).toHaveBeenCalledTimes(4);
     });
   });
 

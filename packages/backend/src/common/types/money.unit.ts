@@ -196,6 +196,18 @@ describe('Money value object', () => {
       const m = Money.fromDecimal(10.125);
       expect(m.round().toNumber()).toBe(10.13);
     });
+
+    it('roundHalfEven rounds a tie to the even neighbour', () => {
+      expect(Money.fromDecimal('10.125').roundHalfEven().toNumber()).toBe(10.12);
+      expect(Money.fromDecimal('10.135').roundHalfEven().toNumber()).toBe(10.14);
+      expect(Money.fromDecimal('-10.125').roundHalfEven().toNumber()).toBe(-10.12);
+    });
+
+    it('roundHalfEven rounds a non-tie to the nearest value', () => {
+      expect(Money.fromDecimal('10.1251').roundHalfEven().toNumber()).toBe(10.13);
+      expect(Money.fromDecimal('2.5').roundHalfEven(0).toNumber()).toBe(2);
+      expect(Money.fromDecimal('3.5').roundHalfEven(0).toNumber()).toBe(4);
+    });
   });
 
   describe('immutability', () => {

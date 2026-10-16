@@ -560,7 +560,8 @@
     "cannotFindForRefAmount": "Cannot find currency to calculate ref amount!",
     "cannotCalculateRefAmount": "Cannot calculate ref amount",
     "currencyNotConnected": "Asked currency is not connected",
-    "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}"
+    "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}",
+    "unknownCurrencyCode": "Unknown currency code: {{code}}"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"

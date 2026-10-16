@@ -564,7 +564,8 @@
     "cannotFindForRefAmount": "Не вдалося знайти валюту для розрахунку базової суми!",
     "cannotCalculateRefAmount": "Не вдалося розрахувати базову суму",
     "currencyNotConnected": "Запитана валюта не підключена",
-    "exchangeRateNotAvailable": "Курс обміну недоступний для {{baseCode}}/{{quoteCode}} на {{date}}"
+    "exchangeRateNotAvailable": "Курс обміну недоступний для {{baseCode}}/{{quoteCode}} на {{date}}",
+    "unknownCurrencyCode": "Невідомий код валюти: {{code}}"
   },
   "userSettings": {
     "userSettingsNotFound": "Налаштування користувача не знайдено"
