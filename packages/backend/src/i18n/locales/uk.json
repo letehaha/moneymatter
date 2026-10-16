@@ -618,6 +618,12 @@
     "cliAuthSessionNotUsable": "Цей вхід відсутній, не завершений, уже використаний або належить іншому провайдеру. Увійдіть знову.",
     "cliAuthSessionNoCodeStep": "Цей вхід не очікує вставлений код.",
     "cliAuthTooManySessions": "Забагато входів виконується одночасно. Спробуйте за хвилину.",
+    "cliConnectionBusy": "На цьому підключенні зараз виконується запуск, спробуйте за хвилину.",
+    "cliNotInstalled": "CLI {{provider}} не встановлено в образі бекенду.",
+    "cliSignInRejected": "{{provider}} відхилив вхід. Увійдіть знову в «Налаштування → AI».",
+    "cliModelNotAvailable": "{{provider}} не пропонує модель «{{model}}» у цій підписці. Оберіть іншу модель.",
+    "cliConnectionNoApiKey": "Підключення Claude Code та Codex входять за підпискою і не приймають API-ключ.",
+    "cliAuthSessionOnlyForCli": "Сеанс входу можна використовувати лише з Claude Code або Codex.",
     "customInstructionsNeedConnection": "Додайте AI-модель у «Налаштування → AI», щоб використовувати власні інструкції."
   },
   "middleware": {

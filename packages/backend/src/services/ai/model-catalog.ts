@@ -1,4 +1,12 @@
-import { AIModelCapabilities, AIModelPricing, AI_NATIVE_PROVIDERS, AI_PROVIDER } from '@bt/shared/types';
+import {
+  AIModelCapabilities,
+  AIModelPricing,
+  AI_NATIVE_PROVIDERS,
+  AI_PROVIDER,
+  CLI_AI_MODELS,
+  asAiCliProvider,
+  isAiCliProvider,
+} from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import { redisClient } from '@root/redis-client';
 import { z } from 'zod';
@@ -66,7 +74,17 @@ export function parseModelsDevCatalog({ raw }: { raw: unknown }): Record<string,
   return catalog;
 }
 
-/** Null for a custom endpoint other than OpenRouter: a self-hosted model has no public price. */
+/** Subscription CLIs are listed under the vendor's public catalog entry for the same model. */
+const CLI_CATALOG_PROVIDERS = {
+  [AI_PROVIDER.claudeCode]: AI_PROVIDER.anthropic,
+  [AI_PROVIDER.codex]: AI_PROVIDER.openai,
+} as const;
+
+/**
+ * Null for a custom endpoint other than OpenRouter: a self-hosted model has no public price.
+ * A CLI alias (`sonnet`) resolves to the model it currently points at; a model typed in by hand
+ * is looked up as it is.
+ */
 export function toCatalogKey({
   provider,
   model,
@@ -76,6 +94,13 @@ export function toCatalogKey({
   model: string;
   baseUrl?: string;
 }): string | null {
+  const cliProvider = asAiCliProvider({ provider });
+
+  if (cliProvider) {
+    const catalogId = CLI_AI_MODELS[cliProvider].find((candidate) => candidate.id === model)?.catalogId ?? model;
+    return `${CLI_CATALOG_PROVIDERS[cliProvider]}/${catalogId}`;
+  }
+
   if (provider !== AI_PROVIDER.custom) return `${provider}/${model}`;
   return baseUrl && new URL(baseUrl).hostname === OPENROUTER_HOST ? `openrouter/${model}` : null;
 }
@@ -113,8 +138,21 @@ async function refreshCatalog(): Promise<Record<string, ModelProfile>> {
 
 let inflightRefresh: Promise<Record<string, ModelProfile>> | null = null;
 
-/** Price, limits and capabilities read as unknown when the public catalog doesn't know the model or can't be reached. */
-export async function getModelProfile({
+/**
+ * Price, limits and capabilities read as unknown when the public catalog doesn't know the model or can't be reached.
+ * A subscription model has no per-token price, so its pricing is always null.
+ */
+export async function getModelProfile(spec: {
+  provider: AI_PROVIDER;
+  model: string;
+  baseUrl?: string;
+}): Promise<ModelProfile> {
+  const profile = await lookupModelProfile(spec);
+
+  return isAiCliProvider({ provider: spec.provider }) ? { ...profile, pricing: null } : profile;
+}
+
+async function lookupModelProfile({
   provider,
   model,
   baseUrl,

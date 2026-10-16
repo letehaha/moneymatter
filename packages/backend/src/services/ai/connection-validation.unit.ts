@@ -1,14 +1,32 @@
-import { AI_PROVIDER } from '@bt/shared/types';
+import { AICliProvider, AI_PROVIDER } from '@bt/shared/types';
 import { i18nextReady, t } from '@i18n/index';
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ValidationError } from '@js/errors';
+import { useFakeAiClis } from '@tests/helpers/ai-cli';
 
+import { CliCredentialSource } from './cli/cli-credential-run';
 import {
+  CliNotInstalledError,
+  createCliApiError,
+  createToolUseBlockedError,
+  mapCliFailure,
+  CLI_ERROR_TYPE,
+} from './cli/cli-errors';
+import { runWithCliSlot } from './cli/cli-run-limiter';
+import {
+  judgeCliProbeFailure,
   pickListedModelsToShow,
   readModelIds,
+  validateCliConnection,
   validateConnection,
   validateCustomEndpoint,
 } from './connection-validation';
+
+// A busy slot must give up quickly for the test; the production wait is 2 minutes.
+jest.mock('./cli/cli-run-limiter', () => ({
+  ...(jest.requireActual('./cli/cli-run-limiter') as object),
+  CLI_PROBE_MAX_WAIT_MS: 150,
+}));
 
 describe('readModelIds', () => {
   it('reads the ids out of an OpenAI-style list', () => {
@@ -441,6 +459,186 @@ describe('validateConnection for a native provider', () => {
     expect(await validate()).toEqual({
       isValid: false,
       error: t({ key: 'ai.connectionValidationFailed', variables: { reason: 'max_output_tokens is too large' } }),
+    });
+  });
+});
+
+const failed = (reason: string) => ({
+  isValid: false,
+  error: t({ key: 'ai.connectionValidationFailed', variables: { reason } }),
+});
+
+describe('CLI connection verdicts', () => {
+  const MODEL = 'sonnet';
+  const claude = AI_PROVIDER.claudeCode;
+
+  beforeAll(async () => {
+    await i18nextReady;
+  });
+
+  const judge = ({ error, provider = claude }: { error: unknown; provider?: AICliProvider }) =>
+    judgeCliProbeFailure({ provider, model: MODEL, error });
+
+  describe('judgeCliProbeFailure', () => {
+    it('accepts the subscription limit: the sign-in and the model were recognised', () => {
+      expect(
+        judge({ error: mapCliFailure({ provider: claude, text: 'Claude AI usage limit reached|1900000000' }) }),
+      ).toEqual({
+        isValid: true,
+      });
+    });
+
+    it('accepts an overloaded service (503)', () => {
+      expect(judge({ error: mapCliFailure({ provider: claude, text: 'Overloaded', apiErrorStatus: 529 }) })).toEqual({
+        isValid: true,
+      });
+    });
+
+    it('refuses an unmapped exit (502 cli_failed) with the CLI own message', () => {
+      const error = mapCliFailure({ provider: claude, text: 'Unknown feature flag: shell_tool', exitCode: 2 });
+
+      expect(judge({ error })).toEqual(
+        failed('The Claude Code CLI exited with code 2: Unknown feature flag: shell_tool'),
+      );
+    });
+
+    it('refuses a blocked tool use (502 cli_tool_use_blocked) with the CLI own message', () => {
+      const error = createToolUseBlockedError({ provider: AI_PROVIDER.codex, detail: 'command_execution' });
+
+      expect(judge({ error, provider: AI_PROVIDER.codex })).toEqual(
+        failed('The Codex run was stopped because the model tried to use a tool (command_execution)'),
+      );
+    });
+
+    it('never puts a token into the reason', () => {
+      const error = createCliApiError({
+        provider: claude,
+        type: CLI_ERROR_TYPE.failed,
+        message: 'crashed with sk-ant-oat01-abcdefghijklmnop1234',
+      });
+
+      const verdict = judge({ error });
+
+      expect(verdict.isValid).toBe(false);
+      expect(verdict.error).not.toContain('abcdefghijklmnop');
+    });
+
+    it('tells the user to sign in again when the CLI rejects the sign-in', () => {
+      expect(judge({ error: mapCliFailure({ provider: claude, text: 'invalid_grant' }) })).toEqual({
+        isValid: false,
+        error: t({ key: 'ai.cliSignInRejected', variables: { provider: 'Claude Code' } }),
+      });
+    });
+
+    it('names the model when the CLI does not serve it', () => {
+      expect(
+        judge({ error: mapCliFailure({ provider: claude, text: 'There is an issue with the selected model (x).' }) }),
+      ).toEqual({
+        isValid: false,
+        error: t({ key: 'ai.cliModelNotAvailable', variables: { provider: 'Claude Code', model: MODEL } }),
+      });
+    });
+
+    it('reports a missing binary with the not-installed copy', () => {
+      expect(
+        judge({ error: new CliNotInstalledError({ provider: claude, cause: new Error('spawn ENOENT') }) }),
+      ).toEqual({
+        isValid: false,
+        error: t({ key: 'ai.cliNotInstalled', variables: { provider: 'Claude Code' } }),
+      });
+    });
+
+    it('keeps the unreachable copy for a probe timeout', () => {
+      const timeout = Object.assign(new Error('timed out'), { name: 'TimeoutError' });
+
+      expect(judge({ error: timeout })).toEqual({
+        isValid: false,
+        error: t({ key: 'ai.connectionProviderUnreachable' }),
+      });
+    });
+
+    it('passes an unclassified failure through', () => {
+      expect(judge({ error: new Error('something odd') })).toEqual(failed('something odd'));
+    });
+  });
+
+  describe('validateCliConnection', () => {
+    const fakes = useFakeAiClis();
+    let counter = 0;
+
+    const buildSource = (): CliCredentialSource => {
+      counter += 1;
+
+      return {
+        connectionKey: `validation-test-${counter}`,
+        load: async () => ({ credential: 'sk-ant-oat01-fake-token-value', revision: 'rev-1' }),
+      };
+    };
+
+    it('accepts a working sign-in and runs onValid once', async () => {
+      const onValid = jest.fn<() => void>();
+
+      const verdict = await validateCliConnection({
+        provider: claude,
+        model: MODEL,
+        credentialSource: buildSource(),
+        onValid,
+      });
+
+      expect(verdict).toEqual({ isValid: true });
+      expect(onValid).toHaveBeenCalledTimes(1);
+      expect(fakes.readRuns()).toHaveLength(1);
+    });
+
+    it.each([
+      ['limit', true],
+      ['overloaded', true],
+      ['auth', false],
+      ['model-not-found', false],
+      ['exit-1', false],
+      ['tool-call', false],
+    ])(
+      'under the %s scenario the verdict is valid: %s, and onValid runs only for a valid one',
+      async (scenario, valid) => {
+        fakes.setScenario({ scenario });
+        const onValid = jest.fn<() => void>();
+
+        const verdict = await validateCliConnection({
+          provider: claude,
+          model: MODEL,
+          credentialSource: buildSource(),
+          onValid,
+        });
+
+        expect(verdict.isValid).toBe(valid);
+        expect(onValid).toHaveBeenCalledTimes(valid ? 1 : 0);
+      },
+    );
+
+    it('lets an onValid failure surface instead of turning it into a verdict', async () => {
+      const onValid = jest.fn(() => {
+        throw new ValidationError({ message: 'session already used' });
+      });
+
+      await expect(
+        validateCliConnection({ provider: claude, model: MODEL, credentialSource: buildSource(), onValid }),
+      ).rejects.toThrow('session already used');
+    });
+
+    it('throws the busy message, without a verdict, when the slot stays taken', async () => {
+      const credentialSource = buildSource();
+      const holder = runWithCliSlot({
+        connectionKey: credentialSource.connectionKey,
+        timeoutMs: 5_000,
+        run: () => new Promise((resolve) => setTimeout(resolve, 600)),
+      });
+
+      await expect(validateCliConnection({ provider: claude, model: MODEL, credentialSource })).rejects.toThrow(
+        t({ key: 'ai.cliConnectionBusy' }),
+      );
+      expect(fakes.readRuns()).toHaveLength(0);
+
+      await holder;
     });
   });
 });

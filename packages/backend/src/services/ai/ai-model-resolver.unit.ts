@@ -1,11 +1,18 @@
 import { AI_FEATURE, AI_PROVIDER, type Entitlements, FEATURES } from '@bt/shared/types';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { StoredAiSettings, StoredConnection } from '@models/user-settings.model';
 
 import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.service';
-import { decryptConnectionKey, getStoredAiSettings, markConnectionInvalid } from '../user-settings/ai-connections';
+import {
+  connectionCredentialSource,
+  decryptConnectionKey,
+  getStoredAiSettings,
+  markConnectionInvalid,
+} from '../user-settings/ai-connections';
 import { isWithinAiAllowance } from './ai-allowance';
 import { resolveAIConfiguration } from './ai-model-resolver';
+import { getCliAiAccess } from './cli/cli-access';
 import { CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE } from './connection-failure';
 import { FALLBACK_SERVER_MODELS, PRIMARY_SERVER_MODEL, buildConnectionModelId } from './resolution-ladder';
 
@@ -15,7 +22,9 @@ jest.mock('../user-settings/ai-connections', () => ({
   getStoredAiSettings: jest.fn(),
   decryptConnectionKey: jest.fn(),
   markConnectionInvalid: jest.fn(),
+  connectionCredentialSource: jest.fn(),
 }));
+jest.mock('./cli/cli-access', () => ({ getCliAiAccess: jest.fn() }));
 jest.mock('@js/utils/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
 }));
@@ -31,6 +40,21 @@ const isWithinAiAllowanceMock = jest.mocked(isWithinAiAllowance);
 const getStoredAiSettingsMock = jest.mocked(getStoredAiSettings);
 const decryptConnectionKeyMock = jest.mocked(decryptConnectionKey);
 const markConnectionInvalidMock = jest.mocked(markConnectionInvalid);
+const connectionCredentialSourceMock = jest.mocked(connectionCredentialSource);
+const getCliAiAccessMock = jest.mocked(getCliAiAccess);
+
+const CLI_SOURCE = { connectionKey: 'conn-codex', load: jest.fn<() => Promise<never>>() };
+
+const CODEX: StoredConnection = {
+  id: 'conn-codex',
+  provider: AI_PROVIDER.codex,
+  name: 'ChatGPT',
+  keyEncrypted: 'ciphertext',
+  model: 'gpt-6-astra',
+  createdAt: NOW,
+  status: 'valid',
+  lastValidatedAt: NOW,
+};
 
 const CLAUDE: StoredConnection = {
   id: 'conn-claude',
@@ -74,6 +98,10 @@ function grantEntitlements(overrides: Partial<Entitlements> = {}): void {
 }
 
 describe('resolveAIConfiguration', () => {
+  beforeAll(async () => {
+    await i18nextReady;
+  });
+
   const envBeforeTest = new Map<string, string | undefined>();
 
   beforeEach(() => {
@@ -211,6 +239,62 @@ describe('resolveAIConfiguration', () => {
       connectionId: OLLAMA.id,
     });
     expect(markConnectionInvalidMock).not.toHaveBeenCalled();
+  });
+
+  describe('subscription CLI connection', () => {
+    beforeEach(() => {
+      connectionCredentialSourceMock.mockReturnValue(CLI_SOURCE);
+      getCliAiAccessMock.mockResolvedValue({ allowed: true });
+    });
+
+    it('dials through a credential source and never decrypts the stored credential', async () => {
+      storeSettings({ connections: [CODEX] });
+
+      const resolution = await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE });
+
+      expect(resolution).toEqual({
+        kind: 'connection',
+        provider: AI_PROVIDER.codex,
+        model: 'gpt-6-astra',
+        credentialSource: CLI_SOURCE,
+        modelId: 'codex/gpt-6-astra',
+        connectionId: CODEX.id,
+        usingUserKey: true,
+      });
+      expect(resolution).not.toHaveProperty('apiKey');
+      expect(connectionCredentialSourceMock).toHaveBeenCalledWith({ userId: USER_ID, connectionId: CODEX.id });
+      expect(decryptConnectionKeyMock).not.toHaveBeenCalled();
+    });
+
+    it('flags a user outside the admin gate, skips the connection and moves on', async () => {
+      storeSettings({ connections: [CODEX, OLLAMA] });
+      getCliAiAccessMock.mockResolvedValue({ allowed: false, reason: 'not-admin' });
+      decryptConnectionKeyMock.mockReturnValue(null);
+
+      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
+        connectionId: OLLAMA.id,
+      });
+      expect(markConnectionInvalidMock).toHaveBeenCalledWith({
+        userId: USER_ID,
+        connectionId: CODEX.id,
+        errorMessage: t({ key: 'ai.cliProvidersNotAllowed' }),
+      });
+      expect(connectionCredentialSourceMock).not.toHaveBeenCalled();
+    });
+
+    it('flags a CLI connection that has no credential stored', async () => {
+      storeSettings({ connections: [{ ...CODEX, keyEncrypted: undefined }, OLLAMA] });
+      decryptConnectionKeyMock.mockReturnValue(null);
+
+      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
+        connectionId: OLLAMA.id,
+      });
+      expect(markConnectionInvalidMock).toHaveBeenCalledWith({
+        userId: USER_ID,
+        connectionId: CODEX.id,
+        errorMessage: CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE,
+      });
+    });
   });
 
   it('never falls back to the server key when every connection is down', async () => {
