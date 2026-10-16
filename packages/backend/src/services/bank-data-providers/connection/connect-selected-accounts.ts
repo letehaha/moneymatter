@@ -225,24 +225,26 @@ const createAccountsForConnection = withTransaction(
         }
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
+        // `ProviderAccount.balance` and the `creditLimit` metadata are minor units (cents).
+        const providerBalance = Money.fromCents(providerAccount.balance);
+        const creditLimit = Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0);
+
         const now = new Date();
         const accountRefBalance = await calculateRefAmount({
-          amount: Money.fromCents(providerAccount.balance),
+          amount: providerBalance,
           userId,
           date: now,
           baseCode: providerAccount.currency,
         });
 
-        const creditLimitCents = (providerAccount.metadata?.creditLimit as number) || 0;
-        const refCreditLimit =
-          creditLimitCents > 0
-            ? await calculateRefAmount({
-                amount: Money.fromCents(creditLimitCents),
-                userId,
-                date: now,
-                baseCode: providerAccount.currency,
-              })
-            : Money.zero();
+        const refCreditLimit = creditLimit.isPositive()
+          ? await calculateRefAmount({
+              amount: creditLimit,
+              userId,
+              date: now,
+              baseCode: providerAccount.currency,
+            })
+          : Money.zero();
 
         // Create new account
         const accountName =
@@ -256,11 +258,11 @@ const createAccountsForConnection = withTransaction(
           type: PROVIDER_TO_ACCOUNT_TYPE[connection.providerType as BANK_PROVIDER_TYPE],
           accountCategory: ACCOUNT_CATEGORIES.general,
           currencyCode: providerAccount.currency,
-          initialBalance: providerAccount.balance,
+          initialBalance: providerBalance,
           refInitialBalance: accountRefBalance,
-          currentBalance: providerAccount.balance,
+          currentBalance: providerBalance,
           refCurrentBalance: accountRefBalance,
-          creditLimit: creditLimitCents,
+          creditLimit,
           refCreditLimit,
           externalId: providerAccount.externalId,
           externalData: { ...(providerAccount.metadata || {}), ...(currencyFallback && { currencyFallback }) },

@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/index';
@@ -183,7 +184,15 @@ export async function applyDemoTemplate({
   reconcileTransferRefAmounts({ rows });
 
   logger.info(`Bulk inserting ${rows.length} demo transactions...`);
-  await Transactions.bulkCreate(rows, { hooks: false, validate: false });
+  // The template and `rows` carry integer cents; the model's money setters take `Money`.
+  await Transactions.bulkCreate(
+    rows.map((row) => ({
+      ...row,
+      amount: Money.fromCents(row.amount),
+      refAmount: Money.fromCents(row.refAmount),
+    })),
+    { hooks: false, validate: false },
+  );
 
   const refAmountById = new Map(rows.map((row) => [row.id, row.refAmount]));
   const amountById = new Map(rows.map((row) => [row.id, row.amount]));

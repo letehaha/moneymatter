@@ -47,7 +47,7 @@ export interface TagModel {
  * Type-specific settings for amount threshold reminders
  */
 export interface AmountThresholdSettings {
-  /** Threshold amount in cents */
+  /** Threshold amount as a decimal, in the user's base currency */
   amountThreshold: number;
 }
 

@@ -29,6 +29,7 @@ export interface MoneyJsonRule {
   /** Model-side name of the JSON column. */
   attrName: string;
   shape: MoneyJsonFieldSpec['shape'];
+  path: readonly string[];
   keys: readonly string[];
 }
 
@@ -78,9 +79,10 @@ export function buildV1ConversionRules({
 } = {}): V1ConversionRules {
   return {
     columns: columns.map(({ table, column }) => resolveColumn({ table, column, tables })),
-    jsonFields: jsonFields.map(({ table, column, shape, keys }) => ({
+    jsonFields: jsonFields.map(({ table, column, shape, keys, path = [] }) => ({
       ...resolveColumn({ table, column, tables }),
       shape,
+      path,
       keys,
     })),
   };
@@ -142,7 +144,11 @@ export function convertV1MoneyToDecimal({
     for (const row of data.get(rule.fileName) ?? []) {
       const field = row[rule.attrName];
       if (rule.shape === 'object') {
-        if (isPlainObject(field)) convertJsonObject({ object: field as Row, rule, where });
+        const target = rule.path.reduce<unknown>(
+          (node, key) => (isPlainObject(node) ? (node as Row)[key] : undefined),
+          field,
+        );
+        if (isPlainObject(target)) convertJsonObject({ object: target as Row, rule, where });
         continue;
       }
       if (!Array.isArray(field)) continue;

@@ -107,9 +107,9 @@ export interface TagReminderNotificationPayload {
     frequency?: TagReminderFrequency | null;
     dayOfMonth?: number | null;
   };
-  /** Amount threshold in cents (integers) */
+  /** Amount threshold as a decimal */
   thresholdAmount?: number;
-  /** Actual amount spent in cents (integers) */
+  /** Actual amount spent as a decimal */
   actualAmount?: number;
   transactionCount?: number;
   currencyCode?: string;

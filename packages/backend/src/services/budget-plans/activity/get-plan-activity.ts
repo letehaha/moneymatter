@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
@@ -10,7 +11,7 @@ import { FoldActivityRow } from '../fold/fold-plan';
 interface RawActivityRow {
   periodId: RecordId;
   categoryId: RecordId | null;
-  /** Cents. SUM over BIGINT returns numeric, which pg hands back as a string. */
+  /** Decimal string: a SUM over the DECIMAL ref amounts, which pg hands back as text. */
   activity: string;
 }
 
@@ -106,6 +107,6 @@ export const getPlanActivity = async ({
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
-    activity: Number(row.activity),
+    activity: Money.fromDecimal(row.activity).toCents(),
   }));
 };

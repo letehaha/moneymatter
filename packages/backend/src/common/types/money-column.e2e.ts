@@ -271,11 +271,9 @@ describe('MoneyField integration', () => {
     });
 
     it('tag reminders: amountThreshold stored in JSONB must survive roundtrip', async () => {
-      // Bug: deserializer converted amountThreshold to Money, service stored Money
-      // in JSONB (serialized via toJSON() → decimal). Serializer read it back as cents
-      // via Money.fromCents(decimal), causing 100x error.
-      //
-      // Fix: deserializer should convert to cents (plain number) for JSONB storage.
+      // The threshold lives in JSONB as the plain decimal the API sends. An earlier version
+      // stored cents and the serializer divided by 100; a mismatch between the two sides
+      // shows up here as a 100x error.
       const tag = await helpers.createTag({
         payload: helpers.buildTagPayload(),
         raw: true,

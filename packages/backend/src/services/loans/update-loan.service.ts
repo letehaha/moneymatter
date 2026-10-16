@@ -62,16 +62,17 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
   }
 
   if (detailFields.plannedPayment !== undefined) {
-    const currentCents = loan.plannedPayment === null ? null : loan.plannedPayment.toCents();
-    const nextCents = detailFields.plannedPayment === null ? null : detailFields.plannedPayment.toCents();
-    if (currentCents !== nextCents) {
+    const current = loan.plannedPayment;
+    const next = detailFields.plannedPayment;
+    const changed = current === null || next === null ? current !== next : !current.equals(next);
+    if (changed) {
       // `null` means "no planned payment set" — recorded as-is so the
       // timeline can distinguish "cleared" from "set to zero".
       newEvents.push({
         type: 'planned_payment_change',
         at: now.toISOString(),
-        fromCents: currentCents,
-        toCents: nextCents,
+        fromCents: current === null ? null : current.toNumber(),
+        toCents: next === null ? null : next.toNumber(),
       });
       detailUpdates.plannedPayment = detailFields.plannedPayment;
       detailUpdates.refPlannedPayment =
@@ -179,8 +180,8 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
     newEvents.push({
       type: 'balance_correction',
       at: now.toISOString(),
-      fromCents: loan.account.currentBalance.abs().toCents(),
-      toCents: currentBalance.toCents(),
+      fromCents: loan.account.currentBalance.abs().toNumber(),
+      toCents: currentBalance.toNumber(),
     });
   }
 

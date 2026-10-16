@@ -1,4 +1,5 @@
 import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_LINK_STATUS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -127,12 +128,12 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
     order: [['time', 'ASC']],
   });
 
-  // Map to TransactionForGrouping (amount as cents number) and filter out linked transactions
+  // Map to TransactionForGrouping (amount as a decimal number; grouping only compares ratios) and filter out linked transactions
   const transactions: TransactionForGrouping[] = rawTransactions
     .filter((tx) => !linkedSet.has(tx.id as string))
     .map((tx) => ({
       id: tx.id as string,
-      amount: tx.amount.toCents(),
+      amount: tx.amount.toNumber(),
       note: tx.note,
       time: tx.time,
       accountId: tx.accountId as string,
@@ -214,7 +215,7 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
     const { group, transactions: txs, confidenceScore, medianIntervalDays } = candidate;
 
     const amounts = txs.map((tx) => Math.abs(tx.amount));
-    const averageAmount = Math.round(amounts.reduce((s, a) => s + a, 0) / amounts.length);
+    const averageAmount = Money.fromDecimal(amounts.reduce((s, a) => s + a, 0) / amounts.length);
     const frequency = mapIntervalToFrequency({ medianDays: medianIntervalDays });
     const suggestedName = findMostCommonNote({ notes: group.rawNotes }).slice(0, MAX_SUGGESTED_NAME_LENGTH);
 

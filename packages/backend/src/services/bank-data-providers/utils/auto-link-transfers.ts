@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/connection';
@@ -81,7 +82,7 @@ async function findLinkableCandidates({
       transactionType: oppositeType({ type: tx.transactionType }),
       refundLinked: false,
       currencyCode: tx.currencyCode,
-      amount: tx.amount.toCents(),
+      amount: toMoneyColumnValue({ money: tx.amount }),
       time: {
         [Op.between]: [subDays(tx.time, TRANSFER_DATE_WINDOW_DAYS), addDays(tx.time, TRANSFER_DATE_WINDOW_DAYS)],
       },

@@ -115,9 +115,12 @@ function buildWhereFromRules({ rules }: { rules: SubscriptionMatchingRule[] }): 
       case 'amount': {
         if (rule.operator === 'between' && typeof rule.value === 'object' && !Array.isArray(rule.value)) {
           const { min, max } = rule.value as { min: number; max: number };
-          // Rule bounds are decimals; the `amount` column and the tolerance math below are cents.
-          const minCents = Money.fromDecimal(min).toCents();
-          const maxCents = Money.fromDecimal(max).toCents();
+          // Rule bounds are decimals. SQL filters the DECIMAL `amount` column with them; the
+          // in-memory tolerance math below runs on the integer cents of the 2-decimal amounts.
+          const minAmount = Money.fromDecimal(min).round(2);
+          const maxAmount = Money.fromDecimal(max).round(2);
+          const minCents = minAmount.toCents();
+          const maxCents = maxAmount.toCents();
 
           if (rule.currencyCode) {
             // Cross-currency amount rules need post-processing
@@ -129,7 +132,7 @@ function buildWhereFromRules({ rules }: { rules: SubscriptionMatchingRule[] }): 
           } else {
             // Same-currency amount rules can use SQL
             sqlConditions.push({
-              amount: { [Op.between]: [minCents, maxCents] },
+              amount: { [Op.between]: [minAmount.toDecimalString(2), maxAmount.toDecimalString(2)] },
             });
           }
         }
