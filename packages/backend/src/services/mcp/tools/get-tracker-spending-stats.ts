@@ -23,13 +23,16 @@ export function registerGetTrackerSpendingStats(server: McpServer) {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'get_tracker_spending_stats', clientId: extra.authInfo?.clientId });
 
-      const [spendingStats, stats] = await Promise.all([
+      const [spending, trackerStats] = await Promise.all([
         getTrackerSpendingStats({ userId, trackerId: args.trackerId }),
         getTrackerStats({ userId, trackerId: args.trackerId }),
       ]);
 
       return jsonContent({
-        data: { ...serializeTrackerSpendingStats(spendingStats), ...serializeTrackerStats(stats) },
+        data: {
+          ...serializeTrackerSpendingStats({ stats: spending.stats, decimals: spending.decimals }),
+          ...serializeTrackerStats({ stats: trackerStats.stats, decimals: trackerStats.decimals }),
+        },
       });
     },
   );

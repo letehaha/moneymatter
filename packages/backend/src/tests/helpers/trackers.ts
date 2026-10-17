@@ -13,9 +13,9 @@ import {
 import addTransactionsToTrackerController from '@controllers/trackers/add-transactions-to-tracker';
 import removeTransactionsFromTrackerController from '@controllers/trackers/remove-transactions-from-tracker';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
+import { serializeTrackerStats } from '@root/serializers';
 import * as createTrackerService from '@root/services/trackers/create-tracker';
 import * as getTrackersService from '@root/services/trackers/get-trackers';
-import type { getTrackerStats as getTrackerStatsService } from '@root/services/trackers/stats';
 import { Response } from 'express';
 
 import { downloadBinary } from './attachments';
@@ -252,7 +252,7 @@ export async function deleteTrackerLine<R extends boolean | undefined = undefine
 }
 
 export async function getTrackerStats<R extends boolean | undefined = undefined>({ id, raw }: { id: string; raw?: R }) {
-  return makeRequest<Awaited<ReturnType<typeof getTrackerStatsService>> | null, R>({
+  return makeRequest<ReturnType<typeof serializeTrackerStats> | null, R>({
     method: 'get',
     url: `/trackers/${id}/stats`,
     raw,

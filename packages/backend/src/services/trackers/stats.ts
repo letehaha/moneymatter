@@ -1,4 +1,5 @@
 import { TRACKER_TYPES, type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
@@ -18,6 +19,7 @@ import { buildDateFilter } from './utils/build-date-filter';
 import { fetchTrackerRefundPairs } from './utils/refund-pairs';
 import { buildSharedTrackerMergeMap } from './utils/shared-category-merge-map';
 
+/** Sums in integer minor units at the tracker owner's base currency decimals. */
 export interface StatsResponse {
   summary: {
     actualIncome: number;
@@ -28,9 +30,9 @@ export interface StatsResponse {
     firstTransactionDate: string | null; // ISO date string of earliest transaction
     lastTransactionDate: string | null; // ISO date string of latest transaction
   };
-  /** Cents, in line `position` order. */
+  /** Minor units, in line `position` order. */
   lines: { lineId: RecordId; spent: number }[];
-  /** Cents of expenses no line matched. */
+  /** Minor units of expenses no line matched. */
   otherSpent: number;
 }
 
@@ -122,10 +124,12 @@ const getManualTrackerStats = async ({
   trackerId,
   callerUserId,
   lines,
+  decimals,
 }: {
   trackerId: string;
   callerUserId: number;
   lines: TrackerLines[];
+  decimals: number;
 }): Promise<StatsResponse> => {
   const trackerDetails = await findOrThrowNotFound({
     query: Trackers.findByPk(trackerId),
@@ -145,17 +149,19 @@ const getManualTrackerStats = async ({
     attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked', 'categoryId', 'userId'],
   });
 
-  const limitAmount = trackerDetails.limitAmount?.toCents() ?? null;
-  const result = aggregateTransactionStats({ transactions, limitAmount });
-  await applyRefundAdjustments({ countedTransactions: transactions, result, limitAmount });
+  const limitAmount = trackerDetails.limitAmount?.toMinorUnits({ decimals }) ?? null;
+  const result = aggregateTransactionStats({ transactions, limitAmount, decimals });
+  await applyRefundAdjustments({ countedTransactions: transactions, result, limitAmount, decimals });
 
   const canonicalize = await buildCategoryCanonicalizer({ ownerUserId: trackerDetails.userId, transactions });
 
   // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
   // Read the transaction's splits here if manual trackers need per-split line totals.
-  const expenses = transactions
-    .filter((tx) => tx.transactionType === TRANSACTION_TYPES.expense)
-    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), cents: tx.refAmount.toCents() }));
+  const expenses = transactions.flatMap((tx) =>
+    tx.transactionType === TRANSACTION_TYPES.expense && tx.refAmount !== null
+      ? [{ categoryId: canonicalize(tx.categoryId), cents: tx.refAmount.toMinorUnits({ decimals }) }]
+      : [],
+  );
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
@@ -168,11 +174,13 @@ const getCategoryTrackerStats = async ({
   trackerId,
   isOwner,
   lines,
+  decimals,
 }: {
   userId: number;
   trackerId: string;
   isOwner: boolean;
   lines: TrackerLines[];
+  decimals: number;
 }): Promise<StatsResponse> => {
   const trackerDetails = await findOrThrowNotFound({
     query: Trackers.findByPk(trackerId, {
@@ -240,16 +248,19 @@ const getCategoryTrackerStats = async ({
       continue;
     }
 
+    // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
+    if (tx.refAmount === null) continue;
+
     countedTransactions.push({ id: tx.id, refundLinked: tx.refundLinked });
     const isExpense = tx.transactionType === TRANSACTION_TYPES.expense;
 
     if (isExpense) {
-      result.summary.actualExpense += tx.refAmount.toCents();
-      result.summary.balance -= tx.refAmount.toCents();
-      expenses.push({ categoryId: tx.categoryId, cents: tx.refAmount.toCents() });
+      result.summary.actualExpense += tx.refAmount.toMinorUnits({ decimals });
+      result.summary.balance -= tx.refAmount.toMinorUnits({ decimals });
+      expenses.push({ categoryId: tx.categoryId, cents: tx.refAmount.toMinorUnits({ decimals }) });
     } else {
-      result.summary.actualIncome += tx.refAmount.toCents();
-      result.summary.balance += tx.refAmount.toCents();
+      result.summary.actualIncome += tx.refAmount.toMinorUnits({ decimals });
+      result.summary.balance += tx.refAmount.toMinorUnits({ decimals });
     }
 
     updateDateRange(result, tx.time);
@@ -258,18 +269,18 @@ const getCategoryTrackerStats = async ({
   // Process splits - only count the split's refAmount
   for (const split of matchingSplits) {
     const transaction = split.get('transaction') as Transactions.default;
-    if (!transaction) continue;
+    if (!transaction || split.refAmount === null) continue;
 
     countedTransactions.push({ id: transaction.id, refundLinked: transaction.refundLinked });
     const isExpense = transaction.transactionType === TRANSACTION_TYPES.expense;
 
     if (isExpense) {
-      result.summary.actualExpense += split.refAmount.toCents();
-      result.summary.balance -= split.refAmount.toCents();
-      expenses.push({ categoryId: split.categoryId, cents: split.refAmount.toCents() });
+      result.summary.actualExpense += split.refAmount.toMinorUnits({ decimals });
+      result.summary.balance -= split.refAmount.toMinorUnits({ decimals });
+      expenses.push({ categoryId: split.categoryId, cents: split.refAmount.toMinorUnits({ decimals }) });
     } else {
-      result.summary.actualIncome += split.refAmount.toCents();
-      result.summary.balance += split.refAmount.toCents();
+      result.summary.actualIncome += split.refAmount.toMinorUnits({ decimals });
+      result.summary.balance += split.refAmount.toMinorUnits({ decimals });
     }
 
     updateDateRange(result, transaction.time);
@@ -278,14 +289,14 @@ const getCategoryTrackerStats = async ({
   const uniqueCountedIds = new Set(countedTransactions.map((tx) => tx.id));
   result.summary.transactionsCount = uniqueCountedIds.size;
 
-  const limitAmount = trackerDetails.limitAmount?.toCents() ?? null;
+  const limitAmount = trackerDetails.limitAmount?.toMinorUnits({ decimals }) ?? null;
 
   if (limitAmount !== null) {
     const netSpending = Math.max(0, -result.summary.balance);
     result.summary.utilizationRate = (netSpending / limitAmount) * 100;
   }
 
-  await applyRefundAdjustments({ countedTransactions, result, limitAmount });
+  await applyRefundAdjustments({ countedTransactions, result, limitAmount, decimals });
 
   return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
@@ -313,16 +324,18 @@ const applyRefundAdjustments = async ({
   countedTransactions,
   result,
   limitAmount,
+  decimals,
 }: {
   countedTransactions: { id: string; refundLinked: boolean }[];
   result: StatsResponse;
   limitAmount: number | null;
+  decimals: number;
 }): Promise<void> => {
   const pairs = await fetchTrackerRefundPairs({ countedTransactions });
   if (pairs.length === 0) return;
 
   for (const pair of pairs) {
-    const adjustment = pair.refundTx.refAmount.toCents();
+    const adjustment = pair.refundTx.refAmount.toMinorUnits({ decimals });
 
     if (pair.originalInScope) {
       if (pair.originalTx.transactionType === TRANSACTION_TYPES.expense) {
@@ -354,13 +367,20 @@ const applyRefundAdjustments = async ({
 const aggregateTransactionStats = ({
   transactions,
   limitAmount,
+  decimals,
 }: {
   transactions: Pick<Transactions.default, 'time' | 'refAmount' | 'transactionType'>[];
   limitAmount: number | null;
+  decimals: number;
 }): StatsResponse => {
-  const result = transactions.reduce((acc, curr) => {
+  // A row with no base-currency amount (custom currency, no rate yet) is left out of every figure.
+  const valued = transactions.flatMap((tx) =>
+    tx.refAmount === null ? [] : [{ time: tx.time, transactionType: tx.transactionType, refAmount: tx.refAmount }],
+  );
+
+  const result = valued.reduce((acc, curr) => {
     const isExpense = curr.transactionType === TRANSACTION_TYPES.expense;
-    const refAmount = curr.refAmount.toCents();
+    const refAmount = curr.refAmount.toMinorUnits({ decimals });
 
     if (isExpense) {
       acc.summary.actualExpense += refAmount;
@@ -374,7 +394,7 @@ const aggregateTransactionStats = ({
     return acc;
   }, getResponseInitialState());
 
-  result.summary.transactionsCount = transactions.length;
+  result.summary.transactionsCount = valued.length;
 
   if (limitAmount !== null) {
     const netSpending = Math.max(0, -result.summary.balance);
@@ -384,8 +404,14 @@ const aggregateTransactionStats = ({
   return result;
 };
 
+/** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
+interface TrackerStatsResult {
+  stats: StatsResponse;
+  decimals: number;
+}
+
 export const getTrackerStats = withTransaction(
-  async ({ userId, trackerId }: { userId: number; trackerId: string }): Promise<StatsResponse> => {
+  async ({ userId, trackerId }: { userId: number; trackerId: string }): Promise<TrackerStatsResult> => {
     // Share-aware auth: recipient sees the same numbers the owner would (per PRD
     // visibility decision). Downstream queries scope against the owner's userId so
     // a recipient's unrelated transactions don't filter the result.
@@ -397,10 +423,14 @@ export const getTrackerStats = withTransaction(
     });
     const lines = trackerDetails.lines ?? [];
 
-    if (trackerDetails.type === TRACKER_TYPES.category) {
-      return getCategoryTrackerStats({ userId: ownerUserId, trackerId, isOwner, lines });
-    }
+    // The tracker's amounts are in its owner's base currency, whoever reads them.
+    const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
 
-    return getManualTrackerStats({ trackerId, callerUserId: userId, lines });
+    const stats =
+      trackerDetails.type === TRACKER_TYPES.category
+        ? await getCategoryTrackerStats({ userId: ownerUserId, trackerId, isOwner, lines, decimals })
+        : await getManualTrackerStats({ trackerId, callerUserId: userId, lines, decimals });
+
+    return { stats, decimals };
   },
 );
