@@ -21,6 +21,8 @@ import {
   PIVOT_GRANULARITIES,
   PIVOT_MEASURES,
   PIVOT_ROW_DIMENSIONS,
+  PUSH_GROUPS,
+  type PushGroup,
   RecordId,
   SAVED_PIVOT_VIEW_NAME_MAX_LENGTH,
   SAVED_TRANSACTION_VIEW_NAME_MAX_LENGTH,
@@ -86,13 +88,33 @@ const ZodAiSettingsSchema = z.object({
   connections: z.array(ZodAiConnectionSchema).max(MAX_AI_CONNECTIONS).optional(),
 });
 
+// No `.default()`: the PATCH deep merge would write defaults over stored values, and an unset
+// group takes its default from `PUSH_GROUP_DEFAULTS` when it is read.
+const ZodPushGroupsSchema = z.object({
+  [PUSH_GROUPS.reminders]: z.boolean().optional(),
+  [PUSH_GROUPS.bankSync]: z.boolean().optional(),
+  [PUSH_GROUPS.sharing]: z.boolean().optional(),
+  [PUSH_GROUPS.system]: z.boolean().optional(),
+  [PUSH_GROUPS.releases]: z.boolean().optional(),
+});
+
+const ZodPushPreferencesSchema = z.object({
+  groups: ZodPushGroupsSchema.optional(),
+});
+
+// `enabled` and `types` carry no `.default()` and are optional: nothing reads them and no row
+// stores them by default. Settings are re-validated with this full schema after a PATCH merge, so
+// requiring `types` would reject a push-group save on every row that never held it.
 const ZodNotificationPreferencesSchema = z.object({
-  enabled: z.boolean().default(true),
-  types: z.object({
-    [NOTIFICATION_TYPES.trackerAlert]: z.boolean().default(true),
-    [NOTIFICATION_TYPES.system]: z.boolean().default(true),
-    [NOTIFICATION_TYPES.changelog]: z.boolean().default(true),
-  }),
+  enabled: z.boolean().optional(),
+  types: z
+    .object({
+      [NOTIFICATION_TYPES.trackerAlert]: z.boolean().default(true),
+      [NOTIFICATION_TYPES.system]: z.boolean().default(true),
+      [NOTIFICATION_TYPES.changelog]: z.boolean().default(true),
+    })
+    .optional(),
+  push: ZodPushPreferencesSchema.optional(),
 });
 
 // Onboarding state schema for Quick Start feature
@@ -394,6 +416,7 @@ export const ZodSettingsPatchSchema = z.object({
           [NOTIFICATION_TYPES.changelog]: z.boolean().optional(),
         })
         .optional(),
+      push: ZodPushPreferencesSchema.optional(),
     })
     .optional(),
   dashboard: z
@@ -498,6 +521,15 @@ type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai'> & {
  * @public exported only so the assertion isn't flagged as unused.
  */
 export type SettingsPatchSchemaIsInSync = Expect<Equals<SettingsPatchSchema, DeepPartial<PatchableSettings>>>;
+
+/**
+ * Compile-time drift guard: the stored push groups must be exactly the shared `PushGroup` keys.
+ *
+ * @public exported only so the assertion isn't flagged as unused.
+ */
+export type PushGroupsSchemaIsInSync = Expect<
+  Equals<z.infer<typeof ZodPushGroupsSchema>, Partial<Record<PushGroup, boolean>>>
+>;
 
 /** @public exported only so the assertion isn't flagged as unused. */
 export type FireSettingsSchemaIsInSync = Expect<Equals<z.infer<typeof ZodFireSettingsSchema>, FireSettings>>;
