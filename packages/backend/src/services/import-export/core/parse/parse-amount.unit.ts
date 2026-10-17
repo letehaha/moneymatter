@@ -55,11 +55,29 @@ describe('parseAmount (core tabular-import amount parser)', () => {
   });
 
   it('treats Unicode minus and dash variants as a negative sign', () => {
-    expect(parseAmount('−361,00')).toBe('-361');
-    expect(parseAmount('–361,00')).toBe('-361');
-    expect(parseAmount('—361,00')).toBe('-361');
-    expect(parseAmount('‐361,00')).toBe('-361');
-    expect(parseAmount('− 1,234.56')).toBe('-1234.56');
+    expect(parseAmount('\u2212361,00')).toBe('-361');
+    expect(parseAmount('\u2013361,00')).toBe('-361');
+    expect(parseAmount('\u2014361,00')).toBe('-361');
+    expect(parseAmount('\u2212 1,234.56')).toBe('-1234.56');
+  });
+
+  it.each([
+    ['U+2010 hyphen', '\u2010'],
+    ['U+2011 non-breaking hyphen', '\u2011'],
+    ['U+2012 figure dash', '\u2012'],
+    ['U+2013 en dash', '\u2013'],
+    ['U+2014 em dash', '\u2014'],
+    ['U+2015 horizontal bar', '\u2015'],
+    ['U+2212 minus sign', '\u2212'],
+    ['U+FE63 small hyphen-minus', '\uFE63'],
+    ['U+FF0D fullwidth hyphen-minus', '\uFF0D'],
+  ])('reads %s as a negative sign', (_name, dash) => {
+    expect(parseAmount(`${dash}12.5`)).toBe('-12.5');
+  });
+
+  it('does not read the characters just outside the dash range as a sign', () => {
+    expect(parseAmount('\u200F12.5')).toBeNull();
+    expect(parseAmount('\u201612.5')).toBeNull();
   });
 
   it('strips currency symbols and whitespace', () => {
@@ -80,5 +98,25 @@ describe('parseAmount (core tabular-import amount parser)', () => {
   it('never returns exponent notation', () => {
     expect(parseAmount('0.00000001')).toBe('0.00000001');
     expect(parseAmount('1e3')).toBe('1000');
+  });
+
+  it('keeps exponents within the bound and reads them exactly', () => {
+    expect(parseAmount('1e-3')).toBe('0.001');
+    expect(parseAmount('1.5E+2')).toBe('150');
+    expect(parseAmount('1e30')).toBe(`1${'0'.repeat(30)}`);
+  });
+
+  it('rejects an exponent beyond the bound instead of expanding it', () => {
+    const startedAt = performance.now();
+
+    expect(parseAmount('1e31')).toBeNull();
+    expect(parseAmount('1e-31')).toBeNull();
+    expect(parseAmount('1e9999999')).toBeNull();
+    expect(parseAmount('-1e300000000')).toBeNull();
+    expect(parseAmount('(1e-1000000000)')).toBeNull();
+    expect(parseAmount(`1e${'9'.repeat(5000)}`)).toBeNull();
+    expect(parseAmount('0e999999999')).toBeNull();
+
+    expect(performance.now() - startedAt).toBeLessThan(250);
   });
 });
