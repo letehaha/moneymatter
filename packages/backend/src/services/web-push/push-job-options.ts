@@ -7,7 +7,7 @@ const FAN_OUT_ATTEMPTS = 3;
 // The delay before a failed attempt is retried. It is zero under test, where BullMQ puts a
 // zero-delay retry straight back on the waiting list instead of the delayed set. The delivery
 // e2e relies on that order: a retry has to run before a job queued after the failure.
-export const RETRY_BACKOFF_MS = process.env.NODE_ENV === 'test' ? 0 : 30_000;
+const RETRY_BACKOFF_MS = process.env.NODE_ENV === 'test' ? 0 : 30_000;
 
 const backoff = () => ({ type: 'exponential' as const, delay: RETRY_BACKOFF_MS });
 

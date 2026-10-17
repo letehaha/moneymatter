@@ -9,7 +9,7 @@ import { type SendResultKind, classifySendResult, readStatusCode } from './class
 import { getWebPushConfig } from './config';
 import { normalizePushEndpoint } from './endpoint-allowlist';
 
-export type PushUrgency = 'very-low' | 'low' | 'normal' | 'high';
+type PushUrgency = 'very-low' | 'low' | 'normal' | 'high';
 
 /** Consecutive `rejected` results after which a subscription is deleted. */
 export const MAX_CONSECUTIVE_REJECTIONS = 10;

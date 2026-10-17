@@ -23,7 +23,7 @@ const MAX_USER_AGENT_LENGTH = 512;
 const BASE64URL_PATTERN = /^[A-Za-z0-9_-]+$/;
 
 /** First 16 hex characters of SHA-256 over the endpoint: lets a client recognize its own device without the capability URL. */
-export const hashPushEndpoint = ({ endpoint }: { endpoint: string }): string =>
+const hashPushEndpoint = ({ endpoint }: { endpoint: string }): string =>
   createHash('sha256').update(endpoint).digest('hex').slice(0, ENDPOINT_HASH_LENGTH);
 
 type DeviceRow = Pick<
@@ -158,7 +158,7 @@ const upsertPushSubscriptionImpl = async ({
 };
 
 /** Enable: registers the browser for the caller, taking the row over from any other account. */
-export const upsertPushSubscription = withTransaction(upsertPushSubscriptionImpl);
+const upsertPushSubscription = withTransaction(upsertPushSubscriptionImpl);
 
 const rotatePushSubscriptionImpl = async ({
   userId,
@@ -219,7 +219,7 @@ const rotatePushSubscriptionTransactional = withTransaction(rotatePushSubscripti
  * Rotate: the browser replaced a subscription. Only ever updates a row the caller already owns,
  * so it can never enrol a device or an account.
  */
-export const rotatePushSubscription = async (
+const rotatePushSubscription = async (
   params: Parameters<typeof rotatePushSubscriptionImpl>[0],
 ): ReturnType<typeof rotatePushSubscriptionImpl> => {
   try {

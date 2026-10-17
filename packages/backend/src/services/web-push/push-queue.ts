@@ -84,7 +84,7 @@ const loadUserSettings = async ({ userId, transaction }: { userId: number; trans
  * Every query passes `transaction: null`. The worker shares a process with the HTTP server, and
  * cls-hooked can hand an unpinned query a concurrent request's already-committed transaction.
  */
-export const processFanOut = async ({
+const processFanOut = async ({
   notificationId,
   transaction = null,
 }: {
@@ -121,7 +121,7 @@ export const processFanOut = async ({
  * the notification's owner: Enable moves a row to another account under the same id, and a
  * browser handed over in the meantime must not receive the previous account's text.
  */
-export const processDeliver = async ({
+const processDeliver = async ({
   notificationId,
   subscriptionId,
   isLastAttempt,
