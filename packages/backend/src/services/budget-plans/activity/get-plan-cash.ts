@@ -1,6 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { CENTS_DECIMALS, Money } from '@common/types/money';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
@@ -22,7 +21,8 @@ interface CashRow {
   closing: string;
 }
 
-const decimalToCents = ({ value }: { value: string }): number => Money.fromDecimal(value).toCents();
+const decimalToMinor = ({ value, decimals }: { value: string; decimals: number }): number =>
+  Money.fromDecimal(value).toMinorUnits({ decimals });
 
 /**
  * The rate Balances revalue uses for a day: the user's manual rate, else the
@@ -56,7 +56,7 @@ const storedRate = async ({
 };
 
 /**
- * Base-currency cents (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
+ * Base-currency minor units at `decimals` (converted from the DECIMAL columns at the query boundary) held in the plan's accounts just before the `opening` and
  * `closing` days start ('yyyy-MM-dd', UTC): the current balance minus every
  * transaction from then on, a card net of its credit limit. A foreign account's
  * opening is valued at the opening day's rate, so a later rate move shows as drift.
@@ -68,15 +68,17 @@ export const getPlanCash = async ({
   plan,
   opening,
   closing,
+  decimals,
 }: {
   plan: BudgetPlans;
   opening: string;
   closing: string;
+  /** The plan currency's decimals, which is the base currency's. */
+  decimals: number;
 }): Promise<{ opening: number; closing: number }> => {
   const openingUtc = utcInstant({ date: opening });
   const [limits, baseCurrency, rows] = await Promise.all([
-    // The plan cash engine sums in cents.
-    getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals: CENTS_DECIMALS }),
+    getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals }),
     getBaseCurrency({ userId: plan.userId }),
     connection.sequelize.query(
       `
@@ -113,7 +115,7 @@ export const getPlanCash = async ({
   const openings = await Promise.all(
     rows.map(async (row) => {
       if (row.currencyCode === baseCurrency?.currencyCode)
-        return decimalToCents({ value: row.opening }) - (limits.get(row.accountId) ?? 0);
+        return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
 
       const rate = await storedRate({
         userId: plan.userId,
@@ -127,18 +129,24 @@ export const getPlanCash = async ({
           accountId: row.accountId,
           currency: row.currencyCode,
         });
-        return decimalToCents({ value: row.opening }) - (limits.get(row.accountId) ?? 0);
+        return decimalToMinor({ value: row.opening, decimals }) - (limits.get(row.accountId) ?? 0);
       }
 
-      const nativeLimit = limits.has(row.accountId) ? decimalToCents({ value: row.nativeLimit }) : 0;
-      return roundHalfToEven((decimalToCents({ value: row.nativeOpening }) - nativeLimit) * rate);
+      // The native figure stays a decimal through the rate and is rounded once, to the base minor unit:
+      // rounding it to the base scale first would lose value (USD 0.60 at 100 JPY/USD is 60 JPY, not 100).
+      const nativeLimit = limits.has(row.accountId) ? Money.fromDecimal(row.nativeLimit) : Money.zero();
+      return Money.fromDecimal(row.nativeOpening)
+        .subtract(nativeLimit)
+        .multiply(rate)
+        .roundHalfEven(decimals)
+        .toMinorUnits({ decimals });
     }),
   );
 
   return {
-    opening: openings.reduce((sum, cents) => sum + cents, 0),
+    opening: openings.reduce((sum, minor) => sum + minor, 0),
     closing: rows.reduce(
-      (sum, row) => sum + decimalToCents({ value: row.closing }) - (limits.get(row.accountId) ?? 0),
+      (sum, row) => sum + decimalToMinor({ value: row.closing, decimals }) - (limits.get(row.accountId) ?? 0),
       0,
     ),
   };

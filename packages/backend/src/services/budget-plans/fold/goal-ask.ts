@@ -21,7 +21,7 @@ interface GoalAskResult {
 
 const ceilDiv = ({ value, by }: { value: number; by: number }): number => Math.ceil(value / by);
 
-/** Money in integer cents, dates `yyyy-MM-dd`. */
+/** Money in integer minor units at the plan currency's decimals, dates `yyyy-MM-dd`. */
 export type GoalSpec = Omit<BudgetLineGoal, 'lineId'>;
 
 /** One entry per plan period with this line's assigned; entries outside the active cycle are ignored. */
@@ -92,7 +92,7 @@ const buildFundingPlan = ({
 };
 
 /**
- * Pure, integer cents. `period.end` is exclusive. `history` feeds the cycle sum of
+ * Pure, integer minor units. Nothing in it depends on the scale. `period.end` is exclusive. `history` feeds the cycle sum of
  * yearly / by-date budget-another goals and may hold any range of periods.
  */
 export const evaluateGoal = ({

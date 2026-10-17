@@ -1,7 +1,7 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetLineGoal, SetBudgetLineGoalPayload } from '@bt/shared/types';
-import { assertMoneyFitsCurrency } from '@common/lib/currency-precision';
-import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { assertMoneyFitsCurrency, getCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money, minorUnitsToApiDecimal, minorUnitsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -22,29 +22,43 @@ interface LineGoalParams {
 
 const dateOrNull = ({ value }: { value: string | null }): string | null => (value ? toUtcDateString(value) : null);
 
-export const toGoalSpec = ({ row }: { row: BudgetLineGoals }): GoalSpec & { lineId: RecordId } => ({
+/** Amounts in integer minor units at `decimals`, the plan currency's. */
+export const toGoalSpec = ({
+  row,
+  decimals,
+}: {
+  row: BudgetLineGoals;
+  decimals: number;
+}): GoalSpec & { lineId: RecordId } => ({
   lineId: row.lineId,
   frequency: row.frequency,
   behavior: row.behavior,
-  amount: row.amount.toCents(),
+  amount: row.amount.toMinorUnits({ decimals }),
   weekday: row.weekday,
   anchorDate: dateOrNull({ value: row.anchorDate }),
   repeatEvery: row.repeatEvery,
   repeatUnit: row.repeatUnit,
-  stopAtBalance: row.stopAtBalance?.toCents() ?? null,
-  fundingCap: row.fundingCap?.toCents() ?? null,
+  stopAtBalance: row.stopAtBalance?.toMinorUnits({ decimals }) ?? null,
+  fundingCap: row.fundingCap?.toMinorUnits({ decimals }) ?? null,
   startPeriodStart: toUtcDateString(row.startPeriodStart),
   snoozedPeriodStart: dateOrNull({ value: row.snoozedPeriodStart }),
 });
 
-export const goalSpecToApi = ({ goal }: { goal: GoalSpec & { lineId: RecordId } }): BudgetLineGoal => ({
+export const goalSpecToApi = ({
+  goal,
+  decimals,
+}: {
+  goal: GoalSpec & { lineId: RecordId };
+  decimals: number;
+}): BudgetLineGoal => ({
   ...goal,
-  amount: centsToApiDecimal(goal.amount),
-  stopAtBalance: centsToApiDecimalOrNull(goal.stopAtBalance),
-  fundingCap: centsToApiDecimalOrNull(goal.fundingCap),
+  amount: minorUnitsToApiDecimal({ value: goal.amount, decimals }),
+  stopAtBalance: minorUnitsToApiDecimalOrNull({ value: goal.stopAtBalance, decimals }),
+  fundingCap: minorUnitsToApiDecimalOrNull({ value: goal.fundingCap, decimals }),
 });
 
-const toGoal = ({ row }: { row: BudgetLineGoals }): BudgetLineGoal => goalSpecToApi({ goal: toGoalSpec({ row }) });
+const toGoal = ({ row, decimals }: { row: BudgetLineGoals; decimals: number }): BudgetLineGoal =>
+  goalSpecToApi({ goal: toGoalSpec({ row, decimals }), decimals });
 
 const findPeriod = ({ planId, periodId }: { planId: RecordId; periodId: RecordId }) =>
   findOrThrowNotFound({
@@ -55,10 +69,11 @@ const findPeriod = ({ planId, periodId }: { planId: RecordId; periodId: RecordId
 const findGoal = async ({ userId, planId, lineId }: LineGoalParams) => {
   const plan = await findPlan({ planId, userId, lock: true });
   await findLine({ planId: plan.id, lineId });
-  return findOrThrowNotFound({
+  const goal = await findOrThrowNotFound({
     query: BudgetLineGoals.findOne({ where: { lineId } }),
     message: t({ key: 'budgetPlans.goalNotFound' }),
   });
+  return { goal, plan };
 };
 
 const setLineGoalImpl = async ({
@@ -92,25 +107,26 @@ const setLineGoalImpl = async ({
     fundingCap: fundingCap == null ? null : Money.fromDecimal(fundingCap),
     ...(settings.frequency === 'open_ended' && { snoozedPeriodStart: null }),
   };
+  const decimals = await getCurrencyDecimals({ userId, code: plan.currencyCode });
   const existing = await BudgetLineGoals.findOne({ where: { lineId } });
-  if (existing) return toGoal({ row: await existing.update(values) });
+  if (existing) return toGoal({ row: await existing.update(values), decimals });
 
   const startPeriodStart = periodId
     ? toUtcDateString((await findPeriod({ planId: plan.id, periodId })).startDate)
     : currentPeriodStart({ plan });
   const row = await BudgetLineGoals.create({ lineId, ...values, startPeriodStart });
 
-  return toGoal({ row });
+  return toGoal({ row, decimals });
 };
 
 const deleteLineGoalImpl = async (params: LineGoalParams): Promise<void> => {
-  const goal = await findGoal(params);
+  const { goal } = await findGoal(params);
   await goal.destroy();
 };
 
 /** Snoozing the already-snoozed period wakes the goal up again. */
 const snoozeLineGoalImpl = async ({ periodId, ...params }: LineGoalParams & { periodId: RecordId }) => {
-  const goal = await findGoal(params);
+  const { goal, plan } = await findGoal(params);
   if (goal.frequency === 'open_ended') {
     throw new ValidationError({ message: t({ key: 'budgetPlans.openEndedGoalCannotSnooze' }) });
   }
@@ -120,7 +136,7 @@ const snoozeLineGoalImpl = async ({ periodId, ...params }: LineGoalParams & { pe
   const current = dateOrNull({ value: goal.snoozedPeriodStart });
   await goal.update({ snoozedPeriodStart: current === start ? null : start });
 
-  return toGoal({ row: goal });
+  return toGoal({ row: goal, decimals: await getCurrencyDecimals({ userId: params.userId, code: plan.currencyCode }) });
 };
 
 export const setLineGoal = withTransaction(setLineGoalImpl);

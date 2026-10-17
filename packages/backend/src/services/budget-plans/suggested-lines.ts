@@ -5,9 +5,9 @@ import {
   BudgetSuggestionAnswers,
   BudgetSuggestionContext,
 } from '@bt/shared/types';
-import { roundToCurrency } from '@common/lib/currency-precision';
+import { getBaseCurrencyDecimals, getCurrencyDecimals, roundToCurrency } from '@common/lib/currency-precision';
 import { requestContext } from '@common/request-context';
-import { CENTS_DECIMALS, Money } from '@common/types/money';
+import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { trackEvent } from '@js/utils/posthog';
@@ -37,7 +37,8 @@ import { ownedCategoryIds } from './validate-line-categories';
 const MAX_LINES = 8;
 const HISTORY_MONTHS = 3;
 const FOCUS_OPTIONS = 6;
-const ROUND_UP_TO_CENTS = 1000;
+/** Baselines round up to a whole 10 of the plan currency, whatever its decimals. */
+const ROUND_UP_TO_WHOLE_UNITS = 10;
 
 const GROUPS = ['bills', 'everyday', 'life'] as const;
 type SuggestedGroup = (typeof GROUPS)[number];
@@ -102,19 +103,21 @@ const findByKey = ({
 interface Suggestion {
   category: Categories;
   group: SuggestedGroup | null;
-  /** Spend filed directly on the category over the history window; ranks suggestions. */
-  totalCents: number;
+  /** Spend filed directly on the category over the history window, in minor units; ranks suggestions. */
+  totalMinor: number;
 }
 
-/** Expense cents per exact category over the full calendar months before the current one (UTC). */
+/** Expense minor units (at `decimals`) per exact category over the full calendar months before the current one (UTC). */
 const historySpend = async ({
   userId,
   accountIds,
   categories,
+  decimals,
 }: {
   userId: number;
   accountIds: RecordId[];
   categories: Categories[];
+  decimals: number;
 }) => {
   // An empty `accountIds` would widen the stats scope to every account.
   if (!accountIds.length) return {};
@@ -132,28 +135,36 @@ const historySpend = async ({
     categoryIds: categories.map((category) => category.id),
     transactionType: TRANSACTION_TYPES.expense,
     excludePlanned: true,
-    // The suggestion engine sums in cents.
-    decimals: CENTS_DECIMALS,
+    decimals,
   });
 };
 
 /** Monthly average in the plan's cadence, rounded up to a whole 10. Integer math keeps the ceil exact. */
-const toBaselineCents = ({ plan, totalCents }: { plan: BudgetPlans; totalCents: number }): number => {
+const toBaselineMinor = ({
+  plan,
+  totalMinor,
+  decimals,
+}: {
+  plan: BudgetPlans;
+  totalMinor: number;
+  decimals: number;
+}): number => {
   const monthsPerPeriod: Record<BudgetPlanCadence, [number, number]> = {
     months: [plan.intervalN, 1],
     semi_monthly: [1, 2],
     days: [plan.intervalN * 12, 365],
   };
   const [numerator, denominator] = monthsPerPeriod[plan.cadence];
+  const step = ROUND_UP_TO_WHOLE_UNITS * 10 ** decimals;
 
-  return Math.ceil((totalCents * numerator) / (HISTORY_MONTHS * denominator * ROUND_UP_TO_CENTS)) * ROUND_UP_TO_CENTS;
+  return Math.ceil((totalMinor * numerator) / (HISTORY_MONTHS * denominator * step)) * step;
 };
 
 interface LineDraft {
   groupName: string | null;
   name: string;
   categoryIds: RecordId[];
-  baselineCents: number;
+  baselineMinor: number;
 }
 
 /** Groups are matched by name, so a rerun or a group the user already made is reused. */
@@ -172,20 +183,21 @@ const writeLines = withTransaction(
     const plan = await findPlan({ planId, userId, lock: true });
     const { periods, currentStart } = await ensureCurrentPeriods({ plan });
     const currentPeriod = periods.find((period) => toUtcDateString(period.startDate) === currentStart)!;
+    const decimals = await getCurrencyDecimals({ userId, code: plan.currencyCode });
 
-    for (const { groupName, name, categoryIds, baselineCents } of drafts) {
+    for (const { groupName, name, categoryIds, baselineMinor } of drafts) {
       const groupId =
         groupName === null
           ? null
           : ((await BudgetLineGroups.findOne({ where: { planId, name: groupName } }))?.id ??
             (await createGroup({ userId, planId, name: groupName })).id);
       const line = await createLine({ userId, planId, name, categoryIds, groupId, origin });
-      if (baselineCents > 0) {
+      if (baselineMinor > 0) {
         await BudgetAssignments.create({
           periodId: currentPeriod.id,
           lineId: line.id,
           baselineAmount: await roundToCurrency({
-            money: Money.fromCents(baselineCents),
+            money: Money.fromMinorUnits({ value: baselineMinor, decimals }),
             userId,
             currencyCode: plan.currencyCode,
             mode: 'half-up',
@@ -218,13 +230,13 @@ const rulesPicks = ({
     .flatMap(([categoryId, { amount }]) => {
       const rootKey = rootKeyOf({ categoryId });
       if (amount <= 0 || EXCLUDED_ROOT_KEYS.has(rootKey)) return [];
-      return [{ category: byId.get(categoryId)!, totalCents: amount, group: GROUP_BY_ROOT_KEY[rootKey] ?? null }];
+      return [{ category: byId.get(categoryId)!, totalMinor: amount, group: GROUP_BY_ROOT_KEY[rootKey] ?? null }];
     })
-    .toSorted((a, b) => b.totalCents - a.totalCents);
+    .toSorted((a, b) => b.totalMinor - a.totalMinor);
 
   const template: Suggestion[] = STARTER_TEMPLATE.flatMap(({ parentKey, key, group }) => {
     const category = findByKey({ categories, byId, parentKey, key });
-    return category ? [{ category, group, totalCents: 0 }] : [];
+    return category ? [{ category, group, totalMinor: 0 }] : [];
   });
 
   const picks: Suggestion[] = [];
@@ -241,7 +253,7 @@ const rulesPicks = ({
 };
 
 /** A line covers its categories' whole subtrees; the expansion dedupes a parent listed with its child. */
-const subtreeSpendCents = ({
+const subtreeSpendMinor = ({
   categoryIds,
   categories,
   byId,
@@ -294,9 +306,10 @@ export const addSuggestedLines = async ({
   const accountIds = (await BudgetPlanAccounts.findAll({ where: { planId: plan.id }, attributes: ['accountId'] })).map(
     (row) => row.accountId,
   );
-  const spend = await historySpend({ userId, accountIds, categories });
-  const subtreeCents = ({ categoryIds }: { categoryIds: string[] }) =>
-    subtreeSpendCents({ categoryIds, categories, byId, spend });
+  const decimals = await getCurrencyDecimals({ userId, code: plan.currencyCode });
+  const spend = await historySpend({ userId, accountIds, categories, decimals });
+  const subtreeMinor = ({ categoryIds }: { categoryIds: string[] }) =>
+    subtreeSpendMinor({ categoryIds, categories, byId, spend });
 
   const candidates = categories.flatMap((category): LineCandidate[] =>
     EXCLUDED_ROOT_KEYS.has(rootKeyOf({ categoryId: category.id })) || overlaps({ categoryId: category.id })
@@ -305,7 +318,7 @@ export const addSuggestedLines = async ({
           {
             id: category.id,
             path: categoryPath({ category, byId }),
-            totalCents: subtreeCents({ categoryIds: [category.id] }),
+            totalMinor: subtreeMinor({ categoryIds: [category.id] }),
           },
         ],
   );
@@ -318,13 +331,14 @@ export const addSuggestedLines = async ({
     locale,
     currencyCode: plan.currencyCode,
     answers,
+    decimals,
   });
 
-  const toDraft = ({ groupName, name, categoryIds }: Omit<LineDraft, 'baselineCents'>): LineDraft => ({
+  const toDraft = ({ groupName, name, categoryIds }: Omit<LineDraft, 'baselineMinor'>): LineDraft => ({
     groupName,
     name,
     categoryIds,
-    baselineCents: toBaselineCents({ plan, totalCents: subtreeCents({ categoryIds }) }),
+    baselineMinor: toBaselineMinor({ plan, totalMinor: subtreeMinor({ categoryIds }), decimals }),
   });
 
   const drafts = ai
@@ -373,21 +387,23 @@ export const getSuggestionContext = async ({
   accountIds: RecordId[];
 }): Promise<BudgetSuggestionContext> => {
   const { categories, byId } = await loadCategories({ userId });
-  const spend = await historySpend({ userId, accountIds, categories });
+  // No plan exists yet, and the plan will take the base currency.
+  const decimals = await getBaseCurrencyDecimals({ userId });
+  const spend = await historySpend({ userId, accountIds, categories, decimals });
 
   const topRoots = categories
     .filter((category) => category.parentId === null && !EXCLUDED_ROOT_KEYS.has(category.key ?? ''))
-    .map(({ id }) => ({ id, totalCents: subtreeSpendCents({ categoryIds: [id], categories, byId, spend }) }))
-    .filter(({ totalCents }) => totalCents > 0)
-    .toSorted((a, b) => b.totalCents - a.totalCents)
+    .map(({ id }) => ({ id, totalMinor: subtreeSpendMinor({ categoryIds: [id], categories, byId, spend }) }))
+    .filter(({ totalMinor }) => totalMinor > 0)
+    .toSorted((a, b) => b.totalMinor - a.totalMinor)
     .slice(0, FOCUS_OPTIONS);
 
   if (topRoots.length) {
     return {
       hasHistory: true,
-      categories: topRoots.map(({ id, totalCents }) => ({
+      categories: topRoots.map(({ id, totalMinor }) => ({
         id,
-        monthlyAvg: Money.fromCents(Math.round(totalCents / HISTORY_MONTHS)).toNumber(),
+        monthlyAvg: minorUnitsToApiDecimal({ value: Math.round(totalMinor / HISTORY_MONTHS), decimals }),
       })),
     };
   }
