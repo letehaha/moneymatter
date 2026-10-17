@@ -1,6 +1,5 @@
 import { USER_ROLES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import { RATE_SOURCE_SAVE_LIMIT, RATE_SOURCE_TEST_LIMIT } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
@@ -9,6 +8,7 @@ import * as rateHistory from '@services/currencies/rate-sources/rate-history.ser
 import * as saveRateSource from '@services/currencies/rate-sources/save-rate-source.service';
 import * as testRateSource from '@services/currencies/rate-sources/test-http-rate-source.service';
 import * as userExchangeRates from '@services/user-exchange-rate';
+import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
 import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and
@@ -31,40 +31,9 @@ import { registerSetCurrencyRateSource } from './set-currency-rate-source';
 import { registerSetExchangeRates } from './set-exchange-rates';
 import { registerTestCurrencyRateSource } from './test-currency-rate-source';
 
-type Extra = {
-  authInfo: { scopes: string[]; extra: { userId: number; role: string; readOnly: boolean } };
-};
-type Handler = (args: unknown, extra: Extra) => Promise<{ content: { type: 'text'; text: string }[] }>;
-type CapturedTool = { name: string; inputSchema?: z.ZodRawShape; handler: Handler };
-
-const capture = ({ register }: { register: (server: McpServer) => void }): CapturedTool => {
-  const tools: CapturedTool[] = [];
-  register({
-    registerTool: (name: string, config: { inputSchema?: z.ZodRawShape }, handler: Handler) => {
-      tools.push({ name, inputSchema: config.inputSchema, handler });
-    },
-  } as unknown as McpServer);
-  if (tools.length !== 1) throw new Error('Expected the register function to add exactly one tool');
-  return tools[0]!;
-};
-
-const makeExtra = ({
-  scopes,
-  readOnly = false,
-  role = USER_ROLES.common,
-}: {
-  scopes: string[];
-  readOnly?: boolean;
-  role?: string;
-}): Extra => ({
-  authInfo: { scopes, extra: { userId: 42, role, readOnly } },
-});
-
 const READ = makeExtra({ scopes: ['finance:read'], readOnly: true });
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'] });
-
-const parsed = (result: Awaited<ReturnType<Handler>>) => JSON.parse(result.content[0]!.text) as unknown;
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const checkRateLimit = jest.mocked(RateLimitService.checkRateLimit);
@@ -87,8 +56,8 @@ beforeEach(() => {
 });
 
 describe('search_coingecko_coins', () => {
-  const tool = capture({ register: registerSearchCoingeckoCoins });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerSearchCoingeckoCoins })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('rejects an empty or too long query', () => {
     expect(schema.safeParse({ query: 'bitcoin' }).success).toBe(true);
@@ -105,7 +74,7 @@ describe('search_coingecko_coins', () => {
     const result = await tool.handler({ query: 'bitcoin' }, READ);
 
     expect(coingeckoService.searchCoingeckoCoins).toHaveBeenCalledWith({ query: 'bitcoin' });
-    expect(parsed(result)).toEqual(coins);
+    expect(parseToolResult({ result })).toEqual(coins);
   });
 
   it('passes the unavailable-key refusal of the service through', async () => {
@@ -116,8 +85,8 @@ describe('search_coingecko_coins', () => {
 });
 
 describe('get_currency_rate_history', () => {
-  const tool = capture({ register: registerGetCurrencyRateHistory });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerGetCurrencyRateHistory })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('accepts a code with paging and rejects a limit or offset out of range', () => {
     expect(schema.safeParse({ code: 'usdt' }).success).toBe(true);
@@ -141,7 +110,7 @@ describe('get_currency_rate_history', () => {
       limit: 30,
       offset: 0,
     });
-    expect(parsed(result)).toEqual(page);
+    expect(parseToolResult({ result })).toEqual(page);
   });
 
   it('passes the page it was given', async () => {
@@ -159,8 +128,8 @@ describe('get_currency_rate_history', () => {
 });
 
 describe('set_currency_rate_source', () => {
-  const tool = capture({ register: registerSetCurrencyRateSource });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerSetCurrencyRateSource })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   const peg = { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1.02 } };
   const coingeckoSource = {
@@ -201,7 +170,7 @@ describe('set_currency_rate_source', () => {
     const result = await tool.handler({ code: 'USDT', ...peg }, WRITE);
 
     expect(saveService.saveCurrencyRateSource).toHaveBeenCalledWith({ userId: 42, code: 'USDT', body: peg });
-    expect(parsed(result)).toEqual(saved);
+    expect(parseToolResult({ result })).toEqual(saved);
   });
 
   it('sends a CoinGecko body with its logo', async () => {
@@ -272,8 +241,8 @@ describe('set_currency_rate_source', () => {
 });
 
 describe('test_currency_rate_source', () => {
-  const tool = capture({ register: registerTestCurrencyRateSource });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerTestCurrencyRateSource })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('accepts an HTTP config with an optional date and rejects a bad config or date', () => {
     expect(schema.safeParse({ code: 'USDT', config: httpConfig }).success).toBe(true);
@@ -294,7 +263,7 @@ describe('test_currency_rate_source', () => {
       code: 'USDT',
       body: { rateSource: 'http', config: httpConfig, date: '2026-10-01' },
     });
-    expect(parsed(result)).toEqual(answer);
+    expect(parseToolResult({ result })).toEqual(answer);
   });
 
   it('draws from the preview budget of the user, not the save one', async () => {
@@ -341,8 +310,8 @@ describe('test_currency_rate_source', () => {
 });
 
 describe('set_exchange_rates', () => {
-  const tool = capture({ register: registerSetExchangeRates });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerSetExchangeRates })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   const pairs = [
     { baseCode: 'USDT', quoteCode: 'USD', rate: 1.01 },
@@ -371,7 +340,7 @@ describe('set_exchange_rates', () => {
     const result = await tool.handler({ pairs }, WRITE);
 
     expect(ratesService.editUserExchangeRates).toHaveBeenCalledWith({ userId: 42, pairs });
-    expect(parsed(result)).toEqual(edited);
+    expect(parseToolResult({ result })).toEqual(edited);
   });
 
   it('passes a refusal of the service through', async () => {
@@ -394,8 +363,8 @@ describe('set_exchange_rates', () => {
 });
 
 describe('delete_exchange_rates', () => {
-  const tool = capture({ register: registerDeleteExchangeRates });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerDeleteExchangeRates })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   const pairs = [
     { baseCode: 'USDT', quoteCode: 'USD' },
@@ -416,7 +385,7 @@ describe('delete_exchange_rates', () => {
     const result = await tool.handler({ pairs }, DELETE);
 
     expect(ratesService.removeUserExchangeRates).toHaveBeenCalledWith({ userId: 42, pairs });
-    expect(parsed(result)).toEqual(removed);
+    expect(parseToolResult({ result })).toEqual(removed);
   });
 
   it('needs finance:delete, not finance:write, and a user who can edit', async () => {

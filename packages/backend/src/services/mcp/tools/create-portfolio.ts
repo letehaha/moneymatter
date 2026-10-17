@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createPortfolio } from '@services/investments/portfolios/create.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Portfolio name (must be unique for this user)'),
@@ -26,6 +26,7 @@ export function registerCreatePortfolio(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_portfolio', clientId: extra.authInfo?.clientId });
 
       const portfolio = await createPortfolio({

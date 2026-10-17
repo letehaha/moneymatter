@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createSingleRefund } from '@services/tx-refunds/create-single-refund.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   originalTxId: z
@@ -27,6 +27,7 @@ export function registerLinkRefund(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'link_refund', clientId: extra.authInfo?.clientId });
 
       const result = await createSingleRefund({

@@ -8,7 +8,13 @@ import { serializeTransactionTuple } from '@root/serializers/transactions.serial
 import { updateTransaction } from '@services/transactions/update-transaction';
 import { z } from 'zod';
 
-import { assertOriginalCurrencyArgs, getUserId, jsonContent, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertOriginalCurrencyArgs,
+  getUserId,
+  jsonContent,
+  requireScope,
+} from './helpers';
 
 const inputSchema = {
   id: recordId().describe('ID of the transaction to update'),
@@ -97,6 +103,7 @@ export function registerUpdateTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_transaction', clientId: extra.authInfo?.clientId });
 
       assertOriginalCurrencyArgs({ args });

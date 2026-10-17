@@ -1,10 +1,16 @@
-import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { FEATURES, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import { RATE_SOURCE_SAVE_LIMIT } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { assertBaseCurrencyUnlocked, assertOriginalCurrencyArgs, enforceUserRateLimit, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertOriginalCurrencyArgs,
+  enforceUserRateLimit,
+  requireFeatureAccess,
+  requireScope,
+} from './helpers';
 
 const authInfoFor = ({ role, scopes, readOnly = false }: { role: string; scopes: string[]; readOnly?: boolean }) => ({
   authInfo: { scopes, extra: { role, readOnly } },
@@ -40,6 +46,71 @@ describe('requireScope', () => {
     const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:read'] });
 
     expect(() => requireScope({ extra, scope: 'finance:write' })).toThrow(/Missing required scope/);
+  });
+});
+
+describe('requireScope with allowReadOnly', () => {
+  it('lets a read-only user through when the scope is granted', () => {
+    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('lets a read-only user through when the entitlement info is missing', () => {
+    const extra = { authInfo: { scopes: ['finance:write'], extra: { role: USER_ROLES.common } } };
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('lets a demo user through, as the READ_ONLY_ROUTES have no demo block', () => {
+    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('still rejects a missing scope', () => {
+    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:read'], readOnly: true });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).toThrow(
+      /Missing required scope/,
+    );
+  });
+
+  it('keeps rejecting read-only and demo users when the option is false or absent', () => {
+    const readOnly = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
+    const demo = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
+
+    expect(() => requireScope({ extra: readOnly, scope: 'finance:write', allowReadOnly: false })).toThrow(
+      /no longer includes editing/,
+    );
+    expect(() => requireScope({ extra: demo, scope: 'finance:write', allowReadOnly: false })).toThrow(/demo mode/);
+  });
+});
+
+const withFeatures = ({ features }: { features?: string[] }) => ({ authInfo: { extra: { features } } });
+
+describe('requireFeatureAccess', () => {
+  it('passes when the plan includes the feature', () => {
+    const extra = withFeatures({ features: [FEATURES.budget_plan, FEATURES.attachments] });
+
+    expect(() => requireFeatureAccess({ extra: extra as never, feature: FEATURES.budget_plan })).not.toThrow();
+  });
+
+  it('throws the plan message when the feature is missing', () => {
+    const extra = withFeatures({ features: [FEATURES.attachments] });
+
+    expect(() => requireFeatureAccess({ extra: extra as never, feature: FEATURES.budget_plan })).toThrow(
+      'This feature is not included in your current plan.',
+    );
+  });
+
+  it('throws when features is absent from the auth payload', () => {
+    expect(() => requireFeatureAccess({ extra: withFeatures({}) as never, feature: FEATURES.attachments })).toThrow(
+      'This feature is not included in your current plan.',
+    );
+    expect(() => requireFeatureAccess({ extra: {} as never, feature: FEATURES.attachments })).toThrow(
+      'This feature is not included in your current plan.',
+    );
   });
 });
 

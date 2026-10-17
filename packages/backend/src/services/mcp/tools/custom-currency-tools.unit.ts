@@ -1,7 +1,7 @@
 import { USER_ROLES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
-import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import * as customCurrencies from '@services/currencies/custom-currencies.service';
+import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
 import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and
@@ -21,40 +21,8 @@ import { registerDeleteCustomCurrency } from './delete-custom-currency';
 import { registerListCustomCurrencies } from './list-custom-currencies';
 import { registerUpdateCustomCurrency } from './update-custom-currency';
 
-type Extra = {
-  authInfo: { scopes: string[]; extra: { userId: number; role: string; readOnly: boolean } };
-};
-type Handler = (args: unknown, extra: Extra) => Promise<{ content: { type: 'text'; text: string }[] }>;
-type NoArgsHandler = (extra: Extra) => Promise<{ content: { type: 'text'; text: string }[] }>;
-type CapturedTool = { name: string; inputSchema?: z.ZodRawShape; handler: Handler & NoArgsHandler };
-
-const capture = ({ register }: { register: (server: McpServer) => void }): CapturedTool => {
-  const tools: CapturedTool[] = [];
-  register({
-    registerTool: (name: string, config: { inputSchema?: z.ZodRawShape }, handler: Handler & NoArgsHandler) => {
-      tools.push({ name, inputSchema: config.inputSchema, handler });
-    },
-  } as unknown as McpServer);
-  if (tools.length !== 1) throw new Error('Expected the register function to add exactly one tool');
-  return tools[0]!;
-};
-
-const makeExtra = ({
-  scopes,
-  readOnly = false,
-  role = USER_ROLES.common,
-}: {
-  scopes: string[];
-  readOnly?: boolean;
-  role?: string;
-}): Extra => ({
-  authInfo: { scopes, extra: { userId: 42, role, readOnly } },
-});
-
 const WRITE = makeExtra({ scopes: ['finance:read', 'finance:write'] });
 const DELETE = makeExtra({ scopes: ['finance:read', 'finance:delete'] });
-
-const parsed = (result: Awaited<ReturnType<Handler>>) => JSON.parse(result.content[0]!.text) as unknown;
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const service = jest.mocked(customCurrencies);
@@ -67,7 +35,7 @@ beforeEach(() => {
 });
 
 describe('list_custom_currencies', () => {
-  const tool = capture({ register: registerListCustomCurrencies });
+  const tool = captureTools({ register: registerListCustomCurrencies })[0]!;
 
   it('returns the service result without a scope helper', async () => {
     const currencies = [{ code: 'PTS', name: 'Points', symbol: null, decimals: 2, logoUrl: null }];
@@ -76,13 +44,13 @@ describe('list_custom_currencies', () => {
     const result = await tool.handler(makeExtra({ scopes: ['finance:read'], readOnly: true }));
 
     expect(service.listCustomCurrencies).toHaveBeenCalledWith({ userId: 42 });
-    expect(parsed(result)).toEqual(currencies);
+    expect(parseToolResult({ result })).toEqual(currencies);
   });
 });
 
 describe('create_custom_currency', () => {
-  const tool = capture({ register: registerCreateCustomCurrency });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerCreateCustomCurrency })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('normalizes the code and accepts a valid definition', () => {
     expect(schema.parse(createInput)).toEqual({ code: 'PTS', name: 'Points', decimals: 2 });
@@ -111,7 +79,7 @@ describe('create_custom_currency', () => {
       name: 'Points',
       decimals: 2,
     });
-    expect(parsed(result)).toEqual(created);
+    expect(parseToolResult({ result })).toEqual(created);
   });
 
   it('is refused without the write scope, for read-only and for demo users', async () => {
@@ -136,8 +104,8 @@ describe('create_custom_currency', () => {
 });
 
 describe('update_custom_currency', () => {
-  const tool = capture({ register: registerUpdateCustomCurrency });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerUpdateCustomCurrency })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('accepts a partial update and null to clear the symbol and logo', () => {
     expect(schema.safeParse({ code: 'PTS', name: 'Loyalty points' }).success).toBe(true);
@@ -166,7 +134,7 @@ describe('update_custom_currency', () => {
       name: 'Loyalty points',
       symbol: null,
     });
-    expect(parsed(result)).toEqual(updated);
+    expect(parseToolResult({ result })).toEqual(updated);
   });
 
   it('is refused without the write scope or for a read-only user', async () => {
@@ -190,8 +158,8 @@ describe('update_custom_currency', () => {
 });
 
 describe('delete_custom_currency', () => {
-  const tool = capture({ register: registerDeleteCustomCurrency });
-  const schema = z.object(tool.inputSchema!);
+  const tool = captureTools({ register: registerDeleteCustomCurrency })[0]!;
+  const schema = z.object(tool.config.inputSchema!);
 
   it('rejects an invalid or missing code', () => {
     expect(schema.safeParse({ code: 'pts' }).success).toBe(true);
@@ -205,7 +173,7 @@ describe('delete_custom_currency', () => {
     const result = await tool.handler({ code: 'PTS' }, DELETE);
 
     expect(service.deleteCustomCurrency).toHaveBeenCalledWith({ userId: 42, code: 'PTS' });
-    expect(parsed(result)).toEqual({ deleted: true, code: 'PTS' });
+    expect(parseToolResult({ result })).toEqual({ deleted: true, code: 'PTS' });
   });
 
   it('needs finance:delete, not finance:write', async () => {

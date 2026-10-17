@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createVentureDeal } from '@services/venture/deals/create.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Deal name (e.g. "SK 116 — Series A")'),
@@ -55,6 +55,7 @@ export function registerCreateVentureDeal(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_venture_deal', clientId: extra.authInfo?.clientId });
 
       const deal = await createVentureDeal({

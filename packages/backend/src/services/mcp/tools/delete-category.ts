@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteCategory } from '@services/categories/delete-category';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   categoryId: recordId().describe('ID of the category to delete.'),
@@ -26,6 +26,7 @@ export function registerDeleteCategory(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_category', clientId: extra.authInfo?.clientId });
 
       await deleteCategory({ userId, categoryId: args.categoryId, replaceWithCategoryId: args.replaceWithCategoryId });

@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updatePortfolio } from '@services/investments/portfolios/update.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
@@ -29,6 +29,7 @@ export function registerUpdatePortfolio(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_portfolio', clientId: extra.authInfo?.clientId });
 
       const portfolio = await updatePortfolio({

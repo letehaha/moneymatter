@@ -3,7 +3,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteTracker } from '@services/trackers/delete-tracker';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to delete'),
@@ -20,6 +20,7 @@ export function registerDeleteTracker(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_tracker', clientId: extra.authInfo?.clientId });
 
       const result = await deleteTracker({ id: args.trackerId, userId });

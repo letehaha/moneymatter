@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { linkTransactionToPortfolio } from '@services/investments/portfolios/transfers';
 
 import { slimPortfolioTransferForMcp } from '../serializers';
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   transactionId: recordId().describe('ID of the existing transaction (from search_transactions)'),
@@ -22,6 +22,7 @@ export function registerLinkTransactionToPortfolio(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'link_transaction_to_portfolio', clientId: extra.authInfo?.clientId });
 
       const transfer = await linkTransactionToPortfolio({

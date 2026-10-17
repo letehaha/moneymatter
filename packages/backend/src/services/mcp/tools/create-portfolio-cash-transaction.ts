@@ -5,7 +5,7 @@ import { directCashTransaction } from '@services/investments/portfolios/transfer
 import { z } from 'zod';
 
 import { slimPortfolioTransferForMcp } from '../serializers';
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
@@ -33,6 +33,7 @@ export function registerCreatePortfolioCashTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_portfolio_cash_transaction', clientId: extra.authInfo?.clientId });
 
       const transfer = await directCashTransaction({

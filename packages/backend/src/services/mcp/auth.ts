@@ -1,4 +1,4 @@
-import { UserRole } from '@bt/shared/types';
+import { Feature, UserRole } from '@bt/shared/types';
 import { authPool } from '@config/auth';
 import { Unauthorized } from '@js/errors';
 import { CacheClient } from '@js/utils/cache';
@@ -35,6 +35,8 @@ export interface McpAuthInfo {
     username: string;
     role: UserRole;
     readOnly: boolean;
+    /** Plan features, active feature trials included; what `requireFeatureAccess` checks. */
+    features: readonly Feature[];
   };
 }
 
@@ -99,7 +101,7 @@ async function verifyAccessToken({ token }: { token: string }): Promise<McpAuthI
   }
 
   const scopes = parseScopes({ scopes: tokenRecord.scopes });
-  const { readOnly } = await getEntitlementsByUserId({ userId: user.id });
+  const { readOnly, features } = await getEntitlementsByUserId({ userId: user.id });
 
   return {
     token,
@@ -112,6 +114,7 @@ async function verifyAccessToken({ token }: { token: string }): Promise<McpAuthI
       username: user.username,
       role: user.role,
       readOnly,
+      features,
     },
   };
 }

@@ -5,7 +5,7 @@ import { accountToPortfolioTransfer } from '@services/investments/portfolios/tra
 import { z } from 'zod';
 
 import { slimPortfolioTransferForMcp } from '../serializers';
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   accountId: recordId().describe('Source account ID (from get_accounts). The transfer uses the account currency'),
@@ -26,6 +26,7 @@ export function registerTransferAccountToPortfolio(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'transfer_account_to_portfolio', clientId: extra.authInfo?.clientId });
 
       const transfer = await accountToPortfolioTransfer({

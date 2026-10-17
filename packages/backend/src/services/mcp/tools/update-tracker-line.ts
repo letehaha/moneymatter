@@ -6,7 +6,7 @@ import { serializeTrackerLine } from '@root/serializers';
 import { updateTrackerLine } from '@services/trackers/lines/update-line';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker the line belongs to'),
@@ -42,6 +42,7 @@ export function registerUpdateTrackerLine(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_tracker_line', clientId: extra.authInfo?.clientId });
 
       const line = await updateTrackerLine({
