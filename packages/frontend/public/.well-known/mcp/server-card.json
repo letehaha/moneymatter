@@ -51,6 +51,18 @@
       "description": "List the user's financial accounts with balances, types, and currencies."
     },
     {
+      "name": "get_account",
+      "description": "Read one account: balances, opening balance, credit limit, bank link, logo and its transaction count."
+    },
+    {
+      "name": "create_account",
+      "description": "Create a manual account with a currency, category, opening balance, credit limit and logo."
+    },
+    {
+      "name": "update_account",
+      "description": "Update an account's name, category, credit limit, stats exclusion, logo or balance."
+    },
+    {
       "name": "search_transactions",
       "description": "Search and filter transactions across accounts by date, category, tag, amount, or merchant."
     },
@@ -229,6 +241,14 @@
     {
       "name": "archive_account",
       "description": "Archive or unarchive a user account, with full side-effect handling (group removal, subscription unlinking)."
+    },
+    {
+      "name": "delete_account",
+      "description": "Permanently delete an account together with all its transactions."
+    },
+    {
+      "name": "unlink_account_from_bank_connection",
+      "description": "Disconnect a bank-connected account from its bank; it becomes a manual account and keeps its history."
     },
     {
       "name": "get_transaction_groups",

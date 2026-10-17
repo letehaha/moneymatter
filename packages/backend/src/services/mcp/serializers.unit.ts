@@ -12,6 +12,7 @@ import type { TransactionApiResponse } from '@root/serializers/transactions.seri
 
 import {
   type SubscriptionDetailForMcp,
+  slimAccountDetailForMcp,
   slimAccountsForMcp,
   slimGoalsForMcp,
   slimSubscriptionDetailForMcp,
@@ -120,6 +121,28 @@ describe('MCP serializers', () => {
         'initialBalance',
         'refInitialBalance',
       ]) {
+        expect(slim).not.toHaveProperty(dropped);
+      }
+    });
+  });
+
+  describe('slimAccountDetailForMcp', () => {
+    it('adds the opening balance, bank link and logo to the list fields', () => {
+      const slim = slimAccountDetailForMcp(fullAccount);
+      expect(slim).toMatchObject({
+        id: 'acc-1',
+        currentBalance: 250.5,
+        initialBalance: 100,
+        refInitialBalance: 100,
+        bankDataProviderConnectionId: 'conn-1',
+        needsRelink: true,
+        logoDomain: null,
+      });
+    });
+
+    it('drops the owner id and the external id', () => {
+      const slim = slimAccountDetailForMcp(fullAccount) as unknown as Record<string, unknown>;
+      for (const dropped of ['userId', 'externalId']) {
         expect(slim).not.toHaveProperty(dropped);
       }
     });
