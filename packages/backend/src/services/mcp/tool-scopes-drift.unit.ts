@@ -10,6 +10,35 @@ const READ_TOOL_NAME = /^(get|list|search|preview)_/;
 // hand: a new destructive tool named otherwise is only checked once it is listed here.
 const DESTRUCTIVE_TOOLS = ['merge_payees'];
 
+// Tools that check a scope but whose REST route carries no `checkBaseCurrencyLock`, so they
+// skip `assertBaseCurrencyUnlocked`. Kept by hand, one route per entry: the lock follows the
+// route, not the tool's name or scope. Add a tool here only after reading its route.
+const LOCK_EXEMPT_TOOLS = [
+  // POST /transactions/:transactionId/attachments has no lock: attachments touch no amounts.
+  'create_attachment_upload_url',
+  // GET /subscriptions/detect-candidates is a read in REST.
+  'detect_subscription_candidates',
+];
+
+// Read-named tools whose REST route carries `checkBaseCurrencyLock`, so REST refuses them with
+// 423 during a base-currency change and the tool must too. They call no scope helper.
+const LOCK_GUARDED_READ_TOOLS = [
+  // POST /automations/preview
+  'preview_transaction_automation',
+];
+
+// The only tools that may pass `allowReadOnly: true` to `requireScope`: each sits on a route in
+// `READ_ONLY_ROUTES` (`middlewares/entitlements.ts`), which a read-only user may call. Kept by
+// hand so the exemption cannot spread. The tools arrive with their tasks.
+const READ_ONLY_ROUTE_TOOLS = [
+  // POST /notifications/read-all and POST /notifications/:id/read
+  'mark_notifications_read',
+  // PUT and PATCH /user/settings
+  'update_user_settings',
+  // POST /user/currencies/base, the first base currency only
+  'change_base_currency',
+];
+
 function readToolSources(): Array<{ name: string; content: string }> {
   const tools: Array<{ name: string; content: string }> = [];
   for (const entry of fs.readdirSync(TOOLS_DIR)) {
@@ -61,5 +90,52 @@ describe('MCP tool scopes', () => {
       .map((t) => t.name);
 
     expect(ungated).toEqual([]);
+  });
+
+  it('every tool that checks a scope checks the base-currency lock right after it, unless its route has none', () => {
+    const tools = readToolSources().filter((t) => t.content.includes('requireScope('));
+
+    const missing = tools
+      .filter((t) => !LOCK_EXEMPT_TOOLS.includes(t.name) && !t.content.includes('await assertBaseCurrencyUnlocked({'))
+      .map((t) => t.name);
+    expect(missing).toEqual([]);
+
+    const misplaced = tools
+      .filter((t) => t.content.includes('await assertBaseCurrencyUnlocked({'))
+      .filter((t) => t.content.indexOf('requireScope(') > t.content.indexOf('assertBaseCurrencyUnlocked('))
+      .map((t) => t.name);
+    expect(misplaced).toEqual([]);
+  });
+
+  it('every lock-exempt tool exists, checks a scope and does not check the lock', () => {
+    const tools = readToolSources();
+    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(LOCK_EXEMPT_TOOLS));
+
+    const wrong = tools
+      .filter((t) => LOCK_EXEMPT_TOOLS.includes(t.name))
+      .filter((t) => !t.content.includes('requireScope(') || t.content.includes('assertBaseCurrencyUnlocked('))
+      .map((t) => t.name);
+    expect(wrong).toEqual([]);
+  });
+
+  it('every read tool on a lock-carrying route checks the lock', () => {
+    const tools = readToolSources();
+    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(LOCK_GUARDED_READ_TOOLS));
+    expect(LOCK_GUARDED_READ_TOOLS.filter((name) => LOCK_EXEMPT_TOOLS.includes(name))).toEqual([]);
+
+    const unguarded = tools
+      .filter((t) => LOCK_GUARDED_READ_TOOLS.includes(t.name))
+      .filter((t) => !READ_TOOL_NAME.test(t.name) || !t.content.includes('await assertBaseCurrencyUnlocked({'))
+      .map((t) => t.name);
+    expect(unguarded).toEqual([]);
+  });
+
+  it('only the tools on READ_ONLY_ROUTES routes pass allowReadOnly', () => {
+    const spread = readToolSources()
+      .filter((t) => t.content.includes('allowReadOnly: true'))
+      .filter((t) => !READ_ONLY_ROUTE_TOOLS.includes(t.name))
+      .map((t) => t.name);
+
+    expect(spread).toEqual([]);
   });
 });

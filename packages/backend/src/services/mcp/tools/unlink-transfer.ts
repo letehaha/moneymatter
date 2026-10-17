@@ -4,7 +4,7 @@ import { serializeTransactions } from '@root/serializers/transactions.serializer
 import { unlinkTransferTransactions } from '@services/transactions/transactions-linking/unlink-transfer-transactions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   transferIds: z
@@ -24,6 +24,7 @@ export function registerUnlinkTransfer(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'unlink_transfer', clientId: extra.authInfo?.clientId });
 
       const result = await unlinkTransferTransactions({ userId, transferIds: args.transferIds });

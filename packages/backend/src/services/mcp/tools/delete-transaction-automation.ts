@@ -3,7 +3,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteAutomation } from '@services/transaction-automations/delete-automation';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   id: recordId().describe('UUID of the automation to delete'),
@@ -20,6 +20,7 @@ export function registerDeleteTransactionAutomation(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_transaction_automation', clientId: extra.authInfo?.clientId });
 
       await deleteAutomation({ userId, id: args.id });

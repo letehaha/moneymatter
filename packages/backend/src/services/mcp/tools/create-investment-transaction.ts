@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
@@ -44,6 +44,7 @@ export function registerCreateInvestmentTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_investment_transaction', clientId: extra.authInfo?.clientId });
 
       const transaction = await createInvestmentTransaction({

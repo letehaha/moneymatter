@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateVenturePlatform } from '@services/venture/platforms/update.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   platformId: recordId().describe('Venture platform ID (from list_venture_platforms)'),
@@ -34,6 +34,7 @@ export function registerUpdateVenturePlatform(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_venture_platform', clientId: extra.authInfo?.clientId });
 
       const platform = await updateVenturePlatform({
