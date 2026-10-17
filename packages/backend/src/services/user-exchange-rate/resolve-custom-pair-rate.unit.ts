@@ -373,6 +373,48 @@ describe('resolveCustomPairRate', () => {
     });
   });
 
+  describe('a currency on a synced source', () => {
+    it.each(['coingecko', 'http'])(
+      'is valued by the %s rates alone, not by a rate quoted in the base entered earlier',
+      async (rateSource) => {
+        // A manual SAT/EUR rate from before the switch, and the source's own SAT/USD rows since.
+        storeRates({}, [
+          datedRate({ baseCode: 'SAT', quoteCode: 'EUR', value: 2, effectiveDate: '2026-01-01' }),
+          datedRate({ baseCode: 'SAT', quoteCode: 'USD', value: 10, effectiveDate: '2026-10-10' }),
+        ]);
+        setSources({ SAT: { rateSource, rateSourceConfig: {} } });
+
+        const result = await resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'SAT', quoteCode: 'EUR' },
+          date: DATE,
+          isCustom: isCustomIn(['SAT']),
+          resolveIsoRate: isoRates({ 'USD>EUR': 0.5 }),
+        });
+
+        expect(result.rate).toBe(5);
+      },
+    );
+
+    it('still takes the exact pair rate of a currency on manual rates', async () => {
+      storeRates({}, [
+        datedRate({ baseCode: 'SAT', quoteCode: 'EUR', value: 2, effectiveDate: '2026-01-01' }),
+        datedRate({ baseCode: 'SAT', quoteCode: 'USD', value: 10, effectiveDate: '2026-10-10' }),
+      ]);
+      setSources({ SAT: { rateSource: 'manual', rateSourceConfig: null } });
+
+      const result = await resolveCustomPairRate({
+        userId: 1,
+        pair: { baseCode: 'SAT', quoteCode: 'EUR' },
+        date: DATE,
+        isCustom: isCustomIn(['SAT']),
+        resolveIsoRate: isoRates({ 'USD>EUR': 0.5 }),
+      });
+
+      expect(result.rate).toBe(2);
+    });
+  });
+
   describe('a pegged currency', () => {
     const resolvePair = ({
       baseCode,

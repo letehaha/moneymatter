@@ -1,6 +1,8 @@
+import type { CurrencyRateSource } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError } from '@js/errors';
 import { toEffectiveDate } from '@models/user-exchange-rates.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import { findStoredCustomRate, findStoredPairRate } from '@services/currencies/rate-sources/manual';
 import { findPeg } from '@services/currencies/rate-sources/peg';
 import Big from 'big.js';
@@ -12,6 +14,9 @@ interface ResolvedRate {
   rate: number;
   custom?: boolean;
 }
+
+/** The sources whose own rates value a currency: a stored rate for an exact pair never overrides them. */
+const SOURCE_OWNED_RATE_SOURCES = ['peg', 'coingecko', 'http'] as const satisfies readonly CurrencyRateSource[];
 
 type IsCustomCode = (params: { code: string }) => Promise<boolean>;
 
@@ -80,6 +85,17 @@ const priceInIsoCurrency = async ({
   return { code: current, factor };
 };
 
+/** Whether the user's rates for a custom code come from a peg or from a synced source, not from their own entries. */
+const followsASource = async ({ userId, code }: { userId: number; code: string }): Promise<boolean> => {
+  const held = await UsersCurrencies.findOne({
+    where: { userId, currencyCode: code },
+    attributes: ['rateSource'],
+    raw: true,
+  });
+
+  return held ? (SOURCE_OWNED_RATE_SOURCES as readonly string[]).includes(held.rateSource) : false;
+};
+
 /**
  * Rate of a pair in which at least one side is a custom currency, on the day of `date`. It never
  * touches the global cross-rate cache, which is keyed by date and code only.
@@ -89,7 +105,7 @@ const priceInIsoCurrency = async ({
  * A pegged currency is valued by its peg on the day instead: `factor` times the peg currency's own
  * rate, which may be another custom currency, so every source resolves on this one path.
  *
- * 1. A rate the user entered for exactly this pair wins (unless a side is pegged).
+ * 1. A rate the user entered for exactly this pair wins (unless a side follows a peg or a synced source).
  * 2. Otherwise each custom side is priced in the quote currency of the user's own rate or peg for
  *    it, and the remaining ISO-to-ISO conversion goes through `resolveIsoRate` for the same day, so
  *    a manual ISO rate into the base wins and the market rate fills in otherwise.
@@ -112,14 +128,15 @@ export const resolveCustomPairRate = async ({
   /** Resolves a pair of codes that are both ISO: it is never given a custom code. */
   resolveIsoRate: ResolveRate;
 }): Promise<ResolvedRate> => {
-  // A pegged currency is valued by its peg alone: rows stored before it was pegged (or restored with
-  // a backup) must not win over it.
-  const sidePegs = await Promise.all(
-    [pair.baseCode, pair.quoteCode].map(async (code) =>
-      (await isCustom({ code })) ? (await findPeg({ userId, code })).kind !== 'none' : false,
+  // A currency that follows a peg or a synced source is valued by it alone: a rate quoted in the base
+  // currency that the user entered earlier (or a backup restored) would otherwise win over every
+  // later day of the source. Only a `manual` currency takes the exact pair shortcut.
+  const sidesFollowingASource = await Promise.all(
+    [pair.baseCode, pair.quoteCode].map(
+      async (code) => (await isCustom({ code })) && (await followsASource({ userId, code })),
     ),
   );
-  const exact = sidePegs.some(Boolean)
+  const exact = sidesFollowingASource.some(Boolean)
     ? null
     : await findStoredPairRate({
         userId,
