@@ -1,3 +1,4 @@
+import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import { DataType, addAttribute } from 'sequelize-typescript';
 
 import { Money } from './money';
@@ -103,9 +104,6 @@ function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
 // ---------------------------------------------------------------------------
 // Raw SQL values
 // ---------------------------------------------------------------------------
-
-/** Scale of the DECIMAL(36,18) money columns. */
-const MONEY_COLUMN_SCALE = 18;
 
 /**
  * Decimal string for a money column in raw SQL (`literal`, `query` replacements, bulk inserts).
