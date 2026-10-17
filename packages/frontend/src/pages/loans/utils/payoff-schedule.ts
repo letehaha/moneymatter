@@ -5,8 +5,8 @@ import { addMonths } from 'date-fns';
  * `computeLoanProjection` returns only summary numbers, and the chart needs a
  * per-month series that recomputes instantly as the user types. Must stay in
  * lockstep with `computeLoanProjection` so the chart matches the Projection
- * card to the cent. Monetary inputs/outputs are decimals; iteration runs in
- * integer cents internally.
+ * card to the minor unit. Monetary inputs/outputs are decimals; iteration runs in
+ * integer minor units at the loan currency's `decimals` internally.
  */
 
 /** Payoff-horizon cap in months (100 years, matching the backend loan-term cap). */
@@ -31,23 +31,28 @@ export function computeMinimumPaymentFromTerm({
   principal,
   interestRate,
   termMonths,
+  decimals,
 }: {
   principal: number;
   /** APR as percent, e.g. 6 for 6%. */
   interestRate: number;
   termMonths: number | null;
+  /** Decimals of the loan currency; the payment is rounded to them. */
+  decimals: number;
 }): number | null {
   if (!termMonths || termMonths <= 0 || principal <= 0) return null;
 
+  const minorPerUnit = 10 ** decimals;
+
   if (interestRate === 0) {
-    return Math.round((principal / termMonths) * 100) / 100;
+    return Math.round((principal / termMonths) * minorPerUnit) / minorPerUnit;
   }
 
   const monthlyRate = interestRate / 100 / MONTHS_PER_YEAR;
   const payment = (principal * monthlyRate) / (1 - Math.pow(1 + monthlyRate, -termMonths));
-  // Half-up to the cent (displayed-payment convention) — unlike the half-to-even
+  // Half-up to the minor unit (displayed-payment convention) — unlike the half-to-even
   // interest accrual, which must mirror the backend.
-  return Math.round(payment * 100) / 100;
+  return Math.round(payment * minorPerUnit) / minorPerUnit;
 }
 
 export interface PayoffPoint {
@@ -71,19 +76,19 @@ export interface PayoffScenario {
 
 /** Closed-form months-to-payoff: n = ⌈log(P / (P − B·r)) / log(1 + r)⌉ — identical to the backend formula. */
 function computeMonthsRemaining({
-  balanceCents,
-  paymentCents,
+  balanceMinor,
+  paymentMinor,
   interestRate,
 }: {
-  balanceCents: number;
-  paymentCents: number;
+  balanceMinor: number;
+  paymentMinor: number;
   interestRate: number;
 }): number {
   if (interestRate === 0) {
-    return Math.ceil(balanceCents / paymentCents);
+    return Math.ceil(balanceMinor / paymentMinor);
   }
   const monthlyRate = interestRate / 100 / MONTHS_PER_YEAR;
-  const numerator = Math.log(paymentCents / (paymentCents - balanceCents * monthlyRate));
+  const numerator = Math.log(paymentMinor / (paymentMinor - balanceMinor * monthlyRate));
   const denominator = Math.log(1 + monthlyRate);
   return Math.ceil(numerator / denominator);
 }
@@ -97,24 +102,28 @@ export function computePayoffScenario({
   interestRate,
   payment,
   today,
+  decimals,
 }: {
   balance: number;
   interestRate: number;
   payment: number;
   today: Date;
+  /** Decimals of the loan currency: the scale of the integer minor units the iteration runs in. */
+  decimals: number;
 }): PayoffScenario {
-  const balanceCents = Math.round(balance * 100);
-  const paymentCents = Math.round(payment * 100);
+  const minorPerUnit = 10 ** decimals;
+  const balanceMinor = Math.round(balance * minorPerUnit);
+  const paymentMinor = Math.round(payment * minorPerUnit);
 
   const neverPaysOff: PayoffScenario = {
     paysOff: false,
     monthsRemaining: null,
     payoffDate: null,
     totalInterest: null,
-    points: [{ month: 0, date: today, balance: Math.max(0, balanceCents) / 100 }],
+    points: [{ month: 0, date: today, balance: Math.max(0, balanceMinor) / minorPerUnit }],
   };
 
-  if (balanceCents <= 0) {
+  if (balanceMinor <= 0) {
     return {
       paysOff: true,
       monthsRemaining: 0,
@@ -124,40 +133,40 @@ export function computePayoffScenario({
     };
   }
 
-  if (paymentCents <= 0) return neverPaysOff;
+  if (paymentMinor <= 0) return neverPaysOff;
 
-  const monthlyInterestCents = roundHalfToEven((balanceCents * interestRate) / 100 / MONTHS_PER_YEAR);
+  const monthlyInterestMinor = roundHalfToEven((balanceMinor * interestRate) / 100 / MONTHS_PER_YEAR);
   // A payment that cannot cover the monthly interest never reduces principal.
-  if (paymentCents <= monthlyInterestCents) return neverPaysOff;
+  if (paymentMinor <= monthlyInterestMinor) return neverPaysOff;
 
-  const monthsRemaining = computeMonthsRemaining({ balanceCents, paymentCents, interestRate });
+  const monthsRemaining = computeMonthsRemaining({ balanceMinor, paymentMinor, interestRate });
   if (!Number.isFinite(monthsRemaining) || monthsRemaining <= 0 || monthsRemaining > MAX_PROJECTION_MONTHS) {
     return neverPaysOff;
   }
 
   // Accumulated month by month (closed-form would overstate: the final month pays
   // only the leftover balance plus its interest). Same accrual as the backend's
-  // `computeLoanProjection`, so the figure matches the Projection card to the cent.
-  let totalInterestCents = 0;
+  // `computeLoanProjection`, so the figure matches the Projection card to the minor unit.
+  let totalInterestMinor = 0;
 
-  const points: PayoffPoint[] = [{ month: 0, date: today, balance: balanceCents / 100 }];
-  let runningCents = balanceCents;
+  const points: PayoffPoint[] = [{ month: 0, date: today, balance: balanceMinor / minorPerUnit }];
+  let runningMinor = balanceMinor;
   for (let month = 1; month <= monthsRemaining; month += 1) {
-    const interestCents = roundHalfToEven((Math.max(0, runningCents) * interestRate) / 100 / MONTHS_PER_YEAR);
-    totalInterestCents += interestCents;
+    const interestMinor = roundHalfToEven((Math.max(0, runningMinor) * interestRate) / 100 / MONTHS_PER_YEAR);
+    totalInterestMinor += interestMinor;
     // The last payment clears whatever is left instead of a full planned payment.
-    runningCents = Math.max(0, runningCents + interestCents - paymentCents);
+    runningMinor = Math.max(0, runningMinor + interestMinor - paymentMinor);
     // Force the final point to zero so the curve lands exactly on the payoff
-    // marker; the sub-cent rounding remainder is absorbed into the last payment.
-    const displayCents = month === monthsRemaining ? 0 : runningCents;
-    points.push({ month, date: addMonths(today, month), balance: displayCents / 100 });
+    // marker; the sub-minor-unit rounding remainder is absorbed into the last payment.
+    const displayMinor = month === monthsRemaining ? 0 : runningMinor;
+    points.push({ month, date: addMonths(today, month), balance: displayMinor / minorPerUnit });
   }
 
   return {
     paysOff: true,
     monthsRemaining,
     payoffDate: addMonths(today, monthsRemaining),
-    totalInterest: totalInterestCents / 100,
+    totalInterest: totalInterestMinor / minorPerUnit,
     points,
   };
 }
