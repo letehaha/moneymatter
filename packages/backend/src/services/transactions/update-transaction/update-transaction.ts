@@ -184,15 +184,14 @@ const makeBasicBaseTxUpdation = async (
   // Never update "transactionType" of non-system transactions. Just an additional guard
   const transactionType = isSystemAccount ? newData.transactionType : prevData.transactionType;
 
+  // `amount` and `refAmount` stay out of the payload until the edit changes them (below): the
+  // model rounds whatever money it is handed, which would rewrite a stored amount that
+  // carries more decimals than its currency now allows on a note-only edit.
   const baseTransactionUpdateParams: Transactions.UpdateTransactionByIdParams & {
-    amount: Money;
-    refAmount: Money;
     currencyCode: string;
     time: Date;
   } = {
     id: newData.id,
-    amount: newData.amount !== undefined ? newData.amount : prevData.amount,
-    refAmount: newData.amount !== undefined ? newData.amount : prevData.refAmount,
     note: newData.note,
     externalUrl: newData.externalUrl,
     externalReference: newData.externalReference,
@@ -277,23 +276,26 @@ const makeBasicBaseTxUpdation = async (
     baseTransactionUpdateParams.externalData = clearOriginalSourceProvider({ externalData: prevData.externalData });
   }
 
-  if (newData.amount !== undefined) {
+  // The amount the row holds after this edit; only a changed amount or currency is written back.
+  let effectiveAmount = prevData.amount;
+
+  if (newData.amount !== undefined || isBaseTxAccountChanged) {
     // Rounded to the decimals of the currency the row ends up in, before it doubles as the
     // reference amount of a row already in the base currency.
-    const roundedAmount = await roundToCurrency({
-      money: newData.amount,
+    effectiveAmount = await roundToCurrency({
+      money: newData.amount ?? prevData.amount,
       userId: ctx.accountOwnerUserId,
       currencyCode: baseTransactionUpdateParams.currencyCode,
       mode: 'half-up',
     });
-    baseTransactionUpdateParams.amount = roundedAmount;
-    baseTransactionUpdateParams.refAmount = roundedAmount;
+    baseTransactionUpdateParams.amount = effectiveAmount;
+    baseTransactionUpdateParams.refAmount = effectiveAmount;
   }
 
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
     baseTransactionUpdateParams.refAmount = await calculateRefAmount({
       userId: newData.userId,
-      amount: baseTransactionUpdateParams.amount,
+      amount: effectiveAmount,
       baseCode: baseTransactionUpdateParams.currencyCode,
       quoteCode: defaultUserCurrency.code,
       date: baseTransactionUpdateParams.time,
