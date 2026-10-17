@@ -5,45 +5,30 @@ import * as Popover from '@/components/lib/ui/popover';
 import {
   useDismissNotification,
   useMarkAllNotificationsAsRead,
-  useMarkNotificationAsRead,
   useNotifications,
   useUnreadNotificationsCount,
 } from '@/composable/data-queries/notifications';
-import { NOTIFICATION_STATUSES } from '@bt/shared/types';
+import { isNotificationsPopoverOpen as isOpen } from '@/composable/global-state/notifications-popover';
+import { useOpenNotification } from '@/composable/use-open-notification';
 import { BellIcon, BellOffIcon, Loader2Icon } from '@lucide/vue';
-import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
-import { buildNotificationRoute } from './build-notification-route';
 import NotificationItem from './notification-item.vue';
 
 withDefaults(defineProps<{ sidebar?: boolean }>(), { sidebar: false });
 
 const { t } = useI18n();
-const router = useRouter();
-const isOpen = ref(false);
+const { openNotification } = useOpenNotification();
 
 const { data: notifications, isLoading } = useNotifications();
 const { data: unreadCount } = useUnreadNotificationsCount();
 
-const markAsReadMutation = useMarkNotificationAsRead();
 const markAllAsReadMutation = useMarkAllNotificationsAsRead();
 const dismissMutation = useDismissNotification();
 
 const handleNotificationClick = (notification: NotificationStruct) => {
-  if (notification.status === NOTIFICATION_STATUSES.unread) {
-    markAsReadMutation.mutate({ id: notification.id });
-  }
-
-  const route = buildNotificationRoute(notification);
-  if (!route) return;
-
-  isOpen.value = false;
-  if (route.kind === 'spa') {
-    router.push(route.to);
-  } else {
-    window.location.href = route.href;
+  if (openNotification({ notification })) {
+    isOpen.value = false;
   }
 };
 

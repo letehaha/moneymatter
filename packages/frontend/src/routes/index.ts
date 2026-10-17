@@ -30,6 +30,13 @@ const routes: RouteRecordRaw[] = [
         meta: { i18nChunks: ['pages/dashboard', 'pages/transactions'] },
       },
       {
+        // Target of every push notification: resolves the notification by id, marks it read and
+        // replaces itself with the type's real route.
+        path: '/notifications/:id',
+        name: ROUTES_NAMES.notificationOpen,
+        component: () => import('@/pages/notification-open/index.vue'),
+      },
+      {
         path: '/accounts',
         name: ROUTES_NAMES.accounts,
         component: () => import('@/pages/accounts/accounts.vue'),

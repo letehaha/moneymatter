@@ -320,6 +320,7 @@
     "title": "Notifications",
     "markAllAsRead": "Mark all as read",
     "empty": "No notifications yet",
+    "notFound": "This notification is no longer available",
     "containerAriaLabel": "Notifications",
     "closeToast": "Close notification",
     "viewOnGitHub": "View on GitHub",

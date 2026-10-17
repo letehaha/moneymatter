@@ -210,6 +210,10 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   notificationsList: [notifications, 'notifications-list'] as const,
   notificationsUnreadCount: [notifications, 'notifications-unread-count'] as const,
 
+  // web push
+  pushConfig: ['push-config'] as const,
+  pushDevices: ['push-devices'] as const,
+
   // subscriptions
   subscriptionsList: [transactionChange, 'subscriptions-list'] as const,
   subscriptionDetails: [transactionChange, 'subscription-details'] as const,

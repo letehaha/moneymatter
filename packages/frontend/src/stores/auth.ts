@@ -1,6 +1,7 @@
 import { analyticsPlan } from '@/common/const/billing';
 import type { DemoEndReason } from '@/common/const/demo';
 import { getDeviceName } from '@/common/utils/device-name';
+import { removeThisDevice } from '@/common/utils/web-push-device';
 import { dismissPersistentNotifications } from '@/components/notification-center';
 import { isMobileSheetOpen } from '@/composable/global-state/mobile-sheet';
 import { OAuthProviderNotConfiguredError, UnexpectedError } from '@/js/errors';
@@ -274,9 +275,23 @@ export const useAuthStore = defineStore('auth', () => {
     // The register page will redirect to verify-email page
   };
 
-  /** `demoEndReason` only matters for a demo account; it labels the demo funnel's terminal event. */
-  const logout = async ({ demoEndReason = 'logout' }: { demoEndReason?: DemoEndReason } = {}) => {
+  /**
+   * `demoEndReason` only matters for a demo account; it labels the demo funnel's terminal event.
+   *
+   * `disablePush` removes this device's push subscription first. Only an explicit sign-out passes it
+   * (the user menu, account deletion): the automatic paths (a 401 from the API client, the demo
+   * banner's expiry) leave the subscription alone, so push keeps arriving after a session expires.
+   */
+  const logout = async ({
+    demoEndReason = 'logout',
+    disablePush = false,
+  }: { demoEndReason?: DemoEndReason; disablePush?: boolean } = {}) => {
     const wasDemo = userStore.isDemo;
+
+    if (disablePush) {
+      // Needs the session cookie for the server row, so it runs before `signOut`. It swallows its own failures.
+      await removeThisDevice({ userId: userStore.user?.id });
+    }
 
     try {
       await signOut();
