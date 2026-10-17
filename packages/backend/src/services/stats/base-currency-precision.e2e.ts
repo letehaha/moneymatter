@@ -190,6 +190,40 @@ describe('Stats in the base currency decimals', () => {
         expect(summary).toEqual({ count: 2, income: 0.778, expense: 1.234, net: -0.456, transfers: 0 });
       });
     });
+
+    it('reports combined-balance-history at 3 decimals', async () => {
+      await inKwdBook(async () => {
+        const rows = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
+        const today = rows.find((row) => row.date === TODAY)!;
+
+        expect(today.accountsBalance).toBe(-0.456);
+        expect(today.totalBalance).toBe(-0.456);
+      });
+    });
+
+    it('reports net-worth-history assets and net worth at 3 decimals', async () => {
+      await inKwdBook(async () => {
+        const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
+        const last = points.at(-1)!;
+
+        expect(last.assets.cash).toBe(0.778);
+        expect(last.assetsTotal).toBe(0.778);
+        expect(last.liabilitiesTotal).toBe(-1.234);
+        expect(last.netWorth).toBe(-0.456);
+      });
+    });
+
+    it('reports net-worth-drivers savings at 3 decimals', async () => {
+      await inKwdBook(async () => {
+        const { buckets } = await helpers.getNetWorthDrivers({ ...WINDOW, granularity: 'monthly', raw: true });
+        const sum = (pick: (savings: (typeof buckets)[number]['savings']) => number) =>
+          Number(buckets.reduce((total, bucket) => total + pick(bucket.savings), 0).toFixed(3));
+
+        expect(sum((savings) => savings.income)).toBe(0.778);
+        expect(sum((savings) => savings.expenses)).toBe(1.234);
+        expect(sum((savings) => savings.net)).toBe(-0.456);
+      });
+    });
   });
 
   describe('2-decimal base currency (regression guard)', () => {
@@ -242,6 +276,16 @@ describe('Stats in the base currency decimals', () => {
 
       const summary = await helpers.getTransactionsSummary({ accountIds: [account.id], raw: true });
       expect(summary).toEqual({ count: 2, income: 4.56, expense: 1.23, net: 3.33, transfers: 0 });
+
+      const combined = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
+      expect(combined.find((row) => row.date === TODAY)!.totalBalance).toBe(3.33);
+
+      const { points } = await helpers.getNetWorthHistory({ ...WINDOW, granularity: 'weekly', raw: true });
+      expect(points.at(-1)).toMatchObject({ assetsTotal: 3.33, liabilitiesTotal: 0, netWorth: 3.33 });
+
+      const { buckets } = await helpers.getNetWorthDrivers({ ...WINDOW, granularity: 'monthly', raw: true });
+      const savingsNet = buckets.reduce((total, bucket) => total + bucket.savings.net, 0);
+      expect(Number(savingsNet.toFixed(2))).toBe(3.33);
     });
   });
 });
