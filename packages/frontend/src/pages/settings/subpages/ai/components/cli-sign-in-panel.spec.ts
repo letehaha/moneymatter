@@ -1,5 +1,5 @@
 import { AI_PROVIDER, type CliAuthSessionInfo, type CliAuthSessionStatus } from '@bt/shared/types';
-import { flushPromises, mount } from '@vue/test-utils';
+import { enableAutoUnmount, flushPromises, mount } from '@vue/test-utils';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { startMock, getMock, submitMock, cancelMock } = vi.hoisted(() => ({
@@ -24,6 +24,12 @@ vi.mock('@/components/notification-center', () => ({
 import CliSignInPanel from './cli-sign-in-panel.vue';
 
 const AUTH_URL = 'https://auth.openai.com/codex/device';
+/** Before the fixtures' `expiresAt`, so a succeeded session's expiry is 15 minutes away, whatever today's date. */
+const NOW = new Date('2026-10-17T12:00:00.000Z');
+const EXPIRES_AT = '2026-10-17T12:15:00.000Z';
+const EXPIRY_MS = new Date(EXPIRES_AT).getTime() - NOW.getTime();
+/** `POLL_INTERVAL_MS` of `use-cli-sign-in.ts`. */
+const POLL_INTERVAL_MS = 2000;
 
 const makeSession = (
   status: CliAuthSessionStatus,
@@ -33,7 +39,7 @@ const makeSession = (
   provider: AI_PROVIDER.claudeCode,
   status,
   authUrl: AUTH_URL,
-  expiresAt: '2026-10-17T12:15:00.000Z',
+  expiresAt: EXPIRES_AT,
   ...overrides,
 });
 
@@ -54,16 +60,22 @@ const findButton = ({ wrapper, text }: { wrapper: ReturnType<typeof mountPanel>;
   wrapper.findAll('button').find((button) => button.text().includes(text));
 
 describe('CliSignInPanel', () => {
+  // Hooks run last-registered-first: the timer check below runs after the wrappers are unmounted.
+  afterEach(() => {
+    expect(vi.getTimerCount(), 'a poll or expiry timer outlived its unmounted panel').toBe(0);
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+  enableAutoUnmount(afterEach);
+
   beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
     startMock.mockReset();
     getMock.mockReset().mockResolvedValue(makeSession('awaiting-user'));
     submitMock.mockReset();
     cancelMock.mockReset().mockResolvedValue(undefined);
     vi.spyOn(window, 'open').mockReturnValue(null);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
   });
 
   it('starts with the provider sign-in button', () => {
@@ -130,6 +142,36 @@ describe('CliSignInPanel', () => {
     expect(cancelMock).toHaveBeenCalledWith({ id: 'session-1' });
     expect(wrapper.text()).toContain('Sign in with the vendor');
     expect(wrapper.emitted('update:inProgress')?.at(-1)).toEqual([false]);
+  });
+
+  it('reports a Codex sign-in as done once a poll sees it succeed', async () => {
+    startMock.mockResolvedValue(makeSession('awaiting-user', { provider: AI_PROVIDER.codex, userCode: 'ABCD-EFGH' }));
+    getMock.mockResolvedValue(makeSession('succeeded', { provider: AI_PROVIDER.codex }));
+    const wrapper = mountPanel({ provider: AI_PROVIDER.codex });
+
+    await findButton({ wrapper, text: 'Sign in with the vendor' })!.trigger('click');
+    await flushPromises();
+    expect(lastSessionId({ wrapper })).toBeNull();
+
+    await vi.advanceTimersByTimeAsync(POLL_INTERVAL_MS);
+
+    expect(getMock).toHaveBeenCalledWith({ id: 'session-1' });
+    expect(lastSessionId({ wrapper })).toBe('session-1');
+    expect(wrapper.text()).toContain('settings.ai.connections.cli.succeededSave');
+  });
+
+  it('drops a finished sign-in that was not saved before the server discards it', async () => {
+    startMock.mockResolvedValue(makeSession('succeeded'));
+    const wrapper = mountPanel();
+
+    await findButton({ wrapper, text: 'Sign in with the vendor' })!.trigger('click');
+    await flushPromises();
+    expect(lastSessionId({ wrapper })).toBe('session-1');
+
+    await vi.advanceTimersByTimeAsync(EXPIRY_MS);
+
+    expect(lastSessionId({ wrapper })).toBeNull();
+    expect(wrapper.text()).toContain('settings.ai.connections.cli.expired');
   });
 
   it('offers a retry after a failed sign-in and shows the reason', async () => {
