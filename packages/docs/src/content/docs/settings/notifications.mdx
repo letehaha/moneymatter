@@ -1,0 +1,122 @@
+---
+title: Browser notifications
+description: Get your MoneyMatter notifications as browser notifications, even when the app is closed. How to turn them on for each browser and phone, what you can choose to receive, how to manage your devices, and what to do when they don't arrive.
+sidebar:
+  order: 25
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+import Screenshot from '~/components/screenshot.astro';
+
+The bell in the header lists your notifications while MoneyMatter is open. With browser notifications on, the same notifications also reach your device as a pop-up, even when the MoneyMatter tab or window is closed. Payment reminders for your subscriptions are the usual reason to turn them on.
+
+Clicking a notification opens MoneyMatter on the page it is about and marks it as read.
+
+<Aside type="note" title="Your server has to be set up for it">
+**Notifications** only appears in Settings when the server has push keys configured. If the page is missing, ask whoever runs your server. If that is you, see [Browser notifications](/getting-started/self-hosting/#browser-notifications) on the self-hosting page.
+</Aside>
+
+## What you get
+
+Notifications are sorted into five groups. You turn each group on or off in **What to send**:
+
+| Group                     | What it covers                                                | Default |
+| ------------------------- | ------------------------------------------------------------- | ------- |
+| **Reminders**             | Scheduled payment reminders, tag reminders and budget alerts. | On      |
+| **Bank sync**             | Confirmed planned payments and transactions stuck as pending. | On      |
+| **Sharing and household** | Invitations, accepted or declined shares and household changes. | On    |
+| **System**                | Important messages about your account and this instance.      | On      |
+| **New releases**          | A message for every new MoneyMatter version.                  | Off     |
+
+These choices apply to all your devices and only change what is pushed. The bell still lists every notification.
+
+The pop-up shows the same title as the bell entry.
+
+## Turn them on for a device
+
+Each browser or phone is turned on separately. Open **Settings**, then **Notifications**, and switch on **Browser notifications on this device**. The browser asks for permission, so click **Allow**.
+
+<Screenshot
+  src="/screenshots/settings/notifications-this-device.png"
+  alt="The Notifications settings page with the This device card showing the Browser notifications on this device switch turned on, and the What to send card with the five groups."
+  hint="Open /settings/notifications on an instance with push keys, in Safari or Chrome with notifications allowed. Turn the device switch on. Leave New releases off. Crop to the This device and What to send cards."
+/>
+
+The steps are slightly different on each browser.
+
+### Safari on a Mac
+
+Switch on the setting and click **Allow** in the prompt. Safari shows the prompt only after you click the switch.
+
+Notifications arrive even when Safari is quit.
+
+### Chrome, Edge and Firefox
+
+Switch on the setting and click **Allow** in the prompt.
+
+The browser has to be running. If you quit it completely, notifications wait at the push service and arrive the next time you start the browser, as long as that happens within 24 hours. After that they are dropped. They are still in the bell.
+
+### iPhone and iPad
+
+On an iPhone or iPad, notifications work only in MoneyMatter added to your Home Screen. They aren't offered in a normal Safari tab.
+
+<Steps>
+
+1. Open MoneyMatter in Safari.
+2. Tap the **Share** button, then **Add to Home Screen**.
+3. Open MoneyMatter from your Home Screen, not from Safari.
+4. Open **Settings**, then **Notifications**, and switch on **Browser notifications on this device**. Tap **Allow** in the prompt.
+
+</Steps>
+
+If you open the Notifications page in Safari instead, it tells you to add MoneyMatter to the Home Screen first.
+
+The number of unread notifications also shows on the app icon.
+
+## If you blocked notifications
+
+If you tapped **Don't Allow** or closed the prompt with a block, the browser won't ask again and the switch is off. The page says that notifications are blocked and shows how to undo it for your browser. You can also reset it yourself:
+
+- **Chrome:** click the icon left of the address bar, open **Site settings** and set **Notifications** to **Allow**.
+- **Edge:** click the icon left of the address bar, open **Permissions for this site** and set **Notifications** to **Allow**.
+- **Firefox:** click the icon left of the address bar, clear the blocked **Notifications** permission, then reload the page.
+- **Safari on a Mac:** open **Safari**, then **Settings**, then **Websites**, then **Notifications**, and set MoneyMatter to **Allow**.
+- **iPhone and iPad:** open the iOS **Settings** app, then **Notifications**, then **MoneyMatter**, and turn on **Allow Notifications**.
+
+Then come back to MoneyMatter, reload the page and switch the setting on.
+
+## Your devices
+
+The **Your devices** card lists every browser that receives notifications for your account. The one you are using is marked **This device**. Each device shows when something was last delivered to it, or **Never delivered**.
+
+<Screenshot
+  src="/screenshots/settings/notifications-devices.png"
+  alt="The Your devices card listing two devices, one marked This device, each with the time of its last delivery and a trash icon, above the Send test notification button."
+  hint="Open /settings/notifications after enabling notifications in two browsers. Click Send test notification once so a Last delivery time shows. Crop to the Your devices card."
+/>
+
+- **Send a test:** click **Send test notification** to send a test to all your devices at once. A message reports how many were sent, how many failed and how many were removed. Use it to check that a new device works.
+- **Remove a device:** click the trash icon on its row and confirm. That device stops receiving notifications until you turn them on there again. If it is the browser you are using, its permission in the browser stays as it was.
+
+Signing out on purpose, with **Sign out** in the user menu, also removes the browser you sign out of. If your session just expires, the device stays and notifications keep arriving. Switch the setting on again after you sign back in on a device that was removed.
+
+## If something doesn't work
+
+**There is no permission prompt.**
+- In Safari, the prompt only appears after you click the switch. Click it again.
+- On an iPhone or iPad, open MoneyMatter from the Home Screen icon. The prompt doesn't appear in a Safari tab.
+- If you blocked the site before, the browser won't ask again. See [If you blocked notifications](#if-you-blocked-notifications).
+
+**The switch is missing, or the page says the browser can't receive notifications.** Use a current version of Chrome, Edge, Firefox or Safari. Some embedded browsers don't support them.
+
+**Notifications stopped arriving.** The browser can drop its push connection, for example after you clear site data or reset the permission. Open **Settings**, then **Notifications**, and switch the setting off and on again. A message may tell you to turn it on once more to finish. If **Send test notification** reports a removed device, the same applies: turn it on again on that device.
+
+**Notifications arrive late, or only after you open the browser.** Chrome, Edge and Firefox need to be running to show them. See [Chrome, Edge and Firefox](#chrome-edge-and-firefox).
+
+**Nothing arrives for one kind of notification.** Check its group under **What to send**. **New releases** is off until you turn it on.
+
+## Related
+
+- [Security and account](/settings/security-and-account/)
+- [Tags](/transactions/tags/)
+- [Self-host MoneyMatter with Docker](/getting-started/self-hosting/)
