@@ -463,6 +463,14 @@ describe('Push subscriptions API', () => {
       expect(disallowed.statusCode).toBe(422);
       expect(errorOf(disallowed).message).toBe(ENDPOINT_NOT_ALLOWED_MESSAGE);
 
+      // WHATWG reads this host as attacker.example.push.example.test (allowed); the sender's legacy
+      // parser would read `attacker.example`. A percent-encoded host is refused outright.
+      const encodedHost = await helpers.subscribePush({
+        payload: helpers.buildPushSubscription({ host: 'attacker.example%2epush.example.test' }).body,
+      });
+      expect(encodedHost.statusCode).toBe(422);
+      expect(errorOf(encodedHost).message).toBe(ENDPOINT_NOT_ALLOWED_MESSAGE);
+
       const plain = helpers.buildPushSubscription();
       const http = await helpers.subscribePush({
         payload: { ...plain.body, endpoint: plain.body.endpoint.replace('https:', 'http:') },

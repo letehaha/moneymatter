@@ -7,7 +7,7 @@ import { sendNotification } from 'web-push';
 
 import { type SendResultKind, classifySendResult, readStatusCode } from './classify-send-result';
 import { getWebPushConfig } from './config';
-import { isPushEndpointAllowed } from './endpoint-allowlist';
+import { normalizePushEndpoint } from './endpoint-allowlist';
 
 export type PushUrgency = 'very-low' | 'low' | 'normal' | 'high';
 
@@ -127,7 +127,9 @@ export const sendToSubscription = async ({
     return 'gone';
   }
 
-  if (!isPushEndpointAllowed({ endpoint: subscription.endpoint })) {
+  // The request goes to this normalized URL, never to the stored string, so check and use cannot diverge.
+  const target = normalizePushEndpoint({ endpoint: subscription.endpoint });
+  if (!target) {
     const reportKey = `${host}:not-allowed`;
     if (!reportedInstanceFailures.has(reportKey)) {
       reportedInstanceFailures.add(reportKey);
@@ -148,7 +150,7 @@ export const sendToSubscription = async ({
   let kind: SendResultKind;
   try {
     const response = await sendNotification(
-      { endpoint: subscription.endpoint, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
+      { endpoint: target, keys: { p256dh: subscription.p256dh, auth: subscription.auth } },
       JSON.stringify(payload),
       {
         TTL: ttl,
