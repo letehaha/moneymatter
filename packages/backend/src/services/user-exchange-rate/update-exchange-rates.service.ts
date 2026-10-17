@@ -5,10 +5,13 @@ import { withTransaction } from '../common/with-transaction';
 import { assertCurrencyCodesVisible } from '../currencies/assert-currency-codes-visible';
 import { planRateChanges, resolveRateChanges } from '../currencies/custom-rate-changes';
 import { recomputeCustomRefAmounts } from '../currencies/recompute-custom-ref-amounts.service';
+import { assertEditPairRules } from './exchange-rate-pair-rules';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
 
 export const editUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.UpdateExchangeRatePair[] }) => {
+    assertEditPairRules({ pairs });
+
     await assertCurrencyCodesVisible({
       userId,
       codes: pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]),

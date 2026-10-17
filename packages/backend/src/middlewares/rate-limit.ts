@@ -4,6 +4,7 @@ import { TooManyRequests } from '@js/errors';
 import { logger } from '@js/utils';
 import Users from '@models/users.model';
 import { RateLimitService } from '@services/common/rate-limit.service';
+import { RATE_SOURCE_SAVE_LIMIT, RATE_SOURCE_TEST_LIMIT, type UserRateLimit } from '@services/common/user-rate-limits';
 import { getMaxSendInvitationsPerOwnerPer24h } from '@services/sharing/limits';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -335,28 +336,18 @@ export const logoSearchRateLimit = createRateLimit({
 });
 
 /**
- * Rate-source preview limit (per user, 20 previews per minute). Each call makes the server fetch
- * a URL the user typed, so it stays low enough that the endpoint cannot be used to hammer a host.
+ * Builds the middleware of a per-user budget that the MCP tools draw from too, so the two paths
+ * share one counter per user.
  */
-export const rateSourceTestRateLimit = createRateLimit({
-  windowSeconds: 60,
-  maxAttempts: 20,
-  keyGenerator: (req: Request) => {
-    const user = req.user as Users;
-    return `rate-source-test:user:${user.id}`;
-  },
-});
+const createUserRateLimit = ({ limit }: { limit: UserRateLimit }) =>
+  createRateLimit({
+    windowSeconds: limit.windowSeconds,
+    maxAttempts: limit.maxAttempts,
+    keyGenerator: (req: Request) => limit.key({ userId: (req.user as Users).id }),
+  });
 
-/**
- * Rate-source save limit (per user, 20 saves per minute, the preview's budget). A save that changes
- * the source fetches from CoinGecko (one shared key for the instance) or from the user's URL, and
- * values every saved row of the currency again, so it cannot be repeated without bound.
- */
-export const rateSourceSaveRateLimit = createRateLimit({
-  windowSeconds: 60,
-  maxAttempts: 20,
-  keyGenerator: (req: Request) => {
-    const user = req.user as Users;
-    return `rate-source-save:user:${user.id}`;
-  },
-});
+/** Rate-source preview limit; the budget and its reason are on `RATE_SOURCE_TEST_LIMIT`. */
+export const rateSourceTestRateLimit = createUserRateLimit({ limit: RATE_SOURCE_TEST_LIMIT });
+
+/** Rate-source save limit; the budget and its reason are on `RATE_SOURCE_SAVE_LIMIT`. */
+export const rateSourceSaveRateLimit = createUserRateLimit({ limit: RATE_SOURCE_SAVE_LIMIT });

@@ -391,6 +391,25 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(refused.statusCode).toBe(ERROR_CODES.TooManyRequests);
     });
 
+    it('limits how often a user previews a source', async () => {
+      await createCustom(USDT);
+      const preview = () =>
+        helpers.testCurrencyRateSource({
+          code: USDT,
+          payload: {
+            rateSource: 'http',
+            config: { urlTemplate: 'https://rates.example.test/{code}', jsonPath: 'price', quoteCurrency: 'USD' },
+          },
+        });
+
+      // Whatever a preview answers on this instance, only the 21st is refused for the rate.
+      for (let attempt = 0; attempt < 20; attempt++) {
+        expect((await preview()).statusCode).not.toBe(ERROR_CODES.TooManyRequests);
+      }
+
+      expect((await preview()).statusCode).toBe(ERROR_CODES.TooManyRequests);
+    });
+
     it('keeps each user their own source for the same custom code', async () => {
       await createCustom(USDT);
       await helpers.setCurrencyRateSource({

@@ -144,6 +144,15 @@ describe('Edit currency exchange rate controller', () => {
       expect(missingOpposite.statusCode).toEqual(ERROR_CODES.ValidationError);
     });
 
+    it('rejects removing one direction of a pair without its opposite', async () => {
+      const oneSided = await helpers.removeCurrencyExchangeRate({
+        pairs: [{ baseCode: 'USD', quoteCode: 'EUR' }],
+      });
+
+      expect(oneSided.statusCode).toEqual(ERROR_CODES.ValidationError);
+      expect((oneSided.body.response as unknown as { message: string }).message).toMatch(/opposite pair/);
+    });
+
     it('should return error when trying to edit non-existent currency pair', async () => {
       const pairs = [
         { baseCode: 'USD', quoteCode: 'JPY', rate: 110 },

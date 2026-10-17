@@ -4,10 +4,13 @@ import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances'
 import { withTransaction } from '../common/with-transaction';
 import { planRateChanges, resolveRateChanges } from '../currencies/custom-rate-changes';
 import { recomputeCustomRefAmounts } from '../currencies/recompute-custom-ref-amounts.service';
+import { assertRemovePairRules } from './exchange-rate-pair-rules';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
 
 export const removeUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.ExchangeRatePair[] }) => {
+    assertRemovePairRules({ pairs });
+
     const plannedChanges = await planRateChanges({ userId, pairs, kind: 'remove' });
 
     await UserExchangeRates.removeRates({

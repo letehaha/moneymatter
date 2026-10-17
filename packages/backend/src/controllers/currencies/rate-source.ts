@@ -2,9 +2,7 @@ import { currencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { testRateSourceBodySchema, updateRateSourceBodySchema } from '@services/currencies/rate-sources';
 import { searchCoingeckoCoins } from '@services/currencies/rate-sources/coingecko';
-import { backfillCoingeckoRates } from '@services/currencies/rate-sources/coingecko-sync';
-import { fetchHttpRateAfterSave } from '@services/currencies/rate-sources/http-sync';
-import { setCurrencyRateSource } from '@services/currencies/rate-sources/set-rate-source.service';
+import { saveCurrencyRateSource } from '@services/currencies/rate-sources/save-rate-source.service';
 import { testHttpRateSource } from '@services/currencies/rate-sources/test-http-rate-source.service';
 import { z } from 'zod';
 
@@ -14,20 +12,9 @@ export const updateCurrencyRateSource = createController(
     body: updateRateSourceBodySchema,
   }),
   async ({ user, params, body }) => {
-    const { response, changed } = await setCurrencyRateSource({ userId: user.id, code: params.code, body });
+    const data = await saveCurrencyRateSource({ userId: user.id, code: params.code, body });
 
-    // The source is saved and committed; the history comes from CoinGecko afterwards, so a slow or
-    // failing provider never holds the save back.
-    if (changed && body.rateSource === 'coingecko') {
-      await backfillCoingeckoRates({ userId: user.id, currencyCode: params.code });
-    }
-
-    // Same for an HTTP source: today's rate is fetched once the save is committed.
-    if (changed && body.rateSource === 'http') {
-      await fetchHttpRateAfterSave({ userId: user.id, currencyCode: params.code });
-    }
-
-    return { data: response };
+    return { data };
   },
 );
 

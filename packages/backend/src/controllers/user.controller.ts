@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode, dateBound, isoCurrencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
@@ -10,6 +10,7 @@ import { resolveEntitlements } from '@services/entitlements/resolve-entitlements
 import { startFeatureTrial as startFeatureTrialService } from '@services/entitlements/start-feature-trial.service';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
 import * as userExchangeRates from '@services/user-exchange-rate';
+import { removeExchangeRatePairSchema } from '@services/user-exchange-rate/exchange-rate-pair-rules';
 import * as userService from '@services/user.service';
 import { deleteUser as deleteUserService } from '@services/user/delete-user.service';
 import {
@@ -195,30 +196,14 @@ export const getCurrenciesExchangeRates = createController(z.object({}), async (
   return { data };
 });
 
-const exchangeRatePairSchema = z.object({
-  baseCode: z.string(),
-  quoteCode: z.string(),
-  rate: z.number().optional(),
-  // Removes only the rate that starts on this day; every rate of the pair when omitted.
-  effectiveDate: dateBound().optional(),
-});
-
 export const removeUserCurrencyExchangeRate = createController(
   z.object({
     body: z.object({
-      pairs: z.array(exchangeRatePairSchema),
+      pairs: z.array(removeExchangeRatePairSchema),
     }),
   }),
   async ({ user, body }) => {
     const { pairs } = body;
-
-    pairs.forEach((pair) => {
-      if (!pairs.some((item) => item.baseCode === pair.quoteCode)) {
-        throw new ValidationError({
-          message: "When removing base-qoute pair rate, you need to also remove opposite pair's rate.",
-        });
-      }
-    });
 
     const data = await userExchangeRates.removeUserExchangeRates({
       userId: user.id,
