@@ -13,6 +13,7 @@ import { registerArchiveAccount } from './tools/archive-account';
 import { registerArchiveTracker } from './tools/archive-tracker';
 import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transaction';
 import { registerBulkUpdateTransactions } from './tools/bulk-update-transactions';
+import { registerCreateAccount } from './tools/create-account';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
 import { registerCreateCategory } from './tools/create-category';
 import { registerCreateCustomCurrency } from './tools/create-custom-currency';
@@ -27,6 +28,9 @@ import { registerCreateTrackerLine } from './tools/create-tracker-line';
 import { registerCreateTransaction } from './tools/create-transaction';
 import { registerCreateTransactionAutomation } from './tools/create-transaction-automation';
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
+import { registerDeleteAccount } from './tools/delete-account';
+import { registerDeleteBudget } from './tools/delete-budget';
+import { registerDeleteBudgetLine } from './tools/delete-budget-line';
 import { registerDeleteCategory } from './tools/delete-category';
 import { registerDeleteCustomCurrency } from './tools/delete-custom-currency';
 import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
@@ -43,6 +47,7 @@ import { registerDeleteTransactionAutomation } from './tools/delete-transaction-
 import { registerDeleteTransactionGroup } from './tools/delete-transaction-group';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
+import { registerGetAccount } from './tools/get-account';
 import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
 import { registerGetCashFlow } from './tools/get-cash-flow';
@@ -92,10 +97,14 @@ import { registerTestCurrencyRateSource } from './tools/test-currency-rate-sourc
 import { registerToggleSubscriptionActive } from './tools/toggle-subscription-active';
 import { registerTransferAccountToPortfolio } from './tools/transfer-account-to-portfolio';
 import { registerTransferPortfolioToAccount } from './tools/transfer-portfolio-to-account';
+import { registerUnlinkAccountFromBankConnection } from './tools/unlink-account-from-bank-connection';
 import { registerUnlinkRefund } from './tools/unlink-refund';
 import { registerUnlinkTransactionFromPortfolio } from './tools/unlink-transaction-from-portfolio';
 import { registerUnlinkTransactionsFromSubscription } from './tools/unlink-transactions-from-subscription';
 import { registerUnlinkTransfer } from './tools/unlink-transfer';
+import { registerUpdateAccount } from './tools/update-account';
+import { registerUpdateBudget } from './tools/update-budget';
+import { registerUpdateBudgetLine } from './tools/update-budget-line';
 import { registerUpdateCategory } from './tools/update-category';
 import { registerUpdateCustomCurrency } from './tools/update-custom-currency';
 import { registerUpdateInvestmentTransaction } from './tools/update-investment-transaction';
@@ -164,8 +173,13 @@ export function createMcpServer(): McpServer {
   // Profile & accounts
   registerGetUserProfile(server);
   registerGetAccounts(server);
+  registerGetAccount(server);
+  registerCreateAccount(server);
+  registerUpdateAccount(server);
   registerAdjustAccountBalance(server);
   registerArchiveAccount(server);
+  registerDeleteAccount(server);
+  registerUnlinkAccountFromBankConnection(server);
 
   // Transactions (read + CRUD + splits + refunds + transfer linking)
   registerSearchTransactions(server);

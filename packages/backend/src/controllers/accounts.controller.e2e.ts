@@ -513,6 +513,31 @@ describe('Accounts controller', () => {
         expect(reloaded.accountCategory).toBe(ACCOUNT_CATEGORIES.general);
       });
 
+      it('rejects moving a vehicle account out of the vehicle category', async () => {
+        const vehicle = await helpers.createVehicle({
+          name: 'Car',
+          currencyCode: global.BASE_CURRENCY_CODE,
+          make: 'Toyota',
+          model: 'Camry',
+          year: 2020,
+          vehicleClass: VEHICLE_CLASS.sedan,
+          purchasePrice: 25000,
+          purchaseDate: format(subDays(new Date(), 365), 'yyyy-MM-dd'),
+          raw: true,
+        });
+
+        const response = await helpers.updateAccount<helpers.ErrorResponse>({
+          id: vehicle.accountId,
+          payload: { accountCategory: ACCOUNT_CATEGORIES.general },
+        });
+
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+        expect(helpers.extractResponse(response).code).toBe(API_ERROR_CODES.validationError);
+
+        const reloaded = await helpers.getAccount({ id: vehicle.accountId, raw: true });
+        expect(reloaded.accountCategory).toBe(ACCOUNT_CATEGORIES.vehicle);
+      });
+
       it('keeps the account editable after the rejected flip', async () => {
         const account = await createGeneralAccount();
 
