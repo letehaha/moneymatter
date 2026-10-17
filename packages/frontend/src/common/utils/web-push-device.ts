@@ -56,18 +56,25 @@ const getExistingSubscription = async (): Promise<PushSubscription | null> => {
 export const removeThisDevice = async ({ userId }: { userId: string | number | undefined }): Promise<void> => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), LOGOUT_CLEANUP_TIMEOUT_MS);
-
-  try {
-    const subscription = await Promise.race([
-      getExistingSubscription().catch(() => null),
-      new Promise<null>((resolve) => {
-        controller.signal.addEventListener('abort', () => resolve(null));
+  // Settles with `fallback` once the budget is spent; a step that never settles is abandoned.
+  const abandonAfterTimeout = <T>({ step, fallback }: { step: Promise<T>; fallback: T }): Promise<T> =>
+    Promise.race([
+      step,
+      new Promise<T>((resolve) => {
+        if (controller.signal.aborted) resolve(fallback);
+        else controller.signal.addEventListener('abort', () => resolve(fallback));
       }),
     ]);
 
+  try {
+    const subscription = await abandonAfterTimeout({
+      step: getExistingSubscription().catch(() => null),
+      fallback: null,
+    });
+
     if (subscription) {
       await unsubscribeEndpointRaw({ endpoint: subscription.endpoint, signal: controller.signal }).catch(() => false);
-      await subscription.unsubscribe().catch(() => false);
+      await abandonAfterTimeout({ step: subscription.unsubscribe().catch(() => false), fallback: false });
     }
   } finally {
     clearTimeout(timer);
