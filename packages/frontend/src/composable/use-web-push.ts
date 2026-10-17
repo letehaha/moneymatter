@@ -43,17 +43,23 @@ const HOME_SCREEN_LABEL_SUFFIX = ' (Home Screen)';
 const DEVICE_LABEL_FALLBACK = 'Browser';
 
 // Module state: the dashboard layout reconciles on app load and the settings page reads the
-// result, so both must see one subscription state.
+// result, so both must see one subscription state. It belongs to one account (`stateOwnerId`): the
+// SPA signs out and in without a page reload, so the next account must not inherit it.
 const registration = shallowRef<ServiceWorkerRegistration | null>(null);
 const support = ref<PushSupport>('unsupported');
 const isSubscribed = ref(false);
 const thisEndpointHash = ref<string | null>(null);
 const needsTapAgain = ref(false);
 const isPending = ref(false);
+const stateOwnerId = ref<string | number | undefined>(undefined);
 let syncOnLoadPromise: Promise<void> | null = null;
+// Bumped by every reset, so a reconciliation that started under an earlier account can tell it is stale.
+let stateEpoch = 0;
 
-/** Clears the module state. The app never calls it; specs do, to start each case from a fresh page load. */
+/** Clears the module state, for a new account and for specs that start each case from a fresh page load. */
 export const resetWebPushState = () => {
+  stateEpoch += 1;
+  stateOwnerId.value = undefined;
   registration.value = null;
   support.value = 'unsupported';
   isSubscribed.value = false;
@@ -61,6 +67,12 @@ export const resetWebPushState = () => {
   needsTapAgain.value = false;
   isPending.value = false;
   syncOnLoadPromise = null;
+};
+
+/** Hands the module state to `userId`, dropping what the previous account left behind. */
+const claimState = ({ userId }: { userId: string | number }) => {
+  if (stateOwnerId.value !== undefined && stateOwnerId.value !== userId) resetWebPushState();
+  stateOwnerId.value = userId;
 };
 
 const refreshSupport = () => {
@@ -115,19 +127,22 @@ export const useWebPush = () => {
 
   refreshSupport();
 
+  const currentUserId = () => userStore.user?.id;
+
+  // False between an account change and the new account's first reconcile.
+  const ownsState = () => stateOwnerId.value !== undefined && stateOwnerId.value === currentUserId();
+
   const state = computed<WebPushState>(() => {
     if (isConfigError.value) return 'server-disabled';
     if (!config.value) return 'checking';
     if (!config.value.enabled) return 'server-disabled';
     if (!isPushUsable()) return support.value as WebPushState;
-    if (!registration.value) return 'checking';
+    if (!registration.value || !ownsState()) return 'checking';
 
     return isSubscribed.value ? 'on' : 'off';
   });
 
   const ensureConfig = (): Promise<PushConfigResponse> => queryClient.ensureQueryData(pushConfigQueryOptions);
-
-  const currentUserId = () => userStore.user?.id;
 
   const markSubscribed = async ({ subscription }: { subscription: PushSubscription }) => {
     isSubscribed.value = true;
@@ -139,6 +154,12 @@ export const useWebPush = () => {
     thisEndpointHash.value = null;
     const userId = currentUserId();
     if (userId !== undefined) clearStoredEndpoint({ userId });
+  };
+
+  /** The browser holds no subscription: forget this device's state. The stored endpoint stays, since a rotation may be mid-flight. */
+  const markNoBrowserSubscription = () => {
+    isSubscribed.value = false;
+    thisEndpointHash.value = null;
   };
 
   /** Drops the browser subscription of a device the server does not know, without a server call. */
@@ -160,7 +181,10 @@ export const useWebPush = () => {
     vapidPublicKey: string;
   }): Promise<PushSubscription | null> => {
     const subscription = await activeRegistration.pushManager.getSubscription();
-    if (!subscription) return null;
+    if (!subscription) {
+      markNoBrowserSubscription();
+      return null;
+    }
 
     if (hasSameKey({ subscription, key: urlBase64ToUint8Array({ value: vapidPublicKey }) })) return subscription;
 
@@ -180,6 +204,7 @@ export const useWebPush = () => {
     userId: string | number;
   }) => {
     const storedEndpoint = getStoredEndpoint({ userId });
+    const startEpoch = stateEpoch;
 
     try {
       if (storedEndpoint && storedEndpoint !== subscription.endpoint) {
@@ -187,12 +212,16 @@ export const useWebPush = () => {
         if (!payload) return;
 
         await subscribeMutation.mutateAsync({ payload, silent: true });
+        if (stateEpoch !== startEpoch) return;
+
         setStoredEndpoint({ userId, endpoint: subscription.endpoint });
         await markSubscribed({ subscription });
         return;
       }
 
       const { known } = await pushApi.syncPushSubscription({ endpoint: subscription.endpoint });
+      // The account changed while the request was in flight: its answer is not for the next account.
+      if (stateEpoch !== startEpoch) return;
 
       if (known) {
         setStoredEndpoint({ userId, endpoint: subscription.endpoint });
@@ -202,32 +231,41 @@ export const useWebPush = () => {
       }
     } catch (error) {
       // The row is gone under both endpoints: the device was removed elsewhere and stays removed.
-      if (isNotFoundError(error)) await dropBrowserSubscription({ subscription });
+      if (stateEpoch === startEpoch && isNotFoundError(error)) await dropBrowserSubscription({ subscription });
     }
   };
 
-  const runSyncOnLoad = async () => {
+  const runSyncOnLoad = async ({ userId }: { userId: string | number }) => {
+    const startEpoch = stateEpoch;
+
     refreshSupport();
     if (!isPushUsable()) return;
 
     const { enabled, vapidPublicKey } = await ensureConfig();
-    const userId = currentUserId();
-    if (!enabled || !vapidPublicKey || userId === undefined) return;
+    if (!enabled || !vapidPublicKey) return;
 
-    // A registration exists only after the user enabled push here once; the app load never creates one.
+    // A registration exists only once the Notifications settings page has been opened here; the app load never creates one.
     const existing = await navigator.serviceWorker.getRegistration('/');
     if (!existing) return;
 
     const activeRegistration = await navigator.serviceWorker.ready;
+    if (stateEpoch !== startEpoch) return;
     registration.value = activeRegistration;
 
     const subscription = await inspectSubscription({ activeRegistration, vapidPublicKey });
-    if (subscription) await reconcileWithServer({ subscription, userId });
+    if (subscription && stateEpoch === startEpoch) await reconcileWithServer({ subscription, userId });
   };
 
-  /** App-load reconcile, once per page load. Never prompts, registers a worker or enrols a device. */
+  /**
+   * App-load reconcile, once per page load and account: signing out and in as someone else in the
+   * same tab starts it over. Never prompts, registers a worker or enrols a device.
+   */
   const syncOnLoad = (): Promise<void> => {
-    syncOnLoadPromise ??= runSyncOnLoad().catch(() => undefined);
+    const userId = currentUserId();
+    if (userId === undefined) return Promise.resolve();
+
+    claimState({ userId });
+    syncOnLoadPromise ??= runSyncOnLoad({ userId }).catch(() => undefined);
 
     return syncOnLoadPromise;
   };
@@ -342,7 +380,7 @@ export const useWebPush = () => {
   };
 
   const isThisDevice = ({ endpointHash }: { endpointHash: string }): boolean =>
-    thisEndpointHash.value !== null && endpointHash === thisEndpointHash.value;
+    ownsState() && thisEndpointHash.value !== null && endpointHash === thisEndpointHash.value;
 
   return {
     state,
