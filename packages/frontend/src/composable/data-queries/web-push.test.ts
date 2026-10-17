@@ -102,6 +102,6 @@ describe('web-push data queries', () => {
 
     await mutation.mutateAsync({ payload, silent: true });
 
-    expect(pushApi.subscribePush).toHaveBeenCalledWith(payload, { silent: true });
+    expect(pushApi.subscribePush).toHaveBeenCalledWith({ payload, silent: true });
   });
 });
