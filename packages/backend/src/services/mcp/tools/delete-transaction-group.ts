@@ -3,7 +3,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteTransactionGroup } from '@services/transaction-groups';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   id: recordId().describe('ID of the transaction group to delete'),
@@ -20,6 +20,7 @@ export function registerDeleteTransactionGroup(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_transaction_group', clientId: extra.authInfo?.clientId });
 
       const result = await deleteTransactionGroup({ id: args.id, userId });

@@ -8,7 +8,7 @@ import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { editTracker } from '@services/trackers/edit-tracker';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to update'),
@@ -55,6 +55,7 @@ export function registerUpdateTracker(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_tracker', clientId: extra.authInfo?.clientId });
 
       const tracker = await editTracker({

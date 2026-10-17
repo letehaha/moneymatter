@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteVentureEvent } from '@services/venture/events/delete.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   eventId: recordId().describe('Venture event ID (from list_venture_events)'),
@@ -25,6 +25,7 @@ export function registerDeleteVentureEvent(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_venture_event', clientId: extra.authInfo?.clientId });
 
       const result = await deleteVentureEvent({

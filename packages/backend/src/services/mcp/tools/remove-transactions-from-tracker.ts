@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { removeTransactionsFromTracker } from '@services/trackers/remove-transactions-from-tracker';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to unlink transactions from'),
@@ -22,6 +22,7 @@ export function registerRemoveTransactionsFromTracker(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'remove_transactions_from_tracker', clientId: extra.authInfo?.clientId });
 
       await removeTransactionsFromTracker({

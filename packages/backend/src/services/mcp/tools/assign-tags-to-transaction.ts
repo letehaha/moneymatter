@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { addTransactionsToTag } from '@services/tags/transaction-tags';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   tagId: recordId().describe('ID of the tag to assign.'),
@@ -22,6 +22,7 @@ export function registerAssignTagsToTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'assign_tags_to_transaction', clientId: extra.authInfo?.clientId });
 
       const result = await addTransactionsToTag({ tagId: args.tagId, userId, transactionIds: args.transactionIds });

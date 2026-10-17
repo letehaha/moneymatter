@@ -28,22 +28,30 @@ export function getUserId({ extra }: { extra: { authInfo?: { extra?: { userId?: 
  * Write and delete MCP tools call this after getUserId to enforce scope gating.
  * Demo and read-only users are rejected here regardless of granted scopes: read tools
  * never call this helper, so those accounts keep read access but cannot mutate via MCP.
+ *
+ * `allowReadOnly` is for the few tools on REST routes in `READ_ONLY_ROUTES`
+ * (`middlewares/entitlements.ts`), which a read-only user may call, and which carry no
+ * `blockDemoUsers`. It skips both rejections and still checks the scope.
  */
 export function requireScope({
   extra,
   scope,
+  allowReadOnly = false,
 }: {
   extra: { authInfo?: { scopes?: string[]; extra?: { role?: string; readOnly?: boolean } } };
   scope: string;
+  allowReadOnly?: boolean;
 }): void {
-  if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
-    throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
-  }
+  if (!allowReadOnly) {
+    if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
+      throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
+    }
 
-  // Missing entitlement info is treated as read-only: a write must never pass on an
-  // auth payload that failed to carry it.
-  if (extra?.authInfo?.extra?.readOnly !== false) {
-    throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
+    // Missing entitlement info is treated as read-only: a write must never pass on an
+    // auth payload that failed to carry it.
+    if (extra?.authInfo?.extra?.readOnly !== false) {
+      throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
+    }
   }
 
   const scopes = extra?.authInfo?.scopes ?? [];
@@ -66,6 +74,24 @@ export const goalsForMcp = async ({ userId, goals }: { userId: number; goals: Go
     : [];
   return slimGoalsForMcp({ goals, accountNames: new Map(accounts.map(({ id, name }) => [id, name])) });
 };
+
+/**
+ * Refuses a call when the user's plan lacks the feature, as the REST `requireFeature` gate does
+ * (402 with the same message). The features come from the entitlements `verifyAccessToken` already
+ * resolves; a payload without them counts as having none, so a gate never opens on missing data.
+ */
+export function requireFeatureAccess({
+  extra,
+  feature,
+}: {
+  extra: { authInfo?: { extra?: { features?: readonly Feature[] } } };
+  feature: Feature;
+}): void {
+  const features = extra?.authInfo?.extra?.features ?? [];
+  if (!features.includes(feature)) {
+    throw new Error('This feature is not included in your current plan.');
+  }
+}
 
 /**
  * Refuses a write while a base-currency change is recalculating the user's amounts, as the

@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateTransactionGroup } from '@services/transaction-groups';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   id: recordId().describe('ID of the transaction group to update'),
@@ -23,6 +23,7 @@ export function registerUpdateTransactionGroup(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_transaction_group', clientId: extra.authInfo?.clientId });
 
       const result = await updateTransactionGroup({

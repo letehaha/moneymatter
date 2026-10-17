@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { linkTransactionsToSubscription } from '@services/subscriptions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   subscriptionId: recordId().describe('UUID of the subscription'),
@@ -26,6 +26,7 @@ export function registerLinkTransactionsToSubscription(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'link_transactions_to_subscription', clientId: extra.authInfo?.clientId });
 
       const result = await linkTransactionsToSubscription({

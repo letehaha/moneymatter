@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { bulkUpdate } from '@services/transactions/bulk-update';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   transactionIds: z.array(recordId()).min(1).describe('IDs of transactions to update'),
@@ -30,6 +30,7 @@ export function registerBulkUpdateTransactions(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'bulk_update_transactions', clientId: extra.authInfo?.clientId });
 
       const result = await bulkUpdate({

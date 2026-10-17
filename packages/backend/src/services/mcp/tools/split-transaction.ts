@@ -10,7 +10,7 @@ import { manageSplits } from '@services/transactions/splits/manage-splits';
 import { validateRefundLinks } from '@services/tx-refunds/validate-refund-links';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   transactionId: recordId().describe('ID of the transaction to split'),
@@ -37,6 +37,7 @@ export function registerSplitTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'split_transaction', clientId: extra.authInfo?.clientId });
 
       const result = await withTransaction(async () => {

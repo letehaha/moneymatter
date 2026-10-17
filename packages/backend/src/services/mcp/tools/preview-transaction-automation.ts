@@ -2,7 +2,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { previewAutomation } from '@services/transaction-automations/preview';
 
-import { getUserId, jsonContent } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent } from './helpers';
 import { automationConditionsInput } from './transaction-automation-inputs';
 
 const inputSchema = {
@@ -19,6 +19,8 @@ export function registerPreviewTransactionAutomation(server: McpServer) {
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
+      // POST /automations/preview carries the base-currency lock in REST, though it only reads.
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'preview_transaction_automation', clientId: extra.authInfo?.clientId });
 
       const result = await previewAutomation({ userId, conditions: args.conditions });

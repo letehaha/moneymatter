@@ -5,7 +5,7 @@ import { serializeTransactions } from '@root/serializers/transactions.serializer
 import { linkTransactions } from '@services/transactions/transactions-linking/link-transactions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   baseTxId: recordId().describe('ID of the base (source) transaction — typically the expense side'),
@@ -23,6 +23,7 @@ export function registerLinkTransfer(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'link_transfer', clientId: extra.authInfo?.clientId });
 
       const results = await linkTransactions({

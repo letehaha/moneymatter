@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateAccount } from '@services/accounts.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   accountId: recordId().describe('ID of the account to archive or unarchive.'),
@@ -23,6 +23,7 @@ export function registerArchiveAccount(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'archive_account', clientId: extra.authInfo?.clientId });
 
       const status = args.archived ? ACCOUNT_STATUSES.archived : ACCOUNT_STATUSES.active;

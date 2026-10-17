@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createVentureEvent } from '@services/venture/events/create.service';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   dealId: recordId().describe('Venture deal ID (from list_venture_deals)'),
@@ -54,6 +54,7 @@ export function registerCreateVentureEvent(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_venture_event', clientId: extra.authInfo?.clientId });
 
       const event = await createVentureEvent({

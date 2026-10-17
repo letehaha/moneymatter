@@ -11,7 +11,13 @@ import { deserializeCreateTransaction, serializeTransactionTuple } from '@root/s
 import { createTransaction } from '@services/transactions/create-transaction';
 import { z } from 'zod';
 
-import { assertOriginalCurrencyArgs, getUserId, jsonContent, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertOriginalCurrencyArgs,
+  getUserId,
+  jsonContent,
+  requireScope,
+} from './helpers';
 
 const inputSchema = {
   accountId: recordId().describe('ID of the account the transaction belongs to'),
@@ -96,6 +102,7 @@ export function registerCreateTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_transaction', clientId: extra.authInfo?.clientId });
 
       assertOriginalCurrencyArgs({ args });

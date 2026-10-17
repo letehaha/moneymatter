@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { reorderAutomations } from '@services/transaction-automations/reorder-automations';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   ids: uniqueRecordIds({ max: AUTOMATION_LIMITS.maxRules }).describe(
@@ -23,6 +23,7 @@ export function registerReorderTransactionAutomations(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'reorder_transaction_automations', clientId: extra.authInfo?.clientId });
 
       const result = await reorderAutomations({ userId, ids: args.ids });

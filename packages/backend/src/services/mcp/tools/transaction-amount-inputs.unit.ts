@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { captureTools } from '@tests/helpers/mcp-tools';
 import { z } from 'zod';
 
 // Blocks the real services, whose import chains build queues at module scope and
@@ -16,12 +17,7 @@ import { registerUpdateTransaction } from './update-transaction';
 const ID = '019f7e9e-b5f4-729c-9881-9544b15f4e3d';
 
 const inputSchemaOf = ({ register }: { register: (server: McpServer) => void }) => {
-  let shape: z.ZodRawShape | undefined;
-  register({
-    registerTool: (_name: string, config: { inputSchema: z.ZodRawShape }) => {
-      shape = config.inputSchema;
-    },
-  } as unknown as McpServer);
+  const shape = captureTools({ register })[0]?.config.inputSchema;
   if (!shape) throw new Error('Tool did not register an input schema');
   return z.object(shape);
 };
