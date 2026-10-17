@@ -94,4 +94,10 @@ describe('cli env builders', () => {
       NODE_EXTRA_CA_CERTS: '/etc/ssl/extra.pem',
     });
   });
+
+  it('passes USE_BUILTIN_RIPGREP through so the image can use its system ripgrep', () => {
+    process.env.USE_BUILTIN_RIPGREP = '0';
+
+    expect(buildClaudeEnv({ home: '/tmp/home' })).toMatchObject({ USE_BUILTIN_RIPGREP: '0' });
+  });
 });
