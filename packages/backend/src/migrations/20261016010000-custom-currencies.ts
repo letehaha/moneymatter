@@ -1,11 +1,12 @@
 import { Transaction, QueryInterface } from 'sequelize';
 
+// The frozen snapshot of the column lists: this migration must not read the live list, which can grow.
 import {
-  CURRENCY_CODE_COLUMNS,
-  CURRENCY_CODE_MAX_LENGTH,
-  ISO_CURRENCY_CODE_LENGTH,
-  NULLABLE_REF_COLUMNS,
-} from '../common/lib/currency-code-columns';
+  CURRENCY_CODE_COLUMNS_20261016 as CURRENCY_CODE_COLUMNS,
+  CURRENCY_CODE_MAX_LENGTH_20261016 as CURRENCY_CODE_MAX_LENGTH,
+  ISO_CURRENCY_CODE_LENGTH_20261016 as ISO_CURRENCY_CODE_LENGTH,
+  NULLABLE_REF_COLUMNS_20261016 as NULLABLE_REF_COLUMNS,
+} from './utils/currency-code-columns-20261016';
 import { createRealTransactionsViewSql, dropRealTransactionsViewSql } from './utils/real-transactions-view';
 
 /**
@@ -18,7 +19,7 @@ import { createRealTransactionsViewSql, dropRealTransactionsViewSql } from './ut
  *   not custom, so an ISO code can never lose its number.
  * - "UsersCurrencies" gains "nameOverride", "symbolOverride" and "decimalsOverride" (0 to 18, the
  *   scale of the money columns): what the user sees and how many decimals their amounts keep.
- * - The currency-code columns listed in `common/lib/currency-code-columns.ts` widen from
+ * - The currency-code columns listed in the frozen `utils/currency-code-columns-20261016.ts` widen from
  *   varchar(3) to varchar(16). Postgres rebuilds the foreign keys that reference
  *   "Currencies"."code" when it changes the type, so no constraint is dropped by hand.
  * - The base-currency amounts of transactions, splits and accounts become nullable, and

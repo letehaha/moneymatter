@@ -1,8 +1,10 @@
 /**
  * Every column that holds a currency code and is declared `varchar(CURRENCY_CODE_MAX_LENGTH)`.
  * Custom currencies carry codes longer than the ISO 4217 three letters, so the custom-currencies
- * migration widens these columns, and the migration check and the model unit test read this one
- * list and cannot drift from the declarations.
+ * migration widens these columns, and a model unit test keeps this list in step with the declarations.
+ *
+ * The migration does not read this list: it has its own frozen snapshot in
+ * `migrations/utils/currency-code-columns-20261016.ts`, so a column added here never reaches it.
  *
  * Currency-code columns of investments (`Holdings`, `InvestmentTransactions`, `Securities`,
  * `SecurityCurrencyCaches`) are `varchar(255)` without a foreign key and are not listed: custom

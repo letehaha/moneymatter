@@ -19,13 +19,13 @@
 import path from 'node:path';
 import { Sequelize } from 'sequelize-typescript';
 
+// The frozen snapshots the migrations themselves read: this script checks those migrations, not the live lists.
 import {
-  CURRENCY_CODE_COLUMNS,
-  CURRENCY_CODE_MAX_LENGTH,
-  ISO_CURRENCY_CODE_LENGTH,
-  NULLABLE_REF_COLUMNS,
-} from '../src/common/lib/currency-code-columns';
-// The frozen snapshot the migration itself reads: this script checks that migration, not the live list.
+  CURRENCY_CODE_COLUMNS_20261016 as CURRENCY_CODE_COLUMNS,
+  CURRENCY_CODE_MAX_LENGTH_20261016 as CURRENCY_CODE_MAX_LENGTH,
+  ISO_CURRENCY_CODE_LENGTH_20261016 as ISO_CURRENCY_CODE_LENGTH,
+  NULLABLE_REF_COLUMNS_20261016 as NULLABLE_REF_COLUMNS,
+} from '../src/migrations/utils/currency-code-columns-20261016';
 import {
   MONEY_COLUMNS_20261016 as MONEY_COLUMNS,
   MONEY_COLUMN_PRECISION_20261016 as MONEY_COLUMN_PRECISION,

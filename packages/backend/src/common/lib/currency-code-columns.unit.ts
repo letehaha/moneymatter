@@ -1,7 +1,18 @@
 import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
 
-import { CURRENCY_CODE_COLUMNS, CURRENCY_CODE_MAX_LENGTH, NULLABLE_REF_COLUMNS } from './currency-code-columns';
+import {
+  CURRENCY_CODE_COLUMNS_20261016,
+  CURRENCY_CODE_MAX_LENGTH_20261016,
+  ISO_CURRENCY_CODE_LENGTH_20261016,
+  NULLABLE_REF_COLUMNS_20261016,
+} from '../../migrations/utils/currency-code-columns-20261016';
+import {
+  CURRENCY_CODE_COLUMNS,
+  CURRENCY_CODE_MAX_LENGTH,
+  ISO_CURRENCY_CODE_LENGTH,
+  NULLABLE_REF_COLUMNS,
+} from './currency-code-columns';
 
 // `@models/index` builds the Sequelize instance so each model's attributes are populated.
 // Dummy connection params make construction succeed without touching a database.
@@ -82,5 +93,18 @@ describe('NULLABLE_REF_COLUMNS', () => {
 
     const listed = NULLABLE_REF_COLUMNS.map(({ table, column }) => `${table}.${column}`);
     expect(listed.filter((entry) => !nullable.has(entry))).toEqual([]);
+  });
+});
+
+describe('custom-currencies migration snapshot', () => {
+  // The migration owns a frozen copy of the lists, so a column added later never reaches it. The
+  // two are equal while the live lists are still the ones the migration widened. When a later
+  // change adds a column to a live list, relax this to "every snapshot entry is still listed" and
+  // leave the snapshot alone.
+  it('matches the live lists while they have not grown past the migration', () => {
+    expect(CURRENCY_CODE_COLUMNS_20261016).toEqual(CURRENCY_CODE_COLUMNS);
+    expect(NULLABLE_REF_COLUMNS_20261016).toEqual(NULLABLE_REF_COLUMNS);
+    expect(CURRENCY_CODE_MAX_LENGTH_20261016).toBe(CURRENCY_CODE_MAX_LENGTH);
+    expect(ISO_CURRENCY_CODE_LENGTH_20261016).toBe(ISO_CURRENCY_CODE_LENGTH);
   });
 });
