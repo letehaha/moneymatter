@@ -874,7 +874,8 @@ const seedUserCurrencies = async ({ sequelize }: { sequelize: Sequelize }): Prom
     `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('${SOURCE_CUSTOM_CODE}', 'Rate source check', 4, NULL, true)`,
   );
   await sequelize.query(
-    `INSERT INTO "UsersCurrencies" ("userId", "currencyCode") VALUES (${userId}, 'USD'), (${userId}, '${SOURCE_CUSTOM_CODE}')`,
+    `INSERT INTO "UsersCurrencies" ("userId", "currencyCode", "liveRateUpdate")
+     VALUES (${userId}, 'USD', true), (${userId}, 'EUR', false), (${userId}, '${SOURCE_CUSTOM_CODE}', false)`,
   );
 };
 
@@ -918,10 +919,15 @@ const assertRateSourceColumns = async ({
 };
 
 const assertRateSourceValues = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
-  // A currency starts on the market feed; a custom one has none, so it starts on manual rates.
+  // A currency starts on the market feed; a custom one has none, so it starts on manual rates, and so
+  // does an ISO currency whose live rates the user switched off.
   check({
     ok: (await sourceOf({ sequelize, code: 'USD' })) === 'provider',
-    label: `${step}: an existing ISO currency row is on the provider`,
+    label: `${step}: an existing ISO currency row with live rates is on the provider`,
+  });
+  check({
+    ok: (await sourceOf({ sequelize, code: 'EUR' })) === 'manual',
+    label: `${step}: an existing ISO currency row with live rates off is on manual rates`,
   });
   check({
     ok: (await sourceOf({ sequelize, code: SOURCE_CUSTOM_CODE })) === 'manual',

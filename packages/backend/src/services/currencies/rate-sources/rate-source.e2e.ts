@@ -163,6 +163,45 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       expect(await savedSource({ code })).toEqual({ rateSource: 'provider', rateSourceConfig: null });
     });
 
+    it('keeps the live-rate flag that the rate lookup reads in step with the saved source', async () => {
+      const code = 'USD';
+      await helpers.addUserCurrencies({ currencyCodes: [code], raw: true });
+      const liveRateUpdate = async () =>
+        (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)?.liveRateUpdate;
+      expect(await liveRateUpdate()).toBe(true);
+
+      await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'manual' } });
+      expect(await liveRateUpdate()).toBe(false);
+
+      await helpers.setCurrencyRateSource({ code, payload: { rateSource: 'provider' } });
+      expect(await liveRateUpdate()).toBe(true);
+    });
+
+    it('moves the saved source along when the flag changes through the currency settings or a manual rate', async () => {
+      const code = 'USD';
+      await helpers.addUserCurrencies({ currencyCodes: [code], raw: true });
+
+      const off = await helpers.updateUserCurrency({
+        currency: { currencyCode: code, liveRateUpdate: false },
+        raw: false,
+      });
+      expect(off.statusCode).toBe(200);
+      expect((await savedSource({ code })).rateSource).toBe('manual');
+
+      await helpers.updateUserCurrency({ currency: { currencyCode: code, liveRateUpdate: true }, raw: false });
+      expect((await savedSource({ code })).rateSource).toBe('provider');
+
+      const rate = await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: code, quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
+          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: code, rate: 0.25 },
+        ],
+        raw: false,
+      });
+      expect(rate.statusCode).toBe(200);
+      expect((await savedSource({ code })).rateSource).toBe('manual');
+    });
+
     it.each([
       ['peg', { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } }],
       ['coingecko', { rateSource: 'coingecko', config: { coinId: 'bitcoin' } }],
@@ -304,6 +343,52 @@ describe('PUT /user/currencies/:code/rate-source', () => {
           expect(foreign.statusCode).toBe(ERROR_CODES.NotFoundError);
         },
       });
+    });
+
+    it('saves a source for a user who has no base currency, and values nothing', async () => {
+      const other = await helpers.signUpSecondUser();
+      await helpers.asUser({
+        cookies: other.cookies,
+        fn: async () => {
+          await createCustom(USDT);
+
+          const peg = await helpers.setCurrencyRateSource({
+            code: USDT,
+            payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 1 } },
+          });
+          expect(peg.statusCode).toBe(200);
+          expect((await savedSource({ code: USDT })).rateSource).toBe('peg');
+
+          // A manual rate edit and removal for the same user reach the same recompute.
+          await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+          const pairs = [
+            { baseCode: USDT, quoteCode: 'USD', rate: 2 },
+            { baseCode: 'USD', quoteCode: USDT, rate: 0.5 },
+          ];
+          expect((await helpers.editCurrencyExchangeRate({ pairs, raw: false })).statusCode).toBe(200);
+          const removal = await helpers.removeCurrencyExchangeRate({
+            pairs: [
+              { baseCode: USDT, quoteCode: 'USD' },
+              { baseCode: 'USD', quoteCode: USDT },
+            ],
+            raw: false,
+          });
+          expect(removal.statusCode).toBe(200);
+        },
+      });
+    });
+
+    it('limits how often a user saves a source', async () => {
+      await createCustom(USDT);
+
+      for (let attempt = 0; attempt < 20; attempt++) {
+        const saved = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+        expect(saved.statusCode).toBe(200);
+      }
+
+      const refused = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+      expect(refused.statusCode).toBe(ERROR_CODES.TooManyRequests);
     });
 
     it('keeps each user their own source for the same custom code', async () => {

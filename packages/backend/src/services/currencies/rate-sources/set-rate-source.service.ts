@@ -11,6 +11,7 @@ import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { requireCoinGeckoKey } from '@services/investments/data-providers/clients/coingecko-client';
+import { revalueAccountsInCurrencies } from '@services/user-exchange-rate/revalue-accounts-in-currencies';
 import omit from 'lodash/omit';
 import { isDeepStrictEqual } from 'node:util';
 
@@ -162,7 +163,8 @@ const setCurrencyRateSourceImpl = async ({
   }
 
   // Synced sources quote in an ISO currency, so a stored rate never depends on another custom rate.
-  if (body.rateSource === 'coingecko' || body.rateSource === 'http') {
+  // An `http` source is checked together with its other rules in `assertHttpSourceAllowed`.
+  if (body.rateSource === 'coingecko') {
     await assertCurrencyCodesVisible({ userId, codes: [body.config.quoteCurrency], isoOnly: true });
   }
 
@@ -181,31 +183,47 @@ const setCurrencyRateSourceImpl = async ({
   }
 
   const { setting, encryptedHeaders } = toSetting({ body, headers });
-  const sameHeaders = isDeepStrictEqual(
-    headers,
-    decryptHttpHeaders({ encrypted: held.rateSourceHeadersEncrypted }) ?? {},
-  );
+  // Headers the body leaves out are the saved ones, so only a body that names some can differ.
+  const headersKept = held.rateSource === 'http' && body.rateSource === 'http' && body.config.headers === undefined;
+  const sameHeaders =
+    headersKept || isDeepStrictEqual(headers, decryptHttpHeaders({ encrypted: held.rateSourceHeadersEncrypted }) ?? {});
   const configChanged =
     held.rateSource !== setting.rateSource || !isDeepStrictEqual(held.rateSourceConfig, setting.rateSourceConfig);
   const changed = configChanged || (setting.rateSource === 'http' && !sameHeaders);
   const previousSource = held.rateSource;
   const previousConfig = held.rateSourceConfig;
-  await held.update({ ...setting, rateSourceHeadersEncrypted: encryptedHeaders });
 
-  // Rates fetched for another coin, URL or quote would mix into the new one's history, so they go.
-  // New headers alone fetch the same rates. The rates of a source the user switches away from stay,
-  // as the history of that currency.
-  if (changed && previousSource === setting.rateSource && returnsOtherRates({ previousConfig, setting })) {
+  // The live-rate flag is what the rate lookup reads for an ISO currency: it follows the source.
+  const liveRateUpdate = !held.currency.isCustom ? setting.rateSource === 'provider' : held.liveRateUpdate;
+  const liveRateChanged = liveRateUpdate !== held.liveRateUpdate;
+  await held.update({ ...setting, rateSourceHeadersEncrypted: encryptedHeaders, liveRateUpdate });
+
+  // Rates a synced source stored before would mix into its new history: the ones fetched for another
+  // coin, URL or quote, and the ones left from an earlier stint on the same source, whose settings
+  // are not known any more. New headers alone fetch the same rates. The rates of a source the user
+  // switches away from stay while another source runs, as the history of that currency.
+  const isSynced = setting.rateSource === 'coingecko' || setting.rateSource === 'http';
+  if (
+    changed &&
+    isSynced &&
+    (previousSource !== setting.rateSource || returnsOtherRates({ previousConfig, setting }))
+  ) {
     await UserExchangeRates.destroy({ where: { userId, baseCode: code, source: setting.rateSource } });
   }
 
-  // The rates of every day come from the new source now, so what was valued under the old one is
+  // The source decides which rates price the currency, so what was valued under the old one is
   // valued again. An ISO currency keeps the base amounts it was saved with.
   if (changed && held.currency.isCustom) {
     await recomputeCustomRefAmounts({
       userId,
       changes: [{ currencyCode: code, from: null, to: null, mode: 'recompute' }],
     });
+  }
+
+  // The flag picks between a flat manual rate and per-day market rates for every stored balance row
+  // of an ISO currency, so its history is rebuilt.
+  if (liveRateChanged) {
+    await revalueAccountsInCurrencies({ userId, pairs: [{ baseCode: code, quoteCode: code }] });
   }
 
   return { response: { currencyCode: code, ...setting }, changed };

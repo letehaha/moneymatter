@@ -10,7 +10,8 @@ import { QueryInterface, Transaction } from 'sequelize';
  *
  * - "UsersCurrencies"."rateSource" says where the user's rates for a currency come from, and
  *   "rateSourceConfig" holds the settings of that source. Every currency starts on 'provider' (the
- *   market feed), except a custom currency, which has no market feed and starts on 'manual'.
+ *   market feed), except a custom currency, which has no market feed, and a currency whose live
+ *   rates are off (the user's own rates price it), which start on 'manual'.
  *   "rateSourceHeadersEncrypted" holds the request headers of an HTTP source (they usually carry an
  *   API key) as one encrypted blob, kept apart from the config so that no ordinary read returns it.
  *
@@ -57,7 +58,7 @@ const upStatements = (): string[] => [
      ADD COLUMN "rateSourceHeadersEncrypted" TEXT;`,
   `UPDATE "UsersCurrencies" held SET "rateSource" = 'manual'
      FROM "Currencies" currency
-    WHERE currency."code" = held."currencyCode" AND currency."isCustom";`,
+    WHERE currency."code" = held."currencyCode" AND (currency."isCustom" OR NOT held."liveRateUpdate");`,
 ];
 
 const downStatements = (): string[] => [

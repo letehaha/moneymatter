@@ -137,15 +137,22 @@ export type UpdateExchangeRatePair = Pick<UserExchangeRatesAttributes, 'baseCode
   effectiveDate?: string;
 };
 
-/** Stop the user's connected-currency flag from letting the market overwrite a rate they just set. */
+/**
+ * Stop the user's connected-currency flag from letting the market overwrite a rate they just set. An
+ * ISO currency's rate source follows the flag, so it moves to the user's own rates too; a custom
+ * currency keeps the source it has.
+ */
 const disableLiveRates = async ({ userId, baseCode }: { userId: number; baseCode: string }): Promise<void> => {
   const currency = (await Currencies.default.findOne({
     where: { code: baseCode },
     raw: true,
-    attributes: ['code'],
+    attributes: ['code', 'isCustom'],
   }))!;
 
-  await UsersCurrencies.default.update({ liveRateUpdate: false }, { where: { userId, currencyCode: currency.code } });
+  await UsersCurrencies.default.update(
+    { liveRateUpdate: false, ...(currency.isCustom ? {} : { rateSource: 'manual' as const }) },
+    { where: { userId, currencyCode: currency.code } },
+  );
 };
 
 /**

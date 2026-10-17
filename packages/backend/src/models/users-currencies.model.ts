@@ -226,12 +226,14 @@ export const updateCurrency = async ({
   exchangeRate,
   liveRateUpdate,
   isDefaultCurrency,
+  rateSource,
 }: {
   userId: number;
   currencyCode: string;
   exchangeRate?: number;
   liveRateUpdate?: boolean;
   isDefaultCurrency?: boolean;
+  rateSource?: CurrencyRateSource;
 }) => {
   const where = { userId, currencyCode };
 
@@ -240,6 +242,7 @@ export const updateCurrency = async ({
       exchangeRate,
       liveRateUpdate,
       isDefaultCurrency,
+      rateSource,
     },
     {
       where,
