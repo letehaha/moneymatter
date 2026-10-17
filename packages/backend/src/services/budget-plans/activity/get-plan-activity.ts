@@ -71,6 +71,8 @@ export const getPlanActivity = async ({
       UNION ALL
       SELECT s.id, s."time", s."transactionType", sp."categoryId", sp."refAmount"
       FROM scoped s JOIN "TransactionSplits" sp ON sp."transactionId" = s.id
+      -- A split with no base-currency amount (custom currency, no rate yet) has no value to count.
+      WHERE sp."refAmount" IS NOT NULL
     ),
     attributed AS (
       -- A refund lands in ITS period. On an original this plan counted it takes
