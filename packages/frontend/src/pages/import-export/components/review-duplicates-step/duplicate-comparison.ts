@@ -5,9 +5,36 @@ import type { DuplicateMatch } from '@bt/shared/types';
 /** Shown in a comparison cell when that side has no value for the field. */
 export const DUPLICATE_PLACEHOLDER = '–';
 
-/** detect-duplicates returns decimal amounts; they show at the decimals of the row's currency. */
+const formattersByDecimals = new Map<number, Intl.NumberFormat>();
+
+/**
+ * Rounds half away from zero on the decimal digits of the number as written (`1.005` -> `1.01`),
+ * the way the duplicate key rounds. `Number.toFixed` rounds the binary value instead (`1.005` -> `1.00`).
+ */
+const getAmountFormatter = ({ decimals }: { decimals: number }): Intl.NumberFormat => {
+  let formatter = formattersByDecimals.get(decimals);
+
+  if (!formatter) {
+    formatter = new Intl.NumberFormat('en-US', {
+      useGrouping: false,
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals,
+      roundingMode: 'halfExpand',
+      // A negative amount that rounds to zero shows as `0.00`, not `-0.00`
+      signDisplay: 'negative',
+    });
+    formattersByDecimals.set(decimals, formatter);
+  }
+
+  return formatter;
+};
+
+/**
+ * detect-duplicates returns decimal amounts; they show at the decimals of the row's currency,
+ * rounded half-up like the duplicate key and the import write.
+ */
 export const formatDuplicateAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }): string =>
-  amount.toFixed(getCurrencyDecimals({ code: currencyCode }));
+  getAmountFormatter({ decimals: getCurrencyDecimals({ code: currencyCode }) }).format(amount);
 
 /**
  * Locale-aware date formatting for comparison cells. Delegates to formatShortDate,

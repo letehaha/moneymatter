@@ -51,6 +51,18 @@ describe('formatDuplicateAmount', () => {
   it('shows a 0-decimal currency without a fraction', () => {
     expect(formatDuplicateAmount({ amount: 1501, currencyCode: 'JPY' })).toBe('1501');
   });
+
+  it('rounds half away from zero on the written decimals, like the duplicate key', () => {
+    expect(formatDuplicateAmount({ amount: 1.005, currencyCode: 'USD' })).toBe('1.01');
+    expect(formatDuplicateAmount({ amount: 2.675, currencyCode: 'USD' })).toBe('2.68');
+    expect(formatDuplicateAmount({ amount: -1.005, currencyCode: 'USD' })).toBe('-1.01');
+    expect(formatDuplicateAmount({ amount: 1.2345, currencyCode: 'KWD' })).toBe('1.235');
+    expect(formatDuplicateAmount({ amount: 0.5, currencyCode: 'JPY' })).toBe('1');
+  });
+
+  it('shows a negative amount that rounds to zero without a sign', () => {
+    expect(formatDuplicateAmount({ amount: -0.001, currencyCode: 'USD' })).toBe('0.00');
+  });
 });
 
 describe('formatDuplicateDate', () => {
