@@ -1,11 +1,13 @@
 import { formatShortDate } from '@/common/utils/date';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import type { DuplicateMatch } from '@bt/shared/types';
 
 /** Shown in a comparison cell when that side has no value for the field. */
 export const DUPLICATE_PLACEHOLDER = '–';
 
-/** detect-duplicates returns amounts as integer cents; the UI always shows decimals. */
-export const formatDuplicateAmount = (cents: number): string => (cents / 100).toFixed(2);
+/** detect-duplicates returns decimal amounts; they show at the decimals of the row's currency. */
+export const formatDuplicateAmount = ({ amount, currencyCode }: { amount: number; currencyCode: string }): string =>
+  amount.toFixed(getCurrencyDecimals({ code: currencyCode }));
 
 /**
  * Locale-aware date formatting for comparison cells. Delegates to formatShortDate,
@@ -38,8 +40,8 @@ export const buildComparisonRows = (item: DuplicateMatch): ComparisonRow[] => {
   const rows: ComparisonRow[] = [
     {
       key: 'amount',
-      csv: formatDuplicateAmount(csv.amount),
-      existing: formatDuplicateAmount(existing.amount),
+      csv: formatDuplicateAmount({ amount: csv.amount, currencyCode: csv.currencyCode }),
+      existing: formatDuplicateAmount({ amount: existing.amount, currencyCode: csv.currencyCode }),
       emphasis: true,
     },
     { key: 'date', csv: formatDuplicateDate(csv.date), existing: formatDuplicateDate(existing.date) },
