@@ -1,4 +1,4 @@
-import type { Cents, NetWorthHistoryUnpricedSecurity, RecordId } from '@bt/shared/types';
+import type { MinorUnits, NetWorthHistoryUnpricedSecurity, RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -40,7 +40,7 @@ import type {
 
 /**
  * Portfolio valuation for the net-worth history report: a per-snapshot-date map of
- * value in base-currency cents, plus the data-quality failures that made any value
+ * value in base-currency minor units, plus the data-quality failures that made any value
  * approximate (so the caller can forward them to the client as `degraded`).
  */
 interface PortfolioValuation {
@@ -50,7 +50,7 @@ interface PortfolioValuation {
    * base currency to convert into) — the caller treats a missing map as zero,
    * matching the combined balance chart.
    */
-  valuesByDate: Map<string, Cents> | null;
+  valuesByDate: Map<string, MinorUnits> | null;
   /** Holdings carried at cost basis for lack of a price; empty when every holding priced. */
   unpricedSecurities: NetWorthHistoryUnpricedSecurity[];
   /**
@@ -63,7 +63,7 @@ interface PortfolioValuation {
 const NOTHING_TO_VALUE: PortfolioValuation = { valuesByDate: null, unpricedSecurities: [], fxFallbackCurrencies: [] };
 
 /**
- * Portfolio value (holdings market value + uninvested cash) in base-currency cents
+ * Portfolio value (holdings market value + uninvested cash) in base-currency minor units
  * for each snapshot date. Holdings are valued on the sparse `snapshotDates` only —
  * the replay folds every transaction dated on or before each day, so skipping the
  * days in between changes nothing and keeps an all-time range cheap. Cash, by
@@ -75,11 +75,14 @@ export const calculatePortfolioValueByDate = async ({
   snapshotDates,
   denseDates,
   userBaseCurrencyPromise,
+  decimals,
 }: {
   userId: number;
   snapshotDates: string[];
   denseDates: string[];
   userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
+  /** Decimals of the base currency: the scale each day's value is rounded to. */
+  decimals: number;
 }): Promise<PortfolioValuation> => {
   const minDate = snapshotDates[0]!;
   const maxDate = snapshotDates[snapshotDates.length - 1]!;
@@ -343,12 +346,15 @@ export const calculatePortfolioValueByDate = async ({
     return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
   });
 
-  // The replays traffic in decimals; everything this service returns is cents.
-  const portfolioValueByDate = new Map<string, Cents>();
+  // The replays traffic in decimals; everything this service returns is minor units.
+  const portfolioValueByDate = new Map<string, MinorUnits>();
   for (const dateStr of snapshotDates) {
     const holdingsForDate = holdingsValueByDate.get(dateStr) ?? 0;
     const cashForDate = cashInBaseByDate.get(dateStr) ?? 0;
-    portfolioValueByDate.set(dateStr, Money.fromDecimal(holdingsForDate).add(Money.fromDecimal(cashForDate)).toCents());
+    portfolioValueByDate.set(
+      dateStr,
+      Money.fromDecimal(holdingsForDate).add(Money.fromDecimal(cashForDate)).toMinorUnits({ decimals }),
+    );
   }
 
   return {

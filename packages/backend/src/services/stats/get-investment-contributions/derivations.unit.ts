@@ -1,4 +1,4 @@
-import { TRANSACTION_TYPES, asCents } from '@bt/shared/types';
+import { TRANSACTION_TYPES, asMinorUnits } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 import { generatePeriodBuckets } from '@services/stats/utils';
@@ -13,7 +13,9 @@ const buckets = generatePeriodBuckets({ from: '2026-01-01', to: '2026-03-31', gr
 describe('accumulateContributions', () => {
   it('counts an inbound deposit as a positive delta', () => {
     const { byBucket, activePortfolioIds } = accumulateContributions({
-      transfers: [{ fromPortfolioId: null, toPortfolioId: 'p1', refAmountCents: asCents(50_000), date: '2026-01-15' }],
+      transfers: [
+        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountMinor: asMinorUnits(50_000), date: '2026-01-15' },
+      ],
       buckets,
       scope: new Set(['p1']),
     });
@@ -24,7 +26,9 @@ describe('accumulateContributions', () => {
 
   it('counts an outbound withdrawal as a negative delta', () => {
     const { byBucket, activePortfolioIds } = accumulateContributions({
-      transfers: [{ fromPortfolioId: 'p1', toPortfolioId: null, refAmountCents: asCents(30_000), date: '2026-01-15' }],
+      transfers: [
+        { fromPortfolioId: 'p1', toPortfolioId: null, refAmountMinor: asMinorUnits(30_000), date: '2026-01-15' },
+      ],
       buckets,
       scope: new Set(['p1']),
     });
@@ -35,7 +39,9 @@ describe('accumulateContributions', () => {
 
   it('skips a portfolio-to-portfolio transfer that names both sides', () => {
     const { byBucket, activePortfolioIds } = accumulateContributions({
-      transfers: [{ fromPortfolioId: 'p1', toPortfolioId: 'p2', refAmountCents: asCents(20_000), date: '2026-01-15' }],
+      transfers: [
+        { fromPortfolioId: 'p1', toPortfolioId: 'p2', refAmountMinor: asMinorUnits(20_000), date: '2026-01-15' },
+      ],
       buckets,
       scope: new Set(['p1', 'p2']),
     });
@@ -46,7 +52,9 @@ describe('accumulateContributions', () => {
 
   it('skips a transfer whose only portfolio is out of scope', () => {
     const { byBucket, activePortfolioIds } = accumulateContributions({
-      transfers: [{ fromPortfolioId: null, toPortfolioId: 'pX', refAmountCents: asCents(10_000), date: '2026-01-15' }],
+      transfers: [
+        { fromPortfolioId: null, toPortfolioId: 'pX', refAmountMinor: asMinorUnits(10_000), date: '2026-01-15' },
+      ],
       buckets,
       scope: new Set(['p1']),
     });
@@ -58,8 +66,8 @@ describe('accumulateContributions', () => {
   it('buckets a Jan 31 transfer into January and a Feb 1 transfer into February', () => {
     const { byBucket } = accumulateContributions({
       transfers: [
-        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountCents: asCents(11_100), date: '2026-01-31' },
-        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountCents: asCents(22_200), date: '2026-02-01' },
+        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountMinor: asMinorUnits(11_100), date: '2026-01-31' },
+        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountMinor: asMinorUnits(22_200), date: '2026-02-01' },
       ],
       buckets,
       scope: new Set(['p1']),
@@ -72,8 +80,8 @@ describe('accumulateContributions', () => {
   it('drops a portfolio whose deposit and withdrawal cancel within a bucket', () => {
     const { byBucket, activePortfolioIds } = accumulateContributions({
       transfers: [
-        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountCents: asCents(40_000), date: '2026-01-10' },
-        { fromPortfolioId: 'p1', toPortfolioId: null, refAmountCents: asCents(40_000), date: '2026-01-20' },
+        { fromPortfolioId: null, toPortfolioId: 'p1', refAmountMinor: asMinorUnits(40_000), date: '2026-01-10' },
+        { fromPortfolioId: 'p1', toPortfolioId: null, refAmountMinor: asMinorUnits(40_000), date: '2026-01-20' },
       ],
       buckets,
       scope: new Set(['p1']),
@@ -87,6 +95,7 @@ describe('accumulateContributions', () => {
 describe('accumulateSavingsNet', () => {
   it('nets income minus expense per bucket', () => {
     const savingsNet = accumulateSavingsNet({
+      decimals: 2,
       transactions: [
         {
           time: '2026-01-10T12:00:00.000Z',
@@ -114,6 +123,7 @@ describe('accumulateSavingsNet', () => {
 
   it('ignores transactions outside every bucket', () => {
     const savingsNet = accumulateSavingsNet({
+      decimals: 2,
       transactions: [
         {
           time: '2025-12-31T12:00:00.000Z',
@@ -126,20 +136,41 @@ describe('accumulateSavingsNet', () => {
 
     expect(savingsNet).toEqual([0, 0, 0]);
   });
+
+  it('keeps the third decimal of a 3-decimal base currency', () => {
+    const savingsNet = accumulateSavingsNet({
+      decimals: 3,
+      transactions: [
+        {
+          time: '2026-01-10T12:00:00.000Z',
+          refAmount: Money.fromDecimal(0.778),
+          transactionType: TRANSACTION_TYPES.income,
+        },
+        {
+          time: '2026-01-20T12:00:00.000Z',
+          refAmount: Money.fromDecimal(1.234),
+          transactionType: TRANSACTION_TYPES.expense,
+        },
+      ],
+      buckets,
+    });
+
+    expect(savingsNet[0]).toBe(-456);
+  });
 });
 
 describe('orderLegend', () => {
   it('orders by absolute signed total desc, breaks ties on name, and drops inactive portfolios', () => {
     const byBucket = [
       new Map([
-        ['p1', asCents(30_000)],
-        ['p2', asCents(-50_000)],
-        ['pA', asCents(20_000)],
-        ['pB', asCents(20_000)],
-        ['p3', asCents(40_000)],
+        ['p1', asMinorUnits(30_000)],
+        ['p2', asMinorUnits(-50_000)],
+        ['pA', asMinorUnits(20_000)],
+        ['pB', asMinorUnits(20_000)],
+        ['p3', asMinorUnits(40_000)],
       ]),
       // p3 cancels to zero across the window, so it is not in `activePortfolioIds`.
-      new Map([['p3', asCents(-40_000)]]),
+      new Map([['p3', asMinorUnits(-40_000)]]),
     ];
 
     const legend = orderLegend({

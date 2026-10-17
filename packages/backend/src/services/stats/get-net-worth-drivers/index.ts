@@ -1,14 +1,14 @@
 import {
   ACCOUNT_CATEGORIES,
-  type Cents,
+  type MinorUnits,
   type NetWorthDriversDegraded,
   type NetWorthDriversGranularity,
   type NetWorthDriversPortfolioMeta,
   type NetWorthDriversUnpricedSecurity,
   type RecordId,
-  asCents,
+  asMinorUnits,
 } from '@bt/shared/types';
-import { CENTS_DECIMALS, Money } from '@common/types/money';
+import { Money } from '@common/types/money';
 import { UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -46,16 +46,16 @@ import { createFindPriceForDate } from '../get-combined-balance-history/security
 import type { CurrentBalanceRow, SecurityRow, TransferRow } from '../get-combined-balance-history/types';
 import { buildBoundaryDates, buildDenseDateRange } from './date-range';
 import {
-  type InvestmentGrowthCents,
+  type InvestmentGrowthMinor,
   type PortfolioGrowthSeries,
   accumulateInvestmentFlows,
   computeInvestmentGrowth,
   foldPortfolioGrowth,
 } from './investment-growth';
 import { accumulateSavings } from './savings';
-import type { NetWorthDriversPortfolioSliceCents, NetWorthDriversResultCents, ReportTransactionRow } from './types';
+import type { NetWorthDriversPortfolioSliceMinor, NetWorthDriversResultMinor, ReportTransactionRow } from './types';
 
-export type { NetWorthDriversResultCents } from './types';
+export type { NetWorthDriversResultMinor } from './types';
 
 interface GetNetWorthDriversParams {
   userId: number;
@@ -69,20 +69,22 @@ interface GetNetWorthDriversParams {
    * account-level cash are user-wide and stay unaffected by this filter.
    */
   portfolioIds?: RecordId[];
+  /** Decimals of the base currency: the minor-unit scale every amount is summed at. */
+  decimals: number;
 }
 
 interface InvestmentSlice {
   /**
-   * Holdings market value in cents, keyed by the snapshot days only. Summed from the
-   * per-portfolio cents so it agrees with the per-portfolio growth split exactly.
+   * Holdings market value in base minor units, keyed by the snapshot days only. Summed from the
+   * per-portfolio minor units so it agrees with the per-portfolio growth split exactly.
    */
-  holdingsCentsByDate: Map<string, Cents>;
-  /** Uninvested portfolio cash in cents, keyed by every day in the window. */
-  cashCentsByDate: Map<string, Cents>;
+  holdingsMinorByDate: Map<string, MinorUnits>;
+  /** Uninvested portfolio cash in base minor units, keyed by every day in the window. */
+  cashMinorByDate: Map<string, MinorUnits>;
   /** Per-bucket growth totals: the elementwise sum of every in-scope portfolio's series. */
-  growth: InvestmentGrowthCents[];
+  growth: InvestmentGrowthMinor[];
   /** Sparse per-portfolio split of each bucket's growth, positionally aligned with the buckets. */
-  growthByPortfolio: NetWorthDriversPortfolioSliceCents[][];
+  growthByPortfolio: NetWorthDriversPortfolioSliceMinor[][];
   /** Portfolios active anywhere in the window, largest absolute total growth first. */
   portfolios: NetWorthDriversPortfolioMeta[];
   /**
@@ -110,8 +112,8 @@ const buildEmptySlice = ({ boundaryDates }: { boundaryDates: string[] }): Invest
   });
 
   return {
-    holdingsCentsByDate: new Map(),
-    cashCentsByDate: new Map(),
+    holdingsMinorByDate: new Map(),
+    cashMinorByDate: new Map(),
     growth: totals,
     growthByPortfolio: byBucket,
     portfolios: legend,
@@ -152,6 +154,7 @@ const calculateInvestmentSlice = async ({
   denseDates,
   userBaseCurrencyPromise,
   portfolioIdsFilter,
+  decimals,
 }: {
   userId: number;
   boundaryDates: string[];
@@ -164,6 +167,8 @@ const calculateInvestmentSlice = async ({
    * disabled id never leaks through. Empty or absent includes every enabled one.
    */
   portfolioIdsFilter?: RecordId[];
+  /** Decimals of the base currency: the scale holdings, cash and flows are converted to minor units at. */
+  decimals: number;
 }): Promise<InvestmentSlice> => {
   const minDate = boundaryDates[0]!;
   const maxDate = boundaryDates[boundaryDates.length - 1]!;
@@ -377,7 +382,7 @@ const calculateInvestmentSlice = async ({
   //
   // Replayed one portfolio at a time so each portfolio's growth is derived from its
   // own holdings and its own flows. The replay is already per-portfolio internally
-  // and every fold downstream is linear over integer cents, so the totals summed
+  // and every fold downstream is linear over integer minor units, so the totals summed
   // back up are the same numbers a single whole-scope pass would produce.
   const perPortfolioHoldings = portfolios.map((portfolio) => ({
     portfolio,
@@ -435,12 +440,12 @@ const calculateInvestmentSlice = async ({
     return { securityId: securityId as RecordId, symbol: label?.symbol ?? null, name: label?.name ?? null };
   });
 
-  // The replays traffic in decimals; everything this service returns is cents. The
-  // scope-wide holdings level is the per-date sum of the per-portfolio cents, so the
+  // The replays traffic in decimals; everything this service returns is minor units. The
+  // scope-wide holdings level is the per-date sum of the per-portfolio minor units, so the
   // composition and the growth split are rounded once and identically.
-  const holdingsCentsByDate = new Map<string, Cents>(boundaryDates.map((dateStr) => [dateStr, asCents(0)]));
+  const holdingsMinorByDate = new Map<string, MinorUnits>(boundaryDates.map((dateStr) => [dateStr, asMinorUnits(0)]));
   const series: PortfolioGrowthSeries[] = perPortfolioHoldings.map(({ portfolio, valueByDate }) => {
-    const portfolioHoldingsCents = new Map<string, Cents>();
+    const portfolioHoldingsMinor = new Map<string, MinorUnits>();
     let heldAnything = false;
 
     for (const dateStr of boundaryDates) {
@@ -453,21 +458,22 @@ const calculateInvestmentSlice = async ({
         });
       }
 
-      const cents = Money.fromDecimal(holdingsValue).toCents();
-      if (cents !== 0) heldAnything = true;
-      portfolioHoldingsCents.set(dateStr, cents);
-      holdingsCentsByDate.set(dateStr, asCents(holdingsCentsByDate.get(dateStr)! + cents));
+      const minor = Money.fromDecimal(holdingsValue).toMinorUnits({ decimals });
+      if (minor !== 0) heldAnything = true;
+      portfolioHoldingsMinor.set(dateStr, minor);
+      holdingsMinorByDate.set(dateStr, asMinorUnits(holdingsMinorByDate.get(dateStr)! + minor));
     }
 
     const flows = accumulateInvestmentFlows({
       transactions: transactionsByPortfolio.get(portfolio.id) ?? [],
       boundaryDates,
+      decimals,
     });
 
     return {
       portfolioId: portfolio.id,
       name: portfolio.name,
-      growth: computeInvestmentGrowth({ flows, holdingsCentsByDate: portfolioHoldingsCents, boundaryDates }),
+      growth: computeInvestmentGrowth({ flows, holdingsMinorByDate: portfolioHoldingsMinor, boundaryDates }),
       hasActivity:
         heldAnything ||
         flows.some(
@@ -477,11 +483,11 @@ const calculateInvestmentSlice = async ({
     };
   });
 
-  const cashCentsByDate = new Map<string, Cents>();
+  const cashMinorByDate = new Map<string, MinorUnits>();
   for (const dateStr of denseDates) {
     // `computePortfolioCashByDate` omits days whose running cash nets to zero, so a missing
     // entry legitimately means zero cash — the fallback stays.
-    cashCentsByDate.set(dateStr, Money.fromDecimal(cashInBaseByDate.get(dateStr) ?? 0).toCents());
+    cashMinorByDate.set(dateStr, Money.fromDecimal(cashInBaseByDate.get(dateStr) ?? 0).toMinorUnits({ decimals }));
   }
 
   const { totals, byBucket, legend } = foldPortfolioGrowth({
@@ -490,8 +496,8 @@ const calculateInvestmentSlice = async ({
   });
 
   return {
-    holdingsCentsByDate,
-    cashCentsByDate,
+    holdingsMinorByDate,
+    cashMinorByDate,
     growth: totals,
     growthByPortfolio: byBucket,
     portfolios: legend,
@@ -517,7 +523,7 @@ const toAccountsDateKey = (dayStr: string): string => format(new Date(dayStr), '
  * savings untouched (it is not income or expense) and holdings untouched (it
  * buys nothing), so it can never be mistaken for growth.
  *
- * All amounts are base-currency cents; the serializer converts to decimals.
+ * All amounts are base-currency minor units at `decimals`; the serializer converts to decimals.
  */
 export const getNetWorthDrivers = async ({
   userId,
@@ -525,7 +531,8 @@ export const getNetWorthDrivers = async ({
   to,
   granularity,
   portfolioIds,
-}: GetNetWorthDriversParams): Promise<NetWorthDriversResultCents> => {
+  decimals,
+}: GetNetWorthDriversParams): Promise<NetWorthDriversResultMinor> => {
   const buckets = generatePeriodBuckets({ from, to, granularity });
 
   if (buckets.length === 0) {
@@ -547,13 +554,14 @@ export const getNetWorthDrivers = async ({
 
     return Promise.all([
       // Savings intake — real income and expense only, transfers dropped, user-wide.
-      fetchSavingsTransactions({ userId, from, to }),
+      fetchSavingsTransactions({ userId, from, to, decimals }),
       calculateInvestmentSlice({
         userId,
         boundaryDates,
         denseDates,
         userBaseCurrencyPromise,
         portfolioIdsFilter: portfolioIds,
+        decimals,
       }),
       // Cash side of the composition. Vehicles and loans are excluded to match
       // the net-worth chart's accounts partition; credit-card negatives stay in,
@@ -564,8 +572,7 @@ export const getNetWorthDrivers = async ({
         from: boundaryDates[0]!,
         to: boundaryDates[boundaryDates.length - 1]!,
         categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.loan] },
-        // The drivers sum in cents.
-        decimals: CENTS_DECIMALS,
+        decimals,
       }),
     ]);
   })();
@@ -574,18 +581,19 @@ export const getNetWorthDrivers = async ({
     transactions: savingsIntake.rows,
     refundPairs: savingsIntake.refundPairs,
     buckets,
+    decimals,
   });
 
-  const accountsCentsByDate = new Map(accountsBalanceHistory.map((item) => [item.date, asCents(item.amount)]));
+  const accountsMinorByDate = new Map(accountsBalanceHistory.map((item) => [item.date, asMinorUnits(item.amount)]));
 
   // `getAggregatedBalanceHistory` fills every day in its range, so a non-empty history that
   // misses a boundary day is a key-derivation bug, not zero cash. Fail loud rather than let
   // `?? 0` silently drop the whole account-cash component of this bucket's net worth. An empty
   // history (user with no account balances at all) is a real zero.
-  const resolveAccountsCents = (periodEndKey: string): Cents => {
-    const cents = accountsCentsByDate.get(toAccountsDateKey(periodEndKey));
-    if (cents !== undefined) return cents;
-    if (accountsBalanceHistory.length === 0) return asCents(0);
+  const resolveAccountsMinor = (periodEndKey: string): MinorUnits => {
+    const minor = accountsMinorByDate.get(toAccountsDateKey(periodEndKey));
+    if (minor !== undefined) return minor;
+    if (accountsBalanceHistory.length === 0) return asMinorUnits(0);
 
     logger.error('Net-worth drivers: account balance history missing a boundary day', {
       userId,
@@ -608,9 +616,9 @@ export const getNetWorthDrivers = async ({
       composition: {
         // An empty investment slice (no portfolios or no investment data) leaves these two
         // maps empty, so a missing key is legitimately zero here.
-        holdingsValue: investmentSlice.holdingsCentsByDate.get(periodEndKey) ?? asCents(0),
-        cashValue: asCents(
-          resolveAccountsCents(periodEndKey) + (investmentSlice.cashCentsByDate.get(periodEndKey) ?? 0),
+        holdingsValue: investmentSlice.holdingsMinorByDate.get(periodEndKey) ?? asMinorUnits(0),
+        cashValue: asMinorUnits(
+          resolveAccountsMinor(periodEndKey) + (investmentSlice.cashMinorByDate.get(periodEndKey) ?? 0),
         ),
       },
     };

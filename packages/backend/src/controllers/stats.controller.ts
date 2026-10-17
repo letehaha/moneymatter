@@ -263,15 +263,18 @@ export const getCombinedBalanceHistory = createController(combinedBalanceHistory
 
   const settings = await getUserSettings({ userId });
 
+  const decimals = await getBaseCurrencyDecimals({ userId });
+
   const combinedBalanceHistory = await statsService.getCombinedBalanceHistory({
     userId,
     from,
     to,
     includeCreditLimit: settings.includeCreditLimitInStats,
+    decimals,
   });
 
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeCombinedBalanceHistory(combinedBalanceHistory) };
+  // Serialize: convert minor units to decimal for API response
+  return { data: serializeCombinedBalanceHistory({ items: combinedBalanceHistory, decimals }) };
 });
 
 const cashFlowSchema = z.object({
@@ -346,12 +349,14 @@ export const getNetWorthDrivers = createController(netWorthDriversSchema, async 
   const { id: userId } = user;
   const { from, to, granularity, portfolioIds } = query;
 
+  const decimals = await getBaseCurrencyDecimals({ userId });
+
   const result = await statsService.getNetWorthDrivers(
-    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds }),
+    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds, decimals }),
   );
 
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeNetWorthDrivers(result) };
+  // Serialize: convert minor units to decimal for API response
+  return { data: serializeNetWorthDrivers({ result, decimals }) };
 });
 
 const netWorthHistorySchema = z.object({
@@ -369,16 +374,19 @@ export const getNetWorthHistory = createController(netWorthHistorySchema, async 
 
   const settings = await getUserSettings({ userId });
 
+  const decimals = await getBaseCurrencyDecimals({ userId });
+
   const result = await statsService.getNetWorthHistory({
     userId,
     from,
     to,
     granularity,
     includeCreditLimit: settings.includeCreditLimitInStats,
+    decimals,
   });
 
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeNetWorthHistory(result) };
+  // Serialize: convert minor units to decimal for API response
+  return { data: serializeNetWorthHistory({ result, decimals }) };
 });
 
 const investmentContributionsSchema = z.object({
@@ -397,12 +405,14 @@ export const getInvestmentContributions = createController(investmentContributio
   const { id: userId } = user;
   const { from, to, granularity, portfolioIds } = query;
 
+  const decimals = await getBaseCurrencyDecimals({ userId });
+
   const result = await statsService.getInvestmentContributions(
-    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds }),
+    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds, decimals }),
   );
 
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeInvestmentContributions(result) };
+  // Serialize: convert minor units to decimal for API response
+  return { data: serializeInvestmentContributions({ result, decimals }) };
 });
 
 const ventureContributionsSchema = z.object({
@@ -410,9 +420,16 @@ const ventureContributionsSchema = z.object({
 });
 
 export const getVentureContributions = createController(ventureContributionsSchema, async ({ user, query }) => {
-  const result = await statsService.getVentureContributions({ userId: user.id, from: query.from, to: query.to });
+  const decimals = await getBaseCurrencyDecimals({ userId: user.id });
 
-  return { data: serializeVentureContributions(result) };
+  const result = await statsService.getVentureContributions({
+    userId: user.id,
+    from: query.from,
+    to: query.to,
+    decimals,
+  });
+
+  return { data: serializeVentureContributions({ result, decimals }) };
 });
 
 const pivotReportSchema = z.object({
