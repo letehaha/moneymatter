@@ -1,6 +1,6 @@
 import type { RecordId, TransactionTemplateModel } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
-import { type Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull, type Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
 import Accounts from '@models/accounts.model';
@@ -53,7 +53,7 @@ export const loadTemplateTagIds = async ({
 };
 
 /**
- * The column holds cents; the API exchanges decimals. A pinned amount is suppressed
+ * The column holds a Money; the API exchanges decimals. A pinned amount is suppressed
  * without an account, which `ON DELETE SET NULL` can leave behind on the row.
  */
 export const serializeTemplate = ({
@@ -67,7 +67,7 @@ export const serializeTemplate = ({
   userId: template.userId,
   name: template.name,
   transactionType: template.transactionType,
-  amount: template.accountId ? centsToApiDecimalOrNull(template.amount) : null,
+  amount: template.accountId ? moneyToApiDecimalOrNull(template.amount) : null,
   accountId: template.accountId,
   categoryId: template.categoryId,
   payeeId: template.payeeId,

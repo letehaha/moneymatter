@@ -1,6 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanDetails, BudgetPlanLineEntry } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLines from '@models/budget-lines.model';
@@ -54,7 +54,7 @@ export const getPlan = async ({ userId, planId }: { userId: number; planId: Reco
   const currentStart = currentPeriodStart({ plan });
 
   return {
-    plan: { ...plan.get({ plain: true }), expectedIncome: centsToApiDecimalOrNull(plan.expectedIncome) },
+    plan: { ...plan.get({ plain: true }), expectedIncome: moneyToApiDecimalOrNull(plan.expectedIncome) },
     accountIds: planAccounts.map((row) => row.accountId),
     lines: lines.map((line) => toLineEntry({ line, lineCategories, currentStart })),
   };

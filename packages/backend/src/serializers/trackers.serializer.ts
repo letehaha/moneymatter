@@ -13,7 +13,7 @@ import {
   type TRACKER_LIMIT_KINDS,
   ResourceShareInfo,
 } from '@bt/shared/types';
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, centsToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Categories from '@models/categories.model';
 import type Tags from '@models/tags.model';
 import type TrackerLines from '@models/tracker-lines.model';
@@ -106,7 +106,7 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     status: tracker.status,
     startDate: tracker.startDate,
     endDate: tracker.endDate,
-    limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+    limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
     limitKind: tracker.limitKind,
     rulesEnabled: tracker.rulesEnabled,
     rulesCleanup: tracker.rulesCleanup,
