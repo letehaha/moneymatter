@@ -18,15 +18,7 @@
       >
         <div class="flex min-w-0 items-center gap-3 @[30rem]/currencies:flex-1">
           <div class="bg-muted flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-            <img
-              v-if="flagUrl && !flagFailed"
-              :src="flagUrl"
-              :alt="code"
-              class="size-5"
-              loading="lazy"
-              @error="flagFailed = true"
-            />
-            <CoinsIcon v-else class="text-muted-foreground size-4.5" aria-hidden="true" />
+            <CurrencyIcon :code="code" size="size-5" />
           </div>
 
           <div class="min-w-0">
@@ -168,13 +160,13 @@
 <script setup lang="ts">
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useCurrencyName } from '@/composable';
-import { getCurrencyIcon } from '@/js/helpers/currencyImage';
+import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useCurrenciesStore } from '@/stores';
 import { useQueryClient } from '@tanstack/vue-query';
-import { ChevronDownIcon, CoinsIcon, PencilIcon } from '@lucide/vue';
+import { ChevronDownIcon, PencilIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -201,7 +193,6 @@ const queryClient = useQueryClient();
 const { getCurrencyName } = useCurrencyName();
 
 const isFormDisabled = ref(false);
-const flagFailed = ref(false);
 
 const isBase = computed(() => props.currency.isDefaultCurrency);
 const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
@@ -223,9 +214,6 @@ const currencyName = computed(() =>
         fallbackName: props.currency.currency?.currency,
       }),
 );
-
-// Custom codes are not countries or ISO currencies, so a flag lookup would match the wrong thing.
-const flagUrl = computed(() => (code.value && !isCustomCurrency.value ? getCurrencyIcon(code.value) : ''));
 
 // A custom currency can be worth a tiny fraction of its quote, so its rate shows more digits.
 const CUSTOM_RATE_MAX_FRACTION_DIGITS = 12;
