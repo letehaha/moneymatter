@@ -1,17 +1,23 @@
+import Big from 'big.js';
+
+/** The numeric prefix of a cleaned amount token, with an optional exponent. */
+const LEADING_NUMBER = /^(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?/i;
+
 /**
- * Parse amount string and return numeric value in cents (integer).
- * The rounding to 2 decimals happens here, whatever the row's currency is; callers build
- * `Money` with `Money.fromCents`.
+ * Parse an amount string and return its exact decimal value as a plain string (`'-12.345'`).
+ * Nothing is rounded: every digit the source wrote is kept, and the caller rounds to the
+ * account currency's decimals where the amount meets a stored one. The string never uses
+ * exponent notation and a zero is always `'0'`.
  * Supports various formats: 1234.56, 1,234.56, -1234.56, (1234.56)
  *
  * New code should use `parseDecimalAmount`, which rejects ambiguous tokens. This one always
- * guesses: a lone comma is read as the decimal point, so `1,234` returns 123 cents.
+ * guesses: a lone comma is read as the decimal point, so `1,234` returns `'1.234'`.
  */
-export function parseAmount(amountStr: string): number | null {
+export function parseAmount(amountStr: string): string | null {
   if (!amountStr) return null;
 
   // Banks export U+2212 minus, en/em dashes, and other hyphen look-alikes as the sign
-  let cleanStr = amountStr.trim().replace(/^[\u2010-\u2015\u2212\uFE63\uFF0D]/, '-');
+  let cleanStr = amountStr.trim().replace(/^[‐-―−﹣－]/, '-');
 
   // Handle parentheses as negative (accounting format)
   const isNegativeParens = cleanStr.startsWith('(') && cleanStr.endsWith(')');
@@ -46,16 +52,19 @@ export function parseAmount(amountStr: string): number | null {
     cleanStr = cleanStr.replace(/,/g, '');
   }
 
-  // Parse as float
-  const parsed = parseFloat(cleanStr);
+  // Read the leading number and ignore a trailing remainder, the way `parseFloat` does
+  const leadingNumber = LEADING_NUMBER.exec(cleanStr)?.[0];
 
-  if (isNaN(parsed)) {
+  if (leadingNumber === undefined) {
     return null;
   }
 
-  // Apply negative sign
-  const finalValue = isNegativeParens || isNegativeSign ? -parsed : parsed;
+  const magnitude = new Big(leadingNumber);
 
-  // Convert to integer cents. Multiply by 100 and round to avoid floating point issues
-  return Math.round(finalValue * 100);
+  if (magnitude.eq(0)) {
+    return '0';
+  }
+
+  // Apply negative sign
+  return (isNegativeParens || isNegativeSign ? magnitude.neg() : magnitude).toFixed();
 }

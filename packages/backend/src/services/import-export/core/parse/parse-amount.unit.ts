@@ -13,59 +13,72 @@ describe('parseAmount (core tabular-import amount parser)', () => {
     expect(parseAmount('--')).toBeNull();
   });
 
-  it('parses plain decimals into integer cents', () => {
-    expect(parseAmount('1234.56')).toBe(123456);
-    expect(parseAmount('1234')).toBe(123400);
-    expect(parseAmount('0.5')).toBe(50);
+  it('parses plain decimals into exact decimal strings', () => {
+    expect(parseAmount('1234.56')).toBe('1234.56');
+    expect(parseAmount('1234')).toBe('1234');
+    expect(parseAmount('0.5')).toBe('0.5');
+  });
+
+  it('keeps every digit the source wrote, whatever the currency decimals are', () => {
+    expect(parseAmount('0.12345678')).toBe('0.12345678');
+    expect(parseAmount('1.234')).toBe('1.234');
+    expect(parseAmount('1.234,5678')).toBe('1234.5678');
+    expect(parseAmount('(12.345)')).toBe('-12.345');
+    expect(parseAmount('10.996')).toBe('10.996');
   });
 
   it('strips US/UK thousands separators', () => {
-    expect(parseAmount('1,234.56')).toBe(123456);
-    expect(parseAmount('1,000,000.00')).toBe(100000000);
+    expect(parseAmount('1,234.56')).toBe('1234.56');
+    expect(parseAmount('1,000,000.00')).toBe('1000000');
   });
 
   it('parses European format (period thousands, comma decimal)', () => {
-    expect(parseAmount('1.234,56')).toBe(123456);
-    expect(parseAmount('1.000.000,00')).toBe(100000000);
+    expect(parseAmount('1.234,56')).toBe('1234.56');
+    expect(parseAmount('1.000.000,00')).toBe('1000000');
   });
 
   it('treats a lone comma as the decimal separator', () => {
     // With no period present, the comma is read as the decimal point (European
     // convention), not a thousands separator: '1,5' -> 1.5, '1,234' -> 1.234.
-    expect(parseAmount('1,5')).toBe(150);
-    expect(parseAmount('1,234')).toBe(123);
+    expect(parseAmount('1,5')).toBe('1.5');
+    expect(parseAmount('1,234')).toBe('1.234');
   });
 
   it('treats parentheses as a negative (accounting format)', () => {
-    expect(parseAmount('(1234.56)')).toBe(-123456);
-    expect(parseAmount('(100)')).toBe(-10000);
+    expect(parseAmount('(1234.56)')).toBe('-1234.56');
+    expect(parseAmount('(100)')).toBe('-100');
   });
 
   it('honors explicit signs', () => {
-    expect(parseAmount('-1234.56')).toBe(-123456);
-    expect(parseAmount('+500')).toBe(50000);
+    expect(parseAmount('-1234.56')).toBe('-1234.56');
+    expect(parseAmount('+500')).toBe('500');
   });
 
   it('treats Unicode minus and dash variants as a negative sign', () => {
-    expect(parseAmount('\u2212361,00')).toBe(-36100);
-    expect(parseAmount('\u2013361,00')).toBe(-36100);
-    expect(parseAmount('\u2014361,00')).toBe(-36100);
-    expect(parseAmount('\u2010361,00')).toBe(-36100);
-    expect(parseAmount('\u2212 1,234.56')).toBe(-123456);
+    expect(parseAmount('−361,00')).toBe('-361');
+    expect(parseAmount('–361,00')).toBe('-361');
+    expect(parseAmount('—361,00')).toBe('-361');
+    expect(parseAmount('‐361,00')).toBe('-361');
+    expect(parseAmount('− 1,234.56')).toBe('-1234.56');
   });
 
   it('strips currency symbols and whitespace', () => {
-    expect(parseAmount('$1,000.00')).toBe(100000);
-    expect(parseAmount('€1.000,50')).toBe(100050);
-    expect(parseAmount('£10.00')).toBe(1000);
-    expect(parseAmount('¥1000')).toBe(100000);
-    expect(parseAmount('₴ 250.00')).toBe(25000);
-    expect(parseAmount('₽5')).toBe(500);
-    expect(parseAmount('  100.00  ')).toBe(10000);
+    expect(parseAmount('$1,000.00')).toBe('1000');
+    expect(parseAmount('€1.000,50')).toBe('1000.5');
+    expect(parseAmount('£10.00')).toBe('10');
+    expect(parseAmount('¥1000')).toBe('1000');
+    expect(parseAmount('₴ 250.00')).toBe('250');
+    expect(parseAmount('₽5')).toBe('5');
+    expect(parseAmount('  100.00  ')).toBe('100');
   });
 
-  it('rounds sub-cent precision to the nearest cent', () => {
-    expect(parseAmount('10.994')).toBe(1099);
-    expect(parseAmount('10.996')).toBe(1100);
+  it('returns a plain zero for a negative zero', () => {
+    expect(parseAmount('-0')).toBe('0');
+    expect(parseAmount('(0.00)')).toBe('0');
+  });
+
+  it('never returns exponent notation', () => {
+    expect(parseAmount('0.00000001')).toBe('0.00000001');
+    expect(parseAmount('1e3')).toBe('1000');
   });
 });

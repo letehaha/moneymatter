@@ -1,5 +1,6 @@
 import { TRANSACTION_TYPES, type OfxParseResult } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
+import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 const readOfxUpload = jest.fn<() => Promise<OfxParseResult>>();
@@ -7,6 +8,12 @@ const getTransactionsByArrayOfField = jest.fn<() => Promise<FakeTransaction[]>>(
 const findWithFilters = jest.fn<() => Promise<FakeTransaction[]>>();
 
 jest.mock('./upload-cache', () => ({ readOfxUpload: () => readOfxUpload() }));
+let mockAccountDecimals = 2;
+jest.mock('@services/import-export/core/duplicates/get-account-decimals', () => ({
+  __esModule: true,
+  getAccountDecimals: ({ accountIds }: { accountIds: string[] }) =>
+    Promise.resolve(new Map(accountIds.map((id) => [id, mockAccountDecimals]))),
+}));
 jest.mock('@models/transactions.model', () => ({
   __esModule: true,
   getTransactionsByArrayOfField: () => getTransactionsByArrayOfField(),
@@ -21,7 +28,7 @@ interface FakeTransaction {
   accountId: string;
   originalId: string | null;
   time: string;
-  amount: { toCents: () => number };
+  amount: Money;
   transactionType: TRANSACTION_TYPES;
   note: string;
 }
@@ -33,23 +40,25 @@ function transaction({
   accountId = ACCOUNT_ID,
   originalId = null,
   type = TRANSACTION_TYPES.expense,
+  amount = 5,
 }: {
   accountId?: string;
   originalId?: string | null;
   type?: TRANSACTION_TYPES;
+  amount?: number;
 }): FakeTransaction {
   return {
     id: generateRandomRecordId(),
     accountId,
     originalId,
     time: '2026-08-01T09:00:00.000Z',
-    amount: { toCents: () => 500 },
+    amount: Money.fromDecimal(amount),
     transactionType: type,
     note: 'Stored note',
   };
 }
 
-function parsedResult({ originalId }: { originalId?: string }): OfxParseResult {
+function parsedResult({ originalId, amount = '-5' }: { originalId?: string; amount?: string }): OfxParseResult {
   return {
     accounts: [
       {
@@ -60,7 +69,7 @@ function parsedResult({ originalId }: { originalId?: string }): OfxParseResult {
         accountType: 'CHECKING',
         currency: 'USD',
         transactionCount: 1,
-        netImportedAmount: '-5',
+        netImportedAmount: amount,
       },
     ],
     transactions: [
@@ -69,7 +78,7 @@ function parsedResult({ originalId }: { originalId?: string }): OfxParseResult {
         sourceAccountKey: SOURCE_ACCOUNT_KEY,
         sourceTransactionKey: originalId,
         date: '2026-08-01T16:00:00.000Z',
-        amount: '-5',
+        amount,
         type: TRANSACTION_TYPES.expense,
         payeeName: 'Example',
         note: 'Imported note',
@@ -93,6 +102,7 @@ async function detect() {
 
 describe('detectOfxDuplicates', () => {
   beforeEach(() => {
+    mockAccountDecimals = 2;
     readOfxUpload.mockReset();
     getTransactionsByArrayOfField.mockReset();
     getTransactionsByArrayOfField.mockResolvedValue([]);
@@ -146,5 +156,22 @@ describe('detectOfxDuplicates', () => {
       }),
     ]);
     expect(getTransactionsByArrayOfField).not.toHaveBeenCalled();
+  });
+
+  it('keys a FITID-less row at the account currency decimals', async () => {
+    mockAccountDecimals = 3;
+    readOfxUpload.mockResolvedValue(parsedResult({ amount: '-1.2345' }));
+
+    findWithFilters.mockResolvedValue([transaction({ amount: 1.231 })]);
+    expect((await detect()).duplicates).toEqual([]);
+
+    const matching = transaction({ amount: 1.235 });
+    findWithFilters.mockResolvedValue([transaction({ amount: 1.231 }), matching]);
+    expect((await detect()).duplicates).toEqual([
+      expect.objectContaining({
+        matchType: 'exact',
+        existingTransaction: expect.objectContaining({ id: matching.id, amount: 1.235 }),
+      }),
+    ]);
   });
 });

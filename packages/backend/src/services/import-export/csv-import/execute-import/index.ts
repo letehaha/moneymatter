@@ -20,6 +20,7 @@ import { logger } from '@js/utils/logger';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { getAccountDecimals } from '@services/import-export/core/duplicates/get-account-decimals';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
 import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
@@ -268,6 +269,10 @@ async function executeImportImpl({
     payeeNames: uniquePayeeNames,
   });
 
+  // A row amount keeps every digit the file wrote. It is rounded to its account's decimals before it
+  // is written and tallied, so the stored amount, the balance tally and the balance hook agree.
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(new Set(accountNameToId.values())) });
+
   // Create transactions
   const errors: ImportError[] = [];
   const newTransactionIds: string[] = [];
@@ -319,7 +324,7 @@ async function executeImportImpl({
       const rowTagIds = resolveRowTagIds({ tagNames: row.tagNames, tagNameToId });
       const hasImportedTags = rowTagIds.length > 0;
 
-      const rowAmount = Money.fromCents(row.amount);
+      const rowAmount = Money.fromDecimal(row.amount).round(decimalsByAccountId.get(accountId)!);
 
       // Service-layer createTransaction handles refAmount + currency from the
       // account, plus Payee extraction + payee_rule via `rawMerchantName` when
