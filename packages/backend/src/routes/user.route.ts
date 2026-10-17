@@ -18,7 +18,7 @@ import {
   updateCustomCurrency,
 } from '@controllers/currencies/custom-currencies';
 import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exchange-rate';
-import { updateCurrencyRateSource } from '@controllers/currencies/rate-source';
+import { findCoingeckoCoins, updateCurrencyRateSource } from '@controllers/currencies/rate-source';
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
 import {
@@ -104,6 +104,8 @@ router.post('/currencies', checkBaseCurrencyLock, addUserCurrencies);
 // Custom currencies change which decimals amounts round to, so they sit behind the same
 // base-currency guard as every other write that feeds amounts.
 router.get('/currencies/custom', listCustomCurrencies);
+// Coin lookup for the CoinGecko rate-source editor; read-only, so it is not behind the guard.
+router.get('/currencies/coingecko/search', findCoingeckoCoins);
 router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
 router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
 router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);

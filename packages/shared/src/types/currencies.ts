@@ -108,6 +108,15 @@ export interface CoingeckoRateSourceConfig {
   quoteCurrency: string;
 }
 
+/** One coin of `GET /user/currencies/coingecko/search`, the id a CoinGecko rate source is configured with. */
+export interface CoingeckoCoinSearchResult {
+  coinId: string;
+  symbol: string;
+  name: string;
+  logoUrl: string | null;
+  marketCapRank: number | null;
+}
+
 /**
  * A JSON endpoint called once per day. `urlTemplate` may hold `{date}`, `{code}` and `{quote}`;
  * `jsonPath` points at the price in the response, and the rate is stored in `quoteCurrency`.

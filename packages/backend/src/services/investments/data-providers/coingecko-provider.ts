@@ -1,5 +1,5 @@
 import { ASSET_CLASS, SECURITY_PROVIDER, SecuritySearchResult } from '@bt/shared/types/investments';
-import Coingecko from '@coingecko/coingecko-typescript';
+import type Coingecko from '@coingecko/coingecko-typescript';
 import { logger } from '@js/utils';
 import { subYears } from 'date-fns';
 
@@ -12,6 +12,7 @@ import {
   SecurityPriceFetchInput,
   toProviderSymbol,
 } from './base-provider';
+import { createCoingeckoClient } from './clients/coingecko-client';
 
 /**
  * CoinGecko Demo tier serves at most 1 year of daily/hourly history (5-minutely
@@ -74,7 +75,7 @@ export class CoinGeckoDataProvider extends BaseSecurityDataProvider {
 
   constructor({ apiKey }: { apiKey: string }) {
     super();
-    this.client = new Coingecko({ demoAPIKey: apiKey, environment: 'demo' });
+    this.client = createCoingeckoClient({ apiKey });
   }
 
   /**

@@ -1,5 +1,6 @@
 import type {
   BaseCurrencyChangeStatus,
+  CoingeckoCoinSearchResult,
   CreateCustomCurrencyBody,
   CurrencyRateSourceResponse,
   CustomCurrencyModel,
@@ -356,6 +357,20 @@ export function setCurrencyRateSource<R extends boolean | undefined = undefined>
     method: 'put',
     url: `/user/currencies/${code}/rate-source`,
     payload,
+    raw,
+  });
+}
+
+export function searchCoingeckoCoins<R extends boolean | undefined = undefined>({
+  query,
+  raw,
+}: {
+  query: string;
+  raw?: R;
+}) {
+  return makeRequest<CoingeckoCoinSearchResult[], R>({
+    method: 'get',
+    url: `/user/currencies/coingecko/search?query=${encodeURIComponent(query)}`,
     raw,
   });
 }
