@@ -4,11 +4,15 @@ import { logger } from '@js/utils/logger';
 import { getCliBinaryPath } from './cli-binaries';
 import { CliCredentialSource, runWithCliCredential } from './cli-credential-run';
 import { buildCodexEnv } from './cli-env';
+import { redactCliSecrets } from './cli-errors';
 import { runCliProcess } from './cli-process';
 import { CLI_LOGOUT_RUN_TIMEOUT_MS } from './cli-run-limiter';
 import { withTempDir } from './cli-workdir';
 
-/** How long a disconnect waits for a running job on the connection before it signs out regardless. */
+/**
+ * How long a disconnect waits for a running job on the connection. Past it the logout is skipped
+ * (logged) and the connection is deleted anyway.
+ */
 const LOGOUT_MAX_WAIT_MS = 30 * 1000;
 
 /**
@@ -39,7 +43,7 @@ export async function logoutCodexConnection({ source }: { source: CliCredentialS
             if (result.exitCode !== 0) {
               logger.warn('codex logout exited with a failure, the tokens may stay valid', {
                 exitCode: result.exitCode,
-                stderr: result.stderrTail.slice(-300),
+                stderr: redactCliSecrets({ text: result.stderrTail }).slice(-300),
               });
             }
           },
