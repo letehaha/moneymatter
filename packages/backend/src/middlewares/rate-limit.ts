@@ -333,3 +333,14 @@ export const logoSearchRateLimit = createRateLimit({
     return `logo-search:user:${user.id}`;
   },
 });
+
+/**
+ * Web Push device registration limit (per user, 30 writes per minute) for subscribe, sync, delete
+ * and unsubscribe. The app syncs once per load and a user taps the toggle by hand, so the budget
+ * only stops a runaway client or script.
+ */
+export const webPushSubscriptionRateLimit = perUserNonDevRateLimit({
+  prefix: 'web-push-subscription',
+  windowSeconds: 60,
+  maxAttempts: 30,
+});

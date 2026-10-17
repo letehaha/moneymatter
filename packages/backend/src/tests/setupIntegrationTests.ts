@@ -38,6 +38,7 @@ import { trackerScanQueue, trackerScanWorker } from '@services/trackers/smart-tr
 import { createAppUserWithUniqueUsername, seedUserDefaults } from '@services/user/create-user-with-defaults.service';
 import { STRIPE_TEST_WEBHOOK_SECRET, extractCookies, makeAuthRequest, makeRequest } from '@tests/helpers';
 import { startOfDay } from 'date-fns';
+import { generateVAPIDKeys } from 'web-push';
 
 import { resetSessionCounter } from './mocks/enablebanking/mock-api';
 import { setupMswServer } from './mocks/setup-mock-server';
@@ -151,6 +152,19 @@ if (missingEnvVars.length > 0) {
  * fail loud.
  */
 process.env.LOGO_DEV_SECRET_KEY = process.env.LOGO_DEV_SECRET_KEY || 'test';
+
+/**
+ * Web Push is on for the whole suite: a fresh VAPID pair per jest worker (`getWebPushConfig`
+ * validates that the two keys belong together), and an allowlist that admits the mocked push
+ * service hosts only, so a real push host is refused like any other.
+ */
+if (!process.env.VAPID_PUBLIC_KEY && !process.env.VAPID_PRIVATE_KEY) {
+  const vapidKeys = generateVAPIDKeys();
+  process.env.VAPID_PUBLIC_KEY = vapidKeys.publicKey;
+  process.env.VAPID_PRIVATE_KEY = vapidKeys.privateKey;
+}
+process.env.VAPID_SUBJECT ??= 'mailto:push-test@example.com';
+process.env.WEB_PUSH_ALLOWED_HOSTS ??= '*.push.example.test';
 
 /** Price-id map the billing fixtures and webhook mapping are written against. */
 process.env.STRIPE_ENV = 'test';
