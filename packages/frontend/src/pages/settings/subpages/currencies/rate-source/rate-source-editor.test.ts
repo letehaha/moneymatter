@@ -8,8 +8,9 @@ import { createI18n } from 'vue-i18n';
 import type { CurrencyWithExchangeRate } from '../types';
 import RateSourceEditor from './rate-source-editor.vue';
 
-const { mockUpdate, mockTest, mockSearch, mockAddSuccess } = vi.hoisted(() => ({
+const { mockUpdate, mockTest, mockSearch, mockAddSuccess, mockLoadHistory } = vi.hoisted(() => ({
   mockUpdate: vi.fn(),
+  mockLoadHistory: vi.fn(),
   mockTest: vi.fn(),
   mockSearch: vi.fn(),
   mockAddSuccess: vi.fn(),
@@ -19,6 +20,7 @@ vi.mock('@/api/currencies', () => ({
   updateCurrencyRateSource: mockUpdate,
   testCurrencyRateSource: mockTest,
   searchCoingeckoCoins: mockSearch,
+  loadCurrencyRateHistory: mockLoadHistory,
 }));
 
 vi.mock('@/components/notification-center', () => ({
@@ -47,13 +49,32 @@ vi.mock('@/stores', async () => {
   };
 });
 
-// The rate form has its own tests; here it only marks that the manual source rendered it.
+// The rate form has its own tests; here it only marks that the manual source rendered it and lets a
+// test report a saved rate.
 vi.mock('../currency-row/exchange-rate-form.vue', async () => {
   const { defineComponent, h } = await import('vue');
   return {
     default: defineComponent({
       name: 'ExchangeRateFormStub',
-      setup: () => () => h('div', { 'data-testid': 'manual-form' }),
+      emits: ['submit'],
+      setup:
+        (_, { emit }) =>
+        () =>
+          h('div', { 'data-testid': 'manual-form', onClick: () => emit('submit') }),
+    }),
+  };
+});
+
+// The tooltip needs its provider and has no part in these cases.
+vi.mock('@/components/lib/ui/tooltip', async () => {
+  const { defineComponent } = await import('vue');
+  return {
+    DesktopOnlyTooltip: defineComponent({
+      name: 'DesktopOnlyTooltipStub',
+      setup:
+        (_, { slots }) =>
+        () =>
+          slots.default?.(),
     }),
   };
 });
@@ -153,6 +174,7 @@ const save = async (wrapper: VueWrapper) => {
 describe('RateSourceEditor', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLoadHistory.mockResolvedValue({ items: [], totalCount: 0 });
     vi.stubGlobal(
       'ResizeObserver',
       class {
@@ -217,6 +239,63 @@ describe('RateSourceEditor', () => {
       await save(wrapper);
 
       expect(mockUpdate).toHaveBeenCalledWith({ code: 'BTC', body: { rateSource: 'manual' } });
+    });
+  });
+
+  describe('rate history', () => {
+    const storedRate = {
+      quoteCode: 'USD',
+      rate: 50000,
+      effectiveDate: '2026-10-01',
+      source: 'manual',
+      writtenAt: '2026-10-01T10:00:00.000Z',
+      isInForce: true,
+    };
+
+    it('lists the stored rates of the currency under the source form', async () => {
+      mockLoadHistory.mockResolvedValue({ items: [storedRate], totalCount: 1 });
+      const wrapper = mountEditor();
+      await flushPromises();
+
+      expect(mockLoadHistory).toHaveBeenCalledWith({ code: 'BTC', limit: expect.any(Number), offset: 0 });
+      expect(wrapper.find('[data-testid="rate-history-rate"]').text()).toBe('1 BTC = 50,000 USD');
+    });
+
+    it('follows the saved source, not the tab picked but not yet saved', async () => {
+      mockLoadHistory.mockResolvedValue({ items: [storedRate], totalCount: 1 });
+      const wrapper = mountEditor();
+      await flushPromises();
+      expect(wrapper.find('[data-testid="rate-history-edit"]').exists()).toBe(true);
+
+      await selectTab(wrapper, 'peg');
+
+      expect(wrapper.find('[data-testid="rate-history-edit"]').exists()).toBe(true);
+      expect(wrapper.find('[data-testid="rate-history-note"]').exists()).toBe(false);
+    });
+
+    it('reloads after a manual rate is saved and reports it', async () => {
+      const wrapper = mountEditor();
+      await flushPromises();
+      mockLoadHistory.mockClear();
+
+      await wrapper.find('[data-testid="manual-form"]').trigger('click');
+      await flushPromises();
+
+      expect(mockLoadHistory).toHaveBeenCalledTimes(1);
+      expect(wrapper.emitted('submit')).toHaveLength(1);
+    });
+
+    it('reloads after the source is saved', async () => {
+      const wrapper = mountEditor();
+      await flushPromises();
+      mockLoadHistory.mockClear();
+
+      await selectTab(wrapper, 'peg');
+      await wrapper.find('[data-testid="rate-source-peg-currency"]').setValue('USD');
+      await setInput(wrapper, 'rate-source-peg-factor', '1');
+      await save(wrapper);
+
+      expect(mockLoadHistory).toHaveBeenCalledTimes(1);
     });
   });
 

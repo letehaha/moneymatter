@@ -3,6 +3,7 @@ import {
   type BaseCurrencyChangeStatus,
   type CoingeckoCoinSearchResult,
   type CreateCustomCurrencyBody,
+  type CurrencyRateHistoryResponse,
   type CurrencyRateSourceResponse,
   CurrencyModel,
   type CustomCurrencyModel,
@@ -134,3 +135,18 @@ export const testCurrencyRateSource = ({
 /** Coins matching a query, for the CoinGecko source editor. */
 export const searchCoingeckoCoins = ({ query }: { query: string }): Promise<CoingeckoCoinSearchResult[]> =>
   api.get('/user/currencies/coingecko/search', { query });
+
+/**
+ * Stored rates of a custom currency, latest first. Only the first page (`offset` 0) carries
+ * `totalCount`.
+ */
+export const loadCurrencyRateHistory = ({
+  code,
+  limit,
+  offset,
+}: {
+  code: string;
+  limit: number;
+  offset: number;
+}): Promise<CurrencyRateHistoryResponse> =>
+  api.get(`/user/currencies/${encodeURIComponent(code)}/rate-history`, { limit, offset });

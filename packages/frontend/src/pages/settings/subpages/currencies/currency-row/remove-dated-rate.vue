@@ -1,59 +1,33 @@
 <template>
-  <div>
-    <Button
-      type="button"
-      variant="ghost-destructive"
-      size="sm"
-      :disabled="isFormDisabled"
-      data-testid="manual-rate-remove"
-      @click="isConfirmOpen = true"
-    >
-      <Trash2Icon class="size-4" />
-      {{ $t('settings.currencies.rateSource.manual.removeButton') }}
-    </Button>
-
-    <ResponsiveAlertDialog
-      v-model:open="isConfirmOpen"
-      :confirm-label="$t('settings.currencies.rateSource.manual.removeConfirm')"
-      confirm-variant="destructive"
-      :confirm-disabled="isFormDisabled"
-      @confirm="removeRate"
-    >
-      <template #title>{{ $t('settings.currencies.rateSource.manual.removeTitle') }}</template>
-      <template #description>
-        {{ $t('settings.currencies.rateSource.manual.removeDescription', { code: currency.currencyCode }) }}
-      </template>
-
-      <DateField
-        v-model="removalDate"
-        mode="date"
-        class="mt-2"
-        :label="$t('settings.currencies.rateSource.manual.removeDateLabel')"
-        :calendar-options="removalDateOptions"
-        data-testid="manual-rate-remove-date"
-      />
-    </ResponsiveAlertDialog>
-  </div>
+  <ResponsiveAlertDialog
+    v-model:open="open"
+    :confirm-label="$t('settings.currencies.rateSource.manual.removeConfirm')"
+    confirm-variant="destructive"
+    :confirm-disabled="isFormDisabled"
+    @confirm="removeRate"
+  >
+    <template #title>{{ $t('settings.currencies.rateSource.manual.removeTitle') }}</template>
+    <template #description>
+      {{ $t('settings.currencies.rateSource.manual.removeDescription', { code, date: displayDate }) }}
+    </template>
+  </ResponsiveAlertDialog>
 </template>
 
 <script setup lang="ts">
 import { deleteCustomRate } from '@/api/currencies';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
-import DateField from '@/components/fields/date-field.vue';
-import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { extractApiErrorMessage } from '@/js/errors';
-import { format } from 'date-fns';
-import { Trash2Icon } from '@lucide/vue';
-import { ref } from 'vue';
+import { format, parseISO } from 'date-fns';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import type { CurrencyWithExchangeRate } from '../types';
-
-const API_DATE_FORMAT = 'yyyy-MM-dd';
-
 const props = defineProps<{
-  currency: CurrencyWithExchangeRate;
+  code: string;
+  /** The currency the rate is quoted in. */
+  quoteCode: string;
+  /** The day (`yyyy-MM-dd`) the rate to remove starts to apply. */
+  effectiveDate: string;
   isFormDisabled: boolean;
 }>();
 
@@ -62,26 +36,25 @@ const emit = defineEmits<{
   'trigger-disabled': [value: boolean];
 }>();
 
+const open = defineModel<boolean>('open', { default: false });
+
 const { t } = useI18n();
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 
-const isConfirmOpen = ref(false);
-const removalDate = ref(new Date());
-const removalDateOptions = { maxDate: new Date() };
+const displayDate = computed(() => format(parseISO(props.effectiveDate), 'PP'));
 
 // Both directions of the pair go together, as the API requires. Only the rate that starts on the
-// chosen day is removed; the days it covered fall back to the earlier rate.
+// row's day is removed; the days it covered fall back to the earlier rate.
 const removeRate = async () => {
-  const effectiveDate = format(removalDate.value, API_DATE_FORMAT);
-  const { currencyCode, quoteCode } = props.currency;
+  const { code, quoteCode, effectiveDate } = props;
 
   emit('trigger-disabled', true);
   try {
     await deleteCustomRate([
-      { baseCode: currencyCode, quoteCode, effectiveDate },
-      { baseCode: quoteCode, quoteCode: currencyCode, effectiveDate },
+      { baseCode: code, quoteCode, effectiveDate },
+      { baseCode: quoteCode, quoteCode: code, effectiveDate },
     ]);
-    isConfirmOpen.value = false;
+    open.value = false;
     addSuccessNotification(t('settings.currencies.rateSource.manual.successfullyRemoved'));
     emit('submit');
   } catch (error) {

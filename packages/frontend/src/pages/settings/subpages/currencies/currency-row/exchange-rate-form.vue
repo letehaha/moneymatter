@@ -47,14 +47,6 @@
         <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
         {{ $t('settings.currencies.rateSource.manual.datedHint') }}
       </p>
-
-      <RemoveDatedRate
-        class="mt-3"
-        :currency="currency"
-        :is-form-disabled="isFormDisabled"
-        @submit="emit('submit')"
-        @trigger-disabled="emit('trigger-disabled', $event)"
-      />
     </template>
 
     <label
@@ -96,23 +88,9 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { CurrencyWithExchangeRate } from '../types';
-import RemoveDatedRate from './remove-dated-rate.vue';
+import { calculateRatio } from './calculate-ratio';
 
 const API_DATE_FORMAT = 'yyyy-MM-dd';
-
-const RATIO_DIGITS = 6;
-// A custom currency can be worth a tiny fraction of its quote, so its inverse keeps significant
-// digits rather than a fixed number of decimals.
-const CUSTOM_RATIO_SIGNIFICANT_DIGITS = 12;
-
-const calculateRatio = ({ value, isCustomCurrency }: { value: number | string; isCustomCurrency: boolean }) => {
-  const num = 1 / Number(value);
-  const result = isCustomCurrency
-    ? Number(num.toPrecision(CUSTOM_RATIO_SIGNIFICANT_DIGITS))
-    : Math.round(num * 10 ** RATIO_DIGITS) / 10 ** RATIO_DIGITS;
-
-  return Number.isFinite(result) ? result : 0;
-};
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;

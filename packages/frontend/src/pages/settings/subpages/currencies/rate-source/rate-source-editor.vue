@@ -26,7 +26,7 @@
         v-if="savedSource === 'manual'"
         :currency="currency"
         :is-form-disabled="isFormDisabled"
-        @submit="emit('submit')"
+        @submit="handleRateSubmit"
         @trigger-disabled="emit('trigger-disabled', $event)"
       />
       <p v-else class="text-muted-foreground text-sm" data-testid="rate-source-manual-unsaved">
@@ -70,6 +70,16 @@
         {{ $t('settings.currencies.rateSource.saveButton') }}
       </Button>
     </div>
+
+    <div class="bg-border/60 h-px w-full" />
+
+    <RateHistoryList
+      :code="code"
+      :saved-source="savedSource"
+      :is-form-disabled="isBusy"
+      @changed="emit('submit')"
+      @trigger-disabled="emit('trigger-disabled', $event)"
+    />
   </section>
 </template>
 
@@ -90,6 +100,7 @@ import type { CurrencyWithExchangeRate } from '../types';
 import CoingeckoSourceForm from './coingecko-source-form.vue';
 import HttpSourceForm from './http-source-form.vue';
 import PegSourceForm from './peg-source-form.vue';
+import RateHistoryList from './rate-history-list.vue';
 import {
   EDITABLE_RATE_SOURCES,
   type EditableRateSource,
@@ -100,6 +111,7 @@ import {
   isDraftChanged,
   validateDraft,
 } from './rate-source-draft';
+import { useInvalidateRateHistory } from './use-rate-history';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
@@ -116,6 +128,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { addSuccessNotification } = useNotificationCenter();
+const invalidateRateHistory = useInvalidateRateHistory();
 
 const code = computed(() => props.currency.currencyCode);
 const saved = computed(() => ({
@@ -167,6 +180,8 @@ const { mutate, isPending } = useMutation({
   onSuccess: (response) => {
     resetDraft({ from: { rateSource: response.rateSource, rateSourceConfig: response.rateSourceConfig } });
     addSuccessNotification(t('settings.currencies.rateSource.successfullySaved'));
+    // A synced source stores rates of its own, and a peg or a switch back to manual changes how the kept ones apply.
+    invalidateRateHistory({ code: code.value });
     emit('changed');
   },
   onError: (error) => {
@@ -178,6 +193,11 @@ const { mutate, isPending } = useMutation({
     saveError.value = extractApiErrorMessage(error) || t('settings.currencies.rateSource.errors.saveFailed');
   },
 });
+
+const handleRateSubmit = () => {
+  invalidateRateHistory({ code: code.value });
+  emit('submit');
+};
 
 const isBusy = computed(() => isPending.value || props.isFormDisabled);
 

@@ -48,6 +48,8 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   exchangeRatePair: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'rate-pair'] as const,
   // append the search term when using
   coingeckoCoinSearch: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'coingecko-search'] as const,
+  // append the custom currency code when using
+  currencyRateHistory: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'rate-history'] as const,
 
   // widget balance trend
   widgetBalanceTrend: [transactionChange, securityPriceChange, ventureChange, 'widget-balance-trend'] as const,

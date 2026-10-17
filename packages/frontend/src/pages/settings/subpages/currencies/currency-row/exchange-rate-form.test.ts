@@ -47,26 +47,6 @@ vi.mock('@/components/fields/date-field.vue', async () => {
   };
 });
 
-vi.mock('@/components/common/responsive-alert-dialog.vue', async () => {
-  const { defineComponent, h } = await import('vue');
-  return {
-    default: defineComponent({
-      name: 'ResponsiveAlertDialogStub',
-      props: { open: { type: Boolean, default: false } },
-      emits: ['update:open', 'confirm'],
-      setup(props, { emit, slots }) {
-        return () =>
-          props.open
-            ? h('div', {}, [
-                slots.default?.(),
-                h('button', { 'data-testid': 'confirm', onClick: () => emit('confirm') }),
-              ])
-            : null;
-      },
-    }),
-  };
-});
-
 const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: { ...currenciesEn } } });
 
 const buildCurrency = ({ isCustom, rate = 0 }: { isCustom: boolean; rate?: number }): CurrencyWithExchangeRate =>
@@ -130,20 +110,10 @@ describe('ExchangeRateForm for a custom currency', () => {
     expect(wrapper.emitted('submit')).toHaveLength(1);
   });
 
-  it('removes the rate that starts on a chosen day, in both directions', async () => {
+  it('leaves removing a dated rate to the history list', () => {
     const wrapper = mountForm({ currency: buildCurrency({ isCustom: true, rate: 50000 }) });
-    const day = format(addDays(new Date(), -10), 'yyyy-MM-dd');
 
-    await wrapper.find('[data-testid="manual-rate-remove"]').trigger('click');
-    await wrapper.find('[data-testid="manual-rate-remove-date"]').setValue(day);
-    await wrapper.find('[data-testid="confirm"]').trigger('click');
-    await flushPromises();
-
-    expect(mockDelete).toHaveBeenCalledWith([
-      { baseCode: 'BTC', quoteCode: 'USD', effectiveDate: day },
-      { baseCode: 'USD', quoteCode: 'BTC', effectiveDate: day },
-    ]);
-    expect(wrapper.emitted('submit')).toHaveLength(1);
+    expect(wrapper.find('[data-testid="manual-rate-remove"]').exists()).toBe(false);
   });
 });
 
@@ -153,11 +123,10 @@ describe('ExchangeRateForm for an ISO currency', () => {
     mockEdit.mockResolvedValue({ rates: [], remeasure: { failed: 0 } });
   });
 
-  it('has no date field or rate removal, and sends no effective date', async () => {
+  it('has no date field, and sends no effective date', async () => {
     const wrapper = mountForm({ currency: buildCurrency({ isCustom: false, rate: 0.9 }) });
 
     expect(wrapper.find('[data-testid="manual-rate-effective-date"]').exists()).toBe(false);
-    expect(wrapper.find('[data-testid="manual-rate-remove"]').exists()).toBe(false);
 
     await wrapper.find('input[type="checkbox"], button[role="checkbox"]').trigger('click');
     await inputs(wrapper)[0]!.trigger('focus');

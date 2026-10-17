@@ -145,10 +145,8 @@
           "notSaved": "Save this source to enter rates by hand.",
           "effectiveFromLabel": "Effective from",
           "datedHint": "A rate applies from its date until the next one. A transaction uses the rate in effect on its own date.",
-          "removeButton": "Remove a rate",
           "removeTitle": "Remove a rate?",
-          "removeDescription": "Removes the rate of {code} that starts on the chosen date. The days it covered fall back to the earlier rate, or to no rate if there is none.",
-          "removeDateLabel": "Rate starting on",
+          "removeDescription": "Removes the rate of {code} that starts on {date}. The days it covered fall back to the earlier rate, or to no rate if there is none.",
           "removeConfirm": "Remove rate",
           "successfullyRemoved": "Rate removed",
           "errors": {
@@ -216,6 +214,25 @@
           "headerNameRequired": "Give every header a name",
           "headerNameDuplicate": "Header names must be unique",
           "saveFailed": "Unexpected error. The rate source is not saved."
+        },
+        "history": {
+          "title": "Rate history",
+          "startsOn": "From {date}",
+          "inForce": "In force",
+          "emptyTitle": "No rates yet",
+          "emptyDescription": "Rates you enter, or that the source fetches, are listed here.",
+          "emptyPegged": "{code} is valued by its peg and stores no rates.",
+          "peggedNote": "These manual rates are inactive while {code} is pegged. They apply again if the source goes back to Manual.",
+          "syncedNote": "The {source} source keeps these rates up to date, so they are read-only here.",
+          "connectToEdit": "Connect {quote} to edit this rate.",
+          "editButton": "Edit rate",
+          "removeButton": "Remove rate",
+          "showMore": "Show more",
+          "loadFailed": "The rates could not be loaded.",
+          "retryButton": "Try again",
+          "editTitle": "Edit rate",
+          "editDescription": "Changes the rate of {code} that starts on {date}.",
+          "successfullyUpdated": "Rate updated"
         }
       }
     }
