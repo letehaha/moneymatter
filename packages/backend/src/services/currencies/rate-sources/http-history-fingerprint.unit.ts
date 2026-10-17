@@ -40,6 +40,18 @@ describe('httpHistoryFingerprint', () => {
     },
   );
 
+  it.each(['sellToken', 'buyToken', 'srcToken', 'destToken', 'baseToken', 'monkey', 'tokenId', 'author'])(
+    'tells histories apart by the value of the asset parameter %s',
+    (name) => {
+      const withValue = (value: string) => ({
+        ...config,
+        urlTemplate: `https://rates.io/price/{code}?${name}=${value}&quote={quote}`,
+      });
+
+      expect(httpHistoryFingerprint(withValue('WETH'))).not.toBe(httpHistoryFingerprint(withValue('WBTC')));
+    },
+  );
+
   it('does not depend on the order of the query parameters or on a fragment', () => {
     const a = { ...config, urlTemplate: 'https://rates.io/p?a=1&b=2' };
     const b = { ...config, urlTemplate: 'https://rates.io/p?b=2&a=1#section' };
