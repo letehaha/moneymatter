@@ -14,6 +14,11 @@ import { QueryInterface, Transaction } from 'sequelize';
  *   rates are off (the user's own rates price it), which start on 'manual'.
  *   "rateSourceHeadersEncrypted" holds the request headers of an HTTP source (they usually carry an
  *   API key) as one encrypted blob, kept apart from the config so that no ordinary read returns it.
+ *   "rateSourceHttpFingerprint" identifies the HTTP source config whose rates are stored for the
+ *   currency (a hash of the URL without credential values, the JSON path and the quote currency).
+ *   A later save of an HTTP source keeps the stored rates when it hands over the same fingerprint,
+ *   because an HTTP source cannot fetch past days again. `null` until an HTTP source is saved; a
+ *   source saved before the column is matched through its saved config instead.
  *
  * A pair never had more than one row (an edit rewrote it), so the new key cannot collide. If two
  * rows of a pair do share a day, the one written last is kept.
@@ -55,7 +60,8 @@ const upStatements = (): string[] => [
   `ALTER TABLE "UsersCurrencies"
      ADD COLUMN "rateSource" VARCHAR(16) NOT NULL DEFAULT 'provider',
      ADD COLUMN "rateSourceConfig" JSONB,
-     ADD COLUMN "rateSourceHeadersEncrypted" TEXT;`,
+     ADD COLUMN "rateSourceHeadersEncrypted" TEXT,
+     ADD COLUMN "rateSourceHttpFingerprint" VARCHAR(64);`,
   `UPDATE "UsersCurrencies" held SET "rateSource" = 'manual'
      FROM "Currencies" currency
     WHERE currency."code" = held."currencyCode" AND (currency."isCustom" OR NOT held."liveRateUpdate");`,
@@ -63,7 +69,8 @@ const upStatements = (): string[] => [
 
 const downStatements = (): string[] => [
   `ALTER TABLE "UsersCurrencies"
-     DROP COLUMN "rateSourceHeadersEncrypted", DROP COLUMN "rateSourceConfig", DROP COLUMN "rateSource";`,
+     DROP COLUMN "rateSourceHttpFingerprint", DROP COLUMN "rateSourceHeadersEncrypted",
+     DROP COLUMN "rateSourceConfig", DROP COLUMN "rateSource";`,
   `DELETE FROM "UserExchangeRates" older
      USING "UserExchangeRates" newer
     WHERE older."userId" = newer."userId"

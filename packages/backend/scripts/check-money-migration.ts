@@ -899,6 +899,7 @@ const assertRateSourceColumns = async ({
   const rateSource = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSource' });
   const config = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceConfig' });
   const headers = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceHeadersEncrypted' });
+  const fingerprint = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceHttpFingerprint' });
   check({
     ok: after
       ? rateSource?.data_type === 'character varying' &&
@@ -915,6 +916,14 @@ const assertRateSourceColumns = async ({
   check({
     ok: after ? headers?.data_type === 'text' && headers.is_nullable === 'YES' : headers === undefined,
     label: `${step}: UsersCurrencies.rateSourceHeadersEncrypted is ${after ? 'a nullable text' : 'absent'}`,
+  });
+  check({
+    ok: after
+      ? fingerprint?.data_type === 'character varying' &&
+        fingerprint.character_maximum_length === 64 &&
+        fingerprint.is_nullable === 'YES'
+      : fingerprint === undefined,
+    label: `${step}: UsersCurrencies.rateSourceHttpFingerprint is ${after ? 'a nullable varchar(64)' : 'absent'}`,
   });
 };
 
