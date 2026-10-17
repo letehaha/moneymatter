@@ -213,7 +213,13 @@ const editableCurrency = computed<EditableCustomCurrency | null>(() => {
   const effective = props.currency.currency;
   if (!effective?.isCustom) return null;
 
-  return { code: effective.code, name: effective.currency, symbol: effective.symbol, decimals: effective.digits };
+  return {
+    code: effective.code,
+    name: effective.currency,
+    symbol: effective.symbol,
+    decimals: effective.digits,
+    logoUrl: props.currency.logoUrl ?? null,
+  };
 });
 const code = computed(() => props.currency.currency?.code ?? '');
 const baseCode = computed(() => baseCurrency.value?.currency?.code ?? '');

@@ -29,6 +29,8 @@ const props = withDefaults(
     size?: CurrencyIconSize;
     /** The account owner's definition of the code, when the icon sits on a shared account. */
     meta?: CurrencyMeta | null;
+    /** A logo to show instead of the one the user's currency list holds, for a preview before saving; `null` shows none. */
+    logoUrl?: string | null;
   }>(),
   { size: 'size-5', meta: null },
 );
@@ -40,7 +42,12 @@ const display = computed(() => resolveCurrencyDisplay({ code: props.code, meta: 
 const isCustom = computed(() => display.value.isCustom);
 
 // The logo belongs to the user's own definition of the code, so only their currency list carries it.
-const logoUrl = computed(() => (isCustom.value ? (currenciesStore.currenciesMap[props.code]?.logoUrl ?? null) : null));
+const logoUrl = computed(() => {
+  if (!isCustom.value) return null;
+  if (props.logoUrl !== undefined) return props.logoUrl;
+
+  return currenciesStore.currenciesMap[props.code]?.logoUrl ?? null;
+});
 
 const imageFailed = ref(false);
 

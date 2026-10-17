@@ -13,4 +13,6 @@ export interface EditableCustomCurrency {
   name: string;
   symbol: string | null;
   decimals: number;
+  /** The logo the user picked, if any. */
+  logoUrl?: string | null;
 }

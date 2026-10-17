@@ -63,6 +63,21 @@ describe('CurrencyIcon', () => {
     expect(wrapper.find('[data-testid="currency-icon-monogram"]').exists()).toBe(false);
   });
 
+  it('shows a logo handed in as a prop over the saved one, and none for null', () => {
+    const OTHER = 'https://coin-images.coingecko.com/coins/images/279/large/ethereum.png';
+    const holdings = [buildHolding({ code: 'BTC', logoUrl: LOGO })];
+
+    expect(
+      mountIcon({ code: 'BTC', holdings, props: { logoUrl: OTHER } })
+        .find('img')
+        .attributes('src'),
+    ).toBe(OTHER);
+
+    const cleared = mountIcon({ code: 'BTC', holdings, props: { logoUrl: null } });
+    expect(cleared.find('img').exists()).toBe(false);
+    expect(cleared.get('[data-testid="currency-icon-monogram"]').text()).toBe('₿');
+  });
+
   it('falls back to the monogram when the logo fails to load', async () => {
     const wrapper = mountIcon({ code: 'BTC', holdings: [buildHolding({ code: 'BTC', logoUrl: LOGO })] });
 

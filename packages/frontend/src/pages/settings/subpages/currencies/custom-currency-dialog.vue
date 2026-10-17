@@ -68,6 +68,38 @@
         {{ $t('settings.currencies.custom.preview', { value: previewLabel }) }}
       </p>
 
+      <div v-if="currency" class="grid gap-3" data-testid="custom-currency-logo">
+        <div class="flex items-center gap-3">
+          <CurrencyIcon :code="currency.code" size="size-8" :logo-url="logoUrl" />
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-medium">{{ $t('settings.currencies.custom.logo.label') }}</p>
+            <p class="text-muted-foreground text-xs leading-5">{{ $t('settings.currencies.custom.logo.hint') }}</p>
+          </div>
+          <Button
+            v-if="logoUrl"
+            type="button"
+            variant="outline"
+            size="sm"
+            :disabled="isPending"
+            data-testid="custom-currency-logo-clear"
+            @click="clearLogo"
+          >
+            {{ $t('settings.currencies.custom.logo.clear') }}
+          </Button>
+        </div>
+
+        <!-- Enter in the search box looks a coin up; it must not submit the whole form. -->
+        <div @keydown.enter.prevent>
+          <CoingeckoCoinSearch
+            :label="$t('settings.currencies.custom.logo.searchLabel')"
+            :placeholder="$t('settings.currencies.custom.logo.searchPlaceholder')"
+            :selected-coin-id="pickedCoinId"
+            :disabled="isPending"
+            @select="pickCoin({ coin: $event })"
+          />
+        </div>
+      </div>
+
       <Callout v-if="formError" variant="destructive" data-testid="custom-currency-error">
         <span>{{ formError }}</span>
       </Callout>
@@ -94,6 +126,7 @@
 
 <script setup lang="ts">
 import { createCustomCurrency, updateCustomCurrency } from '@/api/currencies';
+import CurrencyIcon from '@/components/common/currency-icon.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -108,6 +141,7 @@ import {
   CURRENCY_CODE_PATTERN,
   CUSTOM_CURRENCY_DECIMALS_MAX,
   CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
+  type CoingeckoCoinSearchResult,
   type CurrencyMeta,
 } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
@@ -115,6 +149,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import CoingeckoCoinSearch from './coingecko-coin-search.vue';
 import type { EditableCustomCurrency } from './types';
 import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 
@@ -157,12 +192,40 @@ const buildFormState = (): CustomCurrencyForm => ({
 const form = ref<CustomCurrencyForm>(buildFormState());
 const formError = ref<string | null>(null);
 
+// The logo is kept apart from the form: it is sent only once the user changed it, so editing the
+// other fields never rewrites (or clears) a logo the dialog did not touch.
+const logoUrl = ref<string | null>(props.currency?.logoUrl ?? null);
+const isLogoTouched = ref(false);
+const pickedCoinId = ref<string | undefined>(undefined);
+
+const resetLogo = () => {
+  logoUrl.value = props.currency?.logoUrl ?? null;
+  isLogoTouched.value = false;
+  pickedCoinId.value = undefined;
+};
+
 watch(open, (isOpen) => {
   if (!isOpen) return;
   form.value = buildFormState();
   formError.value = null;
+  resetLogo();
   resetValidation();
 });
+
+// A coin without an image has nothing to pick, so it leaves the logo as it is.
+const pickCoin = ({ coin }: { coin: CoingeckoCoinSearchResult }) => {
+  if (!coin.logoUrl) return;
+
+  logoUrl.value = coin.logoUrl;
+  isLogoTouched.value = true;
+  pickedCoinId.value = coin.coinId;
+};
+
+const clearLogo = () => {
+  logoUrl.value = null;
+  isLogoTouched.value = true;
+  pickedCoinId.value = undefined;
+};
 
 const onCodeInput = (value: string | number | null) => {
   form.value.code = String(value ?? '')
@@ -235,6 +298,7 @@ const { mutate, isPending } = useMutation({
         code: props.currency.code,
         ...payload,
         ...(decimals !== props.currency.decimals && decimals !== null ? { decimals } : {}),
+        ...(isLogoTouched.value ? { logoUrl: logoUrl.value } : {}),
       });
     }
 

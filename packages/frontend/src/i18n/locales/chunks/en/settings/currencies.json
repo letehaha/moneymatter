@@ -110,6 +110,13 @@
         "rateHint": "A custom currency has no market rate. Set its rate against {code} so transactions can be valued in your base currency; without a rate they are saved without a base-currency amount.",
         "successfullyCreated": "Custom currency added",
         "successfullyUpdated": "Custom currency updated",
+        "logo": {
+          "label": "Logo",
+          "hint": "Shown next to the code wherever the currency appears. Without one, a monogram is drawn.",
+          "clear": "Clear logo",
+          "searchLabel": "Pick a logo from CoinGecko",
+          "searchPlaceholder": "Search by name or symbol, for example Bitcoin"
+        },
         "errors": {
           "codeRequired": "Enter a code",
           "codeFormat": "Use 2 to 16 capital letters or digits",
