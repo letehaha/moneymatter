@@ -1,15 +1,14 @@
 import type { CreateCustomCurrencyBody, CustomCurrencyModel, UpdateCustomCurrencyBody } from '@bt/shared/types';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
+import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import { ConflictError, NotFoundError } from '@js/errors';
-import { CacheClient } from '@js/utils/cache';
+import { ConflictError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import { connection } from '@models/index';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { insertOrAdopt } from '@services/common/run-in-savepoint';
 import { withTransaction } from '@services/common/with-transaction';
-import { buildRefAmountCachePattern } from '@services/ref-amount-cache';
 import cc from 'currency-codes';
 import { Op, QueryTypes } from 'sequelize';
 
@@ -65,20 +64,11 @@ const findOwnCustomCurrency = async ({ userId, code }: { userId: number; code: s
     include: [{ model: Currencies, as: 'currency', where: { isCustom: true }, required: true }],
   }) as Promise<(UsersCurrencies & { currency: Currencies }) | null>;
 
-const requireOwnCustomCurrency = async ({ userId, code }: { userId: number; code: string }) => {
-  const held = await findOwnCustomCurrency({ userId, code });
-
-  if (!held) {
-    throw new NotFoundError({ message: t({ key: 'currencies.customCurrencyNotFound', variables: { code } }) });
-  }
-
-  return held;
-};
-
-const dropCachedRefAmounts = ({ userId }: { userId: number }) =>
-  // The converted-amount cache key carries no decimals, so entries made under the old definition
-  // would keep serving amounts rounded to it.
-  new CacheClient({ logPrefix: 'custom-currencies' }).delete(buildRefAmountCachePattern({ userId }), true);
+const requireOwnCustomCurrency = ({ userId, code }: { userId: number; code: string }) =>
+  findOrThrowNotFound({
+    query: findOwnCustomCurrency({ userId, code }),
+    message: t({ key: 'currencies.customCurrencyNotFound', variables: { code } }),
+  });
 
 export const listCustomCurrencies = async ({ userId }: { userId: number }): Promise<CustomCurrencyModel[]> => {
   const held = (await UsersCurrencies.findAll({
@@ -167,10 +157,7 @@ const updateCustomCurrencyImpl = async ({
     ...(decimals !== undefined && { decimalsOverride: decimals }),
   });
 
-  return {
-    decimalsChanged,
-    currency: toCustomCurrencyModel(applyCurrencyOverrides({ currency: held.currency, overrides: held })),
-  };
+  return toCustomCurrencyModel(applyCurrencyOverrides({ currency: held.currency, overrides: held }));
 };
 
 const updateCustomCurrencyInTx = withTransaction(updateCustomCurrencyImpl);
@@ -178,11 +165,11 @@ const updateCustomCurrencyInTx = withTransaction(updateCustomCurrencyImpl);
 export const updateCustomCurrency = async (
   params: UpdateCustomCurrencyBody & { userId: number; code: string },
 ): Promise<CustomCurrencyModel> => {
-  const { currency, decimalsChanged } = await updateCustomCurrencyInTx(params);
+  const currency = await updateCustomCurrencyInTx(params);
 
   // After the commit, so a concurrent read cannot repopulate the cache from the old definition.
+  // The converted-amount cache needs no drop: it never holds a conversion with a custom side.
   invalidateCurrencyDecimalsCache({ userId: params.userId, code: params.code });
-  if (decimalsChanged) await dropCachedRefAmounts({ userId: params.userId });
 
   return currency;
 };
@@ -212,5 +199,4 @@ export const deleteCustomCurrency = async ({ userId, code }: { userId: number; c
   await deleteCustomCurrencyInTx({ userId, code });
 
   invalidateCurrencyDecimalsCache({ userId, code });
-  await dropCachedRefAmounts({ userId });
 };
