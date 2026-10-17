@@ -85,6 +85,8 @@ const leaveMutation = useMutation({
     // the bucket the row didn't live in, so we don't need to branch on `resourceType`.
     queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.allAccounts });
     queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsList });
+    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsListItem });
+    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetStats });
     leaveOpen.value = false;
     leaveTarget.value = null;
   },

@@ -1,29 +1,32 @@
+import type { EditBudgetPayload } from '@/api/budgets';
+
 interface BudgetEditFormValues {
   name: string;
-  limitAmount: number | null | undefined;
-  categoryIds: string[];
+  limitAmount: number | string | null | undefined;
+  startDate: Date | null;
+  endDate: Date | null;
+  /** Only for category trackers. */
+  categoryIds?: string[];
 }
 
-export interface BudgetEditPayload {
-  name: string;
-  categoryIds: string[];
-  limitAmount?: number;
-}
+export type BudgetEditPayload = Required<Pick<EditBudgetPayload, 'name' | 'limitAmount' | 'startDate' | 'endDate'>> &
+  Pick<EditBudgetPayload, 'categoryIds'>;
 
-/**
- * Builds the payload sent to the edit-budget endpoint from the form values.
- *
- * `limitAmount` is only included when it's a finite number greater than zero.
- * The endpoint validates `limitAmount` as a positive number and treats an
- * absent key as "leave the limit unchanged", so a budget with no limit must
- * omit the field entirely rather than send `0` (which fails validation).
- */
-export const buildBudgetEditPayload = ({ name, limitAmount, categoryIds }: BudgetEditFormValues): BudgetEditPayload => {
-  const payload: BudgetEditPayload = { name, categoryIds };
+/** Anything but a positive finite number clears the limit (`null`). */
+export const buildBudgetEditPayload = ({
+  name,
+  limitAmount,
+  startDate,
+  endDate,
+  categoryIds,
+}: BudgetEditFormValues): BudgetEditPayload => {
+  const limit = limitAmount === '' || limitAmount == null ? NaN : Number(limitAmount);
 
-  if (typeof limitAmount === 'number' && Number.isFinite(limitAmount) && limitAmount > 0) {
-    payload.limitAmount = limitAmount;
-  }
-
-  return payload;
+  return {
+    name,
+    limitAmount: Number.isFinite(limit) && limit > 0 ? limit : null,
+    startDate: startDate ? startDate.toISOString() : null,
+    endDate: endDate ? endDate.toISOString() : null,
+    ...(categoryIds ? { categoryIds } : {}),
+  };
 };

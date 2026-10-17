@@ -64,7 +64,7 @@ const RAW_CATEGORIES: RawCategory[] = [
     tasks: [
       { id: 'create-category', route: ROUTES_NAMES.settingsCategories },
       { id: 'create-tag', route: ROUTES_NAMES.settingsTags },
-      { id: 'create-budget', route: ROUTES_NAMES.budgets },
+      { id: 'create-budget', route: ROUTES_NAMES.plannedBudgets },
       { id: 'create-account-group', route: ROUTES_NAMES.settingsAccounts },
       { id: 'setup-tag-reminder', route: ROUTES_NAMES.settingsTags },
       { id: 'create-subscription', route: ROUTES_NAMES.plannedSubscriptions },

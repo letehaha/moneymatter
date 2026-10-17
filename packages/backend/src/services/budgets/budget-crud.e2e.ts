@@ -213,6 +213,73 @@ describe('Budget CRUD', () => {
       const budgetById = await helpers.getCustomBudgetById({ id: budget.id, raw: true });
       expect(budgetById?.limitAmount).toBe(baseBudgetMockData.limitAmount);
     }, 60_000);
+
+    it('rejects a partial date edit that inverts the stored range', async () => {
+      const budget = await helpers.createCustomBudget({
+        ...baseBudgetMockData,
+        startDate: '2025-03-10T00:00:00.000Z',
+        endDate: '2025-03-31T00:00:00.000Z',
+        raw: true,
+      });
+
+      const response = await helpers.editCustomBudget({
+        id: budget.id,
+        params: { endDate: '2025-03-01T00:00:00.000Z' },
+        raw: false,
+      });
+      expect(response.statusCode).toEqual(ERROR_CODES.ValidationError);
+
+      const budgetById = await helpers.getCustomBudgetById({ id: budget.id, raw: true });
+      expect(budgetById).toMatchObject({
+        startDate: '2025-03-10T00:00:00.000Z',
+        endDate: '2025-03-31T00:00:00.000Z',
+      });
+    });
+
+    it('persists archivePromptDismissed', async () => {
+      const budget = await helpers.createCustomBudget({ ...baseBudgetMockData, raw: true });
+      expect(budget.archivePromptDismissed).toBe(false);
+
+      await helpers.editCustomBudget({ id: budget.id, params: { archivePromptDismissed: true }, raw: true });
+
+      const budgetById = await helpers.getCustomBudgetById({ id: budget.id, raw: true });
+      expect(budgetById?.archivePromptDismissed).toBe(true);
+    });
+
+    it('keeps autoInclude when the payload omits it', async () => {
+      const budget = await helpers.createCustomBudget({ ...baseBudgetMockData, autoInclude: true, raw: true });
+
+      const renamed = await helpers.editCustomBudget({ id: budget.id, params: { name: 'Renamed' }, raw: true });
+
+      expect(renamed.autoInclude).toBe(true);
+      const budgetById = await helpers.getCustomBudgetById({ id: budget.id, raw: true });
+      expect(budgetById?.autoInclude).toBe(true);
+    });
+
+    it('clears the limit and the dates with null', async () => {
+      const budget = await helpers.createCustomBudget({ ...baseBudgetMockData, raw: true });
+
+      const cleared = await helpers.editCustomBudget({
+        id: budget.id,
+        params: { limitAmount: null, startDate: null, endDate: null },
+        raw: true,
+      });
+
+      expect(cleared).toMatchObject({ limitAmount: null, startDate: null, endDate: null });
+      const budgetById = await helpers.getCustomBudgetById({ id: budget.id, raw: true });
+      expect(budgetById).toMatchObject({ limitAmount: null, startDate: null, endDate: null });
+    });
+
+    it('persists new start and end dates', async () => {
+      const budget = await helpers.createCustomBudget({ ...baseBudgetMockData, raw: true });
+      const startDate = '2025-06-01T00:00:00.000Z';
+      const endDate = '2025-06-30T23:59:59.000Z';
+
+      await helpers.editCustomBudget({ id: budget.id, params: { startDate, endDate }, raw: true });
+
+      const [budgetById] = (await helpers.getCustomBudgets({ raw: true })).filter((b) => b.id === budget.id);
+      expect(budgetById).toMatchObject({ startDate, endDate });
+    });
   });
 
   describe('Delete', () => {
@@ -357,6 +424,21 @@ describe('Budget CRUD', () => {
       });
       expect(unarchived.status).toBe(BUDGET_STATUSES.active);
     }, 60_000);
+
+    it("returns the tracker's lines in the archive toggle response", async () => {
+      const category = await helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true });
+      const budget = await helpers.createCustomBudget({ name: 'With lines', raw: true });
+      const line = await helpers.createTrackerLine({
+        budgetId: budget.id,
+        payload: { name: 'Food', categoryIds: [category.id] },
+        raw: true,
+      });
+
+      const archived = await helpers.archiveCustomBudget({ id: budget.id, isArchived: true, raw: true });
+
+      expect(archived.lines!.map((l) => l.id)).toEqual([line.id]);
+      expect(archived.lines![0]!.categories.map((c) => c.id)).toEqual([category.id]);
+    });
 
     it('returns 404 when archiving a non-existent budget', async () => {
       const response = await helpers.archiveCustomBudget({

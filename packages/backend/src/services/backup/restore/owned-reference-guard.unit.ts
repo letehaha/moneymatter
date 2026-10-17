@@ -44,6 +44,8 @@ const EXPECTED_GUARDED_COLUMNS: Record<string, string[]> = {
   'subscription-transactions': ['subscriptionId', 'transactionId'],
   subscriptions: ['accountId', 'categoryId', 'payeeId'],
   'tag-reminders': ['tagId'],
+  'tracker-line-categories': ['categoryId', 'lineId'],
+  'tracker-lines': ['budgetId'],
   'transaction-group-items': ['groupId', 'transactionId'],
   'transaction-splits': ['categoryId', 'transactionId'],
   'transaction-tags': ['tagId', 'transactionId'],

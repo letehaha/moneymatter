@@ -2,6 +2,7 @@ import { BUDGET_STATUSES, SHARE_PERMISSIONS } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Budgets from '@models/budget.model';
+import { includeLines } from '@services/budget.service';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { authorizeBudgetAccess } from './authorize-budget-access';
@@ -17,7 +18,7 @@ export const toggleBudgetArchive = withTransaction(
     });
 
     const budget = await findOrThrowNotFound({
-      query: Budgets.findOne({ where: { id, userId: ownerUserId } }),
+      query: Budgets.findOne({ where: { id, userId: ownerUserId }, include: [includeLines] }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
 

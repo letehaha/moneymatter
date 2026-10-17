@@ -2,18 +2,58 @@ import { API_ERROR_CODES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { ConflictError, ValidationError } from '@js/errors';
 import * as Categories from '@models/categories.model';
+import TrackerLineCategories from '@models/tracker-line-categories.model';
+import TrackerLines from '@models/tracker-lines.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
 import { mergeLinesOnCategoryDelete } from '@services/budget-plans/merge-lines-on-category-delete';
 import { withTransaction } from '@services/common/with-transaction';
 import { pauseAutomationsReferencing, rewriteAutomationRef } from '@services/transaction-automations/references';
 import { repointSplits } from '@services/transactions/splits/repoint-splits';
+import { Op } from 'sequelize';
 
 import { countCategoryTransactions } from './count-category-transactions';
 
 interface DeleteCategoryPayload extends Categories.DeleteCategoryPayload {
   replaceWithCategoryId?: string;
 }
+
+/** Without a replacement, a tracker line left with no categories is deleted. */
+const mergeTrackerLinesOnCategoryDelete = async ({
+  categoryId,
+  replacementCategoryId,
+}: {
+  categoryId: string;
+  replacementCategoryId: string | null;
+}): Promise<void> => {
+  const rows = await TrackerLineCategories.findAll({ where: { categoryId }, attributes: ['lineId'] });
+  const lineIds = rows.map((row) => row.lineId);
+  if (!lineIds.length) return;
+
+  if (replacementCategoryId) {
+    const holders = await TrackerLineCategories.findAll({
+      where: { lineId: { [Op.in]: lineIds }, categoryId: replacementCategoryId },
+      attributes: ['lineId'],
+    });
+    const holderIds = new Set(holders.map((row) => row.lineId));
+    const repointIds = lineIds.filter((lineId) => !holderIds.has(lineId));
+    if (repointIds.length) {
+      await TrackerLineCategories.update(
+        { categoryId: replacementCategoryId },
+        { where: { categoryId, lineId: { [Op.in]: repointIds } } },
+      );
+    }
+    return;
+  }
+
+  const survivors = await TrackerLineCategories.findAll({
+    where: { lineId: { [Op.in]: lineIds }, categoryId: { [Op.ne]: categoryId } },
+    attributes: ['lineId'],
+  });
+  const survivorIds = new Set(survivors.map((row) => row.lineId));
+  const emptiedIds = lineIds.filter((lineId) => !survivorIds.has(lineId));
+  if (emptiedIds.length) await TrackerLines.destroy({ where: { id: { [Op.in]: emptiedIds } } });
+};
 
 export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayload) => {
   const category = await findOrThrowNotFound({
@@ -97,6 +137,7 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
     categoryId: category.id,
     replacementCategoryId: replacement?.id ?? null,
   });
+  await mergeTrackerLinesOnCategoryDelete({ categoryId: category.id, replacementCategoryId: replacement?.id ?? null });
 
   await Categories.deleteCategory(payload);
 });

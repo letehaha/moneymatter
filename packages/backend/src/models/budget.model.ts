@@ -5,10 +5,11 @@ import { MoneyField } from '@common/types/money-column';
 import Categories from '@models/categories.model';
 import Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
-import { Table, Column, Model, ForeignKey, DataType, BelongsToMany } from 'sequelize-typescript';
+import { Table, Column, Model, ForeignKey, DataType, BelongsToMany, HasMany } from 'sequelize-typescript';
 
 import BudgetCategories from './budget-categories.model';
 import BudgetTransactions from './budget-transactions.model';
+import TrackerLines from './tracker-lines.model';
 
 /**
  * Shown to users as a "Tracker": watches spending over a date range, by linked
@@ -43,6 +44,9 @@ export default class Budgets extends Model {
   @Column({ defaultValue: false, type: DataType.BOOLEAN })
   autoInclude!: boolean;
 
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  archivePromptDismissed!: boolean;
+
   @MoneyField({ storage: 'cents', allowNull: true })
   declare limitAmount: Money;
 
@@ -63,4 +67,7 @@ export default class Budgets extends Model {
     otherKey: 'categoryId',
   })
   categories!: Categories[];
+
+  @HasMany(() => TrackerLines, { foreignKey: 'budgetId', onDelete: 'CASCADE' })
+  lines?: TrackerLines[];
 }

@@ -12,11 +12,13 @@ import { useNotificationCenter } from '@/components/notification-center';
 import { ApiErrorResponseError } from '@/js/errors';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { cn } from '@/lib/utils';
+import { ROUTES_NAMES } from '@/routes/constants';
 import { useOnboardingStore } from '@/stores/onboarding';
 import { BUDGET_TYPES } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRouter } from 'vue-router';
 
 const BUDGET_DEFAULT_VALUES: {
   id: string | null;
@@ -45,12 +47,14 @@ const { t } = useI18n();
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 
 const queryClient = useQueryClient();
+const router = useRouter();
 const form = ref({ ...BUDGET_DEFAULT_VALUES });
+const splitIntoLines = ref(false);
 const categoriesFieldTouched = ref(false);
 
 const { isPending: isMutating, mutate: createBudgetItem } = useMutation({
   mutationFn: createBudget,
-  onSuccess: () => {
+  onSuccess: (created) => {
     queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsList });
     trackAnalyticsEvent({ event: 'budget_created' });
 
@@ -60,6 +64,14 @@ const { isPending: isMutating, mutate: createBudgetItem } = useMutation({
 
     emits('create-budget');
     addSuccessNotification(t('budgets.creation.success'));
+
+    if (splitIntoLines.value) {
+      router.push({
+        name: ROUTES_NAMES.plannedBudgetDetails,
+        params: { id: created.id },
+        query: { tab: 'limits', addLine: '1' },
+      });
+    }
   },
   onError(error) {
     if (error instanceof ApiErrorResponseError) {
@@ -182,6 +194,11 @@ const onBudgetTypeChange = (type: BUDGET_TYPES) => {
         :placeholder="$t('budgets.creation.limitPlaceholder')"
       />
     </div>
+
+    <label class="flex cursor-pointer items-center gap-2">
+      <Checkbox v-model="splitIntoLines" />
+      {{ $t('budgets.creation.splitIntoLines') }}
+    </label>
 
     <div class="mt-4">
       <Button :disabled="isSubmitDisabled" type="submit">{{ $t('budgets.creation.submitButton') }}</Button>

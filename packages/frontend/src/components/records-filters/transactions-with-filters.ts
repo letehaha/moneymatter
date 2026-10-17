@@ -161,6 +161,7 @@ export const useTransactionsWithFilters = ({
     isFetchingNextPage,
     isFetched,
     isFetching,
+    isError,
   } = useInfiniteQuery({
     queryKey,
     queryFn: ({ pageParam }) => fetchTransactions({ pageParam, filter: appliedFilters.value }),
@@ -203,6 +204,7 @@ export const useTransactionsWithFilters = ({
     isFetchingNextPage,
     isFetched,
     isFetching,
+    isError,
     transactionsListRef,
     invalidate,
     matching,

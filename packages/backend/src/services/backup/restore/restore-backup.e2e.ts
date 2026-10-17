@@ -194,6 +194,11 @@ async function seedRichData() {
     raw: true,
   });
   await helpers.addTransactionToCustomBudget({ id: budget.id, payload: { transactionIds: [expense!.id] }, raw: true });
+  await helpers.createTrackerLine({
+    budgetId: budget.id,
+    payload: { name: 'Groceries', categoryIds: [childCategory.id] },
+    raw: true,
+  });
 
   // Subscription (generates periods).
   await helpers.createSubscription({
@@ -427,6 +432,8 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       expect((firstArchive.readData({ name: 'transaction-templates' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'transaction-template-tags' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'category-tags' }) as unknown[]).length).toBeGreaterThan(0);
+      expect((firstArchive.readData({ name: 'tracker-lines' }) as unknown[]).length).toBeGreaterThan(0);
+      expect((firstArchive.readData({ name: 'tracker-line-categories' }) as unknown[]).length).toBeGreaterThan(0);
 
       const restore = await helpers.restoreBackup({ fileContent: first.base64 });
       expect(restore.statusCode).toBe(200);
@@ -678,6 +685,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect(targetAccountIds.has(ruleAccountIds[0]!)).toBe(true);
 
           const targetCategoryIds = new Set<string>((await helpers.getCategoriesList()).map((row) => row.id));
+
+          const restoredTracker = (await helpers.getCustomBudgets({ raw: true })).find((row) => row.name === 'Monthly');
+          const lineCategoryIds = restoredTracker!.lines.flatMap((line) => line.categories.map((row) => row.id));
+          expect(lineCategoryIds).toHaveLength(1);
+          expect(targetCategoryIds.has(lineCategoryIds[0]!)).toBe(true);
+
           expect(automations[0]!.actions).toHaveLength(2);
           for (const action of automations[0]!.actions) {
             if (action.type === 'set_category') expect(targetCategoryIds.has(action.categoryId)).toBe(true);

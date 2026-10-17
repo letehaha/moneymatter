@@ -28,7 +28,8 @@ export type BackupParentScope =
   | 'subscriptionPeriods'
   | 'importBatches'
   | 'budgetPlans'
-  | 'budgetLines';
+  | 'budgetLines'
+  | 'trackerLines';
 
 /**
  * How a table's rows are selected for the current user.
@@ -398,6 +399,13 @@ const TABLE_DEFS = [
     scope: { strategy: 'viaParent', fk: 'planId', parent: 'budgetPlans' },
     restoreMode: 'insert',
   },
+  {
+    fileName: 'tracker-lines',
+    model: models.TrackerLines,
+    tier: 4,
+    scope: { strategy: 'viaParent', fk: 'budgetId', parent: 'budgets' },
+    restoreMode: 'insert',
+  },
 
   // tier 5
   {
@@ -489,6 +497,13 @@ const TABLE_DEFS = [
     model: models.BudgetLines,
     tier: 5,
     scope: { strategy: 'viaParent', fk: 'planId', parent: 'budgetPlans' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'tracker-line-categories',
+    model: models.TrackerLineCategories,
+    tier: 5,
+    scope: { strategy: 'viaParent', fk: 'lineId', parent: 'trackerLines' },
     restoreMode: 'insert',
   },
 

@@ -24,9 +24,11 @@
       "autoIncludeLabel": "Auto include transactions",
       "limitLabel": "Tracker limit",
       "limitPlaceholder": "Enter the limit",
-      "submitButton": "Add tracker"
+      "submitButton": "Add tracker",
+      "splitIntoLines": "Split into lines after creating (hotels, food, …)"
     },
     "list": {
+      "loadError": "Couldn't load trackers.",
       "tabCategory": "Category Trackers",
       "tabManual": "Manual Trackers",
       "edit": "Edit",
@@ -68,6 +70,55 @@
       "emptyState": {
         "title": "No trackers yet",
         "description": "Create a tracker to start tracking your spending or monitoring specific events."
+      },
+      "searchPlaceholder": "Search trackers",
+      "filters": {
+        "all": "All",
+        "manual": "Manual",
+        "category": "Category",
+        "archived": "Archived"
+      },
+      "groups": {
+        "active": "Active now",
+        "upcoming": "Upcoming",
+        "noDates": "No dates",
+        "ended": "Ended",
+        "archived": "Archived",
+        "show": "show",
+        "hide": "hide"
+      },
+      "showMoreEnded": "Show {count} more ended",
+      "row": {
+        "auto": "auto",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
+        "noLimit": "no limit",
+        "archiveSuggestion": "Archive?"
+      },
+      "menu": {
+        "moreActions": "More actions",
+        "open": "Open",
+        "duplicate": "Duplicate"
+      },
+      "duplicateSuccess": "Tracker duplicated",
+      "duplicateError": "Failed to duplicate tracker",
+      "archiveSuccess": "Tracker archived",
+      "unarchiveSuccess": "Tracker unarchived",
+      "noMatch": {
+        "title": "Nothing matches \"{query}\"",
+        "titleNoQuery": "No trackers match these filters",
+        "description": "Try another name, or include archived trackers.",
+        "includeArchived": "Include archived"
+      },
+      "archivePrompt": {
+        "title": "Archive \"{name}\"?",
+        "endedDaysAgo": "{count} day ago | {count} days ago",
+        "endedMonthsAgo": "{count} month ago | {count} months ago",
+        "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
+        "dontAsk": "Don't ask for this tracker",
+        "notNow": "Not now",
+        "dismissError": "Failed to update tracker",
+        "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
     },
     "settings": {
@@ -108,6 +159,106 @@
     },
     "share": {
       "sharedByBadge": "Shared by {handle}"
+    },
+    "details": {
+      "statsLoadError": "Couldn't load this tracker's totals.",
+      "transactionsCount": "{count} transaction | {count} transactions",
+      "strip": {
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left",
+        "overBy": "Over by",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "transactions": "Transactions",
+        "perDay": "{amount} / day"
+      },
+      "tabs": {
+        "limits": "Limits"
+      },
+      "tracks": "Tracks",
+      "membersLabel": "Members: {count}",
+      "actions": {
+        "share": "Share",
+        "setLimits": "Set limits",
+        "removeLimits": "Remove limits",
+        "duplicate": "Duplicate",
+        "more": "More actions"
+      },
+      "shareDialog": {
+        "title": "Share \"{name}\""
+      },
+      "removeLimitsDialog": {
+        "title": "Remove all limits?",
+        "description": "The line and its limit will be removed. Linked transactions stay in the tracker. | All {count} lines and their limits will be removed. Linked transactions stay in the tracker."
+      },
+      "edit": {
+        "limitHint": "Clear it to track without a limit.",
+        "datesHint": "Changing the dates does not add or remove transactions already linked.",
+        "categoriesHint": "Removing a category also removes it from any line.",
+        "clearDate": "Clear date"
+      }
+    },
+    "lines": {
+      "addLine": "Add line",
+      "empty": {
+        "title": "Split spending into lines",
+        "titleWithLimit": "Split the {amount} into lines",
+        "description": "A line is a set of categories with its own limit. Spending that fits no line shows as \"Other\"."
+      },
+      "columns": {
+        "line": "Line",
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left"
+      },
+      "usage": "{percent}% · {spent} of {limit}",
+      "overUsage": "Over by {amount} · {spent} of {limit}",
+      "spentOnly": "{amount} spent",
+      "editLimitAria": "Edit limit for {name}",
+      "noLimitPlaceholder": "No limit",
+      "other": {
+        "title": "Other spending",
+        "hint": "not in any line"
+      },
+      "total": {
+        "title": "Total · {count} line | Total · {count} lines",
+        "limitOfOverall": "{sum} of {limit}"
+      },
+      "menu": {
+        "ariaLabel": "Line actions",
+        "edit": "Edit line",
+        "delete": "Delete line"
+      },
+      "delete": {
+        "title": "Delete line?",
+        "description": "\"{name}\" will be removed and its spending will show under Other. Transactions are not affected."
+      },
+      "dialog": {
+        "addTitle": "Add line",
+        "editTitle": "Edit line",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Hotels",
+        "nameRequired": "Enter a name",
+        "categoriesLabel": "Categories",
+        "categoriesPlaceholder": "Pick categories",
+        "categoriesRequired": "Pick at least one category",
+        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
+        "limitLabel": "Limit (optional)",
+        "limitPlaceholder": "No limit",
+        "limitHint": "Leave empty to group spending without a limit.",
+        "clearLimit": "Clear limit"
+      },
+      "notifications": {
+        "limitsRemoved": "Limits removed",
+        "created": "Line added",
+        "updated": "Line updated",
+        "deleted": "Line deleted",
+        "createError": "Couldn't add the line",
+        "updateError": "Couldn't update the line",
+        "deleteError": "Couldn't delete the line"
+      }
     }
   }
 }

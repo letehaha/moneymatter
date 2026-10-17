@@ -1,61 +1,57 @@
 <script setup lang="ts">
-import { removeTransactionsFromBudget } from '@/api/budgets';
+import { loadCategoryBudgetTransactions, removeTransactionsFromBudget } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import Button from '@/components/lib/ui/button/Button.vue';
-import Card from '@/components/lib/ui/card/Card.vue';
-import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
+import { Button } from '@/components/lib/ui/button';
+import { Checkbox } from '@/components/lib/ui/checkbox';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
+import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import RecordsFiltersDialog from '@/components/records-filters/filters-dialog.vue';
 import RecordsFilters from '@/components/records-filters/index.vue';
 import { useTransactionsWithFilters } from '@/components/records-filters/transactions-with-filters';
+import TransactionDetailsModal from '@/components/transactions-list/transaction-details-modal.vue';
 import TransactionRecordSkeleton from '@/components/transactions-list/transaction-record-skeleton.vue';
 import TransactionRecord from '@/components/transactions-list/transaction-record.vue';
-import TransactionsList from '@/components/transactions-list/transactions-list.vue';
+import ErrorState from '@/components/widgets/components/error-state.vue';
+import { useManageTransactionDialog } from '@/components/transactions-list/use-manage-transaction-dialog';
+import { useFormatCurrency } from '@/composable';
+import { useScrollAreaContainer } from '@/composable/scroll-area-container';
 import { useShiftMultiSelect } from '@/composable/shift-multi-select';
 import { useVirtualizedInfiniteScroll } from '@/composable/virtualized-infinite-scroll';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
-import { AlertTriangleIcon, LinkIcon, PlusIcon, WalletIcon, XIcon } from '@lucide/vue';
-import { computed, inject, nextTick, reactive, ref, watch } from 'vue';
+import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
+import { extractApiErrorMessage } from '@/js/errors';
+import { cn } from '@/lib/utils';
+import { BUDGET_TYPES, type BudgetModel } from '@bt/shared/types';
+import { LayersIcon, Loader2Icon, PlusIcon, TargetIcon, UnlinkIcon, XIcon } from '@lucide/vue';
+import { useInfiniteQuery, useMutation } from '@tanstack/vue-query';
+import { useIntersectionObserver } from '@vueuse/core';
+import { format, parseISO } from 'date-fns';
+import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRoute } from 'vue-router';
 
+import { useInvalidateTracker } from '../components/use-tracker-actions';
 import AddTransactionsDialog from './add-transactions-dialog.vue';
 
-// Inject the dashboard scroll area viewport
-const scrollAreaViewport = inject<ReturnType<typeof ref<{ viewportElement: HTMLElement } | null>>>(
-  SCROLL_AREA_IDS.dashboard,
+const ManageTransactionDialogContent = defineAsyncComponent(
+  () => import('@/components/dialogs/manage-transaction/dialog-content.vue'),
 );
+const LoanPaymentDialog = defineAsyncComponent(() => import('@/pages/loans/components/loan-payment-dialog/index.vue'));
 
-defineProps<{ isBudgetDataUpdating: boolean; budgetId: string }>();
+const props = defineProps<{ budget: BudgetModel; canWrite: boolean }>();
 
-const { addSuccessNotification } = useNotificationCenter();
+const ROW_HEIGHT_PX = 40;
+const SKELETON_ROWS = 8;
+const CATEGORY_PAGE_SIZE = 50;
+
 const { t } = useI18n();
+const invalidateTracker = useInvalidateTracker();
+const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+const { formatBaseCurrency } = useFormatCurrency();
+const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
 
-const route = useRoute();
-const queryClient = useQueryClient();
-const currentBudgetId = ref<string>(route.params.id as string);
-
-const cardRef = ref<InstanceType<typeof Card> | null>(null);
-const isUnlinkingSelectionEnabled = ref(false);
-const pickedTransactionsIds = reactive<Set<string>>(new Set());
-const isTransactionsPicked = computed(() => !!pickedTransactionsIds.size);
-const { handleSelection, resetSelection, isShiftKeyPressed } = useShiftMultiSelect(pickedTransactionsIds);
-
-const enableUnlinkingMode = async () => {
-  isUnlinkingSelectionEnabled.value = true;
-  await nextTick();
-  // Scroll the card into view within the scroll area
-  const viewport = scrollAreaViewport?.value?.viewportElement;
-  const cardEl = cardRef.value?.$el as HTMLElement;
-  if (viewport && cardEl) {
-    const headerHeight = parseInt(
-      getComputedStyle(document.documentElement).getPropertyValue('--header-height') || '64',
-    );
-    const cardTop = cardEl.offsetTop - headerHeight;
-    viewport.scrollTo({ top: cardTop, behavior: 'smooth' });
-  }
-};
+const budgetId = computed(() => String(props.budget.id));
+const isManual = computed(() => props.budget.type === BUDGET_TYPES.manual);
+const isCategory = computed(() => props.budget.type === BUDGET_TYPES.category);
 
 const {
   isResetButtonDisabled,
@@ -65,355 +61,323 @@ const {
   appliedFilters,
   isAnyFiltersApplied,
   filters,
-  transactionsPages: budgetTransactionsList,
+  transactionsPages,
   fetchNextPage,
   hasNextPage,
   isFetchingNextPage,
   isFetched,
   isFetching,
+  isError,
   invalidate,
 } = useTransactionsWithFilters({
-  appendQueryKey: [...VUE_QUERY_CACHE_KEYS.budgetAddingTransactionList, currentBudgetId],
-  staticFilters: { budgetIds: [currentBudgetId.value] },
+  appendQueryKey: [...VUE_QUERY_CACHE_KEYS.budgetAddingTransactionList, budgetId],
+  staticFilters: { budgetIds: [budgetId.value] },
+  queryEnabled: isManual,
 });
+
+const flatTransactions = computed(() => transactionsPages.value?.pages?.flat() ?? []);
+const isInitialLoading = computed(() => !isFetched.value || (isFetching.value && flatTransactions.value.length === 0));
+
+const pickedTransactionsIds = reactive<Set<string>>(new Set());
+const { handleSelection, resetSelection, isShiftKeyPressed } = useShiftMultiSelect(pickedTransactionsIds);
+const isAllSelected = computed(
+  () => flatTransactions.value.length > 0 && flatTransactions.value.every((tx) => pickedTransactionsIds.has(tx.id)),
+);
+const toggleSelectAll = () => {
+  if (isAllSelected.value) resetSelection();
+  else flatTransactions.value.forEach((tx) => pickedTransactionsIds.add(tx.id));
+};
+const onRowSelectionChange = ({ value, index }: { value: boolean; index: number }) => {
+  const tx = flatTransactions.value[index];
+  if (tx) handleSelection(value, tx.id, index, flatTransactions.value, (item) => item.id);
+};
 
 const isFiltersDialogOpen = ref(false);
-
-// Close filters dialog when filters are applied
 watch(appliedFilters, () => {
   isFiltersDialogOpen.value = false;
+  resetSelection();
 });
 
-const parentRef = ref(null);
-const flatTransactions = computed(() => {
-  return budgetTransactionsList.value?.pages?.flat() ?? [];
+const scrollContainer = useScrollAreaContainer(SCROLL_AREA_IDS.dashboard);
+const scrollElement = computed<HTMLElement | null>(() => scrollContainer.value?.viewportElement ?? null);
+const listRef = ref<HTMLElement | null>(null);
+const scrollMargin = ref(0);
+watch(listRef, (el) => {
+  const scrollEl = scrollElement.value;
+  if (el && scrollEl) {
+    scrollMargin.value = el.getBoundingClientRect().top - scrollEl.getBoundingClientRect().top + scrollEl.scrollTop;
+  }
 });
 
-// Track if we've ever had data to preserve height during refetching
-const hadDataBefore = ref(false);
-
-// Track when we've had transactions to preserve height during refetch
-watch(
-  () => flatTransactions.value.length,
-  (len) => {
-    if (len > 0) hadDataBefore.value = true;
-  },
-  { immediate: true },
-);
 const { virtualRows, totalSize } = useVirtualizedInfiniteScroll({
   items: flatTransactions,
   hasNextPage,
   fetchNextPage,
   isFetchingNextPage,
-  parentRef,
-  getItemKey: (index) => flatTransactions.value[index]!.id,
+  parentRef: scrollElement,
+  scrollMargin,
+  enabled: isManual,
+  estimateSize: () => ROW_HEIGHT_PX,
+  getItemKey: (index) => flatTransactions.value[index]?.id ?? `loader-${index}`,
 });
 
-const { isPending: isMutating, mutate } = useMutation({
+const {
+  isDialogVisible,
+  dialogProps,
+  isCompactDialog,
+  handleRecordClick,
+  closeDialog,
+  isLoanDialogVisible,
+  loanDialogProps,
+  closeLoanDialog,
+} = useManageTransactionDialog();
+
+const { isPending: isUnlinking, mutate: unlinkTransactions } = useMutation({
   mutationFn: removeTransactionsFromBudget,
   onSuccess: () => {
     addSuccessNotification(t('budgets.list.unlinkTransactionsSuccess'));
-    invalidate();
-    isUnlinkingSelectionEnabled.value = false;
-    pickedTransactionsIds.clear();
-    queryClient.invalidateQueries({ queryKey: [...VUE_QUERY_CACHE_KEYS.budgetStats, currentBudgetId] });
     resetSelection();
+    return invalidateTracker({ budgetId: budgetId.value });
+  },
+  onError: (error) => {
+    addErrorNotification(extractApiErrorMessage(error) || t('pages.budgets.transactionsList.unlinkError'));
   },
 });
 
-const cancelUnlinking = async () => {
-  // Preserve scroll position before mode change
-  const viewport = scrollAreaViewport?.value?.viewportElement;
-  const scrollTop = viewport?.scrollTop ?? 0;
-  isUnlinkingSelectionEnabled.value = false;
-  resetSelection();
-  await nextTick();
-  // Restore scroll position after DOM updates
-  if (viewport) {
-    viewport.scrollTop = scrollTop;
-  }
-};
+const handleUnlink = () =>
+  unlinkTransactions({
+    budgetId: budgetId.value,
+    payload: { transactionIds: [...pickedTransactionsIds] },
+  });
 
-// Select All functionality
-const isAllSelected = computed(() => {
-  if (flatTransactions.value.length === 0) return false;
-  return flatTransactions.value.every((tx) => pickedTransactionsIds.has(tx.id));
+const {
+  data: categoryTransactionsData,
+  isLoading: isLoadingCategoryTransactions,
+  isError: isCategoryTransactionsError,
+  hasNextPage: hasNextCategoryPage,
+  isFetchingNextPage: isFetchingNextCategoryPage,
+  fetchNextPage: fetchNextCategoryPage,
+} = useInfiniteQuery({
+  queryFn: ({ pageParam }) =>
+    loadCategoryBudgetTransactions({ budgetId: budgetId.value, from: pageParam, limit: CATEGORY_PAGE_SIZE }),
+  queryKey: [...VUE_QUERY_CACHE_KEYS.budgetCategoryTransactions, budgetId],
+  initialPageParam: 0,
+  getNextPageParam: (lastPage, pages) => {
+    const loaded = pages.reduce((count, page) => count + page.transactions.length, 0);
+    return loaded < lastPage.total ? loaded : undefined;
+  },
+  staleTime: 30_000,
+  enabled: isCategory,
 });
 
-const isSomeSelected = computed(() => {
-  if (flatTransactions.value.length === 0) return false;
-  return flatTransactions.value.some((tx) => pickedTransactionsIds.has(tx.id)) && !isAllSelected.value;
+const categoryTransactions = computed(
+  () => categoryTransactionsData.value?.pages.flatMap((page) => page.transactions) ?? [],
+);
+
+const categorySentinelRef = ref<HTMLElement | null>(null);
+useIntersectionObserver(categorySentinelRef, ([entry]) => {
+  if (entry?.isIntersecting && hasNextCategoryPage.value && !isFetchingNextCategoryPage.value) fetchNextCategoryPage();
 });
 
-const toggleSelectAll = () => {
-  if (isAllSelected.value) {
-    // Deselect all
-    pickedTransactionsIds.clear();
-  } else {
-    // Select all
-    flatTransactions.value.forEach((tx) => {
-      pickedTransactionsIds.add(tx.id);
-    });
-  }
-};
+const formatTransactionDate = (date: string) => format(parseISO(date), 'MMM d, yyyy');
 </script>
 
 <template>
-  <Card
-    ref="cardRef"
-    class="@container overflow-clip border! border-transparent transition-all duration-200"
-    :class="{ 'border-warning/40': isUnlinkingSelectionEnabled }"
-    :style="{ scrollMarginTop: 'var(--header-height, 64px)' }"
-  >
-    <!-- Sticky Header Container -->
-    <div
-      class="bg-card sticky z-20 -mx-px -mt-px rounded-t-lg border-x border-t border-transparent"
-      :class="{ 'border-warning-text/50': isUnlinkingSelectionEnabled }"
-      :style="{ top: 'var(--header-height, 64px)' }"
-    >
-      <!-- Warning Banner (Selection Mode) -->
-      <div
-        v-if="isUnlinkingSelectionEnabled"
-        class="bg-warning-text/10 border-warning-text/30 flex items-center gap-2 border-b px-3 py-2 @md:px-4"
-      >
-        <AlertTriangleIcon class="text-warning-text size-4 shrink-0" />
-        <span class="text-warning-text text-xs font-medium @md:text-sm">
-          {{ t('pages.budgets.transactionsList.selectionModeWarning') }}
-        </span>
-      </div>
-
-      <!-- Action Bar -->
-      <div class="border-border/50 border-b px-3 py-2 @md:px-4 @md:py-3">
-        <template v-if="isUnlinkingSelectionEnabled">
-          <!-- Stacked Layout (narrow container) -->
-          <div class="flex flex-col gap-3 @lg:hidden">
-            <div class="flex items-center justify-between">
-              <!-- Select All Checkbox -->
-              <label class="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  :model-value="isAllSelected"
-                  :indeterminate="isSomeSelected"
-                  @update:model-value="toggleSelectAll"
-                />
-                <span class="text-muted-foreground text-sm">{{ t('pages.budgets.transactionsList.selectAll') }}</span>
-              </label>
-
-              <!-- Selection Counter Badge -->
-              <span
-                class="rounded-full px-2.5 py-0.5 text-xs font-medium tabular-nums"
-                :class="
-                  pickedTransactionsIds.size > 0
-                    ? 'bg-warning-text/20 text-warning-text'
-                    : 'bg-muted text-muted-foreground'
-                "
-              >
-                {{ t('pages.budgets.transactionsList.selected', { count: pickedTransactionsIds.size }) }}
-              </span>
-            </div>
-            <div class="flex items-center gap-2">
-              <Button
-                :disabled="!isTransactionsPicked || isMutating"
-                @click="() => mutate({ budgetId, payload: { transactionIds: [...pickedTransactionsIds.values()] } })"
-                variant="destructive"
-                size="sm"
-                class="flex-1"
-              >
-                <LinkIcon class="mr-2 size-4" />
-                {{ t('pages.budgets.transactionsList.unlink') }}
-              </Button>
-              <Button :disabled="isMutating" @click="cancelUnlinking" variant="outline" size="sm" class="flex-1">
-                <XIcon class="mr-2 size-4" />
-                {{ t('pages.budgets.transactionsList.cancel') }}
-              </Button>
-            </div>
-          </div>
-
-          <!-- Row Layout (wide container) -->
-          <div class="hidden items-center justify-between @lg:flex">
-            <div class="flex items-center gap-3">
-              <!-- Select All Checkbox -->
-              <label class="flex cursor-pointer items-center gap-2">
-                <Checkbox
-                  :model-value="isAllSelected"
-                  :indeterminate="isSomeSelected"
-                  @update:model-value="toggleSelectAll"
-                />
-                <span class="text-muted-foreground text-sm">{{ t('pages.budgets.transactionsList.selectAll') }}</span>
-              </label>
-
-              <!-- Selection Counter Badge -->
-              <span
-                class="rounded-full px-2.5 py-0.5 text-xs font-medium tabular-nums"
-                :class="
-                  pickedTransactionsIds.size > 0
-                    ? 'bg-warning-text/20 text-warning-text'
-                    : 'bg-muted text-muted-foreground'
-                "
-              >
-                {{ t('pages.budgets.transactionsList.selected', { count: pickedTransactionsIds.size }) }}
-              </span>
-            </div>
-            <div class="flex items-center gap-2">
-              <Button
-                :disabled="!isTransactionsPicked || isMutating"
-                @click="() => mutate({ budgetId, payload: { transactionIds: [...pickedTransactionsIds.values()] } })"
-                variant="destructive"
-                size="sm"
-              >
-                <LinkIcon class="mr-2 size-4" />
-                {{ t('pages.budgets.transactionsList.unlinkSelected') }}
-              </Button>
-              <Button :disabled="isMutating" @click="cancelUnlinking" variant="ghost" size="sm">
-                <XIcon class="mr-2 size-4" />
-                {{ t('pages.budgets.transactionsList.cancel') }}
-              </Button>
-            </div>
-          </div>
-        </template>
-
-        <template v-else>
-          <!-- Normal Mode: Single row with filters on left, actions on right -->
-          <div class="flex items-center justify-between gap-2">
-            <!-- Left: Filter button -->
-            <RecordsFiltersDialog v-model:open="isFiltersDialogOpen" :isAnyFiltersApplied="isAnyFiltersApplied">
-              <div class="relative max-h-[calc(100vh-var(--header-height)-32px)] overflow-auto">
-                <RecordsFilters
-                  v-model:filters="filters"
-                  hide-budgets
-                  :is-reset-button-disabled="isResetButtonDisabled"
-                  :is-filters-out-of-sync="isFiltersOutOfSync"
-                  @reset-filters="resetFilters"
-                  @apply-filters="applyFilters"
-                />
-              </div>
-            </RecordsFiltersDialog>
-
-            <!-- Right: Action buttons -->
-            <div class="flex items-center gap-2">
-              <Button
-                :disabled="isBudgetDataUpdating || flatTransactions.length === 0"
-                @click="enableUnlinkingMode"
-                variant="outline"
-                size="sm"
-              >
-                <LinkIcon class="size-4" />
-                <span>{{ t('pages.budgets.transactionsList.unlink') }}</span>
-              </Button>
-              <AddTransactionsDialog>
-                <Button :disabled="isBudgetDataUpdating" size="sm">
-                  <PlusIcon class="size-4" />
-                  <span class="hidden @sm:inline">{{ t('pages.budgets.transactionsList.addTransactions') }}</span>
-                  <span class="@sm:hidden">{{ t('pages.budgets.transactionsList.add') }}</span>
-                </Button>
-              </AddTransactionsDialog>
-            </div>
-          </div>
-        </template>
-      </div>
-    </div>
-
-    <!-- Transactions List -->
-    <div class="p-3 @md:p-4">
-      <template v-if="!isUnlinkingSelectionEnabled">
-        <!-- Loading state during refetch -->
-        <template v-if="isFetching && hadDataBefore && flatTransactions.length === 0">
-          <div class="space-y-1">
-            <TransactionRecordSkeleton v-for="i in 10" :key="i" />
-          </div>
-        </template>
-        <template v-else-if="isFetched && budgetTransactionsList">
-          <template v-if="flatTransactions.length > 0">
-            <TransactionsList
-              :hasNextPage="hasNextPage"
-              :isFetchingNextPage="isFetchingNextPage"
-              :transactions="flatTransactions"
-              @fetch-next-page="fetchNextPage"
+  <div class="@container/tracker-tx">
+    <template v-if="isManual">
+      <div class="flex items-center justify-between gap-2 border-b px-3 py-2 @md/tracker-tx:px-4">
+        <RecordsFiltersDialog v-model:open="isFiltersDialogOpen" :isAnyFiltersApplied="isAnyFiltersApplied">
+          <div class="relative max-h-[calc(100vh-var(--header-height)-32px)] overflow-auto">
+            <RecordsFilters
+              v-model:filters="filters"
+              hide-budgets
+              :is-reset-button-disabled="isResetButtonDisabled"
+              :is-filters-out-of-sync="isFiltersOutOfSync"
+              @reset-filters="resetFilters"
+              @apply-filters="applyFilters"
             />
+          </div>
+        </RecordsFiltersDialog>
+
+        <AddTransactionsDialog v-if="canWrite">
+          <Button size="sm">
+            <PlusIcon class="size-4" />
+            <span class="hidden @sm/tracker-tx:inline">{{ $t('pages.budgets.transactionsList.addTransactions') }}</span>
+            <span class="@sm/tracker-tx:hidden">{{ $t('pages.budgets.transactionsList.add') }}</span>
+          </Button>
+        </AddTransactionsDialog>
+      </div>
+
+      <div class="p-2 @md/tracker-tx:p-3">
+        <div v-if="isInitialLoading" class="space-y-1">
+          <TransactionRecordSkeleton v-for="i in SKELETON_ROWS" :key="i" compact />
+        </div>
+
+        <ErrorState
+          v-else-if="isError"
+          :message="$t('pages.budgets.transactionsList.loadError')"
+          @retry="invalidate()"
+        />
+
+        <div v-else-if="flatTransactions.length === 0" class="flex flex-col items-center py-12 text-center">
+          <div class="bg-muted mb-4 flex size-14 items-center justify-center rounded-full">
+            <TargetIcon class="text-muted-foreground size-7" />
+          </div>
+          <template v-if="isAnyFiltersApplied">
+            <h3 class="mb-1 font-medium">{{ $t('pages.budgets.transactionsList.noMatchingTransactions') }}</h3>
+            <p class="text-muted-foreground mb-4 max-w-sm text-sm">
+              {{ $t('pages.budgets.transactionsList.filterAdjustmentHint') }}
+            </p>
+            <Button size="sm" variant="outline" @click="resetFilters">
+              {{ $t('pages.budgets.transactionsList.resetFilters') }}
+            </Button>
           </template>
           <template v-else>
-            <!-- Empty State -->
-            <div class="flex flex-col items-center justify-center py-12 text-center">
-              <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-                <WalletIcon class="text-muted-foreground size-8" />
-              </div>
-              <h3 class="mb-1 font-medium">
-                {{
-                  isAnyFiltersApplied
-                    ? t('pages.budgets.transactionsList.noMatchingTransactions')
-                    : t('pages.budgets.transactionsList.noTransactionsLinked')
-                }}
-              </h3>
-              <p class="text-muted-foreground mb-4 max-w-sm text-sm">
-                {{
-                  isAnyFiltersApplied
-                    ? t('pages.budgets.transactionsList.filterAdjustmentHint')
-                    : t('pages.budgets.transactionsList.addTransactionsHint')
-                }}
-              </p>
-              <template v-if="isAnyFiltersApplied">
-                <Button size="sm" variant="outline" @click="resetFilters">{{
-                  t('pages.budgets.transactionsList.resetFilters')
-                }}</Button>
-              </template>
-              <template v-else>
-                <AddTransactionsDialog>
-                  <Button size="sm">
-                    <PlusIcon class="mr-2 size-4" />
-                    {{ t('pages.budgets.transactionsList.addTransactions') }}
-                  </Button>
-                </AddTransactionsDialog>
-              </template>
-            </div>
+            <h3 class="mb-1 font-medium">{{ $t('pages.budgets.transactionsList.noTransactionsLinked') }}</h3>
+            <p class="text-muted-foreground mb-4 max-w-sm text-sm">
+              {{ $t('pages.budgets.transactionsList.addTransactionsHint') }}
+            </p>
+            <AddTransactionsDialog v-if="canWrite">
+              <Button size="sm">
+                <PlusIcon class="size-4" />
+                {{ $t('pages.budgets.transactionsList.addTransactions') }}
+              </Button>
+            </AddTransactionsDialog>
           </template>
-        </template>
-      </template>
+        </div>
 
-      <!-- Unlinking Mode -->
-      <template v-else>
-        <div v-if="budgetTransactionsList" ref="parentRef" class="relative w-full">
-          <div :style="{ height: `${totalSize}px`, position: 'relative' }">
+        <div v-else ref="listRef" class="relative" :style="{ height: `${totalSize}px` }">
+          <div
+            v-for="virtualRow in virtualRows"
+            :key="String(virtualRow.key)"
+            class="absolute top-0 left-0 flex w-full items-center"
+            :style="{
+              height: `${virtualRow.size}px`,
+              transform: `translateY(${virtualRow.start - scrollMargin}px)`,
+            }"
+          >
             <div
-              v-for="virtualRow in virtualRows"
-              :key="String(virtualRow.key)"
-              :style="{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                transform: `translateY(${virtualRow.start}px)`,
-              }"
+              v-if="flatTransactions[virtualRow.index]"
+              :class="
+                cn(
+                  'w-full rounded-md',
+                  isShiftKeyPressed && 'select-none',
+                  pickedTransactionsIds.has(flatTransactions[virtualRow.index]!.id) && 'bg-primary/10',
+                )
+              "
             >
-              <label
-                v-if="flatTransactions[virtualRow.index]"
-                :class="[
-                  'grid cursor-pointer grid-cols-[min-content_minmax(0,1fr)] items-center gap-2 rounded-lg px-2 transition-colors',
-                  { 'select-none': isShiftKeyPressed },
-                  pickedTransactionsIds.has(flatTransactions[virtualRow.index]!.id)
-                    ? 'bg-warning-text/10 hover:bg-warning-text/20'
-                    : 'hover:bg-muted/50',
-                ]"
-              >
-                <Checkbox
-                  :model-value="pickedTransactionsIds.has(flatTransactions[virtualRow.index]!.id)"
-                  @update:model-value="
-                    handleSelection(
-                      !!$event,
-                      flatTransactions[virtualRow.index]!.id,
-                      virtualRow.index,
-                      flatTransactions,
-                      (v) => v.id,
-                    )
-                  "
-                />
-                <TransactionRecord :tx="flatTransactions[virtualRow.index]!" />
-              </label>
-              <div v-else class="flex h-13 items-center justify-center">
-                <span class="text-muted-foreground text-sm">{{ t('pages.budgets.transactionsList.loadingMore') }}</span>
-              </div>
+              <TransactionRecord
+                :tx="flatTransactions[virtualRow.index]!"
+                compact
+                :show-checkbox="canWrite"
+                :is-selected="pickedTransactionsIds.has(flatTransactions[virtualRow.index]!.id)"
+                :index="virtualRow.index"
+                @record-click="handleRecordClick"
+                @selection-change="onRowSelectionChange"
+              />
+            </div>
+            <div v-else class="text-muted-foreground flex w-full justify-center text-sm">
+              {{ $t('pages.budgets.transactionsList.loadingMore') }}
             </div>
           </div>
         </div>
+      </div>
+
+      <div
+        v-if="canWrite && pickedTransactionsIds.size > 0"
+        class="bg-popover/95 sticky bottom-3 z-10 mx-3 mb-3 flex items-center gap-3 rounded-lg border px-3 py-2 shadow-lg backdrop-blur"
+      >
+        <Checkbox
+          :model-value="isAllSelected ? true : 'indeterminate'"
+          :aria-label="$t('pages.budgets.transactionsList.selectAll')"
+          @update:model-value="toggleSelectAll"
+        />
+        <span class="text-sm font-medium tabular-nums">
+          {{ $t('pages.budgets.transactionsList.selected', { count: pickedTransactionsIds.size }) }}
+        </span>
+        <Button variant="soft-destructive" size="sm" class="ml-auto" :disabled="isUnlinking" @click="handleUnlink">
+          <UnlinkIcon class="size-4" />
+          {{ $t('pages.budgets.transactionsList.unlink') }}
+        </Button>
+        <DesktopOnlyTooltip :content="$t('pages.budgets.transactionsList.cancel')">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            :disabled="isUnlinking"
+            :aria-label="$t('pages.budgets.transactionsList.cancel')"
+            @click="resetSelection"
+          >
+            <XIcon class="size-4" />
+          </Button>
+        </DesktopOnlyTooltip>
+      </div>
+
+      <TransactionDetailsModal v-model:open="isDialogVisible" :mobile="isMobile" :is-compact="isCompactDialog">
+        <ManageTransactionDialogContent v-bind="dialogProps" @close-modal="closeDialog" />
+      </TransactionDetailsModal>
+      <LoanPaymentDialog
+        v-if="loanDialogProps.loanAccount"
+        :open="isLoanDialogVisible"
+        :loan-account="loanDialogProps.loanAccount"
+        :transaction="loanDialogProps.transaction"
+        :opposite-transaction="loanDialogProps.oppositeTransaction"
+        @update:open="(value) => !value && closeLoanDialog()"
+      />
+    </template>
+
+    <div v-else-if="isCategory" class="p-2 @md/tracker-tx:p-3">
+      <div v-if="isLoadingCategoryTransactions" class="space-y-1">
+        <TransactionRecordSkeleton v-for="i in SKELETON_ROWS" :key="i" compact />
+      </div>
+
+      <div v-else-if="isCategoryTransactionsError" class="text-destructive-text py-12 text-center text-sm">
+        {{ $t('budgets.categoryBudget.transactionsLoadError') }}
+      </div>
+
+      <div v-else-if="categoryTransactions.length === 0" class="flex flex-col items-center py-12 text-center">
+        <div class="bg-muted mb-4 flex size-14 items-center justify-center rounded-full">
+          <LayersIcon class="text-muted-foreground size-7" />
+        </div>
+        <h3 class="mb-1 font-medium">{{ $t('budgets.categoryBudget.noTransactions') }}</h3>
+        <p class="text-muted-foreground max-w-sm text-sm">
+          {{ $t('budgets.categoryBudget.noTransactionsDescription') }}
+        </p>
+      </div>
+
+      <template v-else>
+        <div
+          v-for="tx in categoryTransactions"
+          :key="`${tx.id}-${tx.effectiveCategory?.id}`"
+          class="hover:bg-muted/50 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2.5 rounded-md px-2 py-2 transition-colors"
+        >
+          <span
+            :class="cn('size-2.5 rounded-full', !tx.effectiveCategory && 'bg-muted-foreground/40')"
+            :style="tx.effectiveCategory ? { backgroundColor: tx.effectiveCategory.color } : undefined"
+          />
+          <div class="min-w-0 truncate text-sm">
+            <span v-if="tx.effectiveCategory">{{ tx.effectiveCategory.name }}</span>
+            <span v-else class="text-muted-foreground">{{ $t('pages.budgetDetails.uncategorized') }}</span>
+            <span class="text-muted-foreground">
+              · {{ formatTransactionDate(tx.time) }}<template v-if="tx.note"> · {{ tx.note }}</template>
+            </span>
+          </div>
+          <span
+            :class="
+              cn(
+                'text-sm font-medium whitespace-nowrap tabular-nums',
+                tx.transactionType === 'expense' ? 'text-app-expense-color' : 'text-app-income-color',
+              )
+            "
+          >
+            {{ tx.transactionType === 'expense' ? '-' : '+'
+            }}{{ formatBaseCurrency(tx.effectiveRefAmount || tx.refAmount) }}
+          </span>
+        </div>
+
+        <div v-if="hasNextCategoryPage" ref="categorySentinelRef" class="flex justify-center p-3">
+          <Loader2Icon v-if="isFetchingNextCategoryPage" class="text-muted-foreground size-4 animate-spin" />
+        </div>
       </template>
     </div>
-  </Card>
+  </div>
 </template>
