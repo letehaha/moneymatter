@@ -110,7 +110,6 @@ describe('currencies store', () => {
       expect(store.isoCurrencies.map((item) => item.code)).toEqual(['USD', 'EUR']);
       expect(store.isoCurrenciesVerbose.linked.map((item) => item.code)).toEqual(['USD']);
       expect(store.systemCurrenciesVerbose.linked.map((item) => item.code)).toEqual(['USD', 'USDT']);
-      expect(store.customCurrencies.map((item) => item.code)).toEqual(['USDT']);
     });
 
     it('registers the decimals, symbol and kind of a custom currency', async () => {

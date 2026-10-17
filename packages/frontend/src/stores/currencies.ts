@@ -34,10 +34,6 @@ export const useCurrenciesStore = defineStore('currencies', () => {
   const isoCurrencies = computed(() => systemCurrencies.value.filter((item) => !item.isCustom));
   const isoCurrenciesVerbose = computed(() => splitByLinked({ list: isoCurrencies.value }));
 
-  const customCurrencies = computed(() =>
-    currencies.value.flatMap((item) => (item.currency?.isCustom ? [item.currency] : [])),
-  );
-
   const currenciesMap = computed(() =>
     currencies.value.reduce(
       (acc, curr) => {
@@ -135,7 +131,6 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     systemCurrenciesVerbose,
     isoCurrencies,
     isoCurrenciesVerbose,
-    customCurrencies,
     isBaseCurrencyExists,
     loadCurrencies,
     loadBaseCurrency,
