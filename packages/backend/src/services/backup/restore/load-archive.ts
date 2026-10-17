@@ -7,6 +7,7 @@ import isPlainObject from 'lodash/isPlainObject';
 import { BACKUP_TABLES, type BackupFileName } from '../registry';
 import { sha256Hex } from '../sha256';
 import { FIRST_DECIMAL_MONEY_FORMAT_VERSION, convertV1MoneyToDecimal } from './convert-v1-money';
+import { fillUserRateEffectiveDates } from './fill-user-rate-effective-dates';
 import { normalizeLegacyArchive } from './normalize-legacy-archive';
 
 const BACKUP_FILE_NAMES = BACKUP_TABLES.map((t) => t.fileName);
@@ -248,6 +249,9 @@ export async function loadBackupArchive({
   if (formatVersion < FIRST_DECIMAL_MONEY_FORMAT_VERSION) {
     convertV1MoneyToDecimal({ data });
   }
+
+  // Rates saved before they were dated carry no day to start from.
+  fillUserRateEffectiveDates({ data });
 
   const referenceByName = new Map<string, Row[]>();
   for (const name of BACKUP_REFERENCE_FILE_NAMES) {

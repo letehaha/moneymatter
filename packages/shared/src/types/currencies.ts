@@ -108,9 +108,16 @@ export interface ExchangeRatesModel {
   rate: number;
 }
 
+/** Where a stored user rate came from. */
+export const USER_EXCHANGE_RATE_SOURCES = ['manual', 'coingecko', 'http'] as const;
+export type UserExchangeRateSource = (typeof USER_EXCHANGE_RATE_SOURCES)[number];
+
 export interface UserExchangeRatesModel extends ExchangeRatesModel {
   userId: number;
   custom?: boolean;
+  /** Calendar day (YYYY-MM-DD) the rate starts to apply. Only rates of custom currencies are read by day. */
+  effectiveDate: string;
+  source: UserExchangeRateSource;
 }
 
 /**

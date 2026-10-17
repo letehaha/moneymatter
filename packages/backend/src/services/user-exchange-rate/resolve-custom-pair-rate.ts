@@ -1,7 +1,8 @@
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError } from '@js/errors';
-import UserExchangeRates from '@models/user-exchange-rates.model';
+import UserExchangeRates, { toEffectiveDate } from '@models/user-exchange-rates.model';
 import Big from 'big.js';
+import { Op } from 'sequelize';
 
 interface ResolvedRate {
   baseCode: string;
@@ -11,10 +12,9 @@ interface ResolvedRate {
   custom?: boolean;
 }
 
-type ResolveRate = (params: { baseCode: string; quoteCode: string }) => Promise<ResolvedRate>;
+type IsCustomCode = (params: { code: string }) => Promise<boolean>;
 
-/** Whether a code names a custom currency. It must answer for ANY code, not only the pair's own. */
-type IsCustomCode = (code: string) => Promise<boolean>;
+type ResolveRate = (params: { baseCode: string; quoteCode: string }) => Promise<ResolvedRate>;
 
 const unavailable = ({ pair, date }: { pair: { baseCode: string; quoteCode: string }; date: Date }) =>
   new ExchangeRateUnavailableError({
@@ -26,34 +26,38 @@ const unavailable = ({ pair, date }: { pair: { baseCode: string; quoteCode: stri
 
 /**
  * Walks a custom code down to the first code that is not custom, through the quote currency of the
- * user's own rate for each step. `factor` is how many units of the returned ISO currency one unit of
- * the custom code is worth. Every step asks `isCustomCode` about the quote it reached, so the walk
- * keeps going through custom quotes that are not part of the requested pair, and one `visited` set
- * covers the whole chain. A custom code without a rate, or a loop of custom codes, has no value,
- * and the walk ends there instead of handing a custom code on to the ISO resolution.
+ * user's own rate for each step. `factor` is how many units of `code` that ISO currency one unit of
+ * the custom code is worth. A custom code without a rate, or a loop of custom codes, has no value.
+ *
+ * Whether a quote is custom is asked at every step, not read from the codes of the requested pair: a
+ * rate can quote another custom code, and treating that code as ISO would hand it to the ISO
+ * resolution, which would come back here and walk the same loop again. The rate editor stores both
+ * directions of a pair, so a step never takes a rate that quotes a code already walked when another
+ * rate exists; only a walk with nothing else left is a loop.
  */
 const priceInIsoCurrency = async ({
   userId,
   code,
-  isCustomCode,
+  isCustom,
   date,
   pair,
 }: {
   userId: number;
   code: string;
-  isCustomCode: IsCustomCode;
+  isCustom: IsCustomCode;
   date: Date;
   pair: { baseCode: string; quoteCode: string };
 }): Promise<{ code: string; factor: number }> => {
+  const asOfDate = toEffectiveDate({ date });
   const visited = new Set<string>();
   let current = code;
   let factor = 1;
 
-  while (await isCustomCode(current)) {
+  while (await isCustom({ code: current })) {
     if (visited.has(current)) throw unavailable({ pair, date });
     visited.add(current);
 
-    const step = await getStoredCustomRate({ userId, baseCode: current });
+    const step = await getStoredCustomRate({ userId, baseCode: current, asOfDate, excludedQuotes: [...visited] });
     if (!step) throw unavailable({ pair, date });
 
     factor *= step.rate;
@@ -64,23 +68,43 @@ const priceInIsoCurrency = async ({
 };
 
 /**
- * The user's stored rate for a custom code: the most recently written one when several quotes exist.
+ * The user's stored rate for a custom code on a day: the one that started most recently on or before
+ * it (the one written last when several start on the same day), skipping rates that quote a code in
+ * `excludedQuotes`. A day before the first rate has none.
  * The rate stays in the quote currency it was entered in, so a base-currency change never rewrites it.
  */
-const getStoredCustomRate = async ({ userId, baseCode }: { userId: number; baseCode: string }) => {
-  return UserExchangeRates.findOne({ where: { userId, baseCode }, order: [['date', 'DESC']], raw: true });
+const getStoredCustomRate = async ({
+  userId,
+  baseCode,
+  asOfDate,
+  excludedQuotes,
+}: {
+  userId: number;
+  baseCode: string;
+  asOfDate: string;
+  excludedQuotes: readonly string[];
+}) => {
+  return UserExchangeRates.findOne({
+    where: { userId, baseCode, quoteCode: { [Op.notIn]: excludedQuotes }, effectiveDate: { [Op.lte]: asOfDate } },
+    order: [
+      ['effectiveDate', 'DESC'],
+      ['date', 'DESC'],
+    ],
+    raw: true,
+  });
 };
 
 /**
- * Rate of a pair in which at least one side is a custom currency. It never touches the global
- * cross-rate cache, which is keyed by date and code only.
+ * Rate of a pair in which at least one side is a custom currency, on the day of `date`. It never
+ * touches the global cross-rate cache, which is keyed by date and code only.
+ *
+ * Every user rate is read by day: the one that started most recently on or before that day applies,
+ * whatever the user's live-rate setting or base currency, and a day before the first rate has none.
  *
  * 1. A rate the user entered for exactly this pair wins.
- * 2. Otherwise each custom side is priced in the quote currency of the user's own rate for it, down
- *    to an ISO currency, and the remaining ISO-to-ISO conversion goes through `resolveIsoRate`, so a
- *    manual ISO rate into the base wins and the market rate fills in otherwise. `resolveIsoRate`
- *    only ever receives two ISO codes, so it can never come back here.
- * 3. A custom code with no rate, or a loop of custom codes (A is quoted in B, B in A), is unavailable.
+ * 2. Otherwise each custom side is priced in the quote currency of the user's own rate for it, and
+ *    the remaining ISO-to-ISO conversion goes through `resolveIsoRate` for the same day, so a manual
+ *    ISO rate into the base wins and the market rate fills in otherwise.
  *
  * Custom rates keep their full precision: the 5-decimal market formatting would erase a coin worth
  * a fraction of a cent.
@@ -89,25 +113,42 @@ export const resolveCustomPairRate = async ({
   userId,
   pair,
   date,
-  isCustomCode,
+  isCustom,
   resolveIsoRate,
 }: {
   userId: number;
   pair: { baseCode: string; quoteCode: string };
   date: Date;
-  isCustomCode: IsCustomCode;
+  /** Whether a code is a custom currency, asked for the codes the user's rates quote as well. */
+  isCustom: IsCustomCode;
+  /** Resolves a pair of codes that are both ISO: it is never given a custom code. */
   resolveIsoRate: ResolveRate;
 }): Promise<ResolvedRate> => {
   const exact = await UserExchangeRates.findOne({
-    where: { userId, baseCode: pair.baseCode, quoteCode: pair.quoteCode },
-    order: [['date', 'DESC']],
+    where: {
+      userId,
+      baseCode: pair.baseCode,
+      quoteCode: pair.quoteCode,
+      effectiveDate: { [Op.lte]: toEffectiveDate({ date }) },
+    },
+    order: [
+      ['effectiveDate', 'DESC'],
+      ['date', 'DESC'],
+    ],
     raw: true,
   });
-  if (exact)
-    return { baseCode: pair.baseCode, quoteCode: pair.quoteCode, date: exact.date, rate: exact.rate, custom: true };
+  if (exact) {
+    return {
+      baseCode: pair.baseCode,
+      quoteCode: pair.quoteCode,
+      date: new Date(exact.effectiveDate),
+      rate: exact.rate,
+      custom: true,
+    };
+  }
 
-  const base = await priceInIsoCurrency({ userId, code: pair.baseCode, isCustomCode, date, pair });
-  const quote = await priceInIsoCurrency({ userId, code: pair.quoteCode, isCustomCode, date, pair });
+  const base = await priceInIsoCurrency({ userId, code: pair.baseCode, isCustom, date, pair });
+  const quote = await priceInIsoCurrency({ userId, code: pair.quoteCode, isCustom, date, pair });
 
   const isoRate =
     base.code === quote.code ? 1 : (await resolveIsoRate({ baseCode: base.code, quoteCode: quote.code })).rate;

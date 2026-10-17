@@ -1,4 +1,4 @@
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, dateBound } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as userExchangeRates from '@services/user-exchange-rate';
 import { z } from 'zod';
@@ -8,6 +8,9 @@ const UpdateExchangeRatePairSchema = z
     baseCode: currencyCode(),
     quoteCode: currencyCode(),
     rate: z.number().positive(),
+    // The day a rate of a custom currency starts to apply; today when omitted. Rates between ISO
+    // currencies apply to every day and refuse one.
+    effectiveDate: dateBound().optional(),
   })
   .strict();
 

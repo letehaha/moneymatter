@@ -1,12 +1,14 @@
 import { RecordId } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { ExchangeRateUnavailableError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
-import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
+import { getExchangeRate, resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { QueryTypes } from 'sequelize';
 
 import { utcInstant } from '../date-ranges';
@@ -26,7 +28,9 @@ const decimalToMinor = ({ value, decimals }: { value: string; decimals: number }
 
 /**
  * The rate Balances revalue uses for a day: the user's manual rate, else the
- * latest stored market rate on or before it. Reads only, never fetches a provider.
+ * latest stored market rate on or before it. A pair with a custom currency has no market rate:
+ * it takes the rate the user's own rates give for that day, the same one `revalueBalanceHistory`
+ * writes. Reads only, never fetches a provider.
  */
 const storedRate = async ({
   userId,
@@ -39,6 +43,16 @@ const storedRate = async ({
   quoteCode: string;
   date: Date;
 }): Promise<number | null> => {
+  if (await includesCustomCurrencyCode({ codes: [baseCode, quoteCode] })) {
+    try {
+      const { rate } = await getExchangeRate({ userId, baseCode, quoteCode, date, requireUserConnection: false });
+      return rate;
+    } catch (error) {
+      if (error instanceof ExchangeRateUnavailableError) return null;
+      throw error;
+    }
+  }
+
   const userCurrency = (await UsersCurrencies.findOne({
     where: { userId, currencyCode: baseCode },
     attributes: ['liveRateUpdate'],

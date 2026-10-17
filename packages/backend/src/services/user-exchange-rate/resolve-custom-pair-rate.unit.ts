@@ -2,12 +2,18 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 type AnyFn = (...args: unknown[]) => Promise<unknown>;
 
-jest.mock('@models/user-exchange-rates.model', () => ({ __esModule: true, default: { findOne: jest.fn() } }));
+jest.mock('@models/user-exchange-rates.model', () => ({
+  __esModule: true,
+  default: { findOne: jest.fn() },
+  toEffectiveDate: ({ date }: { date: Date }) => date.toISOString().slice(0, 10),
+}));
 jest.mock('@i18n/index', () => ({ t: ({ key }: { key: string }) => key }));
 
 /* eslint-disable import/first */
 import { ExchangeRateUnavailableError } from '@js/errors';
 import UserExchangeRates from '@models/user-exchange-rates.model';
+import Big from 'big.js';
+import { Op } from 'sequelize';
 
 import { resolveCustomPairRate } from './resolve-custom-pair-rate';
 /* eslint-enable import/first */
@@ -16,23 +22,69 @@ const findRate = UserExchangeRates.findOne as unknown as jest.Mock<AnyFn>;
 
 const DATE = new Date('2026-10-17T00:00:00.000Z');
 
-/** Stored user rates keyed by `base>quote`; a lookup by base alone returns the first one for that base. */
-const storeRates = (rates: Record<string, number>) => {
+interface StoredRate {
+  baseCode: string;
+  quoteCode: string;
+  rate: number;
+  effectiveDate: string;
+}
+
+const LONG_AGO = '2000-01-01';
+
+/**
+ * Stored user rates. A plain `base>quote` key holds one rate in force since long ago; `dated` adds
+ * rates that start on a given day. A lookup by base alone matches any quote, and the latest rate
+ * on or before the asked day comes back first, as the real query orders them.
+ */
+const storeRates = (rates: Record<string, number>, dated: StoredRate[] = []) => {
+  const rows: StoredRate[] = [
+    ...Object.entries(rates).map(([key, rate]) => {
+      const [baseCode, quoteCode] = key.split('>') as [string, string];
+      return { baseCode, quoteCode, rate, effectiveDate: LONG_AGO };
+    }),
+    ...dated,
+  ];
+
   findRate.mockImplementation(async (options) => {
-    const { baseCode, quoteCode } = (options as { where: { baseCode: string; quoteCode?: string } }).where;
-    const key = Object.keys(rates).find((candidate) => {
-      const [base, quote] = candidate.split('>');
-      return base === baseCode && (quoteCode === undefined || quote === quoteCode);
-    });
-    if (!key) return null;
-    const [base, quote] = key.split('>');
-    return { baseCode: base, quoteCode: quote, rate: rates[key], date: DATE };
+    const { where } = options as {
+      where: {
+        baseCode: string;
+        quoteCode?: string | { [Op.notIn]: string[] };
+        effectiveDate: { [Op.lte]: string };
+      };
+    };
+    const exactQuote = typeof where.quoteCode === 'string' ? where.quoteCode : undefined;
+    const excludedQuotes = typeof where.quoteCode === 'object' ? where.quoteCode[Op.notIn] : [];
+    const asOf = where.effectiveDate[Op.lte];
+    const [latest] = rows
+      .filter(
+        (row) =>
+          row.baseCode === where.baseCode &&
+          (exactQuote === undefined || row.quoteCode === exactQuote) &&
+          !excludedQuotes.includes(row.quoteCode) &&
+          row.effectiveDate <= asOf,
+      )
+      .toSorted((a, b) => b.effectiveDate.localeCompare(a.effectiveDate));
+    return latest ?? null;
   });
 };
 
-/** What production answers: any code that names a custom currency, whether or not it is in the pair. */
-const CUSTOM_CODES = new Set(['SAT', 'USDT', 'USDC', 'BTC', 'AAA', 'BBB', 'COIN']);
-const isCustomCode = async (code: string) => CUSTOM_CODES.has(code);
+const isCustomIn =
+  (codes: string[]) =>
+  async ({ code }: { code: string }) =>
+    codes.includes(code);
+
+const datedRate = ({
+  baseCode,
+  quoteCode,
+  value,
+  effectiveDate,
+}: {
+  baseCode: string;
+  quoteCode: string;
+  value: number;
+  effectiveDate: string;
+}): StoredRate => ({ baseCode, quoteCode, rate: value, effectiveDate });
 
 const isoRates = (rates: Record<string, number>) =>
   jest.fn(async ({ baseCode, quoteCode }: { baseCode: string; quoteCode: string }) => {
@@ -54,7 +106,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'SAT', quoteCode: 'USD' },
       date: DATE,
-      isCustomCode,
+      isCustom: isCustomIn(['SAT']),
       resolveIsoRate,
     });
 
@@ -70,7 +122,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDT', quoteCode: 'EUR' },
       date: DATE,
-      isCustomCode,
+      isCustom: isCustomIn(['USDT']),
       resolveIsoRate,
     });
 
@@ -85,7 +137,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'EUR', quoteCode: 'BTC' },
       date: DATE,
-      isCustomCode,
+      isCustom: isCustomIn(['BTC']),
       resolveIsoRate: isoRates({ 'EUR>USD': 1.1 }),
     });
 
@@ -99,7 +151,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDC', quoteCode: 'EUR' },
       date: DATE,
-      isCustomCode,
+      isCustom: isCustomIn(['USDC', 'USDT']),
       resolveIsoRate: isoRates({ 'USD>EUR': 0.9 }),
     });
 
@@ -114,7 +166,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDT', quoteCode: 'USDC' },
       date: DATE,
-      isCustomCode,
+      isCustom: isCustomIn(['USDT', 'USDC']),
       resolveIsoRate,
     });
 
@@ -130,44 +182,24 @@ describe('resolveCustomPairRate', () => {
         userId: 1,
         pair: { baseCode: 'SAT', quoteCode: 'USD' },
         date: DATE,
-        isCustomCode,
+        isCustom: isCustomIn(['SAT']),
         resolveIsoRate: isoRates({}),
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
   });
 
-  it('is unavailable for a loop of custom currencies that the pair does not name, instead of walking it forever', async () => {
-    // Only AAA is in the pair; BBB is reached through the stored quote of AAA.
+  it('is unavailable for a loop of custom currencies instead of walking it forever', async () => {
     storeRates({ 'AAA>BBB': 1, 'BBB>AAA': 1 });
-    const resolveIsoRate = isoRates({});
 
     await expect(
       resolveCustomPairRate({
         userId: 1,
         pair: { baseCode: 'AAA', quoteCode: 'USD' },
         date: DATE,
-        isCustomCode,
-        resolveIsoRate,
+        isCustom: isCustomIn(['AAA', 'BBB']),
+        resolveIsoRate: isoRates({}),
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
-    expect(resolveIsoRate).not.toHaveBeenCalled();
-  });
-
-  it('never hands a custom code to the ISO resolution when the quote of a custom code is custom', async () => {
-    storeRates({ 'SAT>COIN': 2, 'COIN>USD': 3 });
-    const resolveIsoRate = isoRates({ 'USD>EUR': 0.5 });
-
-    const result = await resolveCustomPairRate({
-      userId: 1,
-      pair: { baseCode: 'SAT', quoteCode: 'EUR' },
-      date: DATE,
-      isCustomCode,
-      resolveIsoRate,
-    });
-
-    expect(result.rate).toBe(3);
-    expect(resolveIsoRate).toHaveBeenCalledTimes(1);
-    expect(resolveIsoRate).toHaveBeenCalledWith({ baseCode: 'USD', quoteCode: 'EUR' });
   });
 
   it('passes through the failure of the ISO leg', async () => {
@@ -178,9 +210,148 @@ describe('resolveCustomPairRate', () => {
         userId: 1,
         pair: { baseCode: 'USDT', quoteCode: 'JPY' },
         date: DATE,
-        isCustomCode,
+        isCustom: isCustomIn(['USDT']),
         resolveIsoRate: isoRates({}),
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+  });
+
+  describe('by day', () => {
+    it('takes the rate that started most recently on or before the day', async () => {
+      storeRates({}, [
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-01-01' }),
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 2, effectiveDate: '2026-03-01' }),
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 3, effectiveDate: '2026-06-01' }),
+      ]);
+      const resolve = (day: string) =>
+        resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'USDT', quoteCode: 'USD' },
+          date: new Date(`${day}T15:30:00.000Z`),
+          isCustom: isCustomIn(['USDT']),
+          resolveIsoRate: isoRates({}),
+        });
+
+      expect((await resolve('2026-01-01')).rate).toBe(1);
+      expect((await resolve('2026-02-28')).rate).toBe(1);
+      expect((await resolve('2026-03-01')).rate).toBe(2);
+      expect((await resolve('2026-09-09')).rate).toBe(3);
+    });
+
+    it('reports the day a rate started as the date it applies from', async () => {
+      storeRates({}, [datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-03-01' })]);
+
+      const result = await resolveCustomPairRate({
+        userId: 1,
+        pair: { baseCode: 'USDT', quoteCode: 'USD' },
+        date: new Date('2026-05-05T00:00:00.000Z'),
+        isCustom: isCustomIn(['USDT']),
+        resolveIsoRate: isoRates({}),
+      });
+
+      expect(result.date).toEqual(new Date('2026-03-01T00:00:00.000Z'));
+    });
+
+    it('is unavailable on a day before the first rate', async () => {
+      storeRates({}, [datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-03-01' })]);
+
+      await expect(
+        resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'USDT', quoteCode: 'USD' },
+          date: new Date('2026-02-28T23:59:59.000Z'),
+          isCustom: isCustomIn(['USDT']),
+          resolveIsoRate: isoRates({}),
+        }),
+      ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+    });
+
+    it('switches the stored quote on the day the user starts quoting in another currency', async () => {
+      storeRates({}, [
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-01-01' }),
+        datedRate({ baseCode: 'USDT', quoteCode: 'EUR', value: 0.9, effectiveDate: '2026-04-01' }),
+      ]);
+      const resolveIsoRate = isoRates({ 'USD>GBP': 0.8, 'EUR>GBP': 0.85 });
+      const resolve = (day: string) =>
+        resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'USDT', quoteCode: 'GBP' },
+          date: new Date(`${day}T00:00:00.000Z`),
+          isCustom: isCustomIn(['USDT']),
+          resolveIsoRate,
+        });
+
+      expect((await resolve('2026-03-31')).rate).toBe(0.8);
+      expect((await resolve('2026-04-01')).rate).toBeCloseTo(0.9 * 0.85, 12);
+    });
+
+    it('prefers a rate entered for exactly the pair on that day over crossing the stored quote', async () => {
+      storeRates({}, [
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-01-01' }),
+        datedRate({ baseCode: 'USDT', quoteCode: 'EUR', value: 0.93, effectiveDate: '2026-02-01' }),
+      ]);
+      const resolveIsoRate = isoRates({ 'USD>EUR': 0.9 });
+      const resolve = (day: string) =>
+        resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'USDT', quoteCode: 'EUR' },
+          date: new Date(`${day}T00:00:00.000Z`),
+          isCustom: isCustomIn(['USDT']),
+          resolveIsoRate,
+        });
+
+      expect((await resolve('2026-01-15')).rate).toBe(0.9);
+      expect((await resolve('2026-02-15')).rate).toBe(0.93);
+    });
+
+    it('keeps a rate of a thousandth of a cent whole, so a million units convert to exactly one', async () => {
+      storeRates({ 'SAT>USD': 0.000001 });
+
+      const result = await resolveCustomPairRate({
+        userId: 1,
+        pair: { baseCode: 'SAT', quoteCode: 'USD' },
+        date: DATE,
+        isCustom: isCustomIn(['SAT']),
+        resolveIsoRate: isoRates({}),
+      });
+
+      expect(result.rate).toBe(0.000001);
+      expect(new Big(1_000_000).times(result.rate).toNumber()).toBe(1);
+    });
+  });
+
+  describe('a rate quoted in another custom currency', () => {
+    it('is unavailable, and never reaches the ISO resolution, when the rates only lead back to where they started', async () => {
+      storeRates({ 'SAT>COIN': 2, 'COIN>SAT': 0.5 });
+      const resolveIsoRate = isoRates({});
+
+      await expect(
+        resolveCustomPairRate({
+          userId: 1,
+          pair: { baseCode: 'SAT', quoteCode: 'EUR' },
+          date: DATE,
+          isCustom: isCustomIn(['SAT', 'COIN']),
+          resolveIsoRate,
+        }),
+      ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+      expect(resolveIsoRate).not.toHaveBeenCalled();
+    });
+
+    it('walks on past the reverse rate the editor stores beside every pair', async () => {
+      // The reverse of SAT>COIN is COIN>SAT, written after COIN>USD: it must not win.
+      storeRates({ 'SAT>COIN': 2, 'COIN>USD': 10, 'COIN>SAT': 0.5 });
+      const resolveIsoRate = isoRates({ 'USD>EUR': 0.9 });
+
+      const result = await resolveCustomPairRate({
+        userId: 1,
+        pair: { baseCode: 'SAT', quoteCode: 'EUR' },
+        date: DATE,
+        isCustom: isCustomIn(['SAT', 'COIN']),
+        resolveIsoRate,
+      });
+
+      expect(result.rate).toBeCloseTo(2 * 10 * 0.9, 12);
+      expect(resolveIsoRate).toHaveBeenCalledWith({ baseCode: 'USD', quoteCode: 'EUR' });
+    });
   });
 });

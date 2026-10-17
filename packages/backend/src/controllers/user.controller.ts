@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode, isoCurrencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, dateBound, isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
@@ -199,6 +199,8 @@ const exchangeRatePairSchema = z.object({
   baseCode: z.string(),
   quoteCode: z.string(),
   rate: z.number().optional(),
+  // Removes only the rate that starts on this day; every rate of the pair when omitted.
+  effectiveDate: dateBound().optional(),
 });
 
 export const removeUserCurrencyExchangeRate = createController(

@@ -16,8 +16,16 @@ const pairRates = ({ code, rate, quote = QUOTE }: { code: string; rate: number; 
   { baseCode: quote, quoteCode: code, rate: 1 / rate },
 ];
 
+/** A custom rate applies from the day it starts; these tests back-date their transactions, so it starts long ago. */
+const RATE_START = '2000-01-01';
+
 const setRates = (pairs: { baseCode: string; quoteCode: string; rate: number }[]) =>
-  helpers.editCurrencyExchangeRate({ pairs, raw: true });
+  helpers.editCurrencyExchangeRate({
+    pairs: pairs.map((pair) =>
+      pair.baseCode === 'USDT' || pair.quoteCode === 'USDT' ? { ...pair, effectiveDate: RATE_START } : pair,
+    ),
+    raw: true,
+  });
 
 const createCurrency = async ({ code, decimals = 6 }: { code: string; decimals?: number }) => {
   const response = await helpers.createCustomCurrency({ payload: { code, name: code, decimals } });

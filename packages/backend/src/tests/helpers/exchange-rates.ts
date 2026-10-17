@@ -10,6 +10,8 @@ type ExchangeRatePair = {
   baseCode: string;
   quoteCode: string;
   rate: number;
+  /** yyyy-mm-dd; only for a pair with a custom currency. */
+  effectiveDate?: string;
 };
 
 export async function editCurrencyExchangeRate<R extends boolean | undefined = undefined>({

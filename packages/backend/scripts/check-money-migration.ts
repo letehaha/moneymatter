@@ -1,6 +1,7 @@
 /**
  * Round-trip check for the money-storage migration (`20261016000000-money-columns-to-decimal`)
- * and the custom-currencies migration that follows it (`20261016010000-custom-currencies`).
+ * the custom-currencies migration that follows it (`20261016010000-custom-currencies`) and the
+ * rate-sources migration after that (`20261016020000-currency-rate-sources`).
  *
  * Against a disposable Postgres it applies every migration before the money one, seeds rows into
  * every money column (including `real_transactions` and the JSON fields), then runs the money
@@ -8,6 +9,7 @@
  * that state it runs the custom-currencies migration up, down and up again, and asserts the
  * widened code columns, the new columns and constraints, the nullable base-currency amounts, the
  * view, that the seeded values survive, and that `down` refuses while custom-currency data exists.
+ * Last it runs the rate-sources migration up, down and up again over dated user rates.
  *
  * Usage (needs a Postgres the script may create and drop a database in):
  *   docker run --rm -d --name mm-migcheck -e POSTGRES_PASSWORD=test -p 55432:5432 postgres:16
@@ -38,6 +40,7 @@ const Umzug = require('umzug');
 
 const MIGRATION_NAME = '20261016000000-money-columns-to-decimal';
 const CUSTOM_CURRENCIES_MIGRATION_NAME = '20261016010000-custom-currencies';
+const RATE_SOURCES_MIGRATION_NAME = '20261016020000-currency-rate-sources';
 const DATABASE_NAME = 'money_migration_check';
 
 const connection = {
@@ -798,6 +801,130 @@ const assertDownRefuses = async ({
 // Runner
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Rate sources
+// ---------------------------------------------------------------------------
+
+const RATE_KEY = `"userId" = 1 AND "baseCode" = 'USD' AND "quoteCode" = 'EUR'`;
+
+const seedUserRates = async ({ sequelize }: { sequelize: Sequelize }): Promise<void> => {
+  // The seed has no user or currency parents, which the foreign keys would require.
+  const [foreignKeys] = await sequelize.query(
+    `SELECT conname FROM pg_constraint WHERE contype = 'f' AND conrelid = '"UserExchangeRates"'::regclass`,
+  );
+  for (const { conname } of foreignKeys as { conname: string }[]) {
+    await sequelize.query(`ALTER TABLE "UserExchangeRates" DROP CONSTRAINT ${quote(conname)}`);
+  }
+
+  await sequelize.query(`
+    INSERT INTO "UserExchangeRates" ("userId", "baseCode", "quoteCode", "rate", "date") VALUES
+      (1, 'USD', 'EUR', 0.9,  '2026-03-04 23:59:59+00'),
+      (1, 'EUR', 'USD', 1.1,  '2026-03-05 02:00:00+05:00'),
+      (2, 'USD', 'EUR', 0.8,  '2026-03-05 00:00:01+00'),
+      (1, 'GBP', 'USD', 1.2,  '2026-04-01 08:00:00+00'),
+      (1, 'GBP', 'USD', 1.3,  '2026-04-01 20:00:00+00')`);
+};
+
+const assertRateSources = async ({
+  sequelize,
+  state,
+  step,
+}: {
+  sequelize: Sequelize;
+  state: 'before' | 'after';
+  step: string;
+}): Promise<void> => {
+  const after = state === 'after';
+
+  const effectiveDate = await columnDetails({ sequelize, table: 'UserExchangeRates', column: 'effectiveDate' });
+  const source = await columnDetails({ sequelize, table: 'UserExchangeRates', column: 'source' });
+  check({
+    ok: after ? effectiveDate?.data_type === 'date' && effectiveDate.is_nullable === 'NO' : effectiveDate === undefined,
+    label: `${step}: UserExchangeRates.effectiveDate is ${after ? 'a NOT NULL date' : 'absent'}`,
+  });
+  check({
+    ok: after
+      ? source?.data_type === 'character varying' &&
+        source.character_maximum_length === 32 &&
+        source.is_nullable === 'NO' &&
+        source.column_default?.startsWith("'manual'") === true
+      : source === undefined,
+    label: `${step}: UserExchangeRates.source is ${after ? "a NOT NULL varchar(32) defaulting to 'manual'" : 'absent'}`,
+  });
+
+  const keyColumns = await primaryKeyColumns({ sequelize, table: 'UserExchangeRates' });
+  const expectedKey = after
+    ? ['userId', 'baseCode', 'quoteCode', 'effectiveDate']
+    : ['userId', 'baseCode', 'quoteCode', 'date'];
+  check({
+    ok: JSON.stringify(keyColumns.toSorted()) === JSON.stringify(expectedKey.toSorted()),
+    label: `${step}: primary key is (${expectedKey.join(', ')}), got (${keyColumns.join(', ')})`,
+  });
+};
+
+const assertRateRows = async ({
+  sequelize,
+  expected,
+  step,
+}: {
+  sequelize: Sequelize;
+  expected: { userId: number; baseCode: string; quoteCode: string; rate: number; effectiveDate?: string }[];
+  step: string;
+}): Promise<void> => {
+  const [rows] = await sequelize.query(
+    `SELECT "userId", "baseCode", "quoteCode", "rate", to_char(("date" AT TIME ZONE 'UTC')::date, 'YYYY-MM-DD') AS "savedDay",
+            ${expected.some((row) => row.effectiveDate) ? `to_char("effectiveDate", 'YYYY-MM-DD')` : 'NULL'} AS "effectiveDate"
+       FROM "UserExchangeRates" ORDER BY "userId", "baseCode", "quoteCode", "date"`,
+  );
+  const actual = rows as {
+    userId: number;
+    baseCode: string;
+    quoteCode: string;
+    rate: number;
+    savedDay: string;
+    effectiveDate: string | null;
+  }[];
+
+  check({
+    ok: actual.length === expected.length,
+    label: `${step}: ${expected.length} user rates, got ${actual.length}`,
+  });
+  for (const want of expected) {
+    const found = actual.find(
+      (row) =>
+        row.userId === want.userId &&
+        row.baseCode === want.baseCode &&
+        row.quoteCode === want.quoteCode &&
+        Number(row.rate) === want.rate,
+    );
+    check({
+      ok: found !== undefined && (want.effectiveDate === undefined || found.effectiveDate === want.effectiveDate),
+      label: `${step}: rate ${want.userId} ${want.baseCode}>${want.quoteCode} = ${want.rate}${want.effectiveDate ? ` from ${want.effectiveDate}` : ''} is stored`,
+    });
+  }
+};
+
+const assertRateConstraints = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
+  // One pair can hold a rate per day, but not two for the same day.
+  await sequelize.query(
+    `INSERT INTO "UserExchangeRates" ("userId", "baseCode", "quoteCode", "rate", "date", "effectiveDate")
+     VALUES (1, 'USD', 'EUR', 0.95, now(), '2026-06-01')`,
+  );
+  check({
+    ok: await statementFails({
+      sequelize,
+      sql: `INSERT INTO "UserExchangeRates" ("userId", "baseCode", "quoteCode", "rate", "date", "effectiveDate")
+            VALUES (1, 'USD', 'EUR', 0.96, now(), '2026-06-01')`,
+    }),
+    label: `${step}: two rates of a pair on one day are rejected`,
+  });
+  const days = await scalar<number>({
+    sequelize,
+    sql: `SELECT count(*)::int FROM "UserExchangeRates" WHERE ${RATE_KEY}`,
+  });
+  check({ ok: days === 2, label: `${step}: a pair holds a rate for each of two days, got ${days}` });
+};
+
 const main = async (): Promise<void> => {
   const admin = new Sequelize({ ...connection, database: 'postgres' });
   await admin.query(`DROP DATABASE IF EXISTS ${DATABASE_NAME}`);
@@ -964,6 +1091,57 @@ const main = async (): Promise<void> => {
     await assertValues({ sequelize, seeded: afterDown, expected: 'decimal', step: 'custom-up-again' });
     await assertView({ sequelize, expected: 'decimal', step: 'custom-up-again' });
     await assertCustomConstraints({ sequelize, step: 'custom-up-again' });
+
+    // ---- rate-sources migration: dated user rates ----
+    await seedUserRates({ sequelize });
+    await assertRateSources({ sequelize, state: 'before', step: 'rates-seed' });
+    await umzug.up({ to: RATE_SOURCES_MIGRATION_NAME });
+    await assertRateSources({ sequelize, state: 'after', step: 'rates-up' });
+    // The offset row falls on the day before in UTC; the two GBP rows of one UTC day collapse to the later one.
+    const expectedAfterUp = [
+      { userId: 1, baseCode: 'USD', quoteCode: 'EUR', rate: 0.9, effectiveDate: '2026-03-04' },
+      { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1, effectiveDate: '2026-03-04' },
+      { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8, effectiveDate: '2026-03-05' },
+      { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3, effectiveDate: '2026-04-01' },
+    ];
+    await assertRateRows({ sequelize, expected: expectedAfterUp, step: 'rates-up' });
+    check({
+      ok:
+        (await scalar<number>({
+          sequelize,
+          sql: `SELECT count(*)::int FROM "UserExchangeRates" WHERE "source" <> 'manual'`,
+        })) === 0,
+      label: `rates-up: every existing rate is manual`,
+    });
+    await assertRateConstraints({ sequelize, step: 'rates-up' });
+
+    // down keeps the latest day of each pair: the June rate replaces the March one.
+    await umzug.down();
+    await assertRateSources({ sequelize, state: 'before', step: 'rates-down' });
+    await assertRateRows({
+      sequelize,
+      expected: [
+        { userId: 1, baseCode: 'USD', quoteCode: 'EUR', rate: 0.95 },
+        { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1 },
+        { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8 },
+        { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3 },
+      ],
+      step: 'rates-down',
+    });
+
+    await umzug.up({ to: RATE_SOURCES_MIGRATION_NAME });
+    await assertRateSources({ sequelize, state: 'after', step: 'rates-up-again' });
+    const savedToday = new Date().toISOString().slice(0, 10);
+    await assertRateRows({
+      sequelize,
+      expected: [
+        { userId: 1, baseCode: 'USD', quoteCode: 'EUR', rate: 0.95, effectiveDate: savedToday },
+        { userId: 1, baseCode: 'EUR', quoteCode: 'USD', rate: 1.1, effectiveDate: '2026-03-04' },
+        { userId: 2, baseCode: 'USD', quoteCode: 'EUR', rate: 0.8, effectiveDate: '2026-03-05' },
+        { userId: 1, baseCode: 'GBP', quoteCode: 'USD', rate: 1.3, effectiveDate: '2026-04-01' },
+      ],
+      step: 'rates-up-again',
+    });
 
     // A fractional-cent value fits the new column exactly.
     await sequelize.query(
