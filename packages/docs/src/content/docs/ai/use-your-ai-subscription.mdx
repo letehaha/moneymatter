@@ -1,0 +1,154 @@
+---
+title: Use your Claude or ChatGPT subscription for AI
+description: On a self-hosted MoneyMatter, run the AI features on your own Claude or ChatGPT subscription instead of a per-token API key. Who can use it, how to sign in, which models you can pick and how to sign out.
+sidebar:
+  order: 2
+  label: Use your AI subscription
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Besides an API key, a self-hosted MoneyMatter can run its AI features on your own **Claude** or **ChatGPT** subscription. You sign in to your account from inside MoneyMatter, pick a model, and the usage counts against your plan's limits instead of being billed per token.
+
+Two connection types do this:
+
+- **Claude Code (subscription)** uses your Claude plan.
+- **Codex (ChatGPT subscription)** uses your ChatGPT plan.
+
+They work for every AI feature that runs on your own AI model: automatic categorization, reading bank statements (including images and PDFs), importing investment transactions, and matching invoices to transactions. See [Other import sources](/import/other-import-sources/#import-from-any-text-source) for the statement import.
+
+<Aside type="caution" title="For your own use only">
+  Anthropic's and OpenAI's terms allow a subscription for your own personal use. Don't share the sign-in with other people or run other people's data through your plan. MoneyMatter shows this reminder next to the sign-in.
+</Aside>
+
+## What you need
+
+- **A self-hosted MoneyMatter.** These connection types don't exist on the cloud version. See [Self-hosting MoneyMatter](/getting-started/self-hosting/).
+- **An admin account.** Only an admin can add one. The server's owner makes you an admin by listing your username in `ADMIN_USERS`. See [Make yourself an admin](#make-yourself-an-admin).
+- **A Claude or ChatGPT subscription** that includes Claude Code (for Claude) or Codex (for ChatGPT).
+- **A browser** to approve the sign-in. It doesn't need to be on the same machine as the server.
+
+Nothing extra to install: the Claude Code and Codex programs MoneyMatter drives are already in the backend image.
+
+## Make yourself an admin
+
+If you don't see the subscription options in [Add a Claude Code connection](#add-a-claude-code-connection), the server doesn't list you as an admin yet.
+
+<Steps>
+
+1. Find your username. Open **Settings**, then **Household**. It's the handle shown there, without the `@`.
+2. On the server, set `ADMIN_USERS` in the `.env` file next to `docker-compose.yml`. Use usernames, not email addresses, and separate several with commas:
+
+   ```
+   ADMIN_USERS=alice
+   ```
+
+3. Restart the backend so it reads the new value:
+
+   ```
+   docker compose up -d
+   ```
+
+4. Reload MoneyMatter in your browser.
+
+</Steps>
+
+Only the admins you list can add or re-sign-in a subscription connection. The connection belongs to your own account. Other people on the same server can't use it.
+
+If the backend image doesn't contain a CLI (for example a custom build), its option is shown greyed out with "Not installed in this backend image".
+
+## Add a Claude Code connection
+
+<Steps>
+
+1. Click the gear button (**Settings**) at the top right of the app.
+2. Under **Workspace**, choose **AI**, then open the **AI models** tab.
+3. Click **Add model**.
+4. In **Provider**, choose **Claude Code (subscription)**.
+5. Give it a **Name**, for example `My Claude plan`.
+6. Click **Sign in with Claude**.
+7. Click **Open sign-in page**. A Claude page opens in a new tab. Sign in if asked and approve the access.
+8. Claude shows a code. Copy it, return to MoneyMatter, paste it into **Sign-in code** and click **Submit code**.
+9. When you see "Signed in. Save the model to keep the sign-in.", pick a **Model**. See [Choose a model](#choose-a-model).
+10. Click **Test connection** to check that the model answers, then save.
+
+</Steps>
+
+The sign-in is only kept when you save the model. If you close the form before saving, nothing is stored.
+
+You have 15 minutes to finish the sign-in. After that you'll see "The sign-in expired. Start it again." and click **Try again**. If MoneyMatter rejects the code, check that you pasted all of it and submit again, or use **Cancel sign-in** to start over.
+
+## Add a Codex connection
+
+First, turn on device code login in ChatGPT. Codex can only sign in this way: in ChatGPT, open **Settings**, then **Security**, and switch on **device code login**. MoneyMatter reminds you of this next to the sign-in button.
+
+<Steps>
+
+1. Open **Settings**, then **AI**, then the **AI models** tab, and click **Add model**.
+2. In **Provider**, choose **Codex (ChatGPT subscription)**.
+3. Give it a **Name**, for example `My ChatGPT plan`.
+4. Click **Sign in with ChatGPT**.
+5. MoneyMatter shows a short code. Click it to copy it.
+6. Click **Open sign-in page**, sign in to ChatGPT if asked, and enter the code.
+7. Return to MoneyMatter. It shows "Waiting for you to approve the sign-in…" and then "Signed in. Save the model to keep the sign-in." You don't paste anything back.
+8. Pick a **Model**, click **Test connection**, then save.
+
+</Steps>
+
+As with Claude, the sign-in is only kept once you save, and you have 15 minutes to approve it.
+
+## Choose a model
+
+The **Model** field lists the models the program accepts. Each connection has a default: `sonnet` for Claude Code and `gpt-6-astra` for Codex. Claude Code also accepts the short names `opus`, `haiku` and `fable`, plus specific versions. Codex lists several GPT models.
+
+Not every model is available on every plan. If your plan doesn't include the one you picked, **Test connection** says that the provider doesn't offer that model on your subscription. Pick another one.
+
+Larger models answer better but use up your plan's limits faster. Since you can add the same connection more than once, a common setup is a fast model for categorization and a stronger one for reading statements. Then choose the model for each feature on the **AI Features** tab.
+
+Connections on a subscription are marked **Subscription**. They don't show a cost estimate. Where a price would normally appear, you'll see "Included in your subscription".
+
+## Usage limits
+
+A subscription has its own usage limits, set by Claude or ChatGPT and shared with everything else you do on that account, such as chatting in the apps. MoneyMatter doesn't add a limit of its own, other than these:
+
+- **Runs happen one at a time per connection.** Several at once would use up your plan quickly. Across the server, no more than two runs go at the same time unless the server's owner raises `AI_CLI_MAX_CONCURRENT_RUNS`. Larger imports and categorization can take a little longer than with an API key.
+- **A single run can take up to five minutes** before it's cancelled.
+
+When your plan's limit is reached, the feature tells you the subscription limit is used up and, when the provider says so, when it resets. Try again after the reset, or pick another model for that feature.
+
+MoneyMatter's usage shows up on your plan's usage page at Claude or ChatGPT, like any other use of the account.
+
+## Sign in again
+
+The connection shows when the sign-in stops working:
+
+- **Claude Code:** the sign-in lasts one year. The connection shows "Sign-in valid until" and the date, then "Sign-in expires on" when fewer than 14 days are left, then "Sign-in expired on" once it has run out.
+- **Codex:** MoneyMatter keeps the sign-in fresh as it uses it, so it shows no expiry date. You only sign in again if ChatGPT stops accepting it.
+
+If a provider rejects the sign-in, the connection is marked **Invalid** and AI features skip it until it's fixed. A **Sign in again** button appears on the connection, as it does when the Claude sign-in is close to expiring. It opens the connection's form. Click **Sign in again** there, finish the same steps as above, and save. You keep the name and the model. You can also open the connection's menu, choose **Edit** and replace a working sign-in the same way.
+
+## Disconnect and revoke
+
+To remove a connection, open the menu next to it, choose **Remove** and confirm. This deletes the saved sign-in from MoneyMatter.
+
+- **Codex:** MoneyMatter also asks Codex to sign out, which revokes the access on ChatGPT's side.
+- **Claude Code:** removing the connection doesn't revoke the Claude token, because there's no command for it. To revoke it, open your [Claude account settings](https://claude.ai/settings) and remove the Claude Code access.
+
+If you restore a backup, subscription connections come back marked as needing a new sign-in, because sign-ins aren't included in backups. Click **Sign in again** on each.
+
+## What doesn't use your subscription
+
+**Budget suggestions** keep using the model the server provides, and never your subscription connection. They run on the server's own AI key (`GEMINI_API_KEY`), and are available only when the server has one.
+
+Every other AI feature uses the model you choose for it on the **AI Features** tab, including a subscription connection.
+
+## Troubleshooting
+
+| What you see | What to do |
+| --- | --- |
+| No **Claude Code (subscription)** or **Codex (ChatGPT subscription)** in **Provider** | You're not an admin, or the server isn't self-hosted. See [Make yourself an admin](#make-yourself-an-admin). |
+| An option is greyed out with "Not installed in this backend image" | The backend image doesn't contain that program. Pull the latest image, or ask whoever built it. |
+| "The sign-in didn't finish." | Click **Try again**. For Codex, make sure device code login is on in ChatGPT. |
+| "The sign-in expired. Start it again." | You took longer than 15 minutes. Click **Try again**. |
+| "A run on this connection is in progress, try again in a minute." | Another AI job is using the connection. Wait and test again. |
+| The model is rejected | Your plan doesn't include it. Pick another model. |
