@@ -1,8 +1,9 @@
 import { t } from '@i18n/index';
 import { ExchangeRateUnavailableError } from '@js/errors';
-import UserExchangeRates, { toEffectiveDate } from '@models/user-exchange-rates.model';
+import { toEffectiveDate } from '@models/user-exchange-rates.model';
+import { findStoredCustomRate, findStoredPairRate } from '@services/currencies/rate-sources/manual';
+import { findPeg } from '@services/currencies/rate-sources/peg';
 import Big from 'big.js';
-import { Op } from 'sequelize';
 
 interface ResolvedRate {
   baseCode: string;
@@ -25,15 +26,18 @@ const unavailable = ({ pair, date }: { pair: { baseCode: string; quoteCode: stri
   });
 
 /**
- * Walks a custom code down to the first code that is not custom, through the quote currency of the
- * user's own rate for each step. `factor` is how many units of `code` that ISO currency one unit of
- * the custom code is worth. A custom code without a rate, or a loop of custom codes, has no value.
+ * Walks a custom code down to the first code that is not custom. A step is the user's peg for the
+ * code (a fixed factor of its peg currency, valued on the same day) or, for every other source, the
+ * quote currency of the user's own stored rate. `factor` is how many units of the ISO currency
+ * reached one unit of the custom code is worth. A custom code without a rate, a peg whose config
+ * cannot be read, or a loop of custom codes (a peg cycle, or rates that quote each other) has no
+ * value.
  *
  * Whether a quote is custom is asked at every step, not read from the codes of the requested pair: a
  * rate can quote another custom code, and treating that code as ISO would hand it to the ISO
  * resolution, which would come back here and walk the same loop again. The rate editor stores both
- * directions of a pair, so a step never takes a rate that quotes a code already walked when another
- * rate exists; only a walk with nothing else left is a loop.
+ * directions of a pair, so a stored step never takes a rate that quotes a code already walked when
+ * another rate exists. A peg has no alternative: a peg onto a code already walked is a cycle.
  */
 const priceInIsoCurrency = async ({
   userId,
@@ -47,51 +51,33 @@ const priceInIsoCurrency = async ({
   isCustom: IsCustomCode;
   date: Date;
   pair: { baseCode: string; quoteCode: string };
-}): Promise<{ code: string; factor: number }> => {
+}): Promise<{ code: string; factor: Big }> => {
   const asOfDate = toEffectiveDate({ date });
   const visited = new Set<string>();
   let current = code;
-  let factor = 1;
+  let factor = new Big(1);
 
   while (await isCustom({ code: current })) {
     if (visited.has(current)) throw unavailable({ pair, date });
     visited.add(current);
 
-    const step = await getStoredCustomRate({ userId, baseCode: current, asOfDate, excludedQuotes: [...visited] });
+    const peg = await findPeg({ userId, code: current });
+    if (peg.kind === 'invalid') throw unavailable({ pair, date });
+
+    if (peg.kind === 'peg') {
+      factor = factor.times(peg.factor);
+      current = peg.quoteCode;
+      continue;
+    }
+
+    const step = await findStoredCustomRate({ userId, baseCode: current, asOfDate, excludedQuotes: [...visited] });
     if (!step) throw unavailable({ pair, date });
 
-    factor *= step.rate;
+    factor = factor.times(step.rate);
     current = step.quoteCode;
   }
 
   return { code: current, factor };
-};
-
-/**
- * The user's stored rate for a custom code on a day: the one that started most recently on or before
- * it (the one written last when several start on the same day), skipping rates that quote a code in
- * `excludedQuotes`. A day before the first rate has none.
- * The rate stays in the quote currency it was entered in, so a base-currency change never rewrites it.
- */
-const getStoredCustomRate = async ({
-  userId,
-  baseCode,
-  asOfDate,
-  excludedQuotes,
-}: {
-  userId: number;
-  baseCode: string;
-  asOfDate: string;
-  excludedQuotes: readonly string[];
-}) => {
-  return UserExchangeRates.findOne({
-    where: { userId, baseCode, quoteCode: { [Op.notIn]: excludedQuotes }, effectiveDate: { [Op.lte]: asOfDate } },
-    order: [
-      ['effectiveDate', 'DESC'],
-      ['date', 'DESC'],
-    ],
-    raw: true,
-  });
 };
 
 /**
@@ -100,11 +86,13 @@ const getStoredCustomRate = async ({
  *
  * Every user rate is read by day: the one that started most recently on or before that day applies,
  * whatever the user's live-rate setting or base currency, and a day before the first rate has none.
+ * A pegged currency is valued by its peg on the day instead: `factor` times the peg currency's own
+ * rate, which may be another custom currency, so every source resolves on this one path.
  *
- * 1. A rate the user entered for exactly this pair wins.
- * 2. Otherwise each custom side is priced in the quote currency of the user's own rate for it, and
- *    the remaining ISO-to-ISO conversion goes through `resolveIsoRate` for the same day, so a manual
- *    ISO rate into the base wins and the market rate fills in otherwise.
+ * 1. A rate the user entered for exactly this pair wins (unless a side is pegged).
+ * 2. Otherwise each custom side is priced in the quote currency of the user's own rate or peg for
+ *    it, and the remaining ISO-to-ISO conversion goes through `resolveIsoRate` for the same day, so
+ *    a manual ISO rate into the base wins and the market rate fills in otherwise.
  *
  * Custom rates keep their full precision: the 5-decimal market formatting would erase a coin worth
  * a fraction of a cent.
@@ -124,19 +112,21 @@ export const resolveCustomPairRate = async ({
   /** Resolves a pair of codes that are both ISO: it is never given a custom code. */
   resolveIsoRate: ResolveRate;
 }): Promise<ResolvedRate> => {
-  const exact = await UserExchangeRates.findOne({
-    where: {
-      userId,
-      baseCode: pair.baseCode,
-      quoteCode: pair.quoteCode,
-      effectiveDate: { [Op.lte]: toEffectiveDate({ date }) },
-    },
-    order: [
-      ['effectiveDate', 'DESC'],
-      ['date', 'DESC'],
-    ],
-    raw: true,
-  });
+  // A pegged currency is valued by its peg alone: rows stored before it was pegged (or restored with
+  // a backup) must not win over it.
+  const sidePegs = await Promise.all(
+    [pair.baseCode, pair.quoteCode].map(async (code) =>
+      (await isCustom({ code })) ? (await findPeg({ userId, code })).kind !== 'none' : false,
+    ),
+  );
+  const exact = sidePegs.some(Boolean)
+    ? null
+    : await findStoredPairRate({
+        userId,
+        baseCode: pair.baseCode,
+        quoteCode: pair.quoteCode,
+        asOfDate: toEffectiveDate({ date }),
+      });
   if (exact) {
     return {
       baseCode: pair.baseCode,
@@ -154,7 +144,7 @@ export const resolveCustomPairRate = async ({
     base.code === quote.code ? 1 : (await resolveIsoRate({ baseCode: base.code, quoteCode: quote.code })).rate;
 
   // Decimal arithmetic, so chaining rates does not add binary floating-point noise.
-  const rate = new Big(base.factor).times(isoRate).div(quote.factor).toNumber();
+  const rate = base.factor.times(isoRate).div(quote.factor).toNumber();
 
   return { ...pair, rate, date, custom: true };
 };

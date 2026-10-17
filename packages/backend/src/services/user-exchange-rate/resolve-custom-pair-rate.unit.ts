@@ -7,11 +7,13 @@ jest.mock('@models/user-exchange-rates.model', () => ({
   default: { findOne: jest.fn() },
   toEffectiveDate: ({ date }: { date: Date }) => date.toISOString().slice(0, 10),
 }));
+jest.mock('@models/users-currencies.model', () => ({ __esModule: true, default: { findOne: jest.fn() } }));
 jest.mock('@i18n/index', () => ({ t: ({ key }: { key: string }) => key }));
 
 /* eslint-disable import/first */
 import { ExchangeRateUnavailableError } from '@js/errors';
 import UserExchangeRates from '@models/user-exchange-rates.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import Big from 'big.js';
 import { Op } from 'sequelize';
 
@@ -19,6 +21,8 @@ import { resolveCustomPairRate } from './resolve-custom-pair-rate';
 /* eslint-enable import/first */
 
 const findRate = UserExchangeRates.findOne as unknown as jest.Mock<AnyFn>;
+
+const findHeldCurrency = UsersCurrencies.findOne as unknown as jest.Mock<AnyFn>;
 
 const DATE = new Date('2026-10-17T00:00:00.000Z');
 
@@ -68,6 +72,20 @@ const storeRates = (rates: Record<string, number>, dated: StoredRate[] = []) => 
     return latest ?? null;
   });
 };
+
+/** The currencies the user keeps on a rate source other than their own stored rates. */
+const setSources = (sources: Record<string, { rateSource: string; rateSourceConfig: unknown }>) => {
+  findHeldCurrency.mockImplementation(async (options) => {
+    const { where } = options as { where: { currencyCode: string } };
+
+    return sources[where.currencyCode] ?? { rateSource: 'manual', rateSourceConfig: null };
+  });
+};
+
+const peg = ({ pegCurrency, factor }: { pegCurrency: string; factor: number }) => ({
+  rateSource: 'peg',
+  rateSourceConfig: { pegCurrency, factor },
+});
 
 const isCustomIn =
   (codes: string[]) =>
@@ -352,6 +370,156 @@ describe('resolveCustomPairRate', () => {
 
       expect(result.rate).toBeCloseTo(2 * 10 * 0.9, 12);
       expect(resolveIsoRate).toHaveBeenCalledWith({ baseCode: 'USD', quoteCode: 'EUR' });
+    });
+  });
+
+  describe('a pegged currency', () => {
+    const resolvePair = ({
+      baseCode,
+      quoteCode,
+      customCodes,
+      resolveIsoRate = isoRates({}),
+      date = DATE,
+    }: {
+      baseCode: string;
+      quoteCode: string;
+      customCodes: string[];
+      resolveIsoRate?: ReturnType<typeof isoRates>;
+      date?: Date;
+    }) =>
+      resolveCustomPairRate({
+        userId: 1,
+        pair: { baseCode, quoteCode },
+        date,
+        isCustom: isCustomIn(customCodes),
+        resolveIsoRate,
+      });
+
+    it('is worth the factor times its peg currency, with no stored rate and no ISO lookup for the same currency', async () => {
+      storeRates({});
+      setSources({ USDT: peg({ pegCurrency: 'USD', factor: 1 }) });
+      const resolveIsoRate = isoRates({});
+
+      const result = await resolvePair({ baseCode: 'USDT', quoteCode: 'USD', customCodes: ['USDT'], resolveIsoRate });
+
+      expect(result).toMatchObject({ baseCode: 'USDT', quoteCode: 'USD', rate: 1, custom: true });
+      expect(resolveIsoRate).not.toHaveBeenCalled();
+    });
+
+    it('crosses the peg currency into the target with the ISO resolution of the same day', async () => {
+      storeRates({});
+      setSources({ USDT: peg({ pegCurrency: 'USD', factor: 1.02 }) });
+      const resolveIsoRate = isoRates({ 'USD>EUR': 0.9 });
+
+      const result = await resolvePair({ baseCode: 'USDT', quoteCode: 'EUR', customCodes: ['USDT'], resolveIsoRate });
+
+      expect(result.rate).toBeCloseTo(1.02 * 0.9, 12);
+      expect(resolveIsoRate).toHaveBeenCalledWith({ baseCode: 'USD', quoteCode: 'EUR' });
+    });
+
+    it('prices a pegged target by dividing, so the two directions are exact inverses', async () => {
+      storeRates({});
+      setSources({ USDT: peg({ pegCurrency: 'USD', factor: 4 }) });
+
+      const result = await resolvePair({ baseCode: 'USD', quoteCode: 'USDT', customCodes: ['USDT'] });
+
+      expect(result.rate).toBe(0.25);
+    });
+
+    it('ignores rows stored for the currency before it was pegged', async () => {
+      storeRates({ 'USDT>USD': 7, 'USD>USDT': 0.14 });
+      setSources({ USDT: peg({ pegCurrency: 'USD', factor: 1 }) });
+
+      expect((await resolvePair({ baseCode: 'USDT', quoteCode: 'USD', customCodes: ['USDT'] })).rate).toBe(1);
+      expect((await resolvePair({ baseCode: 'USD', quoteCode: 'USDT', customCodes: ['USDT'] })).rate).toBe(1);
+    });
+
+    it("follows a peg onto another custom currency through that currency's dated rate", async () => {
+      storeRates({}, [
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 1, effectiveDate: '2026-01-01' }),
+        datedRate({ baseCode: 'USDT', quoteCode: 'USD', value: 2, effectiveDate: '2026-02-01' }),
+      ]);
+      setSources({ USDC: peg({ pegCurrency: 'USDT', factor: 1 }) });
+      const resolve = (day: string) =>
+        resolvePair({
+          baseCode: 'USDC',
+          quoteCode: 'USD',
+          customCodes: ['USDC', 'USDT'],
+          date: new Date(`${day}T00:00:00.000Z`),
+        });
+
+      expect((await resolve('2026-01-15')).rate).toBe(1);
+      expect((await resolve('2026-02-15')).rate).toBe(2);
+      await expect(resolve('2025-12-31')).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+    });
+
+    it('chains pegs and multiplies their factors without floating-point noise', async () => {
+      storeRates({});
+      setSources({
+        AAA: peg({ pegCurrency: 'BBB', factor: 0.1 }),
+        BBB: peg({ pegCurrency: 'USD', factor: 0.2 }),
+      });
+
+      const result = await resolvePair({ baseCode: 'AAA', quoteCode: 'USD', customCodes: ['AAA', 'BBB'] });
+
+      expect(result.rate).toBe(0.02);
+    });
+
+    it('is unavailable, and never reaches the ISO resolution, for a peg cycle between two currencies', async () => {
+      storeRates({});
+      setSources({ AAA: peg({ pegCurrency: 'BBB', factor: 1 }), BBB: peg({ pegCurrency: 'AAA', factor: 1 }) });
+      const resolveIsoRate = isoRates({});
+
+      await expect(
+        resolvePair({ baseCode: 'AAA', quoteCode: 'EUR', customCodes: ['AAA', 'BBB'], resolveIsoRate }),
+      ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+      await expect(
+        resolvePair({ baseCode: 'EUR', quoteCode: 'BBB', customCodes: ['AAA', 'BBB'], resolveIsoRate }),
+      ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+      expect(resolveIsoRate).not.toHaveBeenCalled();
+    });
+
+    it('is unavailable for a longer peg cycle and for a peg onto itself restored from a backup', async () => {
+      storeRates({});
+      setSources({
+        AAA: peg({ pegCurrency: 'BBB', factor: 1 }),
+        BBB: peg({ pegCurrency: 'CCC', factor: 1 }),
+        CCC: peg({ pegCurrency: 'AAA', factor: 1 }),
+        SELF: peg({ pegCurrency: 'SELF', factor: 1 }),
+      });
+      const customCodes = ['AAA', 'BBB', 'CCC', 'SELF'];
+
+      await expect(resolvePair({ baseCode: 'AAA', quoteCode: 'USD', customCodes })).rejects.toBeInstanceOf(
+        ExchangeRateUnavailableError,
+      );
+      await expect(resolvePair({ baseCode: 'SELF', quoteCode: 'USD', customCodes })).rejects.toBeInstanceOf(
+        ExchangeRateUnavailableError,
+      );
+    });
+
+    it.each([
+      ['a missing config', null],
+      ['a config of the wrong shape', { pegCurrency: 'USD' }],
+      ['a zero factor', { pegCurrency: 'USD', factor: 0 }],
+      ['a negative factor', { pegCurrency: 'USD', factor: -1 }],
+      ['a string factor', { pegCurrency: 'USD', factor: '1' }],
+      ['a config that is not an object', 'USD'],
+    ])('is unavailable, not a guess, for a peg saved with %s', async (_name, rateSourceConfig) => {
+      storeRates({ 'USDT>USD': 5 });
+      setSources({ USDT: { rateSource: 'peg', rateSourceConfig } });
+
+      await expect(resolvePair({ baseCode: 'USDT', quoteCode: 'USD', customCodes: ['USDT'] })).rejects.toBeInstanceOf(
+        ExchangeRateUnavailableError,
+      );
+    });
+
+    it('leaves a currency on manual rates alone when another one is pegged', async () => {
+      storeRates({ 'SAT>USD': 0.001 });
+      setSources({ USDT: peg({ pegCurrency: 'USD', factor: 1 }) });
+
+      const result = await resolvePair({ baseCode: 'SAT', quoteCode: 'USD', customCodes: ['SAT', 'USDT'] });
+
+      expect(result.rate).toBe(0.001);
     });
   });
 });
