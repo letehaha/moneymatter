@@ -19,7 +19,7 @@ import {
 import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
-import { MoneyField } from '@common/types/money-column';
+import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
@@ -894,11 +894,6 @@ export function buildOrderClause({
   ];
 }
 
-const MONEY_FILTER_SCALE = 18;
-
-/** Exact decimal bound for a money filter: the column is DECIMAL, so the bound keeps the user's own precision. */
-const toFilterBound = (money: Money): string => money.toDecimalString(MONEY_FILTER_SCALE);
-
 function buildRefundCondition(filter: FILTER_OPERATION | undefined): Record<string, unknown> | null {
   if (filter === FILTER_OPERATION.exclude) return { refundLinked: false };
   if (filter === FILTER_OPERATION.only) return { refundLinked: true };
@@ -1254,12 +1249,12 @@ export const findWithFilters = async ({
     whereClause.amount = {};
     if (amountGte && amountLte) {
       whereClause.amount = {
-        [Op.between]: [toFilterBound(amountGte), toFilterBound(amountLte)],
+        [Op.between]: [toMoneyColumnValue({ money: amountGte }), toMoneyColumnValue({ money: amountLte })],
       };
     } else if (amountGte) {
-      whereClause.amount[Op.gte] = toFilterBound(amountGte);
+      whereClause.amount[Op.gte] = toMoneyColumnValue({ money: amountGte });
     } else if (amountLte) {
-      whereClause.amount[Op.lte] = toFilterBound(amountLte);
+      whereClause.amount[Op.lte] = toMoneyColumnValue({ money: amountLte });
     }
   }
 
@@ -1267,12 +1262,12 @@ export const findWithFilters = async ({
     whereClause.refAmount = {};
     if (refAmountGte && refAmountLte) {
       whereClause.refAmount = {
-        [Op.between]: [toFilterBound(refAmountGte), toFilterBound(refAmountLte)],
+        [Op.between]: [toMoneyColumnValue({ money: refAmountGte }), toMoneyColumnValue({ money: refAmountLte })],
       };
     } else if (refAmountGte) {
-      whereClause.refAmount[Op.gte] = toFilterBound(refAmountGte);
+      whereClause.refAmount[Op.gte] = toMoneyColumnValue({ money: refAmountGte });
     } else if (refAmountLte) {
-      whereClause.refAmount[Op.lte] = toFilterBound(refAmountLte);
+      whereClause.refAmount[Op.lte] = toMoneyColumnValue({ money: refAmountLte });
     }
   }
 

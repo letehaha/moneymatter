@@ -1,3 +1,4 @@
+import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import type { Money } from '@common/types/money';
 import { CacheClient } from '@js/utils/cache';
 
@@ -6,9 +7,6 @@ import { CacheClient } from '@js/utils/cache';
  * version segment keeps entries of an older value format from ever being read.
  */
 const REF_AMOUNT_CACHE_NAMESPACE = 'ref_amount:v2';
-
-/** Decimals kept in cache keys and values; matches the scale of the money columns. */
-const REF_AMOUNT_CACHE_SCALE = 18;
 
 export const refAmountCache = new CacheClient<string>({
   logPrefix: 'calculateRefAmountImpl',
@@ -31,11 +29,11 @@ export const buildRefAmountCacheKey = ({
   quoteCode: string;
   dateStr: string;
 }): string =>
-  `${REF_AMOUNT_CACHE_NAMESPACE}:${userId}:${amount.toDecimalString(REF_AMOUNT_CACHE_SCALE)}:${baseCode}:${quoteCode}:${dateStr}`;
+  `${REF_AMOUNT_CACHE_NAMESPACE}:${userId}:${amount.toDecimalString(MONEY_COLUMN_SCALE)}:${baseCode}:${quoteCode}:${dateStr}`;
 
 /** Cached value of a converted amount. */
 export const serializeRefAmountCacheValue = ({ amount }: { amount: Money }): string =>
-  amount.toDecimalString(REF_AMOUNT_CACHE_SCALE);
+  amount.toDecimalString(MONEY_COLUMN_SCALE);
 
 /** Redis pattern matching every cached converted amount of one user. Every invalidator uses it. */
 export const buildRefAmountCachePattern = ({ userId }: { userId: number }): string =>
