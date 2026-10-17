@@ -1,6 +1,7 @@
 import { ChangelogNotificationPayload, NOTIFICATION_TYPES } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import Notifications from '@models/notifications.model';
+import { enqueueWebPushAfterCommit } from '@services/web-push/enqueue-web-push';
 import { QueryTypes } from 'sequelize';
 
 import { connection } from '../../models';
@@ -96,7 +97,8 @@ export const createReleaseNotifications = withTransaction(
       payload,
     }));
 
-    await Notifications.bulkCreate(notifications);
+    const created = await Notifications.bulkCreate(notifications);
+    enqueueWebPushAfterCommit({ notificationIds: created.map(({ id }) => id) });
 
     logger.info(`Created ${notifications.length} release notifications for version ${version}`);
 
