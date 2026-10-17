@@ -94,7 +94,32 @@ describe('web-push-device', () => {
 
       await expect(removeThisDevice({ userId: 1 })).resolves.toBeUndefined();
 
+      expect(unsubscribe).toHaveBeenCalledOnce();
       expect(getStoredEndpoint({ userId: 1 })).toBeNull();
+    });
+
+    it('does not wait on a browser unsubscribe that never settles', async () => {
+      vi.useFakeTimers();
+      try {
+        const unsubscribe = vi.fn(() => new Promise<boolean>(() => {}));
+        stubRegistration({ subscription: { endpoint: 'https://push.example/a', unsubscribe } });
+        setStoredEndpoint({ userId: 1, endpoint: 'https://push.example/a' });
+        let settled = false;
+
+        const removal = removeThisDevice({ userId: 1 }).then(() => {
+          settled = true;
+        });
+        await vi.advanceTimersByTimeAsync(4000);
+        expect(settled).toBe(false);
+
+        await vi.advanceTimersByTimeAsync(1500);
+        await removal;
+
+        expect(unsubscribe).toHaveBeenCalledOnce();
+        expect(getStoredEndpoint({ userId: 1 })).toBeNull();
+      } finally {
+        vi.useRealTimers();
+      }
     });
 
     it('does nothing but clear storage when the browser has no subscription', async () => {
