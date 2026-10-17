@@ -294,7 +294,7 @@ export function moneyToApiDecimalOrNull(val: Money | string | null | undefined):
 }
 
 /**
- * Convert a Money or an integer cents number (the cents-domain sums that stats services compute in memory)
+ * Convert a Money or an integer cents number (provider minor units that really are cents)
  * to an API-friendly decimal number.
  *
  * Only for values that really are cents (provider minor units). Report engines use
