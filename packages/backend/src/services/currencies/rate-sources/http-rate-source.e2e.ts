@@ -476,6 +476,109 @@ describe('HTTP rate source', () => {
         }
       });
 
+      describe('the stored history when the source is saved again', () => {
+        const todayRows = [{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }];
+
+        /** Makes every fetch fail, so a row that is there afterwards was kept and not fetched again. */
+        const failFetches = () => {
+          global.mswMockServer.use(http.get(`${HOST}/price/:code`, () => HttpResponse.json({}, { status: 500 })));
+
+          return jest.spyOn(logger, 'error').mockImplementation(() => logger);
+        };
+
+        it('keeps the history when the same config is selected again after another source', async () => {
+          await createCurrency();
+          servePrice({ price: 2 });
+          await useHttp();
+          expect(await storedRates()).toEqual(todayRows);
+
+          const manual = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+          expect(manual.statusCode).toBe(200);
+
+          const errorSpy = failFetches();
+          try {
+            const again = await useHttp();
+            expect(again.statusCode).toBe(200);
+            expect(await storedRates()).toEqual(todayRows);
+          } finally {
+            errorSpy.mockRestore();
+          }
+        });
+
+        it('keeps the history when the same config is saved again with other headers', async () => {
+          await createCurrency();
+          servePrice({ price: 2 });
+          await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
+          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+
+          const errorSpy = failFetches();
+          try {
+            await useHttp({ config: { headers: { 'X-Api-Key': 'rotated' } } });
+            expect(await storedRates()).toEqual(todayRows);
+          } finally {
+            errorSpy.mockRestore();
+          }
+        });
+
+        it('keeps the history when only the value of a key in the URL query changes', async () => {
+          await createCurrency();
+          const keyed = (apikey: string) => ({ urlTemplate: `${HOST}/price/{code}?apikey=${apikey}&quote={quote}` });
+          servePrice({ price: 2 });
+          await useHttp({ config: keyed('old-key') });
+          expect(await storedRates()).toEqual(todayRows);
+
+          const errorSpy = failFetches();
+          try {
+            const rotated = await useHttp({ config: keyed('new-key') });
+            expect(rotated.statusCode).toBe(200);
+            expect(rotated.body.response).toMatchObject({ rateSourceConfig: keyed('new-key') });
+            expect(await storedRates()).toEqual(todayRows);
+          } finally {
+            errorSpy.mockRestore();
+          }
+        });
+
+        it.each([
+          ['the path of the URL', { urlTemplate: `${HOST}/price/{code}/last?quote={quote}` }],
+          ['the value of a parameter that selects data', { urlTemplate: `${HOST}/price/{code}?quote=EUR` }],
+          ['the JSON path', { jsonPath: 'data.last' }],
+        ])('drops the history when %s changes, also after another source', async (_label, change) => {
+          await createCurrency();
+          servePrice({ price: 2 });
+          await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?quote={quote}` } });
+          expect(await storedRates()).toEqual(todayRows);
+          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+
+          const errorSpy = failFetches();
+          try {
+            await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?quote={quote}`, ...change } });
+            expect(await storedRates()).toEqual([]);
+          } finally {
+            errorSpy.mockRestore();
+          }
+        });
+
+        it('keeps valuing the saved rows with the history that was kept', async () => {
+          await createCurrency();
+          servePrice({ price: 2 });
+          await useHttp();
+          const account = await createAccountIn({ code: USDT });
+          const created = await createTxToday({ accountId: account.id, amount: 10 });
+          expect(created.refAmount).toBe(20);
+          await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+
+          const errorSpy = failFetches();
+          try {
+            await useHttp();
+          } finally {
+            errorSpy.mockRestore();
+          }
+
+          expect((await readTx({ id: created.id })).refAmount).toBe(20);
+          expect(await storedRates()).toEqual(todayRows);
+        });
+      });
+
       it('keeps a rate the user entered by hand for the day', async () => {
         await createCurrency();
         const edit = await helpers.editCurrencyExchangeRate({
