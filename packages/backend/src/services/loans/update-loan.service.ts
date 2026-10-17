@@ -176,7 +176,7 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
     const { projectedBalance, overpaysBy } = projectLoanOverpay({
       projectedBalance: anchorInitialBalance.add(postAnchorPaymentsTotal),
     });
-    if (overpaysBy.toCents() > 0) {
+    if (overpaysBy.isPositive()) {
       throw new ValidationError({
         message: t({
           key: 'loans.correctionOverpay',

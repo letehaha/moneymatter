@@ -128,12 +128,15 @@ const payLoan = async ({
   sourceAccountId,
   amount,
   time,
+  categoryId,
 }: {
   loanId: string;
   sourceAccountId: RecordId;
   amount: number;
   /** ISO timestamp for backdated payments; defaults to now. */
   time?: string;
+  /** Category of the payment; defaults to the primary user's, so other users pass their own. */
+  categoryId?: RecordId;
 }) => {
   const [base] = await helpers.createTransaction({
     payload: {
@@ -141,6 +144,7 @@ const payLoan = async ({
         accountId: sourceAccountId,
         amount,
         ...(time && { time }),
+        ...(categoryId && { categoryId }),
       }),
       transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
       destinationAmount: amount,
@@ -355,6 +359,67 @@ describe('Loans read API', () => {
       const reloaded = await helpers.getLoanById({ id: loan.id, raw: true });
       expect(reloaded.projection.isPaidOff).toBe(true);
       expect(reloaded.projection.estimatedInterestPaid).toBe(0);
+    });
+  });
+
+  describe('loan balance at the loan currency decimals', () => {
+    /** Creates a loan owing `owed` in `currencyCode`, pays `payment` into it from a same-currency account. */
+    const owedAndPaid = async ({
+      currencyCode,
+      owed,
+      payment,
+    }: {
+      currencyCode: string;
+      owed: number;
+      payment: number;
+    }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const category = await helpers.addCustomCategory({ name: 'Loan payment', color: '#123456', raw: true });
+      const sourceAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode }),
+        raw: true,
+      });
+      const loan = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode,
+          initialBalance: owed,
+          originalPrincipal: owed,
+        }),
+        raw: true,
+      });
+      await payLoan({
+        loanId: loan.id,
+        sourceAccountId: sourceAccount.id as RecordId,
+        amount: payment,
+        categoryId: category.id,
+      });
+
+      return helpers.getLoanById({ id: loan.id, raw: true });
+    };
+
+    it('stores a KWD loan balance exactly after a 3-decimal payment, in the primary user book', async () => {
+      const loan = await owedAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.125);
+    });
+
+    it('stores a KWD loan balance exactly in a KWD-base book', async () => {
+      const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+      const loan = await helpers.asUser({
+        cookies: user.cookies,
+        fn: () => owedAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 }),
+      });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.125);
+    });
+
+    it('keeps the 2-decimal balance and paid-to-date of a primary-currency loan', async () => {
+      const loan = await owedAndPaid({ currencyCode: global.BASE_CURRENCY_CODE, owed: 1000.12, payment: 10.12 });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.12);
     });
   });
 

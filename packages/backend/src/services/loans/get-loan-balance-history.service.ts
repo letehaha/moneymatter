@@ -1,5 +1,5 @@
 import type { LoanBalanceHistoryPoint } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { getLoanById } from '@services/loans/get-loan-by-id.service';
 import { getPostAnchorPaymentLegs } from '@services/loans/get-post-anchor-payment-legs';
 import { replayLoanOutstanding } from '@services/loans/replay-loan-outstanding';
@@ -41,12 +41,14 @@ export const getLoanBalanceHistory = async ({
   // so this series sums each leg's nominal `amount` off the nominal anchor
   // snapshot (`Accounts.initialBalance`, stored negative per the liability
   // convention).
+  const decimals = await getCurrencyDecimals({ userId, code: account.currencyCode });
   const series = replayLoanOutstanding({
     legs,
     anchorDate,
     openingBalance: account.initialBalance,
-    pickCents: ({ leg }) => leg.amount.toCents(),
+    decimals,
+    pickMinor: ({ leg }) => leg.amount.toMinorUnits({ decimals }),
   });
 
-  return series.map((point) => ({ date: point.date, amount: centsToApiDecimal(point.balance) }));
+  return series.map((point) => ({ date: point.date, amount: point.balance.toNumber() }));
 };

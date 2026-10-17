@@ -41,11 +41,14 @@ const payLoan = async ({
   sourceAccountId,
   amount,
   time,
+  categoryId,
 }: {
   loanId: string;
   sourceAccountId: RecordId;
   amount: number;
   time?: string;
+  /** Category of the payment; defaults to the primary user's, so other users pass their own. */
+  categoryId?: RecordId;
 }) => {
   const [base] = await helpers.createTransaction({
     payload: {
@@ -53,6 +56,7 @@ const payLoan = async ({
         accountId: sourceAccountId,
         amount,
         ...(time ? { time } : {}),
+        ...(categoryId ? { categoryId } : {}),
       }),
       transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
       destinationAmount: amount,
@@ -485,5 +489,90 @@ describe('Cross-currency loan settlement: chart matches the card', () => {
     expect(latestRow!.date).toBe(PAY_2_KEY);
     expect(latestRow!.amount).toBe(0);
     expect(latestRow!.amount).toBe(reloaded.refCurrentBalance);
+  });
+});
+
+describe('Loan history at the loan currency decimals', () => {
+  /**
+   * A `currencyCode` loan owing 1000.125-style `owed`, re-anchored 30 days back and paid `payment`
+   * 20 days back from a same-currency account. Returns both the loan-currency series and the
+   * base-currency Balances rows.
+   */
+  const anchoredAndPaid = async ({
+    currencyCode,
+    owed,
+    payment,
+  }: {
+    currencyCode: string;
+    owed: number;
+    payment: number;
+  }) => {
+    await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+    const category = await helpers.addCustomCategory({ name: 'Loan payment', color: '#123456', raw: true });
+    const sourceAccount = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode }),
+      raw: true,
+    });
+    const loan = await helpers.createLoan({
+      payload: helpers.buildCreateLoanPayload({ currencyCode, initialBalance: owed, originalPrincipal: owed }),
+      raw: true,
+    });
+    await reAnchorLoan({ loanId: loan.id, balance: owed, asOf: DAY_30_AGO });
+    await payLoan({
+      loanId: loan.id,
+      sourceAccountId: sourceAccount.id as RecordId,
+      amount: payment,
+      time: subDays(new Date(), 20).toISOString(),
+      categoryId: category.id,
+    });
+
+    return {
+      series: await helpers.getLoanBalanceHistory({ id: loan.id, raw: true }),
+      balances: await getLoanHistory({ loanId: loan.id }),
+    };
+  };
+
+  it('keeps 3 decimals in the KWD loan-currency series and rounds the base rows to 2 in a 2-decimal book', async () => {
+    const { series, balances } = await anchoredAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 });
+
+    expect(series).toEqual([
+      { date: DAY_30_AGO, amount: -1000.125 },
+      { date: DAY_20_AGO, amount: -990 },
+    ]);
+    expect(balances).toHaveLength(2);
+    for (const row of balances) {
+      expect(row.amount).toBe(Number(row.amount.toFixed(2)));
+    }
+  });
+
+  it('keeps 3 decimals in the base-currency rows of a KWD-base book', async () => {
+    const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+    const { series, balances } = await helpers.asUser({
+      cookies: user.cookies,
+      fn: () => anchoredAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 }),
+    });
+
+    expect(series).toEqual([
+      { date: DAY_30_AGO, amount: -1000.125 },
+      { date: DAY_20_AGO, amount: -990 },
+    ]);
+    expect(balances).toEqual([
+      { date: DAY_30_AGO, amount: -1000.125 },
+      { date: DAY_20_AGO, amount: -990 },
+    ]);
+  });
+
+  it('keeps the 2-decimal series and rows of a primary-currency loan', async () => {
+    const { series, balances } = await anchoredAndPaid({
+      currencyCode: global.BASE_CURRENCY_CODE,
+      owed: 1000.12,
+      payment: 10.12,
+    });
+
+    expect(series).toEqual([
+      { date: DAY_30_AGO, amount: -1000.12 },
+      { date: DAY_20_AGO, amount: -990 },
+    ]);
+    expect(balances).toEqual(series.map((point) => ({ date: point.date, amount: point.amount })));
   });
 });
