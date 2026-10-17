@@ -5,7 +5,7 @@ const mockUpdate = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockDestroy = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockSendNotification = jest.fn<(...args: unknown[]) => Promise<unknown>>();
 const mockGetConfig = jest.fn<() => unknown>();
-const mockIsAllowed = jest.fn<(...args: unknown[]) => boolean>();
+const mockNormalize = jest.fn<(...args: unknown[]) => string | null>();
 const mockWarn = jest.fn();
 const mockError = jest.fn();
 const mockInfo = jest.fn();
@@ -17,7 +17,7 @@ jest.mock('@models/push-subscriptions.model', () => ({
 }));
 jest.mock('web-push', () => ({ sendNotification: mockSendNotification }));
 jest.mock('./config', () => ({ getWebPushConfig: mockGetConfig }));
-jest.mock('./endpoint-allowlist', () => ({ isPushEndpointAllowed: mockIsAllowed }));
+jest.mock('./endpoint-allowlist', () => ({ normalizePushEndpoint: mockNormalize }));
 jest.mock('@js/utils/logger', () => ({ logger: { warn: mockWarn, error: mockError, info: mockInfo } }));
 jest.mock('@js/utils/sentry', () => ({ captureException: mockCaptureException }));
 
@@ -60,7 +60,7 @@ describe('sendToSubscription', () => {
     mockGetConfig
       .mockReset()
       .mockReturnValue({ keyId: KEY_ID, subject: 'mailto:a@b.c', publicKey: 'pub', privateKey: 'priv' });
-    mockIsAllowed.mockReset().mockReturnValue(true);
+    mockNormalize.mockReset().mockImplementation((params) => (params as { endpoint: string }).endpoint);
     mockUpdate.mockResolvedValue([1, []]);
     mockDestroy.mockResolvedValue(1);
   });
@@ -99,7 +99,7 @@ describe('sendToSubscription', () => {
 
   describe('an endpoint the allowlist refuses', () => {
     beforeEach(() => {
-      mockIsAllowed.mockReturnValue(false);
+      mockNormalize.mockReturnValue(null);
     });
 
     it('is an instance-side condition: no request, no counted rejection, no prune', async () => {
@@ -129,6 +129,18 @@ describe('sendToSubscription', () => {
       await send({ endpoint: 'https://two.push.example.test/a' });
 
       expect(mockWarn).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  describe('the URL the request goes to', () => {
+    it('is the validated, normalized one, never the stored raw string', async () => {
+      mockNormalize.mockReturnValue('https://web.push.apple.com/normalized');
+      mockSendNotification.mockResolvedValue({ statusCode: 201 });
+
+      await send({ endpoint: 'https://WEB.PUSH.APPLE.COM:443/raw' });
+
+      const [target] = mockSendNotification.mock.calls[0]! as [{ endpoint: string }];
+      expect(target.endpoint).toBe('https://web.push.apple.com/normalized');
     });
   });
 
