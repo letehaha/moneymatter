@@ -15,6 +15,7 @@ import {
   TransactionLocation,
   TransactionModel,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
@@ -149,6 +150,7 @@ export interface TransactionsAttributes {
   } & Record<string, unknown>;
   commissionRate: Money;
   refCommissionRate: Money;
+  refAmountMissing: boolean;
   cashbackAmount: Money;
   originalAmount: Money | null;
   originalCurrencyCode: string | null;
@@ -177,7 +179,7 @@ export default class Transactions extends Model {
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refAmount: Money;
 
   @Length({ max: 2000 })
@@ -260,7 +262,7 @@ export default class Transactions extends Model {
   category!: Categories;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, type: DataType.STRING(3) })
+  @Column({ allowNull: true, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @Column({
@@ -271,7 +273,7 @@ export default class Transactions extends Model {
   accountType!: ACCOUNT_TYPES;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(3) })
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   refCurrencyCode!: string;
 
   @Column({
@@ -303,11 +305,16 @@ export default class Transactions extends Model {
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare commissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refCommissionRate: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare cashbackAmount: Money;
+
+  // `true` while the base-currency amounts are `null` because a custom currency had no rate on the
+  // transaction's date; it drives the review badge and selects the rows a new rate fills.
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  refAmountMissing!: boolean;
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
@@ -315,7 +322,7 @@ export default class Transactions extends Model {
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(3) })
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   originalCurrencyCode!: string | null;
 
   // Represents if the transaction refunds another tx, or is being refunded by other. Added only for

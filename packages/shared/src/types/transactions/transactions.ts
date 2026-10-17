@@ -124,6 +124,8 @@ export interface TransactionModel {
   originalAmount: number | null;
   originalCurrencyCode: string | null;
   refundLinked: boolean;
+  /** `true` while the base-currency amounts could not be computed because a custom currency had no rate on the transaction's date. */
+  refAmountMissing: boolean;
   /** Serializer-derived, list reads only. */
   hasAttachments?: boolean;
   isPlanned: boolean;

@@ -1,4 +1,5 @@
 import { UserExchangeRatesModel } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { Op } from 'sequelize';
 import { Table, Column, Model, ForeignKey, DataType } from 'sequelize-typescript';
@@ -22,11 +23,11 @@ export default class UserExchangeRates extends Model {
   userId!: number;
 
   @ForeignKey(() => Currencies.default)
-  @Column({ allowNull: false, type: DataType.STRING(3), primaryKey: true })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), primaryKey: true })
   baseCode!: string;
 
   @ForeignKey(() => Currencies.default)
-  @Column({ allowNull: false, type: DataType.STRING(3), primaryKey: true })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), primaryKey: true })
   quoteCode!: string;
 
   @Column({ allowNull: true, defaultValue: 1, type: DataType.NUMBER })

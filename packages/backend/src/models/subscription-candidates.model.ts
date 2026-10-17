@@ -1,4 +1,5 @@
 import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, RecordId } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -40,7 +41,7 @@ export default class SubscriptionCandidates extends Model {
   declare averageAmount: Money;
 
   @Column({
-    type: DataType.STRING(3),
+    type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH),
     allowNull: false,
   })
   currencyCode!: string;

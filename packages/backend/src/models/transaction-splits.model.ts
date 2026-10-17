@@ -58,7 +58,7 @@ export default class TransactionSplits extends Model {
   declare amount: Money;
 
   /** Amount in base currency (same as transaction.refAmount) */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refAmount: Money;
 
   // Optional per-split note, max 100 chars

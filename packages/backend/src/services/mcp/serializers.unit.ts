@@ -63,6 +63,7 @@ const fullTransaction: TransactionApiResponse = {
   transferId: null,
   originalId: 'orig-1',
   refundLinked: false,
+  refAmountMissing: false,
   isPlanned: false,
   plannedMerge: null,
   isPending: false,

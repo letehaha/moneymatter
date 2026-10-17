@@ -1,3 +1,4 @@
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { ValidationError } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
@@ -26,7 +27,7 @@ export default class Currencies extends Model {
   @Column({
     allowNull: false,
     primaryKey: true,
-    type: DataType.STRING(3),
+    type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH),
   })
   code!: string;
 
@@ -42,11 +43,24 @@ export default class Currencies extends Model {
   })
   digits!: number;
 
+  /** ISO 4217 numeric code. `null` on custom currencies, so they never match an ISO numeric lookup. */
   @Column({
-    allowNull: false,
+    allowNull: true,
     type: DataType.INTEGER,
   })
-  number!: number;
+  number!: number | null;
+
+  /** `true` for a user-defined code, `false` for the ISO 4217 seed. */
+  @Column({ allowNull: false, defaultValue: false, type: DataType.BOOLEAN })
+  isCustom!: boolean;
+
+  /** Currency symbol of a custom code; ISO rows leave it `null`. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
+  symbol!: string | null;
+
+  /** User that defined a custom code; `null` for ISO rows. A plain id, not a foreign key: see the migration. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER })
+  createdByUserId!: number | null;
 
   @BelongsToMany(() => Users, {
     as: 'users',

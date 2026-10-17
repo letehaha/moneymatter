@@ -6,6 +6,7 @@ import {
   type EntityLogoPayload,
   RecordId,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { roundMoneyValues } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
@@ -73,19 +74,19 @@ export default class Accounts extends Model {
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare initialBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refInitialBalance: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare currentBalance: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refCurrentBalance: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare creditLimit: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
   declare refCreditLimit: Money;
 
   @Column({
@@ -104,7 +105,7 @@ export default class Accounts extends Model {
   accountCategory!: ACCOUNT_CATEGORIES;
 
   @ForeignKey(() => Currencies)
-  @Column({ type: DataType.STRING(3) })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @ForeignKey(() => Users)

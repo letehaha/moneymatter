@@ -61,6 +61,8 @@ export interface TransactionApiResponse {
   transferId: string | null;
   originalId: string | null;
   refundLinked: boolean;
+  /** `true` while the base-currency amounts could not be computed for a custom currency. */
+  refAmountMissing: boolean;
   /** Present on list reads only. */
   hasAttachments?: boolean;
   isPlanned: boolean;
@@ -250,6 +252,7 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
+    refAmountMissing: tx.refAmountMissing ?? false,
     isPlanned: tx.isPlanned ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
     isPending: isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) }),

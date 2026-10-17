@@ -21,9 +21,14 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
 export interface CurrencyModel {
   currency: string;
   digits: number;
-  number: number;
+  /** ISO 4217 numeric code; `null` on a custom currency. */
+  number: number | null;
   code: string;
   isDisabled: boolean;
+  /** `true` for a user-defined code, `false` for the ISO 4217 seed. */
+  isCustom: boolean;
+  /** Symbol of a custom currency; `null` on ISO currencies. */
+  symbol: string | null;
 }
 
 export interface UserCurrencyModel {
@@ -33,6 +38,12 @@ export interface UserCurrencyModel {
   exchangeRate: number;
   liveRateUpdate: boolean;
   isDefaultCurrency: boolean;
+  /** Name the user gave the currency; `null` keeps `currency.currency`. */
+  nameOverride: string | null;
+  /** Symbol the user gave the currency; `null` keeps `currency.symbol`. */
+  symbolOverride: string | null;
+  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps `currency.digits`. */
+  decimalsOverride: number | null;
   currency?: CurrencyModel;
   user?: UserModel;
 }

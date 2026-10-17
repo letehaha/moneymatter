@@ -8,5 +8,7 @@ export function serializeCurrency(currency: Currencies): CurrencyModel {
     number: currency.number,
     code: currency.code,
     isDisabled: currency.isDisabled,
+    isCustom: currency.isCustom,
+    symbol: currency.symbol,
   };
 }
