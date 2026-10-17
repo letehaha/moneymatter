@@ -117,6 +117,38 @@ describe('convertV1MoneyToDecimal', () => {
     expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
   });
 
+  it.each([
+    ['an exponent string', '1e1000000000'],
+    ['a huge exponent number', 1e300],
+    ['a number past the BIGINT range', 9.3e18],
+    ['a string past the BIGINT range', '9223372036854775808'],
+    ['an infinite number', Infinity],
+    ['a string with a long fraction', `0.${'1'.repeat(1000)}`],
+  ])('rejects a hostile v1 column amount (%s) before expanding it', (_label, amount) => {
+    const data = new Map<BackupFileName, Row[]>([['transactions', [{ amount }]]]);
+
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
+  });
+
+  it('rejects a hostile v1 amount inside a JSON field', () => {
+    const data = new Map<BackupFileName, Row[]>([['tag-reminders', [{ settings: { amountThreshold: 1e300 } }]]]);
+
+    expect(() => convertV1MoneyToDecimal({ data })).toThrow(/expected an amount in cents/);
+  });
+
+  it('accepts the BIGINT bounds', () => {
+    const data = new Map<BackupFileName, Row[]>([
+      ['transactions', [{ amount: '9223372036854775807' }, { amount: '-9223372036854775808' }]],
+    ]);
+
+    convertV1MoneyToDecimal({ data });
+
+    expect(data.get('transactions')!.map((row) => row.amount)).toEqual([
+      '92233720368547758.07',
+      '-92233720368547758.08',
+    ]);
+  });
+
   it('converts the JSON amount keys of an object field and keeps the other entries', () => {
     const data = new Map<BackupFileName, Row[]>([
       ['tag-reminders', [{ settings: { amountThreshold: 150000, note: 'keep', nested: { amountThreshold: 5 } } }]],
