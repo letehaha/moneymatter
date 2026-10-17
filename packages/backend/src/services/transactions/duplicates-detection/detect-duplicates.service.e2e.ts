@@ -465,20 +465,32 @@ describe('Generic Detect Duplicates Service', () => {
         raw: true,
       });
 
+    // Through POST /import/text-source/detect-duplicates, which feeds this matcher
+    const detect = async ({ accountId, amount }: { accountId: RecordId; amount: number }) => {
+      const { duplicates } = await helpers.statementDetectDuplicates({
+        payload: {
+          accountId,
+          transactions: [{ date: '2024-01-15', description: 'Coffee', amount, type: 'expense' }],
+        },
+        raw: true,
+      });
+
+      return duplicates;
+    };
+
     it('does not flag a KWD 1.234 against an existing 1.231, and flags it against an existing 1.234', async () => {
       const account = await createKwdAccount();
-      const transactions: TransactionToCheck[] = [{ date: '2024-01-15', amount: 1.234, type: 'expense' }];
 
       await createExpense({ accountId: account.id, amount: 1.231 });
 
-      expect(await detectDuplicates({ userId: account.userId, accountId: account.id, transactions })).toHaveLength(0);
+      expect(await detect({ accountId: account.id, amount: 1.234 })).toHaveLength(0);
 
       await createExpense({ accountId: account.id, amount: 1.234 });
 
-      const result = await detectDuplicates({ userId: account.userId, accountId: account.id, transactions });
+      const result = await detect({ accountId: account.id, amount: 1.234 });
 
       expect(result).toHaveLength(1);
-      expect(result[0]!.existing.amount).toBe(1.234);
+      expect(result[0]!.existingTransaction.amount).toBe(1.234);
     });
 
     it('rounds an incoming amount to the account currency before it is keyed', async () => {
@@ -488,20 +500,8 @@ describe('Generic Detect Duplicates Service', () => {
       await createExpense({ accountId: kwdAccount.id, amount: 1.235 });
       await createExpense({ accountId: baseAccount.id, amount: 12.35 });
 
-      expect(
-        await detectDuplicates({
-          userId: kwdAccount.userId,
-          accountId: kwdAccount.id,
-          transactions: [{ date: '2024-01-15', amount: 1.2345, type: 'expense' }],
-        }),
-      ).toHaveLength(1);
-      expect(
-        await detectDuplicates({
-          userId: baseAccount.userId,
-          accountId: baseAccount.id,
-          transactions: [{ date: '2024-01-15', amount: 12.345, type: 'expense' }],
-        }),
-      ).toHaveLength(1);
+      expect(await detect({ accountId: kwdAccount.id, amount: 1.2345 })).toHaveLength(1);
+      expect(await detect({ accountId: baseAccount.id, amount: 12.345 })).toHaveLength(1);
     });
   });
 
