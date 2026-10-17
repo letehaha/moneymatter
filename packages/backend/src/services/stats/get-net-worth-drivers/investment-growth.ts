@@ -1,8 +1,8 @@
-import { type Cents, INVESTMENT_TRANSACTION_CATEGORY, asCents } from '@bt/shared/types';
+import { type MinorUnits, INVESTMENT_TRANSACTION_CATEGORY, asMinorUnits } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 
-import type { InvestmentFlowRow, InvestmentFlowsCents, NetWorthDriversPortfolioSliceCents } from './types';
+import type { InvestmentFlowRow, InvestmentFlowsMinor, NetWorthDriversPortfolioSliceMinor } from './types';
 
 /**
  * Bucket index for a UTC calendar day, or -1 when the day falls outside the
@@ -24,7 +24,7 @@ const findBoundaryBucketIndex = ({ dayStr, boundaryDates }: { dayStr: string; bo
 };
 
 /**
- * Per-bucket investment cash flows in base-currency cents.
+ * Per-bucket investment cash flows in base-currency minor units.
  *
  * `refAmount` is the cash moved: `notional + fees` for buy, `notional - fees`
  * for sell and dividend (see `resolveSettlement`). Each fee is collected once
@@ -38,16 +38,19 @@ const findBoundaryBucketIndex = ({ dayStr, boundaryDates }: { dayStr: string; bo
 export const accumulateInvestmentFlows = ({
   transactions,
   boundaryDates,
+  decimals,
 }: {
   transactions: InvestmentFlowRow[];
   boundaryDates: string[];
-}): InvestmentFlowsCents[] => {
+  /** Decimals of the base currency: the scale the amounts are converted to minor units at. */
+  decimals: number;
+}): InvestmentFlowsMinor[] => {
   const bucketCount = Math.max(boundaryDates.length - 1, 0);
-  const flows: InvestmentFlowsCents[] = Array.from({ length: bucketCount }, () => ({
-    buyNotional: asCents(0),
-    sellNotional: asCents(0),
-    dividendsGross: asCents(0),
-    feesAndTaxes: asCents(0),
+  const flows: InvestmentFlowsMinor[] = Array.from({ length: bucketCount }, () => ({
+    buyNotional: asMinorUnits(0),
+    sellNotional: asMinorUnits(0),
+    dividendsGross: asMinorUnits(0),
+    feesAndTaxes: asMinorUnits(0),
   }));
 
   for (const tx of transactions) {
@@ -56,26 +59,26 @@ export const accumulateInvestmentFlows = ({
 
     const bucket = flows[index]!;
     // Raw rows carry DECIMAL strings; Money.fromDecimal is the same conversion
-    // the model getter applies, so cents come out identical to hydrated rows.
-    const refAmount = Money.fromDecimal(tx.refAmount).toCents();
-    const refFees = Money.fromDecimal(tx.refFees).toCents();
+    // the model getter applies, so minor units come out identical to hydrated rows.
+    const refAmount = Money.fromDecimal(tx.refAmount).toMinorUnits({ decimals });
+    const refFees = Money.fromDecimal(tx.refFees).toMinorUnits({ decimals });
 
     switch (tx.category) {
       case INVESTMENT_TRANSACTION_CATEGORY.buy:
-        bucket.buyNotional = asCents(bucket.buyNotional + refAmount - refFees);
-        bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
+        bucket.buyNotional = asMinorUnits(bucket.buyNotional + refAmount - refFees);
+        bucket.feesAndTaxes = asMinorUnits(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.sell:
-        bucket.sellNotional = asCents(bucket.sellNotional + refAmount + refFees);
-        bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
+        bucket.sellNotional = asMinorUnits(bucket.sellNotional + refAmount + refFees);
+        bucket.feesAndTaxes = asMinorUnits(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.dividend:
-        bucket.dividendsGross = asCents(bucket.dividendsGross + refAmount + refFees);
-        bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refFees);
+        bucket.dividendsGross = asMinorUnits(bucket.dividendsGross + refAmount + refFees);
+        bucket.feesAndTaxes = asMinorUnits(bucket.feesAndTaxes + refFees);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.fee:
       case INVESTMENT_TRANSACTION_CATEGORY.tax:
-        bucket.feesAndTaxes = asCents(bucket.feesAndTaxes + refAmount);
+        bucket.feesAndTaxes = asMinorUnits(bucket.feesAndTaxes + refAmount);
         break;
       case INVESTMENT_TRANSACTION_CATEGORY.transfer:
       case INVESTMENT_TRANSACTION_CATEGORY.cancel:
@@ -93,11 +96,11 @@ export const accumulateInvestmentFlows = ({
   return flows;
 };
 
-export interface InvestmentGrowthCents {
-  growth: Cents;
-  priceEffect: Cents;
-  dividends: Cents;
-  feesAndTaxes: Cents;
+export interface InvestmentGrowthMinor {
+  growth: MinorUnits;
+  priceEffect: MinorUnits;
+  dividends: MinorUnits;
+  feesAndTaxes: MinorUnits;
 }
 
 /**
@@ -116,19 +119,19 @@ export interface InvestmentGrowthCents {
  */
 export const computeInvestmentGrowth = ({
   flows,
-  holdingsCentsByDate,
+  holdingsMinorByDate,
   boundaryDates,
 }: {
-  flows: InvestmentFlowsCents[];
-  holdingsCentsByDate: Map<string, Cents>;
+  flows: InvestmentFlowsMinor[];
+  holdingsMinorByDate: Map<string, MinorUnits>;
   boundaryDates: string[];
-}): InvestmentGrowthCents[] =>
+}): InvestmentGrowthMinor[] =>
   flows.map((flow, index) => {
-    const openingValue = holdingsCentsByDate.get(boundaryDates[index]!) ?? 0;
-    const closingValue = holdingsCentsByDate.get(boundaryDates[index + 1]!) ?? 0;
+    const openingValue = holdingsMinorByDate.get(boundaryDates[index]!) ?? 0;
+    const closingValue = holdingsMinorByDate.get(boundaryDates[index + 1]!) ?? 0;
 
-    const priceEffect = asCents(closingValue - openingValue - flow.buyNotional + flow.sellNotional);
-    const growth = asCents(priceEffect + flow.dividendsGross - flow.feesAndTaxes);
+    const priceEffect = asMinorUnits(closingValue - openingValue - flow.buyNotional + flow.sellNotional);
+    const growth = asMinorUnits(priceEffect + flow.dividendsGross - flow.feesAndTaxes);
 
     return {
       growth,
@@ -142,7 +145,7 @@ export const computeInvestmentGrowth = ({
 export interface PortfolioGrowthSeries {
   portfolioId: string;
   name: string;
-  growth: InvestmentGrowthCents[];
+  growth: InvestmentGrowthMinor[];
   /**
    * Whether the portfolio held or traded anything in the window. Drives legend
    * membership only — a portfolio that held a flat position all window belongs in
@@ -155,7 +158,7 @@ export interface PortfolioGrowthSeries {
  * Collapse the per-portfolio growth series into the report's bucket totals plus the
  * sparse per-portfolio split of each bucket's `growth`.
  *
- * Every component is integer cents and the totals are the elementwise sum of the
+ * Every component is integer minor units and the totals are the elementwise sum of the
  * same series the slices are read from, so a bucket's slices re-add to its `growth`
  * exactly rather than to within a rounding step. Slices are emitted only where the
  * growth is non-zero, so a bucket a portfolio sat out carries no entry for it.
@@ -171,17 +174,17 @@ export const foldPortfolioGrowth = ({
   series: PortfolioGrowthSeries[];
   bucketCount: number;
 }): {
-  totals: InvestmentGrowthCents[];
-  byBucket: NetWorthDriversPortfolioSliceCents[][];
+  totals: InvestmentGrowthMinor[];
+  byBucket: NetWorthDriversPortfolioSliceMinor[][];
   legend: { portfolioId: string; name: string }[];
 } => {
-  const totals: InvestmentGrowthCents[] = Array.from({ length: bucketCount }, () => ({
-    growth: asCents(0),
-    priceEffect: asCents(0),
-    dividends: asCents(0),
-    feesAndTaxes: asCents(0),
+  const totals: InvestmentGrowthMinor[] = Array.from({ length: bucketCount }, () => ({
+    growth: asMinorUnits(0),
+    priceEffect: asMinorUnits(0),
+    dividends: asMinorUnits(0),
+    feesAndTaxes: asMinorUnits(0),
   }));
-  const byBucket: NetWorthDriversPortfolioSliceCents[][] = Array.from({ length: bucketCount }, () => []);
+  const byBucket: NetWorthDriversPortfolioSliceMinor[][] = Array.from({ length: bucketCount }, () => []);
 
   for (const entry of series) {
     for (let index = 0; index < bucketCount; index += 1) {
@@ -189,10 +192,10 @@ export const foldPortfolioGrowth = ({
       if (!bucket) continue;
 
       const total = totals[index]!;
-      total.growth = asCents(total.growth + bucket.growth);
-      total.priceEffect = asCents(total.priceEffect + bucket.priceEffect);
-      total.dividends = asCents(total.dividends + bucket.dividends);
-      total.feesAndTaxes = asCents(total.feesAndTaxes + bucket.feesAndTaxes);
+      total.growth = asMinorUnits(total.growth + bucket.growth);
+      total.priceEffect = asMinorUnits(total.priceEffect + bucket.priceEffect);
+      total.dividends = asMinorUnits(total.dividends + bucket.dividends);
+      total.feesAndTaxes = asMinorUnits(total.feesAndTaxes + bucket.feesAndTaxes);
 
       if (bucket.growth !== 0) {
         byBucket[index]!.push({ portfolioId: entry.portfolioId, growth: bucket.growth });

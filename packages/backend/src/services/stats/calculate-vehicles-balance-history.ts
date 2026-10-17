@@ -68,6 +68,22 @@ interface VehicleCompute {
 }
 
 /**
+ * The vehicle series is still computed in base cents; this lifts it to the base currency's
+ * minor units so it sums with the other series of a report. At 2 decimals it is the identity.
+ */
+export const rescaleVehicleCents = ({
+  series,
+  decimals,
+}: {
+  series: Map<string, number> | null;
+  decimals: number;
+}): Map<string, number> | null => {
+  if (!series || decimals === 2) return series;
+
+  return new Map([...series].map(([dateStr, cents]) => [dateStr, Math.round(cents * 10 ** (decimals - 2))]));
+};
+
+/**
  * Day-by-day depreciated value of all vehicle accounts for a user, in base.
  *
  * Why we don't read `Balances` for vehicles: those rows are sparse — written

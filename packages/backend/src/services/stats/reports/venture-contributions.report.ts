@@ -1,3 +1,4 @@
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { serializeVentureContributions } from '@root/serializers/stats.serializer';
 
 import { getVentureContributions } from '../get-venture-contributions';
@@ -12,7 +13,8 @@ export const getVentureContributionsReport = async ({
   from: string;
   to: string;
 }) => {
-  const result = await getVentureContributions({ userId, from, to });
+  const decimals = await getBaseCurrencyDecimals({ userId });
+  const result = await getVentureContributions({ userId, from, to, decimals });
 
-  return serializeVentureContributions(result);
+  return serializeVentureContributions({ result, decimals });
 };

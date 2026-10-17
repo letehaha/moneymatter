@@ -1,5 +1,4 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import { CENTS_DECIMALS } from '@common/types/money';
 import { StatsTransactionsResult, statsTransactions } from '@services/stats/stats-transactions';
 import { Op } from 'sequelize';
 
@@ -12,16 +11,19 @@ import { Op } from 'sequelize';
  *
  * Shared by the net-worth-drivers and investment-contributions reports so both read
  * the exact same transaction set. `refAmount` keeps its Money getter (no `raw`), so
- * callers convert to cents themselves.
+ * callers convert it to minor units at `decimals`.
  */
 export const fetchSavingsTransactions = ({
   userId,
   from,
   to,
+  decimals,
 }: {
   userId: number;
   from: string;
   to: string;
+  /** Decimals of the base currency: the scale refund pairs are resolved in. */
+  decimals: number;
 }): Promise<StatsTransactionsResult> =>
   statsTransactions({
     // `{ creator }`, not `{ accessibleTo }`: both consumers are personal surfaces — the
@@ -31,8 +33,7 @@ export const fetchSavingsTransactions = ({
     access: { creator: userId },
     planned: 'exclude',
     refunds: 'net',
-    // The savings engines sum in cents.
-    decimals: CENTS_DECIMALS,
+    decimals,
     window: { from, to },
     // A loan payment moves cash into an equal liability drop, so it is not savings intake even
     // though spending reports count its cash leg as an expense.
