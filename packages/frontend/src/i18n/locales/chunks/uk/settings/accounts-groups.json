@@ -22,7 +22,6 @@
         "accountsCount": "{count} рахунок | {count} рахунки | {count} рахунків",
         "noAccounts": "Немає рахунків",
         "accountsElsewhere": "{count} синхронізований рахунок в інших групах | {count} синхронізовані рахунки в інших групах | {count} синхронізованих рахунків в інших групах",
-        "inParent": "у {name}",
         "manageConnection": "Керувати підключенням"
       },
       "update": {

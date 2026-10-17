@@ -22,7 +22,6 @@
         "accountsCount": "{count} account | {count} accounts",
         "noAccounts": "No accounts",
         "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
-        "inParent": "in {name}",
         "manageConnection": "Manage connection"
       },
       "update": {
