@@ -54,7 +54,8 @@ describe('startPtySession', () => {
       matched: false,
       reason: 'timeout',
     });
-    expect(await session.waitFor({ pattern: TOKEN_PATTERN, timeoutMs: 1000 })).toEqual({
+    // Ends at ~1050 ms from the start, well before the delimiter at ~1400 ms plus process start-up.
+    expect(await session.waitFor({ pattern: TOKEN_PATTERN, timeoutMs: 700 })).toEqual({
       matched: false,
       reason: 'timeout',
     });
@@ -84,7 +85,9 @@ describe('startPtySession', () => {
   it('matches output that arrived before waitFor was called', async () => {
     const session = runScript({ script: `process.stdout.write('hello\\n'); setTimeout(() => {}, 3000)` });
 
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    while (!session.getLastLines({ count: 5 }).some((line) => line.includes('hello'))) {
+      await new Promise((resolve) => setTimeout(resolve, 10));
+    }
 
     const result = await session.waitFor({ pattern: /hello(?=\s)/, timeoutMs: 1000 });
 

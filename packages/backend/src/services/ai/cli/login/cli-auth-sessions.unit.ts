@@ -48,11 +48,17 @@ jest.mock('@js/utils/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
 }));
 
+// Sign-in tests start real fake-CLI processes in PTYs, several per test; jest's default 5 s is too tight on a
+// loaded machine. `waitForStatus` fails with its own message before this timeout does.
+jest.setTimeout(30_000);
+
+const WAIT_FOR_STATUS_DEADLINE_MS = 10_000;
+
 const TOKEN = 'sk-ant-oat01-FAKE0123456789abcdefghijklmnopqrstuvwxyz';
 const { claudeCode, codex } = AI_PROVIDER;
 
 const waitForStatus = async ({ userId, sessionId, status }: { userId: number; sessionId: string; status: string }) => {
-  const deadline = Date.now() + 8000;
+  const deadline = Date.now() + WAIT_FOR_STATUS_DEADLINE_MS;
 
   for (;;) {
     const info = getSession({ userId, sessionId });
@@ -159,6 +165,9 @@ describe('cli auth sessions', () => {
       submitCode({ userId: 1, sessionId: started.id, code: 'good-code' });
 
       expect(() => submitCode({ userId: 1, sessionId: started.id, code: 'good-code' })).toThrow(ValidationError);
+
+      // Lets the fake CLI finish, so it is not still writing to its state dir when the test tears down.
+      await waitForStatus({ userId: 1, sessionId: started.id, status: 'succeeded' });
     });
   });
 
