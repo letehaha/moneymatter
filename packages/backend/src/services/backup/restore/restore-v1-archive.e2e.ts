@@ -210,6 +210,18 @@ describe('Restoring a format version 1 backup (cents to decimals)', () => {
     expect(byName.get('Dollars')!.refCurrentBalance).toBe(1120.4);
   });
 
+  it('restores holdings from an archive that predates the currency logo with no logo', async () => {
+    await restoreUpload({ base64: await buildFixtureUpload() });
+
+    const holdings = rowsOf({ archive: await exportParsed(), name: 'users-currencies' });
+    expect(holdings.length).toBeGreaterThan(0);
+    for (const holding of holdings) expect(holding).toHaveProperty('logoUrl', null);
+
+    const userCurrencies = await helpers.getUserCurrencies();
+    expect(userCurrencies.length).toBeGreaterThan(0);
+    for (const item of userCurrencies) expect(item.logoUrl).toBeNull();
+  });
+
   it('exports the restored ledger as a format version 3 archive that round-trips exactly', async () => {
     await restoreUpload({ base64: await buildFixtureUpload() });
     const firstExport = await helpers.exportBackup();

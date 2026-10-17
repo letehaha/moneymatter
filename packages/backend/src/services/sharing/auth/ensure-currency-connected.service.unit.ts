@@ -41,7 +41,9 @@ describe('ensureUserCurrencyConnected', () => {
     findCurrency.mockResolvedValue({ code: 'SAT', isCustom: true });
     findHolding.mockImplementation(async (options) => {
       const { userId } = (options as { where: { userId: number } }).where;
-      return userId === OWNER_ID ? { nameOverride: 'Sats', symbolOverride: 's', decimalsOverride: 8 } : null;
+      return userId === OWNER_ID
+        ? { nameOverride: 'Sats', symbolOverride: 's', decimalsOverride: 8, logoUrl: 'https://example.com/sats.png' }
+        : null;
     });
 
     const connected = await ensureUserCurrencyConnected({
@@ -51,7 +53,13 @@ describe('ensureUserCurrencyConnected', () => {
     });
 
     expect(updateHoldings).toHaveBeenCalledWith(
-      { liveRateUpdate: false, nameOverride: 'Sats', symbolOverride: 's', decimalsOverride: 8 },
+      {
+        liveRateUpdate: false,
+        nameOverride: 'Sats',
+        symbolOverride: 's',
+        decimalsOverride: 8,
+        logoUrl: 'https://example.com/sats.png',
+      },
       { where: { userId: COLLABORATOR_ID, currencyCode: 'SAT' } },
     );
     expect(connected).toMatchObject({ liveRateUpdate: false, decimalsOverride: 8 });

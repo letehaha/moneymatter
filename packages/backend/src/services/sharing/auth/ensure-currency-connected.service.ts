@@ -13,7 +13,7 @@ import { withTransaction } from '@services/common/with-transaction';
  * downstream ref-amount lookup. Runs inside the surrounding `withTransaction`
  * context so the insert rolls back with the rest of the write on failure.
  *
- * A custom currency connected this way takes the name, symbol and decimals of
+ * A custom currency connected this way takes the name, symbol, decimals and logo of
  * `definitionOwnerUserId` (the account owner), so the recipient sees the code the way the
  * account's owner defined it instead of whatever the creator of the global row chose.
  *
@@ -53,6 +53,7 @@ export const ensureUserCurrencyConnected = withTransaction(
         nameOverride: ownerRow.nameOverride,
         symbolOverride: ownerRow.symbolOverride,
         decimalsOverride: ownerRow.decimalsOverride,
+        logoUrl: ownerRow.logoUrl,
       }),
     };
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-import { currencyCode, dateBound, dateRange, isoCurrencyCode, withDateOrder } from './custom-types';
+import { currencyCode, currencyLogoUrl, dateBound, dateRange, isoCurrencyCode, withDateOrder } from './custom-types';
 
 describe('dateBound', () => {
   describe("precision 'date' (default)", () => {
@@ -252,6 +252,37 @@ describe('isoCurrencyCode', () => {
   });
 
   it.each(['ZZZ', 'USDT', 'BTC', 'US', ''])('rejects %p, which is not an ISO 4217 code', (input) => {
+    expect(schema.safeParse(input).success).toBe(false);
+  });
+});
+
+describe('currencyLogoUrl', () => {
+  const schema = currencyLogoUrl();
+  const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
+
+  it('accepts an https URL', () => {
+    expect(schema.parse(LOGO)).toBe(LOGO);
+  });
+
+  it('accepts a URL of exactly 2048 characters', () => {
+    const url = `https://example.com/${'a'.repeat(2048 - 'https://example.com/'.length)}`;
+
+    expect(schema.parse(url)).toBe(url);
+  });
+
+  it('accepts null, which clears the logo', () => {
+    expect(schema.parse(null)).toBeNull();
+  });
+
+  it.each([
+    ['an http URL', 'http://example.com/logo.png'],
+    ['a javascript URL', 'javascript:alert(1)'],
+    ['a data URL', 'data:image/png;base64,AAAA'],
+    ['a protocol-relative URL', '//example.com/logo.png'],
+    ['text that is not a URL', 'bitcoin'],
+    ['an empty string', ''],
+    ['a URL of 2049 characters', `https://example.com/${'a'.repeat(2049 - 'https://example.com/'.length)}`],
+  ])('rejects %s', (_label, input) => {
     expect(schema.safeParse(input).success).toBe(false);
   });
 });

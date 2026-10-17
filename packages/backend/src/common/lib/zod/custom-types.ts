@@ -1,6 +1,7 @@
 import type { RecordId } from '@bt/shared/types';
 import {
   type BudgetSuggestionAnswers,
+  CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH,
   BUDGET_PLAN_NAME_MAX_LENGTH,
   BUDGET_SUGGESTION_DETAILS,
   BUDGET_SUGGESTION_EATS_OUT,
@@ -108,6 +109,20 @@ export const currencyCode = () =>
   z.string().trim().toUpperCase().refine(isCurrencyCodeFormat, {
     message: 'Invalid currency code. Use 2 to 16 letters or digits, e.g. "USD".',
   });
+
+/**
+ * Logo of a custom currency: an absolute `https:` URL of at most `CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH`
+ * characters, or `null` to clear it. Any other scheme (`http:`, `javascript:`, `data:`) is refused, so
+ * a stored logo is always safe to hand to an `<img src>`.
+ *
+ * @example
+ * body: z.object({ logoUrl: currencyLogoUrl().optional() })  // absent keeps, null clears
+ */
+export const currencyLogoUrl = () =>
+  z
+    .url({ protocol: /^https$/ })
+    .max(CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH)
+    .nullable();
 
 /**
  * Currency-code validator for contexts that only accept ISO 4217 codes (base currency,

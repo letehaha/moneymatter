@@ -1,5 +1,6 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
 import { DEACTIVATION_REASON } from '@bt/shared/types';
+import { currencyLogoUrl } from '@common/lib/zod/custom-types';
 import Currencies from '@models/currencies.model';
 import MerchantCategoryCodes from '@models/merchant-category-codes.model';
 import { encryptCredentials } from '@services/bank-data-providers/utils/credential-encryption';
@@ -93,11 +94,11 @@ function buildRowOverrides({
     overrides.mccId = targetMccId;
   }
 
-  // A custom currency's name, symbol and decimals live in the user's overrides. A row without them
+  // A custom currency's name, symbol, decimals and logo live in the user's overrides. A row without them
   // takes the backup's definition (the user's own, see `dumpCustomCurrencies`), so the restored
   // holding never falls back to a global row another user defined. A row that carries its decimals
   // holds a complete definition: its empty symbol was cleared on purpose and stays cleared, as in
-  // `applyCurrencyOverrides`. Every row gets all three keys, keeping the batch's column set uniform.
+  // `applyCurrencyOverrides`. Every row gets all four keys, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
     const isComplete = row.decimalsOverride != null;
@@ -106,6 +107,9 @@ function buildRowOverrides({
       ? (row.symbolOverride ?? null)
       : (row.symbolOverride ?? definition?.symbol ?? null);
     overrides.decimalsOverride = row.decimalsOverride ?? definition?.decimals ?? null;
+    // The logo is an https URL on a custom code only; anything else in the archive restores as no logo.
+    const logo = definition ? currencyLogoUrl().safeParse(row.logoUrl) : null;
+    overrides.logoUrl = logo?.success ? logo.data : null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and

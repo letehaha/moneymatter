@@ -133,6 +133,7 @@ describe('Custom currencies', () => {
         decimals: 8,
         symbol: 'sat',
         isCustom: true,
+        logoUrl: null,
       });
 
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([created.body.response]);
@@ -258,7 +259,14 @@ describe('Custom currencies', () => {
       const updated = await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats', symbol: null } });
 
       expect(updated.statusCode).toBe(200);
-      expect(updated.body.response).toEqual({ code: SAT, name: 'Sats', decimals: 8, symbol: null, isCustom: true });
+      expect(updated.body.response).toEqual({
+        code: SAT,
+        name: 'Sats',
+        decimals: 8,
+        symbol: null,
+        isCustom: true,
+        logoUrl: null,
+      });
     });
 
     it('changes the decimals while none of the user rows use the currency', async () => {
@@ -307,6 +315,91 @@ describe('Custom currencies', () => {
 
       await helpers.createCustomCurrency({ payload: sat() });
       expect((await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 40 } })).statusCode).toBe(422);
+    });
+
+    describe('logo', () => {
+      const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
+
+      const logoOfListedCurrency = async () =>
+        (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === SAT)!.logoUrl;
+      const logoOfUserCurrency = async ({ code }: { code: string }) =>
+        (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)!.logoUrl;
+
+      it('starts without a logo', async () => {
+        const created = await helpers.createCustomCurrency({ payload: sat() });
+
+        expect(created.body.response).toMatchObject({ logoUrl: null });
+        expect(await logoOfUserCurrency({ code: SAT })).toBeNull();
+      });
+
+      it('stores an https logo and returns it from both currency lists', async () => {
+        await helpers.createCustomCurrency({ payload: sat() });
+
+        const updated = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+
+        expect(updated.statusCode).toBe(200);
+        expect(updated.body.response).toMatchObject({ code: SAT, logoUrl: LOGO });
+        expect(await logoOfListedCurrency()).toBe(LOGO);
+        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+      });
+
+      it('keeps the logo when a later update does not send one', async () => {
+        await helpers.createCustomCurrency({ payload: sat() });
+        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+
+        const renamed = await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats' } });
+
+        expect(renamed.statusCode).toBe(200);
+        expect(renamed.body.response).toMatchObject({ name: 'Sats', logoUrl: LOGO });
+        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+      });
+
+      it('clears the logo with null', async () => {
+        await helpers.createCustomCurrency({ payload: sat() });
+        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+
+        const cleared = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: null } });
+
+        expect(cleared.statusCode).toBe(200);
+        expect(cleared.body.response).toMatchObject({ logoUrl: null });
+        expect(await logoOfUserCurrency({ code: SAT })).toBeNull();
+      });
+
+      it.each([
+        ['an http URL', 'http://coin-images.coingecko.com/bitcoin.png'],
+        ['a javascript URL', 'javascript:alert(1)'],
+        ['a data URL', 'data:image/png;base64,AAAA'],
+        ['text that is not a URL', 'bitcoin'],
+        ['an empty string', ''],
+        ['a URL of 2049 characters', `https://example.com/${'a'.repeat(2049 - 'https://example.com/'.length)}`],
+      ])('rejects %s with 422 and keeps the stored logo', async (_label, logoUrl) => {
+        await helpers.createCustomCurrency({ payload: sat() });
+        await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: LOGO } });
+
+        const response = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl } });
+
+        expect(response.statusCode).toBe(422);
+        expect(await logoOfUserCurrency({ code: SAT })).toBe(LOGO);
+      });
+
+      it('accepts a URL of exactly 2048 characters', async () => {
+        await helpers.createCustomCurrency({ payload: sat() });
+        const longUrl = `https://example.com/${'a'.repeat(2048 - 'https://example.com/'.length)}`;
+
+        const response = await helpers.updateCustomCurrency({ code: SAT, payload: { logoUrl: longUrl } });
+
+        expect(response.statusCode).toBe(200);
+        expect(await logoOfUserCurrency({ code: SAT })).toBe(longUrl);
+      });
+
+      it('answers 404 for an ISO code and leaves its logo empty', async () => {
+        await helpers.addUserCurrencies({ currencyCodes: ['USD'], raw: true });
+
+        const response = await helpers.updateCustomCurrency({ code: 'USD', payload: { logoUrl: LOGO } });
+
+        expect(response.statusCode).toBe(404);
+        expect(await logoOfUserCurrency({ code: 'USD' })).toBeNull();
+      });
     });
   });
 
@@ -565,7 +658,7 @@ describe('Custom currencies', () => {
       expect(row!.createdByUserId).not.toBeNull();
 
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-        { code: USDT, name: 'Tether', decimals: 6, symbol: 'T', isCustom: true },
+        { code: USDT, name: 'Tether', decimals: 6, symbol: 'T', isCustom: true, logoUrl: null },
       ]);
 
       const restoredAccount = (await helpers.getAccounts()).find((candidate) => candidate.name === 'Stable');
@@ -573,6 +666,45 @@ describe('Custom currencies', () => {
       expect(restoredAccount!.currencyCode).toBe(USDT);
       const restoredTransactions = await accountTransactions({ accountId: restoredAccount!.id });
       expect(restoredTransactions.map((transaction) => Number(transaction.amount))).toContain(0.123456);
+    });
+
+    it('carries the logo of a custom currency through export and restore', async () => {
+      const logoUrl = 'https://coin-images.coingecko.com/coins/images/325/large/Tether.png';
+      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6, symbol: 'T' } });
+      await helpers.updateCustomCurrency({ code: USDT, payload: { logoUrl } });
+
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const holdings = archive.readData({ name: 'users-currencies' }) as { currencyCode: string; logoUrl: unknown }[];
+      expect(holdings.find((row) => row.currencyCode === USDT)!.logoUrl).toBe(logoUrl);
+
+      await helpers.wipeUserData();
+      const status = await restoreArchive({ fileContent: exported.body.toString('base64') });
+      expect(status.status).toBe('completed');
+
+      expect((await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === USDT)!.logoUrl).toBe(
+        logoUrl,
+      );
+    });
+
+    it('drops a logo that is not an https URL when an archive carries one', async () => {
+      await helpers.createCustomCurrency({ payload: { code: USDT, name: 'Tether', decimals: 6 } });
+
+      const exported = await helpers.exportBackup();
+      const archive = helpers.parseBackupArchive({ buffer: exported.body });
+      const holdings = archive.readData({ name: 'users-currencies' }) as Record<string, unknown>[];
+      const forged = holdings.map((row) =>
+        row.currencyCode === USDT ? { ...row, logoUrl: 'javascript:alert(1)' } : row,
+      );
+      archive.files.set('data/users-currencies.json', Buffer.from(JSON.stringify(forged)));
+
+      await helpers.wipeUserData();
+      const status = await restoreArchive({ fileContent: await helpers.repackBackup({ files: archive.files }) });
+      expect(status.status).toBe('completed');
+
+      expect(
+        (await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === USDT)!.logoUrl,
+      ).toBeNull();
     });
 
     describe('when another user defined the same code first', () => {
@@ -603,7 +735,7 @@ describe('Custom currencies', () => {
         expect(status.status).toBe('completed');
 
         expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true },
+          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true, logoUrl: null },
         ]);
         // Bob's definition on the global row is untouched.
         expect(await Currencies.findByPk(SAT)).toMatchObject({ currency: 'Bob Sats', digits: 3, symbol: 'b' });
@@ -630,7 +762,7 @@ describe('Custom currencies', () => {
         expect(status.status).toBe('completed');
 
         expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
-          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true },
+          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true, logoUrl: null },
         ]);
       });
 

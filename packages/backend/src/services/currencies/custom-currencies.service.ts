@@ -42,12 +42,19 @@ const lockCurrencyRow = ({ code }: { code: string }) => {
   return Currencies.findOne({ where: { code }, transaction: sequelizeTx, lock: sequelizeTx?.LOCK.SHARE });
 };
 
-const toCustomCurrencyModel = (effective: EffectiveCurrency): CustomCurrencyModel => ({
+const toCustomCurrencyModel = ({
+  effective,
+  logoUrl,
+}: {
+  effective: EffectiveCurrency;
+  logoUrl: string | null;
+}): CustomCurrencyModel => ({
   code: effective.code,
   name: effective.name,
   decimals: effective.decimals,
   symbol: effective.symbol,
   isCustom: true,
+  logoUrl,
 });
 
 /** Labels of the user's data that use the currency; empty when nothing does. */
@@ -85,7 +92,12 @@ export const listCustomCurrencies = async ({ userId }: { userId: number }): Prom
     order: [['currencyCode', 'ASC']],
   })) as (UsersCurrencies & { currency: Currencies })[];
 
-  return held.map((row) => toCustomCurrencyModel(applyCurrencyOverrides({ currency: row.currency, overrides: row })));
+  return held.map((row) =>
+    toCustomCurrencyModel({
+      effective: applyCurrencyOverrides({ currency: row.currency, overrides: row }),
+      logoUrl: row.logoUrl,
+    }),
+  );
 };
 
 /**
@@ -138,7 +150,10 @@ export const createCustomCurrency = withTransaction(
       decimalsOverride: decimals,
     });
 
-    return toCustomCurrencyModel(applyCurrencyOverrides({ currency, overrides: held }));
+    return toCustomCurrencyModel({
+      effective: applyCurrencyOverrides({ currency, overrides: held }),
+      logoUrl: held.logoUrl,
+    });
   },
 );
 
@@ -148,6 +163,7 @@ const updateCustomCurrencyImpl = async ({
   name,
   decimals,
   symbol,
+  logoUrl,
 }: UpdateCustomCurrencyBody & { userId: number; code: string }) => {
   const held = await requireOwnCustomCurrency({ userId, code });
   const current = applyCurrencyOverrides({ currency: held.currency, overrides: held });
@@ -168,9 +184,13 @@ const updateCustomCurrencyImpl = async ({
     ...(name !== undefined && { nameOverride: name }),
     ...(symbol !== undefined && { symbolOverride: symbol }),
     ...(decimals !== undefined && { decimalsOverride: decimals }),
+    ...(logoUrl !== undefined && { logoUrl }),
   });
 
-  return toCustomCurrencyModel(applyCurrencyOverrides({ currency: held.currency, overrides: held }));
+  return toCustomCurrencyModel({
+    effective: applyCurrencyOverrides({ currency: held.currency, overrides: held }),
+    logoUrl: held.logoUrl,
+  });
 };
 
 const updateCustomCurrencyInTx = withTransaction(updateCustomCurrencyImpl);

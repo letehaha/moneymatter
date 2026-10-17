@@ -83,6 +83,10 @@ export default class UsersCurrencies extends Model {
   @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER, validate: { min: 0, max: 18 } })
   decimalsOverride!: number | null;
 
+  /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
+  logoUrl!: string | null;
+
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave
   @AfterDestroy

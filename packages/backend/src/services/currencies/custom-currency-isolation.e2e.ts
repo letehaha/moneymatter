@@ -35,6 +35,31 @@ describe('custom currencies stay out of global readers', () => {
     await helpers.removeCustomCurrencyRow({ code: CUSTOM_CODE });
   });
 
+  it("does not show another user's logo for the same custom code", async () => {
+    const logoUrl = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
+    const updated = await helpers.updateCustomCurrency({ code: CUSTOM_CODE, payload: { logoUrl } });
+    expect(updated.statusCode).toBe(200);
+
+    const otherUser = await helpers.signUpSecondUser();
+    await helpers.asUser({
+      cookies: otherUser.cookies,
+      fn: async () => {
+        const created = await helpers.createCustomCurrency({
+          payload: { code: CUSTOM_CODE, name: 'My Bitcoin', decimals: 8 },
+        });
+        expect(created.statusCode).toBe(201);
+        expect(created.body.response).toMatchObject({ logoUrl: null });
+
+        const held = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === CUSTOM_CODE);
+        expect(held!.logoUrl).toBeNull();
+        expect((await helpers.listCustomCurrencies({ raw: true })).map((item) => item.logoUrl)).toEqual([null]);
+      },
+    });
+
+    const owned = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === CUSTOM_CODE);
+    expect(owned!.logoUrl).toBe(logoUrl);
+  });
+
   it('GET /models/currencies lists no custom code for its owner or for any other user', async () => {
     const asOwner = await helpers.getAllCurrencies();
     expect(asOwner.length).toBeGreaterThan(100);

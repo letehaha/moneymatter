@@ -4,7 +4,7 @@ import {
   CUSTOM_CURRENCY_NAME_MAX_LENGTH,
   CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
 } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, currencyLogoUrl } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as customCurrencies from '@services/currencies/custom-currencies.service';
 import { z } from 'zod';
@@ -45,6 +45,7 @@ export const updateCustomCurrency = createController(
         name: nameSchema.optional(),
         decimals: decimalsSchema.optional(),
         symbol: symbolSchema.nullable().optional(),
+        logoUrl: currencyLogoUrl().optional(),
       })
       .strict(),
   }),
