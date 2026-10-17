@@ -49,7 +49,7 @@ Ignored unless you use the [Traefik overlay](traefik-overlay.md)
 | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`                                    | Google sign-in                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET`                                    | GitHub sign-in                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `ENABLE_BANKING_REDIRECT_URL`                                                  | Enable Banking bank linking. Must be `https://<your-domain>/bank-callback` and match the redirect URL registered in your Enable Banking application                                                                                                                                                                                                                                                                                                                             |
-| `POLYGON_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `FMP_API_KEY`, `COINGECKO_API_KEY` | Investments / market data                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `POLYGON_API_KEY`, `ALPHA_VANTAGE_API_KEY`, `FMP_API_KEY`, `COINGECKO_API_KEY` | Investments / market data. `COINGECKO_API_KEY` also enables the CoinGecko rate source for custom currencies (without it, saving that source fails with “CoinGecko is not available on this instance”)                                                                                                                                                                                                                                                                           |
 | `CRYPTO_PRICES_SYNC_INTERVAL_MINUTES`                                          | Crypto price sync cadence (1–59, default 15)                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `API_LAYER_API_KEYS`                                                           | APILayer paid currency-rate fallback                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `GEMINI_API_KEY`                                                               | Included Google AI model for AI features, used when a user has no AI model of their own and `ANTHROPIC_API_KEY` is unset or failing                                                                                                                                                                                                                                                                                                                                             |
@@ -131,7 +131,7 @@ after an image already exists only changes the runtime value — rebuild
 `IS_SELF_HOST` is written straight into `docker-compose.yml`, on both the
 backend and the frontend. There is nothing to put in `.env` — anything you set
 there is ignored. It marks the stack as yours rather than the hosted service,
-which turns on four things:
+which turns on five things:
 
 - **No plans, no trial, no billing.** Every feature is on for every user, no
   trial clock starts at signup, and the billing routes answer 404.
@@ -147,6 +147,14 @@ which turns on four things:
 - **A backup from another account restores fine.** The hosted service refuses
   archives exported by a different user; on your own stack you may be moving
   data between instances, so that check is off.
+- **The HTTP rate source of a custom currency may reach your network.** On the
+  hosted service the address must be `https` and public: private and internal
+  addresses are blocked. On your own stack that guard is off, so the address may
+  use `http` and may point at a server on your LAN. The other limits stay
+  regardless: a 5-second timeout, a 256 KB response cap and no redirects (the
+  request headers are the user's secrets and belong only to the address they
+  saved). Header values are stored encrypted and are never returned by the API.
+  The daily sync of these sources runs at 00:45 UTC.
 
 ## Hosted service only
 

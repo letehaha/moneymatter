@@ -137,11 +137,30 @@ Schema bits worth knowing
 
 ---
 
+Custom currencies – per-user rates
+
+Everything above is the **market** feed: global `USD → X` rows in `ExchangeRates`, shared by every user. A **custom currency** (`Currencies.isCustom`, a per-user definition in `UsersCurrencies`: name, symbol, decimals) never takes part in it.
+
+- **Excluded from provider sync.** `getAllCurrencies` / `GET /currencies`, the registry's coverage set, fawaz and ApiLayer `validCodes` and the historical initializer all filter `isCustom` rows out. A custom code therefore never counts as a coverage gap and no provider is asked for it. `getExchangeRate` also keeps a pair with a custom code out of `computeCrossRate` and the global cross-rate cache, because that cache is keyed by date and code only and holds nothing user-specific.
+- **`UserExchangeRates` is the per-user store.** Primary key `(userId, baseCode, quoteCode, effectiveDate)`: a rate is **dated** and applies from `effectiveDate` until the next row of the pair, and the lookup takes the latest row on or before the requested day (`getRates` with `asOfDate`). `source` records who wrote the row: `manual`, `coingecko` or `http`. Rates are stored at full precision and are **not** passed through `formatRate`, which truncates market rates to 5 decimals: a coin worth 0.00000123 of its quote would otherwise round to nothing. An ISO pair edited by the user is the old undated shape (`liveRateUpdate = false`, latest row wins for every date) and refuses an `effectiveDate`.
+- **The rate source decides how a custom code is priced** (`UsersCurrencies.rateSource` + `rateSourceConfig`, set by `PUT /user/currencies/:code/rate-source`):
+  - `manual`: the user's dated rows.
+  - `peg`: nothing is stored. `{ pegCurrency, factor }` makes the rate the factor times the rate of `pegCurrency` for the same day, which may itself be custom (a cycle has no value).
+  - `coingecko`: `{ coinId, quoteCurrency }`. Saving backfills the last 364 days from one CoinGecko market-chart range call; the cron `coingecko-rates-sync` (00:30 UTC) then adds the new day once per coin for all users. Needs `COINGECKO_API_KEY`; a save without it answers 503.
+  - `http`: `{ urlTemplate, jsonPath, quoteCurrency, headerNames }` plus encrypted headers in `rateSourceHeadersEncrypted` (write-only: the API returns the names only). The URL template takes `{date}`, `{code}` and `{quote}`. A fetch goes through `createGuardedFetch` with a 5 s timeout, a 256 KB cap and `redirect: 'error'`; https is required unless `isGuardBypassed()` (self-host or development). There is **no history backfill**: a source can only ask for a day, so saving fetches today's rate once and the cron `http-rates-sync` (00:45 UTC) adds one per day. `POST .../rate-source/test` previews a call without saving; the test and the save are each limited to 20 per minute per user.
+  - Synced sources quote in an ISO currency, so a rate row never depends on another custom rate, and a base-currency change needs no re-fetch: the resolver crosses from the stored quote into the new base.
+- **A manual row is never overwritten by a sync.** `storeSyncedRates` skips a day whose row is `manual`, replaces a day written by another synced source only when the price differs, and writes nothing while a base-currency change holds the user's lock or when the currency no longer runs the source and settings the fetch was made with. Changing the coin deletes the user's `coingecko` rows; changing an HTTP source deletes its rows only when the config fingerprint (URL, path, quote, never header values) differs, since a past day cannot be fetched again.
+- **A source or rate change re-values saved rows.** Missing rates are not an error for a custom code: `calculateRefAmount` stores `refAmount = null` with `Transactions.refAmountMissing`. `recomputeCustomRefAmounts` then selects the affected custom currencies and days (`recompute-scope.ts`, following pegs and quotes to dependent currencies): a corrected, removed or backdated rate re-values every row on the days it covers (`recompute`), while a rate for a new day only fills the rows still waiting (`fill`). ISO rows keep the base amounts they were saved with.
+- **Backups** carry the custom definitions and `UserExchangeRates` but never the HTTP header values or names (see `services/backup/rate-source-headers.ts`); the user enters them again after a restore.
+
+---
+
 Config
 
 ```bash
 API_LAYER_API_KEYS=key1,key2,key3        # comma-separated; rotated automatically on 429
 CURRENCY_RATES_API_URL=http://currency-rates-api:8080
+COINGECKO_API_KEY=...                    # only for the CoinGecko rate source of custom currencies (and crypto investments)
 ```
 
 `currency-rates-api` (image `letehaha/currency-rates-api`) is self-hosted in docker-compose. fawazahmed0 needs **no configuration at all** – it's a keyless public CDN, so there's nothing to set. ApiLayer is the only external paid dep, and as covered above it's only used where it actually earns its keep.
