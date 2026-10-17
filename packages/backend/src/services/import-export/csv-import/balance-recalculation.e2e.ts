@@ -377,7 +377,7 @@ describe('CSV import balance recalculation', () => {
       const { account, balanceBefore } = await createAccountWithBoundaryTx({ boundaryTime: '2024-01-10T12:00:00Z' });
 
       // The middle row's amount parses fine (`parseAmount` has no magnitude
-      // bound and 1e20 is an exact integer float, so `Money.fromCents` accepts
+      // bound and 1e18 is an exact decimal, so `Money.fromDecimal` accepts
       // it too) but overflows the DECIMAL(36,18) money column
       // (1,000,000,000,000,000,000.00 needs 19 integer digits, the column holds
       // 18), so its insert fails at the database layer and rolls back only
@@ -911,6 +911,59 @@ describe('CSV import balance recalculation', () => {
 
       const accounts = await helpers.getAccounts();
       expect(accounts.find((a) => a.name === 'Fresh Acc')).toBeUndefined();
+    });
+  });
+
+  describe('amounts at the account currency decimals', () => {
+    // The reconciler tallies what each row wrote and `finalize` undoes that tally when recalc is off,
+    // so a tally of the unrounded CSV amount (12.345) instead of the stored one (12.35) would leave
+    // the balance off by the rounding difference.
+    const expectBalanceKept = async ({
+      currencyCode,
+      amount,
+      storedAmount,
+    }: {
+      currencyCode: string | null;
+      amount: string;
+      storedAmount: number;
+    }) => {
+      if (currencyCode) await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ ...(currencyCode && { currencyCode }), initialBalance: 100 }),
+        raw: true,
+      });
+
+      const progress = await runImport({
+        fileContent: buildCsv(
+          ['2024-01-15', '2024-01-16'].map((date, index) => ({
+            date,
+            amount,
+            description: `Income ${index}`,
+            account: 'CSV Acc',
+            currency: account.currencyCode,
+            type: 'income' as const,
+          })),
+        ),
+        accountMapping: { 'CSV Acc': { action: 'link-existing', accountId: account.id } },
+        recalculateBalance: false,
+      });
+      expectCsvImportCompleted(progress);
+      expect(progress.summary.imported).toBe(2);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      const after = await helpers.getAccount({ id: account.id, raw: true });
+      expect(Number(after.currentBalance)).toBe(100);
+
+      const stored = (await helpers.getTransactions({ raw: true })).filter((tx) => tx.accountId === account.id);
+      expect(stored.map((tx) => tx.amount)).toEqual([storedAmount, storedAmount]);
+    };
+
+    it('keeps a 2-decimal balance when two 12.345 rows are stored as 12.35', async () => {
+      await expectBalanceKept({ currencyCode: null, amount: '12.345', storedAmount: 12.35 });
+    });
+
+    it('keeps a KWD balance when two 1.2345 rows are stored as 1.235', async () => {
+      await expectBalanceKept({ currencyCode: 'KWD', amount: '1.2345', storedAmount: 1.235 });
     });
   });
 });
