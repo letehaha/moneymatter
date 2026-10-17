@@ -24,6 +24,7 @@ export interface FakeCliRun {
   stdin: string;
   cwd: string;
   envKeys: string[];
+  pid: number;
   [extra: string]: unknown;
 }
 
@@ -56,7 +57,8 @@ export function useFakeAiClis() {
       }
     }
 
-    rmSync(stateDir, { recursive: true, force: true });
+    // A fake CLI killed at the end of a test may still be writing into the directory; retry on ENOTEMPTY.
+    rmSync(stateDir, { recursive: true, force: true, maxRetries: 5, retryDelay: 50 });
   });
 
   const readRuns = (): FakeCliRun[] => {
@@ -80,6 +82,19 @@ export function useFakeAiClis() {
       if (!run) throw new Error(`The fake CLI was not run ${index + 1} time(s)`);
 
       return run;
+    },
+    /**
+     * Resolves once the fake CLI has recorded its Nth invocation, i.e. the child is up and running.
+     * Polls instead of sleeping, so a loaded machine only makes it slower, not flaky.
+     */
+    waitForRun: async ({ index = 0, timeoutMs = 10_000 }: { index?: number; timeoutMs?: number } = {}) => {
+      const deadline = Date.now() + timeoutMs;
+
+      while (readRuns().length <= index) {
+        if (Date.now() > deadline) throw new Error(`The fake CLI did not start run ${index + 1} in ${timeoutMs}ms`);
+
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
     },
     /** True when a fake got past the point where the adapter should have killed it. */
     didRunComplete: () => existsSync(path.join(stateDir, 'run-completed')),

@@ -1,13 +1,14 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { useFakeAiClis } from '@tests/helpers/ai-cli';
 import { generateText, Output, streamText, UnsupportedFunctionalityError } from 'ai';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import path from 'path';
 import { z } from 'zod';
 
 import { classifyAiCallFailure } from '../ai-error-classifiers';
 import { CliCredentialSource } from './cli-credential-run';
 import { isCliNotInstalledError } from './cli-errors';
+import { abortAllCliRuns } from './cli-run-limiter';
 import { CODEX_DISABLED_FEATURES, CODEX_TOOL_DISABLE_ARGS, createCodexLanguageModel } from './codex-language-model';
 
 jest.mock('@js/utils/logger', () => ({
@@ -90,8 +91,6 @@ const failureOf = async (promise: Promise<unknown>) => {
 };
 
 const inSandboxRealm = (error: unknown) => Object.assign(new Error('abort'), { name: (error as Error).name });
-
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe('CODEX_TOOL_DISABLE_ARGS', () => {
   it('pins the 27 verified feature names, as --disable pairs', () => {
@@ -239,7 +238,7 @@ describe('codex language model', () => {
     expect(classifyAiCallFailure({ error })).toMatchObject({ kind: 'temporary', httpStatus: 502 });
     expect(JSON.parse((error as { responseBody: string }).responseBody).error.type).toBe('cli_tool_use_blocked');
 
-    await wait(800);
+    // The run settles only after the child closed, so a killed fake can no longer complete.
     expect(fakes.didRunComplete()).toBe(false);
   });
 
@@ -281,7 +280,7 @@ describe('codex language model', () => {
     const controller = new AbortController();
     const promise = ask({ model: buildModel(), abortSignal: controller.signal });
 
-    await wait(400);
+    await fakes.waitForRun();
     controller.abort();
 
     const error = await failureOf(promise);
@@ -289,6 +288,25 @@ describe('codex language model', () => {
     expect((error as Error).name).toBe('AbortError');
     expect(classifyAiCallFailure({ error: inSandboxRealm(error) }).kind).toBe('endpoint-down');
     expect(isCliNotInstalledError({ error })).toBe(false);
+  });
+
+  it('kills the child and removes the Codex home when all CLI runs are aborted at shutdown', async () => {
+    fakes.setScenario({ scenario: 'hang' });
+
+    const promise = failureOf(ask({ model: buildModel() }));
+
+    await fakes.waitForRun();
+
+    const { pid } = fakes.getRun();
+    const codexHome = fakes.getRun().codexHome as string;
+
+    expect(existsSync(codexHome)).toBe(true);
+
+    await abortAllCliRuns();
+
+    expect(((await promise) as Error).name).toBe('AbortError');
+    expect(existsSync(codexHome)).toBe(false);
+    expect(() => process.kill(pid, 0)).toThrow();
   });
 
   it('reports a run timeout as a timeout, not as not-installed', async () => {

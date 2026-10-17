@@ -154,13 +154,54 @@ async function acquireSlot({
   }
 }
 
+/** Longest `abortAllCliRuns` waits for aborted runs to clean up, inside the 5 s graceful-shutdown budget. */
+const ABORT_ALL_SETTLE_CAP_MS = 3 * 1000;
+
+interface TrackedRun {
+  controller: AbortController;
+  settled: Promise<unknown>;
+}
+
+/** Every call between entering `runWithCliSlot` (queue wait included) and its cleanup finishing. */
+const trackedRuns = new Set<TrackedRun>();
+
+/**
+ * Aborts every queued and running CLI call (their signals reach `runCliProcess`, which kills the
+ * child's process group) and waits for them to settle: the Codex home write-back and temp dir removal
+ * run on that path. Gives up after 3 s, so a stuck cleanup cannot eat the shutdown budget. All
+ * controllers abort synchronously, so a queued waiter leaves before a freed slot could start it.
+ */
+export async function abortAllCliRuns(): Promise<void> {
+  if (trackedRuns.size === 0) return;
+
+  const runs = [...trackedRuns];
+  const reason = Object.assign(new Error('The CLI run was aborted: the server is shutting down'), {
+    name: 'AbortError',
+  });
+
+  for (const { controller } of runs) controller.abort(reason);
+
+  let capTimer: NodeJS.Timeout | undefined;
+
+  try {
+    await Promise.race([
+      Promise.all(runs.map(({ settled }) => settled)),
+      new Promise<void>((resolve) => {
+        capTimer = setTimeout(resolve, ABORT_ALL_SETTLE_CAP_MS);
+      }),
+    ]);
+  } finally {
+    clearTimeout(capTimer);
+  }
+}
+
 /**
  * Runs one CLI call: at most one per `connectionKey` at a time and at most `AI_CLI_MAX_CONCURRENT_RUNS`
  * instance-wide, FIFO. `abortSignal` bounds the whole call including the queue wait; the run timeout
  * starts only once the slot is held, so time spent behind another run never counts against it.
- * `maxWaitMs` makes a waiter give up with `CliSlotBusyError`.
+ * `maxWaitMs` makes a waiter give up with `CliSlotBusyError`. `abortAllCliRuns` aborts the call too.
  */
-export async function runWithCliSlot<T>({
+export function runWithCliSlot<T>({
   connectionKey,
   abortSignal,
   timeoutMs,
@@ -173,13 +214,25 @@ export async function runWithCliSlot<T>({
   maxWaitMs?: number;
   run: (params: { signal: AbortSignal }) => Promise<T>;
 }): Promise<T> {
-  const release = await acquireSlot({ connectionKey, abortSignal, maxWaitMs });
-  const runTimeout = createTimeout({ ms: timeoutMs });
+  const controller = new AbortController();
+  const callSignal = anySignal({ signals: [abortSignal, controller.signal] });
 
-  try {
-    return await run({ signal: anySignal({ signals: [abortSignal, runTimeout.signal] }) });
-  } finally {
-    runTimeout.clear();
-    release();
-  }
+  const result = (async () => {
+    const release = await acquireSlot({ connectionKey, abortSignal: callSignal, maxWaitMs });
+    const runTimeout = createTimeout({ ms: timeoutMs });
+
+    try {
+      return await run({ signal: anySignal({ signals: [callSignal, runTimeout.signal] }) });
+    } finally {
+      runTimeout.clear();
+      release();
+    }
+  })();
+
+  const tracked: TrackedRun = { controller, settled: result.catch(() => undefined) };
+
+  trackedRuns.add(tracked);
+  void tracked.settled.then(() => trackedRuns.delete(tracked));
+
+  return result;
 }
