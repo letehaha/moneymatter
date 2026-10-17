@@ -1,5 +1,5 @@
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { CENTS_DECIMALS, Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -395,6 +395,8 @@ export const getCombinedBalanceHistory = async ({
           from: minDate,
           to: maxDate,
           categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.loan] },
+          // The combined series sums in cents.
+          decimals: CENTS_DECIMALS,
         }),
         (async () => {
           // Back-fill each loan's pre-anchor days from its opening balance
@@ -407,7 +409,7 @@ export const getCombinedBalanceHistory = async ({
             where: { userId, accountCategory: ACCOUNT_CATEGORIES.loan, excludeFromStats: false },
             attributes: ['id', 'refInitialBalance'],
           });
-          const openingCentsByAccount = new Map(loanAccounts.map((a) => [a.id, a.refInitialBalance.toCents()]));
+          const openingMinorByAccount = new Map(loanAccounts.map((a) => [a.id, a.refInitialBalance.toCents()]));
 
           return getAggregatedBalanceHistory({
             userId,
@@ -415,13 +417,16 @@ export const getCombinedBalanceHistory = async ({
             from: minDate,
             to: maxDate,
             categoryFilter: { only: [ACCOUNT_CATEGORIES.loan] },
-            openingCentsByAccount,
+            openingMinorByAccount,
+            decimals: CENTS_DECIMALS,
           });
         })(),
         calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise }),
         calculatePortfolioBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
         calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
-        includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'owned' }) : Promise.resolve(0),
+        includeCreditLimit
+          ? getCreditLimitAdjustment({ userId, accountScope: 'owned', decimals: CENTS_DECIMALS })
+          : Promise.resolve(0),
       ]);
     })();
 

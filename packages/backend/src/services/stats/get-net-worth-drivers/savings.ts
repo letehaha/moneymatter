@@ -62,8 +62,8 @@ export const accumulateSavings = ({
     if (bucketIndex === -1) continue;
 
     const bucket = savings[bucketIndex]!;
-    bucket.income = asCents(bucket.income - pair.cents);
-    bucket.expenses = asCents(bucket.expenses - pair.cents);
+    bucket.income = asCents(bucket.income - pair.minor);
+    bucket.expenses = asCents(bucket.expenses - pair.minor);
   }
 
   for (const bucket of savings) {

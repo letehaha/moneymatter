@@ -1,3 +1,4 @@
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -29,17 +30,19 @@ export function registerGetExpensesForPeriod(server: McpServer) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const totalCents = await getExpensesAmountForPeriod({
+      const decimals = await getBaseCurrencyDecimals({ userId });
+      const totalMinor = await getExpensesAmountForPeriod({
         userId,
         from: args.startDate ?? startOfMonth.toISOString(),
         to: args.endDate ?? now.toISOString(),
         accountId: args.accountId,
         excludedCategoryIds: args.excludedCategoryIds,
+        decimals,
       });
 
       return jsonContent({
         data: {
-          totalExpenses: serializeExpensesAmountForPeriod(totalCents),
+          totalExpenses: serializeExpensesAmountForPeriod({ amountMinor: totalMinor, decimals }),
           period: {
             startDate: args.startDate ?? startOfMonth.toISOString().split('T')[0],
             endDate: args.endDate ?? now.toISOString().split('T')[0],

@@ -7,7 +7,7 @@ import {
 } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
 import { requestContext } from '@common/request-context';
-import { Money } from '@common/types/money';
+import { CENTS_DECIMALS, Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { trackEvent } from '@js/utils/posthog';
@@ -132,6 +132,8 @@ const historySpend = async ({
     categoryIds: categories.map((category) => category.id),
     transactionType: TRANSACTION_TYPES.expense,
     excludePlanned: true,
+    // The suggestion engine sums in cents.
+    decimals: CENTS_DECIMALS,
   });
 };
 

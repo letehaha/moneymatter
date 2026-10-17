@@ -8,7 +8,7 @@ import {
   type RecordId,
   asCents,
 } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { CENTS_DECIMALS, Money } from '@common/types/money';
 import { UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -564,6 +564,8 @@ export const getNetWorthDrivers = async ({
         from: boundaryDates[0]!,
         to: boundaryDates[boundaryDates.length - 1]!,
         categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.loan] },
+        // The drivers sum in cents.
+        decimals: CENTS_DECIMALS,
       }),
     ]);
   })();

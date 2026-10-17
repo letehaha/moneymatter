@@ -20,9 +20,9 @@ interface AccountCategoryFilter {
  * Balance row fetched without model hydration — a deliberate exception to the
  * "no raw on Money queries" rule: Balances has one row per account per day,
  * so per-row Sequelize instances + Money objects dominate dashboard-load memory.
- * `amount` is integer cents: the DECIMAL column arrives as a string and `toCentsRow`
- * converts it right after the query. Money is constructed only at the public
- * `getBalanceHistory` boundary.
+ * `amount` is integer minor units at the base currency's decimals: the DECIMAL column arrives
+ * as a string and `toMinorRow` converts it right after the query. Money is constructed only at
+ * the public `getBalanceHistory` boundary.
  */
 interface BalanceHistoryRow {
   date: string | Date;
@@ -33,9 +33,15 @@ interface BalanceHistoryRow {
 /** Balance row as the database returns it: `amount` is the DECIMAL column's exact string. */
 type RawBalanceRow = Omit<BalanceHistoryRow, 'amount'> & { amount: string };
 
-const toCentsRow = <T extends { amount: string }>(row: T): Omit<T, 'amount'> & { amount: number } => ({
+const toMinorRow = <T extends { amount: string }>({
+  row,
+  decimals,
+}: {
+  row: T;
+  decimals: number;
+}): Omit<T, 'amount'> & { amount: number } => ({
   ...row,
-  amount: Money.fromDecimal(row.amount).toCents(),
+  amount: Money.fromDecimal(row.amount).toMinorUnits({ decimals }),
 });
 
 /**
@@ -89,12 +95,14 @@ const getBalanceHistoryRows = async ({
   from,
   to,
   categoryFilter,
+  decimals,
 }: {
   userId: number;
   accountScope: AccountScope;
   from?: string;
   to?: string;
   categoryFilter?: AccountCategoryFilter;
+  decimals: number;
 }): Promise<BalanceHistoryRow[]> => {
   const dataAttributes = ['date', 'amount', 'accountId'];
   const accountWhere = await buildAccountWhere({ userId, accountScope, categoryFilter });
@@ -127,7 +135,7 @@ const getBalanceHistoryRows = async ({
     }) as unknown as Promise<RawBalanceRow[]>,
   ]);
 
-  let data = balancesInRange.map(toCentsRow);
+  let data = balancesInRange.map((row) => toMinorRow({ row, decimals }));
   const allAccountIds = allUserAccounts.map((acc) => acc.id);
 
   const accountIdsWithRecordsInRange = new Set(balancesInRange.map((b) => b.accountId));
@@ -167,7 +175,7 @@ const getBalanceHistoryRows = async ({
     ]);
 
     const afterByAccount = new Map<string, BalanceHistoryRow[]>();
-    for (const b of balancesAfterTo.map(toCentsRow)) {
+    for (const b of balancesAfterTo.map((row) => toMinorRow({ row, decimals }))) {
       const items = afterByAccount.get(b.accountId);
       if (items) {
         items.push(b);
@@ -182,7 +190,7 @@ const getBalanceHistoryRows = async ({
 
     const overrideDate = new Date(from ?? to ?? new Date());
     const latestBalances: BalanceHistoryRow[] = latestBalancesBeforeFrom.map((b) => ({
-      ...toCentsRow(b),
+      ...toMinorRow({ row: b, decimals }),
       date: overrideDate,
     }));
     const seededAccountIds = new Set(latestBalancesBeforeFrom.map((b) => b.accountId));
@@ -223,11 +231,12 @@ const getBalanceHistoryRows = async ({
  * @param {AccountScope} params.accountScope - Account set the read runs over — see `AccountScope`.
  * @param {string} [params.from] - The start date (inclusive) of the date range in 'yyyy-mm-dd' format.
  * @param {string} [params.to] - The end date (inclusive) of the date range in 'yyyy-mm-dd' format.
+ * @param {number} params.decimals - Decimals of the base currency: the scale the rows are summed at.
  * @returns {Promise<Balances.default[]>} - A promise that resolves to an array of balance records.
  * @throws {Error} - Throws an error if the database query fails.
  *
  * @example
- * const balances = await getBalanceHistory({ userId: 1, accountScope: 'accessible', from: '2023-01-01', to: '2023-12-31' });
+ * const balances = await getBalanceHistory({ userId: 1, accountScope: 'accessible', from: '2023-01-01', to: '2023-12-31', decimals: 2 });
  */
 export const getBalanceHistory = async ({
   userId,
@@ -235,14 +244,16 @@ export const getBalanceHistory = async ({
   from,
   to,
   categoryFilter,
+  decimals,
 }: {
   userId: number;
   accountScope: AccountScope;
   from?: string;
   to?: string;
   categoryFilter?: AccountCategoryFilter;
+  decimals: number;
 }): Promise<Balances.default[]> => {
-  const rows = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter });
+  const rows = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter, decimals });
 
   // Plain objects (not Sequelize instances) with Money amounts — consumers
   // (stats serializer, getTotalBalance) only read `date`, `amount`, `accountId`.
@@ -250,7 +261,7 @@ export const getBalanceHistory = async ({
     (row) =>
       ({
         date: row.date,
-        amount: Money.fromCents(row.amount),
+        amount: Money.fromMinorUnits({ value: row.amount, decimals }),
         accountId: row.accountId,
       }) as unknown as Balances.default,
   );
@@ -266,15 +277,15 @@ interface BalanceFillIndex {
   accountIds: Set<string>;
   /** Every date in the requested range, ascending. */
   allDates: string[];
-  /** "accountId_date" -> cents, for O(1) lookup of a known value. */
-  centsByAccountAndDate: Map<string, number>;
-  /** accountId -> earliest row's (date, cents), used for back-fill. */
-  earliestRowByAccount: Map<string, { dateStr: string; cents: number }>;
+  /** "accountId_date" -> minor units, for O(1) lookup of a known value. */
+  minorByAccountAndDate: Map<string, number>;
+  /** accountId -> earliest row's (date, minor units), used for back-fill. */
+  earliestRowByAccount: Map<string, { dateStr: string; minor: number }>;
 }
 
 /**
  * Builds the shared lookup structures both fills iterate over: the ascending
- * date range and, in a single pass over the rows, an "accountId_date -> cents"
+ * date range and, in a single pass over the rows, an "accountId_date -> minor units"
  * map plus each account's earliest row for back-filling prior dates.
  */
 function buildBalanceFillIndex({
@@ -304,82 +315,82 @@ function buildBalanceFillIndex({
     allDates.push(formatDate(dt));
   }
 
-  const centsByAccountAndDate = new Map<string, number>();
-  const earliestRowByAccount = new Map<string, { dateStr: string; cents: number }>();
+  const minorByAccountAndDate = new Map<string, number>();
+  const earliestRowByAccount = new Map<string, { dateStr: string; minor: number }>();
   for (const item of data) {
     const dateStr = formatDate(item.date);
-    centsByAccountAndDate.set(`${item.accountId}_${dateStr}`, item.amount);
+    minorByAccountAndDate.set(`${item.accountId}_${dateStr}`, item.amount);
 
     const earliest = earliestRowByAccount.get(item.accountId);
     if (!earliest || dateStr < earliest.dateStr) {
-      earliestRowByAccount.set(item.accountId, { dateStr, cents: item.amount });
+      earliestRowByAccount.set(item.accountId, { dateStr, minor: item.amount });
     }
   }
 
-  return { accountIds, allDates, centsByAccountAndDate, earliestRowByAccount };
+  return { accountIds, allDates, minorByAccountAndDate, earliestRowByAccount };
 }
 
 /**
- * The cents an account carries on `date` while forward-filling: the row on that
+ * The minor units an account carries on `date` while forward-filling: the row on that
  * date if present, otherwise the opening/earliest value for dates before the
  * account's first record, otherwise the previous day's carried value.
  *
- * `openingCents` back-fills the dates STRICTLY BEFORE the account's earliest
+ * `openingMinor` back-fills the dates STRICTLY BEFORE the account's earliest
  * record. Loans pass their `initialBalance` here (the outstanding as-of the
  * anchor date) so a payoff dated on the anchor day — which folds the anchor-day
  * row toward zero — can't retroactively rewrite the outstanding shown on earlier
  * days. `initialBalance` never changes on payment, so pre-anchor days stay
  * stable. The earliest record's own date always keeps its real value.
  */
-function carryForwardCents({
+function carryForwardMinor({
   date,
-  previousCents,
+  previousMinor,
   earliest,
-  actualCents,
-  openingCents,
+  actualMinor,
+  openingMinor,
 }: {
   date: string;
-  previousCents: number;
-  earliest: { dateStr: string; cents: number };
-  actualCents: number | undefined;
-  openingCents: number | undefined;
+  previousMinor: number;
+  earliest: { dateStr: string; minor: number };
+  actualMinor: number | undefined;
+  openingMinor: number | undefined;
 }): number {
-  if (actualCents !== undefined) {
-    return actualCents;
+  if (actualMinor !== undefined) {
+    return actualMinor;
   }
   if (date < earliest.dateStr) {
-    return openingCents !== undefined ? openingCents : earliest.cents;
+    return openingMinor !== undefined ? openingMinor : earliest.minor;
   }
   if (date === earliest.dateStr) {
-    return earliest.cents;
+    return earliest.minor;
   }
   // Dates after the earliest record with no row keep the previous day's value.
-  return previousCents;
+  return previousMinor;
 }
 
 /**
  * Gap-fill raw balance rows into a per-account daily series over the range:
- * each account's earliest value back-fills prior dates (or `openingCentsByAccount`
+ * each account's earliest value back-fills prior dates (or `openingMinorByAccount`
  * when provided), and known values carry forward across dates with no rows.
- * Keyed `accountId → yyyy-MM-dd → cents`. Every account present carries a value
+ * Keyed `accountId → yyyy-MM-dd → minor units`. Every account present carries a value
  * for every date in the range.
  */
 function fillPerAccountBalanceSeries({
   data,
   from,
   to,
-  openingCentsByAccount,
+  openingMinorByAccount,
 }: {
   data: BalanceHistoryRow[];
   from?: string;
   to?: string;
-  openingCentsByAccount?: Map<string, number>;
+  openingMinorByAccount?: Map<string, number>;
 }): Record<string, Record<string, number>> {
   if (!data || data.length === 0) {
     return {};
   }
 
-  const { accountIds, allDates, centsByAccountAndDate, earliestRowByAccount } = buildBalanceFillIndex({
+  const { accountIds, allDates, minorByAccountAndDate, earliestRowByAccount } = buildBalanceFillIndex({
     data,
     from,
     to,
@@ -391,19 +402,19 @@ function fillPerAccountBalanceSeries({
     const earliest = earliestRowByAccount.get(accountId);
     if (!earliest) continue;
 
-    const openingCents = openingCentsByAccount?.get(accountId);
-    let currentCents = 0;
+    const openingMinor = openingMinorByAccount?.get(accountId);
+    let currentMinor = 0;
     const series: Record<string, number> = {};
 
     for (const date of allDates) {
-      currentCents = carryForwardCents({
+      currentMinor = carryForwardMinor({
         date,
-        previousCents: currentCents,
+        previousMinor: currentMinor,
         earliest,
-        actualCents: centsByAccountAndDate.get(`${accountId}_${date}`),
-        openingCents,
+        actualMinor: minorByAccountAndDate.get(`${accountId}_${date}`),
+        openingMinor,
       });
-      series[date] = currentCents;
+      series[date] = currentMinor;
     }
 
     seriesByAccount[accountId] = series;
@@ -421,48 +432,48 @@ function aggregateBalanceTrendData({
   data,
   from,
   to,
-  openingCentsByAccount,
+  openingMinorByAccount,
 }: {
   data: BalanceHistoryRow[];
   from?: string;
   to?: string;
-  openingCentsByAccount?: Map<string, number>;
+  openingMinorByAccount?: Map<string, number>;
 }): AggregatedBalanceHistoryItem[] {
   if (!data || data.length === 0) {
     return [];
   }
 
-  const { accountIds, allDates, centsByAccountAndDate, earliestRowByAccount } = buildBalanceFillIndex({
+  const { accountIds, allDates, minorByAccountAndDate, earliestRowByAccount } = buildBalanceFillIndex({
     data,
     from,
     to,
   });
 
-  const totalCentsByDate = new Map<string, number>();
+  const totalMinorByDate = new Map<string, number>();
 
   for (const accountId of accountIds) {
     const earliest = earliestRowByAccount.get(accountId);
     if (!earliest) continue;
 
-    const openingCents = openingCentsByAccount?.get(accountId);
-    let currentCents = 0;
+    const openingMinor = openingMinorByAccount?.get(accountId);
+    let currentMinor = 0;
 
     for (const date of allDates) {
-      currentCents = carryForwardCents({
+      currentMinor = carryForwardMinor({
         date,
-        previousCents: currentCents,
+        previousMinor: currentMinor,
         earliest,
-        actualCents: centsByAccountAndDate.get(`${accountId}_${date}`),
-        openingCents,
+        actualMinor: minorByAccountAndDate.get(`${accountId}_${date}`),
+        openingMinor,
       });
-      totalCentsByDate.set(date, (totalCentsByDate.get(date) ?? 0) + currentCents);
+      totalMinorByDate.set(date, (totalMinorByDate.get(date) ?? 0) + currentMinor);
     }
   }
 
   // `allDates` is already ascending, so the result is sorted by date.
   return allDates.map((date) => ({
     date,
-    amount: totalCentsByDate.get(date) ?? 0,
+    amount: totalMinorByDate.get(date) ?? 0,
   }));
 }
 
@@ -475,6 +486,7 @@ function aggregateBalanceTrendData({
  * @param {AccountScope} params.accountScope - Account set the read runs over — see `AccountScope`.
  * @param {string} [params.from] - The start date (inclusive) of the date range in 'yyyy-mm-dd' format.
  * @param {string} [params.to] - The end date (inclusive) of the date range in 'yyyy-mm-dd' format.
+ * @param {number} params.decimals - Decimals of the base currency: the scale the amounts are summed at.
  * @returns {Promise<AggregatedBalanceHistoryItem[]>} - A promise that resolves to an array of aggregated balance records.
  */
 export const getAggregatedBalanceHistory = async ({
@@ -483,23 +495,26 @@ export const getAggregatedBalanceHistory = async ({
   from,
   to,
   categoryFilter,
-  openingCentsByAccount,
+  openingMinorByAccount,
+  decimals,
 }: {
   userId: number;
   accountScope: AccountScope;
   from: string;
   to: string;
   categoryFilter?: AccountCategoryFilter;
+  /** Decimals of the base currency: the scale the amounts are summed at. */
+  decimals: number;
   /**
-   * Per-account opening balance (cents) used to back-fill dates before an
+   * Per-account opening balance (minor units) used to back-fill dates before an
    * account's earliest record. Supplied for the loan partition so same-day
    * payoffs can't retroactively move earlier days (see aggregateBalanceTrendData).
    */
-  openingCentsByAccount?: Map<string, number>;
+  openingMinorByAccount?: Map<string, number>;
 }): Promise<AggregatedBalanceHistoryItem[]> => {
-  const rawBalanceHistory = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter });
+  const rawBalanceHistory = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter, decimals });
 
-  return aggregateBalanceTrendData({ data: rawBalanceHistory, from, to, openingCentsByAccount });
+  return aggregateBalanceTrendData({ data: rawBalanceHistory, from, to, openingMinorByAccount });
 };
 
 /**
@@ -507,7 +522,7 @@ export const getAggregatedBalanceHistory = async ({
  * carry-forward/back-fill rules as `getAggregatedBalanceHistory` but WITHOUT the
  * cross-account summation. For callers that classify each account individually
  * (e.g. the net-worth history splits credit cards by balance sign per account).
- * Keyed `accountId → yyyy-MM-dd → cents`; empty object when no balance data.
+ * Keyed `accountId → yyyy-MM-dd → minor units`; empty object when no balance data.
  */
 export const getPerAccountBalanceHistory = async ({
   userId,
@@ -515,16 +530,19 @@ export const getPerAccountBalanceHistory = async ({
   from,
   to,
   categoryFilter,
-  openingCentsByAccount,
+  openingMinorByAccount,
+  decimals,
 }: {
   userId: number;
   accountScope: AccountScope;
   from: string;
   to: string;
   categoryFilter?: AccountCategoryFilter;
-  openingCentsByAccount?: Map<string, number>;
+  openingMinorByAccount?: Map<string, number>;
+  /** Decimals of the base currency: the scale the amounts are summed at. */
+  decimals: number;
 }): Promise<Record<string, Record<string, number>>> => {
-  const rawBalanceHistory = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter });
+  const rawBalanceHistory = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter, decimals });
 
-  return fillPerAccountBalanceSeries({ data: rawBalanceHistory, from, to, openingCentsByAccount });
+  return fillPerAccountBalanceSeries({ data: rawBalanceHistory, from, to, openingMinorByAccount });
 };

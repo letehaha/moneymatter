@@ -27,16 +27,16 @@ const buildTx = ({
 
 const buildPair = ({
   time,
-  cents,
+  minor,
   expenseInScope = true,
   incomeInScope = true,
 }: {
   time: string;
-  cents: number;
+  minor: number;
   expenseInScope?: boolean;
   incomeInScope?: boolean;
 }): CategoryRefundPair => ({
-  cents,
+  minor,
   time: new Date(time),
   expenseCategoryId: 'cat-expense',
   incomeCategoryId: 'cat-income',
@@ -137,7 +137,7 @@ describe('accumulateSavings refund netting', () => {
     const [january] = accumulateSavings({
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', cents: 12_000 })],
+      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000 })],
     });
 
     expect(january).toEqual({ income: 0, expenses: 18_000, net: -18_000 });
@@ -147,7 +147,7 @@ describe('accumulateSavings refund netting', () => {
     const [january] = accumulateSavings({
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', cents: 12_000, expenseInScope: false })],
+      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000, expenseInScope: false })],
     });
 
     expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });
@@ -157,7 +157,7 @@ describe('accumulateSavings refund netting', () => {
     const [january] = accumulateSavings({
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', cents: 12_000, incomeInScope: false })],
+      refundPairs: [buildPair({ time: '2026-01-20T12:00:00.000', minor: 12_000, incomeInScope: false })],
     });
 
     expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });
@@ -171,7 +171,7 @@ describe('accumulateSavings refund netting', () => {
         buildTx({ time: '2026-02-10T12:00:00.000', amount: 120, transactionType: TRANSACTION_TYPES.income }),
       ],
       buckets,
-      refundPairs: [buildPair({ time: '2026-02-10T12:00:00.000', cents: 12_000 })],
+      refundPairs: [buildPair({ time: '2026-02-10T12:00:00.000', minor: 12_000 })],
     });
 
     expect(savings[0]).toEqual({ income: 0, expenses: 30_000, net: -30_000 });
@@ -182,7 +182,7 @@ describe('accumulateSavings refund netting', () => {
     const [january] = accumulateSavings({
       transactions: spendAndRefund,
       buckets,
-      refundPairs: [buildPair({ time: '2025-12-20T12:00:00.000', cents: 12_000 })],
+      refundPairs: [buildPair({ time: '2025-12-20T12:00:00.000', minor: 12_000 })],
     });
 
     expect(january).toEqual({ income: 12_000, expenses: 30_000, net: -18_000 });

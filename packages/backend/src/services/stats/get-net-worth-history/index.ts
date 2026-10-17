@@ -7,6 +7,7 @@ import {
   type NetWorthHistoryUnpricedSecurity,
   asCents,
 } from '@bt/shared/types';
+import { CENTS_DECIMALS } from '@common/types/money';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -16,7 +17,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
 import { getPerAccountBalanceHistory } from '@services/stats/get-balance-history';
-import { getCreditLimitCentsByAccount } from '@services/stats/get-credit-limit-adjustment';
+import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
 import { generatePeriodBuckets } from '@services/stats/utils';
 import { format } from 'date-fns';
 import { Op } from 'sequelize';
@@ -91,7 +92,7 @@ const splitSeriesBySign = ({
   snapshotDate: string;
   partition: string;
   userId: number;
-  creditLimitCentsByAccount: Map<string, Cents>;
+  creditLimitCentsByAccount: Map<string, number>;
 }): { owedCents: Cents; surplusCents: Cents } => {
   const dateKey = toAccountsDateKey(snapshotDate);
   let owed = 0;
@@ -261,7 +262,7 @@ export const getNetWorthHistory = async ({
         // Back-fill each loan's pre-anchor days from its opening balance
         // (`refInitialBalance`, immutable on payment) so a payoff dated on the
         // anchor day can't retroactively rewrite the loan balance on earlier days.
-        const openingCentsByAccount = new Map(
+        const openingMinorByAccount = new Map(
           accounts
             .filter((a) => a.accountCategory === ACCOUNT_CATEGORIES.loan)
             .map((a) => [a.id, a.refInitialBalance.toCents()]),
@@ -272,7 +273,9 @@ export const getNetWorthHistory = async ({
           accountScope: 'owned',
           ...accountsRange,
           categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle] },
-          openingCentsByAccount,
+          openingMinorByAccount,
+          // The net-worth series sums in cents.
+          decimals: CENTS_DECIMALS,
         });
 
         return {
@@ -283,7 +286,9 @@ export const getNetWorthHistory = async ({
       calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates: snapshotDates, userBaseCurrencyPromise }),
       calculatePortfolioValueByDate({ userId, snapshotDates, denseDates, userBaseCurrencyPromise }),
       calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates: snapshotDates, userBaseCurrencyPromise }),
-      includeCreditLimit ? getCreditLimitCentsByAccount({ userId, accountScope: 'owned' }) : new Map<string, Cents>(),
+      includeCreditLimit
+        ? getCreditLimitMinorByAccount({ userId, accountScope: 'owned', decimals: CENTS_DECIMALS })
+        : new Map<string, number>(),
     ]);
   })();
 
