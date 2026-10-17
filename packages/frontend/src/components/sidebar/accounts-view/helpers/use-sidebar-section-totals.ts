@@ -14,6 +14,7 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 import { flattenAccounts } from './account-totals';
+import { buildAccountGroupTree } from './build-account-group-tree';
 
 /**
  * Per-section account splits, base-currency totals and visibility flags for the accounts view.
@@ -29,7 +30,8 @@ export const useSidebarSectionTotals = () => {
     placeholderData: [],
   });
 
-  const accountGroups = computed(() => accountGroupsData.value ?? []);
+  // The endpoint returns a flat list; the sidebar renders a tree, so nest children under their parents.
+  const accountGroups = computed(() => buildAccountGroupTree({ groups: accountGroupsData.value ?? [] }));
 
   // Wait for both accounts and groups to load to prevent layout shift
   const isLoading = computed(() => !isAccountsFetched.value || isGroupsLoading.value);

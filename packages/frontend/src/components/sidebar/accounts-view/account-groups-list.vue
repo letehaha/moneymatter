@@ -3,6 +3,7 @@ import type { AccountGroups } from '@/common/types/models';
 import { computed } from 'vue';
 
 import AccountGroup from './account-group.vue';
+import { groupHasAccounts } from './helpers/account-totals';
 import { useHideZeroBalances } from './helpers/use-hide-zero-balances';
 
 const props = defineProps<{
@@ -16,6 +17,6 @@ const sortedGroups = computed(() => [...props.groups].sort((a, b) => a.name.loca
 
 <template>
   <template v-for="group in sortedGroups" :key="group.id">
-    <AccountGroup v-if="group.accounts.length && isGroupVisible(group)" :group="group" />
+    <AccountGroup v-if="groupHasAccounts({ group }) && isGroupVisible(group)" :group="group" />
   </template>
 </template>

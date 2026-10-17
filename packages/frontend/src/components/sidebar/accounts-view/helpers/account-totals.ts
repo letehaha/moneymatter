@@ -87,3 +87,7 @@ export const collectGroupAccounts = ({ group }: { group: AccountGroups }): Accou
   }
   return accounts;
 };
+
+/** Whether a group holds any account at all, directly or in a descendant group. */
+export const groupHasAccounts = ({ group }: { group: AccountGroups }): boolean =>
+  group.accounts.length > 0 || group.childGroups.some((child) => groupHasAccounts({ group: child }));
