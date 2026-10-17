@@ -395,4 +395,23 @@ describe('foldPlan unbudgeted and header', () => {
   it('flags the period today falls into', () => {
     expect(fold().map((view) => view.period.isCurrent)).toEqual([false, false, true]);
   });
+
+  describe('3-decimal minor units', () => {
+    it('carries, spends and totals amounts of 1.234 and 0.5 without a rounding step', () => {
+      const views = fold({
+        plan: { carryPolicy: 'signed' },
+        assignments: [row({ periodId: 'jul', baselineAmount: 1_234 })],
+        activityRows: [spent({ periodId: 'jul', amount: 500 })],
+      });
+
+      expect(views[0]!.lines[0]).toMatchObject({ assigned: 1_234, activity: -500, available: 734, carriedIn: 0 });
+      expect(views[1]!.lines[0]).toMatchObject({ assigned: 1_234, carriedIn: 734, available: 1_968 });
+      expect(views[0]!.header).toEqual({
+        totalAssigned: 1_234,
+        totalActivity: -500,
+        totalAvailable: 734,
+        totalCarriedIn: 0,
+      });
+    });
+  });
 });

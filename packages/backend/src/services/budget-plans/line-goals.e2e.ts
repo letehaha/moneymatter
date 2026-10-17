@@ -813,3 +813,75 @@ describe('Budget plan next-period coverage', () => {
     });
   });
 });
+
+describe('Budget line goals: plan currency decimals', () => {
+  const goalFlow = async ({
+    currencyCode,
+    goalAmount,
+    assigned,
+  }: {
+    currencyCode: string;
+    goalAmount: number;
+    assigned: number;
+  }) => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ currencyCode }),
+      raw: true,
+    });
+    const category = await helpers.addCustomCategory({ name: 'Food', color: '#111111', raw: true });
+    const { plan } = await helpers.createBudgetPlan({
+      payload: { accountIds: [account.id], epochDate: helpers.budgetPeriodStart({ monthsAgo: CURRENT }) },
+      raw: true,
+    });
+    const periods = await helpers.listBudgetPlanPeriods({ planId: plan.id, raw: true });
+    const line = await helpers.createBudgetPlanLine({
+      planId: plan.id,
+      payload: { name: 'Food', categoryIds: [category.id], activeFrom: periods[0]!.startDate },
+      raw: true,
+    });
+
+    const saved = await setGoal({
+      planId: plan.id,
+      lineId: line.id,
+      payload: {
+        frequency: 'every_period',
+        behavior: 'budget_another',
+        amount: goalAmount,
+        stopAtBalance: goalAmount * 2,
+      },
+    });
+    const current = periods[CURRENT]!;
+    const before = goalOf({ result: await view({ planId: plan.id, period: current }), lineId: line.id })!;
+    await assign({ planId: plan.id, period: current, lineId: line.id, amount: assigned });
+    const after = goalOf({ result: await view({ planId: plan.id, period: current }), lineId: line.id })!;
+
+    return { saved, before, after };
+  };
+
+  it('keeps a KWD goal, its target and its ask at 3 decimals', async () => {
+    const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+    const { saved, before, after } = await helpers.asUser({
+      cookies: user.cookies,
+      fn: async () => {
+        await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+        return goalFlow({ currencyCode: 'KWD', goalAmount: 10.125, assigned: 1.234 });
+      },
+    });
+
+    expect(saved).toMatchObject({ amount: 10.125, stopAtBalance: 20.25 });
+    expect(before).toMatchObject({ amount: 10.125, target: 10.125, periodTarget: 10.125, ask: 10.125, progress: 0 });
+    expect(after).toMatchObject({ amount: 10.125, target: 10.125, periodTarget: 10.125, ask: 8.891, progress: 1.234 });
+  });
+
+  it('keeps the 2-decimal values for a 2-decimal plan', async () => {
+    const { saved, before, after } = await goalFlow({
+      currencyCode: global.BASE_CURRENCY.code,
+      goalAmount: 10.12,
+      assigned: 1.23,
+    });
+
+    expect(saved).toMatchObject({ amount: 10.12, stopAtBalance: 20.24 });
+    expect(before).toMatchObject({ target: 10.12, periodTarget: 10.12, ask: 10.12, progress: 0 });
+    expect(after).toMatchObject({ target: 10.12, ask: 8.89, progress: 1.23 });
+  });
+});

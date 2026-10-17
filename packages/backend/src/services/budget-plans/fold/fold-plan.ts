@@ -142,7 +142,8 @@ interface LineState {
 
 /**
  * Pure: the whole plan from the epoch on, one view per stored period. Every
- * amount it returns is integer cents; `Money` conversion happens at the service edge.
+ * amount it returns is an integer count of minor units at the plan currency's decimals,
+ * and none of the arithmetic depends on that scale; `Money` conversion happens at the service edge.
  */
 export const foldPlan = ({
   plan,

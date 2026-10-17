@@ -152,4 +152,21 @@ describe('foldPool', () => {
   it('returns nothing for no periods', () => {
     expect(foldPool({ periods: [], openingCash: 1000 })).toEqual([]);
   });
+
+  it('folds 3-decimal minor units without a rounding step', () => {
+    const entries = foldPool({
+      periods: [
+        period({ assigned: 1_234, available: 734, carriedIn: 0, income: 2_005, spending: -500 }),
+        period({ available: 734, carriedIn: 734 }),
+      ],
+      openingCash: 3_378,
+    });
+
+    expect(entries[0]).toEqual({
+      readyToAssign: 3_378 + 2_005 - 500 - 1_234,
+      committedLater: 0,
+      flow: { leftOver: 3_378, income: 2_005, outsideSpending: -500, fromLines: 0, assigned: 1_234 },
+    });
+    expect(entries[1]!.flow).toMatchObject({ leftOver: 3_649, fromLines: 0, assigned: 0 });
+  });
 });
