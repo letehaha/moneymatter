@@ -373,6 +373,20 @@ describe('Subscription CLI connections', () => {
         expect(tested.statusCode).toBe(ERROR_CODES.NotAllowed);
         expect(await helpers.getAiConnections({ raw: true })).toEqual([]);
       });
+
+      it('refuses updating and testing a stored CLI connection once the user left ADMIN_USERS', async () => {
+        const connection = await createSignedInConnection({ provider: CLAUDE });
+        const before = await readStoredCredential({ connectionId: connection.id });
+
+        process.env.ADMIN_USERS = 'somebody-else';
+
+        const updated = await helpers.updateAiConnection({ id: connection.id, name: 'Renamed' });
+        const tested = await helpers.testAiConnection({ connectionId: connection.id });
+
+        expect(updated.statusCode).toBe(ERROR_CODES.NotAllowed);
+        expect(tested.statusCode).toBe(ERROR_CODES.NotAllowed);
+        expect((await readStoredCredential({ connectionId: connection.id })).keyEncrypted).toBe(before.keyEncrypted);
+      });
     });
   });
 
