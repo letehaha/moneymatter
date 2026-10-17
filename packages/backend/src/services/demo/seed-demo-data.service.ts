@@ -5,6 +5,7 @@ import {
   BUDGET_TYPES,
   DEPRECIATION_PRESET,
   LOAN_TYPE,
+  PROPERTY_TYPE,
   SUPPORTED_LOAN_TYPES,
   VEHICLE_CLASS,
 } from '@bt/shared/types';
@@ -21,6 +22,7 @@ import { adjustAccountBalance } from '@services/accounts/balance-adjustment';
 import { createBudget } from '@services/budgets/create-budget';
 import * as categoriesService from '@services/categories.service';
 import { createLoan } from '@services/loans/create-loan.service';
+import { createProperty } from '@services/properties/create-property.service';
 import * as tagsService from '@services/tags';
 import * as userService from '@services/user.service';
 import { createVehicle } from '@services/vehicles/create-vehicle.service';
@@ -411,6 +413,95 @@ export async function setupVehicles({ userId, referenceDate }: { userId: number;
   }
 
   logger.info(`Created ${DEMO_VEHICLES.length} demo vehicles for user ${userId}`);
+}
+
+interface DemoPropertyConfig {
+  name: string;
+  address: string;
+  city: string;
+  country: string;
+  propertyType: PROPERTY_TYPE;
+  yearBuilt: number;
+  /** Years before the reference date the property was purchased. */
+  ageYears: number;
+  purchasePrice: number;
+  annualAppreciationRatePct: number;
+  /**
+   * Optional mid-term manual revaluation, so the demo shows how a revaluation
+   * re-anchors the appreciation curve away from the smooth projection.
+   */
+  override?: {
+    /** Months before the reference date the revaluation took effect. */
+    monthsAgo: number;
+    targetValue: number;
+    note: string;
+  };
+}
+
+const DEMO_PROPERTIES: DemoPropertyConfig[] = [
+  {
+    name: 'Family home',
+    address: '18 Maple Grove',
+    city: 'Portland',
+    country: 'United States',
+    propertyType: PROPERTY_TYPE.house,
+    yearBuilt: 1998,
+    ageYears: 8,
+    purchasePrice: 385000,
+    annualAppreciationRatePct: 4.5,
+    override: {
+      monthsAgo: 18,
+      targetValue: 520000,
+      note: 'Bank valuation for refinancing',
+    },
+  },
+  {
+    name: 'City rental',
+    address: '4B Harbour Court',
+    city: 'Lisbon',
+    country: 'Portugal',
+    propertyType: PROPERTY_TYPE.apartment,
+    yearBuilt: 2015,
+    ageYears: 3,
+    purchasePrice: 210000,
+    annualAppreciationRatePct: 3,
+  },
+];
+
+export async function setupProperties({
+  userId,
+  referenceDate,
+}: {
+  userId: number;
+  referenceDate: Date;
+}): Promise<void> {
+  for (const config of DEMO_PROPERTIES) {
+    const property = await createProperty({
+      userId,
+      name: config.name,
+      currencyCode: DEMO_CONFIG.baseCurrency,
+      address: config.address,
+      city: config.city,
+      country: config.country,
+      propertyType: config.propertyType,
+      yearBuilt: config.yearBuilt,
+      purchasePrice: Money.fromDecimal(config.purchasePrice),
+      purchaseDate: format(subYears(referenceDate, config.ageYears), 'yyyy-MM-dd'),
+      annualAppreciationRatePct: config.annualAppreciationRatePct,
+    });
+
+    if (property && config.override) {
+      await adjustAccountBalance({
+        userId,
+        accountId: property.accountId,
+        targetBalance: Money.fromDecimal(config.override.targetValue),
+        note: config.override.note,
+        time: subMonths(referenceDate, config.override.monthsAgo),
+      });
+    }
+  }
+
+  logger.info(`Created ${DEMO_PROPERTIES.length} demo properties for user ${userId}`);
 }
 
 /**

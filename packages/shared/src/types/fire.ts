@@ -8,6 +8,7 @@ export interface FireSettings {
   spendingExcludedCategoryIds?: string[];
   includeVentures?: boolean;
   includeVehicles?: boolean;
+  includeProperties?: boolean;
   includeLoans?: boolean;
   returnIndicatorId?: string;
   customReturnPct?: number | null;
@@ -52,6 +53,7 @@ export const FIRE_LIMITS = {
 export const FIRE_DEFAULTS = {
   includeVentures: false,
   includeVehicles: false,
+  includeProperties: false,
   includeLoans: false,
   returnIndicatorId: 'world-stock',
   inflationPct: 3,

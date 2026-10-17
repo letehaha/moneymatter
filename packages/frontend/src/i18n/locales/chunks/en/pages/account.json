@@ -371,6 +371,76 @@
         "yearsLabel": "{n} yr since purchase",
         "yearsMonthsLabel": "{y}y {m}mo since purchase"
       }
+    },
+    "propertyDetails": {
+      "notFound": "Property not found",
+      "backToAccounts": "Back to accounts",
+      "revalueButton": "Revalue",
+      "editButton": "Edit",
+      "currentValue": "Current value",
+      "sinceAcquired": "Since acquired {date}",
+      "purchasePrice": "Purchase price",
+      "totalGain": "Total gain",
+      "ownedFor": "Over {years} years of ownership",
+      "equity": "Equity",
+      "equityExplain": "After {mortgage} still owed on the linked mortgage",
+      "projectedFiveYear": "Projected in 5 years",
+      "projectedExplain": "At {pct}% per year",
+      "propertyType": "Type",
+      "address": "Address",
+      "city": "City",
+      "country": "Country",
+      "yearBuilt": "Year built",
+      "notes": "Notes",
+      "annualRate": "Annual rate",
+      "lastRevaluation": "Last revaluation",
+      "mortgage": "Mortgage",
+      "deleteTitle": "Delete property?",
+      "deleteDescription": "This will permanently remove the property and its underlying account. Cannot be undone.",
+      "deleteConfirm": "Delete property",
+      "deleteSuccess": "Property deleted",
+      "deleteError": "Failed to delete property",
+      "revaluationDialog": {
+        "title": "Revalue property",
+        "description": "Record a new appraised value. Appreciation is re-anchored to this value from the effective date.",
+        "targetValueLabel": "New value",
+        "dateLabel": "Effective date",
+        "noteLabel": "Note",
+        "notePlaceholder": "Optional note (e.g. bank appraisal, renovation)",
+        "changeLabel": "Change",
+        "submit": "Save valuation",
+        "submitLoading": "Saving...",
+        "success": "Property value updated",
+        "error": "Failed to update property value"
+      },
+      "revaluationHistory": {
+        "title": "Valuation history",
+        "empty": "No valuations yet. Revalue the property to record one.",
+        "delete": "Delete",
+        "deleteTitle": "Delete this valuation?",
+        "deleteDescription": "Removing this valuation re-anchors the appreciation to the previous valuation (or original purchase if none). The associated transaction will be deleted.",
+        "deleteConfirm": "Delete",
+        "deleteSuccess": "Valuation removed",
+        "deleteError": "Failed to remove valuation"
+      },
+      "sections": {
+        "property": "Property",
+        "valuation": "Valuation"
+      },
+      "chart": {
+        "title": "Value over time",
+        "subtitle": "Projected appreciation through year 12 based on the annual rate",
+        "legendValue": "Estimated value",
+        "legendPurchase": "Purchase",
+        "legendToday": "Today",
+        "legendRevaluation": "Revaluation",
+        "legendPurchasePriceLine": "Purchase price",
+        "purchasePriceLine": "Purchase price",
+        "atPurchase": "At purchase",
+        "monthsLabel": "{n} mo since purchase",
+        "yearsLabel": "{n} yr since purchase",
+        "yearsMonthsLabel": "{y}y {m}mo since purchase"
+      }
     }
   }
 }

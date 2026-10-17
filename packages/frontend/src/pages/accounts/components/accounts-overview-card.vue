@@ -57,6 +57,17 @@
             {{ formatBaseCurrency(overview.vehicles) }}
           </div>
         </div>
+
+        <div v-if="hasProperties" class="min-w-0 flex-1 @[40rem]/accounts-page:flex-none">
+          <div class="text-muted-foreground text-[10px] font-semibold tracking-[0.16em] uppercase">
+            {{ $t('accounts.overview.properties') }}
+          </div>
+          <div
+            class="text-muted-foreground mt-1 truncate text-base font-semibold tabular-nums @[40rem]/accounts-page:text-lg"
+          >
+            {{ formatBaseCurrency(overview.properties) }}
+          </div>
+        </div>
       </div>
     </div>
   </Card>
@@ -73,6 +84,7 @@ const props = defineProps<{
   overview: AccountsOverview;
   baseCurrencyCode: string;
   hasVehicles: boolean;
+  hasProperties: boolean;
   planned: PlannedAggregate;
   projectedTotal: number;
 }>();

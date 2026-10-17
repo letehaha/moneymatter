@@ -51,6 +51,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: '/accounts/properties/:id',
+        name: ROUTES_NAMES.accountsPropertyDetails,
+        component: () => import('@/pages/accounts/property-details.vue'),
+        meta: {
+          navSection: 'accounts',
+          i18nChunks: ['pages/accounts', 'pages/account', 'pages/transactions'],
+        },
+      },
+      {
         path: '/accounts/integrations',
         redirect: { name: ROUTES_NAMES.accounts },
       },

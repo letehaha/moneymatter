@@ -17,9 +17,19 @@ import {
 
 const ymd = (date: Date) => format(date, 'yyyy-MM-dd');
 
-const ALL_INCLUDED: NetWorthIncludeSettings = { includeVentures: true, includeVehicles: true, includeLoans: true };
+const ALL_INCLUDED: NetWorthIncludeSettings = {
+  includeVentures: true,
+  includeVehicles: true,
+  includeProperties: true,
+  includeLoans: true,
+};
 
-const ALL_EXCLUDED: NetWorthIncludeSettings = { includeVentures: false, includeVehicles: false, includeLoans: false };
+const ALL_EXCLUDED: NetWorthIncludeSettings = {
+  includeVentures: false,
+  includeVehicles: false,
+  includeProperties: false,
+  includeLoans: false,
+};
 
 const widgetConfig = (config?: Record<string, unknown>) => ({ widgetId: 'net-worth', colSpan: 1, config });
 
@@ -29,6 +39,7 @@ const point = ({
   portfolios = 0,
   ventures = 0,
   vehicles = 0,
+  properties = 0,
   loans = 0,
 }: {
   date: string;
@@ -36,6 +47,7 @@ const point = ({
   portfolios?: number;
   ventures?: number;
   vehicles?: number;
+  properties?: number;
   loans?: number;
 }): CombinedBalanceHistoryEntity => ({
   date,
@@ -43,8 +55,9 @@ const point = ({
   portfoliosBalance: portfolios,
   venturesBalance: ventures,
   vehiclesBalance: vehicles,
+  propertiesBalance: properties,
   loansBalance: loans,
-  totalBalance: accounts + portfolios + ventures + vehicles + loans,
+  totalBalance: accounts + portfolios + ventures + vehicles + properties + loans,
 });
 
 const POINT = point({ date: '2026-07-15', accounts: 1000, portfolios: 500, ventures: 200, vehicles: 300, loans: -400 });
@@ -104,6 +117,7 @@ describe('readNetWorthSettings', () => {
     expect(readNetWorthSettings({ widgetConfig: widgetConfig({ includeLoans: false }) })).toEqual({
       includeVentures: true,
       includeVehicles: true,
+      includeProperties: true,
       includeLoans: false,
     });
   });
@@ -111,7 +125,12 @@ describe('readNetWorthSettings', () => {
   it('reads every stored toggle', () => {
     expect(
       readNetWorthSettings({
-        widgetConfig: widgetConfig({ includeVentures: false, includeVehicles: false, includeLoans: false }),
+        widgetConfig: widgetConfig({
+          includeVentures: false,
+          includeVehicles: false,
+          includeProperties: false,
+          includeLoans: false,
+        }),
       }),
     ).toEqual(ALL_EXCLUDED);
   });
@@ -119,7 +138,12 @@ describe('readNetWorthSettings', () => {
   it('falls back to the default for non-boolean stored values', () => {
     expect(
       readNetWorthSettings({
-        widgetConfig: widgetConfig({ includeVentures: 'false', includeVehicles: 0, includeLoans: {} }),
+        widgetConfig: widgetConfig({
+          includeVentures: 'false',
+          includeVehicles: 0,
+          includeProperties: [],
+          includeLoans: {},
+        }),
       }),
     ).toEqual(ALL_INCLUDED);
   });

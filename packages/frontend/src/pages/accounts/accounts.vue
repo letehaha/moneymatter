@@ -13,6 +13,10 @@
             <UiButton variant="outline">{{ $t('accounts.createVehicle') }}</UiButton>
           </CreateVehicleDialog>
 
+          <CreatePropertyDialog>
+            <UiButton variant="outline">{{ $t('accounts.createProperty') }}</UiButton>
+          </CreatePropertyDialog>
+
           <CreateAccountDialog>
             <UiButton>{{ $t('accounts.createAccount') }}</UiButton>
           </CreateAccountDialog>
@@ -34,6 +38,12 @@
                   {{ $t('accounts.createVehicle') }}
                 </UiButton>
               </CreateVehicleDialog>
+              <CreatePropertyDialog @created="isActionsMenuOpen = false">
+                <UiButton variant="ghost" class="w-full justify-start">
+                  <HomeIcon class="size-4" />
+                  {{ $t('accounts.createProperty') }}
+                </UiButton>
+              </CreatePropertyDialog>
               <CreateAccountDialog @created="isActionsMenuOpen = false">
                 <UiButton variant="ghost" class="w-full justify-start">
                   <PlusIcon class="size-4" />
@@ -75,13 +85,14 @@
         </div>
       </template>
 
-      <template v-else-if="accounts?.length || vehicles?.length">
+      <template v-else-if="accounts?.length || vehicles?.length || properties?.length">
         <div class="grid grid-cols-1 gap-5 @[30rem]/accounts-page:gap-8">
           <AccountsOverviewCard
             v-if="baseCurrencyCode"
             :overview="overview"
             :base-currency-code="baseCurrencyCode"
             :has-vehicles="!!vehiclesWithAccount.length"
+            :has-properties="!!propertiesWithAccount.length"
             :planned="plannedTotals"
             :projected-total="projectedTotal"
           />
@@ -154,6 +165,31 @@
             </div>
           </AccountsSection>
 
+          <AccountsSection
+            v-if="propertiesWithAccount.length"
+            :title="$t('accounts.sections.properties')"
+            :count="propertiesWithAccount.length"
+          >
+            <template v-if="baseCurrencyCode" #action>
+              <GroupTotal
+                :amount="propertiesBaseTotal.total"
+                :currency-code="baseCurrencyCode"
+                :is-approx="propertiesBaseTotal.isApprox"
+                emphasis
+              />
+            </template>
+
+            <div class="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-xl border">
+              <AccountListRow
+                v-for="property in sortedProperties"
+                :key="property.id"
+                :account="property.account!"
+                :subtitle="[property.city, property.country].filter(Boolean).join(', ') || property.address"
+                :category-override="ACCOUNT_CATEGORIES.property"
+              />
+            </div>
+          </AccountsSection>
+
           <section v-if="archivedAccounts.length">
             <Collapsible v-model:open="isArchivedOpen">
               <CollapsibleTrigger
@@ -218,11 +254,13 @@
 <script setup lang="ts">
 import { loadAccountGroups } from '@/api/account-groups';
 import { type BankConnection, type BankProvider, listConnections, listProviders } from '@/api/bank-data-providers';
+import { getProperties } from '@/api/properties';
 import { getVehicles } from '@/api/vehicles';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import type { AccountGroups } from '@/common/types/models';
 import PageWrapper from '@/components/common/page-wrapper.vue';
 import CreateAccountDialog from '@/components/dialogs/create-account-dialog.vue';
+import CreatePropertyDialog from '@/components/dialogs/create-property-dialog.vue';
 import CreateVehicleDialog from '@/components/dialogs/create-vehicle-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Card } from '@/components/lib/ui/card';
@@ -236,7 +274,15 @@ import AddIntegrationDialog from '@/pages/accounts/integrations/components/add-i
 import { useAccountsStore } from '@/stores';
 import { ACCOUNT_CATEGORIES, ACCOUNT_STATUSES, AccountModel } from '@bt/shared/types';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { CarIcon, ChevronDownIcon, EllipsisVerticalIcon, LandmarkIcon, LinkIcon, PlusIcon } from '@lucide/vue';
+import {
+  CarIcon,
+  ChevronDownIcon,
+  EllipsisVerticalIcon,
+  HomeIcon,
+  LandmarkIcon,
+  LinkIcon,
+  PlusIcon,
+} from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -259,7 +305,7 @@ const { t } = useI18n();
 
 const isActionsMenuOpen = ref(false);
 
-const { sortConnectionRows, sortLeafAccounts, sortVehicles, sortManual } = useAccountsSort();
+const { sortConnectionRows, sortLeafAccounts, sortVehicles, sortProperties, sortManual } = useAccountsSort();
 
 const { accounts, activeAccounts, isAccountsFetched } = storeToRefs(useAccountsStore());
 
@@ -273,6 +319,11 @@ const { data: accountGroups, isFetched: isGroupsFetched } = useQuery({
 const { data: vehicles } = useQuery({
   queryKey: VUE_QUERY_CACHE_KEYS.vehiclesList,
   queryFn: getVehicles,
+});
+
+const { data: properties } = useQuery({
+  queryKey: VUE_QUERY_CACHE_KEYS.propertiesList,
+  queryFn: getProperties,
 });
 
 const { data: providers } = useQuery({
@@ -368,12 +419,14 @@ const archivedAccounts = computed(() =>
   ),
 );
 
-// Overview net worth spans grouped + ungrouped money accounts (vehicles counted separately),
-// excluding archived accounts so a grouped-but-archived one doesn't skew net worth.
+// Overview net worth spans grouped + ungrouped money accounts (vehicles and properties
+// counted separately), excluding archived accounts so a grouped-but-archived one doesn't
+// skew net worth.
 const moneyAccounts = computed(() =>
   [...Object.values(accountsInGroups.value), ...ungroupedAccounts.value].filter(
     (account) =>
       account.accountCategory !== ACCOUNT_CATEGORIES.vehicle &&
+      account.accountCategory !== ACCOUNT_CATEGORIES.property &&
       account.accountCategory !== ACCOUNT_CATEGORIES.loan &&
       account.status !== ACCOUNT_STATUSES.archived,
   ),
@@ -386,6 +439,9 @@ const sharedAccountIds = computed(() => new Set(sharedAccounts.value.map((accoun
 const vehiclesWithAccount = computed(() =>
   (vehicles.value ?? []).filter((v) => v.account != null && !sharedAccountIds.value.has(v.accountId)),
 );
+
+// Same nullable-account guard as vehicles above.
+const propertiesWithAccount = computed(() => (properties.value ?? []).filter((p) => p.account != null));
 
 // Loose rows of the Manual section: ungrouped manual accounts, plus manual accounts a
 // user placed inside a connection-managed group (that group only renders under Bank
@@ -402,15 +458,18 @@ const manualLooseAccounts = computed(() => [
 const sortedConnectionRows = computed(() => sortConnectionRows(connectionRows.value));
 const manualItems = computed(() => sortManual(manualFolderGroups.value, manualLooseAccounts.value));
 const sortedVehicles = computed(() => sortVehicles(vehiclesWithAccount.value));
+const sortedProperties = computed(() => sortProperties(propertiesWithAccount.value));
 const sortedShared = computed(() => sortLeafAccounts(sharedAccounts.value));
 const sortedArchived = computed(() => sortLeafAccounts(archivedAccounts.value));
 
 const vehicleAccounts = computed(() => vehiclesWithAccount.value.map((v) => v.account!));
+const propertyAccounts = computed(() => propertiesWithAccount.value.map((p) => p.account!));
 
 const overview = computed(() =>
   computeAccountsOverview({
     moneyAccounts: moneyAccounts.value,
     vehicleAccounts: vehicleAccounts.value,
+    propertyAccounts: propertyAccounts.value,
     baseCurrencyCode: baseCurrencyCode.value,
     includeCreditLimit: includeCreditLimit.value,
   }),
@@ -435,6 +494,7 @@ const manualCount = computed(() => {
 });
 
 const vehiclesBaseTotal = computed(() => sumBaseBalance({ accounts: vehicleAccounts.value }));
+const propertiesBaseTotal = computed(() => sumBaseBalance({ accounts: propertyAccounts.value }));
 
 const isArchivedOpen = ref(false);
 

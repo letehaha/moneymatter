@@ -226,12 +226,13 @@ describe('Demo Mode', () => {
         raw: true,
       });
 
-      // Vehicle assets (category 'vehicle') and loans (category 'loan') are both
-      // tracked as system accounts, so the accounts list also contains the 2
-      // seeded cars and 3 seeded loans.
+      // Dedicated asset and liability accounts are tracked separately from the
+      // four cash accounts in the demo account list.
       const cashAccounts = accountsRes.filter(
         (a: { accountCategory: string }) =>
-          a.accountCategory !== ACCOUNT_CATEGORIES.vehicle && a.accountCategory !== ACCOUNT_CATEGORIES.loan,
+          a.accountCategory !== ACCOUNT_CATEGORIES.vehicle &&
+          a.accountCategory !== ACCOUNT_CATEGORIES.property &&
+          a.accountCategory !== ACCOUNT_CATEGORIES.loan,
       );
       const vehicleAccounts = accountsRes.filter(
         (a: { accountCategory: string }) => a.accountCategory === ACCOUNT_CATEGORIES.vehicle,
@@ -1140,15 +1141,17 @@ describe('Demo Mode', () => {
       });
 
       const accountIds = accountsRes.map((a: { id: number }) => a.id);
-      // 4 cash accounts + 2 vehicle accounts + 3 loan accounts
-      expect(accountIds.length).toBe(9);
+      // 4 cash accounts + 2 vehicle accounts + 2 property accounts + 3 loan accounts
+      expect(accountIds.length).toBe(11);
 
       // Vehicle accounts are depreciation-driven and loan accounts are
       // balance-anchor-driven: neither balance is `initialBalance + Σtx`, so
       // exclude them here.
       const cashAccounts = accountsRes.filter(
         (a: { accountCategory: string }) =>
-          a.accountCategory !== ACCOUNT_CATEGORIES.vehicle && a.accountCategory !== ACCOUNT_CATEGORIES.loan,
+          a.accountCategory !== ACCOUNT_CATEGORIES.vehicle &&
+          a.accountCategory !== ACCOUNT_CATEGORIES.property &&
+          a.accountCategory !== ACCOUNT_CATEGORIES.loan,
       );
       expect(cashAccounts.length).toBe(4);
 

@@ -160,6 +160,7 @@ const ZodSidebarSectionsSchema = z.object({
   portfolios: z.boolean().default(true),
   ventures: z.boolean().default(true),
   vehicles: z.boolean().default(true),
+  properties: z.boolean().default(true),
   loans: z.boolean().default(true),
 });
 
@@ -405,6 +406,7 @@ export const ZodSettingsPatchSchema = z.object({
       portfolios: z.boolean().optional(),
       ventures: z.boolean().optional(),
       vehicles: z.boolean().optional(),
+      properties: z.boolean().optional(),
       loans: z.boolean().optional(),
     })
     .optional(),

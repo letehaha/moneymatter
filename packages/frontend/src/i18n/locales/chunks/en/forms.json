@@ -246,6 +246,52 @@
         "error": "Failed to update vehicle"
       }
     },
+    "createProperty": {
+      "nameLabel": "Property name",
+      "namePlaceholder": "e.g. Maple Street house",
+      "currencyLabel": "Currency",
+      "addressLabel": "Address",
+      "addressPlaceholder": "e.g. 12 Maple Street",
+      "cityLabel": "City",
+      "cityPlaceholder": "e.g. Austin",
+      "countryLabel": "Country",
+      "countryPlaceholder": "e.g. United States",
+      "propertyTypeLabel": "Property type",
+      "yearBuiltLabel": "Year built",
+      "purchasePriceLabel": "Purchase price",
+      "purchaseDateLabel": "Purchase date",
+      "annualAppreciationRatePctLabel": "Annual appreciation rate (%)",
+      "annualAppreciationRatePctDescription": "Applied each year from the purchase date. Use a negative value for a declining market.",
+      "mortgageLabel": "Linked mortgage",
+      "mortgageNone": "No mortgage",
+      "notesLabel": "Notes (optional)",
+      "notesPlaceholder": "e.g. Rented out since 2021",
+      "submitButton": "Add property",
+      "submitButtonLoading": "Adding...",
+      "notifications": {
+        "success": "Property added",
+        "error": "Failed to add property"
+      }
+    },
+    "editProperty": {
+      "nameLabel": "Property name",
+      "addressLabel": "Address",
+      "cityLabel": "City",
+      "countryLabel": "Country",
+      "propertyTypeLabel": "Property type",
+      "yearBuiltLabel": "Year built",
+      "annualAppreciationRatePctLabel": "Annual appreciation rate (%)",
+      "annualAppreciationRatePctDescription": "Applied each year from the purchase date. Use a negative value for a declining market.",
+      "mortgageLabel": "Linked mortgage",
+      "mortgageNone": "No mortgage",
+      "notesLabel": "Notes (optional)",
+      "submitButton": "Save changes",
+      "submitButtonLoading": "Saving...",
+      "notifications": {
+        "success": "Property updated",
+        "error": "Failed to update property"
+      }
+    },
     "loan": {
       "nameLabel": "Loan name",
       "namePlaceholder": "e.g. Primary mortgage",

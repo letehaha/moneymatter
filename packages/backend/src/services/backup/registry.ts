@@ -274,6 +274,13 @@ const TABLE_DEFS = [
     restoreMode: 'insert',
   },
   {
+    fileName: 'properties',
+    model: models.Properties,
+    tier: 3,
+    scope: { strategy: 'userColumn', column: 'userId' },
+    restoreMode: 'insert',
+  },
+  {
     fileName: 'loan-details',
     model: models.LoanDetails,
     tier: 3,

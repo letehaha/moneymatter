@@ -49,6 +49,7 @@ export const resolveFireSettings = ({
     spendingExcludedCategoryIds: f.spendingExcludedCategoryIds ?? [],
     includeVentures: f.includeVentures ?? FIRE_DEFAULTS.includeVentures,
     includeVehicles: f.includeVehicles ?? FIRE_DEFAULTS.includeVehicles,
+    includeProperties: f.includeProperties ?? FIRE_DEFAULTS.includeProperties,
     includeLoans: f.includeLoans ?? FIRE_DEFAULTS.includeLoans,
     returnIndicatorId: f.returnIndicatorId ?? FIRE_DEFAULTS.returnIndicatorId,
     customReturnPct: inLimits({

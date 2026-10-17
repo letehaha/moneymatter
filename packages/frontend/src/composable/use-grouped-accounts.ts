@@ -42,9 +42,9 @@ export const flattenGroupAccounts = ({ group }: { group: AccountGroups }): Accou
 
 /**
  * Narrows the account store to the set a multi-select should offer: active accounts only unless
- * `includeArchived`, and — when `excludeDedicatedFlow` is set — without loan/vehicle accounts,
- * which own their own sidebar sections and carry special transfer semantics (e.g. the Pivot
- * Report filters them out). Pure so it can be unit-tested without mounting the composable.
+ * `includeArchived`, and — when `excludeDedicatedFlow` is set — without loan/vehicle/property
+ * accounts, which own their own sidebar sections and carry special transfer semantics (e.g. the
+ * Pivot Report filters them out). Pure so it can be unit-tested without mounting the composable.
  */
 export const filterSelectableAccounts = ({
   accounts,
@@ -71,7 +71,7 @@ export const filterSelectableAccounts = ({
  * what the group endpoint returns (which excludes archived accounts) — pass
  * `includeArchived` to surface archived accounts as ungrouped entries.
  *
- * `excludeDedicatedFlow` additionally drops loan and vehicle accounts — the
+ * `excludeDedicatedFlow` additionally drops loan, vehicle and property accounts — the
  * dedicated-flow categories that own their own sidebar sections and carry special
  * transfer semantics — so a host like the Pivot Report can keep them out of its
  * account filter.

@@ -15,6 +15,19 @@ import { computed } from 'vue';
 
 import { flattenAccounts } from './account-totals';
 
+const isVehicleAccount = (account: AccountModel) => account.accountCategory === ACCOUNT_CATEGORIES.vehicle;
+const isPropertyAccount = (account: AccountModel) => account.accountCategory === ACCOUNT_CATEGORIES.property;
+const isLoanAccount = (account: AccountModel) => account.accountCategory === ACCOUNT_CATEGORIES.loan;
+
+export const isSidebarBankAccount = ({
+  account,
+  accountsInGroups,
+}: {
+  account: AccountModel;
+  accountsInGroups: Record<string, AccountModel>;
+}) =>
+  !accountsInGroups[account.id] && !isVehicleAccount(account) && !isPropertyAccount(account) && !isLoanAccount(account);
+
 /**
  * Per-section account splits, base-currency totals and visibility flags for the accounts view.
  * Every query here is keyed the same way as its standalone counterpart, so these dedupe with the
@@ -36,13 +49,14 @@ export const useSidebarSectionTotals = () => {
 
   const accountsInGroups = computed(() => flattenAccounts({ groups: accountGroups.value }));
 
-  // Vehicle and loan accounts get their own "Cars" and "Loans" sections, so keep
+  // Vehicle, property and loan accounts get their own dedicated sections, so keep
   // them out of the Bank Accounts list.
-  const isVehicleAccount = (account: AccountModel) => account.accountCategory === ACCOUNT_CATEGORIES.vehicle;
-  const isLoanAccount = (account: AccountModel) => account.accountCategory === ACCOUNT_CATEGORIES.loan;
   const vehicleAccounts = computed(() => activeAccounts.value.filter(isVehicleAccount));
+  const propertyAccounts = computed(() => activeAccounts.value.filter(isPropertyAccount));
   const accountsWithoutGroups = computed(() =>
-    activeAccounts.value.filter((i) => !accountsInGroups.value[i.id] && !isVehicleAccount(i) && !isLoanAccount(i)),
+    activeAccounts.value.filter((account) =>
+      isSidebarBankAccount({ account, accountsInGroups: accountsInGroups.value }),
+    ),
   );
 
   const { baseCurrencyCode, sumBaseBalance } = useBaseBalanceTotals();
@@ -79,6 +93,10 @@ export const useSidebarSectionTotals = () => {
   const carsTotal = computed(() => sumBaseBalance({ accounts: vehicleAccounts.value }));
   const carsCount = computed(() => vehicleAccounts.value.length);
 
+  // Properties total = property accounts in base currency.
+  const propertiesTotal = computed(() => sumBaseBalance({ accounts: propertyAccounts.value }));
+  const propertiesCount = computed(() => propertyAccounts.value.length);
+
   const { data: loans } = useLoans();
   const activeLoans = computed(() => partitionLoans({ loans: loans.value ?? [] }).active);
   const loansCount = computed(() => activeLoans.value.length);
@@ -90,6 +108,7 @@ export const useSidebarSectionTotals = () => {
   const showPortfolios = computed(() => sidebarSections.value.portfolios);
   const venturesVisible = computed(() => sidebarSections.value.ventures && venturesCount.value > 0);
   const carsVisible = computed(() => sidebarSections.value.vehicles && carsCount.value > 0);
+  const propertiesVisible = computed(() => sidebarSections.value.properties && propertiesCount.value > 0);
   const loansVisible = computed(() => sidebarSections.value.loans && loansCount.value > 0);
 
   return {
@@ -97,16 +116,19 @@ export const useSidebarSectionTotals = () => {
     isLoading,
     accountsWithoutGroups,
     vehicleAccounts,
+    propertyAccounts,
     baseCurrencyCode,
     bankAccountsTotal,
     portfoliosTotal,
     isPortfoliosTotalLoading,
     venturesCount,
     carsTotal,
+    propertiesTotal,
     loansTotal,
     showPortfolios,
     venturesVisible,
     carsVisible,
+    propertiesVisible,
     loansVisible,
   };
 };

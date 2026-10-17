@@ -2,6 +2,7 @@ import {
   ASSET_CLASS,
   EXCHANGE_RATE_PROVIDER_TYPE,
   INVESTMENT_TRANSACTION_CATEGORY,
+  PROPERTY_TYPE,
   type RecordId,
   SECURITY_PROVIDER,
   TRANSACTION_TRANSFER_NATURE,
@@ -841,6 +842,99 @@ describe('[Stats] Combined balance history', () => {
       for (const entry of after) {
         expect(entry.vehiclesBalance).toBe(0);
       }
+    }, 60_000);
+  });
+
+  describe('Properties in combined balance history', () => {
+    const buildPropertyPayload = (overrides: Record<string, unknown> = {}) => ({
+      name: 'Property for history',
+      currencyCode: global.BASE_CURRENCY_CODE,
+      address: '123 Example St',
+      city: 'Boston',
+      country: 'US',
+      propertyType: PROPERTY_TYPE.house,
+      purchasePrice: 20000,
+      purchaseDate: format(subDays(new Date(), 4), 'yyyy-MM-dd'),
+      annualAppreciationRatePct: 3,
+      ...overrides,
+    });
+
+    it('tracks propertiesBalance from the purchase day onward and drops it once excluded from stats', async () => {
+      await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ initialBalance: 1000 }),
+        raw: true,
+      });
+
+      const property = await helpers.createProperty({
+        ...buildPropertyPayload(),
+        raw: true,
+      });
+
+      const fromDate = format(subDays(new Date(), 7), 'yyyy-MM-dd');
+      const toDate = format(new Date(), 'yyyy-MM-dd');
+
+      const data = (await helpers.getCombinedBalanceHistory({
+        from: fromDate,
+        to: toDate,
+        raw: true,
+      })) as CombinedBalanceHistoryItem[];
+
+      expect(data.length).toBeGreaterThan(0);
+
+      const purchaseDay = property.purchaseDate;
+
+      const prePurchase = data.filter((entry) => entry.date < purchaseDay);
+      expect(prePurchase.length).toBeGreaterThan(0);
+      for (const entry of prePurchase) {
+        expect(entry.propertiesBalance).toBe(0);
+      }
+
+      const postPurchase = data.filter((entry) => entry.date >= purchaseDay);
+      expect(postPurchase.length).toBeGreaterThan(0);
+      for (const entry of postPurchase) {
+        expect(entry.propertiesBalance).toBeGreaterThan(0);
+        expect(entry.propertiesBalance).toBeLessThanOrEqual(30_000);
+      }
+
+      const updateResponse = await helpers.updateAccount({
+        id: property.accountId,
+        payload: { excludeFromStats: true },
+      });
+      expect(updateResponse.statusCode).toBe(200);
+
+      const after = (await helpers.getCombinedBalanceHistory({
+        from: fromDate,
+        to: toDate,
+        raw: true,
+      })) as CombinedBalanceHistoryItem[];
+
+      expect(after.length).toBeGreaterThan(0);
+      for (const entry of after) {
+        expect(entry.propertiesBalance).toBe(0);
+      }
+    }, 60_000);
+
+    it('does not apply a revaluation on top of the latest persisted anchor', async () => {
+      const property = await helpers.createProperty({
+        ...buildPropertyPayload(),
+        raw: true,
+      });
+      const targetValue = 30_000;
+
+      await helpers.overridePropertyValue({
+        id: property.id,
+        accountId: property.accountId,
+        targetValue,
+      });
+
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const data = (await helpers.getCombinedBalanceHistory({
+        from: today,
+        to: today,
+        raw: true,
+      })) as CombinedBalanceHistoryItem[];
+
+      expect(data.find((entry) => entry.date === today)?.propertiesBalance).toBeCloseTo(targetValue, 2);
     }, 60_000);
   });
 

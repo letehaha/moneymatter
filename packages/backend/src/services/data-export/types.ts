@@ -121,6 +121,28 @@ export interface VehicleRow {
   depreciationModel: string;
 }
 
+export interface PropertyRow {
+  address: string;
+  propertyType: string;
+  city: string | null;
+  country: string | null;
+  yearBuilt: number | null;
+  linkedAccount: string;
+  purchasePrice: number;
+  purchaseDate: string;
+  /**
+   * Null when the linked account FK does not resolve (account deleted or
+   * cross-user reference filtered out by the transformer's userId guard).
+   * Keeps the column in agreement with `linkedAccount`: when one shows the
+   * unresolved sentinel, the other emits null instead of a blank cell that
+   * reads as "no currency configured".
+   */
+  currency: string | null;
+  annualAppreciationRatePct: number;
+  /** Name of the linked mortgage account, or null when the property is unmortgaged. */
+  linkedMortgage: string | null;
+}
+
 export interface BudgetRow {
   name: string;
   status: string;
@@ -251,6 +273,7 @@ export type ExportTable =
   | { name: 'tags'; rows: TagRow[] }
   | { name: 'payees'; rows: PayeeRow[] }
   | { name: 'vehicles'; rows: VehicleRow[] }
+  | { name: 'properties'; rows: PropertyRow[] }
   | { name: 'budgets'; rows: BudgetRow[] }
   | { name: 'budget_lines'; rows: BudgetLineRow[] }
   | { name: 'budget_periods'; rows: BudgetPeriodRow[] }
