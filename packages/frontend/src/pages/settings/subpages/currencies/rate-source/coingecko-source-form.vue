@@ -1,65 +1,14 @@
 <template>
   <div class="grid gap-4" data-testid="rate-source-coingecko-form">
     <div class="grid gap-3">
-      <InputField
-        v-model="searchTerm"
+      <CoingeckoCoinSearch
         :label="$t('settings.currencies.rateSource.coingecko.searchLabel')"
         :placeholder="$t('settings.currencies.rateSource.coingecko.searchPlaceholder')"
+        :selected-coin-id="model.coinId"
         :disabled="disabled"
         :error-message="errors.coinId ? $t(errors.coinId) : undefined"
-        data-testid="rate-source-coin-search"
+        @select="selectCoin({ coin: $event })"
       />
-
-      <Callout v-if="isNotConfigured" variant="warning" data-testid="rate-source-coingecko-not-configured">
-        <span>{{ $t('settings.currencies.rateSource.coingecko.notConfigured') }}</span>
-      </Callout>
-      <Callout v-else-if="isSearchFailed" variant="destructive" data-testid="rate-source-coin-search-error">
-        <span>{{ $t('settings.currencies.rateSource.coingecko.searchFailed') }}</span>
-      </Callout>
-
-      <div v-if="isSearching" class="grid gap-2" data-testid="rate-source-coin-loading">
-        <div v-for="i in SKELETON_ROWS" :key="i" class="bg-muted h-10 animate-pulse rounded-md" />
-      </div>
-
-      <ul v-else-if="coins.length" class="grid gap-1" data-testid="rate-source-coin-results">
-        <li v-for="coin in coins" :key="coin.coinId">
-          <Button
-            type="button"
-            variant="outline"
-            :class="
-              cn(
-                'h-auto w-full justify-start px-3 py-2 text-left font-normal',
-                coin.coinId === model.coinId && 'border-primary bg-primary/10',
-              )
-            "
-            :disabled="disabled"
-            :data-testid="`rate-source-coin-${coin.coinId}`"
-            @click="selectCoin({ coin })"
-          >
-            <img
-              v-if="coin.logoUrl"
-              :src="coin.logoUrl"
-              :alt="coin.name"
-              class="size-6 shrink-0 rounded-full"
-              loading="lazy"
-            />
-            <CoinsIcon v-else class="text-muted-foreground size-5 shrink-0" aria-hidden="true" />
-            <span class="min-w-0 flex-1 truncate font-medium">{{ coin.name }}</span>
-            <span class="text-muted-foreground shrink-0 text-xs uppercase">{{ coin.symbol }}</span>
-            <span v-if="coin.marketCapRank" class="text-muted-foreground shrink-0 text-xs tabular-nums">
-              #{{ coin.marketCapRank }}
-            </span>
-          </Button>
-        </li>
-      </ul>
-
-      <p
-        v-else-if="hasSearched && !isNotConfigured && !isSearchFailed"
-        class="text-muted-foreground text-sm"
-        data-testid="rate-source-coin-empty"
-      >
-        {{ $t('settings.currencies.rateSource.coingecko.noResults') }}
-      </p>
 
       <p v-if="model.coinId" class="text-sm" data-testid="rate-source-selected-coin">
         {{ $t('settings.currencies.rateSource.coingecko.selected', { coin: model.coinLabel || model.coinId }) }}
@@ -85,25 +34,13 @@
 </template>
 
 <script setup lang="ts">
-import { searchCoingeckoCoins } from '@/api/currencies';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import InputField from '@/components/fields/input-field.vue';
 import SelectField from '@/components/fields/select-field.vue';
-import { Button } from '@/components/lib/ui/button';
-import { Callout } from '@/components/lib/ui/callout';
-import { isApiErrorWithCode } from '@/js/errors';
-import { cn } from '@/lib/utils';
-import { API_ERROR_CODES, type CoingeckoCoinSearchResult } from '@bt/shared/types';
-import { useDebounce } from '@vueuse/core';
-import { useQuery } from '@tanstack/vue-query';
-import { CoinsIcon, InfoIcon } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import type { CoingeckoCoinSearchResult } from '@bt/shared/types';
+import { InfoIcon } from '@lucide/vue';
 
+import CoingeckoCoinSearch from '../coingecko-coin-search.vue';
 import type { RateSourceDraft, RateSourceDraftErrors } from './rate-source-draft';
 import { findOption, useCurrencyOptions } from './use-currency-options';
-
-const SEARCH_DEBOUNCE_MS = 300;
-const SKELETON_ROWS = 3;
 
 defineProps<{
   errors: RateSourceDraftErrors;
@@ -114,34 +51,13 @@ const model = defineModel<RateSourceDraft['coingecko']>({ required: true });
 
 const { isoOptions } = useCurrencyOptions({ excludeCode: () => '' });
 
-const searchTerm = ref('');
-const debouncedTerm = useDebounce(
-  computed(() => searchTerm.value.trim()),
-  SEARCH_DEBOUNCE_MS,
-);
-
-const query = useQuery({
-  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.coingeckoCoinSearch, debouncedTerm.value] as const),
-  queryFn: () => searchCoingeckoCoins({ query: debouncedTerm.value }),
-  enabled: () => debouncedTerm.value.length > 0,
-  retry: false,
-  staleTime: Infinity,
-});
-
-const coins = computed<CoingeckoCoinSearchResult[]>(() => query.data.value ?? []);
-const hasSearched = computed(() => debouncedTerm.value.length > 0 && query.isFetched.value);
-// Waiting out the debounce also reads as searching, so the list does not flash "no coins found".
-const isSearching = computed(
-  () =>
-    searchTerm.value.trim().length > 0 && (searchTerm.value.trim() !== debouncedTerm.value || query.isFetching.value),
-);
-// An instance without a CoinGecko key answers 503; the operator, not the user, can fix it.
-const isNotConfigured = computed(() =>
-  isApiErrorWithCode(query.error.value, API_ERROR_CODES.cryptoProviderNotConfigured),
-);
-const isSearchFailed = computed(() => Boolean(query.error.value) && !isNotConfigured.value);
-
+// The coin's logo travels with the save, so the currency's icon becomes the coin's.
 const selectCoin = ({ coin }: { coin: CoingeckoCoinSearchResult }) => {
-  model.value = { ...model.value, coinId: coin.coinId, coinLabel: `${coin.name} (${coin.symbol.toUpperCase()})` };
+  model.value = {
+    ...model.value,
+    coinId: coin.coinId,
+    coinLabel: `${coin.name} (${coin.symbol.toUpperCase()})`,
+    logoUrl: coin.logoUrl,
+  };
 };
 </script>

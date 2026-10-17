@@ -118,6 +118,7 @@ vi.mock('@/components/fields/select-field.vue', async () => {
   };
 });
 
+const SEARCH_DEBOUNCE_MS = 300;
 const i18n = createI18n({ legacy: false, locale: 'en', messages: { en: { ...currenciesEn } } });
 
 const buildCurrency = (patch: Partial<UserCurrencyModel> = {}): CurrencyWithExchangeRate =>
@@ -349,6 +350,60 @@ describe('RateSourceEditor', () => {
       await setInput(wrapper, 'rate-source-peg-factor', '3');
 
       expect(wrapper.find('[data-testid="rate-source-save"]').exists()).toBe(true);
+    });
+  });
+
+  describe('coingecko source', () => {
+    const COIN = {
+      coinId: 'bitcoin',
+      symbol: 'btc',
+      name: 'Bitcoin',
+      logoUrl: 'https://img.test/btc.png',
+      marketCapRank: 1,
+    };
+
+    it('saves the logo of the picked coin with the source and refreshes the currencies', async () => {
+      vi.useFakeTimers();
+      try {
+        mockSearch.mockResolvedValue([COIN]);
+        const wrapper = mountEditor();
+
+        await selectTab(wrapper, 'coingecko');
+        await setInput(wrapper, 'rate-source-coin-search', 'bit');
+        await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
+        await flushPromises();
+        await wrapper.find('[data-testid="rate-source-coin-bitcoin"]').trigger('click');
+        await save(wrapper);
+
+        expect(mockUpdate).toHaveBeenCalledWith({
+          code: 'BTC',
+          body: {
+            rateSource: 'coingecko',
+            config: { coinId: 'bitcoin', quoteCurrency: 'USD' },
+            logoUrl: 'https://img.test/btc.png',
+          },
+        });
+        expect(wrapper.emitted('changed')).toHaveLength(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('sends no logo for a saved coin the user did not pick again', async () => {
+      const wrapper = mountEditor({
+        currency: buildCurrency({
+          rateSource: 'coingecko',
+          rateSourceConfig: { coinId: 'bitcoin', quoteCurrency: 'USD' },
+        }),
+      });
+
+      await wrapper.find('[data-testid="rate-source-coingecko-quote"]').setValue('EUR');
+      await save(wrapper);
+
+      expect(mockUpdate).toHaveBeenCalledWith({
+        code: 'BTC',
+        body: { rateSource: 'coingecko', config: { coinId: 'bitcoin', quoteCurrency: 'EUR' } },
+      });
     });
   });
 

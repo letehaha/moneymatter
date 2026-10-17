@@ -37,7 +37,8 @@ export interface HttpHeaderRow {
 export interface RateSourceDraft {
   source: EditableRateSource;
   peg: { pegCurrency: string | null; factor: string };
-  coingecko: { coinId: string; coinLabel: string; quoteCurrency: string };
+  /** `logoUrl` is the logo of the coin picked in this editor; `null` while none was, which keeps the saved one. */
+  coingecko: { coinId: string; coinLabel: string; quoteCurrency: string; logoUrl: string | null };
   http: {
     urlTemplate: string;
     jsonPath: string;
@@ -91,6 +92,7 @@ export const buildDraft = ({ saved }: { saved: SavedRateSource }): RateSourceDra
       coinId: coingecko?.coinId ?? '',
       coinLabel: coingecko?.coinId ?? '',
       quoteCurrency: coingecko?.quoteCurrency ?? DEFAULT_RATE_SOURCE_QUOTE_CURRENCY,
+      logoUrl: null,
     },
     http: {
       urlTemplate: http?.urlTemplate ?? '',
@@ -138,6 +140,7 @@ export const buildRateSourceBody = ({ draft }: { draft: RateSourceDraft }): Upda
       return {
         rateSource: 'coingecko',
         config: { coinId: draft.coingecko.coinId, quoteCurrency: draft.coingecko.quoteCurrency },
+        ...(draft.coingecko.logoUrl ? { logoUrl: draft.coingecko.logoUrl } : {}),
       };
     case 'http':
       return { rateSource: 'http', config: buildHttpConfig({ http: draft.http }) };

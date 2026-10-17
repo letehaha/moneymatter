@@ -99,6 +99,22 @@ describe('buildRateSourceBody', () => {
     });
   });
 
+  it('sends the logo of a coin picked in this editor, and none otherwise', () => {
+    const draft = draftOf({
+      saved: COINGECKO,
+      patch: (item) => {
+        item.coingecko.logoUrl = 'https://img.test/btc.png';
+      },
+    });
+
+    expect(buildRateSourceBody({ draft })).toEqual({
+      rateSource: 'coingecko',
+      config: { coinId: 'bitcoin', quoteCurrency: 'EUR' },
+      logoUrl: 'https://img.test/btc.png',
+    });
+    expect(buildRateSourceBody({ draft: buildDraft({ saved: COINGECKO }) })).not.toHaveProperty('logoUrl');
+  });
+
   it('omits headers while keeping the saved ones, so the API keeps them', () => {
     const body = buildRateSourceBody({ draft: buildDraft({ saved: HTTP }) });
 
@@ -182,6 +198,17 @@ describe('isDraftChanged', () => {
     for (const saved of [MANUAL, PEG, COINGECKO, HTTP]) {
       expect(isDraftChanged({ draft: buildDraft({ saved }), saved })).toBe(false);
     }
+  });
+
+  it('is true when the saved coin is picked again with its logo', () => {
+    const draft = draftOf({
+      saved: COINGECKO,
+      patch: (item) => {
+        item.coingecko.logoUrl = 'https://img.test/btc.png';
+      },
+    });
+
+    expect(isDraftChanged({ draft, saved: COINGECKO })).toBe(true);
   });
 
   it('is true after switching the source or editing a setting', () => {

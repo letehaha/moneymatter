@@ -51,7 +51,7 @@ const WRAPPED = {
 };
 
 const mountForm = ({ coinId = '' }: { coinId?: string } = {}) => {
-  const model: RateSourceDraft['coingecko'] = { coinId, coinLabel: coinId, quoteCurrency: 'USD' };
+  const model: RateSourceDraft['coingecko'] = { coinId, coinLabel: coinId, quoteCurrency: 'USD', logoUrl: null };
   const wrapper = mount(CoingeckoSourceForm, {
     props: {
       modelValue: model,
@@ -122,9 +122,21 @@ describe('CoingeckoSourceForm', () => {
     await wrapper.find('[data-testid="rate-source-coin-bitcoin"]').trigger('click');
 
     expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
-      { coinId: 'bitcoin', coinLabel: 'Bitcoin (BTC)', quoteCurrency: 'USD' },
+      { coinId: 'bitcoin', coinLabel: 'Bitcoin (BTC)', quoteCurrency: 'USD', logoUrl: 'https://img.test/btc.png' },
     ]);
     expect(wrapper.find('[data-testid="rate-source-selected-coin"]').text()).toBe('Selected coin: Bitcoin (BTC)');
+  });
+
+  it('carries no logo for a coin that has none', async () => {
+    mockSearch.mockResolvedValue([WRAPPED]);
+    const wrapper = mountForm();
+
+    await search({ wrapper, term: 'wrapped' });
+    await wrapper.find('[data-testid="rate-source-coin-wrapped-bitcoin"]').trigger('click');
+
+    expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([
+      { coinId: 'wrapped-bitcoin', coinLabel: 'Wrapped Bitcoin (WBTC)', quoteCurrency: 'USD', logoUrl: null },
+    ]);
   });
 
   it('shows the saved coin before any search', () => {
