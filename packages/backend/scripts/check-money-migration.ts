@@ -9,7 +9,8 @@
  * that state it runs the custom-currencies migration up, down and up again, and asserts the
  * widened code columns, the new columns and constraints, the nullable base-currency amounts, the
  * view, that the seeded values survive, and that `down` refuses while custom-currency data exists.
- * Last it runs the rate-sources migration up, down and up again over dated user rates.
+ * Last it runs the rate-sources migration up, down and up again over dated user rates and the
+ * rate-source columns of the user currency list.
  *
  * Usage (needs a Postgres the script may create and drop a database in):
  *   docker run --rm -d --name mm-migcheck -e POSTGRES_PASSWORD=test -p 55432:5432 postgres:16
@@ -862,6 +863,75 @@ const assertRateSources = async ({
   });
 };
 
+const SOURCE_CUSTOM_CODE = 'RSCUS';
+
+const seedUserCurrencies = async ({ sequelize }: { sequelize: Sequelize }): Promise<void> => {
+  const userId = await scalar<number>({
+    sequelize,
+    sql: `INSERT INTO "Users" (username) VALUES ('rate-source-check') RETURNING id`,
+  });
+  await sequelize.query(
+    `INSERT INTO "Currencies" (code, currency, digits, "number", "isCustom") VALUES ('${SOURCE_CUSTOM_CODE}', 'Rate source check', 4, NULL, true)`,
+  );
+  await sequelize.query(
+    `INSERT INTO "UsersCurrencies" ("userId", "currencyCode") VALUES (${userId}, 'USD'), (${userId}, '${SOURCE_CUSTOM_CODE}')`,
+  );
+};
+
+const sourceOf = ({ sequelize, code }: { sequelize: Sequelize; code: string }) =>
+  scalar<string>({
+    sequelize,
+    sql: `SELECT "rateSource" FROM "UsersCurrencies" WHERE "currencyCode" = '${code}'`,
+  });
+
+const assertRateSourceColumns = async ({
+  sequelize,
+  state,
+  step,
+}: {
+  sequelize: Sequelize;
+  state: 'before' | 'after';
+  step: string;
+}): Promise<void> => {
+  const after = state === 'after';
+
+  const rateSource = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSource' });
+  const config = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceConfig' });
+  check({
+    ok: after
+      ? rateSource?.data_type === 'character varying' &&
+        rateSource.character_maximum_length === 16 &&
+        rateSource.is_nullable === 'NO' &&
+        rateSource.column_default?.startsWith("'provider'") === true
+      : rateSource === undefined,
+    label: `${step}: UsersCurrencies.rateSource is ${after ? "a NOT NULL varchar(16) defaulting to 'provider'" : 'absent'}`,
+  });
+  check({
+    ok: after ? config?.data_type === 'jsonb' && config.is_nullable === 'YES' : config === undefined,
+    label: `${step}: UsersCurrencies.rateSourceConfig is ${after ? 'a nullable jsonb' : 'absent'}`,
+  });
+};
+
+const assertRateSourceValues = async ({ sequelize, step }: { sequelize: Sequelize; step: string }): Promise<void> => {
+  // A currency starts on the market feed; a custom one has none, so it starts on manual rates.
+  check({
+    ok: (await sourceOf({ sequelize, code: 'USD' })) === 'provider',
+    label: `${step}: an existing ISO currency row is on the provider`,
+  });
+  check({
+    ok: (await sourceOf({ sequelize, code: SOURCE_CUSTOM_CODE })) === 'manual',
+    label: `${step}: an existing custom currency row is on manual rates`,
+  });
+  check({
+    ok:
+      (await scalar<number>({
+        sequelize,
+        sql: `SELECT count(*)::int FROM "UsersCurrencies" WHERE "rateSourceConfig" IS NOT NULL`,
+      })) === 0,
+    label: `${step}: no existing row has a source config`,
+  });
+};
+
 const assertRateRows = async ({
   sequelize,
   expected,
@@ -1094,9 +1164,16 @@ const main = async (): Promise<void> => {
 
     // ---- rate-sources migration: dated user rates ----
     await seedUserRates({ sequelize });
+    await seedUserCurrencies({ sequelize });
     await assertRateSources({ sequelize, state: 'before', step: 'rates-seed' });
+    await assertRateSourceColumns({ sequelize, state: 'before', step: 'rates-seed' });
     await umzug.up({ to: RATE_SOURCES_MIGRATION_NAME });
     await assertRateSources({ sequelize, state: 'after', step: 'rates-up' });
+    await assertRateSourceColumns({ sequelize, state: 'after', step: 'rates-up' });
+    await assertRateSourceValues({ sequelize, step: 'rates-up' });
+    await sequelize.query(
+      `UPDATE "UsersCurrencies" SET "rateSource" = 'peg', "rateSourceConfig" = '{"pegCurrency":"USD","factor":1}'::jsonb WHERE "currencyCode" = '${SOURCE_CUSTOM_CODE}'`,
+    );
     // The offset row falls on the day before in UTC; the two GBP rows of one UTC day collapse to the later one.
     const expectedAfterUp = [
       { userId: 1, baseCode: 'USD', quoteCode: 'EUR', rate: 0.9, effectiveDate: '2026-03-04' },
@@ -1118,6 +1195,7 @@ const main = async (): Promise<void> => {
     // down keeps the latest day of each pair: the June rate replaces the March one.
     await umzug.down();
     await assertRateSources({ sequelize, state: 'before', step: 'rates-down' });
+    await assertRateSourceColumns({ sequelize, state: 'before', step: 'rates-down' });
     await assertRateRows({
       sequelize,
       expected: [
@@ -1131,6 +1209,8 @@ const main = async (): Promise<void> => {
 
     await umzug.up({ to: RATE_SOURCES_MIGRATION_NAME });
     await assertRateSources({ sequelize, state: 'after', step: 'rates-up-again' });
+    await assertRateSourceColumns({ sequelize, state: 'after', step: 'rates-up-again' });
+    await assertRateSourceValues({ sequelize, step: 'rates-up-again' });
     const savedToday = new Date().toISOString().slice(0, 10);
     await assertRateRows({
       sequelize,

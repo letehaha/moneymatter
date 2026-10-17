@@ -1,7 +1,9 @@
 import type {
   BaseCurrencyChangeStatus,
   CreateCustomCurrencyBody,
+  CurrencyRateSourceResponse,
   CustomCurrencyModel,
+  UpdateCurrencyRateSourceBody,
   UpdateCustomCurrencyBody,
 } from '@bt/shared/types';
 import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
@@ -336,6 +338,24 @@ export function deleteCustomCurrency<R extends boolean | undefined = undefined>(
   return makeRequest<void, R>({
     method: 'delete',
     url: `/user/currencies/custom/${code}`,
+    raw,
+  });
+}
+
+export function setCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: UpdateCurrencyRateSourceBody | Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<CurrencyRateSourceResponse, R>({
+    method: 'put',
+    url: `/user/currencies/${code}/rate-source`,
+    payload,
     raw,
   });
 }

@@ -1,4 +1,10 @@
-import { RecordId } from '@bt/shared/types';
+import type {
+  CoingeckoRateSourceConfig,
+  CurrencyRateSource,
+  HttpRateSourceConfig,
+  PegRateSourceConfig,
+  RecordId,
+} from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
@@ -86,6 +92,14 @@ export default class UsersCurrencies extends Model {
   /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
   logoUrl!: string | null;
+
+  /** Where the user's rates for the currency come from; the settings of each source are in `rateSourceConfig`. */
+  @Column({ allowNull: false, defaultValue: 'provider', type: DataType.STRING(16) })
+  declare rateSource: CurrencyRateSource;
+
+  /** Settings of `rateSource`; `null` for `provider` and `manual`. Written only by the rate-source endpoint. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.JSONB })
+  declare rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
 
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave

@@ -18,6 +18,7 @@ import {
   updateCustomCurrency,
 } from '@controllers/currencies/custom-currencies';
 import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exchange-rate';
+import { updateCurrencyRateSource } from '@controllers/currencies/rate-source';
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
 import {
@@ -107,6 +108,8 @@ router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
 router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
 router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);
 router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
+// The source decides which rate prices a currency's amounts, so it sits behind the same guard.
+router.put('/currencies/:code/rate-source', checkBaseCurrencyLock, updateCurrencyRateSource);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,
 // so guarding it here would reject the request that is supposed to start the change.
 router.post('/currencies/change-base', changeBaseCurrency);

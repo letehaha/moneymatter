@@ -83,6 +83,58 @@ export interface UpdateCustomCurrencyBody {
   logoUrl?: string | null;
 }
 
+/**
+ * Where a currency's rates come from for one user. `provider` is the market feed of ISO currencies.
+ * A custom currency has no market feed and takes `manual`, `peg`, `coingecko` or `http`.
+ */
+export const CURRENCY_RATE_SOURCES = ['provider', 'manual', 'peg', 'coingecko', 'http'] as const;
+export type CurrencyRateSource = (typeof CURRENCY_RATE_SOURCES)[number];
+
+/** Rate sources an ISO currency can take; the others price custom currencies only. */
+export const ISO_CURRENCY_RATE_SOURCES = ['provider', 'manual'] as const satisfies readonly CurrencyRateSource[];
+
+/** Quote currency of the synced sources when the config names none. */
+export const DEFAULT_RATE_SOURCE_QUOTE_CURRENCY = 'USD';
+
+/** The rate is `factor` times the rate of `pegCurrency`. */
+export interface PegRateSourceConfig {
+  pegCurrency: string;
+  factor: number;
+}
+
+/** Daily prices of one CoinGecko coin, stored in `quoteCurrency`. */
+export interface CoingeckoRateSourceConfig {
+  coinId: string;
+  quoteCurrency: string;
+}
+
+/**
+ * A JSON endpoint called once per day. `urlTemplate` may hold `{date}`, `{code}` and `{quote}`;
+ * `jsonPath` points at the price in the response, and the rate is stored in `quoteCurrency`.
+ */
+export interface HttpRateSourceConfig {
+  urlTemplate: string;
+  jsonPath: string;
+  quoteCurrency: string;
+}
+
+/** Body of `PUT /user/currencies/:code/rate-source`. */
+export type UpdateCurrencyRateSourceBody =
+  | { rateSource: 'provider' | 'manual' }
+  | { rateSource: 'peg'; config: PegRateSourceConfig }
+  | { rateSource: 'coingecko'; config: Omit<CoingeckoRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string } }
+  | { rateSource: 'http'; config: Omit<HttpRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string } };
+
+/** A currency's saved rate source; the config is `null` for `provider` and `manual`. */
+export type CurrencyRateSourceSetting =
+  | { rateSource: 'provider' | 'manual'; rateSourceConfig: null }
+  | { rateSource: 'peg'; rateSourceConfig: PegRateSourceConfig }
+  | { rateSource: 'coingecko'; rateSourceConfig: CoingeckoRateSourceConfig }
+  | { rateSource: 'http'; rateSourceConfig: HttpRateSourceConfig };
+
+/** Response of `PUT /user/currencies/:code/rate-source`. */
+export type CurrencyRateSourceResponse = CurrencyRateSourceSetting & { currencyCode: string };
+
 export interface UserCurrencyModel {
   id: RecordId;
   userId: number;
@@ -98,6 +150,10 @@ export interface UserCurrencyModel {
   decimalsOverride: number | null;
   /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
   logoUrl: string | null;
+  /** Where the currency's rates come from; `provider` until the user picks another source. */
+  rateSource: CurrencyRateSource;
+  /** Settings of the source; `null` for `provider` and `manual`. */
+  rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
   currency?: CurrencyModel;
   user?: UserModel;
 }

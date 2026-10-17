@@ -570,7 +570,11 @@
     "customCurrencyInUse": "Cannot delete \"{{code}}\": your {{usedBy}} still use it",
     "customCurrencyDecimalsInUse": "Cannot change the decimals of \"{{code}}\": your {{usedBy}} still use it",
     "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
-    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency"
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency",
+    "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
+    "rateSourceIsoNotAllowed": "\"{{code}}\" is an ISO currency, so its rate source can only be the market provider or manual rates",
+    "rateSourceCustomNoProvider": "\"{{code}}\" is a custom currency and has no market provider. Use manual rates, a peg, CoinGecko or an HTTP source",
+    "rateSourcePegSelf": "\"{{code}}\" cannot be pegged to itself"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"

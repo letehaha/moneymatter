@@ -8,6 +8,10 @@ import { QueryInterface, Transaction } from 'sequelize';
  *   hold one rate per day. A row that exists already gets the UTC day of its "date".
  * - "UserExchangeRates"."source" says where a rate came from: 'manual' for every row that exists.
  *
+ * - "UsersCurrencies"."rateSource" says where the user's rates for a currency come from, and
+ *   "rateSourceConfig" holds the settings of that source. Every currency starts on 'provider' (the
+ *   market feed), except a custom currency, which has no market feed and starts on 'manual'.
+ *
  * A pair never had more than one row (an edit rewrote it), so the new key cannot collide. If two
  * rows of a pair do share a day, the one written last is kept.
  *
@@ -45,9 +49,16 @@ const upStatements = (): string[] => [
   dropPrimaryKeySql,
   `ALTER TABLE "UserExchangeRates"
      ADD CONSTRAINT "${PRIMARY_KEY_NAME}" PRIMARY KEY ("userId", "baseCode", "quoteCode", "effectiveDate");`,
+  `ALTER TABLE "UsersCurrencies"
+     ADD COLUMN "rateSource" VARCHAR(16) NOT NULL DEFAULT 'provider',
+     ADD COLUMN "rateSourceConfig" JSONB;`,
+  `UPDATE "UsersCurrencies" held SET "rateSource" = 'manual'
+     FROM "Currencies" currency
+    WHERE currency."code" = held."currencyCode" AND currency."isCustom";`,
 ];
 
 const downStatements = (): string[] => [
+  `ALTER TABLE "UsersCurrencies" DROP COLUMN "rateSourceConfig", DROP COLUMN "rateSource";`,
   `DELETE FROM "UserExchangeRates" older
      USING "UserExchangeRates" newer
     WHERE older."userId" = newer."userId"
