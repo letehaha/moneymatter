@@ -3,6 +3,7 @@ import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-c
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
+import { namespace } from '@models/connection';
 import Currencies from '@models/currencies.model';
 import { connection } from '@models/index';
 import UserExchangeRates from '@models/user-exchange-rates.model';
@@ -33,6 +34,13 @@ const USAGE_SOURCES = [
   { label: 'subscription candidates', table: 'SubscriptionCandidates', columns: ['currencyCode'] },
   { label: 'budget plans', table: 'BudgetPlans', columns: ['currencyCode'] },
 ] as const;
+
+/** Reads the global currency row under FOR SHARE inside the ambient CLS transaction. */
+const lockCurrencyRow = ({ code }: { code: string }) => {
+  const sequelizeTx = namespace.get('transaction');
+
+  return Currencies.findOne({ where: { code }, transaction: sequelizeTx, lock: sequelizeTx?.LOCK.SHARE });
+};
 
 const toCustomCurrencyModel = (effective: EffectiveCurrency): CustomCurrencyModel => ({
   code: effective.code,
@@ -97,9 +105,14 @@ export const createCustomCurrency = withTransaction(
       throw new ConflictError({ message: t({ key: 'currencies.customCurrencyAlreadyDefined', variables: { code } }) });
     }
 
+    // FOR SHARE keeps `pruneUnusedCustomCurrencies` from deleting the row between here and the holding
+    // insert below (the delete would cascade the new holding away). A null result means a prune
+    // removed the row after the read above, so it is created afresh.
+    const lockedExisting = existing ? await lockCurrencyRow({ code }) : null;
+
     // Two users defining the same new code at once: the loser adopts the winner's row.
     const currency =
-      existing ??
+      lockedExisting ??
       (await insertOrAdopt({
         insert: () =>
           Currencies.create({
@@ -111,7 +124,7 @@ export const createCustomCurrency = withTransaction(
             symbol: symbol ?? null,
             createdByUserId: userId,
           }),
-        adopt: () => Currencies.findOne({ where: { code } }),
+        adopt: () => lockCurrencyRow({ code }),
       }));
 
     const held = await UsersCurrencies.create({

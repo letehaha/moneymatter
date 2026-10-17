@@ -25,12 +25,29 @@ const REFERENCING_COLUMNS = CURRENCY_CODE_COLUMNS.filter(
  * destroy lifecycle (delete and wipe) and from `DELETE /user/currencies/custom/:code`.
  */
 export const pruneUnusedCustomCurrencies = async (): Promise<{ deletedCodes: string[] }> => {
-  const candidates = (await connection.sequelize.query(
+  // Lock the candidates before judging them. `createCustomCurrency` takes FOR SHARE on the global row
+  // before it inserts a holding, so a holding is either already committed (the recheck below sees it)
+  // or its transaction waits for this one. A DELETE with a NOT EXISTS alone would not close the gap:
+  // under READ COMMITTED a statement that waited on a lock-only conflict never re-runs its subquery.
+  // Ordered by code so two prunes lock in the same order.
+  const unheldCodes = (await connection.sequelize.query(
     `SELECT c."code" FROM "Currencies" c
      WHERE c."isCustom" = true
-       AND NOT EXISTS (SELECT 1 FROM "UsersCurrencies" u WHERE u."currencyCode" = c."code")`,
+       AND NOT EXISTS (SELECT 1 FROM "UsersCurrencies" u WHERE u."currencyCode" = c."code")
+     ORDER BY c."code"
+     FOR UPDATE OF c`,
     { type: QueryTypes.SELECT },
   )) as { code: string }[];
+
+  // The wait above may have ended on a committed holding; a fresh statement sees it.
+  const candidates = unheldCodes.length
+    ? ((await connection.sequelize.query(
+        `SELECT c."code" FROM "Currencies" c
+         WHERE c."code" IN (:codes)
+           AND NOT EXISTS (SELECT 1 FROM "UsersCurrencies" u WHERE u."currencyCode" = c."code")`,
+        { replacements: { codes: unheldCodes.map(({ code }) => code) }, type: QueryTypes.SELECT },
+      )) as { code: string }[])
+    : [];
 
   const deletedCodes: string[] = [];
 
