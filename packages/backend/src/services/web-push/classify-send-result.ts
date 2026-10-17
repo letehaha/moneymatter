@@ -8,7 +8,7 @@ const REJECTED_STATUSES: ReadonlySet<number> = new Set([400]);
 // payload was too large. Not the subscription's fault, so it is never counted against it.
 const INSTANCE_STATUSES: ReadonlySet<number> = new Set([401, 403, 413]);
 
-const readStatusCode = ({ error }: { error: unknown }): number | undefined => {
+export const readStatusCode = ({ error }: { error: unknown }): number | undefined => {
   if (typeof error !== 'object' || error === null) return undefined;
   const { statusCode } = error as { statusCode?: unknown };
   return typeof statusCode === 'number' ? statusCode : undefined;
