@@ -3,6 +3,7 @@ import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
+import { getBaseCurrency } from '@models/users-currencies.model';
 
 export interface ConversionDecimals {
   /** Decimals of the amount's own currency; the amount is rounded to them before it is converted. */
@@ -32,6 +33,20 @@ export const getCurrencyDecimals = async ({ userId, code }: { userId: number; co
   setCachedCurrencyDecimals({ userId, code, decimals: currency.digits });
 
   return currency.digits;
+};
+
+/**
+ * Number of decimal places of the user's base currency: the scale the report engines (stats,
+ * budgets) compute their minor units at. A user without a base currency is an error, never 2.
+ */
+export const getBaseCurrencyDecimals = async ({ userId }: { userId: number }): Promise<number> => {
+  const baseCurrency = await getBaseCurrency({ userId });
+
+  if (!baseCurrency) {
+    throw new ValidationError({ message: t({ key: 'currencies.noBaseCurrency' }) });
+  }
+
+  return getCurrencyDecimals({ userId, code: baseCurrency.currencyCode });
 };
 
 /**
