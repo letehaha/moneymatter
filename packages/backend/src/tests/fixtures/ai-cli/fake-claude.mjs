@@ -2,7 +2,6 @@
 // Fake `claude` for backend tests: answers `-p ... --output-format stream-json` runs from the canned
 // response channel (`MM_FAKE_CLI_RESPONSE_FILE`) and fails per scenario. Mirrors the real stream: with
 // `--json-schema` it emits a `StructuredOutput` tool_use before the `result` event that carries `structured_output`.
-import readline from 'node:readline';
 
 import {
   emit,
@@ -61,8 +60,21 @@ async function setupToken() {
 
   out('Paste code here if prompted > ');
 
+  // Like the real (Ink) prompt: a multi-character chunk is a paste, so a newline inside it is text, and only
+  // a chunk that is exactly Enter submits.
   const code = await new Promise((resolve) => {
-    readline.createInterface({ input: process.stdin }).once('line', resolve);
+    let typed = '';
+    process.stdin.setRawMode(true);
+    process.stdin.setEncoding('utf8');
+    process.stdin.on('data', (chunk) => {
+      if (chunk === '\r' || chunk === '\n') {
+        process.stdin.setRawMode(false);
+        process.stdin.pause();
+        resolve(typed);
+        return;
+      }
+      typed += chunk.replace(/[\r\n]/g, '');
+    });
   });
 
   recordRun({

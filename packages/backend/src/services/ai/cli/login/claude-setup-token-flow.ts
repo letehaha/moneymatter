@@ -13,6 +13,7 @@ const AUTH_URL_PATTERN = /https:\/\/\S*oauth\S*(?=\s)/;
 const TOKEN_PATTERN = /sk-ant-oat\w*-[A-Za-z0-9_-]{20,}(?=\s)/;
 
 const MAX_CODE_LENGTH = 500;
+const SUBMIT_AFTER_PASTE_MS = 300;
 const TOKEN_LIFETIME_MS = 365 * 24 * 60 * 60 * 1000;
 const FAILURE_OUTPUT_LINES = 5;
 
@@ -83,7 +84,11 @@ export function startClaudeSetupTokenFlow({
 
         if (code === null) throw describeFailure({ session });
 
-        session.write({ data: `${code}\r` });
+        // The CLI's prompt reads a multi-character chunk as a paste and keeps a newline inside it as text,
+        // so Enter goes in its own write once the pasted code has been taken in.
+        session.write({ data: code });
+        await new Promise((resolve) => setTimeout(resolve, SUBMIT_AFTER_PASTE_MS));
+        session.write({ data: '\r' });
 
         const token = await session.waitFor({ pattern: TOKEN_PATTERN, timeoutMs: timeouts.tokenMs });
 
