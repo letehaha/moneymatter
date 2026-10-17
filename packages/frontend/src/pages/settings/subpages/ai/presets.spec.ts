@@ -4,10 +4,12 @@ import { describe, expect, it } from 'vitest';
 import {
   AI_CONNECTION_PRESETS,
   findPresetForConnection,
+  getCliModelOptions,
   getDefaultCliModel,
   getVisiblePresets,
   isSubscriptionPreset,
   matchPresetByBaseUrl,
+  resolveCliModelId,
 } from './presets';
 
 describe('matchPresetByBaseUrl', () => {
@@ -154,5 +156,63 @@ describe('getDefaultCliModel', () => {
   it('has no default for a preset without a curated list', () => {
     expect(getDefaultCliModel({ preset: findPreset({ id: 'anthropic' }) })).toBe('');
     expect(getDefaultCliModel({ preset: findPreset({ id: 'custom' }) })).toBe('');
+  });
+});
+
+describe('getCliModelOptions', () => {
+  const findPreset = ({ id }: { id: string }) => AI_CONNECTION_PRESETS.find((preset) => preset.id === id)!;
+
+  it('lists one labelled option per Claude model, aliases only', () => {
+    expect(getCliModelOptions({ preset: findPreset({ id: 'claudeCode' }) })).toEqual([
+      { id: 'sonnet', label: 'Claude Sonnet 5.5' },
+      { id: 'opus', label: 'Claude Opus 5.5' },
+      { id: 'haiku', label: 'Claude Haiku 5.5' },
+      { id: 'fable', label: 'Claude Fable 5.1' },
+    ]);
+  });
+
+  it('lists the Codex models with their labels', () => {
+    const options = getCliModelOptions({ preset: findPreset({ id: 'codex' }) });
+
+    expect(options[0]).toEqual({ id: 'gpt-6-astra', label: 'GPT-6 Astra' });
+    expect(options.at(-1)).toEqual({ id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' });
+  });
+
+  it('does not repeat an id', () => {
+    for (const id of ['claudeCode', 'codex']) {
+      const ids = getCliModelOptions({ preset: findPreset({ id }) }).map((option) => option.id);
+
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+
+  it('adds no extra option for a legacy pinned id, which shows as its alias', () => {
+    const preset = findPreset({ id: 'claudeCode' });
+
+    expect(getCliModelOptions({ preset, currentModel: 'claude-opus-5-5' })).toHaveLength(4);
+  });
+
+  it('keeps an unknown stored model as an option under its own name', () => {
+    const options = getCliModelOptions({ preset: findPreset({ id: 'claudeCode' }), currentModel: 'claude-future-9' });
+
+    expect(options.at(-1)).toEqual({ id: 'claude-future-9', label: 'claude-future-9' });
+  });
+
+  it('has no options for a preset without a curated list', () => {
+    expect(getCliModelOptions({ preset: findPreset({ id: 'anthropic' }) })).toEqual([]);
+  });
+});
+
+describe('resolveCliModelId', () => {
+  const claude = AI_CONNECTION_PRESETS.find((preset) => preset.id === 'claudeCode')!;
+
+  it('maps a legacy pinned id to its alias', () => {
+    expect(resolveCliModelId({ preset: claude, model: 'claude-sonnet-5-5' })).toBe('sonnet');
+    expect(resolveCliModelId({ preset: claude, model: 'claude-fable-5-1' })).toBe('fable');
+  });
+
+  it('keeps a current or unknown id as it is', () => {
+    expect(resolveCliModelId({ preset: claude, model: 'haiku' })).toBe('haiku');
+    expect(resolveCliModelId({ preset: claude, model: 'claude-future-9' })).toBe('claude-future-9');
   });
 });

@@ -233,6 +233,7 @@
           "removeApiKeyButton": "Remove API key",
           "modelLabel": "Model",
           "modelPlaceholder": "Type or pick a model",
+          "modelSelectPlaceholder": "Select a model",
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
           "testButton": "Test connection",
