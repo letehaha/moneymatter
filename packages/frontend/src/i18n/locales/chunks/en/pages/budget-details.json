@@ -2,6 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
+        "loadError": "Couldn't load transactions.",
         "selectionModeWarning": "Selection mode — choose transactions to unlink",
         "selectAll": "Select all",
         "selected": "{count} selected",
@@ -15,7 +16,9 @@
         "resetFilters": "Reset Filters",
         "addTransactions": "Add Transactions",
         "add": "Add",
-        "loadingMore": "Loading more..."
+        "loadingMore": "Loading more...",
+        "unlinkError": "Failed to unlink transactions",
+        "addError": "Failed to add transactions"
       }
     },
     "budgetDetails": {
@@ -57,7 +60,43 @@
         "income": "Income",
         "expenses": "Expenses",
         "incomeLabel": "Income:",
-        "expensesLabel": "Expenses:"
+        "expensesLabel": "Expenses:",
+        "kpi": {
+          "dailyPace": "Daily pace",
+          "perDay": "/ day",
+          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "daysElapsed": "{elapsed} of {total} days",
+          "projectedTotal": "Projected total",
+          "projectedLimit": "at this pace · limit {amount}",
+          "averagePerDay": "Average per day",
+          "firstTransaction": "First transaction",
+          "lastTransaction": "Last transaction",
+          "transactions": "Transactions",
+          "avgAmount": "avg {amount}",
+          "biggestDay": "Biggest day",
+          "shareOfTotal": "{percent}% of total"
+        },
+        "byCategory": "By category",
+        "categoriesCount": "{count} category | {count} categories",
+        "byCurrency": "By currency",
+        "asPaid": "as paid",
+        "timeline": "Timeline",
+        "todayMarker": "today {date}",
+        "timelineAria": "Cumulative spending over time with per-period bars",
+        "limitLabel": "{amount} limit",
+        "cumulativeLabel": "Cumulative",
+        "legend": {
+          "cumulative": "Spent, cumulative",
+          "evenPace": "Even pace to the limit",
+          "projection": "Projection",
+          "daily": "Per day",
+          "weekly": "Per week",
+          "monthly": "Per month"
+        },
+        "topPayees": "Top payees",
+        "bySpend": "by spend",
+        "noPayee": "No payee",
+        "txCount": "{count} tx"
       },
       "sharing": {
         "title": "Sharing",

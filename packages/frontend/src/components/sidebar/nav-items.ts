@@ -7,6 +7,7 @@ import {
   HandCoinsIcon,
   RepeatIcon,
   RocketIcon,
+  TargetIcon,
   TrendingUpIcon,
   WalletIcon,
   WrenchIcon,
@@ -52,7 +53,7 @@ export const SIDEBAR_NAV_CHILDREN = {
   ],
   planned: [
     { routeName: ROUTES_NAMES.plannedSubscriptions, labelKey: 'navigation.planned.subscriptions', icon: RepeatIcon },
-    { routeName: ROUTES_NAMES.plannedBudgets, labelKey: 'navigation.planned.budgets', icon: WalletIcon },
+    { routeName: ROUTES_NAMES.plannedBudgets, labelKey: 'navigation.planned.budgets', icon: TargetIcon },
   ],
 } satisfies Record<string, SidebarNavChild[]>;
 

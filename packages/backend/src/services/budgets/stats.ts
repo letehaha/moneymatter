@@ -1,12 +1,14 @@
-import { BUDGET_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { BUDGET_TYPES, type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import TrackerLines from '@models/tracker-lines.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
+import { includeLines } from '@services/budget.service';
 import { statsTransactions } from '@services/stats/stats-transactions';
 import { Op } from 'sequelize';
 
@@ -14,6 +16,7 @@ import { withTransaction } from '../common/with-transaction';
 import { authorizeBudgetRead } from './authorize-budget-access';
 import { buildDateFilter } from './utils/build-date-filter';
 import { fetchBudgetRefundPairs } from './utils/refund-pairs';
+import { buildSharedBudgetMergeMap } from './utils/shared-category-merge-map';
 
 interface StatsResponse {
   summary: {
@@ -25,6 +28,15 @@ interface StatsResponse {
     firstTransactionDate: string | null; // ISO date string of earliest transaction
     lastTransactionDate: string | null; // ISO date string of latest transaction
   };
+  /** Cents, in line `position` order. */
+  lines: { lineId: string; spent: number }[];
+  /** Cents of expenses no line matched. */
+  otherSpent: number;
+}
+
+interface ExpenseEntry {
+  categoryId: string;
+  cents: number;
 }
 
 export const getResponseInitialState = (): StatsResponse => ({
@@ -37,7 +49,58 @@ export const getResponseInitialState = (): StatsResponse => ({
     firstTransactionDate: null,
     lastTransactionDate: null,
   },
+  lines: [],
+  otherSpent: 0,
 });
+
+/**
+ * An expense lands in the first line (by position, then id) whose categories contain its category.
+ * ponytail: refund netting is not applied to line totals or `otherSpent`.
+ */
+const splitExpensesByLines = ({
+  lines,
+  expenses,
+}: {
+  lines: TrackerLines[];
+  expenses: ExpenseEntry[];
+}): Pick<StatsResponse, 'lines' | 'otherSpent'> => {
+  const totals = lines.map((line) => ({ lineId: line.id, spent: 0 }));
+  const lineIndexByCategory = new Map<string, number>();
+  lines.forEach((line, index) => {
+    for (const category of line.categories ?? []) {
+      if (!lineIndexByCategory.has(category.id)) lineIndexByCategory.set(category.id, index);
+    }
+  });
+
+  let otherSpent = 0;
+  for (const { categoryId, cents } of expenses) {
+    const index = lineIndexByCategory.get(categoryId);
+    if (index === undefined) otherSpent += cents;
+    else totals[index]!.spent += cents;
+  }
+
+  return { lines: totals, otherSpent };
+};
+
+/** A `write` recipient's attached transactions carry their own category ids; lines hold the owner's. */
+const buildCategoryCanonicalizer = async ({
+  ownerUserId,
+  transactions,
+}: {
+  ownerUserId: number;
+  transactions: Pick<Transactions.default, 'userId'>[];
+}): Promise<(categoryId: RecordId) => RecordId> => {
+  const userIds = new Set([ownerUserId, ...transactions.map((tx) => tx.userId)]);
+  if (userIds.size === 1) return (categoryId) => categoryId;
+
+  const categories = (await Categories.findAll({
+    where: { userId: { [Op.in]: [...userIds] } },
+    attributes: ['id', 'key', 'userId'],
+    raw: true,
+  })) as unknown as { id: RecordId; key: string | null; userId: number }[];
+  const mergeMap = buildSharedBudgetMergeMap({ categories, ownerUserId });
+  return (categoryId) => mergeMap.get(categoryId) ?? categoryId;
+};
 
 /**
  * Calculate stats for manual budgets using BudgetTransactions junction table.
@@ -58,9 +121,11 @@ export const getResponseInitialState = (): StatsResponse => ({
 const getManualBudgetStats = async ({
   budgetId,
   callerUserId,
+  lines,
 }: {
   budgetId: string;
   callerUserId: number;
+  lines: TrackerLines[];
 }): Promise<StatsResponse> => {
   const budgetDetails = await findOrThrowNotFound({
     query: Budgets.findByPk(budgetId),
@@ -69,7 +134,7 @@ const getManualBudgetStats = async ({
 
   const transactions: Pick<
     Transactions.default,
-    'id' | 'time' | 'amount' | 'refAmount' | 'transactionType' | 'refundLinked'
+    'id' | 'time' | 'amount' | 'refAmount' | 'transactionType' | 'refundLinked' | 'categoryId' | 'userId'
   >[] = await Transactions.findWithFilters({
     excludeTransfer: true,
     budgetIds: [budgetId],
@@ -77,13 +142,21 @@ const getManualBudgetStats = async ({
     planned: { visibleTo: callerUserId },
     access: 'pre-scoped',
     balanceAdjustments: 'include',
-    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked'],
+    attributes: ['id', 'time', 'amount', 'refAmount', 'transactionType', 'refundLinked', 'categoryId', 'userId'],
   });
 
   const limitAmount = budgetDetails.limitAmount?.toCents() ?? null;
   const result = aggregateTransactionStats({ transactions, limitAmount });
   await applyRefundAdjustments({ countedTransactions: transactions, result, limitAmount });
-  return result;
+
+  const canonicalize = await buildCategoryCanonicalizer({ ownerUserId: budgetDetails.userId, transactions });
+
+  // ponytail: matches on the primary categoryId, so a split transaction lands whole in one line.
+  // Read the transaction's splits here if manual trackers need per-split line totals.
+  const expenses = transactions
+    .filter((tx) => tx.transactionType === TRANSACTION_TYPES.expense)
+    .map((tx) => ({ categoryId: canonicalize(tx.categoryId), cents: tx.refAmount.toCents() }));
+  return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
 /**
@@ -94,10 +167,12 @@ const getCategoryBudgetStats = async ({
   userId,
   budgetId,
   isOwner,
+  lines,
 }: {
   userId: number;
   budgetId: string;
   isOwner: boolean;
+  lines: TrackerLines[];
 }): Promise<StatsResponse> => {
   const budgetDetails = await findOrThrowNotFound({
     query: Budgets.findByPk(budgetId, {
@@ -109,7 +184,7 @@ const getCategoryBudgetStats = async ({
   const categoryIds = budgetDetails.categories?.map((c) => c.id) || [];
 
   if (!categoryIds.length) {
-    return getResponseInitialState();
+    return { ...getResponseInitialState(), ...splitExpensesByLines({ lines, expenses: [] }) };
   }
 
   const dateFilter = buildDateFilter({
@@ -154,6 +229,7 @@ const getCategoryBudgetStats = async ({
 
   const result = getResponseInitialState();
   const countedTransactions: { id: string; refundLinked: boolean }[] = [];
+  const expenses: ExpenseEntry[] = [];
 
   // Process primary category transactions (only those WITHOUT splits)
   for (const tx of primaryCategoryTransactions) {
@@ -170,6 +246,7 @@ const getCategoryBudgetStats = async ({
     if (isExpense) {
       result.summary.actualExpense += tx.refAmount.toCents();
       result.summary.balance -= tx.refAmount.toCents();
+      expenses.push({ categoryId: tx.categoryId, cents: tx.refAmount.toCents() });
     } else {
       result.summary.actualIncome += tx.refAmount.toCents();
       result.summary.balance += tx.refAmount.toCents();
@@ -189,6 +266,7 @@ const getCategoryBudgetStats = async ({
     if (isExpense) {
       result.summary.actualExpense += split.refAmount.toCents();
       result.summary.balance -= split.refAmount.toCents();
+      expenses.push({ categoryId: split.categoryId, cents: split.refAmount.toCents() });
     } else {
       result.summary.actualIncome += split.refAmount.toCents();
       result.summary.balance += split.refAmount.toCents();
@@ -209,7 +287,7 @@ const getCategoryBudgetStats = async ({
 
   await applyRefundAdjustments({ countedTransactions, result, limitAmount });
 
-  return result;
+  return { ...result, ...splitExpensesByLines({ lines, expenses }) };
 };
 
 /**
@@ -314,14 +392,15 @@ export const getBudgetStats = withTransaction(
     const { ownerUserId, isOwner } = await authorizeBudgetRead({ userId, budgetId });
 
     const budgetDetails = await findOrThrowNotFound({
-      query: Budgets.findByPk(budgetId, { attributes: ['type'] }),
+      query: Budgets.findByPk(budgetId, { attributes: ['id', 'type'], include: [includeLines] }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
+    const lines = budgetDetails.lines ?? [];
 
     if (budgetDetails.type === BUDGET_TYPES.category) {
-      return getCategoryBudgetStats({ userId: ownerUserId, budgetId, isOwner });
+      return getCategoryBudgetStats({ userId: ownerUserId, budgetId, isOwner, lines });
     }
 
-    return getManualBudgetStats({ budgetId, callerUserId: userId });
+    return getManualBudgetStats({ budgetId, callerUserId: userId, lines });
   },
 );

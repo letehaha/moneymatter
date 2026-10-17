@@ -131,11 +131,15 @@
   },
   "budgets": {
     "budgetNotFound": "Трекер не знайдено",
+    "lineNotFound": "Рядок трекера не знайдено",
+    "onlyOwnerCanDuplicate": "Дублювати трекер може лише власник",
     "someTransactionIdsInvalid": "Деякі ID транзакцій недійсні",
     "transactionsAddedSuccessfully": "Транзакції успішно додано",
     "cannotManuallyLinkToCategoryBudget": "Неможливо вручну прив'язати транзакції до трекерів за категоріями. Транзакції відстежуються автоматично за категорією.",
     "someCategoryIdsInvalid": "Деякі ID категорій недійсні або не існують",
-    "notCategoryBudget": "Цей ендпоінт доступний тільки для трекерів за категоріями"
+    "notCategoryBudget": "Цей ендпоінт доступний тільки для трекерів за категоріями",
+    "lineCategoryOutsideTracker": "Рядок трекера може використовувати лише категорії, які відстежує сам трекер",
+    "startDateAfterEndDate": "Дата початку має бути не пізніше дати завершення"
   },
   "budgetPlans": {
     "planNotFound": "Бюджетний план не знайдено.",

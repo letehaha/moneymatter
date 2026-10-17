@@ -1,4 +1,12 @@
-import { BUDGET_TYPES, BudgetModel, type BudgetSpendingStatsResponse } from '@bt/shared/types';
+import {
+  BUDGET_TYPES,
+  BudgetModel,
+  RESOURCE_TYPES,
+  type SharePermission,
+  type BudgetSpendingStatsResponse,
+  type TrackerLineModel,
+  type TrackerLinePayload,
+} from '@bt/shared/types';
 import addTransactionsToBudget from '@controllers/budgets/add-transaction-to-budget';
 import removeTransactionsFromBudget from '@controllers/budgets/remove-transaction-from-budget';
 import * as getBudgetService from '@root/services/budget.service';
@@ -7,6 +15,7 @@ import type { getBudgetStats } from '@root/services/budgets/stats';
 import { Response } from 'express';
 
 import { makeRequest } from './common';
+import { type SecondUserHandle, acceptShareInvitation, asUser, createShareInvitation } from './share';
 
 interface TestCreateBudgetPayload {
   id?: string;
@@ -23,10 +32,11 @@ interface TestCreateBudgetPayload {
 interface EditBudgetPayload {
   name?: string;
   categoryIds?: string[];
-  startDate?: string;
-  endDate?: string;
-  limitAmount?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  limitAmount?: number | null;
   autoInclude?: boolean;
+  archivePromptDismissed?: boolean;
 }
 
 interface linkTransactionToBudgetPayload {
@@ -176,6 +186,72 @@ export async function archiveCustomBudget<R extends boolean | undefined = undefi
   });
 }
 
+export async function duplicateCustomBudget<R extends boolean | undefined = undefined>({
+  id,
+  raw,
+}: {
+  id: string;
+  raw?: R;
+}) {
+  return makeRequest<BudgetModel, R>({
+    method: 'post',
+    url: `/budgets/${id}/duplicate`,
+    raw,
+  });
+}
+
+export async function createTrackerLine<R extends boolean | undefined = undefined>({
+  budgetId,
+  payload,
+  raw,
+}: {
+  budgetId: string;
+  payload: TrackerLinePayload;
+  raw?: R;
+}) {
+  return makeRequest<TrackerLineModel, R>({
+    method: 'post',
+    url: `/budgets/${budgetId}/lines`,
+    payload,
+    raw,
+  });
+}
+
+export async function updateTrackerLine<R extends boolean | undefined = undefined>({
+  budgetId,
+  lineId,
+  payload,
+  raw,
+}: {
+  budgetId: string;
+  lineId: string;
+  payload: Partial<TrackerLinePayload>;
+  raw?: R;
+}) {
+  return makeRequest<TrackerLineModel, R>({
+    method: 'put',
+    url: `/budgets/${budgetId}/lines/${lineId}`,
+    payload,
+    raw,
+  });
+}
+
+export async function deleteTrackerLine<R extends boolean | undefined = undefined>({
+  budgetId,
+  lineId,
+  raw,
+}: {
+  budgetId: string;
+  lineId: string;
+  raw?: R;
+}) {
+  return makeRequest<Record<string, never>, R>({
+    method: 'delete',
+    url: `/budgets/${budgetId}/lines/${lineId}`,
+    raw,
+  });
+}
+
 export async function getStats<R extends boolean | undefined = undefined>({ id, raw }: { id: string; raw?: R }) {
   return makeRequest<Awaited<ReturnType<typeof getBudgetStats>> | null, R>({
     method: 'get',
@@ -239,4 +315,23 @@ export async function getSpendingStats<R extends boolean | undefined = undefined
     url: `/budgets/${id}/spending-stats`,
     raw,
   });
+}
+
+export async function shareBudgetWith({
+  budgetId,
+  recipient,
+  permission,
+}: {
+  budgetId: string;
+  recipient: SecondUserHandle;
+  permission: SharePermission;
+}) {
+  const invitation = await createShareInvitation({
+    inviteeEmail: recipient.email,
+    resourceType: RESOURCE_TYPES.budget,
+    resourceId: budgetId,
+    permission,
+    raw: true,
+  });
+  await asUser({ cookies: recipient.cookies, fn: () => acceptShareInvitation({ token: invitation.token, raw: true }) });
 }

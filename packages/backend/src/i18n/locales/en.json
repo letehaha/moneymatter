@@ -129,11 +129,15 @@
   },
   "budgets": {
     "budgetNotFound": "Tracker not found",
+    "lineNotFound": "Tracker line not found",
+    "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
     "someTransactionIdsInvalid": "Some transactions IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added successfully",
     "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based trackers. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
-    "notCategoryBudget": "This endpoint is only available for category-based trackers"
+    "notCategoryBudget": "This endpoint is only available for category-based trackers",
+    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
+    "startDateAfterEndDate": "Start date must be on or before the end date"
   },
   "budgetPlans": {
     "planNotFound": "Budget plan not found.",

@@ -2,7 +2,7 @@
   <div
     :class="
       cn(
-        'flex flex-col gap-6 p-4 md:px-6',
+        'flex flex-col p-4 md:px-6',
         isMobileView
           ? 'min-h-[calc(100dvh-var(--header-height)-var(--bottom-navbar-height))]'
           : 'min-h-[calc(100dvh-var(--header-height))]',

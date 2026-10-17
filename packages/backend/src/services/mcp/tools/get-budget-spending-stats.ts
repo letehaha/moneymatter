@@ -15,7 +15,7 @@ export function registerGetBudgetSpendingStats(server: McpServer) {
     'get_budget_spending_stats',
     {
       description:
-        'Get spending statistics for a tracker (a "budget" in tool and field names): spending broken down by category and a time-series of expense vs income over the tracker period. Granularity is weekly for ranges ≤60 days, monthly otherwise. Amounts are decimals.',
+        'Get spending statistics for a tracker (a "budget" in tool and field names): spending broken down by category and a time-series of expense vs income over the tracker period. Granularity is daily for ranges ≤62 days, weekly ≤184 days, monthly otherwise. Also returns spending by original currency, the top 5 payees and the biggest spending day. Amounts are decimals.',
       inputSchema,
     },
     async (args, extra) => {

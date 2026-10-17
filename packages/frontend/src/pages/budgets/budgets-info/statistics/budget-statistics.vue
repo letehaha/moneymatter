@@ -1,73 +1,350 @@
 <script setup lang="ts">
 import { loadBudgetSpendingStats } from '@/api/budgets';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import Card from '@/components/lib/ui/card/Card.vue';
-import PillTabs from '@/components/lib/ui/pill-tabs/pill-tabs.vue';
+import { useFormatCurrency } from '@/composable';
+import { useDateLocale } from '@/composable/use-date-locale';
+import { cn } from '@/lib/utils';
+import { useCurrenciesStore } from '@/stores';
+import type { BudgetModel, BudgetStatsResponse } from '@bt/shared/types';
+import { BarChart3Icon, TriangleAlertIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
-import { BarChart3Icon, LoaderCircleIcon, TriangleAlertIcon } from '@lucide/vue';
-import { computed, ref } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import BudgetCategoryChart from './budget-category-chart.vue';
+import { parseTrackerDate } from '../../tracker-time-status';
 import BudgetTimelineChart from './budget-timeline-chart.vue';
+import {
+  getAveragePerDay,
+  getCategorySplits,
+  getCumulativeSeries,
+  getPercent,
+  getPeriodProgress,
+  getTrackerPace,
+} from './tracker-insights';
 
 const props = defineProps<{
-  budgetId: string;
+  budget: BudgetModel;
+  stats: BudgetStatsResponse | undefined;
 }>();
 
 const { t } = useI18n();
+const { format } = useDateLocale();
+const { formatBaseCurrency, formatWholeBaseCurrency, formatAmountByCurrencyCode } = useFormatCurrency();
+const { baseCurrency } = storeToRefs(useCurrenciesStore());
+
+const budgetId = computed(() => props.budget.id);
 
 const { data, isLoading, isError } = useQuery({
-  queryFn: () => loadBudgetSpendingStats({ budgetId: props.budgetId }),
-  queryKey: [...VUE_QUERY_CACHE_KEYS.budgetSpendingStats, props.budgetId],
+  queryFn: () => loadBudgetSpendingStats({ budgetId: budgetId.value }),
+  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetSpendingStats, budgetId.value]),
   staleTime: QUERY_CACHE_STALE_TIME.ANALYTICS,
 });
 
-const activeChart = ref('categories');
-const chartTabs = computed(() => [
-  { value: 'categories', label: t('pages.budgetDetails.statistics.tabs.categories') },
-  { value: 'timeline', label: t('pages.budgetDetails.statistics.tabs.timeline') },
-]);
+const isEmpty = computed(
+  () => !!data.value && data.value.spendingsByCategory.length === 0 && data.value.spendingOverTime.periods.length === 0,
+);
+
+const series = computed(() => getCumulativeSeries({ periods: data.value?.spendingOverTime.periods ?? [] }));
+const spent = computed(() => series.value.at(-1)?.cumulative ?? 0);
+const limit = computed(() => props.budget.limitAmount || null);
+const progress = computed(() =>
+  getPeriodProgress({ startDate: props.budget.startDate, endDate: props.budget.endDate }),
+);
+const pace = computed(() => getTrackerPace({ spent: spent.value, limit: limit.value, progress: progress.value }));
+
+const rangeStart = computed(() => progress.value?.start ?? null);
+const rangeEnd = computed(() => progress.value?.end ?? null);
+
+const formatDate = ({ value, pattern }: { value: string | Date | null | undefined; pattern: string }) => {
+  const date = parseTrackerDate(value);
+  return date ? format(date, pattern) : '—';
+};
+const formatDay = (value: string | Date) => formatDate({ value, pattern: 'MMM d' });
+const formatFullDate = (value: string | null | undefined) => formatDate({ value, pattern: 'MMM d, yyyy' });
+const formatSigned = (value: number) =>
+  `${value > 0 ? '+' : value < 0 ? '−' : ''}${formatWholeBaseCurrency(Math.abs(value))}`;
+
+interface KpiCell {
+  key: string;
+  label: string;
+  value: string;
+  suffix?: string;
+  sub?: string;
+  valueClass?: string;
+}
+
+const paceCell = computed<KpiCell>(() => {
+  const summary = props.stats?.summary;
+  if (!progress.value) {
+    return {
+      key: 'first',
+      label: t('pages.budgetDetails.statistics.kpi.firstTransaction'),
+      value: formatFullDate(summary?.firstTransactionDate),
+    };
+  }
+  const { dailyPace, allowedPerDay } = pace.value;
+  const days = { elapsed: progress.value.elapsedDays, total: progress.value.totalDays };
+  return {
+    key: 'pace',
+    label: t('pages.budgetDetails.statistics.kpi.dailyPace'),
+    value: dailyPace === null ? '—' : formatWholeBaseCurrency(dailyPace),
+    suffix: dailyPace === null ? undefined : t('pages.budgetDetails.statistics.kpi.perDay'),
+    sub:
+      allowedPerDay === null
+        ? t('pages.budgetDetails.statistics.kpi.daysElapsed', days)
+        : t('pages.budgetDetails.statistics.kpi.allowedPerDay', {
+            amount: formatWholeBaseCurrency(allowedPerDay),
+            ...days,
+          }),
+    valueClass: allowedPerDay !== null && dailyPace !== null && dailyPace > allowedPerDay ? 'text-warning-text' : '',
+  };
+});
+
+const projectionCell = computed<KpiCell>(() => {
+  const summary = props.stats?.summary;
+  if (!progress.value) {
+    return {
+      key: 'last',
+      label: t('pages.budgetDetails.statistics.kpi.lastTransaction'),
+      value: formatFullDate(summary?.lastTransactionDate),
+    };
+  }
+  if (!limit.value) {
+    const average = getAveragePerDay({
+      spent: spent.value,
+      firstDate: summary?.firstTransactionDate,
+      lastDate: summary?.lastTransactionDate,
+    });
+    return {
+      key: 'average',
+      label: t('pages.budgetDetails.statistics.kpi.averagePerDay'),
+      value: average === null ? '—' : formatWholeBaseCurrency(average),
+      sub:
+        summary?.firstTransactionDate && summary.lastTransactionDate
+          ? `${formatDay(summary.firstTransactionDate)} – ${formatDay(summary.lastTransactionDate)}`
+          : undefined,
+    };
+  }
+  const { projectedTotal, projectedDelta } = pace.value;
+  return {
+    key: 'projection',
+    label: t('pages.budgetDetails.statistics.kpi.projectedTotal'),
+    value: projectedTotal === null ? '—' : formatWholeBaseCurrency(projectedTotal),
+    suffix: projectedDelta === null ? undefined : formatSigned(projectedDelta),
+    sub: t('pages.budgetDetails.statistics.kpi.projectedLimit', { amount: formatWholeBaseCurrency(limit.value) }),
+    valueClass: projectedDelta === null ? '' : projectedDelta > 0 ? 'text-destructive-text' : 'text-success-text',
+  };
+});
+
+const kpis = computed<KpiCell[]>(() => {
+  const count = props.stats?.summary.transactionsCount;
+  const biggestDay = data.value?.biggestDay;
+  return [
+    paceCell.value,
+    projectionCell.value,
+    {
+      key: 'transactions',
+      label: t('pages.budgetDetails.statistics.kpi.transactions'),
+      value: count === undefined ? '—' : String(count),
+      suffix: count
+        ? t('pages.budgetDetails.statistics.kpi.avgAmount', { amount: formatWholeBaseCurrency(spent.value / count) })
+        : undefined,
+    },
+    {
+      key: 'biggestDay',
+      label: t('pages.budgetDetails.statistics.kpi.biggestDay'),
+      value: biggestDay ? formatWholeBaseCurrency(biggestDay.expense) : '—',
+      suffix: biggestDay ? formatDay(biggestDay.date) : undefined,
+      sub: biggestDay
+        ? t('pages.budgetDetails.statistics.kpi.shareOfTotal', {
+            percent: Math.round(getPercent({ part: biggestDay.expense, total: spent.value })),
+          })
+        : undefined,
+    },
+  ];
+});
+
+const categorySplits = computed(() => getCategorySplits({ items: data.value?.spendingsByCategory ?? [] }));
+
+const timelineCaption = computed(() => {
+  const first = series.value[0];
+  const last = series.value.at(-1);
+  const start = rangeStart.value ?? parseTrackerDate(first?.periodStart);
+  const end = rangeEnd.value ?? parseTrackerDate(last?.periodEnd);
+  if (!start || !end) return '';
+  const range = `${formatDay(start)} – ${formatDay(end)}`;
+  return progress.value?.isActive
+    ? `${range} · ${t('pages.budgetDetails.statistics.todayMarker', { date: formatDay(new Date()) })}`
+    : range;
+});
+
+const showProjection = computed(() => !!limit.value && !!progress.value?.isActive);
 </script>
 
 <template>
-  <div>
-    <!-- Loading state -->
-    <Card v-if="isLoading" class="flex items-center justify-center py-16">
-      <LoaderCircleIcon class="text-muted-foreground size-8 animate-spin" />
-    </Card>
-
-    <!-- Error state -->
-    <Card v-else-if="isError" class="flex flex-col items-center justify-center py-12 text-center">
-      <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-        <TriangleAlertIcon class="text-muted-foreground size-8" />
+  <div v-if="isLoading" class="@container/stats overflow-hidden" aria-busy="true">
+    <div class="bg-border grid grid-cols-2 gap-px border-b @md/stats:grid-cols-4">
+      <div v-for="i in 4" :key="i" class="bg-card space-y-2 px-4 py-3">
+        <div class="bg-muted h-3.5 w-16 animate-pulse rounded" />
+        <div class="bg-muted h-7 w-20 animate-pulse rounded" />
+        <div class="bg-muted h-3.5 w-24 animate-pulse rounded" />
       </div>
-      <h3 class="mb-1 font-medium">{{ $t('pages.budgetDetails.statistics.errorTitle') }}</h3>
-      <p class="text-muted-foreground max-w-sm text-sm">{{ $t('pages.budgetDetails.statistics.errorDescription') }}</p>
-    </Card>
-
-    <!-- Empty state -->
-    <Card
-      v-else-if="data && data.spendingsByCategory.length === 0 && data.spendingOverTime.periods.length === 0"
-      class="flex flex-col items-center justify-center py-12 text-center"
-    >
-      <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-        <BarChart3Icon class="text-muted-foreground size-8" />
+    </div>
+    <div class="grid @lg/stats:grid-cols-2">
+      <div class="space-y-3 p-4">
+        <div class="bg-muted h-3.5 w-24 animate-pulse rounded" />
+        <div v-for="i in 4" :key="i" class="bg-muted h-5 animate-pulse rounded" />
       </div>
-      <h3 class="mb-1 font-medium">{{ $t('pages.budgetDetails.statistics.noDataTitle') }}</h3>
-      <p class="text-muted-foreground max-w-sm text-sm">{{ $t('pages.budgetDetails.statistics.noDataDescription') }}</p>
-    </Card>
+      <div class="space-y-3 p-4 @lg/stats:border-l">
+        <div class="bg-muted h-3.5 w-24 animate-pulse rounded" />
+        <div class="bg-muted h-64 animate-pulse rounded" />
+      </div>
+    </div>
+  </div>
 
-    <!-- Data state -->
-    <Card v-else-if="data" class="p-4 @md:p-6">
-      <PillTabs v-model="activeChart" :items="chartTabs" size="sm" class="mb-6" />
+  <div v-else-if="isError" class="flex flex-col items-center justify-center py-12 text-center">
+    <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
+      <TriangleAlertIcon class="text-muted-foreground size-8" />
+    </div>
+    <h3 class="mb-1 font-medium">{{ $t('pages.budgetDetails.statistics.errorTitle') }}</h3>
+    <p class="text-muted-foreground max-w-sm text-sm">{{ $t('pages.budgetDetails.statistics.errorDescription') }}</p>
+  </div>
 
-      <BudgetCategoryChart v-if="activeChart === 'categories'" :data="data.spendingsByCategory" />
-      <BudgetTimelineChart
-        v-else
-        :data="data.spendingOverTime.periods"
-        :granularity="data.spendingOverTime.granularity"
-      />
-    </Card>
+  <div v-else-if="isEmpty" class="flex flex-col items-center justify-center py-12 text-center">
+    <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
+      <BarChart3Icon class="text-muted-foreground size-8" />
+    </div>
+    <h3 class="mb-1 font-medium">{{ $t('pages.budgetDetails.statistics.noDataTitle') }}</h3>
+    <p class="text-muted-foreground max-w-sm text-sm">{{ $t('pages.budgetDetails.statistics.noDataDescription') }}</p>
+  </div>
+
+  <div v-else-if="data" class="@container/stats overflow-hidden tabular-nums">
+    <div class="bg-border grid grid-cols-2 gap-px @md/stats:grid-cols-4">
+      <div v-for="kpi in kpis" :key="kpi.key" class="bg-card min-w-0 px-4 py-3">
+        <div class="text-muted-foreground text-sm font-medium tracking-wide uppercase">{{ kpi.label }}</div>
+        <div :class="cn('mt-0.5 truncate text-xl font-bold', kpi.valueClass)">
+          {{ kpi.value }}
+          <small v-if="kpi.suffix" class="text-muted-foreground ml-1 text-sm font-medium">{{ kpi.suffix }}</small>
+        </div>
+        <div v-if="kpi.sub" class="text-muted-foreground mt-0.5 truncate text-sm">{{ kpi.sub }}</div>
+      </div>
+    </div>
+
+    <div class="flex flex-col border-t @lg/stats:grid @lg/stats:grid-cols-2">
+      <div class="contents @lg/stats:block @lg/stats:min-w-0">
+        <section class="order-2 border-t p-4 @lg/stats:border-t-0">
+          <h3 class="mb-2.5 flex items-baseline gap-2 text-sm font-bold">
+            {{ $t('pages.budgetDetails.statistics.byCategory') }}
+            <span class="text-muted-foreground ml-auto text-sm font-medium">
+              {{ formatBaseCurrency(categorySplits.total) }} ·
+              {{
+                $t(
+                  'pages.budgetDetails.statistics.categoriesCount',
+                  { count: categorySplits.items.length },
+                  categorySplits.items.length,
+                )
+              }}
+            </span>
+          </h3>
+          <div
+            v-for="item in categorySplits.items"
+            :key="item.categoryId"
+            class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-2.5 gap-y-1 py-1.5 text-sm @md/stats:grid-cols-[minmax(0,1fr)_9rem_auto]"
+          >
+            <div class="flex min-w-0 items-center gap-2">
+              <i class="size-2 shrink-0 rounded-full" :style="{ backgroundColor: item.color }" />
+              <span class="truncate">{{ item.name }}</span>
+            </div>
+            <div class="text-right font-semibold whitespace-nowrap @md/stats:order-2">
+              {{ formatBaseCurrency(item.amount) }}
+              <span class="text-muted-foreground ml-1 font-medium">{{ Math.round(item.percent) }}%</span>
+            </div>
+            <div class="bg-muted col-span-2 h-2 overflow-hidden rounded-full @md/stats:order-1 @md/stats:col-span-1">
+              <div class="h-full rounded-full" :style="{ width: `${item.percent}%`, backgroundColor: item.color }" />
+            </div>
+          </div>
+        </section>
+
+        <section
+          v-if="data.spendingsByCurrency.length"
+          class="order-4 border-t p-4 @lg/stats:border-t-0 @lg/stats:pt-0"
+        >
+          <h3 class="mb-2.5 flex items-baseline gap-2 text-sm font-bold">
+            {{ $t('pages.budgetDetails.statistics.byCurrency') }}
+            <span class="text-muted-foreground ml-auto text-sm font-medium">
+              {{ $t('pages.budgetDetails.statistics.asPaid') }}
+            </span>
+          </h3>
+          <div
+            v-for="row in data.spendingsByCurrency"
+            :key="row.currencyCode"
+            class="flex items-center justify-between gap-2.5 py-1.5 text-sm"
+          >
+            <span>{{ row.currencyCode }}</span>
+            <span class="font-semibold whitespace-nowrap">
+              {{ formatAmountByCurrencyCode(row.amount, row.currencyCode) }}
+              <span
+                v-if="row.currencyCode !== baseCurrency?.currency?.code"
+                class="text-muted-foreground ml-1 font-medium"
+              >
+                ≈ {{ formatBaseCurrency(row.refAmount) }}
+              </span>
+            </span>
+          </div>
+        </section>
+      </div>
+
+      <div class="contents @lg/stats:block @lg/stats:min-w-0 @lg/stats:border-l">
+        <section class="order-1 p-4">
+          <h3 class="mb-2.5 flex items-baseline gap-2 text-sm font-bold">
+            {{ $t('pages.budgetDetails.statistics.timeline') }}
+            <span class="text-muted-foreground ml-auto truncate text-sm font-medium">{{ timelineCaption }}</span>
+          </h3>
+          <BudgetTimelineChart
+            v-if="series.length"
+            :series="series"
+            :granularity="data.spendingOverTime.granularity"
+            :range-start="rangeStart"
+            :range-end="rangeEnd"
+            :limit="progress ? limit : null"
+            :projected-total="showProjection ? pace.projectedTotal : null"
+          />
+          <p v-else class="text-muted-foreground py-12 text-center text-sm">
+            {{ $t('pages.budgetDetails.statistics.noTimelineData') }}
+          </p>
+        </section>
+
+        <section v-if="data.topPayees.length" class="order-3 border-t p-4 @lg/stats:border-t-0 @lg/stats:pt-0">
+          <h3 class="mb-2.5 flex items-baseline gap-2 text-sm font-bold">
+            {{ $t('pages.budgetDetails.statistics.topPayees') }}
+            <span class="text-muted-foreground ml-auto text-sm font-medium">
+              {{ $t('pages.budgetDetails.statistics.bySpend') }}
+            </span>
+          </h3>
+          <div
+            v-for="payee in data.topPayees"
+            :key="payee.payeeId ?? 'none'"
+            class="grid grid-cols-[1.75rem_minmax(0,1fr)_auto] items-center gap-2.5 py-1.5 text-sm"
+          >
+            <span class="bg-muted text-muted-foreground grid size-7 place-items-center rounded-full text-sm font-bold">
+              {{ (payee.name ?? '–').charAt(0).toUpperCase() }}
+            </span>
+            <div class="truncate">
+              {{ payee.name ?? $t('pages.budgetDetails.statistics.noPayee') }}
+              <span class="text-muted-foreground">
+                · {{ $t('pages.budgetDetails.statistics.txCount', { count: payee.transactionsCount }) }}
+              </span>
+            </div>
+            <div class="text-right font-semibold whitespace-nowrap">
+              {{ formatBaseCurrency(payee.amount) }}
+              <span class="text-muted-foreground ml-1 font-medium">
+                {{ Math.round(getPercent({ part: payee.amount, total: spent })) }}%
+              </span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
   </div>
 </template>
