@@ -1,5 +1,6 @@
 import { type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, asDecimal } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { connection } from '@models/connection';
 import * as helpers from '@tests/helpers';
 
 const createAccountIn = async ({ currencyCode, initialBalance }: { currencyCode: string; initialBalance?: number }) => {
@@ -279,6 +280,72 @@ describe('Currency precision', () => {
 
       // 50.6 rounds to 51 yen, and 51 + 51 exceeds 100
       expect(response.statusCode).toBe(422);
+    });
+  });
+
+  describe('same-currency reference amount', () => {
+    it('keeps the reference amount of a base-currency portfolio transfer equal to the rounded amount', async () => {
+      const account = await createAccountIn({ currencyCode: global.BASE_CURRENCY.code });
+      const portfolio = await helpers.createPortfolio({
+        payload: helpers.buildPortfolioPayload({ name: 'Precision' }),
+        raw: true,
+      });
+
+      // Half-even on the reference amount alone would give 1.00 next to a native 1.01.
+      const transfer = await helpers.accountToPortfolioTransfer({
+        portfolioId: portfolio.id,
+        payload: { accountId: account.id, amount: '1.005', date: '2025-06-15' },
+        raw: true,
+      });
+
+      const transaction = (await helpers.getTransactions({ raw: true })).find((tx) => tx.id === transfer.transactionId);
+      expect(Number(transaction!.amount)).toBe(1.01);
+      expect(Number(transaction!.refAmount)).toBe(1.01);
+    });
+  });
+
+  describe('metadata-only edits', () => {
+    it('keeps a stored amount that has more decimals than its currency, and the balance, untouched', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY' });
+      await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'JPY', quoteCode: global.BASE_CURRENCY.code, rate: 0.0065 },
+          { baseCode: global.BASE_CURRENCY.code, quoteCode: 'JPY', rate: 153.84615 },
+        ],
+      });
+      const transaction = await createTransactionOf({ accountId: account.id, amount: 10 });
+
+      // A row migrated from 1050 cents holds 10.50 in a currency without minor units.
+      await connection.sequelize.query(`UPDATE "Transactions" SET "amount" = 10.5 WHERE "id" = :id`, {
+        replacements: { id: transaction!.id },
+      });
+      await connection.sequelize.query(`UPDATE "Accounts" SET "currentBalance" = 10.5 WHERE "id" = :id`, {
+        replacements: { id: account.id },
+      });
+
+      const [updated] = await helpers.updateTransaction({
+        id: transaction!.id,
+        payload: { note: 'only the note' },
+        raw: true,
+      });
+
+      expect(updated.note).toBe('only the note');
+      expect(Number(updated.amount)).toBe(10.5);
+      expect(Number((await helpers.getAccount({ id: account.id, raw: true })).currentBalance)).toBe(10.5);
+    });
+
+    it('still rounds an amount that the edit changes', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const transaction = await createTransactionOf({ accountId: account.id, amount: 10 });
+
+      const [updated] = await helpers.updateTransaction({
+        id: transaction!.id,
+        payload: { amount: 20.5 },
+        raw: true,
+      });
+
+      expect(Number(updated.amount)).toBe(21);
     });
   });
 });
