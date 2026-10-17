@@ -27,6 +27,9 @@ no second port to configure.
   fetch `/mcp`, `/.well-known/oauth-*` and `/authorize`, `/token`, `/register`.
   If you hand-wrote per-path rules, those requests land on the wrong place and
   MCP silently connects to the hosted service instead of yours.
+- **Don't cache `/sw.js`.** The push service worker is served with
+  `Cache-Control: no-cache` so browsers pick up a fixed version. Leave that
+  header alone, or notification fixes never reach your users.
 - **Close the direct port.** Your proxy serves the app over HTTPS, but the
   plain-HTTP port `8080` is still open to anyone until you close it –
   see [setup-guide.md](setup-guide.md#3-behind-your-own-reverse-proxy), step 3.
@@ -36,6 +39,35 @@ set to the URL people type in the browser (e.g. `https://budget.example.com`)
 – see [setup-guide.md](setup-guide.md#3-behind-your-own-reverse-proxy),
 step 2.
 
+## Auth proxies (Cloudflare Access and similar)
+
+A proxy that asks people to sign in before it forwards a request (Cloudflare
+Access, Authelia, oauth2-proxy) works with browser notifications without any
+exception rule. Do not add a bypass for `/sw.js`, the manifest or `/api/`.
+
+- **Delivery doesn't pass through the proxy.** The backend sends each
+  notification straight to the browser's push service (Apple, Google, Mozilla
+  or Microsoft) over outbound HTTPS. The push service then reaches the device.
+  Nothing connects to your domain, so the proxy never sees it. The backend
+  needs outbound access on port 443 to `*.push.apple.com`,
+  `fcm.googleapis.com`, `*.push.services.mozilla.com` and
+  `*.notify.windows.com` (see `WEB_PUSH_ALLOWED_HOSTS` in the
+  [environment reference](environment-reference.md#browser-notifications)).
+- **The browser fetches `/sw.js` and the manifest with the proxy's cookie.**
+  The service worker script is a normal same-origin request, so it carries the
+  cookie the proxy set when you signed in. The app's manifest link is declared
+  with `crossorigin="use-credentials"`, so the manifest request carries it too.
+  Without that the browser would fetch the manifest anonymously and get the
+  proxy's sign-in page instead of JSON, which can break adding the app to an
+  iPhone's Home Screen.
+- **API calls are ordinary requests.** Turning notifications on, the device
+  list and the test button go through `/api/` like everything else, with the
+  same cookies.
+- **An expired proxy session doesn't stop delivery.** If the browser replaces
+  its push subscription while you aren't signed in to the proxy, the worker's
+  background request to register the new one is refused. The app registers it
+  the next time you open it.
+
 ## Cloudflare Tunnel
 
 A Cloudflare Tunnel (`cloudflared`) needs no open port at all: run the
@@ -44,7 +76,7 @@ the tunnel's public hostname at `http://budget-tracker:80`, the same address
 the other containerized proxies use (see
 [Proxy running in Docker on the same server](#proxy-running-in-docker-on-the-same-server)).
 Put Cloudflare Access in front if you want a sign-in before the app is even
-reachable.
+reachable (see [Auth proxies](#auth-proxies-cloudflare-access-and-similar)).
 
 Nothing else to set for the client address either: the tunnel container sits
 on a private Docker address, which the backend trusts by default. See
