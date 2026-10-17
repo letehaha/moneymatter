@@ -230,6 +230,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import * as Popover from '@/components/lib/ui/popover';
 import GroupTotal from '@/components/sidebar/accounts-view/group-total.vue';
 import { collectGroupAccounts } from '@/components/sidebar/accounts-view/helpers/account-totals';
+import { buildAccountGroupTree } from '@/components/sidebar/accounts-view/helpers/build-account-group-tree';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
 import { useProjectedBalance } from '@/composable/use-projected-balance';
 import AddIntegrationDialog from '@/pages/accounts/integrations/components/add-integration-dialog.vue';
@@ -249,7 +250,7 @@ import AccountsOverviewCard from './components/accounts-overview-card.vue';
 import AccountsSection from './components/accounts-section.vue';
 import AccountsSortMenu from './components/accounts-sort-menu.vue';
 import BankConnectionRow from './components/bank-connection-row.vue';
-import { collectManualAccounts, mapFolderGroupNames, pruneBankLinkedAccounts } from './manual-accounts-split';
+import { buildManualFolderGroups, mapFolderGroupNames } from './manual-accounts-split';
 import { useAccountsSort } from './use-accounts-sort';
 
 const route = useRoute();
@@ -297,6 +298,8 @@ const isInitialLoading = computed(
   () => !isAccountsFetched.value || !isGroupsFetched.value || !isConnectionsFetched.value,
 );
 
+const accountGroupTree = computed(() => buildAccountGroupTree({ groups: accountGroups.value ?? [] }));
+
 // id -> account map for every account nested anywhere in the group tree, so the
 // ungrouped list can exclude anything already shown under a group.
 const accountsInGroups = computed(() => {
@@ -312,7 +315,7 @@ const accountsInGroups = computed(() => {
       {} as Record<string, AccountModel>,
     );
 
-  return flatten(accountGroups.value ?? []);
+  return flatten(accountGroupTree.value);
 });
 
 // Bank connections are driven by the accounts' own connection link, not group membership:
@@ -337,13 +340,12 @@ const connectionRows = computed(() =>
 
 // Manual section shows only manual accounts: folder groups pruned of bank-linked accounts
 // (those render under their connection above), dropped entirely when nothing manual remains.
-const manualFolderGroups = computed(() =>
-  pruneBankLinkedAccounts({
-    groups: (accountGroups.value ?? []).filter((group) => group.bankDataProviderConnectionId == null),
-  }),
-);
+// The API returns every group in one flat list, so the tree is rebuilt first: only root groups
+// render at the top level, with their subgroups nested underneath.
+const manualSplit = computed(() => buildManualFolderGroups({ groups: accountGroups.value ?? [] }));
+const manualFolderGroups = computed(() => manualSplit.value.folderGroups);
 
-const folderGroupNames = computed(() => mapFolderGroupNames({ groups: accountGroups.value ?? [] }));
+const folderGroupNames = computed(() => mapFolderGroupNames({ groups: accountGroupTree.value }));
 
 const vehicleAccountIds = computed(() => new Set((vehicles.value ?? []).map((v) => v.accountId)));
 
@@ -392,9 +394,7 @@ const vehiclesWithAccount = computed(() =>
 // connections implicitly, so without this rescue they would vanish from the page).
 const manualLooseAccounts = computed(() => [
   ...ungroupedAccounts.value.filter((account) => !account.bankDataProviderConnectionId),
-  ...collectManualAccounts({
-    groups: (accountGroups.value ?? []).filter((group) => group.bankDataProviderConnectionId != null),
-  }),
+  ...manualSplit.value.rescuedAccounts,
 ]);
 
 // Apply the shared sort choice to each section. Manual folds folder-groups and loose

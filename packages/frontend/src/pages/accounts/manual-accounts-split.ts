@@ -1,4 +1,5 @@
 import type { AccountGroups } from '@/common/types/models';
+import { buildAccountGroupTree } from '@/components/sidebar/accounts-view/helpers/build-account-group-tree';
 import type { AccountModel } from '@bt/shared/types';
 
 const isBankLinked = (account: AccountModel): boolean => account.bankDataProviderConnectionId != null;
@@ -47,4 +48,23 @@ export const mapFolderGroupNames = ({ groups }: { groups: AccountGroups[] }): Re
 
   walk(groups);
   return names;
+};
+
+/**
+ * Split the flat `/account-group` list into what the Manual section renders: the nested folder-group
+ * tree (root groups only, each carrying its hydrated subgroups, stripped of bank-linked accounts)
+ * and the loose manual accounts rescued from connection-managed groups and their subgroups.
+ */
+export const buildManualFolderGroups = ({
+  groups,
+}: {
+  groups: AccountGroups[];
+}): { folderGroups: AccountGroups[]; rescuedAccounts: AccountModel[] } => {
+  const roots = buildAccountGroupTree({ groups });
+  const isConnectionGroup = (group: AccountGroups): boolean => group.bankDataProviderConnectionId != null;
+
+  return {
+    folderGroups: pruneBankLinkedAccounts({ groups: roots.filter((group) => !isConnectionGroup(group)) }),
+    rescuedAccounts: collectManualAccounts({ groups: roots.filter(isConnectionGroup) }),
+  };
 };
