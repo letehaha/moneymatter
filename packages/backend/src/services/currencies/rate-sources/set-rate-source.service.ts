@@ -8,8 +8,10 @@ import { NotFoundError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { isDeepStrictEqual } from 'node:util';
 
 import { assertCurrencyCodesVisible } from '../assert-currency-codes-visible';
+import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.service';
 import type { ValidatedRateSourceBody } from './index';
 
 const isIsoRateSource = (rateSource: string): boolean =>
@@ -71,13 +73,25 @@ const setCurrencyRateSourceImpl = async ({
   }
 
   const setting = toSetting(body);
+  const changed =
+    held.rateSource !== setting.rateSource || !isDeepStrictEqual(held.rateSourceConfig, setting.rateSourceConfig);
   await held.update(setting);
+
+  // The rates of every day come from the new source now, so what was valued under the old one is
+  // valued again. An ISO currency keeps the base amounts it was saved with.
+  if (changed && held.currency.isCustom) {
+    await recomputeCustomRefAmounts({
+      userId,
+      changes: [{ currencyCode: code, from: null, to: null, mode: 'recompute' }],
+    });
+  }
 
   return { currencyCode: code, ...setting };
 };
 
 /**
- * Saves where the user's rates for a currency come from, and the settings of that source. It only
- * stores the configuration; syncing and recomputing amounts are the sources' own work.
+ * Saves where the user's rates for a currency come from, and the settings of that source. A custom
+ * currency whose source changed has its saved rows valued again; fetching a synced source's rates
+ * is that source's own work.
  */
 export const setCurrencyRateSource = withTransaction(setCurrencyRateSourceImpl);
