@@ -6,6 +6,7 @@ import {
   NOTIFICATION_STATUSES,
   NOTIFICATION_TYPES,
   NotificationType,
+  SHARE_NOTIFICATION_TYPES,
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
@@ -39,27 +40,6 @@ import ChangelogContent from './changelog-content.vue';
 import DefaultContent from './default-content.vue';
 import ShareContent from './share-content.vue';
 import TagReminderContent from './tag-reminder-content.vue';
-
-const SHARE_NOTIFICATION_TYPES: NotificationType[] = [
-  NOTIFICATION_TYPES.shareInvitationReceived,
-  NOTIFICATION_TYPES.shareInvitationSendFailed,
-  NOTIFICATION_TYPES.shareAccepted,
-  NOTIFICATION_TYPES.shareDeclined,
-  NOTIFICATION_TYPES.shareRevoked,
-  NOTIFICATION_TYPES.shareLeft,
-  NOTIFICATION_TYPES.shareExpired,
-  NOTIFICATION_TYPES.shareOwnerAccountDeleted,
-  NOTIFICATION_TYPES.householdInvitationReceived,
-  NOTIFICATION_TYPES.householdInvitationSendFailed,
-  NOTIFICATION_TYPES.householdAccepted,
-  NOTIFICATION_TYPES.householdDeclined,
-  NOTIFICATION_TYPES.householdPermissionChanged,
-  NOTIFICATION_TYPES.householdRevoked,
-  NOTIFICATION_TYPES.householdLeft,
-  NOTIFICATION_TYPES.householdExpired,
-  NOTIFICATION_TYPES.householdOwnerAccountDeleted,
-  NOTIFICATION_TYPES.householdMemberAccountDeleted,
-];
 
 const props = defineProps<{
   notification: NotificationStruct;

@@ -49,6 +49,31 @@ export const NOTIFICATION_TYPES = {
 export type NotificationType = (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES];
 
 /**
+ * Types the bell renders with its share content (counterpart and resource name). It excludes
+ * `shareOwnerBudgetDeleted`, which falls through to the stored `message`.
+ */
+export const SHARE_NOTIFICATION_TYPES: readonly NotificationType[] = [
+  NOTIFICATION_TYPES.shareInvitationReceived,
+  NOTIFICATION_TYPES.shareInvitationSendFailed,
+  NOTIFICATION_TYPES.shareAccepted,
+  NOTIFICATION_TYPES.shareDeclined,
+  NOTIFICATION_TYPES.shareRevoked,
+  NOTIFICATION_TYPES.shareLeft,
+  NOTIFICATION_TYPES.shareExpired,
+  NOTIFICATION_TYPES.shareOwnerAccountDeleted,
+  NOTIFICATION_TYPES.householdInvitationReceived,
+  NOTIFICATION_TYPES.householdInvitationSendFailed,
+  NOTIFICATION_TYPES.householdAccepted,
+  NOTIFICATION_TYPES.householdDeclined,
+  NOTIFICATION_TYPES.householdPermissionChanged,
+  NOTIFICATION_TYPES.householdRevoked,
+  NOTIFICATION_TYPES.householdLeft,
+  NOTIFICATION_TYPES.householdExpired,
+  NOTIFICATION_TYPES.householdOwnerAccountDeleted,
+  NOTIFICATION_TYPES.householdMemberAccountDeleted,
+];
+
+/**
  * Notification status
  */
 export const NOTIFICATION_STATUSES = {

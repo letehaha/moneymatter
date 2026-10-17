@@ -15,6 +15,7 @@ export enum EnvVar {
   VAPID_PUBLIC_KEY = 'VAPID_PUBLIC_KEY',
   VAPID_PRIVATE_KEY = 'VAPID_PRIVATE_KEY',
   VAPID_SUBJECT = 'VAPID_SUBJECT',
+  WEB_PUSH_ALLOWED_HOSTS = 'WEB_PUSH_ALLOWED_HOSTS',
 }
 
 // Catches values still set to the .env.template default (e.g. `your-resend-api-key`,
