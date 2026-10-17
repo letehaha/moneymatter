@@ -6,6 +6,7 @@ import {
   getCurrencyDecimals,
 } from '@/js/helpers';
 import { useCurrenciesStore } from '@/stores';
+import type { CurrencyMeta } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -74,9 +75,15 @@ export const useFormatCurrency = () => {
   const formatShortBaseCurrency = ({ amount }: { amount: number }) =>
     formatShortFiat({ amount, currency: baseCurrency.value?.currency?.code });
 
-  const formatAmountByCurrencyCode = (amount: number, currencyCode: string) =>
+  /**
+   * `meta` is the owner's definition of the currency (an account's or transaction's
+   * `currencyMeta`); pass it for amounts that live on an account so a shared account
+   * formats by its owner's decimals rather than by the viewer's own list.
+   */
+  const formatAmountByCurrencyCode = (amount: number, currencyCode: string, meta?: CurrencyMeta | null) =>
     formatUIAmount(amount, {
       currency: currencyCode,
+      meta,
     });
 
   /**

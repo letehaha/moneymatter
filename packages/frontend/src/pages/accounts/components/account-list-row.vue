@@ -55,13 +55,16 @@
         class="text-sm font-semibold tabular-nums"
         :class="displayBalance < 0 ? 'text-destructive-text' : 'text-foreground'"
       >
-        {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode) }}
+        {{ formatAmountByCurrencyCode(displayBalance, account.currencyCode, account.currencyMeta) }}
       </div>
       <div
         v-if="account.currencyCode !== baseCurrencyCode"
         class="text-muted-foreground mt-0.5 text-[11px] tabular-nums"
       >
-        ≈ {{ formatBaseCurrency(displayRefBalance) }}
+        <template v-if="account.refCurrentBalance === null">{{
+          $t('common.transactions.record.missingRate')
+        }}</template>
+        <template v-else>≈ {{ formatBaseCurrency(displayRefBalance) }}</template>
       </div>
     </div>
 

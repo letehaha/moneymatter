@@ -49,7 +49,7 @@ const form = ref({ amount: null as number | null, note: '', time: new Date() });
 const direction = ref<'income' | 'expense'>('income');
 
 const currencyCode = useAccountCurrencyCode({ account: toRef(() => props.account) });
-const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
+const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value, meta: props.account.currencyMeta }));
 
 const rules = computed(() => ({
   form: {
@@ -229,10 +229,12 @@ watch(mode, () => {
         </template>
         <template v-else>
           <p class="text-muted-foreground mb-1 text-sm">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: currencyCode }) }} {{ currencyCode }}
+            {{ toLocalCurrencyNumber(displayBalance, { currency: currencyCode, meta: account.currencyMeta }) }}
+            {{ currencyCode }}
             →
             <span class="text-foreground font-medium"
-              >{{ toLocalCurrencyNumber(displayTarget!, { currency: currencyCode }) }} {{ currencyCode }}</span
+              >{{ toLocalCurrencyNumber(displayTarget!, { currency: currencyCode, meta: account.currencyMeta }) }}
+              {{ currencyCode }}</span
             >
           </p>
           <p
@@ -242,11 +244,17 @@ watch(mode, () => {
             {{
               previewType === 'income'
                 ? label('incomeWillBeCreated', {
-                    amount: toLocalCurrencyNumber(Math.abs(diff), { currency: currencyCode }),
+                    amount: toLocalCurrencyNumber(Math.abs(diff), {
+                      currency: currencyCode,
+                      meta: account.currencyMeta,
+                    }),
                     currency: currencyCode,
                   })
                 : label('expenseWillBeCreated', {
-                    amount: toLocalCurrencyNumber(Math.abs(diff), { currency: currencyCode }),
+                    amount: toLocalCurrencyNumber(Math.abs(diff), {
+                      currency: currencyCode,
+                      meta: account.currencyMeta,
+                    }),
                     currency: currencyCode,
                   })
             }}

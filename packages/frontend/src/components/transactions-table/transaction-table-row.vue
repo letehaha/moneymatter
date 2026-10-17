@@ -125,7 +125,8 @@
 
       <!-- Ref amount (base currency) -->
       <template v-else-if="column.id === TABLE_COLUMN.refAmount">
-        <span :class="['text-amount tabular-nums', amountColorClass]">{{ formattedRefAmount }}</span>
+        <MissingRateIndicator v-if="tx.refAmountMissing" :transaction="tx" />
+        <span v-else :class="['text-amount tabular-nums', amountColorClass]">{{ formattedRefAmount }}</span>
       </template>
 
       <!-- Original amount (foreign currency the user paid in) -->
@@ -239,6 +240,7 @@ import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import AttachmentIndicator from '@/components/transactions-list/indicators/attachment-indicator.vue';
+import MissingRateIndicator from '@/components/transactions-list/indicators/missing-rate-indicator.vue';
 import PlannedIndicator from '@/components/transactions-list/indicators/planned-indicator.vue';
 import RefundIndicator from '@/components/transactions-list/indicators/refund-indicator.vue';
 import SplitIndicator from '@/components/transactions-list/indicators/split-indicator.vue';
@@ -387,7 +389,7 @@ const amountColorClass = computed(() => {
 const signedAmount = (amount: number) => (props.tx.transactionType === TRANSACTION_TYPES.expense ? -amount : amount);
 
 const formattedAmount = computed(() =>
-  formatUIAmount(signedAmount(props.tx.amount), { currency: props.tx.currencyCode }),
+  formatUIAmount(signedAmount(props.tx.amount), { currency: props.tx.currencyCode, meta: props.tx.currencyMeta }),
 );
 // A transaction in a custom currency has no base-currency amount until a rate exists.
 const formattedRefAmount = computed(() =>

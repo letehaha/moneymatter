@@ -48,12 +48,12 @@ const { t } = useI18n();
 const currenciesStore = useCurrenciesStore();
 const { formatCurrencyLabel } = useCurrencyName();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(currenciesStore);
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(currenciesStore);
 
 const defaultCurrency = computed(
   () =>
-    systemCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
-    systemCurrenciesVerbose.value.linked[0]?.code ??
+    isoCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
+    isoCurrenciesVerbose.value.linked[0]?.code ??
     '',
 );
 
@@ -127,7 +127,7 @@ const selectedLoanType = computed(() => loanTypeOptions.value.find((o) => o.valu
 
 const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
 const selectedCurrency = computed(
-  () => systemCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
+  () => isoCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
 );
 
 const currencyLabel = (item: CurrencyModel): string =>
@@ -321,7 +321,7 @@ const submit = () => {
     <SelectField
       v-if="!isEdit"
       :model-value="selectedCurrency"
-      :values="systemCurrenciesVerbose.linked"
+      :values="isoCurrenciesVerbose.linked"
       :label-key="currencyLabel"
       value-key="code"
       :label="$t('forms.loan.currencyLabel')"

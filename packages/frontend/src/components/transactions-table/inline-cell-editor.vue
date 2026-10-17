@@ -232,7 +232,9 @@ watch(categories, (list) => {
   if (!form.category) form.category = findFormattedCategoryById(list, props.tx.categoryId);
 });
 
-const amountDecimals = computed(() => getCurrencyDecimals({ code: props.tx.currencyCode }));
+const amountDecimals = computed(() =>
+  getCurrencyDecimals({ code: props.tx.currencyCode, meta: props.tx.currencyMeta }),
+);
 
 const body = computed(() => buildInlineEditBody({ column: props.column, form }));
 const canSave = computed(() => canSaveInlineEdit({ tx: props.tx, body: body.value }));

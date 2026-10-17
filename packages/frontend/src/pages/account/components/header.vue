@@ -47,7 +47,10 @@ const isSystemAccount = computed(() => props.account.type === ACCOUNT_TYPES.syst
 const { formatPlannedDate } = usePlannedDateLabel();
 
 const projectedBalanceDisplay = computed(() =>
-  toLocalCurrencyNumber(projectedBalance.value, { currency: props.account.currencyCode }),
+  toLocalCurrencyNumber(projectedBalance.value, {
+    currency: props.account.currencyCode,
+    meta: props.account.currencyMeta,
+  }),
 );
 const latestPlannedDisplay = computed(() => formatPlannedDate({ time: latestPlannedTime.value }));
 const { isOwner, isSharedWithCaller, ownerHandle, permission, writeScope, isHouseholdGranted } = useAccountAccess(
@@ -229,7 +232,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
           @click="adjustmentDialogOpen = true"
         >
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode }) }}
+            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
             {{ currenciesMap[account.currencyCode]?.currency?.code }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">
@@ -240,7 +243,7 @@ watch([formEditingPopoverOpen, () => props.account.id], () => {
         </button>
         <div v-else class="flex flex-wrap items-end justify-start gap-2">
           <span class="text-amount text-3xl">
-            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode }) }}
+            {{ toLocalCurrencyNumber(displayBalance, { currency: account.currencyCode, meta: account.currencyMeta }) }}
             {{ currenciesMap[account.currencyCode]?.currency?.code }}
           </span>
           <span v-if="baseCurrency && account.currencyCode !== baseCurrency.currencyCode" class="text-white opacity-50">

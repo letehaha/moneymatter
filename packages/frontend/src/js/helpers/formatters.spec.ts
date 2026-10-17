@@ -103,6 +103,56 @@ describe('js/helpers/formatters', () => {
       });
     });
 
+    describe('custom currencies', () => {
+      afterEach(() => {
+        resetCurrencyDecimals();
+      });
+
+      test('a code Intl rejects renders as a plain number plus the code', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true }] });
+        expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.345678 USDT');
+      });
+
+      test('a three-letter code Intl would accept still renders as custom, never in currency style', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const out = formatUIAmount(1234.6, { currency: 'SAT' });
+
+        expect(out).toBe('1,235 SAT');
+        expect(out).not.toContain('\u00a0');
+      });
+
+      test('the symbol replaces the code when the currency has one', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true, symbol: '₮' }] });
+        expect(formatUIAmount(-0.5, { currency: 'USDT' })).toBe('-0.500000 ₮');
+      });
+
+      test('an explicit meta decides the decimals and the kind of a code the viewer does not define', () => {
+        expect(
+          formatUIAmount(0.12345678, { currency: 'SAT', meta: { decimals: 8, symbol: null, isCustom: true } }),
+        ).toBe('0.12345678 SAT');
+      });
+
+      test("a collaborator whose SAT has 0 decimals sees the owner's 8 on the owner's account", () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const ownerMeta = { decimals: 8, symbol: null, isCustom: true };
+
+        expect(formatUIAmount(1.5, { currency: 'SAT', meta: ownerMeta })).toBe('1.50000000 SAT');
+        expect(formatUIAmount(1.5, { currency: 'SAT' })).toBe('2 SAT');
+      });
+
+      test('toLocalCurrencyNumber follows an explicit meta', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        expect(
+          toLocalCurrencyNumber(1.5, { currency: 'SAT', meta: { decimals: 3, symbol: null, isCustom: true } }),
+        ).toBe('1.500');
+      });
+
+      test('an ISO currency keeps currency style with its registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'KWD', decimals: 3, isCustom: false }] });
+        expect(formatUIAmount(1.5, { currency: 'KWD' })).toContain('1.500');
+      });
+    });
+
     test('fractionDigits overrides the currency decimals', () => {
       expect(formatUIAmount(72_187.5, { currency: 'USD', fractionDigits: 0 })).toBe('$72,188');
       expect(formatUIAmount(1234.5, { currency: 'USDT', fractionDigits: 0 })).toBe('1,235 USDT');

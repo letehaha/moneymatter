@@ -1,4 +1,5 @@
 import { getCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
+import { formatUIAmount } from '@/js/helpers/formatters';
 import type { CurrencyModel, UserCurrencyModel } from '@bt/shared/types';
 import { createPinia, setActivePinia } from 'pinia';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -72,5 +73,53 @@ describe('currencies store', () => {
     await store.loadBaseCurrency();
 
     expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
+  });
+
+  describe('custom currencies', () => {
+    const custom = ({
+      id,
+      code,
+      digits,
+      symbol = null,
+    }: {
+      id: number;
+      code: string;
+      digits: number;
+      symbol?: string | null;
+    }) =>
+      ({
+        id,
+        currencyCode: code,
+        currency: { code, currency: `${code} coin`, digits, symbol, isCustom: true, number: null },
+      }) as unknown as UserCurrencyModel;
+
+    beforeEach(() => {
+      api.getAllCurrencies.mockResolvedValue(['EUR', 'USD'].map(system));
+      api.loadUserCurrencies.mockResolvedValue([
+        linked({ id: 1, code: 'USD' }),
+        custom({ id: 2, code: 'USDT', digits: 6, symbol: '₮' }),
+      ]);
+    });
+
+    it('lists the custom currencies with the catalogue, linked first, and keeps them out of the ISO list', async () => {
+      const store = useCurrenciesStore();
+
+      await store.loadCurrencies();
+
+      expect(store.systemCurrencies.map((item) => item.code)).toEqual(['USD', 'USDT', 'EUR']);
+      expect(store.isoCurrencies.map((item) => item.code)).toEqual(['USD', 'EUR']);
+      expect(store.isoCurrenciesVerbose.linked.map((item) => item.code)).toEqual(['USD']);
+      expect(store.systemCurrenciesVerbose.linked.map((item) => item.code)).toEqual(['USD', 'USDT']);
+      expect(store.customCurrencies.map((item) => item.code)).toEqual(['USDT']);
+    });
+
+    it('registers the decimals, symbol and kind of a custom currency', async () => {
+      const store = useCurrenciesStore();
+
+      await store.loadCurrencies();
+
+      expect(getCurrencyDecimals({ code: 'USDT' })).toBe(6);
+      expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.345678 ₮');
+    });
   });
 });

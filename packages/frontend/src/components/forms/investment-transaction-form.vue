@@ -107,7 +107,7 @@ const settlementModeItems = computed<PillTabItem[]>(() => [
 // is on. Stays in sync until the user picks something else.
 watch([useSettlement, securityCurrencyCode], ([enabled, currencyCode]) => {
   if (enabled && !form.settlementCurrency && currencyCode) {
-    form.settlementCurrency = currenciesStore.systemCurrencies.find((c) => c.code === currencyCode) ?? null;
+    form.settlementCurrency = currenciesStore.isoCurrencies.find((c) => c.code === currencyCode) ?? null;
   }
 });
 
@@ -374,7 +374,7 @@ const onSubmit = async () => {
             <SelectField
               v-model="form.settlementCurrency"
               :label="$t('forms.investmentTransaction.settlement.currencyLabel')"
-              :values="currenciesStore.systemCurrencies"
+              :values="currenciesStore.isoCurrencies"
               :pinned-group="linkedCurrencyGroup"
               value-key="code"
               :label-key="

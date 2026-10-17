@@ -29,7 +29,7 @@ const form = ref({
   creditLimit: props.account.creditLimit as number | null,
 });
 
-const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode }));
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode, meta: props.account.currencyMeta }));
 
 const rules = computed(() => ({
   form: {

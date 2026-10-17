@@ -1,7 +1,7 @@
-import type { CurrencyDisplayPreference } from '@bt/shared/types';
+import type { CurrencyDisplayPreference, CurrencyMeta } from '@bt/shared/types';
 import { ref } from 'vue';
 
-import { getCurrencyDecimals, isIntlCurrencyCode } from './currency-decimals';
+import { isIntlCurrencyCode, resolveCurrencyDisplay } from './currency-decimals';
 
 export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
@@ -26,28 +26,34 @@ export function toLocalNumber(
 
 function toLocalFiatCurrency(
   value: string | number | undefined | null,
-  options: Intl.NumberFormatOptions = {},
+  options: Intl.NumberFormatOptions & {
+    /** The owner's definition of the currency (carried by an account or transaction). */
+    meta?: CurrencyMeta | null;
+  } = {},
 ): string {
   if (value !== undefined && value !== null) {
-    const currency = options.currency || 'USD';
-    const currencyDigits = getCurrencyDecimals({ code: currency });
-    // Intl rejects the code (custom or malformed) — render a bare number with the
-    // currency's own decimals and the code appended instead of letting toLocaleString
-    // throw a RangeError mid-render.
-    if (!isIntlCurrencyCode({ code: currency })) {
+    const { meta, ...intlOptions } = options;
+    const currency = intlOptions.currency || 'USD';
+    const display = resolveCurrencyDisplay({ code: currency, meta });
+    const currencyDigits = display.decimals;
+    // A custom code (or one Intl rejects as malformed) renders as a plain number with the
+    // currency's own decimals plus its symbol or code, never in `Intl` currency style: Intl
+    // accepts any three letters ("SAT", "BTC") and would apply its own digits and a `¤` sign.
+    if (display.isCustom || !isIntlCurrencyCode({ code: currency })) {
+      const label = display.symbol || currency;
       return `${toLocalNumber(value, {
-        minimumFractionDigits: options.minimumFractionDigits ?? currencyDigits,
-        maximumFractionDigits: options.maximumFractionDigits ?? currencyDigits,
-        useGrouping: options.useGrouping ?? true,
-      })} ${currency}`;
+        minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
+        maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
+        useGrouping: intlOptions.useGrouping ?? true,
+      })} ${label}`;
     }
     return toLocalNumber(value, {
-      ...options,
-      minimumFractionDigits: options.minimumFractionDigits ?? currencyDigits,
-      maximumFractionDigits: options.maximumFractionDigits ?? currencyDigits,
+      ...intlOptions,
+      minimumFractionDigits: intlOptions.minimumFractionDigits ?? currencyDigits,
+      maximumFractionDigits: intlOptions.maximumFractionDigits ?? currencyDigits,
       currency,
-      currencyDisplay: options.currencyDisplay ?? currencyDisplayPreference.value,
-      useGrouping: options.useGrouping ?? true,
+      currencyDisplay: intlOptions.currencyDisplay ?? currencyDisplayPreference.value,
+      useGrouping: intlOptions.useGrouping ?? true,
       style: 'currency',
     });
   }
@@ -65,11 +71,13 @@ export function toLocalCurrencyNumber(
   options: Omit<Intl.NumberFormatOptions, 'style' | 'currency' | 'currencyDisplay'> & {
     /** Currency code whose fraction digits to apply; only affects digits, never adds a symbol. */
     currency?: string;
+    /** The owner's definition of the currency; its decimals win over the registered ones. */
+    meta?: CurrencyMeta | null;
     locale?: Intl.LocalesArgument;
   } = {},
 ): string {
-  const { currency, ...numberOptions } = options;
-  const digits = getCurrencyDecimals({ code: currency || 'USD' });
+  const { currency, meta, ...numberOptions } = options;
+  const digits = resolveCurrencyDisplay({ code: currency || 'USD', meta }).decimals;
   return toLocalNumber(value, {
     ...numberOptions,
     minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits,
@@ -175,9 +183,12 @@ export function formatUIAmount(
   {
     currency,
     fractionDigits,
+    meta,
   }: {
     currency?: Intl.NumberFormatOptions['currency'];
     fractionDigits?: number;
+    /** The owner's definition of the currency; pass the account's `currencyMeta` for its amounts. */
+    meta?: CurrencyMeta | null;
   } = {},
 ): string {
   if (!Number.isFinite(value)) return String(value);
@@ -185,6 +196,7 @@ export function formatUIAmount(
   // `|| 0` turns -0 into 0 so it doesn't render as "-$0.00".
   return toLocalFiatCurrency(value || 0, {
     currency,
+    meta,
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });

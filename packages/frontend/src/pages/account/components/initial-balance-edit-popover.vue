@@ -31,7 +31,7 @@ const form = ref({
   initialBalance: props.account.initialBalance as number | null,
 });
 
-const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode }));
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode, meta: props.account.currencyMeta }));
 
 const rules = computed(() => ({
   form: {

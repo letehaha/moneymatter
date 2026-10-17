@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const { formatCurrencyLabel } = useCurrencyName();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(useCurrenciesStore());
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(useCurrenciesStore());
 
 const baseCurrencyCode = computed(() => baseCurrency.value?.currencyCode ?? '');
 
@@ -44,7 +44,7 @@ const onSelect = (val: unknown) => {
           <Select.SelectItem :value="BASE_CURRENCY_VALUE">
             {{ $t('forms.portfolioSettings.displayCurrencyBaseOption', { code: baseCurrencyCode }) }}
           </Select.SelectItem>
-          <Select.SelectItem v-for="item of systemCurrenciesVerbose.linked" :key="item.code" :value="String(item.code)">
+          <Select.SelectItem v-for="item of isoCurrenciesVerbose.linked" :key="item.code" :value="String(item.code)">
             {{ formatCurrencyLabel({ code: item.code, fallbackName: item.currency }) }}
           </Select.SelectItem>
         </Select.SelectContent>

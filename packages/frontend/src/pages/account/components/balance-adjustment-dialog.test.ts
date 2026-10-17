@@ -1,5 +1,6 @@
 import formsEn from '@/i18n/locales/chunks/en/forms.json';
 import accountEn from '@/i18n/locales/chunks/en/pages/account.json';
+import { registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { type VueWrapper, flushPromises, mount } from '@vue/test-utils';
 import { nextTick } from 'vue';
 import { createI18n } from 'vue-i18n';
@@ -135,6 +136,10 @@ const switchToAdjustBy = async (w: VueWrapper) => {
 /* ──────────────────────────────── Tests ───────────────────────────────── */
 
 describe('BalanceAdjustmentDialog', () => {
+  afterEach(() => {
+    resetCurrencyDecimals();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockMutateAsync.mockResolvedValue({
@@ -183,6 +188,17 @@ describe('BalanceAdjustmentDialog', () => {
       await enterAmountAndSubmit(w, 1500.6);
 
       expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1500 }));
+    });
+
+    it("follows the account owner's decimals when the viewer defines the same custom code differently", async () => {
+      registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+      const w = mountDialog({
+        currencyCode: 'SAT',
+        currencyMeta: { decimals: 8, symbol: null, isCustom: true },
+      });
+      await enterAmountAndSubmit(w, 1500.123456789);
+
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1500.12345678 }));
     });
 
     it('allows submit for amount with exactly 2 decimal places', async () => {

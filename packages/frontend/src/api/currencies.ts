@@ -1,7 +1,10 @@
 import { api } from '@/api/_api';
 import {
   type BaseCurrencyChangeStatus,
+  type CreateCustomCurrencyBody,
   CurrencyModel,
+  type CustomCurrencyModel,
+  type UpdateCustomCurrencyBody,
   ExchangeRatesModel,
   RefBalanceRemeasureResult,
   UserCurrencyModel,
@@ -81,3 +84,17 @@ export const addUserCurrencies = async (
 ) => api.post('/user/currencies', { currencies });
 
 export const loadUserBaseCurrency = (): Promise<UserCurrencyModel> => api.get('/user/currencies/base');
+
+export const createCustomCurrency = (body: CreateCustomCurrencyBody): Promise<CustomCurrencyModel> =>
+  api.post('/user/currencies/custom', body);
+
+/** Changing `decimals` is allowed only while none of the user's rows use the currency (409 otherwise). */
+export const updateCustomCurrency = ({
+  code,
+  ...body
+}: UpdateCustomCurrencyBody & { code: string }): Promise<CustomCurrencyModel> =>
+  api.put(`/user/currencies/custom/${encodeURIComponent(code)}`, body);
+
+/** Allowed only while none of the user's rows use the currency (409 otherwise). */
+export const deleteCustomCurrency = ({ code }: { code: string }): Promise<void> =>
+  api.delete(`/user/currencies/custom/${encodeURIComponent(code)}`);
