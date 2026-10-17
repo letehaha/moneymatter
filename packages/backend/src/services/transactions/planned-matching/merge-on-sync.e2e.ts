@@ -3,6 +3,8 @@ import {
   BANK_PROVIDER_TYPE,
   type ExternalMonobankTransactionResponse,
   RESOURCE_TYPES,
+  SUBSCRIPTION_FREQUENCIES,
+  SUBSCRIPTION_PERIOD_STATUSES,
   type RecordId,
   SHARE_PERMISSIONS,
   type SplitInput,
@@ -221,6 +223,45 @@ describe('Planned transactions – merge on sync', () => {
       // survive them.
       await helpers.sleep(1000);
       expect((await helpers.getTransactionById({ id: plan.id, raw: true }))!.categoryId).toBe(categoryId);
+    }, 30000);
+
+    it('settles the subscription period a linked plan belongs to when the bank row confirms it', async () => {
+      const now = new Date();
+      const anchorTime = subDays(startOfDay(now), 10);
+      const { connectionId, accountId } = await anchoredAccount({ anchorTime });
+
+      const dueDate = format(addDays(startOfDay(now), 2), 'yyyy-MM-dd');
+      const subscription = await helpers.createSubscription({
+        name: 'Rent',
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        startDate: dueDate,
+        dueDate,
+        accountId,
+        expectedAmount: 250,
+        expectedCurrencyCode: global.BASE_CURRENCY.code,
+        raw: true,
+      });
+
+      const [plan] = await helpers.createPlannedTransaction({
+        payload: { accountId, amount: 250, time: addDays(startOfDay(now), 2).toISOString(), note: 'Rent' },
+        raw: true,
+      });
+      await helpers.linkTransactionsToSubscription({ id: subscription.id, transactionIds: [plan!.id], raw: true });
+
+      const before = await helpers.getSubscriptionById({ id: subscription.id, raw: true });
+      expect(before.periods.find((p) => p.dueDate === dueDate)!.status).not.toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+
+      const incoming = helpers.monobank.buildTransaction({
+        amount: -25000,
+        time: subDays(startOfDay(now), 1),
+        description: 'RENT LANDLORD',
+      });
+      await syncAccount({ connectionId, accountId, transactions: [incoming] });
+
+      const after = await helpers.getSubscriptionById({ id: subscription.id, raw: true });
+      const period = after.periods.find((p) => p.dueDate === dueDate)!;
+      expect(period.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+      expect(period.transactionId).toBe(plan!.id);
     }, 30000);
 
     it('carries the bank receipt id onto the merged plan', async () => {
