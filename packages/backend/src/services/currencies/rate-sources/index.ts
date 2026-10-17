@@ -40,11 +40,42 @@ const HTTP_HEADER_VALUE_PATTERN = /^[\x20-\x7E]*$/;
 const JSON_PATH_MAX_LENGTH = 256;
 const COIN_ID_MAX_LENGTH = 128;
 
+const isKeyChar = (char: string): boolean => /[A-Za-z0-9_-]/.test(char);
+
 /**
  * Where the price sits in a JSON response: dot-separated keys and array positions, such as
  * `data.rates[0].price`, `data.rates.0.price` or `$.bitcoin.usd`. A leading `$` is optional.
+ *
+ * Checked in one left-to-right pass instead of a regular expression: the path comes from the
+ * request body, and a pattern that repeats a repeated key class backtracks exponentially on a
+ * near-miss. Tokens match what {@link readJsonPath} walks: a key (with an optional leading dot) or
+ * an `[index]`.
  */
-export const JSON_PATH_PATTERN = /^\$?(?:\.?[A-Za-z0-9_-]+|\[\d+\])+$/;
+export const isValidJsonPath = (path: string): boolean => {
+  let position = path.startsWith('$') ? 1 : 0;
+  let tokens = 0;
+
+  while (position < path.length) {
+    if (path[position] === '[') {
+      let end = position + 1;
+      while (end < path.length && path[end]! >= '0' && path[end]! <= '9') end += 1;
+      if (end === position + 1 || path[end] !== ']') return false;
+
+      position = end + 1;
+    } else {
+      let end = path[position] === '.' ? position + 1 : position;
+      const keyStart = end;
+      while (end < path.length && isKeyChar(path[end]!)) end += 1;
+      if (end === keyStart) return false;
+
+      position = end;
+    }
+
+    tokens += 1;
+  }
+
+  return tokens > 0;
+};
 
 /** CoinGecko coin ids are lowercase words joined by dashes, such as `bitcoin` or `usd-coin`. */
 const COIN_ID_PATTERN = /^[a-z0-9][a-z0-9._-]*$/;
@@ -130,7 +161,7 @@ const httpSourceFields = {
     .string()
     .trim()
     .max(JSON_PATH_MAX_LENGTH)
-    .regex(JSON_PATH_PATTERN, 'Invalid JSON path, expected something like data.rates[0].price'),
+    .refine(isValidJsonPath, 'Invalid JSON path, expected something like data.rates[0].price'),
   quoteCurrency: quoteCurrencySchema,
 };
 

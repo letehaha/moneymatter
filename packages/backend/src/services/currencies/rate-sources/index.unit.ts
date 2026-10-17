@@ -2,10 +2,10 @@ import { describe, expect, it } from '@jest/globals';
 
 import {
   HTTP_URL_TEMPLATE_PLACEHOLDERS,
-  JSON_PATH_PATTERN,
   fillUrlTemplate,
   httpHeadersSchema,
   httpRateSourceConfigSchema,
+  isValidJsonPath,
   storedHttpRateSourceConfigSchema,
   testRateSourceBodySchema,
   updateRateSourceBodySchema,
@@ -36,7 +36,7 @@ describe('fillUrlTemplate', () => {
   });
 });
 
-describe('JSON_PATH_PATTERN', () => {
+describe('isValidJsonPath', () => {
   it.each([
     'price',
     'data.price',
@@ -45,12 +45,43 @@ describe('JSON_PATH_PATTERN', () => {
     '$.bitcoin.usd',
     '$[0].price',
     'a-b.c_d',
+    'a[0]b',
+    'a[0][1].b',
+    '$a',
   ])('accepts %s', (path) => {
-    expect(JSON_PATH_PATTERN.test(path)).toBe(true);
+    expect(isValidJsonPath(path)).toBe(true);
   });
 
-  it.each(['', '.', 'a..b', 'a[x]', 'a[]', 'a b', '$', 'a.', "a['b']"])('rejects %j', (path) => {
-    expect(JSON_PATH_PATTERN.test(path)).toBe(false);
+  it.each(['', '.', 'a..b', 'a[x]', 'a[]', 'a b', '$', 'a.', "a['b']", '$$', 'a[0', 'a[0]]', '[]', 'a.[0]'])(
+    'rejects %j',
+    (path) => {
+      expect(isValidJsonPath(path)).toBe(false);
+    },
+  );
+
+  it.each([
+    ['64 key characters and a bad one', `${'a'.repeat(64)}!`],
+    ['256 key characters and a bad one', `${'a'.repeat(255)}!`],
+    ['dotted keys and a bad one', `${'ab.'.repeat(80)}!`],
+    ['bracketed positions and a bad one', `${'a[0]'.repeat(60)}!`],
+  ])('rejects %s in linear time', (_label, path) => {
+    const started = performance.now();
+    const valid = isValidJsonPath(path);
+    const elapsed = performance.now() - started;
+
+    expect(valid).toBe(false);
+    expect(elapsed).toBeLessThan(50);
+  });
+
+  it('rejects the hostile path through the schema without stalling', () => {
+    const started = performance.now();
+    const parsed = httpRateSourceConfigSchema.safeParse({
+      urlTemplate: 'https://x.io/{date}',
+      jsonPath: `${'a'.repeat(64)}!`,
+    });
+
+    expect(parsed.success).toBe(false);
+    expect(performance.now() - started).toBeLessThan(50);
   });
 });
 
