@@ -8,9 +8,12 @@ import {
 } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import Currencies from '@models/currencies.model';
+import { connection } from '@models/index';
 import UserExchangeRates from '@models/user-exchange-rates.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import { RateLimitService } from '@services/common/rate-limit.service';
+import { pruneUnusedCustomCurrencies } from '@services/currencies/prune-custom-currencies';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
@@ -94,6 +97,19 @@ const restoreArchive = async ({ fileContent }: { fileContent: string }) => {
 };
 
 const errorOf = (response: { body: { response: unknown } }) => response.body.response as ErrorResponse;
+
+/** Polls until a transaction waits on the row lock the prune takes (`FOR UPDATE OF c`). */
+const waitForBlockedPrune = async () => {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const [blocked] = (await connection.sequelize.query(
+      `SELECT 1 FROM pg_stat_activity
+       WHERE wait_event_type = 'Lock' AND query LIKE '%FOR UPDATE OF c%' AND pid <> pg_backend_pid()`,
+    )) as [unknown[], unknown];
+    if (blocked.length) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error('The prune never waited on the adopter lock');
+};
 
 const userId = async () =>
   ((await helpers.makeRequest({ method: 'get', url: '/user', raw: true })) as { id: number }).id;
@@ -487,6 +503,32 @@ describe('Custom currencies', () => {
 
       expect(await Currencies.findByPk(SAT)).toBeNull();
       expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([]);
+    });
+  });
+
+  describe('a prune racing with a user who adopts the same code', () => {
+    it('keeps the global row and the new holding when the adopter holds the row before its holding commits', async () => {
+      const id = await userId();
+      await helpers.createCustomCurrency({ payload: sat() });
+      // Alice drops her holding, leaving the global row with no holder: what a prune would collect.
+      await UsersCurrencies.destroy({ where: { userId: id, currencyCode: SAT } });
+
+      // The adopter's transaction, stopped between taking the row lock and inserting the holding.
+      const adopter = await connection.sequelize.transaction();
+      await Currencies.findOne({ where: { code: SAT }, transaction: adopter, lock: adopter.LOCK.SHARE });
+
+      const prune = connection.sequelize.transaction(async () => pruneUnusedCustomCurrencies());
+      await waitForBlockedPrune();
+
+      await UsersCurrencies.create(
+        { userId: id, currencyCode: SAT, liveRateUpdate: false, isDefaultCurrency: false },
+        { transaction: adopter },
+      );
+      await adopter.commit();
+
+      expect(await prune).toEqual({ deletedCodes: [] });
+      expect(await Currencies.findByPk(SAT)).not.toBeNull();
+      expect(await UsersCurrencies.findOne({ where: { userId: id, currencyCode: SAT } })).not.toBeNull();
     });
   });
 
