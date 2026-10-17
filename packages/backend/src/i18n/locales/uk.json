@@ -854,6 +854,7 @@
     "endpointNotAllowed": "Ця адреса push-сповіщень не дозволена",
     "invalidKeys": "Ключі push-підписки недійсні",
     "subscriptionNotFound": "Push-підписку не знайдено",
+    "endpointInUse": "Ця адреса push-сповіщень уже належить іншому акаунту",
     "newVersion": "Нова версія {{version}}",
     "testTitle": "MoneyMatter",
     "testBody": "Сповіщення в браузері працюють на цьому пристрої.",

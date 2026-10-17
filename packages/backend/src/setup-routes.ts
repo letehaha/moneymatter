@@ -55,6 +55,7 @@ import transactionsRoutes from './routes/transactions.route';
 import userRoutes from './routes/user.route';
 import vehiclesRoutes from './routes/vehicles.route';
 import ventureRoutes from './routes/venture.route';
+import webPushRoutes from './routes/web-push.route';
 import webhooksRoutes from './routes/webhooks.route';
 
 export function setupRoutes(app: Express) {
@@ -198,6 +199,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/automations`, transactionAutomationsRoutes);
   app.use(`${API_PREFIX}/transaction-templates`, transactionTemplatesRoutes);
   app.use(`${API_PREFIX}/notifications`, notificationsRoutes);
+  app.use(`${API_PREFIX}/push`, webPushRoutes);
   app.use(`${API_PREFIX}/payees`, payeesRoutes);
   app.use(`${API_PREFIX}/brand-logos`, brandLogosRoutes);
   app.use(`${API_PREFIX}/vehicles`, vehiclesRoutes);

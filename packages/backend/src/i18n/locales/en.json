@@ -848,6 +848,7 @@
     "endpointNotAllowed": "This push endpoint is not allowed",
     "invalidKeys": "The push subscription keys are invalid",
     "subscriptionNotFound": "Push subscription not found",
+    "endpointInUse": "This push endpoint already belongs to another account",
     "newVersion": "New version {{version}}",
     "testTitle": "MoneyMatter",
     "testBody": "Browser notifications are working on this device.",

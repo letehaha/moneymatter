@@ -23,7 +23,7 @@ const READ_ONLY_ROUTES = new Set([
   'DELETE /user/delete',
 ]);
 
-const READ_ONLY_PREFIXES = ['/billing/', '/auth/', '/tests/', '/admin/'];
+const READ_ONLY_PREFIXES = ['/billing/', '/auth/', '/tests/', '/admin/', '/push/'];
 
 const NOTIFICATION_READ = /^\/notifications\/[^/]+\/read$/;
 
