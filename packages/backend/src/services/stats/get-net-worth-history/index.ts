@@ -13,10 +13,7 @@ import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
-import {
-  calculateVehiclesBalanceHistory,
-  rescaleVehicleCents,
-} from '@services/stats/calculate-vehicles-balance-history';
+import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
 import { getPerAccountBalanceHistory } from '@services/stats/get-balance-history';
 import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
@@ -292,7 +289,8 @@ export const getNetWorthHistory = async ({
         maxDate,
         uniqueDates: snapshotDates,
         userBaseCurrencyPromise,
-      }).then((series) => rescaleVehicleCents({ series, decimals })),
+        decimals,
+      }),
       calculatePortfolioValueByDate({ userId, snapshotDates, denseDates, userBaseCurrencyPromise, decimals }),
       calculateVentureBalanceHistory({
         userId,

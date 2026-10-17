@@ -1,4 +1,4 @@
-import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TYPES, VEHICLE_CLASS } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { addDays, format, subDays } from 'date-fns';
@@ -286,6 +286,113 @@ describe('Stats in the base currency decimals', () => {
       const { buckets } = await helpers.getNetWorthDrivers({ ...WINDOW, granularity: 'monthly', raw: true });
       const savingsNet = buckets.reduce((total, bucket) => total + bucket.savings.net, 0);
       expect(Number(savingsNet.toFixed(2))).toBe(3.33);
+    });
+  });
+
+  describe('vehicle value', () => {
+    const inBaseCurrencyOf = async ({ currencyCode, fn }: { currencyCode: string; fn: () => Promise<void> }) => {
+      const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode });
+
+      await helpers.asUser({ cookies: user.cookies, fn });
+    };
+
+    const buyVehicle = ({ currencyCode, purchasePrice }: { currencyCode: string; purchasePrice: number }) =>
+      helpers.createVehicle({
+        name: 'Precision car',
+        currencyCode,
+        make: 'Toyota',
+        model: 'Camry',
+        year: 2020,
+        vehicleClass: VEHICLE_CLASS.sedan,
+        purchasePrice,
+        purchaseDate: TODAY,
+        raw: true,
+      });
+
+    const setManualRate = ({ baseCode, quoteCode, rate }: { baseCode: string; quoteCode: string; rate: number }) =>
+      helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode, quoteCode, rate },
+          { baseCode: quoteCode, quoteCode: baseCode, rate: 1 / rate },
+        ],
+      });
+
+    const todayVehiclesBalance = async () => {
+      const rows = await helpers.getCombinedBalanceHistory({ ...WINDOW, raw: true });
+
+      return rows.find((row) => row.date === TODAY)!.vehiclesBalance;
+    };
+
+    it('reports a KWD vehicle at 3 decimals for a KWD-base user', async () => {
+      await inBaseCurrencyOf({
+        currencyCode: 'KWD',
+        fn: async () => {
+          await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
+
+          expect(await todayVehiclesBalance()).toBe(5000.125);
+
+          const { points } = await helpers.getNetWorthHistory({
+            from: FROM,
+            to: TODAY,
+            granularity: 'weekly',
+            raw: true,
+          });
+          expect(points.at(-1)!.assets.vehicles).toBe(5000.125);
+        },
+      });
+    });
+
+    it('keeps 3 decimals in the anchor a KWD override creates', async () => {
+      await inBaseCurrencyOf({
+        currencyCode: 'KWD',
+        fn: async () => {
+          const vehicle = await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
+
+          await helpers.overrideVehicleValue({ id: vehicle.id, accountId: vehicle.accountId, targetValue: 5000.13 });
+
+          expect(await todayVehiclesBalance()).toBe(5000.13);
+        },
+      });
+    });
+
+    it('converts a KWD vehicle into a USD base across the decimals gap', async () => {
+      await inBaseCurrencyOf({
+        currencyCode: 'USD',
+        fn: async () => {
+          await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+          await helpers.updateUserCurrency({ currency: { currencyCode: 'KWD', liveRateUpdate: false }, raw: true });
+          await setManualRate({ baseCode: 'KWD', quoteCode: 'USD', rate: 3.25 });
+          await buyVehicle({ currencyCode: 'KWD', purchasePrice: 5000.125 });
+
+          // 5000.125 * 3.25 = 16250.40625
+          expect(await todayVehiclesBalance()).toBe(16250.41);
+        },
+      });
+    });
+
+    it('converts a JPY vehicle into a KWD base across the decimals gap', async () => {
+      await inBaseCurrencyOf({
+        currencyCode: 'KWD',
+        fn: async () => {
+          await helpers.addUserCurrencies({ currencyCodes: ['JPY'], raw: true });
+          await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
+          await setManualRate({ baseCode: 'JPY', quoteCode: 'KWD', rate: 0.0005 });
+          await buyVehicle({ currencyCode: 'JPY', purchasePrice: 1000000 });
+
+          expect(await todayVehiclesBalance()).toBe(500);
+        },
+      });
+    });
+
+    it('keeps a USD vehicle at the 2-decimal value for a USD-base user (regression guard)', async () => {
+      await inBaseCurrencyOf({
+        currencyCode: 'USD',
+        fn: async () => {
+          await buyVehicle({ currencyCode: 'USD', purchasePrice: 25000.12 });
+
+          expect(await todayVehiclesBalance()).toBe(25000.12);
+        },
+      });
     });
   });
 });

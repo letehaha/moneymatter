@@ -14,10 +14,7 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { buildUsdRateLookup } from '@services/stats/build-usd-rate-lookup';
-import {
-  calculateVehiclesBalanceHistory,
-  rescaleVehicleCents,
-} from '@services/stats/calculate-vehicles-balance-history';
+import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
 import { getAggregatedBalanceHistory } from '@services/stats/get-balance-history';
 import { getCreditLimitAdjustment } from '@services/stats/get-credit-limit-adjustment';
@@ -431,9 +428,7 @@ export const getCombinedBalanceHistory = async ({
             decimals,
           });
         })(),
-        calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise }).then((series) =>
-          rescaleVehicleCents({ series, decimals }),
-        ),
+        calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
         calculatePortfolioBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
         calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
         includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'owned', decimals }) : Promise.resolve(0),
