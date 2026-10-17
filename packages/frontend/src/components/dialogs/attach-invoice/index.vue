@@ -5,6 +5,7 @@ import { editTransaction, loadTransactionById } from '@/api/transactions';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { compressImages } from '@/common/utils/compress-image';
 import PlanRestricted from '@/components/billing/plan-restricted.vue';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import { FileDropzone } from '@/components/common/dropzone';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
@@ -18,7 +19,8 @@ import TransactionRecord from '@/components/transactions-list/transaction-record
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
 import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs';
-import { useIsBillingPage } from '@/composable/use-close-dialog-when';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
+import { useIsAiUsageExitPage } from '@/composable/use-close-dialog-when';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { formatUIAmount } from '@/js/helpers';
@@ -27,6 +29,7 @@ import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
 import { useAccountsStore, useCurrenciesStore, useUserStore } from '@/stores';
 import {
+  AI_FEATURE,
   ATTACHMENT_MAX_FILE_BYTES,
   ATTACHMENT_MIME_TYPES,
   type ExtractedInvoice,
@@ -67,7 +70,9 @@ const { t } = useI18n();
 const { format } = useDateLocale();
 const { addNotification, addErrorNotification, addWarningNotification, removeNotification } = useNotificationCenter();
 const isMobile = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile);
-const isBillingPage = useIsBillingPage();
+const isExitPage = useIsAiUsageExitPage();
+const { isReached } = useAiAllowance();
+const isReceiptParsingPaused = computed(() => isReached({ feature: AI_FEATURE.receiptParsing }));
 const userStore = useUserStore();
 const { txTargetableSourceAccountsActiveFirst } = storeToRefs(useAccountsStore());
 const { systemCurrencies } = storeToRefs(useCurrenciesStore());
@@ -98,6 +103,7 @@ const createPrefill = ref<TransactionPrefill | null>(null);
 const matchMutation = useInvalidatingMutation({
   mutationFn: matchInvoice,
   invalidateKeys: [],
+  invalidateOnSettleKeys: [VUE_QUERY_CACHE_KEYS.aiFeaturesStatus],
   errorKey: 'dialogs.attachInvoice.errors.match',
   persistentErrorId: MATCH_ERROR_TOAST_ID,
 });
@@ -382,7 +388,7 @@ const closeTransactionModal = () => {
 </script>
 
 <template>
-  <ResponsiveDialog v-model:open="open" :close-when="isBillingPage" dialog-content-class="sm:max-w-xl">
+  <ResponsiveDialog v-model:open="open" :close-when="isExitPage" dialog-content-class="sm:max-w-xl">
     <template #title>
       {{ candidatesCount ? $t('dialogs.attachInvoice.resultsTitle') : $t('dialogs.attachInvoice.title') }}
     </template>
@@ -406,14 +412,20 @@ const closeTransactionModal = () => {
 
         <template v-else-if="!result">
           <InvoiceDirectionToggle v-model="transactionType" />
+          <div class="flex justify-end empty:hidden">
+            <AiUsageBadge :feature="AI_FEATURE.receiptParsing" />
+          </div>
           <FileDropzone
             :model-value="file"
             :accept="ACCEPT_ATTRIBUTE"
             :max-size="ATTACHMENT_MAX_FILE_BYTES"
             height="min-h-[180px]"
+            :disabled="isReceiptParsingPaused"
             @update:model-value="(selected: File | null) => analyze({ selected })"
             @error="addErrorNotification"
-          />
+          >
+            <template v-if="isReceiptParsingPaused" #hint>{{ $t('dialogs.attachInvoice.aiPausedHint') }}</template>
+          </FileDropzone>
           <Callout v-if="triesLeft !== null">
             {{ $t('dialogs.attachInvoice.trial.left', { count: triesLeft, limit: TRIAL_LIMIT }, triesLeft) }}
           </Callout>

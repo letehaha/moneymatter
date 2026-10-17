@@ -1,5 +1,5 @@
 import { getAiCategorizationStatus } from '@/api/ai-categorization';
-import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import type { AiCategorizationStatus } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -74,6 +74,7 @@ export function useCategorizationStatus() {
     queryClient.invalidateQueries({
       queryKey: [VUE_QUERY_GLOBAL_PREFIXES.transactionChange],
     });
+    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus });
 
     const categorizedCount = processedCount - failedCount - skippedCount;
     if (status === 'completed' && categorizedCount > 0) {

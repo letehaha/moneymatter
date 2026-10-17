@@ -43,21 +43,22 @@ const storeFeatureConfig = withTransaction(
   },
 );
 
-/** `connectionId: null` pins the included server model, which the user has to be able to use. */
+/**
+ * `connectionId: null` pins the included server model. Only entitlement gates the pick, not the
+ * AI allowance, so a pick made over the cap works again after the reset.
+ */
 export const setFeatureConfig = async ({
   userId,
   feature,
   connectionId,
-  serverKeysAllowed,
-  paidPlus,
+  entitledToServerKeys,
 }: {
   userId: number;
   feature: AI_FEATURE;
   connectionId: string | null;
-  serverKeysAllowed: boolean;
-  paidPlus: boolean;
+  entitledToServerKeys: boolean;
 }): Promise<void> => {
-  if (connectionId === null && !getServerModel({ feature, serverKeysAllowed, paidPlus })) {
+  if (connectionId === null && !getServerModel({ feature, serverKeysAllowed: entitledToServerKeys })) {
     throw new ValidationError({ message: t({ key: 'ai.serverModelUnavailable' }) });
   }
 

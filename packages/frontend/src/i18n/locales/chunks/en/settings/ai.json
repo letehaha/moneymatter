@@ -52,8 +52,6 @@
           "server": "Server",
           "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
         },
-        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
-        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Model",
         "modelInfo": {
           "estimatedCost": "Est. cost:",

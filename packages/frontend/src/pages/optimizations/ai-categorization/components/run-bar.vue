@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { AI_CATEGORIZATION_MAX_TRANSACTIONS_PER_RUN } from '@bt/shared/types';
+import { AI_CATEGORIZATION_MAX_TRANSACTIONS_PER_RUN, AI_FEATURE } from '@bt/shared/types';
 import { Loader2Icon, SparklesIcon, XIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -130,6 +131,7 @@ const handleConfirmRun = () => {
     <!-- The buttons carry whitespace-nowrap, so at the narrowest widths this group
          must be allowed to wrap or it overflows the card. -->
     <div class="ml-auto flex flex-wrap items-center justify-end gap-2">
+      <AiUsageBadge :feature="AI_FEATURE.categorization" />
       <RunSetupPopover />
 
       <Button size="sm" :disabled="isRunDisabled" @click="handleRun">

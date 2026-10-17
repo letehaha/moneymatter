@@ -447,6 +447,39 @@
       "setByEndpoint": "Priced by your provider"
     }
   },
+  "aiUsage": {
+    "title": "Included AI usage",
+    "used": "used",
+    "percentUsed": "{percent}% used",
+    "resetsOn": "Resets on {date}",
+    "connectOwnModel": "Connect your own model",
+    "gotIt": "Got it",
+    "badge": {
+      "used": "{percent}% AI used",
+      "reached": "AI limit reached"
+    },
+    "dialog": {
+      "description": "Statement parsing, categorization, receipts and budget suggestions share this allowance.",
+      "status": {
+        "plusWarning": "You've used most of this month's included AI. When it runs out, AI features pause until {date}.",
+        "plusReached": "You've used this month's included AI. AI features are paused until {date}.",
+        "trialWarning": "You've used most of the AI included in your plan this month. When it runs out, AI features pause.",
+        "trialReached": "You've used the AI included in your plan this month. Subscribe to Plus or connect your own model to keep using AI features."
+      }
+    },
+    "options": {
+      "connectDescription": "Use your own Anthropic, OpenAI, Gemini or local model. It's never counted toward this limit.",
+      "subscribeTitle": "Subscribe to Plus",
+      "subscribeDescription": "Get more included AI every month.",
+      "waitTitle": "Wait for the reset",
+      "waitDescription": "Included AI comes back on {date}."
+    },
+    "meter": {
+      "ok": "Resets on {date}. Your own connected models are never counted.",
+      "warning": "When it runs out, AI features pause until {date} unless you connect your own model.",
+      "reached": "Used up until {date}. AI features are paused."
+    }
+  },
   "transactionGroups": {
     "groupDialog": {
       "editTitle": "Edit Group",

@@ -1,5 +1,7 @@
 <template>
   <div class="space-y-4">
+    <AiUsageMeterCard />
+
     <div>
       <h3 class="text-lg font-medium">{{ $t('settings.ai.features.title') }}</h3>
       <p class="text-muted-foreground text-sm">{{ $t('settings.ai.features.description') }}</p>
@@ -44,6 +46,7 @@ import { AI_FEATURE } from '@bt/shared/types';
 import { RotateCwIcon, TriangleAlertIcon } from '@lucide/vue';
 import type { Component } from 'vue';
 
+import AiUsageMeterCard from './ai-usage-meter-card.vue';
 import CustomInstructions from './features/custom-instructions.vue';
 import ModelSelectorCard from './shared/model-selector-card.vue';
 

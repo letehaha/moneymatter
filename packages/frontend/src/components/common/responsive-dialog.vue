@@ -18,7 +18,7 @@ const props = withDefaults(
     dialogContentClass?: HTMLAttributes['class'];
     drawerContentClass?: HTMLAttributes['class'];
     customClose?: boolean;
-    /** Closes the dialog the moment this turns true, e.g. `useIsBillingPage()` for dialogs with a "See plans" link. */
+    /** Closes the dialog the moment this turns true, e.g. `useIsAiUsageExitPage()` for dialogs linking to AI or billing settings. */
     closeWhen?: boolean;
     /** When true, disables the internal scroll wrapper (display: contents).
      * Use when the dialog content manages its own scrolling layout. */

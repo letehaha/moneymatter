@@ -9,8 +9,10 @@ export function useCloseDialogWhen({ when, close }: { when: MaybeRefOrGetter<boo
   );
 }
 
-/** For dialogs whose "See plans" link would otherwise leave them open over the billing page. */
-export function useIsBillingPage() {
+/** For dialogs whose AI-usage links lead to the AI models or billing settings. */
+export function useIsAiUsageExitPage() {
   const route = useRoute();
-  return computed(() => route.name === ROUTES_NAMES.settingsPlanBilling);
+  return computed(
+    () => route.name === ROUTES_NAMES.settingsPlanBilling || route.name === ROUTES_NAMES.settingsAiModels,
+  );
 }

@@ -151,7 +151,7 @@ Match each source name to the best existing category, or "none". Output one line
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
-    trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
+    await trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
 
     // A truncated answer silently loses the sources after the cut, which would
     // read as "the AI found no match" instead of an error.

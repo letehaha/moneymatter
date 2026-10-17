@@ -27,6 +27,7 @@ export const notifyMutationError = ({ error, fallbackKey }: { error: unknown; fa
 export const useInvalidatingMutation = <TData, TVariables>({
   mutationFn,
   invalidateKeys,
+  invalidateOnSettleKeys,
   successKey,
   successMessage,
   errorKey,
@@ -36,6 +37,8 @@ export const useInvalidatingMutation = <TData, TVariables>({
 }: {
   mutationFn: (variables: TVariables) => Promise<TData>;
   invalidateKeys: QueryKey[];
+  /** Refreshed on failure too, for state the attempt itself changes (e.g. AI usage). */
+  invalidateOnSettleKeys?: QueryKey[];
   /** Omit for writes whose result is obvious from the UI updating. */
   successKey?: string;
   /** Takes precedence over `successKey` when the copy depends on the response. */
@@ -66,5 +69,7 @@ export const useInvalidatingMutation = <TData, TVariables>({
       const text = extractApiErrorMessage(error) || t(errorKey);
       addNotification({ id: persistentErrorId, text, type: NotificationType.error, persistent: true });
     },
+    onSettled: () =>
+      Promise.all((invalidateOnSettleKeys ?? []).map((queryKey) => queryClient.invalidateQueries({ queryKey }))),
   });
 };

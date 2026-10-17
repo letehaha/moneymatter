@@ -2,6 +2,7 @@ import { api } from '@/api/_api';
 import {
   AIConnectionInfo,
   AIFeatureStatus,
+  type AIFeaturesStatusResponse,
   AI_FEATURE,
   CreateAIConnectionBody,
   ListAIConnectionModelsBody,
@@ -14,11 +15,7 @@ import {
 
 // ===== Feature Configuration =====
 
-export interface AiFeaturesStatusResponse {
-  features: AIFeatureStatus[];
-}
-
-export const getAiFeaturesStatus = async (): Promise<AiFeaturesStatusResponse> => {
+export const getAiFeaturesStatus = async (): Promise<AIFeaturesStatusResponse> => {
   return api.get('/user/settings/ai/features');
 };
 

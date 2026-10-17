@@ -7,6 +7,7 @@ import {
   getStatementImportStatus,
 } from '@/api/import-export';
 import { loadTransactions } from '@/api/transactions';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { fileToBase64 } from '@/common/utils/file-to-base64';
 import { useImportJobProgress } from '@/composable/use-import-job-progress';
 import { useWizardSteps } from '@/composable/use-wizard-steps';
@@ -472,6 +473,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
     } finally {
       extractingFileId.value = null;
       isExtracting.value = false;
+      queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus });
     }
 
     // A newly extracted file re-bases every later merged index, so duplicates,

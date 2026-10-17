@@ -1,30 +1,35 @@
 <template>
   <Collapsible v-slot="{ open }" class="@container/feature-header rounded-lg border">
-    <CollapsibleTrigger class="flex w-full items-center gap-3 p-4 text-left">
-      <ChevronRightIcon class="size-4 shrink-0 transition-transform" :class="{ 'rotate-90': open }" />
-      <div class="min-w-0 flex-1">
-        <div class="flex flex-wrap items-center gap-2">
-          <component :is="displayInfo.icon" class="text-muted-foreground size-4 shrink-0" />
-          <h4 class="font-medium">{{ $t(displayInfo.nameKey) }}</h4>
-          <!-- Stops the tap from also toggling the card -->
-          <span v-if="featureStatus.servedBy" class="inline-flex" @click.stop>
-            <ApiKeySourceBadge :using-user-key="featureStatus.usingUserKey" />
-          </span>
-          <span v-if="!open && fitWarningKey" :class="FIT_WARNING_BADGE_CLASS">
-            <TriangleAlertIcon class="size-3" />
-            {{ $t(fitWarningKey) }}
-          </span>
+    <div class="flex items-center">
+      <CollapsibleTrigger class="flex min-w-0 flex-1 items-center gap-3 p-4 text-left">
+        <ChevronRightIcon class="size-4 shrink-0 transition-transform" :class="{ 'rotate-90': open }" />
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <component :is="displayInfo.icon" class="text-muted-foreground size-4 shrink-0" />
+            <h4 class="font-medium">{{ $t(displayInfo.nameKey) }}</h4>
+            <!-- Stops the tap from also toggling the card -->
+            <span v-if="featureStatus.servedBy" class="inline-flex" @click.stop>
+              <ApiKeySourceBadge :using-user-key="featureStatus.usingUserKey" />
+            </span>
+            <span v-if="!open && fitWarningKey" :class="FIT_WARNING_BADGE_CLASS">
+              <TriangleAlertIcon class="size-3" />
+              {{ $t(fitWarningKey) }}
+            </span>
+          </div>
+          <p class="text-muted-foreground text-sm">{{ $t(displayInfo.descriptionKey) }}</p>
         </div>
-        <p class="text-muted-foreground text-sm">{{ $t(displayInfo.descriptionKey) }}</p>
-      </div>
 
-      <span
-        v-if="!open && collapsedModelLabel"
-        class="text-muted-foreground hidden max-w-60 shrink-0 truncate text-xs @lg/feature-header:inline"
-      >
-        {{ collapsedModelLabel }}
-      </span>
-    </CollapsibleTrigger>
+        <span
+          v-if="!open && collapsedModelLabel"
+          class="text-muted-foreground hidden max-w-60 shrink-0 truncate text-xs @lg/feature-header:inline"
+        >
+          {{ collapsedModelLabel }}
+        </span>
+      </CollapsibleTrigger>
+      <div class="shrink-0 pr-4 empty:hidden">
+        <AiUsageBadge :feature="featureStatus.feature" />
+      </div>
+    </div>
 
     <CollapsibleContent>
       <div class="border-t px-4 pt-4 pb-4">
@@ -80,19 +85,6 @@
             </i18n-t>
           </Callout>
 
-          <i18n-t
-            v-if="featureStatus.servedBy === 'server' && isOnSharedPool"
-            keypath="settings.ai.modelSelector.sharedPoolNote"
-            tag="p"
-            class="text-muted-foreground mt-2 text-xs"
-          >
-            <template #link>
-              <router-link :to="{ name: ROUTES_NAMES.settingsPlanBilling }" class="text-primary-text hover:underline">
-                {{ $t('settings.ai.modelSelector.sharedPoolNoteLink') }}
-              </router-link>
-            </template>
-          </i18n-t>
-
           <p
             v-if="formattedPrice && displayInfo.unitLabelKey && featureStatus.servedBy === 'connection'"
             class="text-muted-foreground mt-3 text-xs"
@@ -117,6 +109,7 @@
 
 <script setup lang="ts">
 import { getAIFeatureDisplayInfo } from '@/common/const';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import ApiKeySourceBadge from '@/components/common/api-key-source-badge.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -127,10 +120,8 @@ import { useAiSettings } from '@/composable/data-queries/ai-settings';
 import { useAiConnectionsList } from '@/composable/data-queries/use-ai-connections';
 import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes';
-import { useUserStore } from '@/stores';
 import { AIFeatureStatus, AIModelPricing, getModelNameFromModelId } from '@bt/shared/types';
 import { BrainIcon, ChevronRightIcon, PlusIcon, TriangleAlertIcon } from '@lucide/vue';
-import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -146,10 +137,6 @@ const { t } = useI18n();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 const { setFeatureConfig, isSettingFeatureConfig, resetFeatureConfig, isResettingFeatureConfig } = useAiSettings();
 const { connections } = useAiConnectionsList();
-const { canSeeBilling, entitlements, hasPlus } = storeToRefs(useUserStore());
-
-const isOnSharedPool = computed(() => canSeeBilling.value && entitlements.value !== null && !hasPlus.value);
-
 const displayInfo = computed(() => getAIFeatureDisplayInfo({ feature: props.featureStatus.feature }));
 const isUpdating = computed(() => isSettingFeatureConfig.value || isResettingFeatureConfig.value);
 

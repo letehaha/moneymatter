@@ -4,10 +4,16 @@ import { AI_PROVIDER, RecordId } from '@bt/shared/types';
 import type { BudgetSuggestionAnswers } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
+import { isWithinAiAllowance } from '@services/ai/ai-allowance';
 import { createProviderModel } from '@services/ai/ai-client-factory';
 import { classifyAiCallFailure, isAbortError } from '@services/ai/ai-error-classifiers';
 import { AI_MAX_OUTPUT_TOKENS } from '@services/ai/ai-output-limit';
-import { getServerApiKey, suspendAnthropicServerKey } from '@services/ai/resolution-ladder';
+import {
+  PRIMARY_SERVER_MODEL,
+  type ServerModel,
+  getServerApiKey,
+  suspendPrimaryServerKey,
+} from '@services/ai/resolution-ladder';
 import { createShortIds } from '@services/ai/short-ids';
 import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { createCategoryClaims } from '@services/categories/category-hierarchy';
@@ -16,8 +22,8 @@ import { Output, generateText } from 'ai';
 import { z } from 'zod';
 
 const CALLS_PER_USER_PER_DAY = 30;
-const PAID_MODEL_CALLS_PER_USER_PER_DAY = 5;
-const PAID_MODEL_CALLS_PER_DAY = 300;
+const PRIMARY_MODEL_CALLS_PER_USER_PER_DAY = 5;
+const PRIMARY_MODEL_CALLS_PER_DAY = 300;
 const DAY_SECONDS = 24 * 60 * 60;
 const CALL_TIMEOUT_MS = 30_000;
 export const MAX_AI_LINES = 15;
@@ -72,9 +78,8 @@ const userFacts = ({ answers }: { answers: BudgetSuggestionAnswers }): string[] 
 export const hasGuidance = ({ answers }: { answers: BudgetSuggestionAnswers }) =>
   userFacts({ answers }).length > 0 || !!answers.focusCategoryIds?.length;
 
-/** Billed per call, so capped; the free-tier model takes the rest. */
-const PAID_MODEL = { provider: AI_PROVIDER.anthropic, model: 'claude-haiku-5-5' } as const;
-const FREE_MODEL = { provider: AI_PROVIDER.google, model: 'gemini-3.8-flash' } as const;
+/** Backs up the primary server model, which is billed per call and so capped daily. */
+const FALLBACK_MODEL = { provider: AI_PROVIDER.google, model: 'gemini-3.8-flash' } as const;
 
 export interface LineCandidate {
   id: string;
@@ -197,28 +202,36 @@ export const sanitizeLayout = ({
   return { groups };
 };
 
-/** The paid model answers the first few runs a day per user and per deployment. */
-const underPaidModelCap = async ({ userId }: { userId: number }): Promise<boolean> => {
+/** The primary server model answers the first few runs a day per user and per deployment. */
+const underPrimaryModelCap = async ({ userId }: { userId: number }): Promise<boolean> => {
   const user = await RateLimitService.checkRateLimit(
     `budget-ai-paid:user:${userId}`,
     DAY_SECONDS,
-    PAID_MODEL_CALLS_PER_USER_PER_DAY,
+    PRIMARY_MODEL_CALLS_PER_USER_PER_DAY,
   );
   if (!user.allowed || user.serviceUnavailable) return false;
 
-  const global = await RateLimitService.checkRateLimit('budget-ai-paid:global', DAY_SECONDS, PAID_MODEL_CALLS_PER_DAY);
+  const global = await RateLimitService.checkRateLimit(
+    'budget-ai-paid:global',
+    DAY_SECONDS,
+    PRIMARY_MODEL_CALLS_PER_DAY,
+  );
   return global.allowed && !global.serviceUnavailable;
 };
 
 const pickModels = async ({ userId }: { userId: number }) => {
-  const specs: { provider: AI_PROVIDER.anthropic | AI_PROVIDER.google; model: string; apiKey: string }[] = [];
+  const specs: (ServerModel & { apiKey: string })[] = [];
 
-  // The Plus key serves this feature for every budgeting user; the daily cap is what keeps that affordable.
-  const anthropicKey = getServerApiKey({ provider: AI_PROVIDER.anthropic, paidPlus: true });
-  if (anthropicKey && (await underPaidModelCap({ userId }))) specs.push({ ...PAID_MODEL, apiKey: anthropicKey });
+  if (!(await isWithinAiAllowance({ userId }))) return specs;
 
-  const geminiKey = getServerApiKey();
-  if (geminiKey) specs.push({ ...FREE_MODEL, apiKey: geminiKey });
+  // The server key serves this feature for every budgeting user; the daily cap is what keeps that affordable.
+  const primaryKey = getServerApiKey({ provider: PRIMARY_SERVER_MODEL.provider });
+  if (primaryKey && (await underPrimaryModelCap({ userId }))) {
+    specs.push({ ...PRIMARY_SERVER_MODEL, apiKey: primaryKey });
+  }
+
+  const fallbackKey = getServerApiKey();
+  if (fallbackKey) specs.push({ ...FALLBACK_MODEL, apiKey: fallbackKey });
 
   return specs;
 };
@@ -226,7 +239,7 @@ const pickModels = async ({ userId }: { userId: number }) => {
 /**
  * Asks a model to arrange the candidate categories into named groups and lines. Amounts
  * never come from the model. Returns null when there is neither spending nor an answer to
- * go on, no server key is set, the user is over the daily cap, or every model fails, so the
+ * go on, no server key is set, the user is over the daily cap or the AI allowance, or every model fails, so the
  * caller can fall back to the rule-based suggestions.
  */
 export const organizeLinesWithAi = async ({
@@ -300,14 +313,14 @@ export const organizeLinesWithAi = async ({
         logger.error('[Budget suggestions] AI call failed, trying the next model', meta);
 
         const { kind } = classifyAiCallFailure({ error });
-        if (spec.provider === AI_PROVIDER.anthropic && (kind === 'auth' || kind === 'model-not-found')) {
-          suspendAnthropicServerKey({ reason: `budget suggestions: ${kind}` });
+        if (spec.provider === PRIMARY_SERVER_MODEL.provider && (kind === 'auth' || kind === 'model-not-found')) {
+          suspendPrimaryServerKey({ reason: `budget suggestions: ${kind}` });
         }
         return null;
       });
     if (!answer) continue;
 
-    trackAiUsage({
+    await trackAiUsage({
       userId,
       feature: 'budget_suggestions',
       aiClient: { provider: spec.provider, modelId, usingUserKey: false },

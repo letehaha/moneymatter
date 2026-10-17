@@ -7,7 +7,7 @@ import {
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
-import { SERVER_MODELS } from '@services/ai/resolution-ladder';
+import { FALLBACK_SERVER_MODELS } from '@services/ai/resolution-ladder';
 import { STATEMENT_PDF_FIXTURES, readStatementPdfFixture } from '@tests/fixtures/statement-parser-fixtures';
 import * as helpers from '@tests/helpers';
 import { useSelfHostWithoutServerAiKeys } from '@tests/helpers/ai-test-env';
@@ -79,7 +79,7 @@ const mockAiAnswer = ({ content }: { content: string }) => {
 };
 
 /** The model the server key runs for receipt parsing, which is what a trial upload dials. */
-const OPERATOR_MODEL_NAME = SERVER_MODELS[AI_FEATURE.receiptParsing].model;
+const OPERATOR_MODEL_NAME = FALLBACK_SERVER_MODELS[AI_FEATURE.receiptParsing].model;
 
 const TRIAL_LIMIT = FEATURE_TRIAL_LIMITS[FEATURES.invoice_matching]!;
 

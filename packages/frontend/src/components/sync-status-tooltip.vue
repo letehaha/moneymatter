@@ -129,10 +129,14 @@
     </ScrollArea>
 
     <!-- AI categorization section (always rendered, doesn't scroll with the list) -->
-    <div v-if="isCategorizing || categorizationJustCompleted" class="border-border mt-3 space-y-2 border-t pt-3">
-      <div class="flex items-center gap-2">
+    <div
+      v-if="isCategorizing || categorizationJustCompleted || showBadge({ feature: AI_FEATURE.categorization })"
+      class="border-border mt-3 space-y-2 border-t pt-3"
+    >
+      <div class="flex flex-wrap items-center gap-2">
         <SparklesIcon class="text-primary-text size-4" />
         <span class="text-sm font-medium">{{ $t('header.categorization.title') }}</span>
+        <AiUsageBadge :feature="AI_FEATURE.categorization" />
       </div>
 
       <template v-if="categorizationJustCompleted && categorizationStatus?.status === 'completed'">
@@ -200,11 +204,13 @@
 <script setup lang="ts">
 import { type AccountSyncStatus, type ConnectionNeedingReauth, SyncStatus } from '@/api/bank-data-providers';
 import { METAINFO_FROM_TYPE } from '@/common/const/bank-providers';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { Callout } from '@/components/lib/ui/callout';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
 import { ROUTES_NAMES } from '@/routes/constants';
-import type { AiCategorizationProgressPayload } from '@bt/shared/types';
+import { AI_FEATURE, type AiCategorizationProgressPayload } from '@bt/shared/types';
 import {
   AlertTriangleIcon,
   Building2,
@@ -220,6 +226,7 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
+const { showBadge } = useAiAllowance();
 
 const props = defineProps<{
   accountStatuses: AccountSyncStatus[];

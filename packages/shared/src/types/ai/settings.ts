@@ -108,6 +108,23 @@ export interface AIFeatureStatus {
   serverModelName: string | null;
 }
 
+/** This month's spend on the server AI keys, against the user's included allowance. */
+export interface AIAllowance {
+  usedPercent: number;
+  /** `warning` from 60%; `reached` leaves server-served features unserved until the reset. */
+  state: 'ok' | 'warning' | 'reached';
+  /** ISO timestamp the allowance resets at, the start of the next UTC month */
+  resetsAt: string;
+  /** `trial` covers everyone without paid Plus: trials, early adopters and free users */
+  plan: 'plus' | 'trial';
+}
+
+/** GET /user/settings/ai/features */
+export interface AIFeaturesStatusResponse {
+  features: AIFeatureStatus[];
+  aiAllowance: AIAllowance | null;
+}
+
 /** POST /user/settings/ai/connections */
 export interface CreateAIConnectionBody {
   provider: AI_PROVIDER;

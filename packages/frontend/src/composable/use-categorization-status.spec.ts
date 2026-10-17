@@ -24,6 +24,7 @@ vi.mock('./use-sse', () => ({
 }));
 
 vi.mock('@/common/const', () => ({
+  VUE_QUERY_CACHE_KEYS: { aiFeaturesStatus: ['ai-settings', 'features'] },
   VUE_QUERY_GLOBAL_PREFIXES: { transactionChange: 'transactionChange' },
 }));
 
@@ -364,6 +365,7 @@ describe('useCategorizationStatus live SSE completion', () => {
     deliver({ status: 'completed', processedCount: 10, totalCount: 10, failedCount: 0 });
 
     expect(addNotification).toHaveBeenCalledTimes(1);
-    expect(invalidateQueries).toHaveBeenCalledTimes(1);
+    expect(invalidateQueries).toHaveBeenCalledTimes(2);
+    expect(invalidateQueries).toHaveBeenCalledWith({ queryKey: ['ai-settings', 'features'] });
   });
 });

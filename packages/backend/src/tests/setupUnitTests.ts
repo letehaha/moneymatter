@@ -28,6 +28,7 @@ jest.mock('@root/redis-client', () => ({
     keys: jest.fn().mockResolvedValue([]),
     mget: jest.fn().mockResolvedValue([]),
     incr: jest.fn().mockResolvedValue(1),
+    incrby: jest.fn().mockResolvedValue(1),
     expire: jest.fn().mockResolvedValue(1),
     ttl: jest.fn().mockResolvedValue(-1),
     ping: jest.fn().mockResolvedValue('PONG'),

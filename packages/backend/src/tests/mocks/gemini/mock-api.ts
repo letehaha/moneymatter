@@ -1,5 +1,5 @@
 import { AI_FEATURE } from '@bt/shared/types';
-import { SERVER_MODELS } from '@services/ai/resolution-ladder';
+import { FALLBACK_SERVER_MODELS } from '@services/ai/resolution-ladder';
 import { HttpResponse, delay, http } from 'msw';
 
 // Gemini API uses a different URL pattern, with the model name baked into the
@@ -44,7 +44,7 @@ function invalidKeyResponse() {
 }
 
 /** Most callers of this mock exercise categorization; others pass `expectedModel`. */
-const DEFAULT_EXPECTED_MODEL = SERVER_MODELS[AI_FEATURE.categorization].model;
+const DEFAULT_EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization].model;
 
 /**
  * Pulls the `<model>` segment out of `.../v1beta/models/<model>:generateContent`.

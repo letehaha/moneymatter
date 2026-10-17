@@ -80,7 +80,7 @@ export async function extractInvestmentTransactionsWithAI({
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
-    trackAiUsage({ userId, feature: AI_FEATURE.investmentTransactionsParsing, aiClient, usage });
+    await trackAiUsage({ userId, feature: AI_FEATURE.investmentTransactionsParsing, aiClient, usage });
 
     // Truncated rows parse as a complete-looking but short import, so refuse them.
     if (hitOutputCeiling({ finishReason, usage })) {

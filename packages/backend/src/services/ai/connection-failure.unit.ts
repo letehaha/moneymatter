@@ -3,13 +3,16 @@ import { afterEach, describe, expect, it, jest } from '@jest/globals';
 
 import type { AIClientResult } from './ai-client-factory';
 import { markConnectionRejected, markModelNotServed } from './connection-failure';
-import { suspendAnthropicServerKey } from './resolution-ladder';
+import { suspendPrimaryServerKey } from './resolution-ladder';
 
 jest.mock('../user-settings/ai-connections', () => ({
   getConnectionInfos: jest.fn(),
   markConnectionInvalid: jest.fn(),
 }));
-jest.mock('./resolution-ladder', () => ({ suspendAnthropicServerKey: jest.fn() }));
+jest.mock('./resolution-ladder', () => ({
+  ...jest.requireActual<typeof import('./resolution-ladder')>('./resolution-ladder'),
+  suspendPrimaryServerKey: jest.fn(),
+}));
 
 const USER_ID = 1;
 
@@ -30,13 +33,13 @@ describe.each([
       aiClient: client({ provider: AI_PROVIDER.anthropic, usingUserKey: true }),
     });
     await mark({ userId: USER_ID, aiClient: client({ provider: AI_PROVIDER.google, usingUserKey: false }) });
-    expect(suspendAnthropicServerKey).not.toHaveBeenCalled();
+    expect(suspendPrimaryServerKey).not.toHaveBeenCalled();
 
     const serverKey = await mark({
       userId: USER_ID,
       aiClient: client({ provider: AI_PROVIDER.anthropic, usingUserKey: false }),
     });
-    expect(suspendAnthropicServerKey).toHaveBeenCalledWith({ reason: ownKey });
+    expect(suspendPrimaryServerKey).toHaveBeenCalledWith({ reason: ownKey });
     expect(serverKey).not.toBe(ownKey);
   });
 });
