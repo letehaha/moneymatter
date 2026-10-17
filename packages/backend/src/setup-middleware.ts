@@ -2,6 +2,7 @@ import { isPerfDebugEnabled, perfDebugMiddleware } from '@common/lib/perf/perf-d
 import { logger } from '@js/utils/logger';
 import { requestIdMiddleware } from '@middlewares/request-id';
 import { sessionMiddleware } from '@middlewares/session-id';
+import { stripCloudflareAccessCookiesMiddleware } from '@middlewares/strip-cloudflare-access-cookies';
 import { MS_MONEY_FULL_PATHS } from '@routes/import-export/ms-money-paths';
 import { OFX_FULL_PATHS } from '@routes/import-export/ofx-paths';
 import cors from 'cors';
@@ -21,6 +22,12 @@ export function setupMiddleware(app: Express) {
   app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
 
   app.use(requestIdMiddleware);
+
+  // Behind Cloudflare Access every forwarded request carries a `CF_Authorization` cookie. The app
+  // never reads it, but better-auth sees a cookie, requires an `Origin` header, and rejects MCP/OAuth
+  // clients (which send none) with MISSING_OR_NULL_ORIGIN. Dropping Cloudflare's cookies here, ahead
+  // of every auth handler, makes those requests reach better-auth cookie-less.
+  app.use(stripCloudflareAccessCookiesMiddleware);
 
   // Opt-in (PERF_DEBUG=true): tag responses with per-request query count + timing.
   if (isPerfDebugEnabled) {

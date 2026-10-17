@@ -1,5 +1,6 @@
 import { authPool } from '@config/auth';
 import { app } from '@root/app';
+import { API_PREFIX } from '@root/config';
 import { ConnectedApp } from '@services/mcp/connected-apps';
 import * as helpers from '@tests/helpers';
 import { CustomResponse } from '@tests/helpers';
@@ -22,6 +23,20 @@ export async function getOAuthClientInfo({
   });
 
   return result;
+}
+
+/**
+ * Dynamic client registration as an MCP client sends it: no session cookies, and
+ * only the headers the caller passes (no `Origin` unless given).
+ */
+export async function registerOAuthClient({
+  body,
+  headers = {},
+}: {
+  body: Record<string, unknown>;
+  headers?: Record<string, string>;
+}) {
+  return request(app).post(`${API_PREFIX}/auth/oauth2/register`).set(headers).send(body);
 }
 
 export async function getConnectedApps({ raw }: { raw?: false }): Promise<CustomResponse<ConnectedApp[]>>;
