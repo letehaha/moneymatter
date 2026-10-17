@@ -8,6 +8,7 @@ import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.servic
 import type { Transaction } from 'sequelize';
 import { validate as isUuid, v7 as uuidv7 } from 'uuid';
 
+import { withoutHeaderNames } from '../rate-source-headers';
 import { BACKUP_TABLES, type BackupTableDef } from '../registry';
 import type { ArchiveAnalysis, TableColumnPlan } from './analyze-archive';
 import { buildInsertRecord, runBulkInsert } from './bulk-insert';
@@ -110,6 +111,15 @@ function buildRowOverrides({
     // The logo is an https URL on a custom code only; anything else in the archive restores as no logo.
     const logo = definition ? currencyLogoUrl().safeParse(row.logoUrl) : null;
     overrides.logoUrl = logo?.success ? logo.data : null;
+  }
+
+  // The request headers of an HTTP rate source never travel: whatever an archive claims about
+  // them is dropped, so the source starts without headers and the user enters them again.
+  if (def.stripSecret === 'rateSourceHeaders') {
+    if (hasColumn({ plan, field: 'rateSourceConfig' })) {
+      overrides.rateSourceConfig = withoutHeaderNames({ config: row.rateSourceConfig }) ?? null;
+    }
+    if (hasColumn({ plan, field: 'rateSourceHeadersEncrypted' })) overrides.rateSourceHeadersEncrypted = null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and

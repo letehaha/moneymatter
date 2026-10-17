@@ -60,6 +60,8 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'DELETE /api/v1/user/settings/mcp/connected-apps/:clientId',
   'PATCH /api/v1/user/settings',
   'POST /api/v1/user/backup',
+  // A rate-source preview fetches one URL and saves nothing.
+  'POST /api/v1/user/currencies/:code/rate-source/test',
   'POST /api/v1/user/data-export',
   'POST /api/v1/user/feature-trials/:feature',
   'POST /api/v1/user/settings/ai/connections',

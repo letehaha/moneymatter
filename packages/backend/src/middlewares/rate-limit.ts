@@ -333,3 +333,16 @@ export const logoSearchRateLimit = createRateLimit({
     return `logo-search:user:${user.id}`;
   },
 });
+
+/**
+ * Rate-source preview limit (per user, 20 previews per minute). Each call makes the server fetch
+ * a URL the user typed, so it stays low enough that the endpoint cannot be used to hammer a host.
+ */
+export const rateSourceTestRateLimit = createRateLimit({
+  windowSeconds: 60,
+  maxAttempts: 20,
+  keyGenerator: (req: Request) => {
+    const user = req.user as Users;
+    return `rate-source-test:user:${user.id}`;
+  },
+});

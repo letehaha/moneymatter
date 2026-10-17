@@ -4,7 +4,10 @@ import {
   HTTP_URL_TEMPLATE_PLACEHOLDERS,
   JSON_PATH_PATTERN,
   fillUrlTemplate,
+  httpHeadersSchema,
   httpRateSourceConfigSchema,
+  storedHttpRateSourceConfigSchema,
+  testRateSourceBodySchema,
   updateRateSourceBodySchema,
 } from './index';
 
@@ -73,5 +76,76 @@ describe('updateRateSourceBodySchema', () => {
     { rateSource: 'peg', config: { pegCurrency: 'USD', factor: Number.NaN } },
   ])('rejects %j', (body) => {
     expect(updateRateSourceBodySchema.safeParse(body).success).toBe(false);
+  });
+});
+
+describe('request headers of an HTTP source', () => {
+  it('accepts an API key header and keeps the name as given', () => {
+    expect(httpHeadersSchema.parse({ 'X-Api-Key': 'abc123', Authorization: 'Bearer abc.def' })).toEqual({
+      'X-Api-Key': 'abc123',
+      Authorization: 'Bearer abc.def',
+    });
+  });
+
+  it('accepts the request body of an update with headers, and none', () => {
+    const base = { urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b' };
+
+    expect(httpRateSourceConfigSchema.parse({ ...base, headers: { 'X-Key': 'k' } }).headers).toEqual({ 'X-Key': 'k' });
+    expect(httpRateSourceConfigSchema.parse(base).headers).toBeUndefined();
+    expect(httpRateSourceConfigSchema.parse({ ...base, headers: {} }).headers).toEqual({});
+  });
+
+  it.each([
+    ['a name with a space', { 'X Key': 'v' }],
+    ['an empty name', { '': 'v' }],
+    ['a value with a line break', { 'X-Key': 'a\r\nHost: evil' }],
+    ['a value with a non-ASCII character', { 'X-Key': 'ключ' }],
+    ['a header the HTTP layer owns', { Host: 'internal' }],
+    ['a cookie', { cookie: 'session=1' }],
+    ['a content length', { 'Content-Length': '0' }],
+    ['the same name in two cases', { 'X-Key': 'a', 'x-key': 'b' }],
+    ['an over-long value', { 'X-Key': 'a'.repeat(2049) }],
+    ['more than ten headers', Object.fromEntries(Array.from({ length: 11 }, (_, index) => [`X-H${index}`, 'v']))],
+  ])('rejects %s', (_name, headers) => {
+    expect(httpHeadersSchema.safeParse(headers).success).toBe(false);
+  });
+
+  it('reads a saved config without header names as having none', () => {
+    const parsed = storedHttpRateSourceConfigSchema.parse({
+      urlTemplate: 'https://x.io/{date}',
+      jsonPath: 'a.b',
+      quoteCurrency: 'USD',
+    });
+
+    expect(parsed.headerNames).toEqual([]);
+  });
+
+  it('does not accept header values in a saved config', () => {
+    const parsed = storedHttpRateSourceConfigSchema.safeParse({
+      urlTemplate: 'https://x.io/{date}',
+      jsonPath: 'a.b',
+      quoteCurrency: 'USD',
+      headers: { 'X-Key': 'k' },
+    });
+
+    expect(parsed.success).toBe(false);
+  });
+});
+
+describe('testRateSourceBodySchema', () => {
+  const config = { urlTemplate: 'https://x.io/{date}', jsonPath: 'a.b' };
+
+  it('takes an HTTP config and an optional UTC day', () => {
+    expect(testRateSourceBodySchema.parse({ rateSource: 'http', config, date: '2026-02-03' }).date).toBe('2026-02-03');
+    expect(testRateSourceBodySchema.parse({ rateSource: 'http', config }).date).toBeUndefined();
+  });
+
+  it.each([
+    { rateSource: 'peg', config },
+    { rateSource: 'http', config, date: '2026-02-30' },
+    { rateSource: 'http', config, date: 'today' },
+    { rateSource: 'http', config, extra: true },
+  ])('rejects %j', (body) => {
+    expect(testRateSourceBodySchema.safeParse(body).success).toBe(false);
   });
 });

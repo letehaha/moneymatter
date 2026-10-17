@@ -574,7 +574,9 @@
     "rateSourceCurrencyNotHeld": "\"{{code}}\" is not in your currencies",
     "rateSourceIsoNotAllowed": "\"{{code}}\" is an ISO currency, so its rate source can only be the market provider or manual rates",
     "rateSourceCustomNoProvider": "\"{{code}}\" is a custom currency and has no market provider. Use manual rates, a peg, CoinGecko or an HTTP source",
-    "rateSourcePegSelf": "\"{{code}}\" cannot be pegged to itself"
+    "rateSourcePegSelf": "\"{{code}}\" cannot be pegged to itself",
+    "rateSourceHttpsRequired": "Rates from an HTTP source must be fetched over https",
+    "rateSourceHeadersUnreadable": "Cannot read the saved request headers of \"{{code}}\" (the server secret changed). Enter the headers again"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"

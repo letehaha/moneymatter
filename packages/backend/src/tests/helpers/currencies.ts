@@ -4,6 +4,7 @@ import type {
   CreateCustomCurrencyBody,
   CurrencyRateSourceResponse,
   CustomCurrencyModel,
+  TestCurrencyRateSourceResponse,
   UpdateCurrencyRateSourceBody,
   UpdateCustomCurrencyBody,
 } from '@bt/shared/types';
@@ -356,6 +357,24 @@ export function setCurrencyRateSource<R extends boolean | undefined = undefined>
   return makeRequest<CurrencyRateSourceResponse, R>({
     method: 'put',
     url: `/user/currencies/${code}/rate-source`,
+    payload,
+    raw,
+  });
+}
+
+export function testCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<TestCurrencyRateSourceResponse, R>({
+    method: 'post',
+    url: `/user/currencies/${code}/rate-source/test`,
     payload,
     raw,
   });

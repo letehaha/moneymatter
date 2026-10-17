@@ -120,19 +120,61 @@ export interface CoingeckoCoinSearchResult {
 /**
  * A JSON endpoint called once per day. `urlTemplate` may hold `{date}`, `{code}` and `{quote}`;
  * `jsonPath` points at the price in the response, and the rate is stored in `quoteCurrency`.
+ * The request headers are secrets (usually an API key): they are stored encrypted and never
+ * returned, only their names are.
  */
 export interface HttpRateSourceConfig {
   urlTemplate: string;
   jsonPath: string;
   quoteCurrency: string;
+  /** Names of the request headers the source sends; their values are never returned. */
+  headerNames: string[];
 }
+
+/**
+ * Settings of an `http` source as the editor sends them. `headers` is optional: omitted keeps the
+ * headers already saved on an `http` source, `{}` removes them, an object replaces them.
+ */
+export interface HttpRateSourceInput {
+  urlTemplate: string;
+  jsonPath: string;
+  quoteCurrency?: string;
+  headers?: Record<string, string>;
+}
+
+/** Body of `POST /user/currencies/:code/rate-source/test`. `date` is the UTC day to ask for, today by default. */
+export interface TestCurrencyRateSourceBody {
+  rateSource: 'http';
+  config: HttpRateSourceInput;
+  date?: string;
+}
+
+/** Why a rate-source preview did not produce a rate. */
+export const RATE_SOURCE_TEST_FAILURES = [
+  'blocked',
+  'https_required',
+  'timeout',
+  'network',
+  'http_status',
+  'too_large',
+  'not_json',
+  'path_not_found',
+  'not_a_number',
+  'headers_unreadable',
+] as const;
+export type RateSourceTestFailure = (typeof RATE_SOURCE_TEST_FAILURES)[number];
+
+/** Response of `POST /user/currencies/:code/rate-source/test`; nothing is saved either way. */
+export type TestCurrencyRateSourceResponse =
+  | { ok: true; date: string; rate: number; quoteCurrency: string }
+  | { ok: false; reason: RateSourceTestFailure; message: string };
 
 /** Body of `PUT /user/currencies/:code/rate-source`. */
 export type UpdateCurrencyRateSourceBody =
   | { rateSource: 'provider' | 'manual' }
   | { rateSource: 'peg'; config: PegRateSourceConfig }
   | { rateSource: 'coingecko'; config: Omit<CoingeckoRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string } }
-  | { rateSource: 'http'; config: Omit<HttpRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string } };
+  | { rateSource: 'http'; config: HttpRateSourceInput };
 
 /** A currency's saved rate source; the config is `null` for `provider` and `manual`. */
 export type CurrencyRateSourceSetting =

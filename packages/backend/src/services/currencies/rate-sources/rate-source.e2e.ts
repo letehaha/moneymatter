@@ -86,7 +86,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
     it('saves an HTTP source with its placeholders and JSON path', async () => {
       await createCustom(USDT);
       const config = {
-        urlTemplate: 'https://rates.example.com/{code}/{quote}?day={date}',
+        urlTemplate: 'https://rates.example.test/{code}/{quote}?day={date}',
         jsonPath: 'data.rates[0].price',
         quoteCurrency: 'GBP',
       };
@@ -94,7 +94,10 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       const response = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'http', config } });
 
       expect(response.statusCode).toBe(200);
-      expect(await savedSource({ code: USDT })).toEqual({ rateSource: 'http', rateSourceConfig: config });
+      expect(await savedSource({ code: USDT })).toEqual({
+        rateSource: 'http',
+        rateSourceConfig: { ...config, headerNames: [] },
+      });
     });
 
     it('defaults the HTTP quote currency to USD and accepts a $-rooted path', async () => {
@@ -102,7 +105,10 @@ describe('PUT /user/currencies/:code/rate-source', () => {
 
       const response = await helpers.setCurrencyRateSource({
         code: USDT,
-        payload: { rateSource: 'http', config: { urlTemplate: 'http://10.0.0.5/price', jsonPath: '$.bitcoin.usd' } },
+        payload: {
+          rateSource: 'http',
+          config: { urlTemplate: 'https://rates.example.test/price', jsonPath: '$.bitcoin.usd' },
+        },
       });
 
       expect(response.statusCode).toBe(200);
@@ -212,10 +218,7 @@ describe('PUT /user/currencies/:code/rate-source', () => {
       ['a stray brace', { rateSource: 'http', config: httpConfig({ urlTemplate: 'https://example.com/{date' }) }],
       ['a JSON path that is not a path', { rateSource: 'http', config: httpConfig({ jsonPath: 'a..b[x]' }) }],
       ['an empty JSON path', { rateSource: 'http', config: httpConfig({ jsonPath: '' }) }],
-      [
-        'request headers, which the config does not take yet',
-        { rateSource: 'http', config: httpConfig({ headers: {} }) },
-      ],
+      ['request headers that are not an object', { rateSource: 'http', config: httpConfig({ headers: 'Bearer x' }) }],
     ])('rejects %s with 422', async (_name, payload) => {
       await createCustom(USDT);
       await helpers.setCurrencyRateSource({

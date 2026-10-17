@@ -10,6 +10,30 @@ export const HTTP_URL_TEMPLATE_PLACEHOLDERS = {
 } as const;
 
 export const HTTP_URL_TEMPLATE_MAX_LENGTH = 2048;
+export const HTTP_HEADERS_MAX_COUNT = 10;
+const HTTP_HEADER_NAME_MAX_LENGTH = 64;
+const HTTP_HEADER_VALUE_MAX_LENGTH = 2048;
+
+/** Headers the HTTP layer sets itself or that would change how the connection behaves. */
+const FORBIDDEN_HTTP_HEADER_NAMES = new Set([
+  'host',
+  'content-length',
+  'connection',
+  'keep-alive',
+  'transfer-encoding',
+  'te',
+  'trailer',
+  'upgrade',
+  'proxy-authorization',
+  'proxy-connection',
+  'cookie',
+  'set-cookie',
+]);
+
+/** RFC 9110 token characters. */
+const HTTP_HEADER_NAME_PATTERN = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
+/** Printable ASCII: no control characters, so a value cannot smuggle a second header line. */
+const HTTP_HEADER_VALUE_PATTERN = /^[\x20-\x7E]*$/;
 const JSON_PATH_MAX_LENGTH = 256;
 const COIN_ID_MAX_LENGTH = 128;
 
@@ -72,7 +96,25 @@ export const coingeckoRateSourceConfigSchema = z.strictObject({
   quoteCurrency: quoteCurrencySchema,
 });
 
-export const httpRateSourceConfigSchema = z.strictObject({
+/** Request headers an HTTP source sends: name to value, at most {@link HTTP_HEADERS_MAX_COUNT}. */
+export const httpHeadersSchema = z
+  .record(
+    z
+      .string()
+      .max(HTTP_HEADER_NAME_MAX_LENGTH)
+      .regex(HTTP_HEADER_NAME_PATTERN, 'Invalid header name')
+      .refine((name) => !FORBIDDEN_HTTP_HEADER_NAMES.has(name.toLowerCase()), 'This header cannot be set'),
+    z.string().max(HTTP_HEADER_VALUE_MAX_LENGTH).regex(HTTP_HEADER_VALUE_PATTERN, 'Invalid header value'),
+  )
+  .refine((headers) => Object.keys(headers).length <= HTTP_HEADERS_MAX_COUNT, {
+    message: `At most ${HTTP_HEADERS_MAX_COUNT} headers`,
+  })
+  .refine(
+    (headers) => new Set(Object.keys(headers).map((name) => name.toLowerCase())).size === Object.keys(headers).length,
+    { message: 'Header names must be unique regardless of case' },
+  );
+
+const httpSourceFields = {
   urlTemplate: z
     .string()
     .trim()
@@ -87,6 +129,21 @@ export const httpRateSourceConfigSchema = z.strictObject({
     .max(JSON_PATH_MAX_LENGTH)
     .regex(JSON_PATH_PATTERN, 'Invalid JSON path, expected something like data.rates[0].price'),
   quoteCurrency: quoteCurrencySchema,
+};
+
+/**
+ * An HTTP source as the editor sends it. `headers` omitted keeps the headers already saved on the
+ * currency's `http` source, `{}` removes them.
+ */
+export const httpRateSourceConfigSchema = z.strictObject({
+  ...httpSourceFields,
+  headers: httpHeadersSchema.optional(),
+});
+
+/** An HTTP source as it is saved and returned: the header values are not part of it, only their names. */
+export const storedHttpRateSourceConfigSchema = z.strictObject({
+  ...httpSourceFields,
+  headerNames: z.array(z.string()).max(HTTP_HEADERS_MAX_COUNT).default([]),
 });
 
 /** The request body of `PUT /user/currencies/:code/rate-source`, one shape per source. */
@@ -97,5 +154,12 @@ export const updateRateSourceBodySchema = z.discriminatedUnion('rateSource', [
   z.strictObject({ rateSource: z.literal('coingecko'), config: coingeckoRateSourceConfigSchema }),
   z.strictObject({ rateSource: z.literal('http'), config: httpRateSourceConfigSchema }),
 ]);
+
+/** The body of `POST /user/currencies/:code/rate-source/test`. */
+export const testRateSourceBodySchema = z.strictObject({
+  rateSource: z.literal('http'),
+  config: httpRateSourceConfigSchema,
+  date: z.iso.date().optional(),
+});
 
 export type ValidatedRateSourceBody = z.infer<typeof updateRateSourceBodySchema>;

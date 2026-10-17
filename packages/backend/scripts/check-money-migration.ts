@@ -897,6 +897,7 @@ const assertRateSourceColumns = async ({
 
   const rateSource = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSource' });
   const config = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceConfig' });
+  const headers = await columnDetails({ sequelize, table: 'UsersCurrencies', column: 'rateSourceHeadersEncrypted' });
   check({
     ok: after
       ? rateSource?.data_type === 'character varying' &&
@@ -909,6 +910,10 @@ const assertRateSourceColumns = async ({
   check({
     ok: after ? config?.data_type === 'jsonb' && config.is_nullable === 'YES' : config === undefined,
     label: `${step}: UsersCurrencies.rateSourceConfig is ${after ? 'a nullable jsonb' : 'absent'}`,
+  });
+  check({
+    ok: after ? headers?.data_type === 'text' && headers.is_nullable === 'YES' : headers === undefined,
+    label: `${step}: UsersCurrencies.rateSourceHeadersEncrypted is ${after ? 'a nullable text' : 'absent'}`,
   });
 };
 

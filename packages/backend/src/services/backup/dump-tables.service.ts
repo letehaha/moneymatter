@@ -12,6 +12,7 @@ import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
 
+import { withoutHeaderNames } from './rate-source-headers';
 import { BACKUP_TABLES, type BackupDumpScope, type BackupTableDef } from './registry';
 import { createScopeResolver, type ScopeResolver } from './scope-resolver';
 
@@ -139,6 +140,9 @@ async function dumpTable({
   if (def.stripSecret === 'aiKeys') stripAiKeys({ rows });
   if (def.stripSecret === 'bankCredentials') {
     for (const row of rows) row.credentials = null;
+  }
+  if (def.stripSecret === 'rateSourceHeaders') {
+    for (const row of rows) row.rateSourceConfig = withoutHeaderNames({ config: row.rateSourceConfig });
   }
   if (def.enrichMccCode) await attachMccCodes({ rows });
 

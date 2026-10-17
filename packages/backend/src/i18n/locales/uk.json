@@ -578,7 +578,9 @@
     "rateSourceCurrencyNotHeld": "«{{code}}» немає у ваших валютах",
     "rateSourceIsoNotAllowed": "«{{code}}» — валюта за ISO, тому її джерелом курсу може бути лише ринковий провайдер або курси, введені вручну",
     "rateSourceCustomNoProvider": "«{{code}}» — це власна валюта, і для неї немає ринкового провайдера. Скористайтеся курсами вручну, прив'язкою до іншої валюти, CoinGecko або HTTP-джерелом",
-    "rateSourcePegSelf": "«{{code}}» не можна прив'язати до самої себе"
+    "rateSourcePegSelf": "«{{code}}» не можна прив'язати до самої себе",
+    "rateSourceHttpsRequired": "Курси з HTTP-джерела потрібно отримувати через https",
+    "rateSourceHeadersUnreadable": "Не вдалося прочитати збережені заголовки запиту для «{{code}}» (змінився секрет сервера). Введіть заголовки ще раз"
   },
   "userSettings": {
     "userSettingsNotFound": "Налаштування користувача не знайдено"

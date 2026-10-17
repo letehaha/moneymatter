@@ -68,7 +68,7 @@ export interface BackupTableDef<Name extends string = BackupFileName> {
   /** Self-referential parent column needing the two-pass restore. */
   selfRefColumn?: string;
   /** Encrypted blob to blank before writing (undecryptable on another instance). */
-  stripSecret?: 'bankCredentials' | 'aiKeys';
+  stripSecret?: 'bankCredentials' | 'aiKeys' | 'rateSourceHeaders';
   /** Attach the MCC's natural `code` so restore can remap the integer `mccId`. */
   enrichMccCode?: boolean;
   /** Drop a row on restore whose `currencyCode` isn't seeded on the target instance. */
@@ -110,6 +110,7 @@ const TABLE_DEFS = [
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
     requireSeededCurrency: true,
+    stripSecret: 'rateSourceHeaders',
   },
   {
     fileName: 'categories',

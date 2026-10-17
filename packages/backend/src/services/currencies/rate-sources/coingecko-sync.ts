@@ -2,11 +2,7 @@ import type { CoingeckoRateSourceConfig } from '@bt/shared/types';
 import { logger } from '@js/utils';
 import UserExchangeRates, { toEffectiveDate } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
-import { withTransaction } from '@services/common/with-transaction';
-import { Op } from 'sequelize';
 
-import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.service';
-import type { CustomRateChange } from '../recompute-scope';
 import {
   type CoingeckoDailyRate,
   fetchCoingeckoHistory,
@@ -14,6 +10,7 @@ import {
   isCoingeckoRateLimitError,
 } from './coingecko';
 import { coingeckoRateSourceConfigSchema } from './index';
+import { storeSyncedRates } from './store-synced-rates';
 
 /** The Demo tier allows about 30 calls a minute; a sync leaves this long between two of its calls. */
 export const COINGECKO_SYNC_SPACING_MS = 2_500;
@@ -44,91 +41,6 @@ export interface CoingeckoSyncResult {
 const groupKey = ({ coinId, quoteCurrency }: { coinId: string; quoteCurrency: string }): string =>
   `${coinId}|${quoteCurrency}`;
 
-/**
- * Writes a coin's rates for one user's currency and values the rows they reach again.
- *
- * A day the user set by hand keeps their rate. A day this source wrote before is replaced when the
- * price differs. A rate for a day that had none is new: when it is today's it only fills rows
- * waiting for a rate, and a backfill (which writes days that may have been valued with an earlier
- * rate) values the rows of those days again.
- */
-export const storeCoingeckoRates = withTransaction(
-  async ({
-    userId,
-    currencyCode,
-    quoteCurrency,
-    rates,
-    kind,
-  }: {
-    userId: number;
-    currencyCode: string;
-    quoteCurrency: string;
-    rates: CoingeckoDailyRate[];
-    /** `backfill` writes a series of days; `daily` writes the rate of a new day. */
-    kind: 'backfill' | 'daily';
-  }): Promise<number> => {
-    if (!rates.length) return 0;
-
-    const existing = await UserExchangeRates.findAll({
-      where: {
-        userId,
-        baseCode: currencyCode,
-        quoteCode: quoteCurrency,
-        effectiveDate: { [Op.in]: rates.map((rate) => rate.day) },
-      },
-    });
-    const existingByDay = new Map(existing.map((row) => [row.effectiveDate, row]));
-
-    const added: string[] = [];
-    const replaced: string[] = [];
-    const created: { day: string; rate: number }[] = [];
-
-    for (const { day, rate } of rates) {
-      const known = existingByDay.get(day);
-
-      if (!known) {
-        created.push({ day, rate });
-        added.push(day);
-      } else if (known.source === SOURCE && Number(known.rate) !== rate) {
-        await UserExchangeRates.update(
-          { rate },
-          { where: { userId, baseCode: currencyCode, quoteCode: quoteCurrency, effectiveDate: day } },
-        );
-        replaced.push(day);
-      }
-    }
-
-    if (created.length) {
-      await UserExchangeRates.bulkCreate(
-        created.map(({ day, rate }) => ({
-          userId,
-          baseCode: currencyCode,
-          quoteCode: quoteCurrency,
-          rate,
-          effectiveDate: day,
-          source: SOURCE,
-        })),
-      );
-    }
-
-    const written = [...added, ...replaced].toSorted();
-    if (!written.length) return 0;
-
-    const changes: CustomRateChange[] = [];
-
-    if (kind === 'backfill') {
-      changes.push({ currencyCode, from: written[0]!, to: null, mode: 'recompute' });
-    } else {
-      if (replaced.length) changes.push({ currencyCode, from: replaced[0]!, to: null, mode: 'recompute' });
-      if (added.length) changes.push({ currencyCode, from: added[0]!, to: null, mode: 'fill' });
-    }
-
-    await recomputeCustomRefAmounts({ userId, changes });
-
-    return written.length;
-  },
-);
-
 const parseConfig = (rateSourceConfig: unknown): CoingeckoRateSourceConfig | null => {
   const parsed = coingeckoRateSourceConfigSchema.safeParse(rateSourceConfig);
 
@@ -153,12 +65,13 @@ export const backfillCoingeckoRates = async ({
 
   try {
     const rates = await fetchCoingeckoHistory({ coinId: config.coinId, quoteCurrency: config.quoteCurrency });
-    const ratesWritten = await storeCoingeckoRates({
+    const ratesWritten = await storeSyncedRates({
       userId,
       currencyCode,
       quoteCurrency: config.quoteCurrency,
       rates,
       kind: 'backfill',
+      source: SOURCE,
     });
 
     return { status: 'done', ratesWritten };
@@ -256,12 +169,13 @@ export const syncCoingeckoRates = async ({
   }) => {
     for (const { userId, currencyCode } of group.targets) {
       try {
-        const written = await storeCoingeckoRates({
+        const written = await storeSyncedRates({
           userId,
           currencyCode,
           quoteCurrency: group.quoteCurrency,
           rates,
           kind,
+          source: SOURCE,
         });
         result.ratesWritten += written;
         if (written) result.currenciesUpdated += 1;

@@ -22,11 +22,16 @@ import {
   AfterDestroy,
   AfterBulkUpdate,
   AfterBulkDestroy,
+  DefaultScope,
 } from 'sequelize-typescript';
 
 import Currencies from './currencies.model';
 import Users from './users.model';
 
+// The encrypted request headers of an HTTP rate source stay out of every ordinary read, so no
+// endpoint, serializer or backup can return them by accident. The services that dial the source
+// ask for them with `UsersCurrencies.unscoped()`.
+@DefaultScope(() => ({ attributes: { exclude: ['rateSourceHeadersEncrypted'] } }))
 @Table({
   timestamps: false,
   tableName: 'UsersCurrencies',
@@ -100,6 +105,10 @@ export default class UsersCurrencies extends Model {
   /** Settings of `rateSource`; `null` for `provider` and `manual`. Written only by the rate-source endpoint. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.JSONB })
   declare rateSourceConfig: PegRateSourceConfig | CoingeckoRateSourceConfig | HttpRateSourceConfig | null;
+
+  /** Request headers of an `http` source as one `encryptToken` blob (a JSON object); `null` when it sends none. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
+  declare rateSourceHeadersEncrypted: string | null;
 
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave
