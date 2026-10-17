@@ -39,6 +39,7 @@ export const useCliSignIn = ({ provider }: { provider: MaybeRefOrGetter<AICliPro
   // Bumped on cancel/reset/dispose so a response that lands afterwards is dropped.
   let generation = 0;
   let pollTimer: ReturnType<typeof setTimeout> | null = null;
+  let expiryTimer: ReturnType<typeof setTimeout> | null = null;
   let consecutivePollFailures = 0;
   let pendingTab: Window | null = null;
 
@@ -46,6 +47,27 @@ export const useCliSignIn = ({ provider }: { provider: MaybeRefOrGetter<AICliPro
     if (pollTimer === null) return;
     clearTimeout(pollTimer);
     pollTimer = null;
+  };
+
+  const stopExpiryTimer = () => {
+    if (expiryTimer === null) return;
+    clearTimeout(expiryTimer);
+    expiryTimer = null;
+  };
+
+  /** Polling stops at `succeeded`, so the server dropping the unsaved credential is tracked by the clock. */
+  const scheduleExpiry = ({ expiresAt }: { expiresAt: string }) => {
+    stopExpiryTimer();
+    const expiresAtMs = new Date(expiresAt).getTime();
+    if (Number.isNaN(expiresAtMs)) return;
+
+    expiryTimer = setTimeout(
+      () => {
+        expiryTimer = null;
+        if (state.value === 'succeeded') state.value = 'expired';
+      },
+      Math.max(0, expiresAtMs - Date.now()),
+    );
   };
 
   const closePendingTab = () => {
@@ -103,6 +125,7 @@ export const useCliSignIn = ({ provider }: { provider: MaybeRefOrGetter<AICliPro
 
     stopPolling();
     closePendingTab();
+    if (info.status === 'succeeded') scheduleExpiry({ expiresAt: info.expiresAt });
   };
 
   async function poll() {
@@ -140,6 +163,7 @@ export const useCliSignIn = ({ provider }: { provider: MaybeRefOrGetter<AICliPro
   const clearLocal = () => {
     generation += 1;
     stopPolling();
+    stopExpiryTimer();
     closePendingTab();
     consecutivePollFailures = 0;
     session.value = null;
