@@ -48,7 +48,7 @@ export function recordRun({ bin, argv, stdin, extra = {} }) {
   fs.mkdirSync(dir, { recursive: true });
   fs.appendFileSync(
     path.join(dir, 'runs.jsonl'),
-    `${JSON.stringify({ bin, argv, stdin, cwd: process.cwd(), envKeys: Object.keys(process.env), ...extra })}\n`,
+    `${JSON.stringify({ bin, argv, stdin, pid: process.pid, cwd: process.cwd(), envKeys: Object.keys(process.env), ...extra })}\n`,
   );
 }
 

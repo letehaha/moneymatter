@@ -47,8 +47,6 @@ const failureOf = async (promise: Promise<unknown>) => {
  */
 const inSandboxRealm = (error: unknown) => Object.assign(new Error('abort'), { name: (error as Error).name });
 
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
 describe('claude code language model', () => {
   it('answers from the result event and maps usage', async () => {
     fakes.setResponses({ responses: [{ text: '4' }] });
@@ -188,7 +186,7 @@ describe('claude code language model', () => {
     expect(classifyAiCallFailure({ error })).toMatchObject({ kind: 'temporary', httpStatus: 502 });
     expect(JSON.parse((error as { responseBody: string }).responseBody).error.type).toBe('cli_tool_use_blocked');
 
-    await wait(800);
+    // The run settles only after the child closed, so a killed fake can no longer complete.
     expect(fakes.didRunComplete()).toBe(false);
   });
 
@@ -236,7 +234,7 @@ describe('claude code language model', () => {
     const controller = new AbortController();
     const promise = ask({ model: buildModel().model, abortSignal: controller.signal });
 
-    await wait(400);
+    await fakes.waitForRun();
     controller.abort();
 
     const error = await failureOf(promise);
