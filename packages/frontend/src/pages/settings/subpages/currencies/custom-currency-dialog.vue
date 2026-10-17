@@ -105,7 +105,12 @@ import { extractApiErrorMessage } from '@/js/errors';
 import { formatUIAmount } from '@/js/helpers';
 import { helpers, required } from '@/js/helpers/validators';
 import { useCurrenciesStore } from '@/stores';
-import type { CurrencyMeta } from '@bt/shared/types';
+import {
+  CURRENCY_CODE_PATTERN,
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
+  type CurrencyMeta,
+} from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
@@ -123,9 +128,6 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { default: false });
 
 const FORM_ID = 'custom-currency-form';
-const CODE_PATTERN = /^[A-Z0-9]{2,16}$/;
-const MAX_SYMBOL_LENGTH = 8;
-const MAX_DECIMALS = 18;
 const PREVIEW_AMOUNT = 1234.5;
 
 interface CustomCurrencyForm {
@@ -174,7 +176,7 @@ const validationRules = computed(() => ({
     filled: helpers.withMessage(t('settings.currencies.custom.errors.codeRequired'), required),
     format: helpers.withMessage(
       t('settings.currencies.custom.errors.codeFormat'),
-      (value: string) => !value || CODE_PATTERN.test(value),
+      (value: string) => !value || CURRENCY_CODE_PATTERN.test(value),
     ),
     notIso: helpers.withMessage(
       t('settings.currencies.custom.errors.codeIsIso'),
@@ -194,13 +196,14 @@ const validationRules = computed(() => ({
   symbol: {
     maxLength: helpers.withMessage(
       t('settings.currencies.custom.errors.symbolTooLong'),
-      (value: string) => value.trim().length <= MAX_SYMBOL_LENGTH,
+      (value: string) => value.trim().length <= CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
     ),
   },
   decimals: {
     range: helpers.withMessage(
       t('settings.currencies.custom.errors.decimalsRange'),
-      (value: number | null) => value !== null && Number.isInteger(value) && value >= 0 && value <= MAX_DECIMALS,
+      (value: number | null) =>
+        value !== null && Number.isInteger(value) && value >= 0 && value <= CUSTOM_CURRENCY_DECIMALS_MAX,
     ),
   },
 }));
@@ -214,7 +217,8 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
 // before saving.
 const previewLabel = computed(() => {
   const { code, symbol, decimals } = form.value;
-  if (!CODE_PATTERN.test(code) || decimals === null || decimals < 0 || decimals > MAX_DECIMALS) return '';
+  if (!CURRENCY_CODE_PATTERN.test(code) || decimals === null || decimals < 0 || decimals > CUSTOM_CURRENCY_DECIMALS_MAX)
+    return '';
 
   const meta: CurrencyMeta = { decimals, symbol: symbol.trim() || null, isCustom: true };
   return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta });

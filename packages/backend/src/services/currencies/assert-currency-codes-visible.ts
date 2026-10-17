@@ -1,4 +1,4 @@
-import { CURRENCY_CODE_PATTERN } from '@common/lib/currency-code-format';
+import { CURRENCY_CODE_PATTERN } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 import UsersCurrencies from '@models/users-currencies.model';

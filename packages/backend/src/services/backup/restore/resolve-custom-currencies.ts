@@ -1,4 +1,10 @@
-import type { BackupRestoreWarning } from '@bt/shared/types';
+import {
+  type BackupRestoreWarning,
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
+  CUSTOM_CURRENCY_NAME_MAX_LENGTH,
+  CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
+} from '@bt/shared/types';
 import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
 import Currencies from '@models/currencies.model';
@@ -9,10 +15,6 @@ import { Op, type Transaction } from 'sequelize';
 import type { ParsedArchive } from './load-archive';
 
 type Row = Record<string, unknown>;
-
-const NAME_MAX_LENGTH = 255;
-const SYMBOL_MAX_LENGTH = 8;
-const DECIMALS_MAX = 18;
 
 export interface CustomCurrencyDefinition {
   code: string;
@@ -28,9 +30,18 @@ const parseDefinition = ({ row }: { row: Row }): CustomCurrencyDefinition | null
   if (typeof code !== 'string' || !isCurrencyCodeFormat(code) || code.length > CURRENCY_CODE_MAX_LENGTH) return null;
   // An ISO code is never user-defined, whatever the archive says.
   if (cc.code(code) !== undefined) return null;
-  if (typeof name !== 'string' || !name.trim() || name.length > NAME_MAX_LENGTH) return null;
-  if (typeof digits !== 'number' || !Number.isInteger(digits) || digits < 0 || digits > DECIMALS_MAX) return null;
-  if (symbol != null && (typeof symbol !== 'string' || !symbol.length || symbol.length > SYMBOL_MAX_LENGTH))
+  if (typeof name !== 'string' || !name.trim() || name.length > CUSTOM_CURRENCY_NAME_MAX_LENGTH) return null;
+  if (
+    typeof digits !== 'number' ||
+    !Number.isInteger(digits) ||
+    digits < CUSTOM_CURRENCY_DECIMALS_MIN ||
+    digits > CUSTOM_CURRENCY_DECIMALS_MAX
+  )
+    return null;
+  if (
+    symbol != null &&
+    (typeof symbol !== 'string' || !symbol.length || symbol.length > CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH)
+  )
     return null;
 
   return { code, name, decimals: digits, symbol: (symbol as string | null | undefined) ?? null };

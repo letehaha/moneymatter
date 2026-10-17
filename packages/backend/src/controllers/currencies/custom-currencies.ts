@@ -1,11 +1,17 @@
+import {
+  CUSTOM_CURRENCY_DECIMALS_MAX,
+  CUSTOM_CURRENCY_DECIMALS_MIN,
+  CUSTOM_CURRENCY_NAME_MAX_LENGTH,
+  CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
+} from '@bt/shared/types';
 import { currencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as customCurrencies from '@services/currencies/custom-currencies.service';
 import { z } from 'zod';
 
-const nameSchema = z.string().trim().min(1).max(255);
-const decimalsSchema = z.number().int().min(0).max(18);
-const symbolSchema = z.string().trim().min(1).max(8);
+const nameSchema = z.string().trim().min(1).max(CUSTOM_CURRENCY_NAME_MAX_LENGTH);
+const decimalsSchema = z.number().int().min(CUSTOM_CURRENCY_DECIMALS_MIN).max(CUSTOM_CURRENCY_DECIMALS_MAX);
+const symbolSchema = z.string().trim().min(1).max(CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH);
 
 export const listCustomCurrencies = createController(z.object({}), async ({ user }) => {
   const data = await customCurrencies.listCustomCurrencies({ userId: user.id });

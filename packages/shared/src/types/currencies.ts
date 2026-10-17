@@ -18,6 +18,18 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
   UNKNOWN = 'unknown',
 }
 
+/** Shortest currency code, ISO 4217 or user-defined. */
+export const CURRENCY_CODE_MIN_LENGTH = 2;
+/** Longest currency code; the width of every currency-code column. */
+export const CURRENCY_CODE_MAX_LENGTH = 16;
+/** Shape of a currency code: uppercase letters and digits. Says nothing about whether the code exists. */
+export const CURRENCY_CODE_PATTERN = new RegExp(`^[A-Z0-9]{${CURRENCY_CODE_MIN_LENGTH},${CURRENCY_CODE_MAX_LENGTH}}$`);
+
+export const CUSTOM_CURRENCY_NAME_MAX_LENGTH = 255;
+export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
+export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
+export const CUSTOM_CURRENCY_DECIMALS_MAX = 18;
+
 export interface CurrencyModel {
   currency: string;
   digits: number;

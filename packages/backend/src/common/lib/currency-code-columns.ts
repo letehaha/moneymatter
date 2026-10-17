@@ -1,3 +1,5 @@
+import { CURRENCY_CODE_MAX_LENGTH as SHARED_CURRENCY_CODE_MAX_LENGTH } from '@bt/shared/types';
+
 /**
  * Every column that holds a currency code and is declared `varchar(CURRENCY_CODE_MAX_LENGTH)`.
  * Custom currencies carry codes longer than the ISO 4217 three letters, so the custom-currencies
@@ -12,7 +14,7 @@
  */
 
 /** Longest currency code, custom or ISO. */
-export const CURRENCY_CODE_MAX_LENGTH = 16;
+export const CURRENCY_CODE_MAX_LENGTH = SHARED_CURRENCY_CODE_MAX_LENGTH;
 
 /** Length of the ISO 4217 alphabetic codes the columns were declared with before custom currencies. */
 export const ISO_CURRENCY_CODE_LENGTH = 3;
