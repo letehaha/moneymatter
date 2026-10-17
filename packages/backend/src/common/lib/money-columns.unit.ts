@@ -1,7 +1,13 @@
 import { describe, expect, it } from '@jest/globals';
 import { connection } from '@models/connection';
 
-import { MONEY_COLUMNS, MONEY_COLUMN_PRECISION, MONEY_COLUMN_SCALE } from './money-columns';
+import {
+  MONEY_COLUMNS_20261016,
+  MONEY_COLUMN_PRECISION_20261016,
+  MONEY_COLUMN_SCALE_20261016,
+  MONEY_JSON_FIELDS_20261016,
+} from '../../migrations/utils/money-columns-20261016';
+import { MONEY_COLUMNS, MONEY_COLUMN_PRECISION, MONEY_COLUMN_SCALE, MONEY_JSON_FIELDS } from './money-columns';
 
 // `@models/index` builds the Sequelize instance so each model's attributes are populated.
 // Dummy connection params make construction succeed without touching a database.
@@ -73,5 +79,20 @@ describe('MONEY_COLUMNS', () => {
     }
 
     expect(cents).toEqual([]);
+  });
+});
+
+describe('money-storage migration snapshot', () => {
+  // The migration owns a frozen copy of the list, so a column added later never reaches it. The live
+  // list starts from that snapshot and only grows: a later column gets its own migration.
+  it('keeps every column the migration converted in the live list', () => {
+    // `20261019000000-rename-budgets-to-trackers` renamed the "Budgets" table after the snapshot was taken.
+    const renamed = MONEY_COLUMNS_20261016.map((entry) =>
+      entry.table === 'Budgets' ? { ...entry, table: 'Trackers' } : entry,
+    );
+    expect(MONEY_COLUMNS).toEqual(expect.arrayContaining(renamed));
+    expect(MONEY_JSON_FIELDS).toEqual(expect.arrayContaining([...MONEY_JSON_FIELDS_20261016]));
+    expect(MONEY_COLUMN_PRECISION_20261016).toBe(MONEY_COLUMN_PRECISION);
+    expect(MONEY_COLUMN_SCALE_20261016).toBe(MONEY_COLUMN_SCALE);
   });
 });

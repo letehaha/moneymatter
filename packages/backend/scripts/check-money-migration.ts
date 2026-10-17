@@ -15,12 +15,13 @@
 import path from 'node:path';
 import { Sequelize } from 'sequelize-typescript';
 
+// The frozen snapshot the migration itself reads: this script checks that migration, not the live list.
 import {
-  MONEY_COLUMNS,
-  MONEY_COLUMN_PRECISION,
-  MONEY_COLUMN_SCALE,
-  MONEY_JSON_FIELDS,
-} from '../src/common/lib/money-columns';
+  MONEY_COLUMNS_20261016 as MONEY_COLUMNS,
+  MONEY_COLUMN_PRECISION_20261016 as MONEY_COLUMN_PRECISION,
+  MONEY_COLUMN_SCALE_20261016 as MONEY_COLUMN_SCALE,
+  MONEY_JSON_FIELDS_20261016 as MONEY_JSON_FIELDS,
+} from '../src/migrations/utils/money-columns-20261016';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const Umzug = require('umzug');
