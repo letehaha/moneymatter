@@ -332,6 +332,7 @@ const routes: RouteRecordRaw[] = [
             'settings/general',
             'settings/ai',
             'settings/security',
+            'settings/notifications',
             'settings/admin',
             'pages/shared-with-me',
           ],
@@ -487,6 +488,12 @@ const routes: RouteRecordRaw[] = [
             name: ROUTES_NAMES.settingsGeneral,
             component: () => import('@/pages/settings/subpages/general/index.vue'),
             meta: { i18nChunks: ['settings/general'] },
+          },
+          {
+            path: 'notifications',
+            name: ROUTES_NAMES.settingsNotifications,
+            component: () => import('@/pages/settings/subpages/notifications/index.vue'),
+            meta: { i18nChunks: ['settings/notifications'] },
           },
           {
             path: 'admin',
