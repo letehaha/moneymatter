@@ -26,6 +26,7 @@ vi.mock('@/lib/auth-client', () => ({
   signOut: vi.fn(),
   signUp: {},
 }));
+vi.mock('@/common/utils/web-push-device', () => ({ removeThisDevice: vi.fn() }));
 vi.mock('@/lib/query-persister', () => ({
   resetQueryCaches: vi.fn().mockResolvedValue(true),
   collectPersistedQueryGarbage: vi.fn(),

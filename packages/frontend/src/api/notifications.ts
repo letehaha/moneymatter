@@ -15,6 +15,12 @@ export const getNotifications = async (params: GetNotificationsParams = {}): Pro
   return result.data;
 };
 
+/** The backend answers 200 with a null body for an id that is missing or belongs to another account. */
+export const getNotificationById = async ({ id }: { id: string }): Promise<NotificationStruct | null> => {
+  const result: NotificationStruct | null = await api.get(`/notifications/${id}`);
+  return result ?? null;
+};
+
 export const getUnreadCount = async (): Promise<number> => {
   const result = await api.get('/notifications/unread-count');
   return result.count;
