@@ -8,28 +8,31 @@ import type {
   SyncPushSubscriptionResponse,
 } from '@bt/shared/types';
 
-interface QuietOptions {
-  /** Suppresses the API client's error toast, for calls the user did not start. */
-  silent?: boolean;
-}
-
 export const getPushConfig = async (): Promise<PushConfigResponse> => api.get('/push/config');
 
 export const getPushDevices = async (): Promise<PushDeviceDto[]> => api.get('/push/subscriptions');
 
 /** Enable, or Rotate when the payload carries `oldEndpoint`. */
-export const subscribePush = async (
-  payload: SubscribePushRequest,
-  { silent = false }: QuietOptions = {},
-): Promise<PushDeviceDto> => api.post('/push/subscriptions', payload, { silent });
+export const subscribePush = async ({
+  payload,
+  silent = false,
+}: {
+  payload: SubscribePushRequest;
+  /** Suppresses the API client's error toast, for calls the user did not start. */
+  silent?: boolean;
+}): Promise<PushDeviceDto> => api.post('/push/subscriptions', payload, { silent });
 
 export const syncPushSubscription = async ({ endpoint }: { endpoint: string }): Promise<SyncPushSubscriptionResponse> =>
   api.post('/push/subscriptions/sync', { endpoint }, { silent: true });
 
-export const unsubscribePush = async (
-  { endpoint }: { endpoint: string },
-  { silent = false }: QuietOptions = {},
-): Promise<void> => {
+export const unsubscribePush = async ({
+  endpoint,
+  silent = false,
+}: {
+  endpoint: string;
+  /** Suppresses the API client's error toast, for calls the user did not start. */
+  silent?: boolean;
+}): Promise<void> => {
   await api.post('/push/subscriptions/unsubscribe', { endpoint }, { silent });
 };
 

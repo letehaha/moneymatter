@@ -135,15 +135,15 @@ describe('useWebPush', () => {
       expect(pushApi.subscribePush).not.toHaveBeenCalled();
 
       expect(await pending).toBe('enabled');
-      expect(pushApi.subscribePush).toHaveBeenCalledWith(
-        {
+      expect(pushApi.subscribePush).toHaveBeenCalledWith({
+        payload: {
           endpoint: E1,
           keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
           expirationTime: null,
           deviceLabel: expect.any(String),
         },
-        { silent: undefined },
-      );
+        silent: undefined,
+      });
       expect(invalidate).toHaveBeenCalledWith({ queryKey: ['push-devices'] });
       expect(getStoredEndpoint({ userId: USER_ID })).toBe(E1);
       expect(webPush.state.value).toBe('on');
@@ -160,7 +160,7 @@ describe('useWebPush', () => {
 
       await webPush.enable();
 
-      const payload = vi.mocked(pushApi.subscribePush).mock.calls[0]![0];
+      const { payload } = vi.mocked(pushApi.subscribePush).mock.calls[0]![0];
       expect(payload.deviceLabel).toMatch(/ \(Home Screen\)$/);
     });
 
@@ -238,7 +238,7 @@ describe('useWebPush', () => {
       await webPush.disable();
 
       expect(subscription.unsubscribe).toHaveBeenCalledOnce();
-      expect(pushApi.unsubscribePush).toHaveBeenCalledWith({ endpoint: E1 }, { silent: undefined });
+      expect(pushApi.unsubscribePush).toHaveBeenCalledWith({ endpoint: E1, silent: undefined });
       expect(getStoredEndpoint({ userId: USER_ID })).toBeNull();
       expect(webPush.state.value).toBe('off');
     });
@@ -257,7 +257,7 @@ describe('useWebPush', () => {
         await webPush[entryPoint]();
 
         expect(stale.unsubscribe).toHaveBeenCalled();
-        expect(pushApi.unsubscribePush).toHaveBeenCalledWith({ endpoint: E1 }, { silent: true });
+        expect(pushApi.unsubscribePush).toHaveBeenCalledWith({ endpoint: E1, silent: true });
         expect(pushApi.syncPushSubscription).not.toHaveBeenCalled();
         expect(getStoredEndpoint({ userId: USER_ID })).toBeNull();
         await vi.waitFor(() => expect(webPush.state.value).toBe('off'));
@@ -389,16 +389,16 @@ describe('useWebPush', () => {
 
       await webPush.syncOnLoad();
 
-      expect(pushApi.subscribePush).toHaveBeenCalledWith(
-        {
+      expect(pushApi.subscribePush).toHaveBeenCalledWith({
+        payload: {
           endpoint: E2,
           keys: { p256dh: 'p256dh-key', auth: 'auth-key' },
           expirationTime: null,
           deviceLabel: expect.any(String),
           oldEndpoint: E1,
         },
-        { silent: true },
-      );
+        silent: true,
+      });
       expect(pushApi.syncPushSubscription).not.toHaveBeenCalled();
       expect(getStoredEndpoint({ userId: USER_ID })).toBe(E2);
       await vi.waitFor(() => expect(webPush.state.value).toBe('on'));

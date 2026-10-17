@@ -46,7 +46,7 @@ export const useSubscribePush = () => {
 
   return useMutation({
     mutationFn: ({ payload, silent }: { payload: SubscribePushRequest; silent?: boolean }) =>
-      pushApi.subscribePush(payload, { silent }),
+      pushApi.subscribePush({ payload, silent }),
     onSuccess: invalidateDevices,
   });
 };
@@ -56,7 +56,7 @@ export const useUnsubscribePush = () => {
 
   return useMutation({
     mutationFn: ({ endpoint, silent }: { endpoint: string; silent?: boolean }) =>
-      pushApi.unsubscribePush({ endpoint }, { silent }),
+      pushApi.unsubscribePush({ endpoint, silent }),
     onSuccess: invalidateDevices,
   });
 };
