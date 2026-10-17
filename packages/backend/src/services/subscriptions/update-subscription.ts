@@ -7,7 +7,7 @@ import {
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
 import { roundToCurrency } from '@common/lib/currency-precision';
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { resolveManualLogoFields } from '@services/brand-logos';
@@ -89,7 +89,7 @@ export const updateSubscription = withTransaction(
     });
 
     // Validate the merged amount/currency pairing (only null-ness matters, so the
-    // stored cents vs. the incoming decimal is irrelevant). Covers MCP callers that
+    // stored Money vs. the incoming decimal is irrelevant). Covers MCP callers that
     // send a partial payload the controller's request schema can't reconcile.
     assertAmountCurrencyConsistent({
       expectedAmount: fields.expectedAmount !== undefined ? fields.expectedAmount : subscription.expectedAmount,
@@ -162,7 +162,7 @@ export const updateSubscription = withTransaction(
     const wasInstallment = subscription.type === SUBSCRIPTION_TYPES.installment;
     const previousDueDate = subscription.dueDate;
 
-    // The API exchanges decimals; the cents-backed column takes a Money (or null
+    // The API exchanges decimals; the DECIMAL column takes a Money (or null
     // to clear). Convert only when the caller sent the field, so an omitted
     // expectedAmount leaves the stored amount untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
@@ -263,12 +263,11 @@ export const updateSubscription = withTransaction(
       await subscription.$set('tags', uniqueTagIds);
     }
 
-    // Surface expectedAmount as a decimal so the response matches GET (the
-    // column holds raw cents).
+    // Surface expectedAmount as a decimal number so the response matches GET.
     const plain = subscription.toJSON() as Subscriptions;
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       tagIds: uniqueTagIds ?? (await getSubscriptionTagIds({ subscriptionId: id })),
     };
   },

@@ -7,7 +7,7 @@ import {
   BudgetPlanPeriodViewLineGoal,
   BudgetPlanPool,
 } from '@bt/shared/types';
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { centsToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
@@ -150,7 +150,7 @@ const goalsSummary = ({
     underfunded: results
       .filter(([, result]) => result.status === 'underfunded')
       .map(([lineId, result]) => ({ lineId, ask: centsToApiDecimal(result.ask) })),
-    expectedIncome: centsToApiDecimalOrNull(plan.expectedIncome),
+    expectedIncome: moneyToApiDecimalOrNull(plan.expectedIncome),
   };
 };
 

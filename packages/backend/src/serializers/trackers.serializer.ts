@@ -13,7 +13,7 @@ import {
   type EntityLogoFields,
   ResourceShareInfo,
 } from '@bt/shared/types';
-import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, centsToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Categories from '@models/categories.model';
 import type TrackerLines from '@models/tracker-lines.model';
 import type Trackers from '@models/trackers.model';
@@ -104,7 +104,7 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     startDate: tracker.startDate,
     endDate: tracker.endDate,
     autoInclude: tracker.autoInclude,
-    limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+    limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
     archivePromptDismissed: tracker.archivePromptDismissed,
     aiEnabled: isRecipient ? false : tracker.aiEnabled,
     aiDescription: isRecipient ? null : tracker.aiDescription,
