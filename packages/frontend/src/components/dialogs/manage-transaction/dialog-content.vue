@@ -31,7 +31,7 @@ import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useCategoriesStore, useCurrenciesStore, useTagsStore, useUserStore } from '@/stores';
@@ -671,6 +671,10 @@ const currencyCode = computed(() => {
   }
   return undefined;
 });
+
+// Amount inputs keep only the decimals their currency stores.
+const amountDecimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
+const targetAmountDecimals = computed(() => getCurrencyDecimals({ code: targetCurrency.value?.currency?.code }));
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
@@ -1694,6 +1698,7 @@ onUnmounted(() => {
                   v-model="form.amount"
                   :label="$t('dialogs.manageTransaction.form.amountLabel')"
                   type="number"
+                  :decimals="amountDecimals"
                   :disabled="isFormFieldsDisabled || isAmountFieldDisabled"
                   only-positive
                   :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
@@ -1784,6 +1789,7 @@ onUnmounted(() => {
                       :label="$t('dialogs.manageTransaction.form.targetAmountLabel')"
                       :placeholder="$t('dialogs.manageTransaction.form.targetAmountPlaceholder')"
                       type="number"
+                      :decimals="targetAmountDecimals"
                       :error-message="targetAmountErrorMessage"
                       @blur="touchField('form.targetAmount')"
                     >

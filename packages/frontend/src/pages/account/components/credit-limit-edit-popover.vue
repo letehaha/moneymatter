@@ -5,11 +5,12 @@ import * as Popover from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import * as validators from '@/js/helpers/validators';
 import { useAccountsStore } from '@/stores';
 import { AccountModel } from '@bt/shared/types';
 import { PencilIcon } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
@@ -28,21 +29,25 @@ const form = ref({
   creditLimit: props.account.creditLimit as number | null,
 });
 
-const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
-  { form },
-  {
-    form: {
-      creditLimit: {
-        required: validators.required,
-        minValue: validators.minValue(0),
-        currencyDecimal: validators.currencyDecimal,
-      },
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode }));
+
+const rules = computed(() => ({
+  form: {
+    creditLimit: {
+      required: validators.required,
+      minValue: validators.minValue(0),
+      currencyDecimal: validators.maxDecimalPoints(decimals.value),
     },
   },
+}));
+
+const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
+  { form },
+  rules,
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: t('forms.validators.invalidCurrencyDecimal'),
+      currencyDecimal: computed(() => t('forms.validators.invalidCurrencyDecimal', { decimals: decimals.value })),
     },
   },
 );
@@ -84,6 +89,7 @@ watch([isOpen, () => props.account.id], () => {
           <InputField
             v-model="form.creditLimit"
             type="number"
+            :decimals="decimals"
             :label="$t('pages.account.details.creditLimit')"
             :only-positive="true"
             :error-message="getFieldErrorMessage('form.creditLimit')"

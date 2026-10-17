@@ -8,7 +8,7 @@ import { useFormValidation } from '@/composable';
 import { useAdjustAccountBalance } from '@/composable/data-queries/accounts';
 import { useAccountCurrencyCode } from '@/composable/use-account-currency-code';
 import { useAccountDisplayBalance } from '@/composable/use-account-display-balance';
-import { toLocalCurrencyNumber } from '@/js/helpers';
+import { getCurrencyDecimals, toLocalCurrencyNumber } from '@/js/helpers';
 import * as validators from '@/js/helpers/validators';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
@@ -48,11 +48,14 @@ const mode = ref<'set-to' | 'adjust-by'>('set-to');
 const form = ref({ amount: null as number | null, note: '', time: new Date() });
 const direction = ref<'income' | 'expense'>('income');
 
+const currencyCode = useAccountCurrencyCode({ account: toRef(() => props.account) });
+const decimals = computed(() => getCurrencyDecimals({ code: currencyCode.value }));
+
 const rules = computed(() => ({
   form: {
     amount: {
       required: validators.required,
-      currencyDecimal: validators.currencyDecimal,
+      currencyDecimal: validators.maxDecimalPoints(decimals.value),
       ...(mode.value === 'adjust-by' ? { minValue: validators.minValue(0) } : {}),
     },
     note: {},
@@ -65,13 +68,11 @@ const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFo
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: t('forms.validators.invalidCurrencyDecimal'),
+      currencyDecimal: computed(() => t('forms.validators.invalidCurrencyDecimal', { decimals: decimals.value })),
       minValue: t('forms.validators.mustBePositive'),
     },
   },
 );
-
-const currencyCode = useAccountCurrencyCode({ account: toRef(() => props.account) });
 
 // Actual target balance for the API (always in real currentBalance terms)
 const computedTarget = computed<number | null>(() => {
@@ -172,6 +173,7 @@ watch(mode, () => {
       <InputField
         v-model="form.amount"
         type="number"
+        :decimals="decimals"
         :label="mode === 'set-to' ? label('newBalance') : label('amount')"
         :placeholder="mode === 'set-to' ? label('enterTargetBalance') : label('enterAmount')"
         :only-positive="mode === 'adjust-by'"

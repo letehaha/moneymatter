@@ -15,6 +15,7 @@ import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subs
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { helpers, required } from '@/js/helpers/validators';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
@@ -98,6 +99,8 @@ const FREQUENCY_OPTIONS = Object.values(SUBSCRIPTION_FREQUENCIES);
 const selectedCurrency = computed(
   () => currencies.value.find((c) => c.code === form.value.expectedCurrencyCode) ?? null,
 );
+
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
 
 const installmentTotalLabel = computed(() => {
   const { expectedAmount, maxOccurrences, expectedCurrencyCode } = form.value;
@@ -243,6 +246,7 @@ const handleSubmit = () => {
         <InputField
           v-model.number="form.expectedAmount"
           type="number"
+          :decimals="amountDecimals"
           :label="$t('planned.subscriptions.form.amountLabel')"
           :placeholder="$t('planned.subscriptions.form.amountPlaceholder')"
           :error-message="getFieldErrorMessage('form.expectedAmount')"

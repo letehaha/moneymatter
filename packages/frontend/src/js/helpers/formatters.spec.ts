@@ -1,3 +1,4 @@
+import { registerCurrencyDecimals, resetCurrencyDecimals } from './currency-decimals';
 import {
   currencyDisplayPreference,
   formatCompactFiat,
@@ -57,14 +58,49 @@ describe('js/helpers/formatters', () => {
       expect(formatUIAmount(value, { currency: 'USD' })).toBe(expected);
     });
 
-    test('three-decimal currency (BHD) is clamped to 2 (cents storage)', () => {
-      const out = formatUIAmount(1234.567, { currency: 'BHD' });
-      expect(out).toContain('1,234.57');
-      expect(out).not.toMatch(/\.\d{3}/);
+    test.each<[string, number, string]>([
+      ['BHD', 1234.567, '1,234.567'],
+      ['KWD', 1234.5, '1,234.500'],
+      ['KWD', 0.001, '0.001'],
+    ])('three-decimal currency %s keeps all three decimals: %d', (currency, value, expected) => {
+      expect(formatUIAmount(value, { currency })).toContain(expected);
+    });
+
+    test('large VND values (0 decimals) group without a fraction', () => {
+      const out = formatUIAmount(20_500_000_000, { currency: 'VND' });
+      expect(out).toContain('20,500,000,000');
+      expect(out).not.toContain('.');
     });
 
     test('malformed currency code degrades to a bare number + code instead of throwing', () => {
       expect(formatUIAmount(1234.5, { currency: 'USDT' })).toBe('1,234.50 USDT');
+    });
+
+    describe('registered decimals', () => {
+      afterEach(() => {
+        resetCurrencyDecimals();
+      });
+
+      test('a ticker renders with its registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8 }] });
+        expect(formatUIAmount(0.00040641, { currency: 'BTC' })).toContain('0.00040641');
+        expect(formatUIAmount(2, { currency: 'BTC' })).toContain('2.00000000');
+      });
+
+      test('a code Intl rejects renders its registered decimals with the code appended', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
+        expect(formatUIAmount(0.5, { currency: 'USDT' })).toBe('0.500000 USDT');
+      });
+
+      test('a registered value wins over the ISO one', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 4 }] });
+        expect(formatUIAmount(1.23456, { currency: 'USD' })).toBe('$1.2346');
+      });
+
+      test('toLocalCurrencyNumber follows the registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
+        expect(toLocalCurrencyNumber(1.5, { currency: 'USDT' })).toBe('1.500000');
+      });
     });
 
     test('fractionDigits overrides the currency decimals', () => {
@@ -118,8 +154,12 @@ describe('js/helpers/formatters', () => {
       expect(toLocalCurrencyNumber(1500)).toBe('1,500.00');
     });
 
-    test('three-decimal currency (BHD) is clamped to 2 (cents storage)', () => {
-      expect(toLocalCurrencyNumber(1234.567, { currency: 'BHD' })).toBe('1,234.57');
+    test.each<[number, string, string]>([
+      [1234.567, 'BHD', '1,234.567'],
+      [1234.5, 'KWD', '1,234.500'],
+      [20_500_000_000, 'VND', '20,500,000,000'],
+    ])('%d in %s keeps the currency decimals → %s', (value, currency, expected) => {
+      expect(toLocalCurrencyNumber(value, { currency })).toBe(expected);
     });
 
     test('malformed currency code falls back to 2 digits without throwing', () => {

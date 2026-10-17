@@ -1,6 +1,5 @@
-// Money stores cents, so decimals past the second never survive a save. A 0-digit
-// currency (JPY) rounds tighter still.
-const MAX_SUGGESTION_DIGITS = 2;
+// Decimals assumed when the original currency's own are unknown.
+const FALLBACK_SUGGESTION_DIGITS = 2;
 
 const isFilled = (value: number | string | null | undefined): boolean =>
   value !== null && value !== undefined && value !== '';
@@ -24,8 +23,8 @@ export const canSuggestOriginalAmount = ({
 };
 
 const resolveSuggestionDigits = ({ currencyDigits }: { currencyDigits: number | null | undefined }): number => {
-  if (typeof currencyDigits !== 'number' || !Number.isFinite(currencyDigits)) return MAX_SUGGESTION_DIGITS;
-  return Math.min(Math.max(Math.trunc(currencyDigits), 0), MAX_SUGGESTION_DIGITS);
+  if (typeof currencyDigits !== 'number' || !Number.isFinite(currencyDigits)) return FALLBACK_SUGGESTION_DIGITS;
+  return Math.max(Math.trunc(currencyDigits), 0);
 };
 
 /**
