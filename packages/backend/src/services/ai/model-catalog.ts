@@ -3,8 +3,8 @@ import {
   AIModelPricing,
   AI_NATIVE_PROVIDERS,
   AI_PROVIDER,
-  CLI_AI_MODELS,
   asAiCliProvider,
+  findCliAiModel,
   isAiCliProvider,
 } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
@@ -97,7 +97,7 @@ export function toCatalogKey({
   const cliProvider = asAiCliProvider({ provider });
 
   if (cliProvider) {
-    const catalogId = CLI_AI_MODELS[cliProvider].find((candidate) => candidate.id === model)?.catalogId ?? model;
+    const catalogId = findCliAiModel({ provider: cliProvider, model })?.catalogId ?? model;
     return `${CLI_CATALOG_PROVIDERS[cliProvider]}/${catalogId}`;
   }
 

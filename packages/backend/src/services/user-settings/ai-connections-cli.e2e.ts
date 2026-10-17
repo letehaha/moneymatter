@@ -280,11 +280,22 @@ describe('Subscription CLI connections', () => {
       expect(await helpers.getAiConnections({ raw: true })).toEqual([]);
     });
 
+    it('still saves and runs a connection stored with a pinned Claude id from before the alias list', async () => {
+      const cliAuthSessionId = await signIn({ provider: CLAUDE });
+
+      const response = await createCliConnection({ provider: CLAUDE, cliAuthSessionId, model: 'claude-sonnet-5-5' });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.body.response).toMatchObject({ model: 'claude-sonnet-5-5', status: 'valid' });
+      expect(fakes.readRuns().find((run) => run.argv.includes('--model'))?.argv).toContain('claude-sonnet-5-5');
+    });
+
     it('lists the curated models for each CLI provider without a sign-in', async () => {
       for (const provider of [CLAUDE, CODEX] as const) {
         const { models } = await helpers.listAiConnectionModels({ provider, raw: true });
 
         expect(models).toEqual(CLI_AI_MODELS[provider].map((model) => model.id));
+        expect(new Set(models).size).toBe(models.length);
       }
 
       expect(fakes.readRuns()).toEqual([]);
