@@ -30,6 +30,10 @@ const storeRates = (rates: Record<string, number>) => {
   });
 };
 
+/** What production answers: any code that names a custom currency, whether or not it is in the pair. */
+const CUSTOM_CODES = new Set(['SAT', 'USDT', 'USDC', 'BTC', 'AAA', 'BBB', 'COIN']);
+const isCustomCode = async (code: string) => CUSTOM_CODES.has(code);
+
 const isoRates = (rates: Record<string, number>) =>
   jest.fn(async ({ baseCode, quoteCode }: { baseCode: string; quoteCode: string }) => {
     const rate = rates[`${baseCode}>${quoteCode}`];
@@ -50,7 +54,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'SAT', quoteCode: 'USD' },
       date: DATE,
-      customCodes: new Set(['SAT']),
+      isCustomCode,
       resolveIsoRate,
     });
 
@@ -66,7 +70,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDT', quoteCode: 'EUR' },
       date: DATE,
-      customCodes: new Set(['USDT']),
+      isCustomCode,
       resolveIsoRate,
     });
 
@@ -81,7 +85,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'EUR', quoteCode: 'BTC' },
       date: DATE,
-      customCodes: new Set(['BTC']),
+      isCustomCode,
       resolveIsoRate: isoRates({ 'EUR>USD': 1.1 }),
     });
 
@@ -95,7 +99,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDC', quoteCode: 'EUR' },
       date: DATE,
-      customCodes: new Set(['USDC', 'USDT']),
+      isCustomCode,
       resolveIsoRate: isoRates({ 'USD>EUR': 0.9 }),
     });
 
@@ -110,7 +114,7 @@ describe('resolveCustomPairRate', () => {
       userId: 1,
       pair: { baseCode: 'USDT', quoteCode: 'USDC' },
       date: DATE,
-      customCodes: new Set(['USDT', 'USDC']),
+      isCustomCode,
       resolveIsoRate,
     });
 
@@ -126,24 +130,44 @@ describe('resolveCustomPairRate', () => {
         userId: 1,
         pair: { baseCode: 'SAT', quoteCode: 'USD' },
         date: DATE,
-        customCodes: new Set(['SAT']),
+        isCustomCode,
         resolveIsoRate: isoRates({}),
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
   });
 
-  it('is unavailable for a loop of custom currencies instead of walking it forever', async () => {
+  it('is unavailable for a loop of custom currencies that the pair does not name, instead of walking it forever', async () => {
+    // Only AAA is in the pair; BBB is reached through the stored quote of AAA.
     storeRates({ 'AAA>BBB': 1, 'BBB>AAA': 1 });
+    const resolveIsoRate = isoRates({});
 
     await expect(
       resolveCustomPairRate({
         userId: 1,
         pair: { baseCode: 'AAA', quoteCode: 'USD' },
         date: DATE,
-        customCodes: new Set(['AAA', 'BBB']),
-        resolveIsoRate: isoRates({}),
+        isCustomCode,
+        resolveIsoRate,
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);
+    expect(resolveIsoRate).not.toHaveBeenCalled();
+  });
+
+  it('never hands a custom code to the ISO resolution when the quote of a custom code is custom', async () => {
+    storeRates({ 'SAT>COIN': 2, 'COIN>USD': 3 });
+    const resolveIsoRate = isoRates({ 'USD>EUR': 0.5 });
+
+    const result = await resolveCustomPairRate({
+      userId: 1,
+      pair: { baseCode: 'SAT', quoteCode: 'EUR' },
+      date: DATE,
+      isCustomCode,
+      resolveIsoRate,
+    });
+
+    expect(result.rate).toBe(3);
+    expect(resolveIsoRate).toHaveBeenCalledTimes(1);
+    expect(resolveIsoRate).toHaveBeenCalledWith({ baseCode: 'USD', quoteCode: 'EUR' });
   });
 
   it('passes through the failure of the ISO leg', async () => {
@@ -154,7 +178,7 @@ describe('resolveCustomPairRate', () => {
         userId: 1,
         pair: { baseCode: 'USDT', quoteCode: 'JPY' },
         date: DATE,
-        customCodes: new Set(['USDT']),
+        isCustomCode,
         resolveIsoRate: isoRates({}),
       }),
     ).rejects.toBeInstanceOf(ExchangeRateUnavailableError);

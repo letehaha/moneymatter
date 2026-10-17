@@ -71,7 +71,7 @@ export async function getExchangeRate({
       userId,
       pair,
       date,
-      customCodes,
+      isCustomCode: async (code) => (await findCustomCurrencyCodes({ codes: [code] })).size > 0,
       resolveIsoRate: (isoPair) =>
         getExchangeRate({ userId, date, ...isoPair, bypassCache, requireUserConnection: false }),
     });

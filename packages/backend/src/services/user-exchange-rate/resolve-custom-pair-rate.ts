@@ -13,6 +13,9 @@ interface ResolvedRate {
 
 type ResolveRate = (params: { baseCode: string; quoteCode: string }) => Promise<ResolvedRate>;
 
+/** Whether a code names a custom currency. It must answer for ANY code, not only the pair's own. */
+type IsCustomCode = (code: string) => Promise<boolean>;
+
 const unavailable = ({ pair, date }: { pair: { baseCode: string; quoteCode: string }; date: Date }) =>
   new ExchangeRateUnavailableError({
     message: t({
@@ -23,19 +26,22 @@ const unavailable = ({ pair, date }: { pair: { baseCode: string; quoteCode: stri
 
 /**
  * Walks a custom code down to the first code that is not custom, through the quote currency of the
- * user's own rate for each step. `factor` is how many units of `code` that ISO currency one unit of
- * the custom code is worth. A custom code without a rate, or a loop of custom codes, has no value.
+ * user's own rate for each step. `factor` is how many units of the returned ISO currency one unit of
+ * the custom code is worth. Every step asks `isCustomCode` about the quote it reached, so the walk
+ * keeps going through custom quotes that are not part of the requested pair, and one `visited` set
+ * covers the whole chain. A custom code without a rate, or a loop of custom codes, has no value,
+ * and the walk ends there instead of handing a custom code on to the ISO resolution.
  */
 const priceInIsoCurrency = async ({
   userId,
   code,
-  customCodes,
+  isCustomCode,
   date,
   pair,
 }: {
   userId: number;
   code: string;
-  customCodes: ReadonlySet<string>;
+  isCustomCode: IsCustomCode;
   date: Date;
   pair: { baseCode: string; quoteCode: string };
 }): Promise<{ code: string; factor: number }> => {
@@ -43,7 +49,7 @@ const priceInIsoCurrency = async ({
   let current = code;
   let factor = 1;
 
-  while (customCodes.has(current)) {
+  while (await isCustomCode(current)) {
     if (visited.has(current)) throw unavailable({ pair, date });
     visited.add(current);
 
@@ -70,9 +76,11 @@ const getStoredCustomRate = async ({ userId, baseCode }: { userId: number; baseC
  * cross-rate cache, which is keyed by date and code only.
  *
  * 1. A rate the user entered for exactly this pair wins.
- * 2. Otherwise each custom side is priced in the quote currency of the user's own rate for it, and
- *    the remaining ISO-to-ISO conversion goes through `resolveIsoRate`, so a manual ISO rate into
- *    the base wins and the market rate fills in otherwise.
+ * 2. Otherwise each custom side is priced in the quote currency of the user's own rate for it, down
+ *    to an ISO currency, and the remaining ISO-to-ISO conversion goes through `resolveIsoRate`, so a
+ *    manual ISO rate into the base wins and the market rate fills in otherwise. `resolveIsoRate`
+ *    only ever receives two ISO codes, so it can never come back here.
+ * 3. A custom code with no rate, or a loop of custom codes (A is quoted in B, B in A), is unavailable.
  *
  * Custom rates keep their full precision: the 5-decimal market formatting would erase a coin worth
  * a fraction of a cent.
@@ -81,13 +89,13 @@ export const resolveCustomPairRate = async ({
   userId,
   pair,
   date,
-  customCodes,
+  isCustomCode,
   resolveIsoRate,
 }: {
   userId: number;
   pair: { baseCode: string; quoteCode: string };
   date: Date;
-  customCodes: ReadonlySet<string>;
+  isCustomCode: IsCustomCode;
   resolveIsoRate: ResolveRate;
 }): Promise<ResolvedRate> => {
   const exact = await UserExchangeRates.findOne({
@@ -98,8 +106,8 @@ export const resolveCustomPairRate = async ({
   if (exact)
     return { baseCode: pair.baseCode, quoteCode: pair.quoteCode, date: exact.date, rate: exact.rate, custom: true };
 
-  const base = await priceInIsoCurrency({ userId, code: pair.baseCode, customCodes, date, pair });
-  const quote = await priceInIsoCurrency({ userId, code: pair.quoteCode, customCodes, date, pair });
+  const base = await priceInIsoCurrency({ userId, code: pair.baseCode, isCustomCode, date, pair });
+  const quote = await priceInIsoCurrency({ userId, code: pair.quoteCode, isCustomCode, date, pair });
 
   const isoRate =
     base.code === quote.code ? 1 : (await resolveIsoRate({ baseCode: base.code, quoteCode: quote.code })).rate;

@@ -278,6 +278,27 @@ describe('Transactions in custom currencies', () => {
       expect((await readAccount({ id: usdt.id })).refCurrentBalance).toBe(-22.04);
     });
 
+    it('flags the entry instead of hanging when two custom currencies are quoted in each other and neither has a rate in the base', async () => {
+      await createCurrency({ code: 'SAT', decimals: 8 });
+      await createCurrency({ code: 'COIN', decimals: 4 });
+      const sat = await createAccountIn({ code: 'SAT' });
+
+      // The endpoint stores both directions, so SAT is quoted in COIN and COIN in SAT: a loop.
+      await setRates(pairRates({ code: 'SAT', rate: 3, quote: 'COIN' }));
+
+      const [created] = await createTx({ accountId: sat.id, amount: 0.5 });
+
+      expect(created!.amount).toBe(0.5);
+      expect(created!.refAmount).toBeNull();
+      expect(created!.refAmountMissing).toBe(true);
+
+      // A rate to the base breaks the loop for the entries saved after it.
+      await setRates(pairRates({ code: 'SAT', rate: 2 }));
+      const [valued] = await createTx({ accountId: sat.id, amount: 0.5 });
+      expect(valued!.refAmount).toBe(1);
+      expect(valued!.refAmountMissing).toBe(false);
+    });
+
     it('turns a valued transaction back into a flagged one when its rate is removed before an edit', async () => {
       await createCurrency({ code: 'USDT', decimals: 6 });
       await setRates(pairRates({ code: 'USDT', rate: 4 }));
