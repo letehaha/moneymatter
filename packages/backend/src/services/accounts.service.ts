@@ -27,6 +27,7 @@ import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/re
 import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
   cleanupAccountSharesInTx,
@@ -216,6 +217,7 @@ export const createAccount = withTransaction(
         });
       }
 
+      await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
       await ensureUserCurrencyConnected({ userId, currencyCode });
 
       // Rounded before the ref stamps are derived from them: a same-currency stamp is the native

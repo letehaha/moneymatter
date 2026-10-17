@@ -8,12 +8,13 @@ import {
   asDecimal,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { describe, expect, it, jest } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import Transactions from '@models/transactions.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import { redisClient } from '@root/redis-client';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
 import * as helpers from '@tests/helpers';
@@ -696,6 +697,59 @@ describe('SimpleFIN Data Provider E2E', () => {
         currencyOverrides: { [SIMPLEFIN_ACCOUNT_1]: 'XAU' },
       });
       expect(failed.statusCode).toBe(ERROR_CODES.BadRequest);
+    });
+
+    describe('with a user-defined currency as the chosen one', () => {
+      const CUSTOM_CODE = 'BTC';
+
+      afterEach(async () => {
+        await helpers.removeCustomCurrencyRow({ code: CUSTOM_CODE });
+      });
+
+      const connectWithOverride = async () => {
+        const connectionId = await connectSimplefin();
+        global.mswMockServer.use(
+          getSimplefinAccountsMock({ response: getMockedSimplefinAccountSet({ account1Currency: '' }) }),
+        );
+
+        return helpers.bankDataProviders.connectSelectedAccounts({
+          connectionId,
+          accountExternalIds: [SIMPLEFIN_ACCOUNT_1],
+          currencyOverrides: { [SIMPLEFIN_ACCOUNT_1]: CUSTOM_CODE },
+        });
+      };
+
+      it('rejects a custom currency the user does not hold', async () => {
+        await helpers.seedCustomCurrencyRow({ code: CUSTOM_CODE, name: 'Bitcoin', digits: 8 });
+
+        const failed = await connectWithOverride();
+
+        expect(failed.statusCode).toBe(ERROR_CODES.BadRequest);
+      });
+
+      it('connects the account in a custom currency the user holds', async () => {
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        await helpers.seedCustomCurrencyRow({ code: CUSTOM_CODE, name: 'Bitcoin', digits: 8, createdByUserId: userId });
+        await UsersCurrencies.create({
+          userId,
+          currencyCode: CUSTOM_CODE,
+          isDefaultCurrency: false,
+          liveRateUpdate: false,
+        });
+        const base = global.BASE_CURRENCY.code;
+        await helpers.editUserCurrencyExchangeRate({
+          pairs: [
+            { baseCode: CUSTOM_CODE, quoteCode: base, rate: 60000 },
+            { baseCode: base, quoteCode: CUSTOM_CODE, rate: 1 / 60000 },
+          ],
+        });
+
+        const response = await connectWithOverride();
+
+        expect(response.statusCode).toBe(200);
+        const accounts = await Accounts.findAll({ where: { userId }, raw: true });
+        expect(accounts.map((account) => account.currencyCode)).toEqual([CUSTOM_CODE]);
+      });
     });
   });
 

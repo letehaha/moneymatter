@@ -1,5 +1,5 @@
 import { VENTURE_CASH_FLOW_MODE, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
-import { currencyCode, dateString, decimalString, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { dateString, decimalString, isoCurrencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createVentureDeal } from '@services/venture/deals/create.service';
@@ -9,7 +9,7 @@ import { getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Deal name (e.g. "SK 116 — Series A")'),
-  currencyCode: currencyCode().describe('Three-letter ISO currency code (e.g. "USD")'),
+  currencyCode: isoCurrencyCode().describe('Three-letter ISO currency code (e.g. "USD")'),
   principal: decimalString().describe('Principal amount as a decimal string (e.g. "16000")'),
   investmentDate: dateString().describe('Investment date in YYYY-MM-DD'),
   platformId: recordId().nullable().optional().describe('Optional platform id (from list_venture_platforms)'),

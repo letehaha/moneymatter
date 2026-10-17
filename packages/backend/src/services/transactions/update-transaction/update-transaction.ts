@@ -17,6 +17,7 @@ import * as UsersCurrencies from '@models/users-currencies.model';
 import { getUserDefaultCategory } from '@models/users.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
 import { deriveImpliedDestinationAmount } from '@services/loans/implied-destination-amount';
 import {
@@ -618,6 +619,8 @@ export const updateTransaction = withTransaction(
     payload: UpdateTransactionParams,
   ): Promise<[baseTx: Transactions.default, oppositeTx?: Transactions.default]> => {
     try {
+      await assertCurrencyCodesVisible({ userId: payload.userId, codes: [payload.originalCurrencyCode] });
+
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
       // pre-resolved `authCtx` so this service doesn't reassemble auth primitives.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { z } from 'zod';
 
-import { dateBound, dateRange, withDateOrder } from './custom-types';
+import { currencyCode, dateBound, dateRange, isoCurrencyCode, withDateOrder } from './custom-types';
 
 describe('dateBound', () => {
   describe("precision 'date' (default)", () => {
@@ -207,5 +207,51 @@ describe('withDateOrder', () => {
     it('still enforces ordering when both bounds are present', () => {
       expect(schema.safeParse({ startDate: '2025-02-01', endDate: '2025-01-01' }).success).toBe(false);
     });
+  });
+});
+
+describe('currencyCode', () => {
+  const schema = currencyCode();
+
+  it.each([
+    ['USD', 'USD'],
+    ['usd', 'USD'],
+    ['  eur ', 'EUR'],
+    ['USDT', 'USDT'],
+    ['btc', 'BTC'],
+    ['SAT', 'SAT'],
+    ['1INCH', '1INCH'],
+    ['AB', 'AB'],
+    ['ABCDEFGHIJKLMNOP', 'ABCDEFGHIJKLMNOP'],
+  ])('accepts %p as %p', (input, expected) => {
+    expect(schema.parse(input)).toBe(expected);
+  });
+
+  it.each([
+    ['empty', ''],
+    ['one character', 'A'],
+    ['seventeen characters', 'ABCDEFGHIJKLMNOPQ'],
+    ['a hyphen', 'US-D'],
+    ['a space inside', 'US D'],
+    ['a dot', 'U.S'],
+    ['a non-latin letter', 'ДОЛ'],
+  ])('rejects %s', (_label, input) => {
+    expect(schema.safeParse(input).success).toBe(false);
+  });
+
+  it('does not check ISO 4217 membership, because existence is a service check', () => {
+    expect(schema.parse('zzz')).toBe('ZZZ');
+  });
+});
+
+describe('isoCurrencyCode', () => {
+  const schema = isoCurrencyCode();
+
+  it('accepts and uppercases an ISO 4217 code', () => {
+    expect(schema.parse(' jpy ')).toBe('JPY');
+  });
+
+  it.each(['ZZZ', 'USDT', 'BTC', 'US', ''])('rejects %p, which is not an ISO 4217 code', (input) => {
+    expect(schema.safeParse(input).success).toBe(false);
   });
 });

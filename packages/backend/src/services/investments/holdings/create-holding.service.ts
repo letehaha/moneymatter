@@ -27,9 +27,10 @@ const createHoldingImpl = async ({ userId, portfolioId, securityId }: CreateHold
     message: t({ key: 'investments.securityNotFound' }),
   });
 
-  // Ensure user has the currency for this security
+  // Ensure user has the currency for this security. Investments are ISO-only: a security quoted
+  // in a code that matches a user-defined currency must not attach somebody's custom definition.
   const currency = await findOrThrowNotFound({
-    query: getCurrency({ code: security.currencyCode.toUpperCase() }),
+    query: getCurrency({ code: security.currencyCode.toUpperCase() }).then((row) => (row?.isCustom ? null : row)),
     message: t({ key: 'investments.currencyForSecurityNotFound' }),
   });
   await addUserCurrencies([{ userId, currencyCode: currency.code }]);

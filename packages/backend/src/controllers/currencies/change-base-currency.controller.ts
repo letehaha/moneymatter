@@ -1,4 +1,4 @@
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -8,7 +8,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   body: z.object({
-    newCurrencyCode: currencyCode(),
+    newCurrencyCode: isoCurrencyCode(),
   }),
 });
 

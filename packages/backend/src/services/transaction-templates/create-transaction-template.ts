@@ -2,6 +2,7 @@ import type { CreateTransactionTemplateBody, TransactionTemplateModel } from '@b
 import { Money } from '@common/types/money';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
 import { assertTemplateConsistent } from './assert-template-consistent';
 import { roundTemplateAmount, serializeTemplate, writeOrConflict } from './helpers';
@@ -22,6 +23,8 @@ export const createTransactionTemplate = withTransaction(
     originalCurrencyCode = null,
     tagIds = [],
   }: CreateTransactionTemplateParams): Promise<TransactionTemplateModel> => {
+    await assertCurrencyCodesVisible({ userId, codes: [originalCurrencyCode] });
+
     const requestedAmount = amount === null ? null : Money.fromDecimal(amount);
 
     await assertTemplateConsistent({ userId, amount: requestedAmount, accountId, categoryId, payeeId, tagIds });

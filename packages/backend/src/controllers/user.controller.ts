@@ -1,5 +1,5 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, isoCurrencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
@@ -145,7 +145,7 @@ export const getUserBaseCurrency = createController(z.object({}), async ({ user 
 export const setBaseUserCurrency = createController(
   z.object({
     body: z.object({
-      currencyCode: currencyCode(),
+      currencyCode: isoCurrencyCode(),
     }),
   }),
   async ({ user, body }) => {

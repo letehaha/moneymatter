@@ -1,5 +1,5 @@
 import { SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
-import { currencyCode, dateString, decimalMoney, recordId } from '@common/lib/zod/custom-types';
+import { dateString, decimalMoney, isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
 import { addDays, format } from 'date-fns';
 import { z } from 'zod';
 
@@ -55,7 +55,7 @@ const notFutureCalendarDate = ({ message }: { message: string }) =>
  */
 export const createLoanBodySchema = z.object({
   name: z.string().min(1).max(200).trim(),
-  currencyCode: currencyCode(),
+  currencyCode: isoCurrencyCode(),
   initialBalance: nonNegativeDecimalMoney({ field: 'initialBalance' }),
 
   // Only the loan types the form picker exposes are accepted; HELOC-style types

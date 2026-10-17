@@ -23,6 +23,7 @@ import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanPaymentAllowed } from '@services/loans/assert-loan-payment-allowed';
 import { applyPayeeCategorization } from '@services/payees/apply-categorization';
 import { applyPayeeDefaultLocation } from '@services/payees/apply-default-location';
@@ -379,6 +380,8 @@ export const createTransaction = withTransaction(
     ...payload
   }: CreateTransactionParams): Promise<CreateTxResult> => {
     if (applyAutomations) payload.externalData = { ...payload.externalData, applyAutomations: true };
+
+    await assertCurrencyCodesVisible({ userId, codes: [payload.originalCurrencyCode] });
 
     try {
       // Captured before the coercion below, which would hide a non-positive amount from

@@ -1,6 +1,8 @@
 import type { BaseCurrencyChangeStatus } from '@bt/shared/types';
+import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
+import { connection } from '@models/index';
 import { UpdateExchangeRatePair } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { addUserCurrencies as apiAddUserCurrencies } from '@root/services/currencies/add-user-currency';
@@ -261,10 +263,20 @@ export async function seedCustomCurrencyRow({
   });
 }
 
-/** Remove a row created by {@link seedCustomCurrencyRow} together with the rows that reference it. */
+/**
+ * Remove a row created by {@link seedCustomCurrencyRow} together with the rows that reference it: every
+ * currency-code column is cleared, transactions first and accounts last, so a test that went on to create
+ * accounts or transactions in the custom currency can still clean up.
+ */
 export async function removeCustomCurrencyRow({ code }: { code: string }) {
-  await ExchangeRates.destroy({ where: { quoteCode: code } });
-  await ExchangeRates.destroy({ where: { baseCode: code } });
-  await UsersCurrencies.destroy({ where: { currencyCode: code } });
+  const rank = (table: string) => (table === 'Transactions' ? 0 : table === 'Accounts' ? 2 : 1);
+  const ordered = CURRENCY_CODE_COLUMNS.filter(({ table }) => table !== 'Currencies').toSorted(
+    (a, b) => rank(a.table) - rank(b.table),
+  );
+
+  for (const { table, column } of ordered) {
+    await connection.sequelize.query(`DELETE FROM "${table}" WHERE "${column}" = :code`, { replacements: { code } });
+  }
+
   await Currencies.destroy({ where: { code, isCustom: true } });
 }
