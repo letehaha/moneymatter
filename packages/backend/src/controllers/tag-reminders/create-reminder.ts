@@ -16,7 +16,6 @@ const schema = z.object({
 export default createController(schema, async ({ user, params, body }) => {
   const { tagId } = params;
 
-  // Deserialize: convert decimal amounts to cents
   const deserialized = deserializeCreateTagReminder(body);
 
   const reminder = await tagRemindersService.createReminder({
@@ -29,6 +28,5 @@ export default createController(schema, async ({ user, params, body }) => {
     isEnabled: deserialized.isEnabled,
   });
 
-  // Serialize: convert cents to decimal for API response
   return { data: serializeTagReminder(reminder) };
 });

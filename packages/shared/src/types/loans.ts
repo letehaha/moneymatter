@@ -148,8 +148,8 @@ interface AmortizingLoanProjection extends LoanProjectionProgress {
 export type LoanProjection = PaidOffLoanProjection | StalledLoanProjection | AmortizingLoanProjection;
 
 /**
- * Serialized loan-details sidecar. Money fields are decimals (cents converted
- * on the way out); `events` carry the decimal `LoanEventApi` wire shape.
+ * Serialized loan-details sidecar. Money fields are decimals; `events` carry the decimal
+ * `LoanEventApi` wire shape.
  */
 export interface LoanDetailsApiResponse {
   id: RecordId;
@@ -199,8 +199,8 @@ export interface LoanBalanceHistoryPoint {
 /**
  * 1:1 sidecar on `Accounts` for loan-category accounts (APR, payment plan,
  * lender metadata, event log); the Account still owns the balance (stored
- * negative) and currency. Monetary values are cents (BIGINT), surfaced as
- * Money via model getters.
+ * negative) and currency. Monetary values are decimals (DECIMAL(36,18)),
+ * surfaced as Money via model getters.
  */
 export interface LoanDetailsModel {
   id: RecordId;
@@ -209,7 +209,7 @@ export interface LoanDetailsModel {
   /** Sub-type (mortgage, auto, student…) – drives UI grouping only. */
   loanType: LOAN_TYPE;
   /**
-   * Lender-issued principal in cents, immutable after create —
+   * Lender-issued principal, immutable after create —
    * Account.initialBalance drifts with balance corrections, so this frozen
    * field preserves the amortization reference.
    */
