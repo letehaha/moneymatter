@@ -11,7 +11,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
-import { SERVER_MODELS } from '@services/ai/resolution-ladder';
+import { FALLBACK_SERVER_MODELS } from '@services/ai/resolution-ladder';
 import * as helpers from '@tests/helpers';
 import { GEMINI_API_URL, VALID_GEMINI_API_KEY, rejectIfWrongModel } from '@tests/mocks/gemini/mock-api';
 import { HttpResponse, http } from 'msw';
@@ -75,7 +75,7 @@ const csvRow = ({
 }) => `${symbol},${name},${date},${side},${quantity},${price},${fees},${currency},${assetClassHint},${confidence}`;
 
 /** The model the investment-import CSV extraction is actually configured to call. */
-const EXPECTED_GEMINI_MODEL = SERVER_MODELS[AI_FEATURE.investmentTransactionsParsing].model;
+const EXPECTED_GEMINI_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.investmentTransactionsParsing].model;
 
 /**
  * MSW handler that returns a fixed CSV from Gemini's generateContent endpoint.

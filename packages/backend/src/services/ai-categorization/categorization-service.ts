@@ -140,7 +140,7 @@ async function categorizeBatch({
       maxRetries,
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
-    trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
+    await trackAiUsage({ userId, feature: AI_FEATURE.categorization, aiClient, usage });
 
     const inputTokens = usage?.inputTokens ?? 0;
     const outputTokens = usage?.outputTokens ?? 0;

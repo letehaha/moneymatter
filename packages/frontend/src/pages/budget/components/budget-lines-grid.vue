@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { addSuggestedBudgetLines, archiveBudgetPlanLine, deleteBudgetLineGroup } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
@@ -11,6 +12,7 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
 import { useQueryClient } from '@tanstack/vue-query';
 import { cn } from '@/lib/utils';
 import type {
@@ -279,10 +281,13 @@ defineExpose({ pickMenuAction });
 const { isPending: isAddingSuggested, mutate: addSuggested } = useInvalidatingMutation({
   mutationFn: addSuggestedBudgetLines,
   invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
+  invalidateOnSettleKeys: [VUE_QUERY_CACHE_KEYS.aiFeaturesStatus],
   errorKey: 'budgetPlans.line.error',
 });
 
 const isSuggestOpen = ref(false);
+const { isReached } = useAiAllowance();
+const isAiReached = computed(() => isReached());
 
 const addSuggestedLines = ({ answers }: { answers?: BudgetSuggestionAnswers }) => {
   if (isAddingSuggested.value) return;
@@ -682,15 +687,22 @@ const archiveSelected = () => {
       <p class="text-muted-foreground max-w-sm text-sm">
         {{ $t('budgetPlans.grid.noLinesDescription') }}
       </p>
-      <Button
-        v-if="view.period.isCurrent"
-        variant="soft-primary"
-        :disabled="isAddingSuggested"
-        @click="isSuggestOpen = true"
-      >
-        <SparklesIcon class="size-4" />
-        {{ $t('budgetPlans.grid.addSuggested') }}
-      </Button>
+      <template v-if="view.period.isCurrent">
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          <Button
+            variant="soft-primary"
+            :disabled="isAddingSuggested"
+            @click="isAiReached ? addSuggestedLines({}) : (isSuggestOpen = true)"
+          >
+            <SparklesIcon class="size-4" />
+            {{ $t('budgetPlans.grid.addSuggested') }}
+          </Button>
+          <AiUsageBadge />
+        </div>
+        <p v-if="isAiReached" class="text-muted-foreground max-w-sm text-xs">
+          {{ $t('budgetPlans.create.askQuestionsNeedsAi') }}
+        </p>
+      </template>
       <DocsLink path="/budgeting/start-budgeting/" class="text-sm">{{ $t('budgetPlans.docs.howItWorks') }}</DocsLink>
       <ArchivedTrigger />
     </div>

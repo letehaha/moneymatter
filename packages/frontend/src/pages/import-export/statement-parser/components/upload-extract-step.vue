@@ -115,10 +115,7 @@
     </Callout>
 
     <div v-if="totals" class="space-y-4">
-      <CostEstimateWarnings
-        :estimated-input-tokens="totals.estimatedInputTokens"
-        :using-user-key="totals.usingUserKey"
-      />
+      <CostEstimateWarnings :estimated-input-tokens="totals.estimatedInputTokens" />
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="bg-muted rounded-lg p-3">
@@ -151,8 +148,12 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <Button class="flex-1" :disabled="isBusy || !pendingExtractionCount" @click="store.extractAll()">
+      <div class="flex flex-wrap items-center gap-3">
+        <Button
+          class="flex-1"
+          :disabled="isBusy || !pendingExtractionCount || isReached({ feature: AI_FEATURE.statementParsing })"
+          @click="store.extractAll()"
+        >
           <template v-if="store.isExtracting">
             <Loader2Icon class="size-4 animate-spin" />
             {{ extractionStatus }}
@@ -163,6 +164,7 @@
           </template>
         </Button>
         <ApiKeySourceBadge :using-user-key="totals.usingUserKey" />
+        <AiUsageBadge :feature="AI_FEATURE.statementParsing" />
       </div>
 
       <!-- Extraction Progress -->
@@ -203,7 +205,13 @@
           {{ entry.file.name }} — {{ entry.extractionError }}
         </li>
       </ul>
-      <Button v-if="!store.isExtracting" variant="ghost" size="sm" class="mt-2" @click="handleRetryFailed">
+      <Button
+        v-if="!store.isExtracting && !isReached({ feature: AI_FEATURE.statementParsing })"
+        variant="ghost"
+        size="sm"
+        class="mt-2"
+        @click="handleRetryFailed"
+      >
         {{ $t('pages.statementParser.uploadExtract.retryFailed') }}
       </Button>
     </Callout>
@@ -260,17 +268,20 @@ import { logClientEvent } from '@/api/client-logs';
 import { formatBytes } from '@/common/utils/format-bytes';
 import { isMacPlatform } from '@/common/utils/platform';
 import AiEstimatedCost from '@/components/common/ai-estimated-cost.vue';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import ApiKeySourceBadge from '@/components/common/api-key-source-badge.vue';
 import { MultiFileDropzone } from '@/components/common/dropzone';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
 import {
   type StatementFileEntry,
   type StatementFileStatus,
   entryStatus,
   useStatementParserStore,
 } from '@/stores/statement-parser';
+import { AI_FEATURE } from '@bt/shared/types';
 import {
   AlertCircleIcon,
   ArrowRightIcon,
@@ -298,6 +309,7 @@ import CostEstimateWarnings from './cost-estimate-warnings.vue';
 
 const { t } = useI18n();
 const store = useStatementParserStore();
+const { isReached } = useAiAllowance();
 
 /** Sync rejections from the dropzone (size/extension); `fileError` holds our async content checks. */
 const dropzoneError = ref('');

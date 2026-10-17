@@ -75,8 +75,6 @@
             "description": "Processing may take 5+ minutes. Consider splitting the file into smaller parts for faster processing."
           }
         },
-        "freeApiWarning": "You're using the included MoneyMatter AI, which has usage limits.",
-        "addApiKeyLink": "Add your own AI model",
         "status": {
           "sendingFile": "Sending file to AI...",
           "readingDocument": "AI is reading the document...",

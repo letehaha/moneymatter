@@ -1,4 +1,5 @@
 import { aiMapImportCategories } from '@/api/import-export';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { i18n } from '@/i18n';
 import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
@@ -10,6 +11,7 @@ import {
   computeExactLinkEntries,
 } from '@/pages/import-export/utils/resolve-mapping';
 import { API_ERROR_CODES } from '@bt/shared/types';
+import { useQueryClient } from '@tanstack/vue-query';
 import { type ComputedRef, type Ref, computed, ref } from 'vue';
 
 /**
@@ -98,6 +100,7 @@ export function useResolveMapping<
    */
   unmarkedDuplicateIndices: Ref<Set<number>>;
 }) {
+  const queryClient = useQueryClient();
   // S6: cache sources/targets as computeds (not re-derived on every read). The
   // getters read reactive store state, so dependency tracking still works.
   const accountSources = computed(() => accounts.getSources());
@@ -316,6 +319,7 @@ export function useResolveMapping<
       }
     } finally {
       isAiMappingCategories.value = false;
+      queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus });
     }
   }
 

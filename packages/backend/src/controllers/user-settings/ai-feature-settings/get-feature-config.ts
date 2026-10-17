@@ -3,7 +3,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import { getStoredAiSettings } from '@services/user-settings/ai-connections';
 import { z } from 'zod';
 
-import { buildFeatureStatusPayload } from './build-feature-status-payload';
+import { buildFeatureStatusPayload, isRequestWithinAiAllowance } from './build-feature-status-payload';
 
 const schema = z.object({
   params: z.object({
@@ -15,6 +15,11 @@ export const getFeatureConfigController = createController(schema, async ({ user
   const aiSettings = await getStoredAiSettings({ userId: user.id });
 
   return {
-    data: await buildFeatureStatusPayload({ req, feature: params.feature, aiSettings }),
+    data: await buildFeatureStatusPayload({
+      req,
+      feature: params.feature,
+      aiSettings,
+      withinAllowance: await isRequestWithinAiAllowance({ req }),
+    }),
   };
 });

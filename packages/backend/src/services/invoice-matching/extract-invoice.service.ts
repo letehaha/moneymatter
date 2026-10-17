@@ -151,7 +151,7 @@ export async function extractInvoice({
       maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
     });
     answer = output;
-    trackAiUsage({ userId, feature: AI_FEATURE.receiptParsing, aiClient, usage });
+    await trackAiUsage({ userId, feature: AI_FEATURE.receiptParsing, aiClient, usage });
     logger.info('[Invoice Matching] AI answered', {
       modelId: aiClient.modelId,
       usingUserKey: aiClient.usingUserKey,

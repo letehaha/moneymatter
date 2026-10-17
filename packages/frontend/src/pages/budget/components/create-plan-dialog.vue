@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createBudgetPlan } from '@/api/budget-plans';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import AccountMultiSelectField from '@/components/fields/account-multi-select-field.vue';
@@ -16,6 +17,8 @@ import { ArrowRightIcon, InfoIcon, LoaderCircleIcon } from '@lucide/vue';
 import { StatusBadge } from '@/components/lib/ui/status-badge';
 import { Switch } from '@/components/lib/ui/switch';
 import { useInvalidatingMutation } from '@/composable/data-queries/use-invalidating-mutation';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
+import { useIsAiUsageExitPage } from '@/composable/use-close-dialog-when';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -48,6 +51,9 @@ const router = useRouter();
 const { activeAccounts, isAccountsFetched, isAccountsError } = storeToRefs(useAccountsStore());
 const userStore = useUserStore();
 const { locale } = useDateLocale();
+const isExitPage = useIsAiUsageExitPage();
+const { isReached } = useAiAllowance();
+const isAiReached = computed(() => isReached());
 
 const preset = ref<BudgetCadencePreset>('monthly');
 const customUnit = ref<BudgetCustomCadenceUnit>('days');
@@ -59,7 +65,7 @@ const poolEnabled = ref(false);
 const withSuggestedLines = ref(true);
 const askQuestions = ref(true);
 const isAskingQuestions = ref(false);
-const opensQuestions = computed(() => withSuggestedLines.value && askQuestions.value);
+const opensQuestions = computed(() => withSuggestedLines.value && askQuestions.value && !isAiReached.value);
 
 const startsOn = computed(() => {
   if (editedStartsOn.value) return editedStartsOn.value;
@@ -124,6 +130,7 @@ const customEveryError = computed(() =>
 const { isPending, mutate } = useInvalidatingMutation({
   mutationFn: createBudgetPlan,
   invalidateKeys: [VUE_QUERY_CACHE_KEYS.budgetPlans],
+  invalidateOnSettleKeys: [VUE_QUERY_CACHE_KEYS.aiFeaturesStatus],
   successKey: 'budgetPlans.create.success',
   errorKey: 'budgetPlans.create.error',
   onSuccess: () => {
@@ -185,7 +192,7 @@ const submit = () => {
 </script>
 
 <template>
-  <ResponsiveDialog v-model:open="isOpen">
+  <ResponsiveDialog v-model:open="isOpen" :close-when="isExitPage">
     <template #title>
       {{ $t(isAskingQuestions ? 'budgetPlans.suggest.title' : 'budgetPlans.create.title') }}
     </template>
@@ -289,6 +296,7 @@ const submit = () => {
             <InfoIcon class="text-muted-foreground size-3.5 shrink-0 cursor-help" />
           </ResponsiveTooltip>
           <StatusBadge variant="info">{{ $t('budgetPlans.create.recommended') }}</StatusBadge>
+          <AiUsageBadge />
         </span>
         <Switch id="budget-create-suggested" v-model="withSuggestedLines" />
       </div>
@@ -301,9 +309,16 @@ const submit = () => {
             </Label>
             <StatusBadge variant="info">{{ $t('budgetPlans.create.recommended') }}</StatusBadge>
           </span>
-          <Switch id="budget-create-questions" v-model="askQuestions" />
+          <Switch
+            id="budget-create-questions"
+            :model-value="askQuestions && !isAiReached"
+            :disabled="isAiReached"
+            @update:model-value="(value) => (askQuestions = value)"
+          />
         </div>
-        <p class="text-muted-foreground text-xs">{{ $t('budgetPlans.create.askQuestionsHint') }}</p>
+        <p class="text-muted-foreground text-xs">
+          {{ $t(isAiReached ? 'budgetPlans.create.askQuestionsNeedsAi' : 'budgetPlans.create.askQuestionsHint') }}
+        </p>
       </div>
 
       <Button type="submit" :disabled="isSubmitDisabled">

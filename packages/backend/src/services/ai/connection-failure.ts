@@ -1,11 +1,13 @@
 // Shared by every AI feature so a dead connection gets the same status and message.
 
-import { AI_PROVIDER } from '@bt/shared/types';
+import { AI_PROVIDER, FEATURES } from '@bt/shared/types';
 
+import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.service';
 import { getConnectionInfos, markConnectionInvalid } from '../user-settings/ai-connections';
+import { isWithinAiAllowance } from './ai-allowance';
 import type { AIClientResult } from './ai-client-factory';
 import { buildModelNotServedMessage } from './ai-error-classifiers';
-import { suspendAnthropicServerKey } from './resolution-ladder';
+import { PRIMARY_SERVER_MODEL, suspendPrimaryServerKey } from './resolution-ladder';
 
 /** Not translated: it surfaces in job error lists, where no request locale is available. */
 const CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE =
@@ -28,6 +30,9 @@ const INVALID_KEY_ERROR_MESSAGE =
 /** Nothing in the ladder yielded credentials: no connection and no server model. */
 const NO_AI_CONFIGURED_ERROR_MESSAGE = 'No AI model configured. Add one in Settings → AI.';
 
+const AI_ALLOWANCE_REACHED_ERROR_MESSAGE =
+  "You've used the AI included in your plan this month. Connect your own model in Settings → AI to keep going.";
+
 /**
  * A user whose every connection is flagged down does own credentials, so telling them to add
  * a model would send them to the wrong screen.
@@ -39,6 +44,11 @@ export async function describeMissingAiConfiguration({ userId }: { userId: numbe
 
   if (!dialable && first) {
     return first.lastError ?? CUSTOM_ENDPOINT_UNREACHABLE_ERROR_MESSAGE;
+  }
+
+  const entitlements = await getEntitlementsByUserId({ userId });
+  if (entitlements.features.includes(FEATURES.operator_ai) && !(await isWithinAiAllowance({ userId, entitlements }))) {
+    return AI_ALLOWANCE_REACHED_ERROR_MESSAGE;
   }
 
   return NO_AI_CONFIGURED_ERROR_MESSAGE;
@@ -67,9 +77,9 @@ export async function markCustomEndpointUnreachable({
 const SERVER_MODEL_SUSPENDED_ERROR_MESSAGE = 'The AI model is temporarily unavailable. Please try again.';
 
 function suspendDeadServerKey({ aiClient, message }: { aiClient: AIClientResult; message: string }): string {
-  if (aiClient.usingUserKey || aiClient.provider !== AI_PROVIDER.anthropic) return message;
+  if (aiClient.usingUserKey || aiClient.provider !== PRIMARY_SERVER_MODEL.provider) return message;
 
-  suspendAnthropicServerKey({ reason: message });
+  suspendPrimaryServerKey({ reason: message });
   return SERVER_MODEL_SUSPENDED_ERROR_MESSAGE;
 }
 

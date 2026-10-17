@@ -1,16 +1,19 @@
 <script setup lang="ts">
 import { estimateInvestmentImportCost, extractInvestmentTransactions } from '@/api/investment-transactions-import';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import AiEstimatedCost from '@/components/common/ai-estimated-cost.vue';
+import AiUsageBadge from '@/components/common/ai-usage/ai-usage-badge.vue';
 import { FileDropzone } from '@/components/common/dropzone';
 import TextareaField from '@/components/fields/textarea-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent } from '@/components/lib/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/lib/ui/tabs';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
 import { getApiErrorMessage } from '@/js/errors';
 import type { InvestmentImportExtractionResult, InvestmentImportHolding } from '@bt/shared/types/investments';
-import type { StatementCostEstimate, StatementCostEstimateFailure } from '@bt/shared/types';
-import { useMutation } from '@tanstack/vue-query';
+import { AI_FEATURE, type StatementCostEstimate, type StatementCostEstimateFailure } from '@bt/shared/types';
+import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { ClipboardIcon, FileSpreadsheetIcon, FileTextIcon, Loader2Icon, SparklesIcon } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -36,6 +39,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { addNotification } = useNotificationCenter();
+const queryClient = useQueryClient();
+const { isReached } = useAiAllowance();
+const isAiReached = computed(() => isReached({ feature: AI_FEATURE.investmentTransactionsParsing }));
 
 type ImportMode = 'ai' | 'csv';
 const importMode = ref<ImportMode>('ai');
@@ -154,6 +160,7 @@ const extract = useMutation({
       type: NotificationType.error,
     });
   },
+  onSettled: () => queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.aiFeaturesStatus }),
 });
 
 const parseCsv = useMutation({
@@ -303,7 +310,10 @@ onBeforeUnmount(() => abortExtract());
           <Loader2Icon v-if="estimate.isPending.value" class="size-4 animate-spin" />
           {{ $t('investmentsImport.upload.estimateButton') }}
         </Button>
-        <Button :disabled="!isReadyToExtract || extract.isPending.value" @click="extract.mutate()">
+        <div class="flex empty:hidden sm:mr-auto">
+          <AiUsageBadge :feature="AI_FEATURE.investmentTransactionsParsing" />
+        </div>
+        <Button :disabled="!isReadyToExtract || extract.isPending.value || isAiReached" @click="extract.mutate()">
           <Loader2Icon v-if="extract.isPending.value" class="size-4 animate-spin" />
           <SparklesIcon v-else class="size-4" />
           {{

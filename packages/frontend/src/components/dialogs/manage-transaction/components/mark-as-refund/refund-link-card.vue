@@ -49,9 +49,13 @@ const singleTxLabel = computed(() => {
   return singleTx.value.note || (categoriesMap.value[singleTx.value.categoryId]?.name ?? t('common.labels.unknown'));
 });
 
+const selectedType = computed(() => props.selected[0]?.transactionType ?? TRANSACTION_TYPES.income);
+
 const totalLabel = computed(() => {
   if (props.totals.total === null || !props.totals.currencyCode) return null;
-  const formatted = formatUIAmount(props.totals.total, { currency: props.totals.currencyCode });
+  const formatted = formatUIAmount(signedAmount(props.totals.total, selectedType.value), {
+    currency: props.totals.currencyCode,
+  });
   return props.totals.isTotalConverted ? `≈ ${formatted}` : formatted;
 });
 
@@ -154,7 +158,10 @@ const meterLinkedLabel = computed(() => {
               )
             }}
           </span>
-          <span v-if="totalLabel" class="text-amount text-app-income-color ml-auto text-[13px] whitespace-nowrap">
+          <span
+            v-if="totalLabel"
+            :class="['text-amount ml-auto text-[13px] whitespace-nowrap', amountColorClass(selectedType)]"
+          >
             {{ totalLabel }}
           </span>
         </template>

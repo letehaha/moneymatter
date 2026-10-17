@@ -5,7 +5,7 @@ import { setFeatureConfig } from '@services/user-settings/ai-feature-settings';
 import { resolveFeatureStatus } from '@services/user-settings/resolve-feature-model-display';
 import { z } from 'zod';
 
-import { resolvePaidPlus, resolveServerKeysAllowed } from './build-feature-status-payload';
+import { isRequestWithinAiAllowance, resolveEntitledToServerKeys } from './build-feature-status-payload';
 
 const schema = z.object({
   params: z.object({
@@ -21,17 +21,15 @@ export const setFeatureConfigController = createController(schema, async ({ user
   const { id: userId } = user;
   const { feature } = params;
 
-  const serverKeysAllowed = await resolveServerKeysAllowed({ req, feature });
-  const paidPlus = await resolvePaidPlus({ req });
+  const entitledToServerKeys = await resolveEntitledToServerKeys({ req, feature });
 
-  await setFeatureConfig({ userId, feature, connectionId: body.connectionId, serverKeysAllowed, paidPlus });
+  await setFeatureConfig({ userId, feature, connectionId: body.connectionId, entitledToServerKeys });
 
   return {
     data: await resolveFeatureStatus({
       feature,
       aiSettings: await getStoredAiSettings({ userId }),
-      serverKeysAllowed,
-      paidPlus,
+      serverKeysAllowed: entitledToServerKeys && (await isRequestWithinAiAllowance({ req })),
     }),
   };
 });

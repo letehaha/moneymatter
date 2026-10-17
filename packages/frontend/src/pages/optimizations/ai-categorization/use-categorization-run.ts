@@ -2,10 +2,11 @@ import { getAiCategorizationCandidates, triggerAiCategorization } from '@/api/ai
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { DEFAULT_SORTING, type TableSorting } from '@/components/transactions-table/columns';
+import { useAiAllowance } from '@/composable/use-ai-allowance';
 import { useCategorizationStatus } from '@/composable/use-categorization-status';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
-import { AI_CATEGORIZATION_MAX_TRANSACTIONS_PER_RUN, API_ERROR_CODES } from '@bt/shared/types';
+import { AI_CATEGORIZATION_MAX_TRANSACTIONS_PER_RUN, AI_FEATURE, API_ERROR_CODES } from '@bt/shared/types';
 import { useInfiniteQuery, useMutation } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -22,6 +23,7 @@ export function useCategorizationRun() {
   const { addNotification } = useNotificationCenter();
   const { formatDistance } = useDateLocale();
   const { isCategorizing, progress, categorizationStatus } = useCategorizationStatus();
+  const { isReached } = useAiAllowance();
 
   const sorting = ref<TableSorting>({ ...DEFAULT_SORTING });
 
@@ -112,7 +114,13 @@ export function useCategorizationRun() {
   // The SSE `queued` event lands right after a successful trigger and keeps the
   // button locked for the whole run.
   const isBusy = computed(() => isTriggering.value || isCategorizing.value);
-  const isRunDisabled = computed(() => isBusy.value || !isCountKnown.value || isEverythingCategorized.value);
+  const isRunDisabled = computed(
+    () =>
+      isBusy.value ||
+      !isCountKnown.value ||
+      isEverythingCategorized.value ||
+      isReached({ feature: AI_FEATURE.categorization }),
+  );
 
   const processedLabel = computed(() => {
     const status = categorizationStatus.value;

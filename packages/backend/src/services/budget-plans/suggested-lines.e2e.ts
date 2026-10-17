@@ -798,14 +798,14 @@ describe('Suggested budget lines', () => {
       });
     });
 
-    it('falls through to the free model when the paid one fails', async () => {
+    it('falls through to the fallback model when the primary one fails', async () => {
       enableServerModel();
-      process.env.ANTHROPIC_PLUS_API_KEY = 'server-side-anthropic-key';
+      process.env.ANTHROPIC_API_KEY = 'server-side-anthropic-key';
       const { attached, rent } = await seedHistory();
-      let paidCalls = 0;
+      let primaryCalls = 0;
       global.mswMockServer.use(
         http.post(ANTHROPIC_API_URL, () => {
-          paidCalls += 1;
+          primaryCalls += 1;
           return HttpResponse.json(
             { type: 'error', error: { type: 'invalid_request_error', message: 'Bad request' } },
             { status: 400 },
@@ -821,9 +821,52 @@ describe('Suggested budget lines', () => {
         raw: true,
       });
 
-      expect(paidCalls).toBe(1);
+      expect(primaryCalls).toBe(1);
       expect(requests).toHaveLength(1);
       expect(lines.map((line) => line.name)).toEqual(['Rent']);
+    });
+
+    it('skips every model once the AI allowance is used up', async () => {
+      enableServerModel();
+      process.env.ANTHROPIC_API_KEY = 'server-side-anthropic-key';
+      process.env.AI_MONTHLY_CAP_USD_TRIAL = '0';
+      const { attached, rent } = await seedHistory();
+      let primaryCalls = 0;
+      global.mswMockServer.use(
+        http.post(ANTHROPIC_API_URL, () => {
+          primaryCalls += 1;
+          return HttpResponse.json({}, { status: 500 });
+        }),
+      );
+      const requests = mockLayout({
+        layout: { groups: [{ name: 'Home', lines: [{ name: 'Rent', categories: [rent.name] }] }] },
+      });
+
+      const { plan, lines } = await helpers.createBudgetPlan({
+        payload: { accountIds: [attached.id], withSuggestedLines: true },
+        raw: true,
+      });
+
+      expect(primaryCalls).toBe(0);
+      expect(requests).toHaveLength(0);
+      expect(lines).toHaveLength(4);
+      const view = await currentView({ planId: plan.id });
+      expect(view.groups.map((group) => group.name)).toEqual(['Bills', 'Everyday']);
+    });
+
+    it('counts the AI layout toward the AI allowance', async () => {
+      enableServerModel();
+      process.env.AI_MONTHLY_CAP_USD_TRIAL = '0.001';
+      const { attached, rent } = await seedHistory();
+      mockLayout({ layout: { groups: [{ name: 'Home', lines: [{ name: 'Rent', categories: [rent.name] }] }] } });
+
+      await helpers.createBudgetPlan({
+        payload: { accountIds: [attached.id], withSuggestedLines: true },
+        raw: true,
+      });
+
+      const { aiAllowance } = await helpers.getAiFeaturesStatus({ raw: true });
+      expect(aiAllowance?.usedPercent).toBeGreaterThan(0);
     });
   });
 });

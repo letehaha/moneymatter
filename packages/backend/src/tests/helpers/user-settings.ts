@@ -1,6 +1,7 @@
 import {
   AIConnectionInfo,
   AIFeatureStatus,
+  AIFeaturesStatusResponse,
   AI_FEATURE,
   AI_PROVIDER,
   CreateAIConnectionBody,
@@ -214,7 +215,7 @@ export async function listAiConnectionModels<R extends boolean | undefined = und
 // AI Feature configuration helpers
 
 export async function getAiFeaturesStatus<R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) {
-  return makeRequest<{ features: AIFeatureStatus[] }, R>({
+  return makeRequest<AIFeaturesStatusResponse, R>({
     method: 'get',
     url: '/user/settings/ai/features',
     raw,

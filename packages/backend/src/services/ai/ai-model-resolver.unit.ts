@@ -1,22 +1,16 @@
-import {
-  AI_FEATURE,
-  AI_PROVIDER,
-  BILLING_CYCLES,
-  type Entitlements,
-  FEATURES,
-  PLANS,
-  SUBSCRIPTION_STATUSES,
-} from '@bt/shared/types';
+import { AI_FEATURE, AI_PROVIDER, type Entitlements, FEATURES } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { StoredAiSettings, StoredConnection } from '@models/user-settings.model';
 
 import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.service';
 import { decryptConnectionKey, getStoredAiSettings, markConnectionInvalid } from '../user-settings/ai-connections';
+import { isWithinAiAllowance } from './ai-allowance';
 import { resolveAIConfiguration } from './ai-model-resolver';
 import { CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE } from './connection-failure';
-import { PLUS_SERVER_MODELS, SERVER_MODELS, buildConnectionModelId } from './resolution-ladder';
+import { FALLBACK_SERVER_MODELS, PRIMARY_SERVER_MODEL, buildConnectionModelId } from './resolution-ladder';
 
 jest.mock('../entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
+jest.mock('./ai-allowance', () => ({ isWithinAiAllowance: jest.fn() }));
 jest.mock('../user-settings/ai-connections', () => ({
   getStoredAiSettings: jest.fn(),
   decryptConnectionKey: jest.fn(),
@@ -30,10 +24,10 @@ jest.mock('@js/utils/logger', () => ({
 const FEATURE = AI_FEATURE.categorization;
 const USER_ID = 1;
 const NOW = new Date().toISOString();
-const IN_A_MONTH = new Date(Date.now() + 30 * 86_400_000).toISOString();
-const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'GEMINI_PLUS_API_KEY', 'ANTHROPIC_PLUS_API_KEY'] as const;
+const SERVER_KEY_ENV_VARS = ['GEMINI_API_KEY', 'ANTHROPIC_API_KEY'] as const;
 
 const getEntitlementsMock = jest.mocked(getEntitlementsByUserId);
+const isWithinAiAllowanceMock = jest.mocked(isWithinAiAllowance);
 const getStoredAiSettingsMock = jest.mocked(getStoredAiSettings);
 const decryptConnectionKeyMock = jest.mocked(decryptConnectionKey);
 const markConnectionInvalidMock = jest.mocked(markConnectionInvalid);
@@ -85,9 +79,9 @@ describe('resolveAIConfiguration', () => {
   beforeEach(() => {
     for (const name of SERVER_KEY_ENV_VARS) envBeforeTest.set(name, process.env[name]);
     process.env.GEMINI_API_KEY = 'server-key';
-    delete process.env.GEMINI_PLUS_API_KEY;
-    delete process.env.ANTHROPIC_PLUS_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
     getStoredAiSettingsMock.mockResolvedValue(null);
+    isWithinAiAllowanceMock.mockResolvedValue(true);
     grantEntitlements();
   });
 
@@ -104,64 +98,34 @@ describe('resolveAIConfiguration', () => {
     expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toBeNull();
   });
 
-  describe('included model key', () => {
-    const plusSubscription = {
-      externalSubscriptionId: 'sub_plus',
-      tier: PLANS.plus,
-      status: SUBSCRIPTION_STATUSES.active,
-      billingCycle: BILLING_CYCLES.month,
-      currentPeriodEndsAt: IN_A_MONTH,
-      scheduledChange: null,
-    };
-
+  describe('server model', () => {
     beforeEach(() => {
-      process.env.GEMINI_PLUS_API_KEY = 'plus-key';
+      grantEntitlements({ features: [FEATURES.operator_ai] });
     });
 
-    it.each<[string, Partial<Entitlements>, string]>([
-      ['a paying Plus subscriber', { subscriptions: [plusSubscription] }, 'plus-key'],
-      ['an early adopter', { plan: PLANS.early_adopter }, 'server-key'],
-      ['a trial user', { trialEndsAt: IN_A_MONTH }, 'server-key'],
-      [
-        'a lapsed Plus subscriber',
-        { subscriptions: [{ ...plusSubscription, status: SUBSCRIPTION_STATUSES.canceled }] },
-        'server-key',
-      ],
-    ])('serves %s from the matching key', async (_label, overrides, apiKey) => {
-      grantEntitlements({ features: [FEATURES.operator_ai], ...overrides });
+    it('serves the primary Anthropic model once ANTHROPIC_API_KEY is set', async () => {
+      process.env.ANTHROPIC_API_KEY = 'anthropic-key';
 
       expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
         kind: 'server',
-        apiKey,
+        modelId: buildConnectionModelId(PRIMARY_SERVER_MODEL),
+        apiKey: 'anthropic-key',
+        usingUserKey: false,
       });
     });
 
-    it('falls back to the shared key for a Plus subscriber while the Plus key is unset', async () => {
-      delete process.env.GEMINI_PLUS_API_KEY;
-      grantEntitlements({ features: [FEATURES.operator_ai], subscriptions: [plusSubscription] });
+    it('leaves the server model unserved over the AI allowance, but still dials a user connection', async () => {
+      isWithinAiAllowanceMock.mockResolvedValue(false);
+
+      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toBeNull();
+
+      storeSettings({ connections: [CLAUDE] });
+      decryptConnectionKeyMock.mockReturnValue('user-key');
 
       expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
-        kind: 'server',
-        apiKey: 'server-key',
-      });
-    });
-
-    it.each<[string, Partial<Entitlements>, string, string]>([
-      [
-        'a paying Plus subscriber',
-        { subscriptions: [plusSubscription] },
-        buildConnectionModelId(PLUS_SERVER_MODELS[FEATURE]!),
-        'anthropic-plus-key',
-      ],
-      ['a trial user', { trialEndsAt: IN_A_MONTH }, buildConnectionModelId(SERVER_MODELS[FEATURE]), 'server-key'],
-    ])('picks the model for %s once the Anthropic Plus key is set', async (_label, overrides, modelId, apiKey) => {
-      process.env.ANTHROPIC_PLUS_API_KEY = 'anthropic-plus-key';
-      grantEntitlements({ features: [FEATURES.operator_ai], ...overrides });
-
-      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
-        kind: 'server',
-        modelId,
-        apiKey,
+        kind: 'connection',
+        connectionId: CLAUDE.id,
+        usingUserKey: true,
       });
     });
   });
@@ -171,7 +135,7 @@ describe('resolveAIConfiguration', () => {
 
     expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
       kind: 'server',
-      modelId: buildConnectionModelId(SERVER_MODELS[FEATURE]),
+      modelId: buildConnectionModelId(FALLBACK_SERVER_MODELS[FEATURE]),
       apiKey: 'server-key',
       usingUserKey: false,
     });

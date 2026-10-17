@@ -7,6 +7,7 @@ export const MODELS_DEV_CATALOG = {
   anthropic: {
     models: {
       'claude-haiku-4-5': { name: 'Claude Haiku 4.5', cost: { input: 1, output: 5 }, limit: { context: 200_000 } },
+      'claude-haiku-5-5': { name: 'Claude Haiku 5.5', cost: { input: 1, output: 5 }, limit: { context: 200_000 } },
     },
   },
   google: {
