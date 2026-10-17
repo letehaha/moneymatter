@@ -1,6 +1,8 @@
 import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
+import { RateLimitService } from '@services/common/rate-limit.service';
+import type { UserRateLimit } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 /**
@@ -66,6 +68,19 @@ export async function assertBaseCurrencyUnlocked({ userId }: { userId: number })
 
   if (locked) {
     throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
+  }
+}
+
+/**
+ * Draws one call from a per-user budget the REST middleware also enforces, and refuses the call
+ * when the budget is spent. Redis being down lets the call through, as the middleware does for
+ * these routes: `checkRateLimit` resolves `allowed: true` then.
+ */
+export async function enforceUserRateLimit({ userId, limit }: { userId: number; limit: UserRateLimit }): Promise<void> {
+  const result = await RateLimitService.checkRateLimit(limit.key({ userId }), limit.windowSeconds, limit.maxAttempts);
+
+  if (!result.allowed) {
+    throw new Error(t({ key: 'middleware.tooManyRequests' }));
   }
 }
 
