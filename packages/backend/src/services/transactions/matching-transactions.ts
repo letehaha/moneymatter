@@ -6,7 +6,8 @@ import {
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimal } from '@common/types/money';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 import { allocateTransaction, loadSplitsByTxId } from '@services/stats/category-allocation';
@@ -18,6 +19,7 @@ type ListFilters = Omit<
   'from' | 'limit' | 'order' | 'sortBy' | 'attributes' | 'isRaw'
 >;
 
+/** `refAmount` is the exact DECIMAL string the raw read returns. */
 interface MatchingRow {
   id: string;
   userId: number;
@@ -26,18 +28,15 @@ interface MatchingRow {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
   categoryId: string | null;
-  /** Base-currency cents, converted from the exact decimal string the raw read returns. */
-  refAmount: number;
+  refAmount: string;
 }
-
-type RawMatchingRow = Omit<MatchingRow, 'refAmount'> & { refAmount: string };
 
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
   // The raw read makes `refAmount` the DECIMAL column's exact string.
-  const rawRows = (await getTransactions({
+  return (await getTransactions({
     ...filters,
     isRaw: true,
     limit: Infinity,
@@ -51,18 +50,20 @@ const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> =>
       'categoryId',
       'refAmount',
     ],
-  })) as unknown as RawMatchingRow[];
-  return rawRows.map((row): MatchingRow => ({ ...row, refAmount: Money.fromDecimal(row.refAmount).toCents() }));
+  })) as unknown as MatchingRow[];
 };
+
+/** A matching row with `refAmount` in integer minor units of the base currency. */
+type MinorUnitsRow = Omit<MatchingRow, 'refAmount'> & { refAmount: number };
 
 /** Under a category filter a split row counts only the share booked to those categories. */
 const scopeToCategories = async ({
   rows,
   categoryIds,
 }: {
-  rows: MatchingRow[];
+  rows: MinorUnitsRow[];
   categoryIds?: string[];
-}): Promise<MatchingRow[]> => {
+}): Promise<MinorUnitsRow[]> => {
   if (!categoryIds?.length) return rows;
 
   const splitsByTxId = await loadSplitsByTxId({ transactionIds: rows.map((row) => row.id) });
@@ -79,15 +80,21 @@ const scopeToCategories = async ({
 };
 
 export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
+  const decimals = await getBaseCurrencyDecimals({ userId: filters.userId });
   const rows = dedupeTransferLegs(await findMatchingRows(filters));
-  const totals = sumTransactionTotals(await scopeToCategories({ rows, categoryIds: filters.categoryIds }));
+  // Summed in the base currency's minor units, so the totals are exact integers.
+  const minorRows = rows.map((row) => ({
+    ...row,
+    refAmount: Money.fromDecimal(row.refAmount).toMinorUnits({ decimals }),
+  }));
+  const totals = sumTransactionTotals(await scopeToCategories({ rows: minorRows, categoryIds: filters.categoryIds }));
 
   return {
     count: rows.length,
-    income: centsToApiDecimal(totals.income),
-    expense: centsToApiDecimal(totals.expense),
-    net: centsToApiDecimal(totals.net),
-    transfers: centsToApiDecimal(totals.transfers),
+    income: minorUnitsToApiDecimal({ value: totals.income, decimals }),
+    expense: minorUnitsToApiDecimal({ value: totals.expense, decimals }),
+    net: minorUnitsToApiDecimal({ value: totals.net, decimals }),
+    transfers: minorUnitsToApiDecimal({ value: totals.transfers, decimals }),
   };
 };
 
