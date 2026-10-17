@@ -9,9 +9,9 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { t } from '@i18n/index';
 import { BadRequestError, ForbiddenError, NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -1278,7 +1278,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
       const closingRow = rowsById.get(closingRowId)!;
       const closingBalance = (closingRow.externalData as { balanceAfter?: AmountType } | null)!.balanceAfter!;
 
-      let refBalance: Money;
+      let convertedBalance: Money;
       try {
         const exchangeRateData = await getExchangeRate({
           userId: closingRow.userId,
@@ -1286,9 +1286,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
           baseCode: closingRow.currencyCode,
           quoteCode: closingRow.refCurrencyCode,
         });
-        refBalance = Money.fromDecimal(
-          roundHalfToEven(Number.parseFloat(closingBalance.amount) * exchangeRateData.rate * 100) / 100,
-        );
+        convertedBalance = Money.fromDecimal(closingBalance.amount).multiply(exchangeRateData.rate);
       } catch {
         // A day with no rate on record is one day of chart, and this pass runs
         // late enough that throwing would discard every transaction the sync just
@@ -1297,6 +1295,10 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         ratelessDays++;
         continue;
       }
+
+      const refBalance = convertedBalance.roundHalfEven(
+        await getCurrencyDecimals({ userId: closingRow.userId, code: closingRow.refCurrencyCode }),
+      );
 
       await Balances.updateAccountBalance({ accountId: account.id, date, refBalance });
     }
