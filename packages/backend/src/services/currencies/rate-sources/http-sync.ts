@@ -113,7 +113,9 @@ export const fetchHttpRateAfterSave = async ({
       currencyCode,
       quoteCurrency: read.quoteCurrency,
       rates: [{ day, rate }],
-      kind: 'daily',
+      // The source was just saved, so its first rate takes over from whatever priced today's rows
+      // before, which a plain daily rate (it only fills rows waiting for a rate) would leave alone.
+      kind: 'backfill',
       source: SOURCE,
       fetchedWith: fetchedWith({ target }),
     });

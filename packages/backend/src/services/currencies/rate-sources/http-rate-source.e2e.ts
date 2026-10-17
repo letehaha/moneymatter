@@ -419,6 +419,27 @@ describe('HTTP rate source', () => {
         expect(valued.refAmountMissing).toBe(false);
       });
 
+      it('values the rows a manual rate priced again with the first rate of the source', async () => {
+        await createCurrency({ decimals: 2 });
+        const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+        const manual = await helpers.editCurrencyExchangeRate({
+          pairs: [
+            { baseCode: USDT, quoteCode: BASE(), rate: 2, effectiveDate: yesterday },
+            { baseCode: BASE(), quoteCode: USDT, rate: 0.5, effectiveDate: yesterday },
+          ],
+          raw: false,
+        });
+        expect(manual.statusCode).toBe(200);
+        const account = await createAccountIn({ code: USDT });
+        const priced = await createTxToday({ accountId: account.id, amount: 10 });
+        expect((await readTx({ id: priced.id })).refAmount).toBe(20);
+        servePrice({ price: 3 });
+
+        await useHttp();
+
+        expect((await readTx({ id: priced.id })).refAmount).toBe(30);
+      });
+
       it('keeps the saved headers when an update names none, replaces them when it names some, drops them with {}', async () => {
         await createCurrency();
         servePrice({ price: 1 });
