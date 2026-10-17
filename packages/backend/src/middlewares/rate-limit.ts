@@ -346,3 +346,17 @@ export const rateSourceTestRateLimit = createRateLimit({
     return `rate-source-test:user:${user.id}`;
   },
 });
+
+/**
+ * Rate-source save limit (per user, 20 saves per minute, the preview's budget). A save that changes
+ * the source fetches from CoinGecko (one shared key for the instance) or from the user's URL, and
+ * values every saved row of the currency again, so it cannot be repeated without bound.
+ */
+export const rateSourceSaveRateLimit = createRateLimit({
+  windowSeconds: 60,
+  maxAttempts: 20,
+  keyGenerator: (req: Request) => {
+    const user = req.user as Users;
+    return `rate-source-save:user:${user.id}`;
+  },
+});

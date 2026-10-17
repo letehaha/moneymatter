@@ -72,6 +72,7 @@ import {
   backupRateLimit,
   backupRestoreRateLimit,
   dataExportRateLimit,
+  rateSourceSaveRateLimit,
   rateSourceTestRateLimit,
 } from '@middlewares/rate-limit';
 import { Router } from 'express';
@@ -115,8 +116,9 @@ router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
 router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
 router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);
 router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
-// The source decides which rate prices a currency's amounts, so it sits behind the same guard.
-router.put('/currencies/:code/rate-source', checkBaseCurrencyLock, updateCurrencyRateSource);
+// The source decides which rate prices a currency's amounts, so it sits behind the same guard. A save
+// fetches rates and values saved rows again, so it is limited like the preview.
+router.put('/currencies/:code/rate-source', checkBaseCurrencyLock, rateSourceSaveRateLimit, updateCurrencyRateSource);
 // A preview saves nothing, so it is not behind the base-currency guard.
 router.post('/currencies/:code/rate-source/test', rateSourceTestRateLimit, testCurrencyRateSource);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,
