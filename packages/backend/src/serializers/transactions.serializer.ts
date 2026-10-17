@@ -331,7 +331,7 @@ export function serializeTransactionTuple(
 // ============================================================================
 
 /**
- * Deserialize a create transaction request from API decimal format to internal cents format
+ * Deserialize a create transaction request from API decimal format to internal `Money` values
  */
 export function deserializeCreateTransaction(req: CreateTransactionRequest, userId: number): CreateTransactionInternal {
   return {

@@ -34,7 +34,7 @@ export class Money {
   // ==========================================================================
 
   /**
-   * Create Money from a database INTEGER cents value.
+   * Create Money from an integer cents value (the cents-domain numbers some services sum in memory).
    * Divides by 100 to get the actual decimal value.
    *
    * @example
@@ -177,7 +177,8 @@ export class Money {
   // ==========================================================================
 
   /**
-   * Convert to integer cents for INTEGER DB columns.
+   * Convert to integer cents for in-memory cents-domain sums. Money columns are DECIMAL: write the
+   * `Money` itself (or `toMoneyColumnValue` in raw SQL), never cents.
    * Multiplies by 100 and rounds.
    *
    * @example
@@ -252,9 +253,8 @@ export function moneyToApiDecimalOrNull(val: Money | string | null | undefined):
 /**
  * Convert a Money or an integer cents number (the cents-domain sums that stats services compute in memory)
  * to an API-friendly decimal number.
- * Handles both Money instances (via getter) and raw DB integers (from raw queries).
  *
- * Use in serializers when preparing money fields for API responses.
+ * Only for in-memory cents-domain numbers. For model or raw-row money fields use `moneyToApiDecimal`.
  */
 export function centsToApiDecimal(val: Money | number): Decimal {
   if (Money.isMoney(val)) return val.toNumber();
