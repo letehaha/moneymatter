@@ -28,9 +28,16 @@ import { computed, ref, shallowRef } from 'vue';
  * - `unsupported` / `needs-home-screen` / `denied`: see `PushSupport`.
  * - `off` / `on`: this device is not / is subscribed.
  */
-type WebPushState = 'checking' | 'server-disabled' | 'unsupported' | 'needs-home-screen' | 'denied' | 'off' | 'on';
+export type WebPushState =
+  | 'checking'
+  | 'server-disabled'
+  | 'unsupported'
+  | 'needs-home-screen'
+  | 'denied'
+  | 'off'
+  | 'on';
 
-type EnableResult = 'enabled' | 'denied' | 'dismissed' | 'tap-again' | 'failed';
+export type EnableResult = 'enabled' | 'denied' | 'dismissed' | 'tap-again' | 'failed';
 
 const HOME_SCREEN_LABEL_SUFFIX = ' (Home Screen)';
 const DEVICE_LABEL_FALLBACK = 'Browser';

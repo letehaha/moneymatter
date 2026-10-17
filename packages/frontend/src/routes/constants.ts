@@ -64,6 +64,7 @@ export const ROUTES_NAMES = Object.freeze({
   settingsAppearance: `${ROUTER_LAYOUTS.dashboard}.settings.appearance`,
   settingsLanguage: `${ROUTER_LAYOUTS.dashboard}.settings.language`,
   settingsGeneral: `${ROUTER_LAYOUTS.dashboard}.settings.general`,
+  settingsNotifications: `${ROUTER_LAYOUTS.dashboard}.settings.notifications`,
   settingsAi: `${ROUTER_LAYOUTS.dashboard}.settings.ai`,
   settingsAiFeatures: `${ROUTER_LAYOUTS.dashboard}.settings.ai.features`,
   settingsAiModels: `${ROUTER_LAYOUTS.dashboard}.settings.ai.models`,

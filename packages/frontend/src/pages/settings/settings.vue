@@ -126,6 +126,7 @@ import BackLink from '@/components/common/back-link.vue';
 import NewBadge from '@/components/common/new-badge.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { usePushConfig } from '@/composable/data-queries/web-push';
 import { useAfterMountTransition } from '@/composable/use-after-mount-transition';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { cn } from '@/lib/utils';
@@ -133,6 +134,7 @@ import { ROUTES_NAMES } from '@/routes';
 import { useUserStore } from '@/stores';
 import { useElementSize, useLocalStorage } from '@vueuse/core';
 import {
+  BellIcon,
   BookOpenIcon,
   CalendarClockIcon,
   ChevronRightIcon,
@@ -179,6 +181,7 @@ const route = useRoute();
 const router = useRouter();
 const { user, canSeeBilling } = storeToRefs(useUserStore());
 const { t } = useI18n();
+const { config: pushConfig } = usePushConfig();
 
 const containerRef = ref<HTMLElement | null>(null);
 const { width: containerWidth } = useElementSize(containerRef);
@@ -232,6 +235,18 @@ const personalTabs = computed<Tab[]>(() => [
     to: { name: ROUTES_NAMES.settingsSecurity },
     icon: KeyRoundIcon,
   },
+  // Shown only once the server says it can send pushes; without VAPID keys the page has nothing to offer.
+  ...(pushConfig.value?.enabled
+    ? [
+        {
+          name: 'notifications',
+          label: t('settings.navigation.notifications'),
+          to: { name: ROUTES_NAMES.settingsNotifications },
+          icon: BellIcon,
+          badgeSince: '2026-10-18',
+        },
+      ]
+    : []),
   ...(canSeeBilling.value
     ? [
         {

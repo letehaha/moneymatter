@@ -58,6 +58,7 @@ const I18N_CHUNKS = [
   'settings/general',
   'settings/ai',
   'settings/security',
+  'settings/notifications',
   'settings/admin',
   'settings/ai-integrations',
   'settings/subscriptions',

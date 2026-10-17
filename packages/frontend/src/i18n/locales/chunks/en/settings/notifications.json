@@ -1,0 +1,91 @@
+{
+  "settings": {
+    "notifications": {
+      "description": "Get the notifications from the bell as browser notifications, even when MoneyMatter is closed.",
+      "serverDisabled": {
+        "title": "Browser notifications are not set up",
+        "description": "This instance has no push keys configured, so it cannot send browser notifications. Ask the administrator to set the VAPID keys."
+      },
+      "thisDevice": {
+        "title": "This device",
+        "toggleLabel": "Browser notifications on this device",
+        "toggleDescription": "Notifications arrive on this browser even when the tab or the whole browser is closed.",
+        "unsupported": "This browser cannot receive push notifications. Open MoneyMatter in a current version of Chrome, Edge, Firefox or Safari to turn them on.",
+        "needsHomeScreen": "Add MoneyMatter to your Home Screen first: Share → Add to Home Screen, then open it from there and turn this on.",
+        "denied": "Notifications are blocked for this site, so the browser will not ask again.",
+        "blockedHint": {
+          "chrome": "Click the icon left of the address bar, open Site settings and set Notifications to Allow.",
+          "edge": "Click the icon left of the address bar, open Permissions for this site and set Notifications to Allow.",
+          "firefox": "Click the icon left of the address bar, clear the blocked Notifications permission, then reload the page.",
+          "safari": "Open Safari → Settings → Websites → Notifications and set this site to Allow.",
+          "ios": "Open Settings → Notifications → MoneyMatter and turn on Allow Notifications.",
+          "other": "Allow notifications for this site in your browser's site settings, then reload the page."
+        },
+        "tapAgain": "The browser still held an older subscription. It has been removed, so turn this on again.",
+        "toasts": {
+          "enabled": "Notifications are on for this device",
+          "disabled": "Notifications are off for this device",
+          "denied": "Notifications are blocked in your browser settings",
+          "dismissed": "The permission request was dismissed. Turn this on again to allow notifications.",
+          "tapAgain": "Turn this on once more to finish",
+          "failed": "Could not turn on notifications for this device",
+          "disableFailed": "Could not turn off notifications for this device"
+        }
+      },
+      "groups": {
+        "title": "What to send",
+        "description": "These choices apply to all your devices.",
+        "items": {
+          "reminders": {
+            "label": "Reminders",
+            "description": "Scheduled payment reminders, tag reminders and budget alerts."
+          },
+          "bankSync": {
+            "label": "Bank sync",
+            "description": "Confirmed planned payments and transactions stuck as pending."
+          },
+          "sharing": {
+            "label": "Sharing and household",
+            "description": "Invitations, accepted or declined shares and household changes."
+          },
+          "system": {
+            "label": "System",
+            "description": "Important messages about your account and this instance."
+          },
+          "releases": {
+            "label": "New releases",
+            "description": "A message for every new MoneyMatter version. Off by default."
+          }
+        }
+      },
+      "devices": {
+        "title": "Your devices",
+        "description": "Browsers that receive notifications for your account.",
+        "thisDeviceBadge": "This device",
+        "unnamed": "Unnamed device",
+        "lastSuccess": "Last delivery {time}",
+        "never": "Never delivered",
+        "remove": "Remove device",
+        "removeDialog": {
+          "title": "Remove this device?",
+          "description": "{device} will stop receiving notifications until you turn them on there again.",
+          "thisDeviceNote": "This is the browser you are using now. Its notification permission stays as it is.",
+          "confirm": "Remove"
+        },
+        "toasts": {
+          "removed": "Device removed",
+          "removeFailed": "Could not remove the device"
+        },
+        "empty": {
+          "title": "No devices yet",
+          "description": "Turn on notifications in a browser and it shows up here.",
+          "action": "Turn on for this device"
+        },
+        "test": {
+          "button": "Send test notification",
+          "result": "Test notification: {sent} sent, {failed} failed, {removed} removed"
+        }
+      }
+    }
+  }
+}
