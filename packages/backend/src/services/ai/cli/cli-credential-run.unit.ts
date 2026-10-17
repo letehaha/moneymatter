@@ -124,10 +124,12 @@ describe('runWithCliCredential', () => {
     const credentials = { current: '{"v":1}' };
     const { source } = sourceFor({ key: 'codex-save-order', credentials });
     const saveGate = deferred();
+    const saveStarted = deferred();
     const events: string[] = [];
 
     source.save.mockImplementation(async ({ credential }) => {
       events.push('save:start');
+      saveStarted.resolve();
       await saveGate.promise;
       credentials.current = credential;
       events.push('save:end');
@@ -148,7 +150,9 @@ describe('runWithCliCredential', () => {
       },
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 20));
+    await saveStarted.promise;
+    // One tick for `second` to run if the slot were wrongly free.
+    await new Promise((resolve) => setImmediate(resolve));
     expect(events).toEqual(['save:start']);
 
     saveGate.resolve();
