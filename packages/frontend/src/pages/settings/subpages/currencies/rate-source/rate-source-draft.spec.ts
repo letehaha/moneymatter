@@ -166,7 +166,7 @@ describe('buildTestBody', () => {
       },
     });
 
-    expect(buildTestBody({ draft })).toEqual({
+    expect(buildTestBody({ http: draft.http })).toEqual({
       rateSource: 'http',
       config: {
         urlTemplate: 'https://api.example.com/{code}?on={date}',

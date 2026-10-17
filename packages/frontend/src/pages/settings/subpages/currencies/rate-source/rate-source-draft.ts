@@ -1,7 +1,10 @@
 import {
   type CoingeckoRateSourceConfig,
   DEFAULT_RATE_SOURCE_QUOTE_CURRENCY,
+  HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES,
   type HttpRateSourceConfig,
+  type HttpRateSourceInput,
+  type HttpUrlTemplatePlaceholderName,
   type PegRateSourceConfig,
   type RateSourceTestFailure,
   type TestCurrencyRateSourceBody,
@@ -14,11 +17,10 @@ import { isEqual } from 'lodash-es';
 export const EDITABLE_RATE_SOURCES = ['manual', 'peg', 'coingecko', 'http'] as const;
 export type EditableRateSource = (typeof EDITABLE_RATE_SOURCES)[number];
 
-/** The API takes at most this many request headers on an HTTP source. */
-export const MAX_HTTP_HEADERS = 10;
-
-/** Placeholders an HTTP source URL may hold; the API fills them in per request. */
-export const HTTP_URL_PLACEHOLDERS = ['{date}', '{code}', '{quote}'] as const;
+/** Placeholders an HTTP source URL may hold as written in a template, by name; the API fills them in per request. */
+export const HTTP_URL_PLACEHOLDERS = Object.fromEntries(
+  HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES.map((name) => [name, `{${name}}`]),
+) as Record<HttpUrlTemplatePlaceholderName, string>;
 
 /**
  * What to do with the headers already saved on an HTTP source. Saved values are never returned, so
@@ -55,17 +57,17 @@ export interface RateSourceDraftErrors {
   headers?: string;
 }
 
-type SavedSource = Pick<UserCurrencyModel, 'rateSource' | 'rateSourceConfig'>;
+export type SavedRateSource = Pick<UserCurrencyModel, 'rateSource' | 'rateSourceConfig'>;
 
-const isPegConfig = (config: SavedSource['rateSourceConfig']): config is PegRateSourceConfig =>
+const isPegConfig = (config: SavedRateSource['rateSourceConfig']): config is PegRateSourceConfig =>
   Boolean(config && 'pegCurrency' in config);
-const isCoingeckoConfig = (config: SavedSource['rateSourceConfig']): config is CoingeckoRateSourceConfig =>
+const isCoingeckoConfig = (config: SavedRateSource['rateSourceConfig']): config is CoingeckoRateSourceConfig =>
   Boolean(config && 'coinId' in config);
-const isHttpConfig = (config: SavedSource['rateSourceConfig']): config is HttpRateSourceConfig =>
+const isHttpConfig = (config: SavedRateSource['rateSourceConfig']): config is HttpRateSourceConfig =>
   Boolean(config && 'urlTemplate' in config);
 
 /** Names of the headers saved on the currency's HTTP source; their values are never available. */
-export const getSavedHeaderNames = ({ saved }: { saved: SavedSource }): string[] =>
+export const getSavedHeaderNames = ({ saved }: { saved: SavedRateSource }): string[] =>
   saved.rateSource === 'http' && isHttpConfig(saved.rateSourceConfig) ? saved.rateSourceConfig.headerNames : [];
 
 let headerRowSequence = 0;
@@ -73,7 +75,7 @@ let headerRowSequence = 0;
 export const createHeaderRow = (): HttpHeaderRow => ({ id: ++headerRowSequence, name: '', value: '' });
 
 /** The editor's starting point: the saved source with its config, or blank fields for the others. */
-export const buildDraft = ({ saved }: { saved: SavedSource }): RateSourceDraft => {
+export const buildDraft = ({ saved }: { saved: SavedRateSource }): RateSourceDraft => {
   const { rateSourceConfig } = saved;
   const peg = isPegConfig(rateSourceConfig) ? rateSourceConfig : null;
   const coingecko = isCoingeckoConfig(rateSourceConfig) ? rateSourceConfig : null;
@@ -115,6 +117,14 @@ const buildHeadersField = ({ http }: { http: RateSourceDraft['http'] }): { heade
   };
 };
 
+/** The HTTP settings as the API takes them, in a save and in a preview alike. */
+export const buildHttpConfig = ({ http }: { http: RateSourceDraft['http'] }): HttpRateSourceInput => ({
+  urlTemplate: http.urlTemplate.trim(),
+  jsonPath: http.jsonPath.trim(),
+  quoteCurrency: http.quoteCurrency,
+  ...buildHeadersField({ http }),
+});
+
 export const buildRateSourceBody = ({ draft }: { draft: RateSourceDraft }): UpdateCurrencyRateSourceBody => {
   switch (draft.source) {
     case 'manual':
@@ -130,28 +140,18 @@ export const buildRateSourceBody = ({ draft }: { draft: RateSourceDraft }): Upda
         config: { coinId: draft.coingecko.coinId, quoteCurrency: draft.coingecko.quoteCurrency },
       };
     case 'http':
-      return {
-        rateSource: 'http',
-        config: {
-          urlTemplate: draft.http.urlTemplate.trim(),
-          jsonPath: draft.http.jsonPath.trim(),
-          quoteCurrency: draft.http.quoteCurrency,
-          ...buildHeadersField({ http: draft.http }),
-        },
-      };
+      return { rateSource: 'http', config: buildHttpConfig({ http: draft.http }) };
   }
 };
 
 /** The body of the preview request: the HTTP settings as typed, today's date. */
-export const buildTestBody = ({ draft }: { draft: RateSourceDraft }): TestCurrencyRateSourceBody => {
-  const body = buildRateSourceBody({ draft: { ...draft, source: 'http' } });
-  if (body.rateSource !== 'http') throw new Error('Expected an http rate source body');
-
-  return { rateSource: 'http', config: body.config };
-};
+export const buildTestBody = ({ http }: { http: RateSourceDraft['http'] }): TestCurrencyRateSourceBody => ({
+  rateSource: 'http',
+  config: buildHttpConfig({ http }),
+});
 
 /** Whether the draft would change what is saved, so Save stays disabled for an untouched editor. */
-export const isDraftChanged = ({ draft, saved }: { draft: RateSourceDraft; saved: SavedSource }): boolean =>
+export const isDraftChanged = ({ draft, saved }: { draft: RateSourceDraft; saved: SavedRateSource }): boolean =>
   !isEqual(buildRateSourceBody({ draft }), buildRateSourceBody({ draft: buildDraft({ saved }) }));
 
 const POSITIVE_NUMBER_PATTERN = /^\d*\.?\d+(e[+-]?\d+)?$/i;
@@ -170,7 +170,7 @@ export const isValidUrlTemplate = ({ value }: { value: string }): boolean => {
   const text = value.trim();
   if (!URL_TEMPLATE_PATTERN.test(text)) return false;
 
-  const known = new Set(HTTP_URL_PLACEHOLDERS.map((placeholder) => placeholder.slice(1, -1)));
+  const known = new Set<string>(HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES);
   const names = [...text.matchAll(PLACEHOLDER_PATTERN)].map((match) => match[1]!);
   const withoutPlaceholders = text.replace(PLACEHOLDER_PATTERN, '');
 

@@ -1,4 +1,8 @@
-import { DEFAULT_RATE_SOURCE_QUOTE_CURRENCY } from '@bt/shared/types';
+import {
+  DEFAULT_RATE_SOURCE_QUOTE_CURRENCY,
+  HTTP_RATE_SOURCE_MAX_HEADERS,
+  type HttpUrlTemplatePlaceholderName,
+} from '@bt/shared/types';
 import { currencyCode } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
@@ -7,10 +11,9 @@ export const HTTP_URL_TEMPLATE_PLACEHOLDERS = {
   date: '2026-01-01',
   code: 'BTC',
   quote: 'USD',
-} as const;
+} as const satisfies Record<HttpUrlTemplatePlaceholderName, string>;
 
 export const HTTP_URL_TEMPLATE_MAX_LENGTH = 2048;
-export const HTTP_HEADERS_MAX_COUNT = 10;
 const HTTP_HEADER_NAME_MAX_LENGTH = 64;
 const HTTP_HEADER_VALUE_MAX_LENGTH = 2048;
 
@@ -96,7 +99,7 @@ export const coingeckoRateSourceConfigSchema = z.strictObject({
   quoteCurrency: quoteCurrencySchema,
 });
 
-/** Request headers an HTTP source sends: name to value, at most {@link HTTP_HEADERS_MAX_COUNT}. */
+/** Request headers an HTTP source sends: name to value, at most {@link HTTP_RATE_SOURCE_MAX_HEADERS}. */
 export const httpHeadersSchema = z
   .record(
     z
@@ -106,8 +109,8 @@ export const httpHeadersSchema = z
       .refine((name) => !FORBIDDEN_HTTP_HEADER_NAMES.has(name.toLowerCase()), 'This header cannot be set'),
     z.string().max(HTTP_HEADER_VALUE_MAX_LENGTH).regex(HTTP_HEADER_VALUE_PATTERN, 'Invalid header value'),
   )
-  .refine((headers) => Object.keys(headers).length <= HTTP_HEADERS_MAX_COUNT, {
-    message: `At most ${HTTP_HEADERS_MAX_COUNT} headers`,
+  .refine((headers) => Object.keys(headers).length <= HTTP_RATE_SOURCE_MAX_HEADERS, {
+    message: `At most ${HTTP_RATE_SOURCE_MAX_HEADERS} headers`,
   })
   .refine(
     (headers) => new Set(Object.keys(headers).map((name) => name.toLowerCase())).size === Object.keys(headers).length,
@@ -143,7 +146,7 @@ export const httpRateSourceConfigSchema = z.strictObject({
 /** An HTTP source as it is saved and returned: the header values are not part of it, only their names. */
 export const storedHttpRateSourceConfigSchema = z.strictObject({
   ...httpSourceFields,
-  headerNames: z.array(z.string()).max(HTTP_HEADERS_MAX_COUNT).default([]),
+  headerNames: z.array(z.string()).max(HTTP_RATE_SOURCE_MAX_HEADERS).default([]),
 });
 
 /** The request body of `PUT /user/currencies/:code/rate-source`, one shape per source. */

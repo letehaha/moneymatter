@@ -117,6 +117,13 @@ export interface CoingeckoCoinSearchResult {
   marketCapRank: number | null;
 }
 
+/** An HTTP source sends at most this many request headers. */
+export const HTTP_RATE_SOURCE_MAX_HEADERS = 10;
+
+/** The placeholders an HTTP source URL template may hold, written `{date}`, `{code}` and `{quote}`. */
+export const HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES = ['date', 'code', 'quote'] as const;
+export type HttpUrlTemplatePlaceholderName = (typeof HTTP_URL_TEMPLATE_PLACEHOLDER_NAMES)[number];
+
 /**
  * A JSON endpoint called once per day. `urlTemplate` may hold `{date}`, `{code}` and `{quote}`;
  * `jsonPath` points at the price in the response, and the rate is stored in `quoteCurrency`.

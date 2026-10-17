@@ -10,7 +10,7 @@
       @update:model-value="updateField({ urlTemplate: String($event ?? '') })"
     />
     <p class="text-muted-foreground -mt-2 text-xs leading-5">
-      {{ $t('settings.currencies.rateSource.http.urlHint', placeholderParams) }}
+      {{ $t('settings.currencies.rateSource.http.urlHint', HTTP_URL_PLACEHOLDERS) }}
     </p>
 
     <div class="grid gap-3 @[26rem]/currencies:grid-cols-2">
@@ -138,7 +138,7 @@
             type="button"
             variant="outline"
             size="sm"
-            :disabled="disabled || model.headers.length >= MAX_HTTP_HEADERS"
+            :disabled="disabled || model.headers.length >= HTTP_RATE_SOURCE_MAX_HEADERS"
             data-testid="rate-source-add-header"
             @click="addHeader"
           >
@@ -207,7 +207,7 @@ import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { extractApiErrorMessage } from '@/js/errors';
-import type { TestCurrencyRateSourceResponse } from '@bt/shared/types';
+import { HTTP_RATE_SOURCE_MAX_HEADERS, type TestCurrencyRateSourceResponse } from '@bt/shared/types';
 import { FlaskConicalIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { useMutation } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
@@ -215,7 +215,6 @@ import { useI18n } from 'vue-i18n';
 
 import {
   HTTP_URL_PLACEHOLDERS,
-  MAX_HTTP_HEADERS,
   type HttpHeaderRow,
   type RateSourceDraft,
   type RateSourceDraftErrors,
@@ -242,10 +241,6 @@ const model = defineModel<RateSourceDraft['http']>({ required: true });
 const { t } = useI18n();
 const { isoOptions } = useCurrencyOptions({ excludeCode: () => '' });
 
-// vue-i18n reads braces as interpolation, so the literal placeholders travel as parameters.
-const [datePlaceholder, codePlaceholder, quotePlaceholder] = HTTP_URL_PLACEHOLDERS;
-const placeholderParams = { date: datePlaceholder, code: codePlaceholder, quote: quotePlaceholder };
-
 const canTest = computed(() => Boolean(model.value.urlTemplate.trim() && model.value.jsonPath.trim()));
 
 const testResult = ref<TestCurrencyRateSourceResponse | null>(null);
@@ -267,15 +262,8 @@ const updateHeader = ({ id, ...patch }: Partial<HttpHeaderRow> & { id: number })
 const formatTestRate = ({ rate }: { rate: number }) =>
   rate.toLocaleString(undefined, { maximumFractionDigits: TEST_RATE_MAX_FRACTION_DIGITS });
 
-const draftForTest = computed<RateSourceDraft>(() => ({
-  source: 'http',
-  peg: { pegCurrency: null, factor: '1' },
-  coingecko: { coinId: '', coinLabel: '', quoteCurrency: model.value.quoteCurrency },
-  http: model.value,
-}));
-
 const { mutate: runTest, isPending: isTesting } = useMutation({
-  mutationFn: () => testCurrencyRateSource({ code: props.code, body: buildTestBody({ draft: draftForTest.value }) }),
+  mutationFn: () => testCurrencyRateSource({ code: props.code, body: buildTestBody({ http: model.value }) }),
   onMutate: () => {
     testResult.value = null;
     testError.value = null;
