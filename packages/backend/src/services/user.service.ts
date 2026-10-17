@@ -13,6 +13,7 @@ import * as Users from '@models/users.model';
 import { withTransaction } from './common/with-transaction';
 import { addUserCurrencies } from './currencies/add-user-currency';
 import { withEffectiveCurrency } from './currencies/effective-currency';
+import { recomputeCustomRefAmounts } from './currencies/recompute-custom-ref-amounts.service';
 import { revalueAccountsInCurrencies } from './user-exchange-rate/revalue-accounts-in-currencies';
 
 export const getUser = async (id: number) => {
@@ -177,6 +178,15 @@ export const editUserCurrency = withTransaction(
     // `liveRateUpdate` picks between a flat manual rate and per-day market rates for
     // every stored balance row in this currency, so the whole history must be rebuilt.
     if (liveRateUpdate !== undefined && liveRateUpdate !== passedCurrency.liveRateUpdate) {
+      // The flag also decides whether the custom currencies pegged to or quoted in an ISO currency
+      // are worth its manual rate or the market's, so what they were valued with is valued again.
+      if (!passedCurrency.currency.isCustom) {
+        await recomputeCustomRefAmounts({
+          userId,
+          changes: [{ currencyCode, from: null, to: null, mode: 'recompute' }],
+        });
+      }
+
       await revalueAccountsInCurrencies({ userId, pairs: [{ baseCode: currencyCode, quoteCode: currencyCode }] });
     }
 

@@ -221,8 +221,14 @@ const setCurrencyRateSourceImpl = async ({
   }
 
   // The flag picks between a flat manual rate and per-day market rates for every stored balance row
-  // of an ISO currency, so its history is rebuilt.
+  // of an ISO currency, so its history is rebuilt. It also decides whether the custom currencies
+  // pegged to or quoted in that currency are worth its manual rate or the market's, so what they
+  // were valued with is valued again.
   if (liveRateChanged) {
+    await recomputeCustomRefAmounts({
+      userId,
+      changes: [{ currencyCode: code, from: null, to: null, mode: 'recompute' }],
+    });
     await revalueAccountsInCurrencies({ userId, pairs: [{ baseCode: code, quoteCode: code }] });
   }
 

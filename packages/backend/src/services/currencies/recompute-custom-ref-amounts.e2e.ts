@@ -425,5 +425,46 @@ describe('Valuing saved rows again after the rates of a custom currency change',
       expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
       expect((await readTx({ id: stored!.id })).refAmount).toBe(20);
     });
+
+    it('values a custom currency again when the ISO currency it is pegged to moves between the provider and its manual rate', async () => {
+      await createCurrency({ code: 'USDT' });
+      await pegTo({ code: 'USDT', pegCurrency: 'USD', factor: 2 });
+      const manualUsd = await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: BASE(), rate: 5 },
+          { baseCode: BASE(), quoteCode: 'USD', rate: 0.2 },
+        ],
+        raw: false,
+      });
+      expect(manualUsd.statusCode).toBe(200);
+      const usdt = await createAccountIn({ code: 'USDT' });
+      const [pegged] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
+      // The manual rate of 5 per USD: 10 * 2 * 5.
+      expect(pegged!.refAmount).toBe(100);
+
+      // Through the rate-source endpoint: the market rate of 4 per USD takes over, and back.
+      const toProvider = await helpers.setCurrencyRateSource({ code: 'USD', payload: { rateSource: 'provider' } });
+      expect(toProvider.statusCode).toBe(200);
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
+
+      const toManual = await helpers.setCurrencyRateSource({ code: 'USD', payload: { rateSource: 'manual' } });
+      expect(toManual.statusCode).toBe(200);
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(100);
+
+      // Through the live-rate flag of the currency editor.
+      const live = await helpers.updateUserCurrency({
+        currency: { currencyCode: 'USD', liveRateUpdate: true },
+        raw: false,
+      });
+      expect(live.statusCode).toBe(200);
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
+
+      const manual = await helpers.updateUserCurrency({
+        currency: { currencyCode: 'USD', liveRateUpdate: false },
+        raw: false,
+      });
+      expect(manual.statusCode).toBe(200);
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(100);
+    });
   });
 });
