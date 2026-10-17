@@ -7,6 +7,7 @@ import * as Transactions from '@models/transactions.model';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 
+import { settleNearestOpenPeriod } from './settle-period-on-match';
 import { stampSubscriptionPayeeAndTags } from './stamp-payee-and-tags';
 
 interface MatchTransactionParams {
@@ -109,6 +110,15 @@ export const matchTransactionToSubscriptions = withTransaction(
     }
 
     await stampSubscriptionPayeeAndTags({ subscription: best.subscription, transactionIds: [transaction.id] });
+
+    // The link alone leaves a scheduled subscription's period looking unpaid or overdue, so
+    // settle the open period this payment belongs to.
+    await settleNearestOpenPeriod({
+      subscription: best.subscription,
+      transactionId: transaction.id,
+      transactionTime: transaction.time,
+      userId,
+    });
 
     logger.info(
       `Subscription "${best.subscription.name}" matched transaction ${transaction.id} (score: ${best.score.toFixed(3)}, candidates: ${candidates.length})`,

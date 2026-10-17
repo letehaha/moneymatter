@@ -10,6 +10,7 @@ import { createTransaction } from '@services/transactions/create-transaction';
 import { buildTransactionFromSubscription } from './build-transaction-from-subscription';
 import { ensureNextPeriodExists } from './ensure-next-period';
 import { findSubscriptionOrThrow, validateAccountOwnership } from './helpers';
+import { withoutPeriodSettlement } from './period-settlement-context';
 import { stampSubscriptionPayeeAndTags } from './stamp-payee-and-tags';
 
 interface MarkPeriodPaidParams {
@@ -84,7 +85,9 @@ export const markPeriodPaid = withTransaction(
       const createParams = await buildTransactionFromSubscription({ subscription, amount, time });
       // createTransaction joins the active transaction via `withTransaction`, so
       // the created tx rolls back with the period update if anything below throws.
-      const [createdBaseTx] = await createTransaction(createParams);
+      // The rule matcher also sees this transaction; it already belongs to this period, so
+      // the matcher must only link it, not settle a period of its own.
+      const [createdBaseTx] = await withoutPeriodSettlement({ run: () => createTransaction(createParams) });
       linkedTransactionId = createdBaseTx.id;
     } else if (transactionId != null) {
       // Validate the caller-supplied transaction.
