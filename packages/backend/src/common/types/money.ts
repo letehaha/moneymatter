@@ -334,11 +334,5 @@ export function minorUnitsToApiDecimalOrNull({
   return value == null ? null : minorUnitsToApiDecimal({ value, decimals });
 }
 
-/**
- * Decimals of the engines that still sum in cents. They pass this where a report engine takes the
- * `decimals` its minor units are at, so their numbers stay what they were at cent precision.
- */
-export const CENTS_DECIMALS = 2;
-
 /** Decimal scale for investment DECIMAL columns (precision: 20, scale: 10). */
 export const INVESTMENT_DECIMAL_SCALE = 10;
