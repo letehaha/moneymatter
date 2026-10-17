@@ -27,6 +27,8 @@ interface InsertContext {
   mccByCode: Map<string, number>;
   /** Currency codes a restored row may name: the ISO seed plus the custom codes this backup defines. */
   currencyCodes: Set<string>;
+  /** Custom codes that exist on this instance but that this backup does not define: not the restorer's to use. */
+  unheldCustomCodes: Set<string>;
   /** Definitions of the backup's custom currencies, keyed by code. */
   customDefinitions: Map<string, CustomCurrencyDefinition>;
   /** Guarded FK columns per backup file name, derived from model metadata. */
@@ -38,6 +40,15 @@ interface InsertContext {
   transaction: Transaction;
   warnings: BackupRestoreWarning[];
 }
+
+/**
+ * The attributes of a table that hold a currency code, found by name so a new table or column is
+ * covered without a list to maintain (`currencyCode`, `originalCurrencyCode`, `toCurrencyCode`, ...).
+ */
+const CURRENCY_CODE_ATTRIBUTE = /currencycode$/i;
+
+const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] =>
+  Object.keys(def.model.getAttributes()).filter((attrName) => CURRENCY_CODE_ATTRIBUTE.test(attrName));
 
 const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): boolean =>
   plan.columns.some((c) => c.field === field);
@@ -83,12 +94,17 @@ function buildRowOverrides({
   }
 
   // A custom currency's name, symbol and decimals live in the user's overrides. A row without them
-  // takes the backup's definition, so the restored holding never falls back to a global row another
-  // user defined. Every row gets all three keys, keeping the batch's column set uniform.
+  // takes the backup's definition (the user's own, see `dumpCustomCurrencies`), so the restored
+  // holding never falls back to a global row another user defined. A row that carries its decimals
+  // holds a complete definition: its empty symbol was cleared on purpose and stays cleared, as in
+  // `applyCurrencyOverrides`. Every row gets all three keys, keeping the batch's column set uniform.
   if (def.fileName === 'users-currencies') {
     const definition = ctx.customDefinitions.get(String(row.currencyCode));
+    const isComplete = row.decimalsOverride != null;
     overrides.nameOverride = row.nameOverride ?? definition?.name ?? null;
-    overrides.symbolOverride = row.symbolOverride ?? definition?.symbol ?? null;
+    overrides.symbolOverride = isComplete
+      ? (row.symbolOverride ?? null)
+      : (row.symbolOverride ?? definition?.symbol ?? null);
     overrides.decimalsOverride = row.decimalsOverride ?? definition?.decimals ?? null;
   }
 
@@ -172,6 +188,8 @@ async function insertTable({
     }
   }
 
+  const currencyAttributes = getCurrencyCodeAttributes({ def });
+
   // The self-ref column is validated in the second pass, not here — exclude it.
   const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => fk.attrName !== selfRefColumn);
 
@@ -195,6 +213,14 @@ async function insertTable({
 
     // Skip a row whose currency isn't seeded on the target (users-currencies).
     if (def.requireSeededCurrency && !ctx.currencyCodes.has(String(row.currencyCode))) {
+      droppedCurrencyCount += 1;
+      continue;
+    }
+
+    // Skip a row of any table that names a custom currency the backup does not define. The foreign
+    // key accepts the code (another user's global row exists), but the restorer holds no definition
+    // of it, so the row would read that user's name, symbol and decimals.
+    if (currencyAttributes.some((attrName) => ctx.unheldCustomCodes.has(String(row[attrName])))) {
       droppedCurrencyCount += 1;
       continue;
     }
@@ -337,19 +363,15 @@ export async function insertRestoreTables({
   const insertedIds = new Map<string, Map<string, string>>();
 
   const needsMcc = BACKUP_TABLES.some((d) => d.enrichMccCode && (archive.data.get(d.fileName)?.length ?? 0) > 0);
-  const needsCurrency = (archive.data.get('users-currencies')?.length ?? 0) > 0;
-
   const [mccRows, currencyRows] = await Promise.all([
     needsMcc
       ? (MerchantCategoryCodes.findAll({ attributes: ['id', 'code'], raw: true }) as unknown as Promise<
           Array<{ id: number; code: string | number }>
         >)
       : Promise.resolve<Array<{ id: number; code: string | number }>>([]),
-    needsCurrency
-      ? (Currencies.findAll({ attributes: ['code', 'isCustom'], raw: true }) as unknown as Promise<
-          Array<{ code: string; isCustom: boolean }>
-        >)
-      : Promise.resolve<Array<{ code: string; isCustom: boolean }>>([]),
+    Currencies.findAll({ attributes: ['code', 'isCustom'], raw: true }) as unknown as Promise<
+      Array<{ code: string; isCustom: boolean }>
+    >,
   ]);
 
   const ctx: InsertContext = {
@@ -358,6 +380,9 @@ export async function insertRestoreTables({
     mccByCode: new Map(mccRows.map((r) => [String(r.code), r.id])),
     currencyCodes: new Set(
       currencyRows.filter((r) => !r.isCustom || customCurrencies.codes.has(r.code)).map((r) => r.code),
+    ),
+    unheldCustomCodes: new Set(
+      currencyRows.filter((r) => r.isCustom && !customCurrencies.codes.has(r.code)).map((r) => r.code),
     ),
     customDefinitions: customCurrencies.definitions,
     guardedFkMap: buildGuardedReferenceMap(),

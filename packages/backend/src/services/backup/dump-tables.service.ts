@@ -7,6 +7,7 @@ import InvestmentTransaction from '@models/investments/investment-transaction.mo
 import Securities from '@models/investments/securities.model';
 import MerchantCategoryCodes from '@models/merchant-category-codes.model';
 import UsersCurrencies from '@models/users-currencies.model';
+import { applyCurrencyOverrides } from '@services/currencies/effective-currency';
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
@@ -198,20 +199,25 @@ async function dumpReferenceFiles({
 }
 
 /**
- * The definitions (code, name, decimals, symbol) of the custom currencies the user holds. The user's
- * own overrides travel in `users-currencies`; this is the global row they sit on, so a restore on a
- * fresh instance can create it. Nothing that names a creator travels.
+ * The definitions (code, name, decimals, symbol) of the custom currencies the user holds, as THIS
+ * user defined them: their own overrides on top of the global row. The global row carries whoever
+ * created the code first, so exporting it would hand one user another user's name, symbol and
+ * decimals. A restore on a fresh instance creates the global row from this definition, and on an
+ * instance that already has the code the user's own overrides travel in `users-currencies`.
+ * Nothing that names a creator travels.
  */
 async function dumpCustomCurrencies({ userId }: { userId: number }): Promise<Row[]> {
-  const held = await UsersCurrencies.findAll({ where: { userId }, attributes: ['currencyCode'], raw: true });
-  if (held.length === 0) return [];
+  const held = (await UsersCurrencies.findAll({
+    where: { userId },
+    include: [{ model: Currencies, as: 'currency', where: { isCustom: true }, required: true }],
+    order: [['currencyCode', 'ASC']],
+  })) as (UsersCurrencies & { currency: Currencies })[];
 
-  return (await Currencies.findAll({
-    where: { code: { [Op.in]: held.map((row) => row.currencyCode) }, isCustom: true },
-    attributes: ['code', 'currency', 'digits', 'symbol', 'isCustom'],
-    order: [['code', 'ASC']],
-    raw: true,
-  })) as unknown as Row[];
+  return held.map((row) => {
+    const { code, name, decimals, symbol } = applyCurrencyOverrides({ currency: row.currency, overrides: row });
+
+    return { code, currency: name, digits: decimals, symbol, isCustom: true };
+  });
 }
 
 /** Dump every backup file (data + reference) for one user. */

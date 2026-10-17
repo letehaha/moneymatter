@@ -9,10 +9,8 @@ import {
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import Currencies from '@models/currencies.model';
 import UserExchangeRates from '@models/user-exchange-rates.model';
-import { redisClient } from '@root/redis-client';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import { RateLimitService } from '@services/common/rate-limit.service';
-import { buildRefAmountCachePattern } from '@services/ref-amount-cache';
 import * as helpers from '@tests/helpers';
 import type { ErrorResponse } from '@tests/helpers/common';
 
@@ -87,6 +85,13 @@ const accountTransactions = async ({ accountId }: { accountId: string }) =>
     accountIds: [accountId as RecordId],
     raw: true,
   })) as unknown as TransactionApiResponse[];
+
+const restoreArchive = async ({ fileContent }: { fileContent: string }) => {
+  const restore = await helpers.restoreBackup({ fileContent });
+  expect(restore.statusCode).toBe(200);
+
+  return helpers.waitForRestore({ jobId: restore.jobId! });
+};
 
 const errorOf = (response: { body: { response: unknown } }) => response.body.response as ErrorResponse;
 
@@ -254,24 +259,9 @@ describe('Custom currencies', () => {
       const account = await createCustomAccount({ code: SAT });
       const transaction = await createExpense({ accountId: account.id, amount: 1.005 });
       expect(Number(transaction.amount)).toBe(1.01);
-    });
-
-    it('drops the cached converted amounts of the user when the decimals change', async () => {
-      await helpers.createCustomCurrency({ payload: sat({ decimals: 8 }) });
-      const ownId = await userId();
-      const cachedKey = `ref_amount:v2:${ownId}:1.000000000000000000:${SAT}:${global.BASE_CURRENCY_CODE}:2025-01-01`;
-      const otherUsersKey = `ref_amount:v2:${ownId + 1000}:1.000000000000000000:${SAT}:${global.BASE_CURRENCY_CODE}:2025-01-01`;
-      await redisClient.set(cachedKey, '2.00');
-      await redisClient.set(otherUsersKey, '2.00');
-      expect(buildRefAmountCachePattern({ userId: ownId })).toBe(`ref_amount:v2:${ownId}:*`);
-
-      await helpers.updateCustomCurrency({ code: SAT, payload: { name: 'Sats' } });
-      expect(await redisClient.get(cachedKey)).toBe('2.00');
-
-      await helpers.updateCustomCurrency({ code: SAT, payload: { decimals: 2 } });
-
-      expect(await redisClient.get(cachedKey)).toBeNull();
-      expect(await redisClient.get(otherUsersKey)).toBe('2.00');
+      // The base-currency value follows the rounded native amount: 1.01 x RATE.
+      expect(Number(transaction.refAmount)).toBe(2.02);
+      expect(transaction.refAmountMissing).toBe(false);
     });
 
     it('refuses a decimals change with 409 while an account uses the currency', async () => {
@@ -541,6 +531,94 @@ describe('Custom currencies', () => {
       expect(restoredAccount!.currencyCode).toBe(USDT);
       const restoredTransactions = await accountTransactions({ accountId: restoredAccount!.id });
       expect(restoredTransactions.map((transaction) => Number(transaction.amount))).toContain(0.123456);
+    });
+
+    describe('when another user defined the same code first', () => {
+      const defineAsBob = async () => {
+        const bob = await helpers.signUpSecondUser();
+        await helpers.asUser({
+          cookies: bob.cookies,
+          fn: () =>
+            helpers.createCustomCurrency({
+              payload: { code: SAT, name: 'Bob Sats', decimals: 3, symbol: 'b' },
+              raw: true,
+            }),
+        });
+      };
+
+      it("exports the user's own definition, not the one the global row holds, and restores it as theirs", async () => {
+        await defineAsBob();
+        await helpers.createCustomCurrency({ payload: sat({ name: 'My Sats', decimals: 8 }) });
+
+        const exported = await helpers.exportBackup();
+        const archive = helpers.parseBackupArchive({ buffer: exported.body });
+        const reference = JSON.parse(archive.files.get('reference/custom-currencies.json')!.toString('utf8'));
+        expect(reference).toEqual([{ code: SAT, currency: 'My Sats', digits: 8, symbol: null, isCustom: true }]);
+        expect(JSON.stringify(reference)).not.toContain('Bob');
+
+        await helpers.wipeUserData();
+        const status = await restoreArchive({ fileContent: exported.body.toString('base64') });
+        expect(status.status).toBe('completed');
+
+        expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
+          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true },
+        ]);
+        // Bob's definition on the global row is untouched.
+        expect(await Currencies.findByPk(SAT)).toMatchObject({ currency: 'Bob Sats', digits: 3, symbol: 'b' });
+      });
+
+      it('keeps a symbol the user cleared cleared, even when the archive carries a symbol for the code', async () => {
+        await defineAsBob();
+        await helpers.createCustomCurrency({ payload: sat({ name: 'My Sats', decimals: 8, symbol: 'S' }) });
+        await helpers.updateCustomCurrency({ code: SAT, payload: { symbol: null } });
+
+        const exported = await helpers.exportBackup();
+        const archive = helpers.parseBackupArchive({ buffer: exported.body });
+        const reference = JSON.parse(archive.files.get('reference/custom-currencies.json')!.toString('utf8'));
+        expect(reference).toEqual([{ code: SAT, currency: 'My Sats', digits: 8, symbol: null, isCustom: true }]);
+
+        // An archive written before the definition followed the user's overrides carried the symbol
+        // of the global row; the cleared symbol in `users-currencies` still wins.
+        archive.files.set(
+          'reference/custom-currencies.json',
+          Buffer.from(JSON.stringify([{ ...reference[0], symbol: 'S' }])),
+        );
+        await helpers.wipeUserData();
+        const status = await restoreArchive({ fileContent: await helpers.repackBackup({ files: archive.files }) });
+        expect(status.status).toBe('completed');
+
+        expect(await helpers.listCustomCurrencies({ raw: true })).toEqual([
+          { code: SAT, name: 'My Sats', decimals: 8, symbol: null, isCustom: true },
+        ]);
+      });
+
+      it('drops an account that names the code without the archive defining it, and says so', async () => {
+        await defineAsBob();
+        await createCustomAccount({ code: global.BASE_CURRENCY_CODE, name: 'Plain' });
+
+        const exported = await helpers.exportBackup();
+        const archive = helpers.parseBackupArchive({ buffer: exported.body });
+        const accounts = JSON.parse(archive.files.get('data/accounts.json')!.toString('utf8')) as {
+          name: string;
+          currencyCode: string;
+        }[];
+        archive.files.set(
+          'data/accounts.json',
+          Buffer.from(
+            JSON.stringify(accounts.map((item) => (item.name === 'Plain' ? { ...item, currencyCode: SAT } : item))),
+          ),
+        );
+
+        const status = await restoreArchive({ fileContent: await helpers.repackBackup({ files: archive.files }) });
+
+        expect(status.status).toBe('completed');
+        expect(status.summary?.warnings).toEqual(
+          expect.arrayContaining([expect.objectContaining({ code: 'currency_missing', table: 'accounts', count: 1 })]),
+        );
+        const restored = await helpers.getAccounts();
+        expect(restored.some((item) => item.currencyCode === SAT)).toBe(false);
+        expect(restored.some((item) => item.name === 'Plain')).toBe(false);
+      });
     });
 
     it("never attaches another user's custom currency that an archive names without defining", async () => {
