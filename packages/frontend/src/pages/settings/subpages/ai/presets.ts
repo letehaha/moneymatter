@@ -4,6 +4,7 @@ import {
   CLI_AI_MODELS,
   type CliAiAvailability,
   asAiCliProvider,
+  findCliAiModel,
 } from '@bt/shared/types';
 
 export type AiConnectionPresetId =
@@ -154,6 +155,39 @@ export const getDefaultCliModel = ({ preset }: { preset: AiConnectionPreset }): 
   const cliProvider = asAiCliProvider({ provider: preset.provider });
   if (!cliProvider) return '';
   return CLI_AI_MODELS[cliProvider].find((model) => model.isDefault)?.id ?? '';
+};
+
+export interface CliModelOption {
+  id: string;
+  label: string;
+}
+
+/**
+ * The options of a subscription preset's model select: one per curated model. A stored id the list
+ * does not know (a model typed before the list became a select) is kept as an extra option under its
+ * own name, so the select never shows an empty value for an existing connection. A preset without a
+ * curated list yields no options.
+ */
+export const getCliModelOptions = ({
+  preset,
+  currentModel,
+}: {
+  preset: AiConnectionPreset;
+  currentModel?: string;
+}): CliModelOption[] => {
+  const cliProvider = asAiCliProvider({ provider: preset.provider });
+  if (!cliProvider) return [];
+
+  const options = CLI_AI_MODELS[cliProvider].map(({ id, label }) => ({ id, label }));
+  const model = currentModel?.trim();
+  if (!model || findCliAiModel({ provider: cliProvider, model })) return options;
+  return [...options, { id: model, label: model }];
+};
+
+/** The option id a stored model is shown as: a legacy pinned id becomes its alias, an unknown one stays. */
+export const resolveCliModelId = ({ preset, model }: { preset: AiConnectionPreset; model: string }): string => {
+  const cliProvider = asAiCliProvider({ provider: preset.provider });
+  return (cliProvider && findCliAiModel({ provider: cliProvider, model })?.id) || model;
 };
 
 const CLI_NOT_INSTALLED_REASON_KEY = 'settings.ai.connections.presets.cliNotInstalled';

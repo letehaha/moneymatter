@@ -124,10 +124,22 @@
         </p>
       </div>
 
+      <SelectField
+        v-if="isSubscription"
+        :model-value="selectedCliModelOption"
+        :values="cliModelOptions"
+        label-key="label"
+        value-key="id"
+        :disabled="isBusy"
+        :label="$t('settings.ai.connections.form.modelLabel')"
+        :placeholder="$t('settings.ai.connections.form.modelSelectPlaceholder')"
+        @update:model-value="handleCliModelChange"
+      />
       <AutocompleteField
+        v-else
         v-model="form.model"
         :disabled="isBusy"
-        :suggestions="modelSuggestions"
+        :suggestions="liveModels"
         :loading="isLoadingLiveModels"
         :maxlength="AI_MODEL_NAME_MAX_LENGTH"
         :label="$t('settings.ai.connections.form.modelLabel')"
@@ -198,7 +210,6 @@ import {
   AI_MODEL_NAME_MAX_LENGTH,
   AICliProvider,
   AI_PROVIDER,
-  CLI_AI_MODELS,
   TestAIConnectionBody,
   asAiCliProvider,
 } from '@bt/shared/types';
@@ -210,10 +221,13 @@ import {
   AI_CONNECTION_PRESETS,
   type AiConnectionPreset,
   type AiConnectionPresetOption,
+  type CliModelOption,
   findPresetForConnection,
+  getCliModelOptions,
   getDefaultCliModel,
   getVisiblePresets,
   isSubscriptionPreset,
+  resolveCliModelId,
 } from '../presets';
 import CliSignInPanel from './cli-sign-in-panel.vue';
 
@@ -305,7 +319,9 @@ watch(
           )
         : '');
     form.baseUrl = base?.baseUrl ?? '';
-    form.model = base?.model ?? getDefaultCliModel({ preset: selectedPreset.value });
+    form.model = base?.model
+      ? resolveCliModelId({ preset: selectedPreset.value, model: base.model })
+      : getDefaultCliModel({ preset: selectedPreset.value });
     form.apiKey = '';
     cliSessionId.value = null;
     isCliSignInInProgress.value = false;
@@ -376,9 +392,14 @@ const { liveModels, isLoadingLiveModels } = useAiConnectionModels({
   enabled: computed(() => isOpen.value && !isSubscription.value),
 });
 
-const modelSuggestions = computed(() =>
-  cliProvider.value ? CLI_AI_MODELS[cliProvider.value].map((model) => model.id) : liveModels.value,
-);
+const cliModelOptions = computed(() => getCliModelOptions({ preset: selectedPreset.value, currentModel: form.model }));
+const selectedCliModelOption = computed(() => cliModelOptions.value.find((option) => option.id === form.model) ?? null);
+
+const handleCliModelChange = (option: CliModelOption | null) => {
+  if (!option) return;
+  form.model = option.id;
+  resetFeedback();
+};
 
 const handlePresetChange = (preset: AiConnectionPresetOption | null) => {
   if (!preset || preset.disabled || preset.id === selectedPreset.value.id) return;
