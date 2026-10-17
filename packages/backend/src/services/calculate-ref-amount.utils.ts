@@ -1,21 +1,18 @@
+import type { ConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 
-/** Decimals of a currency pair that no `getCurrencyDecimals` lookup refined: the ISO 4217 majority. */
-const DEFAULT_CONVERSION_DECIMALS = 2;
-
-export interface ConversionDecimals {
-  /** Decimals of the amount's own currency; the amount is rounded to them before it is converted. */
-  baseDecimals?: number;
-  /** Decimals of the currency the amount converts into; the product is rounded to them. */
-  quoteDecimals?: number;
-}
+/**
+ * Investment figures reach the API as two-decimal display strings whatever the currency, so their
+ * conversions round to 2 on purpose instead of looking the decimals up.
+ */
+export const INVESTMENT_CONVERSION_DECIMALS: ConversionDecimals = { baseDecimals: 2, quoteDecimals: 2 };
 
 export const calculateRefAmountFromParams = ({
   amount,
   rate,
   useFloorAbs = true,
-  baseDecimals = DEFAULT_CONVERSION_DECIMALS,
-  quoteDecimals = DEFAULT_CONVERSION_DECIMALS,
+  baseDecimals,
+  quoteDecimals,
 }: {
   amount: Money;
   rate: number;

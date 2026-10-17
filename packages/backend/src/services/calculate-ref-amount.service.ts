@@ -1,4 +1,4 @@
-import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -96,12 +96,9 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       bypassCache,
     });
 
-    const [baseDecimals, quoteDecimals] = await Promise.all([
-      getCurrencyDecimals({ userId, code: baseCode }),
-      getCurrencyDecimals({ userId, code: resolvedQuoteCode }),
-    ]);
+    const decimals = await getConversionDecimals({ userId, baseCode, quoteCode: resolvedQuoteCode });
 
-    const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate, baseDecimals, quoteDecimals });
+    const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate, ...decimals });
 
     // Cache the final result as an exact decimal string. Skipped under `bypassCache` (see its doc):
     // a write-back inside an uncommitted rate-write transaction would poison the

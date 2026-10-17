@@ -14,7 +14,13 @@ jest.mock('@models/currencies.model', () => ({
 import Currencies from '@models/currencies.model';
 
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
-import { assertMoneyFitsCurrency, getCurrencyDecimals, roundMoneyValues, roundToCurrency } from './currency-precision';
+import {
+  assertMoneyFitsCurrency,
+  getConversionDecimals,
+  getCurrencyDecimals,
+  roundMoneyValues,
+  roundToCurrency,
+} from './currency-precision';
 /* eslint-enable import/first */
 
 const USER_ID = 1;
@@ -43,6 +49,19 @@ describe('currency precision helpers', () => {
       const code = (options as { where: { code: string } }).where.code;
       const digits = DIGITS_BY_CODE[code];
       return digits === undefined ? null : { code, digits };
+    });
+  });
+
+  describe('getConversionDecimals', () => {
+    it('returns the decimals of both currencies of the conversion', async () => {
+      await expect(getConversionDecimals({ userId: USER_ID, baseCode: 'JPY', quoteCode: 'KWD' })).resolves.toEqual({
+        baseDecimals: 0,
+        quoteDecimals: 3,
+      });
+    });
+
+    it('rejects an unknown currency instead of falling back to 2 decimals', async () => {
+      await expect(getConversionDecimals({ userId: USER_ID, baseCode: 'USD', quoteCode: 'XXZ' })).rejects.toThrow();
     });
   });
 
