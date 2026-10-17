@@ -13,11 +13,12 @@ jest.mock('@models/currencies.model', () => ({
 jest.mock('@models/users-currencies.model', () => ({
   __esModule: true,
   getBaseCurrency: jest.fn(),
+  default: { findOne: jest.fn() },
 }));
 
 /* eslint-disable import/first */
 import Currencies from '@models/currencies.model';
-import { getBaseCurrency } from '@models/users-currencies.model';
+import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
 import {
@@ -49,6 +50,69 @@ const round = ({
   });
 
 describe('currency precision helpers', () => {
+  describe('getCurrencyDecimals with custom currencies', () => {
+    const OTHER_USER_ID = 2;
+    const overrideByUser: Record<number, number | null> = { [USER_ID]: 8, [OTHER_USER_ID]: 0 };
+
+    beforeEach(() => {
+      invalidateCurrencyDecimalsCache();
+      (Currencies.findOne as jest.Mock).mockClear();
+      (UsersCurrencies.findOne as jest.Mock).mockClear();
+      (Currencies.findOne as jest.Mock<(...args: unknown[]) => Promise<unknown>>).mockImplementation(
+        async (options) => {
+          const code = (options as { where: { code: string } }).where.code;
+          if (code === 'SAT') return { code, digits: 4, isCustom: true };
+          if (code === 'USD') return { code, digits: 2, isCustom: false };
+          return null;
+        },
+      );
+      (UsersCurrencies.findOne as jest.Mock<(...args: unknown[]) => Promise<unknown>>).mockImplementation(
+        async (options) => {
+          const userId = (options as { where: { userId: number } }).where.userId;
+          return userId in overrideByUser ? { decimalsOverride: overrideByUser[userId] } : null;
+        },
+      );
+    });
+
+    it("prefers the user's own decimals over the global row, and keeps users apart", async () => {
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'SAT' })).resolves.toBe(8);
+      await expect(getCurrencyDecimals({ userId: OTHER_USER_ID, code: 'SAT' })).resolves.toBe(0);
+    });
+
+    it('falls back to the global digits for a user who holds no override', async () => {
+      await expect(getCurrencyDecimals({ userId: 3, code: 'SAT' })).resolves.toBe(4);
+    });
+
+    it('does not look for an override on an ISO currency', async () => {
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'USD' })).resolves.toBe(2);
+      expect(UsersCurrencies.findOne).not.toHaveBeenCalled();
+    });
+
+    it('serves the cached value until the cache is invalidated for the user and code', async () => {
+      await getCurrencyDecimals({ userId: USER_ID, code: 'SAT' });
+      overrideByUser[USER_ID] = 2;
+
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'SAT' })).resolves.toBe(8);
+
+      invalidateCurrencyDecimalsCache({ userId: USER_ID, code: 'SAT' });
+      await expect(getCurrencyDecimals({ userId: USER_ID, code: 'SAT' })).resolves.toBe(2);
+
+      overrideByUser[USER_ID] = 8;
+    });
+
+    it("rounds a conversion's native side with the owner's definition when one is given", async () => {
+      await expect(
+        getConversionDecimals({ userId: OTHER_USER_ID, baseCode: 'SAT', quoteCode: 'USD', baseOwnerUserId: USER_ID }),
+      ).resolves.toEqual({ baseDecimals: 8, quoteDecimals: 2 });
+      await expect(
+        getConversionDecimals({ userId: OTHER_USER_ID, baseCode: 'SAT', quoteCode: 'USD' }),
+      ).resolves.toEqual({
+        baseDecimals: 0,
+        quoteDecimals: 2,
+      });
+    });
+  });
+
   beforeEach(() => {
     invalidateCurrencyDecimalsCache();
     (Currencies.findOne as jest.Mock).mockClear();

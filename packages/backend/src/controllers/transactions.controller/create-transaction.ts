@@ -2,6 +2,7 @@ import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, isTwoLeg
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { deserializeCreateTransaction, serializeTransactionTuple } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
@@ -162,6 +163,7 @@ export default createController(schema, async ({ user, body }) => {
   // 1. Amount and destinationAmount with same currency should be equal
 
   const transactions = await transactionsService.createTransaction(params);
+  await attachTransactionCurrencyMeta({ transactions });
 
   // Serialize: convert cents to decimal for API response
   // createTransaction returns [baseTx, oppositeTx?] tuple

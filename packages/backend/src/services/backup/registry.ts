@@ -574,9 +574,14 @@ interface BackupReferenceDef {
  * Global catalog subset embedded under `reference/`. Not owner-scoped: dumped
  * as the exact Securities rows the user's holdings and investment transactions
  * reference (identity only), then resolve-or-create on restore. Prices are NOT
- * dumped — see SecurityPricing in BACKUP_EXCLUDED.
+ * dumped — see SecurityPricing in BACKUP_EXCLUDED. The Currencies model is here
+ * for the user-defined rows the user holds (the ISO seed is referenced by natural
+ * code and is stable across instances).
  */
-export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [{ fileName: 'securities', model: models.Securities }];
+export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [
+  { fileName: 'securities', model: models.Securities },
+  { fileName: 'custom-currencies', model: models.Currencies },
+];
 
 interface BackupExcludedDef {
   model: AnyModel;
@@ -589,7 +594,6 @@ interface BackupExcludedDef {
  * a new model added without one fails that test.
  */
 export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
-  { model: models.Currencies, reason: 'Global ISO seed, referenced by natural code — stable across instances.' },
   {
     model: models.ExchangeRates,
     reason: 'Global; self-heals via startup backfill (1999→today) plus the daily rate cron.',

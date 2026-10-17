@@ -1,10 +1,12 @@
 import type { RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
+import Currencies from '@models/currencies.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
 import MerchantCategoryCodes from '@models/merchant-category-codes.model';
+import UsersCurrencies from '@models/users-currencies.model';
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
@@ -148,7 +150,13 @@ async function dumpTable({
  * resolves-or-creates by natural key. Prices are not dumped: derived market data
  * the instance refetches, never trusted from an uploaded backup.
  */
-async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Promise<BackupFile[]> {
+async function dumpReferenceFiles({
+  resolver,
+  userId,
+}: {
+  resolver: ScopeResolver;
+  userId: number;
+}): Promise<BackupFile[]> {
   const portfolioIds = await resolver.getScope({ scope: 'portfolios' });
 
   let securityIds: RecordId[] = [];
@@ -177,7 +185,33 @@ async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Pr
     ? await Securities.findAll({ where: { id: { [Op.in]: securityIds } }, raw: true })
     : [];
 
-  return [{ path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) }];
+  const customCurrencies = await dumpCustomCurrencies({ userId });
+
+  return [
+    { path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) },
+    {
+      path: 'reference/custom-currencies.json',
+      rows: customCurrencies.length,
+      buffer: toBuffer({ value: customCurrencies }),
+    },
+  ];
+}
+
+/**
+ * The definitions (code, name, decimals, symbol) of the custom currencies the user holds. The user's
+ * own overrides travel in `users-currencies`; this is the global row they sit on, so a restore on a
+ * fresh instance can create it. Nothing that names a creator travels.
+ */
+async function dumpCustomCurrencies({ userId }: { userId: number }): Promise<Row[]> {
+  const held = await UsersCurrencies.findAll({ where: { userId }, attributes: ['currencyCode'], raw: true });
+  if (held.length === 0) return [];
+
+  return (await Currencies.findAll({
+    where: { code: { [Op.in]: held.map((row) => row.currencyCode) }, isCustom: true },
+    attributes: ['code', 'currency', 'digits', 'symbol', 'isCustom'],
+    order: [['code', 'ASC']],
+    raw: true,
+  })) as unknown as Row[];
 }
 
 /** Dump every backup file (data + reference) for one user. */
@@ -191,6 +225,6 @@ export async function dumpBackupFiles({ userId }: { userId: number }): Promise<B
     dataFiles.push(await dumpTable({ def, userId, resolver }));
   }
 
-  const referenceFiles = await dumpReferenceFiles({ resolver });
+  const referenceFiles = await dumpReferenceFiles({ resolver, userId });
   return [...dataFiles, ...referenceFiles];
 }

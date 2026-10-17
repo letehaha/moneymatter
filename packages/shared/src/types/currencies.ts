@@ -31,6 +31,40 @@ export interface CurrencyModel {
   symbol: string | null;
 }
 
+/**
+ * How an amount in a currency is formatted, as the account owner defines it. Accounts and
+ * transactions carry it so a collaborator's UI formats by the account rather than by its own list.
+ */
+export interface CurrencyMeta {
+  /** Decimals the amounts in this currency keep. */
+  decimals: number;
+  /** Symbol of a custom currency; `null` for ISO currencies, which the client formats itself. */
+  symbol: string | null;
+  isCustom: boolean;
+}
+
+/** A user's custom currency as `/user/currencies/custom` returns it, overrides applied. */
+export interface CustomCurrencyModel extends CurrencyMeta {
+  code: string;
+  name: string;
+  isCustom: true;
+}
+
+export interface CreateCustomCurrencyBody {
+  code: string;
+  name: string;
+  /** 0 to 18. */
+  decimals: number;
+  symbol?: string | null;
+}
+
+export interface UpdateCustomCurrencyBody {
+  name?: string;
+  /** Changing it is allowed only while none of the user's rows use the currency. */
+  decimals?: number;
+  symbol?: string | null;
+}
+
 export interface UserCurrencyModel {
   id: RecordId;
   userId: number;

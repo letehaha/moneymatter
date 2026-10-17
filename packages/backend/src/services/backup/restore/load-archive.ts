@@ -88,6 +88,7 @@ export interface ParsedArchive {
   user: Row | null;
   reference: {
     securities: Row[];
+    customCurrencies: Row[];
   };
   /** Data files present in the zip whose base name isn't a known backup table. */
   unknownFileNames: string[];
@@ -274,6 +275,7 @@ export async function loadBackupArchive({
     user,
     reference: {
       securities: referenceByName.get('securities') ?? [],
+      customCurrencies: referenceByName.get('custom-currencies') ?? [],
     },
     unknownFileNames,
   };

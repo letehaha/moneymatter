@@ -25,12 +25,14 @@ interface TransactionMoneyFields {
 export const roundTransactionMoney = async <TValues extends TransactionMoneyFields>({
   values,
   userId,
+  accountOwnerUserId = userId,
   currencyCode,
   refCurrencyCode,
   originalCurrencyCode,
 }: {
   values: TValues;
   userId: number;
+  accountOwnerUserId?: number;
   currencyCode: string;
   refCurrencyCode: string | null | undefined;
   originalCurrencyCode: string | null | undefined;
@@ -39,14 +41,15 @@ export const roundTransactionMoney = async <TValues extends TransactionMoneyFiel
 
   const roundedNative = await roundMoneyValues({
     values: { amount: native.amount, commissionRate: native.commissionRate, cashbackAmount: native.cashbackAmount },
-    userId,
+    userId: accountOwnerUserId,
     currencyCode,
     mode: 'half-up',
   });
   const resolvedRefCurrencyCode = refCurrencyCode ?? currencyCode;
   const roundedRef = await roundMoneyValues({
     values: { refAmount, refCommissionRate },
-    userId,
+    // A reference value in the account's own currency is its native value, so it follows the owner.
+    userId: resolvedRefCurrencyCode === currencyCode ? accountOwnerUserId : userId,
     currencyCode: resolvedRefCurrencyCode,
     mode: resolvedRefCurrencyCode === currencyCode ? 'half-up' : 'half-even',
   });

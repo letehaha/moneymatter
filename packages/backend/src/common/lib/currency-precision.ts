@@ -3,7 +3,7 @@ import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
-import { getBaseCurrency } from '@models/users-currencies.model';
+import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 
 export interface ConversionDecimals {
   /** Decimals of the amount's own currency; the amount is rounded to them before it is converted. */
@@ -17,8 +17,13 @@ type CurrencyRoundingMode = 'half-up' | 'half-even';
 /**
  * Number of decimal places the currency carries for the user.
  *
- * Reads `Currencies.digits`. Results are cached per `userId + code`; the cache is dropped
- * by the `Currencies` model hooks whenever a currency row changes.
+ * A custom currency takes the user's own `UsersCurrencies.decimalsOverride` when they hold one;
+ * every other case reads `Currencies.digits`. ISO currencies never carry an override, so they cost
+ * one lookup. Results are cached per `userId + code`; the `Currencies` and `UsersCurrencies` model
+ * hooks drop the entries whenever either row changes.
+ *
+ * Pass the account owner's id for an amount denominated in the account's currency: the owner's
+ * definition of a custom code governs every native amount on the account, whoever enters it.
  */
 export const getCurrencyDecimals = async ({ userId, code }: { userId: number; code: string }): Promise<number> => {
   const cached = getCachedCurrencyDecimals({ userId, code });
@@ -30,9 +35,19 @@ export const getCurrencyDecimals = async ({ userId, code }: { userId: number; co
     throw new NotFoundError({ message: t({ key: 'currencies.unknownCurrencyCode', variables: { code } }) });
   }
 
-  setCachedCurrencyDecimals({ userId, code, decimals: currency.digits });
+  const override = currency.isCustom
+    ? (
+        await UsersCurrencies.findOne({
+          where: { userId, currencyCode: code },
+          attributes: ['decimalsOverride'],
+        })
+      )?.decimalsOverride
+    : null;
+  const decimals = override ?? currency.digits;
 
-  return currency.digits;
+  setCachedCurrencyDecimals({ userId, code, decimals });
+
+  return decimals;
 };
 
 /**
@@ -57,13 +72,16 @@ export const getConversionDecimals = async ({
   userId,
   baseCode,
   quoteCode,
+  baseOwnerUserId = userId,
 }: {
   userId: number;
   baseCode: string;
   quoteCode: string;
+  /** Whose definition of `baseCode` applies; the account owner's, for an amount on a shared account. */
+  baseOwnerUserId?: number;
 }): Promise<ConversionDecimals> => {
   const [baseDecimals, quoteDecimals] = await Promise.all([
-    getCurrencyDecimals({ userId, code: baseCode }),
+    getCurrencyDecimals({ userId: baseOwnerUserId, code: baseCode }),
     getCurrencyDecimals({ userId, code: quoteCode }),
   ]);
 

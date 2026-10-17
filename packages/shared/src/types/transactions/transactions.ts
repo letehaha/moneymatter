@@ -1,6 +1,7 @@
 import type { ACCOUNT_TYPES } from '../accounts';
 import type { EmbeddedCategoryModel } from '../categories';
 import type { CategorizationMeta } from '../categorization';
+import type { CurrencyMeta } from '../currencies';
 import { RecordId } from '../record-id';
 import type { TagModel } from '../tags';
 
@@ -128,6 +129,8 @@ export interface TransactionModel {
   refAmountMissing: boolean;
   /** Serializer-derived, list reads only. */
   hasAttachments?: boolean;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them; list and detail reads. */
+  currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
   /** Serializer-derived: set when a bank transaction merged into this row while it was planned. */
   plannedMerge?: { mergedAt: string } | null;

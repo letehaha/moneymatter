@@ -4,7 +4,7 @@
  * Serializes account model instances for API responses.
  * Money fields auto-convert via .toNumber().
  */
-import { type AccountApiResponse, BANK_PROVIDER_TYPE } from '@bt/shared/types';
+import { type AccountApiResponse, BANK_PROVIDER_TYPE, type CurrencyMeta } from '@bt/shared/types';
 import { moneyToApiDecimal } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type { AccountShareContext } from '@services/sharing/get-shared-accounts.service';
@@ -28,6 +28,7 @@ export function serializeAccount(
     needsRelink?: boolean;
     _shareContext?: AccountShareContext;
     _bankProviderType?: BANK_PROVIDER_TYPE | null;
+    currencyMeta?: CurrencyMeta;
   },
 ): AccountApiResponse {
   // Owner-side bank-link metadata (externalId, externalData, connection FK) leaks PII —
@@ -57,6 +58,10 @@ export function serializeAccount(
     ...serializeLogoFields({ entity: account }),
   };
 
+  if (account.currencyMeta) {
+    response.currencyMeta = account.currencyMeta;
+  }
+
   if (account.needsRelink !== undefined) {
     response.needsRelink = account.needsRelink;
   }
@@ -82,6 +87,7 @@ export function serializeAccounts(
     needsRelink?: boolean;
     _shareContext?: AccountShareContext;
     _bankProviderType?: BANK_PROVIDER_TYPE | null;
+    currencyMeta?: CurrencyMeta;
   })[],
 ): AccountApiResponse[] {
   return accounts.map(serializeAccount);

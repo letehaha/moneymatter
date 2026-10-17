@@ -13,6 +13,7 @@ import { buildInsertRecord, runBulkInsert } from './bulk-insert';
 import type { ParsedArchive } from './load-archive';
 import { type GuardedFk, buildGuardedReferenceMap, guardRowReferences } from './owned-reference-guard';
 import { remapEmbeddedReferences } from './remap-embedded-references';
+import { type CustomCurrencyDefinition } from './resolve-custom-currencies';
 
 type Row = Record<string, unknown>;
 
@@ -24,8 +25,10 @@ interface InsertContext {
   securitiesRemap: Map<string, string>;
   /** Target MCC id keyed by natural code (compared as strings). */
   mccByCode: Map<string, number>;
-  /** Currency codes that exist on the target instance. */
+  /** Currency codes a restored row may name: the ISO seed plus the custom codes this backup defines. */
   currencyCodes: Set<string>;
+  /** Definitions of the backup's custom currencies, keyed by code. */
+  customDefinitions: Map<string, CustomCurrencyDefinition>;
   /** Guarded FK columns per backup file name, derived from model metadata. */
   guardedFkMap: Map<string, GuardedFk[]>;
   /** Per-table backup id → final id map, keyed by DB target table name. A guarded
@@ -77,6 +80,16 @@ function buildRowOverrides({
     const targetMccId = code != null ? ctx.mccByCode.get(code) : undefined;
     if (targetMccId === undefined) return null;
     overrides.mccId = targetMccId;
+  }
+
+  // A custom currency's name, symbol and decimals live in the user's overrides. A row without them
+  // takes the backup's definition, so the restored holding never falls back to a global row another
+  // user defined. Every row gets all three keys, keeping the batch's column set uniform.
+  if (def.fileName === 'users-currencies') {
+    const definition = ctx.customDefinitions.get(String(row.currencyCode));
+    overrides.nameOverride = row.nameOverride ?? definition?.name ?? null;
+    overrides.symbolOverride = row.symbolOverride ?? definition?.symbol ?? null;
+    overrides.decimalsOverride = row.decimalsOverride ?? definition?.decimals ?? null;
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and
@@ -302,6 +315,7 @@ export async function insertRestoreTables({
   analysis,
   targetUserId,
   securitiesRemap,
+  customCurrencies,
   transaction,
   onProgress,
 }: {
@@ -309,6 +323,8 @@ export async function insertRestoreTables({
   analysis: ArchiveAnalysis;
   targetUserId: number;
   securitiesRemap: Map<string, string>;
+  /** Custom codes the restore made available, with their definitions. */
+  customCurrencies: { codes: Set<string>; definitions: Map<string, CustomCurrencyDefinition> };
   transaction: Transaction;
   onProgress?: TableProgressCallback;
 }): Promise<{
@@ -330,15 +346,20 @@ export async function insertRestoreTables({
         >)
       : Promise.resolve<Array<{ id: number; code: string | number }>>([]),
     needsCurrency
-      ? (Currencies.findAll({ attributes: ['code'], raw: true }) as unknown as Promise<Array<{ code: string }>>)
-      : Promise.resolve<Array<{ code: string }>>([]),
+      ? (Currencies.findAll({ attributes: ['code', 'isCustom'], raw: true }) as unknown as Promise<
+          Array<{ code: string; isCustom: boolean }>
+        >)
+      : Promise.resolve<Array<{ code: string; isCustom: boolean }>>([]),
   ]);
 
   const ctx: InsertContext = {
     targetUserId,
     securitiesRemap,
     mccByCode: new Map(mccRows.map((r) => [String(r.code), r.id])),
-    currencyCodes: new Set(currencyRows.map((r) => r.code)),
+    currencyCodes: new Set(
+      currencyRows.filter((r) => !r.isCustom || customCurrencies.codes.has(r.code)).map((r) => r.code),
+    ),
+    customDefinitions: customCurrencies.definitions,
     guardedFkMap: buildGuardedReferenceMap(),
     insertedIds,
     transaction,

@@ -562,7 +562,14 @@
     "currencyNotConnected": "Asked currency is not connected",
     "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}",
     "unknownCurrencyCode": "Unknown currency code: {{code}}",
-    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places"
+    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
+    "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
+    "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
+    "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
+    "customCurrencyInUse": "Cannot delete \"{{code}}\": your {{usedBy}} still use it",
+    "customCurrencyDecimalsInUse": "Cannot change the decimals of \"{{code}}\": your {{usedBy}} still use it",
+    "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"

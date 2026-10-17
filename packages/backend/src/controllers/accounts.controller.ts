@@ -8,6 +8,7 @@ import { removeUndefinedKeys } from '@js/helpers';
 import Accounts from '@models/accounts.model';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
+import { attachAccountCurrencyMeta } from '@services/currencies/effective-currency';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
@@ -20,6 +21,7 @@ export const getAccounts = createController(z.object({}), async ({ user }) => {
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
+  await attachAccountCurrencyMeta({ accounts });
   // Serialize: convert cents to decimal for API response
   return { data: serializeAccounts(accounts) };
 });
@@ -35,6 +37,7 @@ export const getAccountById = createController(
     const { id: userId } = user;
 
     const account = await accountsService.getAccountById({ userId, id });
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     // Serialize: convert cents to decimal for API response
     return { data: account ? serializeAccount(account) : null };
   },
@@ -92,6 +95,7 @@ export const createAccount = createController(
       logoIcon,
     });
 
+    if (account) await attachAccountCurrencyMeta({ accounts: [account] });
     // Serialize: convert cents to decimal for API response
     return { data: account ? serializeAccount(account) : null };
   },
@@ -186,6 +190,7 @@ export const updateAccount = createController(
       }),
     });
 
+    if (result) await attachAccountCurrencyMeta({ accounts: [result] });
     // Serialize: convert cents to decimal for API response
     return { data: result ? serializeAccount(result) : null };
   },

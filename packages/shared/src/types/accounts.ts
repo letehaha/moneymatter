@@ -1,3 +1,4 @@
+import type { CurrencyMeta } from './currencies';
 import type { EntityLogoFields, EntityLogoPayload } from './entity-logo';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
@@ -141,6 +142,8 @@ export interface AccountModel extends EntityLogoFields {
   bankProviderType?: BANK_PROVIDER_TYPE | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**
@@ -174,6 +177,8 @@ export interface AccountApiResponse extends EntityLogoFields {
   needsRelink?: boolean;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**

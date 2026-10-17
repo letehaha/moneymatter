@@ -1,4 +1,9 @@
-import type { BaseCurrencyChangeStatus } from '@bt/shared/types';
+import type {
+  BaseCurrencyChangeStatus,
+  CreateCustomCurrencyBody,
+  CustomCurrencyModel,
+  UpdateCustomCurrencyBody,
+} from '@bt/shared/types';
 import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
@@ -279,4 +284,58 @@ export async function removeCustomCurrencyRow({ code }: { code: string }) {
   }
 
   await Currencies.destroy({ where: { code, isCustom: true } });
+}
+
+export function listCustomCurrencies<R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) {
+  return makeRequest<CustomCurrencyModel[], R>({
+    method: 'get',
+    url: '/user/currencies/custom',
+    raw,
+  });
+}
+
+export function createCustomCurrency<R extends boolean | undefined = undefined>({
+  payload,
+  raw,
+}: {
+  payload: CreateCustomCurrencyBody;
+  raw?: R;
+}) {
+  return makeRequest<CustomCurrencyModel, R>({
+    method: 'post',
+    url: '/user/currencies/custom',
+    payload,
+    raw,
+  });
+}
+
+export function updateCustomCurrency<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  payload: UpdateCustomCurrencyBody;
+  raw?: R;
+}) {
+  return makeRequest<CustomCurrencyModel, R>({
+    method: 'put',
+    url: `/user/currencies/custom/${code}`,
+    payload,
+    raw,
+  });
+}
+
+export function deleteCustomCurrency<R extends boolean | undefined = undefined>({
+  code,
+  raw,
+}: {
+  code: string;
+  raw?: R;
+}) {
+  return makeRequest<void, R>({
+    method: 'delete',
+    url: `/user/currencies/custom/${code}`,
+    raw,
+  });
 }

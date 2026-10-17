@@ -11,6 +11,12 @@ import { restoreStatusController } from '@controllers/backup/restore-status.cont
 import addUserCurrencies from '@controllers/currencies/add-user-currencies';
 import changeBaseCurrencyStatus from '@controllers/currencies/change-base-currency-status.controller';
 import changeBaseCurrency from '@controllers/currencies/change-base-currency.controller';
+import {
+  createCustomCurrency,
+  deleteCustomCurrency,
+  listCustomCurrencies,
+  updateCustomCurrency,
+} from '@controllers/currencies/custom-currencies';
 import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exchange-rate';
 import { exportDataController } from '@controllers/data-export/export-data.controller';
 import { getConnectedAppsController, revokeConnectedAppController } from '@controllers/mcp/connected-apps.controller';
@@ -94,6 +100,12 @@ router.get('/currencies/base', getUserBaseCurrency);
 router.get('/currencies/rates', getCurrenciesExchangeRates);
 
 router.post('/currencies', checkBaseCurrencyLock, addUserCurrencies);
+// Custom currencies change which decimals amounts round to, so they sit behind the same
+// base-currency guard as every other write that feeds amounts.
+router.get('/currencies/custom', listCustomCurrencies);
+router.post('/currencies/custom', checkBaseCurrencyLock, createCustomCurrency);
+router.put('/currencies/custom/:code', checkBaseCurrencyLock, updateCustomCurrency);
+router.delete('/currencies/custom/:code', checkBaseCurrencyLock, deleteCustomCurrency);
 router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,
 // so guarding it here would reject the request that is supposed to start the change.

@@ -6,7 +6,7 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CategorizationMeta, RecordId, TransactionLocation } from '@bt/shared/types';
+import type { CategorizationMeta, CurrencyMeta, RecordId, TransactionLocation } from '@bt/shared/types';
 import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
@@ -65,6 +65,8 @@ export interface TransactionApiResponse {
   refAmountMissing: boolean;
   /** Present on list reads only. */
   hasAttachments?: boolean;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
   /** Set when a bank transaction merged into this row while it was planned. */
   plannedMerge: { mergedAt: string } | null;
@@ -220,6 +222,7 @@ export function serializeTransaction(
     transactionGroups?: TransactionGroups[];
     addedBy?: { id: number; username: string; avatar: string | null } | null;
     canEdit?: boolean;
+    currencyMeta?: CurrencyMeta;
   },
 ): TransactionApiResponse {
   // Aliased literal: a plain property on raw rows, dataValues-only on model instances.
@@ -298,6 +301,7 @@ export function serializeTransaction(
     // fetches). Property-existence check so an explicit `false` survives serialization.
     ...('canEdit' in tx ? { canEdit: tx.canEdit ?? false } : {}),
     ...(hasAttachments !== undefined && { hasAttachments }),
+    ...(tx.currencyMeta && { currencyMeta: tx.currencyMeta }),
   };
 }
 

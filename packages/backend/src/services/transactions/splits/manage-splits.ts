@@ -146,6 +146,7 @@ export const manageSplits = async ({
           // Calculate refAmount based on exchange rate
           refAmount = await calculateRefAmount({
             userId,
+            amountOwnerUserId: categoryOwnerUserId ?? userId,
             amount: split.amount,
             baseCode: transactionCurrencyCode,
             quoteCode: baseCurrency.code,

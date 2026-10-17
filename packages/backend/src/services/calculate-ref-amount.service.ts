@@ -30,7 +30,7 @@ import { buildRefAmountCacheKey, refAmountCache, serializeRefAmountCacheValue } 
  * const refAmountForDefaultUserCurrency = await calculateRefAmount({ amount: 100, userId: 42, baseCode: 'USD' });
  */
 async function calculateRefAmountImpl(params: Params): Promise<Money> {
-  const { baseCode, quoteCode, userId, amount, bypassCache = false } = params;
+  const { baseCode, quoteCode, userId, amount, bypassCache = false, amountOwnerUserId } = params;
 
   const dateStr = new Date(params.date).toISOString().split('T')[0]!;
 
@@ -96,7 +96,12 @@ async function calculateRefAmountImpl(params: Params): Promise<Money> {
       bypassCache,
     });
 
-    const decimals = await getConversionDecimals({ userId, baseCode, quoteCode: resolvedQuoteCode });
+    const decimals = await getConversionDecimals({
+      userId,
+      baseCode,
+      quoteCode: resolvedQuoteCode,
+      baseOwnerUserId: amountOwnerUserId,
+    });
 
     const finalAmount = calculateRefAmountFromParams({ amount, rate: result.rate, ...decimals });
 
@@ -120,7 +125,13 @@ export { calculateRefAmountFromParams } from './calculate-ref-amount.utils';
 
 type Params = {
   amount: Money;
+  /** User whose base currency and rates drive the conversion. */
   userId: number;
+  /**
+   * Whose definition of `baseCode` rounds the amount before it converts: the account owner, when
+   * a collaborator writes on a shared account. Defaults to `userId`.
+   */
+  amountOwnerUserId?: number;
   date: Date | string;
   baseCode: string;
   quoteCode?: string;

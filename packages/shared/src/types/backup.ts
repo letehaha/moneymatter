@@ -29,8 +29,12 @@ export const BACKUP_FORMAT_VERSION = 3;
  * derived market data the instance refetches from its provider, and letting an
  * uploaded archive write the global SecurityPricing table would let a crafted
  * backup poison prices for securities other users hold.
+ *
+ * `custom-currencies` carries the definition (code, name, decimals, symbol) of every custom
+ * currency the user holds. Restore reuses a global row that already has the code and creates it
+ * otherwise; the user's own overrides travel in `users-currencies`.
  */
-export const BACKUP_REFERENCE_FILE_NAMES = ['securities'] as const;
+export const BACKUP_REFERENCE_FILE_NAMES = ['securities', 'custom-currencies'] as const;
 export type BackupReferenceFileName = (typeof BACKUP_REFERENCE_FILE_NAMES)[number];
 
 /** Per-file entry in the manifest's `files` map. Key is the zip path. */
