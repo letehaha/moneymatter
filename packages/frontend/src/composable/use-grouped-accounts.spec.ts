@@ -8,7 +8,12 @@ import {
 } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { filterSelectableAccounts, flattenGroupAccounts, sortAccounts } from './use-grouped-accounts';
+import {
+  buildGroupedAccountsGroups,
+  filterSelectableAccounts,
+  flattenGroupAccounts,
+  sortAccounts,
+} from './use-grouped-accounts';
 
 const makeAccount = (overrides: Partial<AccountModel> = {}): AccountModel => ({
   type: ACCOUNT_TYPES.system,
@@ -156,5 +161,73 @@ describe('filterSelectableAccounts', () => {
         excludeDedicatedFlow: true,
       }).map((a) => a.id),
     ).toEqual(['active']);
+  });
+});
+
+describe('buildGroupedAccountsGroups', () => {
+  const apiGroup = ({
+    id,
+    parentGroupId = null,
+    accounts = [],
+    childGroups = [],
+  }: {
+    id: string;
+    parentGroupId?: string | null;
+    accounts?: AccountModel[];
+    childGroups?: AccountGroups[];
+  }) => ({ id, name: id, parentGroupId, accounts, childGroups }) as unknown as AccountGroups;
+  const stub = (group: AccountGroups) => ({ ...group, accounts: [], childGroups: [] }) as AccountGroups;
+
+  it('folds nested groups into their root from the flat API response, without duplicate top-level rows', () => {
+    const georgia = apiGroup({
+      id: 'georgia',
+      parentGroupId: 'banks',
+      accounts: [makeAccount({ id: 'g1' as RecordId })],
+    });
+    const bankIndonesia = apiGroup({
+      id: 'bank-indonesia',
+      parentGroupId: 'banks',
+      accounts: [makeAccount({ id: 'bi1' as RecordId })],
+    });
+    const walletIndonesia = apiGroup({
+      id: 'wallet-indonesia',
+      parentGroupId: 'e-wallets',
+      accounts: [makeAccount({ id: 'wi1' as RecordId })],
+    });
+    const cash = apiGroup({ id: 'cash', accounts: [makeAccount({ id: 'c1' as RecordId })] });
+    const accountGroups = [
+      apiGroup({ id: 'banks', childGroups: [stub(georgia), stub(bankIndonesia)] }),
+      cash,
+      apiGroup({ id: 'e-wallets', childGroups: [stub(walletIndonesia)] }),
+      georgia,
+      bankIndonesia,
+      walletIndonesia,
+    ];
+    const visible = new Set(['g1', 'bi1', 'wi1', 'c1']);
+
+    const groups = buildGroupedAccountsGroups({ accountGroups, visibleAccountIds: visible });
+
+    expect(groups.map((group) => group.id).sort()).toEqual(['banks', 'cash', 'e-wallets']);
+    expect(
+      groups
+        .find((group) => group.id === 'banks')!
+        .accounts.map((account) => account.id)
+        .sort(),
+    ).toEqual(['bi1', 'g1']);
+    expect(groups.find((group) => group.id === 'e-wallets')!.accounts.map((account) => account.id)).toEqual(['wi1']);
+  });
+
+  it('drops a root whose descendant accounts are all filtered out', () => {
+    const child = apiGroup({
+      id: 'child',
+      parentGroupId: 'root',
+      accounts: [makeAccount({ id: 'x' as RecordId })],
+    });
+    const groups = buildGroupedAccountsGroups({
+      accountGroups: [apiGroup({ id: 'root', childGroups: [stub(child)] }), child],
+      visibleAccountIds: new Set<string>(),
+    });
+
+    expect(groups).toEqual([]);
   });
 });

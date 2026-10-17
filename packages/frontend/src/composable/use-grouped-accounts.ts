@@ -1,6 +1,7 @@
 import { loadAccountGroups } from '@/api/account-groups';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { AccountGroups } from '@/common/types/models';
+import { buildAccountGroupTree } from '@/components/sidebar/accounts-view/helpers/build-account-group-tree';
 import { useAccountsStore } from '@/stores';
 import { ACCOUNT_STATUSES, AccountModel, isDedicatedFlowAccountCategory } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
@@ -39,6 +40,28 @@ export const flattenGroupAccounts = ({ group }: { group: AccountGroups }): Accou
   }
   return accounts;
 };
+
+/**
+ * The endpoint returns every group in one flat list (nested ones carry their own accounts, while
+ * their `childGroups` stubs do not), so the tree is rebuilt first. Only root groups come out, each
+ * folding in its descendants' visible accounts; groups left with no accounts are dropped.
+ */
+export const buildGroupedAccountsGroups = ({
+  accountGroups,
+  visibleAccountIds,
+}: {
+  accountGroups: AccountGroups[];
+  visibleAccountIds: { has: (id: string) => boolean };
+}): GroupedAccountsGroup[] =>
+  buildAccountGroupTree({ groups: accountGroups })
+    .map((group) => ({
+      id: group.id,
+      name: group.name,
+      accounts: sortAccounts({
+        accounts: flattenGroupAccounts({ group }).filter((account) => visibleAccountIds.has(account.id)),
+      }),
+    }))
+    .filter((group) => group.accounts.length > 0);
 
 /**
  * Narrows the account store to the set a multi-select should offer: active accounts only unless
@@ -99,18 +122,9 @@ export const useGroupedAccounts = ({
   );
 
   /** Top-level groups, each carrying a flat list of its visible descendant accounts. Empty groups are dropped. */
-  const groups = computed<GroupedAccountsGroup[]>(() => {
-    const visible = accountsById.value;
-    return (accountGroups.value ?? [])
-      .map((group) => ({
-        id: group.id,
-        name: group.name,
-        accounts: sortAccounts({
-          accounts: flattenGroupAccounts({ group }).filter((account) => visible.has(account.id)),
-        }),
-      }))
-      .filter((group) => group.accounts.length > 0);
-  });
+  const groups = computed<GroupedAccountsGroup[]>(() =>
+    buildGroupedAccountsGroups({ accountGroups: accountGroups.value ?? [], visibleAccountIds: accountsById.value }),
+  );
 
   /** Ids that belong to any group — used to derive the ungrouped remainder. */
   const groupedAccountIds = computed<Set<string>>(() => {
