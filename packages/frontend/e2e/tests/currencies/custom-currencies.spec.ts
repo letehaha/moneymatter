@@ -1,6 +1,7 @@
 import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
 
 import {
+  apiPut,
   completeOnboarding,
   createAccount,
   createTransaction,
@@ -18,12 +19,15 @@ const DECIMALS = 6;
 const ACCOUNT_NAME = 'Tether Wallet';
 const AMOUNT = 12.345678;
 const FORMATTED_AMOUNT = '12.345678 USDT';
+const DAY_MS = 24 * 60 * 60 * 1000;
 const creds = buildTestCredentials({ prefix: 'customccy' });
 
 test.describe.configure({ mode: 'serial' });
 
 const dialogField = ({ page, testId }: { page: Page; testId: string }): Locator =>
   page.getByRole('dialog').locator(`input[data-testid="${testId}"], [data-testid="${testId}"] input`).first();
+
+const daysAgo = ({ days }: { days: number }): string => new Date(Date.now() - days * DAY_MS).toISOString().slice(0, 10);
 
 test.describe('Custom currencies', () => {
   let api: APIRequestContext;
@@ -101,5 +105,54 @@ test.describe('Custom currencies', () => {
     await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
     await expect(page.getByTestId('missing-rate-badge')).toHaveCount(0);
     await expect(page.getByText(/12\.35/).first()).toBeVisible();
+  });
+
+  test('the rate history lists dated rates latest first, and a rate can be edited and removed', async ({ page }) => {
+    const [olderDay, newerDay] = [daysAgo({ days: 10 }), daysAgo({ days: 5 })];
+
+    // The peg kept from the previous case overrides stored rates, so the currency goes back to manual first.
+    await page.goto('/settings/currencies');
+    await page.getByRole('button', { name: new RegExp(NAME) }).click();
+    await page.getByTestId('rate-source-tabs').locator('[data-value="manual"]').click();
+    await page.getByTestId('rate-source-save').click();
+    await waitForSuccessToast({ page });
+
+    for (const [effectiveDate, rate] of [
+      [olderDay, 2],
+      [newerDay, 4],
+    ] as const) {
+      await apiPut({
+        request: api,
+        path: '/api/v1/user/currency/rates',
+        data: {
+          pairs: [
+            { baseCode: CODE, quoteCode: BASE_CURRENCY, rate, effectiveDate },
+            { baseCode: BASE_CURRENCY, quoteCode: CODE, rate: 1 / rate, effectiveDate },
+          ],
+        },
+      });
+    }
+
+    await page.reload();
+    await page.getByRole('button', { name: new RegExp(NAME) }).click();
+
+    const rows = page.getByTestId('rate-history-row');
+    await expect(rows).toHaveCount(2);
+    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 4 USD');
+    await expect(rows.first().getByTestId('rate-history-in-force')).toBeVisible();
+    await expect(rows.last().getByTestId('rate-history-rate')).toHaveText('1 USDT = 2 USD');
+
+    await rows.first().getByTestId('rate-history-edit').click();
+    await dialogField({ page, testId: 'edit-dated-rate-base' }).fill('5');
+    await page.getByTestId('edit-dated-rate-save').click();
+    await waitForSuccessToast({ page });
+    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
+    await expect(rows).toHaveCount(2);
+
+    await rows.last().getByTestId('rate-history-remove').click();
+    await page.getByRole('alertdialog').getByRole('button', { name: 'Remove rate' }).click();
+    await waitForSuccessToast({ page });
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first().getByTestId('rate-history-rate')).toHaveText('1 USDT = 5 USD');
   });
 });
