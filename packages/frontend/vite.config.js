@@ -8,6 +8,8 @@ import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
 import svgLoader from 'vite-svg-loader';
 
+import { serviceWorkerPlugin } from './build/service-worker-plugin.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -92,7 +94,14 @@ export default async ({ mode }) => {
       __APP_VERSION__: JSON.stringify(appVersion),
       __APP_RELEASE__: JSON.stringify(appRelease),
     },
-    plugins: [vue(), tailwind(), svgLoader(), versionJsonPlugin({ version: appVersion }), sentryPlugin].filter(Boolean),
+    plugins: [
+      vue(),
+      tailwind(),
+      svgLoader(),
+      versionJsonPlugin({ version: appVersion }),
+      serviceWorkerPlugin(),
+      sentryPlugin,
+    ].filter(Boolean),
     build: {
       sourcemap: true,
       rollupOptions: {
