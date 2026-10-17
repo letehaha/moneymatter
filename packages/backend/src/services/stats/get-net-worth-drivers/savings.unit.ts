@@ -28,17 +28,17 @@ const buildTx = ({
 const buildPair = ({
   expenseTime,
   incomeTime,
-  cents,
+  minor,
   expenseInScope = true,
   incomeInScope = true,
 }: {
   expenseTime: string;
   incomeTime: string;
-  cents: number;
+  minor: number;
   expenseInScope?: boolean;
   incomeInScope?: boolean;
 }): CategoryRefundPair => ({
-  cents,
+  minor,
   expenseTime: new Date(expenseTime),
   incomeTime: new Date(incomeTime),
   expenseCategoryId: 'cat-expense',
@@ -138,7 +138,7 @@ describe('accumulateSavings refund netting', () => {
   const sameMonthPair = {
     expenseTime: '2026-01-05T12:00:00.000',
     incomeTime: '2026-01-20T12:00:00.000',
-    cents: 12_000,
+    minor: 12_000,
   };
 
   it('subtracts a fully in-scope pair from both sides', () => {
@@ -180,7 +180,7 @@ describe('accumulateSavings refund netting', () => {
       ],
       buckets,
       refundPairs: [
-        buildPair({ expenseTime: '2026-01-05T12:00:00.000', incomeTime: '2026-02-10T12:00:00.000', cents: 12_000 }),
+        buildPair({ expenseTime: '2026-01-05T12:00:00.000', incomeTime: '2026-02-10T12:00:00.000', minor: 12_000 }),
       ],
     });
 

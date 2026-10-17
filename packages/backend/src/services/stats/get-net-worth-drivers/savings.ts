@@ -59,9 +59,9 @@ export const accumulateSavings = ({
 
       const bucket = savings[bucketIndex]!;
       if (side === TRANSACTION_TYPES.income) {
-        bucket.income = asCents(bucket.income + leg.cents);
+        bucket.income = asCents(bucket.income + leg.minor);
       } else {
-        bucket.expenses = asCents(bucket.expenses + leg.cents);
+        bucket.expenses = asCents(bucket.expenses + leg.minor);
       }
     }
   }

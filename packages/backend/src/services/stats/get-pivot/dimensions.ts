@@ -9,7 +9,7 @@ import { Includeable, Op } from 'sequelize';
 import { computeCategoryAllocations } from '../category-allocation';
 import { resolveWholeTxRefunds } from './refunds';
 import {
-  PivotReportRowCents,
+  PivotReportRowMinor,
   UNASSIGNED_ID,
   UNASSIGNED_LABEL,
   UNKNOWN_PAYEE_LABEL,
@@ -31,7 +31,9 @@ interface PivotAggregateContext {
   /** The transaction type the report measures; refunds net against their leg on this side. */
   side: TRANSACTION_TYPES;
   cellData: Map<string, Map<string, number>>;
-  addCell: (args: { rowKey: string; columnKey: string; cents: number }) => void;
+  addCell: (args: { rowKey: string; columnKey: string; minor: number }) => void;
+  /** Decimals of the base currency: the scale the cells' minor units are at. */
+  decimals: number;
 }
 
 interface PivotAssembleContext {
@@ -48,8 +50,8 @@ interface PivotAssembleContext {
 interface PivotDimensionStrategy {
   buildInclude(): Includeable[];
   aggregate(ctx: PivotAggregateContext): Promise<void>;
-  assembleRows(ctx: PivotAssembleContext): PivotReportRowCents[];
-  hydrate?(ctx: { userId: number; rows: PivotReportRowCents[] }): Promise<void>;
+  assembleRows(ctx: PivotAssembleContext): PivotReportRowMinor[];
+  hydrate?(ctx: { userId: number; rows: PivotReportRowMinor[] }): Promise<void>;
 }
 
 /**
@@ -72,13 +74,14 @@ const createCategoryStrategy = ({
     const allocations = await computeCategoryAllocations({
       transactions: ctx.transactions,
       applyRefunds: true,
+      decimals: ctx.decimals,
       refundSide: ctx.side,
     });
 
     for (const leg of allocations.base) {
       const bucketIndex = ctx.bucketIndexForTime(leg.time);
       if (bucketIndex === -1) continue;
-      ctx.addCell({ rowKey: resolveRowKey(leg.categoryId), columnKey: ctx.columnKeys[bucketIndex]!, cents: leg.cents });
+      ctx.addCell({ rowKey: resolveRowKey(leg.categoryId), columnKey: ctx.columnKeys[bucketIndex]!, minor: leg.minor });
     }
 
     // No base leg in this row means nothing to net; skipping avoids a phantom negative row.
@@ -87,7 +90,7 @@ const createCategoryStrategy = ({
       if (!ctx.cellData.has(rowKey)) continue;
       const bucketIndex = ctx.bucketIndexForTime(leg.time);
       if (bucketIndex === -1) continue;
-      ctx.addCell({ rowKey, columnKey: ctx.columnKeys[bucketIndex]!, cents: leg.cents });
+      ctx.addCell({ rowKey, columnKey: ctx.columnKeys[bucketIndex]!, minor: leg.minor });
     }
   },
   assembleRows: (ctx) => {
@@ -117,13 +120,18 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
       const bucketIndex = ctx.bucketIndexForTime(new Date(tx.time));
       if (bucketIndex === -1) continue;
       const rowKey = tx.payeeId ?? UNASSIGNED_ID;
-      ctx.addCell({ rowKey, columnKey: ctx.columnKeys[bucketIndex]!, cents: tx.refAmount.toCents() });
+      ctx.addCell({
+        rowKey,
+        columnKey: ctx.columnKeys[bucketIndex]!,
+        minor: tx.refAmount.toMinorUnits({ decimals: ctx.decimals }),
+      });
     }
 
     const refunds = await resolveWholeTxRefunds({
       transactions: ctx.transactions,
       needTags: false,
       side: ctx.side,
+      decimals: ctx.decimals,
     });
     for (const refund of refunds) {
       const refundBucket = ctx.bucketIndexForTime(refund.time);
@@ -131,7 +139,7 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
       ctx.addCell({
         rowKey: refund.payeeId ?? UNASSIGNED_ID,
         columnKey: ctx.columnKeys[refundBucket]!,
-        cents: -refund.refundCents,
+        minor: -refund.refundMinor,
       });
     }
   },
@@ -186,12 +194,13 @@ const createTagStrategy = (): PivotDimensionStrategy => {
         if (bucketIndex === -1) continue;
         const columnKey = ctx.columnKeys[bucketIndex]!;
         const txTags = tx.tags ?? [];
+        const minor = tx.refAmount.toMinorUnits({ decimals: ctx.decimals });
         if (txTags.length === 0) {
-          ctx.addCell({ rowKey: UNTAGGED_ID, columnKey, cents: tx.refAmount.toCents() });
+          ctx.addCell({ rowKey: UNTAGGED_ID, columnKey, minor });
         } else {
           for (const tag of txTags) {
             if (!tagMeta.has(tag.id)) tagMeta.set(tag.id, { name: tag.name, color: tag.color });
-            ctx.addCell({ rowKey: tag.id, columnKey, cents: tx.refAmount.toCents() });
+            ctx.addCell({ rowKey: tag.id, columnKey, minor });
           }
         }
       }
@@ -200,6 +209,7 @@ const createTagStrategy = (): PivotDimensionStrategy => {
         transactions: ctx.transactions,
         needTags: true,
         side: ctx.side,
+        decimals: ctx.decimals,
       });
       for (const refund of refunds) {
         const refundBucket = ctx.bucketIndexForTime(refund.time);
@@ -207,7 +217,7 @@ const createTagStrategy = (): PivotDimensionStrategy => {
         const columnKey = ctx.columnKeys[refundBucket]!;
         const targets = refund.tagIds.length === 0 ? [UNTAGGED_ID] : refund.tagIds;
         for (const rowKey of targets) {
-          ctx.addCell({ rowKey, columnKey, cents: -refund.refundCents });
+          ctx.addCell({ rowKey, columnKey, minor: -refund.refundMinor });
         }
       }
     },

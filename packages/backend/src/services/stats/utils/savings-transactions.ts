@@ -1,4 +1,5 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { CENTS_DECIMALS } from '@common/types/money';
 import { StatsTransactionsResult, statsTransactions } from '@services/stats/stats-transactions';
 import { Op } from 'sequelize';
 
@@ -30,6 +31,8 @@ export const fetchSavingsTransactions = ({
     access: { creator: userId },
     planned: 'exclude',
     refunds: 'net',
+    // The savings engines sum in cents.
+    decimals: CENTS_DECIMALS,
     window: { from, to },
     // A loan payment moves cash into an equal liability drop, so it is not savings intake even
     // though spending reports count its cash leg as an expense.

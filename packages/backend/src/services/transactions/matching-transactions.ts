@@ -60,9 +60,11 @@ type MinorUnitsRow = Omit<MatchingRow, 'refAmount'> & { refAmount: number };
 const scopeToCategories = async ({
   rows,
   categoryIds,
+  decimals,
 }: {
   rows: MinorUnitsRow[];
   categoryIds?: string[];
+  decimals: number;
 }): Promise<MinorUnitsRow[]> => {
   if (!categoryIds?.length) return rows;
 
@@ -72,9 +74,9 @@ const scopeToCategories = async ({
   return rows.map((row) => {
     const splits = splitsByTxId.get(row.id);
     if (!splits) return row;
-    const refAmount = allocateTransaction({ cents: row.refAmount, categoryId: row.categoryId, splits })
+    const refAmount = allocateTransaction({ minor: row.refAmount, categoryId: row.categoryId, splits, decimals })
       .filter((leg) => leg.categoryId !== null && wanted.has(leg.categoryId))
-      .reduce((sum, leg) => sum + leg.cents, 0);
+      .reduce((sum, leg) => sum + leg.minor, 0);
     return { ...row, refAmount };
   });
 };
@@ -87,7 +89,7 @@ export const getTransactionsSummary = async (filters: ListFilters): Promise<Tran
     ...row,
     refAmount: Money.fromDecimal(row.refAmount).toMinorUnits({ decimals }),
   }));
-  const totals = sumTransactionTotals(await scopeToCategories({ rows: minorRows, categoryIds: filters.categoryIds }));
+  const totals = sumTransactionTotals(await scopeToCategories({ rows: minorRows, categoryIds: filters.categoryIds, decimals }));
 
   return {
     count: rows.length,

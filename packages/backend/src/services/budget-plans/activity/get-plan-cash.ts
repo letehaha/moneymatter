@@ -1,12 +1,12 @@
 import { RecordId } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { CENTS_DECIMALS, Money } from '@common/types/money';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { logger } from '@js/utils/logger';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
-import { getCreditLimitCentsByAccount } from '@services/stats/get-credit-limit-adjustment';
+import { getCreditLimitMinorByAccount } from '@services/stats/get-credit-limit-adjustment';
 import { resolveCustomRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { QueryTypes } from 'sequelize';
 
@@ -75,7 +75,8 @@ export const getPlanCash = async ({
 }): Promise<{ opening: number; closing: number }> => {
   const openingUtc = utcInstant({ date: opening });
   const [limits, baseCurrency, rows] = await Promise.all([
-    getCreditLimitCentsByAccount({ userId: plan.userId, accountScope: 'owned' }),
+    // The plan cash engine sums in cents.
+    getCreditLimitMinorByAccount({ userId: plan.userId, accountScope: 'owned', decimals: CENTS_DECIMALS }),
     getBaseCurrency({ userId: plan.userId }),
     connection.sequelize.query(
       `
