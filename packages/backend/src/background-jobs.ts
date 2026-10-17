@@ -1,5 +1,6 @@
 import { logger } from '@js/utils/logger';
 import { shutdownPostHog } from '@js/utils/posthog';
+import { resetCliAuthSessions } from '@services/ai/cli/login/cli-auth-sessions';
 import { accountSyncWorker } from '@services/bank-data-providers/sync/account-sync-queue';
 
 import { aiUsageMonthEndCron } from './crons/ai-usage-month-end';
@@ -68,6 +69,8 @@ export function initializeBackgroundJobs() {
 export async function shutdownBackgroundJobs() {
   for (const cron of [...allEnvCrons, ...prodOnlyCrons]) cron.stopCron();
   loadCurrencyRatesJob.stop();
+  // Kills live CLI sign-in PTYs so they don't outlive the server with credentials in temp dirs
+  resetCliAuthSessions();
   await accountSyncWorker.close();
   // Flush remaining PostHog events before exit
   await shutdownPostHog();
