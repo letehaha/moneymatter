@@ -20,6 +20,8 @@ const SOURCE = 'coingecko';
 interface Target {
   userId: number;
   currencyCode: string;
+  /** The settings the target was loaded with: rates fetched for them are stored only while they stand. */
+  rateSourceConfig: unknown;
 }
 
 /** The users who take one coin in one quote currency: it is fetched once for all of them. */
@@ -61,7 +63,7 @@ export const backfillCoingeckoRates = async ({
 }): Promise<{ status: 'done'; ratesWritten: number } | { status: 'skipped' | 'failed' }> => {
   const held = await UsersCurrencies.findOne({ where: { userId, currencyCode, rateSource: SOURCE }, raw: true });
   const config = held ? parseConfig(held.rateSourceConfig) : null;
-  if (!config) return { status: 'skipped' };
+  if (!held || !config) return { status: 'skipped' };
 
   try {
     const rates = await fetchCoingeckoHistory({ coinId: config.coinId, quoteCurrency: config.quoteCurrency });
@@ -72,6 +74,7 @@ export const backfillCoingeckoRates = async ({
       rates,
       kind: 'backfill',
       source: SOURCE,
+      fetchedWith: { rateSourceConfig: held.rateSourceConfig },
     });
 
     return { status: 'done', ratesWritten };
@@ -116,7 +119,11 @@ const loadGroups = async (): Promise<{ needHistory: CoinGroup[]; needLatest: Coi
     const bucket = hasRates.has(`${row.userId}|${row.currencyCode}|${config.quoteCurrency}`) ? latest : history;
     const key = groupKey(config);
     const group = bucket.get(key) ?? { coinId: config.coinId, quoteCurrency: config.quoteCurrency, targets: [] };
-    group.targets.push({ userId: row.userId, currencyCode: row.currencyCode });
+    group.targets.push({
+      userId: row.userId,
+      currencyCode: row.currencyCode,
+      rateSourceConfig: row.rateSourceConfig,
+    });
     bucket.set(key, group);
   }
 
@@ -167,7 +174,7 @@ export const syncCoingeckoRates = async ({
     rates: CoingeckoDailyRate[];
     kind: 'backfill' | 'daily';
   }) => {
-    for (const { userId, currencyCode } of group.targets) {
+    for (const { userId, currencyCode, rateSourceConfig } of group.targets) {
       try {
         const written = await storeSyncedRates({
           userId,
@@ -176,6 +183,7 @@ export const syncCoingeckoRates = async ({
           rates,
           kind,
           source: SOURCE,
+          fetchedWith: { rateSourceConfig },
         });
         result.ratesWritten += written;
         if (written) result.currenciesUpdated += 1;

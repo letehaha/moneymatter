@@ -5,7 +5,7 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { buildHttpRateUrl, fetchHttpRate, HttpRateSourceError } from './http';
 import { decryptHttpHeaders } from './http-headers';
 import { storedHttpRateSourceConfigSchema } from './index';
-import { storeSyncedRates } from './store-synced-rates';
+import { type FetchedWith, storeSyncedRates } from './store-synced-rates';
 
 const SOURCE = 'http';
 
@@ -40,6 +40,12 @@ const readTarget = ({ target }: { target: Target }): ReadTarget => {
 
   return { ok: true, urlTemplate, jsonPath, quoteCurrency, headers };
 };
+
+/** The saved settings the target's request was made with, which the stored rates must still match. */
+const fetchedWith = ({ target }: { target: Target }): FetchedWith => ({
+  rateSourceConfig: target.rateSourceConfig,
+  rateSourceHeadersEncrypted: target.rateSourceHeadersEncrypted,
+});
 
 const loadTargets = ({ userId, currencyCode }: { userId?: number; currencyCode?: string } = {}): Promise<Target[]> =>
   UsersCurrencies.unscoped().findAll({
@@ -109,6 +115,7 @@ export const fetchHttpRateAfterSave = async ({
       rates: [{ day, rate }],
       kind: 'daily',
       source: SOURCE,
+      fetchedWith: fetchedWith({ target }),
     });
 
     return { status: 'done', ratesWritten };
@@ -167,6 +174,7 @@ export const syncHttpRates = async (): Promise<HttpSyncResult> => {
         rates: [{ day, rate }],
         kind: 'daily',
         source: SOURCE,
+        fetchedWith: fetchedWith({ target }),
       });
 
       result.ratesWritten += written;

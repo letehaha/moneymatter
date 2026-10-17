@@ -4,8 +4,10 @@ import { ERROR_CODES } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
+import { redisClient } from '@root/redis-client';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
 import { syncHttpRates } from '@root/services/currencies/rate-sources/http-sync';
+import { buildLockKey } from '@services/currencies/base-currency-lock';
 import * as helpers from '@tests/helpers';
 import { http, HttpResponse } from 'msw';
 
@@ -567,6 +569,57 @@ describe('HTTP rate source', () => {
       });
     });
 
+    describe('another synced source before it', () => {
+      it('takes over the rate of a day the other source wrote, with its own tag', async () => {
+        await createCurrency();
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        await UserExchangeRates.create({
+          userId,
+          baseCode: USDT,
+          quoteCode: BASE(),
+          rate: 7,
+          effectiveDate: todayKey(),
+          source: 'coingecko',
+        });
+        servePrice({ price: 2 });
+
+        await useHttp();
+
+        expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
+
+        // The row now belongs to the HTTP source, so a change of URL removes it with the rest.
+        servePrice({ status: 500, price: 1 });
+        const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => logger);
+        try {
+          await useHttp({ config: { urlTemplate: `${HOST}/price/{code}?other=1` } });
+        } finally {
+          errorSpy.mockRestore();
+        }
+        expect(await storedRates()).toEqual([]);
+      });
+    });
+
+    describe('POST /user/currencies/:code/rate-source/test with unreadable saved headers', () => {
+      it('answers with the reason instead of failing the request', async () => {
+        await createCurrency();
+        servePrice({ price: 1 });
+        await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        await UsersCurrencies.unscoped().update(
+          { rateSourceHeadersEncrypted: 'not-an-encrypted-blob' },
+          { where: { userId, currencyCode: USDT } },
+        );
+
+        const response = await helpers.testCurrencyRateSource({
+          code: USDT,
+          payload: { rateSource: 'http', config: httpConfig() },
+        });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.response).toMatchObject({ ok: false, reason: 'headers_unreadable' });
+      });
+    });
+
     describe('daily sync', () => {
       it('replaces a changed rate of today, values the rows again and leaves other days alone', async () => {
         await createCurrency({ decimals: 2 });
@@ -581,6 +634,52 @@ describe('HTTP rate source', () => {
 
         expect(result).toMatchObject({ requests: 1, currenciesUpdated: 1, ratesWritten: 1, failures: 0 });
         expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 4, source: 'http' }]);
+        expect((await readTx({ id: tx.id })).refAmount).toBe(40);
+      });
+
+      it('does not store a rate for a source that was changed while the request was in flight', async () => {
+        await createCurrency();
+        servePrice({ price: 2 });
+        await useHttp();
+
+        global.mswMockServer.use(
+          http.get(`${HOST}/price/:code`, async () => {
+            const moved = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+            expect(moved.statusCode).toBe(200);
+
+            return HttpResponse.json({ data: { price: 9 } });
+          }),
+        );
+        const result = await syncHttpRates();
+
+        expect(result).toMatchObject({ requests: 1, currenciesUpdated: 0, ratesWritten: 0 });
+        expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
+      });
+
+      it('leaves a user alone while their base currency is being changed, and catches up afterwards', async () => {
+        await createCurrency({ decimals: 2 });
+        const account = await createAccountIn({ code: USDT });
+        servePrice({ price: 2 });
+        await useHttp();
+        const tx = await createTxToday({ accountId: account.id, amount: 10 });
+        expect((await readTx({ id: tx.id })).refAmount).toBe(20);
+
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        await redisClient.set(buildLockKey(userId), 'test-lock');
+        try {
+          servePrice({ price: 4 });
+          const locked = await syncHttpRates();
+
+          expect(locked).toMatchObject({ ratesWritten: 0, currenciesUpdated: 0 });
+          expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
+          expect((await readTx({ id: tx.id })).refAmount).toBe(20);
+        } finally {
+          await redisClient.del(buildLockKey(userId));
+        }
+
+        const free = await syncHttpRates();
+
+        expect(free).toMatchObject({ ratesWritten: 1, currenciesUpdated: 1 });
         expect((await readTx({ id: tx.id })).refAmount).toBe(40);
       });
 
