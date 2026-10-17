@@ -4,6 +4,13 @@ import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
 import Currencies from '@models/currencies.model';
 
+export interface ConversionDecimals {
+  /** Decimals of the amount's own currency; the amount is rounded to them before it is converted. */
+  baseDecimals: number;
+  /** Decimals of the currency the amount converts into; the product is rounded to them. */
+  quoteDecimals: number;
+}
+
 export type CurrencyRoundingMode = 'half-up' | 'half-even';
 
 /**
@@ -25,6 +32,27 @@ export const getCurrencyDecimals = async ({ userId, code }: { userId: number; co
   setCachedCurrencyDecimals({ userId, code, decimals: currency.digits });
 
   return currency.digits;
+};
+
+/**
+ * Decimals of both currencies of a conversion, in the shape `calculateRefAmountFromParams` takes.
+ * Every per-currency conversion looks them up here, so none rounds a JPY or KWD amount to 2.
+ */
+export const getConversionDecimals = async ({
+  userId,
+  baseCode,
+  quoteCode,
+}: {
+  userId: number;
+  baseCode: string;
+  quoteCode: string;
+}): Promise<ConversionDecimals> => {
+  const [baseDecimals, quoteDecimals] = await Promise.all([
+    getCurrencyDecimals({ userId, code: baseCode }),
+    getCurrencyDecimals({ userId, code: quoteCode }),
+  ]);
+
+  return { baseDecimals, quoteDecimals };
 };
 
 /**

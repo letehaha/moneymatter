@@ -8,7 +8,7 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
-import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
@@ -192,9 +192,9 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
 /**
  * Rewrites every `ref*` amount the user owns into the new base currency inside one
  * atomic DB transaction, flips the `UsersCurrencies` default, and clears the
- * `ref_amount:{userId}:*` cache. Re-runs {@link validateBaseCurrencyChange} first
- * (in-job re-check), then sweeps the eight tables in order, invoking `onProgress`
- * before each so the running job reports its current step.
+ * `ref_amount:v2:{userId}:*` cache (`buildRefAmountCachePattern`). Re-runs
+ * {@link validateBaseCurrencyChange} first (in-job re-check), then sweeps the eight tables
+ * in order, invoking `onProgress` before each so the running job reports its current step.
  *
  * Foreign-currency accounts' balance history is rebuilt after that transaction
  * commits: a rebuild inside it would still read the old base currency.
@@ -350,12 +350,13 @@ const localCalculateRefAmount = async ({
     ...exchangeRateParams,
     date: new Date(exchangeRateParams.date),
   });
-  const [baseDecimals, quoteDecimals] = await Promise.all([
-    getCurrencyDecimals({ userId: exchangeRateParams.userId, code: exchangeRateParams.baseCode }),
-    getCurrencyDecimals({ userId: exchangeRateParams.userId, code: exchangeRateParams.quoteCode }),
-  ]);
+  const decimals = await getConversionDecimals({
+    userId: exchangeRateParams.userId,
+    baseCode: exchangeRateParams.baseCode,
+    quoteCode: exchangeRateParams.quoteCode,
+  });
 
-  return calculateRefAmountFromParams({ amount, rate, useFloorAbs, baseDecimals, quoteDecimals });
+  return calculateRefAmountFromParams({ amount, rate, useFloorAbs, ...decimals });
 };
 
 /**
@@ -651,10 +652,7 @@ async function rebuildBalances(params: {
   });
 
   const updates: { id: string; amount: Money }[] = [];
-  const [oldDecimals, newDecimals] = await Promise.all([
-    getCurrencyDecimals({ userId, code: oldCurrencyCode }),
-    getCurrencyDecimals({ userId, code: newCurrencyCode }),
-  ]);
+  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -667,12 +665,7 @@ async function rebuildBalances(params: {
             quoteCode: newCurrencyCode,
             date: balance.date,
           })
-        : calculateRefAmountFromParams({
-            amount: balance.amount,
-            rate,
-            baseDecimals: oldDecimals,
-            quoteDecimals: newDecimals,
-          });
+        : calculateRefAmountFromParams({ amount: balance.amount, rate, ...decimals });
 
     updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
@@ -913,20 +906,12 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
-  const [baseDecimals, quoteDecimals] = await Promise.all([
-    getCurrencyDecimals({ userId, code: oldCurrencyCode }),
-    getCurrencyDecimals({ userId, code: newCurrencyCode }),
-  ]);
+  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
   const converted = { ...fire };
   for (const key of FIRE_AMOUNT_KEYS) {
     const value = fire[key];
     if (value == null) continue;
-    converted[key] = calculateRefAmountFromParams({
-      amount: Money.fromDecimal(value),
-      rate,
-      baseDecimals,
-      quoteDecimals,
-    }).toNumber();
+    converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate, ...decimals }).toNumber();
   }
 
   userSettings.settings = { ...userSettings.settings, fire: converted };
@@ -938,7 +923,7 @@ async function convertFireSettingsAmounts({
  * After changing base currency, all cached ref_amount values are invalid
  * because they were calculated with the OLD base currency.
  *
- * Uses Redis SCAN to safely iterate and delete all ref_amount keys for this user.
+ * Deletes every ref_amount key of this user by KEYS pattern match.
  */
 async function clearUserCache(userId: number): Promise<void> {
   logger.info(`Clearing ref_amount cache for user ${userId}`);
