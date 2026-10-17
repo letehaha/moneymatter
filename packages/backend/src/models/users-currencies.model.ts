@@ -31,7 +31,7 @@ import Users from './users.model';
 // The encrypted request headers of an HTTP rate source stay out of every ordinary read, so no
 // endpoint, serializer or backup can return them by accident. The services that dial the source
 // ask for them with `UsersCurrencies.unscoped()`.
-@DefaultScope(() => ({ attributes: { exclude: ['rateSourceHeadersEncrypted'] } }))
+@DefaultScope(() => ({ attributes: { exclude: ['rateSourceHeadersEncrypted', 'rateSourceHttpFingerprint'] } }))
 @Table({
   timestamps: false,
   tableName: 'UsersCurrencies',
@@ -109,6 +109,15 @@ export default class UsersCurrencies extends Model {
   /** Request headers of an `http` source as one `encryptToken` blob (a JSON object); `null` when it sends none. */
   @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
   declare rateSourceHeadersEncrypted: string | null;
+
+  /**
+   * Which `http` config the stored `http` rates of this currency belong to (see
+   * `httpHistoryFingerprint`). It outlives the source, so choosing the same config again keeps the
+   * history; `null` when no `http` source was saved since this column exists. Left out of ordinary
+   * reads, like the headers.
+   */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(64) })
+  declare rateSourceHttpFingerprint: string | null;
 
   // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
   @AfterSave

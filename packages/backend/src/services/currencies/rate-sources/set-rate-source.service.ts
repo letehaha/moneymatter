@@ -12,12 +12,12 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { requireCoinGeckoKey } from '@services/investments/data-providers/clients/coingecko-client';
 import { revalueAccountsInCurrencies } from '@services/user-exchange-rate/revalue-accounts-in-currencies';
-import omit from 'lodash/omit';
 import { isDeepStrictEqual } from 'node:util';
 
 import { assertCurrencyCodesVisible } from '../assert-currency-codes-visible';
 import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.service';
 import { decryptHttpHeaders, encryptHttpHeaders } from './http-headers';
+import { httpHistoryFingerprint } from './http-history-fingerprint';
 import { fillUrlTemplate, HTTP_URL_TEMPLATE_PLACEHOLDERS, type ValidatedRateSourceBody } from './index';
 
 type HeldCurrency = UsersCurrencies & { currency: Currencies };
@@ -117,20 +117,18 @@ export const resolveHttpHeaders = ({
   return held.rateSource === 'http' ? decryptHttpHeaders({ encrypted: held.rateSourceHeadersEncrypted }) : {};
 };
 
-/** Whether a changed config of a synced source asks for different rates than the one it replaces. */
-const returnsOtherRates = ({
-  previousConfig,
-  setting,
-}: {
-  previousConfig: UsersCurrencies['rateSourceConfig'];
-  setting: CurrencyRateSourceSetting;
-}): boolean => {
-  if (setting.rateSource === 'coingecko') return true;
-  if (setting.rateSource !== 'http') return false;
+/**
+ * The fingerprint of the `http` config that wrote the `http` rates stored for a currency: the one
+ * recorded when that config was saved, else (a source saved before it was recorded) the one of the
+ * config in force, which wrote them.
+ */
+const recordedHttpFingerprint = ({ held }: { held: HeldCurrency }): string | null => {
+  if (held.rateSourceHttpFingerprint) return held.rateSourceHttpFingerprint;
 
-  if (!previousConfig || !('urlTemplate' in previousConfig)) return true;
+  const config = held.rateSourceConfig;
+  if (held.rateSource !== 'http' || !config || !('urlTemplate' in config)) return null;
 
-  return !isDeepStrictEqual(omit(previousConfig, 'headerNames'), omit(setting.rateSourceConfig, 'headerNames'));
+  return httpHistoryFingerprint(config);
 };
 
 const setCurrencyRateSourceImpl = async ({
@@ -190,25 +188,33 @@ const setCurrencyRateSourceImpl = async ({
   const configChanged =
     held.rateSource !== setting.rateSource || !isDeepStrictEqual(held.rateSourceConfig, setting.rateSourceConfig);
   const changed = configChanged || (setting.rateSource === 'http' && !sameHeaders);
-  const previousSource = held.rateSource;
-  const previousConfig = held.rateSourceConfig;
+
+  // Read before the save overwrites the source and config the fingerprint falls back on.
+  const recordedFingerprint = recordedHttpFingerprint({ held });
+  const httpFingerprint =
+    setting.rateSource === 'http' ? httpHistoryFingerprint(setting.rateSourceConfig) : recordedFingerprint;
 
   // The live-rate flag is what the rate lookup reads for an ISO currency: it follows the source.
   const liveRateUpdate = !held.currency.isCustom ? setting.rateSource === 'provider' : held.liveRateUpdate;
   const liveRateChanged = liveRateUpdate !== held.liveRateUpdate;
-  await held.update({ ...setting, rateSourceHeadersEncrypted: encryptedHeaders, liveRateUpdate });
+  await held.update({
+    ...setting,
+    rateSourceHeadersEncrypted: encryptedHeaders,
+    rateSourceHttpFingerprint: httpFingerprint,
+    liveRateUpdate,
+  });
 
   // Rates a synced source stored before would mix into its new history: the ones fetched for another
-  // coin, URL or quote, and the ones left from an earlier stint on the same source, whose settings
-  // are not known any more. New headers alone fetch the same rates. The rates of a source the user
+  // coin, and the ones left from an earlier stint on CoinGecko, whose settings are not known any
+  // more (it backfills what it drops). An `http` source cannot fetch a past day again, so its rates
+  // go only when the new config returns other ones: the saved fingerprint tells (headers and the
+  // values of credential query parameters are not part of it). The rates of a source the user
   // switches away from stay while another source runs, as the history of that currency.
-  const isSynced = setting.rateSource === 'coingecko' || setting.rateSource === 'http';
-  if (
-    changed &&
-    isSynced &&
-    (previousSource !== setting.rateSource || returnsOtherRates({ previousConfig, setting }))
-  ) {
-    await UserExchangeRates.destroy({ where: { userId, baseCode: code, source: setting.rateSource } });
+  if (changed && setting.rateSource === 'coingecko') {
+    await UserExchangeRates.destroy({ where: { userId, baseCode: code, source: 'coingecko' } });
+  }
+  if (changed && setting.rateSource === 'http' && recordedFingerprint !== httpFingerprint) {
+    await UserExchangeRates.destroy({ where: { userId, baseCode: code, source: 'http' } });
   }
 
   // The source decides which rates price the currency, so what was valued under the old one is
