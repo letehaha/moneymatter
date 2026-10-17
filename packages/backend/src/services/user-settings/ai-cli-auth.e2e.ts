@@ -9,9 +9,7 @@ import { randomUUID } from 'node:crypto';
 
 const CLAUDE_TOKEN_PREFIX = 'sk-ant-oat';
 
-const callEveryAuthSessionRoute = async () => {
-  const id = randomUUID();
-
+const callEveryAuthSessionRoute = async ({ id = randomUUID() }: { id?: string } = {}) => {
   return [
     await helpers.startCliAuthSession({ provider: AI_PROVIDER.claudeCode }),
     await helpers.getCliAuthSession({ id }),
@@ -247,10 +245,13 @@ describe('Subscription CLI sign-in endpoints', () => {
       expect(responses.map((response) => response.statusCode)).toEqual([401, 401, 401, 401]);
     });
 
-    it('answers 404 on every route on a cloud instance', async () => {
+    it('answers 404 on every route on a cloud instance, even for a session that exists', async () => {
+      // A live session, so get/submit/cancel can only answer 404 because of the cloud gate.
+      const started = await helpers.startCliAuthSession({ provider: AI_PROVIDER.claudeCode, raw: true });
+
       runAsCloud();
 
-      const responses = await callEveryAuthSessionRoute();
+      const responses = await callEveryAuthSessionRoute({ id: started.id });
 
       expect(responses.map((response) => response.statusCode)).toEqual([404, 404, 404, 404]);
     });
