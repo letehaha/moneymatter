@@ -45,6 +45,8 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'POST /api/v1/push/subscriptions',
   'POST /api/v1/push/subscriptions/sync',
   'POST /api/v1/push/subscriptions/unsubscribe',
+  // Push test send: no monetary data.
+  'POST /api/v1/push/test',
 
   // Billing and admin plan grants: Stripe sessions and plan flags, no monetary data.
   'PATCH /api/v1/admin/users/:id/plan',

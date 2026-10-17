@@ -1,5 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { sendTestPush } from '@services/web-push/send-test-push';
 import * as subscriptionsService from '@services/web-push/subscriptions.service';
 import { z } from 'zod';
 
@@ -57,3 +58,7 @@ export const unsubscribePush = createController(
     await subscriptionsService.unsubscribePushEndpoint({ userId: user.id, endpoint: body.endpoint });
   },
 );
+
+export const sendTestPushNotification = createController(z.object({}), async ({ user }) => ({
+  data: await sendTestPush({ userId: user.id }),
+}));
