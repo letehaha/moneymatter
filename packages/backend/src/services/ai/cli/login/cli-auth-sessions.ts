@@ -11,6 +11,7 @@ import { startCodexDeviceAuthFlow } from './codex-device-auth-flow';
 import { LoginFlow, LoginTimeouts } from './login-flow';
 import { redactSecrets } from './pty-session';
 
+/** How long a sign-in may take, and again how long a finished one waits for its Save. */
 const SESSION_TTL_MS = 15 * 60 * 1000;
 /** How long an expired session stays readable (as `expired`) before the sweep drops it. */
 const EXPIRED_RETENTION_MS = 5 * 60 * 1000;
@@ -185,6 +186,8 @@ export async function startSession({
         session.credentialExpiresAt = credentialExpiresAt;
         session.status = 'succeeded';
         session.flow = undefined;
+        // A slow approval must not eat the time the user needs to press Save.
+        session.expiresAt = Date.now() + SESSION_TTL_MS;
       } catch (error) {
         markFailed({ session, error });
       }

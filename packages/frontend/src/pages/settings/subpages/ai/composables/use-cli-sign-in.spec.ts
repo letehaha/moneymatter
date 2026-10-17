@@ -52,6 +52,7 @@ const setup = ({
 describe('useCliSignIn', () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-17T12:00:00.000Z'));
     startMock.mockReset();
     getMock.mockReset();
     submitMock.mockReset();
@@ -205,6 +206,33 @@ describe('useCliSignIn', () => {
 
       await vi.advanceTimersByTimeAsync(POLL_MS * 5);
       expect(getMock).toHaveBeenCalledTimes(2);
+    });
+
+    it('moves a succeeded sign-in to expired once the server drops it, so Save is not offered a dead session', async () => {
+      startMock.mockResolvedValue(withStatus('awaiting-user', { provider: AI_PROVIDER.codex }));
+      getMock.mockResolvedValueOnce(withStatus('succeeded', { expiresAt: '2026-10-17T12:20:00.000Z' }));
+      const { signIn } = setup({ provider: AI_PROVIDER.codex });
+      await signIn.start();
+      await vi.advanceTimersByTimeAsync(POLL_MS);
+      expect(signIn.state.value).toBe('succeeded');
+
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000 - POLL_MS - 1000);
+      expect(signIn.state.value).toBe('succeeded');
+
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(signIn.state.value).toBe('expired');
+      expect(getMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not expire a succeeded sign-in that was reset before its deadline', async () => {
+      startMock.mockResolvedValue(withStatus('succeeded', { authUrl: undefined }));
+      const { signIn } = setup();
+      await signIn.start();
+
+      signIn.reset();
+      await vi.advanceTimersByTimeAsync(20 * 60 * 1000);
+
+      expect(signIn.state.value).toBe('idle');
     });
 
     it.each([
