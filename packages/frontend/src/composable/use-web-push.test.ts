@@ -25,7 +25,18 @@ vi.mock('@/api/web-push', () => ({
 vi.mock('@/common/utils/web-push-support', () => ({ getPushSupport: vi.fn() }));
 vi.mock('@/common/utils/register-service-worker', () => ({ registerServiceWorker: vi.fn() }));
 vi.mock('@/composable/detect-safari', () => ({ useSafariDetection: vi.fn() }));
-vi.mock('@/stores', () => ({ useUserStore: () => ({ user: { id: 1 } }) }));
+// A ref, like the real store's `user`, so a computed that reads it follows an account change.
+const signedIn = await vi.hoisted(async () => {
+  const { shallowRef } = await import('vue');
+  return { user: shallowRef<{ id: number } | null>({ id: 1 }) };
+});
+vi.mock('@/stores', () => ({
+  useUserStore: () => ({
+    get user() {
+      return signedIn.user.value;
+    },
+  }),
+}));
 
 const USER_ID = 1;
 const E1 = 'https://web.push.apple.com/endpoint-one';
@@ -100,6 +111,7 @@ describe('useWebPush', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetWebPushState();
+    signedIn.user.value = { id: USER_ID };
     localStorage.clear();
     Reflect.deleteProperty(navigator, 'serviceWorker');
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -469,6 +481,97 @@ describe('useWebPush', () => {
       await webPush.handleEndpointChanged({ endpoint: E2 });
 
       expect(getStoredEndpoint({ userId: USER_ID })).toBeNull();
+    });
+  });
+
+  describe('an account change in the same tab (no page reload)', () => {
+    const OTHER_USER_ID = 2;
+
+    it('reconciles again for the next account and does not carry the previous account endpoint or toggle over', async () => {
+      const subscription = buildSubscription();
+      const registration = buildRegistration({ existing: subscription });
+      stubServiceWorker({ registration, hasRegistration: true });
+      setStoredEndpoint({ userId: USER_ID, endpoint: E1 });
+      const webPush = mountWebPush();
+
+      await webPush.syncOnLoad();
+      await vi.waitFor(() => expect(webPush.state.value).toBe('on'));
+      expect(pushApi.syncPushSubscription).toHaveBeenCalledTimes(1);
+
+      // Sign out (a 401: the subscription stays) and sign in as another account. No resetWebPushState().
+      signedIn.user.value = { id: OTHER_USER_ID };
+      vi.mocked(pushApi.syncPushSubscription).mockResolvedValue({ known: false });
+
+      expect(webPush.state.value).not.toBe('on');
+      expect(webPush.isThisDevice({ endpointHash: await getEndpointHash({ endpoint: E1 }) })).toBe(false);
+
+      await mountWebPush().syncOnLoad();
+
+      expect(pushApi.syncPushSubscription).toHaveBeenCalledTimes(2);
+      expect(pushApi.syncPushSubscription).toHaveBeenLastCalledWith({ endpoint: E1 });
+      expect(pushApi.subscribePush).not.toHaveBeenCalled();
+      expect(subscription.unsubscribe).toHaveBeenCalledOnce();
+      expect(getStoredEndpoint({ userId: OTHER_USER_ID })).toBeNull();
+      await vi.waitFor(() => expect(webPush.state.value).toBe('off'));
+    });
+
+    it('lets the settings page of the next account reconcile too', async () => {
+      const registration = buildRegistration({ existing: buildSubscription() });
+      stubServiceWorker({ registration, hasRegistration: true });
+      setStoredEndpoint({ userId: USER_ID, endpoint: E1 });
+      const webPush = mountWebPush();
+      await webPush.prepare();
+      await vi.waitFor(() => expect(webPush.state.value).toBe('on'));
+
+      signedIn.user.value = { id: OTHER_USER_ID };
+      vi.mocked(pushApi.syncPushSubscription).mockResolvedValue({ known: false });
+      await webPush.prepare();
+
+      expect(pushApi.syncPushSubscription).toHaveBeenCalledTimes(2);
+      await vi.waitFor(() => expect(webPush.state.value).toBe('off'));
+    });
+
+    it('turns the toggle off when the browser subscription was removed by an explicit sign-out', async () => {
+      const registration = buildRegistration({ existing: buildSubscription() });
+      stubServiceWorker({ registration, hasRegistration: true });
+      setStoredEndpoint({ userId: USER_ID, endpoint: E1 });
+      const webPush = mountWebPush();
+      await webPush.prepare();
+      await vi.waitFor(() => expect(webPush.state.value).toBe('on'));
+
+      // removeThisDevice dropped the browser subscription; the same account signs in again.
+      registration.pushManager.getSubscription.mockResolvedValue(null);
+      await webPush.prepare();
+
+      await vi.waitFor(() => expect(webPush.state.value).toBe('off'));
+      expect(webPush.isThisDevice({ endpointHash: await getEndpointHash({ endpoint: E1 }) })).toBe(false);
+    });
+
+    it('discards a reconciliation that finishes after the account changed', async () => {
+      const registration = buildRegistration({ existing: buildSubscription() });
+      stubServiceWorker({ registration, hasRegistration: true });
+      setStoredEndpoint({ userId: USER_ID, endpoint: E1 });
+      let finishSync!: (value: { known: boolean }) => void;
+      vi.mocked(pushApi.syncPushSubscription).mockReturnValue(
+        new Promise((resolve) => {
+          finishSync = resolve;
+        }),
+      );
+      const webPush = mountWebPush();
+
+      const firstLoad = webPush.syncOnLoad();
+      await vi.waitFor(() => expect(pushApi.syncPushSubscription).toHaveBeenCalledTimes(1));
+      signedIn.user.value = { id: OTHER_USER_ID };
+      vi.mocked(pushApi.syncPushSubscription).mockResolvedValue({ known: false });
+      await webPush.syncOnLoad();
+      await vi.waitFor(() => expect(webPush.state.value).toBe('off'));
+
+      finishSync({ known: true });
+      await firstLoad;
+      await flushPromises();
+
+      expect(webPush.state.value).toBe('off');
+      expect(webPush.isThisDevice({ endpointHash: await getEndpointHash({ endpoint: E1 }) })).toBe(false);
     });
   });
 
