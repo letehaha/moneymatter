@@ -10,12 +10,19 @@ jest.mock('@models/currencies.model', () => ({
   default: { findOne: jest.fn() },
 }));
 
+jest.mock('@models/users-currencies.model', () => ({
+  __esModule: true,
+  getBaseCurrency: jest.fn(),
+}));
+
 /* eslint-disable import/first */
 import Currencies from '@models/currencies.model';
+import { getBaseCurrency } from '@models/users-currencies.model';
 
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
 import {
   assertMoneyFitsCurrency,
+  getBaseCurrencyDecimals,
   getConversionDecimals,
   getCurrencyDecimals,
   roundMoneyValues,
@@ -62,6 +69,39 @@ describe('currency precision helpers', () => {
 
     it('rejects an unknown currency instead of falling back to 2 decimals', async () => {
       await expect(getConversionDecimals({ userId: USER_ID, baseCode: 'USD', quoteCode: 'XXZ' })).rejects.toThrow();
+    });
+  });
+
+  describe('getBaseCurrencyDecimals', () => {
+    const baseIs = ({ code }: { code: string | null }) =>
+      (getBaseCurrency as jest.Mock<(...args: unknown[]) => Promise<unknown>>).mockResolvedValue(
+        code === null ? null : { userId: USER_ID, currencyCode: code, isDefaultCurrency: true },
+      );
+
+    it('returns 2 for a USD base', async () => {
+      baseIs({ code: 'USD' });
+      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(2);
+    });
+
+    it('returns 3 for a KWD base', async () => {
+      baseIs({ code: 'KWD' });
+      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(3);
+    });
+
+    it('returns 0 for a JPY base', async () => {
+      baseIs({ code: 'JPY' });
+      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).resolves.toBe(0);
+    });
+
+    it('looks the base up for the given user', async () => {
+      baseIs({ code: 'USD' });
+      await getBaseCurrencyDecimals({ userId: 7 });
+      expect(getBaseCurrency).toHaveBeenLastCalledWith({ userId: 7 });
+    });
+
+    it('rejects a user without a base currency instead of falling back to 2 decimals', async () => {
+      baseIs({ code: null });
+      await expect(getBaseCurrencyDecimals({ userId: USER_ID })).rejects.toThrow();
     });
   });
 
