@@ -99,21 +99,22 @@ async function updateAccountBalanceForChangedTxImpl({
   // running sum of per-transaction `refAmount`s — those carry historical rates and
   // would leave a ref residue on an account drained back to zero.
   //
-  // `measureSpotRefBalance` returns null when no rate reaches the pair; the stored
+  // `measureSpotRefBalance` returns `undefined` when no rate reaches the pair; the stored
   // ref balance is kept (the daily remeasure self-heals it) so a delete never
-  // fails. Dynamic import for the module-comment reason: it statically pulls in the
+  // fails. It returns `null` for a custom currency without a rate, which is stored as
+  // such. Dynamic import for the module-comment reason: it statically pulls in the
   // exchange-rate stack, which must not load while transactions.model is still in
   // the model loader.
   const { measureSpotRefBalance } = await import('./measure-spot-ref-balance');
-  const refCurrentBalance =
-    (await measureSpotRefBalance({
-      // Owner of the account, not the tx author — ref balances live in the owner's
-      // base currency (shared accounts can be written by recipients).
-      userId: account.userId,
-      amount: newCurrentBalance,
-      baseCode: account.currencyCode,
-      site: 'updateAccountBalanceForChangedTx',
-    })) ?? account.refCurrentBalance;
+  const measuredRefBalance = await measureSpotRefBalance({
+    // Owner of the account, not the tx author — ref balances live in the owner's
+    // base currency (shared accounts can be written by recipients).
+    userId: account.userId,
+    amount: newCurrentBalance,
+    baseCode: account.currencyCode,
+    site: 'updateAccountBalanceForChangedTx',
+  });
+  const refCurrentBalance = measuredRefBalance === undefined ? account.refCurrentBalance : measuredRefBalance;
 
   await Accounts.update({ currentBalance: newCurrentBalance, refCurrentBalance }, { where: { id: accountId } });
 

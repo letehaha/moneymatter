@@ -35,7 +35,9 @@ export const getCreditLimitMinorByAccount = async ({
     attributes: ['id', 'refCreditLimit'],
   });
 
-  return new Map(accounts.map((account) => [account.id, account.refCreditLimit.toMinorUnits({ decimals })]));
+  return new Map(
+    accounts.map((account) => [account.id, account.refCreditLimit?.toMinorUnits({ decimals }) ?? asMinorUnits(0)]),
+  );
 };
 
 /** Sum of `getCreditLimitMinorByAccount`, for reads that adjust one aggregate balance. */

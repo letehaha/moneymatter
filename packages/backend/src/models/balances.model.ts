@@ -123,7 +123,9 @@ export default class Balances extends Model {
     isDelete?: boolean;
   }) {
     const { accountId, time } = data;
-    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? data.refAmount : data.refAmount.negate();
+    // A row without a base-currency amount (a custom currency with no rate yet) moves no balance.
+    const refAmount = data.refAmount ?? Money.zero();
+    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? refAmount : refAmount.negate();
     const date = startOfDay(new Date(time));
 
     switch (data.accountType) {
@@ -166,8 +168,9 @@ export default class Balances extends Model {
           amount = amount.negate(); // Reverse the amount if it's a deletion
         } else if (prevData) {
           const originalDate = startOfDay(new Date(prevData.time));
+          const prevRefAmount = prevData.refAmount ?? Money.zero();
           const originalAmount =
-            prevData.transactionType === TRANSACTION_TYPES.income ? prevData.refAmount : prevData.refAmount.negate();
+            prevData.transactionType === TRANSACTION_TYPES.income ? prevRefAmount : prevRefAmount.negate();
 
           if (
             // If the account ID changed,
@@ -403,7 +406,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date: subDays(new Date(date), 1),
-              amount: account!.refInitialBalance,
+              amount: account!.refInitialBalance ?? Money.zero(),
             }),
           );
         } catch (err) {
@@ -418,7 +421,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date,
-              amount: account!.refInitialBalance.add(amount),
+              amount: (account!.refInitialBalance ?? Money.zero()).add(amount),
             }),
           );
         } catch (err) {
@@ -469,7 +472,10 @@ export default class Balances extends Model {
    * @param prevAccount - The previous account state (undefined for new accounts)
    */
   static async handleAccountChange({ account, prevAccount }: { account: Accounts; prevAccount?: Accounts }) {
-    const { id: accountId, refInitialBalance } = account;
+    const { id: accountId } = account;
+    // An account whose opening balance has no base-currency value yet (a custom currency without
+    // a rate) contributes nothing to the history.
+    const refInitialBalance = account.refInitialBalance ?? Money.zero();
 
     // Try to find an existing balance for the account
     const record = await this.findOne({
@@ -480,7 +486,7 @@ export default class Balances extends Model {
 
     // If record exists, then it's account updating, otherwise account creation
     if (record && prevAccount) {
-      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance);
+      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance ?? Money.zero());
 
       // Update history for all the records related to that account
       await this.update(
@@ -594,6 +600,8 @@ export default class Balances extends Model {
    */
   static async setTodayRowToSpot({ account }: { account: Accounts }): Promise<void> {
     if (account.accountCategory === ACCOUNT_CATEGORIES.loan) return;
+    // No spot value to pin while a custom currency has no rate.
+    if (account.refCurrentBalance == null) return;
 
     await this.updateAccountBalance({
       accountId: account.id,

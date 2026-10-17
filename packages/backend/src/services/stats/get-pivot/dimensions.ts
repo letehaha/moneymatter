@@ -115,6 +115,8 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
   buildInclude: () => [],
   aggregate: async (ctx) => {
     for (const tx of ctx.transactions) {
+      // A row with no base-currency amount (custom currency, no rate yet) is left out of every cell.
+      if (tx.refAmount === null) continue;
       const bucketIndex = ctx.bucketIndexForTime(new Date(tx.time));
       if (bucketIndex === -1) continue;
       const rowKey = tx.payeeId ?? UNASSIGNED_ID;
@@ -186,6 +188,7 @@ const createTagStrategy = (): PivotDimensionStrategy => {
     ],
     aggregate: async (ctx) => {
       for (const tx of ctx.transactions) {
+        if (tx.refAmount === null) continue;
         const bucketIndex = ctx.bucketIndexForTime(new Date(tx.time));
         if (bucketIndex === -1) continue;
         const columnKey = ctx.columnKeys[bucketIndex]!;

@@ -10,7 +10,7 @@ import TransactionSplits, {
 } from '@models/transaction-splits.model';
 import Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 
 import { SplitInput } from './types';
 import { assertValidSplits } from './validate-splits';
@@ -90,7 +90,7 @@ export const manageSplits = async ({
     });
 
     if (refunds.length > 0) {
-      const totalRefunded = Money.sum(refunds.map((r) => r.refundTransaction.refAmount.abs()));
+      const totalRefunded = Money.sum(refunds.map((r) => r.refundTransaction.refAmount?.abs() ?? Money.zero()));
       const refundAmounts = refunds.map((r) => ({
         amount: r.refundTransaction.amount.abs(),
         currencyCode: r.refundTransaction.currencyCode,
@@ -135,7 +135,7 @@ export const manageSplits = async ({
   // Prepare split payloads with calculated refAmounts
   const splitPayloads: CreateSplitPayload[] = await Promise.all(
     splits.map(async (split) => {
-      let refAmount = split.amount;
+      let refAmount: Money | null = split.amount;
 
       // Calculate refAmount if transaction is in a different currency
       if (!isBaseCurrency) {
@@ -143,8 +143,8 @@ export const manageSplits = async ({
           // Use provided refAmount if available
           refAmount = split.refAmount.round(baseDecimals);
         } else {
-          // Calculate refAmount based on exchange rate
-          refAmount = await calculateRefAmount({
+          // Calculate refAmount based on exchange rate; `null` for a custom currency without a rate
+          refAmount = await calculateRefAmountOrNull({
             userId,
             amountOwnerUserId: categoryOwnerUserId ?? userId,
             amount: split.amount,
@@ -157,7 +157,7 @@ export const manageSplits = async ({
 
       // Validate: if this category had refunds, new refAmount must be >= total refunded
       const existingRefundInfo = refundsByCategoryId.get(split.categoryId);
-      if (existingRefundInfo && refAmount.lessThan(existingRefundInfo.totalRefundedRefAmount)) {
+      if (existingRefundInfo && refAmount && refAmount.lessThan(existingRefundInfo.totalRefundedRefAmount)) {
         // Format refund amounts in their original currencies for user-friendly display
         const refundDescriptions = existingRefundInfo.refundAmounts.map(
           (r) => `${r.amount.toNumber().toFixed(2)} ${r.currencyCode}`,

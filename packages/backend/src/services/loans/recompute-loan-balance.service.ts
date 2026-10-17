@@ -1,6 +1,6 @@
 import { ACCOUNT_CATEGORIES, type LoanEvent } from '@bt/shared/types';
 import { getBaseCurrencyDecimals, getCurrencyDecimals } from '@common/lib/currency-precision';
-import { Money } from '@common/types/money';
+import { Money, moneyEqualsOrNull } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -130,7 +130,10 @@ const recomputeLoanBalanceImpl = async ({
       site: 'recomputeLoanBalance',
     })) ?? account.refCurrentBalance;
 
-  if (!newCurrentBalance.equals(account.currentBalance) || !newRefCurrentBalance.equals(account.refCurrentBalance)) {
+  if (
+    !newCurrentBalance.equals(account.currentBalance) ||
+    !moneyEqualsOrNull(newRefCurrentBalance, account.refCurrentBalance)
+  ) {
     await Accounts.update(
       { currentBalance: newCurrentBalance, refCurrentBalance: newRefCurrentBalance },
       { where: { id: loanAccountId, userId: account.userId } },
@@ -187,9 +190,9 @@ const recomputeLoanBalanceImpl = async ({
   const rebuiltRows = replayLoanOutstanding({
     legs,
     anchorDate,
-    openingBalance: account.refInitialBalance,
+    openingBalance: account.refInitialBalance ?? Money.zero(),
     decimals: baseDecimals,
-    pickMinor: ({ leg }) => leg.refAmount.toMinorUnits({ decimals: baseDecimals }),
+    pickMinor: ({ leg }) => leg.refAmount?.toMinorUnits({ decimals: baseDecimals }) ?? 0,
   }).map((row) => {
     // A day whose native outstanding is floored to zero is settled — nothing is
     // owed, so its base-currency row is zero too. The ref accumulator

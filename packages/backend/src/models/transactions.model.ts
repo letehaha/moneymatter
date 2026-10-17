@@ -111,7 +111,7 @@ export interface TransactionsAttributes {
   id: string;
   amount: Money;
   /** Amount in user's base currency */
-  refAmount: Money;
+  refAmount: Money | null;
   note: string;
   externalUrl: string | null;
   externalReference: string | null;
@@ -149,7 +149,7 @@ export interface TransactionsAttributes {
     originalSource?: { originalId: string; importedFrom: string | null; accountType: ACCOUNT_TYPES };
   } & Record<string, unknown>;
   commissionRate: Money;
-  refCommissionRate: Money;
+  refCommissionRate: Money | null;
   refAmountMissing: boolean;
   cashbackAmount: Money;
   originalAmount: Money | null;
@@ -180,7 +180,7 @@ export default class Transactions extends Model {
 
   // Amount in curreny of account
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refAmount: Money;
+  declare refAmount: Money | null;
 
   @Length({ max: 2000 })
   @Column({ allowNull: true, type: DataType.STRING })
@@ -306,7 +306,7 @@ export default class Transactions extends Model {
   declare commissionRate: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refCommissionRate: Money;
+  declare refCommissionRate: Money | null;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare cashbackAmount: Money;
@@ -375,6 +375,19 @@ export default class Transactions extends Model {
   declare createdAt: Date;
   declare updatedAt: Date;
   declare deletedAt: Date | null;
+
+  /**
+   * `refAmountMissing` follows `refAmount`: a row whose base-currency amount is `null` is flagged,
+   * and a write that gives it a value clears the flag. Deriving it at the model keeps every write
+   * path (manual entry, transfers, imports, a later rate) from setting one without the other.
+   */
+  @BeforeCreate
+  @BeforeUpdate
+  static syncRefAmountMissing(instance: Transactions) {
+    if (instance.isNewRecord || instance.changed('refAmount')) {
+      instance.refAmountMissing = instance.refAmount == null;
+    }
+  }
 
   @BeforeCreate
   @BeforeUpdate
@@ -591,8 +604,9 @@ export default class Transactions extends Model {
     const newRaw = newData as any,
       prevRaw = prevData as any;
     for (const field of MONEY_FIELDS) {
-      newRaw[field] = Money.fromDecimal(newRaw[field]);
-      prevRaw[field] = Money.fromDecimal(prevRaw[field]);
+      // `refAmount` and `refCommissionRate` are `null` while a custom currency has no rate.
+      newRaw[field] = newRaw[field] == null ? null : Money.fromDecimal(newRaw[field]);
+      prevRaw[field] = prevRaw[field] == null ? null : Money.fromDecimal(prevRaw[field]);
     }
 
     const wasPlanned = Boolean(prevData.isPlanned);
@@ -1443,7 +1457,8 @@ export interface UpdateTransactionByIdParams {
   /** Owner of the account when it differs from `userId`; its definition of the currency governs the native amounts. */
   accountOwnerUserId?: number;
   amount?: Money;
-  refAmount?: Money;
+  /** `null` stores a missing base-currency amount (a custom currency without a rate). */
+  refAmount?: Money | null;
   note?: string | null;
   externalUrl?: string | null;
   externalReference?: string | null;
@@ -1492,7 +1507,7 @@ const roundUpdatePayloadMoney = async ({
 
   const needsStoredRow =
     payload.currencyCode === undefined ||
-    (refAmount !== undefined && payload.refCurrencyCode === undefined) ||
+    (refAmount !== undefined && refAmount !== null && payload.refCurrencyCode === undefined) ||
     (originalAmount !== undefined && originalAmount !== null && payload.originalCurrencyCode === undefined);
 
   const stored = needsStoredRow

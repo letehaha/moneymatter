@@ -77,6 +77,8 @@ export const resolveWholeTxRefunds = async ({
     const baseTx = byId.get(refund.originalTxId);
     const refundTx = byId.get(refund.refundTxId);
     if (!baseTx || !refundTx) continue;
+    // A refund with no base-currency amount has no magnitude to net.
+    if (refundTx.refAmount === null) continue;
 
     // Attribute to the expense side of the pair (mirrors the category netting's leg choice).
     const expenseSide = baseTx.transactionType === TRANSACTION_TYPES.expense ? baseTx : refundTx;

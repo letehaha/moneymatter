@@ -4,7 +4,7 @@ import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { assertImportTargetNotBankLinked } from '@services/import-export/core/assert-import-target-not-bank-linked';
 
@@ -91,7 +91,7 @@ export async function createAccountsIfNeeded({
     const initialBalanceCents = resolveInitialBalanceCents?.(accountName) ?? 0;
     const initialBalance = initialBalanceCents === 0 ? Money.zero() : Money.fromCents(initialBalanceCents);
 
-    const refInitialBalance = await calculateRefAmount({
+    const refInitialBalance = await calculateRefAmountOrNull({
       userId,
       amount: initialBalance,
       baseCode: currencyCode,

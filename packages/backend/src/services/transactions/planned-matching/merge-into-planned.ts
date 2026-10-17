@@ -2,7 +2,7 @@ import { ACCOUNT_TYPES, type TransactionLocation } from '@bt/shared/types';
 import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { Money } from '@common/types/money';
 import Transactions from '@models/transactions.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { resolvePayeeForIncomingRow } from '@services/payees/resolve-payee-for-incoming-row';
 
 export interface IncomingTransactionData {
@@ -66,7 +66,7 @@ export const mergeIntoPlanned = async ({
 
   const refAmount = isRefCurrency
     ? planned.amount
-    : await calculateRefAmount({
+    : await calculateRefAmountOrNull({
         userId: planned.userId,
         amount: planned.amount,
         baseCode: planned.currencyCode,
@@ -76,7 +76,7 @@ export const mergeIntoPlanned = async ({
 
   const refCommissionRate = isRefCurrency
     ? commissionRate
-    : await calculateRefAmount({
+    : await calculateRefAmountOrNull({
         userId: planned.userId,
         amount: commissionRate,
         baseCode: planned.currencyCode,

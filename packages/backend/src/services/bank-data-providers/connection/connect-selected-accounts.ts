@@ -17,7 +17,7 @@ import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
 import { NON_CURRENCY_CODES } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
-import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
 import {
   PROVIDER_TO_ACCOUNT_TYPE,
@@ -242,7 +242,7 @@ const createAccountsForConnection = withTransaction(
         });
 
         const now = new Date();
-        const accountRefBalance = await calculateRefAmount({
+        const accountRefBalance = await calculateRefAmountOrNull({
           amount: providerBalance,
           userId,
           date: now,
@@ -250,7 +250,7 @@ const createAccountsForConnection = withTransaction(
         });
 
         const refCreditLimit = creditLimit.isPositive()
-          ? await calculateRefAmount({
+          ? await calculateRefAmountOrNull({
               amount: creditLimit,
               userId,
               date: now,

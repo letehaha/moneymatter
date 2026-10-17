@@ -34,7 +34,8 @@ export interface OriginalTransactionStateSnapshot {
   transferId: string | null;
   categoryId: string | null;
   amount: number;
-  refAmount: number;
+  /** `null` when the transaction had no base-currency amount (a custom currency without a rate). */
+  refAmount: number | null;
   accountId: string;
   transactionType: string;
   paymentType: string;
@@ -50,7 +51,7 @@ export function snapshotOriginalTransactionState(tx: Transactions): OriginalTran
     transferId: tx.transferId,
     categoryId: tx.categoryId,
     amount: tx.amount.toNumber(),
-    refAmount: tx.refAmount.toNumber(),
+    refAmount: tx.refAmount?.toNumber() ?? null,
     accountId: tx.accountId,
     transactionType: tx.transactionType,
     paymentType: tx.paymentType,

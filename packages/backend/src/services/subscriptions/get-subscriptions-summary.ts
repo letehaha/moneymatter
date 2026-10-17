@@ -39,7 +39,8 @@ const getAverageMonthlyIncome = async ({
 
   let total = Money.zero();
   for (const tx of incomeTxs) {
-    total = total.add(tx.refAmount);
+    // A row with no base-currency amount yet (custom currency, no rate) is left out of the sum.
+    if (tx.refAmount) total = total.add(tx.refAmount);
   }
 
   return total.divide(lookbackMonths);

@@ -82,7 +82,7 @@ const linkTransactionToPortfolioImpl = async ({
         transferId: tx.transferId,
         categoryId: tx.categoryId,
         amount: tx.amount.toNumber(),
-        refAmount: tx.refAmount.toNumber(),
+        refAmount: tx.refAmount?.toNumber() ?? null,
         accountId: tx.accountId,
         transactionType: tx.transactionType,
         paymentType: tx.paymentType,

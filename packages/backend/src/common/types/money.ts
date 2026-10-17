@@ -336,3 +336,9 @@ export function minorUnitsToApiDecimalOrNull({
 
 /** Decimal scale for investment DECIMAL columns (precision: 20, scale: 10). */
 export const INVESTMENT_DECIMAL_SCALE = 10;
+
+/** Equality of two nullable amounts: two missing values are equal, a missing value never equals an amount. */
+export function moneyEqualsOrNull(a: Money | null | undefined, b: Money | null | undefined): boolean {
+  if (a == null || b == null) return a == null && b == null;
+  return a.equals(b);
+}

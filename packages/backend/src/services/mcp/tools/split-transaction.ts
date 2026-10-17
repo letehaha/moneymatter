@@ -68,7 +68,7 @@ export function registerSplitTransaction(server: McpServer) {
           transactionId: split.transactionId,
           categoryId: split.categoryId,
           amount: split.amount.toNumber(),
-          refAmount: split.refAmount.toNumber(),
+          refAmount: split.refAmount?.toNumber() ?? null,
           note: split.note,
         })),
       });

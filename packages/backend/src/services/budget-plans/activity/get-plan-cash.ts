@@ -92,8 +92,8 @@ export const getPlanCash = async ({
       )
       SELECT a.id AS "accountId", a."currencyCode", a."creditLimit" AS "nativeLimit",
              a."currentBalance" - COALESCE(SUM(s."native") FILTER (WHERE s."time" >= :openingUtc), 0) AS "nativeOpening",
-             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :openingUtc), 0) AS "opening",
-             a."refCurrentBalance" - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :closingUtc), 0) AS "closing"
+             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :openingUtc), 0) AS "opening",
+             COALESCE(a."refCurrentBalance", 0) - COALESCE(SUM(s."ref") FILTER (WHERE s."time" >= :closingUtc), 0) AS "closing"
       FROM "BudgetPlanAccounts" pa
       JOIN "Accounts" a ON a.id = pa."accountId" AND a."excludeFromStats" = false AND a."userId" = :ownerId
       LEFT JOIN signed s ON s."accountId" = a.id

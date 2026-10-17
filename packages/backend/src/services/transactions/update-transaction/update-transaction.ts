@@ -15,7 +15,7 @@ import { deleteSplitsForTransaction } from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { getUserDefaultCategory } from '@models/users.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
@@ -295,7 +295,8 @@ const makeBasicBaseTxUpdation = async (
   }
 
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
-    baseTransactionUpdateParams.refAmount = await calculateRefAmount({
+    // `null` flags the row as missing its base-currency amount (custom currency, no rate yet).
+    baseTransactionUpdateParams.refAmount = await calculateRefAmountOrNull({
       userId: newData.userId,
       amountOwnerUserId: ctx.accountOwnerUserId,
       amount: effectiveAmount,

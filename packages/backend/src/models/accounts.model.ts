@@ -23,11 +23,11 @@ interface AccountsAttributes {
   id: string;
   name: string;
   initialBalance: Money;
-  refInitialBalance: Money;
+  refInitialBalance: Money | null;
   currentBalance: Money;
-  refCurrentBalance: Money;
+  refCurrentBalance: Money | null;
   creditLimit: Money;
-  refCreditLimit: Money;
+  refCreditLimit: Money | null;
   type: ACCOUNT_TYPES;
   accountCategory: ACCOUNT_CATEGORIES;
   currencyCode: string;
@@ -75,19 +75,19 @@ export default class Accounts extends Model {
   declare initialBalance: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refInitialBalance: Money;
+  declare refInitialBalance: Money | null;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare currentBalance: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refCurrentBalance: Money;
+  declare refCurrentBalance: Money | null;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare creditLimit: Money;
 
   @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
-  declare refCreditLimit: Money;
+  declare refCreditLimit: Money | null;
 
   @Column({
     type: DataType.STRING,

@@ -389,7 +389,10 @@ const signedAmount = (amount: number) => (props.tx.transactionType === TRANSACTI
 const formattedAmount = computed(() =>
   formatUIAmount(signedAmount(props.tx.amount), { currency: props.tx.currencyCode }),
 );
-const formattedRefAmount = computed(() => formatBaseCurrency(signedAmount(props.tx.refAmount)));
+// A transaction in a custom currency has no base-currency amount until a rate exists.
+const formattedRefAmount = computed(() =>
+  props.tx.refAmount === null ? '' : formatBaseCurrency(signedAmount(props.tx.refAmount)),
+);
 
 const formattedOriginalAmount = computed(() => {
   const { originalAmount, originalCurrencyCode } = props.tx;

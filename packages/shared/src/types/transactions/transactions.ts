@@ -60,7 +60,8 @@ export interface TransactionSplitModel {
   userId: number;
   categoryId: RecordId;
   amount: number;
-  refAmount: number;
+  /** `null` while a custom currency has no rate on the transaction's date. */
+  refAmount: number | null;
   note: string | null;
   category?: EmbeddedCategoryModel;
 }
@@ -86,8 +87,8 @@ export interface TransactionLocation {
 export interface TransactionModel {
   id: RecordId;
   amount: number;
-  // Amount in base currency
-  refAmount: number;
+  // Amount in base currency; `null` while a custom currency has no rate on the transaction's date
+  refAmount: number | null;
   note: string;
   /** Link to an order page, booking confirmation, receipt, etc. http(s) only. */
   externalUrl: string | null;
@@ -120,7 +121,7 @@ export interface TransactionModel {
   // hold: boolean;
   // receiptId: RecordId;
   commissionRate: number; // should be comission calculated as refAmount
-  refCommissionRate: number; // should be comission calculated as refAmount
+  refCommissionRate: number | null; // should be comission calculated as refAmount
   cashbackAmount: number; // add to unified
   originalAmount: number | null;
   originalCurrencyCode: string | null;

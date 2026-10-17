@@ -177,6 +177,9 @@ async function getPeriodData({
 
   // Aggregate transactions into months
   for (const tx of transactions) {
+    // A row with no base-currency amount (custom currency, no rate yet) is left out of the totals.
+    if (tx.refAmount === null) continue;
+
     const txTime = new Date(tx.time);
     const monthKey = `${getYear(txTime)}-${getMonth(txTime)}`; // year-monthIndex (0-11)
 

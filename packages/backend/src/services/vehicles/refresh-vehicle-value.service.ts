@@ -23,7 +23,7 @@ interface RefreshSingleParams {
 
 interface RefreshSingleResult {
   value: Money;
-  refValue: Money;
+  refValue: Money | null;
   refreshed: boolean;
 }
 

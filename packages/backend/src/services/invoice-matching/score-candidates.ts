@@ -32,8 +32,8 @@ export interface ScoringCandidate {
   /** Decimal, positive. */
   amount: number;
   currencyCode: string;
-  /** Decimal, positive, in the user's base currency. */
-  refAmount: number;
+  /** Decimal, positive, in the user's base currency; `null` while a custom currency has no rate. */
+  refAmount: number | null;
   /** Decimal; what the merchant charged before the bank converted it, when the transaction carries it. */
   originalAmount: number | null;
   originalCurrencyCode: string | null;
@@ -73,7 +73,7 @@ const scoreAmount = ({
     return { score: falloff({ gap: diff / invoiceAmount, limit: AMOUNT_TOLERANCE }), signal: 'close', diff };
   }
 
-  if (invoiceBaseAmount === null) return { score: 0, signal: 'unknown', diff: null };
+  if (invoiceBaseAmount === null || candidate.refAmount === null) return { score: 0, signal: 'unknown', diff: null };
 
   const baseDiff = Math.abs(candidate.refAmount - invoiceBaseAmount);
   const gapPastAllowance = Math.max(0, baseDiff / invoiceBaseAmount - CONVERTED_MARKUP_ALLOWANCE);

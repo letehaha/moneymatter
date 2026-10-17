@@ -51,6 +51,7 @@ export const getVentureContributions = async ({
   for (const link of links) {
     const { dealId, deal } = link.event!;
     const tx = link.transaction!;
+    if (tx.refAmount === null) continue;
     const minor = tx.refAmount.toMinorUnits({ decimals }) * (tx.transactionType === TRANSACTION_TYPES.expense ? 1 : -1);
     const entry = byDeal.get(dealId) ?? { dealId, name: deal!.name, amount: asMinorUnits(0) };
     entry.amount = asMinorUnits(entry.amount + minor);

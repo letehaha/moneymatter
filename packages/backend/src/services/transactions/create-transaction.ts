@@ -21,7 +21,7 @@ import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanPaymentAllowed } from '@services/loans/assert-loan-payment-allowed';
@@ -142,7 +142,7 @@ export const calcTransferTransactionRefAmount = async ({
   const isSourceRef = baseTransaction.currencyCode === baseCurrency.currency.code;
   const isOppositeRef = oppositeTxCurrencyCode === baseCurrency.currency.code;
 
-  let oppositeRefAmount: Money = destinationAmount;
+  let oppositeRefAmount: Money | null = destinationAmount;
 
   if (isSourceRef && !isOppositeRef) {
     oppositeRefAmount = baseTransaction.refAmount;
@@ -156,7 +156,7 @@ export const calcTransferTransactionRefAmount = async ({
   } else if (isSourceRef && isOppositeRef) {
     oppositeRefAmount = baseTransaction.refAmount;
   } else if (!isSourceRef && !isOppositeRef) {
-    oppositeRefAmount = await calculateRefAmount({
+    oppositeRefAmount = await calculateRefAmountOrNull({
       userId,
       amount: destinationAmount,
       baseCode: oppositeTxCurrencyCode,
@@ -285,7 +285,7 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
     ? await UsersCurrencies.getBaseCurrency({ userId: destOwnerUserId })
     : sourceUserBaseCurrency;
 
-  let oppositeRefAmount: Money;
+  let oppositeRefAmount: Money | null;
 
   if (isCrossUser) {
     // Cross-user pairs deliberately *don't* share a refAmount: each leg's refAmount is in
@@ -296,7 +296,7 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
     if (destOwnerBaseCurrency.currency.code === oppositeTxCurrency.code) {
       oppositeRefAmount = destinationAmount;
     } else {
-      oppositeRefAmount = await calculateRefAmount({
+      oppositeRefAmount = await calculateRefAmountOrNull({
         userId: destOwnerUserId,
         amount: destinationAmount,
         baseCode: oppositeTxCurrency.code,
@@ -579,7 +579,9 @@ export const createTransaction = withTransaction(
       };
 
       if (defaultUserCurrency.code !== generalTxCurrency.code) {
-        generalTxParams.refAmount = await calculateRefAmount({
+        // `null` when the account currency is a custom one with no rate on the date: the row is
+        // saved and flagged `refAmountMissing`.
+        generalTxParams.refAmount = await calculateRefAmountOrNull({
           userId,
           amountOwnerUserId: accountOwnerUserId,
           amount: generalTxParams.amount,
@@ -587,7 +589,7 @@ export const createTransaction = withTransaction(
           quoteCode: defaultUserCurrency.code,
           date: generalTxParams.time,
         });
-        generalTxParams.refCommissionRate = await calculateRefAmount({
+        generalTxParams.refCommissionRate = await calculateRefAmountOrNull({
           userId,
           amountOwnerUserId: accountOwnerUserId,
           amount: generalTxParams.commissionRate || Money.zero(),

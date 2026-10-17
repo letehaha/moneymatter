@@ -26,7 +26,7 @@ import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
 import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
@@ -229,7 +229,9 @@ export const createAccount = withTransaction(
         mode: 'half-up',
       });
 
-      const refCreditLimit = await calculateRefAmount({
+      // A custom currency without a rate yields `null` rather than failing the creation; the
+      // stamps are filled in when a rate arrives.
+      const refCreditLimit = await calculateRefAmountOrNull({
         userId: userId,
         amount: creditLimit,
         baseCode: currencyCode,
@@ -240,7 +242,7 @@ export const createAccount = withTransaction(
       // correct stamp. Once transactions older than the account appear (imports,
       // backdated entries), `restampRefInitialBalance` re-derives this at the
       // ledger-boundary date's rate.
-      const refInitialBalance = await calculateRefAmount({
+      const refInitialBalance = await calculateRefAmountOrNull({
         userId,
         amount: initialBalance,
         baseCode: currencyCode,
@@ -391,7 +393,7 @@ export const updateAccount = withTransaction(
     const currentBalanceIsChanging =
       payload.currentBalance !== undefined && !payload.currentBalance.equals(accountData.currentBalance);
     let initialBalance: Money = accountData.initialBalance;
-    let refCurrentBalance: Money = accountData.refCurrentBalance;
+    let refCurrentBalance: Money | null = accountData.refCurrentBalance;
 
     /**
      * If `currentBalance` is changing, it means user want to change current balance
@@ -411,7 +413,7 @@ export const updateAccount = withTransaction(
       // `refCurrentBalance` is a spot measure – the new native balance at the latest
       // rate – not the stored ref plus a delta (that would keep the stored blend of
       // historical rates alive). Cache bypassed so a just-edited rate is observed.
-      refCurrentBalance = await calculateRefAmount({
+      refCurrentBalance = await calculateRefAmountOrNull({
         userId: accountData.userId,
         amount: payload.currentBalance!,
         baseCode: accountData.currencyCode,
@@ -425,10 +427,10 @@ export const updateAccount = withTransaction(
     // it via `displayBalance = currentBalance - creditLimit`.
     const creditLimitIsChanging =
       payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
-    let adjustedRefCreditLimit: Money | undefined;
+    let adjustedRefCreditLimit: Money | null | undefined;
 
     if (creditLimitIsChanging) {
-      adjustedRefCreditLimit = await calculateRefAmount({
+      adjustedRefCreditLimit = await calculateRefAmountOrNull({
         userId: accountData.userId,
         amount: payload.creditLimit!,
         baseCode: accountData.currencyCode,

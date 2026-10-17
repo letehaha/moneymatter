@@ -5,7 +5,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import Accounts from '@models/accounts.model';
 import { getTransactionById } from '@models/transactions.model';
 import { serializeTransactions } from '@root/serializers';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
@@ -42,7 +42,7 @@ export default createController(schema, async ({ user, query }) => {
   const { id: userId } = user;
 
   let searchTransactionType: TRANSACTION_TYPES;
-  let refAmountCenter: Money;
+  let refAmountCenter: Money | null;
 
   if (query.transactionId) {
     // Fetch the transaction and derive parameters
@@ -80,13 +80,16 @@ export default createController(schema, async ({ user, query }) => {
     }
 
     // Calculate refAmount from the form amount
-    refAmountCenter = await calculateRefAmount({
+    refAmountCenter = await calculateRefAmountOrNull({
       amount: Money.fromDecimal(originAmount!),
       userId,
       baseCode: account.currencyCode,
       date: new Date(),
     });
   }
+
+  // Candidates are found by base-currency amount: with none (custom currency, no rate yet) there is nothing to match.
+  if (!refAmountCenter) return { data: [] };
 
   // Calculate refAmount range
   const lowerBound = refAmountCenter.subtract(RECOMMENDATION_REF_AMOUNT_RANGE);

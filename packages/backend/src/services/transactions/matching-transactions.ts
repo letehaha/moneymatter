@@ -37,17 +37,23 @@ interface MatchingRow {
   refAmount: string;
 }
 
+type RawMatchingRow = Omit<MatchingRow, 'refAmount'> & { refAmount: string | null };
+
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
   // `getTransactions` reads raw exactly when no `include*` flag is passed, which is
   // what makes `refAmount` the raw DECIMAL string here.
-  const rows = (await getTransactions({
+  const rawRows = (await getTransactions({
     ...filters,
     limit: Infinity,
     attributes: ['id', 'userId', 'accountId', 'transactionType', 'transferNature', 'transferId', 'refAmount'],
-  })) as unknown as MatchingRow[];
+  })) as unknown as RawMatchingRow[];
+  // A row with no base-currency amount (custom currency, no rate yet) is left out of the totals.
+  const rows = rawRows.flatMap((row): MatchingRow[] =>
+    row.refAmount === null ? [] : [{ ...row, refAmount: row.refAmount }],
+  );
 
   // The tag filter joins TransactionTags, which repeats a row per matching tag.
   return [...new Map(rows.map((row) => [row.id, row])).values()];

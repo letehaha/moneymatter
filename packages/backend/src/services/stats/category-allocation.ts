@@ -31,7 +31,8 @@ import { Op } from 'sequelize';
 /** Minimal transaction shape the engine needs; both stats consumers already load these columns. */
 interface AllocatableTransaction {
   id: string;
-  refAmount: Money;
+  /** `null` while a custom currency has no rate: the row contributes to no figure. */
+  refAmount: Money | null;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
@@ -88,14 +89,14 @@ export interface CategoryRefundPair {
 }
 
 interface TxEntry {
-  refAmount: Money;
+  refAmount: Money | null;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date;
 }
 
 const toTxEntry = (tx: {
-  refAmount: Money;
+  refAmount: Money | null;
   categoryId: string | null;
   transactionType: TRANSACTION_TYPES;
   time: Date | string;
@@ -180,6 +181,8 @@ export const resolveRefundPairs = async ({
     const originalTx = txMap.get(refund.originalTxId);
     const refundTx = txMap.get(refund.refundTxId);
     if (!originalTx || !refundTx) continue;
+    // A refund with no base-currency amount has no magnitude to net.
+    if (refundTx.refAmount === null) continue;
 
     // `splitId` always points at a split of the original tx (enforced when the refund is created),
     // so the split's category stands in for the original's on whichever side the original sits.
@@ -236,20 +239,23 @@ export const computeCategoryAllocations = async ({
 
   const base: CategoryAllocationLeg[] = [];
   for (const tx of transactions) {
+    // A row with no base-currency amount (custom currency, no rate yet) is left out of every report.
+    if (tx.refAmount === null) continue;
+
     const time = new Date(tx.time);
     const transactionType = tx.transactionType;
     const txSplits = splitsByTxId.get(tx.id);
     if (txSplits && txSplits.length > 0) {
-      const splitsTotal = txSplits.reduce((sum, split) => sum + split.refAmount.toMinorUnits({ decimals }), 0);
+      const valuedSplits = txSplits.flatMap((split) =>
+        split.refAmount === null
+          ? []
+          : [{ categoryId: split.categoryId, minor: split.refAmount.toMinorUnits({ decimals }) }],
+      );
+      const splitsTotal = valuedSplits.reduce((sum, split) => sum + split.minor, 0);
       const primaryAmount = tx.refAmount.toMinorUnits({ decimals }) - splitsTotal;
       if (primaryAmount > 0) base.push({ categoryId: tx.categoryId, minor: primaryAmount, time, transactionType });
-      for (const split of txSplits) {
-        base.push({
-          categoryId: split.categoryId,
-          minor: split.refAmount.toMinorUnits({ decimals }),
-          time,
-          transactionType,
-        });
+      for (const split of valuedSplits) {
+        base.push({ categoryId: split.categoryId, minor: split.minor, time, transactionType });
       }
     } else {
       base.push({ categoryId: tx.categoryId, minor: tx.refAmount.toMinorUnits({ decimals }), time, transactionType });

@@ -25,7 +25,8 @@ interface TransactionSplitApiResponse {
   id: string;
   categoryId: string;
   amount: number;
-  refAmount: number;
+  /** `null` while a custom currency has no rate on the transaction's date. */
+  refAmount: number | null;
   note: string | null;
   category?: {
     id: string;
@@ -38,9 +39,10 @@ interface TransactionSplitApiResponse {
 export interface TransactionApiResponse {
   id: string;
   amount: number;
-  refAmount: number;
+  /** `null` while a custom currency has no rate on the transaction's date; see `refAmountMissing`. */
+  refAmount: number | null;
   commissionRate: number;
-  refCommissionRate: number;
+  refCommissionRate: number | null;
   cashbackAmount: number;
   originalAmount: number | null;
   originalCurrencyCode: string | null;
@@ -194,7 +196,7 @@ function serializeTransactionSplit(
     id: split.id,
     categoryId: split.categoryId,
     amount: moneyToApiDecimal(split.amount),
-    refAmount: moneyToApiDecimal(split.refAmount),
+    refAmount: moneyToApiDecimalOrNull(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -232,9 +234,9 @@ export function serializeTransaction(
   return {
     id: tx.id,
     amount: moneyToApiDecimal(tx.amount),
-    refAmount: moneyToApiDecimal(tx.refAmount),
+    refAmount: moneyToApiDecimalOrNull(tx.refAmount),
     commissionRate: moneyToApiDecimal(tx.commissionRate),
-    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
+    refCommissionRate: moneyToApiDecimalOrNull(tx.refCommissionRate),
     cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
     originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,

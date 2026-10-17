@@ -6,8 +6,8 @@ interface TransactionMoneyFields {
   commissionRate?: Money;
   cashbackAmount?: Money;
   originalAmount?: Money | null;
-  refAmount?: Money;
-  refCommissionRate?: Money;
+  refAmount?: Money | null;
+  refCommissionRate?: Money | null;
 }
 
 /**
