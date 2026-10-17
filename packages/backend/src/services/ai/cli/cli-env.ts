@@ -3,7 +3,14 @@ const DEFAULT_PATH = '/usr/local/bin:/usr/bin:/bin';
 /** Test-only variables the fake CLIs read; never forwarded outside `NODE_ENV=test`. */
 const FAKE_CLI_ENV_VARS = ['MM_FAKE_CLI_SCENARIO', 'MM_FAKE_CLI_RESPONSE_FILE', 'MM_FAKE_CLI_STATE_DIR'] as const;
 
-const OPTIONAL_PASSTHROUGH_VARS = ['LANG', 'TZ', 'SSL_CERT_FILE', 'NODE_EXTRA_CA_CERTS'] as const;
+/** `USE_BUILTIN_RIPGREP` lets the Alpine image point Claude at its system ripgrep (the vendored one is glibc-only). */
+const OPTIONAL_PASSTHROUGH_VARS = [
+  'LANG',
+  'TZ',
+  'SSL_CERT_FILE',
+  'NODE_EXTRA_CA_CERTS',
+  'USE_BUILTIN_RIPGREP',
+] as const;
 
 /**
  * The child environment is assembled from scratch instead of spread from `process.env`, so an
