@@ -135,7 +135,17 @@ async function dumpTable({
   // raw:true is the sanctioned exception to the "no raw on Money" rule: a
   // backup must carry exact DB storage values (decimal strings for money,
   // JSONB, arrays) and bypassing the @MoneyField getters is the point.
-  const rows = (await def.model.findAll({ where, raw: true, paranoid: false })) as unknown as Row[];
+  // The rate-source table is read unscoped: its default scope also leaves out the HTTP history
+  // fingerprint, which has to travel (a restored currency that was switched away from HTTP needs it
+  // to keep its stored rates). The encrypted request headers are excluded by name instead.
+  const rows = (await (def.stripSecret === 'rateSourceHeaders'
+    ? def.model.unscoped().findAll({
+        where,
+        attributes: { exclude: ['rateSourceHeadersEncrypted'] },
+        raw: true,
+        paranoid: false,
+      })
+    : def.model.findAll({ where, raw: true, paranoid: false }))) as unknown as Row[];
 
   if (def.stripSecret === 'aiKeys') stripAiKeys({ rows });
   if (def.stripSecret === 'bankCredentials') {

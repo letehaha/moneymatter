@@ -52,6 +52,8 @@ const CURRENCY_CODE_ATTRIBUTE = /currencycode$/i;
 const getCurrencyCodeAttributes = ({ def }: { def: BackupTableDef }): string[] =>
   Object.keys(def.model.getAttributes()).filter((attrName) => CURRENCY_CODE_ATTRIBUTE.test(attrName));
 
+const HTTP_FINGERPRINT_PATTERN = /^[0-9a-f]{64}$/;
+
 const hasColumn = ({ plan, field }: { plan: TableColumnPlan; field: string }): boolean =>
   plan.columns.some((c) => c.field === field);
 
@@ -120,6 +122,15 @@ function buildRowOverrides({
       overrides.rateSourceConfig = withoutHeaderNames({ config: row.rateSourceConfig }) ?? null;
     }
     if (hasColumn({ plan, field: 'rateSourceHeadersEncrypted' })) overrides.rateSourceHeadersEncrypted = null;
+    // The history fingerprint is a SHA-256 hex digest; anything else in an archive is dropped, and
+    // the stored rates are then matched through the saved config as for a source saved before it.
+    if (hasColumn({ plan, field: 'rateSourceHttpFingerprint' })) {
+      overrides.rateSourceHttpFingerprint =
+        typeof row.rateSourceHttpFingerprint === 'string' &&
+        HTTP_FINGERPRINT_PATTERN.test(row.rateSourceHttpFingerprint)
+          ? row.rateSourceHttpFingerprint
+          : null;
+    }
   }
 
   // Bank credentials never travel: re-encrypt an empty stub on THIS instance and

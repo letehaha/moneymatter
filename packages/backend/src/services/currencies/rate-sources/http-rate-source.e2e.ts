@@ -122,6 +122,17 @@ const storedHeadersBlob = async ({ code = USDT }: { code?: string } = {}) => {
   return row?.rateSourceHeadersEncrypted ?? null;
 };
 
+const restoreArchive = async ({ files }: { files: Map<string, Buffer> }) => {
+  await helpers.wipeUserData();
+  const restore = await helpers.restoreBackup({ fileContent: await helpers.repackBackup({ files }) });
+  expect(restore.statusCode).toBe(200);
+  const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+  expect(status.status).toBe('completed');
+};
+
+const heldRows = ({ archive }: { archive: { files: Map<string, Buffer> } }) =>
+  JSON.parse(archive.files.get('data/users-currencies.json')!.toString('utf8')) as Record<string, unknown>[];
+
 const asSelfHost = () => {
   let before: string | undefined;
 
@@ -690,6 +701,81 @@ describe('HTTP rate source', () => {
           rateSourceConfig: { ...httpConfig(), headerNames: [] },
         });
         expect(await storedHeadersBlob()).toBeNull();
+      });
+    });
+
+    describe('backup of the history fingerprint', () => {
+      const backUpAfterHttpStint = async () => {
+        await createCurrency();
+        servePrice({ price: 2 });
+        await useHttp({ config: { headers: { 'X-Api-Key': SECRET } } });
+        const manual = await helpers.setCurrencyRateSource({ code: USDT, payload: { rateSource: 'manual' } });
+        expect(manual.statusCode).toBe(200);
+
+        const exported = await helpers.exportBackup();
+        expect(exported.statusCode).toBe(200);
+
+        return helpers.parseBackupArchive({ buffer: exported.body });
+      };
+
+      it('keeps the history of a source that was switched away from, when the same config is selected after a restore', async () => {
+        const archive = await backUpAfterHttpStint();
+        const usdt = heldRows({ archive }).find((row) => row.currencyCode === USDT)!;
+        expect(usdt.rateSource).toBe('manual');
+        expect(usdt.rateSourceHttpFingerprint).toMatch(/^[0-9a-f]{64}$/);
+        expect(usdt).not.toHaveProperty('rateSourceHeadersEncrypted');
+        for (const [, content] of archive.files) {
+          expect(content.toString('utf8')).not.toContain(SECRET);
+        }
+
+        await restoreArchive({ files: archive.files });
+        expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
+
+        // An HTTP source cannot fetch past days, so a failing endpoint shows the rows were kept.
+        global.mswMockServer.use(http.get(`${HOST}/price/:code`, () => HttpResponse.json({}, { status: 500 })));
+        const errorSpy = jest.spyOn(logger, 'error').mockImplementation(() => logger);
+        try {
+          expect((await useHttp()).statusCode).toBe(200);
+          expect(await storedRates()).toEqual([{ day: todayKey(), quote: BASE(), rate: 2, source: 'http' }]);
+        } finally {
+          errorSpy.mockRestore();
+        }
+      });
+
+      it('ignores a fingerprint in an archive that is not a digest', async () => {
+        const archive = await backUpAfterHttpStint();
+        archive.files.set(
+          'data/users-currencies.json',
+          Buffer.from(
+            JSON.stringify(
+              heldRows({ archive }).map((row) =>
+                row.currencyCode === USDT ? { ...row, rateSourceHttpFingerprint: 'x'.repeat(200) } : row,
+              ),
+            ),
+          ),
+        );
+
+        await restoreArchive({ files: archive.files });
+
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        const row = await UsersCurrencies.unscoped().findOne({ where: { userId, currencyCode: USDT }, raw: true });
+        expect(row?.rateSourceHttpFingerprint).toBeNull();
+      });
+
+      it('restores an archive written before the fingerprint was dumped', async () => {
+        const archive = await backUpAfterHttpStint();
+        archive.files.set(
+          'data/users-currencies.json',
+          Buffer.from(
+            JSON.stringify(heldRows({ archive }).map(({ rateSourceHttpFingerprint: _dropped, ...row }) => row)),
+          ),
+        );
+
+        await restoreArchive({ files: archive.files });
+
+        const { id: userId } = await helpers.getUserInfo({ raw: true });
+        const row = await UsersCurrencies.unscoped().findOne({ where: { userId, currencyCode: USDT }, raw: true });
+        expect(row?.rateSourceHttpFingerprint).toBeNull();
       });
     });
 
