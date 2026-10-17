@@ -2,7 +2,7 @@ import { EnvVar, isEnvConfigured } from '@common/utils/env';
 import { logger } from '@js/utils/logger';
 import { createECDH, createHash } from 'node:crypto';
 
-export interface WebPushConfig {
+interface WebPushConfig {
   /** base64url, uncompressed P-256 point */
   publicKey: string;
   /** base64url, 32 bytes */
