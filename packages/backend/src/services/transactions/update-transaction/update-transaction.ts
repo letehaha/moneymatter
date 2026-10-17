@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -276,6 +277,19 @@ const makeBasicBaseTxUpdation = async (
     baseTransactionUpdateParams.externalData = clearOriginalSourceProvider({ externalData: prevData.externalData });
   }
 
+  if (newData.amount !== undefined) {
+    // Rounded to the decimals of the currency the row ends up in, before it doubles as the
+    // reference amount of a row already in the base currency.
+    const roundedAmount = await roundToCurrency({
+      money: newData.amount,
+      userId: ctx.accountOwnerUserId,
+      currencyCode: baseTransactionUpdateParams.currencyCode,
+      mode: 'half-up',
+    });
+    baseTransactionUpdateParams.amount = roundedAmount;
+    baseTransactionUpdateParams.refAmount = roundedAmount;
+  }
+
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
     baseTransactionUpdateParams.refAmount = await calculateRefAmount({
       userId: newData.userId,
@@ -491,6 +505,15 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
       });
     }
     updateOppositeTxParams.amount = impliedDestinationAmount;
+  }
+
+  if (updateOppositeTxParams.amount !== undefined) {
+    updateOppositeTxParams.amount = await roundToCurrency({
+      money: updateOppositeTxParams.amount,
+      userId: oppositeTx.userId,
+      currencyCode: updateOppositeTxParams.currencyCode,
+      mode: 'half-up',
+    });
   }
 
   // Effective post-update amount of the destination leg. Falls back to the

@@ -5,6 +5,7 @@ import {
   BudgetSuggestionAnswers,
   BudgetSuggestionContext,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { requestContext } from '@common/request-context';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
@@ -181,7 +182,12 @@ const writeLines = withTransaction(
         await BudgetAssignments.create({
           periodId: currentPeriod.id,
           lineId: line.id,
-          baselineAmount: Money.fromCents(baselineCents),
+          baselineAmount: await roundToCurrency({
+            money: Money.fromCents(baselineCents),
+            userId,
+            currencyCode: plan.currencyCode,
+            mode: 'half-up',
+          }),
         });
       }
     }

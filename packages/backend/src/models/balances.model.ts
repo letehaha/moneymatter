@@ -5,6 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   RecordId,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
@@ -44,7 +45,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -251,7 +252,9 @@ export default class Balances extends Model {
             quoteCode: data.refCurrencyCode,
           });
           // Monobank reports the balance in minor units (cents) of the account currency.
-          const refBalance = Money.fromCents(balance).multiply(exchangeRateData.rate).roundHalfEven(2);
+          const refBalance = Money.fromCents(balance)
+            .multiply(exchangeRateData.rate)
+            .roundHalfEven(await getCurrencyDecimals({ userId: data.userId, code: data.refCurrencyCode }));
 
           await this.updateAccountBalance({ accountId, date, refBalance });
         }

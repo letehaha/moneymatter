@@ -15,6 +15,7 @@ import {
   TransactionLocation,
   TransactionModel,
 } from '@bt/shared/types';
+import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -172,11 +173,11 @@ export default class Transactions extends Model {
   @Column(IdColumn())
   declare id: RecordId;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare amount: Money;
 
   // Amount in curreny of account
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare refAmount: Money;
 
   @Length({ max: 2000 })
@@ -299,18 +300,18 @@ export default class Transactions extends Model {
   })
   externalData!: TransactionsAttributes['externalData'];
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare commissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare refCommissionRate: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare cashbackAmount: Money;
 
   // Metadata only: no balance, statistics, tracker or budget-plan path reads these. What the user spent in a
   // foreign currency, with its ISO 4217 code. Both hold a value or both stay null.
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare originalAmount: Money | null;
 
   @ForeignKey(() => Currencies)
@@ -1409,7 +1410,16 @@ type CreateTxOptionalParams = Partial<
 export type CreateTransactionPayload = CreateTxRequiredParams & CreateTxOptionalParams;
 
 export const createTransaction = async ({ userId, ...rest }: CreateTransactionPayload) => {
-  const response = await Transactions.create({ userId, ...rest });
+  const { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate } = rest;
+  const rounded = await roundTransactionMoney({
+    values: { amount, commissionRate, cashbackAmount, originalAmount, refAmount, refCommissionRate },
+    userId,
+    currencyCode: rest.currencyCode,
+    refCurrencyCode: rest.refCurrencyCode,
+    originalCurrencyCode: rest.originalCurrencyCode,
+  });
+
+  const response = await Transactions.create({ userId, ...rest, ...rounded });
 
   return getTransactionById({
     id: response.get('id'),
@@ -1447,6 +1457,52 @@ export interface UpdateTransactionByIdParams {
   externalData?: TransactionsAttributes['externalData'];
 }
 
+/**
+ * Rounds the money fields of a single-row update. The currencies the fields are denominated in
+ * come from the payload when it carries them, and from the stored row otherwise.
+ */
+const roundUpdatePayloadMoney = async ({
+  id,
+  userId,
+  payload,
+}: {
+  id: string;
+  userId: number;
+  payload: Omit<UpdateTransactionByIdParams, 'id' | 'userId'>;
+}) => {
+  const { amount, refAmount, originalAmount } = payload;
+
+  if (amount === undefined && refAmount === undefined && (originalAmount === undefined || originalAmount === null)) {
+    return {};
+  }
+
+  const needsStoredRow =
+    payload.currencyCode === undefined ||
+    (refAmount !== undefined && payload.refCurrencyCode === undefined) ||
+    (originalAmount !== undefined && originalAmount !== null && payload.originalCurrencyCode === undefined);
+
+  const stored = needsStoredRow
+    ? await Transactions.findOne({
+        where: { id, userId },
+        attributes: ['currencyCode', 'refCurrencyCode', 'originalCurrencyCode'],
+        paranoid: false,
+      })
+    : null;
+
+  const currencyCode = payload.currencyCode ?? stored?.currencyCode;
+
+  // No row and no currency: nothing to round against, and the update matches nothing anyway.
+  if (!currencyCode) return {};
+
+  return roundTransactionMoney({
+    values: { amount, refAmount, originalAmount },
+    userId,
+    currencyCode,
+    refCurrencyCode: payload.refCurrencyCode ?? stored?.refCurrencyCode,
+    originalCurrencyCode: payload.originalCurrencyCode ?? stored?.originalCurrencyCode,
+  });
+};
+
 export const updateTransactionById = async (
   { id, userId, ...payload }: UpdateTransactionByIdParams,
   {
@@ -1457,7 +1513,9 @@ export const updateTransactionById = async (
 ) => {
   const where = { id, userId };
 
-  await Transactions.update(removeUndefinedKeys(payload), {
+  const rounded = await roundUpdatePayloadMoney({ id, userId, payload });
+
+  await Transactions.update(removeUndefinedKeys({ ...payload, ...rounded }), {
     where,
     individualHooks,
   });

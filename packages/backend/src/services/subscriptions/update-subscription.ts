@@ -6,6 +6,7 @@ import {
   SUBSCRIPTION_TYPES,
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money, centsToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -165,10 +166,22 @@ export const updateSubscription = withTransaction(
     // to clear). Convert only when the caller sent the field, so an omitted
     // expectedAmount leaves the stored amount untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
+    const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
     await subscription.update({
       ...restFields,
       ...(expectedAmountInput !== undefined
-        ? { expectedAmount: expectedAmountInput != null ? Money.fromDecimal(expectedAmountInput) : null }
+        ? {
+            // Stored at the decimals of the currency it is billed in.
+            expectedAmount:
+              expectedAmountInput != null && expectedCurrencyCode
+                ? await roundToCurrency({
+                    money: Money.fromDecimal(expectedAmountInput),
+                    userId,
+                    currencyCode: expectedCurrencyCode,
+                    mode: 'half-up',
+                  })
+                : null,
+          }
         : {}),
     });
 

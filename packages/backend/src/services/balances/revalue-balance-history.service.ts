@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, isDedicatedFlowAccountCategory, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
@@ -201,6 +202,8 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
   const startKey = toDayKey(gridStart);
   const todayKey = toDayKey(today);
 
+  const baseDecimals = await getCurrencyDecimals({ userId: account.userId, code: baseCurrency.currencyCode });
+
   let nativeBalance = account.initialBalance;
   let lastEmitted = null as Money | null;
   const rows: { date: string; amount: Money }[] = [];
@@ -219,7 +222,7 @@ const revalueBalanceHistoryImpl = async ({ accountId }: { accountId: string }): 
       return 'skipped';
     }
 
-    const amount = nativeBalance.multiply(rate).roundHalfEven(2);
+    const amount = nativeBalance.multiply(rate).roundHalfEven(baseDecimals);
     // The chart forward-fills, so a day repeating the previous value carries no
     // information. Today always gets a row so the series tracks the daily rate.
     if (lastEmitted?.equals(amount) && dayKey !== startKey && dayKey !== todayKey) continue;

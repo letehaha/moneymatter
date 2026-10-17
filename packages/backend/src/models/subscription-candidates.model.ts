@@ -36,7 +36,7 @@ export default class SubscriptionCandidates extends Model {
   })
   detectedFrequency!: SUBSCRIPTION_FREQUENCIES;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare averageAmount: Money;
 
   @Column({

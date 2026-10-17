@@ -5,6 +5,7 @@ import {
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
 } from '@bt/shared/types';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, NotFoundError, ValidationError } from '@js/errors';
@@ -226,8 +227,15 @@ const createAccountsForConnection = withTransaction(
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
         // `ProviderAccount.balance` and the `creditLimit` metadata are minor units (cents).
-        const providerBalance = Money.fromCents(providerAccount.balance);
-        const creditLimit = Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0);
+        const { providerBalance, creditLimit } = await roundMoneyValues({
+          values: {
+            providerBalance: Money.fromCents(providerAccount.balance),
+            creditLimit: Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0),
+          },
+          userId,
+          currencyCode: providerAccount.currency,
+          mode: 'half-up',
+        });
 
         const now = new Date();
         const accountRefBalance = await calculateRefAmount({

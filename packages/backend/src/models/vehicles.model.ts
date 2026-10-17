@@ -61,7 +61,7 @@ export default class Vehicles extends Model {
   })
   vehicleClass!: VEHICLE_CLASS;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare purchasePrice: Money;
 
   @Column({
@@ -70,7 +70,7 @@ export default class Vehicles extends Model {
   })
   purchaseDate!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare valueAnchor: Money | null;
 
   @Column({

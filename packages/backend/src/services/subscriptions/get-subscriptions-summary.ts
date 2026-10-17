@@ -1,4 +1,5 @@
 import { API_ERROR_CODES, SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { CustomError, ValidationError } from '@js/errors';
@@ -119,7 +120,12 @@ const getSubscriptionsSummaryImpl = async ({
         }));
         baseRates.set(currencyCode, rate);
       }
-      const refAmount = calculateRefAmountFromParams({ amount: sub.expectedAmount!, rate });
+      const refAmount = calculateRefAmountFromParams({
+        amount: sub.expectedAmount!,
+        rate,
+        baseDecimals: await getCurrencyDecimals({ userId, code: currencyCode }),
+        quoteDecimals: await getCurrencyDecimals({ userId, code: baseCurrencyCode }),
+      });
 
       const multiplier = MONTHLY_MULTIPLIERS[sub.frequency] ?? 1;
       const monthlyAmount = refAmount.multiply(multiplier);

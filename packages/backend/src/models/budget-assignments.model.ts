@@ -30,11 +30,11 @@ export default class BudgetAssignments extends Model {
   lineId!: RecordId;
 
   /** From this period on. */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare baselineAmount: Money | null;
 
   /** This period only. */
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare overrideAmount: Money | null;
 
   /** Carry into this period and later; NULL = inherit the earlier setting. */

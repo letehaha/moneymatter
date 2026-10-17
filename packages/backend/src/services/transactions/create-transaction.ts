@@ -7,6 +7,8 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
+import { roundTransactionMoney } from '@common/lib/round-transaction-money';
 import { UnwrapPromise } from '@common/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -178,9 +180,14 @@ export const calcTransferTransactionRefAmount = async ({
 export const createOppositeTransaction = async (params: CreateOppositeTransactionParams) => {
   const [creationParams, baseTransaction] = params;
 
-  const { destinationAmount, destinationAccountId, userId, transactionType } = creationParams;
+  const {
+    destinationAmount: requestedDestinationAmount,
+    destinationAccountId,
+    userId,
+    transactionType,
+  } = creationParams;
 
-  if (!destinationAmount || !destinationAccountId) {
+  if (!requestedDestinationAmount || !destinationAccountId) {
     throw new ValidationError({
       message: t({ key: 'transactions.missingRequiredFields' }),
     });
@@ -209,11 +216,17 @@ export const createOppositeTransaction = async (params: CreateOppositeTransactio
   // caller bug — fail loudly.
   const destAccount = await Accounts.default.findOne({
     where: { id: destinationAccountId, userId: destOwnerUserId },
-    attributes: ['accountCategory', 'type'],
+    attributes: ['accountCategory', 'type', 'currencyCode'],
   });
   if (!destAccount) {
     throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
   }
+  const destinationAmount = await roundToCurrency({
+    money: requestedDestinationAmount,
+    userId: destOwnerUserId,
+    currencyCode: destAccount.currencyCode,
+    mode: 'half-up',
+  });
   if (destAccount.type !== ACCOUNT_TYPES.system) {
     throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });
   }
@@ -452,6 +465,26 @@ export const createTransaction = withTransaction(
       if (!isOwner && generalTxCurrency.code !== defaultUserCurrency.code) {
         await ensureUserCurrencyConnected({ userId, currencyCode: generalTxCurrency.code });
       }
+
+      // Every figure the caller entered is rounded to the account currency's decimals once, here, so
+      // the planned-row match, the split-sum check and the ref conversion below all see the amounts
+      // the row will store.
+      const roundedAmounts = await roundTransactionMoney({
+        values: {
+          amount,
+          commissionRate,
+          cashbackAmount: payload.cashbackAmount,
+          originalAmount: payload.originalAmount,
+        },
+        userId: accountOwnerUserId,
+        currencyCode: generalTxCurrency.code,
+        refCurrencyCode: undefined,
+        originalCurrencyCode: payload.originalCurrencyCode,
+      });
+      amount = roundedAmounts.amount!;
+      commissionRate = roundedAmounts.commissionRate!;
+      payload.cashbackAmount = roundedAmounts.cashbackAmount;
+      payload.originalAmount = roundedAmounts.originalAmount;
 
       if (matchPlanned && transferNature === TRANSACTION_TRANSFER_NATURE.not_transfer && !payload.isPlanned) {
         const merged = await tryMergeIntoPlanned({

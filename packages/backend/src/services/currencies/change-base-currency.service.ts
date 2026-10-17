@@ -8,6 +8,7 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
@@ -349,8 +350,12 @@ const localCalculateRefAmount = async ({
     ...exchangeRateParams,
     date: new Date(exchangeRateParams.date),
   });
+  const [baseDecimals, quoteDecimals] = await Promise.all([
+    getCurrencyDecimals({ userId: exchangeRateParams.userId, code: exchangeRateParams.baseCode }),
+    getCurrencyDecimals({ userId: exchangeRateParams.userId, code: exchangeRateParams.quoteCode }),
+  ]);
 
-  return calculateRefAmountFromParams({ amount, rate, useFloorAbs });
+  return calculateRefAmountFromParams({ amount, rate, useFloorAbs, baseDecimals, quoteDecimals });
 };
 
 /**
@@ -646,6 +651,10 @@ async function rebuildBalances(params: {
   });
 
   const updates: { id: string; amount: Money }[] = [];
+  const [oldDecimals, newDecimals] = await Promise.all([
+    getCurrencyDecimals({ userId, code: oldCurrencyCode }),
+    getCurrencyDecimals({ userId, code: newCurrencyCode }),
+  ]);
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -658,7 +667,12 @@ async function rebuildBalances(params: {
             quoteCode: newCurrencyCode,
             date: balance.date,
           })
-        : calculateRefAmountFromParams({ amount: balance.amount, rate });
+        : calculateRefAmountFromParams({
+            amount: balance.amount,
+            rate,
+            baseDecimals: oldDecimals,
+            quoteDecimals: newDecimals,
+          });
 
     updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
@@ -899,11 +913,20 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
+  const [baseDecimals, quoteDecimals] = await Promise.all([
+    getCurrencyDecimals({ userId, code: oldCurrencyCode }),
+    getCurrencyDecimals({ userId, code: newCurrencyCode }),
+  ]);
   const converted = { ...fire };
   for (const key of FIRE_AMOUNT_KEYS) {
     const value = fire[key];
     if (value == null) continue;
-    converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate }).toNumber();
+    converted[key] = calculateRefAmountFromParams({
+      amount: Money.fromDecimal(value),
+      rate,
+      baseDecimals,
+      quoteDecimals,
+    }).toNumber();
   }
 
   userSettings.settings = { ...userSettings.settings, fire: converted };

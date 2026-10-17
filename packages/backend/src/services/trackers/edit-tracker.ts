@@ -22,6 +22,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { getTrackerById } from '@services/trackers/get-trackers';
 import { Op } from 'sequelize';
+import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 
 import { authorizeTrackerAccess } from './authorize-tracker-access';
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
@@ -138,7 +139,11 @@ export const editTracker = withTransaction(async ({ id, userId, categoryIds, ...
     stored: tracker,
   });
 
-  await tracker.update({ ...removeUndefinedKeys(fields), ...logoPatch, ...(rescan && { aiScannedUntil: null }) });
+  // A tracker is denominated in the owner's base currency.
+  const [limitAmount] = await roundToBaseCurrency({ userId: ownerUserId, values: [fields.limitAmount] });
+  const roundedFields = limitAmount === undefined ? fields : { ...fields, limitAmount };
+
+  await tracker.update({ ...removeUndefinedKeys(roundedFields), ...logoPatch, ...(rescan && { aiScannedUntil: null }) });
   if (aiTurnedOn) {
     await startFeatureTrial({ userId: ownerUserId, feature: AI_FEATURE_ENTITLEMENTS[AI_FEATURE.trackerMatching] });
   }

@@ -6,6 +6,7 @@ import {
   TRANSACTION_TYPES,
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money, centsToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -120,7 +121,16 @@ export const createSubscription = withTransaction(
     const anchorDay = dueDate ? new Date(dueDate + 'T00:00:00Z').getUTCDate() : null;
 
     // The API exchanges decimals; the cents-backed column takes a Money directly.
-    const expectedAmountMoney = expectedAmount != null ? Money.fromDecimal(expectedAmount) : null;
+    // It is stored at the decimals of the currency it is billed in.
+    const expectedAmountMoney =
+      expectedAmount != null
+        ? await roundToCurrency({
+            money: Money.fromDecimal(expectedAmount),
+            userId,
+            currencyCode: expectedCurrencyCode!,
+            mode: 'half-up',
+          })
+        : null;
 
     const subscription = await Subscriptions.create({
       userId,
