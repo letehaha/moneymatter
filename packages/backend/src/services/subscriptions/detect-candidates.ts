@@ -4,6 +4,7 @@ import {
   SUBSCRIPTION_LINK_STATUS,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import SubscriptionCandidates from '@models/subscription-candidates.model';
@@ -222,7 +223,12 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
     const { group, transactions: txs, confidenceScore, medianIntervalDays } = candidate;
 
     const amounts = txs.map((tx) => Math.abs(tx.amount));
-    const averageAmount = Money.fromDecimal(amounts.reduce((s, a) => s + a, 0) / amounts.length);
+    const averageAmount = await roundToCurrency({
+      money: Money.fromDecimal(amounts.reduce((s, a) => s + a, 0) / amounts.length),
+      userId,
+      currencyCode: group.currencyCode,
+      mode: 'half-up',
+    });
     // A fixed day cadence (every 30 days) wins over the nearest preset, which would drift.
     const cadence = detectFixedDayCadence({ dates: txs.map((tx) => new Date(tx.time)) });
     const frequency = cadence

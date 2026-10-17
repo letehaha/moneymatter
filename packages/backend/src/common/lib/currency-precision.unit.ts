@@ -14,7 +14,7 @@ jest.mock('@models/currencies.model', () => ({
 import Currencies from '@models/currencies.model';
 
 import { invalidateCurrencyDecimalsCache } from './currency-decimals-cache';
-import { getCurrencyDecimals, roundToCurrency } from './currency-precision';
+import { assertMoneyFitsCurrency, getCurrencyDecimals, roundMoneyValues, roundToCurrency } from './currency-precision';
 /* eslint-enable import/first */
 
 const USER_ID = 1;
@@ -216,6 +216,81 @@ describe('currency precision helpers', () => {
           ).toNumber(),
         ).toBe(4);
       });
+    });
+  });
+  describe('roundMoneyValues', () => {
+    it('rounds every present value half-up to the currency decimals', async () => {
+      const result = await roundMoneyValues({
+        values: { amount: Money.fromDecimal('1.2345'), commission: Money.fromDecimal('0.0005') },
+        userId: USER_ID,
+        currencyCode: 'KWD',
+        mode: 'half-up',
+      });
+
+      expect(result.amount.toNumber()).toBe(1.235);
+      expect(result.commission.toNumber()).toBe(0.001);
+    });
+
+    it('rounds half-even when asked to', async () => {
+      const result = await roundMoneyValues({
+        values: { amount: Money.fromDecimal('0.125') },
+        userId: USER_ID,
+        currencyCode: 'USD',
+        mode: 'half-even',
+      });
+
+      expect(result.amount.toNumber()).toBe(0.12);
+    });
+
+    it('keeps null and undefined as they are', async () => {
+      const result = await roundMoneyValues({
+        values: { cleared: null, omitted: undefined, amount: Money.fromDecimal('1500.6') },
+        userId: USER_ID,
+        currencyCode: 'JPY',
+        mode: 'half-up',
+      });
+
+      expect(result.cleared).toBeNull();
+      expect(result.omitted).toBeUndefined();
+      expect(result.amount!.toNumber()).toBe(1501);
+    });
+
+    it('does not read the currency when there is nothing to round', async () => {
+      const values = { omitted: undefined, cleared: null };
+
+      await expect(roundMoneyValues({ values, userId: USER_ID, currencyCode: 'ZZZ', mode: 'half-up' })).resolves.toBe(
+        values,
+      );
+      expect(Currencies.findOne).not.toHaveBeenCalled();
+    });
+
+    it('throws for an unknown code when there is something to round', async () => {
+      await expect(
+        roundMoneyValues({
+          values: { amount: Money.fromDecimal(1) },
+          userId: USER_ID,
+          currencyCode: 'ZZZ',
+          mode: 'half-up',
+        }),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe('assertMoneyFitsCurrency', () => {
+    const assertFits = ({ value, currencyCode }: { value: string; currencyCode: string }) =>
+      assertMoneyFitsCurrency({ money: Money.fromDecimal(value), userId: USER_ID, currencyCode });
+
+    it('accepts an amount with the currency decimals or fewer', async () => {
+      await expect(assertFits({ value: '12.34', currencyCode: 'USD' })).resolves.toBeUndefined();
+      await expect(assertFits({ value: '12', currencyCode: 'USD' })).resolves.toBeUndefined();
+      await expect(assertFits({ value: '1.234', currencyCode: 'KWD' })).resolves.toBeUndefined();
+      await expect(assertFits({ value: '1500', currencyCode: 'JPY' })).resolves.toBeUndefined();
+    });
+
+    it('rejects an amount with more decimals than the currency carries', async () => {
+      await expect(assertFits({ value: '12.345', currencyCode: 'USD' })).rejects.toThrow();
+      await expect(assertFits({ value: '1.2345', currencyCode: 'KWD' })).rejects.toThrow();
+      await expect(assertFits({ value: '1500.5', currencyCode: 'JPY' })).rejects.toThrow();
     });
   });
 });

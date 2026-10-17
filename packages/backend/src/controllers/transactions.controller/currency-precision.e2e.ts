@@ -1,16 +1,12 @@
-import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, asDecimal } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 
-// Cases that need amounts rounded to the currency's own decimals. They stay skipped
-// until every write path rounds per currency instead of to 2 decimals.
-const itPerCurrencyRounding = it.skip;
-
-const createAccountIn = async ({ currencyCode }: { currencyCode: string }) => {
+const createAccountIn = async ({ currencyCode, initialBalance }: { currencyCode: string; initialBalance?: number }) => {
   await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
 
   return helpers.createAccount({
-    payload: helpers.buildAccountPayload({ currencyCode }),
+    payload: helpers.buildAccountPayload({ currencyCode, ...(initialBalance !== undefined && { initialBalance }) }),
     raw: true,
   });
 };
@@ -68,7 +64,7 @@ describe('Currency precision', () => {
   });
 
   describe('storage keeps the currency decimals', () => {
-    itPerCurrencyRounding('reads back a KWD transaction with 3 decimals', async () => {
+    it('reads back a KWD transaction with 3 decimals', async () => {
       const account = await createAccountIn({ currencyCode: 'KWD' });
 
       const transaction = await createTransactionOf({
@@ -79,7 +75,7 @@ describe('Currency precision', () => {
       expect(Number(transaction.amount)).toBe(1.234);
     });
 
-    itPerCurrencyRounding('keeps a KWD balance equal to the exact sum of its transactions', async () => {
+    it('keeps a KWD balance equal to the exact sum of its transactions', async () => {
       const account = await createAccountIn({ currencyCode: 'KWD' });
 
       await createTransactionOf({ accountId: account.id, amount: 1.234 });
@@ -96,7 +92,7 @@ describe('Currency precision', () => {
   });
 
   describe('rounding follows the currency decimals', () => {
-    itPerCurrencyRounding('rounds a JPY amount to whole units', async () => {
+    it('rounds a JPY amount to whole units', async () => {
       const account = await createAccountIn({ currencyCode: 'JPY' });
 
       const transaction = await createTransactionOf({
@@ -107,52 +103,182 @@ describe('Currency precision', () => {
       expect(Number(transaction.amount)).toBe(1501);
     });
 
-    itPerCurrencyRounding(
-      'rounds a converted refAmount half-even to the 3 decimals of a KWD base currency',
-      async () => {
-        // KWD is not a supported base-currency change target, so the user starts with it.
-        const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({
-          currencyCode: 'KWD',
-        });
+    it('rounds a converted refAmount half-even to the 3 decimals of a KWD base currency', async () => {
+      // KWD is not a supported base-currency change target, so the user starts with it.
+      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({
+        currencyCode: 'KWD',
+      });
 
-        await helpers.asUser({
-          cookies: kwdUser.cookies,
-          fn: async () => {
-            const account = await createAccountIn({ currencyCode: 'JPY' });
-            // The suite-wide default category belongs to the primary user.
-            const category = await helpers.addCustomCategory({
-              name: 'Precision',
-              color: '#AABBCC',
-              raw: true,
-            });
-            await helpers.updateUserCurrency({
-              currency: { currencyCode: 'JPY', liveRateUpdate: false },
-              raw: true,
-            });
-            await helpers.editCurrencyExchangeRate({
-              pairs: [
-                { baseCode: 'JPY', quoteCode: 'KWD', rate: 0.0005 },
-                { baseCode: 'KWD', quoteCode: 'JPY', rate: 2000 },
-              ],
-            });
+      await helpers.asUser({
+        cookies: kwdUser.cookies,
+        fn: async () => {
+          const account = await createAccountIn({ currencyCode: 'JPY' });
+          // The suite-wide default category belongs to the primary user.
+          const category = await helpers.addCustomCategory({
+            name: 'Precision',
+            color: '#AABBCC',
+            raw: true,
+          });
+          await helpers.updateUserCurrency({
+            currency: { currencyCode: 'JPY', liveRateUpdate: false },
+            raw: true,
+          });
+          await helpers.editCurrencyExchangeRate({
+            pairs: [
+              { baseCode: 'JPY', quoteCode: 'KWD', rate: 0.0005 },
+              { baseCode: 'KWD', quoteCode: 'JPY', rate: 2000 },
+            ],
+          });
 
-            // 5 JPY and 15 JPY convert to exact ties (0.0025 and 0.0075 KWD).
-            const evenDown = await createTransactionOf({
-              accountId: account.id,
-              amount: 5,
-              categoryId: category.id,
-            });
-            const evenUp = await createTransactionOf({
-              accountId: account.id,
-              amount: 15,
-              categoryId: category.id,
-            });
+          // 5 JPY and 15 JPY convert to exact ties (0.0025 and 0.0075 KWD).
+          const evenDown = await createTransactionOf({
+            accountId: account.id,
+            amount: 5,
+            categoryId: category.id,
+          });
+          const evenUp = await createTransactionOf({
+            accountId: account.id,
+            amount: 15,
+            categoryId: category.id,
+          });
 
-            expect(Number(evenDown.refAmount)).toBe(0.002);
-            expect(Number(evenUp.refAmount)).toBe(0.008);
-          },
-        });
-      },
-    );
+          expect(Number(evenDown.refAmount)).toBe(0.002);
+          expect(Number(evenUp.refAmount)).toBe(0.008);
+        },
+      });
+    });
+  });
+  describe('opening balance and credit limit', () => {
+    it('stores a USD opening balance rounded half-up to 2 decimals', async () => {
+      const account = await createAccountIn({ currencyCode: 'USD', initialBalance: 100.555 });
+
+      expect(Number(account.initialBalance)).toBe(100.56);
+      expect(Number(account.currentBalance)).toBe(100.56);
+    });
+
+    it('keeps the 3 decimals of a KWD opening balance', async () => {
+      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 100.555 });
+
+      expect(Number(account.initialBalance)).toBe(100.555);
+      expect(Number(account.currentBalance)).toBe(100.555);
+    });
+
+    it('rounds a JPY opening balance to whole units', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY', initialBalance: 100.5 });
+
+      expect(Number(account.initialBalance)).toBe(101);
+    });
+
+    it('rounds a KWD credit limit to 3 decimals and a JPY one to whole units', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD', 'JPY'], raw: true });
+
+      const kwd = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD', creditLimit: 500.4567 }),
+        raw: true,
+      });
+      const jpy = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY', creditLimit: 50000.5 }),
+        raw: true,
+      });
+
+      expect(Number(kwd.creditLimit)).toBe(500.457);
+      expect(Number(jpy.creditLimit)).toBe(50001);
+    });
+
+    it('rounds the target of a balance adjustment to the account currency', async () => {
+      const account = await createAccountIn({ currencyCode: 'KWD', initialBalance: 10 });
+
+      await helpers.balanceAdjustment({ id: account.id, payload: { targetBalance: asDecimal(12.3456) }, raw: true });
+
+      const updated = await helpers.getAccount({ id: account.id, raw: true });
+      expect(Number(updated.currentBalance)).toBe(12.346);
+    });
+  });
+
+  describe('transfers between currencies of different decimals', () => {
+    it('rounds each leg to its own currency and keeps the balances exact', async () => {
+      const jpyAccount = await createAccountIn({ currencyCode: 'JPY', initialBalance: 10000 });
+      const kwdAccount = await createAccountIn({ currencyCode: 'KWD' });
+      await helpers.updateUserCurrency({ currency: { currencyCode: 'JPY', liveRateUpdate: false }, raw: true });
+      await helpers.updateUserCurrency({ currency: { currencyCode: 'KWD', liveRateUpdate: false }, raw: true });
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'JPY', quoteCode: global.BASE_CURRENCY.code, rate: 0.0065 },
+          { baseCode: global.BASE_CURRENCY.code, quoteCode: 'JPY', rate: 153.84615 },
+          { baseCode: 'KWD', quoteCode: global.BASE_CURRENCY.code, rate: 3.25 },
+          { baseCode: global.BASE_CURRENCY.code, quoteCode: 'KWD', rate: 0.30769 },
+        ],
+      });
+
+      const [outLeg, inLeg] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: jpyAccount.id,
+            amount: 1500.6,
+            transactionType: TRANSACTION_TYPES.expense,
+          }),
+          transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+          destinationAmount: 3.4567,
+          destinationAccountId: kwdAccount.id,
+        },
+        raw: true,
+      });
+
+      expect(Number(outLeg.amount)).toBe(1501);
+      expect(Number(inLeg!.amount)).toBe(3.457);
+      // 1501 * 0.0065 = 9.7565 and 3.457 * 3.25 = 11.23525: base-currency amounts carry 2 decimals
+      expect(Number(outLeg.refAmount)).toBe(9.76);
+      expect(Number(inLeg!.refAmount)).toBe(11.24);
+
+      expect(Number((await helpers.getAccount({ id: jpyAccount.id, raw: true })).currentBalance)).toBe(8499);
+      expect(Number((await helpers.getAccount({ id: kwdAccount.id, raw: true })).currentBalance)).toBe(3.457);
+    });
+  });
+
+  describe('splits', () => {
+    it('compares the splits with the transaction at the currency decimals', async () => {
+      const account = await createAccountIn({ currencyCode: 'KWD' });
+      const categories = await helpers.getCategoriesList();
+
+      // Unrounded, 5.0624 + 5.0624 = 10.1248 exceeds 10.1236; rounded, 5.062 + 5.062 fits 10.124.
+      const response = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: categories[0]!.id,
+          amount: 10.1236,
+          splits: [
+            { categoryId: categories[1]!.id, amount: 5.0624 },
+            { categoryId: categories[2]!.id, amount: 5.0624 },
+          ],
+        }),
+        raw: false,
+      });
+      expect(response.statusCode).toBe(200);
+
+      const [stored] = (await helpers.getTransactions({ raw: true, includeSplits: true }))!;
+      expect(Number(stored!.amount)).toBe(10.124);
+      expect(stored!.splits!.map((split) => Number(split.amount))).toEqual([5.062, 5.062]);
+    });
+
+    it('rejects splits that still exceed the transaction after rounding', async () => {
+      const account = await createAccountIn({ currencyCode: 'JPY' });
+      const categories = await helpers.getCategoriesList();
+
+      const response = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          categoryId: categories[0]!.id,
+          amount: 100,
+          splits: [
+            { categoryId: categories[1]!.id, amount: 50.6 },
+            { categoryId: categories[2]!.id, amount: 50.6 },
+          ],
+        }),
+        raw: false,
+      });
+
+      // 50.6 rounds to 51 yen, and 51 + 51 exceeds 100
+      expect(response.statusCode).toBe(422);
+    });
   });
 });

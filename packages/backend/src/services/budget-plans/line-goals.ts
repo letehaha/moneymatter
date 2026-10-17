@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetLineGoal, SetBudgetLineGoalPayload } from '@bt/shared/types';
+import { assertMoneyFitsCurrency } from '@common/lib/currency-precision';
 import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -72,6 +73,12 @@ const setLineGoalImpl = async ({
 }: LineGoalParams & Omit<SetBudgetLineGoalPayload, 'periodId'> & { periodId?: RecordId }): Promise<BudgetLineGoal> => {
   const plan = await findPlan({ planId, userId, lock: true });
   await findLine({ planId: plan.id, lineId });
+
+  for (const value of [amount, stopAtBalance, fundingCap]) {
+    if (value != null) {
+      await assertMoneyFitsCurrency({ money: Money.fromDecimal(value), userId, currencyCode: plan.currencyCode });
+    }
+  }
 
   const values = {
     frequency: settings.frequency,

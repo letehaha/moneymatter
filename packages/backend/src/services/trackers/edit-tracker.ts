@@ -18,6 +18,7 @@ import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { getTrackerById } from '@services/trackers/get-trackers';
+import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 
 import { authorizeTrackerAccess } from './authorize-tracker-access';
 import { saveTrackerRules } from './rules/save-tracker-rules';
@@ -100,7 +101,15 @@ export const editTracker = withTransaction(
       stored: tracker,
     });
 
-    await tracker.update({ ...removeUndefinedKeys(fields), ...logoPatch, ...(rescan && { aiScannedUntil: null }) });
+    // A tracker is denominated in the owner's base currency.
+    const [limitAmount] = await roundToBaseCurrency({ userId: ownerUserId, values: [fields.limitAmount] });
+    const roundedFields = limitAmount === undefined ? fields : { ...fields, limitAmount };
+
+    await tracker.update({
+      ...removeUndefinedKeys(roundedFields),
+      ...logoPatch,
+      ...(rescan && { aiScannedUntil: null }),
+    });
     if (aiTurnedOn) {
       await startFeatureTrial({ userId: ownerUserId, feature: AI_FEATURE_ENTITLEMENTS[AI_FEATURE.trackerMatching] });
     }

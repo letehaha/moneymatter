@@ -315,6 +315,26 @@ describe('Budget plan assignment guards', () => {
     ).toBe(ERROR_CODES.ValidationError);
   });
 
+  it('accepts as many decimals as the plan currency carries and no more', async () => {
+    const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+
+    await helpers.asUser({
+      cookies: kwdUser.cookies,
+      fn: async () => {
+        const { planId, periods, line } = await setup();
+        const target = { planId, periodId: periods[0]!.id, lineId: line.id };
+
+        expect(
+          (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1.234 } })).statusCode,
+        ).toBe(200);
+        expect(
+          (await helpers.setBudgetAssignment({ ...target, payload: { scope: 'from_here', amount: 1.2345 } }))
+            .statusCode,
+        ).toBe(ERROR_CODES.ValidationError);
+      },
+    });
+  });
+
   it('404s on an unknown period, an unknown line, and a period of another plan', async () => {
     const { planId, periods, line } = await setup();
     const payload = { scope: 'from_here' as const, amount: 10 };

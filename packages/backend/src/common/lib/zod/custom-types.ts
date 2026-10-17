@@ -59,11 +59,21 @@ export const uniqueRecordIds = ({ min, max }: { min?: number; max?: number } = {
  */
 export const decimalMoney = () => z.number().transform((val) => Money.fromDecimal(val));
 
-/** A plain decimal (no Money transform) of at most 2 places, capped at 1e13; `positive` excludes 0. */
+/** Decimals the money columns can store: the scale of `DECIMAL(36,18)`. */
+const MONEY_COLUMN_DECIMALS = 18;
+const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_DECIMALS}})?$`);
+
+/**
+ * A plain decimal (no Money transform), capped at 1e13; `positive` excludes 0.
+ *
+ * The schema only enforces what the storage can hold. How many decimals the amount may carry
+ * depends on the currency it is denominated in, which the request does not name, so the service
+ * that knows the currency checks it with `assertMoneyFitsCurrency`.
+ */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
   (positive ? z.number().positive() : z.number().min(0))
     .max(1e13)
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(String(value)), 'At most 2 decimal places');
+    .refine((value) => DECIMAL_AMOUNT_PATTERN.test(String(value)), `At most ${MONEY_COLUMN_DECIMALS} decimal places`);
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);

@@ -1,5 +1,7 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import type { Money } from '@common/types/money';
+import Accounts from '@models/accounts.model';
 import { findTransactions } from '@models/transactions-query';
 import type Vehicles from '@models/vehicles.model';
 import { format, parseISO } from 'date-fns';
@@ -56,6 +58,9 @@ export async function reconstructVehicleAnchor({
     ],
   });
 
+  const account = await Accounts.findByPk(vehicle.accountId, { attributes: ['currencyCode'] });
+  const decimals = account ? await getCurrencyDecimals({ userId: vehicle.userId, code: account.currencyCode }) : 2;
+
   let anchorValue = vehicle.purchasePrice;
   let anchorDateStr = vehicle.purchaseDate;
   const customRate = vehicle.customAnnualRatePct ? Number(vehicle.customAnnualRatePct) : null;
@@ -74,10 +79,9 @@ export async function reconstructVehicleAnchor({
       salvageFloorPct: salvage,
     });
 
-    const signedAmountCents =
-      tx.transactionType === TRANSACTION_TYPES.income ? tx.amount.toCents() : -tx.amount.toCents();
-
-    anchorValue = Money.fromCents(preTxValue.toCents() + signedAmountCents);
+    anchorValue = preTxValue
+      .round(decimals)
+      .add(tx.transactionType === TRANSACTION_TYPES.income ? tx.amount : tx.amount.negate());
     anchorDateStr = txDateStr;
   }
 

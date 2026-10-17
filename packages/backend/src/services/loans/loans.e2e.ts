@@ -359,6 +359,36 @@ describe('Loans read API', () => {
   });
 
   describe('POST /loans', () => {
+    it('stores every loan amount at the decimals of the loan currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+
+      const jpy = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'JPY',
+          initialBalance: 900_000.6,
+          originalPrincipal: 1_000_000.5,
+          plannedPayment: 20_000.4,
+          minPayment: 15_000.5,
+        }),
+        raw: true,
+      });
+      expect(jpy.currentBalance).toBe(-900_001);
+      expect(jpy.loanDetails.originalPrincipal).toBe(1_000_001);
+      expect(jpy.loanDetails.plannedPayment).toBe(20_000);
+      expect(jpy.loanDetails.minPayment).toBe(15_001);
+
+      const kwd = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'KWD',
+          initialBalance: 900.4567,
+          originalPrincipal: 1000.0005,
+        }),
+        raw: true,
+      });
+      expect(kwd.currentBalance).toBe(-900.457);
+      expect(kwd.loanDetails.originalPrincipal).toBe(1000.001);
+    });
+
     it('creates an Account + LoanDetails atomically and serializes the same shape on create, detail and list', async () => {
       const result = await helpers.createLoan({
         payload: helpers.buildCreateLoanPayload(),

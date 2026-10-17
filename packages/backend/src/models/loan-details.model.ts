@@ -37,10 +37,10 @@ export default class LoanDetails extends Model {
   })
   loanType!: LOAN_TYPE;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare originalPrincipal: Money;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2 })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare refOriginalPrincipal: Money;
 
   // Postgres returns DECIMAL columns as strings; parse at the model boundary
@@ -76,16 +76,16 @@ export default class LoanDetails extends Model {
   })
   balanceAnchorDate!: string;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare minPayment: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare refMinPayment: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare plannedPayment: Money | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare refPlannedPayment: Money | null;
 
   @Column({

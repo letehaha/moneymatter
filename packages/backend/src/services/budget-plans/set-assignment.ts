@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { SetBudgetPlanAssignmentPayload } from '@bt/shared/types';
+import { assertMoneyFitsCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
@@ -31,6 +32,9 @@ const setAssignmentImpl = async ({
   carryPolicy,
 }: SetAssignmentParams) => {
   const plan = await findPlan({ planId, userId, lock: true });
+  if (amount != null) {
+    await assertMoneyFitsCurrency({ money: Money.fromDecimal(amount), userId, currencyCode: plan.currencyCode });
+  }
   const { periods } = await ensureCurrentPeriods({ plan });
 
   const period = periods.find((entry) => entry.id === periodId);

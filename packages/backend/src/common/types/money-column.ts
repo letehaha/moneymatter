@@ -18,7 +18,10 @@ import { Money } from './money';
  *
  * Value contracts (same as the underlying setters):
  * - cents: accepts `Money` or a raw number of CENTS
- * - decimal: accepts `Money` or a raw decimal string/number; `roundOnWrite` rounds it half-up first
+ * - decimal: accepts `Money` or a raw decimal string/number, stored as given up to the column scale.
+ *   Rounding to a currency's own decimals happens before the value reaches the model (see
+ *   `roundToCurrency` / `roundMoneyValues` in `@common/lib/currency-precision`), because the
+ *   decimals depend on a currency the attribute setter cannot see.
  *
  * @example
  * // BIGINT column storing cents:
@@ -50,13 +53,12 @@ export function MoneyField(opts: MoneyColumnOptions): PropertyDecorator {
           }
         : (() => {
             const scale = opts.scale ?? DEFAULT_DECIMAL_SCALE;
-            const { roundOnWrite } = opts;
             return {
               get(this: ModelDataAccess): Money {
                 return moneyGetDecimal(this, key);
               },
               set(this: ModelDataAccess, val: Money | string | number | null): void {
-                moneySetDecimal({ model: this, field: key, val, scale, roundOnWrite });
+                moneySetDecimal({ model: this, field: key, val, scale });
               },
             };
           })();
@@ -105,15 +107,13 @@ function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
 /** Scale of the DECIMAL(36,18) money columns. */
 const MONEY_COLUMN_SCALE = 18;
 
-/** Fixed decimals of every money column until the write paths round per currency (see `roundOnWrite`). */
-const TRANSITIONAL_MONEY_DECIMALS = 2;
-
 /**
  * Decimal string for a money column in raw SQL (`literal`, `query` replacements, bulk inserts).
- * Raw SQL bypasses the `@MoneyField` setters, so this applies the same rounding they do.
+ * Raw SQL bypasses the `@MoneyField` setters, so this formats the value exactly as they store it.
+ * It does not round to a currency: the caller rounds the value first, like any other write.
  */
 export function toMoneyColumnValue({ money }: { money: Money }): string {
-  return money.round(TRANSITIONAL_MONEY_DECIMALS).toDecimalString(MONEY_COLUMN_SCALE);
+  return money.toDecimalString(MONEY_COLUMN_SCALE);
 }
 
 // ---------------------------------------------------------------------------
@@ -161,21 +161,16 @@ function moneySetDecimal({
   field,
   val,
   scale,
-  roundOnWrite,
 }: {
   model: ModelDataAccess;
   field: string;
   val: Money | string | number | null;
   scale: number;
-  roundOnWrite: number | undefined;
 }): void {
   if (val === null) {
     model.setDataValue(field, null);
   } else if (Money.isMoney(val)) {
-    const rounded = roundOnWrite === undefined ? val : val.round(roundOnWrite);
-    model.setDataValue(field, rounded.toDecimalString(scale));
-  } else if (roundOnWrite !== undefined && (typeof val === 'number' || typeof val === 'string')) {
-    model.setDataValue(field, Money.fromDecimal(val).round(roundOnWrite).toDecimalString(scale));
+    model.setDataValue(field, val.toDecimalString(scale));
   } else {
     // Raw values (decimal strings/numbers, Sequelize Literals) pass through unchanged
     model.setDataValue(field, val);
@@ -199,12 +194,6 @@ interface MoneyColumnDecimalOptions extends MoneyColumnBaseOptions {
   storage: 'decimal';
   precision?: number;
   scale?: number;
-  /**
-   * Rounds every written value half-up to this many decimals before it is stored. A column
-   * holding amounts in more than one currency uses it as a fixed 2-decimal ceiling until the
-   * write paths round per currency.
-   */
-  roundOnWrite?: number;
 }
 
 type MoneyColumnOptions = MoneyColumnCentsOptions | MoneyColumnDecimalOptions;

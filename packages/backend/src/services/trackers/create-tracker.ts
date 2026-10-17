@@ -12,6 +12,7 @@ import { applyLogoWrite } from '@services/brand-logos';
 import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
+import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 import { includeCategories, includeTags } from '@services/trackers/get-trackers';
 
 import { saveTrackerRules } from './rules/save-tracker-rules';
@@ -51,13 +52,16 @@ export const createTracker = withTransaction(async (payload: CreateTrackerPayloa
     },
   });
 
+  // A tracker is denominated in the owner's base currency.
+  const [limitAmount] = await roundToBaseCurrency({ userId: payload.userId, values: [payload.limitAmount] });
+
   const tracker = await Trackers.create({
     name: payload.name,
     userId: payload.userId,
     status: payload.status || TRACKER_STATUSES.active,
     startDate: payload.startDate || null,
     endDate: payload.endDate || null,
-    limitAmount: payload.limitAmount ?? null,
+    limitAmount: limitAmount ?? null,
     ...(payload.limitKind && { limitKind: payload.limitKind }),
     rulesEnabled,
     ...(payload.rulesCleanup !== undefined && { rulesCleanup: payload.rulesCleanup }),

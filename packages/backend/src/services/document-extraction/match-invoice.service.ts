@@ -6,6 +6,7 @@ import {
   TRANSACTION_TYPES,
   invoiceCounterpartyName,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import { trackInvoiceMatchRequested } from '@js/utils/posthog';
@@ -45,7 +46,12 @@ async function convertToBaseCurrency({
       quoteCode: base.currency.code,
       requireUserConnection: false,
     });
-    return calculateRefAmountFromParams({ amount: Money.fromDecimal(invoice.totalAmount), rate });
+    return calculateRefAmountFromParams({
+      amount: Money.fromDecimal(invoice.totalAmount),
+      rate,
+      baseDecimals: await getCurrencyDecimals({ userId, code: invoice.currencyCode }),
+      quoteDecimals: await getCurrencyDecimals({ userId, code: base.currency.code }),
+    });
   } catch (error) {
     logger.warn('[Invoice Matching] Invoice currency could not be converted, matching on raw amounts', {
       userId,

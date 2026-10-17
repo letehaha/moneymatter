@@ -66,7 +66,7 @@ export default class Trackers extends Model {
   @Column({ type: DataType.UUID, allowNull: true })
   logoImageId!: string | null;
 
-  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, roundOnWrite: 2, allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare limitAmount: Money | null;
 
   @Column({

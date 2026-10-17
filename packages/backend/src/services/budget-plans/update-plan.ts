@@ -1,5 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanCarryPolicy } from '@bt/shared/types';
+import { assertMoneyFitsCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
@@ -36,6 +37,13 @@ const updatePlanImpl = async ({
   expectedIncome?: number | null;
 }) => {
   const plan = await findPlan({ planId, userId, lock: true });
+  if (expectedIncome != null) {
+    await assertMoneyFitsCurrency({
+      money: Money.fromDecimal(expectedIncome),
+      userId,
+      currencyCode: plan.currencyCode,
+    });
+  }
 
   let poolFrom: string | null | undefined;
   if (poolEnabled === false) poolFrom = null;
