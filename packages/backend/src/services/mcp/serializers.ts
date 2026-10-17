@@ -35,6 +35,27 @@ export function slimAccountsForMcp(accounts: AccountApiResponse[]) {
   }));
 }
 
+/**
+ * The detail view of one account: the list fields plus what a single-account read, a write
+ * result or a bank unlink needs (opening balance, bank link, logo, currency precision, share).
+ */
+export function slimAccountDetailForMcp(account: AccountApiResponse) {
+  const [slim] = slimAccountsForMcp([account]);
+  return {
+    ...slim,
+    initialBalance: account.initialBalance,
+    refInitialBalance: account.refInitialBalance,
+    bankDataProviderConnectionId: account.bankDataProviderConnectionId,
+    bankProviderType: account.bankProviderType,
+    needsRelink: account.needsRelink,
+    logoDomain: account.logoDomain,
+    logoInitials: account.logoInitials,
+    logoColor: account.logoColor,
+    currencyMeta: account.currencyMeta,
+    share: account.share,
+  };
+}
+
 export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
   return {
     id: transfer.id,

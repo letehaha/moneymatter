@@ -53,6 +53,9 @@ page.
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
+| `get_account`                           | Read one account: balances, opening balance, bank link, logo, transaction count                                  |
+| `create_account`                        | Create a manual account with currency, category, opening balance, credit limit (`finance:write`)                 |
+| `update_account`                        | Update an account's name, category, credit limit, logo or balance (`finance:write`)                              |
 | `search_transactions`                   | Filter transactions by date, category, tag, amount, etc.                                                         |
 | `get_categories`                        | List spending/income categories                                                                                  |
 | `get_tags`                              | List transaction tags                                                                                            |
@@ -98,6 +101,8 @@ page.
 | `list_portfolio_transfers`              | Cash movement history of a portfolio (transfers, deposits, exchanges)                                            |
 | `adjust_account_balance`                | Set an account to a target balance via an adjustment transaction (`finance:write`)                               |
 | `archive_account`                       | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
+| `delete_account`                        | Permanently delete an account and all its transactions (`finance:delete`)                                        |
+| `unlink_account_from_bank_connection`   | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`)                       |
 | `get_transaction_groups`                | List transaction groups with counts/dates or full embedded transactions                                          |
 | `create_transaction_group`              | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                                     |
 | `update_transaction_group`              | Rename or add a note to an existing group (`finance:write`)                                                      |
