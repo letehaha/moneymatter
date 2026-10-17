@@ -382,5 +382,48 @@ describe('Valuing saved rows again after the rates of a custom currency change',
 
       expect((await readTx({ id: created!.id })).refAmount).toBe(40);
     });
+
+    it('values a custom currency again when the manual rate of the ISO currency it resolves through changes or goes', async () => {
+      await createCurrency({ code: 'USDT' });
+      await createCurrency({ code: 'SAT' });
+      await pegTo({ code: 'USDT', pegCurrency: 'USD', factor: 2 });
+      // A currency on manual rates, whose own rate is quoted in USD.
+      const quoted = await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'SAT', quoteCode: 'USD', rate: 0.5, effectiveDate: DAY_1 },
+          { baseCode: 'USD', quoteCode: 'SAT', rate: 2, effectiveDate: DAY_1 },
+        ],
+        raw: false,
+      });
+      expect(quoted.statusCode).toBe(200);
+      const usdt = await createAccountIn({ code: 'USDT' });
+      const sat = await createAccountIn({ code: 'SAT' });
+      const [pegged] = await createTx({ accountId: usdt.id, amount: 10, day: DAY_2 });
+      const [stored] = await createTx({ accountId: sat.id, amount: 10, day: DAY_2 });
+      // At the market rate of 4 per USD: 10 * 2 * 4 and 10 * 0.5 * 4.
+      expect([pegged!.refAmount, stored!.refAmount]).toEqual([80, 20]);
+
+      const usdRate = (rate: number) => [
+        { baseCode: 'USD', quoteCode: BASE(), rate },
+        { baseCode: BASE(), quoteCode: 'USD', rate: 1 / rate },
+      ];
+      const edit = await helpers.editCurrencyExchangeRate({ pairs: usdRate(5), raw: false });
+      expect(edit.statusCode).toBe(200);
+
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(100);
+      expect((await readTx({ id: stored!.id })).refAmount).toBe(25);
+
+      const removal = await helpers.removeCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USD', quoteCode: BASE() },
+          { baseCode: BASE(), quoteCode: 'USD' },
+        ],
+        raw: false,
+      });
+      expect(removal.statusCode).toBe(200);
+
+      expect((await readTx({ id: pegged!.id })).refAmount).toBe(80);
+      expect((await readTx({ id: stored!.id })).refAmount).toBe(20);
+    });
   });
 });

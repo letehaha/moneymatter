@@ -4,8 +4,7 @@ import Accounts from '@models/accounts.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { findTransactions } from '@models/transactions-query';
 import type Transactions from '@models/transactions.model';
-import UserExchangeRates from '@models/user-exchange-rates.model';
-import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { getBaseCurrency } from '@models/users-currencies.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
 import { restampRefInitialBalance } from '@services/accounts/restamp-ref-initial-balance';
 import { scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
@@ -15,10 +14,9 @@ import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
 import { findCustomCurrencyCodes } from './custom-currency-codes';
-import { pegRateSourceConfigSchema } from './rate-sources';
+import { loadDependencyEdges } from './load-dependency-edges';
 import {
   type CustomRateChange,
-  type DependencyEdge,
   type RateInterval,
   buildRowSelectors,
   buildScope,
@@ -40,36 +38,6 @@ const EMPTY_RESULT: RecomputeResult = {
   transactionsUpdated: 0,
   splitsUpdated: 0,
   accountsRestamped: 0,
-};
-
-/**
- * The user's custom currencies that are valued through another one: a currency pegged to it, or a
- * stored rate that quotes it. A peg whose saved config cannot be read leads nowhere.
- */
-const loadDependencyEdges = async ({ userId }: { userId: number }): Promise<DependencyEdge[]> => {
-  const pegged = await UsersCurrencies.findAll({
-    where: { userId, rateSource: 'peg' },
-    attributes: ['currencyCode', 'rateSourceConfig'],
-    raw: true,
-  });
-  const pegEdges = pegged.flatMap(({ currencyCode, rateSourceConfig }): DependencyEdge[] => {
-    const config = pegRateSourceConfigSchema.safeParse(rateSourceConfig);
-
-    return config.success ? [{ dependent: currencyCode, source: config.data.pegCurrency }] : [];
-  });
-
-  const quoted = await UserExchangeRates.findAll({
-    where: { userId },
-    attributes: ['baseCode', 'quoteCode'],
-    group: ['baseCode', 'quoteCode'],
-    raw: true,
-  });
-  const customBases = await findCustomCurrencyCodes({ codes: quoted.map((row) => row.baseCode) });
-  const quoteEdges = quoted
-    .filter((row) => customBases.has(row.baseCode))
-    .map((row): DependencyEdge => ({ dependent: row.baseCode, source: row.quoteCode }));
-
-  return [...pegEdges, ...quoteEdges];
 };
 
 /**
@@ -251,12 +219,14 @@ const valueAccounts = async ({
  * `refAmount` and `refCommissionRate` of transactions, the ref amounts of their splits, the
  * `refAmountMissing` flag, the accounts' base-currency balances and the stored balance history.
  *
- * `changes` say which currency changed on which days. They are expanded first through the user's
- * pegs and stored quotes, so a currency priced through a changed one is valued again for the same
- * days. A `recompute` change values every row of those days; a `fill` change (a rate for a new day)
- * only values rows still waiting for a rate. Each row is converted with the rate in force on its own
- * date, and only a row whose value differs is written. ISO currencies are never touched: their saved
- * transactions keep the base amounts they were saved with.
+ * `changes` say which currency changed on which days; a change may name an ISO currency whose manual
+ * rate into the base moved. They are expanded first through the user's pegs and stored quotes, so a
+ * currency priced through a changed one is valued again for the same days. A `recompute` change
+ * values every row of those days; a `fill` change (a rate for a new day) only values rows still
+ * waiting for a rate. Each row is converted with the rate in force on its own
+ * date, and only a row whose value differs is written. ISO currencies are never valued: their saved
+ * transactions keep the base amounts they were saved with. A user with no base currency has nothing
+ * to value, and the result is empty.
  *
  * Runs inside the caller's database transaction when there is one, so it sees rates the caller wrote
  * and commits with them. The user's cached converted amounts are dropped after that commit.
@@ -274,22 +244,25 @@ export const recomputeCustomRefAmounts = withTransaction(
   }): Promise<RecomputeResult> => {
     if (!changes.length) return EMPTY_RESULT;
 
-    const customCodes = await findCustomCurrencyCodes({ codes: changes.map((change) => change.currencyCode) });
-    const scope = expandScope({
-      scope: buildScope({ changes: changes.filter((change) => customCodes.has(change.currencyCode.toUpperCase())) }),
-      edges: await loadDependencyEdges({ userId }),
-    });
-    if (!scope.size) return EMPTY_RESULT;
+    // A user with no base currency has nothing to value amounts in.
+    const baseCurrency = await getBaseCurrency({ userId });
+    if (!baseCurrency) return EMPTY_RESULT;
 
-    const { currency: baseCurrency } = await getBaseCurrency({ userId });
-    const currencyCodes = [...scope.keys()].filter((code) => code !== baseCurrency.code);
+    // An ISO seed (a manual ISO rate into the base) is expanded too: it reaches the custom
+    // currencies pegged to or quoted in it. Only custom codes are valued afterwards.
+    const scope = expandScope({ scope: buildScope({ changes }), edges: await loadDependencyEdges({ userId }) });
+    const customCodes = await findCustomCurrencyCodes({ codes: [...scope.keys()] });
+    const currencyCodes = [...scope.keys()].filter(
+      (code) => customCodes.has(code.toUpperCase()) && code !== baseCurrency.currency.code,
+    );
+    if (!currencyCodes.length) return EMPTY_RESULT;
 
     let transactionsUpdated = 0;
     let splitsUpdated = 0;
     for (const currencyCode of currencyCodes) {
       const result = await valueTransactions({
         userId,
-        baseCurrencyCode: baseCurrency.code,
+        baseCurrencyCode: baseCurrency.currency.code,
         currencyCode,
         intervals: scope.get(currencyCode)!,
       });

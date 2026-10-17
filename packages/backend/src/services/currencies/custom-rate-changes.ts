@@ -24,8 +24,12 @@ type RatePair = { baseCode: string; quoteCode: string; effectiveDate?: string };
  * the effective rate of days that were valued under the earlier state, so those are valued again.
  * Removing a rate does the same, and removing a pair without naming a day reaches all of its days.
  *
- * Only a pair that has a custom currency on its base side can be a rate a transaction is valued
- * with, so the reverse direction the rate editor stores beside every pair is not a change.
+ * A pair with a custom currency on its base side is a rate a transaction is valued with; the reverse
+ * direction the rate editor stores beside every pair is not a change. A manual rate between two ISO
+ * currencies that quotes the base currency is a change too: a custom currency pegged to (or quoted
+ * in) the base side is worth its ISO rate, and a manual ISO rate applies to every day, so the change
+ * has no start or end day. The planned entry names the ISO code; the recompute expands it to the
+ * custom currencies behind it.
  */
 export const planRateChanges = async ({
   userId,
@@ -37,11 +41,17 @@ export const planRateChanges = async ({
   kind: 'edit' | 'remove';
 }): Promise<PlannedRateChange[]> => {
   const customCodes = await findCustomCurrencyCodes({ codes: pairs.map((pair) => pair.baseCode) });
+  const baseCurrency = await getBaseCurrency({ userId });
   const today = toEffectiveDate({ date: new Date() });
   const planned: PlannedRateChange[] = [];
 
   for (const pair of pairs) {
-    if (!customCodes.has(pair.baseCode.toUpperCase())) continue;
+    if (!customCodes.has(pair.baseCode.toUpperCase())) {
+      if (baseCurrency && pair.quoteCode === baseCurrency.currency.code) {
+        planned.push({ currencyCode: pair.baseCode, quoteCode: pair.quoteCode, from: null, mode: 'recompute' });
+      }
+      continue;
+    }
 
     if (kind === 'remove') {
       planned.push({
@@ -108,7 +118,9 @@ export const resolveRateChanges = async ({
 }): Promise<CustomRateChange[]> => {
   if (!planned.length) return [];
 
-  const { currency } = await getBaseCurrency({ userId });
+  const baseCurrency = await getBaseCurrency({ userId });
+  if (!baseCurrency) return [];
+
   const changes: CustomRateChange[] = [];
 
   for (const change of planned) {
@@ -118,7 +130,7 @@ export const resolveRateChanges = async ({
         : await findNextRateDay({
             userId,
             change: { ...change, from: change.from },
-            baseCurrencyCode: currency.code,
+            baseCurrencyCode: baseCurrency.currency.code,
           });
 
     changes.push({ currencyCode: change.currencyCode, from: change.from, to, mode: change.mode });

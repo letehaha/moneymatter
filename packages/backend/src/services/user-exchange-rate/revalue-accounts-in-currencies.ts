@@ -1,13 +1,14 @@
 import Accounts from '@models/accounts.model';
-import UserExchangeRates from '@models/user-exchange-rates.model';
 import { getBaseCurrency } from '@models/users-currencies.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
-import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
+import { loadDependencyEdges } from '@services/currencies/load-dependency-edges';
+import { expandScope } from '@services/currencies/recompute-scope';
 
 /**
  * The edited codes plus every custom currency the user prices through one of them, however many
- * custom steps away. A custom currency is worth its stored quote times the ISO rate of that quote
- * into the base, so editing the quote's rate moves the custom currency's value as well.
+ * steps away: a currency pegged to an edited code, or one whose stored quote is an edited code. A
+ * custom currency is worth its peg or stored quote times the ISO rate of that currency into the
+ * base, so editing that rate moves the custom currency's value as well.
  */
 const withDependentCustomCurrencies = async ({
   userId,
@@ -16,22 +17,10 @@ const withDependentCustomCurrencies = async ({
   userId: number;
   currencyCodes: string[];
 }): Promise<string[]> => {
-  const covered = new Set(currencyCodes);
-  let frontier = currencyCodes;
+  const seeds = new Map(currencyCodes.map((code) => [code, [{ from: null, to: null, mode: 'recompute' as const }]]));
+  const reached = expandScope({ scope: seeds, edges: await loadDependencyEdges({ userId }) });
 
-  while (frontier.length) {
-    const rows = await UserExchangeRates.findAll({
-      where: { userId, quoteCode: frontier },
-      attributes: ['baseCode'],
-      raw: true,
-    });
-    const customCodes = await findCustomCurrencyCodes({ codes: rows.map((row) => row.baseCode) });
-
-    frontier = [...customCodes].filter((code) => !covered.has(code));
-    frontier.forEach((code) => covered.add(code));
-  }
-
-  return [...covered];
+  return [...reached.keys()];
 };
 
 /**
