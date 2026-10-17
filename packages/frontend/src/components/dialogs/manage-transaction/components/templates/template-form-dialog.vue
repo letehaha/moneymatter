@@ -25,6 +25,7 @@ import {
 import { useFormValidation } from '@/composable/form-validator';
 import { useLinkedCurrencyGroup } from '@/composable/use-linked-currency-group';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { isApiErrorWithCode } from '@/js/errors';
 import { useCategoriesStore } from '@/stores';
 import { findFormattedCategoryById } from '@/stores/categories/helpers';
@@ -110,6 +111,7 @@ const emptyTemplateForm = () => ({
 });
 
 const form = ref(emptyTemplateForm());
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.account?.currencyCode }));
 
 const nameFieldRef = ref<InstanceType<typeof InputField> | null>(null);
 const nameConflictError = ref<string | null>(null);
@@ -327,6 +329,7 @@ const confirmDelete = async () => {
         <InputField
           v-model="form.amount"
           type="number"
+          :decimals="amountDecimals"
           only-positive
           :label="$t('dialogs.manageTransaction.form.amountLabel')"
           :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"

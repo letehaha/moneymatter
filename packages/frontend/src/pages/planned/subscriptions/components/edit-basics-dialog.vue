@@ -20,6 +20,7 @@ import { useInvalidateSubscriptionQueries, useResetSubscriptionLogo } from '@/co
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { helpers, required } from '@/js/helpers/validators';
 import { type CurrencyModel, SUBSCRIPTION_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
@@ -121,6 +122,8 @@ const selectedCurrency = computed(() => {
   if (!form.value.expectedCurrencyCode) return null;
   return currencies.value.find((c) => c.code === form.value.expectedCurrencyCode) ?? null;
 });
+
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.value.expectedCurrencyCode }));
 
 const isIncome = computed(() => props.subscription.transactionType === TRANSACTION_TYPES.income);
 
@@ -315,6 +318,7 @@ const handleSubmit = async () => {
         <InputField
           v-model.number="form.expectedAmount"
           type="number"
+          :decimals="amountDecimals"
           :label="$t('planned.subscriptions.form.amountLabel')"
           :placeholder="$t('planned.subscriptions.form.amountPlaceholder')"
           :error-message="getFieldErrorMessage('form.expectedAmount')"

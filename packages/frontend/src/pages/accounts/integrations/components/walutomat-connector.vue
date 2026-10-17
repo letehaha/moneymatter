@@ -115,7 +115,6 @@
 </template>
 
 <script lang="ts" setup>
-import { numberFormatLocale } from '@/js/helpers/formatters';
 import {
   type AvailableAccount,
   connectProvider,
@@ -129,6 +128,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { Checkbox, type CheckedState } from '@/components/lib/ui/checkbox';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useSyncStatus } from '@/composable/use-sync-status';
+import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useOnboardingStore, useUserStore } from '@/stores';
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
@@ -252,10 +252,5 @@ const getErrorMessage = (error: unknown): string | undefined => {
   return undefined;
 };
 
-const formatBalance = (balance: number, currency: string) => {
-  return new Intl.NumberFormat(numberFormatLocale.value, {
-    style: 'currency',
-    currency,
-  }).format(balance);
-};
+const formatBalance = (balance: number, currency: string) => formatUIAmount(balance, { currency });
 </script>

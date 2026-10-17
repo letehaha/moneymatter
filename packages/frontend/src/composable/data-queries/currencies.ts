@@ -6,6 +6,7 @@ import {
   setBaseUserCurrency,
 } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { CurrencyModel, UserExchangeRatesModel } from '@bt/shared/types';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/vue-query';
@@ -106,7 +107,7 @@ export const useExchangeRates = (queryOptions = {}) => {
 
   /**
    * Converts between two currencies via the shared base rate: A→B = A.rate / B.rate,
-   * rounded to 2 decimals. Returns null while loading or a rate is missing — treat as
+   * rounded to the target currency's decimals. Returns null while loading or a rate is missing — treat as
    * "unavailable", not zero.
    */
   const convert = ({ amount, from, to }: { amount: number; from: string; to: string }): number | null => {
@@ -116,7 +117,8 @@ export const useExchangeRates = (queryOptions = {}) => {
     if (!fromRate || !toRate) return null;
     const converted = (amount * fromRate) / toRate;
     if (!Number.isFinite(converted)) return null;
-    return Math.round(converted * 100) / 100;
+    const factor = 10 ** getCurrencyDecimals({ code: to });
+    return Math.round(converted * factor) / factor;
   };
 
   return {

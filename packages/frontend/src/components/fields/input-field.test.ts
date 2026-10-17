@@ -384,4 +384,73 @@ describe('InputField component', () => {
       expect(wrapper.find('input').element.value).toBe('');
     });
   });
+
+  describe('decimals prop', () => {
+    const typeInto = async ({ wrapper, value }: { wrapper: ReturnType<typeof mountComponent>; value: string }) => {
+      await wrapper.find('input').setValue(value);
+    };
+
+    it('drops digits past the currency decimals and emits the trimmed number', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3 });
+
+      await typeInto({ wrapper, value: '1.23456' });
+
+      expect(wrapper.find('input').element.value).toBe('1.234');
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
+    });
+
+    it('keeps a 3-decimal amount intact', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 3 });
+
+      await typeInto({ wrapper, value: '1.234' });
+
+      expect(wrapper.find('input').element.value).toBe('1.234');
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1.234]);
+    });
+
+    it('drops the decimal point for a whole-number currency', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+
+      await typeInto({ wrapper, value: '1500.6' });
+
+      expect(wrapper.find('input').element.value).toBe('1500');
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([1500]);
+    });
+
+    it('keeps every digit of a large whole-number amount (VND)', async () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+
+      await typeInto({ wrapper, value: '20500000000' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([20_500_000_000]);
+    });
+
+    it('does not limit precision when decimals is unset', async () => {
+      const wrapper = mountComponent({ type: 'number' });
+
+      await typeInto({ wrapper, value: '0.00040641' });
+
+      expect(wrapper.emitted('update:modelValue')?.at(-1)).toEqual([0.00040641]);
+    });
+
+    it('blocks the decimal point key for a whole-number currency', () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 0 });
+      const event = new KeyboardEvent('keypress', { key: '.' });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+      wrapper.find('input').element.dispatchEvent(event);
+
+      expect(preventDefaultSpy).toHaveBeenCalled();
+    });
+
+    it('allows the decimal point key when the currency has decimals', () => {
+      const wrapper = mountComponent({ type: 'number', decimals: 2 });
+      const event = new KeyboardEvent('keypress', { key: '.' });
+      const preventDefaultSpy = vi.spyOn(event, 'preventDefault');
+
+      wrapper.find('input').element.dispatchEvent(event);
+
+      expect(preventDefaultSpy).not.toHaveBeenCalled();
+    });
+  });
 });

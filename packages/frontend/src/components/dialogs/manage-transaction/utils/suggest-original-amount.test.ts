@@ -38,8 +38,12 @@ describe('resolveSuggestedOriginalAmount', () => {
     expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.91234, currencyDigits: 2 })).toBe(9.12);
   });
 
-  it('clamps a 3-digit currency to two decimals', () => {
-    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.376543, currencyDigits: 3 })).toBe(3.77);
+  it('keeps all three decimals of a 3-digit currency', () => {
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.376543, currencyDigits: 3 })).toBe(3.765);
+  });
+
+  it('keeps the decimals of a high-precision currency', () => {
+    expect(resolveSuggestedOriginalAmount({ amount: 10, rate: 0.000123456789, currencyDigits: 8 })).toBe(0.00123457);
   });
 
   it('falls back to two decimals when the currency carries no digits', () => {

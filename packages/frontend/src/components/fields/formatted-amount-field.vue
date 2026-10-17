@@ -31,6 +31,7 @@
 import FieldError from '@/components/fields/components/field-error.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import {
+  DEFAULT_AMOUNT_DECIMALS,
   caretOffsetAfterDigits,
   countDigitsBeforeCaret,
   getAmountSeparators,
@@ -39,13 +40,23 @@ import {
 import { cn } from '@/lib/utils';
 import { computed, nextTick, ref } from 'vue';
 
-const props = defineProps<{
-  modelValue: number | null;
-  label?: string;
-  placeholder?: string;
-  disabled?: boolean;
-  errorMessage?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    modelValue: number | null;
+    label?: string;
+    placeholder?: string;
+    disabled?: boolean;
+    errorMessage?: string;
+    /** Decimals of the amount's currency; typed precision beyond it is dropped. */
+    decimals?: number;
+  }>(),
+  {
+    label: undefined,
+    placeholder: undefined,
+    errorMessage: undefined,
+    decimals: DEFAULT_AMOUNT_DECIMALS,
+  },
+);
 
 const emit = defineEmits<{
   'update:modelValue': [value: number | null];
@@ -61,14 +72,17 @@ const trailingFragment = ref<string>('');
 const separators = getAmountSeparators();
 
 // Locale grouping/decimal separators, matching the rest of the app's number rendering.
-const formatter = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 2,
-  minimumFractionDigits: 0,
-});
+const formatter = computed(
+  () =>
+    new Intl.NumberFormat(undefined, {
+      maximumFractionDigits: props.decimals,
+      minimumFractionDigits: 0,
+    }),
+);
 
 const formatNumber = (value: number): string => {
   if (Number.isNaN(value)) return '';
-  return formatter.format(value);
+  return formatter.value.format(value);
 };
 
 const displayValue = computed(() => {
@@ -92,6 +106,7 @@ const onInput = (event: Event) => {
     raw,
     decimalSeparator: separators.decimal,
     groupSeparator: separators.group,
+    decimals: props.decimals,
   });
   trailingFragment.value = fragment;
 

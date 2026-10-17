@@ -13,7 +13,7 @@ import { buildPoolAssignPayload, groupLines } from '../helpers';
 
 const props = defineProps<{ planId: string; view: BudgetPlanPeriodView; prominent?: boolean }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { baseCurrencyDecimals, formatBaseCurrency } = useFormatCurrency();
 
 const isOpen = ref(false);
 const lineId = ref<string | null>(null);
@@ -78,6 +78,7 @@ const submit = () => {
       />
 
       <FormattedAmountField
+        :decimals="baseCurrencyDecimals"
         :model-value="amount"
         :label="$t('budgetPlans.pool.amountLabel')"
         :placeholder="$t('budgetPlans.assign.amountPlaceholder')"

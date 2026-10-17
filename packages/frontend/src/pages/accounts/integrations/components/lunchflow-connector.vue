@@ -138,7 +138,6 @@
 </template>
 
 <script lang="ts" setup>
-import { numberFormatLocale } from '@/js/helpers/formatters';
 import {
   type AvailableAccount,
   connectProvider,
@@ -152,6 +151,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import * as Tooltip from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useSyncStatus } from '@/composable/use-sync-status';
+import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useOnboardingStore, useUserStore } from '@/stores';
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { BuildingIcon, ExternalLinkIcon, InfoIcon } from '@lucide/vue';
@@ -253,10 +253,5 @@ const getErrorMessage = (error: unknown): string | undefined => {
   return undefined;
 };
 
-const formatBalance = (balance: number, currency: string) => {
-  return new Intl.NumberFormat(numberFormatLocale.value, {
-    style: 'currency',
-    currency,
-  }).format(balance);
-};
+const formatBalance = (balance: number, currency: string) => formatUIAmount(balance, { currency });
 </script>

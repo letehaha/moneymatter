@@ -23,6 +23,7 @@ import { useDateLocale } from '@/composable/use-date-locale';
 import { ApiErrorResponseError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import { cn } from '@/lib/utils';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore } from '@/stores';
 import type { AccountModel } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -180,6 +181,8 @@ const dialogAmountCurrency = computed(() => {
   }
   return accountCurrencyFor(sub) ?? sub.expectedCurrencyCode ?? null;
 });
+
+const amountDecimals = computed(() => getCurrencyDecimals({ code: dialogAmountCurrency.value }));
 
 const isConfirmDisabled = computed(() => {
   if (isPending.value) return true;
@@ -386,7 +389,7 @@ defineExpose({ triggerPay, isPending });
         <InputField
           v-model="amount"
           type="number"
-          step="0.01"
+          :decimals="amountDecimals"
           min="0.01"
           only-positive
           :label="$t('dialogs.subscriptionMarkPaid.amountLabel')"

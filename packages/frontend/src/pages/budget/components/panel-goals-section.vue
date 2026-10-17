@@ -20,7 +20,7 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ selectLine: [lineId: string] }>();
 
-const { formatBaseCurrency } = useFormatCurrency();
+const { baseCurrencyDecimals, formatBaseCurrency } = useFormatCurrency();
 
 const isIncomeOpen = ref(false);
 const income = ref<number | null>(null);
@@ -152,6 +152,7 @@ const submitIncome = ({ value }: { value: number | null }) => {
 
       <form class="grid gap-3" @submit.prevent="submitIncome({ value: income })">
         <FormattedAmountField
+          :decimals="baseCurrencyDecimals"
           :model-value="income"
           :label="$t('budgetPlans.goals.expectedIncome')"
           :placeholder="$t('budgetPlans.goals.expectedIncomePlaceholder')"

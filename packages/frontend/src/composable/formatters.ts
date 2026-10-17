@@ -1,6 +1,13 @@
-import { formatCompactFiat, formatCompactUIAmount, formatShortFiat, formatUIAmount } from '@/js/helpers';
+import {
+  formatCompactFiat,
+  formatCompactUIAmount,
+  formatShortFiat,
+  formatUIAmount,
+  getCurrencyDecimals,
+} from '@/js/helpers';
 import { useCurrenciesStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const COMPACT_AMOUNT_THRESHOLD = 10_000;
@@ -51,6 +58,9 @@ export const useCurrencyName = () => {
 
 export const useFormatCurrency = () => {
   const { baseCurrency } = storeToRefs(useCurrenciesStore());
+
+  /** Decimals the base currency's amounts (budgets, reference values) are stored with. */
+  const baseCurrencyDecimals = computed(() => getCurrencyDecimals({ code: baseCurrency.value?.currency?.code }));
 
   const formatBaseCurrency = (amount: number, { fractionDigits }: { fractionDigits?: number } = {}) =>
     formatUIAmount(amount, {
@@ -113,6 +123,7 @@ export const useFormatCurrency = () => {
   };
 
   return {
+    baseCurrencyDecimals,
     formatBaseCurrency,
     formatWholeBaseCurrency,
     formatAmountByCurrencyCode,
