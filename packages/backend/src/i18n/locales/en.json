@@ -229,6 +229,7 @@
     "securitySearchResultNotRecognized": "Security search result is not recognized or has expired. Search for the security again.",
     "currencyForSecurityNotFound": "Currency for security not found.",
     "currencyNotFound": "Currency not found",
+    "customCurrencyNotSupported": "Portfolios support ISO 4217 currencies only. \"{{code}}\" is a custom currency",
     "transactionNotFound": "Investment transaction not found",
     "userBaseCurrencyNotFound": "User base currency not found",
     "insufficientSharesToSell": "Insufficient shares to sell. After this update, you would have {{adjustedQuantity}} shares but are trying to sell {{sellQuantity}} shares.",

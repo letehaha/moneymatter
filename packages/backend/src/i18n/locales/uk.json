@@ -231,6 +231,7 @@
     "securitySearchResultNotRecognized": "Результат пошуку цінного папера не розпізнано або він застарів. Виконайте пошук цінного папера ще раз.",
     "currencyForSecurityNotFound": "Валюту для цінного папера не знайдено.",
     "currencyNotFound": "Валюту не знайдено",
+    "customCurrencyNotSupported": "Портфелі підтримують лише валюти ISO 4217. \"{{code}}\" — це власна валюта",
     "transactionNotFound": "Інвестиційну транзакцію не знайдено",
     "userBaseCurrencyNotFound": "Базову валюту користувача не знайдено",
     "insufficientSharesToSell": "Недостатня кількість для продажу. Після цього оновлення кількість становитиме {{adjustedQuantity}}, а кількість для продажу — {{sellQuantity}}.",
