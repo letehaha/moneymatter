@@ -20,7 +20,7 @@ import {
   getAllMockAccountUIDs,
   getMockedAccountDetails,
 } from '@tests/mocks/enablebanking/data';
-import { AED_PER_USD, EUR_PER_USD } from '@tests/mocks/exchange-rates/data';
+import { AED_PER_USD, EUR_PER_USD, JPY_PER_USD } from '@tests/mocks/exchange-rates/data';
 import { format } from 'date-fns';
 import { HttpResponse, http } from 'msw';
 
@@ -28,6 +28,7 @@ import { SyncStatus } from '../sync/sync-status-tracker';
 
 // getExchangeRate pivots through USD and truncates the rate to 5 decimals.
 const EUR_TO_AED = Math.trunc((AED_PER_USD / EUR_PER_USD) * 100_000) / 100_000;
+const EUR_TO_JPY = Math.trunc((JPY_PER_USD / EUR_PER_USD) * 100_000) / 100_000;
 const utcDateDaysAgo = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString().split('T')[0]!;
 
 /**
@@ -1965,6 +1966,21 @@ describe('Enable Banking Data Provider E2E', () => {
         // a different figure, and so does an unconverted, inverted or cents-scaled
         // reading of the right one.
         expect(bookingDayCents({ balances })).toEqualRefValue(CLOSING_BALANCE_EUR * EUR_TO_AED * 100);
+      });
+
+      it('rounds the converted balance to the decimals of a base currency without any', async () => {
+        const jpyUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'JPY' });
+
+        await helpers.asUser({
+          cookies: jpyUser.cookies,
+          fn: async () => {
+            const { balances } = await connectAccountWithLadder();
+            const row = balances.find((balance) => String(balance.date) === BOOKING_DATE);
+
+            // -50 EUR is about -9,000 JPY; two decimals of it would not be a whole number.
+            expect(row!.amount).toBe(Math.round(CLOSING_BALANCE_EUR * EUR_TO_JPY));
+          },
+        });
       });
 
       it('leaves the day blank when its ladder does not resolve', async () => {
