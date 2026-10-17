@@ -1,6 +1,6 @@
 import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
 
-import { computeNextExpectedDate } from './subscription-date.utils';
+import { resolveNextExpectedDate } from './subscription-date.utils';
 
 export type SubscriptionSortBy = 'dueDate' | 'amount' | 'name' | 'recent';
 
@@ -8,10 +8,11 @@ export type SubscriptionSortBy = 'dueDate' | 'amount' | 'name' | 'recent';
  * The effective next-due date for a list item, computed for EVERY subscription
  * so the UI can always render "in N days" and sort on a single field.
  *
- * Prefers the earliest open period's `dueDate` (period-payments engine). Falls
- * back to the derived date for detection-only subscriptions that have no open
- * period, anchoring the derivation on the latest linked active transaction time
- * (or `startDate` when there are none). Returns null only when uncomputable.
+ * Prefers the earliest open period's `dueDate` (period-payments engine), then the
+ * subscription's own `dueDate`/`anchorDay` schedule. Falls back to the derived date
+ * for detection-only subscriptions, anchoring the derivation on the latest linked
+ * active transaction time (or `startDate` when there are none). Null when the
+ * subscription is inactive, ended before that date, or the date is uncomputable.
  *
  * `latestTransactionTime` must already exclude planned rows — an intention is not
  * a payment, and anchoring on one pushes the due date a whole cycle forward.
@@ -21,20 +22,30 @@ export const computeEffectiveNextDueDate = ({
   startDate,
   frequency,
   latestTransactionTime,
+  isActive,
+  endDate,
+  dueDate,
+  anchorDay,
 }: {
   earliestPeriodDueDate: string | null;
   startDate: string;
   frequency: SUBSCRIPTION_FREQUENCIES;
   latestTransactionTime: Date | string | null;
-}): string | null => {
-  if (earliestPeriodDueDate) return earliestPeriodDueDate;
-
-  return computeNextExpectedDate({
+  isActive?: boolean;
+  endDate?: string | null;
+  dueDate?: string | null;
+  anchorDay?: number | null;
+}): string | null =>
+  resolveNextExpectedDate({
     startDate,
     frequency,
     transactions: latestTransactionTime ? [{ time: latestTransactionTime }] : [],
+    isActive,
+    endDate,
+    dueDate,
+    anchorDay,
+    openPeriodDueDate: earliestPeriodDueDate,
   });
-};
 
 interface SortableSubscription {
   name: string;

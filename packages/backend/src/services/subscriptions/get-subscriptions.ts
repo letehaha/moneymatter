@@ -16,10 +16,8 @@ import { applyCachedLogos, enqueueLogoResolution } from '@services/brand-logos';
 import { col, fn, literal, Op } from 'sequelize';
 
 import { computeEffectiveNextDueDate, sortSubscriptions, type SubscriptionSortBy } from './sort-subscriptions';
-import { computeNextExpectedDate } from './subscription-date.utils';
+import { resolveNextExpectedDate } from './subscription-date.utils';
 import { getSubscriptionTagIds, loadSubscriptionTagIds } from './subscription-tags';
-
-export { computeNextExpectedDate };
 
 interface GetSubscriptionsParams {
   userId: number;
@@ -47,6 +45,8 @@ interface SubscriptionBase extends Pick<
   | 'frequency'
   | 'startDate'
   | 'endDate'
+  | 'dueDate'
+  | 'anchorDay'
   | 'accountId'
   | 'categoryId'
   | 'payeeId'
@@ -104,9 +104,10 @@ interface SubscriptionListItem extends SubscriptionBase {
   paidPeriodsCount: number;
   /**
    * Effective next-due date (YYYY-MM-DD) computed for EVERY item: the earliest
-   * open period's `dueDate` when one exists, else the derived date from
-   * `computeNextExpectedDate` anchored on the latest linked active transaction.
-   * Null only when uncomputable. Drives the "in N days" chip and dueDate sort.
+   * open period's `dueDate` when one exists, else the subscription's own
+   * `dueDate`/`anchorDay` schedule, else the date derived from the latest linked
+   * active transaction. Null when uncomputable, when the subscription is inactive,
+   * or when it ends before that date. Drives the "in N days" chip and dueDate sort.
    */
   nextDueDate: string | null;
 }
@@ -282,6 +283,10 @@ export const getSubscriptions = async ({
         startDate: item.startDate,
         frequency: item.frequency,
         latestTransactionTime: latestTxTimeBySubscriptionId.get(item.id) ?? null,
+        isActive: item.isActive,
+        endDate: item.endDate,
+        dueDate: item.dueDate,
+        anchorDay: item.anchorDay,
       }),
     };
   });
@@ -344,10 +349,21 @@ export const getSubscriptionById = async ({
     cashbackAmount: tx.cashbackAmount.toNumber(),
   }));
 
-  const nextExpectedDate = computeNextExpectedDate({
+  const periods = raw.periods ?? [];
+  // `periods` arrive ordered by dueDate ASC, so the first open one is the earliest.
+  const openPeriod = periods.find(
+    (p) => p.status === SUBSCRIPTION_PERIOD_STATUSES.upcoming || p.status === SUBSCRIPTION_PERIOD_STATUSES.overdue,
+  );
+
+  const nextExpectedDate = resolveNextExpectedDate({
     startDate: raw.startDate,
     frequency: raw.frequency,
     transactions: transactions.filter((tx) => !tx.isPlanned),
+    isActive: raw.isActive,
+    endDate: raw.endDate,
+    dueDate: raw.dueDate,
+    anchorDay: raw.anchorDay,
+    openPeriodDueDate: openPeriod?.dueDate ?? null,
   });
 
   return {
@@ -356,6 +372,6 @@ export const getSubscriptionById = async ({
     tagIds: await getSubscriptionTagIds({ subscriptionId: id }),
     transactions,
     nextExpectedDate,
-    periods: raw.periods ?? [],
+    periods,
   };
 };

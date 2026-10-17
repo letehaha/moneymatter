@@ -9,6 +9,22 @@ export const daysUntilDue = ({ dueDate, now }: { dueDate: string; now: Date }): 
   return differenceInCalendarDays(parsed, startOfDay(now));
 };
 
+/**
+ * Whether a due date still counts as "coming up" for the subscription: not when it is
+ * paused, nor when its end date lies before the due date. The backend nulls `nextDueDate`
+ * for those; this keeps views that read a period's own `dueDate` consistent with it.
+ */
+export const hasUpcomingDue = ({
+  subscription,
+  dueDate,
+}: {
+  subscription: Pick<SubscriptionListItem, 'isActive' | 'endDate'>;
+  dueDate: string;
+}): boolean => {
+  if (!subscription.isActive) return false;
+  return !subscription.endDate || dueDate.slice(0, 10) <= subscription.endDate.slice(0, 10);
+};
+
 // Overdue when the open period is stored overdue, or when the effective next date has
 // already passed — the latter covers an `upcoming` period whose due date slipped before
 // the daily cron flips the stored status, so a past date never shows "in -1 days".

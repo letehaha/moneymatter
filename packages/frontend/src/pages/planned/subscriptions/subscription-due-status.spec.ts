@@ -2,7 +2,7 @@ import type { SubscriptionListItem } from '@/api/subscriptions';
 import { SUBSCRIPTION_PERIOD_STATUSES } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { daysUntilDue, isSubscriptionOverdue } from './subscription-due-status';
+import { daysUntilDue, hasUpcomingDue, isSubscriptionOverdue } from './subscription-due-status';
 import { buildSubscription } from './subscription-fixtures';
 
 const NOW = new Date(2025, 5, 15, 13, 30);
@@ -83,5 +83,27 @@ describe('isSubscriptionOverdue', () => {
 
   it('is false for an unparseable due date without a stored overdue period', () => {
     expect(isSubscriptionOverdue({ subscription: scheduled({ nextDueDate: 'not-a-date' }), now: NOW })).toBe(false);
+  });
+});
+
+describe('hasUpcomingDue', () => {
+  it('is true for an active subscription without an end date', () => {
+    expect(hasUpcomingDue({ subscription: { isActive: true, endDate: null }, dueDate: '2025-07-08' })).toBe(true);
+  });
+
+  it('is false for an inactive subscription', () => {
+    expect(hasUpcomingDue({ subscription: { isActive: false, endDate: null }, dueDate: '2025-07-08' })).toBe(false);
+  });
+
+  it('is false when the due date falls after the end date', () => {
+    expect(hasUpcomingDue({ subscription: { isActive: true, endDate: '2025-06-30' }, dueDate: '2025-07-08' })).toBe(
+      false,
+    );
+  });
+
+  it('is true when the due date is on or before the end date', () => {
+    expect(hasUpcomingDue({ subscription: { isActive: true, endDate: '2025-07-08' }, dueDate: '2025-07-08' })).toBe(
+      true,
+    );
   });
 });

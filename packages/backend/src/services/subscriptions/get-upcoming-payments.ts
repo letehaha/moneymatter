@@ -8,7 +8,7 @@ import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import { Includeable, Op } from 'sequelize';
 
 import { calculateNextDueDate } from './calculate-next-due-date';
-import { computeNextExpectedDate } from './get-subscriptions';
+import { resolveNextExpectedDate } from './subscription-date.utils';
 
 /** What `nextPaymentDate` reads: linked real payments and the earliest open period. */
 export const scheduleInclude: Includeable[] = [
@@ -34,15 +34,20 @@ export const scheduleInclude: Includeable[] = [
   },
 ];
 
-type ScheduledSubscription = Pick<Subscriptions, 'startDate' | 'frequency' | 'transactions' | 'periods'>;
+type ScheduledSubscription = Pick<
+  Subscriptions,
+  'startDate' | 'frequency' | 'dueDate' | 'anchorDay' | 'transactions' | 'periods'
+>;
 
-/** The earliest open period's dueDate; legacy subscriptions with no open period derive it. */
+/** The earliest open period's dueDate; with no open period it follows the schedule, then the payments. */
 const nextPaymentDate = ({ subscription }: { subscription: ScheduledSubscription }): string | null =>
-  subscription.periods?.[0]?.dueDate ??
-  computeNextExpectedDate({
+  resolveNextExpectedDate({
     startDate: subscription.startDate,
     frequency: subscription.frequency,
     transactions: subscription.transactions,
+    dueDate: subscription.dueDate,
+    anchorDay: subscription.anchorDay,
+    openPeriodDueDate: subscription.periods?.[0]?.dueDate ?? null,
   });
 
 /** Every payment date in `[from, until)`, stepping from the next one. Needs `scheduleInclude` loaded. */
