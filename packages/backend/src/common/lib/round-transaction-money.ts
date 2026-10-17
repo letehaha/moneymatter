@@ -18,7 +18,9 @@ interface TransactionMoneyFields {
  * currency. A field that is absent stays absent, so a partial update keeps its meaning.
  *
  * `refCurrencyCode` falls back to the account currency: a row without a reference currency holds
- * its reference values in the account's own.
+ * its reference values in the account's own. When the reference currency is the account currency,
+ * no conversion happened and each reference value is its native value, so it rounds half-up like
+ * the native one and the two stay equal.
  */
 export const roundTransactionMoney = async <TValues extends TransactionMoneyFields>({
   values,
@@ -41,11 +43,12 @@ export const roundTransactionMoney = async <TValues extends TransactionMoneyFiel
     currencyCode,
     mode: 'half-up',
   });
+  const resolvedRefCurrencyCode = refCurrencyCode ?? currencyCode;
   const roundedRef = await roundMoneyValues({
     values: { refAmount, refCommissionRate },
     userId,
-    currencyCode: refCurrencyCode ?? currencyCode,
-    mode: 'half-even',
+    currencyCode: resolvedRefCurrencyCode,
+    mode: resolvedRefCurrencyCode === currencyCode ? 'half-up' : 'half-even',
   });
   // An original amount without its currency cannot be rounded to a currency. It is stored as given,
   // like the row itself, which a validation upstream keeps from happening.
