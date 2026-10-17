@@ -41,6 +41,7 @@ import PayeeAliasesModel from './payee-aliases.model';
 import PayeeIgnoredNamesModel from './payee-ignored-names.model';
 import PayeeTagsModel from './payee-tags.model';
 import PayeesModel from './payees.model';
+import PushSubscriptionsModel from './push-subscriptions.model';
 import RefundTransactionsModel from './refund-transactions.model';
 import ResourceSharesModel from './resource-shares.model';
 import ShareInvitationsModel from './share-invitations.model';
@@ -173,6 +174,7 @@ const models = [
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,
+  PushSubscriptionsModel,
 ];
 
 const sequelize = new Sequelize({

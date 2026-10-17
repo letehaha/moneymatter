@@ -624,6 +624,11 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     reason:
       'Rows point at files in attachment storage, which the backup archive does not carry — restoring rows alone would list attachments that cannot be opened. Attachments are not part of backup/restore.',
   },
+  {
+    model: models.PushSubscriptions,
+    reason:
+      "Device-bound push endpoints and keys tied to one browser profile and this instance's VAPID key; restored elsewhere they would push to dead or foreign devices.",
+  },
 ];
 
 const unresolved = [...BACKUP_TABLES, ...REFERENCE_TABLES, ...BACKUP_EXCLUDED].filter((t) => !t.model);
