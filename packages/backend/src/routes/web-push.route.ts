@@ -2,13 +2,14 @@ import {
   deletePushSubscription,
   getPushConfig,
   listPushSubscriptions,
+  sendTestPushNotification,
   subscribePush,
   syncPushSubscription,
   unsubscribePush,
 } from '@controllers/web-push.controller';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
-import { webPushSubscriptionRateLimit } from '@middlewares/rate-limit';
+import { webPushSubscriptionRateLimit, webPushTestRateLimit } from '@middlewares/rate-limit';
 import { Router } from 'express';
 
 const router = Router({});
@@ -30,5 +31,7 @@ router.post('/subscriptions/sync', webPushSubscriptionRateLimit, syncPushSubscri
 router.post('/subscriptions/unsubscribe', webPushSubscriptionRateLimit, unsubscribePush);
 
 router.delete('/subscriptions/:id', webPushSubscriptionRateLimit, deletePushSubscription);
+
+router.post('/test', blockDemoUsers, webPushTestRateLimit, sendTestPushNotification);
 
 export default router;

@@ -2,6 +2,7 @@ import {
   NOTIFICATION_TYPES,
   type PushConfigResponse,
   type PushDeviceDto,
+  type SendTestPushResponse,
   type SubscribePushRequest,
   type SyncPushSubscriptionRequest,
   type SyncPushSubscriptionResponse,
@@ -113,6 +114,10 @@ export async function unsubscribePush<R extends boolean | undefined = undefined>
   raw?: R;
 }) {
   return makeRequest<void, R>({ method: 'post', url: '/push/subscriptions/unsubscribe', payload, raw });
+}
+
+export async function sendTestPush<R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) {
+  return makeRequest<SendTestPushResponse, R>({ method: 'post', url: '/push/test', raw });
 }
 
 /**

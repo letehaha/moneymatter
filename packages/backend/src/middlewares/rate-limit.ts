@@ -344,3 +344,13 @@ export const webPushSubscriptionRateLimit = perUserNonDevRateLimit({
   windowSeconds: 60,
   maxAttempts: 30,
 });
+
+/**
+ * Web Push test limit (per user, 5 per minute). Each call sends to every device of the user
+ * and waits for the push services, so it is far heavier than a registration write.
+ */
+export const webPushTestRateLimit = perUserNonDevRateLimit({
+  prefix: 'web-push-test',
+  windowSeconds: 60,
+  maxAttempts: 5,
+});
