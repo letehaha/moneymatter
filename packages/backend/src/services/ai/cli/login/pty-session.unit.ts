@@ -38,6 +38,17 @@ describe('startPtySession', () => {
     expect(result.matched && result.match[0]).toBe('https://example.com/oauth?a=1');
   });
 
+  it('treats Ink cursor moves as delimiters, so a field laid out with them is matched whole', async () => {
+    const session = runScript({
+      script: `process.stdout.write('\\x1b[2GYour\\x1b[7Gtoken:\\x1b[14G${TOKEN}\\x1b[${TOKEN.length + 15}GStore\\x1b[1Cit\\x1b[1A')`,
+    });
+
+    const result = await session.waitFor({ pattern: TOKEN_PATTERN, timeoutMs: 5000 });
+
+    expect(result).toMatchObject({ matched: true });
+    expect(result.matched && result.match[0]).toBe(TOKEN);
+  });
+
   it('never matches a token that ends mid-field, only the whole token once its delimiter arrives', async () => {
     const half = Math.ceil(TOKEN.length / 2) + 4;
     const session = runScript({

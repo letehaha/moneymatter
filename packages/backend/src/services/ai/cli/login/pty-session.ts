@@ -6,6 +6,14 @@ const KILL_GRACE_MS = 5 * 1000;
 const DEFAULT_COLS = 1000;
 const DEFAULT_ROWS = 24;
 
+/**
+ * CSI cursor moves (CUU/CUD/CUF/CUB/CNL/CPL/CHA/CUP/HVP). Ink lays out text with them instead of
+ * spaces (`\x1b[2GPaste\x1b[8Gcode`), so they become a space before stripping: otherwise words and
+ * printed fields run together and a field's trailing delimiter disappears.
+ */
+// eslint-disable-next-line no-control-regex
+const CURSOR_MOVE_PATTERN = /\x1b\[[0-9;]*[A-HJKf]/g;
+
 /** Every Anthropic secret shape (`sk-ant-oat01-...`); applied to any text that leaves a PTY. */
 const ANTHROPIC_SECRET_PATTERN = /sk-ant-[A-Za-z0-9_-]+/g;
 
@@ -61,7 +69,7 @@ export function startPtySession({
   let hasExited = false;
   const waiters = new Set<Waiter>();
 
-  const readText = () => stripVTControlCharacters(raw);
+  const readText = () => stripVTControlCharacters(raw.replace(CURSOR_MOVE_PATTERN, ' '));
 
   const evaluate = ({ waiter }: { waiter: Waiter }) => {
     const haystack = hasExited ? `${readText()}\n` : readText();
