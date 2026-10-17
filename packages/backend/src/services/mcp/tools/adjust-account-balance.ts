@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { adjustAccountBalance } from '@services/accounts/balance-adjustment';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   accountId: recordId().describe('ID of the account to adjust.'),
@@ -26,6 +26,7 @@ export function registerAdjustAccountBalance(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'adjust_account_balance', clientId: extra.authInfo?.clientId });
 
       const result = await adjustAccountBalance({

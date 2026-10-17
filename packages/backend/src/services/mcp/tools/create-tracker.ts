@@ -13,7 +13,7 @@ import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { createTracker } from '@services/trackers/create-tracker';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Tracker name'),
@@ -61,6 +61,7 @@ export function registerCreateTracker(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_tracker', clientId: extra.authInfo?.clientId });
 
       const tracker = await createTracker({

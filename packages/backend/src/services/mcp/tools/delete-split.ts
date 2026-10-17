@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteSplit } from '@services/transactions/splits/delete-split';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   splitId: z.string().describe('UUID of the split to delete'),
@@ -20,6 +20,7 @@ export function registerDeleteSplit(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_split', clientId: extra.authInfo?.clientId });
 
       const result = await deleteSplit({ splitId: args.splitId, userId });
