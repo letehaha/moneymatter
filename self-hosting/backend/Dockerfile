@@ -55,7 +55,8 @@ RUN npm ci
 RUN apk del python3 make g++
 
 # CLIs the backend drives for the Claude Code and Codex subscription providers.
-# Installed globally (not as backend dependencies); bump a version here only.
+# Installed globally (not as backend dependencies). Pinned here and in docker/dev/backend/Dockerfile:
+# bump both together. CODEX_DISABLED_FEATURES (and its test fixture) is tied to the pinned Codex version.
 ARG CLAUDE_CODE_VERSION=2.1.292
 ARG CODEX_VERSION=0.160.1
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} \
