@@ -193,6 +193,26 @@ export type CurrencyRateSourceSetting =
 /** Response of `PUT /user/currencies/:code/rate-source`. */
 export type CurrencyRateSourceResponse = CurrencyRateSourceSetting & { currencyCode: string };
 
+/** One stored rate of a custom currency, as listed by `GET /user/currencies/:code/rate-history`. */
+export interface CurrencyRateHistoryItem {
+  /** The currency the rate is quoted in: one unit of the custom currency is worth `rate` of it. */
+  quoteCode: string;
+  rate: number;
+  /** Calendar day (YYYY-MM-DD) the rate starts to apply. */
+  effectiveDate: string;
+  source: UserExchangeRateSource;
+  /** ISO instant the row was written. */
+  writtenAt: string;
+  /** Whether this is the rate that values the currency in the base currency today. */
+  isInForce: boolean;
+}
+
+/** Response of `GET /user/currencies/:code/rate-history`; `totalCount` is set on the first page only. */
+export interface CurrencyRateHistoryResponse {
+  items: CurrencyRateHistoryItem[];
+  totalCount: number | null;
+}
+
 export interface UserCurrencyModel {
   id: RecordId;
   userId: number;

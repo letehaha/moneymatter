@@ -18,6 +18,7 @@ import {
   updateCustomCurrency,
 } from '@controllers/currencies/custom-currencies';
 import editCurrencyExchangeRate from '@controllers/currencies/edit-currency-exchange-rate';
+import { getCurrencyRateHistory } from '@controllers/currencies/rate-history';
 import {
   findCoingeckoCoins,
   testCurrencyRateSource,
@@ -119,6 +120,8 @@ router.post('/currencies/base', checkBaseCurrencyLock, setBaseUserCurrency);
 // The source decides which rate prices a currency's amounts, so it sits behind the same guard. A save
 // fetches rates and values saved rows again, so it is limited like the preview.
 router.put('/currencies/:code/rate-source', checkBaseCurrencyLock, rateSourceSaveRateLimit, updateCurrencyRateSource);
+// The dated rates stored for a custom currency; a read, so it is not behind the guard.
+router.get('/currencies/:code/rate-history', getCurrencyRateHistory);
 // A preview saves nothing, so it is not behind the base-currency guard.
 router.post('/currencies/:code/rate-source/test', rateSourceTestRateLimit, testCurrencyRateSource);
 // The enqueue route owns its own dedupe: its NX lock acquisition returns the proper 423,

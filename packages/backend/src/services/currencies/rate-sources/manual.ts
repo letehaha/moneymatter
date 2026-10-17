@@ -11,6 +11,32 @@ const LATEST_FIRST: Order = [
   ['date', 'DESC'],
 ];
 
+/** Every stored rate of a custom code (any quote), latest first, one page at a time. */
+export const listStoredCustomRates = async ({
+  userId,
+  baseCode,
+  limit,
+  offset,
+}: {
+  userId: number;
+  baseCode: string;
+  limit: number;
+  offset: number;
+}) => {
+  return UserExchangeRates.findAll({
+    where: { userId, baseCode },
+    order: LATEST_FIRST,
+    limit,
+    offset,
+    raw: true,
+  });
+};
+
+/** How many rates the user stored for a custom code, in any quote. */
+export const countStoredCustomRates = async ({ userId, baseCode }: { userId: number; baseCode: string }) => {
+  return UserExchangeRates.count({ where: { userId, baseCode } });
+};
+
 /** The user's stored rate for exactly this pair on a day. */
 export const findStoredPairRate = async ({
   userId,

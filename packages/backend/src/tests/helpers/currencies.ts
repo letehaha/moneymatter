@@ -2,6 +2,7 @@ import type {
   BaseCurrencyChangeStatus,
   CoingeckoCoinSearchResult,
   CreateCustomCurrencyBody,
+  CurrencyRateHistoryResponse,
   CurrencyRateSourceResponse,
   CustomCurrencyModel,
   TestCurrencyRateSourceResponse,
@@ -390,6 +391,29 @@ export function searchCoingeckoCoins<R extends boolean | undefined = undefined>(
   return makeRequest<CoingeckoCoinSearchResult[], R>({
     method: 'get',
     url: `/user/currencies/coingecko/search?query=${encodeURIComponent(query)}`,
+    raw,
+  });
+}
+
+export function getCurrencyRateHistory<R extends boolean | undefined = undefined>({
+  code,
+  limit,
+  offset,
+  raw,
+}: {
+  code: string;
+  limit?: number;
+  offset?: number;
+  raw?: R;
+}) {
+  const query = new URLSearchParams();
+  if (limit !== undefined) query.set('limit', String(limit));
+  if (offset !== undefined) query.set('offset', String(offset));
+  const suffix = query.size ? `?${query.toString()}` : '';
+
+  return makeRequest<CurrencyRateHistoryResponse, R>({
+    method: 'get',
+    url: `/user/currencies/${code}/rate-history${suffix}`,
     raw,
   });
 }

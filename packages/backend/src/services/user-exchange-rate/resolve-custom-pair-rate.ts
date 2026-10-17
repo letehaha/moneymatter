@@ -85,6 +85,10 @@ const priceInIsoCurrency = async ({
   return { code: current, factor };
 };
 
+/** Whether a rate source is a peg or a synced one, which price a currency instead of the user's own entries. */
+export const isSourceOwnedRateSource = ({ rateSource }: { rateSource: string }): boolean =>
+  (SOURCE_OWNED_RATE_SOURCES as readonly string[]).includes(rateSource);
+
 /** Whether the user's rates for a custom code come from a peg or from a synced source, not from their own entries. */
 const followsASource = async ({ userId, code }: { userId: number; code: string }): Promise<boolean> => {
   const held = await UsersCurrencies.findOne({
@@ -93,7 +97,7 @@ const followsASource = async ({ userId, code }: { userId: number; code: string }
     raw: true,
   });
 
-  return held ? (SOURCE_OWNED_RATE_SOURCES as readonly string[]).includes(held.rateSource) : false;
+  return held ? isSourceOwnedRateSource({ rateSource: held.rateSource }) : false;
 };
 
 /**

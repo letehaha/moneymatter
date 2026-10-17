@@ -577,6 +577,7 @@
     "customCurrencyCannotBeBase": "«{{code}}» — це власна валюта, її не можна зробити базовою",
     "rateSourceCurrencyNotHeld": "«{{code}}» немає у ваших валютах",
     "rateSourceIsoNotAllowed": "«{{code}}» — валюта за ISO, тому її джерелом курсу може бути лише ринковий провайдер або курси, введені вручну",
+    "rateHistoryIsoNotAllowed": "«{{code}}» — валюта за ISO, тому має один курс без дати й історії курсів",
     "rateSourceCustomNoProvider": "«{{code}}» — це власна валюта, і для неї немає ринкового провайдера. Скористайтеся курсами вручну, прив'язкою до іншої валюти, CoinGecko або HTTP-джерелом",
     "rateSourcePegSelf": "«{{code}}» не можна прив'язати до самої себе",
     "rateSourceHttpsRequired": "Курси з HTTP-джерела потрібно отримувати через https",
