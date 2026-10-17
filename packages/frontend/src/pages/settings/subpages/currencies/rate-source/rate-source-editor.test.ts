@@ -1,6 +1,6 @@
 import currenciesEn from '@/i18n/locales/chunks/en/settings/currencies.json';
 import { ApiErrorResponseError } from '@/js/errors';
-import { API_ERROR_CODES, type UserCurrencyModel } from '@bt/shared/types';
+import { API_ERROR_CODES, type UpdateCurrencyRateSourceBody, type UserCurrencyModel } from '@bt/shared/types';
 import { QueryClient, VueQueryPlugin } from '@tanstack/vue-query';
 import { type VueWrapper, flushPromises, mount } from '@vue/test-utils';
 import { createI18n } from 'vue-i18n';
@@ -166,7 +166,24 @@ describe('RateSourceEditor', () => {
       addEventListener: () => {},
       removeEventListener: () => {},
     }));
-    mockUpdate.mockResolvedValue({});
+    // The API answers with the saved source; the header values are never part of it, only their names.
+    mockUpdate.mockImplementation(async ({ body }: { body: UpdateCurrencyRateSourceBody }) => {
+      if (body.rateSource !== 'http')
+        return {
+          currencyCode: 'BTC',
+          ...body,
+          rateSourceConfig: null,
+          ...('config' in body ? { rateSourceConfig: body.config } : {}),
+        };
+
+      const { headers, ...config } = body.config;
+
+      return {
+        currencyCode: 'BTC',
+        rateSource: 'http',
+        rateSourceConfig: { quoteCurrency: 'USD', ...config, headerNames: Object.keys(headers ?? {}) },
+      };
+    });
   });
 
   afterEach(() => {
@@ -369,16 +386,23 @@ describe('RateSourceEditor', () => {
         expect(mockUpdate.mock.calls[0]![0].body.config.headers).toEqual({});
       });
 
-      it('replaces them with the typed rows, and can back out to keep them', async () => {
+      it('replaces them with the typed rows', async () => {
         const wrapper = mountEditor({ currency: savedHttp() });
 
         await wrapper.find('[data-testid="rate-source-replace-headers"]').trigger('click');
         await wrapper.find('[data-testid="rate-source-header-row-0"] input').setValue('Authorization');
         await wrapper.findAll('[data-testid="rate-source-header-row-0"] input')[1]!.setValue('Bearer x');
         await save(wrapper);
-        expect(mockUpdate.mock.calls[0]![0].body.config.headers).toEqual({ Authorization: 'Bearer x' });
 
+        expect(mockUpdate.mock.calls[0]![0].body.config.headers).toEqual({ Authorization: 'Bearer x' });
+      });
+
+      it('can back out of replacing them to keep the saved ones', async () => {
+        const wrapper = mountEditor({ currency: savedHttp() });
+
+        await wrapper.find('[data-testid="rate-source-replace-headers"]').trigger('click');
         await wrapper.find('[data-testid="rate-source-cancel-replace-headers"]').trigger('click');
+
         expect(wrapper.find('[data-testid="rate-source-saved-headers"]').exists()).toBe(true);
         expect(wrapper.find('[data-testid="rate-source-save"]').exists()).toBe(false);
       });
@@ -405,6 +429,26 @@ describe('RateSourceEditor', () => {
 
         expect(wrapper.find('[data-testid="rate-source-saved-headers"]').text()).toContain('X-New');
         expect(wrapper.html()).not.toContain('top-secret');
+      });
+
+      it('resets the draft after new values for headers with the same names, which change nothing public', async () => {
+        const wrapper = mountEditor({ currency: savedHttp() });
+
+        await wrapper.find('[data-testid="rate-source-replace-headers"]').trigger('click');
+        await wrapper.find('[data-testid="rate-source-header-row-0"] input').setValue('X-Api-Key');
+        await wrapper.findAll('[data-testid="rate-source-header-row-0"] input')[1]!.setValue('rotated-secret');
+        mockUpdate.mockResolvedValueOnce({
+          currencyCode: 'BTC',
+          rateSource: 'http',
+          rateSourceConfig: savedHttp().rateSourceConfig,
+        });
+        await save(wrapper);
+
+        // The saved source is the one it was before, so the editor must not keep the typed secret.
+        expect(wrapper.find('[data-testid="rate-source-save"]').exists()).toBe(false);
+        expect(wrapper.find('[data-testid="rate-source-header-row-0"]').exists()).toBe(false);
+        expect(wrapper.find('[data-testid="rate-source-saved-headers"]').text()).toContain('X-Api-Key');
+        expect(wrapper.html()).not.toContain('rotated-secret');
       });
     });
 

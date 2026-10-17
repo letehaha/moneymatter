@@ -93,6 +93,7 @@ import PegSourceForm from './peg-source-form.vue';
 import {
   EDITABLE_RATE_SOURCES,
   type EditableRateSource,
+  type SavedRateSource,
   buildDraft,
   buildRateSourceBody,
   getSavedHeaderNames,
@@ -130,16 +131,21 @@ const showErrors = ref(false);
 const saveError = ref<string | null>(null);
 const isNotConfigured = ref(false);
 
-const resetDraft = () => {
-  Object.assign(draft, buildDraft({ saved: saved.value }));
+const resetDraft = ({ from = saved.value }: { from?: SavedRateSource } = {}) => {
+  Object.assign(draft, buildDraft({ saved: from }));
   showErrors.value = false;
   saveError.value = null;
   isNotConfigured.value = false;
 };
 
 // Re-seed the draft whenever the saved source changes, so a saved HTTP source drops the typed
-// header values and shows the names the API returned.
-watch(() => JSON.stringify(saved.value), resetDraft);
+// header values and shows the names the API returned. A save that changes no public setting (new
+// values for headers with the same names) leaves the saved source as it was, so the draft is also
+// re-seeded from the response of the save itself.
+watch(
+  () => JSON.stringify(saved.value),
+  () => resetDraft(),
+);
 
 const sourceTabs = computed(() =>
   EDITABLE_RATE_SOURCES.map((value) => ({ value, label: t(`settings.currencies.rateSource.sources.${value}`) })),
@@ -158,7 +164,8 @@ const isChanged = computed(() => isDraftChanged({ draft, saved: saved.value }));
 
 const { mutate, isPending } = useMutation({
   mutationFn: () => updateCurrencyRateSource({ code: code.value, body: buildRateSourceBody({ draft }) }),
-  onSuccess: () => {
+  onSuccess: (response) => {
+    resetDraft({ from: { rateSource: response.rateSource, rateSourceConfig: response.rateSourceConfig } });
     addSuccessNotification(t('settings.currencies.rateSource.successfullySaved'));
     emit('changed');
   },
