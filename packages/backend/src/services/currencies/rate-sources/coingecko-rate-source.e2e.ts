@@ -75,6 +75,15 @@ const useCoingecko = ({
     payload: { rateSource: 'coingecko', config: { coinId, ...(quoteCurrency ? { quoteCurrency } : {}) } },
   });
 
+const logoOf = async ({ code }: { code: string }) =>
+  (await helpers.getUserCurrencies()).find((item) => item.currencyCode === code)!.logoUrl;
+
+const saveWithLogo = ({ code, logoUrl }: { code: string; logoUrl: unknown }) =>
+  helpers.setCurrencyRateSource({
+    code,
+    payload: { rateSource: 'coingecko', config: { coinId: 'bitcoin' }, logoUrl },
+  });
+
 const createAccountIn = async ({ code }: { code: string }) => {
   const response = await helpers.createAccount({
     payload: helpers.buildAccountPayload({ currencyCode: code, name: `${code} account`, initialBalance: 0 }),
@@ -339,6 +348,126 @@ describe('CoinGecko rate source', () => {
       ]);
       const tx = await createTx({ accountId: account.id, amount: 1, day: DAY_3 });
       expect(tx.refAmount).toBe(600 * AED_PER_USD);
+    });
+  });
+
+  describe('the coin logo', () => {
+    const LOGO = 'https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png';
+    const OTHER_LOGO = 'https://coin-images.coingecko.com/coins/images/279/large/ethereum.png';
+
+    it('stores the logo of the picked coin together with the source', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+
+      const response = await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body.response).toEqual({
+        currencyCode: 'BTC',
+        rateSource: 'coingecko',
+        rateSourceConfig: { coinId: 'bitcoin', quoteCurrency: 'USD' },
+      });
+      expect(await logoOf({ code: 'BTC' })).toBe(LOGO);
+      expect((await helpers.listCustomCurrencies({ raw: true })).find((item) => item.code === 'BTC')!.logoUrl).toBe(
+        LOGO,
+      );
+    });
+
+    it('stores the logo when the same source is saved again', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await useCoingecko({ code: 'BTC' });
+      expect(await logoOf({ code: 'BTC' })).toBeNull();
+
+      const response = await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
+
+      expect(response.statusCode).toBe(200);
+      expect(await logoOf({ code: 'BTC' })).toBe(LOGO);
+      expect(getRange).toHaveBeenCalledTimes(1);
+    });
+
+    it('replaces the logo with the one of the next coin', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
+
+      await helpers.setCurrencyRateSource({
+        code: 'BTC',
+        payload: { rateSource: 'coingecko', config: { coinId: 'ethereum' }, logoUrl: OTHER_LOGO },
+      });
+
+      expect(await logoOf({ code: 'BTC' })).toBe(OTHER_LOGO);
+    });
+
+    it('keeps the current logo when the save names none', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
+
+      const response = await helpers.setCurrencyRateSource({
+        code: 'BTC',
+        payload: { rateSource: 'coingecko', config: { coinId: 'ethereum' } },
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(await logoOf({ code: 'BTC' })).toBe(LOGO);
+    });
+
+    it('keeps the logo when the currency goes back to manual or to a peg', async () => {
+      await createCurrency({ code: 'BTC' });
+      getRange.mockResolvedValue(history([[DAY_1, 10]]));
+      await saveWithLogo({ code: 'BTC', logoUrl: LOGO });
+
+      expect((await helpers.setCurrencyRateSource({ code: 'BTC', payload: { rateSource: 'manual' } })).statusCode).toBe(
+        200,
+      );
+      expect(await logoOf({ code: 'BTC' })).toBe(LOGO);
+
+      const peg = await helpers.setCurrencyRateSource({
+        code: 'BTC',
+        payload: { rateSource: 'peg', config: { pegCurrency: 'USD', factor: 2 } },
+      });
+      expect(peg.statusCode).toBe(200);
+      expect(await logoOf({ code: 'BTC' })).toBe(LOGO);
+    });
+
+    it('refuses a logo that is not an https URL and saves nothing', async () => {
+      await createCurrency({ code: 'BTC' });
+      await helpers.updateCustomCurrency({ code: 'BTC', payload: { logoUrl: LOGO } });
+
+      const tooLong = `https://example.com/${'a'.repeat(2049)}`;
+      for (const logoUrl of ['http://example.com/a.png', 'javascript:alert(1)', 'not a url', tooLong, 5]) {
+        const response = await saveWithLogo({ code: 'BTC', logoUrl });
+
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+
+      const entry = (await helpers.getUserCurrencies()).find((item) => item.currencyCode === 'BTC');
+      expect(entry?.rateSource).toBe('manual');
+      expect(entry?.logoUrl).toBe(LOGO);
+      expect(getRange).not.toHaveBeenCalled();
+    });
+
+    it('refuses a logo on a source other than CoinGecko', async () => {
+      await createCurrency({ code: 'BTC' });
+
+      const response = await helpers.setCurrencyRateSource({
+        code: 'BTC',
+        payload: { rateSource: 'manual', logoUrl: LOGO },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await logoOf({ code: 'BTC' })).toBeNull();
+    });
+
+    it('saves no logo on an ISO currency, which cannot take a CoinGecko source', async () => {
+      const response = await helpers.setCurrencyRateSource({
+        code: 'EUR',
+        payload: { rateSource: 'coingecko', config: { coinId: 'bitcoin' }, logoUrl: LOGO },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await logoOf({ code: 'EUR' })).toBeNull();
     });
   });
 

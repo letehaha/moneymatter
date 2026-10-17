@@ -197,8 +197,11 @@ const setCurrencyRateSourceImpl = async ({
   // The live-rate flag is what the rate lookup reads for an ISO currency: it follows the source.
   const liveRateUpdate = !held.currency.isCustom ? setting.rateSource === 'provider' : held.liveRateUpdate;
   const liveRateChanged = liveRateUpdate !== held.liveRateUpdate;
+  // Only a CoinGecko save carries a logo (the coin's); another source leaves the logo as it is.
+  const logoUpdate = body.rateSource === 'coingecko' && body.logoUrl !== undefined ? { logoUrl: body.logoUrl } : {};
   await held.update({
     ...setting,
+    ...logoUpdate,
     rateSourceHeadersEncrypted: encryptedHeaders,
     rateSourceHttpFingerprint: httpFingerprint,
     liveRateUpdate,

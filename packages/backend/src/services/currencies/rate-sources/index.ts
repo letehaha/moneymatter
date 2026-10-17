@@ -3,7 +3,7 @@ import {
   HTTP_RATE_SOURCE_MAX_HEADERS,
   type HttpUrlTemplatePlaceholderName,
 } from '@bt/shared/types';
-import { currencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode, currencyLogoUrl } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
 /** Placeholders an HTTP source URL template may hold, and a sample value for each. */
@@ -185,7 +185,12 @@ export const updateRateSourceBodySchema = z.discriminatedUnion('rateSource', [
   z.strictObject({ rateSource: z.literal('provider') }),
   z.strictObject({ rateSource: z.literal('manual') }),
   z.strictObject({ rateSource: z.literal('peg'), config: pegRateSourceConfigSchema }),
-  z.strictObject({ rateSource: z.literal('coingecko'), config: coingeckoRateSourceConfigSchema }),
+  z.strictObject({
+    rateSource: z.literal('coingecko'),
+    config: coingeckoRateSourceConfigSchema,
+    /** The picked coin's logo; absent keeps the currency's logo, `null` clears it. */
+    logoUrl: currencyLogoUrl().optional(),
+  }),
   z.strictObject({ rateSource: z.literal('http'), config: httpRateSourceConfigSchema }),
 ]);
 

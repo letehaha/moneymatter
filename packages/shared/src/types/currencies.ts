@@ -180,7 +180,12 @@ export type TestCurrencyRateSourceResponse =
 export type UpdateCurrencyRateSourceBody =
   | { rateSource: 'provider' | 'manual' }
   | { rateSource: 'peg'; config: PegRateSourceConfig }
-  | { rateSource: 'coingecko'; config: Omit<CoingeckoRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string } }
+  | {
+      rateSource: 'coingecko';
+      config: Omit<CoingeckoRateSourceConfig, 'quoteCurrency'> & { quoteCurrency?: string };
+      /** The picked coin's https logo; absent keeps the currency's logo, `null` clears it. */
+      logoUrl?: string | null;
+    }
   | { rateSource: 'http'; config: HttpRateSourceInput };
 
 /** A currency's saved rate source; the config is `null` for `provider` and `manual`. */
