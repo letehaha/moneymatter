@@ -79,38 +79,59 @@ export type AiNativeProvidersAreExhaustive = Expect<Equals<(typeof AI_NATIVE_PRO
 export interface CliAiModel {
   /** Passed to the CLI verbatim as `--model` */
   id: string;
-  /** Public catalog model (without the provider prefix) used for capability lookup */
+  /** Name shown in the model picker */
+  label: string;
+  /** Public catalog model (without the provider prefix) used for capability lookup and price */
   catalogId: string;
   isDefault?: boolean;
+  /**
+   * Ids saved before this entry took its current `id` (the pinned id an alias replaced). The CLI still
+   * accepts them, so a stored connection keeps working; the picker shows it as this entry.
+   */
+  legacyIds?: string[];
 }
 
 /**
- * Curated models per CLI provider. Neither CLI can list models without a signed-in session, so
- * the picker offers this list plus free-text entry; the create/test probe confirms the pick.
- * Aliases (`sonnet`) resolve to a `catalogId` only for capability display.
+ * Curated models per CLI provider, one entry per model. Neither CLI can list models without a
+ * signed-in session, so the picker offers this list; the create/test probe confirms the pick.
+ * Claude entries use the CLI aliases (`sonnet`), which follow the newest model of their family, so a
+ * CLI bump needs no change here; `catalogId` only drives capability and price display.
  */
 export const CLI_AI_MODELS: Record<AICliProvider, CliAiModel[]> = {
   [AI_PROVIDER.claudeCode]: [
-    { id: 'sonnet', catalogId: 'claude-sonnet-5-5', isDefault: true },
-    { id: 'opus', catalogId: 'claude-opus-5-5' },
-    { id: 'haiku', catalogId: 'claude-haiku-5-5' },
-    { id: 'fable', catalogId: 'claude-fable-5-1' },
-    { id: 'claude-sonnet-5-5', catalogId: 'claude-sonnet-5-5' },
-    { id: 'claude-opus-5-5', catalogId: 'claude-opus-5-5' },
-    { id: 'claude-haiku-5-5', catalogId: 'claude-haiku-5-5' },
-    { id: 'claude-fable-5-1', catalogId: 'claude-fable-5-1' },
+    {
+      id: 'sonnet',
+      label: 'Claude Sonnet 5.5',
+      catalogId: 'claude-sonnet-5-5',
+      isDefault: true,
+      legacyIds: ['claude-sonnet-5-5'],
+    },
+    { id: 'opus', label: 'Claude Opus 5.5', catalogId: 'claude-opus-5-5', legacyIds: ['claude-opus-5-5'] },
+    { id: 'haiku', label: 'Claude Haiku 5.5', catalogId: 'claude-haiku-5-5', legacyIds: ['claude-haiku-5-5'] },
+    { id: 'fable', label: 'Claude Fable 5.1', catalogId: 'claude-fable-5-1', legacyIds: ['claude-fable-5-1'] },
   ],
   [AI_PROVIDER.codex]: [
-    { id: 'gpt-6-astra', catalogId: 'gpt-6-astra', isDefault: true },
-    { id: 'gpt-6-sol', catalogId: 'gpt-6-sol' },
-    { id: 'gpt-6-luna', catalogId: 'gpt-6-luna' },
-    { id: 'gpt-5.6-sol', catalogId: 'gpt-5.6-sol' },
-    { id: 'gpt-5.6-terra', catalogId: 'gpt-5.6-terra' },
-    { id: 'gpt-5.6-luna', catalogId: 'gpt-5.6-luna' },
-    { id: 'gpt-5.5', catalogId: 'gpt-5.5' },
-    { id: 'gpt-5.3-codex', catalogId: 'gpt-5.3-codex' },
+    { id: 'gpt-6-astra', label: 'GPT-6 Astra', catalogId: 'gpt-6-astra', isDefault: true },
+    { id: 'gpt-6-sol', label: 'GPT-6 Sol', catalogId: 'gpt-6-sol' },
+    { id: 'gpt-6-luna', label: 'GPT-6 Luna', catalogId: 'gpt-6-luna' },
+    { id: 'gpt-5.6-sol', label: 'GPT-5.6 Sol', catalogId: 'gpt-5.6-sol' },
+    { id: 'gpt-5.6-terra', label: 'GPT-5.6 Terra', catalogId: 'gpt-5.6-terra' },
+    { id: 'gpt-5.6-luna', label: 'GPT-5.6 Luna', catalogId: 'gpt-5.6-luna' },
+    { id: 'gpt-5.5', label: 'GPT-5.5', catalogId: 'gpt-5.5' },
+    { id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex', catalogId: 'gpt-5.3-codex' },
   ],
 };
+
+/** The curated entry a stored model id belongs to, whether it is the current id or a legacy one. */
+export function findCliAiModel({
+  provider,
+  model,
+}: {
+  provider: AICliProvider;
+  model: string;
+}): CliAiModel | undefined {
+  return CLI_AI_MODELS[provider].find((candidate) => candidate.id === model || candidate.legacyIds?.includes(model));
+}
 
 export const MAX_AI_CONNECTIONS = 20;
 

@@ -85,6 +85,7 @@ describe('toCatalogKey', () => {
   it.each([
     ['sonnet', 'anthropic/claude-sonnet-5-5'],
     ['fable', 'anthropic/claude-fable-5-1'],
+    ['opus', 'anthropic/claude-opus-5-5'],
     ['claude-opus-5-5', 'anthropic/claude-opus-5-5'],
     ['a-model-typed-by-hand', 'anthropic/a-model-typed-by-hand'],
   ])('looks the Claude Code model %s up under Anthropic as %s', (model, key) => {
