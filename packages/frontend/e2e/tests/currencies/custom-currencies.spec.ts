@@ -80,4 +80,26 @@ test.describe('Custom currencies', () => {
       'Decimals can change only while no account, transaction or template uses USDT',
     );
   });
+
+  test('pegging USDT to USD removes the missing-rate badge and values the transaction in the base currency', async ({
+    page,
+  }) => {
+    await page.goto('/settings/currencies');
+
+    await page.getByRole('button', { name: new RegExp(NAME) }).click();
+    await page.getByTestId('rate-source-tabs').locator('[data-value="peg"]').click();
+
+    await page.getByTestId('rate-source-peg-currency').locator('button[role="combobox"]').click();
+    await page.getByRole('option', { name: /^USD ·/ }).click();
+    await page.locator('input[data-testid="rate-source-peg-factor"]').fill('1');
+    await page.getByTestId('rate-source-save').click();
+    await waitForSuccessToast({ page });
+
+    await page.goto('/transactions');
+
+    // 12.345678 USDT at a 1:1 peg is 12.35 in the USD base currency.
+    await expect(page.getByText(FORMATTED_AMOUNT).first()).toBeVisible();
+    await expect(page.getByTestId('missing-rate-badge')).toHaveCount(0);
+    await expect(page.getByText(/12\.35/).first()).toBeVisible();
+  });
 });

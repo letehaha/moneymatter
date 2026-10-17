@@ -94,7 +94,6 @@
 
 <script setup lang="ts">
 import { createCustomCurrency, updateCustomCurrency } from '@/api/currencies';
-import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -111,12 +110,13 @@ import {
   CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH,
   type CurrencyMeta,
 } from '@bt/shared/types';
-import { useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useMutation } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import type { EditableCustomCurrency } from './types';
+import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 
 const props = defineProps<{
   /** The currency being edited; unset creates a new one. */
@@ -139,7 +139,6 @@ interface CustomCurrencyForm {
 
 const { t } = useI18n();
 const { addSuccessNotification } = useNotificationCenter();
-const queryClient = useQueryClient();
 const currenciesStore = useCurrenciesStore();
 const { currencies, isoCurrencies } = storeToRefs(currenciesStore);
 
@@ -224,15 +223,7 @@ const previewLabel = computed(() => {
   return formatUIAmount(PREVIEW_AMOUNT, { currency: code, meta });
 });
 
-const refreshAfterChange = async () => {
-  await currenciesStore.loadCurrencies({ force: true });
-  // Accounts and transactions carry the currency's metadata (symbol, name), so they refetch too.
-  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.allAccounts });
-  queryClient.invalidateQueries({
-    predicate: (query) => query.queryKey.includes(VUE_QUERY_GLOBAL_PREFIXES.transactionChange),
-  });
-  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates });
-};
+const refreshAfterChange = useRefreshAfterCurrencyChange();
 
 const { mutate, isPending } = useMutation({
   mutationFn: () => {

@@ -108,7 +108,16 @@
 
     <CollapsibleContent v-if="!isBase" scroll-into-view>
       <div class="border-border/60 bg-muted/20 border-t px-4 py-4">
+        <RateSourceEditor
+          v-if="isCustomCurrency"
+          :currency="currency"
+          :is-form-disabled="isFormDisabled"
+          @submit="handleSubmit"
+          @changed="refreshAfterRateChange"
+          @trigger-disabled="isFormDisabled = $event"
+        />
         <ExchangeRateForm
+          v-else
           :currency="currency"
           :is-form-disabled="isFormDisabled"
           @submit="handleSubmit"
@@ -172,6 +181,8 @@ import { computed, ref } from 'vue';
 
 import CustomCurrencyDialog from './custom-currency-dialog.vue';
 import ExchangeRateForm from './currency-row/exchange-rate-form.vue';
+import RateSourceEditor from './rate-source/rate-source-editor.vue';
+import { useRefreshAfterCurrencyChange } from './use-refresh-after-currency-change';
 import DeleteCurrency from './currency-row/delete-currency.vue';
 import SetBaseCurrency from './currency-row/set-base-currency.vue';
 import { CurrencyWithExchangeRate, EditableCustomCurrency } from './types';
@@ -190,6 +201,7 @@ const emit = defineEmits<{
 const currenciesStore = useCurrenciesStore();
 const { baseCurrency } = storeToRefs(currenciesStore);
 const queryClient = useQueryClient();
+const refreshAfterCurrencyChange = useRefreshAfterCurrencyChange();
 const { getCurrencyName } = useCurrencyName();
 
 const isFormDisabled = ref(false);
@@ -232,13 +244,19 @@ const onTriggerClick = () => {
   emit('toggle');
 };
 
-// Mirror the previous dialog-close refresh: pull fresh currencies and re-run the
-// exchange-rates query so the row reflects the saved rate (or vanishes on delete).
+// A saved rate changes the amounts valued by it, so a custom currency refreshes everything that
+// carries its base-currency amounts; an ISO currency only its own rates.
+const refreshAfterRateChange = async () => {
+  if (isCustomCurrency.value) {
+    await refreshAfterCurrencyChange();
+    return;
+  }
+  await currenciesStore.loadCurrencies({ force: true });
+  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates });
+};
+
 const handleSubmit = async () => {
   emit('submit');
-  await currenciesStore.loadCurrencies({ force: true });
-  queryClient.invalidateQueries({
-    queryKey: VUE_QUERY_CACHE_KEYS.exchangeRates,
-  });
+  await refreshAfterRateChange();
 };
 </script>

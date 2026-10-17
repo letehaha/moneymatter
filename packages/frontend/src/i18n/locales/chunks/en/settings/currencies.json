@@ -121,6 +121,102 @@
           "createFailed": "Unexpected error. Custom currency is not added.",
           "updateFailed": "Unexpected error. Custom currency is not updated."
         }
+      },
+      "rateSource": {
+        "title": "Rate source",
+        "description": "Where the rate of {code} comes from. The rate values {code} in your base currency.",
+        "sources": {
+          "manual": "Manual",
+          "peg": "Peg",
+          "coingecko": "CoinGecko",
+          "http": "HTTP"
+        },
+        "sourceDescriptions": {
+          "manual": "Enter the rates yourself, each from the date it starts to apply.",
+          "peg": "Price {code} as a multiple of another currency, such as a stablecoin pegged to the dollar.",
+          "coingecko": "Daily prices of a coin from CoinGecko.",
+          "http": "Daily prices from a JSON endpoint you provide."
+        },
+        "saveButton": "Save source",
+        "successfullySaved": "Rate source saved",
+        "quoteLabel": "Price currency",
+        "quotePlaceholder": "Select a currency",
+        "manual": {
+          "notSaved": "Save this source to enter rates by hand.",
+          "effectiveFromLabel": "Effective from",
+          "datedHint": "A rate applies from its date until the next one. A transaction uses the rate in effect on its own date.",
+          "removeButton": "Remove a rate",
+          "removeTitle": "Remove a rate?",
+          "removeDescription": "Removes the rate of {code} that starts on the chosen date. The days it covered fall back to the earlier rate, or to no rate if there is none.",
+          "removeDateLabel": "Rate starting on",
+          "removeConfirm": "Remove rate",
+          "successfullyRemoved": "Rate removed",
+          "errors": {
+            "removeFailed": "Unexpected error. The rate is not removed."
+          }
+        },
+        "peg": {
+          "currencyLabel": "Pegged to",
+          "currencyPlaceholder": "Select a currency",
+          "factorLabel": "Factor",
+          "factorPlaceholder": "1",
+          "hint": "The rate of {code} is the factor times the rate of the currency it is pegged to. Nothing is stored: the rate is worked out whenever it is needed."
+        },
+        "coingecko": {
+          "searchLabel": "Find a coin",
+          "searchPlaceholder": "Search by name or symbol, for example Bitcoin",
+          "noResults": "No coins found",
+          "selected": "Selected coin: {coin}",
+          "hint": "Saving fetches the last year of daily prices, then the rate refreshes every day. Prices are stored in the price currency and converted to your base currency when needed.",
+          "notConfigured": "CoinGecko is not available on this instance. Ask the administrator to set COINGECKO_API_KEY to enable it.",
+          "searchFailed": "Could not search CoinGecko. Try again in a moment."
+        },
+        "http": {
+          "urlLabel": "URL",
+          "urlPlaceholder": "https://api.example.com/price?id={'{code}'}&vs={'{quote}'}&on={'{date}'}",
+          "urlHint": "Placeholders: {date} is the day as yyyy-mm-dd, {code} is the currency code and {quote} is the price currency.",
+          "pathLabel": "JSON path",
+          "pathPlaceholder": "data.rates[0].price",
+          "headersTitle": "Request headers",
+          "headersHint": "Usually an API key. Values are stored encrypted and are never shown again.",
+          "headerNameLabel": "Header name",
+          "headerNamePlaceholder": "X-Api-Key",
+          "headerValueLabel": "Value",
+          "headerValuePlaceholder": "Enter the value",
+          "addHeader": "Add header",
+          "removeHeader": "Remove header",
+          "savedHeaders": "Saved headers: {names}. Their values are hidden.",
+          "headersWillBeRemoved": "The saved headers will be removed when you save.",
+          "replaceHeaders": "Replace headers",
+          "clearHeaders": "Remove headers",
+          "keepHeaders": "Keep saved headers",
+          "testButton": "Test",
+          "testSuccess": "On {date}, 1 {code} = {rate} {quote}",
+          "testUnavailable": "The test could not run. Try again in a moment.",
+          "failures": {
+            "blocked": "This address is not allowed: private and internal addresses are blocked.",
+            "https_required": "The address must use https.",
+            "timeout": "The endpoint took too long to answer.",
+            "network": "Could not reach the endpoint.",
+            "http_status": "The endpoint answered with an error status.",
+            "too_large": "The response is too large.",
+            "not_json": "The response is not JSON.",
+            "path_not_found": "The JSON path points at nothing in the response.",
+            "not_a_number": "The value at the JSON path is not a positive number.",
+            "headers_unreadable": "The saved headers could not be read. Enter them again."
+          }
+        },
+        "errors": {
+          "pegCurrencyRequired": "Select the currency to peg to",
+          "factorInvalid": "Enter a number above 0",
+          "coinRequired": "Search and select a coin",
+          "urlRequired": "Enter the URL",
+          "urlInvalid": "Use an http(s) URL; the only placeholders are the day, the code and the quote",
+          "pathRequired": "Enter the JSON path",
+          "headerNameRequired": "Give every header a name",
+          "headerNameDuplicate": "Header names must be unique",
+          "saveFailed": "Unexpected error. The rate source is not saved."
+        }
       }
     }
   }
