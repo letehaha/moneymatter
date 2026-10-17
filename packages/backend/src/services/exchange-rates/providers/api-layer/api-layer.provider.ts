@@ -125,8 +125,8 @@ export class ApiLayerProvider extends BaseExchangeRateProvider {
           continue;
         }
 
-        // Filter to only currencies we have in our database
-        const allCurrencies = await Currencies.findAll();
+        // Filter to the ISO currencies we have in our database; user-defined codes never receive market rates
+        const allCurrencies = await Currencies.findAll({ where: { isCustom: false } });
         const validCurrencyCodes = new Set(allCurrencies.map((c) => c.code));
 
         const filteredRates: Record<string, number> = {};

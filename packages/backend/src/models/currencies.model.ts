@@ -92,6 +92,10 @@ export default class Currencies extends Model {
  * feeds the exchange-rate sync's coverage checks: treating them as expected would make full coverage
  * permanently unreachable (no provider quotes them), defeating the ApiLayer early-stop and making
  * the coverage alerts fire on every sync.
+ *
+ * User-defined codes (`isCustom`) are excluded for the same reason, and because they are private to
+ * their owners: a custom code must never be listed to other users or counted as a provider-coverage
+ * target.
  */
 export const NON_CURRENCY_CODES = [
   'XAU', // Gold
@@ -120,6 +124,7 @@ export const NON_CURRENCY_CODES = [
 export const getAllCurrencies = async () => {
   const currencies = await Currencies.findAll({
     where: {
+      isCustom: false,
       isDisabled: { [Op.not]: true },
       code: { [Op.notIn]: NON_CURRENCY_CODES },
     },

@@ -234,3 +234,37 @@ export function expectBaseCurrencyChangeFailed(
     throw new Error(`Expected failed base-currency change, got state="${status.state}".`);
   }
 }
+
+/**
+ * Insert a user-defined currency straight into the shared `Currencies` table, the way the custom-currency
+ * endpoint will. The table survives the between-test truncation, so every test that calls this must pair it
+ * with {@link removeCustomCurrencyRow}.
+ */
+export async function seedCustomCurrencyRow({
+  code,
+  name = code,
+  digits = 8,
+  createdByUserId = null,
+}: {
+  code: string;
+  name?: string;
+  digits?: number;
+  createdByUserId?: number | null;
+}) {
+  return Currencies.create({
+    code,
+    currency: name,
+    digits,
+    number: null,
+    isCustom: true,
+    createdByUserId,
+  });
+}
+
+/** Remove a row created by {@link seedCustomCurrencyRow} together with the rows that reference it. */
+export async function removeCustomCurrencyRow({ code }: { code: string }) {
+  await ExchangeRates.destroy({ where: { quoteCode: code } });
+  await ExchangeRates.destroy({ where: { baseCode: code } });
+  await UsersCurrencies.destroy({ where: { currencyCode: code } });
+  await Currencies.destroy({ where: { code, isCustom: true } });
+}

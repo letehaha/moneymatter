@@ -134,8 +134,10 @@ export async function initializeHistoricalRates(): Promise<void> {
     const globalStartDate = exchangeRateProviderRegistry.getEarliestHistoricalDate() ?? FALLBACK_START_DATE;
     const globalEndDate = new Date();
 
-    // Get all valid currency codes from the database
+    // Get all valid currency codes from the database. User-defined codes are private to their owners and have
+    // no market rate, so they are never ingested.
     const validCurrencies = await Currencies.findAll({
+      where: { isCustom: false },
       attributes: ['code'],
       raw: true,
     });
