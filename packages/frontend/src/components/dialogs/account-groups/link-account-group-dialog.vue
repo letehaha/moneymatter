@@ -1,18 +1,16 @@
 <script setup lang="ts">
-import { loadAccountGroups } from '@/api/account-groups';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { AccountGroups } from '@/common/types/models';
 import GroupLogo from '@/components/common/group-logo.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import {
   useAccountGroupForAccount,
+  useAccountGroupPaths,
   useLinkAccountToGroup,
   useUnlinkAccountFromGroup,
 } from '@/composable/data-queries/account-groups';
 import { cn } from '@/lib/utils';
 import { AccountModel } from '@bt/shared/types';
-import { useQuery } from '@tanstack/vue-query';
 import { CheckIcon, CircleSlashIcon, InfoIcon, PlusIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -30,11 +28,7 @@ const isOpen = ref(false);
 
 const selectedGroup = ref<AccountGroups | null>(null);
 
-const { data } = useQuery({
-  queryFn: () => loadAccountGroups(),
-  queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
-  staleTime: Infinity,
-});
+const { entries: groupEntries } = useAccountGroupPaths();
 
 const accountId = ref(props.account.id);
 
@@ -58,7 +52,9 @@ watch(
   { immediate: true },
 );
 
-const hasBankGroups = computed(() => (data.value ?? []).some((group) => group.bankDataProviderConnectionId != null));
+const hasBankGroups = computed(() =>
+  groupEntries.value.some(({ group }) => group.bankDataProviderConnectionId != null),
+);
 
 const groupMeta = (group: AccountGroups): string => {
   const parts = [t('dialogs.linkAccountGroup.accountsCount', { count: group.accounts.length })];
@@ -129,7 +125,7 @@ const rowClass = (isSelected: boolean) =>
       </UiButton>
 
       <UiButton
-        v-for="group of data ?? []"
+        v-for="{ group, path } of groupEntries"
         :key="group.id"
         variant="ghost"
         :class="rowClass(group.id === selectedGroup?.id)"
@@ -139,7 +135,7 @@ const rowClass = (isSelected: boolean) =>
         <GroupLogo :group="group" size="size-7" variant="tile" />
         <span class="min-w-0 flex-1 text-left">
           <span class="flex items-center gap-2">
-            <span class="truncate text-sm font-medium">{{ group.name }}</span>
+            <span class="truncate text-sm font-medium">{{ path }}</span>
             <span
               v-if="group.id === currentSelection?.id"
               class="bg-success/20 text-success-text shrink-0 rounded px-1.5 py-px text-[10px] font-semibold tracking-wide uppercase"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAccountGroupsQuery } from '@/composable/data-queries/account-groups';
+import { useAccountGroupPaths } from '@/composable/data-queries/account-groups';
 import type { RecordId } from '@bt/shared/types';
 import { computed } from 'vue';
 
@@ -8,9 +8,9 @@ import RefMultiSelect from './ref-multi-select.vue';
 defineProps<{ modelValue: RecordId[]; placeholder: string }>();
 const emit = defineEmits<{ 'update:modelValue': [value: RecordId[]] }>();
 
-const { data: groups } = useAccountGroupsQuery();
+const { entries } = useAccountGroupPaths();
 
-const options = computed(() => (groups.value ?? []).map((group) => ({ id: group.id as RecordId, name: group.name })));
+const options = computed(() => entries.value.map(({ group, path }) => ({ id: group.id as RecordId, name: path })));
 </script>
 
 <template>

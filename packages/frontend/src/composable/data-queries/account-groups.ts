@@ -8,9 +8,10 @@ import {
 } from '@/api/account-groups';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { AccountGroups } from '@/common/types/models';
+import { listAccountGroupPaths } from '@/components/sidebar/accounts-view/helpers/list-account-group-paths';
 import { type EntityLogoPayload } from '@bt/shared/types';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { MaybeRefOrGetter, Ref, toValue } from 'vue';
+import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue';
 
 import { useInvalidatingMutation } from './use-invalidating-mutation';
 
@@ -20,6 +21,18 @@ export const useAccountGroupsQuery = () =>
     queryFn: () => loadAccountGroups(),
     staleTime: Infinity,
   });
+
+/**
+ * The account groups as a pick list: parents followed by their subgroups, each labelled with its
+ * full path (`Banks / Indonesia`) so same-named subgroups of different parents stay distinguishable.
+ */
+export const useAccountGroupPaths = () => {
+  const query = useAccountGroupsQuery();
+  const entries = computed(() => listAccountGroupPaths({ groups: query.data.value ?? [] }));
+  const pathById = computed(() => new Map(entries.value.map((entry) => [entry.group.id, entry.path])));
+
+  return { ...query, entries, pathById };
+};
 
 export const useAccountGroupForAccount = (
   accountId: Ref<string>,
