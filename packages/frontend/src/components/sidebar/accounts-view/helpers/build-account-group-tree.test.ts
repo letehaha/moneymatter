@@ -163,6 +163,20 @@ describe('groupHasAccounts', () => {
   });
 });
 
+describe('collectGroupAccounts', () => {
+  it('counts an account linked to both a parent and its subgroup once', () => {
+    const shared = makeAccount({ id: 'shared' });
+    const tree = buildAccountGroupTree({
+      groups: [
+        makeApiGroup({ id: 'a', name: 'A', accounts: [shared] }),
+        makeApiGroup({ id: 'b', name: 'B', parentGroupId: 'a', accounts: [shared, makeAccount({ id: 'x' })] }),
+      ],
+    });
+
+    expect(collectGroupAccounts({ group: tree[0]! }).map((account) => account.id)).toEqual(['shared', 'x']);
+  });
+});
+
 describe('zero-balance hiding on the built tree', () => {
   it('judges visibility per subtree', () => {
     const tree = buildAccountGroupTree({ groups: makeOwnerApiResponse({ zeroKazakhstan: true }) });

@@ -2,6 +2,7 @@
 import GroupLogo from '@/components/common/group-logo.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { collectGroupAccounts } from '@/components/sidebar/accounts-view/helpers/account-totals';
 import GroupTotal from '@/components/sidebar/accounts-view/group-total.vue';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
 import { cn } from '@/lib/utils';
@@ -18,22 +19,26 @@ import DeleteGroup from './group-row/delete-group.vue';
 import EditGroupForm from './group-row/edit-group-form.vue';
 import GroupAccountRow from './group-row/group-account-row.vue';
 
-const props = defineProps<{ item: AccountGroupListItem; expanded: boolean }>();
+const props = defineProps<{ item: AccountGroupListItem; expandedGroupId: string | null }>();
 
-const emit = defineEmits<{ toggle: [] }>();
+const emit = defineEmits<{ toggle: [id: string] }>();
 
 const { t } = useI18n();
 const router = useRouter();
 
 const group = computed(() => props.item.group);
 const isBankLinked = computed(() => !!group.value.bankDataProviderConnectionId);
-const accountsCount = computed(() => group.value.accounts.length);
+// Single-open accordion shared by the whole tree: this row's panel is open when it holds the id.
+const expanded = computed(() => props.expandedGroupId === group.value.id);
+const ownAccountsCount = computed(() => group.value.accounts.length);
+// The whole subtree: a parent whose accounts all sit in subgroups still reads as populated.
+const subtreeAccounts = computed(() => collectGroupAccounts({ group: group.value }));
+const accountsCount = computed(() => subtreeAccounts.value.length);
 
 const { baseCurrencyCode, sumBaseBalance } = useBaseBalanceTotals();
 
-// Own accounts only: this list is flat, so a nested group renders as its own row and
-// rolling its accounts up into the parent here would count them twice.
-const total = computed(() => sumBaseBalance({ accounts: group.value.accounts }));
+// A parent's total rolls up its subgroups, so it matches what the nested rows add up to.
+const total = computed(() => sumBaseBalance({ accounts: subtreeAccounts.value }));
 
 const { accounts: allAccounts } = storeToRefs(useAccountsStore());
 
@@ -56,17 +61,9 @@ const subtitle = computed(() => {
         )
       : t('settings.accountGroups.row.noAccounts');
 
-  const parts = [
-    accountsCount.value > 0
-      ? t('settings.accountGroups.row.accountsCount', { count: accountsCount.value }, accountsCount.value)
-      : emptyLabel,
-  ];
-
-  if (props.item.parentName) {
-    parts.push(t('settings.accountGroups.row.inParent', { name: props.item.parentName }));
-  }
-
-  return parts.join(' · ');
+  return accountsCount.value > 0
+    ? t('settings.accountGroups.row.accountsCount', { count: accountsCount.value }, accountsCount.value)
+    : emptyLabel;
 });
 </script>
 
@@ -81,7 +78,7 @@ const subtitle = computed(() => {
           'hover:bg-muted/40 focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
         )
       "
-      @click="emit('toggle')"
+      @click="emit('toggle', group.id)"
     >
       <div class="flex min-w-0 items-center gap-3">
         <GroupLogo :group="group" size="size-9" variant="tile" />
@@ -135,7 +132,7 @@ const subtitle = computed(() => {
       </h4>
 
       <div
-        v-if="accountsCount"
+        v-if="ownAccountsCount"
         class="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-lg border"
       >
         <GroupAccountRow v-for="account in group.accounts" :key="account.id" :account="account" :group-id="group.id" />
@@ -162,6 +159,22 @@ const subtitle = computed(() => {
 
         <DeleteGroup :group="group" />
       </div>
+    </div>
+
+    <!-- Subgroups nest under their parent; each is a full row, so edit and delete work the same. -->
+    <div
+      v-if="item.children.length"
+      class="border-border/60 divide-border/60 ml-4 divide-y border-t border-l"
+      role="group"
+      :aria-label="group.name"
+    >
+      <GroupListRow
+        v-for="child in item.children"
+        :key="child.group.id"
+        :item="child"
+        :expanded-group-id="expandedGroupId"
+        @toggle="emit('toggle', $event)"
+      />
     </div>
   </div>
 </template>

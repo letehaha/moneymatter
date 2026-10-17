@@ -29,7 +29,7 @@ const groupsList = computed(() => buildAccountGroupList({ groups: accountGroups.
 // Single-open accordion: expanding a row collapses whichever other row was open.
 const expandedGroupId = ref<string | null>(null);
 
-const toggleExpanded = ({ id }: { id: string }) => {
+const toggleExpanded = (id: string) => {
   expandedGroupId.value = expandedGroupId.value === id ? null : id;
 };
 </script>
@@ -68,8 +68,8 @@ const toggleExpanded = ({ id }: { id: string }) => {
         v-for="item in groupsList"
         :key="item.group.id"
         :item="item"
-        :expanded="expandedGroupId === item.group.id"
-        @toggle="toggleExpanded({ id: item.group.id })"
+        :expanded-group-id="expandedGroupId"
+        @toggle="toggleExpanded"
       />
     </div>
 

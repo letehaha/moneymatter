@@ -79,13 +79,20 @@ export const flattenAccounts = ({ groups }: { groups: AccountGroups[] }): Record
     {} as Record<string, AccountModel>,
   );
 
-/** Flatten a group's own accounts plus every descendant group's accounts. */
+/**
+ * Flatten a group's own accounts plus every descendant group's accounts. An account linked to
+ * both a group and one of its subgroups appears once, so counts and totals don't double it.
+ */
 export const collectGroupAccounts = ({ group }: { group: AccountGroups }): AccountModel[] => {
-  const accounts = [...group.accounts];
-  for (const child of group.childGroups) {
-    accounts.push(...collectGroupAccounts({ group: child }));
-  }
-  return accounts;
+  const byId = new Map<string, AccountModel>();
+  const visit = (node: AccountGroups) => {
+    for (const account of node.accounts) {
+      if (!byId.has(account.id)) byId.set(account.id, account);
+    }
+    node.childGroups.forEach(visit);
+  };
+  visit(group);
+  return [...byId.values()];
 };
 
 /** Whether a group holds any account at all, directly or in a descendant group. */
