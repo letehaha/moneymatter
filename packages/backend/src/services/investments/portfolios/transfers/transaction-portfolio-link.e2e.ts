@@ -261,9 +261,7 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
       expect((response.body as unknown as { response: { message: string } }).response.message).toContain('USDT');
 
       // Nothing was written: no transfer, no cash on the portfolio, the transaction is untouched.
-      expect(await helpers.getPortfolioBalance({ portfolioId: portfolio.id, currencyCode: 'USDT', raw: true })).toEqual(
-        [],
-      );
+      expect(await helpers.getPortfolioBalance({ portfolioId: portfolio.id, raw: true })).toEqual([]);
       const stored = await helpers.getTransactionById({ id: tx!.id, raw: true });
       expect(stored!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
     });
