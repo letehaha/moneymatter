@@ -17,12 +17,32 @@ import {
   submitCode,
   sweepCliAuthSessions,
 } from './cli-auth-sessions';
+import type { LoginFlow } from './login-flow';
 import { DEFAULT_LOGIN_TIMEOUTS } from './login-flow';
 
 jest.mock('@i18n/index', () => ({
   t: ({ key, variables }: { key: string; variables?: Record<string, unknown> }) =>
     variables ? `${key} ${JSON.stringify(variables)}` : key,
 }));
+
+/** Every flow the registry started, with `cancel` wrapped so tests can see that it ran. */
+const mockStartedFlows: LoginFlow[] = [];
+
+jest.mock('./claude-setup-token-flow', () => {
+  const actual = jest.requireActual<typeof import('./claude-setup-token-flow')>('./claude-setup-token-flow');
+
+  return {
+    ...actual,
+    startClaudeSetupTokenFlow: (...args: Parameters<typeof actual.startClaudeSetupTokenFlow>) => {
+      const flow = actual.startClaudeSetupTokenFlow(...args);
+      const cancel = jest.fn(flow.cancel);
+
+      mockStartedFlows.push({ ...flow, cancel });
+
+      return { ...flow, cancel };
+    },
+  };
+});
 
 jest.mock('@js/utils/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
@@ -66,6 +86,7 @@ describe('cli auth sessions', () => {
   useFakeAiClis();
 
   afterEach(() => {
+    mockStartedFlows.length = 0;
     jest.restoreAllMocks();
     jest.clearAllMocks();
     resetCliAuthSessions();
@@ -184,8 +205,13 @@ describe('cli auth sessions', () => {
     it('cancel removes the session and kills the login', async () => {
       const started = await startSession({ userId: 1, provider: claudeCode });
 
+      const flow = mockStartedFlows[0]!;
+
       cancelSession({ userId: 1, sessionId: started.id });
 
+      expect(flow.cancel).toHaveBeenCalledTimes(1);
+      // The login ended: its PTY exited and the temp dir is cleaned up before the result settles.
+      await expect(flow.result).rejects.toThrow();
       expect(() => getSession({ userId: 1, sessionId: started.id })).toThrow(NotFoundError);
       expect(() => cancelSession({ userId: 1, sessionId: started.id })).toThrow(NotFoundError);
     });
@@ -233,8 +259,30 @@ describe('cli auth sessions', () => {
       jest.spyOn(Date, 'now').mockReturnValue(realNow + 16 * 60 * 1000);
 
       expect(getSession({ userId: 1, sessionId: waiting.id }).status).toBe('expired');
+      const waitingFlow = mockStartedFlows[0]!;
+
+      expect(waitingFlow.cancel).toHaveBeenCalledTimes(1);
+      await expect(waitingFlow.result).rejects.toThrow();
       expect(getSession({ userId: 2, sessionId: finished }).status).toBe('expired');
       expect(() => peekCredential({ userId: 2, sessionId: finished, provider: codex })).toThrow(ValidationError);
+    });
+
+    it('gives a finished sign-in a fresh TTL, so a slow approval still leaves time to save', async () => {
+      const realNow = Date.now();
+      const now = jest.spyOn(Date, 'now');
+      const started = await startSession({ userId: 1, provider: claudeCode });
+
+      now.mockReturnValue(realNow + 14 * 60 * 1000);
+      submitCode({ userId: 1, sessionId: started.id, code: 'good-code' });
+      const done = await waitForStatus({ userId: 1, sessionId: started.id, status: 'succeeded' });
+
+      expect(new Date(done.expiresAt).getTime()).toBe(realNow + 29 * 60 * 1000);
+
+      now.mockReturnValue(realNow + 28 * 60 * 1000);
+      expect(peekCredential({ userId: 1, sessionId: started.id, provider: claudeCode }).keyEncrypted).toBeTruthy();
+
+      now.mockReturnValue(realNow + 30 * 60 * 1000);
+      expect(() => peekCredential({ userId: 1, sessionId: started.id, provider: claudeCode })).toThrow(ValidationError);
     });
 
     it('the sweep drops sessions that stayed expired past the retention period', async () => {
