@@ -8,6 +8,7 @@ import {
   NotificationType,
 } from '@bt/shared/types';
 import Notifications from '@models/notifications.model';
+import { enqueueWebPushAfterCommit } from '@services/web-push/enqueue-web-push';
 
 import { withTransaction } from '../common/with-transaction';
 
@@ -40,6 +41,8 @@ export const createNotification = withTransaction(
       priority,
       expiresAt,
     });
+
+    enqueueWebPushAfterCommit({ notificationIds: [notification.id] });
 
     return notification.toJSON();
   },
