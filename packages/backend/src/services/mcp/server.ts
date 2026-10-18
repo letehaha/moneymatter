@@ -87,6 +87,10 @@ import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
 import { registerGetBaseCurrencyChangeStatus } from './tools/get-base-currency-change-status';
 import { registerGetBudget } from './tools/get-budget';
+import { registerGetBudgetPlanPeriod } from './tools/get-budget-plan-period';
+import { registerGetBudgetPlanScheduled } from './tools/get-budget-plan-scheduled';
+import { registerGetBudgetPlanSuggestionContext } from './tools/get-budget-plan-suggestion-context';
+import { registerGetBudgetPlanTrends } from './tools/get-budget-plan-trends';
 import { registerGetBudgetSpendingStats } from './tools/get-budget-spending-stats';
 import { registerGetBudgetTransactions } from './tools/get-budget-transactions';
 import { registerGetBudgets } from './tools/get-budgets';
@@ -152,6 +156,10 @@ import { registerLinkTransactionToPortfolio } from './tools/link-transaction-to-
 import { registerLinkTransactionsToSubscription } from './tools/link-transactions-to-subscription';
 import { registerLinkTransactionsToVentureEvent } from './tools/link-transactions-to-venture-event';
 import { registerLinkTransfer } from './tools/link-transfer';
+import { registerListBudgetPlanPeriods } from './tools/list-budget-plan-periods';
+import { registerListBudgetPlans } from './tools/list-budget-plans';
+import { registerListBudgetSuggestions } from './tools/list-budget-suggestions';
+import { registerListCustomCurrencies } from './tools/list-custom-currencies';
 import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers';
 import { registerListStuckPendingTransactions } from './tools/list-stuck-pending-transactions';
 import { registerListSubscriptionCandidates } from './tools/list-subscription-candidates';
@@ -546,6 +554,14 @@ export function createMcpServer(): McpServer {
   registerCreateVehicle(server);
   registerUpdateVehicle(server);
   registerDeleteVehicle(server);
+
+  // Budget plans
+  registerListBudgetPlans(server);
+  registerGetBudgetPlanSuggestionContext(server);
+  registerListBudgetPlanPeriods(server);
+  registerGetBudgetPlanPeriod(server);
+  registerGetBudgetPlanScheduled(server);
+  registerGetBudgetPlanTrends(server);
 
   return server;
 }
