@@ -84,7 +84,7 @@
     },
     {
       "name": "bulk_delete_transactions",
-      "description": "Permanently delete many transactions by ids or by filters. Irreversible. Requires finance:delete scope."
+      "description": "Permanently delete many transactions by ids or by filters (at least one filter is required). Irreversible. Requires finance:delete scope."
     },
     {
       "name": "get_transaction_links",
@@ -429,6 +429,26 @@
     {
       "name": "unlink_refund",
       "description": "Remove a refund link between two transactions. Requires finance:write scope."
+    },
+    {
+      "name": "get_refunds",
+      "description": "Read refund links: the refunds of one transaction, one refund pair, or a paged list filtered by category, account and type. Each link carries both transactions with their payee."
+    },
+    {
+      "name": "get_refund_recommendations",
+      "description": "Suggest up to 5 transactions a refund could be linked to (opposite type, last 6 months, within 50 in the base currency), for a saved transaction or for form data."
+    },
+    {
+      "name": "get_transfer_recommendations",
+      "description": "Suggest up to 7 transactions that could be the other leg of a transfer (opposite type, other account, within 10% and 14 days), for a saved transaction or for form data."
+    },
+    {
+      "name": "list_transfer_suggestions",
+      "description": "Scan a period for expenses that look like one leg of a transfer, each with up to 4 scored candidate incomes. Reads only; refused while a base-currency change runs."
+    },
+    {
+      "name": "dismiss_transfer_suggestion",
+      "description": "Dismiss a suggested expense/income pair as not a transfer, so scans stop offering it. Requires finance:write scope."
     },
     {
       "name": "assign_tags_to_transaction",

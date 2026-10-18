@@ -35,6 +35,8 @@ const LOCK_EXEMPT_IN_ONE_BRANCH = ['change_base_currency'];
 const LOCK_GUARDED_READ_TOOLS = [
   // POST /automations/preview
   'preview_transaction_automation',
+  // POST /transactions/transfer-recommendations/bulk-scan: a scan that writes nothing
+  'list_transfer_suggestions',
 ];
 
 // The only tools that may pass `allowReadOnly: true` to `requireScope`: each sits on a route in
