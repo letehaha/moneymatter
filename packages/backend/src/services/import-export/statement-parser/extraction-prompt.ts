@@ -36,7 +36,10 @@ RULES:
    a decimal comma. A line without a usable amount will be discarded.
 5. The output separator is a COMMA, whatever the source uses. Never join several source
    columns into one output field with the source's own separator.
-6. Date format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS (include time if available in the statement)
+6. Date format: YYYY-MM-DD or YYYY-MM-DD HH:MM:SS (include time if available in the statement,
+   writing :00 for the seconds when the source shows only hours and minutes). Always a
+   four-digit year with the month and day as numbers, whatever the source prints:
+   "18 Oct 2026" and "18.10.2026" are both written 2026-10-18.
 7. Type: E for expense, I for income
 8. Confidence: number 0-100 (integer)
 9. Empty value = field not available (just leave empty between commas)
@@ -141,17 +144,21 @@ const TYPE_PATTERN = /^[EI]$/i;
 const EXTERNAL_REFERENCE_MAX_LENGTH = 255;
 
 /**
- * The prompt asks for `YYYY-MM-DD HH:MM:SS`, but the model copies full ISO timestamps out
- * of app exports, so the `T` separator, fractional seconds and a zone are all tolerated.
+ * The prompt asks for `YYYY-MM-DD HH:MM:SS`, but a banking app shows "00:46", so seconds are
+ * optional. The model also copies full ISO timestamps out of app exports, so the `T`
+ * separator, fractional seconds and a zone are all tolerated.
  */
-const DATE_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{2}:\d{2}:\d{2})(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+const DATE_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 
 /** Drops sub-second precision and any zone designator, so the wall clock stands as the statement wrote it. */
 function normalizeDate({ date }: { date: string }): string | null {
   const match = DATE_PATTERN.exec(date);
   if (!match) return null;
 
-  return match[2] ? `${match[1]} ${match[2]}` : match[1]!;
+  const [, day, hours, minutes, seconds] = match;
+  if (hours === undefined) return day!;
+
+  return `${day} ${hours.padStart(2, '0')}:${minutes}:${seconds ?? '00'}`;
 }
 
 interface TransactionFields {
