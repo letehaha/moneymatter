@@ -137,6 +137,7 @@ page.
 | `unlink_transactions_from_subscription`  | Remove transaction links from a subscription (`finance:write`)                                                   |
 | `get_upcoming_subscription_payments`     | Upcoming payments sorted by next expected date                                                                   |
 | `get_subscriptions_summary`              | Monthly/yearly cost, expected monthly income, and per-direction active counts in base currency                   |
+| `get_category_transaction_count`         | Count transactions filed under a category; check before `delete_category`                                        |
 | `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
 | `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
 | `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
@@ -151,6 +152,11 @@ page.
 | `update_transaction_automation`          | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
 | `delete_transaction_automation`          | Permanently delete an automation rule (`finance:delete`)                                                         |
 | `reorder_transaction_automations`        | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
+| `apply_transaction_automation`           | Run a saved rule on up to 500 existing transactions; non-matching ids are skipped (`finance:write`)              |
+| `get_transaction_templates`              | List transaction templates: named presets for new transactions                                                   |
+| `create_transaction_template`            | Create a template: type, account, pinned amount, category, payee, tags (`finance:write`)                         |
+| `update_transaction_template`            | Change a template; `null` clears a field, `tagIds` replaces the tags (`finance:write`)                           |
+| `delete_transaction_template`            | Permanently delete a template (`finance:delete`)                                                                 |
 | `create_transaction`                     | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
 | `update_transaction`                     | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
 | `delete_transaction`                     | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |

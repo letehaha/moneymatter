@@ -103,8 +103,12 @@
       "description": "List spending and income categories, including custom user-defined categories."
     },
     {
+      "name": "get_category_transaction_count",
+      "description": "Count the transactions filed under a category (planned and split lines included); check it before delete_category."
+    },
+    {
       "name": "get_tags",
-      "description": "List transaction tags used to annotate spending."
+      "description": "List transaction tags used to annotate spending. Pass tagId to read one tag with its description."
     },
     {
       "name": "get_trackers",
@@ -312,7 +316,7 @@
     },
     {
       "name": "get_transaction_groups",
-      "description": "List all transaction groups with aggregate counts and date ranges, or with full embedded transactions."
+      "description": "List all transaction groups with aggregate counts and date ranges, or with full embedded transactions. Pass groupId to read one group with its transactions."
     },
     {
       "name": "create_transaction_group",
@@ -524,7 +528,7 @@
     },
     {
       "name": "delete_category",
-      "description": "Permanently delete a category; supply replaceWithCategoryId to reassign linked transactions. Requires finance:delete scope."
+      "description": "Permanently delete a category; supply replaceWithCategoryId to reassign linked transactions (see get_category_transaction_count). Requires finance:delete scope."
     },
     {
       "name": "create_tag",
@@ -617,6 +621,26 @@
     {
       "name": "reorder_transaction_automations",
       "description": "Set the top-to-bottom evaluation order of the automation rules. Requires the full current id set. Requires finance:write scope."
+    },
+    {
+      "name": "apply_transaction_automation",
+      "description": "Run one saved automation rule on up to 500 existing transactions; ids that no longer match are skipped. Requires finance:write scope."
+    },
+    {
+      "name": "get_transaction_templates",
+      "description": "List transaction templates: named presets for filling new transactions."
+    },
+    {
+      "name": "create_transaction_template",
+      "description": "Create a transaction template (named preset: type, account, pinned amount, category, payee, tags). Requires finance:write scope."
+    },
+    {
+      "name": "update_transaction_template",
+      "description": "Update a transaction template; null clears a field and tagIds replaces the tag set. Requires finance:write scope."
+    },
+    {
+      "name": "delete_transaction_template",
+      "description": "Permanently delete a transaction template. Requires finance:delete scope."
     },
     {
       "name": "list_venture_platforms",
