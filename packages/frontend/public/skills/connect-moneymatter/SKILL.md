@@ -137,6 +137,14 @@ page.
 | `unlink_transactions_from_subscription` | Remove transaction links from a subscription (`finance:write`)                                                   |
 | `get_upcoming_subscription_payments`    | Upcoming payments sorted by next expected date                                                                   |
 | `get_subscriptions_summary`             | Monthly/yearly cost, expected monthly income, and per-direction active counts in base currency                   |
+| `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
+| `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
+| `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
+| `preview_subscription_payment`           | What paying a period would book (converted amount, already-recorded payments); changes nothing                   |
+| `pay_subscription_period`                | Mark a period paid by linking a transaction or booking a new one (`finance:write`)                               |
+| `skip_subscription_period`               | Skip a billing cycle without paying it (`finance:write`)                                                         |
+| `unlink_subscription_period_transaction` | Detach a period's transaction; the transaction and the paid status stay (`finance:write`)                        |
+| `revert_subscription_period`             | Undo a paid or skipped period; may delete the transaction the app booked (`finance:write` + `finance:delete`)    |
 | `get_transaction_automations`           | List automation rules with evaluation order, enabled state, match counts, and pause reason                       |
 | `preview_transaction_automation`        | Dry-run automation conditions against recent transactions; nothing is modified                                   |
 | `create_transaction_automation`         | Create a rule that sets category, tags, payee, or note on matching transactions (`finance:write`)                |
@@ -173,7 +181,15 @@ page.
 | `create_tag`                            | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                            | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                            | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
-| `set_exchange_rates`                    | Set the user's own rates for pairs, each with its opposite (`finance:write`)                                     |
+| `list_custom_currencies`                 | List the user's custom currencies (code, name, symbol, decimals, logo)                                           |
+| `create_custom_currency`                 | Define a custom currency such as points or a token; needs a rate source for base values (`finance:write`)        |
+| `update_custom_currency`                 | Change a custom currency's name, decimals, symbol, or logo; decimals locked while in use (`finance:write`)       |
+| `delete_custom_currency`                 | Delete an unused custom currency and its exchange rates (`finance:delete`)                                       |
+| `search_coingecko_coins`                 | Find the CoinGecko coinId for a rate source by name or symbol                                                    |
+| `get_currency_rate_history`              | A custom currency's stored rates, latest first, with the rate in force                                           |
+| `set_currency_rate_source`               | Set a currency's rate source (provider, manual, peg, CoinGecko, HTTP); re-values saved rows (`finance:write`)    |
+| `test_currency_rate_source`              | Preview an HTTP rate source for one day without saving it (`finance:write`)                                      |
+| `set_exchange_rates` | Set the user's own rates for pairs, each with its opposite; custom pairs take a date (`finance:write`) |
 | `delete_exchange_rates`                 | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                                 |
 | `get_user_currencies`                   | Base currency, held currencies with their rate settings, and today's rates to the base                           |
 | `list_supported_currencies`             | Every ISO currency the app supports (code, name, decimals)                                                       |
@@ -205,6 +221,12 @@ multi-currency data.
   get back the budget, group and subscription links it lost. Bank rows pending for over
   a week show up in `list_stuck_pending_transactions` with the booked row that likely
   replaced each.
+- A subscription period is one billing cycle. `get_subscription_periods` lists them,
+  `preview_subscription_payment` shows what a payment would book, and
+  `pay_subscription_period` either links an existing transaction or books a new one.
+  `revert_subscription_period` undoes a payment and also deletes a transaction the app
+  booked for it, so it needs `finance:delete` in that case; a transaction you linked
+  yourself is kept.
 - File bytes never travel through MCP tool arguments. To attach a receipt, call
   `create_attachment_upload_url`, then POST each file as the raw request body to
   the returned `url` with the returned headers plus the file's URI-encoded name in
