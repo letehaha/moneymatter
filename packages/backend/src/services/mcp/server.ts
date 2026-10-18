@@ -64,6 +64,7 @@ import { registerDeleteBudgetLine } from './tools/delete-budget-line';
 import { registerDeleteBudgetPlan } from './tools/delete-budget-plan';
 import { registerDeleteBudgetPlanGroup } from './tools/delete-budget-plan-group';
 import { registerDeleteBudgetPlanLine } from './tools/delete-budget-plan-line';
+import { registerDeleteBudgetPlanLineGoal } from './tools/delete-budget-plan-line-goal';
 import { registerDeleteCategory } from './tools/delete-category';
 import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
 import { registerDeleteGoal } from './tools/delete-goal';
@@ -203,12 +204,15 @@ import { registerSearchCoingeckoCoins } from './tools/search-coingecko-coins';
 import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
 import { registerSetBudgetPlanAccounts } from './tools/set-budget-plan-accounts';
+import { registerSetBudgetPlanAssignment } from './tools/set-budget-plan-assignment';
 import { registerSetBudgetPlanLayout } from './tools/set-budget-plan-layout';
+import { registerSetBudgetPlanLineGoal } from './tools/set-budget-plan-line-goal';
 import { registerSetCurrencyRateSource } from './tools/set-currency-rate-source';
 import { registerSetExchangeRates } from './tools/set-exchange-rates';
 import { registerSetPayeesCategorizationMode } from './tools/set-payees-categorization-mode';
 import { registerSetPortfolioTransferAdjustment } from './tools/set-portfolio-transfer-adjustment';
 import { registerSkipSubscriptionPeriod } from './tools/skip-subscription-period';
+import { registerSnoozeBudgetPlanLineGoal } from './tools/snooze-budget-plan-line-goal';
 import { registerSplitTransaction } from './tools/split-transaction';
 import { registerToggleSubscriptionActive } from './tools/toggle-subscription-active';
 import { registerTransferAccountToPortfolio } from './tools/transfer-account-to-portfolio';
@@ -594,6 +598,10 @@ export function createMcpServer(): McpServer {
   registerArchiveBudgetPlanLine(server);
   registerAddSuggestedBudgetPlanLines(server);
   registerSetBudgetPlanLayout(server);
+  registerSetBudgetPlanLineGoal(server);
+  registerDeleteBudgetPlanLineGoal(server);
+  registerSnoozeBudgetPlanLineGoal(server);
+  registerSetBudgetPlanAssignment(server);
 
   return server;
 }
