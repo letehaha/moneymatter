@@ -18,18 +18,18 @@ const CONFIDENCE_WEIGHT_AMOUNT = 50;
 const CONFIDENCE_WEIGHT_DATE = 30;
 const CONFIDENCE_WEIGHT_CURRENCY = 20;
 
-export interface BulkScanMatch {
+interface BulkScanMatch {
   transaction: Transactions;
   confidence: number;
   ai?: TransferPairReview;
 }
 
-export interface BulkScanItem {
+interface BulkScanItem {
   expense: Transactions;
   matches: BulkScanMatch[];
 }
 
-export interface BulkScanResult {
+interface BulkScanResult {
   total: number;
   items: BulkScanItem[];
 }

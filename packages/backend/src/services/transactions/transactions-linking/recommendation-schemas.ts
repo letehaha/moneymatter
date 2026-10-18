@@ -29,8 +29,6 @@ export const recommendationQuerySchema = z
     },
   );
 
-export type RecommendationQuery = z.infer<typeof recommendationQuerySchema>;
-
 export const bulkScanBodySchema = withDateOrder(
   z.object({
     ...dateRange({ required: true, precision: 'datetime', offset: true }),
