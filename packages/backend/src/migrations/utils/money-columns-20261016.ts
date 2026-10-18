@@ -10,7 +10,7 @@
 export const MONEY_COLUMN_PRECISION_20261016 = 36;
 export const MONEY_COLUMN_SCALE_20261016 = 18;
 
-export interface MoneyColumnSpec {
+interface MoneyColumnSpec {
   /** SQL table name. */
   table: string;
   /** SQL column name. */
