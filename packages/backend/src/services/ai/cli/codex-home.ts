@@ -1,79 +1,202 @@
 import { logger } from '@js/utils/logger';
 import { createHash } from 'crypto';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, rm, writeFile } from 'fs/promises';
 import path from 'path';
 
-import { withTempDir } from './cli-workdir';
+import { createPrivateDir } from './cli-workdir';
 
 const AUTH_FILE = 'auth.json';
 
 const sha256 = ({ content }: { content: string }) => createHash('sha256').update(content).digest('hex');
 
-async function readRefreshedAuth({ authPath, loadedHash }: { authPath: string; loadedHash: string }) {
+type SaveCredential = (params: { credential: string; loadedRevision: string }) => Promise<{ revision: string } | null>;
+
+/** The one `CODEX_HOME` the concurrent runs of a connection share, and what is needed to write it back. */
+interface SharedHome {
+  dir: string;
+  authPath: string;
+  refs: number;
+  /** The stored ciphertext the next write-back is compared against; advances with every successful save. */
+  revision: string;
+  /** Hash of the last `auth.json` content that is stored (or deliberately not stored), so it is saved once. */
+  settledHash: string;
+  save: SaveCredential | undefined;
+}
+
+const homes = new Map<string, SharedHome>();
+const locks = new Map<string, Promise<unknown>>();
+
+/**
+ * In-process mutex per connection. It makes materialize, write-back and removal atomic with respect to
+ * each other, so a run that arrives while the last one is saving and deleting waits and then starts
+ * from what was saved. It does not span processes: a second backend process keeps its own home.
+ */
+async function withConnectionLock<T>({ key, run }: { key: string; run: () => Promise<T> }): Promise<T> {
+  const previous = locks.get(key) ?? Promise.resolve();
+  const result = previous.then(run);
+  const tail = result.then(
+    () => undefined,
+    () => undefined,
+  );
+
+  locks.set(key, tail);
+
+  try {
+    return await result;
+  } finally {
+    if (locks.get(key) === tail) locks.delete(key);
+  }
+}
+
+async function createSharedHome({
+  key,
+  load,
+  save,
+}: {
+  key: string;
+  load: () => Promise<{ credential: string; revision: string }>;
+  save: SaveCredential | undefined;
+}): Promise<SharedHome> {
+  const { credential, revision } = await load();
+  const dir = await createPrivateDir({ prefix: 'mm-codex-home' });
+  const authPath = path.join(dir, AUTH_FILE);
+
+  try {
+    await writeFile(authPath, credential, { mode: 0o600 });
+    await writeFile(path.join(dir, 'config.toml'), 'cli_auth_credentials_store = "file"\n', { mode: 0o600 });
+  } catch (error) {
+    await rm(dir, { recursive: true, force: true });
+    throw error;
+  }
+
+  const home: SharedHome = { dir, authPath, refs: 0, revision, settledHash: sha256({ content: credential }), save };
+
+  homes.set(key, home);
+
+  return home;
+}
+
+/**
+ * Saves `auth.json` when Codex rewrote it since the last save. A failed save is logged and retried by
+ * the next run to end; a skipped swap (the stored credential changed meanwhile) is final, the stored
+ * one wins. It never throws: a run's own outcome must not depend on the write-back.
+ */
+async function persistIfChanged({ key, home }: { key: string; home: SharedHome }): Promise<void> {
   let content: string;
 
   try {
-    content = await readFile(authPath, 'utf8');
+    content = await readFile(home.authPath, 'utf8');
   } catch {
-    return null;
+    return;
   }
 
-  if (sha256({ content }) === loadedHash) return null;
+  const hash = sha256({ content });
+
+  if (hash === home.settledHash) return;
 
   try {
     JSON.parse(content);
   } catch {
     logger.warn('Codex rewrote auth.json into something that is not JSON, keeping the stored credential');
 
-    return null;
+    return;
   }
 
-  return content;
+  if (!home.save) {
+    home.settledHash = hash;
+
+    return;
+  }
+
+  try {
+    const saved = await home.save({ credential: content, loadedRevision: home.revision });
+
+    home.settledHash = hash;
+    if (saved) home.revision = saved.revision;
+  } catch (error) {
+    logger.error('Failed to persist a refreshed CLI credential', {
+      connectionKey: key,
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+}
+
+async function acquireHome({
+  key,
+  load,
+  save,
+}: {
+  key: string;
+  load: () => Promise<{ credential: string; revision: string }>;
+  save: SaveCredential | undefined;
+}): Promise<SharedHome> {
+  return withConnectionLock({
+    key,
+    run: async () => {
+      const home = homes.get(key) ?? (await createSharedHome({ key, load, save }));
+
+      home.refs += 1;
+
+      return home;
+    },
+  });
+}
+
+function releaseHome({ key, home }: { key: string; home: SharedHome }): Promise<void> {
+  return withConnectionLock({
+    key,
+    run: async () => {
+      await persistIfChanged({ key, home });
+
+      home.refs -= 1;
+
+      if (home.refs > 0) return;
+
+      homes.delete(key);
+
+      try {
+        await rm(home.dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
+      } catch (error) {
+        logger.warn('Could not remove a Codex home directory', {
+          connectionKey: key,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
+    },
+  });
 }
 
 /**
- * Materializes a stored Codex `auth.json` into a private `CODEX_HOME` for one run. Codex refreshes
- * its tokens while it works and rewrites the file, so afterwards (also when `run` threw: a refresh
- * followed by a rate limit or a kill is still a refresh) a changed file is handed to `onRefreshed`
- * before the directory is removed. The run's own error takes precedence over a write-back failure.
+ * Runs `run` against the connection's shared `CODEX_HOME`, the way `codex` sessions on a laptop share
+ * `~/.codex`. Codex rotates its refresh token, so parallel runs on separate copies would race and the
+ * loser would be signed out; on one `auth.json` a refresh by one run is what the others read.
+ *
+ * The first run materializes `auth.json` from `load` (the stored credential) into a private 0700
+ * directory; later runs reuse it; the last one to end removes it. Every run that ends saves a changed
+ * `auth.json` first (also when it failed: a refresh followed by a rate limit is still a refresh), as
+ * a compare-and-swap through `save`, so a refresh survives the process dying while others still run.
+ * Only the home is shared; callers keep their own working directories.
+ *
+ * The state is per process. A second backend process would materialize its own copy of the same
+ * stored credential and the two could race on a rotating refresh token; the compare-and-swap keeps
+ * the stored credential consistent, but the losing process's runs can fail until the next sign-in.
  */
 export async function withCodexHome<T>({
-  authJson,
-  onRefreshed,
+  connectionKey,
+  load,
+  save,
   run,
 }: {
-  authJson: string;
-  onRefreshed: (params: { authJson: string }) => Promise<void>;
+  connectionKey: string;
+  load: () => Promise<{ credential: string; revision: string }>;
+  save?: SaveCredential;
   run: (params: { codexHome: string }) => Promise<T>;
 }): Promise<T> {
-  return withTempDir({
-    prefix: 'mm-codex-home',
-    run: async ({ dir }) => {
-      const authPath = path.join(dir, AUTH_FILE);
+  const home = await acquireHome({ key: connectionKey, load, save });
 
-      await writeFile(authPath, authJson, { mode: 0o600 });
-      await writeFile(path.join(dir, 'config.toml'), 'cli_auth_credentials_store = "file"\n', { mode: 0o600 });
-
-      const loadedHash = sha256({ content: authJson });
-      let outcome: { ok: true; value: T } | { ok: false; error: unknown };
-
-      try {
-        outcome = { ok: true, value: await run({ codexHome: dir }) };
-      } catch (error) {
-        outcome = { ok: false, error };
-      }
-
-      try {
-        const refreshed = await readRefreshedAuth({ authPath, loadedHash });
-
-        if (refreshed !== null) await onRefreshed({ authJson: refreshed });
-      } catch (error) {
-        if (outcome.ok) throw error;
-      }
-
-      if (!outcome.ok) throw outcome.error;
-
-      return outcome.value;
-    },
-  });
+  try {
+    return await run({ codexHome: home.dir });
+  } finally {
+    await releaseHome({ key: connectionKey, home });
+  }
 }

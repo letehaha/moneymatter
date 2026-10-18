@@ -106,13 +106,14 @@ describe('replaceConnectionCredential', () => {
   it('writes the refreshed credential while the row still holds the loaded ciphertext', async () => {
     const row = stubSettingsRow({ connections: [buildConnection({ id: 'a', keyEncrypted: 'loaded' })] });
 
-    await replaceConnectionCredential({
+    const swapped = await replaceConnectionCredential({
       userId: USER_ID,
       connectionId: 'a',
       expectedKeyEncrypted: 'loaded',
       keyEncrypted: 'refreshed',
     });
 
+    expect(swapped).toBe(true);
     expect(row.save).toHaveBeenCalledTimes(1);
     expect(row.settings.ai.connections[0]!.keyEncrypted).toBe('refreshed');
     expect(logger.warn).not.toHaveBeenCalled();
@@ -121,13 +122,14 @@ describe('replaceConnectionCredential', () => {
   it('keeps a credential a re-authentication wrote in between and logs it without key material', async () => {
     const row = stubSettingsRow({ connections: [buildConnection({ id: 'a', keyEncrypted: 'reauthenticated' })] });
 
-    await replaceConnectionCredential({
+    const swapped = await replaceConnectionCredential({
       userId: USER_ID,
       connectionId: 'a',
       expectedKeyEncrypted: 'loaded',
       keyEncrypted: 'refreshed',
     });
 
+    expect(swapped).toBe(false);
     expect(row.settings.ai.connections[0]!.keyEncrypted).toBe('reauthenticated');
     expect(logger.warn).toHaveBeenCalledWith(expect.any(String), { userId: USER_ID, connectionId: 'a' });
   });
@@ -135,13 +137,14 @@ describe('replaceConnectionCredential', () => {
   it('does not resurrect a connection deleted mid-run', async () => {
     const row = stubSettingsRow({ connections: [buildConnection({ id: 'other', keyEncrypted: 'loaded' })] });
 
-    await replaceConnectionCredential({
+    const swapped = await replaceConnectionCredential({
       userId: USER_ID,
       connectionId: 'a',
       expectedKeyEncrypted: 'loaded',
       keyEncrypted: 'refreshed',
     });
 
+    expect(swapped).toBe(false);
     expect(row.save).not.toHaveBeenCalled();
     expect(row.settings.ai.connections.map((connection) => connection.id)).toEqual(['other']);
   });
@@ -198,11 +201,25 @@ describe('connectionCredentialSource', () => {
     findOneMock.mockResolvedValue(row);
 
     const source = connectionCredentialSource({ userId: USER_ID, connectionId: 'a' });
-    await source.save!({ credential: '{"tokens":{"refresh_token":"rt-2"}}', loadedRevision: loaded });
+    const saved = await source.save!({ credential: '{"tokens":{"refresh_token":"rt-2"}}', loadedRevision: loaded });
 
     const stored = row.settings.ai.connections[0]!.keyEncrypted!;
 
     expect(stored).not.toBe(loaded);
     expect(decryptToken(stored)).toBe('{"tokens":{"refresh_token":"rt-2"}}');
+    expect(saved).toEqual({ revision: stored });
+  });
+
+  it('reports a skipped swap as null, so the caller keeps its revision', async () => {
+    const row = {
+      settings: { ai: { connections: [buildConnection({ id: 'a', keyEncrypted: 'changed-meanwhile' })] } },
+      save: jest.fn(async () => undefined),
+    };
+    findOneMock.mockResolvedValue(row);
+
+    const source = connectionCredentialSource({ userId: USER_ID, connectionId: 'a' });
+
+    expect(await source.save!({ credential: AUTH_JSON, loadedRevision: 'loaded' })).toBeNull();
+    expect(row.settings.ai.connections[0]!.keyEncrypted).toBe('changed-meanwhile');
   });
 });

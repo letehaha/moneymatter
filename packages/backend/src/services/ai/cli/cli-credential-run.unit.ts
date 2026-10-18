@@ -1,5 +1,5 @@
 import { AI_PROVIDER } from '@bt/shared/types';
-import { describe, expect, it, jest } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import { readFile, writeFile } from 'fs/promises';
 import path from 'path';
 
@@ -21,6 +21,8 @@ const deferred = <T = void>() => {
 const sourceFor = ({ key, credentials }: { key: string; credentials: { current: string } }) => {
   const save = jest.fn<NonNullable<CliCredentialSource['save']>>(async ({ credential }) => {
     credentials.current = credential;
+
+    return { revision: `rev:${credential}` };
   });
   const load = jest.fn(async () => ({ credential: credentials.current, revision: `rev:${credentials.current}` }));
 
@@ -28,6 +30,13 @@ const sourceFor = ({ key, credentials }: { key: string; credentials: { current: 
 };
 
 describe('runWithCliCredential', () => {
+  const savedCap = process.env.AI_CLI_MAX_CONCURRENT_RUNS;
+
+  afterEach(() => {
+    if (savedCap === undefined) delete process.env.AI_CLI_MAX_CONCURRENT_RUNS;
+    else process.env.AI_CLI_MAX_CONCURRENT_RUNS = savedCap;
+  });
+
   it('loads the credential and hands it to a Claude run', async () => {
     const { source } = sourceFor({ key: 'claude-basic', credentials: { current: 'sk-ant-oat01-token' } });
 
@@ -54,39 +63,28 @@ describe('runWithCliCredential', () => {
     expect(content).toBe('{"a":1}');
   });
 
-  it('loads only after the slot is acquired, so a queued caller sees the refreshed credential', async () => {
+  it('loads the credential for a Codex call that starts after the previous ones ended', async () => {
     const credentials = { current: '{"refresh":"one"}' };
-    const { source, load, save } = sourceFor({ key: 'codex-queue', credentials });
-    const gate = deferred();
-    const seen: string[] = [];
+    const { source, load } = sourceFor({ key: 'codex-sequential', credentials });
+    let seen = '';
 
-    const first = runWithCliCredential({
+    await runWithCliCredential({
+      provider: AI_PROVIDER.codex,
+      source,
+      timeoutMs: 1000,
+      run: ({ codexHome }) => writeFile(path.join(codexHome!, 'auth.json'), '{"refresh":"two"}'),
+    });
+    await runWithCliCredential({
       provider: AI_PROVIDER.codex,
       source,
       timeoutMs: 1000,
       run: async ({ codexHome }) => {
-        await gate.promise;
-        await writeFile(path.join(codexHome!, 'auth.json'), '{"refresh":"two"}');
+        seen = await readFile(path.join(codexHome!, 'auth.json'), 'utf8');
       },
     });
-    const second = runWithCliCredential({
-      provider: AI_PROVIDER.codex,
-      source,
-      timeoutMs: 1000,
-      run: async ({ credential }) => {
-        seen.push(credential);
-      },
-    });
-
-    await new Promise((resolve) => setImmediate(resolve));
-    expect(load).toHaveBeenCalledTimes(1);
-
-    gate.resolve();
-    await Promise.all([first, second]);
 
     expect(load).toHaveBeenCalledTimes(2);
-    expect(save).toHaveBeenCalledTimes(1);
-    expect(seen).toEqual(['{"refresh":"two"}']);
+    expect(seen).toBe('{"refresh":"two"}');
   });
 
   it('passes the loaded revision to save', async () => {
@@ -121,6 +119,7 @@ describe('runWithCliCredential', () => {
   });
 
   it('releases the slot only after save resolved', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const credentials = { current: '{"v":1}' };
     const { source } = sourceFor({ key: 'codex-save-order', credentials });
     const saveGate = deferred();
@@ -133,6 +132,8 @@ describe('runWithCliCredential', () => {
       await saveGate.promise;
       credentials.current = credential;
       events.push('save:end');
+
+      return { revision: `rev:${credential}` };
     });
 
     const first = runWithCliCredential({
@@ -179,6 +180,7 @@ describe('runWithCliCredential', () => {
   });
 
   it('runs beforeRelease after save and before the next queued caller loads', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const credentials = { current: '{"v":1}' };
     const { source, load } = sourceFor({ key: 'codex-before-release', credentials });
     const events: string[] = [];
@@ -186,6 +188,8 @@ describe('runWithCliCredential', () => {
     source.save.mockImplementation(async ({ credential }) => {
       events.push('save');
       credentials.current = credential;
+
+      return { revision: credential };
     });
     load.mockImplementation(async () => {
       events.push('load');

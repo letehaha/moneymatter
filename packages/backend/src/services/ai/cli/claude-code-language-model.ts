@@ -288,7 +288,7 @@ export function createClaudeCodeLanguageModel({
       timeoutMs: runOptions?.timeoutMs ?? getFeatureRunTimeoutMs(),
       maxWaitMs: runOptions?.maxWaitMs,
       beforeRelease: runOptions?.beforeRelease,
-      run: ({ credential, signal }) => runClaude({ model, credential, prompt, schema, signal }),
+      run: ({ credential, signal }) => runClaude({ model, credential: credential!, prompt, schema, signal }),
     });
   };
 

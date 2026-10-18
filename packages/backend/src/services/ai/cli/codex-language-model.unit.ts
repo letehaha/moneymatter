@@ -62,6 +62,8 @@ const buildSource = ({ initial = authJson({ refreshToken: 'rt-0' }) }: { initial
   const save = jest.fn<NonNullable<CliCredentialSource['save']>>(async ({ credential }) => {
     store.credential = credential;
     store.revision += 1;
+
+    return { revision: `rev-${store.revision}` };
   });
 
   const source: CliCredentialSource = { connectionKey: `codex-model-test-${counter}`, load, save };

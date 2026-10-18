@@ -1,8 +1,8 @@
 import { describe, expect, it } from '@jest/globals';
-import { stat, writeFile } from 'fs/promises';
+import { rm, stat, writeFile } from 'fs/promises';
 import path from 'path';
 
-import { withTempDir } from './cli-workdir';
+import { createPrivateDir, withTempDir } from './cli-workdir';
 
 describe('withTempDir', () => {
   it('creates a private directory and removes it afterwards', async () => {
@@ -38,5 +38,22 @@ describe('withTempDir', () => {
     ).rejects.toThrow('boom');
 
     await expect(stat(seenDir)).rejects.toMatchObject({ code: 'ENOENT' });
+  });
+});
+
+describe('createPrivateDir', () => {
+  it('creates a distinct 0700 directory per call and leaves removal to the caller', async () => {
+    const first = await createPrivateDir({ prefix: 'mm-test' });
+    const second = await createPrivateDir({ prefix: 'mm-test' });
+
+    try {
+      expect(first).not.toBe(second);
+      expect(path.basename(first)).toMatch(/^mm-test-/);
+      expect((await stat(first)).mode & 0o777).toBe(0o700);
+      expect((await stat(second)).mode & 0o777).toBe(0o700);
+    } finally {
+      await rm(first, { recursive: true, force: true });
+      await rm(second, { recursive: true, force: true });
+    }
   });
 });
