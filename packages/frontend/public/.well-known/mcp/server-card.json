@@ -115,6 +115,10 @@
       "description": "Retrieve active and historical trackers with their limits, categories, and lines."
     },
     {
+      "name": "get_tracker",
+      "description": "Read one tracker with its date range, limit, categories and stats: income, expense, balance and how much of the limit is used."
+    },
+    {
       "name": "create_tracker",
       "description": "Create a new tracker with an optional spending limit, date range, linked categories, and smart tracking."
     },
@@ -165,6 +169,10 @@
     {
       "name": "reject_tracker_suggestions",
       "description": "Reject smart-tracking suggestions; AI-linked or accepted ones are also unlinked from the tracker."
+    },
+    {
+      "name": "get_tracker_transactions",
+      "description": "List the transactions a category tracker counts, newest first, with one entry per matching split; manual trackers use search_transactions with trackerIds."
     },
     {
       "name": "get_spending_by_categories",
@@ -525,6 +533,22 @@
     {
       "name": "delete_tag",
       "description": "Permanently delete a tag and unlink it from all transactions. Requires finance:delete scope."
+    },
+    {
+      "name": "get_tag_reminders",
+      "description": "List tag reminders (notify when a tag total passes an amount, or when a tag has no transaction in a period); optionally for one tag or one reminder."
+    },
+    {
+      "name": "create_tag_reminder",
+      "description": "Create a reminder on a tag: an amount threshold in the base currency or an existence check, scheduled or real-time. Requires finance:write scope."
+    },
+    {
+      "name": "update_tag_reminder",
+      "description": "Update a tag reminder; null clears the schedule, isEnabled pauses it. Requires finance:write scope."
+    },
+    {
+      "name": "delete_tag_reminder",
+      "description": "Permanently delete a tag reminder. Requires finance:delete scope."
     },
     {
       "name": "get_payees",

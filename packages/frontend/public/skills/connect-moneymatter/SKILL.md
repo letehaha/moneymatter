@@ -82,6 +82,8 @@ page.
 | `accept_tracker_suggestions`             | Accept pending suggestions, linking their transactions (`finance:write`)                                         |
 | `reject_tracker_suggestions`             | Reject suggestions; also unlinks AI-linked or accepted ones (`finance:write`)                                    |
 | `get_category_transaction_count`         | Count transactions filed under a category; check before `delete_category`                                        |
+| `get_budget`                             | One tracker with its limit, categories and stats (income, expense, balance, limit used)                          |
+| `get_budget_transactions`                | Transactions a category tracker counts, newest first; manual trackers use `search_transactions` with `budgetIds` |
 | `get_spending_by_categories`             | Aggregate spending by category over a range                                                                      |
 | `get_cash_flow`                          | Income vs expenses over a range                                                                                  |
 | `get_balance_history`                    | Time-series of account balances                                                                                  |
@@ -183,6 +185,10 @@ page.
 | `create_tag`                             | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                             | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                             | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+| `get_tag_reminders`                      | Tag reminders: amount threshold or existence check, scheduled or real-time; filter by tag or reminder            |
+| `create_tag_reminder`                    | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`)              |
+| `update_tag_reminder`                    | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`)                           |
+| `delete_tag_reminder`                    | Permanently delete a tag reminder (`finance:delete`)                                                             |
 | `get_payees`                             | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
 | `get_payee`                              | One payee with its aliases and stats                                                                             |
 | `create_payee`                           | Create a payee (`finance:write`)                                                                                 |
