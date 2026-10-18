@@ -47,6 +47,7 @@ import { registerCreateTransaction } from './tools/create-transaction';
 import { registerCreateTransactionAutomation } from './tools/create-transaction-automation';
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
 import { registerCreateTransactionTemplate } from './tools/create-transaction-template';
+import { registerCreateVehicle } from './tools/create-vehicle';
 import { registerDeleteAccount } from './tools/delete-account';
 import { registerDeleteAccountGroup } from './tools/delete-account-group';
 import { registerDeleteAttachment } from './tools/delete-attachment';
@@ -73,6 +74,7 @@ import { registerDeleteTransactionAutomation } from './tools/delete-transaction-
 import { registerDeleteTransactionGroup } from './tools/delete-transaction-group';
 import { registerDeleteTransactionTemplate } from './tools/delete-transaction-template';
 import { registerDeleteUserCurrency } from './tools/delete-user-currency';
+import { registerDeleteVehicle } from './tools/delete-vehicle';
 import { registerDeleteVentureEventLink } from './tools/delete-venture-event-link';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
 import { registerDismissNotification } from './tools/dismiss-notification';
@@ -140,6 +142,7 @@ import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-su
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
 import { registerGetUserSettings } from './tools/get-user-settings';
+import { registerGetVehicles } from './tools/get-vehicles';
 import { registerGetVentureContributions } from './tools/get-venture-contributions';
 import { registerIgnorePayeeName } from './tools/ignore-payee-name';
 import { registerKeepPendingAsBooked } from './tools/keep-pending-as-booked';
@@ -217,6 +220,7 @@ import { registerUpdateTransactionGroup } from './tools/update-transaction-group
 import { registerUpdateTransactionTemplate } from './tools/update-transaction-template';
 import { registerUpdateUserCurrency } from './tools/update-user-currency';
 import { registerUpdateUserSettings } from './tools/update-user-settings';
+import { registerUpdateVehicle } from './tools/update-vehicle';
 import {
   registerCreateVentureDeal,
   registerCreateVentureEvent,
@@ -538,6 +542,10 @@ export function createMcpServer(): McpServer {
   registerAddLoanNote(server);
   registerLinkLoanPayments(server);
   registerUnlinkLoanPayment(server);
+  registerGetVehicles(server);
+  registerCreateVehicle(server);
+  registerUpdateVehicle(server);
+  registerDeleteVehicle(server);
 
   return server;
 }

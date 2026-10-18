@@ -199,6 +199,103 @@ describe('Vehicles', () => {
     });
   });
 
+  describe('request body validation', () => {
+    it('rejects a create body that breaks a field rule, and keeps the vehicle list empty', async () => {
+      const invalid: Record<string, unknown>[] = [
+        { purchasePrice: 0 },
+        { currencyCode: 'USD1' },
+        { currencyCode: 'ZZZ' },
+        { name: '' },
+        { make: '' },
+        { model: '' },
+        { year: new Date().getFullYear() + 2 },
+        { vehicleClass: 'spaceship' },
+        { purchaseDate: '2024/01/15' },
+        { depreciationPreset: 'turbo' },
+        { customAnnualRatePct: 101 },
+        { salvageFloorPct: -1 },
+        { salvageFloorPct: 101 },
+        { currentMileage: -1 },
+        { currentMileage: 1.5 },
+      ];
+
+      for (const patch of invalid) {
+        const response = await helpers.createVehicle({
+          ...(basePayload() as Parameters<typeof helpers.createVehicle>[0]),
+          ...patch,
+          raw: false,
+        });
+        expect([patch, response.statusCode]).toEqual([patch, 422]);
+      }
+
+      expect(await helpers.getVehicles({ raw: true })).toEqual([]);
+    });
+
+    it('accepts a create body with every optional field, a null trim and a custom rate', async () => {
+      const vehicle = await helpers.createVehicle({
+        ...basePayload({
+          trim: 'XSE',
+          depreciationPreset: DEPRECIATION_PRESET.custom,
+          customAnnualRatePct: 12.5,
+          salvageFloorPct: 20,
+          currentMileage: 42000,
+        }),
+        raw: true,
+      });
+
+      expect(vehicle.trim).toBe('XSE');
+      expect(vehicle.customAnnualRatePct).toBe(12.5);
+      expect(vehicle.salvageFloorPct).toBe(20);
+      expect(vehicle.currentMileage).toBe(42000);
+    });
+
+    it('rejects an update body that breaks a field rule, and leaves the vehicle unchanged', async () => {
+      const vehicle = await helpers.createVehicle({ ...basePayload(), raw: true });
+
+      const invalid: Record<string, unknown>[] = [
+        { name: '' },
+        { make: '' },
+        { year: 1800 },
+        { year: new Date().getFullYear() + 2 },
+        { vehicleClass: 'spaceship' },
+        { depreciationPreset: 'turbo' },
+        { customAnnualRatePct: -1 },
+        { salvageFloorPct: 101 },
+        { currentMileage: -5 },
+        { depreciationPreset: DEPRECIATION_PRESET.custom },
+      ];
+
+      for (const patch of invalid) {
+        const response = await helpers.updateVehicle({ id: vehicle.id, ...patch, raw: false });
+        expect([patch, response.statusCode]).toEqual([patch, 422]);
+      }
+
+      const after = await helpers.getVehicleById({ id: vehicle.id, raw: true });
+      expect(after.make).toBe(vehicle.make);
+      expect(after.year).toBe(vehicle.year);
+      expect(after.account!.name).toBe(vehicle.account!.name);
+    });
+
+    it('updates the editable fields, renames the account and clears nullable ones', async () => {
+      const vehicle = await helpers.createVehicle({ ...basePayload({ trim: 'LE', currentMileage: 1000 }), raw: true });
+
+      const updated = await helpers.updateVehicle({
+        id: vehicle.id,
+        name: 'Family car',
+        trim: null,
+        currentMileage: null,
+        salvageFloorPct: 15,
+        raw: true,
+      });
+
+      expect(updated.account!.name).toBe('Family car');
+      expect(updated.trim).toBeNull();
+      expect(updated.currentMileage).toBeNull();
+      expect(updated.salvageFloorPct).toBe(15);
+      expect(updated.purchasePrice).toBe(vehicle.purchasePrice);
+    });
+  });
+
   describe('Manual override via POST /accounts/:id/balance-adjustment', () => {
     it('creates a transfer_out_wallet income transaction when overriding above current value, and an expense when overriding below', async () => {
       const vehicle = await helpers.createVehicle({ ...basePayload(), raw: true });
