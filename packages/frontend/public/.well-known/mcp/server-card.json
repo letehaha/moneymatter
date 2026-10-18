@@ -64,7 +64,39 @@
     },
     {
       "name": "search_transactions",
-      "description": "Search and filter transactions across accounts by date, category, tag, amount, or merchant."
+      "description": "Search and filter transactions across accounts by date, category, tag, payee, planned state, amount, or merchant; each result carries its payee."
+    },
+    {
+      "name": "get_transactions",
+      "description": "Read transactions by id (up to 50) or both legs of a transfer by transferId, with payee, optionally with splits and tags."
+    },
+    {
+      "name": "get_transactions_summary",
+      "description": "Count and base-currency totals (income, expense, net, transfers) of the transactions matching the list filters."
+    },
+    {
+      "name": "get_planned_summary",
+      "description": "Totals of planned (upcoming, unconfirmed) transactions per account and currency."
+    },
+    {
+      "name": "confirm_planned_transaction",
+      "description": "Confirm a planned transaction once the money has moved; settles a linked subscription period. Bank-account plans are confirmed by sync. Requires finance:write scope."
+    },
+    {
+      "name": "bulk_delete_transactions",
+      "description": "Permanently delete many transactions by ids or by filters. Irreversible. Requires finance:delete scope."
+    },
+    {
+      "name": "get_transaction_links",
+      "description": "Read a transaction's portfolio transfer link and venture event link (each null when absent)."
+    },
+    {
+      "name": "list_transaction_attachments",
+      "description": "List the files attached to a transaction: id, filename, type and size."
+    },
+    {
+      "name": "delete_attachment",
+      "description": "Permanently delete a file attached to a transaction. Requires finance:delete scope."
     },
     {
       "name": "get_categories",

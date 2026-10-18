@@ -56,7 +56,15 @@ page.
 | `get_account`                           | Read one account: balances, opening balance, bank link, logo, transaction count                                  |
 | `create_account`                        | Create a manual account with currency, category, opening balance, credit limit (`finance:write`)                 |
 | `update_account`                        | Update an account's name, category, credit limit, logo or balance (`finance:write`)                              |
-| `search_transactions`                   | Filter transactions by date, category, tag, amount, etc.                                                         |
+| `search_transactions`                   | Filter transactions by date, category, tag, payee, planned state, amount, etc.; each carries its payee           |
+| `get_transactions`                      | Read transactions by id (up to 50) or both legs of a transfer; optionally with splits and tags                   |
+| `get_transactions_summary`              | Count and base-currency totals of the transactions matching the list filters                                     |
+| `get_planned_summary`                   | Totals of planned (upcoming) transactions per account and currency                                               |
+| `confirm_planned_transaction`           | Confirm a planned transaction once the money moved; settles a subscription period (`finance:write`)              |
+| `bulk_delete_transactions`              | Permanently delete many transactions by ids or filters; preview with get_transactions_summary (`finance:delete`) |
+| `get_transaction_links`                 | A transaction's portfolio-transfer and venture-event links                                                       |
+| `list_transaction_attachments`          | Files attached to a transaction (id, name, type, size)                                                           |
+| `delete_attachment`                     | Permanently delete a transaction attachment (`finance:delete`)                                                   |
 | `get_categories`                        | List spending/income categories                                                                                  |
 | `get_tags`                              | List transaction tags                                                                                            |
 | `get_trackers`                          | Trackers with limits, category/tag rules and lines                                                               |

@@ -1,7 +1,6 @@
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
-import { slimTransactionsForMcp } from '@services/mcp/serializers';
 import { getTransactionGroups } from '@services/transaction-groups';
 import type {
   TransactionGroupWithAggregates,
@@ -10,6 +9,7 @@ import type {
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
+import { presentTransactions } from './transaction-output';
 
 const inputSchema = {
   includeTransactions: z
@@ -23,7 +23,7 @@ export function registerGetTransactionGroups(server: McpServer) {
     'get_transaction_groups',
     {
       description:
-        'List all transaction groups for the user. Groups bundle related transactions (e.g. split expenses). When includeTransactions is true, each group contains the full transaction list; otherwise returns aggregate counts and date ranges.',
+        'List all transaction groups for the user. Groups bundle related transactions (e.g. split expenses). When includeTransactions is true, each group contains the full transaction list, each with its payee; otherwise returns aggregate counts and date ranges.',
       inputSchema,
     },
     async (args, extra) => {
@@ -34,14 +34,19 @@ export function registerGetTransactionGroups(server: McpServer) {
 
       if (args.includeTransactions) {
         const groups = result as TransactionGroupWithTransactions[];
-        const slimmed = groups.map((group) => ({
-          id: group.id,
-          name: group.name,
-          note: group.note,
-          // Embedded transactions are full models; run through the REST serializer
-          // (Money → decimals) then keep only the AI-relevant fields.
-          transactions: slimTransactionsForMcp(serializeTransactions(group.transactions)),
-        }));
+        // Embedded transactions are full models; run through the REST serializer
+        // (Money → decimals) then keep only the AI-relevant fields. One call presents every
+        // group's transactions, so the payee names come from a single lookup.
+        const presented = await presentTransactions({
+          userId,
+          transactions: serializeTransactions(groups.flatMap((group) => group.transactions)),
+        });
+        let offset = 0;
+        const slimmed = groups.map((group) => {
+          const transactions = presented.slice(offset, offset + group.transactions.length);
+          offset += group.transactions.length;
+          return { id: group.id, name: group.name, note: group.note, transactions };
+        });
 
         return jsonContent({ data: slimmed });
       }
