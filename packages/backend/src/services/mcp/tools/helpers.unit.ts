@@ -5,6 +5,7 @@ import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlem
 
 import {
   assertBaseCurrencyUnlocked,
+  assertNotDemoUser,
   assertOriginalCurrencyArgs,
   requireFeature,
   requireFeatureAccess,
@@ -110,6 +111,21 @@ describe('requireScope with allowReadOnly', () => {
 });
 
 const withFeatures = ({ features }: { features?: string[] }) => ({ authInfo: { extra: { features } } });
+
+describe('assertNotDemoUser', () => {
+  it('refuses a demo user whatever the scopes and plan', () => {
+    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:read'], readOnly: true });
+
+    expect(() => assertNotDemoUser({ extra })).toThrow(/demo mode/);
+  });
+
+  it('lets a common user through, read-only or not', () => {
+    expect(() => assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [] }) })).not.toThrow();
+    expect(() =>
+      assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [], readOnly: true }) }),
+    ).not.toThrow();
+  });
+});
 
 describe('requireFeatureAccess', () => {
   it('passes when the plan includes the feature', () => {
