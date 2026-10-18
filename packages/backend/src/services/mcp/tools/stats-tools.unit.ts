@@ -3,6 +3,8 @@ import {
   INVESTMENT_CONTRIBUTIONS_GRANULARITIES,
   NET_WORTH_DRIVERS_GRANULARITIES,
   NET_WORTH_HISTORY_GRANULARITIES,
+  NET_WORTH_ASSET_KINDS,
+  NET_WORTH_LIABILITY_KINDS,
   PIVOT_GRANULARITIES,
   PIVOT_MEASURES,
   PIVOT_ROW_DIMENSIONS,
@@ -12,6 +14,7 @@ import {
 import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { getBaseCurrency } from '@models/users-currencies.model';
 import { getBalanceHistory } from '@services/stats/get-balance-history';
 import { getBalanceHistoryForAccount } from '@services/stats/get-balance-history-for-account';
 import { getCashFlow } from '@services/stats/get-cash-flow';
@@ -32,6 +35,7 @@ import { z } from 'zod';
 
 // Block the real services: their import chains load models and open database pools.
 jest.mock('@common/lib/currency-precision', () => ({ getBaseCurrencyDecimals: jest.fn() }));
+jest.mock('@models/users-currencies.model', () => ({ getBaseCurrency: jest.fn() }));
 jest.mock('@services/user-settings/get-user-settings', () => ({ getUserSettings: jest.fn() }));
 jest.mock('@services/stats/get-balance-history', () => ({ getBalanceHistory: jest.fn() }));
 jest.mock('@services/stats/get-balance-history-for-account', () => ({ getBalanceHistoryForAccount: jest.fn() }));
@@ -69,6 +73,7 @@ const DECIMALS = 3;
 
 const decimalsOf = jest.mocked(getBaseCurrencyDecimals);
 const settingsOf = jest.mocked(getUserSettings);
+const baseCurrencyOf = jest.mocked(getBaseCurrency);
 const balanceHistory = jest.mocked(getBalanceHistory);
 const accountBalanceHistory = jest.mocked(getBalanceHistoryForAccount);
 const cashFlow = jest.mocked(getCashFlow);
@@ -128,6 +133,7 @@ const setSettings = ({ includeCreditLimitInStats }: { includeCreditLimitInStats:
 beforeEach(() => {
   jest.resetAllMocks();
   decimalsOf.mockResolvedValue(DECIMALS);
+  baseCurrencyOf.mockResolvedValue({ currencyCode: 'EUR' } as Awaited<ReturnType<typeof getBaseCurrency>>);
   setSettings({ includeCreditLimitInStats: false });
 });
 
@@ -147,6 +153,15 @@ describe('stats tools registration', () => {
       'get_total_balance',
       'get_venture_contributions',
     ]);
+  });
+});
+
+describe('get_net_worth_history description', () => {
+  it('names the asset and liability kinds the data carries, not look-alikes', () => {
+    const { description } = tool({ name: 'get_net_worth_history' }).config;
+
+    for (const kind of [...NET_WORTH_ASSET_KINDS, ...NET_WORTH_LIABILITY_KINDS]) expect(description).toContain(kind);
+    expect(description).not.toMatch(/loans|credit cards/);
   });
 });
 
@@ -295,7 +310,7 @@ describe('get_balance_history', () => {
 });
 
 describe('get_total_balance', () => {
-  it('returns the total as a decimal and applies includeCreditLimitInStats', async () => {
+  it('returns the total as a decimal with the base currency and the date, and applies includeCreditLimitInStats', async () => {
     setSettings({ includeCreditLimitInStats: true });
     totalBalance.mockResolvedValue(asMinorUnits(12_345));
 
@@ -307,7 +322,7 @@ describe('get_total_balance', () => {
       includeCreditLimit: true,
       decimals: DECIMALS,
     });
-    expect(data).toBe(12.345);
+    expect(data).toEqual({ amount: 12.345, currencyCode: 'EUR', date: '2026-02-01' });
   });
 
   it('leaves the credit limit out while the setting is off', async () => {
@@ -334,7 +349,7 @@ describe('get_net_worth_history', () => {
           date: '2026-01-31',
           assets: { cash: asMinorUnits(2_000), investments: 0, vehicles: 0, ventures: 0 },
           assetsTotal: asMinorUnits(2_000),
-          liabilities: { loans: asMinorUnits(500) },
+          liabilities: { loan: asMinorUnits(500) },
           liabilitiesTotal: asMinorUnits(500),
           netWorth: asMinorUnits(1_500),
         },
