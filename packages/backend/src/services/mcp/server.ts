@@ -58,6 +58,7 @@ import { registerDeleteTransactionGroup } from './tools/delete-transaction-group
 import { registerDeleteUserCurrency } from './tools/delete-user-currency';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
+import { registerDismissTransferSuggestion } from './tools/dismiss-transfer-suggestion';
 import { registerGetAccount } from './tools/get-account';
 import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
@@ -79,6 +80,8 @@ import { registerGetPortfolioHoldings } from './tools/get-portfolio-holdings';
 import { registerGetPortfolioSummary } from './tools/get-portfolio-summary';
 import { registerGetPortfolios } from './tools/get-portfolios';
 import { registerGetRefundLinks } from './tools/get-refund-links';
+import { registerGetRefundRecommendations } from './tools/get-refund-recommendations';
+import { registerGetRefunds } from './tools/get-refunds';
 import { registerGetSpendingByCategories } from './tools/get-spending-by-categories';
 import { registerGetSubscriptionById } from './tools/get-subscription-by-id';
 import { registerGetSubscriptions } from './tools/get-subscriptions';
@@ -91,6 +94,7 @@ import { registerGetTransactionGroups } from './tools/get-transaction-groups';
 import { registerGetTransactionLinks } from './tools/get-transaction-links';
 import { registerGetTransactions } from './tools/get-transactions';
 import { registerGetTransactionsSummary } from './tools/get-transactions-summary';
+import { registerGetTransferRecommendations } from './tools/get-transfer-recommendations';
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
@@ -103,6 +107,7 @@ import { registerListSubscriptionCandidates } from './tools/list-subscription-ca
 import { registerListSupportedCurrencies } from './tools/list-supported-currencies';
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
 import { registerListTransactionAttachments } from './tools/list-transaction-attachments';
+import { registerListTransferSuggestions } from './tools/list-transfer-suggestions';
 import { registerMergePayees } from './tools/merge-payees';
 import { registerMoveAccountGroup } from './tools/move-account-group';
 import { registerPreviewTransactionAutomation } from './tools/preview-transaction-automation';
@@ -237,6 +242,11 @@ export function createMcpServer(): McpServer {
   registerGetTransactionLinks(server);
   registerListTransactionAttachments(server);
   registerDeleteAttachment(server);
+  registerGetRefunds(server);
+  registerGetRefundRecommendations(server);
+  registerGetTransferRecommendations(server);
+  registerListTransferSuggestions(server);
+  registerDismissTransferSuggestion(server);
 
   // Taxonomy (categories + tags)
   registerGetCategories(server);
