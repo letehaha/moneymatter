@@ -5,8 +5,8 @@ import { ValidationError } from '@js/errors';
 
 import { fillUrlTemplate } from './index';
 
-export const HTTP_SOURCE_TIMEOUT_MS = 5_000;
-export const HTTP_SOURCE_MAX_RESPONSE_BYTES = 256 * 1024;
+const HTTP_SOURCE_TIMEOUT_MS = 5_000;
+const HTTP_SOURCE_MAX_RESPONSE_BYTES = 256 * 1024;
 
 /** A rate that could not be fetched from an HTTP source; `reason` tells the preview what went wrong. */
 export class HttpRateSourceError extends Error {

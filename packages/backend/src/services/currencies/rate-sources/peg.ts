@@ -7,9 +7,9 @@ import { pegRateSourceConfigSchema } from './index';
  * What a peg turns a currency into: one unit of the pegged currency is worth `factor` units of
  * `quoteCode`. Nothing is stored; the quote's own rate for the day is looked up when asked.
  */
-export type PegStep = { quoteCode: string; factor: number };
+type PegStep = { quoteCode: string; factor: number };
 
-export type PegLookup =
+type PegLookup =
   /** The user's rates for this currency do not come from a peg. */
   | { kind: 'none' }
   /** The currency is pegged, but the saved config cannot be read (a backup restores it verbatim). */

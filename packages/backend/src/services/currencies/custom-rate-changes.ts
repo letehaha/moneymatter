@@ -6,7 +6,7 @@ import { Op } from 'sequelize';
 import type { CustomRateChange, RecomputeMode } from './recompute-scope';
 
 /** A manual-rate write about to happen, read before it lands. */
-export interface PlannedRateChange {
+interface PlannedRateChange {
   currencyCode: string;
   quoteCode: string;
   /** First day the change reaches; `null` when every day of the pair is affected. */

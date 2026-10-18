@@ -9,7 +9,7 @@ import { type FetchedWith, storeSyncedRates } from './store-synced-rates';
 
 const SOURCE = 'http';
 
-export interface HttpSyncResult {
+interface HttpSyncResult {
   /** HTTP calls made: identical requests of several users are made once. */
   requests: number;
   /** Users' currencies that got a new or changed rate. */

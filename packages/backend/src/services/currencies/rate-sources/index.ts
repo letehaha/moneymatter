@@ -13,7 +13,7 @@ export const HTTP_URL_TEMPLATE_PLACEHOLDERS = {
   quote: 'USD',
 } as const satisfies Record<HttpUrlTemplatePlaceholderName, string>;
 
-export const HTTP_URL_TEMPLATE_MAX_LENGTH = 2048;
+const HTTP_URL_TEMPLATE_MAX_LENGTH = 2048;
 const HTTP_HEADER_NAME_MAX_LENGTH = 64;
 const HTTP_HEADER_VALUE_MAX_LENGTH = 2048;
 

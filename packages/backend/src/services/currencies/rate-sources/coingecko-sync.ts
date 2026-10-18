@@ -13,7 +13,7 @@ import { coingeckoRateSourceConfigSchema } from './index';
 import { storeSyncedRates } from './store-synced-rates';
 
 /** The Demo tier allows about 30 calls a minute; a sync leaves this long between two of its calls. */
-export const COINGECKO_SYNC_SPACING_MS = 2_500;
+const COINGECKO_SYNC_SPACING_MS = 2_500;
 
 const SOURCE = 'coingecko';
 
@@ -31,7 +31,7 @@ interface CoinGroup {
   targets: Target[];
 }
 
-export interface CoingeckoSyncResult {
+interface CoingeckoSyncResult {
   /** Coins fetched, counting a coin once per quote currency. */
   coinsFetched: number;
   /** Users' currencies that got at least one new or changed rate. */

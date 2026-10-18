@@ -25,7 +25,7 @@ import {
   selectorEnvelope,
 } from './recompute-scope';
 
-export interface RecomputeResult {
+interface RecomputeResult {
   /** Custom currencies valued again: the changed ones plus everything priced through them. */
   currencyCodes: string[];
   transactionsUpdated: number;

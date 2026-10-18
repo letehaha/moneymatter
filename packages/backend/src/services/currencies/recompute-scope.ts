@@ -25,7 +25,7 @@ export interface CustomRateChange extends RateInterval {
 }
 
 /** Intervals per custom currency code. */
-export type RecomputeScope = Map<string, RateInterval[]>;
+type RecomputeScope = Map<string, RateInterval[]>;
 
 /**
  * `dependent` is valued through `source`: it is pegged to it, or its stored rate quotes it. When
@@ -82,7 +82,7 @@ export const expandScope = ({ scope, edges }: { scope: RecomputeScope; edges: De
 
 const startOfDay = ({ day }: { day: string }): Date => new Date(`${day}T00:00:00.000Z`);
 
-export interface RowSelector {
+interface RowSelector {
   from: Date | null;
   to: Date | null;
   /** Only rows still waiting for a base-currency amount. */

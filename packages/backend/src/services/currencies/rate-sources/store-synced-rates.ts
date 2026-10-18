@@ -11,13 +11,13 @@ import { recomputeCustomRefAmounts } from '../recompute-custom-ref-amounts.servi
 import type { CustomRateChange } from '../recompute-scope';
 
 /** One day's rate of a synced source: `day` is the UTC calendar day (`YYYY-MM-DD`). */
-export interface SyncedDailyRate {
+interface SyncedDailyRate {
   day: string;
   rate: number;
 }
 
 /** The sources that write rates on their own; a rate the user set by hand is `manual`. */
-export type SyncedRateSource = Exclude<UserExchangeRateSource, 'manual'>;
+type SyncedRateSource = Exclude<UserExchangeRateSource, 'manual'>;
 
 /** The saved settings a fetch was made with: the rates are stored only while the currency still has them. */
 export interface FetchedWith {

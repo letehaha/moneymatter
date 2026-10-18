@@ -6,7 +6,7 @@ import type { Transaction } from 'sequelize';
 import { refAmountCache, buildRefAmountCachePattern } from './ref-amount-cache';
 
 /** Drops every cached converted amount of one user. Never throws: a stale entry only lives until its TTL. */
-export const clearUserRefAmountCache = async ({ userId }: { userId: number }): Promise<void> => {
+const clearUserRefAmountCache = async ({ userId }: { userId: number }): Promise<void> => {
   try {
     await refAmountCache.delete(buildRefAmountCachePattern({ userId }), true);
   } catch (error) {
