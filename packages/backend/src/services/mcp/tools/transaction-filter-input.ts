@@ -83,17 +83,59 @@ export function parseTransactionFilters({ filters }: { filters: unknown }) {
 }
 
 /**
- * Whether a filter set narrows the selection at all: a value narrows unless it is absent, an empty
- * list, `false` (an exclude flag switched off) or the include-everything operation `all`. REST
- * lets a bulk action run with `filters: {}`, which selects every transaction the caller owns; an
- * AI client must not delete that much by leaving the filters out or empty.
+ * Whether a filter set narrows the selection at all, judged on the filters the REST schema
+ * parsed (what `parseBulkTarget` returns), not on the arguments as sent: a value counts only
+ * when it restricts the WHERE clause the service builds. So an empty or all-separator
+ * `noteSearch` (the schema turns it into no terms), an empty list, an exclude flag that is off,
+ * the `all` operation (including one that overrides a legacy `excludeTransfer`/`excludeRefunds`
+ * flag) and a lone `keepRefundsForTxId` (only read together with `excludeRefundTxs`) all select
+ * everything. REST lets a bulk action run with such filters, which selects every transaction
+ * the caller owns; an AI client must not delete that much by sending nothing that filters.
  */
-export function hasNarrowingFilter({ filters }: { filters: Record<string, unknown> }): boolean {
-  return Object.values(filters).some((value) => {
-    if (value === undefined || value === null || value === false) return false;
-    if (Array.isArray(value)) return value.length > 0;
-    return value !== FILTER_OPERATION.all;
-  });
+export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof parseTransactionFilters> }): boolean {
+  const hasItems = (list: readonly unknown[] | undefined) => !!list?.length;
+
+  // The model lets the enum operation win over the legacy boolean, and `all` restricts nothing.
+  const transferOperation = filters.transferFilter ?? (filters.excludeTransfer ? FILTER_OPERATION.exclude : undefined);
+  const refundOperation = filters.refundFilter ?? (filters.excludeRefunds ? FILTER_OPERATION.exclude : undefined);
+  const restrictsTransfers =
+    hasItems(filters.transferNatures) || (transferOperation ?? FILTER_OPERATION.all) !== FILTER_OPERATION.all;
+  const restrictsRefunds = (refundOperation ?? FILTER_OPERATION.all) !== FILTER_OPERATION.all;
+
+  const hasList = [
+    filters.accountIds,
+    filters.excludeAccountIds,
+    filters.budgetIds,
+    filters.excludedBudgetIds,
+    filters.categoryIds,
+    filters.tagIds,
+    filters.excludedTagIds,
+    filters.payeeIds,
+    filters.noteSearch,
+  ].some(hasItems);
+
+  const hasValue = [
+    filters.startDate,
+    filters.endDate,
+    filters.amountGte,
+    filters.amountLte,
+    filters.transactionType,
+    filters.accountType,
+    filters.categorizationSource,
+    filters.categorizedAt,
+    filters.batchId,
+  ].some((value) => value !== undefined && value !== null);
+
+  // A flag counts only when switched on. `false` on an exclude flag changes nothing, and `false` on
+  // isPlanned or hasAttachment still keeps nearly every row, so it is no basis for a delete either.
+  const hasFlag = [
+    filters.isPlanned,
+    filters.hasAttachment,
+    filters.excludeRefundTxs,
+    filters.excludeBalanceAdjustments,
+  ].some((flag) => flag === true);
+
+  return restrictsTransfers || restrictsRefunds || hasList || hasValue || hasFlag;
 }
 
 const bulkTargetSchema = z.object(bulkTargetFields).refine(hasOneBulkTarget, bulkTargetIssue);
