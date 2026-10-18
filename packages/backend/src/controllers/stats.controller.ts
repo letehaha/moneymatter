@@ -16,28 +16,23 @@ import {
   recordId,
   withDateOrder,
 } from '@common/lib/zod/custom-types';
-import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
-import { removeUndefinedKeys } from '@js/helpers';
-import type Balances from '@models/balances.model';
+import { getBalanceHistoryReport } from '@services/stats/reports/balance-history.report';
+import { getCashFlowReport } from '@services/stats/reports/cash-flow.report';
+import { getCombinedBalanceHistoryReport } from '@services/stats/reports/combined-balance-history.report';
+import { getCumulativeDataReport } from '@services/stats/reports/cumulative-data.report';
+import { getEarliestTransactionDateReport } from '@services/stats/reports/earliest-transaction-date.report';
+import { getExpensesAmountForPeriodReport } from '@services/stats/reports/expenses-amount-for-period.report';
+import { getInvestmentContributionsReport } from '@services/stats/reports/investment-contributions.report';
+import { getNetWorthDriversReport } from '@services/stats/reports/net-worth-drivers.report';
+import { getNetWorthHistoryReport } from '@services/stats/reports/net-worth-history.report';
+import { getPivotTableReport } from '@services/stats/reports/pivot.report';
 import {
-  serializeBalanceHistory,
-  serializeCashFlow,
-  serializeCombinedBalanceHistory,
-  serializeCumulativeData,
-  serializeExpensesAmountForPeriod,
-  serializeInvestmentContributions,
-  serializeVentureContributions,
-  serializeNetWorthDrivers,
-  serializeNetWorthHistory,
-  serializePivotReport,
-  serializeSpendingsByCategories,
-  serializeSpendingsByCategoriesByType,
-  serializeTotalBalance,
-} from '@root/serializers';
-import * as statsService from '@services/stats';
-import { getUserSettings } from '@services/user-settings/get-user-settings';
-import { isValid } from 'date-fns';
+  getMonthlySpendingsByCategoriesReport,
+  getSpendingsByCategoriesByTypeReport,
+  getSpendingsByCategoriesReport,
+} from '@services/stats/reports/spendings-by-categories.report';
+import { getTotalBalanceReport } from '@services/stats/reports/total-balance.report';
+import { getVentureContributionsReport } from '@services/stats/reports/venture-contributions.report';
 import { z } from 'zod';
 
 import { createController } from './helpers/controller-factory';
@@ -54,30 +49,9 @@ const balanceHistorySchema = z.object({
   query: withDateOrder(z.object({ ...dateRange(), accountId: recordId().optional() })),
 });
 
-export const getBalanceHistory = createController(balanceHistorySchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, accountId } = query;
-
-  let balanceHistory: Balances[];
-  if (accountId) {
-    balanceHistory = await statsService.getBalanceHistoryForAccount({
-      userId,
-      from,
-      to,
-      accountId,
-    });
-  } else {
-    balanceHistory = await statsService.getBalanceHistory({
-      userId,
-      accountScope: 'accessible',
-      from,
-      to,
-    });
-  }
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeBalanceHistory(balanceHistory) };
-});
+export const getBalanceHistory = createController(balanceHistorySchema, async ({ user, query }) => ({
+  data: await getBalanceHistoryReport({ userId: user.id, ...query }),
+}));
 
 const totalBalanceSchema = z.object({
   query: z.object({
@@ -85,25 +59,9 @@ const totalBalanceSchema = z.object({
   }),
 });
 
-export const getTotalBalance = createController(totalBalanceSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { date } = query;
-
-  if (!isValid(new Date(date))) {
-    throw new ValidationError({ message: t({ key: 'validation.dateInvalid' }) });
-  }
-
-  const settings = await getUserSettings({ userId });
-
-  const totalBalance = await statsService.getTotalBalance({
-    userId,
-    date,
-    includeCreditLimit: settings.includeCreditLimitInStats,
-  });
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeTotalBalance(totalBalance) };
-});
+export const getTotalBalance = createController(totalBalanceSchema, async ({ user, query }) => ({
+  data: await getTotalBalanceReport({ userId: user.id, date: query.date }),
+}));
 
 const spendingsByCategoriesSchema = z.object({
   query: withDateOrder(
@@ -122,65 +80,14 @@ const spendingsByCategoriesSchema = z.object({
 });
 
 export const getSpendingsByCategories = createController(spendingsByCategoriesSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const {
-    from,
-    to,
-    accountId,
-    accountIds,
-    payeeIds,
-    excludedPayeeIds,
-    tagIds,
-    excludedTagIds,
-    type: transactionType,
-    categoryIds,
-    excludedCategoryIds,
-    groupByType,
-    excludePlanned,
-  } = query;
+  const { groupByType, type: transactionType, ...filters } = query;
+  const params = { userId: user.id, ...filters };
 
   if (groupByType) {
-    const byType = await statsService.getSpendingsByCategoriesByType(
-      removeUndefinedKeys({
-        userId,
-        from,
-        to,
-        accountId,
-        accountIds,
-        payeeIds,
-        excludedPayeeIds,
-        tagIds,
-        excludedTagIds,
-        categoryIds,
-        excludedCategoryIds,
-        excludePlanned,
-      }),
-    );
-
-    // Serialize: convert cents to decimal for API response
-    return { data: serializeSpendingsByCategoriesByType(byType) };
+    return { data: await getSpendingsByCategoriesByTypeReport(params) };
   }
 
-  const result = await statsService.getSpendingsByCategories(
-    removeUndefinedKeys({
-      userId,
-      from,
-      to,
-      accountId,
-      accountIds,
-      payeeIds,
-      excludedPayeeIds,
-      tagIds,
-      excludedTagIds,
-      transactionType,
-      categoryIds,
-      excludedCategoryIds,
-      excludePlanned,
-    }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeSpendingsByCategories(result) };
+  return { data: await getSpendingsByCategoriesReport({ ...params, transactionType }) };
 });
 
 const monthlySpendingsByCategoriesSchema = z.object({
@@ -198,15 +105,8 @@ export const getMonthlySpendingsByCategories = createController(
   async ({ user, query }) => {
     const { from, to, categoryIds, excludePlanned } = query;
 
-    const months = await statsService.getMonthlySpendingsByCategoriesByType(
-      removeUndefinedKeys({ userId: user.id, from, to, categoryIds, excludePlanned }),
-    );
-
     return {
-      data: months.map(({ month, categories }) => ({
-        month,
-        categories: serializeSpendingsByCategoriesByType(categories),
-      })),
+      data: await getMonthlySpendingsByCategoriesReport({ userId: user.id, from, to, categoryIds, excludePlanned }),
     };
   },
 );
@@ -222,45 +122,17 @@ const expensesAmountSchema = z.object({
   ),
 });
 
-export const getExpensesAmountForPeriod = createController(expensesAmountSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, accountId, excludedCategoryIds, excludePlanned } = query;
-
-  const result = await statsService.getExpensesAmountForPeriod(
-    removeUndefinedKeys({
-      userId,
-      from,
-      to,
-      accountId,
-      excludedCategoryIds,
-      excludePlanned,
-    }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeExpensesAmountForPeriod(result) };
-});
+export const getExpensesAmountForPeriod = createController(expensesAmountSchema, async ({ user, query }) => ({
+  data: await getExpensesAmountForPeriodReport({ userId: user.id, ...query }),
+}));
 
 const combinedBalanceHistorySchema = z.object({
   query: withDateOrder(z.object({ ...dateRange() })),
 });
 
-export const getCombinedBalanceHistory = createController(combinedBalanceHistorySchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to } = query;
-
-  const settings = await getUserSettings({ userId });
-
-  const combinedBalanceHistory = await statsService.getCombinedBalanceHistory({
-    userId,
-    from,
-    to,
-    includeCreditLimit: settings.includeCreditLimitInStats,
-  });
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeCombinedBalanceHistory(combinedBalanceHistory) };
-});
+export const getCombinedBalanceHistory = createController(combinedBalanceHistorySchema, async ({ user, query }) => ({
+  data: await getCombinedBalanceHistoryReport({ userId: user.id, ...query }),
+}));
 
 const cashFlowSchema = z.object({
   query: withDateOrder(
@@ -276,44 +148,9 @@ const cashFlowSchema = z.object({
   ),
 });
 
-export const getCashFlow = createController(cashFlowSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const {
-    from,
-    to,
-    granularity,
-    accountId,
-    accountIds,
-    payeeIds,
-    excludedPayeeIds,
-    tagIds,
-    excludedTagIds,
-    categoryIds,
-    excludedCategoryIds,
-    excludePlanned,
-  } = query;
-
-  const result = await statsService.getCashFlow(
-    removeUndefinedKeys({
-      userId,
-      from,
-      to,
-      granularity,
-      accountId,
-      accountIds,
-      payeeIds,
-      excludedPayeeIds,
-      tagIds,
-      excludedTagIds,
-      categoryIds,
-      excludedCategoryIds,
-      excludePlanned,
-    }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeCashFlow(result) };
-});
+export const getCashFlow = createController(cashFlowSchema, async ({ user, query }) => ({
+  data: await getCashFlowReport({ userId: user.id, ...query }),
+}));
 
 const netWorthDriversSchema = z.object({
   query: withDateOrder(
@@ -327,17 +164,9 @@ const netWorthDriversSchema = z.object({
   ),
 });
 
-export const getNetWorthDrivers = createController(netWorthDriversSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, granularity, portfolioIds } = query;
-
-  const result = await statsService.getNetWorthDrivers(
-    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeNetWorthDrivers(result) };
-});
+export const getNetWorthDrivers = createController(netWorthDriversSchema, async ({ user, query }) => ({
+  data: await getNetWorthDriversReport({ userId: user.id, ...query }),
+}));
 
 const netWorthHistorySchema = z.object({
   query: withDateOrder(
@@ -348,23 +177,9 @@ const netWorthHistorySchema = z.object({
   ),
 });
 
-export const getNetWorthHistory = createController(netWorthHistorySchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, granularity } = query;
-
-  const settings = await getUserSettings({ userId });
-
-  const result = await statsService.getNetWorthHistory({
-    userId,
-    from,
-    to,
-    granularity,
-    includeCreditLimit: settings.includeCreditLimitInStats,
-  });
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeNetWorthHistory(result) };
-});
+export const getNetWorthHistory = createController(netWorthHistorySchema, async ({ user, query }) => ({
+  data: await getNetWorthHistoryReport({ userId: user.id, ...query }),
+}));
 
 const investmentContributionsSchema = z.object({
   query: withDateOrder(
@@ -378,27 +193,17 @@ const investmentContributionsSchema = z.object({
   ),
 });
 
-export const getInvestmentContributions = createController(investmentContributionsSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, granularity, portfolioIds } = query;
-
-  const result = await statsService.getInvestmentContributions(
-    removeUndefinedKeys({ userId, from, to, granularity, portfolioIds }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeInvestmentContributions(result) };
-});
+export const getInvestmentContributions = createController(investmentContributionsSchema, async ({ user, query }) => ({
+  data: await getInvestmentContributionsReport({ userId: user.id, ...query }),
+}));
 
 const ventureContributionsSchema = z.object({
   query: withDateOrder(z.object({ ...dateRange({ required: true }) })),
 });
 
-export const getVentureContributions = createController(ventureContributionsSchema, async ({ user, query }) => {
-  const result = await statsService.getVentureContributions({ userId: user.id, from: query.from, to: query.to });
-
-  return { data: serializeVentureContributions(result) };
-});
+export const getVentureContributions = createController(ventureContributionsSchema, async ({ user, query }) => ({
+  data: await getVentureContributionsReport({ userId: user.id, ...query }),
+}));
 
 const pivotReportSchema = z.object({
   query: withDateOrder(
@@ -414,32 +219,13 @@ const pivotReportSchema = z.object({
   ),
 });
 
-export const getPivotReport = createController(pivotReportSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const { from, to, granularity, rowDimension, measure, accountIds, categoryIds, payeeIds } = query;
+export const getPivotReport = createController(pivotReportSchema, async ({ user, query }) => ({
+  data: await getPivotTableReport({ userId: user.id, ...query }),
+}));
 
-  const result = await statsService.getPivotReport(
-    removeUndefinedKeys({
-      userId,
-      from,
-      to,
-      granularity,
-      rowDimension,
-      measure,
-      accountIds,
-      categoryIds,
-      payeeIds,
-    }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializePivotReport(result) };
-});
-
-export const getEarliestTransactionDate = createController(z.object({}), async ({ user }) => {
-  const date = await statsService.getEarliestTransactionDate({ userId: user.id });
-  return { data: date };
-});
+export const getEarliestTransactionDate = createController(z.object({}), async ({ user }) => ({
+  data: await getEarliestTransactionDateReport({ userId: user.id }),
+}));
 
 const cumulativeDataSchema = z.object({
   query: withDateOrder(
@@ -454,39 +240,6 @@ const cumulativeDataSchema = z.object({
   ),
 });
 
-export const getCumulativeData = createController(cumulativeDataSchema, async ({ user, query }) => {
-  const { id: userId } = user;
-  const {
-    from,
-    to,
-    metric,
-    accountId,
-    accountIds,
-    payeeIds,
-    excludedPayeeIds,
-    tagIds,
-    excludedTagIds,
-    categoryIds,
-    excludedCategoryIds,
-  } = query;
-
-  const result = await statsService.getCumulativeData(
-    removeUndefinedKeys({
-      userId,
-      from,
-      to,
-      metric,
-      accountId: accountId ?? undefined,
-      accountIds,
-      payeeIds,
-      excludedPayeeIds,
-      tagIds,
-      excludedTagIds,
-      categoryIds,
-      excludedCategoryIds,
-    }),
-  );
-
-  // Serialize: convert cents to decimal for API response
-  return { data: serializeCumulativeData(result) };
-});
+export const getCumulativeData = createController(cumulativeDataSchema, async ({ user, query }) => ({
+  data: await getCumulativeDataReport({ userId: user.id, ...query }),
+}));

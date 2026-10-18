@@ -140,6 +140,14 @@ page.
 | `get_category_transaction_count`         | Count transactions filed under a category; check before `delete_category`                                        |
 | `get_budget`                             | One tracker with its limit, categories and stats (income, expense, balance, limit used)                          |
 | `get_budget_transactions`                | Transactions a category tracker counts, newest first; manual trackers use `search_transactions` with `budgetIds` |
+| `get_total_balance`                      | Total balance on one date across all accounts, net of credit limits if that setting is on                        |
+| `get_net_worth_history`                  | Net worth over a range: assets and liabilities by kind, weekly to yearly points                                  |
+| `get_net_worth_drivers`                  | What moved net worth per period: savings, investment growth, dividends, fees                                     |
+| `get_investment_contributions`           | Money moved into portfolios per period, split per portfolio                                                      |
+| `get_venture_contributions`              | Net contributed to each venture deal over a range                                                                |
+| `get_pivot_report`                       | Spending or income as rows (category, payee, tag) by time columns, with totals                                   |
+| `get_cumulative_stats`                   | Running monthly totals of expenses, income or savings vs the previous period                                     |
+| `get_earliest_transaction_date`          | Date of the first transaction on record; start date for reports                                                  |
 | `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
 | `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
 | `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
