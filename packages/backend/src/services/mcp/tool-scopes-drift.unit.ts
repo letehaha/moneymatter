@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 const TOOLS_DIR = path.join(__dirname, 'tools');
+const SERVER_CARD_PATH = path.resolve(__dirname, '../../../../frontend/public/.well-known/mcp/server-card.json');
 
 const READ_TOOL_NAME = /^(get|list|search|preview)_/;
 
@@ -208,5 +209,31 @@ describe('MCP tool scopes', () => {
     const gate = 'requireFeatureAccess({ extra, feature: FEATURES.budget_plan })';
     const ungated = writes.filter((t) => !t.content.includes(gate)).map((t) => t.name);
     expect(ungated.toSorted()).toEqual(BUDGET_PLAN_UNGATED_TOOLS.toSorted());
+  });
+
+  it('every scope a server-card description requires is checked by the tool', () => {
+    const card: { tools: Array<{ name: string; description: string }> } = JSON.parse(
+      fs.readFileSync(SERVER_CARD_PATH, 'utf-8'),
+    );
+    const sources = new Map(readToolSources().map((t) => [t.name, t.content]));
+
+    const mismatched = card.tools
+      .map((tool) => ({ name: tool.name, documented: tool.description.match(/Requires (finance:\w+) scope/)?.[1] }))
+      .filter((tool) => tool.documented)
+      .filter((tool) => !sources.get(tool.name)?.includes(`requireScope({ extra, scope: '${tool.documented}'`))
+      .map((tool) => tool.name);
+
+    expect(mismatched).toEqual([]);
+  });
+
+  it('a tool that unlinks records requires finance:write, because linking them again undoes it', () => {
+    const unlinkTools = readToolSources().filter((t) => t.name.startsWith('unlink_'));
+    expect(unlinkTools.map((t) => t.name)).toEqual(expect.arrayContaining(['unlink_refund', 'unlink_transfer']));
+
+    const wrongScope = unlinkTools
+      .filter((t) => !t.content.includes("requireScope({ extra, scope: 'finance:write' })"))
+      .map((t) => t.name);
+
+    expect(wrongScope).toEqual([]);
   });
 });

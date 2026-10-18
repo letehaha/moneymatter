@@ -20,12 +20,12 @@ export function registerUnlinkRefund(server: McpServer) {
     'unlink_refund',
     {
       description:
-        'Remove the refund link between two transactions. DESTRUCTIVE: both transactions will no longer be marked as refund-linked. Requires both originalTxId and refundTxId that were previously linked.',
+        'Remove the refund link between two transactions; both stay and are no longer marked as refund-linked. The link can be recreated with link_refund. Requires both originalTxId and refundTxId that were previously linked.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
-      requireScope({ extra, scope: 'finance:delete' });
+      requireScope({ extra, scope: 'finance:write' });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'unlink_refund', clientId: extra.authInfo?.clientId });
 
