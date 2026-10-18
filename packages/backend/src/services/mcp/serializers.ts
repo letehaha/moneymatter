@@ -8,7 +8,7 @@
  * fields an assistant reasons about. The shared serializers stay untouched.
  */
 import { goalDisplayStatus, toGoalCurrency } from '@bt/shared/goals/goal-math';
-import type { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
+import type { AccountGroupApiResponse, GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
 import { INVESTMENT_DECIMAL_SCALE } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type Categories from '@models/categories.model';
@@ -55,6 +55,59 @@ export function slimAccountDetailForMcp(account: AccountApiResponse) {
     currencyMeta: account.currencyMeta,
     share: account.share,
   };
+}
+
+/** One account group without its accounts, children or path: what a write result needs. */
+export function slimAccountGroupForMcp(group: AccountGroupApiResponse) {
+  return {
+    id: group.id,
+    name: group.name,
+    parentGroupId: group.parentGroupId,
+    bankDataProviderConnectionId: group.bankDataProviderConnectionId,
+    logoDomain: group.logoDomain,
+    logoInitials: group.logoInitials,
+    logoColor: group.logoColor,
+  };
+}
+
+const GROUP_PATH_SEPARATOR = ' > ';
+const GROUP_PATH_TRUNCATED = '…';
+
+/**
+ * The groups come as a flat list in which a child also appears nested one level inside its
+ * parent. Each entry keeps `parentGroupId` and gets a `path` of group names from the top,
+ * built from the list itself. An ancestor missing from the list (an account filter drops
+ * groups with no matching account) starts the path with "…" instead of passing for the top.
+ */
+export function slimAccountGroupsForMcp(groups: AccountGroupApiResponse[]) {
+  const byId = new Map(groups.map((group) => [group.id, group]));
+
+  const pathOf = (group: AccountGroupApiResponse): string => {
+    const names = [group.name];
+    const seen = new Set([group.id]);
+    let parentId = group.parentGroupId;
+    let truncated = false;
+
+    while (parentId) {
+      const parent = byId.get(parentId);
+      if (!parent || seen.has(parent.id)) {
+        truncated = true;
+        break;
+      }
+      seen.add(parent.id);
+      names.unshift(parent.name);
+      parentId = parent.parentGroupId;
+    }
+
+    return (truncated ? [GROUP_PATH_TRUNCATED, ...names] : names).join(GROUP_PATH_SEPARATOR);
+  };
+
+  return groups.map((group) => ({
+    ...slimAccountGroupForMcp(group),
+    path: pathOf(group),
+    childGroups: group.childGroups.map((child) => ({ id: child.id, name: child.name })),
+    accounts: slimAccountsForMcp(group.accounts),
+  }));
 }
 
 export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
