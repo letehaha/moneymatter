@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import {
   nonNegativeAmountSchema,
+  payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
   splitSchema,
@@ -34,7 +35,7 @@ const schema = z.object({
       refundForSplitId: recordId().optional(),
       splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').optional(),
       tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
-      payeeId: recordId().nullable().optional(),
+      payeeId: payeeIdSchema(),
       payeeLocked: z.boolean().optional(),
       isPlanned: z.boolean().optional().default(false),
       applyAutomations: z.boolean().optional().default(false),
