@@ -28,6 +28,10 @@ import { registerConfirmPlannedTransaction } from './tools/confirm-planned-trans
 import { registerCreateAccount } from './tools/create-account';
 import { registerCreateAccountGroup } from './tools/create-account-group';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
+import { registerCreateBudget } from './tools/create-budget';
+import { registerCreateBudgetLine } from './tools/create-budget-line';
+import { registerCreateBudgetPlan } from './tools/create-budget-plan';
+import { registerCreateBudgetPlanGroup } from './tools/create-budget-plan-group';
 import { registerCreateCategory } from './tools/create-category';
 import { registerCreateCustomCurrency } from './tools/create-custom-currency';
 import { registerCreateHolding } from './tools/create-holding';
@@ -52,6 +56,8 @@ import { registerDeleteAccountGroup } from './tools/delete-account-group';
 import { registerDeleteAttachment } from './tools/delete-attachment';
 import { registerDeleteBudget } from './tools/delete-budget';
 import { registerDeleteBudgetLine } from './tools/delete-budget-line';
+import { registerDeleteBudgetPlan } from './tools/delete-budget-plan';
+import { registerDeleteBudgetPlanGroup } from './tools/delete-budget-plan-group';
 import { registerDeleteCategory } from './tools/delete-category';
 import { registerDeleteCustomCurrency } from './tools/delete-custom-currency';
 import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
@@ -182,12 +188,14 @@ import { registerRemoveTransactionsFromGroup } from './tools/remove-transactions
 import { registerRemoveTransactionsFromTracker } from './tools/remove-transactions-from-tracker';
 import { registerReorderTransactionAutomations } from './tools/reorder-transaction-automations';
 import { registerReplaceVentureEventLinks } from './tools/replace-venture-event-links';
+import { registerRestoreBudgetPlan } from './tools/restore-budget-plan';
 import { registerRestorePortfolio } from './tools/restore-portfolio';
 import { registerRestoreRemovedTransactions } from './tools/restore-removed-transactions';
 import { registerRevertSubscriptionPeriod } from './tools/revert-subscription-period';
 import { registerSearchCoingeckoCoins } from './tools/search-coingecko-coins';
 import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
+import { registerSetBudgetPlanAccounts } from './tools/set-budget-plan-accounts';
 import { registerSetCurrencyRateSource } from './tools/set-currency-rate-source';
 import { registerSetExchangeRates } from './tools/set-exchange-rates';
 import { registerSetPayeesCategorizationMode } from './tools/set-payees-categorization-mode';
@@ -211,6 +219,8 @@ import { registerUpdateAccount } from './tools/update-account';
 import { registerUpdateAccountGroup } from './tools/update-account-group';
 import { registerUpdateBudget } from './tools/update-budget';
 import { registerUpdateBudgetLine } from './tools/update-budget-line';
+import { registerUpdateBudgetPlan } from './tools/update-budget-plan';
+import { registerUpdateBudgetPlanGroup } from './tools/update-budget-plan-group';
 import { registerUpdateCategory } from './tools/update-category';
 import { registerUpdateCustomCurrency } from './tools/update-custom-currency';
 import { registerUpdateInvestmentTransaction } from './tools/update-investment-transaction';
@@ -564,6 +574,14 @@ export function createMcpServer(): McpServer {
   registerGetBudgetPlanPeriod(server);
   registerGetBudgetPlanScheduled(server);
   registerGetBudgetPlanTrends(server);
+  registerCreateBudgetPlan(server);
+  registerUpdateBudgetPlan(server);
+  registerDeleteBudgetPlan(server);
+  registerRestoreBudgetPlan(server);
+  registerSetBudgetPlanAccounts(server);
+  registerCreateBudgetPlanGroup(server);
+  registerUpdateBudgetPlanGroup(server);
+  registerDeleteBudgetPlanGroup(server);
 
   return server;
 }
