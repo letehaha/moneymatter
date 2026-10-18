@@ -18,13 +18,13 @@ export const FIRST_DECIMAL_MONEY_FORMAT_VERSION = 3;
 
 const CENTS_PER_UNIT = 100;
 
-export interface MoneyColumnRule {
+interface MoneyColumnRule {
   fileName: BackupFileName;
   /** Model-side name: the key a dumped row uses. */
   attrName: string;
 }
 
-export interface MoneyJsonRule {
+interface MoneyJsonRule {
   fileName: BackupFileName;
   /** Model-side name of the JSON column. */
   attrName: string;
@@ -33,7 +33,7 @@ export interface MoneyJsonRule {
   keys: readonly string[];
 }
 
-export interface V1ConversionRules {
+interface V1ConversionRules {
   columns: MoneyColumnRule[];
   jsonFields: MoneyJsonRule[];
 }

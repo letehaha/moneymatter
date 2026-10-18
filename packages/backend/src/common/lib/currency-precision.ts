@@ -12,7 +12,7 @@ export interface ConversionDecimals {
   quoteDecimals: number;
 }
 
-export type CurrencyRoundingMode = 'half-up' | 'half-even';
+type CurrencyRoundingMode = 'half-up' | 'half-even';
 
 /**
  * Number of decimal places the currency carries for the user.
