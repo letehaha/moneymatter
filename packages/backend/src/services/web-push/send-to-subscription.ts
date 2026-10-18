@@ -92,6 +92,13 @@ const reportInstanceFailure = ({ host, statusCode }: { host: string; statusCode:
  *
  * Returns the class so the caller decides whether to retry.
  */
+/**
+ * The Topic header as every push service accepts it. RFC 8030 allows the URL-safe base64 alphabet
+ * up to 32 characters, but Apple answers `400 BadWebPushTopic` to `-` and `_`, so only letters and
+ * digits are kept.
+ */
+const toPushTopic = ({ topic }: { topic: string }): string => topic.replace(/[^A-Za-z0-9]/g, '').slice(0, 32);
+
 export const sendToSubscription = async ({
   subscription,
   payload,
@@ -105,7 +112,7 @@ export const sendToSubscription = async ({
   /** Seconds the push service keeps the message for an offline device */
   ttl: number;
   urgency: PushUrgency;
-  /** Lets the push service coalesce a retry with its pending original; up to 32 URL-safe base64 characters */
+  /** Lets the push service coalesce a retry with its pending original; normalised by `toPushTopic` */
   topic: string;
   /** True on the last attempt of a delivery (or on a path without retries) */
   recordTransientFailure: boolean;
@@ -155,7 +162,7 @@ export const sendToSubscription = async ({
       {
         TTL: ttl,
         urgency,
-        topic,
+        topic: toPushTopic({ topic }),
         timeout: REQUEST_TIMEOUT_MS,
         vapidDetails: { subject: config.subject, publicKey: config.publicKey, privateKey: config.privateKey },
       },

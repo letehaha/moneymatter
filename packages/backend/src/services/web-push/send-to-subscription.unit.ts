@@ -144,6 +144,24 @@ describe('sendToSubscription', () => {
     });
   });
 
+  describe('the Topic header', () => {
+    it('keeps only letters and digits, at most 32, since Apple refuses anything else with BadWebPushTopic', async () => {
+      mockSendNotification.mockResolvedValue({ statusCode: 201 });
+
+      await sendToSubscription({
+        subscription: subscription({}),
+        payload: {} as never,
+        ttl: 60,
+        urgency: 'normal',
+        topic: 'push-test_01a14dd7-61b3-76bd-b71f-90ee6cf87439',
+        recordTransientFailure: false,
+      });
+
+      const [, , options] = mockSendNotification.mock.calls[0]! as [unknown, unknown, { topic: string }];
+      expect(options.topic).toBe('pushtest01a14dd761b376bdb71f90ee');
+    });
+  });
+
   describe('a bookkeeping write after a successful send', () => {
     it('does not fail the delivery when the write throws, so the job is not retried', async () => {
       mockSendNotification.mockResolvedValue({ statusCode: 201 });
