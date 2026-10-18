@@ -192,11 +192,11 @@
     },
     {
       "name": "get_total_balance",
-      "description": "Total balance across all accounts on one date, in the base currency, net of credit limits when the user setting is on."
+      "description": "Total balance across all accounts on one date as { amount, currencyCode, date } in the base currency, net of credit limits when the user setting is on."
     },
     {
       "name": "get_net_worth_history",
-      "description": "Net worth over time with assets and liabilities by kind, weekly to yearly points, in the base currency."
+      "description": "Net worth over time with assets (cash, investments, vehicles, ventures) and liabilities (credit-card, loan, overdraft) by kind, weekly to yearly points, in the base currency."
     },
     {
       "name": "get_net_worth_drivers",
@@ -252,11 +252,11 @@
     },
     {
       "name": "search_securities",
-      "description": "Search for securities by ticker or company name. Each result can be passed unchanged to create_holding, which returns the securityId that create_investment_transaction needs."
+      "description": "Search for securities by ticker or company name. Each result can be passed unchanged to create_holding, which returns the securityId that create_investment_transaction needs; a result already stored carries its securityId."
     },
     {
       "name": "get_security_prices",
-      "description": "Stored closing prices of one security, oldest first, as { prices, total }; the range defaults to the last 365 days and at most limit rows (default 500, max 5000) come back, the newest."
+      "description": "Stored closing prices of one security (by securityId, or symbol with providerName), oldest first, as { prices, total }; the range defaults to the last 365 days and at most limit rows (default 500, max 5000) come back, the newest."
     },
     {
       "name": "create_holding",
@@ -352,7 +352,7 @@
     },
     {
       "name": "get_account_groups",
-      "description": "List the account groups (nested folders) with their parent, path, child groups and accounts, or the account ids of one group."
+      "description": "List the account groups (nested folders) with their parent, path, child groups and a short summary of each account (full fields with includeAccountDetails), or the account ids of one group."
     },
     {
       "name": "create_account_group",

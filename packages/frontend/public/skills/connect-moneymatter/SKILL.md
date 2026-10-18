@@ -73,15 +73,15 @@ The 250 tools are grouped as the server registers them. Tools marked with a scop
 
 Nested folders of accounts.
 
-| Tool                         | Purpose                                                                             |
-| ---------------------------- | ----------------------------------------------------------------------------------- |
-| `get_account_groups`         | List account groups (nested folders) with parent, path, child groups and accounts   |
-| `create_account_group`       | Create an account group, optionally nested under a parent (`finance:write`)         |
-| `update_account_group`       | Rename an account group or change its parent or logo (`finance:write`)              |
-| `move_account_group`         | Move an account group under another group or to the top level (`finance:write`)     |
-| `delete_account_group`       | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)   |
-| `add_account_to_group`       | Put an account into a group; an account is in one group at a time (`finance:write`) |
-| `remove_accounts_from_group` | Take accounts out of a group (`finance:write`)                                      |
+| Tool                         | Purpose                                                                                                                              |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `get_account_groups`         | List account groups (nested folders) with parent, path, child groups and account summaries (`includeAccountDetails` for full fields) |
+| `create_account_group`       | Create an account group, optionally nested under a parent (`finance:write`)                                                          |
+| `update_account_group`       | Rename an account group or change its parent or logo (`finance:write`)                                                               |
+| `move_account_group`         | Move an account group under another group or to the top level (`finance:write`)                                                      |
+| `delete_account_group`       | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)                                                    |
+| `add_account_to_group`       | Put an account into a group; an account is in one group at a time (`finance:write`)                                                  |
+| `remove_accounts_from_group` | Take accounts out of a group (`finance:write`)                                                                                       |
 
 ### Transactions
 
@@ -198,45 +198,45 @@ A tracker is a limit on categories over a date range. Its tools keep "budget" in
 
 ### Analytics
 
-| Tool                            | Purpose                                                                                   |
-| ------------------------------- | ----------------------------------------------------------------------------------------- |
-| `get_spending_by_categories`    | Aggregate spending by category over a range                                               |
-| `get_cash_flow`                 | Income vs expenses over a range                                                           |
-| `get_balance_history`           | Time-series of account balances                                                           |
-| `get_expenses_for_period`       | Expenses summary for a time period                                                        |
-| `get_total_balance`             | Total balance on one date across all accounts, net of credit limits if that setting is on |
-| `get_net_worth_history`         | Net worth over a range: assets and liabilities by kind, weekly to yearly points           |
-| `get_net_worth_drivers`         | What moved net worth per period: savings, investment growth, dividends, fees              |
-| `get_investment_contributions`  | Money moved into portfolios per period, split per portfolio                               |
-| `get_venture_contributions`     | Net contributed to each venture deal over a range                                         |
-| `get_pivot_report`              | Spending or income as rows (category, payee, tag) by time columns, with totals            |
-| `get_cumulative_stats`          | Running monthly totals of expenses, income or savings vs the previous period              |
-| `get_earliest_transaction_date` | Date of the first transaction on record; start date for reports                           |
+| Tool                            | Purpose                                                                                                                                                |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `get_spending_by_categories`    | Aggregate spending by category over a range                                                                                                            |
+| `get_cash_flow`                 | Income vs expenses over a range                                                                                                                        |
+| `get_balance_history`           | Time-series of account balances                                                                                                                        |
+| `get_expenses_for_period`       | Expenses summary for a time period                                                                                                                     |
+| `get_total_balance`             | Total balance on one date across all accounts as `{ amount, currencyCode, date }`, net of credit limits if that setting is on                          |
+| `get_net_worth_history`         | Net worth over a range: assets (cash, investments, vehicles, ventures) and liabilities (credit-card, loan, overdraft) by kind, weekly to yearly points |
+| `get_net_worth_drivers`         | What moved net worth per period: savings, investment growth, dividends, fees                                                                           |
+| `get_investment_contributions`  | Money moved into portfolios per period, split per portfolio                                                                                            |
+| `get_venture_contributions`     | Net contributed to each venture deal over a range                                                                                                      |
+| `get_pivot_report`              | Spending or income as rows (category, payee, tag) by time columns, with totals                                                                         |
+| `get_cumulative_stats`          | Running monthly totals of expenses, income or savings vs the previous period                                                                           |
+| `get_earliest_transaction_date` | Date of the first transaction on record; start date for reports                                                                                        |
 
 ### Investments
 
 Portfolios, holdings, securities and investment transactions.
 
-| Tool                            | Purpose                                                                                              |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `get_portfolios`                | List investment portfolios (types, enabled state)                                                    |
-| `get_portfolio`                 | Read one portfolio by id                                                                             |
-| `get_portfolios_overview`       | Summaries and annualized returns of all portfolios                                                   |
-| `get_portfolio_summary`         | Portfolio totals, P&L, cash balances                                                                 |
-| `get_portfolio_holdings`        | Positions with market value and gains/losses                                                         |
-| `get_portfolio_balances`        | Portfolio cash balances per currency                                                                 |
-| `get_investment_transactions`   | Buy/sell/dividend/fee history for investments                                                        |
-| `search_securities`             | Search securities by ticker/name; each result can be passed to `create_holding`                      |
-| `get_security_prices`           | Stored closing prices of one security; last 365 days by default, newest `limit` rows (500, max 5000) |
-| `create_holding`                | Add a security to a portfolio from a search result or securityId (`finance:write`)                   |
-| `delete_holding`                | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`)             |
-| `create_portfolio`              | Create a new investment portfolio (`finance:write`)                                                  |
-| `update_portfolio`              | Rename, recategorize, or disable a portfolio (`finance:write`)                                       |
-| `delete_portfolio`              | Delete a portfolio and optionally all its data (`finance:delete`)                                    |
-| `restore_portfolio`             | Restore a deleted portfolio (`finance:write`)                                                        |
-| `create_investment_transaction` | Record a buy/sell/dividend/fee transaction (`finance:write`)                                         |
-| `update_investment_transaction` | Correct a transaction's date, quantity, price, or fees (`finance:write`)                             |
-| `delete_investment_transaction` | Delete an investment transaction (`finance:delete`)                                                  |
+| Tool                            | Purpose                                                                                                                                              |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get_portfolios`                | List investment portfolios (types, enabled state)                                                                                                    |
+| `get_portfolio`                 | Read one portfolio by id                                                                                                                             |
+| `get_portfolios_overview`       | Summaries and annualized returns of all portfolios                                                                                                   |
+| `get_portfolio_summary`         | Portfolio totals, P&L, cash balances                                                                                                                 |
+| `get_portfolio_holdings`        | Positions with market value and gains/losses                                                                                                         |
+| `get_portfolio_balances`        | Portfolio cash balances per currency                                                                                                                 |
+| `get_investment_transactions`   | Buy/sell/dividend/fee history for investments                                                                                                        |
+| `search_securities`             | Search securities by ticker/name; each result can be passed to `create_holding`; a stored one carries its `securityId`                               |
+| `get_security_prices`           | Stored closing prices of one security (`securityId`, or `symbol` with `providerName`); last 365 days by default, newest `limit` rows (500, max 5000) |
+| `create_holding`                | Add a security to a portfolio from a search result or securityId (`finance:write`)                                                                   |
+| `delete_holding`                | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`)                                                             |
+| `create_portfolio`              | Create a new investment portfolio (`finance:write`)                                                                                                  |
+| `update_portfolio`              | Rename, recategorize, or disable a portfolio (`finance:write`)                                                                                       |
+| `delete_portfolio`              | Delete a portfolio and optionally all its data (`finance:delete`)                                                                                    |
+| `restore_portfolio`             | Restore a deleted portfolio (`finance:write`)                                                                                                        |
+| `create_investment_transaction` | Record a buy/sell/dividend/fee transaction (`finance:write`)                                                                                         |
+| `update_investment_transaction` | Correct a transaction's date, quantity, price, or fees (`finance:write`)                                                                             |
+| `delete_investment_transaction` | Delete an investment transaction (`finance:delete`)                                                                                                  |
 
 ### Portfolio cash transfers
 
