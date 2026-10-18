@@ -462,6 +462,11 @@ describe('get_category_transaction_count', () => {
     expect(tool.config.description).toMatch(/delete_category/);
   });
 
+  it('says a category the caller cannot access is not found, rather than counting 0', () => {
+    expect(tool.config.description).toMatch(/not found/i);
+    expect(tool.config.description).not.toMatch(/counts 0/);
+  });
+
   it('counts the transactions of the category for the caller, with no scope or lock', async () => {
     lockCheck.mockResolvedValue(true);
     countCategory.mockResolvedValue(7);
