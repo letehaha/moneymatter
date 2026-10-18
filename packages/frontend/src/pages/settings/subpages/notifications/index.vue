@@ -8,8 +8,6 @@
     </Card>
 
     <template v-else>
-      <p class="max-w-4xl text-sm opacity-80">{{ $t('settings.notifications.description') }}</p>
-
       <ThisDeviceCard />
       <PushGroupsCard />
       <PushDevicesCard />

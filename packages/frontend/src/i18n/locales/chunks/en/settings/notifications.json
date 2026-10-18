@@ -1,7 +1,6 @@
 {
   "settings": {
     "notifications": {
-      "description": "Get the notifications from the bell as browser notifications, even when MoneyMatter is closed.",
       "serverDisabled": {
         "title": "Browser notifications are not set up",
         "description": "This instance has no push keys configured, so it cannot send browser notifications. Ask the administrator to set the VAPID keys."
