@@ -101,6 +101,8 @@ describe('get_account_groups', () => {
     expect(schema.safeParse({}).success).toBe(true);
     expect(schema.safeParse({ includeArchived: true, accountIds: [ACCOUNT_ID] }).success).toBe(true);
     expect(schema.safeParse({ groupId: GROUP_ID }).success).toBe(true);
+    expect(schema.safeParse({ includeAccountDetails: true }).success).toBe(true);
+    expect(schema.safeParse({ includeAccountDetails: 'yes' }).success).toBe(false);
     expect(schema.safeParse({ groupId: 'nope' }).success).toBe(false);
     expect(schema.safeParse({ accountIds: ['nope'] }).success).toBe(false);
   });
@@ -142,7 +144,17 @@ describe('get_account_groups', () => {
       path: 'Savings',
       childGroups: [{ id: CHILD_ID, name: 'Emergency' }],
       logoDomain: 'example.com',
-      accounts: [{ id: ACCOUNT_ID, name: 'Checking', currencyCode: 'USD', currentBalance: 250.5 }],
+      accounts: [
+        {
+          id: ACCOUNT_ID,
+          name: 'Checking',
+          type: ACCOUNT_TYPES.system,
+          accountCategory: ACCOUNT_CATEGORIES.general,
+          currencyCode: 'USD',
+          currentBalance: 250.5,
+          status: 'active',
+        },
+      ],
     });
     expect(child).toMatchObject({
       id: CHILD_ID,
@@ -153,6 +165,32 @@ describe('get_account_groups', () => {
     });
     expect(parent).not.toHaveProperty('userId');
     expect((parent!.accounts as Record<string, unknown>[])[0]).not.toHaveProperty('userId');
+  });
+
+  it('returns the full list-sized accounts when includeAccountDetails is on', async () => {
+    service.getAccountGroups.mockResolvedValueOnce([makeGroupRow({ accounts: [makeAccountRow()] })] as never);
+
+    const result = await tool.handler({ includeAccountDetails: true }, makeExtra());
+    const [group] = parseToolResult({ result }) as { accounts: Record<string, unknown>[] }[];
+
+    expect(group!.accounts[0]).toMatchObject({
+      id: ACCOUNT_ID,
+      refCurrentBalance: 250.5,
+      creditLimit: 0,
+      excludeFromStats: false,
+    });
+  });
+
+  it('does not pass includeAccountDetails on to the service', async () => {
+    service.getAccountGroups.mockResolvedValueOnce([]);
+
+    await tool.handler({ includeAccountDetails: true }, makeExtra());
+
+    expect(service.getAccountGroups).toHaveBeenCalledWith({
+      userId: 42,
+      includeArchived: undefined,
+      accountIds: undefined,
+    });
   });
 
   it('lists the accounts of one group as ids when given a group id', async () => {
@@ -171,6 +209,9 @@ describe('get_account_groups', () => {
   it('rejects a group id combined with a list filter instead of ignoring the filter', async () => {
     await expect(tool.handler({ groupId: GROUP_ID, includeArchived: true }, makeExtra())).rejects.toThrow(/groupId/);
     await expect(tool.handler({ groupId: GROUP_ID, accountIds: [ACCOUNT_ID] }, makeExtra())).rejects.toThrow(/groupId/);
+    await expect(tool.handler({ groupId: GROUP_ID, includeAccountDetails: true }, makeExtra())).rejects.toThrow(
+      /groupId/,
+    );
     expect(service.getAccountsInGroup).not.toHaveBeenCalled();
   });
 });

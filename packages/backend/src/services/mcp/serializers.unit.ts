@@ -165,7 +165,7 @@ describe('MCP serializers', () => {
       ...patch,
     });
 
-    it('keeps the group fields, slims the accounts and child stubs, and drops the owner id', () => {
+    it('keeps the group fields, shrinks the accounts to a short summary and the child stubs, and drops the owner id', () => {
       const root = makeGroup({
         childGroups: [makeGroup({ id: 'g-child', name: 'Emergency', parentGroupId: 'g-root', accounts: [] })],
       });
@@ -182,7 +182,21 @@ describe('MCP serializers', () => {
         childGroups: [{ id: 'g-child', name: 'Emergency' }],
       });
       expect(slim).not.toHaveProperty('userId');
-      expect((slim!.accounts as Record<string, unknown>[])[0]).toEqual(slimAccountsForMcp([fullAccount])[0]);
+      expect((slim!.accounts as Record<string, unknown>[])[0]).toEqual({
+        id: fullAccount.id,
+        name: fullAccount.name,
+        type: fullAccount.type,
+        accountCategory: fullAccount.accountCategory,
+        currencyCode: fullAccount.currencyCode,
+        currentBalance: fullAccount.currentBalance,
+        status: fullAccount.status,
+      });
+    });
+
+    it('keeps the list-sized account fields with includeAccountDetails', () => {
+      const [slim] = slimAccountGroupsForMcp([makeGroup({})], { includeAccountDetails: true });
+
+      expect(slim!.accounts[0]).toEqual(slimAccountsForMcp([fullAccount])[0]);
     });
 
     it('builds the path through every ancestor present in the list', () => {
