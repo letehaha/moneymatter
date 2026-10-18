@@ -11,6 +11,7 @@ import { z } from 'zod';
 import {
   atLeastOneCentAmountSchema,
   nonNegativeAmountSchema,
+  payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
   splitSchema,
@@ -49,7 +50,7 @@ const bodyZodSchema = z
       .nullish(),
     splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').nullish(),
     tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').nullish(),
-    payeeId: recordId().nullable().optional(),
+    payeeId: payeeIdSchema(),
     payeeLocked: z.boolean().optional(),
     isPlanned: z.boolean().optional(),
     originalAmount: nonNegativeAmountSchema().nullable().optional(),

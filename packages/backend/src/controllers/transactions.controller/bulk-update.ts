@@ -5,6 +5,7 @@ import * as transactionsService from '@services/transactions/bulk-update';
 import { resolveBulkTargetIds } from '@services/transactions/matching-transactions';
 import { z } from 'zod';
 
+import { payeeIdSchema } from './schemas';
 import { bulkTargetFields, bulkTargetIssue, hasOneBulkTarget, toBulkTarget } from './transaction-filters';
 
 const tagModeSchema = z.enum(BULK_UPDATE_TAG_MODES);
@@ -17,7 +18,7 @@ const bodyZodSchema = z
     tagMode: tagModeSchema.optional(),
     note: z.string().max(1000, 'Note must not exceed 1000 characters').optional(),
     // Nullable on the wire: explicit `null` clears the Payee, undefined leaves it untouched.
-    payeeId: recordId().nullable().optional(),
+    payeeId: payeeIdSchema(),
   })
   .refine(
     (data) =>

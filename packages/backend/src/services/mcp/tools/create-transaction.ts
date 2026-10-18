@@ -2,6 +2,7 @@ import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import {
   nonNegativeAmountSchema,
+  payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
 } from '@controllers/transactions.controller/schemas';
@@ -69,8 +70,17 @@ const inputSchema = {
     .optional()
     .describe('Split the transaction across multiple categories'),
   tagIds: z.array(recordId()).optional().describe('Tag IDs to assign to this transaction'),
-  payeeId: recordId().optional().describe('Payee ID to assign'),
   isPlanned: z.boolean().optional().describe('Mark the transaction as planned rather than an already-happened record'),
+  payeeId: payeeIdSchema().describe(
+    'ID of an existing payee to link (from get_payees). Cannot be combined with merchantName',
+  ),
+  merchantName: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      'Raw merchant name, resolved to a payee the way bank sync and imports do: an existing payee is matched by name or alias, and a new one is created only once the name has repeated enough (the instance promotion rule). Cannot be combined with payeeId',
+    ),
   originalAmount: z
     .number()
     .nonnegative()
@@ -96,7 +106,7 @@ export function registerCreateTransaction(server: McpServer) {
     'create_transaction',
     {
       description:
-        'Create a new transaction (income, expense, or transfer). Requires accountId, amount (decimal), transactionType, and transferNature. paymentType is optional and defaults to the default payment type of the account. For transfers, also provide destinationAccountId and destinationAmount. Use splits to categorize portions of the amount. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to pay one purchase from several accounts.',
+        "Create a new transaction (income, expense, or transfer). Requires accountId, amount (decimal), transactionType, and transferNature. paymentType is optional and defaults to the default payment type of the account. For transfers, also provide destinationAccountId and destinationAmount. Use splits to categorize portions of the amount. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to pay one purchase from several accounts. Use payeeId to link an existing payee, or merchantName to let the server resolve a payee from a raw merchant name (it matches an existing payee by name or alias and follows the instance's normal promotion rules, so it may not create a payee on first sight); the two cannot be combined.",
       inputSchema,
     },
     async (args, extra) => {
@@ -106,6 +116,9 @@ export function registerCreateTransaction(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'create_transaction', clientId: extra.authInfo?.clientId });
 
       assertOriginalCurrencyArgs({ args });
+      if (args.payeeId != null && args.merchantName) {
+        throw new Error('"payeeId" and "merchantName" cannot be used together');
+      }
 
       const params = deserializeCreateTransaction(
         {
@@ -122,16 +135,16 @@ export function registerCreateTransaction(server: McpServer) {
           transferNature: args.transferNature,
           splits: args.splits,
           tagIds: args.tagIds,
-          payeeId: args.payeeId,
           isPlanned: args.isPlanned,
           originalAmount: args.originalAmount,
           originalCurrencyCode: args.originalCurrencyCode,
           paymentLegs: args.paymentLegs,
+          payeeId: args.payeeId,
         },
         userId,
       );
 
-      const result = await createTransaction(params);
+      const result = await createTransaction({ ...params, rawMerchantName: args.merchantName });
       return jsonContent({ data: serializeTransactionTuple(result) });
     },
   );
