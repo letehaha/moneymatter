@@ -96,6 +96,7 @@ import { registerGetAccount } from './tools/get-account';
 import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
+import { registerGetBankSyncStatus } from './tools/get-bank-sync-status';
 import { registerGetBaseCurrencyChangeStatus } from './tools/get-base-currency-change-status';
 import { registerGetBudget } from './tools/get-budget';
 import { registerGetBudgetPlanPeriod } from './tools/get-budget-plan-period';
@@ -167,10 +168,14 @@ import { registerLinkTransactionsToSubscription } from './tools/link-transaction
 import { registerLinkTransactionsToVentureEvent } from './tools/link-transactions-to-venture-event';
 import { registerLinkTransfer } from './tools/link-transfer';
 import { registerListBudgetSuggestions } from './tools/list-budget-suggestions';
+import { registerListBankConnections } from './tools/list-bank-connections';
 import { registerListBudgetPlanPeriods } from './tools/list-budget-plan-periods';
 import { registerListBudgetPlans } from './tools/list-budget-plans';
 import { registerListCustomCurrencies } from './tools/list-custom-currencies';
 import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers';
+import { registerListShareInvitations } from './tools/list-share-invitations';
+import { registerListShareMembers } from './tools/list-share-members';
+import { registerListSharedWithMe } from './tools/list-shared-with-me';
 import { registerListStuckPendingTransactions } from './tools/list-stuck-pending-transactions';
 import { registerListSubscriptionCandidates } from './tools/list-subscription-candidates';
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
@@ -603,6 +608,13 @@ export function createMcpServer(): McpServer {
   registerDeleteBudgetPlanLineGoal(server);
   registerSnoozeBudgetPlanLineGoal(server);
   registerSetBudgetPlanAssignment(server);
+
+  // Sharing & bank connections (read-only)
+  registerListShareInvitations(server);
+  registerListShareMembers(server);
+  registerListSharedWithMe(server);
+  registerListBankConnections(server);
+  registerGetBankSyncStatus(server);
 
   return server;
 }

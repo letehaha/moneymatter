@@ -1033,6 +1033,26 @@
     {
       "name": "set_budget_plan_assignment",
       "description": "Assign money to a budget plan line from a period on or for one period, or set its carry policy. Requires finance:write scope."
+    },
+    {
+      "name": "list_share_invitations",
+      "description": "List the sharing invitations you sent and the pending ones sent to you."
+    },
+    {
+      "name": "list_share_members",
+      "description": "List the owner and members of an account, household or budget you manage."
+    },
+    {
+      "name": "list_shared_with_me",
+      "description": "List the accounts, households and budgets other people shared with you."
+    },
+    {
+      "name": "list_bank_connections",
+      "description": "List your bank connections, or read one with its accounts and consent window."
+    },
+    {
+      "name": "get_bank_sync_status",
+      "description": "Read the sync state of the bank-connected accounts, the connections to reconnect and the running syncs."
     }
   ],
   "prompts": [
