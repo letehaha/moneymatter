@@ -8,6 +8,7 @@ import type {
   StatementFileType,
 } from '@bt/shared/types';
 import { AI_FEATURE } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils';
 import {
   AI_MAX_OUTPUT_TOKENS,
@@ -191,8 +192,7 @@ export async function extractTransactionsWithAI({
         success: false,
         error: {
           code: 'NO_TRANSACTIONS_FOUND',
-          message:
-            'No transactions found in the file. It may not be a bank statement, receipt or banking app screenshot.',
+          message: t({ key: 'statementParser.noTransactionsFound' }),
         },
       };
     }

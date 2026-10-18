@@ -7,6 +7,7 @@ import {
 } from '@tests/fixtures/statement-parser-fixtures';
 import * as helpers from '@tests/helpers';
 import { enableServerModel, useSelfHostWithoutServerAiKeys } from '@tests/helpers/ai-test-env';
+import { makeRequest } from '@tests/helpers/common';
 import {
   createFirstConnection,
   createOpenAiConnection,
@@ -246,5 +247,67 @@ describe('Statement parser extraction of an encrypted PDF', () => {
     expect(result.metadata.currencyCode).toBe('SEK');
     expect(result.transactions).toHaveLength(2);
     expect(result.transactions[0]).toMatchObject({ amount: 42.1, type: 'expense', merchant: 'LIDL STOCKHOLM' });
+  });
+});
+
+describe('Statement parser extraction that yields nothing usable', () => {
+  useSelfHostWithoutServerAiKeys();
+
+  const METADATA_ONLY_REPLY = 'Testbanken,4321,2026-06-01,2026-06-30,SEK';
+
+  // Another file, or a retry, fixes these, so none of them is a server fault.
+  it('answers 422 and says no transactions were found when the model returns metadata only', async () => {
+    await createFirstConnection();
+    global.mswMockServer.use(getCustomEndpointVllmMock({ content: METADATA_ONLY_REPLY }));
+
+    const response = await helpers.statementExtract({ payload: { fileBase64: PNG_1X1_BASE64 } });
+
+    expect(response.statusCode).toBe(422);
+    expect(errorMessage({ response })).toMatch(/no transactions found/i);
+  });
+
+  it('words the no-transactions answer in the language of the request', async () => {
+    await createFirstConnection();
+    global.mswMockServer.use(getCustomEndpointVllmMock({ content: METADATA_ONLY_REPLY }));
+
+    const response = await makeRequest({
+      method: 'post',
+      url: '/import/text-source/extract?lang=uk',
+      payload: { fileBase64: PNG_1X1_BASE64 },
+    });
+
+    expect(response.statusCode).toBe(422);
+    expect(errorMessage({ response })).toMatch(/не знайдено транзакцій/);
+  });
+
+  it('answers 422 when every row the model returned has an unreadable date', async () => {
+    await createFirstConnection();
+    global.mswMockServer.use(
+      getCustomEndpointVllmMock({
+        content: [METADATA_ONLY_REPLY, 'sometime last week,Card purchase,LIDL,42.10,E,,90'].join('\n'),
+      }),
+    );
+
+    const response = await helpers.statementExtract({ payload: { fileBase64: PNG_1X1_BASE64 } });
+
+    expect(response.statusCode).toBe(422);
+    expect(errorMessage({ response })).toMatch(/readable date/i);
+  });
+
+  it('answers 422 when the user has no AI model configured', async () => {
+    const response = await helpers.statementExtract({ payload: { fileBase64: PNG_1X1_BASE64 } });
+
+    expect(response.statusCode).toBe(422);
+    expect(errorMessage({ response })).toMatch(/no ai model configured/i);
+  });
+
+  it('answers 502 when the AI endpoint is down', async () => {
+    await createFirstConnection();
+    global.mswMockServer.use(getCustomEndpointOfflineMock());
+
+    const response = await helpers.statementExtract({ payload: { fileBase64: PNG_1X1_BASE64 } });
+
+    expect(response.statusCode).toBe(502);
+    expect(errorMessage({ response })).toMatch(/did not respond/i);
   });
 });
