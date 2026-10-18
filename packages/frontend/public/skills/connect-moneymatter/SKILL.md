@@ -7,6 +7,15 @@ subscriptions, transaction automations, categories, tags, cash flow, balance
 history, investment portfolios, holdings, and investment transactions). The
 agent can read these records and — when the user grants the corresponding
 scopes — create, edit, and delete them.
+financial data: accounts and account groups, transactions (including planned
+ones, refunds, transfers, splits and attachments), categories, tags, tag
+reminders, payees, trackers, budget plans, subscriptions, transaction
+automations and templates, loans, vehicles, currencies and exchange rates,
+notifications, app settings, investment portfolios, holdings, investment
+transactions, venture deals, and duplicate cleanup. Bank connections and
+sharing are readable only; imports can be listed and undone. The agent can
+read these records and — when the user grants the corresponding scopes —
+create, edit, and delete them.
 
 Use this skill when the user asks to "connect Claude to my budget", "hook up
 ChatGPT to MoneyMatter", "let my AI see my finances", or similar.
@@ -22,7 +31,7 @@ ChatGPT to MoneyMatter", "let my AI see my finances", or similar.
 
 | Scope            | Purpose                                                          |
 | ---------------- | ---------------------------------------------------------------- |
-| `finance:read`   | Read accounts, transactions, trackers, subscriptions, analytics  |
+| `finance:read`   | Read accounts, transactions, trackers, budget plans, analytics   |
 | `finance:write`  | Create and edit transactions, trackers, subscriptions, and more  |
 | `finance:delete` | Permanently delete records (transactions, trackers, portfolios…) |
 | `profile:read`   | Read the user's profile (name, email, base currency)             |
@@ -50,6 +59,7 @@ page.
 ## Available tools
 
 | Tool | Purpose |
+| `get_budgets` | Trackers ("budget" in tool names) with progress and overspend state |
 | `get_loans` | List loans with balance, terms and payoff projection; `loanId` reads one with its timeline |
 | `get_loan_balance_history` | Outstanding balance of a loan over time, one point per payment day |
 | `create_loan` | Create a loan with its terms (`finance:write`) |
@@ -286,6 +296,22 @@ page.
 | `update_transaction_template` | Change a template; `null` clears a field, `tagIds` replaces the tags (`finance:write`) |
 | `delete_transaction_template` | Permanently delete a template (`finance:delete`) |
 | `delete_transaction_template` | Permanently delete a template (`finance:delete`) |
+| `list_venture_platforms` | List venture platforms (syndicators, fund managers) with their default fees |
+| `get_venture_platform` | Read one venture platform by id, including its default fees |
+| `create_venture_platform` | Create a venture platform whose default fees apply to new deals (`finance:write`) |
+| `update_venture_platform` | Change a platform's name, website, description or default fees; existing deals keep their fees (`finance:write`) |
+| `delete_venture_platform` | Delete a venture platform; its deals lose the platform; `force` hard-deletes (`finance:delete`) |
+| `list_venture_deals` | List venture deals (illiquid private investments) with status, platform, currency, principal, fees and dates |
+| `get_venture_deal` | Read one venture deal with its platform and currency, optionally with its event history |
+| `get_venture_deal_metrics` | Cost basis, current value, distributions, P&L, TVPI, DPI and IRR of a deal, as of an optional date |
+| `create_venture_deal` | Create a venture deal; can create its initial investment event in the same call (`finance:write`) |
+| `update_venture_deal` | Update a deal; its terms are locked once it has events (`finance:write`) |
+| `delete_venture_deal` | Delete a deal and its events; linked bank transactions are restored (`finance:delete`) |
+| `list_venture_events` | Events of a venture deal in time order, with amounts, cash-flow modes and linked bank transactions |
+| `get_venture_event` | Read one venture event with its linked bank transactions |
+| `create_venture_event` | Record an event on a deal; the initial investment comes first; carry is computed (`finance:write`) |
+| `update_venture_event` | Update an event; manual carry or net values override the automatic ones (`finance:write`) |
+| `delete_venture_event` | Delete an event and unlink its transactions; the initial investment goes last (`finance:delete`) |
 | `create_transaction` | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`) |
 | `create_transaction` | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`) |
 | `create_transaction` | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`) |
@@ -510,6 +536,13 @@ page.
 | `get_category_transaction_count` | Count transactions filed under a category; check before `delete_category` |
 | `get_budget` | One tracker with its limit, categories and stats (income, expense, balance, limit used) |
 | `get_budget_transactions` | Transactions a category tracker counts, newest first; manual trackers use `search_transactions` with `budgetIds` |
+| `create_budget` | Create a new tracker with limit, date range, categories (`finance:write`) |
+| `update_budget` | Update name, date range, limit, or categories of a tracker (`finance:write`) |
+| `delete_budget` | Permanently delete a tracker and its transaction links (`finance:delete`) |
+| `archive_budget` | Archive or restore a tracker — active ↔ archived (`finance:write`) |
+| `add_transactions_to_budget` | Link transactions to a manual tracker (`finance:write`) |
+| `remove_transactions_from_budget` | Unlink transactions from a tracker (`finance:write`) |
+| `get_budget_spending_stats` | Category breakdown and time-series spending for a tracker |
 | `get_total_balance` | Total balance on one date across all accounts, net of credit limits if that setting is on |
 | `get_net_worth_history` | Net worth over a range: assets and liabilities by kind, weekly to yearly points |
 | `get_net_worth_drivers` | What moved net worth per period: savings, investment growth, dividends, fees |
@@ -789,6 +822,53 @@ page.
 =======
 >>>>>>> theirs
 
+### Transaction automations
+
+Rules that set a category, tags, payee or note.
+| Tool | Purpose |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- |
+
+### Transaction templates
+
+Named presets for new transactions.
+| Tool | Purpose |
+| ----------------------------- | ---------------------------------------------------------------------------------------- |
+
+### Venture investments
+
+Platforms, deals and events.
+| Tool | Purpose |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+
+### Currencies
+
+Custom currencies, rate sources, exchange rates, held currencies and the base currency.
+| Tool | Purpose |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+
+### Loans and vehicles
+
+| Tool | Purpose |
+| ---- | ------- |
+
+### Budget plans
+
+Period envelopes with lines, goals and assignments; not trackers.
+| Tool | Purpose |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+
+### Sharing and bank connections
+
+Read-only.
+| Tool | Purpose |
+| ------------------------ | ------------------------------------------------------------------------------ |
+
+### Imports
+
+List and undo only; imports run in the app.
+| Tool | Purpose |
+| -------------------------------- | ---------------------------------------------------------------------------------------------- |
+
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize
 multi-currency data.
@@ -910,6 +990,25 @@ multi-currency data.
   A batch above 1000 rows answers with a `jobId`: the delete runs in the
   background and blocks writes until it ends, so follow it with
   `get_import_batch_delete_status`.
+- The base currency lock: while a base-currency change runs
+  (`change_base_currency`, then `get_base_currency_change_status`), the write
+  tools fail with a "change in progress" error; reads keep working, except
+  `preview_transaction_automation` and `list_transfer_suggestions`, which are
+  refused too. A few writes that touch no amounts (attachments, rate-source
+  tests) are exempt. Wait for the status to finish, then retry. A read-only account (expired plan) can read
+  and use only a few writes (`mark_notifications_read`, `update_user_settings`,
+  the first `change_base_currency`); every other write is refused whatever
+  scopes were granted.
+- Destructive calls are deliberately narrow. `bulk_delete_transactions` needs
+  explicit `transactionIds` or at least one narrowing filter and refuses an
+  empty filter (the REST API would delete everything); preview the count with
+  `get_transactions_summary` first. Tools that delete only on one path
+  (`ignore_payee_name` with `force`, `revert_subscription_period` when the
+  app booked the transaction) need `finance:write`, plus `finance:delete` on
+  that path.
+- Bank connections, sharing writes, file imports and downloads, the app's AI
+  settings, billing, and deleting or wiping the account have no tools; send the
+  user to the app for those.
 
 ## Troubleshooting
 
