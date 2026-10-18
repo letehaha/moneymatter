@@ -111,7 +111,7 @@ Connections on a subscription are marked **Subscription**. They don't show a cos
 
 A subscription has its own usage limits, set by Claude or ChatGPT and shared with everything else you do on that account, such as chatting in the apps. MoneyMatter doesn't add a limit of its own, other than these:
 
-- **Runs happen one at a time per connection.** Several at once would use up your plan quickly. Across the server, no more than two runs go at the same time unless the server's owner raises `AI_CLI_MAX_CONCURRENT_RUNS`. Larger imports and categorization can take a little longer than with an API key.
+- **Runs can overlap.** Several runs of one connection can go at the same time, which draws on your plan faster. Across the server, no more than four runs go at the same time unless the server's owner changes `AI_CLI_MAX_CONCURRENT_RUNS`. Larger imports and categorization can take a little longer than with an API key.
 - **A single run can take up to five minutes** before it's cancelled.
 
 When your plan's limit is reached, the feature tells you the subscription limit is used up and, when the provider says so, when it resets. Try again after the reset, or pick another model for that feature.
@@ -129,7 +129,7 @@ If a provider rejects the sign-in, the connection is marked **Invalid** and AI f
 
 ## Disconnect and revoke
 
-To remove a connection, open the menu next to it, choose **Remove** and confirm. This deletes the saved sign-in from MoneyMatter.
+To remove a connection, open the menu next to it, choose **Remove** and confirm. This cancels any runs still going on that connection and deletes the saved sign-in from MoneyMatter.
 
 - **Codex:** MoneyMatter also asks Codex to sign out, which revokes the access on ChatGPT's side.
 - **Claude Code:** removing the connection doesn't revoke the Claude token, because there's no command for it. To revoke it, open your [Claude account settings](https://claude.ai/settings) and remove the Claude Code access.
@@ -150,5 +150,5 @@ Every other AI feature uses the model you choose for it on the **AI Features** t
 | An option is greyed out with "Not installed in this backend image" | The backend image doesn't contain that program. Pull the latest image, or ask whoever built it. |
 | "The sign-in didn't finish." | Click **Try again**. For Codex, make sure device code login is on in ChatGPT. |
 | "The sign-in expired. Start it again." | You took longer than 15 minutes. Click **Try again**. |
-| "A run on this connection is in progress, try again in a minute." | Another AI job is using the connection. Wait and test again. |
+| "The AI runner is busy with other runs, try again in a minute." | Other AI jobs are using all the available capacity. Wait and test again. |
 | The model is rejected | Your plan doesn't include it. Pick another model. |

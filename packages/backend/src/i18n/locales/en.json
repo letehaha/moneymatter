@@ -616,7 +616,7 @@
     "cliAuthSessionNotUsable": "This sign-in is missing, not finished, already used or for another provider. Sign in again.",
     "cliAuthSessionNoCodeStep": "This sign-in is not waiting for a pasted code.",
     "cliAuthTooManySessions": "Too many sign-ins are in progress. Try again in a minute.",
-    "cliConnectionBusy": "A run on this connection is in progress, try again in a minute.",
+    "cliConnectionBusy": "The AI runner is busy with other runs, try again in a minute.",
     "cliNotInstalled": "The {{provider}} CLI is not installed in the backend image.",
     "cliSignInRejected": "{{provider}} rejected the sign-in. Sign in again in Settings → AI.",
     "cliModelNotAvailable": "{{provider}} does not offer the model \"{{model}}\" on this subscription. Pick another model.",
