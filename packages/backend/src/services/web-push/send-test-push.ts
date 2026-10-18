@@ -14,7 +14,7 @@ import { sendToSubscription } from './send-to-subscription';
 
 const TEST_PUSH_TTL_SECONDS = 120;
 const DEFAULT_LOCALE = 'en';
-const TEST_PUSH_TOPIC = 'push-test';
+const TEST_PUSH_TOPIC = 'pushtest';
 
 /**
  * Sends the test message to every device of the user at once and counts the outcomes: `sent`
