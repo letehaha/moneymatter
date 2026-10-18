@@ -68,6 +68,7 @@ import { registerDeleteCategory } from './tools/delete-category';
 import { registerDeleteCustomCurrency } from './tools/delete-custom-currency';
 import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
 import { registerDeleteHolding } from './tools/delete-holding';
+import { registerDeleteImportBatch } from './tools/delete-import-batch';
 import { registerDeleteInvestmentTransaction } from './tools/delete-investment-transaction';
 import { registerDeleteLoan } from './tools/delete-loan';
 import { registerDeletePayee } from './tools/delete-payee';
@@ -115,6 +116,7 @@ import { registerGetEarliestTransactionDate } from './tools/get-earliest-transac
 import { registerGetExchangeRate } from './tools/get-exchange-rate';
 import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
 import { registerGetIgnoredPayeeNames } from './tools/get-ignored-payee-names';
+import { registerGetImportBatchDeleteStatus } from './tools/get-import-batch-delete-status';
 import { registerGetInvestmentContributions } from './tools/get-investment-contributions';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
 import { registerGetLoanBalanceHistory } from './tools/get-loan-balance-history';
@@ -172,6 +174,7 @@ import { registerListBankConnections } from './tools/list-bank-connections';
 import { registerListBudgetPlanPeriods } from './tools/list-budget-plan-periods';
 import { registerListBudgetPlans } from './tools/list-budget-plans';
 import { registerListCustomCurrencies } from './tools/list-custom-currencies';
+import { registerListImportBatches } from './tools/list-import-batches';
 import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers';
 import { registerListShareInvitations } from './tools/list-share-invitations';
 import { registerListShareMembers } from './tools/list-share-members';
@@ -615,6 +618,11 @@ export function createMcpServer(): McpServer {
   registerListSharedWithMe(server);
   registerListBankConnections(server);
   registerGetBankSyncStatus(server);
+
+  // Imports
+  registerListImportBatches(server);
+  registerDeleteImportBatch(server);
+  registerGetImportBatchDeleteStatus(server);
 
   return server;
 }
