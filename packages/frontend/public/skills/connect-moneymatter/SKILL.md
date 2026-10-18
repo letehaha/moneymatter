@@ -159,6 +159,12 @@ page.
 | `get_transfer_recommendations`          | Suggest the other leg of a transfer (saved transaction or form data)                                             |
 | `list_transfer_suggestions`             | Scan a period for likely transfer pairs with a confidence score; reads only                                      |
 | `dismiss_transfer_suggestion`           | Dismiss a suggested pair as not a transfer (`finance:write`)                                                     |
+| `get_reconciliation_history`            | Past duplicate removals and merges, newest first, with the removed rows and survivors                            |
+| `list_stuck_pending_transactions`       | Bank transactions pending over 7 days, each with the booked row that likely replaced it                          |
+| `remove_duplicate_transactions`         | Remove duplicates from the books; restorable, but without their links (`finance:write`)                          |
+| `restore_removed_transactions`          | Bring back removed or merged transactions, without the links they lost (`finance:write`)                         |
+| `merge_duplicate_transactions`          | Merge 2 to 4 duplicates of one account into a survivor that takes their links (`finance:write`)                  |
+| `keep_pending_as_booked`                | Confirm stuck pending bank transactions as booked (`finance:write`)                                              |
 | `assign_tags_to_transaction`            | Assign tags to a transaction (`finance:write`)                                                                   |
 | `remove_tags_from_transaction`          | Remove tags from one or more transactions (`finance:write`)                                                      |
 | `create_category`                       | Create a new category, optionally nested (`finance:write`)                                                       |
@@ -193,6 +199,12 @@ multi-currency data.
   `transferId` reads both. To find unlinked pairs, `list_transfer_suggestions` scans a
   period and `get_transfer_recommendations` suggests one transaction's other leg;
   `link_transfer` links a pair and `dismiss_transfer_suggestion` rejects a wrong one.
+- Duplicate cleanup is reversible. `remove_duplicate_transactions` and
+  `merge_duplicate_transactions` soft-delete rows, `get_reconciliation_history` lists
+  them and `restore_removed_transactions` brings them back, but a restored row does not
+  get back the budget, group and subscription links it lost. Bank rows pending for over
+  a week show up in `list_stuck_pending_transactions` with the booked row that likely
+  replaced each.
 - File bytes never travel through MCP tool arguments. To attach a receipt, call
   `create_attachment_upload_url`, then POST each file as the raw request body to
   the returned `url` with the returned headers plus the file's URI-encoded name in

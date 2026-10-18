@@ -79,6 +79,7 @@ import { registerGetPortfolioBalances } from './tools/get-portfolio-balances';
 import { registerGetPortfolioHoldings } from './tools/get-portfolio-holdings';
 import { registerGetPortfolioSummary } from './tools/get-portfolio-summary';
 import { registerGetPortfolios } from './tools/get-portfolios';
+import { registerGetReconciliationHistory } from './tools/get-reconciliation-history';
 import { registerGetRefundRecommendations } from './tools/get-refund-recommendations';
 import { registerGetRefunds } from './tools/get-refunds';
 import { registerGetSpendingByCategories } from './tools/get-spending-by-categories';
@@ -97,26 +98,32 @@ import { registerGetTransferRecommendations } from './tools/get-transfer-recomme
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
+import { registerKeepPendingAsBooked } from './tools/keep-pending-as-booked';
 import { registerLinkRefund } from './tools/link-refund';
 import { registerLinkTransactionToPortfolio } from './tools/link-transaction-to-portfolio';
 import { registerLinkTransactionsToSubscription } from './tools/link-transactions-to-subscription';
 import { registerLinkTransfer } from './tools/link-transfer';
 import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers';
+import { registerListStuckPendingTransactions } from './tools/list-stuck-pending-transactions';
 import { registerListSubscriptionCandidates } from './tools/list-subscription-candidates';
 import { registerListSupportedCurrencies } from './tools/list-supported-currencies';
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
 import { registerListTransactionAttachments } from './tools/list-transaction-attachments';
 import { registerListTransferSuggestions } from './tools/list-transfer-suggestions';
+import { registerMergeDuplicateTransactions } from './tools/merge-duplicate-transactions';
 import { registerMergePayees } from './tools/merge-payees';
 import { registerMoveAccountGroup } from './tools/move-account-group';
 import { registerPreviewTransactionAutomation } from './tools/preview-transaction-automation';
 import { registerRejectBudgetSuggestions } from './tools/reject-budget-suggestions';
 import { registerRejectTrackerSuggestions } from './tools/reject-tracker-suggestions';
 import { registerRemoveAccountsFromGroup } from './tools/remove-accounts-from-group';
+import { registerRemoveDuplicateTransactions } from './tools/remove-duplicate-transactions';
 import { registerRemoveTagsFromTransaction } from './tools/remove-tags-from-transaction';
 import { registerRemoveTransactionsFromGroup } from './tools/remove-transactions-from-group';
 import { registerRemoveTransactionsFromTracker } from './tools/remove-transactions-from-tracker';
 import { registerReorderTransactionAutomations } from './tools/reorder-transaction-automations';
+import { registerRestoreRemovedTransactions } from './tools/restore-removed-transactions';
+import { registerSearchCoingeckoCoins } from './tools/search-coingecko-coins';
 import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
 import { registerSetExchangeRates } from './tools/set-exchange-rates';
@@ -245,6 +252,14 @@ export function createMcpServer(): McpServer {
   registerGetTransferRecommendations(server);
   registerListTransferSuggestions(server);
   registerDismissTransferSuggestion(server);
+
+  // Reconciliation
+  registerGetReconciliationHistory(server);
+  registerListStuckPendingTransactions(server);
+  registerRemoveDuplicateTransactions(server);
+  registerRestoreRemovedTransactions(server);
+  registerMergeDuplicateTransactions(server);
+  registerKeepPendingAsBooked(server);
 
   // Taxonomy (categories + tags)
   registerGetCategories(server);
