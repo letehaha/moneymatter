@@ -552,7 +552,7 @@
     },
     {
       "name": "update_payee",
-      "description": "Rename a Payee or set/clear its defaultCategoryId. Renaming preserves the previous canonical name as an alias so historical matches still resolve. Requires finance:write scope."
+      "description": "Update a Payee: rename it (the old name is kept as an alias), set its default category and categorization mode, default tags, default location and logo. Requires finance:write scope."
     },
     {
       "name": "merge_payees",
@@ -561,6 +561,38 @@
     {
       "name": "delete_payee",
       "description": "Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
+    },
+    {
+      "name": "set_payees_categorization_mode",
+      "description": "Set the categorization mode of every payee the user has to the same value. Requires finance:write scope."
+    },
+    {
+      "name": "bulk_delete_payees",
+      "description": "Permanently delete many payees at once, all or nothing, optionally adding their names to the ignored list. Requires finance:delete scope."
+    },
+    {
+      "name": "get_ignored_payee_names",
+      "description": "List the names that are never turned into payees automatically."
+    },
+    {
+      "name": "ignore_payee_name",
+      "description": "Add a name to the ignored list. With force it also permanently deletes the payee the name resolves to, which needs finance:delete scope. Requires finance:write scope."
+    },
+    {
+      "name": "unignore_payee_name",
+      "description": "Remove a name from the ignored list. Requires finance:write scope."
+    },
+    {
+      "name": "apply_payee_tags_to_transactions",
+      "description": "Add a payee's default tags to every transaction already linked to it; it only adds tags. Requires finance:write scope."
+    },
+    {
+      "name": "create_payee_alias",
+      "description": "Add an alias to a payee, another name that links future transactions to it. Requires finance:write scope."
+    },
+    {
+      "name": "delete_payee_alias",
+      "description": "Delete one alias of a payee. Requires finance:delete scope."
     },
     {
       "name": "get_transaction_automations",
