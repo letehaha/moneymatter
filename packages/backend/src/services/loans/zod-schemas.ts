@@ -1,5 +1,6 @@
 import { SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
-import { dateString, decimalMoney, isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
+import { Money } from '@common/types/money';
 import { addDays, format } from 'date-fns';
 import { z } from 'zod';
 
@@ -18,8 +19,28 @@ const optionalNullableInt = ({ min, max }: { min: number; max?: number }) => {
   return schema.nullable().optional();
 };
 
-const nonNegativeDecimalMoney = ({ field }: { field: string }) =>
-  decimalMoney().refine((m) => !m.isNegative(), { message: `${field} must be >= 0` });
+// Amount fields are plain decimals in the field shapes, which the MCP tools expose as their input;
+// the body schemas below turn them into `Money`.
+const nonNegativeAmount = ({ field }: { field: string }) => z.number().min(0, { message: `${field} must be >= 0` });
+
+type WithMoneyFields<T, K extends keyof T> = Omit<T, K> & { [P in keyof Pick<T, K>]: Exclude<T[P], number> | Money };
+
+// Turns the named amount fields into `Money`. An omitted field stays omitted and `null` stays
+// `null` (it clears the stored amount).
+const toMoneyFields = <T extends object, K extends keyof T & string>({
+  body,
+  keys,
+}: {
+  body: T;
+  keys: readonly K[];
+}): WithMoneyFields<T, K> => {
+  const result: Record<string, unknown> = { ...(body as Record<string, unknown>) };
+  for (const key of keys) {
+    const value = body[key];
+    if (typeof value === 'number') result[key] = Money.fromDecimal(value);
+  }
+  return result as WithMoneyFields<T, K>;
+};
 
 /**
  * Calendar-valid YYYY-MM-DD — `dateString()` only regex-checks the shape, so
@@ -53,27 +74,31 @@ const notFutureCalendarDate = ({ message }: { message: string }) =>
  * service negates it into the negative-liability convention on
  * Accounts.currentBalance.
  */
-export const createLoanBodySchema = z.object({
+export const createLoanBodyFields = {
   name: z.string().min(1).max(200).trim(),
   currencyCode: isoCurrencyCode(),
-  initialBalance: nonNegativeDecimalMoney({ field: 'initialBalance' }),
+  initialBalance: nonNegativeAmount({ field: 'initialBalance' }),
 
   // Only the loan types the form picker exposes are accepted; HELOC-style types
   // need multi-disbursement support before the balance machinery can back them.
   loanType: z.enum(SUPPORTED_LOAN_TYPES),
-  originalPrincipal: decimalMoney().refine((m) => m.isPositive(), {
-    message: 'originalPrincipal must be > 0',
-  }),
+  originalPrincipal: z.number().positive({ message: 'originalPrincipal must be > 0' }),
   interestRate: z.number().min(0).max(99.9999),
   termMonths: optionalNullableInt({ min: 1, max: 1200 }),
   // Contractual origination date — a loan can't originate in the future.
   startDate: notFutureCalendarDate({ message: 'startDate must not be in the future' }),
-  minPayment: nonNegativeDecimalMoney({ field: 'minPayment' }).nullable().optional(),
-  plannedPayment: nonNegativeDecimalMoney({ field: 'plannedPayment' }).nullable().optional(),
+  minPayment: nonNegativeAmount({ field: 'minPayment' }).nullable().optional(),
+  plannedPayment: nonNegativeAmount({ field: 'plannedPayment' }).nullable().optional(),
   paymentDayOfMonth: optionalNullableInt({ min: 1, max: 31 }),
   lenderName: z.string().min(1).max(200).trim().nullable().optional(),
   accountNumber: z.string().min(1).max(100).trim().nullable().optional(),
-});
+};
+
+export const createLoanBodySchema = z
+  .object(createLoanBodyFields)
+  .transform((body) =>
+    toMoneyFields({ body, keys: ['initialBalance', 'originalPrincipal', 'minPayment', 'plannedPayment'] as const }),
+  );
 
 export type CreateLoanBody = z.infer<typeof createLoanBodySchema>;
 
@@ -83,28 +108,30 @@ export type CreateLoanBody = z.infer<typeof createLoanBodySchema>;
  * and `loanType` are intentionally absent: currency switching is unsupported
  * codebase-wide, and loanType is UI-only metadata.
  */
-export const updateLoanBodySchema = z
-  .object({
-    name: z.string().min(1).max(200).trim().optional(),
-    // Positive outstanding amount; a negative value would flip into a loan in
-    // credit once the service negates it into the ledger convention.
-    currentBalance: nonNegativeDecimalMoney({ field: 'currentBalance' }).optional(),
-    // Balance-anchor date: "the outstanding was `currentBalance` as-of this date".
-    // Meaningless without `currentBalance` (cross-field refine enforces pairing);
-    // future dates are rejected because post-anchor payment legs are summed
-    // against the anchor.
-    currentBalanceAsOf: notFutureCalendarDate({ message: 'currentBalanceAsOf must not be in the future' }).optional(),
+export const updateLoanBodyFields = {
+  name: z.string().min(1).max(200).trim().optional(),
+  // Positive outstanding amount; a negative value would flip into a loan in
+  // credit once the service negates it into the ledger convention.
+  currentBalance: nonNegativeAmount({ field: 'currentBalance' }).optional(),
+  // Balance-anchor date: "the outstanding was `currentBalance` as-of this date".
+  // Meaningless without `currentBalance` (cross-field refine enforces pairing);
+  // future dates are rejected because post-anchor payment legs are summed
+  // against the anchor.
+  currentBalanceAsOf: notFutureCalendarDate({ message: 'currentBalanceAsOf must not be in the future' }).optional(),
 
-    interestRate: z.number().min(0).max(99.9999).optional(),
-    termMonths: optionalNullableInt({ min: 1, max: 1200 }),
-    // Contractual origination date — a loan can't originate in the future.
-    startDate: notFutureCalendarDate({ message: 'startDate must not be in the future' }).optional(),
-    minPayment: nonNegativeDecimalMoney({ field: 'minPayment' }).nullable().optional(),
-    plannedPayment: nonNegativeDecimalMoney({ field: 'plannedPayment' }).nullable().optional(),
-    paymentDayOfMonth: optionalNullableInt({ min: 1, max: 31 }),
-    lenderName: z.string().min(1).max(200).trim().nullable().optional(),
-    accountNumber: z.string().min(1).max(100).trim().nullable().optional(),
-  })
+  interestRate: z.number().min(0).max(99.9999).optional(),
+  termMonths: optionalNullableInt({ min: 1, max: 1200 }),
+  // Contractual origination date — a loan can't originate in the future.
+  startDate: notFutureCalendarDate({ message: 'startDate must not be in the future' }).optional(),
+  minPayment: nonNegativeAmount({ field: 'minPayment' }).nullable().optional(),
+  plannedPayment: nonNegativeAmount({ field: 'plannedPayment' }).nullable().optional(),
+  paymentDayOfMonth: optionalNullableInt({ min: 1, max: 31 }),
+  lenderName: z.string().min(1).max(200).trim().nullable().optional(),
+  accountNumber: z.string().min(1).max(100).trim().nullable().optional(),
+};
+
+export const updateLoanBodySchema = z
+  .object(updateLoanBodyFields)
   .refine((data) => Object.values(data).some((v) => v !== undefined), {
     message: 'At least one field must be provided',
   })
@@ -112,7 +139,8 @@ export const updateLoanBodySchema = z
     message:
       'currentBalanceAsOf requires currentBalance: the anchor date re-states the outstanding amount as-of that date',
     path: ['currentBalanceAsOf'],
-  });
+  })
+  .transform((body) => toMoneyFields({ body, keys: ['currentBalance', 'minPayment', 'plannedPayment'] as const }));
 
 export type UpdateLoanBody = z.infer<typeof updateLoanBodySchema>;
 

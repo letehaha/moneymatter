@@ -552,6 +552,9 @@ describe('Loans read API', () => {
         ['negative interestRate', { interestRate: -1 }],
         ['interestRate >= 100', { interestRate: 100 }],
         ['non-positive originalPrincipal', { originalPrincipal: 0 }],
+        ['negative initialBalance', { initialBalance: -1 }],
+        ['negative minPayment', { minPayment: -1 }],
+        ['negative plannedPayment', { plannedPayment: -1 }],
         ['paymentDayOfMonth outside 1-31', { paymentDayOfMonth: 32 }],
         ['calendar-invalid startDate 2024-02-30', { startDate: '2024-02-30' }],
         ['calendar-invalid startDate 2024-13-45', { startDate: '2024-13-45' }],
@@ -762,6 +765,8 @@ describe('Loans read API', () => {
       // rejection rather than a 200 that silently drops the payload.
       const badPayloads: [label: string, payload: Record<string, unknown>][] = [
         ['negative currentBalance', { currentBalance: -50 }],
+        ['negative minPayment', { minPayment: -1 }],
+        ['negative plannedPayment', { plannedPayment: -1 }],
         ['empty patch body', {}],
         ['calendar-invalid startDate', { startDate: '2024-02-30' }],
         ['future startDate', { startDate: format(addDays(new Date(), 2), 'yyyy-MM-dd') }],

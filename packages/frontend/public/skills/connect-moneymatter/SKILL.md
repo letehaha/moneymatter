@@ -249,6 +249,14 @@ page.
 | `get_base_currency_change_status`        | State of the running or last base-currency change                                                                |
 | Tool                                     | Purpose                                                                                                          |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `get_loans`                              | List loans with balance, terms and payoff projection; `loanId` reads one with its timeline                       |
+| `get_loan_balance_history`               | Outstanding balance of a loan over time, one point per payment day                                               |
+| `create_loan`                            | Create a loan with its terms (`finance:write`)                                                                   |
+| `update_loan`                            | Correct a loan's balance, rate, term, payments or lender details (`finance:write`)                               |
+| `delete_loan`                            | Permanently delete a loan that has no payments (`finance:delete`)                                                |
+| `add_loan_note`                          | Add a note to a loan's timeline (`finance:write`)                                                                |
+| `link_loan_payments`                     | Record expense transactions as payments on a loan (`finance:write`)                                              |
+| `unlink_loan_payment`                    | Undo a loan payment; the expense is restored (`finance:write`)                                                   |
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize
@@ -326,6 +334,12 @@ multi-currency data.
   whose amounts sum to its `lpNetAmount`: `link_transactions_to_venture_event`
   adds them, `replace_venture_event_links` swaps the whole set, and
   `delete_venture_event_link` frees one.
+- A loan is an account with a payment plan. Its balance is negative while debt
+  is outstanding, but `create_loan` and `update_loan` take the amount still owed
+  as a positive decimal. `get_loans` carries the payoff projection (use it for
+  payoff date and interest left). Payments are existing expenses recorded with
+  `link_loan_payments`; a loan with payments cannot be deleted until
+  `unlink_loan_payment` has undone them.
 
 ## Troubleshooting
 

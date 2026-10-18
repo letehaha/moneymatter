@@ -889,6 +889,38 @@
     {
       "name": "get_base_currency_change_status",
       "description": "Get the state of the running or last base-currency change: idle, queued, running, completed or failed."
+    },
+    {
+      "name": "get_loans",
+      "description": "List the loans with balance, terms and payoff projection, or read one with its timeline."
+    },
+    {
+      "name": "get_loan_balance_history",
+      "description": "Outstanding balance of a loan over time, one point per payment day, newest points when limited."
+    },
+    {
+      "name": "create_loan",
+      "description": "Create a loan with its terms; returns it with a payoff projection. Requires finance:write scope."
+    },
+    {
+      "name": "update_loan",
+      "description": "Update a loan's balance, rate, term, payments or lender details. Requires finance:write scope."
+    },
+    {
+      "name": "delete_loan",
+      "description": "Permanently delete a loan with no recorded payments. Requires finance:delete scope."
+    },
+    {
+      "name": "add_loan_note",
+      "description": "Add a note to the timeline of a loan. Requires finance:write scope."
+    },
+    {
+      "name": "link_loan_payments",
+      "description": "Record existing expense transactions as payments on a loan. Requires finance:write scope."
+    },
+    {
+      "name": "unlink_loan_payment",
+      "description": "Undo a loan payment; the source transaction is restored. Requires finance:write scope."
     }
   ],
   "prompts": [

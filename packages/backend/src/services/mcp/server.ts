@@ -9,6 +9,7 @@ import { registerAcceptTrackerSuggestions } from './tools/accept-tracker-suggest
 import { registerAcceptBudgetSuggestions } from './tools/accept-budget-suggestions';
 import { registerAcceptSubscriptionCandidate } from './tools/accept-subscription-candidate';
 import { registerAddAccountToGroup } from './tools/add-account-to-group';
+import { registerAddLoanNote } from './tools/add-loan-note';
 import { registerAddTransactionsToBudget } from './tools/add-transactions-to-budget';
 import { registerAddTransactionsToGroup } from './tools/add-transactions-to-group';
 import { registerAddTransactionsToTracker } from './tools/add-transactions-to-tracker';
@@ -31,6 +32,7 @@ import { registerCreateCategory } from './tools/create-category';
 import { registerCreateCustomCurrency } from './tools/create-custom-currency';
 import { registerCreateHolding } from './tools/create-holding';
 import { registerCreateInvestmentTransaction } from './tools/create-investment-transaction';
+import { registerCreateLoan } from './tools/create-loan';
 import { registerCreatePayee } from './tools/create-payee';
 import { registerCreatePayeeAlias } from './tools/create-payee-alias';
 import { registerCreatePortfolio } from './tools/create-portfolio';
@@ -54,6 +56,7 @@ import { registerDeleteCustomCurrency } from './tools/delete-custom-currency';
 import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
 import { registerDeleteHolding } from './tools/delete-holding';
 import { registerDeleteInvestmentTransaction } from './tools/delete-investment-transaction';
+import { registerDeleteLoan } from './tools/delete-loan';
 import { registerDeletePayee } from './tools/delete-payee';
 import { registerDeletePayeeAlias } from './tools/delete-payee-alias';
 import { registerDeletePortfolio } from './tools/delete-portfolio';
@@ -95,6 +98,8 @@ import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
 import { registerGetIgnoredPayeeNames } from './tools/get-ignored-payee-names';
 import { registerGetInvestmentContributions } from './tools/get-investment-contributions';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
+import { registerGetLoanBalanceHistory } from './tools/get-loan-balance-history';
+import { registerGetLoans } from './tools/get-loans';
 import { registerGetNetWorthDrivers } from './tools/get-net-worth-drivers';
 import { registerGetNetWorthHistory } from './tools/get-net-worth-history';
 import { registerGetNotifications } from './tools/get-notifications';
@@ -136,6 +141,7 @@ import { registerGetUserSettings } from './tools/get-user-settings';
 import { registerGetVentureContributions } from './tools/get-venture-contributions';
 import { registerIgnorePayeeName } from './tools/ignore-payee-name';
 import { registerKeepPendingAsBooked } from './tools/keep-pending-as-booked';
+import { registerLinkLoanPayments } from './tools/link-loan-payments';
 import { registerLinkRefund } from './tools/link-refund';
 import { registerLinkTransactionToPortfolio } from './tools/link-transaction-to-portfolio';
 import { registerLinkTransactionsToSubscription } from './tools/link-transactions-to-subscription';
@@ -185,6 +191,7 @@ import { registerTransferBetweenPortfolios } from './tools/transfer-between-port
 import { registerTransferPortfolioToAccount } from './tools/transfer-portfolio-to-account';
 import { registerUnignorePayeeName } from './tools/unignore-payee-name';
 import { registerUnlinkAccountFromBankConnection } from './tools/unlink-account-from-bank-connection';
+import { registerUnlinkLoanPayment } from './tools/unlink-loan-payment';
 import { registerUnlinkRefund } from './tools/unlink-refund';
 import { registerUnlinkSubscriptionPeriodTransaction } from './tools/unlink-subscription-period-transaction';
 import { registerUnlinkTransactionFromPortfolio } from './tools/unlink-transaction-from-portfolio';
@@ -197,6 +204,7 @@ import { registerUpdateBudgetLine } from './tools/update-budget-line';
 import { registerUpdateCategory } from './tools/update-category';
 import { registerUpdateCustomCurrency } from './tools/update-custom-currency';
 import { registerUpdateInvestmentTransaction } from './tools/update-investment-transaction';
+import { registerUpdateLoan } from './tools/update-loan';
 import { registerUpdatePayee } from './tools/update-payee';
 import { registerUpdatePortfolio } from './tools/update-portfolio';
 import { registerUpdateSubscription } from './tools/update-subscription';
@@ -523,6 +531,16 @@ export function createMcpServer(): McpServer {
   registerDeleteUserCurrency(server);
   registerChangeBaseCurrency(server);
   registerGetBaseCurrencyChangeStatus(server);
+
+  // Loans & vehicles
+  registerGetLoans(server);
+  registerGetLoanBalanceHistory(server);
+  registerCreateLoan(server);
+  registerUpdateLoan(server);
+  registerDeleteLoan(server);
+  registerAddLoanNote(server);
+  registerLinkLoanPayments(server);
+  registerUnlinkLoanPayment(server);
 
   return server;
 }
