@@ -81,6 +81,7 @@ page.
 | `list_tracker_suggestions`               | Smart-tracking suggestions (score, AI reason), AI-matched transactions, scan status of an owned tracker          |
 | `accept_tracker_suggestions`             | Accept pending suggestions, linking their transactions (`finance:write`)                                         |
 | `reject_tracker_suggestions`             | Reject suggestions; also unlinks AI-linked or accepted ones (`finance:write`)                                    |
+| `get_category_transaction_count`         | Count transactions filed under a category; check before `delete_category`                                        |
 | `get_spending_by_categories`             | Aggregate spending by category over a range                                                                      |
 | `get_cash_flow`                          | Income vs expenses over a range                                                                                  |
 | `get_balance_history`                    | Time-series of account balances                                                                                  |
@@ -114,7 +115,7 @@ page.
 | `delete_account_group`                   | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)                                |
 | `add_account_to_group`                   | Put an account into a group; an account is in one group at a time (`finance:write`)                              |
 | `remove_accounts_from_group`             | Take accounts out of a group (`finance:write`)                                                                   |
-| `get_transaction_groups`                 | List transaction groups with counts/dates or full embedded transactions                                          |
+| `get_transaction_groups`                 | List transaction groups with counts/dates or full embedded transactions; `groupId` reads one group               |
 | `create_transaction_group`               | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                                     |
 | `update_transaction_group`               | Rename or add a note to an existing group (`finance:write`)                                                      |
 | `delete_transaction_group`               | Delete a group — transactions kept (`finance:delete`)                                                            |
@@ -147,6 +148,11 @@ page.
 | `update_transaction_automation`          | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
 | `delete_transaction_automation`          | Permanently delete an automation rule (`finance:delete`)                                                         |
 | `reorder_transaction_automations`        | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
+| `apply_transaction_automation`           | Run a saved rule on up to 500 existing transactions; non-matching ids are skipped (`finance:write`)              |
+| `get_transaction_templates`              | List transaction templates: named presets for new transactions                                                   |
+| `create_transaction_template`            | Create a template: type, account, pinned amount, category, payee, tags (`finance:write`)                         |
+| `update_transaction_template`            | Change a template; `null` clears a field, `tagIds` replaces the tags (`finance:write`)                           |
+| `delete_transaction_template`            | Permanently delete a template (`finance:delete`)                                                                 |
 | `create_transaction`                     | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
 | `update_transaction`                     | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
 | `delete_transaction`                     | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |

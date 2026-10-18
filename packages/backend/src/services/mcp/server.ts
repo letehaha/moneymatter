@@ -15,6 +15,7 @@ import { registerAddTransactionsToTracker } from './tools/add-transactions-to-tr
 import { registerAddUserCurrencies } from './tools/add-user-currencies';
 import { registerAdjustAccountBalance } from './tools/adjust-account-balance';
 import { registerApplyPayeeTagsToTransactions } from './tools/apply-payee-tags-to-transactions';
+import { registerApplyTransactionAutomation } from './tools/apply-transaction-automation';
 import { registerArchiveAccount } from './tools/archive-account';
 import { registerArchiveTracker } from './tools/archive-tracker';
 import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transaction';
@@ -40,6 +41,7 @@ import { registerCreateTrackerLine } from './tools/create-tracker-line';
 import { registerCreateTransaction } from './tools/create-transaction';
 import { registerCreateTransactionAutomation } from './tools/create-transaction-automation';
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
+import { registerCreateTransactionTemplate } from './tools/create-transaction-template';
 import { registerDeleteAccount } from './tools/delete-account';
 import { registerDeleteAccountGroup } from './tools/delete-account-group';
 import { registerDeleteAttachment } from './tools/delete-attachment';
@@ -60,6 +62,7 @@ import { registerDeleteTrackerLine } from './tools/delete-tracker-line';
 import { registerDeleteTransaction } from './tools/delete-transaction';
 import { registerDeleteTransactionAutomation } from './tools/delete-transaction-automation';
 import { registerDeleteTransactionGroup } from './tools/delete-transaction-group';
+import { registerDeleteTransactionTemplate } from './tools/delete-transaction-template';
 import { registerDeleteUserCurrency } from './tools/delete-user-currency';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
@@ -73,6 +76,7 @@ import { registerGetBudgetSpendingStats } from './tools/get-budget-spending-stat
 import { registerGetBudgets } from './tools/get-budgets';
 import { registerGetCashFlow } from './tools/get-cash-flow';
 import { registerGetCategories } from './tools/get-categories';
+import { registerGetCategoryTransactionCount } from './tools/get-category-transaction-count';
 import { registerGetCurrencyRateHistory } from './tools/get-currency-rate-history';
 import { registerGetExchangeRate } from './tools/get-exchange-rate';
 import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
@@ -99,6 +103,7 @@ import { registerGetTrackers } from './tools/get-trackers';
 import { registerGetTransactionAutomations } from './tools/get-transaction-automations';
 import { registerGetTransactionGroups } from './tools/get-transaction-groups';
 import { registerGetTransactionLinks } from './tools/get-transaction-links';
+import { registerGetTransactionTemplates } from './tools/get-transaction-templates';
 import { registerGetTransactions } from './tools/get-transactions';
 import { registerGetTransactionsSummary } from './tools/get-transactions-summary';
 import { registerGetTransferRecommendations } from './tools/get-transfer-recommendations';
@@ -171,6 +176,7 @@ import { registerUpdateTrackerLine } from './tools/update-tracker-line';
 import { registerUpdateTransaction } from './tools/update-transaction';
 import { registerUpdateTransactionAutomation } from './tools/update-transaction-automation';
 import { registerUpdateTransactionGroup } from './tools/update-transaction-group';
+import { registerUpdateTransactionTemplate } from './tools/update-transaction-template';
 import { registerUpdateUserCurrency } from './tools/update-user-currency';
 import {
   registerCreateVentureDeal,
@@ -282,6 +288,7 @@ export function createMcpServer(): McpServer {
 
   // Taxonomy (categories + tags)
   registerGetCategories(server);
+  registerGetCategoryTransactionCount(server);
   registerCreateCategory(server);
   registerUpdateCategory(server);
   registerDeleteCategory(server);
@@ -390,6 +397,13 @@ export function createMcpServer(): McpServer {
   registerUpdateTransactionAutomation(server);
   registerDeleteTransactionAutomation(server);
   registerReorderTransactionAutomations(server);
+  registerApplyTransactionAutomation(server);
+
+  // Transaction templates (named presets for new transactions)
+  registerGetTransactionTemplates(server);
+  registerCreateTransactionTemplate(server);
+  registerUpdateTransactionTemplate(server);
+  registerDeleteTransactionTemplate(server);
 
   // Venture investments (platforms, deals, events)
   registerListVenturePlatforms(server);
