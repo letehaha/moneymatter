@@ -422,6 +422,79 @@ describe('GET /transactions/by-ids', () => {
   });
 });
 
+describe('GET /transactions/by-ids — access follows the current share, not the row author', () => {
+  it('returns the owner-authored transactions of a shared account to the read-only viewer', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [ownerTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 70 }),
+      raw: true,
+    });
+    const privateAccount = await helpers.createAccount({ raw: true });
+    const [privateTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: privateAccount.id, amount: 80 }),
+      raw: true,
+    });
+
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({ accountId: account.id, recipient, permission: SHARE_PERMISSIONS.read });
+
+    const viewed = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [ownerTx.id, privateTx.id], raw: true }),
+    });
+
+    expect(viewed.map((tx) => tx.id)).toEqual([ownerTx.id]);
+    expect(viewed[0]!.amount).toBe(70);
+  });
+
+  it('stops returning a transaction the recipient authored once the owner revokes the share', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const ownerCategory = await helpers.addCustomCategory({ name: 'by-ids-cat', color: '#00AA00', raw: true });
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({
+      accountId: account.id,
+      recipient,
+      permission: SHARE_PERMISSIONS.write,
+      transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all,
+    });
+    const [recipientTx] = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () =>
+        helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 25,
+            categoryId: ownerCategory.id,
+          }),
+          raw: true,
+        }),
+    });
+
+    const whileShared = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true }),
+    });
+    expect(whileShared.map((tx) => tx.id)).toEqual([recipientTx.id]);
+
+    const recipientApp = await helpers.findAppUserByEmail({ email: recipient.email });
+    await helpers.revokeShareMember({
+      resourceType: RESOURCE_TYPES.account,
+      resourceId: account.id,
+      memberUserId: recipientApp.id,
+      raw: true,
+    });
+
+    const afterRevoke = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true }),
+    });
+    expect(afterRevoke).toEqual([]);
+
+    const ownerView = await helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true });
+    expect(ownerView.map((tx) => tx.id)).toEqual([recipientTx.id]);
+  });
+});
+
 describe('Retrieve transaction by transfer id', () => {
   it('returns both legs for a real transferId and nothing for a null one', async () => {
     const accountA = await helpers.createAccount({ raw: true });
