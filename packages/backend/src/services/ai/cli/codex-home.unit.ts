@@ -2,7 +2,7 @@ import { describe, expect, it, jest } from '@jest/globals';
 import { readFile, stat, writeFile } from 'fs/promises';
 import path from 'path';
 
-import { withCodexHome } from './codex-home';
+import { retireCodexHome, withCodexHome } from './codex-home';
 
 jest.mock('@js/utils/logger', () => ({
   logger: { error: jest.fn(), warn: jest.fn(), info: jest.fn(), debug: jest.fn() },
@@ -50,6 +50,12 @@ function createStore({ initial }: { initial: string }) {
   return { state, load, save };
 }
 
+/** A re-sign-in: the stored copy changes under the running home, as `updateConnection` does. */
+const reSignIn = ({ store, credential }: { store: ReturnType<typeof createStore>; credential: string }) => {
+  store.state.credential = credential;
+  store.state.revision = 'rev-resigned';
+};
+
 describe('withCodexHome', () => {
   it('writes auth.json and config.toml with private modes and removes the dir', async () => {
     const store = createStore({ initial: '{"v":1}' });
@@ -83,7 +89,7 @@ describe('withCodexHome', () => {
   });
 
   describe('sharing one home per connection', () => {
-    it('gives overlapping runs of one connection the same directory and loads the credential once', async () => {
+    it('gives overlapping runs of one connection the same directory', async () => {
       const store = createStore({ initial: '{"v":1}' });
       const bothRunning = deferred();
       const homes: string[] = [];
@@ -102,7 +108,6 @@ describe('withCodexHome', () => {
       ]);
 
       expect(homes[0]).toBe(homes[1]);
-      expect(store.load).toHaveBeenCalledTimes(1);
     });
 
     it('gives different connections different directories', async () => {
@@ -127,7 +132,7 @@ describe('withCodexHome', () => {
       expect(store.load).toHaveBeenCalledTimes(2);
     });
 
-    it('shows a run the auth.json another run rewrote, without reloading from the store', async () => {
+    it('shows a run the auth.json another run rewrote before it was saved', async () => {
       const store = createStore({ initial: '{"v":1}' });
       const firstRunning = deferred();
       const release = deferred();
@@ -157,7 +162,6 @@ describe('withCodexHome', () => {
       await first;
 
       expect(seenBySecond).toBe('{"v":2}');
-      expect(store.load).toHaveBeenCalledTimes(1);
     });
 
     it('keeps the directory until the last run ends', async () => {
@@ -290,8 +294,172 @@ describe('withCodexHome', () => {
       loadGate.resolve();
       await both;
 
-      expect(store.load).toHaveBeenCalledTimes(1);
       expect(homes[0]).toBe(homes[1]);
+    });
+  });
+
+  describe('when the stored credential is replaced', () => {
+    it('gives a run that starts after a re-sign-in a fresh home with the new credential, while the old run goes on', async () => {
+      const store = createStore({ initial: '{"v":"old"}' });
+      const oldRunUp = deferred();
+      const releaseOldRun = deferred();
+      let oldHome = '';
+      let newHome = '';
+      let seenByNew = '';
+      let oldStillThere = false;
+
+      const oldRun = withCodexHome({
+        connectionKey: 'resigned',
+        ...store,
+        run: async ({ codexHome }) => {
+          oldHome = codexHome;
+          oldRunUp.resolve();
+          await releaseOldRun.promise;
+        },
+      });
+
+      await oldRunUp.promise;
+      reSignIn({ store, credential: '{"v":"new"}' });
+
+      await withCodexHome({
+        connectionKey: 'resigned',
+        ...store,
+        run: async ({ codexHome }) => {
+          newHome = codexHome;
+          seenByNew = await readFile(authFile({ codexHome }), 'utf8');
+          oldStillThere = await exists({ target: authFile({ codexHome: oldHome }) });
+        },
+      });
+
+      releaseOldRun.resolve();
+      await oldRun;
+
+      expect(seenByNew).toBe('{"v":"new"}');
+      expect(newHome).not.toBe(oldHome);
+      expect(oldStillThere).toBe(true);
+      expect(await exists({ target: oldHome })).toBe(false);
+      expect(await exists({ target: newHome })).toBe(false);
+    });
+
+    it('keeps putting later runs on the new home, and does not save the old home late refresh over the new credential', async () => {
+      const store = createStore({ initial: '{"v":"old"}' });
+      const oldRunUp = deferred();
+      const releaseOldRun = deferred();
+      const newRunUp = deferred();
+      const releaseNewRun = deferred();
+      const homes: string[] = [];
+
+      const oldRun = withCodexHome({
+        connectionKey: 'resigned-late',
+        ...store,
+        run: async ({ codexHome }) => {
+          homes.push(codexHome);
+          oldRunUp.resolve();
+          await releaseOldRun.promise;
+          await rewrite({ codexHome, content: '{"v":"old-refreshed"}' });
+        },
+      });
+
+      await oldRunUp.promise;
+      reSignIn({ store, credential: '{"v":"new"}' });
+
+      const newRun = withCodexHome({
+        connectionKey: 'resigned-late',
+        ...store,
+        run: async ({ codexHome }) => {
+          homes.push(codexHome);
+          newRunUp.resolve();
+          await releaseNewRun.promise;
+        },
+      });
+
+      await newRunUp.promise;
+      await withCodexHome({
+        connectionKey: 'resigned-late',
+        ...store,
+        run: async ({ codexHome }) => {
+          homes.push(codexHome);
+        },
+      });
+
+      releaseOldRun.resolve();
+      await oldRun;
+      releaseNewRun.resolve();
+      await newRun;
+
+      expect(homes[1]).toBe(homes[2]);
+      expect(homes[0]).not.toBe(homes[1]);
+      expect(store.save).not.toHaveBeenCalled();
+      expect(store.state.credential).toBe('{"v":"new"}');
+    });
+
+    it('still lets a refresh made on the new home be saved against the new revision', async () => {
+      const store = createStore({ initial: '{"v":"old"}' });
+      const oldRunUp = deferred();
+      const releaseOldRun = deferred();
+
+      const oldRun = withCodexHome({
+        connectionKey: 'resigned-refresh',
+        ...store,
+        run: async () => {
+          oldRunUp.resolve();
+          await releaseOldRun.promise;
+        },
+      });
+
+      await oldRunUp.promise;
+      reSignIn({ store, credential: '{"v":"new"}' });
+
+      await withCodexHome({
+        connectionKey: 'resigned-refresh',
+        ...store,
+        run: ({ codexHome }) => rewrite({ codexHome, content: '{"v":"new-refreshed"}' }),
+      });
+
+      releaseOldRun.resolve();
+      await oldRun;
+
+      expect(store.save).toHaveBeenCalledWith({ credential: '{"v":"new-refreshed"}', loadedRevision: 'rev-resigned' });
+      expect(store.state.credential).toBe('{"v":"new-refreshed"}');
+    });
+
+    it('retires the home on demand: later runs start fresh and the retired home is not written back', async () => {
+      const store = createStore({ initial: '{"v":1}' });
+      const oldRunUp = deferred();
+      const releaseOldRun = deferred();
+      const homes: string[] = [];
+
+      const oldRun = withCodexHome({
+        connectionKey: 'retired',
+        ...store,
+        run: async ({ codexHome }) => {
+          homes.push(codexHome);
+          oldRunUp.resolve();
+          await releaseOldRun.promise;
+          await rewrite({ codexHome, content: '{"v":2}' });
+        },
+      });
+
+      await oldRunUp.promise;
+      await retireCodexHome({ connectionKey: 'retired' });
+      await withCodexHome({
+        connectionKey: 'retired',
+        ...store,
+        run: async ({ codexHome }) => {
+          homes.push(codexHome);
+        },
+      });
+
+      releaseOldRun.resolve();
+      await oldRun;
+
+      expect(homes[0]).not.toBe(homes[1]);
+      expect(store.save).not.toHaveBeenCalled();
+      expect(await exists({ target: homes[0]! })).toBe(false);
+    });
+
+    it('does nothing when the connection has no home', async () => {
+      await expect(retireCodexHome({ connectionKey: 'never-used' })).resolves.toBeUndefined();
     });
   });
 

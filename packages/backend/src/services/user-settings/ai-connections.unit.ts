@@ -5,6 +5,7 @@ import { logger } from '@js/utils/logger';
 import UserSettings, { type StoredConnection } from '@models/user-settings.model';
 
 import { abortCliRunsForConnection } from '../ai/cli/cli-run-limiter';
+import { retireCodexHome } from '../ai/cli/codex-home';
 import { logoutCodexConnection } from '../ai/cli/codex-logout';
 import {
   connectionCredentialSource,
@@ -22,6 +23,7 @@ jest.mock('../ai/connection-validation', () => ({ validateCliConnection: jest.fn
 jest.mock('../ai/list-connection-models', () => ({ listConnectionModels: jest.fn() }));
 jest.mock('../ai/cli/cli-access', () => ({ assertCliAiAllowed: jest.fn() }));
 jest.mock('../ai/cli/codex-logout', () => ({ logoutCodexConnection: jest.fn() }));
+jest.mock('../ai/cli/codex-home', () => ({ retireCodexHome: jest.fn() }));
 jest.mock('../ai/cli/cli-run-limiter', () => ({
   ...jest.requireActual<object>('../ai/cli/cli-run-limiter'),
   abortCliRunsForConnection: jest.fn(),
@@ -240,12 +242,15 @@ describe('deleteConnection', () => {
     jest.clearAllMocks();
   });
 
-  it("cancels the connection's active runs before signing a Codex connection out, then removes it", async () => {
+  it("cancels the connection's active runs and retires its Codex home before signing it out, then removes it", async () => {
     const events: string[] = [];
     const row = stubSettingsRow({ connections: [buildConnection({ id: 'a', keyEncrypted: encryptToken(AUTH_JSON) })] });
 
     jest.mocked(abortCliRunsForConnection).mockImplementation(async () => {
       events.push('abort');
+    });
+    jest.mocked(retireCodexHome).mockImplementation(async () => {
+      events.push('retire');
     });
     jest.mocked(logoutCodexConnection).mockImplementation(async () => {
       events.push('logout');
@@ -257,7 +262,8 @@ describe('deleteConnection', () => {
     await deleteConnection({ userId: USER_ID, connectionId: 'a' });
 
     expect(abortCliRunsForConnection).toHaveBeenCalledWith({ connectionKey: 'a' });
-    expect(events).toEqual(['abort', 'logout', 'delete']);
+    expect(retireCodexHome).toHaveBeenCalledWith({ connectionKey: 'a' });
+    expect(events).toEqual(['abort', 'retire', 'logout', 'delete']);
   });
 
   it('cancels the active runs of a Claude Code connection too, without a logout', async () => {
