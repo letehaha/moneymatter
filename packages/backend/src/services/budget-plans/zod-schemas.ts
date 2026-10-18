@@ -1,4 +1,9 @@
-import { BUDGET_PLAN_CADENCES, BUDGET_PLAN_CARRY_POLICIES, BUDGET_PLAN_TYPE_KEYS } from '@bt/shared/types';
+import {
+  BUDGET_ASSIGNMENT_SCOPES,
+  BUDGET_PLAN_CADENCES,
+  BUDGET_PLAN_CARRY_POLICIES,
+  BUDGET_PLAN_TYPE_KEYS,
+} from '@bt/shared/types';
 import {
   boundedDecimalAmount,
   budgetPlanName,
@@ -103,3 +108,19 @@ export const setLayoutBodyFields = {
 };
 
 export const setLayoutBodySchema = z.strictObject(setLayoutBodyFields);
+
+/**
+ * Body of `PUT /budget-plans/:planId/periods/:periodId/lines/:lineId/assignment`. `undefined` leaves
+ * a field untouched, `null` clears it, so an empty body is the one thing that cannot be meant.
+ */
+export const setAssignmentBodyFields = {
+  scope: z.enum(BUDGET_ASSIGNMENT_SCOPES),
+  amount: boundedDecimalAmount().nullable().optional(),
+  carryPolicy: z.enum(BUDGET_PLAN_CARRY_POLICIES).nullable().optional(),
+};
+
+export const setAssignmentBodySchema = z
+  .strictObject(setAssignmentBodyFields)
+  .refine((body) => body.amount !== undefined || body.carryPolicy !== undefined, {
+    message: 'Provide amount, carryPolicy, or both.',
+  });
