@@ -146,7 +146,7 @@ The `name` MUST match the string in step 1 exactly. The drift test compares sort
 
 Path: `packages/frontend/public/skills/connect-moneymatter/SKILL.md`
 
-Add a row to the "Available tools" table under the correct conceptual group (accounts vs investments vs analytics vs categories/tags). Use the SAME column layout (keep table alignment padded).
+Add a row to the "Available tools" table in the section that matches the `// comment` group the tool is registered under in `server.ts` (one `###` section per group, in the same order). Use the SAME column layout (keep table alignment padded) and state the scope as the existing rows do.
 
 If the new tool introduces a new data convention (e.g. investments vs regular transactions), also add a bullet under "Data conventions".
 
@@ -241,6 +241,10 @@ Representative tools to copy from:
 - **Single filter + pagination**: `tools/get-accounts.ts`
 - **Many optional filters + pagination + enum**: `tools/search-transactions.ts`
 - **Conditional branch based on args**: `tools/get-balance-history.ts`
+- **Consolidated read** (one call assembles a view from a service): `tools/get-budget-plan-period.ts`
+- **Gated write** (scope, feature gate, base-currency lock, shared body schema): `tools/create-budget-plan-group.ts`
+- **Lock-exempt write** (no `assertBaseCurrencyUnlocked`, with the REST route named in a comment; also feature-gated): `tools/delete-attachment.ts`
+- **Read-only-allowed write** (`allowReadOnly: true`, listed in `READ_ONLY_ROUTE_TOOLS`): `tools/mark-notifications-read.ts`
 
 Helpers available from `./helpers`:
 

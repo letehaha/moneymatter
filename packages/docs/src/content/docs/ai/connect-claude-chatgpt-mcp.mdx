@@ -127,9 +127,9 @@ Before an app gets access, MoneyMatter shows a page titled "[app name] wants acc
 
 | Permission                              | On this page                                 | What it allows                                                                |
 | --------------------------------------- | -------------------------------------------- | ----------------------------------------------------------------------------- |
-| **View your financial data**            | **Always granted**                           | Read accounts, transactions, trackers, categories, tags, portfolios and stats. |
-| **Create and edit your financial data** | **Optional**, ticked when the page opens     | Add and update transactions, trackers, subscriptions, investments and more.   |
-| **Delete your financial data**          | **Optional**, not ticked when the page opens | Permanently remove records.                                                   |
+| **View your financial data**            | **Always granted**                           | Read accounts, transactions, budget plans, loans, currencies, portfolios and stats. |
+| **Create and edit your financial data** | **Optional**, ticked when the page opens     | Add and update transactions, budget plans, subscriptions, loans, investments and more. |
+| **Delete your financial data**          | **Optional**, not ticked when the page opens | Permanently remove records, such as transactions, accounts or payees.         |
 | **View your profile**                   | **Always granted**                           | See your name, email and base currency.                                       |
 | **Stay connected in the background**    | **Always granted**                           | Keep access without asking you to approve again each session.                 |
 
@@ -144,19 +144,62 @@ For questions and reports only, untick **Create and edit your financial data** b
 
 To change the access level later, [revoke the app](#disconnect-an-app) and connect it again.
 
-If your account is in [read-only mode](/settings/plans-and-billing/#read-only-mode), a connected assistant can still read your data, but every change it tries is refused, whatever you approved.
+If your account is in [read-only mode](/settings/plans-and-billing/#read-only-mode), a connected assistant can still read your data, but almost every change it tries is refused, whatever you approved. The exceptions are the ones the app allows in read-only mode too: marking notifications read and changing your settings.
 
 ## What you can ask
 
-The assistant can work with your accounts, transactions, categories, tags, payees, trackers, subscriptions, automation rules, investments, venture deals and spending stats. Some things to try:
+The assistant can work with:
+
+- accounts and account groups;
+- transactions, including planned ones, refunds, transfers and attachments;
+- categories, tags and tag reminders;
+- payees;
+- trackers and budget plans;
+- subscriptions, automation rules and transaction templates;
+- loans and vehicles;
+- currencies and exchange rates, including your own custom currencies;
+- notifications and your app settings;
+- investments and venture deals;
+- reports, such as spending, cash flow and net worth.
+
+Some things to try:
 
 - "Compare my dining out spending this month to my 3-month average."
 - "Which of my subscriptions got more expensive this year?"
 - "Show every transaction over $100 last quarter that wasn't a subscription."
 - "What's my average weekly grocery spend, and how has it changed?"
 - "I want to save $500 a month. Where could I realistically cut?"
+- "How much of my budget plan is left in groceries this month, and how did it go over the last three months?"
+- "When will my car loan be paid off, and how much interest is left?"
+- "Find duplicate transactions from last month's bank sync."
 
-With edit access you can also ask it to do things, for example "Categorize last week's uncategorized transactions" or "Create a tracker of $400 for groceries this month".
+With edit access you can also ask it to do things, for example:
+
+- "Categorize last week's uncategorized transactions."
+- "Create a tracker of $400 for groceries this month."
+- "Confirm my rent payment, it went out today."
+- "Put my savings accounts into a group called Savings."
+
+<Aside type="note" title="Budget versus tracker">
+  The **Budget** page in the app is a budget plan: money you assign to
+  categories period by period, see [Start budgeting](/budgeting/start-budgeting/).
+  A **tracker** is a spending limit on some categories over a date range. Say
+  which one you mean if the assistant mixes them up. The assistant can only
+  change a budget if your plan [includes budgeting](/budgeting/start-budgeting/#which-plans-include-budgeting).
+</Aside>
+
+While you change your base currency, MoneyMatter recalculates your history and blocks edits until it finishes. The assistant's changes are refused during that time, and it can still read. Ask it again once the change is done.
+
+### What the assistant can't do
+
+Some things stay in the app, and the assistant can't do them even with every permission:
+
+- Connect or disconnect a bank, and sync a bank connection. It can show the state of your connections and syncs.
+- Share an account or budget with someone, or accept or change a share. It can show who has access.
+- Import a file, or download or back up your data. It can list your past imports and undo one.
+- Change the AI settings, such as AI providers and API keys.
+- Change your password or sign-in, manage your subscription and billing, or delete your account.
+- Revoke its own access. You do that under [Disconnect an app](#disconnect-an-app).
 
 ## Disconnect an app
 

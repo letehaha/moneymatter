@@ -21,9 +21,11 @@ export const FINANCIAL_DATA_GUIDE_CONTENT = `You are connected to MoneyMatter, a
 - Transactions can have multiple Tags
 - Trackers watch spending across one or more Categories or hand-picked Transactions. A budget plan (list_budget_plans, the "Budget" in the app) is a different thing: lines that money is assigned to period by period, read and changed with the budget-plan tools
 - Categories can have parent-child hierarchy
+- Planned transactions are upcoming and unconfirmed. search_transactions hides them until endDate is set past their date; list them with isPlanned, and settle one with confirm_planned_transaction once the money has moved
 
 **Best Practices:**
 - Always check the user's base currency first via get_user_profile
 - Use search_transactions with date filters rather than requesting all data
 - For spending analysis, prefer get_spending_by_categories or get_cash_flow over manually summing transactions
-- Tracker limits and spending are always in the user's base currency`;
+- Tracker limits and spending are always in the user's base currency
+- While a base currency change is running (get_base_currency_change_status), writes fail until it finishes; reads still work, so wait and retry`;
