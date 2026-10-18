@@ -91,6 +91,9 @@ page.
 | `list_shared_with_me` | Accounts, households and budgets others shared with you |
 | `list_bank_connections` | Bank connections, or one with its accounts and consent window |
 | `get_bank_sync_status` | Sync state of bank-connected accounts, connections to reconnect, running syncs |
+| `list_import_batches` | Import batches (source, row count, accounts), newest first |
+| `delete_import_batch` | Undo an import: delete one batch's transactions; large batches run as a job (`finance:delete`) |
+| `get_import_batch_delete_status` | State of the background import batch delete (idle, queued, running, completed, failed) |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
@@ -900,6 +903,13 @@ multi-currency data.
   (never an invitation's accept link); `list_bank_connections` and
   `get_bank_sync_status` show the state of linked banks (never credentials).
   Inviting, accepting, connecting a bank and syncing are done in the app.
+- Imports are run in the app; here you can list batches and undo one.
+  `delete_import_batch` takes a batch id from `list_import_batches` and
+  deletes every transaction the import created (it also reverses the balance
+  the import absorbed and removes accounts it created that are now empty).
+  A batch above 1000 rows answers with a `jobId`: the delete runs in the
+  background and blocks writes until it ends, so follow it with
+  `get_import_batch_delete_status`.
 
 ## Troubleshooting
 
