@@ -235,6 +235,34 @@
       "description": "Disconnect a bank-connected account from its bank; it becomes a manual account and keeps its history."
     },
     {
+      "name": "get_account_groups",
+      "description": "List the account groups (nested folders) with their parent, path, child groups and accounts, or the account ids of one group."
+    },
+    {
+      "name": "create_account_group",
+      "description": "Create an account group, optionally nested under a parent group. Requires finance:write scope."
+    },
+    {
+      "name": "update_account_group",
+      "description": "Rename an account group, change its parent or its logo. Requires finance:write scope."
+    },
+    {
+      "name": "move_account_group",
+      "description": "Move an account group under another group or to the top level. Requires finance:write scope."
+    },
+    {
+      "name": "delete_account_group",
+      "description": "Delete an account group; its accounts are kept and only ungrouped. Requires finance:delete scope."
+    },
+    {
+      "name": "add_account_to_group",
+      "description": "Put an account into an account group (an account sits in one group at a time). Requires finance:write scope."
+    },
+    {
+      "name": "remove_accounts_from_group",
+      "description": "Take accounts out of an account group. Requires finance:write scope."
+    },
+    {
       "name": "get_transaction_groups",
       "description": "List all transaction groups with aggregate counts and date ranges, or with full embedded transactions."
     },
