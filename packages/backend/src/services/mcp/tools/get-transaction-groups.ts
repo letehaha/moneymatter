@@ -1,7 +1,8 @@
+import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
-import { getTransactionGroups } from '@services/transaction-groups';
+import { getTransactionGroupById, getTransactionGroups } from '@services/transaction-groups';
 import type {
   TransactionGroupWithAggregates,
   TransactionGroupWithTransactions,
@@ -12,6 +13,9 @@ import { getUserId, jsonContent } from './helpers';
 import { presentTransactions } from './transaction-output';
 
 const inputSchema = {
+  groupId: recordId()
+    .optional()
+    .describe('Group id. When given, returns that one group with its transactions; includeTransactions is ignored.'),
   includeTransactions: z
     .boolean()
     .optional()
@@ -23,12 +27,22 @@ export function registerGetTransactionGroups(server: McpServer) {
     'get_transaction_groups',
     {
       description:
-        'List all transaction groups for the user. Groups bundle related transactions (e.g. split expenses). When includeTransactions is true, each group contains the full transaction list, each with its payee; otherwise returns aggregate counts and date ranges.',
+        'List all transaction groups for the user. Groups bundle related transactions (e.g. split expenses). When includeTransactions is true, each group contains the full transaction list, each with its payee; otherwise returns aggregate counts and date ranges. Pass groupId to read a single group with its transactions.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'get_transaction_groups', clientId: extra.authInfo?.clientId });
+
+      if (args.groupId) {
+        const group = await getTransactionGroupById({ id: args.groupId, userId });
+        const transactions = await presentTransactions({
+          userId,
+          transactions: serializeTransactions(group.transactions ?? []),
+        });
+
+        return jsonContent({ data: { id: group.id, name: group.name, note: group.note, transactions } });
+      }
 
       const result = await getTransactionGroups({ userId, includeTransactions: args.includeTransactions });
 
