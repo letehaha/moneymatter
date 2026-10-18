@@ -4,14 +4,17 @@ import { slimToolListSchema } from './tool-list-slimming';
 
 const UUID_PATTERN = '^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$';
 
+// zod's `datetime()` accepts a UTC time only (ending in Z); the pattern is the one place a client can read that.
+const UTC_DATE_TIME_PATTERN = '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z)$';
+
 describe('slimToolListSchema', () => {
-  it('drops the pattern next to a uuid, date or date-time format and keeps the format', () => {
+  it('drops the pattern next to a uuid or date format, keeps the format, and keeps a date-time pattern', () => {
     const schema = {
       type: 'object',
       properties: {
         id: { type: 'string', format: 'uuid', pattern: UUID_PATTERN, description: 'Account id' },
         day: { type: 'string', format: 'date', pattern: '^\\d{4}-\\d{2}-\\d{2}$' },
-        at: { type: 'string', format: 'date-time', pattern: '^.*$' },
+        at: { type: 'string', format: 'date-time', pattern: UTC_DATE_TIME_PATTERN },
       },
     };
 
@@ -20,7 +23,7 @@ describe('slimToolListSchema', () => {
       properties: {
         id: { type: 'string', format: 'uuid', description: 'Account id' },
         day: { type: 'string', format: 'date' },
-        at: { type: 'string', format: 'date-time' },
+        at: { type: 'string', format: 'date-time', pattern: UTC_DATE_TIME_PATTERN },
       },
     });
   });
