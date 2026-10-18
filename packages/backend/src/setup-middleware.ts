@@ -1,4 +1,5 @@
 import { isPerfDebugEnabled, perfDebugMiddleware } from '@common/lib/perf/perf-debug';
+import { resolveTrustedProxies, TRUSTED_PROXIES_ENV } from '@config/trusted-proxies';
 import { logger } from '@js/utils/logger';
 import { requestIdMiddleware } from '@middlewares/request-id';
 import { sessionMiddleware } from '@middlewares/session-id';
@@ -15,10 +16,11 @@ export function setupMiddleware(app: Express) {
   // Drop the default `X-Powered-By: Express` info-disclosure header.
   app.disable('x-powered-by');
 
-  // `req.ip` keys the per-IP rate limits. Behind nginx or Traefik the socket peer is the proxy, so
-  // Express has to read X-Forwarded-For. Trusting private ranges only means the first public
-  // address from the right wins, which a client cannot forge.
-  app.set('trust proxy', ['loopback', 'linklocal', 'uniquelocal']);
+  // `req.ip` keys the per-IP rate limits. Behind nginx, Traefik or a Cloudflare Tunnel the socket peer is the proxy, so Express
+  // has to read X-Forwarded-For. Trusting private ranges only (the default) means the first public
+  // address from the right wins, which a client cannot forge. TRUSTED_PROXIES overrides the list for a
+  // proxy that reaches the backend from a public address.
+  app.set('trust proxy', resolveTrustedProxies({ raw: process.env[TRUSTED_PROXIES_ENV] }));
 
   app.use(requestIdMiddleware);
 
