@@ -61,7 +61,7 @@ page.
 | `get_transactions_summary`              | Count and base-currency totals of the transactions matching the list filters                                     |
 | `get_planned_summary`                   | Totals of planned (upcoming) transactions per account and currency                                               |
 | `confirm_planned_transaction`           | Confirm a planned transaction once the money moved; settles a subscription period (`finance:write`)              |
-| `bulk_delete_transactions`              | Permanently delete many transactions by ids or filters; preview with get_transactions_summary (`finance:delete`) |
+| `bulk_delete_transactions`              | Permanently delete many by ids or non-empty filters; preview with get_transactions_summary (`finance:delete`)    |
 | `get_transaction_links`                 | A transaction's portfolio-transfer and venture-event links                                                       |
 | `list_transaction_attachments`          | Files attached to a transaction (id, name, type, size)                                                           |
 | `delete_attachment`                     | Permanently delete a transaction attachment (`finance:delete`)                                                   |
@@ -150,6 +150,11 @@ page.
 | `unlink_transfer`                       | Unlink a transfer pair by transferId (`finance:write`)                                                           |
 | `link_refund`                           | Mark a transaction as a refund of another (`finance:write`)                                                      |
 | `unlink_refund`                         | Remove the refund link between two transactions (`finance:write`)                                                |
+| `get_refunds`                           | Refund links: of one transaction, one pair, or a paged list; both sides carry their payee                        |
+| `get_refund_recommendations`            | Suggest transactions a refund could link to (saved transaction or form data)                                     |
+| `get_transfer_recommendations`          | Suggest the other leg of a transfer (saved transaction or form data)                                             |
+| `list_transfer_suggestions`             | Scan a period for likely transfer pairs with a confidence score; reads only                                      |
+| `dismiss_transfer_suggestion`           | Dismiss a suggested pair as not a transfer (`finance:write`)                                                     |
 | `assign_tags_to_transaction`            | Assign tags to a transaction (`finance:write`)                                                                   |
 | `remove_tags_from_transaction`          | Remove tags from one or more transactions (`finance:write`)                                                      |
 | `create_category`                       | Create a new category, optionally nested (`finance:write`)                                                       |
@@ -188,6 +193,10 @@ multi-currency data.
   Use them for cross-account totals when accounts have different currencies.
 - Transaction types: `income`, `expense`, `transfer`. Transfers are **not**
   income or expense — exclude them from spend/earn aggregations.
+- The two legs of a linked transfer share a `transferId`; `get_transactions` with that
+  `transferId` reads both. To find unlinked pairs, `list_transfer_suggestions` scans a
+  period and `get_transfer_recommendations` suggests one transaction's other leg;
+  `link_transfer` links a pair and `dismiss_transfer_suggestion` rejects a wrong one.
 - File bytes never travel through MCP tool arguments. To attach a receipt, call
   `create_attachment_upload_url`, then POST each file as the raw request body to
   the returned `url` with the returned headers plus the file's URI-encoded name in
