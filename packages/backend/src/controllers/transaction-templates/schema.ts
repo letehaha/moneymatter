@@ -22,6 +22,9 @@ export const templateBodySchema = z.object({
   tagIds: uniqueRecordIds().optional(),
 });
 
+/** The update body: every field optional. `null` clears a nullable field and `tagIds` replaces the set. */
+export const updateTemplateBodySchema = templateBodySchema.partial();
+
 /**
  * Fails `tsc` when the request schema and the shared payload type drift apart.
  * @public exported only so the assertion is not flagged as unused.

@@ -137,6 +137,7 @@ page.
 | `unlink_transactions_from_subscription` | Remove transaction links from a subscription (`finance:write`)                                                   |
 | `get_upcoming_subscription_payments`    | Upcoming payments sorted by next expected date                                                                   |
 | `get_subscriptions_summary`             | Monthly/yearly cost, expected monthly income, and per-direction active counts in base currency                   |
+| `get_category_transaction_count`         | Count transactions filed under a category; check before `delete_category`                                        |
 | `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
 | `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
 | `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
@@ -145,6 +146,7 @@ page.
 | `skip_subscription_period`               | Skip a billing cycle without paying it (`finance:write`)                                                         |
 | `unlink_subscription_period_transaction` | Detach a period's transaction; the transaction and the paid status stay (`finance:write`)                        |
 | `revert_subscription_period`             | Undo a paid or skipped period; may delete the transaction the app booked (`finance:write` + `finance:delete`)    |
+<<<<<<< ours
 | `get_transaction_automations`           | List automation rules with evaluation order, enabled state, match counts, and pause reason                       |
 | `preview_transaction_automation`        | Dry-run automation conditions against recent transactions; nothing is modified                                   |
 | `create_transaction_automation`         | Create a rule that sets category, tags, payee, or note on matching transactions (`finance:write`)                |
@@ -181,6 +183,86 @@ page.
 | `create_tag`                            | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                            | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                            | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+||||||| base
+| `get_transaction_automations`            | List automation rules with evaluation order, enabled state, match counts, and pause reason                       |
+| `preview_transaction_automation`         | Dry-run automation conditions against recent transactions; nothing is modified                                   |
+| `create_transaction_automation`          | Create a rule that sets category, tags, payee, or note on matching transactions (`finance:write`)                |
+| `update_transaction_automation`          | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
+| `delete_transaction_automation`          | Permanently delete an automation rule (`finance:delete`)                                                         |
+| `reorder_transaction_automations`        | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
+| `create_transaction`                     | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
+| `update_transaction`                     | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
+| `delete_transaction`                     | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |
+| `create_attachment_upload_url`           | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`)   |
+| `bulk_update_transactions`               | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
+| `split_transaction`                      | Split a transaction across multiple categories (`finance:write`)                                                 |
+| `delete_split`                           | Delete a single split by split ID (`finance:delete`)                                                             |
+| `link_transfer`                          | Link two existing transactions as a transfer pair (`finance:write`)                                              |
+| `unlink_transfer`                        | Unlink a transfer pair by transferId (`finance:write`)                                                           |
+| `link_refund`                            | Mark a transaction as a refund of another (`finance:write`)                                                      |
+| `unlink_refund`                          | Remove the refund link between two transactions (`finance:write`)                                                |
+| `get_refunds`                            | Refund links: of one transaction, one pair, or a paged list; both sides carry their payee                        |
+| `get_refund_recommendations`             | Suggest transactions a refund could link to (saved transaction or form data)                                     |
+| `get_transfer_recommendations`           | Suggest the other leg of a transfer (saved transaction or form data)                                             |
+| `list_transfer_suggestions`              | Scan a period for likely transfer pairs with a confidence score; reads only                                      |
+| `dismiss_transfer_suggestion`            | Dismiss a suggested pair as not a transfer (`finance:write`)                                                     |
+| `get_reconciliation_history`             | Past duplicate removals and merges, newest first, with the removed rows and survivors                            |
+| `list_stuck_pending_transactions`        | Bank transactions pending over 7 days, each with the booked row that likely replaced it                          |
+| `remove_duplicate_transactions`          | Remove duplicates from the books; restorable, but without their links (`finance:write`)                          |
+| `restore_removed_transactions`           | Bring back removed or merged transactions, without the links they lost (`finance:write`)                         |
+| `merge_duplicate_transactions`           | Merge 2 to 4 duplicates of one account into a survivor that takes their links (`finance:write`)                  |
+| `keep_pending_as_booked`                 | Confirm stuck pending bank transactions as booked (`finance:write`)                                              |
+| `assign_tags_to_transaction`             | Assign tags to a transaction (`finance:write`)                                                                   |
+| `remove_tags_from_transaction`           | Remove tags from one or more transactions (`finance:write`)                                                      |
+| `create_category`                        | Create a new category, optionally nested (`finance:write`)                                                       |
+| `update_category`                        | Rename, recolor, or change a category's icon (`finance:write`)                                                   |
+| `delete_category`                        | Delete a category; supply replacement for linked transactions (`finance:delete`)                                 |
+| `create_tag`                             | Create a new transaction tag (`finance:write`)                                                                   |
+| `update_tag`                             | Rename, recolor, or update a tag (`finance:write`)                                                               |
+| `delete_tag`                             | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+=======
+| `get_transaction_automations`            | List automation rules with evaluation order, enabled state, match counts, and pause reason                       |
+| `preview_transaction_automation`         | Dry-run automation conditions against recent transactions; nothing is modified                                   |
+| `create_transaction_automation`          | Create a rule that sets category, tags, payee, or note on matching transactions (`finance:write`)                |
+| `update_transaction_automation`          | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
+| `delete_transaction_automation`          | Permanently delete an automation rule (`finance:delete`)                                                         |
+| `reorder_transaction_automations`        | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
+| `apply_transaction_automation`           | Run a saved rule on up to 500 existing transactions; non-matching ids are skipped (`finance:write`)              |
+| `get_transaction_templates`              | List transaction templates: named presets for new transactions                                                   |
+| `create_transaction_template`            | Create a template: type, account, pinned amount, category, payee, tags (`finance:write`)                         |
+| `update_transaction_template`            | Change a template; `null` clears a field, `tagIds` replaces the tags (`finance:write`)                           |
+| `delete_transaction_template`            | Permanently delete a template (`finance:delete`)                                                                 |
+| `create_transaction`                     | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
+| `update_transaction`                     | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
+| `delete_transaction`                     | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |
+| `create_attachment_upload_url`           | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`)   |
+| `bulk_update_transactions`               | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
+| `split_transaction`                      | Split a transaction across multiple categories (`finance:write`)                                                 |
+| `delete_split`                           | Delete a single split by split ID (`finance:delete`)                                                             |
+| `link_transfer`                          | Link two existing transactions as a transfer pair (`finance:write`)                                              |
+| `unlink_transfer`                        | Unlink a transfer pair by transferId (`finance:write`)                                                           |
+| `link_refund`                            | Mark a transaction as a refund of another (`finance:write`)                                                      |
+| `unlink_refund`                          | Remove the refund link between two transactions (`finance:write`)                                                |
+| `get_refunds`                            | Refund links: of one transaction, one pair, or a paged list; both sides carry their payee                        |
+| `get_refund_recommendations`             | Suggest transactions a refund could link to (saved transaction or form data)                                     |
+| `get_transfer_recommendations`           | Suggest the other leg of a transfer (saved transaction or form data)                                             |
+| `list_transfer_suggestions`              | Scan a period for likely transfer pairs with a confidence score; reads only                                      |
+| `dismiss_transfer_suggestion`            | Dismiss a suggested pair as not a transfer (`finance:write`)                                                     |
+| `get_reconciliation_history`             | Past duplicate removals and merges, newest first, with the removed rows and survivors                            |
+| `list_stuck_pending_transactions`        | Bank transactions pending over 7 days, each with the booked row that likely replaced it                          |
+| `remove_duplicate_transactions`          | Remove duplicates from the books; restorable, but without their links (`finance:write`)                          |
+| `restore_removed_transactions`           | Bring back removed or merged transactions, without the links they lost (`finance:write`)                         |
+| `merge_duplicate_transactions`           | Merge 2 to 4 duplicates of one account into a survivor that takes their links (`finance:write`)                  |
+| `keep_pending_as_booked`                 | Confirm stuck pending bank transactions as booked (`finance:write`)                                              |
+| `assign_tags_to_transaction`             | Assign tags to a transaction (`finance:write`)                                                                   |
+| `remove_tags_from_transaction`           | Remove tags from one or more transactions (`finance:write`)                                                      |
+| `create_category`                        | Create a new category, optionally nested (`finance:write`)                                                       |
+| `update_category`                        | Rename, recolor, or change a category's icon (`finance:write`)                                                   |
+| `delete_category`                        | Delete a category; supply replacement for linked transactions (`finance:delete`)                                 |
+| `create_tag`                             | Create a new transaction tag (`finance:write`)                                                                   |
+| `update_tag`                             | Rename, recolor, or update a tag (`finance:write`)                                                               |
+| `delete_tag`                             | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+>>>>>>> theirs
 | `get_payees`                             | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
 | `get_payee`                              | One payee with its aliases and stats                                                                             |
 | `create_payee`                           | Create a payee (`finance:write`)                                                                                 |
