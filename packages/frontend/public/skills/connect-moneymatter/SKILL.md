@@ -104,7 +104,7 @@ page.
 | `get_portfolio_balances`                 | Portfolio cash balances per currency                                                                             |
 | `get_investment_transactions`            | Buy/sell/dividend/fee history for investments                                                                    |
 | `search_securities`                      | Search securities by ticker/name; each result can be passed to `create_holding`                                  |
-| `get_security_prices`                    | Stored closing prices of one security, optionally in a date range                                                |
+| `get_security_prices`                    | Stored closing prices of one security; last 365 days by default, newest `limit` rows (500, max 5000)             |
 | `create_holding`                         | Add a security to a portfolio from a search result or securityId (`finance:write`)                               |
 | `delete_holding`                         | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`)                         |
 | `create_portfolio`                       | Create a new investment portfolio (`finance:write`)                                                              |

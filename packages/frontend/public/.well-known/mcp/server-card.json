@@ -256,7 +256,7 @@
     },
     {
       "name": "get_security_prices",
-      "description": "Stored closing prices of one security, optionally within a date range, oldest first."
+      "description": "Stored closing prices of one security, oldest first, as { prices, total }; the range defaults to the last 365 days and at most limit rows (default 500, max 5000) come back, the newest."
     },
     {
       "name": "create_holding",
