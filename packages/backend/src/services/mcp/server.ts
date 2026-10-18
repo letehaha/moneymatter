@@ -55,6 +55,7 @@ import { registerDeleteInvestmentTransaction } from './tools/delete-investment-t
 import { registerDeletePayee } from './tools/delete-payee';
 import { registerDeletePayeeAlias } from './tools/delete-payee-alias';
 import { registerDeletePortfolio } from './tools/delete-portfolio';
+import { registerDeletePortfolioTransfer } from './tools/delete-portfolio-transfer';
 import { registerDeleteSplit } from './tools/delete-split';
 import { registerDeleteSubscription } from './tools/delete-subscription';
 import { registerDeleteTag } from './tools/delete-tag';
@@ -70,6 +71,7 @@ import { registerDetectSubscriptionCandidates } from './tools/detect-subscriptio
 import { registerDismissNotification } from './tools/dismiss-notification';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
 import { registerDismissTransferSuggestion } from './tools/dismiss-transfer-suggestion';
+import { registerExchangePortfolioCurrency } from './tools/exchange-portfolio-currency';
 import { registerGetAccount } from './tools/get-account';
 import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
@@ -98,10 +100,12 @@ import { registerGetPayee } from './tools/get-payee';
 import { registerGetPayees } from './tools/get-payees';
 import { registerGetPivotReport } from './tools/get-pivot-report';
 import { registerGetPlannedSummary } from './tools/get-planned-summary';
+import { registerGetPortfolio } from './tools/get-portfolio';
 import { registerGetPortfolioBalances } from './tools/get-portfolio-balances';
 import { registerGetPortfolioHoldings } from './tools/get-portfolio-holdings';
 import { registerGetPortfolioSummary } from './tools/get-portfolio-summary';
 import { registerGetPortfolios } from './tools/get-portfolios';
+import { registerGetPortfoliosOverview } from './tools/get-portfolios-overview';
 import { registerGetReconciliationHistory } from './tools/get-reconciliation-history';
 import { registerGetRefundRecommendations } from './tools/get-refund-recommendations';
 import { registerGetRefunds } from './tools/get-refunds';
@@ -156,6 +160,7 @@ import { registerRemoveTagsFromTransaction } from './tools/remove-tags-from-tran
 import { registerRemoveTransactionsFromGroup } from './tools/remove-transactions-from-group';
 import { registerRemoveTransactionsFromTracker } from './tools/remove-transactions-from-tracker';
 import { registerReorderTransactionAutomations } from './tools/reorder-transaction-automations';
+import { registerRestorePortfolio } from './tools/restore-portfolio';
 import { registerRestoreRemovedTransactions } from './tools/restore-removed-transactions';
 import { registerRevertSubscriptionPeriod } from './tools/revert-subscription-period';
 import { registerSearchCoingeckoCoins } from './tools/search-coingecko-coins';
@@ -163,10 +168,12 @@ import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
 import { registerSetExchangeRates } from './tools/set-exchange-rates';
 import { registerSetPayeesCategorizationMode } from './tools/set-payees-categorization-mode';
+import { registerSetPortfolioTransferAdjustment } from './tools/set-portfolio-transfer-adjustment';
 import { registerSkipSubscriptionPeriod } from './tools/skip-subscription-period';
 import { registerSplitTransaction } from './tools/split-transaction';
 import { registerToggleSubscriptionActive } from './tools/toggle-subscription-active';
 import { registerTransferAccountToPortfolio } from './tools/transfer-account-to-portfolio';
+import { registerTransferBetweenPortfolios } from './tools/transfer-between-portfolios';
 import { registerTransferPortfolioToAccount } from './tools/transfer-portfolio-to-account';
 import { registerUnignorePayeeName } from './tools/unignore-payee-name';
 import { registerUnlinkAccountFromBankConnection } from './tools/unlink-account-from-bank-connection';
@@ -398,6 +405,8 @@ export function createMcpServer(): McpServer {
 
   // Investments
   registerGetPortfolios(server);
+  registerGetPortfolio(server);
+  registerGetPortfoliosOverview(server);
   registerGetPortfolioSummary(server);
   registerGetPortfolioHoldings(server);
   registerGetPortfolioBalances(server);
@@ -406,6 +415,7 @@ export function createMcpServer(): McpServer {
   registerCreatePortfolio(server);
   registerUpdatePortfolio(server);
   registerDeletePortfolio(server);
+  registerRestorePortfolio(server);
   registerCreateInvestmentTransaction(server);
   registerUpdateInvestmentTransaction(server);
   registerDeleteInvestmentTransaction(server);
@@ -416,7 +426,11 @@ export function createMcpServer(): McpServer {
   registerTransferAccountToPortfolio(server);
   registerTransferPortfolioToAccount(server);
   registerCreatePortfolioCashTransaction(server);
+  registerTransferBetweenPortfolios(server);
+  registerExchangePortfolioCurrency(server);
   registerListPortfolioTransfers(server);
+  registerSetPortfolioTransferAdjustment(server);
+  registerDeletePortfolioTransfer(server);
 
   // Transaction groups
   registerGetTransactionGroups(server);

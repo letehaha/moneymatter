@@ -148,6 +148,13 @@ page.
 | `get_pivot_report`                       | Spending or income as rows (category, payee, tag) by time columns, with totals                                   |
 | `get_cumulative_stats`                   | Running monthly totals of expenses, income or savings vs the previous period                                     |
 | `get_earliest_transaction_date`          | Date of the first transaction on record; start date for reports                                                  |
+| `get_portfolio`                          | Read one portfolio by id                                                                                         |
+| `get_portfolios_overview`                | Summaries and annualized returns of all portfolios                                                               |
+| `restore_portfolio`                      | Restore a deleted portfolio (`finance:write`)                                                                    |
+| `transfer_between_portfolios`            | Move cash from one portfolio to another (`finance:write`)                                                        |
+| `exchange_portfolio_currency`            | Exchange one cash currency for another inside a portfolio (`finance:write`)                                      |
+| `set_portfolio_transfer_adjustment`      | Flag a transfer as an adjustment, not a contribution (`finance:write`)                                           |
+| `delete_portfolio_transfer`              | Delete a portfolio transfer and reverse its cash effect (`finance:delete`)                                       |
 | `accept_subscription_candidate`          | Accept a detected candidate, optionally linking its samples to a subscription (`finance:write`)                  |
 | `list_subscription_match_suggestions`    | Past transactions a subscription's matching rules would match but that are not linked yet                        |
 | `get_subscription_periods`               | A subscription's billing periods with status and the transaction behind each paid one                            |
@@ -306,7 +313,11 @@ multi-currency data.
 - Portfolio cash moves via transfers: `link_transaction_to_portfolio` when the
   bank transaction already exists, `transfer_account_to_portfolio` /
   `transfer_portfolio_to_account` to create the transaction alongside the
-  transfer, `create_portfolio_cash_transaction` when no account is involved.
+  transfer, `create_portfolio_cash_transaction` when no account is involved,
+  `transfer_between_portfolios` between two portfolios and
+  `exchange_portfolio_currency` to swap cash currencies inside one portfolio.
+  `set_portfolio_transfer_adjustment` keeps a correction out of the
+  contributions report.
 
 ## Troubleshooting
 
