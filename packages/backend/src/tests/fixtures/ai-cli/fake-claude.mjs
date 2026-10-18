@@ -4,6 +4,7 @@
 // `--json-schema` it emits a `StructuredOutput` tool_use before the `result` event that carries `structured_output`.
 
 import {
+  awaitPeers,
   emit,
   fail,
   flagValue,
@@ -180,6 +181,10 @@ switch (scenario) {
   case 'hang':
     setInterval(() => {}, 1000);
     await new Promise(() => {});
+    break;
+  // Answers only once a second run is alive too, so a gate that serializes runs fails them.
+  case 'parallel':
+    await awaitPeers({ count: 2 });
     break;
   case 'exit-1':
     fail({ code: 1, message: 'fake-claude: something broke' });

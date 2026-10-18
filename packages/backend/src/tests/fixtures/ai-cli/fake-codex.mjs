@@ -8,6 +8,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
+  awaitPeers,
+  claimOnce,
   emit,
   fail,
   flagValue,
@@ -17,6 +19,7 @@ import {
   readStdin,
   recordRun,
   sleep,
+  waitForMarker,
 } from './fake-cli-common.mjs';
 
 const argv = process.argv.slice(2);
@@ -219,6 +222,29 @@ function rotate() {
   rewriteAuth({ refreshToken: `rt-rotated-${used.length}` });
 }
 
+// Two runs share one `CODEX_HOME`: `parallel` only needs both alive at once; `peer-refresh` makes the first
+// run to claim the leader role rotate the refresh token while the other waits and then reports the
+// refresh token it finds in `auth.json` (`observed-<pid>.json`).
+async function awaitPeersAndRefresh() {
+  await awaitPeers({ count: 2 });
+
+  if (scenario !== 'peer-refresh') return;
+
+  if (claimOnce({ name: 'leader' })) {
+    rewriteAuth({ refreshToken: 'rt-shared-refreshed' });
+    fs.writeFileSync(path.join(stateDir, 'refreshed'), '1');
+
+    return;
+  }
+
+  await waitForMarker({ name: 'refreshed' });
+  fs.writeFileSync(
+    path.join(stateDir, `observed-${process.pid}.json`),
+    JSON.stringify({ refreshToken: JSON.parse(fs.readFileSync(authPath, 'utf8')).tokens?.refresh_token }),
+  );
+}
+
+if (scenario === 'parallel' || scenario === 'peer-refresh') await awaitPeersAndRefresh();
 if (scenario === 'rotating') rotate();
 if (scenario === 'refresh' || scenario === 'refresh-then-limit') {
   rewriteAuth({ refreshToken: `rt-refreshed-${Math.random().toString(36).slice(2)}` });

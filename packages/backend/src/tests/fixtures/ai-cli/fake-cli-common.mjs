@@ -71,3 +71,54 @@ export function flagValue({ argv, name }) {
 export function flagValues({ argv, name }) {
   return argv.flatMap((arg, index) => (arg === name ? [argv[index + 1]] : []));
 }
+
+/**
+ * Registers this run in `<state dir>/active` and waits until `count` runs have registered, i.e. until
+ * that many fake CLIs are alive at the same time. Fails the run when they never overlap, which is how a
+ * test sees a gate that serialized runs it should have let overlap.
+ */
+export async function awaitPeers({ count, timeoutMs = 10_000 }) {
+  const dir = process.env.MM_FAKE_CLI_STATE_DIR;
+
+  if (!dir) fail({ code: 2, message: 'awaiting peers needs MM_FAKE_CLI_STATE_DIR' });
+
+  const activeDir = path.join(dir, 'active');
+
+  fs.mkdirSync(activeDir, { recursive: true });
+  fs.writeFileSync(path.join(activeDir, String(process.pid)), '1');
+
+  const deadline = Date.now() + timeoutMs;
+
+  while (fs.readdirSync(activeDir).length < count) {
+    if (Date.now() > deadline) fail({ code: 3, message: `fake-cli: no ${count} runs overlapped in ${timeoutMs}ms` });
+
+    await sleep(20);
+  }
+}
+
+/** True for exactly one caller per `name` and state dir, so concurrent runs can elect a leader. */
+export function claimOnce({ name }) {
+  const dir = process.env.MM_FAKE_CLI_STATE_DIR;
+
+  if (!dir) fail({ code: 2, message: 'claiming needs MM_FAKE_CLI_STATE_DIR' });
+
+  try {
+    fs.writeFileSync(path.join(dir, name), String(process.pid), { flag: 'wx' });
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/** Waits for `<state dir>/<name>` to exist. */
+export async function waitForMarker({ name, timeoutMs = 10_000 }) {
+  const file = path.join(process.env.MM_FAKE_CLI_STATE_DIR ?? '', name);
+  const deadline = Date.now() + timeoutMs;
+
+  while (!fs.existsSync(file)) {
+    if (Date.now() > deadline) fail({ code: 3, message: `fake-cli: marker ${name} never appeared` });
+
+    await sleep(20);
+  }
+}
