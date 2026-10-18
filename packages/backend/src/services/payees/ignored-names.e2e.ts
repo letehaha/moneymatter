@@ -20,6 +20,9 @@ describe('Payee Ignored Names', () => {
       const emptyName = await helpers.addIgnoredName({ rawName: '   ', raw: false });
       expect(emptyName.statusCode).toBe(ERROR_CODES.ValidationError);
 
+      const tooLong = await helpers.addIgnoredName({ rawName: 'x'.repeat(501), raw: false });
+      expect(tooLong.statusCode).toBe(ERROR_CODES.ValidationError);
+
       const after = await helpers.listIgnoredNames({ raw: true });
       expect(after.some((r) => r.id === added.id)).toBe(true);
 

@@ -8,12 +8,15 @@ const READ_TOOL_NAME = /^(get|list|search|preview)_/;
 
 // Tools that permanently delete a record without `delete_` in their name. Kept by
 // hand: a new destructive tool named otherwise is only checked once it is listed here.
-const DESTRUCTIVE_TOOLS = ['merge_payees', 'bulk_delete_transactions'];
+const DESTRUCTIVE_TOOLS = ['merge_payees', 'bulk_delete_transactions', 'bulk_delete_payees'];
 
 // Tools whose delete path is optional: they require `finance:write` always and `finance:delete`
 // only on the path that deletes, where the service decides and asks through a callback. Kept by
 // hand, so a tool that sometimes deletes cannot ship with the write scope alone.
 const CONDITIONAL_DELETE_TOOLS = [
+  // With `force`, the service deletes the payee the ignored name resolves to; the handler checks
+  // finance:delete before it calls the service.
+  'ignore_payee_name',
   // The revert deletes the payment transaction the app created for the period; `revertPeriod` asks
   // `assertCanDeleteTransaction` inside its own transaction, right before `deleteTransaction`.
   'revert_subscription_period',
