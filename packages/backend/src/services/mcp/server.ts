@@ -16,8 +16,10 @@ import { registerAdjustAccountBalance } from './tools/adjust-account-balance';
 import { registerArchiveAccount } from './tools/archive-account';
 import { registerArchiveTracker } from './tools/archive-tracker';
 import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transaction';
+import { registerBulkDeleteTransactions } from './tools/bulk-delete-transactions';
 import { registerBulkUpdateTransactions } from './tools/bulk-update-transactions';
 import { registerChangeBaseCurrency } from './tools/change-base-currency';
+import { registerConfirmPlannedTransaction } from './tools/confirm-planned-transaction';
 import { registerCreateAccount } from './tools/create-account';
 import { registerCreateAccountGroup } from './tools/create-account-group';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
@@ -36,6 +38,7 @@ import { registerCreateTransactionAutomation } from './tools/create-transaction-
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
 import { registerDeleteAccount } from './tools/delete-account';
 import { registerDeleteAccountGroup } from './tools/delete-account-group';
+import { registerDeleteAttachment } from './tools/delete-attachment';
 import { registerDeleteBudget } from './tools/delete-budget';
 import { registerDeleteBudgetLine } from './tools/delete-budget-line';
 import { registerDeleteCategory } from './tools/delete-category';
@@ -70,6 +73,7 @@ import { registerGetGoals } from './tools/get-goals';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
 import { registerGetPayee } from './tools/get-payee';
 import { registerGetPayees } from './tools/get-payees';
+import { registerGetPlannedSummary } from './tools/get-planned-summary';
 import { registerGetPortfolioBalances } from './tools/get-portfolio-balances';
 import { registerGetPortfolioHoldings } from './tools/get-portfolio-holdings';
 import { registerGetPortfolioSummary } from './tools/get-portfolio-summary';
@@ -83,6 +87,9 @@ import { registerGetTrackerSpendingStats } from './tools/get-tracker-spending-st
 import { registerGetTrackers } from './tools/get-trackers';
 import { registerGetTransactionAutomations } from './tools/get-transaction-automations';
 import { registerGetTransactionGroups } from './tools/get-transaction-groups';
+import { registerGetTransactionLinks } from './tools/get-transaction-links';
+import { registerGetTransactions } from './tools/get-transactions';
+import { registerGetTransactionsSummary } from './tools/get-transactions-summary';
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
@@ -94,6 +101,7 @@ import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers
 import { registerListSubscriptionCandidates } from './tools/list-subscription-candidates';
 import { registerListSupportedCurrencies } from './tools/list-supported-currencies';
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
+import { registerListTransactionAttachments } from './tools/list-transaction-attachments';
 import { registerMergePayees } from './tools/merge-payees';
 import { registerMoveAccountGroup } from './tools/move-account-group';
 import { registerPreviewTransactionAutomation } from './tools/preview-transaction-automation';
@@ -219,6 +227,14 @@ export function createMcpServer(): McpServer {
   registerUnlinkRefund(server);
   registerLinkTransfer(server);
   registerUnlinkTransfer(server);
+  registerGetTransactions(server);
+  registerGetTransactionsSummary(server);
+  registerGetPlannedSummary(server);
+  registerConfirmPlannedTransaction(server);
+  registerBulkDeleteTransactions(server);
+  registerGetTransactionLinks(server);
+  registerListTransactionAttachments(server);
+  registerDeleteAttachment(server);
 
   // Taxonomy (categories + tags)
   registerGetCategories(server);
