@@ -136,25 +136,42 @@ export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
   };
 }
 
-export function slimTransactionsForMcp(txs: TransactionApiResponse[]) {
-  return txs.map((tx) => ({
-    id: tx.id,
-    time: tx.time,
-    amount: tx.amount,
-    refAmount: tx.refAmount,
-    currencyCode: tx.currencyCode,
-    note: tx.note,
-    transactionType: tx.transactionType,
-    transferNature: tx.transferNature,
-    accountId: tx.accountId,
-    categoryId: tx.categoryId,
-    isPlanned: tx.isPlanned,
-    ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
-    ...(tx.splits && {
-      splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
-    }),
-    ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
-  }));
+/**
+ * A transaction as an assistant reads it. `payeeNames` maps the caller's payee ids to names
+ * (`getPayeeNames`); a transaction with no payee, or one whose payee is not the caller's, gets
+ * `payee: null`. It is required so no tool serializes a transaction without its payee.
+ */
+export function slimTransactionsForMcp({
+  transactions,
+  payeeNames,
+}: {
+  transactions: TransactionApiResponse[];
+  payeeNames: ReadonlyMap<string, string>;
+}) {
+  return transactions.map((tx) => {
+    const payeeName = tx.payeeId ? payeeNames.get(tx.payeeId) : undefined;
+
+    return {
+      id: tx.id,
+      time: tx.time,
+      amount: tx.amount,
+      refAmount: tx.refAmount,
+      currencyCode: tx.currencyCode,
+      note: tx.note,
+      transactionType: tx.transactionType,
+      transferNature: tx.transferNature,
+      accountId: tx.accountId,
+      categoryId: tx.categoryId,
+      isPlanned: tx.isPlanned,
+      payeeId: tx.payeeId,
+      payee: tx.payeeId && payeeName !== undefined ? { id: tx.payeeId, name: payeeName } : null,
+      ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
+      ...(tx.splits && {
+        splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
+      }),
+      ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
+    };
+  });
 }
 
 /**
