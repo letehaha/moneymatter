@@ -800,12 +800,19 @@ export const updateTransaction = withTransaction(
       }
 
       // A row that matched no subscription when it was created can match after an edit, say a
-      // note reworded to name the service. The engine skips a row that has any link row, so an
-      // unlinked one is never matched again, and it settles the period like a create-time match.
-      // Subscriptions belong to the account owner, whoever edits the row.
-      if (editChangesMatchingFields && !isTwoLegTransfer(baseTransaction.transferNature)) {
+      // note reworded to name the service. It matches as it would on create, as its author: the
+      // engine skips a row that has any link row, so an unlinked one is never matched again, and
+      // a match settles the period. A category this edit sets stays; otherwise the subscription's
+      // category applies. The response carries the row as the match left it.
+      const [matchedTx] = updatedTransactions;
+      if (editChangesMatchingFields && !isTwoLegTransfer(matchedTx.transferNature)) {
         try {
-          await matchTransactionToSubscriptions({ transaction: baseTransaction, userId: ctx.accountOwnerUserId });
+          const matched = await matchTransactionToSubscriptions({
+            transaction: matchedTx,
+            userId: matchedTx.userId,
+            preserveCategory: payload.categoryId !== undefined,
+          });
+          if (matched) await matchedTx.reload();
         } catch (error) {
           if (
             error instanceof DatabaseError ||
@@ -815,7 +822,7 @@ export const updateTransaction = withTransaction(
             throw error;
           }
           logger.error({
-            message: `Failed to match edited transaction ${baseTransaction.id} to subscriptions`,
+            message: `Failed to match edited transaction ${matchedTx.id} to subscriptions`,
             error: error as Error,
           });
         }
