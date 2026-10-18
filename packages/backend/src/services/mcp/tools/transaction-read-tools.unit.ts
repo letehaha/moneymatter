@@ -549,6 +549,20 @@ describe('bulk_delete_transactions', () => {
     { label: 'filters that are all empty lists', filters: { accountIds: [], categoryIds: [], tagIds: [] } },
     { label: 'only exclude flags switched off', filters: { excludeTransfer: false, excludeRefunds: false } },
     { label: 'only the include-everything operations', filters: { transferFilter: 'all', refundFilter: 'all' } },
+    { label: 'an empty note search', filters: { noteSearch: '' } },
+    { label: 'a note search of only separators', filters: { noteSearch: ',' } },
+    { label: 'a note search of only whitespace', filters: { noteSearch: '  ,  ' } },
+    { label: 'a lone keepRefundsForTxId', filters: { keepRefundsForTxId: ID_1 } },
+    {
+      label: 'keepRefundsForTxId with excludeRefundTxs off',
+      filters: { keepRefundsForTxId: ID_1, excludeRefundTxs: false },
+    },
+    { label: 'an empty transferNatures list', filters: { transferNatures: [] } },
+    {
+      label: 'a legacy exclude flag overridden by the all operation',
+      filters: { excludeTransfer: true, transferFilter: 'all' },
+    },
+    { label: 'only no-op values mixed together', filters: { noteSearch: '', accountIds: [], excludeRefunds: false } },
   ])(
     'refuses $label, which would delete everything the caller owns, before resolving anything',
     async ({ filters }) => {
@@ -569,6 +583,13 @@ describe('bulk_delete_transactions', () => {
     { label: 'a transaction type', filters: { transactionType: TRANSACTION_TYPES.expense } },
     { label: 'a switched-on flag', filters: { excludeTransfer: true } },
     { label: 'the only-refunds operation', filters: { refundFilter: 'only' } },
+    { label: 'a note search with a real term among separators', filters: { noteSearch: ' , coffee,' } },
+    {
+      label: 'the refund side switched on, with the transaction to keep',
+      filters: { excludeRefundTxs: true, keepRefundsForTxId: ID_1 },
+    },
+    { label: 'a legacy exclude flag with no operation set', filters: { excludeRefunds: true } },
+    { label: 'an exact transfer natures list', filters: { transferNatures: ['not_transfer'] } },
   ])('still deletes by $label alone', async ({ filters }) => {
     await call({ tool, args: { filters }, extra: DELETE });
 
