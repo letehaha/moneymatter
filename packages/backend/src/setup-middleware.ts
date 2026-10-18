@@ -1,6 +1,7 @@
 import { isPerfDebugEnabled, perfDebugMiddleware } from '@common/lib/perf/perf-debug';
 import { resolveTrustedProxies, TRUSTED_PROXIES_ENV } from '@config/trusted-proxies';
 import { logger } from '@js/utils/logger';
+import { setClientIpHeaderMiddleware } from '@middlewares/client-ip-header';
 import { requestIdMiddleware } from '@middlewares/request-id';
 import { sessionMiddleware } from '@middlewares/session-id';
 import { MS_MONEY_FULL_PATHS } from '@routes/import-export/ms-money-paths';
@@ -16,13 +17,18 @@ export function setupMiddleware(app: Express) {
   // Drop the default `X-Powered-By: Express` info-disclosure header.
   app.disable('x-powered-by');
 
-  // `req.ip` keys the per-IP rate limits. Behind nginx, Traefik or a Cloudflare Tunnel the socket peer is the proxy, so Express
+  // `req.ip` keys the per-IP rate limits and, through setClientIpHeaderMiddleware, the address stored on
+  // auth sessions. Behind nginx, Traefik or a Cloudflare Tunnel the socket peer is the proxy, so Express
   // has to read X-Forwarded-For. Trusting private ranges only (the default) means the first public
   // address from the right wins, which a client cannot forge. TRUSTED_PROXIES overrides the list for a
   // proxy that reaches the backend from a public address.
   app.set('trust proxy', resolveTrustedProxies({ raw: process.env[TRUSTED_PROXIES_ENV] }));
 
   app.use(requestIdMiddleware);
+
+  // Hand the proxy-aware client address to better-auth, which only sees headers. Runs ahead of every
+  // auth handler and overwrites whatever the caller sent in that header.
+  app.use(setClientIpHeaderMiddleware);
 
   // Opt-in (PERF_DEBUG=true): tag responses with per-request query count + timing.
   if (isPerfDebugEnabled) {

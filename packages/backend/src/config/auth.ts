@@ -9,6 +9,7 @@ import { isAuthApiError } from '@controllers/helpers/error-handler';
 import { logger } from '@js/utils/logger';
 import { identifyUser, trackSignup } from '@js/utils/posthog';
 import { captureException } from '@js/utils/sentry';
+import { CLIENT_IP_HEADER } from '@middlewares/client-ip-header';
 import { redisClient } from '@root/redis-client';
 import { appName, fromEmail, isEmailEnabled } from '@services/email';
 import { sendEmail } from '@services/email/send-email';
@@ -311,6 +312,12 @@ export const auth = betterAuth({
 
   // Advanced options
   advanced: {
+    // Read the client address from the header setClientIpHeaderMiddleware fills from Express's own
+    // proxy-aware `req.ip`. better-auth's default (`x-forwarded-for`) accepts a single-value header
+    // only, so behind a proxy chain it records no address and every client shares one auth
+    // rate-limit bucket. Pointing it at X-Forwarded-For with `trustedProxies` instead would believe
+    // the header from any caller, because better-auth cannot see the socket peer.
+    ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
     // Cookie settings for session. The prefix is overridable because cookies are
     // keyed by host, not port: parallel git worktrees all share `localhost`, so a
     // shared prefix means signing into one worktree overwrites another's session
