@@ -62,6 +62,12 @@ page.
 | `create_vehicle` | Create a vehicle whose value depreciates from its purchase price and date (`finance:write`) |
 | `update_vehicle` | Update a vehicle's name, details, depreciation settings or mileage (`finance:write`) |
 | `delete_vehicle` | Permanently delete a vehicle and its account (`finance:delete`) |
+| `list_budget_plans` | List budget plans (period envelopes, not trackers); `planId` reads one with its accounts and lines |
+| `get_budget_plan_suggestion_context` | Top spending categories of given accounts, to start a new budget plan from |
+| `list_budget_plan_periods` | Periods of a budget plan, newest first, the current one marked |
+| `get_budget_plan_period` | One period: assigned, activity and available per line, the pool, goals and coverage |
+| `get_budget_plan_scheduled` | Subscription payments and planned transactions still scheduled in a period |
+| `get_budget_plan_trends` | Assigned, activity and available over the last periods, in total and per line |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
@@ -849,6 +855,13 @@ multi-currency data.
   `account.currentBalance`. The purchase price, date and currency are fixed
   after `create_vehicle`; to set the value by hand, use `adjust_account_balance`
   on the vehicle's `accountId`.
+- A budget plan (`list_budget_plans`, the "Budget" in the app) is a set of lines
+  that money is assigned to period by period, with what is available carried
+  from one period to the next. It is not a tracker: the tools named
+  `get_budgets`, `get_budget` and the like read trackers, a limit on a set of
+  categories over a date range. Read a plan's periods with
+  `list_budget_plan_periods`, then one period with `get_budget_plan_period`.
+  Every plan amount is a decimal in the plan's own `currencyCode`.
 
 ## Troubleshooting
 
