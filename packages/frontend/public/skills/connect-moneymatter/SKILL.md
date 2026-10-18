@@ -103,6 +103,13 @@ page.
 | `archive_account`                       | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
 | `delete_account`                        | Permanently delete an account and all its transactions (`finance:delete`)                                        |
 | `unlink_account_from_bank_connection`   | Disconnect a bank-connected account; it becomes manual and keeps history (`finance:write`)                       |
+| `get_account_groups`                    | List account groups (nested folders) with parent, path, child groups and accounts                                |
+| `create_account_group`                  | Create an account group, optionally nested under a parent (`finance:write`)                                      |
+| `update_account_group`                  | Rename an account group or change its parent or logo (`finance:write`)                                           |
+| `move_account_group`                    | Move an account group under another group or to the top level (`finance:write`)                                  |
+| `delete_account_group`                  | Delete an account group; its accounts are kept, only ungrouped (`finance:delete`)                                |
+| `add_account_to_group`                  | Put an account into a group; an account is in one group at a time (`finance:write`)                              |
+| `remove_accounts_from_group`            | Take accounts out of a group (`finance:write`)                                                                   |
 | `get_transaction_groups`                | List transaction groups with counts/dates or full embedded transactions                                          |
 | `create_transaction_group`              | Bundle related transactions into a group (e.g. split bill) (`finance:write`)                                     |
 | `update_transaction_group`              | Rename or add a note to an existing group (`finance:write`)                                                      |
