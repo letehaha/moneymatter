@@ -48,3 +48,16 @@ export interface UserModel {
 
 /** `GET /user` payload. Email comes from better-auth's ba_user, not the Users table. */
 export type UserInfoResponse = UserModel & { email: string | null };
+
+/** One entry of `GET /user/sessions`: a login session of the signed-in user, as better-auth stores it. */
+export interface AuthSessionInfo {
+  id: string;
+  userId: string;
+  /** Needed by better-auth's revoke-session call. */
+  token: string;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  updatedAt: string;
+  expiresAt: string;
+}
