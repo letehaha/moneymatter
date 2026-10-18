@@ -1009,6 +1009,30 @@
     {
       "name": "delete_budget_plan_group",
       "description": "Delete an empty group of a budget plan. Requires finance:delete scope."
+    },
+    {
+      "name": "create_budget_plan_line",
+      "description": "Add a line to a budget plan for one or more categories. Requires finance:write scope."
+    },
+    {
+      "name": "update_budget_plan_line",
+      "description": "Rename a budget plan line, move it to another group or change its categories. Requires finance:write scope."
+    },
+    {
+      "name": "delete_budget_plan_line",
+      "description": "Permanently delete a budget plan line with its assignments. Requires finance:delete scope."
+    },
+    {
+      "name": "archive_budget_plan_line",
+      "description": "Archive a budget plan line from the current period, or restore an archived one. Requires finance:write scope."
+    },
+    {
+      "name": "add_suggested_budget_plan_lines",
+      "description": "Draft starter lines for a budget plan from the spending history, using the server's AI when available. Requires finance:write scope."
+    },
+    {
+      "name": "set_budget_plan_layout",
+      "description": "Reorder a budget plan's groups and move lines between them in one call. Requires finance:write scope."
     }
   ],
   "prompts": [
