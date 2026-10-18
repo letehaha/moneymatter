@@ -148,7 +148,7 @@ page.
 | `get_portfolio_holdings` | Positions with market value and gains/losses |
 | `get_portfolio_balances` | Portfolio cash balances per currency |
 | `get_investment_transactions` | Buy/sell/dividend/fee history for investments |
-| `search_securities` | Search securities by ticker/name; resolves to securityId |
+| `search_securities` | Search securities by ticker/name; each result can be passed to `create_holding`; a stored one carries its `securityId` |
 | `create_portfolio` | Create a new investment portfolio (`finance:write`) |
 | `update_portfolio` | Rename, recategorize, or disable a portfolio (`finance:write`) |
 | `delete_portfolio` | Delete a portfolio and optionally all its data (`finance:delete`) |
