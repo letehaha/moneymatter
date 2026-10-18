@@ -58,6 +58,10 @@ page.
 | `add_loan_note` | Add a note to a loan's timeline (`finance:write`) |
 | `link_loan_payments` | Record expense transactions as payments on a loan (`finance:write`) |
 | `unlink_loan_payment` | Undo a loan payment; the expense is restored (`finance:write`) |
+| `get_vehicles` | List vehicles with their estimated value and depreciation settings; `vehicleId` reads one |
+| `create_vehicle` | Create a vehicle whose value depreciates from its purchase price and date (`finance:write`) |
+| `update_vehicle` | Update a vehicle's name, details, depreciation settings or mileage (`finance:write`) |
+| `delete_vehicle` | Permanently delete a vehicle and its account (`finance:delete`) |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile` | Base currency, configured currencies, profile basics |
 | `get_accounts` | List accounts with balances, types, currencies |
@@ -537,6 +541,11 @@ multi-currency data.
   payoff date and interest left). Payments are existing expenses recorded with
   `link_loan_payments`; a loan with payments cannot be deleted until
   `unlink_loan_payment` has undone them.
+- A vehicle is an asset account whose value follows a depreciation curve from
+  its purchase price and date. `get_vehicles` shows the estimated value in
+  `account.currentBalance`. The purchase price, date and currency are fixed
+  after `create_vehicle`; to set the value by hand, use `adjust_account_balance`
+  on the vehicle's `accountId`.
 
 ## Troubleshooting
 
