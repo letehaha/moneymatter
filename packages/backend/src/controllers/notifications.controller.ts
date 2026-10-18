@@ -1,26 +1,19 @@
-import { NOTIFICATION_PRIORITIES, NOTIFICATION_STATUSES, NOTIFICATION_TYPES } from '@bt/shared/types';
+import { NOTIFICATION_PRIORITIES } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import {
+  notificationStatusSchema,
+  notificationTypeSchema,
+  notificationTypeValues,
+} from '@controllers/notifications/shared-schemas';
 import * as notificationsService from '@services/notifications';
 import { z } from 'zod';
-
-const notificationTypeValues = Object.values(NOTIFICATION_TYPES) as [
-  (typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES],
-  ...(typeof NOTIFICATION_TYPES)[keyof typeof NOTIFICATION_TYPES][],
-];
-const notificationStatusValues = Object.values(NOTIFICATION_STATUSES) as [
-  (typeof NOTIFICATION_STATUSES)[keyof typeof NOTIFICATION_STATUSES],
-  ...(typeof NOTIFICATION_STATUSES)[keyof typeof NOTIFICATION_STATUSES][],
-];
-
-const notificationTypeSchema = z.enum(notificationTypeValues).optional();
-const notificationStatusSchema = z.enum(notificationStatusValues).optional();
 
 export const getNotifications = createController(
   z.object({
     query: z.object({
-      status: notificationStatusSchema,
-      type: notificationTypeSchema,
+      status: notificationStatusSchema.optional(),
+      type: notificationTypeSchema.optional(),
       limit: z.coerce.number().min(1).max(100).optional().default(50),
       offset: z.coerce.number().min(0).optional().default(0),
     }),
