@@ -8,7 +8,7 @@ const READ_TOOL_NAME = /^(get|list|search|preview)_/;
 
 // Tools that permanently delete a record without `delete_` in their name. Kept by
 // hand: a new destructive tool named otherwise is only checked once it is listed here.
-const DESTRUCTIVE_TOOLS = ['merge_payees'];
+const DESTRUCTIVE_TOOLS = ['merge_payees', 'bulk_delete_transactions'];
 
 // Tools that check a scope but whose REST route carries no `checkBaseCurrencyLock`, so they
 // skip `assertBaseCurrencyUnlocked`. Kept by hand, one route per entry: the lock follows the
@@ -22,6 +22,8 @@ const LOCK_EXEMPT_TOOLS = [
   // exempt in that branch only; its first-base branch (POST /user/currencies/base) carries the
   // lock, so it is also in LOCK_EXEMPT_IN_ONE_BRANCH and calls it there.
   'change_base_currency',
+  // DELETE /attachments/:id has no lock: attachments touch no amounts.
+  'delete_attachment',
 ];
 
 // Lock-exempt tools that still call `assertBaseCurrencyUnlocked` in one branch, because their

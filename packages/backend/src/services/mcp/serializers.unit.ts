@@ -245,8 +245,10 @@ describe('MCP serializers', () => {
   });
 
   describe('slimTransactionsForMcp', () => {
+    const noPayees = new Map<string, string>();
+
     it('keeps only AI-relevant transaction fields', () => {
-      const slim = slimTransactionsForMcp([fullTransaction])[0]!;
+      const slim = slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees })[0]!;
       expect(Object.keys(slim).toSorted()).toEqual(
         [
           'accountId',
@@ -256,6 +258,8 @@ describe('MCP serializers', () => {
           'id',
           'isPlanned',
           'note',
+          'payee',
+          'payeeId',
           'refAmount',
           'splits',
           'tags',
@@ -268,7 +272,12 @@ describe('MCP serializers', () => {
     });
 
     it('drops fee, internal, audit and bank-blob fields', () => {
-      const slim = (slimTransactionsForMcp([fullTransaction]) as unknown as Record<string, unknown>[])[0]!;
+      const slim = (
+        slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees }) as unknown as Record<
+          string,
+          unknown
+        >[]
+      )[0]!;
       for (const dropped of [
         'userId',
         'paymentType',
@@ -288,7 +297,7 @@ describe('MCP serializers', () => {
     });
 
     it('slims embedded tags to id+name and splits to category/amount/note', () => {
-      const slim = slimTransactionsForMcp([fullTransaction])[0]!;
+      const slim = slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees })[0]!;
       expect(slim.tags).toEqual([{ id: 'tag-1', name: 'food' }]);
       expect(slim.splits).toEqual([{ categoryId: 'cat-2', amount: 12.34, note: 'half' }]);
     });
@@ -298,7 +307,12 @@ describe('MCP serializers', () => {
       void tags;
       void splits;
       void transactionGroups;
-      const slim = (slimTransactionsForMcp([noCollections]) as unknown as Record<string, unknown>[])[0]!;
+      const slim = (
+        slimTransactionsForMcp({ transactions: [noCollections], payeeNames: noPayees }) as unknown as Record<
+          string,
+          unknown
+        >[]
+      )[0]!;
       expect(slim).not.toHaveProperty('tags');
       expect(slim).not.toHaveProperty('splits');
       expect(slim).not.toHaveProperty('transactionGroups');
@@ -328,6 +342,36 @@ describe('MCP serializers', () => {
       const slim = slimTransactionsForMcp([{ ...fullTransaction, paymentParts, paymentTotal: 20.5 }])[0]!;
       expect(slim.paymentParts).toEqual(paymentParts);
       expect(slim.paymentTotal).toBe(20.5);
+    });
+
+    it('carries the payee id and name when the payee is known', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: 'payee-1' }],
+        payeeNames: new Map([['payee-1', 'Starbucks']]),
+      })[0]!;
+
+      expect(slim.payeeId).toBe('payee-1');
+      expect(slim.payee).toEqual({ id: 'payee-1', name: 'Starbucks' });
+    });
+
+    it('has a null payee when the transaction has none', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: null }],
+        payeeNames: new Map([['payee-1', 'Starbucks']]),
+      })[0]!;
+
+      expect(slim.payeeId).toBeNull();
+      expect(slim.payee).toBeNull();
+    });
+
+    it('has a null payee, with the id kept, when the payee is not among the caller own', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: 'payee-other' }],
+        payeeNames: noPayees,
+      })[0]!;
+
+      expect(slim.payeeId).toBe('payee-other');
+      expect(slim.payee).toBeNull();
     });
   });
 
