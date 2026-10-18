@@ -19,7 +19,7 @@ export const CURRENCY_CODE_MAX_LENGTH = SHARED_CURRENCY_CODE_MAX_LENGTH;
 /** Length of the ISO 4217 alphabetic codes the columns were declared with before custom currencies. */
 export const ISO_CURRENCY_CODE_LENGTH = 3;
 
-export interface CurrencyCodeColumnSpec {
+interface CurrencyCodeColumnSpec {
   /** SQL table name. */
   table: string;
   /** SQL column name. */
@@ -50,7 +50,7 @@ export const CURRENCY_CODE_COLUMNS: readonly CurrencyCodeColumnSpec[] = [
   { table: 'VentureEvents', column: 'currencyCode' },
 ];
 
-export interface NullableRefColumnSpec {
+interface NullableRefColumnSpec {
   /** SQL table name. */
   table: string;
   /** SQL column name. A custom currency without a rate leaves it `NULL`. */
