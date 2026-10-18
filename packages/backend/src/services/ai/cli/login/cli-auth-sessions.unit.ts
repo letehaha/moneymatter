@@ -358,12 +358,14 @@ describe('cli auth sessions', () => {
       const id = await signInWithCodex();
       const { keyEncrypted } = peekCredential({ userId: 1, sessionId: id, provider: codex });
 
-      await replaceSessionCredential({
+      const swapped = await replaceSessionCredential({
         userId: 1,
         sessionId: id,
         expectedRevision: keyEncrypted,
         credential: '{"tokens":{"refresh_token":"rt-2"}}',
       });
+
+      expect(swapped).toBe(true);
 
       const after = peekCredential({ userId: 1, sessionId: id, provider: codex });
 
@@ -375,13 +377,14 @@ describe('cli auth sessions', () => {
       const id = await signInWithCodex();
       const before = peekCredential({ userId: 1, sessionId: id, provider: codex });
 
-      await replaceSessionCredential({
+      const swapped = await replaceSessionCredential({
         userId: 1,
         sessionId: id,
         expectedRevision: 'stale-ciphertext',
         credential: 'new',
       });
 
+      expect(swapped).toBe(false);
       expect(peekCredential({ userId: 1, sessionId: id, provider: codex })).toEqual(before);
       expect(logger.warn).toHaveBeenCalledTimes(1);
     });
@@ -423,11 +426,12 @@ describe('cli auth sessions', () => {
       expect(credential).toBe(TOKEN);
       expect(revision).toBe(peekCredential({ userId: 1, sessionId: id, provider: claudeCode }).keyEncrypted);
 
-      await source.save!({ credential: 'refreshed', loadedRevision: revision });
+      const saved = await source.save!({ credential: 'refreshed', loadedRevision: revision });
 
       expect((await source.load()).credential).toBe('refreshed');
+      expect(saved).toEqual({ revision: (await source.load()).revision });
 
-      await source.save!({ credential: 'stale-write', loadedRevision: revision });
+      expect(await source.save!({ credential: 'stale-write', loadedRevision: revision })).toBeNull();
 
       expect((await source.load()).credential).toBe('refreshed');
     });

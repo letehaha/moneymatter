@@ -294,16 +294,18 @@ export async function replaceSessionCredential({
   sessionId: string;
   expectedRevision: string;
   credential: string;
-}): Promise<void> {
+}): Promise<boolean> {
   const session = findOwned({ userId, sessionId });
 
   if (!session || session.status !== 'succeeded' || session.keyEncrypted !== expectedRevision) {
     logger.warn('Skipped saving a refreshed CLI credential: the sign-in session changed or is gone', { sessionId });
 
-    return;
+    return false;
   }
 
   session.keyEncrypted = encryptToken(credential);
+
+  return true;
 }
 
 /** The probe's view of a sign-in session; the decrypted credential exists only inside `load`. */
@@ -323,8 +325,16 @@ export function sessionCredentialSource({
 
       return { credential: decryptToken(keyEncrypted), revision: keyEncrypted };
     },
-    save: ({ credential, loadedRevision }) =>
-      replaceSessionCredential({ userId, sessionId, expectedRevision: loadedRevision, credential }),
+    save: async ({ credential, loadedRevision }) => {
+      const swapped = await replaceSessionCredential({
+        userId,
+        sessionId,
+        expectedRevision: loadedRevision,
+        credential,
+      });
+
+      return swapped ? { revision: peekCredential({ userId, sessionId, provider }).keyEncrypted } : null;
+    },
   };
 }
 

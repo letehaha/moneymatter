@@ -102,9 +102,10 @@ function readStoredKey({ connection, userId }: { connection: StoredConnection; u
 }
 
 /**
- * A CLI connection's credential as a source the CLI runner loads inside the connection's slot. The
- * row is read fresh and decrypted per run, so no caller holds a decrypted CLI credential, and a
- * Codex refresh a previous run persisted is what the next run starts from.
+ * A CLI connection's credential as a source the CLI runner loads inside a run. The row is read fresh
+ * and decrypted when a run (Claude Code) or the connection's shared Codex home (Codex) needs it, so no
+ * caller holds a decrypted CLI credential, and a Codex refresh a previous run persisted is what the
+ * next shared home starts from.
  */
 export function connectionCredentialSource({
   userId,
@@ -128,13 +129,17 @@ export function connectionCredentialSource({
 
       return { credential, revision: connection.keyEncrypted };
     },
-    save: ({ credential, loadedRevision }) =>
-      replaceConnectionCredential({
+    save: async ({ credential, loadedRevision }) => {
+      const keyEncrypted = encryptToken(credential);
+      const swapped = await replaceConnectionCredential({
         userId,
         connectionId,
         expectedKeyEncrypted: loadedRevision,
-        keyEncrypted: encryptToken(credential),
-      }),
+        keyEncrypted,
+      });
+
+      return swapped ? { revision: keyEncrypted } : null;
+    },
   };
 }
 
@@ -168,6 +173,7 @@ export function swapConnectionCredential({
 /**
  * Persists a credential the CLI refreshed during a run as a compare-and-swap on `keyEncrypted`.
  * A connection deleted mid-run is not resurrected, and a credential replaced mid-run is kept.
+ * Returns whether the new ciphertext was stored.
  */
 export async function replaceConnectionCredential({
   userId,
@@ -179,13 +185,17 @@ export async function replaceConnectionCredential({
   connectionId: string;
   expectedKeyEncrypted: string;
   keyEncrypted: string;
-}): Promise<void> {
+}): Promise<boolean> {
+  let stored = false;
+
   await mutateConnections({
     userId,
     connectionId,
     onMissing: 'skip',
     mutate: ({ connections }) => {
       const result = swapConnectionCredential({ connections, connectionId, expectedKeyEncrypted, keyEncrypted });
+
+      stored = result.swapped;
 
       if (!result.swapped) {
         logger.warn('Skipped saving a refreshed CLI credential: the stored credential changed during the run', {
@@ -197,6 +207,8 @@ export async function replaceConnectionCredential({
       return { connections: result.connections };
     },
   });
+
+  return stored;
 }
 
 function toConnectionInfo({ connection }: { connection: StoredConnection }): AIConnectionInfo {
