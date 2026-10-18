@@ -90,11 +90,11 @@ Reading, planned transactions, create and edit, splits, refunds, transfer linkin
 | Tool                           | Purpose                                                                                                        |
 | ------------------------------ | -------------------------------------------------------------------------------------------------------------- |
 | `search_transactions`          | Filter transactions by date, category, tag, payee, planned state, amount, etc.; each carries its payee         |
-| `create_transaction`           | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`) |
+| `create_transaction`           | Create an income, expense, or transfer with optional splits/tags/payee/original amount (`finance:write`)       |
 | `create_attachment_upload_url` | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`) |
-| `update_transaction`           | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)        |
+| `update_transaction`           | Update amount, date, category, tags, note, splits, payee or original amount (`finance:write`)                  |
 | `delete_transaction`           | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                       |
-| `bulk_update_transactions`     | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                       |
+| `bulk_update_transactions`     | Update category, note, payee (`null` clears) or tags on multiple transactions at once (`finance:write`)        |
 | `split_transaction`            | Split a transaction across multiple categories (`finance:write`)                                               |
 | `delete_split`                 | Delete a single split by split ID (`finance:delete`)                                                           |
 | `link_refund`                  | Mark a transaction as a refund of another (`finance:write`)                                                    |
@@ -594,6 +594,11 @@ multi-currency data.
   `transferId` reads both. To find unlinked pairs, `list_transfer_suggestions` scans a
   period and `get_transfer_recommendations` suggests one transaction's other leg;
   `link_transfer` links a pair and `dismiss_transfer_suggestion` rejects a wrong one.
+- A transaction's payee is set with `payeeId` (an id from `get_payees`; `null` clears it
+  on `update_transaction` and `bulk_update_transactions`). `create_transaction` also
+  takes `merchantName`, a raw merchant string resolved the way bank sync does: it matches
+  an existing payee by name or alias and follows the instance's promotion rules, so a new
+  payee may not appear on first sight. `payeeId` and `merchantName` exclude each other.
 - Duplicate cleanup is reversible. `remove_duplicate_transactions` and
   `merge_duplicate_transactions` soft-delete rows, `get_reconciliation_history` lists
   them and `restore_removed_transactions` brings them back, but a restored row does not
