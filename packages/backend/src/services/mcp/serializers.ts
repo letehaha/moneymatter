@@ -68,6 +68,19 @@ export function slimAccountGroupForMcp(group: AccountGroupApiResponse) {
   };
 }
 
+/** The few fields that identify an account inside a group; `get_accounts` has the rest. `status` tells archived from active. */
+function summarizeGroupAccountsForMcp(accounts: AccountApiResponse[]) {
+  return accounts.map((a) => ({
+    id: a.id,
+    name: a.name,
+    type: a.type,
+    accountCategory: a.accountCategory,
+    currencyCode: a.currencyCode,
+    currentBalance: a.currentBalance,
+    status: a.status,
+  }));
+}
+
 const GROUP_PATH_SEPARATOR = ' > ';
 const GROUP_PATH_TRUNCATED = '…';
 
@@ -76,8 +89,12 @@ const GROUP_PATH_TRUNCATED = '…';
  * parent. Each entry keeps `parentGroupId` and gets a `path` of group names from the top,
  * built from the list itself. An ancestor missing from the list (an account filter drops
  * groups with no matching account) starts the path with "…" instead of passing for the top.
+ * The embedded accounts are a short summary unless `includeAccountDetails` asks for the list-sized shape.
  */
-export function slimAccountGroupsForMcp(groups: AccountGroupApiResponse[]) {
+export function slimAccountGroupsForMcp(
+  groups: AccountGroupApiResponse[],
+  { includeAccountDetails = false }: { includeAccountDetails?: boolean } = {},
+) {
   const byId = new Map(groups.map((group) => [group.id, group]));
 
   const pathOf = (group: AccountGroupApiResponse): string => {
@@ -104,7 +121,7 @@ export function slimAccountGroupsForMcp(groups: AccountGroupApiResponse[]) {
     ...slimAccountGroupForMcp(group),
     path: pathOf(group),
     childGroups: group.childGroups.map((child) => ({ id: child.id, name: child.name })),
-    accounts: slimAccountsForMcp(group.accounts),
+    accounts: includeAccountDetails ? slimAccountsForMcp(group.accounts) : summarizeGroupAccountsForMcp(group.accounts),
   }));
 }
 
