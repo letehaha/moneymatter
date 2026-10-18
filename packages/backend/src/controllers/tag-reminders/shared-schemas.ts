@@ -21,7 +21,7 @@ export const reminderDayOfMonthSchema = z.number().int().min(1).max(31);
 /** A decimal in the user's base currency, stored as sent. */
 export const reminderAmountThresholdSchema = z.number().min(0.01);
 
-export const reminderSettingsSchema = z.object({
+const reminderSettingsSchema = z.object({
   amountThreshold: reminderAmountThresholdSchema.optional(),
 });
 
