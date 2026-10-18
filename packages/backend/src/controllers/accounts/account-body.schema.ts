@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 /**
  * The account write bodies, shared by the REST controller and the MCP account tools so the two
- * paths accept exactly the same input. The MCP tools expose the `*Shape` objects as their
+ * paths accept exactly the same input. The MCP tools expose the `*Fields` objects as their
  * `inputSchema` and run the full schema in the handler, which adds the logo refinement.
  */
 
