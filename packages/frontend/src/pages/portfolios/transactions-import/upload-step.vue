@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/lib/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/lib/ui/tabs';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useAiAllowance } from '@/composable/use-ai-allowance';
-import { getApiErrorMessage } from '@/js/errors';
+import { extractApiErrorMessage, getApiErrorMessage } from '@/js/errors';
 import type { InvestmentImportExtractionResult, InvestmentImportHolding } from '@bt/shared/types/investments';
 import { AI_FEATURE, type StatementCostEstimate, type StatementCostEstimateFailure } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
@@ -151,12 +151,7 @@ const extract = useMutation({
   onError: (err: Error) => {
     if (err instanceof DOMException && err.name === 'AbortError') return;
     addNotification({
-      text: getApiErrorMessage({
-        e: err,
-        t,
-        conflictKey: 'investmentsImport.notifications.extractFailed',
-        fallbackKey: 'investmentsImport.notifications.extractFailed',
-      }),
+      text: extractApiErrorMessage(err) || t('investmentsImport.notifications.extractFailed'),
       type: NotificationType.error,
     });
   },

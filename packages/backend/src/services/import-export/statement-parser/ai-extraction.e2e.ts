@@ -146,6 +146,7 @@ describe('Statement parser AI extraction against a dead endpoint', () => {
   it('tells a user with no AI models to add one', async () => {
     const response = await helpers.statementExtract({ payload: { fileBase64: STATEMENT_FILE_BASE64 } });
 
+    expect(response.statusCode).toBe(422);
     expect(errorMessage({ response })).toMatch(/no ai model configured/i);
   });
 });
@@ -255,7 +256,6 @@ describe('Statement parser extraction that yields nothing usable', () => {
 
   const METADATA_ONLY_REPLY = 'Testbanken,4321,2026-06-01,2026-06-30,SEK';
 
-  // Another file, or a retry, fixes these, so none of them is a server fault.
   it('answers 422 and says no transactions were found when the model returns metadata only', async () => {
     await createFirstConnection();
     global.mswMockServer.use(getCustomEndpointVllmMock({ content: METADATA_ONLY_REPLY }));
@@ -292,13 +292,6 @@ describe('Statement parser extraction that yields nothing usable', () => {
 
     expect(response.statusCode).toBe(422);
     expect(errorMessage({ response })).toMatch(/readable date/i);
-  });
-
-  it('answers 422 when the user has no AI model configured', async () => {
-    const response = await helpers.statementExtract({ payload: { fileBase64: PNG_1X1_BASE64 } });
-
-    expect(response.statusCode).toBe(422);
-    expect(errorMessage({ response })).toMatch(/no ai model configured/i);
   });
 
   it('answers 502 when the AI endpoint is down', async () => {

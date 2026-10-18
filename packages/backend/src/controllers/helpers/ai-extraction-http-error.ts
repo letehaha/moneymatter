@@ -1,4 +1,4 @@
-import { BadGateway, TooManyRequests, ValidationError } from '@js/errors';
+import { BadGateway, TooManyRequests, UnexpectedError, ValidationError } from '@js/errors';
 import type { AIExtractionError } from '@services/import-export/core/ai-extraction-failure';
 
 /**
@@ -18,6 +18,7 @@ export const toAiExtractionHttpError = ({ error }: { error: AIExtractionError })
     case 'AI_ERROR':
       return new BadGateway({ message: error.message });
     default:
-      return error.code satisfies never;
+      error.code satisfies never;
+      return new UnexpectedError({ message: error.message });
   }
 };
