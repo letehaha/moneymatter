@@ -4,6 +4,7 @@ import {
   budgetPlanName,
   budgetSuggestionAnswers,
   dateBound,
+  recordId,
   uniqueRecordIds,
 } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
@@ -64,3 +65,41 @@ export const createGroupBodySchema = z.strictObject(createGroupBodyFields);
 export const updateGroupBodyFields = { name: budgetPlanName() };
 
 export const updateGroupBodySchema = z.strictObject(updateGroupBodyFields);
+
+/** Body of `POST /budget-plans/:planId/lines`. */
+export const createLineBodyFields = {
+  name: budgetPlanName(),
+  categoryIds: uniqueRecordIds({ min: 1 }),
+  sortOrder: z.int32().optional(),
+  groupId: recordId().nullable().optional(),
+  activeFrom: dateBound().optional(),
+};
+
+export const createLineBodySchema = z.strictObject(createLineBodyFields);
+
+/**
+ * Patch body of `PATCH /budget-plans/:planId/lines/:lineId`. An empty `categoryIds` is not how a
+ * line is emptied: archiving is.
+ */
+export const updateLineBodyFields = {
+  name: budgetPlanName().optional(),
+  sortOrder: z.int32().optional(),
+  groupId: recordId().nullable().optional(),
+  categoryIds: uniqueRecordIds({ min: 1 }).optional(),
+  effectiveFrom: dateBound().optional(),
+};
+
+export const updateLineBodySchema = z
+  .strictObject(updateLineBodyFields)
+  .refine((body) => body.effectiveFrom === undefined || body.categoryIds !== undefined, {
+    message: 'effectiveFrom can only be used together with categoryIds',
+    path: ['effectiveFrom'],
+  });
+
+/** Body of `PUT /budget-plans/:planId/layout`. */
+export const setLayoutBodyFields = {
+  groups: z.array(z.strictObject({ id: recordId(), lineIds: uniqueRecordIds() })),
+  ungroupedLineIds: uniqueRecordIds(),
+};
+
+export const setLayoutBodySchema = z.strictObject(setLayoutBodyFields);
