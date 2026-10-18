@@ -140,6 +140,9 @@ export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
  * A transaction as an assistant reads it. `payeeNames` maps the caller's payee ids to names
  * (`getPayeeNames`); a transaction with no payee, or one whose payee is not the caller's, gets
  * `payee: null`. It is required so no tool serializes a transaction without its payee.
+ *
+ * `transferId` is shared by the two legs of a linked transfer, so an assistant can see which rows
+ * are paired and read both legs with `get_transactions`.
  */
 export function slimTransactionsForMcp({
   transactions,
@@ -160,6 +163,7 @@ export function slimTransactionsForMcp({
       note: tx.note,
       transactionType: tx.transactionType,
       transferNature: tx.transferNature,
+      transferId: tx.transferId,
       accountId: tx.accountId,
       categoryId: tx.categoryId,
       isPlanned: tx.isPlanned,

@@ -256,6 +256,7 @@ describe('MCP serializers', () => {
           'time',
           'transactionGroups',
           'transactionType',
+          'transferId',
           'transferNature',
         ].toSorted(),
       );
@@ -273,7 +274,6 @@ describe('MCP serializers', () => {
         'paymentType',
         'accountType',
         'refCurrencyCode',
-        'transferId',
         'originalId',
         'commissionRate',
         'refCommissionRate',
