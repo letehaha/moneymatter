@@ -82,6 +82,20 @@ export function parseTransactionFilters({ filters }: { filters: unknown }) {
   return toServiceFilters(transactionFiltersSchema.parse(filters));
 }
 
+/**
+ * Whether a filter set narrows the selection at all: a value narrows unless it is absent, an empty
+ * list, `false` (an exclude flag switched off) or the include-everything operation `all`. REST
+ * lets a bulk action run with `filters: {}`, which selects every transaction the caller owns; an
+ * AI client must not delete that much by leaving the filters out or empty.
+ */
+export function hasNarrowingFilter({ filters }: { filters: Record<string, unknown> }): boolean {
+  return Object.values(filters).some((value) => {
+    if (value === undefined || value === null || value === false) return false;
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== FILTER_OPERATION.all;
+  });
+}
+
 const bulkTargetSchema = z.object(bulkTargetFields).refine(hasOneBulkTarget, bulkTargetIssue);
 
 /**

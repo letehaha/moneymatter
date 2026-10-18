@@ -6,7 +6,7 @@ import { resolveBulkTargetIds } from '@services/transactions/matching-transactio
 import { z } from 'zod';
 
 import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
-import { parseBulkTarget, transactionFilterInput } from './transaction-filter-input';
+import { hasNarrowingFilter, parseBulkTarget, transactionFilterInput } from './transaction-filter-input';
 
 const inputSchema = {
   transactionIds: z
@@ -35,7 +35,7 @@ export function registerBulkDeleteTransactions(server: McpServer) {
     'bulk_delete_transactions',
     {
       description:
-        'Permanently delete many transactions at once, by ids or by filters. DESTRUCTIVE: this cannot be undone, and balances change. Before using filters, call get_transactions_summary with the same filters and check the count. Deleting one leg of a transfer deletes both. Transactions on bank-connected accounts are refused (planned ones excepted), and so is a delete over the service maximum. All or nothing. Requires finance:delete scope.',
+        'Permanently delete many transactions at once, by ids or by filters. DESTRUCTIVE: this cannot be undone, and balances change. Before using filters, call get_transactions_summary with the same filters and check the count. Unlike the REST endpoint, empty filters are refused: give at least one filter (a date range, account, category, …) or explicit transactionIds. Deleting one leg of a transfer deletes both. Transactions on bank-connected accounts are refused (planned ones excepted), and so is a delete over the service maximum. All or nothing. Requires finance:delete scope.',
       inputSchema,
     },
     async (args, extra) => {
@@ -49,6 +49,15 @@ export function registerBulkDeleteTransactions(server: McpServer) {
         filters: args.filters,
         excludedIds: args.excludedIds,
       });
+
+      // REST accepts `filters: {}`, which selects everything the caller owns. For an AI client that
+      // is one forgotten argument away from wiping the account, so MCP requires a narrowing filter.
+      if (args.filters !== undefined && !hasNarrowingFilter({ filters: args.filters })) {
+        throw new Error(
+          'Refusing to delete without a narrowing filter: empty filters would select every transaction you own. Give at least one filter (a date range, account, category, …) or explicit transactionIds',
+        );
+      }
+
       const transactionIds = await resolveBulkTargetIds({ userId, ...target });
       const result = await bulkDelete({ userId, transactionIds });
 

@@ -253,6 +253,22 @@ describe('get_transactions', () => {
     expect(data.transactions.map((tx) => tx.id)).toEqual([ID_1, ID_2]);
   });
 
+  it('shows which rows are paired transfers: each carries its transferId and transferNature', async () => {
+    byTransferId.mockResolvedValue([
+      makeTx({ id: ID_1, transferId: 'transfer-1', transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer }),
+      makeTx({ id: ID_2, transferId: 'transfer-1', transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer }),
+    ] as never);
+
+    const data = (await call({ tool, args: { transferId: 'transfer-1' } })) as {
+      transactions: { transferId: string | null; transferNature: string }[];
+    };
+
+    expect(data.transactions.map((tx) => [tx.transferId, tx.transferNature])).toEqual([
+      ['transfer-1', TRANSACTION_TRANSFER_NATURE.common_transfer],
+      ['transfer-1', TRANSACTION_TRANSFER_NATURE.common_transfer],
+    ]);
+  });
+
   it('reads one by one, with splits and tags, when includeSplits is set, and skips an id that is not visible', async () => {
     byId.mockImplementation((async ({ id }: { id: string }) =>
       id === ID_1
@@ -526,6 +542,42 @@ describe('bulk_delete_transactions', () => {
 
     expect(resolveTargets).not.toHaveBeenCalled();
     expect(bulkDeleteService).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { label: 'empty filters', filters: {} },
+    { label: 'filters that are all empty lists', filters: { accountIds: [], categoryIds: [], tagIds: [] } },
+    { label: 'only exclude flags switched off', filters: { excludeTransfer: false, excludeRefunds: false } },
+    { label: 'only the include-everything operations', filters: { transferFilter: 'all', refundFilter: 'all' } },
+  ])(
+    'refuses $label, which would delete everything the caller owns, before resolving anything',
+    async ({ filters }) => {
+      await expect(call({ tool, args: { filters }, extra: DELETE })).rejects.toThrow(/at least one filter/);
+      await expect(call({ tool, args: { filters, excludedIds: [ID_2] }, extra: DELETE })).rejects.toThrow(
+        /at least one filter/,
+      );
+
+      expect(resolveTargets).not.toHaveBeenCalled();
+      expect(bulkDeleteService).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { label: 'a date bound', filters: { from: '2026-10-01T00:00:00.000Z' } },
+    { label: 'an account', filters: { accountIds: [ACCOUNT_ID] } },
+    { label: 'a note search', filters: { noteSearch: 'coffee' } },
+    { label: 'a transaction type', filters: { transactionType: TRANSACTION_TYPES.expense } },
+    { label: 'a switched-on flag', filters: { excludeTransfer: true } },
+    { label: 'the only-refunds operation', filters: { refundFilter: 'only' } },
+  ])('still deletes by $label alone', async ({ filters }) => {
+    await call({ tool, args: { filters }, extra: DELETE });
+
+    expect(resolveTargets).toHaveBeenCalledTimes(1);
+    expect(bulkDeleteService).toHaveBeenCalledWith({ userId: 42, transactionIds: [ID_1, ID_2] });
+  });
+
+  it('says in its description that an unfiltered delete is refused', () => {
+    expect(tool.config.description).toMatch(/at least one filter/i);
   });
 
   it('passes the service refusals (bank rows, the maximum count) through with their message', async () => {
