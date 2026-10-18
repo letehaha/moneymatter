@@ -5,6 +5,7 @@ import { listPortfolios } from '@services/investments/portfolios/list.service';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
+import { presentPortfolio } from './portfolio-output';
 
 const inputSchema = {
   portfolioType: z
@@ -36,17 +37,7 @@ export function registerGetPortfolios(server: McpServer) {
         offset: args.offset,
       });
 
-      // Raw model dump otherwise; drop the caller's own userId and audit fields.
-      const slimmed = portfolios.map((p) => ({
-        id: p.id,
-        name: p.name,
-        portfolioType: p.portfolioType,
-        description: p.description,
-        isEnabled: p.isEnabled,
-        createdAt: p.createdAt,
-      }));
-
-      return jsonContent({ data: slimmed });
+      return jsonContent({ data: portfolios.map((portfolio) => presentPortfolio({ portfolio })) });
     },
   );
 }
