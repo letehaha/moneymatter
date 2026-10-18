@@ -68,6 +68,14 @@ page.
 | `get_budget_plan_period` | One period: assigned, activity and available per line, the pool, goals and coverage |
 | `get_budget_plan_scheduled` | Subscription payments and planned transactions still scheduled in a period |
 | `get_budget_plan_trends` | Assigned, activity and available over the last periods, in total and per line |
+| `create_budget_plan` | Create the budget plan from accounts, cadence and anchor date; only one can be active (`finance:write`) |
+| `update_budget_plan` | Change a plan's name, carry policy, pool, zero-sum or expected income (`finance:write`) |
+| `delete_budget_plan` | Trash a plan, or erase a trashed one with `permanent` (`finance:delete`) |
+| `restore_budget_plan` | Bring a plan back from the trash; `replace` swaps out the active one (`finance:write`) |
+| `set_budget_plan_accounts` | Replace the accounts a plan counts activity from (`finance:write`) |
+| `create_budget_plan_group` | Add a named group for a plan's lines (`finance:write`) |
+| `update_budget_plan_group` | Rename a plan's group (`finance:write`) |
+| `delete_budget_plan_group` | Delete an empty group of a plan (`finance:delete`) |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile` | Base currency, configured currencies, profile basics |
 | `get_accounts` | List accounts with balances, types, currencies |
@@ -559,6 +567,10 @@ multi-currency data.
   categories over a date range. Read a plan's periods with
   `list_budget_plan_periods`, then one period with `get_budget_plan_period`.
   Every plan amount is a decimal in the plan's own `currencyCode`.
+  Only one plan is active at a time (`create_budget_plan` fails while another
+  exists; trash it with `delete_budget_plan` or swap with `restore_budget_plan`
+  and `replace`). Changing a plan needs a subscription that includes budget
+  plans; trashing one does not.
 
 ## Troubleshooting
 
