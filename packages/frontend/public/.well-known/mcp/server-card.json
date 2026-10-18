@@ -1069,6 +1069,18 @@
     {
       "name": "get_bank_sync_status",
       "description": "Read the sync state of the bank-connected accounts, the connections to reconnect and the running syncs."
+    },
+    {
+      "name": "list_import_batches",
+      "description": "List your import batches, newest first, with their source, row count and accounts."
+    },
+    {
+      "name": "delete_import_batch",
+      "description": "Undo an import by deleting every transaction of one batch. Large batches run as a background job. Requires finance:delete scope."
+    },
+    {
+      "name": "get_import_batch_delete_status",
+      "description": "Read the state of a background import batch delete: idle, queued, running, completed or failed."
     }
   ],
   "prompts": [
