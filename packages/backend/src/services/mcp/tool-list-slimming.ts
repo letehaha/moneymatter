@@ -5,12 +5,16 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
  * out as a regular expression (about 150 bytes per UUID, 400 per date), repeated on every id
  * and date field of every tool. The server still validates with the full schema when a tool is
  * called; only the advertised copy drops the expression.
+ *
+ * `date-time` is not in the set: zod accepts only a UTC time (ending in Z) there, which is
+ * stricter than the format's name says, and its pattern is the one place a client can read
+ * that rule.
  */
-const SELF_DESCRIBING_FORMATS = new Set(['uuid', 'date', 'date-time']);
+const SELF_DESCRIBING_FORMATS = new Set(['uuid', 'date']);
 
 type JsonValue = null | boolean | number | string | JsonValue[] | { [key: string]: JsonValue };
 
-/** Returns a copy of `schema` without the `pattern` that sits next to a uuid, date or date-time `format`. */
+/** Returns a copy of `schema` without the `pattern` that sits next to a uuid or date `format`. */
 export function slimToolListSchema<T>({ schema }: { schema: T }): T {
   return slimValue({ value: schema as JsonValue }) as T;
 }
