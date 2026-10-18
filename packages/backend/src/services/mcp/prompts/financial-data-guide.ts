@@ -19,7 +19,7 @@ export const FINANCIAL_DATA_GUIDE_CONTENT = `You are connected to MoneyMatter, a
 **Data Relationships:**
 - Transactions belong to one Account and one Category
 - Transactions can have multiple Tags
-- Trackers watch spending across one or more Categories or hand-picked Transactions; the period-based Budget plan is not available through these tools
+- Trackers watch spending across one or more Categories or hand-picked Transactions. A budget plan (list_budget_plans, the "Budget" in the app) is a different thing: lines that money is assigned to period by period, read and changed with the budget-plan tools
 - Categories can have parent-child hierarchy
 - Savings goals are funded by a percentage share of one or more accounts' balances; an account's shares across non-archived goals never exceed 100%. They are separate from the Budget plan's envelope line goals
 
