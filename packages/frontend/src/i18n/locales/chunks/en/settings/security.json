@@ -58,6 +58,7 @@
         "unknownLocation": "Unknown location",
         "lastActive": "Last active: {date}",
         "noSessions": "No active sessions found",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Sign out of all other sessions",
         "deviceTypes": {
           "unknownDevice": "Unknown device",
@@ -70,7 +71,6 @@
           "daysAgo": "{count} day ago | {count} days ago"
         },
         "notifications": {
-          "loadFailed": "Failed to load sessions",
           "revokeSuccess": "Session revoked",
           "revokeFailed": "Failed to revoke session",
           "revokeAllSuccess": "All other sessions have been signed out",
