@@ -25,6 +25,7 @@ import { randomUUID } from 'node:crypto';
 
 import { assertCliAiAllowed } from '../ai/cli/cli-access';
 import { CliCredentialSource } from '../ai/cli/cli-credential-run';
+import { abortCliRunsForConnection } from '../ai/cli/cli-run-limiter';
 import { logoutCodexConnection } from '../ai/cli/codex-logout';
 import { consumeCredential, peekCredential, sessionCredentialSource } from '../ai/cli/login/cli-auth-sessions';
 import { validateCliConnection, validateConnection } from '../ai/connection-validation';
@@ -744,11 +745,20 @@ export const updateConnection = async ({
 };
 
 /**
- * Features pinned to the deleted connection become automatic again. A Codex connection is signed
- * out first, best effort, so the tokens it held stop working; Claude Code has no CLI revoke.
+ * Features pinned to the deleted connection become automatic again. A CLI connection's active runs
+ * are cancelled first (and waited for, briefly), so nothing keeps using the credential, or the
+ * connection's shared Codex home, while it is signed out: cancelling is the safe choice, since
+ * waiting out a feature run could take minutes for a connection that is going away. A Codex
+ * connection is then signed out, best effort, so the tokens it held stop working; Claude Code has no
+ * CLI revoke. A run that starts in the instant between the cancel and the delete is not stopped:
+ * it fails at the sign-out or completes against the deleted row, which is harmless.
  */
 export const deleteConnection = async ({ userId, connectionId }: { userId: number; connectionId: string }) => {
   const stored = (await readStoredConnections({ userId })).find((connection) => connection.id === connectionId);
+
+  if (stored && asAiCliProvider({ provider: stored.provider })) {
+    await abortCliRunsForConnection({ connectionKey: connectionId });
+  }
 
   if (stored?.provider === AI_PROVIDER.codex && stored.keyEncrypted) {
     const { connectionKey, load } = connectionCredentialSource({ userId, connectionId });
