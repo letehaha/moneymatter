@@ -921,6 +921,22 @@
     {
       "name": "unlink_loan_payment",
       "description": "Undo a loan payment; the source transaction is restored. Requires finance:write scope."
+    },
+    {
+      "name": "get_vehicles",
+      "description": "List the vehicles with their estimated value and depreciation settings, or read one."
+    },
+    {
+      "name": "create_vehicle",
+      "description": "Create a vehicle whose value depreciates from its purchase price and date. Requires finance:write scope."
+    },
+    {
+      "name": "update_vehicle",
+      "description": "Update a vehicle's name, details, depreciation settings or mileage. Requires finance:write scope."
+    },
+    {
+      "name": "delete_vehicle",
+      "description": "Permanently delete a vehicle with its account. Requires finance:delete scope."
     }
   ],
   "prompts": [
