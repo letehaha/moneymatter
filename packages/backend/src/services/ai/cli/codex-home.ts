@@ -21,6 +21,8 @@ interface SharedHome {
   /** Hash of the last `auth.json` content that is stored (or deliberately not stored), so it is saved once. */
   settledHash: string;
   save: SaveCredential | undefined;
+  /** Set once the stored credential moved on without this home: no new run joins it and it is not written back. */
+  retired: boolean;
 }
 
 const homes = new Map<string, SharedHome>();
@@ -50,14 +52,13 @@ async function withConnectionLock<T>({ key, run }: { key: string; run: () => Pro
 
 async function createSharedHome({
   key,
-  load,
+  loaded: { credential, revision },
   save,
 }: {
   key: string;
-  load: () => Promise<{ credential: string; revision: string }>;
+  loaded: { credential: string; revision: string };
   save: SaveCredential | undefined;
 }): Promise<SharedHome> {
-  const { credential, revision } = await load();
   const dir = await createPrivateDir({ prefix: 'mm-codex-home' });
   const authPath = path.join(dir, AUTH_FILE);
 
@@ -69,7 +70,15 @@ async function createSharedHome({
     throw error;
   }
 
-  const home: SharedHome = { dir, authPath, refs: 0, revision, settledHash: sha256({ content: credential }), save };
+  const home: SharedHome = {
+    dir,
+    authPath,
+    refs: 0,
+    revision,
+    settledHash: sha256({ content: credential }),
+    save,
+    retired: false,
+  };
 
   homes.set(key, home);
 
@@ -121,6 +130,13 @@ async function persistIfChanged({ key, home }: { key: string; home: SharedHome }
   }
 }
 
+/** Takes the home out of circulation: its current runs finish on it, nothing new joins, nothing is saved. */
+function retireHome({ key, home }: { key: string; home: SharedHome }) {
+  home.retired = true;
+
+  if (homes.get(key) === home) homes.delete(key);
+}
+
 async function acquireHome({
   key,
   load,
@@ -133,7 +149,15 @@ async function acquireHome({
   return withConnectionLock({
     key,
     run: async () => {
-      const home = homes.get(key) ?? (await createSharedHome({ key, load, save }));
+      // Every arrival reads the stored credential, so a home that no longer matches it (a re-sign-in
+      // replaced the credential) is retired instead of being joined. A home whose own save failed
+      // still matches the stored revision and keeps being shared.
+      const loaded = await load();
+      const existing = homes.get(key);
+
+      if (existing && existing.revision !== loaded.revision) retireHome({ key, home: existing });
+
+      const home = homes.get(key) ?? (await createSharedHome({ key, loaded, save }));
 
       home.refs += 1;
 
@@ -142,17 +166,32 @@ async function acquireHome({
   });
 }
 
+/**
+ * Retires the connection's shared home, if any, so the next run starts from the stored credential.
+ * Disconnecting uses it: the home's remaining runs finish on it and are not written back.
+ */
+export function retireCodexHome({ connectionKey }: { connectionKey: string }): Promise<void> {
+  return withConnectionLock({
+    key: connectionKey,
+    run: async () => {
+      const home = homes.get(connectionKey);
+
+      if (home) retireHome({ key: connectionKey, home });
+    },
+  });
+}
+
 function releaseHome({ key, home }: { key: string; home: SharedHome }): Promise<void> {
   return withConnectionLock({
     key,
     run: async () => {
-      await persistIfChanged({ key, home });
+      if (!home.retired) await persistIfChanged({ key, home });
 
       home.refs -= 1;
 
       if (home.refs > 0) return;
 
-      homes.delete(key);
+      if (homes.get(key) === home) homes.delete(key);
 
       try {
         await rm(home.dir, { recursive: true, force: true, maxRetries: 3, retryDelay: 50 });
@@ -172,7 +211,9 @@ function releaseHome({ key, home }: { key: string; home: SharedHome }): Promise<
  * loser would be signed out; on one `auth.json` a refresh by one run is what the others read.
  *
  * The first run materializes `auth.json` from `load` (the stored credential) into a private 0700
- * directory; later runs reuse it; the last one to end removes it. Every run that ends saves a changed
+ * directory; later runs reuse it while the stored credential is still the one it was built from (a
+ * re-sign-in retires it and the next run gets a fresh home, the old runs finishing on theirs without
+ * a write-back); the last run of a home removes it. Every run that ends saves a changed
  * `auth.json` first (also when it failed: a refresh followed by a rate limit is still a refresh), as
  * a compare-and-swap through `save`, so a refresh survives the process dying while others still run.
  * Only the home is shared; callers keep their own working directories.

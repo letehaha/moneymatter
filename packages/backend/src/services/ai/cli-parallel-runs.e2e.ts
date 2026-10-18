@@ -122,6 +122,54 @@ describe('Parallel CLI runs on one connection', () => {
     TEST_TIMEOUT_MS,
   );
 
+  describe('re-signing in while a run is active', () => {
+    it(
+      'starts the next Codex run from the new sign-in in a new home, while the old run keeps its own',
+      async () => {
+        const connection = await createSignedInConnection({ provider: CODEX });
+        const runsBefore = fakes.readRuns().length;
+
+        useFakeCliScenario({ scenario: 'hang' });
+
+        const oldProbe = helpers.testAiConnection({ connectionId: connection.id });
+
+        await fakes.waitForRun({ index: runsBefore });
+
+        const oldRun = fakes.getRun({ index: runsBefore });
+
+        expect(oldRun.refreshToken).toBe('rt-fake-initial');
+
+        // The sign-in and its probe must not hang like the run above.
+        delete process.env.MM_FAKE_CLI_SCENARIO;
+
+        const { id: cliAuthSessionId } = await helpers.startCliAuthSession({ provider: CODEX, raw: true });
+
+        await helpers.waitForCliAuthSession({ id: cliAuthSessionId, status: 'succeeded' });
+
+        const update = await helpers.updateAiConnection({ id: connection.id, cliAuthSessionId });
+
+        expect(update.statusCode).toBe(200);
+        expect(await readStoredRefreshToken({ connectionId: connection.id })).toBe('rt-fake-login-2');
+
+        const runsAfterUpdate = fakes.readRuns().length;
+        const next = await helpers.testAiConnection({ connectionId: connection.id });
+
+        expect(next.body.response).toEqual({ isValid: true });
+
+        const nextRun = fakes.getRun({ index: runsAfterUpdate });
+
+        expect(nextRun.refreshToken).toBe('rt-fake-login-2');
+        expect(nextRun.codexHome).not.toBe(oldRun.codexHome);
+        expect(isProcessAlive({ pid: oldRun.pid })).toBe(true);
+
+        // Disconnecting cancels the old run, which settles its probe.
+        await helpers.deleteAiConnection({ id: connection.id });
+        await Promise.race([oldProbe, sleep(SETTLE_TIMEOUT_MS)]);
+      },
+      TEST_TIMEOUT_MS,
+    );
+  });
+
   describe('disconnecting while runs are active', () => {
     it.each<AICliProvider>([CLAUDE, CODEX])(
       'cancels the active %s run, kills its process and still removes the connection',

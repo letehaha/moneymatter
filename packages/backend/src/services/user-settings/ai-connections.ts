@@ -26,6 +26,7 @@ import { randomUUID } from 'node:crypto';
 import { assertCliAiAllowed } from '../ai/cli/cli-access';
 import { CliCredentialSource } from '../ai/cli/cli-credential-run';
 import { abortCliRunsForConnection } from '../ai/cli/cli-run-limiter';
+import { retireCodexHome } from '../ai/cli/codex-home';
 import { logoutCodexConnection } from '../ai/cli/codex-logout';
 import { consumeCredential, peekCredential, sessionCredentialSource } from '../ai/cli/login/cli-auth-sessions';
 import { validateCliConnection, validateConnection } from '../ai/connection-validation';
@@ -758,6 +759,9 @@ export const deleteConnection = async ({ userId, connectionId }: { userId: numbe
 
   if (stored && asAiCliProvider({ provider: stored.provider })) {
     await abortCliRunsForConnection({ connectionKey: connectionId });
+    // A run that outlived the cancel (past its 3 s wait) keeps its home but is not written back, and the
+    // sign-out below starts from a fresh home.
+    await retireCodexHome({ connectionKey: connectionId });
   }
 
   if (stored?.provider === AI_PROVIDER.codex && stored.keyEncrypted) {

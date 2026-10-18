@@ -87,7 +87,7 @@ describe('runWithCliCredential', () => {
     expect(content).toBe('{"a":1}');
   });
 
-  it('runs Codex calls on one connection at once in one shared home and loads the credential once', async () => {
+  it('runs Codex calls on one connection at once in one shared home', async () => {
     const credentials = { current: '{"refresh":"one"}' };
     const { source, load, save } = sourceFor({ key: 'codex-shared', credentials });
     const firstRewrote = deferred();
@@ -124,7 +124,7 @@ describe('runWithCliCredential', () => {
 
     expect(homes[0]).toBe(homes[1]);
     expect(seenBySecond).toBe('{"refresh":"two"}');
-    expect(load).toHaveBeenCalledTimes(1);
+    expect(load).toHaveBeenCalledTimes(2);
     expect(save).toHaveBeenCalledTimes(1);
   });
 
