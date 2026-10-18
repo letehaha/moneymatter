@@ -23,6 +23,7 @@ import {
   assertTxWriteAccess,
 } from '@services/sharing/auth/authorize-account-write.service';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
+import { matchTransactionToSubscriptions } from '@services/subscriptions/matching-engine';
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
 import * as refundsService from '@services/tx-refunds';
 
@@ -585,6 +586,24 @@ const isDiscardingTransfer = (payload: UpdateTransactionParams, prevData: Transa
 };
 
 /**
+ * Does the edit change a field the subscription matching rules read (note, amount, account,
+ * type, time) or the payee? Only then can a row that matched nothing before match now.
+ */
+const changesMatchingFields = ({
+  payload,
+  prevData,
+}: {
+  payload: UpdateTransactionParams;
+  prevData: Transactions.default;
+}): boolean =>
+  (payload.note !== undefined && payload.note !== prevData.note) ||
+  (payload.amount !== undefined && !payload.amount.equals(prevData.amount)) ||
+  (payload.accountId !== undefined && payload.accountId !== prevData.accountId) ||
+  (payload.transactionType !== undefined && payload.transactionType !== prevData.transactionType) ||
+  (payload.payeeId !== undefined && payload.payeeId !== prevData.payeeId) ||
+  (payload.time !== undefined && payload.time.getTime() !== prevData.time.getTime());
+
+/**
  * Updates transaction and updates account balance.
  */
 export const updateTransaction = withTransaction(
@@ -668,6 +687,9 @@ export const updateTransaction = withTransaction(
           message: 'Category not found or does not belong to user.',
         });
       }
+
+      // Read before the update, which may change `prevData` in place.
+      const editChangesMatchingFields = changesMatchingFields({ payload, prevData });
 
       // Make basic updation to the base transaction. "Transfer" transactions
       // handled down in the code
@@ -774,6 +796,28 @@ export const updateTransaction = withTransaction(
             // Emit event for real-time reminders check (handled by event listener)
             eventBus.emit(DOMAIN_EVENTS.TRANSACTIONS_TAGGED, { tagIds: payload.tagIds, userId: payload.userId });
           }
+        }
+      }
+
+      // A row that matched no subscription when it was created can match after an edit, say a
+      // note reworded to name the service. The engine skips a row that has any link row, so an
+      // unlinked one is never matched again, and it settles the period like a create-time match.
+      // Subscriptions belong to the account owner, whoever edits the row.
+      if (editChangesMatchingFields && !isTwoLegTransfer(baseTransaction.transferNature)) {
+        try {
+          await matchTransactionToSubscriptions({ transaction: baseTransaction, userId: ctx.accountOwnerUserId });
+        } catch (error) {
+          if (
+            error instanceof DatabaseError ||
+            error instanceof UniqueConstraintError ||
+            error instanceof ConnectionError
+          ) {
+            throw error;
+          }
+          logger.error({
+            message: `Failed to match edited transaction ${baseTransaction.id} to subscriptions`,
+            error: error as Error,
+          });
         }
       }
 
