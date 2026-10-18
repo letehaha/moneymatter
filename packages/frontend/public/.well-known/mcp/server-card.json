@@ -207,6 +207,38 @@
       "description": "Summarize expenses for a given time period with breakdowns."
     },
     {
+      "name": "get_total_balance",
+      "description": "Total balance across all accounts on one date, in the base currency, net of credit limits when the user setting is on."
+    },
+    {
+      "name": "get_net_worth_history",
+      "description": "Net worth over time with assets and liabilities by kind, weekly to yearly points, in the base currency."
+    },
+    {
+      "name": "get_net_worth_drivers",
+      "description": "What moved net worth per period: savings, investment growth, dividends, fees and the holdings and cash values, optionally for some portfolios."
+    },
+    {
+      "name": "get_investment_contributions",
+      "description": "Money moved into portfolios per period with the split per portfolio and the period's net savings."
+    },
+    {
+      "name": "get_venture_contributions",
+      "description": "Net amount contributed to each venture deal over a date range."
+    },
+    {
+      "name": "get_pivot_report",
+      "description": "Cross-tab of spending or income: categories, subcategories, payees or tags against time columns, with totals."
+    },
+    {
+      "name": "get_cumulative_stats",
+      "description": "Running monthly totals of expenses, income or savings for a period next to the period before it, with the percent change."
+    },
+    {
+      "name": "get_earliest_transaction_date",
+      "description": "Date of the first transaction on record, or null when there are none."
+    },
+    {
       "name": "get_portfolios",
       "description": "List the user's investment portfolios with type, enabled state, and metadata."
     },
