@@ -181,6 +181,20 @@ page.
 | `create_tag`                             | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                             | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                             | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+| `get_payees`                             | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
+| `get_payee`                              | One payee with its aliases and stats                                                                             |
+| `create_payee`                           | Create a payee (`finance:write`)                                                                                 |
+| `update_payee`                           | Rename a payee or change its default category, mode, default tags, location or logo (`finance:write`)            |
+| `delete_payee`                           | Permanently delete a payee; its transactions stay, unlinked (`finance:delete`)                                   |
+| `merge_payees`                           | Merge one payee into another; the source is deleted (`finance:delete`)                                           |
+| `set_payees_categorization_mode`         | Set the categorization mode of every payee at once (`finance:write`)                                             |
+| `bulk_delete_payees`                     | Permanently delete up to 2000 payees, optionally ignoring their names later (`finance:delete`)                   |
+| `get_ignored_payee_names`                | Names that are never turned into payees automatically                                                            |
+| `ignore_payee_name`                      | Add a name to the ignored list; `force` also deletes its payee (`finance:write` + `finance:delete` with `force`) |
+| `unignore_payee_name`                    | Remove a name from the ignored list (`finance:write`)                                                            |
+| `apply_payee_tags_to_transactions`       | Add a payee's default tags to all its existing transactions; adds only (`finance:write`)                         |
+| `create_payee_alias`                     | Add another name that links to a payee (`finance:write`)                                                         |
+| `delete_payee_alias`                     | Delete one alias of a payee (`finance:delete`)                                                                   |
 | `list_custom_currencies`                 | List the user's custom currencies (code, name, symbol, decimals, logo)                                           |
 | `create_custom_currency`                 | Define a custom currency such as points or a token; needs a rate source for base values (`finance:write`)        |
 | `update_custom_currency`                 | Change a custom currency's name, decimals, symbol, or logo; decimals locked while in use (`finance:write`)       |

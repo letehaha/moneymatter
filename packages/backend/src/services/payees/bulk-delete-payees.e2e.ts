@@ -1,5 +1,5 @@
 import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
-import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
+import { generateRandomRecordId, NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -75,6 +75,12 @@ describe('POST /payees/bulk-delete', () => {
 
   it('rejects an empty id list', async () => {
     const res = await helpers.bulkDeletePayees({ ids: [], raw: false });
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('rejects more than 2000 ids', async () => {
+    const ids = Array.from({ length: 2001 }, () => generateRandomRecordId());
+    const res = await helpers.bulkDeletePayees({ ids, raw: false });
     expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 
