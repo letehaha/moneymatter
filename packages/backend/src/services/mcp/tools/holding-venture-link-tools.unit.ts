@@ -13,6 +13,10 @@ import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-l
 import { createHoldingFromInput } from '@services/investments/holdings/create-holding-from-input.service';
 import { deleteHolding } from '@services/investments/holdings/delete-holding.service';
 import { getPrices } from '@services/investments/securities-price/get-prices.service';
+import {
+  findStoredSecurityBySymbol,
+  findStoredSecurityIds,
+} from '@services/investments/securities/find-stored.service';
 import { searchSecurities } from '@services/investments/securities/search.service';
 import { linkTxsToEvent } from '@services/venture/linking/link-txs-to-event.service';
 import { replaceEventLinks } from '@services/venture/linking/replace-event-links.service';
@@ -26,6 +30,10 @@ jest.mock('@services/investments/holdings/create-holding-from-input.service', ()
   createHoldingFromInput: jest.fn(),
 }));
 jest.mock('@services/investments/holdings/delete-holding.service', () => ({ deleteHolding: jest.fn() }));
+jest.mock('@services/investments/securities/find-stored.service', () => ({
+  findStoredSecurityBySymbol: jest.fn(),
+  findStoredSecurityIds: jest.fn(),
+}));
 jest.mock('@services/investments/securities/search.service', () => ({ searchSecurities: jest.fn() }));
 jest.mock('@services/investments/securities-price/get-prices.service', () => ({ getPrices: jest.fn() }));
 jest.mock('@services/venture/linking/link-txs-to-event.service', () => ({ linkTxsToEvent: jest.fn() }));
@@ -50,6 +58,8 @@ const LOCKED = /currencies.baseCurrencyChangeInProgress/;
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const search = jest.mocked(searchSecurities);
+const findBySymbol = jest.mocked(findStoredSecurityBySymbol);
+const findStoredIds = jest.mocked(findStoredSecurityIds);
 const createFromInput = jest.mocked(createHoldingFromInput);
 const removeHolding = jest.mocked(deleteHolding);
 const prices = jest.mocked(getPrices);
@@ -116,6 +126,7 @@ const makeLink = (patch: Record<string, unknown> = {}) => ({
 beforeEach(() => {
   jest.resetAllMocks();
   lockCheck.mockResolvedValue(false);
+  findStoredIds.mockResolvedValue([]);
 });
 
 describe('search_securities', () => {
@@ -128,6 +139,7 @@ describe('search_securities', () => {
     expect(tool.config.description).toMatch(/searchResult/);
     expect(tool.config.description).toMatch(/securityId/);
     expect(tool.config.description).toMatch(/get_portfolio_holdings/);
+    expect(tool.config.description).toMatch(/get_security_prices/);
   });
 
   it('searches for the caller and works for a read-only user during a base-currency change', async () => {
@@ -211,6 +223,19 @@ describe('search_securities', () => {
       // Nothing a provider set is lost on the way: the parsed result equals the search result.
       expect(parsed.data).toEqual(results[index]);
     });
+  });
+
+  it('adds the securityId to a result that matches a security already stored, and only to that one', async () => {
+    const stored = makeSearchResult();
+    const unknown = makeSearchResult({ symbol: 'QQQ', providerSymbol: 'QQQ' });
+    search.mockResolvedValue([stored, unknown] as never);
+    findStoredIds.mockResolvedValue([SECURITY_ID, null]);
+
+    const items = (await call({ tool, args: { query: 'VOO' } })) as Record<string, unknown>[];
+
+    expect(findStoredIds).toHaveBeenCalledWith({ results: [stored, unknown] });
+    expect(items[0]).toHaveProperty('securityId', SECURITY_ID);
+    expect(items[1]).not.toHaveProperty('securityId');
   });
 
   it('feeds a result straight into create_holding, which hands the full search result to the service', async () => {
@@ -407,14 +432,59 @@ describe('get_security_prices', () => {
     ...patch,
   });
 
-  it('registers under its name with the REST query fields plus a limit, and the security required', () => {
+  it('registers under its name with the REST query fields plus a limit and the symbol lookup', () => {
     expect(tool.name).toBe('get_security_prices');
     expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
-      [...Object.keys(securityPricesQuerySchema.shape), 'limit'].toSorted(),
+      [...Object.keys(securityPricesQuerySchema.shape), 'limit', 'providerName', 'symbol'].toSorted(),
     );
     expect(schema.safeParse({ securityId: SECURITY_ID }).success).toBe(true);
-    expect(schema.safeParse({}).success).toBe(false);
+    expect(schema.safeParse({ symbol: 'VOO', providerName: SECURITY_PROVIDER.fmp }).success).toBe(true);
     expect(schema.safeParse({ securityId: 'nope' }).success).toBe(false);
+    expect(schema.safeParse({ symbol: 'VOO', providerName: 'nope' }).success).toBe(false);
+  });
+
+  it('refuses a call that names no security, both ways to name it, or half of the symbol lookup', async () => {
+    for (const args of [
+      {},
+      { securityId: SECURITY_ID, symbol: 'VOO', providerName: SECURITY_PROVIDER.fmp },
+      { symbol: 'VOO' },
+      { providerName: SECURITY_PROVIDER.fmp },
+    ]) {
+      await expect(call({ tool, args })).rejects.toThrow(/securityId|symbol/);
+    }
+    expect(prices).not.toHaveBeenCalled();
+  });
+
+  it('looks a stored security up by symbol and provider, then reads its prices with the same window', async () => {
+    findBySymbol.mockResolvedValue({ id: SECURITY_ID } as never);
+    prices.mockResolvedValue([row()] as never);
+
+    const data = await call({
+      tool,
+      args: { symbol: 'VOO', providerName: SECURITY_PROVIDER.fmp, to: '2026-10-05T00:00:00.000Z' },
+    });
+
+    expect(findBySymbol).toHaveBeenCalledWith({ symbol: 'VOO', providerName: SECURITY_PROVIDER.fmp });
+    expect(prices).toHaveBeenCalledWith({
+      securityId: SECURITY_ID,
+      from: new Date('2025-10-05T00:00:00.000Z'),
+      to: new Date('2026-10-05T00:00:00.000Z'),
+    });
+    expect(data).toMatchObject({ total: 1 });
+  });
+
+  it('reports not found when no stored security matches the symbol, without reading prices', async () => {
+    findBySymbol.mockResolvedValue(null);
+
+    await expect(call({ tool, args: { symbol: 'NOPE', providerName: SECURITY_PROVIDER.fmp } })).rejects.toThrow(
+      /not found/i,
+    );
+    expect(prices).not.toHaveBeenCalled();
+  });
+
+  it('points at the symbol lookup in its description', () => {
+    expect(tool.config.description).toMatch(/symbol/);
+    expect(tool.config.description).toMatch(/search_securities/);
   });
 
   it('takes the REST datetime bounds', () => {

@@ -1,8 +1,11 @@
+import { SECURITY_PROVIDER } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { securityPricesQuerySchema } from '@controllers/investments/prices/schemas';
+import { NotFoundError } from '@js/errors';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { getPrices } from '@services/investments/securities-price/get-prices.service';
+import { findStoredSecurityBySymbol } from '@services/investments/securities/find-stored.service';
 import { subDays } from 'date-fns';
 import { z } from 'zod';
 
@@ -16,7 +19,22 @@ const DEFAULT_LIMIT = 500;
 const MAX_LIMIT = 5000;
 
 const inputSchema = {
-  securityId: recordId().describe('Security ID (from get_portfolio_holdings or create_holding)'),
+  securityId: recordId()
+    .optional()
+    .describe(
+      'Security ID (from get_portfolio_holdings, create_holding, or a search_securities result that carries one). Give this or symbol with providerName',
+    ),
+  symbol: z
+    .string()
+    .min(1)
+    .optional()
+    .describe(
+      'Symbol of a security already stored, as search_securities returns it (providerSymbol, or the ticker). Needs providerName; read-only, never adds a security',
+    ),
+  providerName: z
+    .nativeEnum(SECURITY_PROVIDER)
+    .optional()
+    .describe('Provider of the stored security, as search_securities returns it. Needs symbol'),
   from: shape.from.describe(
     `Start of the range, ISO 8601 UTC (e.g. "2026-01-01T00:00:00Z"). Default: ${DEFAULT_WINDOW_DAYS} days before to (or before now)`,
   ),
@@ -30,12 +48,35 @@ const inputSchema = {
     .describe(`Most rows to return, the newest of the range (default ${DEFAULT_LIMIT}, max ${MAX_LIMIT})`),
 };
 
+/** Exactly one of a security id and a symbol with its provider names the security; a symbol must match a stored one. */
+async function resolveSecurityId({
+  securityId,
+  symbol,
+  providerName,
+}: {
+  securityId?: string;
+  symbol?: string;
+  providerName?: SECURITY_PROVIDER;
+}) {
+  const bySymbol = symbol !== undefined || providerName !== undefined;
+
+  if (securityId && bySymbol) throw new Error('Give securityId or symbol with providerName, not both.');
+  if (securityId) return securityId;
+  if (!symbol || !providerName) throw new Error('Give securityId, or both symbol and providerName.');
+
+  const security = await findStoredSecurityBySymbol({ symbol, providerName });
+  if (!security)
+    throw new NotFoundError({ message: `Security ${symbol} (${providerName}) not found among stored securities.` });
+
+  return security.id;
+}
+
 export function registerGetSecurityPrices(server: McpServer) {
   server.registerTool(
     'get_security_prices',
     {
       description:
-        'Stored closing prices of one security, oldest first, each with the date, the close, when it was recorded and its source, as { prices, total }. Without from the range starts 365 days before to (or before now), and at most limit rows come back (default 500, max 5000), the newest of the range, so total tells you when rows were left out: narrow from and to to see them. Use get_portfolio_holdings for what a position is worth now.',
+        'Stored closing prices of one security, found by securityId or by symbol with providerName (a security that is stored, even without a holding; not found otherwise), oldest first, each with the date, the close, when it was recorded and its source, as { prices, total }. Without from the range starts 365 days before to (or before now), and at most limit rows come back (default 500, max 5000), the newest of the range, so total tells you when rows were left out: narrow from and to to see them. search_securities returns the symbol and providerName to look a stored security up by. Use get_portfolio_holdings for what a position is worth now.',
       inputSchema,
     },
     async (args, extra) => {
@@ -43,7 +84,10 @@ export function registerGetSecurityPrices(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'get_security_prices', clientId: extra.authInfo?.clientId });
 
       // The REST query rule, `from` on or before `to`, which a plain input shape cannot carry.
-      const { securityId, from, to } = securityPricesQuerySchema.parse(args);
+      const { securityId: givenId, from, to } = securityPricesQuerySchema.parse(args);
+      const { symbol, providerName } = args;
+
+      const securityId = await resolveSecurityId({ securityId: givenId, symbol, providerName });
 
       const toDate = to ? new Date(to) : undefined;
       // Prices are shared by all users and can be hourly, so an open range is cut to a year.
