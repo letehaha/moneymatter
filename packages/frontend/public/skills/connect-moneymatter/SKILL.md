@@ -520,7 +520,7 @@ page.
 | `get_earliest_transaction_date` | Date of the first transaction on record; start date for reports |
 | `get_portfolio` | Read one portfolio by id |
 | `get_portfolios_overview` | Summaries and annualized returns of all portfolios |
-| `get_security_prices` | Stored closing prices of one security, optionally in a date range |
+| `get_security_prices` | Stored closing prices of one security; last 365 days by default, newest `limit` rows (500, max 5000) |
 | `create_holding` | Add a security to a portfolio from a search result or securityId (`finance:write`) |
 | `delete_holding` | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`) |
 | `restore_portfolio` | Restore a deleted portfolio (`finance:write`) |
