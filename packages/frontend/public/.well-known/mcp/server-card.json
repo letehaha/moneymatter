@@ -227,6 +227,14 @@
       "description": "List the user's investment portfolios with type, enabled state, and metadata."
     },
     {
+      "name": "get_portfolio",
+      "description": "Read one portfolio by id: name, type, description, enabled state and creation date."
+    },
+    {
+      "name": "get_portfolios_overview",
+      "description": "Summaries and annualized returns of all portfolios in one call."
+    },
+    {
       "name": "get_portfolio_summary",
       "description": "Portfolio-level aggregates: total value, cost basis, realized and unrealized gains, and cash balances in the user's base currency."
     },
@@ -257,6 +265,10 @@
     {
       "name": "delete_portfolio",
       "description": "Permanently delete a portfolio and optionally all its data (requires finance:delete scope)."
+    },
+    {
+      "name": "restore_portfolio",
+      "description": "Restore a portfolio that was deleted without force, with its holdings and balances (requires finance:write scope)."
     },
     {
       "name": "create_investment_transaction",
@@ -291,8 +303,24 @@
       "description": "Record a direct portfolio cash deposit or withdrawal with no linked account transaction (requires finance:write scope)."
     },
     {
+      "name": "transfer_between_portfolios",
+      "description": "Move cash from one portfolio to another in one currency, creating no account transaction (requires finance:write scope)."
+    },
+    {
+      "name": "exchange_portfolio_currency",
+      "description": "Record a currency exchange inside a portfolio: sell one cash currency, buy another (requires finance:write scope)."
+    },
+    {
       "name": "list_portfolio_transfers",
       "description": "Cash movement history of a portfolio: transfers, deposits/withdrawals, linked transactions, and currency exchanges."
+    },
+    {
+      "name": "set_portfolio_transfer_adjustment",
+      "description": "Flag a portfolio transfer as an adjustment, which drops it from the contributions report, or clear the flag (requires finance:write scope)."
+    },
+    {
+      "name": "delete_portfolio_transfer",
+      "description": "Permanently delete a portfolio transfer and reverse its cash effect, optionally with the linked account transaction (requires finance:delete scope)."
     },
     {
       "name": "adjust_account_balance",

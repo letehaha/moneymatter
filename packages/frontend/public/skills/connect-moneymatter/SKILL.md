@@ -97,6 +97,8 @@ page.
 | `get_cumulative_stats`                   | Running monthly totals of expenses, income or savings vs the previous period                                     |
 | `get_earliest_transaction_date`          | Date of the first transaction on record; start date for reports                                                  |
 | `get_portfolios`                         | List investment portfolios (types, enabled state)                                                                |
+| `get_portfolio`                          | Read one portfolio by id                                                                                         |
+| `get_portfolios_overview`                | Summaries and annualized returns of all portfolios                                                               |
 | `get_portfolio_summary`                  | Portfolio totals, P&L, cash balances                                                                             |
 | `get_portfolio_holdings`                 | Positions with market value and gains/losses                                                                     |
 | `get_portfolio_balances`                 | Portfolio cash balances per currency                                                                             |
@@ -105,6 +107,7 @@ page.
 | `create_portfolio`                       | Create a new investment portfolio (`finance:write`)                                                              |
 | `update_portfolio`                       | Rename, recategorize, or disable a portfolio (`finance:write`)                                                   |
 | `delete_portfolio`                       | Delete a portfolio and optionally all its data (`finance:delete`)                                                |
+| `restore_portfolio`                      | Restore a deleted portfolio (`finance:write`)                                                                    |
 | `create_investment_transaction`          | Record a buy/sell/dividend/fee transaction (`finance:write`)                                                     |
 | `update_investment_transaction`          | Correct a transaction's date, quantity, price, or fees (`finance:write`)                                         |
 | `delete_investment_transaction`          | Delete an investment transaction (`finance:delete`)                                                              |
@@ -113,7 +116,11 @@ page.
 | `transfer_account_to_portfolio`          | Move cash from an account into a portfolio (`finance:write`)                                                     |
 | `transfer_portfolio_to_account`          | Withdraw portfolio cash into an account (`finance:write`)                                                        |
 | `create_portfolio_cash_transaction`      | Direct portfolio cash deposit/withdrawal, no account involved (`finance:write`)                                  |
+| `transfer_between_portfolios`            | Move cash from one portfolio to another (`finance:write`)                                                        |
+| `exchange_portfolio_currency`            | Exchange one cash currency for another inside a portfolio (`finance:write`)                                      |
 | `list_portfolio_transfers`               | Cash movement history of a portfolio (transfers, deposits, exchanges)                                            |
+| `set_portfolio_transfer_adjustment`      | Flag a transfer as an adjustment, not a contribution (`finance:write`)                                           |
+| `delete_portfolio_transfer`              | Delete a portfolio transfer and reverse its cash effect (`finance:delete`)                                       |
 | `adjust_account_balance`                 | Set an account to a target balance via an adjustment transaction (`finance:write`)                               |
 | `archive_account`                        | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
 | `delete_account`                         | Permanently delete an account and all its transactions (`finance:delete`)                                        |
@@ -299,7 +306,11 @@ multi-currency data.
 - Portfolio cash moves via transfers: `link_transaction_to_portfolio` when the
   bank transaction already exists, `transfer_account_to_portfolio` /
   `transfer_portfolio_to_account` to create the transaction alongside the
-  transfer, `create_portfolio_cash_transaction` when no account is involved.
+  transfer, `create_portfolio_cash_transaction` when no account is involved,
+  `transfer_between_portfolios` between two portfolios and
+  `exchange_portfolio_currency` to swap cash currencies inside one portfolio.
+  `set_portfolio_transfer_adjustment` keeps a correction out of the
+  contributions report.
 
 ## Troubleshooting
 
