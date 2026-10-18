@@ -34,12 +34,22 @@ const SEARCH_RESULT_KEYS = Object.keys(SecuritySearchResultSchema.shape);
  * A search hit as `create_holding` takes it as `searchResult`: every field of the REST search result
  * schema the provider set, plus `isInPortfolio` when the search was scoped to a portfolio. A key the
  * provider left null or unset is omitted, since the schema takes absent keys but not null for most.
+ * `securityId` is added when the hit is already a stored security; the schema drops it, so the result
+ * still goes to `create_holding` unchanged.
  */
-export function presentSecuritySearchResult({ result }: { result: SecuritySearchResultFormatted }) {
+export function presentSecuritySearchResult({
+  result,
+  securityId,
+}: {
+  result: SecuritySearchResultFormatted;
+  /** The id of the security already stored for this hit, when there is one. */
+  securityId?: string | null;
+}) {
   const presented: Record<string, unknown> = {};
   for (const key of [...SEARCH_RESULT_KEYS, 'isInPortfolio'] as (keyof SecuritySearchResultFormatted)[]) {
     const value = result[key];
     if (value !== null && value !== undefined) presented[key] = value;
   }
+  if (securityId) presented.securityId = securityId;
   return presented;
 }
