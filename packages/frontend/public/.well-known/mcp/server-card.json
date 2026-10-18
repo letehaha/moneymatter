@@ -937,6 +937,30 @@
     {
       "name": "delete_vehicle",
       "description": "Permanently delete a vehicle with its account. Requires finance:delete scope."
+    },
+    {
+      "name": "list_budget_plans",
+      "description": "List the budget plans (period envelopes, not trackers), or read one with its accounts and lines."
+    },
+    {
+      "name": "get_budget_plan_suggestion_context",
+      "description": "Read the top spending categories of given accounts to start a new budget plan from."
+    },
+    {
+      "name": "list_budget_plan_periods",
+      "description": "List the periods of a budget plan, newest first, with the current one marked."
+    },
+    {
+      "name": "get_budget_plan_period",
+      "description": "Read one budget plan period: assigned, activity and available per line, the pool, goals and coverage."
+    },
+    {
+      "name": "get_budget_plan_scheduled",
+      "description": "List the subscription payments and planned transactions still scheduled in a budget plan period."
+    },
+    {
+      "name": "get_budget_plan_trends",
+      "description": "Compare assigned, activity and available over the last periods of a budget plan, in total and per line."
     }
   ],
   "prompts": [
