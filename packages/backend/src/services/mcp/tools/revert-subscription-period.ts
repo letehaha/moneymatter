@@ -15,7 +15,7 @@ export function registerRevertSubscriptionPeriod(server: McpServer) {
     'revert_subscription_period',
     {
       description:
-        'Undo a paid or skipped period: it becomes upcoming (or overdue when its due date has passed) again, and the open period the app generated after it is removed unless a later period was already paid or skipped. When the payment transaction was created by the app for the period (pay_subscription_period with createTransaction), the revert also deletes that transaction and reverses its effect on the account balance, which additionally needs finance:delete scope; the call is refused, with nothing changed, when the token lacks it. A transaction you linked yourself is never deleted, and neither is one on a bank-connected account. Returns the period. Requires finance:write scope.',
+        'Undo a paid or skipped period: it becomes upcoming (or overdue when its due date has passed) again, and the open period the app generated after it is removed unless a later period was already paid or skipped. When the payment transaction was created by the app for the period (pay_subscription_period with createTransaction), the revert also deletes that transaction and reverses its effect on the account balance, which additionally needs finance:delete scope; the call is refused, with nothing changed, when the token lacks it. A transaction you linked yourself is never deleted, and neither is a booked (non-planned) one on a bank-connected account. Returns the period. Requires finance:write scope.',
       inputSchema,
     },
     async (args, extra) => {

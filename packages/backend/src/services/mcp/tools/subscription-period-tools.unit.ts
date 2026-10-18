@@ -438,6 +438,11 @@ describe('revert_subscription_period', () => {
     expect(tool.config.description).toMatch(/finance:delete/);
   });
 
+  it('states the real keep rule: a booked row on a bank-connected account is kept, a planned one is not', () => {
+    // revertPeriod deletes when `tx.isPlanned || !isBankLinkedAccount(...)`.
+    expect(tool.config.description).toMatch(/neither is a booked \(non-planned\) one on a bank-connected account/);
+  });
+
   it('hands the service a callback and no preliminary decision about the transaction', async () => {
     serviceKeepsTransaction();
 
