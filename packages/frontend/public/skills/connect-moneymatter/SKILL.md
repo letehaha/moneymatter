@@ -82,6 +82,10 @@ page.
 | `archive_budget_plan_line` | Archive a line from the current period, or restore an archived one (`finance:write`) |
 | `add_suggested_budget_plan_lines` | Draft starter lines from spending history, with AI when the server has it (`finance:write`) |
 | `set_budget_plan_layout` | Reorder groups and move lines between them in one call (`finance:write`) |
+| `set_budget_plan_line_goal` | Set or replace a line's goal: frequency, behavior and amount (`finance:write`) |
+| `delete_budget_plan_line_goal` | Delete a line's goal (`finance:delete`) |
+| `snooze_budget_plan_line_goal` | Snooze a line's goal for one period, or wake it again (`finance:write`) |
+| `set_budget_plan_assignment` | Assign money to a line from a period on or for one period, or set its carry policy (`finance:write`) |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
@@ -882,7 +886,10 @@ multi-currency data.
   plans; trashing one does not.
   A plan holds lines (envelopes for categories, in groups). A category sits in
   one line at a time; archive a line before reusing its categories elsewhere.
-  Money is assigned to lines per period with the assignment tools, not here.
+  Money is assigned to a line per period with `set_budget_plan_assignment`
+  (`from_here` sets a baseline that runs on, `this_period` a one-period
+  override). A line's goal is set with `set_budget_plan_line_goal`; the
+  combinations it accepts are listed in that tool's description.
 
 ## Troubleshooting
 
