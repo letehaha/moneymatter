@@ -977,6 +977,38 @@
     {
       "name": "get_budget_plan_trends",
       "description": "Compare assigned, activity and available over the last periods of a budget plan, in total and per line."
+    },
+    {
+      "name": "create_budget_plan",
+      "description": "Create the budget plan (period envelopes, not trackers) from accounts, cadence and anchor date, with optional starter lines. Requires finance:write scope."
+    },
+    {
+      "name": "update_budget_plan",
+      "description": "Change a budget plan's name, carry policy, pool, zero-sum or expected income. Requires finance:write scope."
+    },
+    {
+      "name": "delete_budget_plan",
+      "description": "Move a budget plan to the trash, or erase a trashed one for good with permanent. Requires finance:delete scope."
+    },
+    {
+      "name": "restore_budget_plan",
+      "description": "Bring a budget plan back from the trash, optionally replacing the active plan. Requires finance:write scope."
+    },
+    {
+      "name": "set_budget_plan_accounts",
+      "description": "Replace the accounts a budget plan counts activity from. Requires finance:write scope."
+    },
+    {
+      "name": "create_budget_plan_group",
+      "description": "Add a named group to a budget plan for its lines. Requires finance:write scope."
+    },
+    {
+      "name": "update_budget_plan_group",
+      "description": "Rename a group of a budget plan. Requires finance:write scope."
+    },
+    {
+      "name": "delete_budget_plan_group",
+      "description": "Delete an empty group of a budget plan. Requires finance:delete scope."
     }
   ],
   "prompts": [
