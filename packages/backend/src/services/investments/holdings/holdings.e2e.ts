@@ -571,48 +571,6 @@ describe('Investment holdings', () => {
 
         expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
       });
-
-      it('does not overwrite priceSourceSymbol when re-add omits the field', async () => {
-        // Re-adding the same security via search (e.g. user re-adds after delete)
-        // must NOT clear a stored priceSourceSymbol when the new search result
-        // carries none. The securities-manage update path guards on `!= null`
-        // so undefined leaves the column intact.
-        const seeded = await Securities.create({
-          symbol: 'IE00B53L3W79.IR',
-          providerSymbol: 'IE00B53L3W79.IR',
-          priceSourceSymbol: 'MEUD.PA',
-          name: 'iShares Core EURO STOXX 50',
-          currencyCode: 'EUR',
-          providerName: SECURITY_PROVIDER.yahoo,
-          assetClass: ASSET_CLASS.stocks,
-        });
-
-        mockedAlphaDaily.mockResolvedValue({
-          'Time Series (Daily)': { '2024-01-15': { '4. close': '92.5' } },
-        });
-
-        const response = await makeRequest({
-          method: 'post',
-          url: '/investments/holding',
-          payload: {
-            portfolioId: investmentPortfolio.id,
-            searchResult: {
-              symbol: 'IE00B53L3W79.IR',
-              providerSymbol: 'IE00B53L3W79.IR',
-              // priceSourceSymbol intentionally omitted
-              name: 'iShares Core EURO STOXX 50',
-              assetClass: ASSET_CLASS.stocks,
-              providerName: SECURITY_PROVIDER.yahoo,
-              currencyCode: 'EUR',
-              isin: 'IE00B53L3W79',
-            },
-          },
-        });
-        expect(response.statusCode).toBe(201);
-
-        const reloaded = await Securities.findByPk(seeded.id);
-        expect(reloaded?.priceSourceSymbol).toBe('MEUD.PA');
-      });
     });
 
     describe('searchResult for a security that already exists', () => {
@@ -653,19 +611,21 @@ describe('Investment holdings', () => {
 
         const stored = await Securities.findAll({ where: { symbol: 'VOO' } });
         expect(stored).toHaveLength(1);
-        expect(stored[0]!.id).toBe(vooSecurity.id);
-        expect(stored[0]!.name).toBe(vooSecurity.name);
-        expect(stored[0]!.priceSourceSymbol).toBeNull();
-        expect(stored[0]!.logoUrl).toBeNull();
-        expect(stored[0]!.exchangeName).toBe(vooSecurity.exchangeName);
-        expect(stored[0]!.exchangeAcronym).toBe(vooSecurity.exchangeAcronym);
-        expect(stored[0]!.exchangeMic).toBe(vooSecurity.exchangeMic);
+        expect(stored[0]).toMatchObject({
+          id: vooSecurity.id,
+          name: vooSecurity.name,
+          priceSourceSymbol: null,
+          logoUrl: null,
+          exchangeName: vooSecurity.exchangeName,
+          exchangeAcronym: vooSecurity.exchangeAcronym,
+          exchangeMic: vooSecurity.exchangeMic,
+        });
 
         const holdings = await Holdings.findAll({ where: { securityId: vooSecurity.id } });
         expect(holdings).toHaveLength(1);
       });
 
-      it("fetches the first price through the stored security's symbol, not the one in the request", async () => {
+      it("fetches the first price through the stored security's provider and symbol, not the ones in the request", async () => {
         const mockedYahooQuote = jest.fn<any>().mockResolvedValue({
           symbol: 'MEUD.PA',
           regularMarketPreviousClose: 92.5,
@@ -702,7 +662,7 @@ describe('Investment holdings', () => {
               priceSourceSymbol: 'EVIL.PA',
               name: 'iShares Core EURO STOXX 50',
               assetClass: ASSET_CLASS.stocks,
-              providerName: SECURITY_PROVIDER.yahoo,
+              providerName: SECURITY_PROVIDER.fmp,
               currencyCode: 'EUR',
             },
           },

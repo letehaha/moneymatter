@@ -6,7 +6,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { dataProviderFactory } from '../data-providers';
 import { toProviderSymbol } from '../data-providers/base-provider';
-import { addOrUpdateFromProvider } from '../securities-manage';
+import { createMissingSecurities } from '../securities-manage';
 import { findSecurityByIdentity } from './identity';
 
 interface AddSecurityFromSearchParams {
@@ -32,10 +32,10 @@ const addSecurityFromSearchImpl = async ({
   logger.info(`Adding security from search: ${searchResult.symbol} - ${searchResult.name}`);
 
   // Step 1: Create the security when it does not exist yet. An existing row is left as stored.
-  await addOrUpdateFromProvider([searchResult]);
+  await createMissingSecurities({ securities: [searchResult] });
 
-  // Step 2: Resolve the created/updated row via the shared identity helper –
-  // the same key shape `addOrUpdateFromProvider` used for dedup. A non-crypto
+  // Step 2: Resolve the created or existing row via the shared identity helper –
+  // the same key shape `createMissingSecurities` used for dedup. A non-crypto
   // search result whose existing row was sourced from a different provider
   // (e.g. an FMP-sourced VOO matched against a Yahoo hit) resolves to that
   // existing row instead of looking like a fresh insert.
@@ -50,11 +50,8 @@ const addSecurityFromSearchImpl = async ({
   // Step 3: Fetch and store the latest price immediately (unless skipped)
   let latestPrice: AddSecurityFromSearchResult['latestPrice'];
 
-  // Route the latest-price call through the stored row's `priceSourceSymbol` when set so the
-  // row's first stored price comes from a venue with dense data instead of the sparse
-  // ISIN-suffix listing (Yahoo ISIN-fallback path). The stored row decides the provider and
-  // symbol, never the request: the price lands on a row that every user shares. Declared
-  // outside the try so the catch can reference it when annotating failure logs.
+  // Provider and symbol come from the stored row, never the request: the price lands on a row
+  // every user shares.
   const priceQuerySymbol = security.priceQuerySymbol;
 
   if (!skipPriceFetch) {
@@ -80,7 +77,7 @@ const addSecurityFromSearchImpl = async ({
       security.pricingLastSyncedAt = new Date();
       await security.save();
 
-      logger.info(`Successfully fetched latest price for ${searchResult.symbol}: ${priceData.priceClose}`);
+      logger.info(`Successfully fetched latest price for ${security.symbol}: ${priceData.priceClose}`);
     } catch (error) {
       // The immediate price fetch is optional and best-effort: the security was
       // created successfully and the daily price-sync cron backfills its price on
@@ -91,7 +88,7 @@ const addSecurityFromSearchImpl = async ({
       const routedVia =
         priceQuerySymbol !== security.providerSymbol ? ` (routed via priceSourceSymbol=${priceQuerySymbol})` : '';
       logger.info(
-        `Failed to fetch latest price for ${searchResult.symbol}${routedVia} (will be backfilled by daily sync)`,
+        `Failed to fetch latest price for ${security.symbol}${routedVia} (will be backfilled by daily sync)`,
         {
           error: error instanceof Error ? error.message : String(error),
         },
@@ -100,7 +97,7 @@ const addSecurityFromSearchImpl = async ({
     }
   }
 
-  logger.info(`Successfully added security from search: ${searchResult.symbol}`);
+  logger.info(`Successfully added security from search: ${security.symbol}`);
 
   return {
     security,
@@ -114,6 +111,6 @@ const addSecurityFromSearchImpl = async ({
  *
  * @param params - The search result selected by the user
  * @param params.skipPriceFetch - If true, skips fetching the latest price from external API
- * @returns The created/updated security with optional latest price info
+ * @returns The created or existing security with optional latest price info
  */
 export const addSecurityFromSearch = withTransaction(addSecurityFromSearchImpl);

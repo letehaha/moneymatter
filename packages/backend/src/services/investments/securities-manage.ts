@@ -5,9 +5,11 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { securityIdentityBatchWhere, securityIdentityKey } from './securities/identity';
 
-const addOrUpdateFromProviderImpl = async (
-  securitiesFromProvider: SecuritySearchResult[],
-): Promise<{ newCount: number }> => {
+const createMissingSecuritiesImpl = async ({
+  securities: securitiesFromProvider,
+}: {
+  securities: SecuritySearchResult[];
+}): Promise<{ newCount: number }> => {
   if (!securitiesFromProvider || securitiesFromProvider.length === 0) {
     logger.info('No securities provided to sync. Aborting.');
     return { newCount: 0 };
@@ -24,22 +26,16 @@ const addOrUpdateFromProviderImpl = async (
       ? []
       : await Securities.findAll({
           where: lookupWhere,
-          attributes: ['id', 'providerName', 'providerSymbol', 'symbol', 'currencyCode', 'assetClass'],
+          attributes: ['providerName', 'providerSymbol', 'symbol', 'currencyCode', 'assetClass'],
           raw: true,
         });
 
-  const existingByKey = new Map<string, (typeof existingSecurities)[number]>();
-  for (const e of existingSecurities) {
-    existingByKey.set(securityIdentityKey(e), e);
-  }
-  logger.info(
-    `Found ${existingByKey.size} matching existing securities for ${securitiesFromProvider.length} incoming entries.`,
-  );
+  const existingKeys = new Set(existingSecurities.map((e) => securityIdentityKey(e)));
 
   // A row that already stands for the security is left as stored: Securities rows are shared by
   // every user, and the incoming results can come from a request body, so they never overwrite
   // the name, logo, price source or exchange of an existing row.
-  const newSecurities = securitiesFromProvider.filter((sec) => !existingByKey.has(securityIdentityKey(sec)));
+  const newSecurities = securitiesFromProvider.filter((sec) => !existingKeys.has(securityIdentityKey(sec)));
 
   const newCount = newSecurities.length;
   logger.info(
@@ -67,8 +63,6 @@ const addOrUpdateFromProviderImpl = async (
     await Securities.bulkCreate(securitiesToCreate);
   }
 
-  logger.info(`Securities sync completed. New: ${newCount}.`);
-
   return { newCount };
 };
 
@@ -77,4 +71,4 @@ const addOrUpdateFromProviderImpl = async (
  * the local database, and saves the securities it does not have yet within a DB
  * transaction. A security that already exists is never modified.
  */
-export const addOrUpdateFromProvider = withTransaction(addOrUpdateFromProviderImpl);
+export const createMissingSecurities = withTransaction(createMissingSecuritiesImpl);
