@@ -1017,6 +1017,22 @@
     {
       "name": "set_budget_plan_layout",
       "description": "Reorder a budget plan's groups and move lines between them in one call. Requires finance:write scope."
+    },
+    {
+      "name": "set_budget_plan_line_goal",
+      "description": "Set or replace the goal of a budget plan line: its frequency, behavior and amount. Requires finance:write scope."
+    },
+    {
+      "name": "delete_budget_plan_line_goal",
+      "description": "Delete the goal of a budget plan line. Requires finance:delete scope."
+    },
+    {
+      "name": "snooze_budget_plan_line_goal",
+      "description": "Snooze a budget plan line goal for one period, or wake it up again. Requires finance:write scope."
+    },
+    {
+      "name": "set_budget_plan_assignment",
+      "description": "Assign money to a budget plan line from a period on or for one period, or set its carry policy. Requires finance:write scope."
     }
   ],
   "prompts": [
