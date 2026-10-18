@@ -407,10 +407,10 @@ describe('get_security_prices', () => {
     ...patch,
   });
 
-  it('registers under its name with the REST query fields, and the security required', () => {
+  it('registers under its name with the REST query fields plus a limit, and the security required', () => {
     expect(tool.name).toBe('get_security_prices');
     expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(
-      Object.keys(securityPricesQuerySchema.shape).toSorted(),
+      [...Object.keys(securityPricesQuerySchema.shape), 'limit'].toSorted(),
     );
     expect(schema.safeParse({ securityId: SECURITY_ID }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
@@ -440,17 +440,103 @@ describe('get_security_prices', () => {
       from: new Date('2026-10-01T00:00:00.000Z'),
       to: new Date('2026-10-05T00:00:00.000Z'),
     });
-    expect(data).toEqual([
-      { date: '2026-10-02T00:00:00.000Z', priceClose: 512.34, priceAsOf: null, source: 'fmp' },
-      { date: '2026-10-03T00:00:00.000Z', priceClose: 512.34, priceAsOf: null, source: null },
-    ]);
+    expect(data).toEqual({
+      prices: [
+        { date: '2026-10-02T00:00:00.000Z', priceClose: 512.34, priceAsOf: null, source: 'fmp' },
+        { date: '2026-10-03T00:00:00.000Z', priceClose: 512.34, priceAsOf: null, source: null },
+      ],
+      total: 2,
+    });
   });
 
-  it('asks for every stored price when no bounds are given, and returns an empty list for a security without any', async () => {
+  it('bounds the read to the year before `to` when `from` is omitted', async () => {
     prices.mockResolvedValue([]);
 
-    expect(await call({ tool, args: { securityId: SECURITY_ID } })).toEqual([]);
-    expect(prices).toHaveBeenCalledWith({ securityId: SECURITY_ID, from: undefined, to: undefined });
+    expect(await call({ tool, args: { securityId: SECURITY_ID, to: '2026-10-05T00:00:00.000Z' } })).toEqual({
+      prices: [],
+      total: 0,
+    });
+    expect(prices).toHaveBeenCalledWith({
+      securityId: SECURITY_ID,
+      from: new Date('2025-10-05T00:00:00.000Z'),
+      to: new Date('2026-10-05T00:00:00.000Z'),
+    });
+  });
+
+  it('bounds the read to the last year when neither bound is given, leaving the upper end open', async () => {
+    prices.mockResolvedValue([]);
+    const before = Date.now();
+
+    await call({ tool, args: { securityId: SECURITY_ID } });
+
+    const { from, to } = prices.mock.calls[0]![0];
+    const year = 365 * 24 * 60 * 60 * 1000;
+    expect(to).toBeUndefined();
+    expect(from!.getTime()).toBeGreaterThanOrEqual(before - year);
+    expect(from!.getTime()).toBeLessThanOrEqual(Date.now() - year);
+  });
+
+  it('keeps an explicit `from` as given, however old', async () => {
+    prices.mockResolvedValue([]);
+
+    await call({ tool, args: { securityId: SECURITY_ID, from: '2001-01-01T00:00:00.000Z' } });
+
+    expect(prices).toHaveBeenCalledWith({
+      securityId: SECURITY_ID,
+      from: new Date('2001-01-01T00:00:00.000Z'),
+      to: undefined,
+    });
+  });
+
+  describe('limit', () => {
+    const days = (count: number) =>
+      Array.from({ length: count }, (_, index) =>
+        row({ date: new Date(Date.UTC(2026, 0, 1 + index)), priceClose: Money.fromDecimal(index + 1) }),
+      );
+
+    it('defaults to 500 and caps at 5000 in the input schema', () => {
+      expect(schema.safeParse({ securityId: SECURITY_ID, limit: 5000 }).success).toBe(true);
+      expect(schema.safeParse({ securityId: SECURITY_ID, limit: 5001 }).success).toBe(false);
+      expect(schema.safeParse({ securityId: SECURITY_ID, limit: 0 }).success).toBe(false);
+      expect(schema.safeParse({ securityId: SECURITY_ID, limit: 1.5 }).success).toBe(false);
+    });
+
+    it('keeps the newest rows, oldest first, and reports the matching total', async () => {
+      prices.mockResolvedValue(days(600).toReversed() as never);
+
+      const data = (await call({ tool, args: { securityId: SECURITY_ID } })) as {
+        prices: { date: string; priceClose: number }[];
+        total: number;
+      };
+
+      expect(data.total).toBe(600);
+      expect(data.prices).toHaveLength(500);
+      expect(data.prices[0]!.priceClose).toBe(101);
+      expect(data.prices.at(-1)!.priceClose).toBe(600);
+    });
+
+    it('honours a smaller limit', async () => {
+      prices.mockResolvedValue(days(10) as never);
+
+      const data = (await call({ tool, args: { securityId: SECURITY_ID, limit: 3 } })) as {
+        prices: { priceClose: number }[];
+        total: number;
+      };
+
+      expect(data.total).toBe(10);
+      expect(data.prices.map((price) => price.priceClose)).toEqual([8, 9, 10]);
+    });
+  });
+
+  it('says in its description that the window and the row count are bounded', () => {
+    expect(tool.config.description).toMatch(/365 days|last year/i);
+    expect(tool.config.description).toMatch(/limit/);
+  });
+
+  it('returns an empty list for a security without any price', async () => {
+    prices.mockResolvedValue([]);
+
+    expect(await call({ tool, args: { securityId: SECURITY_ID } })).toEqual({ prices: [], total: 0 });
   });
 
   it('refuses an inverted range as REST does, before the service', async () => {
