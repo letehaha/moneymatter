@@ -11,11 +11,13 @@ import { registerAddAccountToGroup } from './tools/add-account-to-group';
 import { registerAddTransactionsToBudget } from './tools/add-transactions-to-budget';
 import { registerAddTransactionsToGroup } from './tools/add-transactions-to-group';
 import { registerAddTransactionsToTracker } from './tools/add-transactions-to-tracker';
+import { registerAddUserCurrencies } from './tools/add-user-currencies';
 import { registerAdjustAccountBalance } from './tools/adjust-account-balance';
 import { registerArchiveAccount } from './tools/archive-account';
 import { registerArchiveTracker } from './tools/archive-tracker';
 import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transaction';
 import { registerBulkUpdateTransactions } from './tools/bulk-update-transactions';
+import { registerChangeBaseCurrency } from './tools/change-base-currency';
 import { registerCreateAccount } from './tools/create-account';
 import { registerCreateAccountGroup } from './tools/create-account-group';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
@@ -50,14 +52,19 @@ import { registerDeleteTrackerLine } from './tools/delete-tracker-line';
 import { registerDeleteTransaction } from './tools/delete-transaction';
 import { registerDeleteTransactionAutomation } from './tools/delete-transaction-automation';
 import { registerDeleteTransactionGroup } from './tools/delete-transaction-group';
+import { registerDeleteUserCurrency } from './tools/delete-user-currency';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
 import { registerGetAccount } from './tools/get-account';
 import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
+import { registerGetBaseCurrencyChangeStatus } from './tools/get-base-currency-change-status';
+import { registerGetBudgetSpendingStats } from './tools/get-budget-spending-stats';
+import { registerGetBudgets } from './tools/get-budgets';
 import { registerGetCashFlow } from './tools/get-cash-flow';
 import { registerGetCategories } from './tools/get-categories';
+import { registerGetExchangeRate } from './tools/get-exchange-rate';
 import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
 import { registerGetGoals } from './tools/get-goals';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
@@ -77,6 +84,7 @@ import { registerGetTrackers } from './tools/get-trackers';
 import { registerGetTransactionAutomations } from './tools/get-transaction-automations';
 import { registerGetTransactionGroups } from './tools/get-transaction-groups';
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
+import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
 import { registerLinkRefund } from './tools/link-refund';
 import { registerLinkTransactionToPortfolio } from './tools/link-transaction-to-portfolio';
@@ -84,6 +92,7 @@ import { registerLinkTransactionsToSubscription } from './tools/link-transaction
 import { registerLinkTransfer } from './tools/link-transfer';
 import { registerListPortfolioTransfers } from './tools/list-portfolio-transfers';
 import { registerListSubscriptionCandidates } from './tools/list-subscription-candidates';
+import { registerListSupportedCurrencies } from './tools/list-supported-currencies';
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
 import { registerMergePayees } from './tools/merge-payees';
 import { registerMoveAccountGroup } from './tools/move-account-group';
@@ -123,6 +132,7 @@ import { registerUpdateTrackerLine } from './tools/update-tracker-line';
 import { registerUpdateTransaction } from './tools/update-transaction';
 import { registerUpdateTransactionAutomation } from './tools/update-transaction-automation';
 import { registerUpdateTransactionGroup } from './tools/update-transaction-group';
+import { registerUpdateUserCurrency } from './tools/update-user-currency';
 import {
   registerCreateVentureDeal,
   registerCreateVentureEvent,
@@ -332,6 +342,14 @@ export function createMcpServer(): McpServer {
   // Exchange rates
   registerSetExchangeRates(server);
   registerDeleteExchangeRates(server);
+  registerGetUserCurrencies(server);
+  registerListSupportedCurrencies(server);
+  registerGetExchangeRate(server);
+  registerAddUserCurrencies(server);
+  registerUpdateUserCurrency(server);
+  registerDeleteUserCurrency(server);
+  registerChangeBaseCurrency(server);
+  registerGetBaseCurrencyChangeStatus(server);
 
   return server;
 }
