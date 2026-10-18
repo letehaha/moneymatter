@@ -1,11 +1,9 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeSpendingsByCategories } from '@root/serializers/stats.serializer';
-import { getSpendingsByCategories } from '@services/stats/get-spendings-by-categories';
+import { getSpendingsByCategoriesReport } from '@services/stats/reports/spendings-by-categories.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -37,8 +35,7 @@ export function registerGetSpendingByCategories(server: McpServer) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const decimals = await getBaseCurrencyDecimals({ userId });
-      const spendings = await getSpendingsByCategories({
+      const serialized = await getSpendingsByCategoriesReport({
         userId,
         from: args.startDate ?? startOfMonth.toISOString(),
         to: args.endDate ?? now.toISOString(),
@@ -46,10 +43,7 @@ export function registerGetSpendingByCategories(server: McpServer) {
         transactionType: args.transactionType,
         categoryIds: args.categoryIds,
         excludedCategoryIds: args.excludedCategoryIds,
-        decimals,
       });
-
-      const serialized = serializeSpendingsByCategories({ spendings, decimals });
 
       // Convert from object keyed by ID to an array for easier AI consumption
       const categories = Object.entries(serialized).map(([id, data]) => ({

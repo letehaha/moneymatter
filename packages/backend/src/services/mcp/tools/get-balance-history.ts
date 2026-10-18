@@ -1,9 +1,7 @@
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeBalanceHistory, serializeCombinedBalanceHistory } from '@root/serializers/stats.serializer';
-import { getBalanceHistoryForAccount } from '@services/stats/get-balance-history-for-account';
-import { getCombinedBalanceHistory } from '@services/stats/get-combined-balance-history';
+import { getBalanceHistoryReport } from '@services/stats/reports/balance-history.report';
+import { getCombinedBalanceHistoryReport } from '@services/stats/reports/combined-balance-history.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -36,18 +34,10 @@ export function registerGetBalanceHistory(server: McpServer) {
       const to = args.endDate ?? now.toISOString();
 
       if (args.accountId) {
-        const balances = await getBalanceHistoryForAccount({
-          userId,
-          accountId: args.accountId,
-          from,
-          to,
-        });
-        return jsonContent({ data: serializeBalanceHistory(balances) });
+        return jsonContent({ data: await getBalanceHistoryReport({ userId, accountId: args.accountId, from, to }) });
       }
 
-      const decimals = await getBaseCurrencyDecimals({ userId });
-      const combined = await getCombinedBalanceHistory({ userId, from, to, decimals });
-      return jsonContent({ data: serializeCombinedBalanceHistory({ items: combined, decimals }) });
+      return jsonContent({ data: await getCombinedBalanceHistoryReport({ userId, from, to }) });
     },
   );
 }

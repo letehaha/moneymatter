@@ -88,6 +88,14 @@ page.
 | `get_cash_flow`                          | Income vs expenses over a range                                                                                  |
 | `get_balance_history`                    | Time-series of account balances                                                                                  |
 | `get_expenses_for_period`                | Expenses summary for a time period                                                                               |
+| `get_total_balance`                      | Total balance on one date across all accounts, net of credit limits if that setting is on                        |
+| `get_net_worth_history`                  | Net worth over a range: assets and liabilities by kind, weekly to yearly points                                  |
+| `get_net_worth_drivers`                  | What moved net worth per period: savings, investment growth, dividends, fees                                     |
+| `get_investment_contributions`           | Money moved into portfolios per period, split per portfolio                                                      |
+| `get_venture_contributions`              | Net contributed to each venture deal over a range                                                                |
+| `get_pivot_report`                       | Spending or income as rows (category, payee, tag) by time columns, with totals                                   |
+| `get_cumulative_stats`                   | Running monthly totals of expenses, income or savings vs the previous period                                     |
+| `get_earliest_transaction_date`          | Date of the first transaction on record; start date for reports                                                  |
 | `get_portfolios`                         | List investment portfolios (types, enabled state)                                                                |
 | `get_portfolio_summary`                  | Portfolio totals, P&L, cash balances                                                                             |
 | `get_portfolio_holdings`                 | Positions with market value and gains/losses                                                                     |
