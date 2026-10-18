@@ -1,8 +1,7 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeExpensesAmountForPeriod } from '@root/serializers/stats.serializer';
-import { getExpensesAmountForPeriod } from '@services/stats/get-expenses-amount-for-period';
+import { getExpensesAmountForPeriodReport } from '@services/stats/reports/expenses-amount-for-period.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -29,7 +28,7 @@ export function registerGetExpensesForPeriod(server: McpServer) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const totalCents = await getExpensesAmountForPeriod({
+      const totalExpenses = await getExpensesAmountForPeriodReport({
         userId,
         from: args.startDate ?? startOfMonth.toISOString(),
         to: args.endDate ?? now.toISOString(),
@@ -39,7 +38,7 @@ export function registerGetExpensesForPeriod(server: McpServer) {
 
       return jsonContent({
         data: {
-          totalExpenses: serializeExpensesAmountForPeriod(totalCents),
+          totalExpenses,
           period: {
             startDate: args.startDate ?? startOfMonth.toISOString().split('T')[0],
             endDate: args.endDate ?? now.toISOString().split('T')[0],
