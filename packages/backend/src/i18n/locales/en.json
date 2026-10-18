@@ -228,7 +228,8 @@
     "transactionAlreadyLinkedToPortfolio": "Transaction is already linked to a portfolio transfer.",
     "transactionAlreadyLinkedToVenture": "Transaction is already linked to a venture deal",
     "portfolioTransferNotFound": "Portfolio transfer not found",
-    "exchangeCurrenciesMustDiffer": "Exchange currencies must be different"
+    "exchangeCurrenciesMustDiffer": "Exchange currencies must be different",
+    "importNoTransactionsFound": "No transactions found in the file."
   },
   "landingFaq": {
     "unavailable": "The assistant is unavailable right now. Please try again later or email support@moneymatter.app."

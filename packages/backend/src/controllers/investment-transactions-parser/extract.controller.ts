@@ -5,6 +5,7 @@ import {
 } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
 import { CustomError, UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -133,9 +134,7 @@ async function extractFromAi({ userId, body }: { userId: number; body: z.infer<t
   });
 
   if (!aiResult.success) {
-    throw new UnexpectedError({
-      message: aiResult.error.message,
-    });
+    throw toAiExtractionHttpError({ error: aiResult.error });
   }
 
   // Surface rows the AI parser silently dropped. Without this warning the user

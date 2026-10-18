@@ -230,7 +230,8 @@
     "transactionAlreadyLinkedToPortfolio": "Транзакція вже прив'язана до переказу портфеля.",
     "transactionAlreadyLinkedToVenture": "Транзакція вже прив'язана до венчурної угоди",
     "portfolioTransferNotFound": "Переказ портфеля не знайдено",
-    "exchangeCurrenciesMustDiffer": "Валюти обміну мають бути різними"
+    "exchangeCurrenciesMustDiffer": "Валюти обміну мають бути різними",
+    "importNoTransactionsFound": "У файлі не знайдено транзакцій."
   },
   "landingFaq": {
     "unavailable": "Помічник недоступний прямо зараз. Спробуйте ще раз пізніше або напишіть на support@moneymatter.app."

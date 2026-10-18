@@ -377,7 +377,7 @@ describe('Investment transactions AI import — E2E', () => {
         },
       });
 
-      expect(withoutKey.statusCode).not.toBe(200);
+      expect(withoutKey.statusCode).toBe(422);
 
       process.env.GEMINI_API_KEY = VALID_GEMINI_API_KEY;
       installCoingeckoMock({ coins: [] });
@@ -390,7 +390,7 @@ describe('Investment transactions AI import — E2E', () => {
         },
       });
 
-      expect(emptyCsv.statusCode).not.toBe(200);
+      expect(emptyCsv.statusCode).toBe(422);
     });
 
     it('keeps currencyCode null and surfaces a warning when AI returns a crypto/crypto pair', async () => {
