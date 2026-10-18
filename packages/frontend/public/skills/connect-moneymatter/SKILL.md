@@ -189,6 +189,11 @@ page.
 | `create_tag_reminder`                    | Create a tag reminder (amount threshold in the base currency, or existence check) (`finance:write`)              |
 | `update_tag_reminder`                    | Change a reminder; `null` clears the schedule, `isEnabled` pauses it (`finance:write`)                           |
 | `delete_tag_reminder`                    | Permanently delete a tag reminder (`finance:delete`)                                                             |
+| `get_notifications`                      | In-app notifications with total and unread count; filter by status or type, or read one by id                    |
+| `mark_notifications_read`                | Mark one notification read, or all if no id; read-only accounts allowed (`finance:write`)                        |
+| `dismiss_notification`                   | Dismiss a notification from the list and the unread count (`finance:write`)                                      |
+| `get_user_settings`                      | App settings: language, notifications, dashboard, layout, saved views, FIRE inputs; no AI part                   |
+| `update_user_settings`                   | Patch app settings; arrays replaced whole; `fire` needs the FIRE planner (`finance:write`)                       |
 | `get_payees`                             | List payees (merchants) with transaction count, net flow and top category; filter by name                        |
 | `get_payee`                              | One payee with its aliases and stats                                                                             |
 | `create_payee`                           | Create a payee (`finance:write`)                                                                                 |

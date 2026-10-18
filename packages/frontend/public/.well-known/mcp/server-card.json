@@ -551,6 +551,26 @@
       "description": "Permanently delete a tag reminder. Requires finance:delete scope."
     },
     {
+      "name": "get_notifications",
+      "description": "List in-app notifications (budget alerts, reminders, bank sync messages), newest first, with the total and the unread count; filter by status or type, or read one by id."
+    },
+    {
+      "name": "mark_notifications_read",
+      "description": "Mark one notification read, or all unread ones when no id is given. Works for read-only accounts. Requires finance:write scope."
+    },
+    {
+      "name": "dismiss_notification",
+      "description": "Dismiss a notification so it leaves the default list and the unread count. Requires finance:write scope."
+    },
+    {
+      "name": "get_user_settings",
+      "description": "Read the user's app settings (language, notification preferences, dashboard, layout, saved views, import and bank sync options, FIRE planner inputs). The AI configuration is not included."
+    },
+    {
+      "name": "update_user_settings",
+      "description": "Change app settings with a partial patch merged into the stored ones; arrays replace the stored array whole; a fire key needs the FIRE planner plan. The AI configuration cannot be changed. Requires finance:write scope."
+    },
+    {
       "name": "get_payees",
       "description": "List Payees (merchants/counterparties) for the user, optionally filtered by a substring query. Returns Payee id, name, defaultCategoryId, and aggregated stats (transactionCount, netFlowRef, top category, last seen)."
     },

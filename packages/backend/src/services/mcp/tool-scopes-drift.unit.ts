@@ -38,6 +38,10 @@ const LOCK_EXEMPT_TOOLS = [
   'change_base_currency',
   // DELETE /attachments/:id has no lock: attachments touch no amounts.
   'delete_attachment',
+  // POST /notifications/read-all and POST /notifications/:id/read have no lock.
+  'mark_notifications_read',
+  // PUT and PATCH /user/settings have no lock: settings touch no amounts.
+  'update_user_settings',
 ];
 
 // Lock-exempt tools that still call `assertBaseCurrencyUnlocked` in one branch, because their
