@@ -1,22 +1,11 @@
-import { currencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as userCurrenciesService from '@services/currencies/add-user-currency';
 import { z } from 'zod';
 
-const UserCurrencySchema = z
-  .object({
-    currencyCode: currencyCode(),
-    exchangeRate: z.number().positive().optional(),
-    liveRateUpdate: z.boolean().optional(),
-  })
-  .strict();
+import { addUserCurrenciesBodySchema } from './user-currency-body.schema';
 
 const schema = z.object({
-  body: z
-    .object({
-      currencies: z.array(UserCurrencySchema).nonempty(),
-    })
-    .strict(),
+  body: addUserCurrenciesBodySchema,
 });
 
 export default createController(schema, async ({ user, body }) => {
