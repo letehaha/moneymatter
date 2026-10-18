@@ -86,6 +86,11 @@ page.
 | `delete_budget_plan_line_goal` | Delete a line's goal (`finance:delete`) |
 | `snooze_budget_plan_line_goal` | Snooze a line's goal for one period, or wake it again (`finance:write`) |
 | `set_budget_plan_assignment` | Assign money to a line from a period on or for one period, or set its carry policy (`finance:write`) |
+| `list_share_invitations` | Sharing invitations you sent and the pending ones sent to you |
+| `list_share_members` | Owner and members of an account, household or budget you manage |
+| `list_shared_with_me` | Accounts, households and budgets others shared with you |
+| `list_bank_connections` | Bank connections, or one with its accounts and consent window |
+| `get_bank_sync_status` | Sync state of bank-connected accounts, connections to reconnect, running syncs |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
@@ -890,6 +895,11 @@ multi-currency data.
   (`from_here` sets a baseline that runs on, `this_period` a one-period
   override). A line's goal is set with `set_budget_plan_line_goal`; the
   combinations it accepts are listed in that tool's description.
+- Sharing and bank connections are read-only here. `list_share_invitations`,
+  `list_share_members` and `list_shared_with_me` show who has access to what
+  (never an invitation's accept link); `list_bank_connections` and
+  `get_bank_sync_status` show the state of linked banks (never credentials).
+  Inviting, accepting, connecting a bank and syncing are done in the app.
 
 ## Troubleshooting
 

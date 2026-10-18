@@ -24,6 +24,17 @@ export function getUserId({ extra }: { extra: { authInfo?: { extra?: { userId?: 
 }
 
 /**
+ * Refuses a demo user, as the `blockDemoUsers` middleware does on the REST routes that carry it.
+ * `requireScope` calls it for every write; a read tool whose REST route carries `blockDemoUsers`
+ * (`GET /bank-data-providers/sync/status`) calls it directly.
+ */
+export function assertNotDemoUser({ extra }: { extra: { authInfo?: { extra?: { role?: string } } } }): void {
+  if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
+    throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
+  }
+}
+
+/**
  * Assert the caller's access token was granted a specific scope.
  * Write and delete MCP tools call this after getUserId to enforce scope gating.
  * Demo and read-only users are rejected here regardless of granted scopes: read tools
@@ -43,9 +54,7 @@ export function requireScope({
   allowReadOnly?: boolean;
 }): void {
   if (!allowReadOnly) {
-    if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
-      throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
-    }
+    assertNotDemoUser({ extra });
 
     // Missing entitlement info is treated as read-only: a write must never pass on an
     // auth payload that failed to carry it.
