@@ -67,6 +67,7 @@ import { registerDeleteTransactionGroup } from './tools/delete-transaction-group
 import { registerDeleteTransactionTemplate } from './tools/delete-transaction-template';
 import { registerDeleteUserCurrency } from './tools/delete-user-currency';
 import { registerDetectSubscriptionCandidates } from './tools/detect-subscription-candidates';
+import { registerDismissNotification } from './tools/dismiss-notification';
 import { registerDismissSubscriptionCandidate } from './tools/dismiss-subscription-candidate';
 import { registerDismissTransferSuggestion } from './tools/dismiss-transfer-suggestion';
 import { registerGetAccount } from './tools/get-account';
@@ -87,6 +88,7 @@ import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
 import { registerGetGoals } from './tools/get-goals';
 import { registerGetIgnoredPayeeNames } from './tools/get-ignored-payee-names';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
+import { registerGetNotifications } from './tools/get-notifications';
 import { registerGetPayee } from './tools/get-payee';
 import { registerGetPayees } from './tools/get-payees';
 import { registerGetPlannedSummary } from './tools/get-planned-summary';
@@ -116,6 +118,7 @@ import { registerGetTransferRecommendations } from './tools/get-transfer-recomme
 import { registerGetUpcomingSubscriptionPayments } from './tools/get-upcoming-subscription-payments';
 import { registerGetUserCurrencies } from './tools/get-user-currencies';
 import { registerGetUserProfile } from './tools/get-user-profile';
+import { registerGetUserSettings } from './tools/get-user-settings';
 import { registerIgnorePayeeName } from './tools/ignore-payee-name';
 import { registerKeepPendingAsBooked } from './tools/keep-pending-as-booked';
 import { registerLinkRefund } from './tools/link-refund';
@@ -130,6 +133,7 @@ import { registerListSupportedCurrencies } from './tools/list-supported-currenci
 import { registerListTrackerSuggestions } from './tools/list-tracker-suggestions';
 import { registerListTransactionAttachments } from './tools/list-transaction-attachments';
 import { registerListTransferSuggestions } from './tools/list-transfer-suggestions';
+import { registerMarkNotificationsRead } from './tools/mark-notifications-read';
 import { registerMergeDuplicateTransactions } from './tools/merge-duplicate-transactions';
 import { registerMergePayees } from './tools/merge-payees';
 import { registerMoveAccountGroup } from './tools/move-account-group';
@@ -182,6 +186,7 @@ import { registerUpdateTransactionAutomation } from './tools/update-transaction-
 import { registerUpdateTransactionGroup } from './tools/update-transaction-group';
 import { registerUpdateTransactionTemplate } from './tools/update-transaction-template';
 import { registerUpdateUserCurrency } from './tools/update-user-currency';
+import { registerUpdateUserSettings } from './tools/update-user-settings';
 import {
   registerCreateVentureDeal,
   registerCreateVentureEvent,
@@ -306,6 +311,13 @@ export function createMcpServer(): McpServer {
   registerCreateTagReminder(server);
   registerUpdateTagReminder(server);
   registerDeleteTagReminder(server);
+
+  // Notifications & settings
+  registerGetNotifications(server);
+  registerMarkNotificationsRead(server);
+  registerDismissNotification(server);
+  registerGetUserSettings(server);
+  registerUpdateUserSettings(server);
 
   // Payees
   registerGetPayees(server);
