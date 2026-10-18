@@ -103,7 +103,10 @@ page.
 | `get_portfolio_holdings`                 | Positions with market value and gains/losses                                                                     |
 | `get_portfolio_balances`                 | Portfolio cash balances per currency                                                                             |
 | `get_investment_transactions`            | Buy/sell/dividend/fee history for investments                                                                    |
-| `search_securities`                      | Search securities by ticker/name; resolves to securityId                                                         |
+| `search_securities`                      | Search securities by ticker/name; each result can be passed to `create_holding`                                  |
+| `get_security_prices`                    | Stored closing prices of one security, optionally in a date range                                                |
+| `create_holding`                         | Add a security to a portfolio from a search result or securityId (`finance:write`)                               |
+| `delete_holding`                         | Remove a security from a portfolio, with `force` its transactions too (`finance:delete`)                         |
 | `create_portfolio`                       | Create a new investment portfolio (`finance:write`)                                                              |
 | `update_portfolio`                       | Rename, recategorize, or disable a portfolio (`finance:write`)                                                   |
 | `delete_portfolio`                       | Delete a portfolio and optionally all its data (`finance:delete`)                                                |
@@ -121,6 +124,9 @@ page.
 | `list_portfolio_transfers`               | Cash movement history of a portfolio (transfers, deposits, exchanges)                                            |
 | `set_portfolio_transfer_adjustment`      | Flag a transfer as an adjustment, not a contribution (`finance:write`)                                           |
 | `delete_portfolio_transfer`              | Delete a portfolio transfer and reverse its cash effect (`finance:delete`)                                       |
+| `link_transactions_to_venture_event`     | Link bank transactions to a venture event as its cash (`finance:write`)                                          |
+| `replace_venture_event_links`            | Replace the transactions linked to a venture event (`finance:write`)                                             |
+| `delete_venture_event_link`              | Remove one transaction link from a venture event (`finance:delete`)                                              |
 | `adjust_account_balance`                 | Set an account to a target balance via an adjustment transaction (`finance:write`)                               |
 | `archive_account`                        | Archive or unarchive an account; handles side effects (`finance:write`)                                          |
 | `delete_account`                         | Permanently delete an account and all its transactions (`finance:delete`)                                        |
@@ -311,6 +317,15 @@ multi-currency data.
   `exchange_portfolio_currency` to swap cash currencies inside one portfolio.
   `set_portfolio_transfer_adjustment` keeps a correction out of the
   contributions report.
+- A security reaches a portfolio in two steps: `search_securities` finds it,
+  `create_holding` adds a result (passed unchanged as `searchResult`) and returns
+  the `securityId` that `create_investment_transaction` needs. A known security is
+  added with its `securityId` alone. `delete_holding` removes a holding with no
+  quantity left; `force` also deletes its transactions.
+- A venture event's cash is a set of bank transactions in the event's currency
+  whose amounts sum to its `lpNetAmount`: `link_transactions_to_venture_event`
+  adds them, `replace_venture_event_links` swaps the whole set, and
+  `delete_venture_event_link` frees one.
 
 ## Troubleshooting
 

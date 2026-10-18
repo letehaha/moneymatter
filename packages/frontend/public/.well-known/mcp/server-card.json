@@ -252,7 +252,19 @@
     },
     {
       "name": "search_securities",
-      "description": "Search for securities by ticker or company name. Returns securityId needed for create_investment_transaction."
+      "description": "Search for securities by ticker or company name. Each result can be passed unchanged to create_holding, which returns the securityId that create_investment_transaction needs."
+    },
+    {
+      "name": "get_security_prices",
+      "description": "Stored closing prices of one security, optionally within a date range, oldest first."
+    },
+    {
+      "name": "create_holding",
+      "description": "Add a security to a portfolio, from a known securityId or a search_securities result (requires finance:write scope)."
+    },
+    {
+      "name": "delete_holding",
+      "description": "Remove a security from a portfolio; force=true also deletes its investment transactions and reverses their cash effect (requires finance:delete scope)."
     },
     {
       "name": "create_portfolio",
@@ -793,6 +805,18 @@
     {
       "name": "delete_venture_event",
       "description": "Delete a venture event; unlinks bank transactions first. Cannot delete initial_investment while other events exist. Requires finance:delete scope."
+    },
+    {
+      "name": "link_transactions_to_venture_event",
+      "description": "Link bank transactions to a venture event as its cash; same currency, not linked elsewhere, summing to the event's lpNetAmount. Requires finance:write scope."
+    },
+    {
+      "name": "replace_venture_event_links",
+      "description": "Replace all bank transactions linked to a venture event with a new set, or none. Requires finance:write scope."
+    },
+    {
+      "name": "delete_venture_event_link",
+      "description": "Remove one transaction link from a venture event; the transaction gets its original state back. Requires finance:delete scope."
     },
     {
       "name": "list_custom_currencies",
