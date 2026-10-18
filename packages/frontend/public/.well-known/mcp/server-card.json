@@ -387,6 +387,38 @@
       "description": "Aggregate summary across all active subscriptions, split by direction: estimated monthly and projected yearly cost from expense subscriptions, expected monthly income from income subscriptions, and active counts as { expense, income }, all in the user's base currency."
     },
     {
+      "name": "accept_subscription_candidate",
+      "description": "Accept a pending subscription candidate, optionally attaching its sample transactions to an existing subscription. Requires finance:write scope."
+    },
+    {
+      "name": "list_subscription_match_suggestions",
+      "description": "List past transactions that a subscription's matching rules would match but that are not linked to it yet."
+    },
+    {
+      "name": "get_subscription_periods",
+      "description": "List a subscription's billing periods, newest first, with the status of each and the transaction behind a paid one."
+    },
+    {
+      "name": "preview_subscription_payment",
+      "description": "Preview what paying a subscription period would book, and the payments already recorded for it. Changes nothing."
+    },
+    {
+      "name": "pay_subscription_period",
+      "description": "Mark a subscription period as paid, linking an existing transaction or booking a new one. Requires finance:write scope."
+    },
+    {
+      "name": "skip_subscription_period",
+      "description": "Skip a subscription period without paying it and open the next one. Requires finance:write scope."
+    },
+    {
+      "name": "unlink_subscription_period_transaction",
+      "description": "Detach the transaction a subscription period points at, keeping the transaction and the paid status. Requires finance:write scope."
+    },
+    {
+      "name": "revert_subscription_period",
+      "description": "Undo a paid or skipped subscription period. Deletes the transaction the app created for the payment, which also needs finance:delete scope. Requires finance:write scope."
+    },
+    {
       "name": "create_transaction",
       "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, payee, and original (foreign-currency) amount."
     },

@@ -10,6 +10,15 @@ const READ_TOOL_NAME = /^(get|list|search|preview)_/;
 // hand: a new destructive tool named otherwise is only checked once it is listed here.
 const DESTRUCTIVE_TOOLS = ['merge_payees', 'bulk_delete_transactions'];
 
+// Tools whose delete path is optional: they require `finance:write` always and `finance:delete`
+// only on the path that deletes, where the service decides and asks through a callback. Kept by
+// hand, so a tool that sometimes deletes cannot ship with the write scope alone.
+const CONDITIONAL_DELETE_TOOLS = [
+  // The revert deletes the payment transaction the app created for the period; `revertPeriod` asks
+  // `assertCanDeleteTransaction` inside its own transaction, right before `deleteTransaction`.
+  'revert_subscription_period',
+];
+
 // Tools that check a scope but whose REST route carries no `checkBaseCurrencyLock`, so they
 // skip `assertBaseCurrencyUnlocked`. Kept by hand, one route per entry: the lock follows the
 // route, not the tool's name or scope. Add a tool here only after reading its route.
@@ -102,6 +111,24 @@ describe('MCP tool scopes', () => {
       .map((t) => t.name);
 
     expect(ungated).toEqual([]);
+  });
+
+  it('every tool with an optional delete path requires finance:write and checks finance:delete where it deletes', () => {
+    const tools = readToolSources();
+    expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(CONDITIONAL_DELETE_TOOLS));
+    expect(CONDITIONAL_DELETE_TOOLS.filter((name) => DESTRUCTIVE_TOOLS.includes(name))).toEqual([]);
+
+    const wrong = tools
+      .filter((t) => CONDITIONAL_DELETE_TOOLS.includes(t.name))
+      .filter(
+        (t) =>
+          t.name.startsWith('delete_') ||
+          !t.content.includes("requireScope({ extra, scope: 'finance:write' })") ||
+          !t.content.includes("requireScope({ extra, scope: 'finance:delete' })"),
+      )
+      .map((t) => t.name);
+
+    expect(wrong).toEqual([]);
   });
 
   it('every tool that checks a scope checks the base-currency lock right after it, unless its route has none', () => {
