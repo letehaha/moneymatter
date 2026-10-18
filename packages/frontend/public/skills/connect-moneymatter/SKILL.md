@@ -884,6 +884,11 @@ multi-currency data.
   `transferId` reads both. To find unlinked pairs, `list_transfer_suggestions` scans a
   period and `get_transfer_recommendations` suggests one transaction's other leg;
   `link_transfer` links a pair and `dismiss_transfer_suggestion` rejects a wrong one.
+- A transaction's payee is set with `payeeId` (an id from `get_payees`; `null` clears it
+  on `update_transaction` and `bulk_update_transactions`). `create_transaction` also
+  takes `merchantName`, a raw merchant string resolved the way bank sync does: it matches
+  an existing payee by name or alias and follows the instance's promotion rules, so a new
+  payee may not appear on first sight. `payeeId` and `merchantName` exclude each other.
 - Duplicate cleanup is reversible. `remove_duplicate_transactions` and
   `merge_duplicate_transactions` soft-delete rows, `get_reconciliation_history` lists
   them and `restore_removed_transactions` brings them back, but a restored row does not
