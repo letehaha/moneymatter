@@ -36,6 +36,7 @@ import { registerCreatePortfolio } from './tools/create-portfolio';
 import { registerCreatePortfolioCashTransaction } from './tools/create-portfolio-cash-transaction';
 import { registerCreateSubscription } from './tools/create-subscription';
 import { registerCreateTag } from './tools/create-tag';
+import { registerCreateTagReminder } from './tools/create-tag-reminder';
 import { registerCreateTracker } from './tools/create-tracker';
 import { registerCreateTrackerLine } from './tools/create-tracker-line';
 import { registerCreateTransaction } from './tools/create-transaction';
@@ -57,6 +58,7 @@ import { registerDeletePortfolio } from './tools/delete-portfolio';
 import { registerDeleteSplit } from './tools/delete-split';
 import { registerDeleteSubscription } from './tools/delete-subscription';
 import { registerDeleteTag } from './tools/delete-tag';
+import { registerDeleteTagReminder } from './tools/delete-tag-reminder';
 import { registerDeleteTracker } from './tools/delete-tracker';
 import { registerDeleteTrackerLine } from './tools/delete-tracker-line';
 import { registerDeleteTransaction } from './tools/delete-transaction';
@@ -72,7 +74,9 @@ import { registerGetAccountGroups } from './tools/get-account-groups';
 import { registerGetAccounts } from './tools/get-accounts';
 import { registerGetBalanceHistory } from './tools/get-balance-history';
 import { registerGetBaseCurrencyChangeStatus } from './tools/get-base-currency-change-status';
+import { registerGetBudget } from './tools/get-budget';
 import { registerGetBudgetSpendingStats } from './tools/get-budget-spending-stats';
+import { registerGetBudgetTransactions } from './tools/get-budget-transactions';
 import { registerGetBudgets } from './tools/get-budgets';
 import { registerGetCashFlow } from './tools/get-cash-flow';
 import { registerGetCategories } from './tools/get-categories';
@@ -98,6 +102,7 @@ import { registerGetSubscriptionById } from './tools/get-subscription-by-id';
 import { registerGetSubscriptionPeriods } from './tools/get-subscription-periods';
 import { registerGetSubscriptions } from './tools/get-subscriptions';
 import { registerGetSubscriptionsSummary } from './tools/get-subscriptions-summary';
+import { registerGetTagReminders } from './tools/get-tag-reminders';
 import { registerGetTags } from './tools/get-tags';
 import { registerGetTrackerSpendingStats } from './tools/get-tracker-spending-stats';
 import { registerGetTrackers } from './tools/get-trackers';
@@ -169,6 +174,7 @@ import { registerUpdatePayee } from './tools/update-payee';
 import { registerUpdatePortfolio } from './tools/update-portfolio';
 import { registerUpdateSubscription } from './tools/update-subscription';
 import { registerUpdateTag } from './tools/update-tag';
+import { registerUpdateTagReminder } from './tools/update-tag-reminder';
 import { registerUpdateTracker } from './tools/update-tracker';
 import { registerUpdateTrackerLine } from './tools/update-tracker-line';
 import { registerUpdateTransaction } from './tools/update-transaction';
@@ -296,6 +302,10 @@ export function createMcpServer(): McpServer {
   registerDeleteTag(server);
   registerAssignTagsToTransaction(server);
   registerRemoveTagsFromTransaction(server);
+  registerGetTagReminders(server);
+  registerCreateTagReminder(server);
+  registerUpdateTagReminder(server);
+  registerDeleteTagReminder(server);
 
   // Payees
   registerGetPayees(server);
@@ -328,6 +338,23 @@ export function createMcpServer(): McpServer {
   registerListTrackerSuggestions(server);
   registerAcceptTrackerSuggestions(server);
   registerRejectTrackerSuggestions(server);
+  // Trackers: the tool ids keep the "budget" name
+  registerGetBudgets(server);
+  registerGetBudget(server);
+  registerGetBudgetTransactions(server);
+  registerCreateBudget(server);
+  registerUpdateBudget(server);
+  registerDeleteBudget(server);
+  registerArchiveBudget(server);
+  registerAddTransactionsToBudget(server);
+  registerRemoveTransactionsFromBudget(server);
+  registerGetBudgetSpendingStats(server);
+  registerCreateBudgetLine(server);
+  registerUpdateBudgetLine(server);
+  registerDeleteBudgetLine(server);
+  registerListBudgetSuggestions(server);
+  registerAcceptBudgetSuggestions(server);
+  registerRejectBudgetSuggestions(server);
 
   // Savings goals
   registerGetGoals(server);
