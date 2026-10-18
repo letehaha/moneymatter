@@ -1,4 +1,11 @@
-import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
+import {
+  ACCOUNT_TYPES,
+  CATEGORIZATION_SOURCE,
+  RESOURCE_TYPES,
+  SHARE_PERMISSIONS,
+  TRANSACTION_TRANSFER_NATURE,
+  isTwoLegTransfer,
+} from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -22,6 +29,7 @@ import {
   assertSharedWritePhase1Guards,
   assertTxWriteAccess,
 } from '@services/sharing/auth/authorize-account-write.service';
+import { canUserAccessResource } from '@services/sharing/auth/can-user-access-resource.service';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import { matchTransactionToSubscriptions } from '@services/subscriptions/matching-engine';
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
@@ -604,6 +612,24 @@ const changesMatchingFields = ({
   (payload.time !== undefined && payload.time.getTime() !== prevData.time.getTime());
 
 /**
+ * May a subscription match replace the row's category? Only a category nobody chose: the
+ * default ("uncategorized") one, or one an automatic source set. A manual choice stays.
+ */
+const isReplaceableCategory = async ({
+  categoryId,
+  source,
+  ownerUserId,
+}: {
+  categoryId: string;
+  source: CATEGORIZATION_SOURCE | undefined;
+  ownerUserId: number;
+}): Promise<boolean> => {
+  if (source) return source !== CATEGORIZATION_SOURCE.manual;
+
+  return categoryId === (await getUserDefaultCategory({ id: ownerUserId }));
+};
+
+/**
  * Updates transaction and updates account balance.
  */
 export const updateTransaction = withTransaction(
@@ -690,6 +716,7 @@ export const updateTransaction = withTransaction(
 
       // Read before the update, which may change `prevData` in place.
       const editChangesMatchingFields = changesMatchingFields({ payload, prevData });
+      const prevCategory = { categoryId: prevData.categoryId, source: prevData.categorizationMeta?.source };
 
       // Make basic updation to the base transaction. "Transfer" transactions
       // handled down in the code
@@ -800,19 +827,34 @@ export const updateTransaction = withTransaction(
       }
 
       // A row that matched no subscription when it was created can match after an edit, say a
-      // note reworded to name the service. It matches as it would on create, as its author: the
-      // engine skips a row that has any link row, so an unlinked one is never matched again, and
-      // a match settles the period. A category this edit sets stays; otherwise the subscription's
-      // category applies. The response carries the row as the match left it.
+      // note reworded to name the service. It matches as it would on create, as its author, and
+      // only while the author can still read the account: a revoked recipient's subscriptions
+      // must not reach a row on the owner's account. The engine skips a row that has any link
+      // row, so an unlinked one is never matched again, and a match settles the period. The
+      // subscription's category replaces only one nobody chose, and never one this edit sets.
+      // The response carries the row as the match left it.
       const [matchedTx] = updatedTransactions;
       if (editChangesMatchingFields && !isTwoLegTransfer(matchedTx.transferNature)) {
         try {
-          const matched = await matchTransactionToSubscriptions({
-            transaction: matchedTx,
+          const authorCanRead = await canUserAccessResource({
             userId: matchedTx.userId,
-            preserveCategory: payload.categoryId !== undefined,
+            resourceType: RESOURCE_TYPES.account,
+            resourceId: matchedTx.accountId,
+            requiredPermission: SHARE_PERMISSIONS.read,
           });
-          if (matched) await matchedTx.reload();
+
+          if (!authorCanRead.granted) {
+            logger.info(`Skipped subscription matching of ${matchedTx.id}: its author no longer reads the account`);
+          } else {
+            const matched = await matchTransactionToSubscriptions({
+              transaction: matchedTx,
+              userId: matchedTx.userId,
+              preserveCategory:
+                payload.categoryId !== undefined ||
+                !(await isReplaceableCategory({ ...prevCategory, ownerUserId: ctx.accountOwnerUserId })),
+            });
+            if (matched) await matchedTx.reload();
+          }
         } catch (error) {
           if (
             error instanceof DatabaseError ||

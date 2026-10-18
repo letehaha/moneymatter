@@ -111,10 +111,14 @@ describe('Editing a transaction re-runs subscription matching: category and auth
       raw: true,
     });
 
-  const createUnmatchedRow = async ({ accountId }: { accountId: RecordId }) => {
+  /** Where an uncategorized row lands. `global.DEFAULT_CATEGORY_ID` is only the first seeded category. */
+  const userDefaultCategoryId = async () => (await helpers.getUserInfo({ raw: true })).defaultCategoryId;
+
+  const createUnmatchedRow = async ({ accountId, categoryId }: { accountId: RecordId; categoryId?: RecordId }) => {
     const [tx] = await helpers.createTransaction({
       payload: helpers.buildTransactionPayload({
         accountId,
+        ...(categoryId ? { categoryId } : {}),
         amount: 10,
         note: 'APPLE.COM/BILL',
         time: dayFromToday(-3).toISOString(),
@@ -124,12 +128,12 @@ describe('Editing a transaction re-runs subscription matching: category and auth
     return tx;
   };
 
-  it("applies the subscription's category and answers with the row as stored", async () => {
+  it("applies the subscription's category to an uncategorized row and answers with the row as stored", async () => {
     const account = await helpers.createAccount({ raw: true });
     const dueDate = formatDay(dayFromToday(-3));
     const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
     await createCategorizedSubscription({ accountId: account.id, categoryId: musicCategory.id, dueDate });
-    const tx = await createUnmatchedRow({ accountId: account.id });
+    const tx = await createUnmatchedRow({ accountId: account.id, categoryId: await userDefaultCategoryId() });
 
     const [edited] = await helpers.updateTransaction({
       id: tx.id,
@@ -173,7 +177,7 @@ describe('Editing a transaction re-runs subscription matching: category and auth
 
   it("matches a share recipient's own row on the owner's account like create does, with category and period", async () => {
     const ownerAccount = await helpers.createAccount({ raw: true });
-    const ownerCategory = await helpers.addCustomCategory({ name: 'Shared cat', color: '#778899', raw: true });
+    const ownerCategory = await userDefaultCategoryId();
     const recipient = await helpers.provisionSecondUserWithBaseCurrency();
     const invitation = await helpers.createShareInvitation({
       inviteeEmail: recipient.email,
@@ -199,7 +203,7 @@ describe('Editing a transaction re-runs subscription matching: category and auth
             accountId: ownerAccount.id,
             amount: 10,
             note: 'APPLE.COM/BILL',
-            categoryId: ownerCategory.id,
+            categoryId: ownerCategory,
             time: dayFromToday(-3).toISOString(),
           }),
           raw: true,
@@ -223,5 +227,95 @@ describe('Editing a transaction re-runs subscription matching: category and auth
     const settled = detail.periods.find((p: { dueDate: string }) => p.dueDate === dueDate);
     expect(settled!.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
     expect(settled!.transactionId).toBe(tx.id);
+  });
+
+  it('leaves a manually chosen category alone when an edit that omits categoryId makes the note match', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const dueDate = formatDay(dayFromToday(-3));
+    const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
+    const giftsCategory = await helpers.addCustomCategory({ name: 'Gifts', color: '#445566', raw: true });
+    const sub = await createCategorizedSubscription({
+      accountId: account.id,
+      categoryId: musicCategory.id,
+      dueDate,
+    });
+    const tx = await createUnmatchedRow({ accountId: account.id });
+    await helpers.updateTransaction({ id: tx.id, payload: { categoryId: giftsCategory.id }, raw: true });
+
+    const [edited] = await helpers.updateTransaction({
+      id: tx.id,
+      payload: { note: 'Apple Music gift card' },
+      raw: true,
+    });
+
+    expect(edited.categoryId).toBe(giftsCategory.id);
+    const stored = await helpers.getTransactionById({ id: tx.id, raw: true });
+    expect(stored!.categoryId).toBe(giftsCategory.id);
+
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    expect(detail.transactions.map((t: { id: string }) => t.id)).toContain(tx.id);
+    const settled = detail.periods.find((p: { dueDate: string }) => p.dueDate === dueDate);
+    expect(settled!.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+  });
+
+  it("does not match a row to its author's subscription once the author lost access to the account", async () => {
+    const ownerAccount = await helpers.createAccount({ raw: true });
+    const ownerCategory = await helpers.addCustomCategory({ name: 'Shared cat', color: '#778899', raw: true });
+    const recipient = await helpers.provisionSecondUserWithBaseCurrency();
+    const invitation = await helpers.createShareInvitation({
+      inviteeEmail: recipient.email,
+      resourceType: RESOURCE_TYPES.account,
+      resourceId: ownerAccount.id,
+      permission: SHARE_PERMISSIONS.write,
+      policy: { transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all },
+      raw: true,
+    });
+    await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.acceptShareInvitation({ token: invitation.token, raw: true }),
+    });
+
+    const dueDate = formatDay(dayFromToday(-3));
+    const { sub, tx } = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: async () => {
+        const category = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
+        const subscription = await createCategorizedSubscription({ categoryId: category.id, dueDate });
+        const [row] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: ownerAccount.id,
+            amount: 10,
+            note: 'APPLE.COM/BILL',
+            categoryId: ownerCategory.id,
+            time: dayFromToday(-3).toISOString(),
+          }),
+          raw: true,
+        });
+        return { sub: subscription, tx: row };
+      },
+    });
+
+    const recipientApp = await helpers.findAppUserByEmail({ email: recipient.email });
+    await helpers.revokeShareMember({
+      resourceType: RESOURCE_TYPES.account,
+      resourceId: ownerAccount.id,
+      memberUserId: recipientApp.id,
+      raw: true,
+    });
+
+    const [edited] = await helpers.updateTransaction({
+      id: tx.id,
+      payload: { note: 'Apple Music subscription' },
+      raw: true,
+    });
+
+    expect(edited.categoryId).toBe(ownerCategory.id);
+    const detail = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getSubscriptionById({ id: sub.id, raw: true }),
+    });
+    expect(detail.transactions.map((t: { id: string }) => t.id)).not.toContain(tx.id);
+    const period = detail.periods.find((p: { dueDate: string }) => p.dueDate === dueDate);
+    expect(period!.status).not.toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
   });
 });
