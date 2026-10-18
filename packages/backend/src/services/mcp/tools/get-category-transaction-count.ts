@@ -14,7 +14,7 @@ export function registerGetCategoryTransactionCount(server: McpServer) {
     'get_category_transaction_count',
     {
       description:
-        'Count the transactions filed under a category, planned ones and split lines included. Call it before delete_category: a category with transactions can only be deleted with replaceWithCategoryId, and the count is the number that would be reassigned. An unknown category counts 0.',
+        'Count the transactions filed under a category, planned ones and split lines included. Call it before delete_category: a category with transactions can only be deleted with replaceWithCategoryId, and the count is the number that would be reassigned. A category that does not exist or is not yours (or shared with you) is not found.',
       inputSchema,
     },
     async (args, extra) => {
