@@ -19,7 +19,7 @@ export function registerGetNetWorthHistory(server: McpServer) {
     'get_net_worth_history',
     {
       description:
-        'Get net worth over time as points, each with assets by kind (cash, investments, vehicles, ventures), liabilities by kind (loans, credit cards) and the net worth, in the base currency. Subtracts credit limits when the includeCreditLimitInStats setting is on. A degraded field lists securities or currencies that could not be priced.',
+        'Get net worth over time as points, each with assets by kind (cash, investments, vehicles, ventures), liabilities by kind (credit-card, loan, overdraft) and the net worth, in the base currency. Subtracts credit limits when the includeCreditLimitInStats setting is on. A degraded field lists securities or currencies that could not be priced.',
       inputSchema,
     },
     async (args, extra) => {
