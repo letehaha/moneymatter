@@ -451,6 +451,30 @@
       "description": "Dismiss a suggested expense/income pair as not a transfer, so scans stop offering it. Requires finance:write scope."
     },
     {
+      "name": "get_reconciliation_history",
+      "description": "List past duplicate removals and merges, newest first, with the removed rows and the survivor of each merge."
+    },
+    {
+      "name": "list_stuck_pending_transactions",
+      "description": "List bank transactions pending for over 7 days with the booked row that likely replaced each."
+    },
+    {
+      "name": "remove_duplicate_transactions",
+      "description": "Remove duplicate transactions from the books; restorable, but their budget, group and subscription links are not. Requires finance:write scope."
+    },
+    {
+      "name": "restore_removed_transactions",
+      "description": "Bring back transactions removed or merged by reconciliation, without the links they lost. Requires finance:write scope."
+    },
+    {
+      "name": "merge_duplicate_transactions",
+      "description": "Merge 2 to 4 duplicates of one account into a survivor that takes their links; restorable. Requires finance:write scope."
+    },
+    {
+      "name": "keep_pending_as_booked",
+      "description": "Confirm stuck pending bank transactions as booked so they stop showing as stuck. Requires finance:write scope."
+    },
+    {
       "name": "assign_tags_to_transaction",
       "description": "Assign one or more tags to a transaction; already-assigned tags are silently skipped. Requires finance:write scope."
     },
