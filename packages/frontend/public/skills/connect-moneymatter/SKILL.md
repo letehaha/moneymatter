@@ -76,6 +76,12 @@ page.
 | `create_budget_plan_group` | Add a named group for a plan's lines (`finance:write`) |
 | `update_budget_plan_group` | Rename a plan's group (`finance:write`) |
 | `delete_budget_plan_group` | Delete an empty group of a plan (`finance:delete`) |
+| `create_budget_plan_line` | Add a line for one or more categories to a plan (`finance:write`) |
+| `update_budget_plan_line` | Rename a line, move it to a group or change its categories (`finance:write`) |
+| `delete_budget_plan_line` | Permanently delete a line and its assignments (`finance:delete`) |
+| `archive_budget_plan_line` | Archive a line from the current period, or restore an archived one (`finance:write`) |
+| `add_suggested_budget_plan_lines` | Draft starter lines from spending history, with AI when the server has it (`finance:write`) |
+| `set_budget_plan_layout` | Reorder groups and move lines between them in one call (`finance:write`) |
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `get_user_profile`                      | Base currency, configured currencies, profile basics                                                             |
 | `get_accounts`                          | List accounts with balances, types, currencies                                                                   |
@@ -874,6 +880,9 @@ multi-currency data.
   exists; trash it with `delete_budget_plan` or swap with `restore_budget_plan`
   and `replace`). Changing a plan needs a subscription that includes budget
   plans; trashing one does not.
+  A plan holds lines (envelopes for categories, in groups). A category sits in
+  one line at a time; archive a line before reusing its categories elsewhere.
+  Money is assigned to lines per period with the assignment tools, not here.
 
 ## Troubleshooting
 
