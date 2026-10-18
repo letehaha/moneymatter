@@ -6,6 +6,7 @@ import {
   FINANCIAL_DATA_GUIDE_NAME,
 } from './prompts/financial-data-guide';
 import { registerAcceptBudgetSuggestions } from './tools/accept-budget-suggestions';
+import { slimToolListing } from './tool-list-slimming';
 import { registerAcceptSubscriptionCandidate } from './tools/accept-subscription-candidate';
 import { registerAcceptTrackerSuggestions } from './tools/accept-tracker-suggestions';
 import { registerAddAccountToGroup } from './tools/add-account-to-group';
@@ -298,6 +299,7 @@ export function createMcpServer(): McpServer {
       },
     },
   );
+  slimToolListing({ server });
 
   // Register the financial data guide prompt
   server.prompt(FINANCIAL_DATA_GUIDE_NAME, FINANCIAL_DATA_GUIDE_DESCRIPTION, () => ({
