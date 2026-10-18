@@ -4,7 +4,14 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { logger } from '@js/utils/logger';
 import UserSettings, { type StoredConnection } from '@models/user-settings.model';
 
-import { connectionCredentialSource, replaceConnectionCredential, swapConnectionCredential } from './ai-connections';
+import { abortCliRunsForConnection } from '../ai/cli/cli-run-limiter';
+import { logoutCodexConnection } from '../ai/cli/codex-logout';
+import {
+  connectionCredentialSource,
+  deleteConnection,
+  replaceConnectionCredential,
+  swapConnectionCredential,
+} from './ai-connections';
 
 jest.mock('@js/utils/logger', () => ({
   logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn() },
@@ -15,6 +22,10 @@ jest.mock('../ai/connection-validation', () => ({ validateCliConnection: jest.fn
 jest.mock('../ai/list-connection-models', () => ({ listConnectionModels: jest.fn() }));
 jest.mock('../ai/cli/cli-access', () => ({ assertCliAiAllowed: jest.fn() }));
 jest.mock('../ai/cli/codex-logout', () => ({ logoutCodexConnection: jest.fn() }));
+jest.mock('../ai/cli/cli-run-limiter', () => ({
+  ...jest.requireActual<object>('../ai/cli/cli-run-limiter'),
+  abortCliRunsForConnection: jest.fn(),
+}));
 jest.mock('../ai/cli/login/cli-auth-sessions', () => ({
   consumeCredential: jest.fn(),
   peekCredential: jest.fn(),
@@ -221,5 +232,52 @@ describe('connectionCredentialSource', () => {
 
     expect(await source.save!({ credential: AUTH_JSON, loadedRevision: 'loaded' })).toBeNull();
     expect(row.settings.ai.connections[0]!.keyEncrypted).toBe('changed-meanwhile');
+  });
+});
+
+describe('deleteConnection', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it("cancels the connection's active runs before signing a Codex connection out, then removes it", async () => {
+    const events: string[] = [];
+    const row = stubSettingsRow({ connections: [buildConnection({ id: 'a', keyEncrypted: encryptToken(AUTH_JSON) })] });
+
+    jest.mocked(abortCliRunsForConnection).mockImplementation(async () => {
+      events.push('abort');
+    });
+    jest.mocked(logoutCodexConnection).mockImplementation(async () => {
+      events.push('logout');
+    });
+    row.save.mockImplementation(async () => {
+      events.push('delete');
+    });
+
+    await deleteConnection({ userId: USER_ID, connectionId: 'a' });
+
+    expect(abortCliRunsForConnection).toHaveBeenCalledWith({ connectionKey: 'a' });
+    expect(events).toEqual(['abort', 'logout', 'delete']);
+  });
+
+  it('cancels the active runs of a Claude Code connection too, without a logout', async () => {
+    stubSettingsRow({
+      connections: [{ ...buildConnection({ id: 'c', keyEncrypted: 'token' }), provider: AI_PROVIDER.claudeCode }],
+    });
+
+    await deleteConnection({ userId: USER_ID, connectionId: 'c' });
+
+    expect(abortCliRunsForConnection).toHaveBeenCalledWith({ connectionKey: 'c' });
+    expect(logoutCodexConnection).not.toHaveBeenCalled();
+  });
+
+  it('leaves the runs of a native API connection alone', async () => {
+    stubSettingsRow({
+      connections: [{ ...buildConnection({ id: 'n', keyEncrypted: 'key' }), provider: AI_PROVIDER.anthropic }],
+    });
+
+    await deleteConnection({ userId: USER_ID, connectionId: 'n' });
+
+    expect(abortCliRunsForConnection).not.toHaveBeenCalled();
   });
 });
