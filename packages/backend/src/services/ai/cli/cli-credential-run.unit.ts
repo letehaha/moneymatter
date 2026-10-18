@@ -50,6 +50,30 @@ describe('runWithCliCredential', () => {
     expect(result).toEqual({ credential: 'sk-ant-oat01-token', codexHome: undefined });
   });
 
+  it('runs several Claude calls on one connection at once and never writes anything back', async () => {
+    const { source, load, save } = sourceFor({ key: 'claude-parallel', credentials: { current: 'tok' } });
+    const bothRunning = deferred();
+    let running = 0;
+
+    const run = async ({ credential }: { credential?: string }) => {
+      running += 1;
+      if (running === 2) bothRunning.resolve();
+
+      await bothRunning.promise;
+
+      return credential;
+    };
+
+    const results = await Promise.all([
+      runWithCliCredential({ provider: AI_PROVIDER.claudeCode, source, timeoutMs: 1000, run }),
+      runWithCliCredential({ provider: AI_PROVIDER.claudeCode, source, timeoutMs: 1000, run }),
+    ]);
+
+    expect(results).toEqual(['tok', 'tok']);
+    expect(load).toHaveBeenCalledTimes(2);
+    expect(save).not.toHaveBeenCalled();
+  });
+
   it('materializes a Codex home with the credential', async () => {
     const { source } = sourceFor({ key: 'codex-basic', credentials: { current: '{"a":1}' } });
 
@@ -61,6 +85,47 @@ describe('runWithCliCredential', () => {
     });
 
     expect(content).toBe('{"a":1}');
+  });
+
+  it('runs Codex calls on one connection at once in one shared home and loads the credential once', async () => {
+    const credentials = { current: '{"refresh":"one"}' };
+    const { source, load, save } = sourceFor({ key: 'codex-shared', credentials });
+    const firstRewrote = deferred();
+    const secondDone = deferred();
+    const homes: (string | undefined)[] = [];
+    let seenBySecond = '';
+
+    const first = runWithCliCredential({
+      provider: AI_PROVIDER.codex,
+      source,
+      timeoutMs: 1000,
+      run: async ({ codexHome }) => {
+        homes.push(codexHome);
+        await writeFile(path.join(codexHome!, 'auth.json'), '{"refresh":"two"}');
+        firstRewrote.resolve();
+        await secondDone.promise;
+      },
+    });
+
+    await firstRewrote.promise;
+
+    const second = runWithCliCredential({
+      provider: AI_PROVIDER.codex,
+      source,
+      timeoutMs: 1000,
+      run: async ({ codexHome }) => {
+        homes.push(codexHome);
+        seenBySecond = await readFile(path.join(codexHome!, 'auth.json'), 'utf8');
+        secondDone.resolve();
+      },
+    });
+
+    await Promise.all([first, second]);
+
+    expect(homes[0]).toBe(homes[1]);
+    expect(seenBySecond).toBe('{"refresh":"two"}');
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledTimes(1);
   });
 
   it('loads the credential for a Codex call that starts after the previous ones ended', async () => {

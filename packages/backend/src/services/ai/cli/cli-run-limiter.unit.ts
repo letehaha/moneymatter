@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
-import { abortAllCliRuns, CliSlotBusyError, getFeatureRunTimeoutMs, runWithCliSlot } from './cli-run-limiter';
+import {
+  abortAllCliRuns,
+  abortCliRunsForConnection,
+  CliSlotBusyError,
+  getFeatureRunTimeoutMs,
+  runWithCliSlot,
+} from './cli-run-limiter';
 
 const deferred = <T = void>() => {
   let resolve!: (value: T) => void;
@@ -33,34 +39,26 @@ describe('runWithCliSlot', () => {
     }
   });
 
-  it('serializes runs that share a connection key', async () => {
-    const order: string[] = [];
-    const first = deferred();
+  it('runs calls that share a connection key in parallel', async () => {
+    const gates = [deferred(), deferred()];
+    const started: number[] = [];
 
-    const a = runWithCliSlot({
-      connectionKey: 'serial',
-      timeoutMs: 1000,
-      run: async () => {
-        order.push('a:start');
-        await first.promise;
-        order.push('a:end');
-      },
-    });
-    const b = runWithCliSlot({
-      connectionKey: 'serial',
-      timeoutMs: 1000,
-      run: async () => {
-        order.push('b:start');
-      },
-    });
+    const runs = gates.map((gate, index) =>
+      runWithCliSlot({
+        connectionKey: 'shared-key',
+        timeoutMs: 1000,
+        run: async () => {
+          started.push(index);
+          await gate.promise;
+        },
+      }),
+    );
 
     await flush();
-    expect(order).toEqual(['a:start']);
+    expect(started).toEqual([0, 1]);
 
-    first.resolve();
-    await Promise.all([a, b]);
-
-    expect(order).toEqual(['a:start', 'a:end', 'b:start']);
+    for (const gate of gates) gate.resolve();
+    await Promise.all(runs);
   });
 
   it('caps concurrent runs instance-wide', async () => {
@@ -91,6 +89,59 @@ describe('runWithCliSlot', () => {
     await Promise.all(runs);
   });
 
+  it('allows four simultaneous runs by default, whatever their connection', async () => {
+    delete process.env.AI_CLI_MAX_CONCURRENT_RUNS;
+    const gates = Array.from({ length: 5 }, () => deferred());
+    const started: number[] = [];
+
+    const runs = gates.map((gate, index) =>
+      runWithCliSlot({
+        connectionKey: index < 3 ? 'same' : `other-${index}`,
+        timeoutMs: 1000,
+        run: async () => {
+          started.push(index);
+          await gate.promise;
+        },
+      }),
+    );
+
+    await flush();
+    expect(started).toEqual([0, 1, 2, 3]);
+
+    gates[0]!.resolve();
+    await flush();
+    expect(started).toEqual([0, 1, 2, 3, 4]);
+
+    for (const gate of gates) gate.resolve();
+    await Promise.all(runs);
+  });
+
+  it.each(['0', '-1', '1.5', 'abc', ''])(
+    'falls back to four runs when AI_CLI_MAX_CONCURRENT_RUNS is %j',
+    async (raw) => {
+      process.env.AI_CLI_MAX_CONCURRENT_RUNS = raw;
+      const gates = Array.from({ length: 5 }, () => deferred());
+      const started: number[] = [];
+
+      const runs = gates.map((gate, index) =>
+        runWithCliSlot({
+          connectionKey: `fallback-${index}`,
+          timeoutMs: 1000,
+          run: async () => {
+            started.push(index);
+            await gate.promise;
+          },
+        }),
+      );
+
+      await flush();
+      expect(started).toHaveLength(4);
+
+      for (const gate of gates) gate.resolve();
+      await Promise.all(runs);
+    },
+  );
+
   it('releases the slot when run throws', async () => {
     await expect(
       runWithCliSlot({
@@ -108,6 +159,7 @@ describe('runWithCliSlot', () => {
   });
 
   it('drops an aborted waiter from the queue without running it', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const first = deferred();
     const controller = new AbortController();
     const waiterRan = jest.fn();
@@ -171,6 +223,7 @@ describe('runWithCliSlot', () => {
   });
 
   it('gives a run its full timeout even after it queued longer than that', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const first = deferred();
     let secondSignal: AbortSignal | undefined;
 
@@ -202,6 +255,7 @@ describe('runWithCliSlot', () => {
   });
 
   it('gives up with CliSlotBusyError once maxWaitMs passes without a slot', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const first = deferred();
     const a = runWithCliSlot({ connectionKey: 'busy', timeoutMs: 100_000, run: () => first.promise });
     const probe = runWithCliSlot({ connectionKey: 'busy', timeoutMs: 1000, maxWaitMs: 2000, run: async () => 'ran' });
@@ -219,6 +273,7 @@ describe('runWithCliSlot', () => {
   });
 
   it('does not report busy when the slot arrives before maxWaitMs', async () => {
+    process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
     const first = deferred();
     const a = runWithCliSlot({ connectionKey: 'not-busy', timeoutMs: 100_000, run: () => first.promise });
     const probe = runWithCliSlot({
@@ -237,6 +292,7 @@ describe('runWithCliSlot', () => {
 
   describe('abortAllCliRuns', () => {
     it('aborts running and queued calls and resolves once their cleanup finished', async () => {
+      process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
       const events: string[] = [];
       const waiterRan = jest.fn();
 
@@ -317,6 +373,112 @@ describe('runWithCliSlot', () => {
       await runWithCliSlot({ connectionKey: 'abort-all-finished', timeoutMs: 1000, run: async () => 'done' });
 
       await expect(abortAllCliRuns()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('abortCliRunsForConnection', () => {
+    it('aborts every running and queued call of that connection and waits for their cleanup', async () => {
+      process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
+      const events: string[] = [];
+
+      const running = runWithCliSlot({
+        connectionKey: 'abort-conn',
+        timeoutMs: 100_000,
+        run: async ({ signal }) => {
+          await untilAborted({ signal });
+          events.push('cleanup:start');
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+          events.push('cleanup:end');
+        },
+      });
+      const queued = runWithCliSlot({ connectionKey: 'abort-conn', timeoutMs: 100_000, run: async () => 'never' });
+      const queuedResult = queued.catch((error: unknown) => error);
+
+      await flush();
+
+      const aborting = abortCliRunsForConnection({ connectionKey: 'abort-conn' }).then(() => events.push('abort:done'));
+
+      await jest.advanceTimersByTimeAsync(1000);
+      await aborting;
+      await running;
+
+      expect(events).toEqual(['cleanup:start', 'cleanup:end', 'abort:done']);
+      expect(await queuedResult).toMatchObject({ name: 'AbortError' });
+    });
+
+    it('leaves the runs of other connections alone', async () => {
+      const other = deferred();
+      const mine = runWithCliSlot({
+        connectionKey: 'abort-mine',
+        timeoutMs: 100_000,
+        run: ({ signal }) => untilAborted({ signal }),
+      });
+      let otherSignal: AbortSignal | undefined;
+      const otherRun = runWithCliSlot({
+        connectionKey: 'abort-other',
+        timeoutMs: 100_000,
+        run: async ({ signal }) => {
+          otherSignal = signal;
+          await other.promise;
+
+          return 'other done';
+        },
+      });
+
+      await flush();
+      await abortCliRunsForConnection({ connectionKey: 'abort-mine' });
+      await mine;
+
+      expect(otherSignal!.aborted).toBe(false);
+
+      other.resolve();
+      await expect(otherRun).resolves.toBe('other done');
+    });
+
+    it('lets a later call of the same connection run', async () => {
+      const running = runWithCliSlot({
+        connectionKey: 'abort-conn-later',
+        timeoutMs: 100_000,
+        run: ({ signal }) => untilAborted({ signal }),
+      });
+
+      await flush();
+      await abortCliRunsForConnection({ connectionKey: 'abort-conn-later' });
+      await running;
+
+      await expect(
+        runWithCliSlot({ connectionKey: 'abort-conn-later', timeoutMs: 1000, run: async () => 'free' }),
+      ).resolves.toBe('free');
+    });
+
+    it('gives up waiting after three seconds when a run does not settle', async () => {
+      const stuck = deferred();
+      const running = runWithCliSlot({
+        connectionKey: 'abort-conn-stuck',
+        timeoutMs: 100_000,
+        run: () => stuck.promise,
+      });
+      let done = false;
+
+      await flush();
+
+      const aborting = abortCliRunsForConnection({ connectionKey: 'abort-conn-stuck' }).then(() => {
+        done = true;
+      });
+
+      await jest.advanceTimersByTimeAsync(2999);
+      expect(done).toBe(false);
+
+      await jest.advanceTimersByTimeAsync(1);
+      await aborting;
+      expect(done).toBe(true);
+
+      stuck.resolve();
+      await running;
+    });
+
+    it('resolves immediately when the connection has no calls', async () => {
+      await expect(abortCliRunsForConnection({ connectionKey: 'abort-conn-none' })).resolves.toBeUndefined();
     });
   });
 

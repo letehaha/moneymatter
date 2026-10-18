@@ -625,20 +625,29 @@ describe('CLI connection verdicts', () => {
       ).rejects.toThrow('session already used');
     });
 
-    it('throws the busy message, without a verdict, when the slot stays taken', async () => {
-      const credentialSource = buildSource();
-      const holder = runWithCliSlot({
-        connectionKey: credentialSource.connectionKey,
-        timeoutMs: 5_000,
-        run: () => new Promise((resolve) => setTimeout(resolve, 600)),
-      });
+    it('throws the busy message, without a verdict, when every instance-wide slot stays taken', async () => {
+      const savedCap = process.env.AI_CLI_MAX_CONCURRENT_RUNS;
 
-      await expect(validateCliConnection({ provider: claude, model: MODEL, credentialSource })).rejects.toThrow(
-        t({ key: 'ai.cliConnectionBusy' }),
-      );
-      expect(fakes.readRuns()).toHaveLength(0);
+      process.env.AI_CLI_MAX_CONCURRENT_RUNS = '1';
 
-      await holder;
+      try {
+        const credentialSource = buildSource();
+        const holder = runWithCliSlot({
+          connectionKey: 'another-connection',
+          timeoutMs: 5_000,
+          run: () => new Promise((resolve) => setTimeout(resolve, 600)),
+        });
+
+        await expect(validateCliConnection({ provider: claude, model: MODEL, credentialSource })).rejects.toThrow(
+          t({ key: 'ai.cliConnectionBusy' }),
+        );
+        expect(fakes.readRuns()).toHaveLength(0);
+
+        await holder;
+      } finally {
+        if (savedCap === undefined) delete process.env.AI_CLI_MAX_CONCURRENT_RUNS;
+        else process.env.AI_CLI_MAX_CONCURRENT_RUNS = savedCap;
+      }
     });
   });
 });
