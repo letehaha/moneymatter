@@ -565,6 +565,38 @@
     {
       "name": "delete_exchange_rates",
       "description": "Remove the user's own exchange rates for pairs, each with its opposite; an effective date removes only that day's rate. Requires finance:delete scope."
+    },
+    {
+      "name": "get_user_currencies",
+      "description": "Get the user's held currencies, base currency and today's rates to the base in one result."
+    },
+    {
+      "name": "list_supported_currencies",
+      "description": "List every ISO currency the app supports, with code, name and decimals."
+    },
+    {
+      "name": "get_exchange_rate",
+      "description": "Read the rate of one currency pair for a day as the app values it, or the global market rates stored for that day."
+    },
+    {
+      "name": "add_user_currencies",
+      "description": "Add ISO or custom currencies to the ones the user holds, with an optional flat rate and live-rate flag. Requires finance:write scope."
+    },
+    {
+      "name": "update_user_currency",
+      "description": "Change a held currency's flat rate or switch it between the market rate and a manual one; re-values stored balances. Requires finance:write scope."
+    },
+    {
+      "name": "delete_user_currency",
+      "description": "Stop holding an ISO currency. Refused for the base currency and for currencies in use. Requires finance:delete scope."
+    },
+    {
+      "name": "change_base_currency",
+      "description": "Set the base currency: at once for a user with none, otherwise as a background change that recalculates all history and blocks other edits until it finishes. Requires finance:write scope."
+    },
+    {
+      "name": "get_base_currency_change_status",
+      "description": "Get the state of the running or last base-currency change: idle, queued, running, completed or failed."
     }
   ],
   "prompts": [

@@ -20,7 +20,15 @@ const LOCK_EXEMPT_TOOLS = [
   'detect_subscription_candidates',
   // POST /user/currencies/:code/rate-source/test fetches one URL and saves nothing.
   'test_currency_rate_source',
+  // POST /user/currencies/change-base has no lock: the enqueue takes its own NX lock. The tool is
+  // exempt in that branch only; its first-base branch (POST /user/currencies/base) carries the
+  // lock, so it is also in LOCK_EXEMPT_IN_ONE_BRANCH and calls it there.
+  'change_base_currency',
 ];
+
+// Lock-exempt tools that still call `assertBaseCurrencyUnlocked` in one branch, because their
+// branches follow two REST routes with different guards.
+const LOCK_EXEMPT_IN_ONE_BRANCH = ['change_base_currency'];
 
 // Read-named tools whose REST route carries `checkBaseCurrencyLock`, so REST refuses them with
 // 423 during a base-currency change and the tool must too. They call no scope helper.
@@ -96,15 +104,22 @@ describe('MCP tool scopes', () => {
     expect(misplaced).toEqual([]);
   });
 
-  it('every lock-exempt tool exists, checks a scope and does not check the lock', () => {
+  it('every lock-exempt tool exists, checks a scope and does not check the lock, except in a listed branch', () => {
     const tools = readToolSources();
     expect(tools.map((t) => t.name)).toEqual(expect.arrayContaining(LOCK_EXEMPT_TOOLS));
+    expect(LOCK_EXEMPT_IN_ONE_BRANCH.filter((name) => !LOCK_EXEMPT_TOOLS.includes(name))).toEqual([]);
 
     const wrong = tools
       .filter((t) => LOCK_EXEMPT_TOOLS.includes(t.name))
-      .filter((t) => !t.content.includes('requireScope(') || t.content.includes('assertBaseCurrencyUnlocked('))
+      .filter((t) => !t.content.includes('requireScope('))
       .map((t) => t.name);
     expect(wrong).toEqual([]);
+
+    const checksLock = tools
+      .filter((t) => LOCK_EXEMPT_TOOLS.includes(t.name))
+      .filter((t) => t.content.includes('assertBaseCurrencyUnlocked('))
+      .map((t) => t.name);
+    expect(checksLock.toSorted()).toEqual(LOCK_EXEMPT_IN_ONE_BRANCH.toSorted());
   });
 
   it('every read tool on a lock-carrying route checks the lock', () => {

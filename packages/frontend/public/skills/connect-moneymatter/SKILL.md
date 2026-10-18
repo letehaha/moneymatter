@@ -160,6 +160,14 @@ page.
 | `test_currency_rate_source`             | Preview an HTTP rate source for one day without saving it (`finance:write`)                                      |
 | `set_exchange_rates`                    | Set the user's own rates for pairs, each with its opposite; custom pairs take a date (`finance:write`)           |
 | `delete_exchange_rates`                 | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                                 |
+| `get_user_currencies`                   | Base currency, held currencies with their rate settings, and today's rates to the base                           |
+| `list_supported_currencies`             | Every ISO currency the app supports (code, name, decimals)                                                       |
+| `get_exchange_rate`                     | Rate of a pair on a day, or the global rates of the day                                                          |
+| `add_user_currencies`                   | Add currencies the user holds, with optional flat rate and live-rate flag (`finance:write`)                      |
+| `update_user_currency`                  | Change a held currency's flat rate or market-vs-manual rate; re-values balances (`finance:write`)                |
+| `delete_user_currency`                  | Stop holding an unused ISO currency; not the base currency (`finance:delete`)                                    |
+| `change_base_currency`                  | Set the base currency; a change recalculates history and blocks edits until done (`finance:write`)               |
+| `get_base_currency_change_status`       | State of the running or last base-currency change                                                                |
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize
