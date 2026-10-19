@@ -3,12 +3,14 @@
     "title": "Accounts",
     "createAccount": "Create account",
     "createVehicle": "Add vehicle",
+    "createProperty": "Add property",
     "actionsMenu": "Account actions",
     "sections": {
       "archived": "Archived",
       "manual": "Manual accounts",
       "sharedWithMe": "Shared with me",
       "vehicles": "Vehicles",
+      "properties": "Properties",
       "bankConnections": "Bank connections"
     },
     "empty": {
@@ -22,6 +24,7 @@
       "assets": "Assets",
       "liabilities": "Liabilities",
       "vehicles": "Vehicles",
+      "properties": "Properties",
       "projected": "Projected {amount} · {count} planned entry through {date} | Projected {amount} · {count} planned entries through {date}"
     },
     "sharedBy": "Shared by {handle}",

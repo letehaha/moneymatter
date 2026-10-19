@@ -15,7 +15,7 @@
     "deleteBlockedByLoanPayments": "This account has loan payments. Delete or reassign them before deleting the account.",
     "loanBalanceUseUpdateLoan": "Change a loan's outstanding balance from its loan page, not from account settings.",
     "loanCategoryImmutable": "A loan account's category can't be changed.",
-    "dedicatedFlowCategoryNotAllowed": "Loan and vehicle accounts must be created through their dedicated endpoints, not the generic accounts endpoint.",
+    "dedicatedFlowCategoryNotAllowed": "Loan, vehicle and property accounts must be created through their dedicated endpoints, not the generic accounts endpoint.",
     "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
     "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
   },
@@ -23,7 +23,9 @@
     "defaultNote": "Balance adjustment",
     "accountNotFound": "Account with id \"{{accountId}}\" not found.",
     "vehicleUseOverride": "A vehicle's value can only be changed from its vehicle page.",
-    "vehicleNegativeValue": "A vehicle's value cannot be negative."
+    "vehicleNegativeValue": "A vehicle's value cannot be negative.",
+    "propertyUseOverride": "A property's value can only be changed from its property page.",
+    "propertyNegativeValue": "A property's value cannot be negative."
   },
   "accountGroups": {
     "groupNotFound": "Group not found",
@@ -74,6 +76,7 @@
     "cannotEditPortfolioLinkedTransaction": "Cannot edit a transaction linked to a portfolio. Unlink it first.",
     "refFieldsRequiredForTransferToPortfolio": "Reference currency and reference amount must be set for portfolio-transfer transactions.",
     "vehicleAccountReadonly": "This account tracks a vehicle. Its value can only be changed from the vehicle page.",
+    "propertyAccountReadonly": "This account tracks a property. Its value can only be changed from the property page.",
     "transferNatureChangeNotAllowed": "Cannot change the transfer kind of an existing transfer. Unlink the transfer first, then mark the transaction again.",
     "transferToLoanRequiresLoanDestination": "A loan payment requires the destination to be a loan account.",
     "transferToLoanRelinkRequired": "This transfer's destination is a loan account. Unlink the transfer first, then mark the expense as a loan payment.",
@@ -82,7 +85,7 @@
     "loanPaymentMustBeExpense": "A loan payment must be an expense — income transactions can't be transferred to a loan.",
     "plannedMustBeStandalone": "A planned transaction must be a plain income or expense — transfers, refunds and imported records are not supported.",
     "plannedAmountMustBePositive": "A planned transaction must have an amount greater than zero.",
-    "plannedAccountNotSupported": "Planned transactions are not available on loan and vehicle accounts.",
+    "plannedAccountNotSupported": "Planned transactions are not available on loan, vehicle and property accounts.",
     "plannedOwnerOnly": "Only the account owner can create planned transactions.",
     "plannedFlipNotAllowed": "This transaction cannot be turned into a planned one.",
     "plannedCreatorOnly": "Only the creator of a planned transaction can edit or delete it.",
@@ -757,6 +760,11 @@
   },
   "vehicles": {
     "notFound": "Vehicle not found"
+  },
+  "properties": {
+    "notFound": "Property not found",
+    "loanAccountNotFound": "The linked mortgage account was not found.",
+    "loanAccountNotALoan": "A property can only be linked to a loan account."
   },
   "stats": {
     "netWorthHistoryTooManyPoints": "This date range and granularity produce too many data points. Pick a coarser granularity or a shorter range."

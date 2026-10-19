@@ -20,6 +20,7 @@
           "portfolios": "Portfolios",
           "ventures": "Ventures",
           "vehicles": "Vehicles",
+          "properties": "Properties",
           "loans": "Loans"
         },
         "tooltip": {
@@ -28,6 +29,7 @@
           "total": "Total:",
           "ventures": "Ventures:",
           "vehicles": "Vehicles:",
+          "properties": "Properties:",
           "loans": "Loans:"
         },
         "today": "Today",
@@ -69,6 +71,7 @@
         "componentsSettings": {
           "description": "Choose which components count toward the Total balance line.",
           "vehicles": "Vehicles",
+          "properties": "Properties",
           "ventures": "Ventures",
           "loans": "Loans",
           "loansTooltip": "When on, your outstanding loan balances are subtracted from the total (true net worth). When off, loans are ignored so the total shows assets only.",
@@ -156,12 +159,14 @@
         "components": {
           "ventures": "Ventures",
           "vehicles": "Vehicles",
+          "properties": "Properties",
           "loans": "Loans"
         },
         "settings": {
           "title": "Include in net worth",
           "loans": "Loans",
           "vehicles": "Vehicles",
+          "properties": "Properties",
           "ventures": "Ventures"
         },
         "trendTooltip": {

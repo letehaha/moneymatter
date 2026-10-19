@@ -125,6 +125,16 @@
 
               <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
                 <span class="text-sm font-medium">
+                  {{ t('dashboard.widgets.balanceTrend.componentsSettings.properties') }}
+                </span>
+                <Switch
+                  :model-value="persistedSettings.includePropertiesInTotal"
+                  @update:model-value="onIncludePropertiesToggle"
+                />
+              </div>
+
+              <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+                <span class="text-sm font-medium">
                   {{ t('dashboard.widgets.balanceTrend.componentsSettings.ventures') }}
                 </span>
                 <Switch
@@ -287,6 +297,7 @@ const notifyIncludePlannedSaveError = useIncludePlannedSaveError();
 
 const FIT_TO_LATEST_DATA_DEFAULT = true;
 const INCLUDE_VEHICLES_DEFAULT = true;
+const INCLUDE_PROPERTIES_DEFAULT = true;
 const INCLUDE_VENTURES_DEFAULT = true;
 const INCLUDE_LOANS_DEFAULT = true;
 
@@ -299,6 +310,7 @@ const persistedSettings = computed(() => {
     maxSpikes: (cfg?.spikeMaxCount as number | undefined) ?? SPIKE_DEFAULTS.maxSpikes,
     fitToLatestData: (cfg?.fitToLatestData as boolean | undefined) ?? FIT_TO_LATEST_DATA_DEFAULT,
     includeVehiclesInTotal: (cfg?.includeVehiclesInTotal as boolean | undefined) ?? INCLUDE_VEHICLES_DEFAULT,
+    includePropertiesInTotal: (cfg?.includePropertiesInTotal as boolean | undefined) ?? INCLUDE_PROPERTIES_DEFAULT,
     includeVenturesInTotal: (cfg?.includeVenturesInTotal as boolean | undefined) ?? INCLUDE_VENTURES_DEFAULT,
     includeLoansInTotal: (cfg?.includeLoansInTotal as boolean | undefined) ?? INCLUDE_LOANS_DEFAULT,
     includePlanned: readIncludePlanned({ config: cfg }),
@@ -317,6 +329,9 @@ const includeInTotalSummary = computed(() => {
   const excluded: string[] = [];
   if (!persistedSettings.value.includeVehiclesInTotal) {
     excluded.push(t('dashboard.widgets.balanceTrend.componentsSettings.vehicles'));
+  }
+  if (!persistedSettings.value.includePropertiesInTotal) {
+    excluded.push(t('dashboard.widgets.balanceTrend.componentsSettings.properties'));
   }
   if (!persistedSettings.value.includeVenturesInTotal) {
     excluded.push(t('dashboard.widgets.balanceTrend.componentsSettings.ventures'));
@@ -431,6 +446,10 @@ function onFitToLatestDataToggle(value: boolean) {
 
 function onIncludeVehiclesToggle(value: boolean) {
   persistConfig({ includeVehiclesInTotal: value });
+}
+
+function onIncludePropertiesToggle(value: boolean) {
+  persistConfig({ includePropertiesInTotal: value });
 }
 
 function onIncludeVenturesToggle(value: boolean) {

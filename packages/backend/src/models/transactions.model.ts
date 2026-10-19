@@ -453,6 +453,30 @@ export default class Transactions extends Model {
   }
 
   /**
+   * Property-account write invariant — the real-estate counterpart of
+   * `enforceVehicleAccountInvariant`, and it exists for the same reason: a
+   * property's `Account.currentBalance` is projected from
+   * `Property.valueAnchor` along an appreciation curve, so any transaction that
+   * moves the balance without re-anchoring is silently erased by the next lazy
+   * refresh. The revaluation flow records a `transfer_out_wallet` row and
+   * updates the anchor together, so it passes for free.
+   */
+  @BeforeCreate
+  @BeforeUpdate
+  static async enforcePropertyAccountInvariant(instance: Transactions) {
+    if (instance.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet) return;
+
+    const account = await Accounts.findByPk(instance.accountId, {
+      attributes: ['accountCategory'],
+    });
+    if (account?.accountCategory !== ACCOUNT_CATEGORIES.property) return;
+
+    throw new ValidationError({
+      message: t({ key: 'transactions.propertyAccountReadonly' }),
+    });
+  }
+
+  /**
    * Loan-account write invariant. A managed loan (accountCategory 'loan' with a
    * `LoanDetails` sidecar) accepts exactly one write: the INCOME leg of a
    * `transfer_to_loan` payment, already overpay-checked by
@@ -723,6 +747,46 @@ export default class Transactions extends Model {
     // reflects today's curve-derived value, not the BeforeDestroy intermediate.
     const { refreshVehicleValueIfStale } = await import('@services/vehicles/refresh-vehicle-value.service');
     await refreshVehicleValueIfStale({ vehicleId: vehicle.id, force: true });
+  }
+
+  @AfterDestroy
+  static async reconcilePropertyAnchorOnDelete(instance: Transactions) {
+    // Mirror of `reconcileVehicleAnchorOnDelete`: deleting a revaluation tx on a
+    // property account undoes that manual valuation, so the appreciation anchor
+    // is re-derived by walking the REMAINING revaluations forward from purchase.
+    // The cents-arithmetic Account.currentBalance decremented by BeforeDestroy
+    // is not the right anchor value — once the chain has more than one entry,
+    // the prior revaluation's post-tx value depends on the curve between it and
+    // the deleted one, not on a flat subtraction.
+    if (instance.transferNature !== TRANSACTION_TRANSFER_NATURE.transfer_out_wallet) return;
+
+    const account = await Accounts.findByPk(instance.accountId);
+    if (!account || account.accountCategory !== ACCOUNT_CATEGORIES.property) return;
+
+    // Lazy-imported to avoid circular dep (Properties model is in the same model layer).
+    const { default: Properties } = await import('@models/properties.model');
+    const property = await Properties.findOne({ where: { accountId: instance.accountId } });
+    if (!property) return;
+
+    const { reconstructPropertyAnchor } = await import('@services/properties/reconstruct-property-anchor');
+    const reconstructed = await reconstructPropertyAnchor({ property });
+
+    if (reconstructed.hasOverrides) {
+      await property.update({
+        valueAnchor: reconstructed.value,
+        valueAnchorDate: reconstructed.date,
+        valueLastComputedAt: null,
+      });
+    } else {
+      await property.update({
+        valueAnchor: null,
+        valueAnchorDate: null,
+        valueLastComputedAt: null,
+      });
+    }
+
+    const { refreshPropertyValueIfStale } = await import('@services/properties/refresh-property-value.service');
+    await refreshPropertyValueIfStale({ propertyId: property.id, force: true });
   }
 
   @AfterDestroy

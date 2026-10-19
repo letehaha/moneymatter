@@ -7,7 +7,7 @@ import { type NetWorthIncludeSettings, composeNetWorth } from '../net-worth-comp
 
 export type { NetWorthIncludeSettings };
 
-export type NetWorthComponentKey = 'ventures' | 'vehicles' | 'loans';
+export type NetWorthComponentKey = 'ventures' | 'vehicles' | 'properties' | 'loans';
 
 type NetWorthTrendBar = { label: string; shortLabel: string } & (
   | { hasData: false }
@@ -111,6 +111,7 @@ export function readNetWorthSettings({
   return {
     includeVentures: read(config?.includeVentures),
     includeVehicles: read(config?.includeVehicles),
+    includeProperties: read(config?.includeProperties),
     includeLoans: read(config?.includeLoans),
   };
 }

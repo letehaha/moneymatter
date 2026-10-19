@@ -323,6 +323,13 @@ export const updateAccount = withTransaction(
       });
     }
 
+    // Same reasoning for a property
+    if (accountData.accountCategory === ACCOUNT_CATEGORIES.property && payload.currentBalance !== undefined) {
+      throw new ValidationError({
+        message: t({ key: 'balanceAdjustment.propertyUseOverride' }),
+      });
+    }
+
     // A loan's balance must go through `updateLoan` (PATCH /loans/:id), which negates
     // to the liability convention, appends the balance_correction event, and
     // re-anchors. Enforced in the service so non-HTTP callers can't bypass it.

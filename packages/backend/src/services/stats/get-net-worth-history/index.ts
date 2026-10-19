@@ -13,6 +13,7 @@ import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { calculatePropertiesBalanceHistory } from '@services/stats/calculate-properties-balance-history';
 import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
 import { getPerAccountBalanceHistory } from '@services/stats/get-balance-history';
@@ -173,7 +174,7 @@ const buildDegraded = ({
  * Assets/liabilities/net-worth series: one end-of-bucket balance snapshot per
  * granularity bucket over [from, to], the last bucket clamped to `to`. Assets =
  * every non-liability account plus portfolios (holdings + uninvested cash),
- * ventures and vehicles. Every account that can cross zero — cards, overdrafts
+ * ventures, vehicles and properties. Every account that can cross zero — cards, overdrafts
  * and plain deposit accounts — is classified per account by balance sign at each
  * snapshot: an owing (negative) balance sums into a liability kind, while a
  * positive balance counts as assets. An overdrawn deposit account has no liability
@@ -237,6 +238,7 @@ export const getNetWorthHistory = async ({
   const [
     { accountSeries, categoryByAccount },
     vehicleValuesByDate,
+    propertyValuesByDate,
     portfolioValuation,
     ventureValuesByDate,
     creditLimitCentsByAccount,
@@ -249,13 +251,18 @@ export const getNetWorthHistory = async ({
     }) as Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
 
     return Promise.all([
-      // One per-account series for every non-vehicle account, split by category
+      // One per-account series for every non-vehicle and non-property account, split by category
       // after the fetch. Fill and back-fill are decided per account, so splitting
       // afterwards yields the same numbers as one filtered read per partition.
       // Vehicles enter assets through their own depreciation series below.
+      // Properties enter assets through their own appreciation series below.
       (async () => {
         const accounts = await Accounts.findAll({
-          where: { userId, excludeFromStats: false, accountCategory: { [Op.ne]: ACCOUNT_CATEGORIES.vehicle } },
+          where: {
+            userId,
+            excludeFromStats: false,
+            accountCategory: { [Op.notIn]: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.property] },
+          },
           attributes: ['id', 'accountCategory', 'refInitialBalance'],
         });
         // Back-fill each loan's pre-anchor days from its opening balance
@@ -271,7 +278,7 @@ export const getNetWorthHistory = async ({
           userId,
           accountScope: 'owned',
           ...accountsRange,
-          categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle] },
+          categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.property] },
           openingCentsByAccount,
         });
 
@@ -281,6 +288,7 @@ export const getNetWorthHistory = async ({
         };
       })(),
       calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates: snapshotDates, userBaseCurrencyPromise }),
+      calculatePropertiesBalanceHistory({ userId, maxDate, uniqueDates: snapshotDates, userBaseCurrencyPromise }),
       calculatePortfolioValueByDate({ userId, snapshotDates, denseDates, userBaseCurrencyPromise }),
       calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates: snapshotDates, userBaseCurrencyPromise }),
       includeCreditLimit ? getCreditLimitCentsByAccount({ userId, accountScope: 'owned' }) : new Map<string, Cents>(),
@@ -348,6 +356,7 @@ export const getNetWorthHistory = async ({
         readAssetValue({ map: portfolioValuation.valuesByDate, dateStr, label: 'portfolio', userId }),
       ),
       vehicleCents: asCents(readAssetValue({ map: vehicleValuesByDate, dateStr, label: 'vehicle', userId })),
+      propertyCents: asCents(readAssetValue({ map: propertyValuesByDate, dateStr, label: 'property', userId })),
       ventureCents: asCents(readAssetValue({ map: ventureValuesByDate, dateStr, label: 'venture', userId })),
     }),
   );

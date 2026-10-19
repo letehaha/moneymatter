@@ -241,7 +241,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 
-type BalanceTypeValue = 'total' | 'accounts' | 'portfolios' | 'ventures' | 'vehicles' | 'loans';
+type BalanceTypeValue = 'total' | 'accounts' | 'portfolios' | 'ventures' | 'vehicles' | 'properties' | 'loans';
 type BalanceTypeOption = { value: BalanceTypeValue; label: string };
 
 const selectedBalanceType = ref<BalanceTypeOption>({
@@ -275,11 +275,15 @@ const fitToLatestData = computed<boolean>(() => {
 // User-controlled toggles for what counts toward the "Total" balance line.
 // Default true so behavior matches pre-toggle releases (no migration needed).
 // Affects the "total" chart line + tooltip total + headline number only; the
-// per-component balance types (vehicles, ventures, loans) in the dropdown stay
-// unaffected so users can still drill into them directly.
+// per-component balance types (vehicles, properties, ventures, loans) in the
+// dropdown stay unaffected so users can still drill into them directly.
 const includeVehiclesInTotal = computed<boolean>(() => {
   const cfg = widgetConfigRef?.value?.config;
   return (cfg?.includeVehiclesInTotal as boolean | undefined) ?? true;
+});
+const includePropertiesInTotal = computed<boolean>(() => {
+  const cfg = widgetConfigRef?.value?.config;
+  return (cfg?.includePropertiesInTotal as boolean | undefined) ?? true;
 });
 const includeVenturesInTotal = computed<boolean>(() => {
   const cfg = widgetConfigRef?.value?.config;
@@ -293,6 +297,7 @@ const includeLoansInTotal = computed<boolean>(() => {
 const compositionSettings = computed<NetWorthIncludeSettings>(() => ({
   includeVentures: includeVenturesInTotal.value,
   includeVehicles: includeVehiclesInTotal.value,
+  includeProperties: includePropertiesInTotal.value,
   includeLoans: includeLoansInTotal.value,
 }));
 const includePlanned = computed<boolean>(() => readIncludePlanned({ config: widgetConfigRef?.value?.config }));
@@ -313,6 +318,7 @@ const tooltip = reactive({
   portfoliosBalance: 0,
   venturesBalance: 0,
   vehiclesBalance: 0,
+  propertiesBalance: 0,
   loansBalance: 0,
   totalBalance: 0,
   // Point-over-point change of each component, so the tooltip can show which
@@ -321,6 +327,7 @@ const tooltip = reactive({
   portfoliosDelta: 0,
   venturesDelta: 0,
   vehiclesDelta: 0,
+  propertiesDelta: 0,
   loansDelta: 0,
   // Change of the currently-charted line (matches the selected balance type).
   deltaAbsolute: 0,
@@ -421,6 +428,11 @@ const hasVehicleData = computed(
   () => !!balanceHistory.value && balanceHistory.value.some((i) => i.vehiclesBalance !== 0),
 );
 
+// Same gating for properties.
+const hasPropertyData = computed(
+  () => !!balanceHistory.value && balanceHistory.value.some((i) => i.propertiesBalance !== 0),
+);
+
 // Same gating for loans; balances are negative, so check `!== 0` (not `> 0`) to detect any active loan.
 const hasLoanData = computed(() => !!balanceHistory.value && balanceHistory.value.some((i) => i.loansBalance !== 0));
 
@@ -433,6 +445,11 @@ const showVehiclesRow = computed(() => {
   if (!hasVehicleData.value) return false;
   if (selectedBalanceType.value.value === 'vehicles') return true;
   return includeVehiclesInTotal.value;
+});
+const showPropertiesRow = computed(() => {
+  if (!hasPropertyData.value) return false;
+  if (selectedBalanceType.value.value === 'properties') return true;
+  return includePropertiesInTotal.value;
 });
 const showVenturesRow = computed(() => {
   if (!hasVentureData.value) return false;
@@ -487,6 +504,13 @@ const tooltipComponentRows = computed(() =>
       show: showVehiclesRow.value,
     },
     {
+      key: 'properties',
+      label: t('dashboard.widgets.balanceTrend.tooltip.properties'),
+      value: tooltip.propertiesBalance,
+      delta: tooltip.propertiesDelta,
+      show: showPropertiesRow.value,
+    },
+    {
       key: 'loans',
       label: t('dashboard.widgets.balanceTrend.tooltip.loans'),
       value: tooltip.loansBalance,
@@ -508,15 +532,19 @@ const balanceTypeOptions = computed<BalanceTypeOption[]>(() => {
   if (hasVehicleData.value) {
     options.push({ value: 'vehicles', label: t('dashboard.widgets.balanceTrend.balanceTypes.vehicles') });
   }
+  if (hasPropertyData.value) {
+    options.push({ value: 'properties', label: t('dashboard.widgets.balanceTrend.balanceTypes.properties') });
+  }
   if (hasLoanData.value) {
     options.push({ value: 'loans', label: t('dashboard.widgets.balanceTrend.balanceTypes.loans') });
   }
   return options;
 });
 
-// Roll the user off the ventures/vehicles/loans views if the underlying data
-// disappears (last deal/vehicle/loan deleted while widget mounted) — otherwise
-// the select would display a stale label after the option vanishes from the list.
+// Roll the user off the ventures/vehicles/properties/loans views if the underlying
+// data disappears (last deal/vehicle/property/loan deleted while widget mounted) —
+// otherwise the select would display a stale label after the option vanishes from
+// the list.
 watch(hasVentureData, (val) => {
   if (!val && selectedBalanceType.value.value === 'ventures') {
     selectedBalanceType.value = balanceTypeOptions.value[0]!;
@@ -524,6 +552,11 @@ watch(hasVentureData, (val) => {
 });
 watch(hasVehicleData, (val) => {
   if (!val && selectedBalanceType.value.value === 'vehicles') {
+    selectedBalanceType.value = balanceTypeOptions.value[0]!;
+  }
+});
+watch(hasPropertyData, (val) => {
+  if (!val && selectedBalanceType.value.value === 'properties') {
     selectedBalanceType.value = balanceTypeOptions.value[0]!;
   }
 });
@@ -583,6 +616,9 @@ const chartData = computed(() => {
       case 'vehicles':
         value = point.vehiclesBalance;
         break;
+      case 'properties':
+        value = point.propertiesBalance;
+        break;
       case 'loans':
         value = point.loansBalance;
         break;
@@ -597,6 +633,7 @@ const chartData = computed(() => {
       portfoliosBalance: point.portfoliosBalance,
       venturesBalance: point.venturesBalance,
       vehiclesBalance: point.vehiclesBalance,
+      propertiesBalance: point.propertiesBalance,
       loansBalance: point.loansBalance,
       totalBalance: effectiveTotal,
     };
@@ -1022,6 +1059,7 @@ const renderChart = () => {
       tooltip.portfoliosBalance = d.portfoliosBalance;
       tooltip.venturesBalance = d.venturesBalance;
       tooltip.vehiclesBalance = d.vehiclesBalance;
+      tooltip.propertiesBalance = d.propertiesBalance;
       tooltip.loansBalance = d.loansBalance;
       tooltip.totalBalance = d.totalBalance;
 
@@ -1035,6 +1073,7 @@ const renderChart = () => {
         tooltip.portfoliosDelta = d.portfoliosBalance - prevPoint.portfoliosBalance;
         tooltip.venturesDelta = d.venturesBalance - prevPoint.venturesBalance;
         tooltip.vehiclesDelta = d.vehiclesBalance - prevPoint.vehiclesBalance;
+        tooltip.propertiesDelta = d.propertiesBalance - prevPoint.propertiesBalance;
         tooltip.loansDelta = d.loansBalance - prevPoint.loansBalance;
         tooltip.hasDelta = true;
       } else {
@@ -1044,6 +1083,7 @@ const renderChart = () => {
         tooltip.portfoliosDelta = 0;
         tooltip.venturesDelta = 0;
         tooltip.vehiclesDelta = 0;
+        tooltip.propertiesDelta = 0;
         tooltip.loansDelta = 0;
         tooltip.hasDelta = false;
       }
@@ -1186,6 +1226,11 @@ const displayBalance = computed(() => {
       return {
         current: latestEntry.vehiclesBalance || 0,
         previous: prevPeriodLastEntry?.vehiclesBalance || 0,
+      };
+    case 'properties':
+      return {
+        current: latestEntry.propertiesBalance || 0,
+        previous: prevPeriodLastEntry?.propertiesBalance || 0,
       };
     case 'loans':
       return {

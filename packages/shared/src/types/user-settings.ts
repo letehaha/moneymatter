@@ -64,6 +64,7 @@ export interface SidebarSectionsConfig {
   portfolios: boolean;
   ventures: boolean;
   vehicles: boolean;
+  properties: boolean;
   loans: boolean;
 }
 

@@ -22,11 +22,12 @@ describe('computeAccountsOverview', () => {
     const result = computeAccountsOverview({
       moneyAccounts: [],
       vehicleAccounts: [],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
 
-    expect(result).toEqual({ total: 0, assets: 0, liabilities: 0, vehicles: 0, isApprox: false });
+    expect(result).toEqual({ total: 0, assets: 0, liabilities: 0, vehicles: 0, properties: 0, isApprox: false });
   });
 
   it('splits money accounts into assets and liabilities and nets them into the total', () => {
@@ -36,6 +37,7 @@ describe('computeAccountsOverview', () => {
         makeAccount({ refCurrentBalance: -120, currencyCode: 'USD' }),
       ],
       vehicleAccounts: [],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
@@ -53,6 +55,7 @@ describe('computeAccountsOverview', () => {
         makeAccount({ refCurrentBalance: 40, currencyCode: 'EUR' }),
       ],
       vehicleAccounts: [],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
@@ -64,6 +67,7 @@ describe('computeAccountsOverview', () => {
     const result = computeAccountsOverview({
       moneyAccounts: [makeAccount({ refCurrentBalance: 100, currencyCode: 'USD' })],
       vehicleAccounts: [makeAccount({ refCurrentBalance: 5000, currencyCode: 'EUR' })],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
@@ -75,6 +79,7 @@ describe('computeAccountsOverview', () => {
     const result = computeAccountsOverview({
       moneyAccounts: [makeAccount({ refCurrentBalance: 5, currencyCode: 'EUR' })],
       vehicleAccounts: [makeAccount({ refCurrentBalance: 5, currencyCode: 'PLN' })],
+      propertyAccounts: [],
       baseCurrencyCode: undefined,
       includeCreditLimit: false,
     });
@@ -89,6 +94,7 @@ describe('computeAccountsOverview', () => {
         makeAccount({ refCurrentBalance: 15000, currencyCode: 'USD' }),
         makeAccount({ refCurrentBalance: 8000, currencyCode: 'USD' }),
       ],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
@@ -99,12 +105,44 @@ describe('computeAccountsOverview', () => {
     expect(result.total).toBe(200);
   });
 
+  it('sums properties separately and keeps them out of total, assets and liabilities', () => {
+    const result = computeAccountsOverview({
+      moneyAccounts: [makeAccount({ refCurrentBalance: 200, currencyCode: 'USD' })],
+      vehicleAccounts: [],
+      propertyAccounts: [
+        makeAccount({ refCurrentBalance: 385000, currencyCode: 'USD' }),
+        makeAccount({ refCurrentBalance: 210000, currencyCode: 'USD' }),
+      ],
+      baseCurrencyCode: 'USD',
+      includeCreditLimit: false,
+    });
+
+    expect(result.properties).toBe(595000);
+    expect(result.vehicles).toBe(0);
+    expect(result.assets).toBe(200);
+    expect(result.liabilities).toBe(0);
+    expect(result.total).toBe(200);
+  });
+
+  it('flags approximate when a property account is in a non-base currency', () => {
+    const result = computeAccountsOverview({
+      moneyAccounts: [makeAccount({ refCurrentBalance: 100, currencyCode: 'USD' })],
+      vehicleAccounts: [],
+      propertyAccounts: [makeAccount({ refCurrentBalance: 400000, currencyCode: 'EUR' })],
+      baseCurrencyCode: 'USD',
+      includeCreditLimit: false,
+    });
+
+    expect(result.isApprox).toBe(true);
+  });
+
   it('leaves the credit limit out of the balances unless the setting is enabled', () => {
     const account = makeAccount({ currentBalance: 200, refCurrentBalance: 200, creditLimit: 500, currencyCode: 'USD' });
 
     const result = computeAccountsOverview({
       moneyAccounts: [account],
       vehicleAccounts: [],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: false,
     });
@@ -126,6 +164,7 @@ describe('computeAccountsOverview', () => {
     const result = computeAccountsOverview({
       moneyAccounts: [account],
       vehicleAccounts: [],
+      propertyAccounts: [],
       baseCurrencyCode: 'USD',
       includeCreditLimit: true,
     });

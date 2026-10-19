@@ -19,6 +19,7 @@ const assemble = (overrides: Partial<Parameters<typeof assembleNetWorthPoint>[0]
     loanCents: asCents(0),
     portfolioCents: asCents(0),
     vehicleCents: asCents(0),
+    propertyCents: asCents(0),
     ventureCents: asCents(0),
     ...overrides,
   });
@@ -85,12 +86,19 @@ describe('assembleNetWorthPoint', () => {
       assetAccounts: split(0, 100),
       portfolioCents: asCents(200),
       vehicleCents: asCents(300),
+      propertyCents: asCents(500),
       ventureCents: asCents(400),
     });
 
-    expect(point.assets).toEqual({ cash: 100, investments: 200, vehicles: 300, ventures: 400 });
-    expect(point.assetsTotal).toBe(1000);
-    expect(point.netWorth).toBe(1000);
+    expect(point.assets).toEqual({
+      cash: 100,
+      investments: 200,
+      vehicles: 300,
+      properties: 500,
+      ventures: 400,
+    });
+    expect(point.assetsTotal).toBe(1500);
+    expect(point.netWorth).toBe(1500);
   });
 
   it('nets assets against liabilities in net worth', () => {
@@ -116,6 +124,7 @@ const _cents: Cents = assembleNetWorthPoint({
   loanCents: asCents(0),
   portfolioCents: asCents(0),
   vehicleCents: asCents(0),
+  propertyCents: asCents(0),
   ventureCents: asCents(0),
 }).netWorth;
 void _cents;

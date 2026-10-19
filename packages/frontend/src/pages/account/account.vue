@@ -29,6 +29,19 @@
       <div class="text-muted-foreground text-sm">{{ t('pages.account.loading') }}</div>
     </div>
 
+    <!-- Property accounts follow the same dedicated-page redirect as vehicles. -->
+    <ResourceNotFound
+      v-else-if="isPropertyAccount && (isPropertiesError || isPropertyNotFound)"
+      class="m-6"
+      :title="t('pages.account.notFound')"
+      :description="t('pages.account.notFoundDescription')"
+      :link-label="t('pages.account.goToAccounts')"
+      :link-to="{ name: ROUTES_NAMES.accounts }"
+    />
+    <div v-else-if="isPropertyAccount" class="flex h-100 items-center justify-center">
+      <div class="text-muted-foreground text-sm">{{ t('pages.account.loading') }}</div>
+    </div>
+
     <div v-else class="flex flex-col justify-start gap-4 p-6 @[800px]/settings:flex-row">
       <Card.Card class="w-full max-w-150">
         <Header :account="account" />
@@ -104,6 +117,7 @@
 
 <script setup lang="ts">
 import { loadTransactions } from '@/api';
+import { getProperties } from '@/api/properties';
 import { getVehicles } from '@/api/vehicles';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
@@ -125,7 +139,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import Header from './components/header.vue';
-import { isGenuineVehicleOrphan } from './is-vehicle-orphan';
+import { isGenuineSidecarOrphan } from './is-sidecar-orphan';
 import BankConnectionView from './types/bank-connection/index.vue';
 import SystemAccount from './types/system/system.vue';
 
@@ -196,16 +210,66 @@ watch(
 watch(isVehicleNotFound, (notFound) => {
   if (!notFound) return;
   if (
-    !isGenuineVehicleOrphan({
+    !isGenuineSidecarOrphan({
       accountId: account.value?.id,
+      category: ACCOUNT_CATEGORIES.vehicle,
       liveAccounts: accounts.value ?? [],
-      vehicles: vehicles.value ?? [],
+      sidecarRecords: vehicles.value ?? [],
     })
   ) {
     return;
   }
   captureException({
     error: new Error('Vehicle account has no matching vehicle record'),
+    context: { accountId: account.value?.id, source: 'accountPage' },
+  });
+});
+
+// A property is stored as a regular `system` account, so its id can land on this
+// generic page too. Same reasoning as vehicles above: the generic actions are all
+// rejected by the backend for a property, so bounce to its dedicated page.
+const isPropertyAccount = computed(() => account.value?.accountCategory === ACCOUNT_CATEGORIES.property);
+
+const {
+  data: properties,
+  isError: isPropertiesError,
+  isSuccess: isPropertiesSuccess,
+} = useQuery({
+  queryKey: VUE_QUERY_CACHE_KEYS.propertiesList,
+  queryFn: getProperties,
+  enabled: isPropertyAccount,
+});
+
+const isPropertyNotFound = computed(
+  () => isPropertiesSuccess.value && !properties.value?.find((p) => p.accountId === account.value?.id),
+);
+
+watch(
+  [isPropertyAccount, properties],
+  ([isProperty, list]) => {
+    if (!isProperty) return;
+    const propertyId = list?.find((p) => p.accountId === account.value?.id)?.id;
+    if (propertyId) {
+      router.replace({ name: ROUTES_NAMES.accountsPropertyDetails, params: { id: propertyId } });
+    }
+  },
+  { immediate: true },
+);
+
+watch(isPropertyNotFound, (notFound) => {
+  if (!notFound) return;
+  if (
+    !isGenuineSidecarOrphan({
+      accountId: account.value?.id,
+      category: ACCOUNT_CATEGORIES.property,
+      liveAccounts: accounts.value ?? [],
+      sidecarRecords: properties.value ?? [],
+    })
+  ) {
+    return;
+  }
+  captureException({
+    error: new Error('Property account has no matching property record'),
     context: { accountId: account.value?.id, source: 'accountPage' },
   });
 });

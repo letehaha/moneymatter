@@ -150,7 +150,7 @@ const props = withDefaults(
      * matches the account-group endpoint (active accounts only); the /transactions
      * filter opts in so history can still be narrowed to a since-archived account. */
     includeArchived?: boolean;
-    /** Drop dedicated-flow accounts (loans, vehicles) from the list. The Pivot Report
+    /** Drop dedicated-flow accounts (loans, vehicles, properties) from the list. The Pivot Report
      * opts in so its account filter only offers regular cash-flow accounts. */
     excludeDedicatedFlow?: boolean;
     /** Extra predicate narrowing the offered accounts, e.g. to the categories a budget plan may attach. */

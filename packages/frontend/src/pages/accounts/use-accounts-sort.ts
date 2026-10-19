@@ -1,4 +1,5 @@
 import type { BankConnection } from '@/api/bank-data-providers';
+import type { PropertyModel } from '@/api/properties';
 import type { VehicleModel } from '@/api/vehicles';
 import type { AccountGroups } from '@/common/types/models';
 import { sumAccountsBaseBalance } from '@/components/sidebar/accounts-view/helpers/account-totals';
@@ -64,6 +65,17 @@ export function useAccountsSort() {
         vehicle.account ? accountBaseValue({ account: vehicle.account, includeCreditLimit: includeCreditLimit() }) : 0,
     });
 
+  const sortProperties = (properties: PropertyModel[]): PropertyModel[] =>
+    sortItems({
+      items: properties,
+      sortKey: sortKey.value,
+      getName: (property) => property.account?.name ?? property.address,
+      getValue: (property) =>
+        property.account
+          ? accountBaseValue({ account: property.account, includeCreditLimit: includeCreditLimit() })
+          : 0,
+    });
+
   const sortManual = (groups: AccountGroups[], accounts: AccountModel[]): AccountsListItem[] =>
     sortMixed({
       groups,
@@ -88,6 +100,7 @@ export function useAccountsSort() {
     sortConnectionRows,
     sortLeafAccounts,
     sortVehicles,
+    sortProperties,
     sortManual,
     sortGroupChildren,
   };

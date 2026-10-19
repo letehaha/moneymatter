@@ -8,6 +8,7 @@ import { removeUndefinedKeys } from '@js/helpers';
 import Accounts from '@models/accounts.model';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
+import { refreshStalePropertyValuesForUser } from '@services/properties/refresh-property-value.service';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
@@ -15,10 +16,11 @@ import { createController } from './helpers/controller-factory';
 
 export const getAccounts = createController(z.object({}), async ({ user }) => {
   const { id: userId } = user;
-  // Refresh vehicle balances whose 7-day cache has expired before reading the
-  // accounts list. Errors per-vehicle are swallowed inside so one bad row never
+  // Refresh vehicle and property balances whose cache has expired before reading
+  // the accounts list. Errors per-row are swallowed inside so one bad row never
   // breaks the response.
   await refreshStaleVehicleValuesForUser({ userId });
+  await refreshStalePropertyValuesForUser({ userId });
   const accounts = await accountsService.getAccounts({ userId });
   // Serialize: convert cents to decimal for API response
   return { data: serializeAccounts(accounts) };
@@ -144,22 +146,30 @@ export const updateAccount = createController(
       });
     }
 
-    // Flipping accountCategory into or out of 'vehicle' breaks the 1:1 Vehicles
-    // sidecar invariant — the row would either point to a missing Vehicles
-    // record or strand an existing one. Vehicle accounts are created/destroyed
-    // via the /vehicles endpoints which create/cascade the sidecar; the generic
+    // Flipping accountCategory into or out of a sidecar-owning category breaks
+    // the 1:1 invariant — the row would either point to a missing sidecar record
+    // or strand an existing one. These accounts are created/destroyed via their
+    // dedicated endpoints, which create/cascade the sidecar; the generic
     // updateAccount must not move accounts between categories that own sidecars.
     if (accountCategory !== undefined && accountCategory !== account.accountCategory) {
-      const involvesVehicle =
-        accountCategory === ACCOUNT_CATEGORIES.vehicle || account.accountCategory === ACCOUNT_CATEGORIES.vehicle;
-      if (involvesVehicle) {
+      const SIDECAR_CATEGORIES: Record<string, string> = {
+        [ACCOUNT_CATEGORIES.vehicle]: '/vehicles',
+        [ACCOUNT_CATEGORIES.property]: '/properties',
+      };
+      const sidecarCategory = SIDECAR_CATEGORIES[accountCategory]
+        ? accountCategory
+        : SIDECAR_CATEGORIES[account.accountCategory]
+          ? account.accountCategory
+          : null;
+
+      if (sidecarCategory) {
         throw new ValidationError({
-          message: `Changing accountCategory into or out of '${ACCOUNT_CATEGORIES.vehicle}' is not supported. Delete and recreate via /vehicles.`,
+          message: `Changing accountCategory into or out of '${sidecarCategory}' is not supported. Delete and recreate via ${SIDECAR_CATEGORIES[sidecarCategory]}.`,
         });
       }
     }
 
-    // NOTE: the "currentBalance can't be set directly on a vehicle account"
+    // NOTE: the "currentBalance can't be set directly on a managed-value account"
     // guard lives in `accountsService.updateAccount` (not here) so every caller
     // — HTTP, MCP, internal — is covered, not just this controller.
 

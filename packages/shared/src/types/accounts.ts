@@ -58,6 +58,7 @@ export enum ACCOUNT_CATEGORIES {
   overdraft = 'overdraft',
   crypto = 'crypto',
   vehicle = 'vehicle',
+  property = 'property',
 }
 
 /**
@@ -73,7 +74,11 @@ export enum ACCOUNT_CATEGORIES {
  * depreciation curve) rather than to `initialBalance + Σtransactions`, so the
  * balance-revalue paths skip them too.
  */
-export const DEDICATED_FLOW_ACCOUNT_CATEGORIES = [ACCOUNT_CATEGORIES.loan, ACCOUNT_CATEGORIES.vehicle] as const;
+export const DEDICATED_FLOW_ACCOUNT_CATEGORIES = [
+  ACCOUNT_CATEGORIES.loan,
+  ACCOUNT_CATEGORIES.vehicle,
+  ACCOUNT_CATEGORIES.property,
+] as const;
 
 type DedicatedFlowAccountCategory = (typeof DEDICATED_FLOW_ACCOUNT_CATEGORIES)[number];
 
