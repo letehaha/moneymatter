@@ -66,18 +66,21 @@ usually don't set anything. When the addresses come out wrong, the symptom is
 "Unknown location" on every session, or sessions that all show the proxy's
 own address.
 
-If your proxy reaches the backend from a **public** address (for example a
-proxy on another server), list it in `.env`, then run `docker compose up -d`:
+If a proxy in front of the app sits on a **public** address (for example a
+proxy on another server), add it to the defaults in `.env`, then run
+`docker compose up -d`:
 
 ```
-TRUSTED_PROXIES=203.0.113.10
+TRUSTED_PROXIES=loopback,linklocal,uniquelocal,203.0.113.10
 ```
 
-The value is a comma-separated list of IP addresses and CIDR ranges. Keep the
-private ranges in the list if a proxy also reaches the app from there:
-`TRUSTED_PROXIES=loopback,linklocal,uniquelocal,203.0.113.10`. A typo fails the
-start with a message naming the bad entry, rather than trusting the wrong host.
-Don't list addresses you don't control.
+Always keep `loopback,linklocal,uniquelocal` in the list: the bundled frontend
+container reaches the backend from a private Docker address, and the backend
+also calls itself over loopback. Without them every session shows the
+frontend container's address. The value is a comma-separated list of IP
+addresses and CIDR ranges. A typo fails the start with a message naming the bad
+entry, rather than trusting the wrong host. Don't list addresses you don't
+control.
 
 ## Nginx Proxy Manager
 

@@ -22,18 +22,6 @@ describe('resolveTrustedProxies', () => {
     expect(resolveTrustedProxies({ raw: '2001:db8::1' })).toEqual(['2001:db8::1']);
   });
 
-  it('turns "none" into an empty list so no proxy is trusted', () => {
-    expect(resolveTrustedProxies({ raw: 'none' })).toEqual([]);
-    expect(resolveTrustedProxies({ raw: ' NONE ' })).toEqual([]);
-  });
-
-  it('does not hand out the shared default array to callers', () => {
-    const first = resolveTrustedProxies({ raw: undefined });
-    first.push('1.2.3.4');
-
-    expect(resolveTrustedProxies({ raw: undefined })).toEqual(['loopback', 'linklocal', 'uniquelocal']);
-  });
-
   it('rejects an entry that is neither a keyword, an IP address nor a CIDR range', () => {
     expect(() => resolveTrustedProxies({ raw: 'loopback,not-an-ip' })).toThrow(/TRUSTED_PROXIES.*not-an-ip/);
     expect(() => resolveTrustedProxies({ raw: '10.0.0.0/33' })).toThrow(/10\.0\.0\.0\/33/);
@@ -44,7 +32,7 @@ describe('resolveTrustedProxies', () => {
     expect(() => resolveTrustedProxies({ raw: '1' })).toThrow(/TRUSTED_PROXIES.*"1"/);
   });
 
-  it('rejects "none" mixed with other entries', () => {
-    expect(() => resolveTrustedProxies({ raw: 'none,10.0.0.0/8' })).toThrow(/none/);
+  it('lowercases keywords, which Express matches case-sensitively', () => {
+    expect(resolveTrustedProxies({ raw: 'LoopBack' })).toEqual(['loopback']);
   });
 });

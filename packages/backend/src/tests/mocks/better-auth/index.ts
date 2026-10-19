@@ -133,10 +133,8 @@ function resolveSession(
 }
 
 /**
- * Mirrors how better-auth derives the client address that it stores on a session: it walks
- * `advanced.ipAddress.ipAddressHeaders` (default `x-forwarded-for`) and accepts a header only when it
- * holds exactly one valid IP. Without `trustedProxies`, a multi-hop `X-Forwarded-For` yields no address.
- * An unresolved address is '', which is what the session insert stores in production.
+ * Approximates better-auth's `getIp`: first header in `ipAddressHeaders` holding exactly one valid IP.
+ * Skips its IPv6 /64 masking and its dev/test `127.0.0.1` fallback.
  */
 function resolveSessionIpAddress({ config, headers }: { config: BetterAuthConfig; headers: Headers }): string {
   const headerNames = config.advanced?.ipAddress?.ipAddressHeaders ?? ['x-forwarded-for'];

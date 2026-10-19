@@ -312,11 +312,8 @@ export const auth = betterAuth({
 
   // Advanced options
   advanced: {
-    // Read the client address from the header setClientIpHeaderMiddleware fills from Express's own
-    // proxy-aware `req.ip`. better-auth's default (`x-forwarded-for`) accepts a single-value header
-    // only, so behind a proxy chain it records no address and every client shares one auth
-    // rate-limit bucket. Pointing it at X-Forwarded-For with `trustedProxies` instead would believe
-    // the header from any caller, because better-auth cannot see the socket peer.
+    // better-auth's `x-forwarded-for` reader rejects multi-hop chains, and its `trustedProxies` can't see
+    // the socket peer, so it would believe a forged header. Read the address Express resolved instead.
     ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
     // Cookie settings for session. The prefix is overridable because cookies are
     // keyed by host, not port: parallel git worktrees all share `localhost`, so a

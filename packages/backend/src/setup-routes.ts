@@ -117,6 +117,8 @@ export function setupRoutes(app: Express) {
           method: 'POST',
           headers: {
             ...req.headers,
+            // The inner hop arrives from trusted loopback, so a caller-sent X-Forwarded-For would be believed.
+            'x-forwarded-for': req.ip ?? '',
             'content-length': body.length.toString(),
             'x-register-patched': '1',
           },
