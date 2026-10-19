@@ -478,7 +478,7 @@ test.describe('FIRE planner', () => {
     });
   });
 
-  test('overrides typed into the panel drive the hero, progress and chips until Back to Auto', async ({ page }) => {
+  test('overrides typed into the panel drive the hero, progress and chips until Back to auto', async ({ page }) => {
     await openFirePage({
       page,
       fire: { ...BASE_FIRE, annualSpendingOverride: null, monthlyContributionOverride: null },
@@ -542,7 +542,7 @@ test.describe('FIRE planner', () => {
       page,
       action: () =>
         panel
-          .getByRole('button', { name: new RegExp(`^Back to Auto \\(\\$${autoSpending.toLocaleString('en-US')}`) })
+          .getByRole('button', { name: new RegExp(`^Back to auto \\(\\$${autoSpending.toLocaleString('en-US')}`) })
           .click(),
     });
     expect(backToAuto.request().postDataJSON()).toEqual({ fire: { annualSpendingOverride: null } });
@@ -654,7 +654,7 @@ test.describe('FIRE planner', () => {
     expect(spMonths).toBeLessThan(worldMonths);
     await expect(panel).toContainText(/3% · built into this preset/);
 
-    await pickReturn({ option: /^US Treasury Bonds/ });
+    await pickReturn({ option: /^US Treasury bonds/ });
     const treasuryMonths = etaAt({ realAnnual: toRealAnnual({ nominalPct: 5, inflationPct: PRESET_INFLATION_PCT }) })!;
     await expectHeroEta({ page, months: treasuryMonths });
     expect(treasuryMonths).toBeGreaterThan(worldMonths);
@@ -716,7 +716,7 @@ test.describe('FIRE planner', () => {
       });
 
     await openFirePage({ page, fire: { returnIndicatorId: `portfolio:${randomUUID()}` } });
-    await expect(page.locator('main')).toContainText('Return switched to World stocks');
+    await expect(page.locator('main')).toContainText('Return switched to world stocks');
     await expectHeroEta({ page, months: worldMonths });
   });
 
@@ -1227,7 +1227,7 @@ test.describe('FIRE planner failures and callouts', () => {
 
     const backToAuto = await saveVia({
       page,
-      action: () => panel.getByRole('button', { name: /^Back to Auto \(\$0/ }).click(),
+      action: () => panel.getByRole('button', { name: /^Back to auto \(\$0/ }).click(),
     });
     expect(backToAuto.request().postDataJSON()).toEqual({ fire: { monthlyContributionOverride: null } });
     await expect(enterContribution).toBeVisible();

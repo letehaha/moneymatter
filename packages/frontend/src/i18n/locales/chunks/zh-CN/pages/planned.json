@@ -1,17 +1,17 @@
 {
   "planned": {
     "budgets": {
-      "backToList": "Back to Trackers"
+      "backToList": "Back to trackers"
     },
     "subscriptions": {
       "notFound": "Recurring payment not found",
       "notFoundDescription": "We couldn't find this recurring payment. It may have been deleted or you might not have access to it.",
-      "title": "Recurring Payments",
+      "title": "Recurring payments",
       "description": "Track recurring payments, bills, and income",
-      "addSubscription": "Add Recurring Payment",
+      "addSubscription": "Add recurring payment",
       "addSubscriptionShort": "添加",
       "backToList": "Back to recurring payments",
-      "createTitle": "Create Recurring Payment",
+      "createTitle": "Create recurring payment",
       "typeSubscription": "Subscription",
       "typeBill": "Bill",
       "typeInstallment": "Installment",
@@ -26,11 +26,11 @@
       "nextExpected": "Next expected",
       "startDate": "Start date",
       "linkedTransactions": "{count} linked transaction | {count} linked transactions",
-      "linkedTransactionsTitle": "Linked Transactions",
+      "linkedTransactionsTitle": "Linked transactions",
       "noLinkedTransactions": "No linked transactions yet",
       "unlinkTransaction": "Unlink transaction",
-      "suggestMatches": "Suggest Matches",
-      "suggestMatchesTitle": "Suggested Matches",
+      "suggestMatches": "Suggest matches",
+      "suggestMatchesTitle": "Suggested matches",
       "suggestMatchesDescription": "Transactions that match your subscription rules",
       "noSuggestedMatches": "No matching transactions found",
       "linkSelected": "Link {count} selected",
@@ -98,7 +98,7 @@
         "tagsLabel": "Tags",
         "tagsPlaceholder": "Select tags",
         "tagsHint": "Added to every transaction linked to this subscription. Existing tags are kept.",
-        "matchingRulesLabel": "Matching Rules",
+        "matchingRulesLabel": "Matching rules",
         "matchingRulesDescription": "Define rules to automatically match transactions to this subscription",
         "notesLabel": "Notes",
         "notesPlaceholder": "Optional notes about this subscription",
@@ -147,11 +147,11 @@
         "minAmount": "Min amount",
         "maxAmount": "Max amount",
         "currencyCode": "Currency code",
-        "addRule": "Add Rule",
+        "addRule": "Add rule",
         "fieldOptions": {
           "note": "Note",
           "amount": "Amount",
-          "transactionType": "Transaction Type",
+          "transactionType": "Transaction type",
           "account": "Account"
         },
         "transactionTypeOptions": {
@@ -165,7 +165,7 @@
       "updateError": "Failed to update recurring payment",
       "deleteSuccess": "Recurring payment deleted successfully",
       "deleteError": "Failed to delete recurring payment",
-      "deleteConfirmTitle": "Delete Recurring Payment?",
+      "deleteConfirmTitle": "Delete recurring payment?",
       "deleteConfirmDescription": "Are you sure you want to delete this recurring payment? This action cannot be undone.",
       "deleteConfirm": "删除",
       "toggleError": "Failed to update recurring payment status",
@@ -220,7 +220,7 @@
       },
       "candidates": {
         "discover": "Discover",
-        "title": "Discover Subscriptions",
+        "title": "Discover subscriptions",
         "description": "We analyze your transaction history to find recurring payments that might be subscriptions.",
         "lastScanned": "Last scanned {time}",
         "emptyTitle": "No new subscriptions found",
@@ -254,16 +254,16 @@
           "skipped": "Skipped",
           "upcoming": "Upcoming"
         },
-        "nextDue": "Next Due",
+        "nextDue": "Next due",
         "overdueBadge": "Overdue",
         "inDays": "in {count} days",
-        "paymentHistory": "Payment History",
+        "paymentHistory": "Payment history",
         "noPaymentPeriods": "No payment periods yet.",
         "dueOn": "Due {date}",
         "paidAt": "Paid {date}",
         "viewTransaction": "View transaction",
         "actions": {
-          "markPaid": "Mark Paid",
+          "markPaid": "Mark paid",
           "skip": "Skip"
         },
         "tooltips": {
@@ -273,7 +273,7 @@
           "revert": "Revert"
         },
         "dialogs": {
-          "revertTitle": "Revert Period",
+          "revertTitle": "Revert period",
           "revertConfirm": "Revert",
           "revertDescription": "This period will be marked as unpaid again.",
           "revertDescriptionUnlinksTransaction": "The linked transaction will be detached, and this period will be marked as unpaid.",

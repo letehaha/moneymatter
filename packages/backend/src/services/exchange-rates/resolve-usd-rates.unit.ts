@@ -113,7 +113,6 @@ describe('resolveUsdRates future-date guard', () => {
     const exactRowDate = pastDate;
     findOne.mockImplementation(async (rawArgs: unknown) => {
       const args = rawArgs as FindOneArgs;
-      const code = args.where.quoteCode!;
       if (args.order) {
         // Fallback query.
         return { rate: 0.9, date: subDays(pastDate, 30) };

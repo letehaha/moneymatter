@@ -75,6 +75,38 @@
       "estimateFailed": "Не вдалося оцінити вартість імпорту",
       "csvParseFailed": "Не вдалося розібрати CSV. Перевірте формат файлу та спробуйте ще раз."
     },
+    "errors": {
+      "csv": {
+        "empty": "CSV-файл порожній.",
+        "noHeaders": "У CSV-файлі немає рядка заголовків.",
+        "forbiddenHeader": "Заголовок CSV використовує зарезервовану назву (наприклад, __proto__).",
+        "tooManyRows": "CSV перевищує ліміт у {max} рядків.",
+        "parseError": "Не вдалося розібрати CSV-файл. Перевірте, чи це коректний CSV."
+      }
+    },
+    "warnings": {
+      "csvRowMissingSymbol": "Рядок {row}: немає тікера",
+      "csvRowInvalidDate": "Рядок {row}: нерозпізнана дата «{value}»",
+      "csvRowUnmappedSide": "Рядок {row}: незіставлене значення дії «{value}»",
+      "csvRowInvalidQuantity": "Рядок {row}: недійсна кількість «{value}»",
+      "csvRowInvalidPrice": "Рядок {row}: недійсна ціна «{value}»",
+      "csvRowInvalidFees": "Рядок {row}: недійсна комісія «{value}»",
+      "aiRowsDropped": "AI повернув {count} рядок, який не вдалося розібрати (некоректна дата, дія або числа), тому його пропущено. | AI повернув {count} рядки, які не вдалося розібрати (некоректна дата, дія або числа), тому їх пропущено. | AI повернув {count} рядків, які не вдалося розібрати (некоректна дата, дія або числа), тому їх пропущено.",
+      "csvRowsInvalid": "Пропущено {count} рядок CSV із {total}: | Пропущено {count} рядки CSV із {total}: | Пропущено {count} рядків CSV із {total}:",
+      "csvRowsSkipped": "{count} рядок пропущено, бо його значення дії зіставлено з «Пропустити». | {count} рядки пропущено, бо їхні значення дії зіставлено з «Пропустити». | {count} рядків пропущено, бо їхні значення дії зіставлено з «Пропустити».",
+      "unsupportedQuoteCurrency": "{symbol}: {count} рядок має непідтримувану валюту котирування. | {symbol}: {count} рядки мають непідтримувану валюту котирування. | {symbol}: {count} рядків мають непідтримувану валюту котирування.",
+      "duplicateCheckFailed": "Не вдалося перевірити на можливі дублікати. Перегляньте наявні транзакції вручну.",
+      "providerLookupFailed": "Не вдалося знайти «{symbol}» у постачальника ринкових даних. Спробуйте пізніше.",
+      "noResolvedSecurity": "Пропущено «{symbol}»: цінний папір не вибрано.",
+      "noCurrency": "Пропущено «{symbol}»: валюту не вибрано.",
+      "portfolioNotFound": "Пропущено «{symbol}»: цільовий портфель не знайдено.",
+      "holdingSetupFailed": "Пропущено «{symbol}»: не вдалося налаштувати його актив.",
+      "holdingSetupFailedWithReason": "Пропущено «{symbol}»: {reason}",
+      "unsupportedCategory": "Пропущено транзакцію «{symbol}» ({side}) від {date}: ця категорія ще не підтримується.",
+      "transactionFailed": "Не вдалося імпортувати транзакцію «{symbol}» ({side}) від {date}.",
+      "transactionFailedWithReason": "Не вдалося імпортувати транзакцію «{symbol}» ({side}) від {date}: {reason}",
+      "unknown": "Деякі рядки могли бути імпортовані не так, як очікувалося."
+    },
     "columnMapping": {
       "rowsAndDelimiter": "{rows} рядків · роздільник '{delimiter}'",
       "backToUpload": "Назад",

@@ -4,6 +4,7 @@ import Categories from '@models/categories.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import Transactions from '@models/transactions.model';
+import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import { Includeable, Op } from 'sequelize';
 
 import { calculateNextDueDate } from './calculate-next-due-date';
@@ -94,9 +95,7 @@ export const getUpcomingPayments = async ({ userId, limit = 5, type }: GetUpcomi
       return {
         subscriptionId: plain.id,
         subscriptionName: plain.name,
-        logoDomain: plain.logoDomain ?? null,
-        logoInitials: plain.logoInitials ?? null,
-        logoColor: plain.logoColor ?? null,
+        ...serializeLogoFields({ entity: plain }),
         expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
         expectedCurrencyCode: plain.expectedCurrencyCode,
         transactionType: plain.transactionType,

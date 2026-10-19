@@ -70,6 +70,7 @@
 
     <BudgetMultiSelectField
       v-if="!hideBudgets"
+      allow-blank
       :budget-ids="filters.budgetIds"
       @update:budget-ids="$emit('update:filters', { ...filters, budgetIds: $event })"
     />

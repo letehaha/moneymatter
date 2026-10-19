@@ -15,7 +15,7 @@ import {
   startOfDay,
 } from 'date-fns';
 
-export const STRIP_DAYS = 30;
+const STRIP_DAYS = 30;
 
 // Offsets from the anchor rather than chained steps, so a month-end date doesn't drift (Jan 31 → Feb 28 → Mar 28).
 const NTH_OCCURRENCE: Record<SUBSCRIPTION_FREQUENCIES, (date: Date, n: number) => Date> = {

@@ -44,6 +44,7 @@
 
 <script setup lang="ts">
 import { Callout } from '@/components/lib/ui/callout';
+import { importJobFailureMessage } from '@/pages/import-export/utils/import-error-message';
 import { useImportBudgetBakersWalletStore } from '@/stores/import-budget-bakers-wallet';
 import type { BudgetBakersWalletImportJobStatus } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
@@ -74,11 +75,9 @@ const progressPercent = computed(() => {
 
 const statusLabel = computed(() => (progress.value ? t(STATUS_LABEL_KEYS[progress.value.status]) : ''));
 
-/** null when the job hasn't failed; the server's error string (or empty
- *  string when none) when it has. Narrows the discriminated union once so
- *  the template doesn't have to. */
+/** null when the job hasn't failed; the translated failure detail when it has, empty for an unknown cause. */
 const failureMessage = computed<string | null>(() => {
   if (progress.value?.status !== 'failed') return null;
-  return progress.value.error ?? '';
+  return importJobFailureMessage({ failure: progress.value.failure, t }) ?? '';
 });
 </script>

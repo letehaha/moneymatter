@@ -60,12 +60,12 @@
         "processing": "Processing...",
         "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
         "dialog": {
-          "title": "Change Base Currency?",
+          "title": "Change base currency?",
           "warningTitle": "Warning:",
           "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
           "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
           "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's Rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
+          "roundingIntro": "Currency conversions use Banker's rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
           "roundingHow": "How it works:",
           "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
           "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
@@ -74,7 +74,7 @@
           "processingTimeInfo": "This might take a while if your currency is not widely-common.",
           "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
           "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change Base Currency",
+          "changeButton": "Change base currency",
           "cancelButton": "Cancel"
         },
         "successMessage": "Base currency changed successfully.",

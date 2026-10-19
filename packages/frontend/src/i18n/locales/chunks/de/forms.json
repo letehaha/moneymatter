@@ -199,7 +199,7 @@
       "toAmountLabel": "In Betrag",
       "amountPlaceholder": "0.00",
       "maxButton": "Max: {amount}",
-      "dateLabel": "Wechseldatum",
+      "dateLabel": "Tauschdatum",
       "descriptionLabel": "Beschreibung (optional)",
       "descriptionPlaceholder": "Notiz zu diesem Währungstausch hinzufügen...",
       "cancelButton": "Abbrechen",
@@ -371,6 +371,7 @@
       "searchPlaceholder": "Tracker suchen",
       "noResults": "Keine Tracker gefunden",
       "unknownBudget": "Unbekannter Tracker",
+      "blankOption": "Not in any tracker",
       "loadError": "Tracker konnten nicht geladen werden. Bitte versuche es erneut."
     },
     "payeeSelect": {

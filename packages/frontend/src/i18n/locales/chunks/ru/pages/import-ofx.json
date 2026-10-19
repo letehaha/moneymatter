@@ -104,6 +104,11 @@
           "balanceWarningBody": "Не удалось установить итоговый баланс для каждого счёта. Проверьте эти счета и при необходимости скорректируйте баланс.",
           "errorsTitle": "Не удалось импортировать {count} транзакцию | Не удалось импортировать {count} транзакции | Не удалось импортировать {count} транзакций",
           "errorsOverflow": "…и ещё {count}",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "accountBalanceDesync": "An account balance could not be updated after the import.",
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+          },
           "rowPrefix": "Строка {rowIndex}:",
           "viewTransactions": "Просмотреть транзакции",
           "importAnother": "Импортировать другой файл"

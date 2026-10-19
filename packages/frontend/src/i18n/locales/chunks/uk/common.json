@@ -137,6 +137,10 @@
       "receiptParsing": {
         "name": "Зіставлення інвойсів",
         "description": "Читає завантажений інвойс або чек і знаходить транзакцію, до якої він належить."
+      },
+      "trackerMatching": {
+        "name": "Зіставлення трекерів",
+        "description": "Переглядає нові транзакції та пропонує ті, що належать до розумного трекера."
       }
     },
     "transactions": {
@@ -152,6 +156,7 @@
       },
       "record": {
         "addedByTooltip": "Цю транзакцію додав до трекера {handle}",
+        "matchedByAi": "Зіставлено AI",
         "externalLinkTooltip": "Відкрити зовнішнє посилання",
         "locationTooltip": "Відкрити місце на карті",
         "attachmentsTooltip": "Є вкладення",
@@ -218,7 +223,9 @@
     "logo": {
       "tabs": {
         "brand": "Бренд",
-        "letters": "Літери"
+        "letters": "Літери",
+        "icon": "Іконка",
+        "custom": "Зображення"
       },
       "searchPlaceholder": "Назва бренду або домен",
       "searchHint": "Введіть назву бренду або домен, як-от amazon.com",
@@ -238,8 +245,17 @@
       "colorLabel": "Колір",
       "colorSwatchAriaLabel": "Використати колір {color}",
       "customColorAriaLabel": "Вибрати власний колір",
-      "applyLetters": "Застосувати",
-      "lettersSelectedLabel": "Літери «{letters}»"
+      "lettersSelectedLabel": "Літери «{letters}»",
+      "lettersHint": "1–2 літери або емодзі",
+      "chooseImage": "Вибрати зображення",
+      "replaceImage": "Замінити зображення",
+      "imageHint": "Обрізається до квадрата й стискається до 200×200 на вашому пристрої.",
+      "imageTooLarge": "Після стиснення зображення все ще перевищує 50 КБ. Спробуйте простіше зображення.",
+      "imageUnreadable": "Не вдалося прочитати цей файл як зображення."
+    },
+    "iconPicker": {
+      "searchPlaceholder": "Пошук іконок...",
+      "clear": "Очистити іконку"
     },
     "importBatchDeleteOverlay": {
       "title": "Видалення імпортованих транзакцій",
@@ -301,6 +317,13 @@
     "viewOnGitHub": "Переглянути на GitHub",
     "newVersion": "Нова версія {version}",
     "newRelease": "Новий реліз",
+    "trackerAiMatches": {
+      "title": "{name}: {summary}",
+      "added": "додано {count} транзакцію | додано {count} транзакції | додано {count} транзакцій",
+      "toReview": "{count} транзакція на перевірку | {count} транзакції на перевірку | {count} транзакцій на перевірку",
+      "toReviewShort": "{count} на перевірку",
+      "both": "{added}, {toReview}"
+    },
     "tagReminder": {
       "thresholdMessage": "витрачено {amount} (поріг: {threshold})",
       "existenceMessage": "{count} транзакція | {count} транзакції | {count} транзакцій"
@@ -401,6 +424,7 @@
   },
   "billing": {
     "seePlans": "Переглянути плани",
+    "trialStartFailed": "Не вдалося почати безкоштовний пробний період. Спробуйте ще раз.",
     "updatePaymentMethod": "Оновіть спосіб оплати",
     "planRequired": {
       "essential": "Включено в план Essential",

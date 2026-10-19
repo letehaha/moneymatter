@@ -1,4 +1,4 @@
-import type { PivotColumn, PivotRow } from '@bt/shared/types';
+import type { EntityLogoFields, PivotColumn, PivotRow } from '@bt/shared/types';
 import { AccessibleCategoryInfo } from '@services/categories/get-accessible-category-map.service';
 
 // Synthetic residual-row ids/labels (rows for transactions without the grouping dimension).
@@ -21,15 +21,11 @@ type PivotRowKind = PivotRow['kind'];
  * decimal. `values` only contains columns with a non-zero net amount (frontend defaults
  * missing columns to 0).
  */
-export interface PivotReportRowCents {
+// The logo fields are set for the payee dimension only (via its hydrate step).
+export interface PivotReportRowCents extends Partial<EntityLogoFields> {
   id: string;
   label: string;
   color: string | null;
-  // Only populated for the payee dimension (via hydratePayeeLabels); null = payee has no logo.
-  logoDomain?: string | null;
-  // Monogram letters + '#rrggbb' background, same payee-only population as logoDomain.
-  logoInitials?: string | null;
-  logoColor?: string | null;
   parentId: string | null;
   kind: PivotRowKind;
   values: Record<string, number>;

@@ -1,3 +1,5 @@
+import { AI_FEATURE } from './ai/settings';
+
 export const PLANS = {
   essential: 'essential',
   plus: 'plus',
@@ -50,6 +52,7 @@ export const FEATURES = {
   invoice_matching: 'invoice_matching',
   fire_planner: 'fire_planner',
   budget_plan: 'budget_plan',
+  smart_tracking: 'smart_tracking',
 } as const;
 export type Feature = (typeof FEATURES)[keyof typeof FEATURES];
 
@@ -62,6 +65,7 @@ export const TRIALABLE_FEATURES = Object.keys(FEATURE_TRIAL_LIMITS) as Feature[]
 /** Features a user without the entitlement may use for this many days from first open. */
 export const FEATURE_TRIAL_DAYS = {
   [FEATURES.fire_planner]: 14,
+  [FEATURES.smart_tracking]: 14,
 } as const satisfies Partial<Record<Feature, number>>;
 export type DayTrialableFeature = keyof typeof FEATURE_TRIAL_DAYS;
 export const DAY_TRIALABLE_FEATURES = Object.keys(FEATURE_TRIAL_DAYS) as DayTrialableFeature[];
@@ -84,6 +88,7 @@ const PLUS_FEATURES: readonly Feature[] = [
   FEATURES.operator_ai,
   FEATURES.invoice_matching,
   FEATURES.fire_planner,
+  FEATURES.smart_tracking,
 ];
 /** Plus as of launch (2026-09-15), inlined: a feature added to ESSENTIAL_FEATURES later is paid for early adopters. */
 const EARLY_ADOPTER_FEATURES: readonly Feature[] = [
@@ -104,6 +109,25 @@ export const PLAN_FEATURES: Record<Plan, readonly Feature[]> = {
   plus: PLUS_FEATURES,
   early_adopter: EARLY_ADOPTER_FEATURES,
 };
+
+/**
+ * Feature an AI feature needs to run on the server key. Unlisted ones need `operator_ai`; the user's own key always works.
+ * Each one starts a day trial when the user turns it on, so it must be day-trialable.
+ */
+export const AI_FEATURE_ENTITLEMENTS = {
+  [AI_FEATURE.trackerMatching]: FEATURES.smart_tracking,
+} as const satisfies Partial<Record<AI_FEATURE, DayTrialableFeature>>;
+
+export const getAiFeatureEntitlement = ({ feature }: { feature?: AI_FEATURE }): Feature =>
+  (feature && (AI_FEATURE_ENTITLEMENTS as Partial<Record<AI_FEATURE, Feature>>)[feature]) ?? FEATURES.operator_ai;
+
+export const hasServerAiEntitlement = ({
+  entitlements,
+  feature,
+}: {
+  entitlements: Pick<Entitlements, 'features'>;
+  feature?: AI_FEATURE;
+}): boolean => entitlements.features.includes(getAiFeatureEntitlement({ feature }));
 
 export const SEATS_BY_PLAN: Record<Plan, number> = {
   essential: 2,

@@ -165,9 +165,7 @@
                 <!-- Compact (two-line row) -->
                 <div class="flex items-center gap-2.5 @3xl/payees-table:hidden">
                   <BrandLogo
-                    :domain="list[virtualRow.index]!.logoDomain ?? null"
-                    :initials="list[virtualRow.index]!.logoInitials ?? null"
-                    :color="list[virtualRow.index]!.logoColor ?? null"
+                    v-bind="toEntityLogoDisplayProps(list[virtualRow.index]!)"
                     :name="list[virtualRow.index]!.name"
                     class="size-7 shrink-0"
                   />
@@ -205,9 +203,7 @@
                 <div :class="['hidden items-center gap-3 text-sm @3xl/payees-table:grid', DESKTOP_GRID]">
                   <div class="flex min-w-0 items-center gap-2">
                     <BrandLogo
-                      :domain="list[virtualRow.index]!.logoDomain ?? null"
-                      :initials="list[virtualRow.index]!.logoInitials ?? null"
-                      :color="list[virtualRow.index]!.logoColor ?? null"
+                      v-bind="toEntityLogoDisplayProps(list[virtualRow.index]!)"
                       :name="list[virtualRow.index]!.name"
                       class="size-7 shrink-0"
                     />
@@ -287,6 +283,7 @@ import { RouterLink } from 'vue-router';
 
 import CategoryDisplay from './category-display.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import TagsIndicator from '@/components/common/tags-indicator.vue';
 import PayeeRowSkeleton from './payee-row-skeleton.vue';
 import PayeesBulkActions from './payees-bulk-actions.vue';

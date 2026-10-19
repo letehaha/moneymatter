@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import { addTransactionsToBudget, loadBudgetById } from '@/api/budgets';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { addTransactionsToBudget } from '@/api/budgets';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
-import { useNotificationCenter } from '@/components/notification-center';
 import RecordsFiltersDialog from '@/components/records-filters/filters-dialog.vue';
 import RecordsFilters from '@/components/records-filters/index.vue';
 import { useTransactionsWithFilters } from '@/components/records-filters/transactions-with-filters';
@@ -13,18 +11,16 @@ import TransactionRecord from '@/components/transactions-list/transaction-record
 import { useShiftMultiSelect } from '@/composable/shift-multi-select';
 import { useVirtualizedInfiniteScroll } from '@/composable/virtualized-infinite-scroll';
 import { useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { useQuery, useQueryClient } from '@tanstack/vue-query';
-import { cloneDeep } from 'lodash-es';
-import { computed, reactive, ref, watch, watchEffect } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+
+import { reportTrackerError, useInvalidateTracker } from '../components/use-tracker-actions';
 
 const { t } = useI18n();
 
 const route = useRoute();
-const { addErrorNotification } = useNotificationCenter();
-const budgetData = ref();
-const queryClient = useQueryClient();
+const invalidateTracker = useInvalidateTracker();
 
 const pickedTransactionsIds = reactive<Set<string>>(new Set());
 const { handleSelection, resetSelection, isShiftKeyPressed } = useShiftMultiSelect(pickedTransactionsIds);
@@ -32,12 +28,6 @@ const { handleSelection, resetSelection, isShiftKeyPressed } = useShiftMultiSele
 const isAddingTransactionModalVisible = ref<boolean>(false);
 const currentBudgetId = ref<string>(String(route.params.id));
 const isTransactionsPicked = computed(() => !!pickedTransactionsIds.size);
-const { data: budgetItem, isLoading } = useQuery({
-  queryFn: () => loadBudgetById(currentBudgetId.value),
-  queryKey: [VUE_QUERY_CACHE_KEYS.budgetsListItem, currentBudgetId.value],
-  staleTime: Infinity,
-});
-
 const {
   isResetButtonDisabled,
   isFiltersOutOfSync,
@@ -50,7 +40,6 @@ const {
   fetchNextPage: fetchNextTransactionPage,
   hasNextPage: hasNextTransactionsPage,
   isFetchingNextPage: isFetchingNextTransactionsPage,
-  invalidate,
 } = useTransactionsWithFilters({
   appendQueryKey: [currentBudgetId],
   queryEnabled: isAddingTransactionModalVisible,
@@ -63,27 +52,17 @@ const addTransactions = async () => {
   };
   try {
     await addTransactionsToBudget(currentBudgetId.value, data);
-    invalidate();
-    queryClient.invalidateQueries({ queryKey: [...VUE_QUERY_CACHE_KEYS.budgetStats, currentBudgetId] });
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetAddingTransactionList });
-    queryClient.invalidateQueries({
-      predicate: (query) => query.queryKey.includes(currentBudgetId.value),
-    });
+    invalidateTracker({ budgetId: currentBudgetId.value });
+    isAddingTransactionModalVisible.value = false;
+    resetSelection();
   } catch (err: unknown) {
-    const message = (err as any)?.data?.message ?? 'Failed to add transactions';
-    addErrorNotification(message);
+    reportTrackerError({
+      error: err,
+      fallbackKey: 'pages.budgets.transactionsList.addError',
+      context: { source: 'trackerAddTransactions', budgetId: currentBudgetId.value },
+    });
   }
-  isAddingTransactionModalVisible.value = false;
-  resetSelection();
 };
-
-watchEffect(() => {
-  if (!isLoading.value && budgetItem.value) {
-    budgetData.value = cloneDeep(budgetItem.value);
-    budgetData.value.startDate = new Date(budgetData.value.startDate);
-    budgetData.value.endDate = new Date(budgetData.value.endDate);
-  }
-});
 
 const scrollAreaRef = ref<InstanceType<typeof ScrollArea> | null>(null);
 const parentRef = computed<HTMLElement | null>(() => scrollAreaRef.value?.viewportRef?.viewportElement ?? null);

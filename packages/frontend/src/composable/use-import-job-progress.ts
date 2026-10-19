@@ -1,6 +1,6 @@
 import { useSSE } from '@/composable/use-sse';
 import { i18n } from '@/i18n';
-import { isNotFoundError } from '@/js/errors';
+import { isNotFoundError, NetworkError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import type { SSEEventType } from '@bt/shared/types';
 import { ref } from 'vue';
@@ -187,7 +187,7 @@ export function useImportJobProgress<TProgress extends ImportJobProgress>({
           // error and stop the watchdog so the user isn't stuck on a phantom
           // spinner, then let the importer bounce them back to retry.
           setExecuteError(
-            err instanceof Error ? err.message : i18n.global.t('pages.importExport.progress.lostContact'),
+            err instanceof NetworkError ? err.message : i18n.global.t('pages.importExport.progress.lostContact'),
           );
           stop();
           onLostContact();

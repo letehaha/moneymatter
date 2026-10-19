@@ -58,6 +58,7 @@
         "unknownLocation": "Lokasi tidak diketahui",
         "lastActive": "Terakhir aktif: {date}",
         "noSessions": "Tidak ada sesi aktif ditemukan",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Keluar dari semua sesi lainnya",
         "deviceTypes": {
           "unknownDevice": "Perangkat Tidak Diketahui",
@@ -70,7 +71,6 @@
           "daysAgo": "{count} hari yang lalu | {count} hari yang lalu"
         },
         "notifications": {
-          "loadFailed": "Gagal memuat sesi",
           "revokeSuccess": "Sesi dicabut",
           "revokeFailed": "Gagal mencabut sesi",
           "revokeAllSuccess": "Semua sesi lainnya telah keluar",
@@ -120,6 +120,10 @@
           "setFailed": "Gagal mengatur kata sandi",
           "unexpectedError": "Terjadi kesalahan yang tidak terduga",
           "updateFailed": "Gagal memperbarui kata sandi"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "Current password is incorrect.",
+          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
         }
       },
       "dangerZone": "Zona berbahaya",
@@ -248,11 +252,27 @@
             "noRecords": "Tidak ada catatan yang dipulihkan.",
             "doneButton": "Selesai"
           },
+          "warnings": {
+            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
+            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
+            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
+            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
+            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
+            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
+            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
+            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
+            "noSettings": "The backup had no saved settings; defaults were applied.",
+            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
+            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
+            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+          },
           "failed": {
             "title": "Pemulihan gagal",
             "genericError": "Terjadi kesalahan saat memulihkan cadangan Anda.",
             "unconfirmed": "Tidak dapat mengonfirmasi status pemulihan. Muat ulang halaman dan periksa data Anda.",
-            "closeButton": "Tutup"
+            "closeButton": "Tutup",
+            "technicalDetails": "Technical details"
           },
           "overlay": {
             "title": "Memulihkan data Anda",

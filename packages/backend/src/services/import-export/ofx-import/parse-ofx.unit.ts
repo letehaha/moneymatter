@@ -100,7 +100,7 @@ describe('parseOfx', () => {
     const bytes = Buffer.from(source, 'latin1');
     const result = parseOfx({ bytes });
     expect(result.accounts[0]).toEqual(
-      expect.objectContaining({ statementType: 'credit-card', maskedDisplayName: 'Credit card ••••7777' }),
+      expect.objectContaining({ statementType: 'credit-card', maskedDisplayName: 'CREDITCARD ••••7777' }),
     );
     expect(result.transactions[0]!.payeeName).toBe('€ Café Example');
   });
@@ -108,7 +108,7 @@ describe('parseOfx', () => {
   it('rejects malformed OFX 2.x XML instead of using the SGML fallback', () => {
     const body = '<OFX><BANKMSGSRSV1></OFX>';
     expect(() => parseOfx({ bytes: withHeader({ body, charset: 'NONE', encoding: 'UTF-8', version: '203' }) })).toThrow(
-      'tags do not match',
+      'ofxImport.errors.tagsMismatch',
     );
   });
 
@@ -120,7 +120,7 @@ describe('parseOfx', () => {
 
     const conflict = row.replace('<TRNAMT>-1', '<TRNAMT>-2');
     expect(() => parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: row + conflict }) }) })).toThrow(
-      'conflicting transaction data',
+      'ofxImport.errors.conflictingFitid',
     );
   });
 
@@ -129,9 +129,17 @@ describe('parseOfx', () => {
     ['MEMO', 'M'.repeat(2_001), 2_000],
   ])('rejects an oversized %s field', (field, text, limit) => {
     const row = `<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260801<TRNAMT>-1<FITID>long<${field}>${text}</STMTTRN>`;
-    expect(() => parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: row }) }) })).toThrow(
-      `exceeds ${limit} characters`,
-    );
+    expect.assertions(1);
+    try {
+      parseOfx({ bytes: withHeader({ body: bankStatementWithRows({ rows: row }) }) });
+    } catch (error) {
+      expect(error).toEqual(
+        expect.objectContaining<Partial<OfxParseError>>({
+          key: 'ofxImport.errors.textTooLong',
+          params: { field, max: limit },
+        }),
+      );
+    }
   });
 
   it.each([
@@ -168,7 +176,7 @@ describe('parseOfx', () => {
   it('rejects correction records', () => {
     const body =
       '<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><CURDEF>USD<BANKACCTFROM><BANKID>1<ACCTID>1234<ACCTTYPE>CHECKING</BANKACCTFROM><BANKTRANLIST><STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260801<TRNAMT>-1<FITID>new<CORRECTFITID>old<CORRECTACTION>REPLACE</STMTTRN></BANKTRANLIST><LEDGERBAL><BALAMT>0<DTASOF>20260801</LEDGERBAL></STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>';
-    expect(() => parseOfx({ bytes: withHeader({ body }) })).toThrow('correction records');
+    expect(() => parseOfx({ bytes: withHeader({ body }) })).toThrow('ofxImport.errors.correctionRecord');
   });
 
   it('accepts a UTF-8 BOM before the OFX 1.x header', () => {

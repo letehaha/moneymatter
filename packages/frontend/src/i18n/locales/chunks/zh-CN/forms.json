@@ -55,7 +55,7 @@
       }
     },
     "portfolioSettings": {
-      "nameLabel": "Portfolio Name",
+      "nameLabel": "投资组合名称",
       "namePlaceholder": "我的投资组合",
       "nameRequired": "Name is required",
       "typeLabel": "投资组合类型",
@@ -67,7 +67,7 @@
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
       "cancelButton": "取消",
-      "submitButton": "Save Changes",
+      "submitButton": "Save changes",
       "submitButtonLoading": "Saving...",
       "notifications": {
         "success": "Portfolio updated successfully.",
@@ -75,20 +75,20 @@
       }
     },
     "portfolioTransfer": {
-      "transferTypeLabel": "Transfer Type",
+      "transferTypeLabel": "Transfer type",
       "transferTypes": {
-        "portfolioToPortfolio": "To Another Portfolio",
-        "portfolioToAccount": "To Account",
-        "accountToPortfolio": "To Portfolio"
+        "portfolioToPortfolio": "To another portfolio",
+        "portfolioToAccount": "到账户",
+        "accountToPortfolio": "到投资组合"
       },
       "comingSoonNotice": "💡 Account-to-portfolio transfers are coming in a future update!",
-      "fromPortfolioLabel": "From Portfolio",
+      "fromPortfolioLabel": "From portfolio",
       "fromPortfolioPlaceholder": "Select source portfolio",
-      "fromAccountLabel": "From Account",
+      "fromAccountLabel": "从账户",
       "fromAccountPlaceholder": "Select source account",
-      "toPortfolioLabel": "To Portfolio",
+      "toPortfolioLabel": "到投资组合",
       "toPortfolioPlaceholder": "Select destination portfolio",
-      "toAccountLabel": "To Account",
+      "toAccountLabel": "到账户",
       "toAccountPlaceholder": "Select destination account",
       "currencyLabel": "Currency",
       "currencyPlaceholder": "选择货币",
@@ -102,13 +102,13 @@
       "submitButton": "Transfer",
       "submitButtonLoading": "处理中……",
       "confirmDialog": {
-        "title": "Confirm Transfer",
+        "title": "Confirm transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
         "actionTransfer": "transfer",
         "actionWithdrawal": "提现",
         "actionDeposit": "存款",
         "cancelButton": "取消",
-        "confirmButton": "Confirm Transfer"
+        "confirmButton": "Confirm transfer"
       },
       "validation": {
         "required": "此字段为必填",
@@ -128,11 +128,11 @@
       "namePlaceholder": "Account name",
       "currencyLabel": "Currency",
       "currencyPlaceholder": "选择货币",
-      "addCurrencyButton": "Add new currency +",
+      "addCurrencyButton": "添加新货币",
       "initialBalanceLabel": "Initial balance",
       "initialBalancePlaceholder": "Initial balance",
       "initialBalanceHelpLink": "What should I enter?",
-      "accountCategoryLabel": "Account Category",
+      "accountCategoryLabel": "Account category",
       "accountCategoryPlaceholder": "Select account category",
       "creditLimitLabel": "Credit limit",
       "creditLimitPlaceholder": "Credit limit",
@@ -152,8 +152,8 @@
         "deposit": "Deposit",
         "withdrawal": "Withdrawal"
       },
-      "fromAccountLabel": "From Account",
-      "toAccountLabel": "To Account",
+      "fromAccountLabel": "从账户",
+      "toAccountLabel": "到账户",
       "accountPlaceholder": "选择账户",
       "orSeparator": "or",
       "linkExistingTransaction": "Link existing transaction",
@@ -165,13 +165,13 @@
       "dateLabel": "Date",
       "descriptionLabel": "Description",
       "adjustmentLabel": "This is a balance correction",
-      "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the Investment Contributions report.",
+      "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the investment contributions report.",
       "descriptionPlaceholder": "Optional description",
       "cancelButton": "取消",
       "submitButton": "Submit",
       "submitButtonLoading": "Submitting...",
       "confirmDialog": {
-        "title": "Confirm Transfer",
+        "title": "Confirm transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
         "cancelButton": "取消",
         "confirmButton": "确认",
@@ -192,14 +192,14 @@
       "mustBePositive": "金额必须是正数"
     },
     "exchangeCurrency": {
-      "fromCurrencyLabel": "From Currency",
-      "toCurrencyLabel": "To Currency",
+      "fromCurrencyLabel": "From currency",
+      "toCurrencyLabel": "To currency",
       "currencyPlaceholder": "选择货币",
-      "fromAmountLabel": "From Amount",
-      "toAmountLabel": "To Amount",
+      "fromAmountLabel": "From amount",
+      "toAmountLabel": "To amount",
       "amountPlaceholder": "0.00",
       "maxButton": "Max: {amount}",
-      "dateLabel": "Exchange Date",
+      "dateLabel": "Exchange date",
       "descriptionLabel": "描述（可选）",
       "descriptionPlaceholder": "Add a note about this exchange...",
       "cancelButton": "取消",
@@ -208,7 +208,7 @@
       "validation": {
         "required": "此字段为必填",
         "minValue": "Amount must be greater than 0",
-        "sameCurrency": "From and To currencies must be different"
+        "sameCurrency": "From and to currencies must be different"
       },
       "notifications": {
         "success": "Currency exchanged successfully",
@@ -327,7 +327,7 @@
       "otherCurrencies": "Other currencies"
     },
     "comboboxAccounts": {
-      "allAccounts": "All accounts",
+      "allAccounts": "所有账户",
       "account": "account",
       "accountsSelected": "accounts selected",
       "selectedOne": "1 account selected",
@@ -371,6 +371,7 @@
       "searchPlaceholder": "Search trackers",
       "noResults": "No trackers found",
       "unknownBudget": "Unknown tracker",
+      "blankOption": "Not in any tracker",
       "loadError": "Couldn't load trackers. Please try again."
     },
     "payeeSelect": {

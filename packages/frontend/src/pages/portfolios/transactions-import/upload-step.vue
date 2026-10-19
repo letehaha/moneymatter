@@ -10,9 +10,18 @@ import { Card, CardContent } from '@/components/lib/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/lib/ui/tabs';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useAiAllowance } from '@/composable/use-ai-allowance';
-import { getApiErrorMessage } from '@/js/errors';
-import type { InvestmentImportExtractionResult, InvestmentImportHolding } from '@bt/shared/types/investments';
-import { AI_FEATURE, type StatementCostEstimate, type StatementCostEstimateFailure } from '@bt/shared/types';
+import { extractApiErrorMessage, getApiErrorMessage } from '@/js/errors';
+import type {
+  InvestmentImportExtractionResult,
+  InvestmentImportHolding,
+  InvestmentImportWarning,
+} from '@bt/shared/types/investments';
+import {
+  AI_FEATURE,
+  MAX_CSV_ROWS,
+  type StatementCostEstimate,
+  type StatementCostEstimateFailure,
+} from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { ClipboardIcon, FileSpreadsheetIcon, FileTextIcon, Loader2Icon, SparklesIcon } from '@lucide/vue';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
@@ -30,7 +39,7 @@ function base64ToUtf8(b64: string): string {
 const props = defineProps<{ portfolioId: string }>();
 
 const emit = defineEmits<{
-  (e: 'extracted', payload: { holdings: InvestmentImportHolding[]; warnings: string[] }): void;
+  (e: 'extracted', payload: { holdings: InvestmentImportHolding[]; warnings: InvestmentImportWarning[] }): void;
   (
     e: 'csvParsed',
     payload: { fileBase64: string; fileName: string; parseResult: InvestmentImportParseCsvResult },
@@ -104,7 +113,8 @@ const estimate = useMutation({
   onSuccess: (result) => {
     if ('success' in result && (result as StatementCostEstimateFailure).success === false) {
       const failure = result as StatementCostEstimateFailure;
-      estimateError.value = failure.error?.message ?? failure.suggestion ?? 'Failed to analyze file';
+      estimateError.value =
+        failure.error?.message || failure.suggestion || t('investmentsImport.notifications.estimateFailed');
       costEstimate.value = null;
     } else {
       costEstimate.value = result as StatementCostEstimate;
@@ -151,12 +161,7 @@ const extract = useMutation({
   onError: (err: Error) => {
     if (err instanceof DOMException && err.name === 'AbortError') return;
     addNotification({
-      text: getApiErrorMessage({
-        e: err,
-        t,
-        conflictKey: 'investmentsImport.notifications.extractFailed',
-        fallbackKey: 'investmentsImport.notifications.extractFailed',
-      }),
+      text: extractApiErrorMessage(err) || t('investmentsImport.notifications.extractFailed'),
       type: NotificationType.error,
     });
   },
@@ -177,12 +182,10 @@ const parseCsv = useMutation({
     });
   },
   onError: (err: Error) => {
-    // Surface our local parse errors verbatim — they're written for end users.
-    // Anything else falls through to the generic i18n message.
     addNotification({
       text:
         err instanceof CsvParseLocalError
-          ? err.message
+          ? csvParseErrorMessage({ error: err })
           : getApiErrorMessage({
               e: err,
               t,
@@ -193,6 +196,24 @@ const parseCsv = useMutation({
     });
   },
 });
+
+function csvParseErrorMessage({ error }: { error: CsvParseLocalError }): string {
+  switch (error.code) {
+    case 'EMPTY':
+      return t('investmentsImport.errors.csv.empty');
+    case 'NO_HEADERS':
+      return t('investmentsImport.errors.csv.noHeaders');
+    case 'FORBIDDEN_HEADER':
+      return t('investmentsImport.errors.csv.forbiddenHeader');
+    case 'TOO_MANY_ROWS':
+      return t('investmentsImport.errors.csv.tooManyRows', { max: MAX_CSV_ROWS });
+    case 'PARSE_ERROR':
+      return t('investmentsImport.errors.csv.parseError');
+    default:
+      error.code satisfies never;
+      return t('investmentsImport.notifications.csvParseFailed');
+  }
+}
 
 function onDropzoneError(message: string) {
   addNotification({ text: message, type: NotificationType.error });

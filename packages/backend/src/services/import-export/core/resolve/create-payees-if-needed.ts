@@ -1,5 +1,6 @@
-import { ValidationError } from '@js/errors';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
+import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
 import { normalizePayeeName } from '@services/payees/normalize-name';
 import { resolveNormalizedName } from '@services/payees/payee-namespace';
 import { createPayee } from '@services/payees/payees.service';
@@ -79,8 +80,10 @@ export async function createPayeesIfNeeded({
       if (displayName.length > PAYEE_NAME_MAX_LENGTH) {
         const preview = `${displayName.slice(0, 50)}…`;
         logger.info(`Tried to import too long payee name: ${preview}`);
-        throw new ValidationError({
-          message: `Payee name "${preview}" is too long (${displayName.length} characters); maximum is ${PAYEE_NAME_MAX_LENGTH}.`,
+        const params = { name: preview, length: displayName.length, max: PAYEE_NAME_MAX_LENGTH };
+        throw new ImportJobError({
+          message: t({ key: 'importExport.payeeNameTooLong', variables: params }),
+          failure: { code: 'payee-name-too-long', params },
         });
       }
 

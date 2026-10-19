@@ -204,7 +204,7 @@ export const syncConnection = async ({ connectionId }: { connectionId: string })
   return response;
 };
 
-export interface ReconcileDuplicatesResult {
+interface ReconcileDuplicatesResult {
   mergedCount: number;
   skippedCount: number;
   consideredPairs: number;

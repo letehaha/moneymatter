@@ -7,7 +7,7 @@ const OFX_DATE =
 
 export function parseOfxDate({ value, timezone }: { value: string; timezone?: string }): string {
   const match = OFX_DATE.exec(value.trim());
-  if (!match) throw new OfxParseError({ code: 'invalid-date', message: `Invalid OFX date: ${value}` });
+  if (!match) throw new OfxParseError({ code: 'invalid-date', key: 'ofxImport.errors.invalidDate', params: { value } });
 
   const [, year, month, day, hour, minute = '00', second = '00', fraction = '', offset] = match;
   const hasTime = hour !== undefined;
@@ -24,7 +24,7 @@ export function parseOfxDate({ value, timezone }: { value: string; timezone?: st
     !Number.isFinite(offsetNumber) ||
     Math.abs(offsetNumber) > 24
   ) {
-    throw new OfxParseError({ code: 'invalid-date', message: `Invalid OFX date: ${value}` });
+    throw new OfxParseError({ code: 'invalid-date', key: 'ofxImport.errors.invalidDate', params: { value } });
   }
   const milliseconds = Number(`0.${fraction || '0'}`) * 1000;
   const calendarDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
@@ -33,7 +33,7 @@ export function parseOfxDate({ value, timezone }: { value: string; timezone?: st
     calendarDate.getUTCMonth() !== Number(month) - 1 ||
     calendarDate.getUTCDate() !== Number(day)
   ) {
-    throw new OfxParseError({ code: 'invalid-date', message: `Invalid OFX date: ${value}` });
+    throw new OfxParseError({ code: 'invalid-date', key: 'ofxImport.errors.invalidDate', params: { value } });
   }
 
   if (!hasOffset) {
@@ -66,11 +66,11 @@ export function parseOfxDate({ value, timezone }: { value: string; timezone?: st
   );
   const date = new Date(timestamp - offsetNumber * 60 * 60 * 1000);
   if (Number.isNaN(date.getTime())) {
-    throw new OfxParseError({ code: 'invalid-date', message: `Invalid OFX date: ${value}` });
+    throw new OfxParseError({ code: 'invalid-date', key: 'ofxImport.errors.invalidDate', params: { value } });
   }
   try {
     return date.toISOString();
   } catch {
-    throw new OfxParseError({ code: 'invalid-date', message: `Invalid OFX date: ${value}` });
+    throw new OfxParseError({ code: 'invalid-date', key: 'ofxImport.errors.invalidDate', params: { value } });
   }
 }

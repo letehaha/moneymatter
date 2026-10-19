@@ -85,7 +85,7 @@ export const METAINFO_FROM_TYPE: Record<string, ProviderMetainfo> = {
   },
 };
 
-export interface RegionFilterGroup {
+interface RegionFilterGroup {
   key: string;
   labelKey: string;
   flagCode: string;

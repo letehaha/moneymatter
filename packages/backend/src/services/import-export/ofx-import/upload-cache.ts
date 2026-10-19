@@ -1,5 +1,7 @@
 import type { OfxParseResult, ResourceLease } from '@bt/shared/types';
 import { OFX_UPLOAD_IDLE_TTL_MS, OFX_UPLOAD_MAX_LIFETIME_MS } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { ConflictError, NotFoundError } from '@js/errors';
 import { createExpiringUploadCache } from '@services/common/expiring-upload-cache';
 
 export const ofxUploadCache = createExpiringUploadCache<OfxParseResult>({
@@ -9,6 +11,17 @@ export const ofxUploadCache = createExpiringUploadCache<OfxParseResult>({
   missingMessage: 'This OFX upload is no longer available. Please upload the file again.',
   claimedMessage: 'An import for this file is already in progress.',
 });
+
+// The cache builds its errors from strings fixed at module load, outside any request locale.
+async function withTranslatedCacheErrors<T>({ operation }: { operation: () => Promise<T> }): Promise<T> {
+  try {
+    return await operation();
+  } catch (error) {
+    if (error instanceof NotFoundError) throw new NotFoundError({ message: t({ key: 'ofxImport.uploadUnavailable' }) });
+    if (error instanceof ConflictError) throw new ConflictError({ message: t({ key: 'ofxImport.importInProgress' }) });
+    throw error;
+  }
+}
 
 export async function storeOfxUpload({
   userId,
@@ -32,11 +45,13 @@ export function claimOfxUpload({
   jobId: string;
   isClaimStale: ({ jobId }: { jobId: string }) => Promise<boolean>;
 }): Promise<ResourceLease> {
-  return ofxUploadCache.claim({ userId, id: uploadId, jobId, isClaimStale });
+  return withTranslatedCacheErrors({
+    operation: () => ofxUploadCache.claim({ userId, id: uploadId, jobId, isClaimStale }),
+  });
 }
 
 export function readOfxUpload({ userId, uploadId }: { userId: number; uploadId: string }): Promise<OfxParseResult> {
-  return ofxUploadCache.read({ userId, id: uploadId });
+  return withTranslatedCacheErrors({ operation: () => ofxUploadCache.read({ userId, id: uploadId }) });
 }
 
 export function deleteOfxUpload({ userId, uploadId }: { userId: number; uploadId: string }): Promise<void> {

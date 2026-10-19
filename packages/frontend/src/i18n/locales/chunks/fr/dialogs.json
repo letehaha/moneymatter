@@ -10,12 +10,12 @@
       "accountsCount": "{count} compte | {count} comptes"
     },
     "reassignCategory": {
-      "title": "Reassign Transactions",
+      "title": "Reassign transactions",
       "description": "This category has {count} transaction(s). Select a new category for \"{categoryName}\" transactions before deleting.",
       "newCategoryLabel": "New category",
       "newCategoryPlaceholder": "Select a category",
       "cancelButton": "Cancel",
-      "reassignButton": "Reassign & Delete",
+      "reassignButton": "Reassign & delete",
       "reassignButtonLoading": "Reassigning...",
       "notifications": {
         "success": "{count} transaction(s) reassigned to {newCategoryName}",
@@ -23,9 +23,9 @@
       }
     },
     "syncConfirmation": {
-      "title": "Sync Recently Completed",
+      "title": "Sync recently completed",
       "description": "You synchronized your accounts {time} ago. Are you sure you want to sync again?",
-      "syncAnyway": "Sync Anyway",
+      "syncAnyway": "Sync anyway",
       "cancel": "Cancel",
       "timeUnits": {
         "someTime": "some time",
@@ -34,15 +34,15 @@
       }
     },
     "createPortfolio": {
-      "title": "Create Portfolio",
+      "title": "Create portfolio",
       "description": "Create a new investment portfolio to track your holdings and transactions.",
       "assetSupportNotice": "Currently supports stocks, ETFs and crypto. Bonds, options & other securities are on the {roadmapLink} – share what you need via {feedbackLink}.",
       "assetSupportRoadmapLink": "vote for what's next",
       "assetSupportFeedbackLink": "request a feature",
       "form": {
         "nameLabel": "Portfolio name",
-        "namePlaceholder": "My Investment Portfolio",
-        "typeLabel": "Portfolio Type",
+        "namePlaceholder": "My investment portfolio",
+        "typeLabel": "Portfolio type",
         "typePlaceholder": "Select portfolio type",
         "portfolioTypes": {
           "investment": "Investment",
@@ -52,7 +52,7 @@
         },
         "descriptionLabel": "Description (optional)",
         "descriptionPlaceholder": "A brief description of this portfolio...",
-        "submitButton": "Create Portfolio",
+        "submitButton": "Create portfolio",
         "submitButtonLoading": "Creating..."
       },
       "notifications": {
@@ -61,14 +61,14 @@
       }
     },
     "editPortfolio": {
-      "title": "Edit Portfolio",
+      "title": "Edit portfolio",
       "description": "Update name, type or description of your portfolio."
     },
     "deletePortfolio": {
-      "title": "Delete Portfolio",
+      "title": "Delete portfolio",
       "description": "This portfolio will be moved to trash and can be restored within 30 days. After that, it will be permanently deleted along with all holdings and transactions.",
       "cancelButton": "Cancel",
-      "deleteButton": "Move to Trash",
+      "deleteButton": "Move to trash",
       "deleteButtonLoading": "Moving...",
       "notifications": {
         "success": "Portfolio moved to trash. You can restore it within 30 days from the Investments page.",
@@ -76,9 +76,9 @@
       }
     },
     "manageTransaction": {
-      "addTitle": "Add Transaction",
-      "editTitle": "Edit Transaction",
-      "detailsTitle": "Transaction Details",
+      "addTitle": "Add transaction",
+      "editTitle": "Edit transaction",
+      "detailsTitle": "Transaction details",
       "title": "Manage transaction",
       "description": "Create or edit a transaction",
       "linkSection": {
@@ -102,7 +102,7 @@
       "recordList": {},
       "form": {
         "payeeLabel": "Payee",
-        "outOfWalletDocsLink": "What is Out of Wallet?",
+        "outOfWalletDocsLink": "What is out of wallet?",
         "destinationGroupLabel": "Where the money goes",
         "paymentTypeLabel": "Payment type",
         "noteLabel": "Note",
@@ -269,7 +269,7 @@
       "splitDialog": {
         "title": "Split into categories",
         "description": "Distribute this transaction across multiple categories. The main category keeps any unallocated amount.",
-        "mainCategoryLabel": "Main Category",
+        "mainCategoryLabel": "Main category",
         "selectCategoryPlaceholder": "Select category",
         "amountPlaceholder": "0",
         "addCategoryButton": "Add category",
@@ -334,7 +334,7 @@
       },
       "refundInfo": {
         "trigger": "How it works?",
-        "title": "About Refund Transactions",
+        "title": "About refund transactions",
         "description": "This action links the current transaction [expense/income] as a refund to a previous existing transaction.",
         "howItWorks": {
           "title": "How it works:",
@@ -348,7 +348,7 @@
           "tracking": "Helps track related transactions to improve your feed."
         },
         "notes": {
-          "title": "Important Notes:",
+          "title": "Important notes:",
           "recordKeeping": "This link is for record-keeping purposes only.",
           "noBalanceAdjust": "It does not adjust the balance of the original transaction in any way.",
           "canUnlink": "You can always unlink transactions back."
@@ -379,23 +379,23 @@
         "resetFiltersButton": "Reset filters"
       },
       "portfolioLinked": {
-        "title": "Portfolio-Linked Transaction",
+        "title": "Portfolio-linked transaction",
         "linkedAs": "This transaction is linked as a {type} to",
         "deposit": "deposit",
         "withdrawal": "withdrawal",
-        "unlinkButton": "Unlink from Portfolio",
+        "unlinkButton": "Unlink from portfolio",
         "unlinkWarning": "Unlinking will reduce the cash balance of {portfolio} portfolio.",
         "unlinkWarningNoCash": "This transfer never changed {portfolio}'s cash balance, so unlinking leaves the balance untouched.",
         "noCashBadge": "No cash impact",
         "unlinkDescription": "Original transaction details will be restored.",
         "cancelButton": "Cancel",
-        "confirmUnlink": "Confirm Unlink"
+        "confirmUnlink": "Confirm unlink"
       },
       "ventureLinked": {
         "title": "Venture-linked transaction",
         "description": "This transaction is linked to a venture event.",
         "editHint": "Edit or unlink it from the related venture deal's events timeline.",
-        "openVenture": "Open Venture"
+        "openVenture": "Open venture"
       },
       "vehicleLinked": {
         "title": "Vehicle adjustment",
@@ -462,16 +462,16 @@
     },
     "portfolioTransfer": {
       "portfolio": {
-        "title": "Transfer from Portfolio",
+        "title": "Transfer from portfolio",
         "description": "Transfer funds from this portfolio to another portfolio or account."
       },
       "account": {
-        "title": "Transfer from Account",
+        "title": "Transfer from account",
         "description": "Transfer funds from this account to a portfolio."
       }
     },
     "addSymbols": {
-      "title": "Add Symbols",
+      "title": "Add symbols",
       "searchLabel": "Search symbol or name",
       "searchPlaceholder": "AAPL",
       "searchError": "Failed to search securities.",
@@ -500,7 +500,7 @@
       "cryptoProviderNotConfigured": "Crypto search is unavailable. Set COINGECKO_API_KEY in your environment to enable it."
     },
     "deleteInvestmentTransaction": {
-      "title": "Delete Transaction",
+      "title": "Delete transaction",
       "description": "Are you sure you want to delete this transaction? This action cannot be undone.",
       "cancelButton": "Cancel",
       "deleteButton": "Delete",
@@ -512,8 +512,8 @@
     },
     "categoryForm": {
       "title": {
-        "edit": "Edit Category",
-        "add": "Add Category"
+        "edit": "Edit category",
+        "add": "Add category"
       },
       "description": {
         "addSubcategory": "Adding subcategory to {parentName}",
@@ -560,7 +560,7 @@
       }
     },
     "directCashTransaction": {
-      "title": "Cash Transaction",
+      "title": "Cash transaction",
       "description": "Add a deposit or withdrawal to the portfolio"
     },
     "pickTransaction": {
@@ -574,6 +574,7 @@
       "analyzing": "Reading the invoice and searching your transactions…",
       "attaching": "Attaching the invoice to the transaction…",
       "privacyNote": "The file goes to the AI provider for reading only. Nothing is saved until you link it to a transaction.",
+      "aiPausedHint": "Invoice reading is paused. Open the AI badge above to see your options.",
       "direction": {
         "paid": "I paid this",
         "gotPaid": "I got paid",
@@ -649,7 +650,7 @@
       }
     },
     "exchangeCurrency": {
-      "title": "Exchange Currency",
+      "title": "Exchange currency",
       "description": "Exchange cash between different currencies within your portfolio"
     },
     "shareAccountDialog": {
@@ -768,7 +769,7 @@
       "countExcluded": "1 category excluded | {count} categories excluded"
     },
     "subscriptionMarkPaid": {
-      "title": "Mark Payment",
+      "title": "Mark payment",
       "description": "Record a payment for {name}",
       "chooseDescription": "How do you want to record this payment for {name}?",
       "amountLabel": "Amount",
@@ -798,8 +799,8 @@
     "loanPayment": {
       "title": "Loan payment",
       "description": "Record or edit a payment against this loan.",
-      "createTitle": "Record Payment",
-      "editTitle": "Edit Loan Payment",
+      "createTitle": "Record payment",
+      "editTitle": "Edit loan payment",
       "payingTo": "Paying to",
       "fromAccountLabel": "From account",
       "fromAccountPlaceholder": "Select account",

@@ -1,4 +1,5 @@
 import { MS_MONEY_MAX_FILE_BYTES } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -23,7 +24,7 @@ describe('Microsoft Money import endpoints', () => {
         file: Buffer.from('this is a text file, not a Money database'),
       });
       expect(notADatabase.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(notADatabase.errorMessage).toMatch(/not a Microsoft Money database/i);
+      expect(notADatabase.errorMessage).toBe(t({ key: 'importExport.msMoney.notMsMoneyFile', locale: 'en' }));
 
       // Random bytes long enough to clear any minimum-length check, so the
       // rejection comes from the file's own header rather than its size.
@@ -33,7 +34,7 @@ describe('Microsoft Money import endpoints', () => {
 
       const empty = await helpers.uploadMsMoney({ file: Buffer.alloc(0) });
       expect(empty.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(empty.errorMessage).toMatch(/No file was uploaded/i);
+      expect(empty.errorMessage).toBe(t({ key: 'importExport.msMoney.noFileUploaded', locale: 'en' }));
 
       // Only `application/octet-stream` reaches the raw parser, so anything else
       // leaves the handler with no buffer at all.
@@ -42,7 +43,18 @@ describe('Microsoft Money import endpoints', () => {
         contentType: 'text/plain',
       });
       expect(wrongContentType.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(wrongContentType.errorMessage).toMatch(/No file was uploaded/i);
+      expect(wrongContentType.errorMessage).toBe(t({ key: 'importExport.msMoney.noFileUploaded', locale: 'en' }));
+    });
+
+    it("rejects an upload in the requester's language", async () => {
+      const result = await helpers.uploadMsMoney({
+        file: Buffer.from('this is a text file, not a Money database'),
+        locale: 'uk',
+      });
+
+      expect(result.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(result.errorMessage).toBe(t({ key: 'importExport.msMoney.notMsMoneyFile', locale: 'uk' }));
+      expect(result.errorMessage).not.toBe(t({ key: 'importExport.msMoney.notMsMoneyFile', locale: 'en' }));
     });
 
     /**

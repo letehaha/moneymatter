@@ -3,7 +3,7 @@
     "categories": {
       "title": "Categories",
       "description": "Organize your transactions into categories and subcategories. Drag a category to move it under a different parent or to the top level.",
-      "addButton": "Add Category",
+      "addButton": "Add category",
       "organizeButton": "Organize",
       "empty": "No categories yet. Create your first category to get started.",
       "categoriesCount": "{n} category | {n} categories",

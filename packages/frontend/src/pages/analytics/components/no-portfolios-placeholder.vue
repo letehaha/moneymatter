@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="border-border bg-card flex flex-col items-center justify-center gap-3 rounded-lg border px-6 py-16 text-center"
-  >
+  <div class="flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
     <div class="bg-muted flex size-14 items-center justify-center rounded-full">
       <component :is="icon" class="text-muted-foreground size-7" />
     </div>

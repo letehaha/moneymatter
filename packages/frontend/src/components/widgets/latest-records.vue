@@ -8,6 +8,7 @@ import { useFormatCurrency } from '@/composable/formatters';
 import { buttonVariants } from '@/components/lib/ui/button';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import TransactionsList from '@/components/transactions-list/transactions-list.vue';
@@ -197,13 +198,7 @@ const isDataEmpty = computed(() => !isTxFetching.value && pastTransactions.value
           :key="sub.id"
           class="bg-muted/40 mb-1.5 flex items-center gap-2.5 rounded-md px-3 py-2"
         >
-          <BrandLogo
-            :domain="sub.logoDomain ?? null"
-            :initials="sub.logoInitials ?? null"
-            :color="sub.logoColor ?? null"
-            :name="sub.name"
-            class="size-5 shrink-0"
-          />
+          <BrandLogo v-bind="toEntityLogoDisplayProps(sub)" :name="sub.name" class="size-5 shrink-0" />
           <div class="min-w-0 flex-1">
             <p class="truncate text-sm leading-tight font-medium">
               {{ sub.name }}

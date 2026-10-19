@@ -6,6 +6,7 @@ import {
   type ShareInvitationNotificationPayload,
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
+  type TrackerAiMatchesNotificationPayload,
 } from '@bt/shared/types';
 
 /**
@@ -105,6 +106,19 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
       return {
         kind: 'spa',
         to: { name: ROUTES_NAMES.plannedBudgets },
+      };
+    }
+
+    case NOTIFICATION_TYPES.trackerAiMatches: {
+      const payload = notification.payload as TrackerAiMatchesNotificationPayload | undefined;
+      if (!payload?.budgetId) return null;
+      return {
+        kind: 'spa',
+        to: {
+          name: ROUTES_NAMES.plannedBudgetDetails,
+          params: { id: payload.budgetId },
+          query: { tab: 'transactions', review: '1' },
+        },
       };
     }
 

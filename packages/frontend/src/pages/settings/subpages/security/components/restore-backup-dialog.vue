@@ -16,6 +16,8 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import { getRestoreWarningMessage } from './restore-warning-message';
+
 const props = defineProps<{
   open: boolean;
   fileName: string;
@@ -34,6 +36,7 @@ const jobId = ref<string | null>(null);
 const sharedResources = ref<WipeDataSharedResources | null>(null);
 const acknowledged = ref(false);
 const failureMessage = ref('');
+const failureDetail = ref('');
 
 const { mutate: restore, isPending: isSubmitting } = useRestoreBackup();
 const { data: statusData, isError: isStatusError, error: statusError } = useRestoreStatus({ jobId });
@@ -74,7 +77,12 @@ const restoredEntries = computed(() =>
     .sort((a, b) => b[1] - a[1]),
 );
 
-const warnings = computed(() => summary.value?.warnings ?? []);
+const warningMessages = computed(() =>
+  (summary.value?.warnings ?? []).map((warning) => {
+    const { key, params, plural } = getRestoreWarningMessage({ warning });
+    return t(key, params, plural);
+  }),
+);
 
 const humanizeTable = (table: string) => table.replace(/[-_]/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 
@@ -85,6 +93,7 @@ const resetState = () => {
   sharedResources.value = null;
   acknowledged.value = false;
   failureMessage.value = '';
+  failureDetail.value = '';
   // Fresh attempt from the confirm step: this dialog isn't presenting a restore yet.
   restoreDialogPresenting.value = false;
 };
@@ -127,6 +136,7 @@ watch(statusData, (status) => {
   } else if (status.status === 'failed') {
     resetStall();
     failureMessage.value = status.error || t('settings.security.backup.restore.failed.genericError');
+    failureDetail.value = status.errorDetail ?? '';
     step.value = 'failed';
     // The user is watching this failure live in the dialog; mark it handled so the boot
     // watchdog doesn't re-toast it, and release the safety-net watchdog (rollback left
@@ -314,13 +324,13 @@ const handleClose = () => setOpen(false);
         </ul>
       </div>
 
-      <div v-if="warnings.length">
+      <div v-if="warningMessages.length">
         <p class="mb-2 text-sm font-medium">
           {{ $t('settings.security.backup.restore.summary.warningsHeading') }}
         </p>
         <div class="flex flex-col gap-2">
-          <Callout v-for="(warning, index) in warnings" :key="index" variant="warning">
-            <p>{{ warning.message }}</p>
+          <Callout v-for="(message, index) in warningMessages" :key="index" variant="warning">
+            <p>{{ message }}</p>
           </Callout>
         </div>
       </div>
@@ -331,6 +341,10 @@ const handleClose = () => setOpen(false);
       <Callout variant="destructive">
         <p>{{ failureMessage }}</p>
       </Callout>
+      <details v-if="failureDetail" class="text-muted-foreground text-xs">
+        <summary class="cursor-pointer">{{ $t('settings.security.backup.restore.failed.technicalDetails') }}</summary>
+        <p class="mt-2 font-mono break-all">{{ failureDetail }}</p>
+      </details>
     </div>
 
     <template #footer>

@@ -4,6 +4,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import BrandLogos from '@models/brand-logos.model';
+import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { getLogoDevSearchMock } from '@tests/mocks/logo-dev/mock-api';
 
@@ -427,5 +428,65 @@ describe('Subscription monogram', () => {
       expect(reResolved.logoDomain).toBe('twilio.com');
       expect(reResolved.logoInitials).toBeNull();
     });
+  });
+});
+
+describe('Subscription logo icon and image slots', () => {
+  it('creates with logoIcon + logoColor', async () => {
+    const created = await helpers.createSubscription({
+      ...buildBillPayload({ name: 'Gym' }),
+      logoIcon: 'food-24-regular',
+      logoColor: '#7355be',
+      raw: true,
+    });
+
+    expect(created).toMatchObject({ logoIcon: 'food-24-regular', logoColor: '#7355be', logoSource: 'manual' });
+  });
+
+  it('sets logoIcon on update and evicts the domain', async () => {
+    const created = await helpers.createSubscription({
+      ...buildBillPayload({ name: 'Netflix', logoDomain: 'netflix.com' }),
+      raw: true,
+    });
+
+    const updated = await helpers.updateSubscription({ id: created.id, logoIcon: 'food-24-regular', raw: true });
+
+    expect(updated).toMatchObject({ logoIcon: 'food-24-regular', logoDomain: null });
+  });
+
+  it('clears every slot with the three-null payload', async () => {
+    const created = await helpers.createSubscription({
+      ...buildBillPayload({ name: 'Icon Bill' }),
+      logoIcon: 'food-24-regular',
+      raw: true,
+    });
+
+    const response = await helpers.updateSubscription({
+      id: created.id,
+      logoDomain: null,
+      logoInitials: null,
+      logoIcon: null,
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(await helpers.getSubscriptionById({ id: created.id, raw: true })).toMatchObject({
+      logoDomain: null,
+      logoInitials: null,
+      logoIcon: null,
+    });
+  });
+
+  it('ignores logoImage', async () => {
+    const created = await helpers.createSubscription({ ...buildBillPayload({ name: 'Plain Bill' }), raw: true });
+
+    const response = await helpers.updateSubscription({
+      id: created.id,
+      ...({ logoImage: PNG_1X1_DATA_URL } as object),
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect((await helpers.getSubscriptionById({ id: created.id, raw: true })).logoImageId).toBeNull();
   });
 });

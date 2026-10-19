@@ -52,8 +52,6 @@
           "server": "Servidor",
           "serverTooltip": "Esta función utiliza la clave de API compartida de nuestro servidor. Es gratuita, pero puede tener límites de velocidad durante alta demanda. Añada su propia clave de API para acceso ilimitado."
         },
-        "sharedPoolNote": "En tu plan actual, el modelo incluido se ejecuta en un recurso compartido, por lo que pueden aplicarse límites cuando la demanda general es alta. {link} para evitarlos.",
-        "sharedPoolNoteLink": "Actualizar a Plus",
         "modelLabel": "Modelo",
         "modelInfo": {
           "estimatedCost": "Coste est.:",
@@ -95,13 +93,15 @@
           "categorization": "Un trabajo corto y repetitivo. Un modelo pequeño lo maneja bien y mantiene el coste bajo.",
           "statementParsing": "Lee la sentencia entera y escribe de vuelta cada fila, por lo que necesita un modelo que se mantenga preciso sobre el texto largo.",
           "investmentTransactionsParsing": "Convierte las exportaciones de los corredores en la compra y venta de filas. Las exportaciones de largo plazo necesitan un modelo que pueda escribir respuestas largas.",
-          "receiptParsing": "El modelo mira el archivo de factura en sí, así que tiene que leer imágenes y PDFs."
+          "receiptParsing": "El modelo mira el archivo de factura en sí, así que tiene que leer imágenes y PDFs.",
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet ",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Buen ajuste",

@@ -2,13 +2,13 @@
   "pages": {
     "importExport": {
       "csvImport": {
-        "pageTitle": "Import Transactions from CSV",
+        "pageTitle": "Import transactions from CSV",
         "pageDescription": "Upload your bank CSV export or transaction history file to import transactions into your account.",
         "stepper": {
           "stepOf": "Step {current} of {total}",
           "steps": {
             "upload": "Upload",
-            "map": "Map Columns",
+            "map": "Map columns",
             "resolveAccounts": "Accounts",
             "resolveCategories": "分类",
             "review": "Review",
@@ -16,24 +16,24 @@
           }
         },
         "steps": {
-          "uploadTitle": "Upload CSV File",
+          "uploadTitle": "Upload CSV file",
           "uploadDescription": "Select your CSV file to begin",
-          "mappingTitle": "Map Columns",
+          "mappingTitle": "Map columns",
           "mappingDescription": "Match CSV columns to transaction fields",
-          "reviewTitle": "Review Duplicates",
+          "reviewTitle": "Review duplicates",
           "reviewDescription": "Check for duplicate transactions",
-          "completeTitle": "Import Complete",
+          "completeTitle": "Import complete",
           "completeDescription": "Review import results"
         },
         "fileUpload": {
-          "stepTitle": "Upload CSV File",
+          "stepTitle": "Upload CSV file",
           "description": "Upload one or more CSV files to import transactions. All files must have the same columns.",
           "dragDrop": "Drag and drop your CSV file here",
           "orBrowse": "or click to browse",
           "maxSize": "Maximum file size: 50MB",
           "removeFile": "Remove file",
           "parsing": "Parsing...",
-          "continueToMapping": "Continue to Mapping",
+          "continueToMapping": "Continue to mapping",
           "errors": {
             "invalidFormat": "Invalid file format. Please upload a CSV file.",
             "invalidFormatNamed": "{name} is not a CSV file",
@@ -52,7 +52,7 @@
           }
         },
         "columnMapping": {
-          "stepTitle": "Map Columns",
+          "stepTitle": "Map columns",
           "description": "Map your CSV columns to the required fields",
           "file": "File",
           "filesCount": "{count} file | {count} files",
@@ -60,8 +60,8 @@
           "delimiter": "Delimiter",
           "extracting": "Extracting...",
           "detecting": "Detecting duplicates…",
-          "nextExtract": "Next: Extract Values",
-          "continueToDuplicates": "Continue to Duplicate Check"
+          "nextExtract": "Next: Extract values",
+          "continueToDuplicates": "Continue to duplicate check"
         },
         "execute": {
           "starting": "Starting import…",
@@ -74,29 +74,29 @@
           "partialImportNote": "Some rows may have already been imported before this failure. Re-importing could create duplicates."
         },
         "review": {
-          "stepTitle": "Review Import",
+          "stepTitle": "Review import",
           "description": "Review the data before importing",
-          "totalRows": "Total Rows",
-          "validRows": "Valid Rows",
-          "invalidRows": "Invalid Rows",
+          "totalRows": "Total rows",
+          "validRows": "Valid rows",
+          "invalidRows": "Invalid rows",
           "duplicates": "Duplicates",
-          "invalidRowsTitle": "Invalid Rows",
+          "invalidRowsTitle": "Invalid rows",
           "rowNumber": "Row #",
           "errors": "Errors",
-          "rawData": "Raw Data",
+          "rawData": "Raw data",
           "duplicatesTitle": "{count} potential duplicates found",
           "duplicatesHint": "Check rows you want to import anyway; unchecked duplicates are skipped.",
           "skip": "Skip",
           "match": "Match",
-          "csvTransaction": "CSV Transaction",
-          "existingTransaction": "Existing Transaction",
-          "importSummary": "Import Summary",
+          "csvTransaction": "CSV transaction",
+          "existingTransaction": "Existing transaction",
+          "importSummary": "Import summary",
           "willBeImported": "transactions will be imported.",
           "invalidWillBeSkipped": "invalid rows will be skipped.",
           "duplicatesWillBeSkipped": "duplicates will be skipped.",
-          "backToMapping": "Back to Mapping",
+          "backToMapping": "Back to mapping",
           "importing": "Importing...",
-          "importButton": "Import {count} Transactions",
+          "importButton": "Import {count} transactions",
           "unpriceableTitle": "{count} row(s) cannot be priced — no exchange rate found",
           "unpriceableDescription": "These rows use a currency that has no stored exchange rate and cannot be converted to your base currency. You must skip them or cancel the import.",
           "unpriceableWillBeSkipped": "unpriceable will be skipped",
@@ -109,24 +109,24 @@
           "collapse": "Hide full data"
         },
         "results": {
-          "completeTitle": "Import Complete!",
-          "completeWithIssuesTitle": "Import Completed with Issues",
+          "completeTitle": "Import complete!",
+          "completeWithIssuesTitle": "Import completed with issues",
           "successDescription": "All transactions have been successfully imported.",
           "partialDescription": "Some transactions could not be imported.",
           "imported": "Imported",
-          "skippedDuplicates": "Skipped (Duplicates)",
-          "accountsCreated": "Accounts Created",
+          "skippedDuplicates": "Skipped (duplicates)",
+          "accountsCreated": "Accounts created",
           "accountsSkipped": "Accounts skipped",
-          "categoriesCreated": "Categories Created",
-          "tagsCreated": "Tags Created",
-          "payeesCreated": "Payees Created",
-          "importErrors": "Import Errors",
+          "categoriesCreated": "Categories created",
+          "tagsCreated": "Tags created",
+          "payeesCreated": "Payees created",
+          "importErrors": "Import errors",
           "rowNumber": "Row #",
           "error": "Error",
           "batchIdLabel": "Batch ID",
           "batchIdDescription": "Use this ID to find all transactions from this import.",
-          "viewTransactions": "View Transactions",
-          "startNewImport": "Start New Import",
+          "viewTransactions": "View transactions",
+          "startNewImport": "Start new import",
           "skippedUnpriceable": "Skipped (unpriced)",
           "importFailed": "Failed to import transactions. Please try again.",
           "successCallout": "{count} transactions imported successfully",
@@ -137,7 +137,7 @@
         }
       },
       "columnMapping": {
-        "stepTitle": "Map Columns",
+        "stepTitle": "Map columns",
         "description": "Map your CSV columns to the required fields",
         "file": "File",
         "totalRows": "Total rows",
@@ -151,17 +151,17 @@
         "selectAction": "Select action..."
       },
       "transactionTypeMapping": {
-        "columnLabel": "Transaction Type Column",
-        "incomeValuesLabel": "Income Values",
-        "expenseValuesLabel": "Expense Values",
+        "columnLabel": "Transaction type column",
+        "incomeValuesLabel": "Income values",
+        "expenseValuesLabel": "Expense values",
         "commaSeparatedHint": "Comma-separated values",
         "uncoveredValues": "These values in the type column aren't assigned to Income or Expense yet: {values}. Add each one to a list above to continue.",
         "selectColumn": "Select column...",
         "incomeValuesPlaceholder": "e.g., Credit, Deposit, Income",
         "expenseValuesPlaceholder": "e.g., Debit, Withdrawal, Expense",
         "methodOptions": {
-          "amountSign": "From Amount Sign (negative = expense, positive = income)",
-          "dataSourceColumn": "From Column (specify values)"
+          "amountSign": "From amount sign (negative = expense, positive = income)",
+          "dataSourceColumn": "From column (specify values)"
         },
         "amountSignInfo": "ℹ️ Transaction types will be determined automatically: negative amounts = expenses, positive amounts = income"
       },
@@ -179,10 +179,10 @@
         "selectAccount": "Select account..."
       },
       "accountAssignment": {
-        "title": "Account Assignment",
+        "title": "Account assignment",
         "howToAssign": "How do you want to assign accounts?",
         "description": "Choose how accounts should be assigned to imported transactions",
-        "accountColumn": "Account Column",
+        "accountColumn": "Account column",
         "columnDescription": "Select the CSV column that contains account names",
         "accountLabel": "Account",
         "singleAccountDescription": "All imported transactions will be assigned to this account",
@@ -193,15 +193,15 @@
         }
       },
       "accountMappingTable": {
-        "title": "Account Mapping",
+        "title": "Account mapping",
         "description": "Map CSV account names to your existing accounts or create new ones. Only accounts with matching currency will be shown.",
-        "csvAccountName": "CSV Account Name",
+        "csvAccountName": "CSV account name",
         "currency": "Currency",
         "action": "Action",
-        "targetAccount": "Target Account",
+        "targetAccount": "Target account",
         "actions": {
-          "createNew": "Create New Account",
-          "mapToExisting": "Map to Existing Account"
+          "createNew": "Create new account",
+          "mapToExisting": "Map to existing account"
         },
         "noMatchingCurrency": "No accounts available with matching currency ({currency})",
         "willBeCreated": "New account \"{name}\" will be created with {currency} currency",
@@ -210,7 +210,7 @@
         "selectAccount": "Select account..."
       },
       "categoryMappingTable": {
-        "csvCategoryName": "CSV Category Name"
+        "csvCategoryName": "CSV category name"
       },
       "categoryAssignment": {
         "options": {
@@ -220,7 +220,7 @@
         }
       },
       "tagMappingTable": {
-        "csvTagName": "CSV Tag Value"
+        "csvTagName": "CSV tag value"
       },
       "resolveValues": {
         "selectAction": "Select action",
@@ -244,12 +244,12 @@
           }
         },
         "accounts": {
-          "sectionTitle": "Account Mapping",
+          "sectionTitle": "Account mapping",
           "resolvedCount": "{resolved} of {total} resolved",
-          "csvName": "CSV Account",
+          "csvName": "CSV account",
           "currency": "Currency",
           "action": "Action",
-          "target": "Target Account",
+          "target": "Target account",
           "selectTarget": "Select an account",
           "noMatchingCurrency": "No accounts match currency {currency}",
           "willCreate": "Will create \"{name}\" ({currency})",
@@ -260,15 +260,15 @@
           "skippedNote": "{count} account(s) will be skipped. Their transactions will not be imported."
         },
         "categories": {
-          "sectionTitle": "Category Mapping",
-          "csvName": "CSV Category"
+          "sectionTitle": "Category mapping",
+          "csvName": "CSV category"
         },
         "tags": {
-          "sectionTitle": "Tag Mapping",
+          "sectionTitle": "Tag mapping",
           "resolvedCount": "{resolved} of {total} resolved",
-          "csvName": "CSV Tag",
+          "csvName": "CSV tag",
           "action": "Action",
-          "target": "Target Tag",
+          "target": "Target tag",
           "selectTarget": "Select a tag",
           "willCreate": "Will create \"{name}\"",
           "willSkip": "Will be skipped",
@@ -325,6 +325,12 @@
         "errorColumns": {
           "row": "Row",
           "error": "Error"
+        },
+        "rowErrors": {
+          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
+          "accountUnresolved": "The account for this row could not be resolved, so the row was skipped.",
+          "readBackFailed": "The transaction was created but could not be read back, so it is missing from the imported count.",
+          "generic": "This row could not be imported."
         }
       }
     }

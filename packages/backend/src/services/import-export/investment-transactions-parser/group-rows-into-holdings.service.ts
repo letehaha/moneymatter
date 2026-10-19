@@ -17,6 +17,7 @@ import { ASSET_CLASS, isCashInCategory, isTradeSide } from '@bt/shared/types/inv
 import type {
   InvestmentImportExtractionResult,
   InvestmentImportTradeSide,
+  InvestmentImportWarning,
   InvestmentImportTransactionSide,
 } from '@bt/shared/types/investments';
 import { logger } from '@js/utils';
@@ -55,12 +56,12 @@ interface GroupRowsParams {
    * per-symbol currency warnings. Lets callers preserve the existing AI-path
    * ordering for things like "AI dropped N rows".
    */
-  extraWarnings?: string[];
+  extraWarnings?: InvestmentImportWarning[];
 }
 
 interface GroupRowsResult {
   holdings: InvestmentImportExtractionResult['holdings'];
-  warnings: string[];
+  warnings: InvestmentImportWarning[];
 }
 
 export async function groupRowsIntoHoldings({
@@ -94,7 +95,7 @@ export async function groupRowsIntoHoldings({
     defaultPortfolioId,
   });
 
-  const warnings: string[] = [...resolution.warnings, ...extraWarnings];
+  const warnings: InvestmentImportWarning[] = [...resolution.warnings, ...extraWarnings];
 
   const holdings: InvestmentImportExtractionResult['holdings'] = [];
   const rowsForDedup: Array<{
@@ -127,7 +128,7 @@ export async function groupRowsIntoHoldings({
     }
 
     if (invalidCount > 0) {
-      warnings.push(`Symbol "${symbol}" had ${invalidCount} row(s) with unsupported quote currency.`);
+      warnings.push({ code: 'UNSUPPORTED_QUOTE_CURRENCY', params: { symbol, count: invalidCount } });
     }
 
     const holdingTempId = uuidv4();
@@ -197,7 +198,7 @@ export async function groupRowsIntoHoldings({
         message: 'Investment txn import dedup detection failed',
         error: error as Error,
       });
-      warnings.push('Could not check for possible duplicates — review your existing transactions manually.');
+      warnings.push({ code: 'DUPLICATE_CHECK_FAILED' });
     }
   }
 

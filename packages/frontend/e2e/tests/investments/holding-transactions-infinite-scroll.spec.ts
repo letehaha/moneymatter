@@ -15,7 +15,7 @@ const CURRENCY = 'USD';
 const TX_COUNT = 45;
 const creds = buildTestCredentials({ prefix: 'hts' });
 
-let portfolioId: number;
+let portfolioId: string;
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });
@@ -35,13 +35,7 @@ async function seedTestData({ request }: { request: import('@playwright/test').A
   const holdingRes = await createHolding({
     request,
     portfolioId,
-    searchResult: {
-      symbol: 'ISCRL',
-      name: 'Infinite Scroll Corp',
-      assetClass: 'stocks',
-      providerName: 'fmp',
-      currencyCode: 'USD',
-    },
+    symbol: 'ISCRL',
   });
   const securityId = holdingRes.response.securityId;
 

@@ -27,12 +27,17 @@ export interface OfxDecodedFile {
   formatVersion: OfxFormatVersion;
 }
 
+/** `key` is a backend i18n key under `ofxImport.errors`; the upload controller translates it with `params`. */
 export class OfxParseError extends Error {
-  constructor({ code, message }: { code: string; message: string }) {
-    super(message);
+  constructor({ code, key, params }: { code: string; key: string; params?: Record<string, string | number> }) {
+    super(key);
     this.name = 'OfxParseError';
     this.code = code;
+    this.key = key;
+    this.params = params;
   }
 
   readonly code: string;
+  readonly key: string;
+  readonly params?: Record<string, string | number>;
 }

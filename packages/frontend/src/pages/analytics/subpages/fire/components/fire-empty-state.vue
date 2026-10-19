@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col items-center px-4 py-12 text-center">
-    <div class="bg-primary/10 mb-4 flex size-12 items-center justify-center rounded-full">
-      <component :is="status === 'no-data' ? FlameIcon : CalendarClockIcon" class="text-primary-text size-6" />
+    <div class="bg-muted mb-4 flex size-12 items-center justify-center rounded-full">
+      <component :is="status === 'no-data' ? FlameIcon : CalendarClockIcon" class="text-muted-foreground size-6" />
     </div>
     <h2 class="text-foreground mb-2 text-lg font-semibold text-balance">
       {{ $t(`analytics.fire.empty.${variant}.title`, { n: monthsUsed }, monthsUsed) }}

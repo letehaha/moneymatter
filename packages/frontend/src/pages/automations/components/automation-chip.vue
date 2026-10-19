@@ -3,6 +3,7 @@ import { getMonogramTextColor } from '@/common/utils/monogram-color';
 import AccountLogo from '@/components/common/account-logo.vue';
 import BankConnectionLogo from '@/components/common/bank-connection-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import TagIcon from '@/components/common/icons/tag-icon.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
@@ -149,9 +150,7 @@ const tagStyle = computed(() => {
           <AccountLogo v-if="visual.type === 'account'" :account="visual.account" class="size-4" />
           <BrandLogo
             v-else-if="visual.type === 'payee'"
-            :domain="visual.payee.logoDomain"
-            :initials="visual.payee.logoInitials"
-            :color="visual.payee.logoColor"
+            v-bind="toEntityLogoDisplayProps(visual.payee)"
             :name="visual.payee.name"
             class="size-4 rounded-full"
           />

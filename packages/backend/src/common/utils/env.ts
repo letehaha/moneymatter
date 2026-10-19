@@ -67,3 +67,9 @@ export function isEnvConfigured(name: EnvVar, value: string | undefined): boolea
 
   return true;
 }
+
+// Playwright e2e runs against dev and preview backends; preview has NODE_ENV=production, hence the flag.
+export const isTestSeedingEnabled = (): boolean =>
+  process.env.NODE_ENV === 'test' ||
+  process.env.NODE_ENV === 'development' ||
+  process.env.ENABLE_TEST_SEEDING_ENDPOINTS === 'true';

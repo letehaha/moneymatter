@@ -353,7 +353,7 @@
           "loadFailed": "Dostupné účty sa nepodarilo načítať. Skúste to znova, prosím.",
           "noAdditionalAccounts": "Nie sú dostupné žiadne ďalšie účty na pripojenie.",
           "connectSelectedButton": "Pripojiť vybrané účty ({count})",
-          "selectAccountsButton": "Vybrať účty",
+          "selectAccountsButton": "Vyberte účty",
           "alreadyConnected": "Už pripojené",
           "creditLimitMeta": "Limit {amount}"
         },

@@ -31,7 +31,8 @@ function boundedText({ value, field, maxLength }: { value: string | undefined; f
   if (value && value.length > maxLength) {
     throw new OfxParseError({
       code: 'text-too-long',
-      message: `The OFX ${field} value exceeds ${maxLength} characters.`,
+      key: 'ofxImport.errors.textTooLong',
+      params: { field, max: maxLength },
     });
   }
   return value;
@@ -87,10 +88,7 @@ function collectStatements({ ofx }: { ofx: Node }): RawStatement[] {
   }
 
   if (statements.length === 0) {
-    throw new OfxParseError({
-      code: 'unsupported-message-set',
-      message: 'The file has no supported bank or credit-card statements.',
-    });
+    throw new OfxParseError({ code: 'unsupported-message-set', key: 'ofxImport.errors.unsupportedMessageSet' });
   }
   return statements;
 }
@@ -98,9 +96,14 @@ function collectStatements({ ofx }: { ofx: Node }): RawStatement[] {
 function accountIdentity({ fi, statement }: { fi: { fid?: string; org?: string }; statement: RawStatement }) {
   const accountTag = statement.type === 'bank' ? 'BANKACCTFROM' : 'CCACCTFROM';
   const account = objectValue({ value: statement.node[accountTag] });
-  if (!account) throw new OfxParseError({ code: 'missing-account', message: `The ${accountTag} section is missing.` });
+  if (!account)
+    throw new OfxParseError({
+      code: 'missing-account',
+      key: 'ofxImport.errors.missingAccount',
+      params: { tag: accountTag },
+    });
   const accountId = stringValue({ node: account, key: 'ACCTID' });
-  if (!accountId) throw new OfxParseError({ code: 'missing-account-id', message: 'The source account ID is missing.' });
+  if (!accountId) throw new OfxParseError({ code: 'missing-account-id', key: 'ofxImport.errors.missingAccountId' });
   return {
     accountId,
     accountType:
@@ -144,14 +147,13 @@ function mapTransaction({
   timezone?: string;
 }): OfxParseTransaction {
   if (stringValue({ node: raw, key: 'CORRECTFITID' }) || stringValue({ node: raw, key: 'CORRECTACTION' })) {
-    throw new OfxParseError({ code: 'correction-record', message: 'OFX correction records are not supported.' });
+    throw new OfxParseError({ code: 'correction-record', key: 'ofxImport.errors.correctionRecord' });
   }
   const amountText = stringValue({ node: raw, key: 'TRNAMT' });
-  if (!amountText)
-    throw new OfxParseError({ code: 'missing-amount', message: 'An OFX transaction amount is missing.' });
+  if (!amountText) throw new OfxParseError({ code: 'missing-amount', key: 'ofxImport.errors.missingAmount' });
   const amount = parseOfxAmount({ value: amountText });
   const dateText = stringValue({ node: raw, key: 'DTPOSTED' }) ?? stringValue({ node: raw, key: 'DTUSER' });
-  if (!dateText) throw new OfxParseError({ code: 'missing-date', message: 'An OFX transaction date is missing.' });
+  if (!dateText) throw new OfxParseError({ code: 'missing-date', key: 'ofxImport.errors.missingDate' });
   if (!stringValue({ node: raw, key: 'DTPOSTED' })) {
     warnings.set('date-user-fallback', (warnings.get('date-user-fallback') ?? 0) + 1);
   }
@@ -193,12 +195,6 @@ function mapTransaction({
   };
 }
 
-function warningMessage({ code }: { code: OfxParseWarning['code'] }): string {
-  if (code === 'date-user-fallback') return 'DTUSER was used because DTPOSTED was missing.';
-  if (code === 'fitid-duplicate') return 'Duplicate identical FITID records were collapsed.';
-  return 'Some transactions have no FITID and will use fallback duplicate detection.';
-}
-
 export function mapOfxDocument({
   document,
   formatVersion,
@@ -209,7 +205,7 @@ export function mapOfxDocument({
   timezone?: string;
 }): OfxParseResult {
   const ofx = objectValue({ value: document.OFX });
-  if (!ofx) throw new OfxParseError({ code: 'missing-root', message: 'The OFX root element is missing.' });
+  if (!ofx) throw new OfxParseError({ code: 'missing-root', key: 'ofxImport.errors.missingRoot' });
   const fi = getFinancialInstitution({ ofx });
   const statements = collectStatements({ ofx });
   const warnings = new Map<OfxParseWarning['code'], number>();
@@ -223,7 +219,7 @@ export function mapOfxDocument({
     const identity = accountIdentity({ fi, statement });
     const currency = stringValue({ node: statement.node, key: 'CURDEF' })?.toUpperCase();
     if (!currency || !/^[A-Z]{3}$/.test(currency)) {
-      throw new OfxParseError({ code: 'invalid-currency', message: 'The statement currency is missing or invalid.' });
+      throw new OfxParseError({ code: 'invalid-currency', key: 'ofxImport.errors.invalidCurrency' });
     }
     const transactionList = objectValue({ value: statement.node.BANKTRANLIST });
     const rawTransactions = arrayValue({ value: transactionList?.STMTTRN })
@@ -237,7 +233,8 @@ export function mapOfxDocument({
       if (transactions.length + accountTransactions.length >= OFX_MAX_ROWS) {
         throw new OfxParseError({
           code: 'row-limit',
-          message: `The OFX file has more than ${OFX_MAX_ROWS} transactions.`,
+          key: 'ofxImport.errors.rowLimit',
+          params: { max: OFX_MAX_ROWS },
         });
       }
       const fitId = stringValue({ node: raw, key: 'FITID' });
@@ -248,11 +245,7 @@ export function mapOfxDocument({
           warnings.set('fitid-duplicate', (warnings.get('fitid-duplicate') ?? 0) + 1);
           continue;
         }
-        if (previous)
-          throw new OfxParseError({
-            code: 'conflicting-fitid',
-            message: 'A repeated FITID has conflicting transaction data.',
-          });
+        if (previous) throw new OfxParseError({ code: 'conflicting-fitid', key: 'ofxImport.errors.conflictingFitid' });
         seenFitIds.set(fitId, signature);
       }
       const mapped = mapTransaction({ accountIdentityValue: identity, fi, raw, rowIndex, warnings, timezone });
@@ -263,7 +256,7 @@ export function mapOfxDocument({
     transactions.push(...accountTransactions);
 
     const lastFour = identity.accountId.slice(-4);
-    const baseDisplayName = `${statement.type === 'credit-card' ? 'Credit card' : identity.accountType} ••••${lastFour}`;
+    const baseDisplayName = `${identity.accountType} ••••${lastFour}`;
     const collision = (usedNames.get(baseDisplayName) ?? 0) + 1;
     usedNames.set(baseDisplayName, collision);
     const ledger = objectValue({ value: statement.node.LEDGERBAL });
@@ -290,6 +283,6 @@ export function mapOfxDocument({
     financialInstitutionName: fi.name ?? null,
     formatVersion,
     transactions,
-    warnings: [...warnings.entries()].map(([code, count]) => ({ code, count, message: warningMessage({ code }) })),
+    warnings: [...warnings.entries()].map(([code, count]) => ({ code, count })),
   };
 }

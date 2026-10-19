@@ -16,6 +16,8 @@ export const NOTIFICATION_TYPES = {
   plannedConfirmed: 'planned_confirmed',
   /** Enable Banking rows still pending after a week; the user should check them with the bank. */
   stuckPending: 'stuck_pending',
+  /** A smart tracking scan linked or suggested transactions for a tracker. */
+  trackerAiMatches: 'tracker_ai_matches',
   shareInvitationReceived: 'share_invitation_received',
   shareInvitationSendFailed: 'share_invitation_send_failed',
   shareAccepted: 'share_accepted',
@@ -115,6 +117,13 @@ export interface TagReminderNotificationPayload {
   transactionIds?: string[];
 }
 
+export interface TrackerAiMatchesNotificationPayload {
+  budgetId: RecordId;
+  budgetName: string;
+  linkedCount: number;
+  suggestedCount: number;
+}
+
 export interface StuckPendingNotificationPayload {
   transactionIds: RecordId[];
 }
@@ -188,6 +197,7 @@ export type NotificationPayload =
   | ChangelogNotificationPayload
   | TagReminderNotificationPayload
   | StuckPendingNotificationPayload
+  | TrackerAiMatchesNotificationPayload
   | ShareInvitationNotificationPayload
   | ShareLifecycleNotificationPayload
   | ShareInvitationSendFailedPayload

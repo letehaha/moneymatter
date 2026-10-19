@@ -1,7 +1,8 @@
 import { ApiBaseError } from '@/common/types';
+import { i18n } from '@/i18n';
 
 /**
- * Authorization error.
+ * Authorization error. The message is user-facing; the server detail stays on `data` and `url`.
  *
  * @class
  */
@@ -10,10 +11,7 @@ export class AuthError extends Error {
   url?: string;
 
   constructor(data: ApiBaseError, url?: string) {
-    const code = data?.code ?? 'unknown';
-    const detail = data?.message ?? data?.statusText ?? 'no detail';
-    const where = url ? ` @ ${url}` : '';
-    super(`[${code}] ${detail}${where}`);
+    super(i18n.global.t('errors.api.sessionExpired'));
 
     this.name = 'AuthError';
     this.data = data;

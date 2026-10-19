@@ -43,8 +43,8 @@ git log <latest-tag>..HEAD --oneline
 # Non-merge commits only — these are the primary source of truth for understanding changes
 git log <latest-tag>..HEAD --oneline --no-merges
 
-# Merged PRs with URLs (needed for the Code Changes section)
-gh pr list --state merged --base dev --limit 30 --json number,title,url | jq -r '.[] | "#\(.number) \(.title) \(.url)"'
+# Merged PRs with authors and URLs (needed for the Code Changes section)
+gh pr list --state merged --base dev --limit 30 --json number,title,url,author,mergedAt | jq -r '.[] | "#\(.number) @\(.author.login) \(.mergedAt) \(.title) \(.url)"'
 ```
 
 Feature and fix PRs are merged into `dev`; the only PR with `--base main` is the
@@ -79,6 +79,26 @@ Categorize by commit prefix:
 - `refactor:` / `chore:` commits = internal improvements
 
 For `fix:` commits, the priority chain above is **not enough** — it tells you what was changed, not who the bug hit. Before writing the fix line, also check the linked issue (`gh issue view <n>`, often referenced as "Closes #N" in the PR body) and, when the condition is still unclear, read the actual call site to see when the broken path was taken. See the bug-fix scope rule under Format rules — a fix line that can't name the affected flow and condition isn't ready to ship.
+
+#### Collect credits (mandatory)
+
+Releases regularly include work from other people. Never assume a PR is by `@letehaha`; build the credit list from data:
+
+1. **PR authors**: take `@author` from the Step 2 PR list for every PR. That login goes in its Code Changes line.
+2. **First-time contributors**: for every author other than `letehaha`, check whether a PR of theirs was merged before this release:
+   ```bash
+   gh pr list --state merged --author <login> --limit 100 --json number,mergedAt --jq 'sort_by(.mergedAt)|.[0]|"#\(.number) \(.mergedAt)"'
+   ```
+   If their earliest merged PR is in this release, list them under `## New Contributors` with that PR.
+3. **Bug reporters**: every issue or discussion referenced by a PR body or a commit message ("Closes #N", "Fixes #N", "Refs discussion #N") has a reporter. This includes commits pushed to `dev` without a PR. Find each reporter:
+   ```bash
+   git log <latest-tag>..HEAD --no-merges --format='%h %B' | grep -iE '#[0-9]+'
+   gh issue view <n> --json author --jq .author.login
+   gh api graphql -f query='{repository(owner:"letehaha",name:"moneymatter"){discussion(number:<n>){author{login}}}}' --jq .data.repository.discussion.author.login
+   ```
+   Skip `letehaha`. Thank everyone else at the end of the matching fix or feature line: `Thanks to @<login> for the report.`
+
+Present this credit list to the user next to the notes (Step 8), so a missing name is easy to spot.
 
 Group changes into these categories (skip empty ones):
 
@@ -117,8 +137,12 @@ Follow the **exact format** observed from recent releases. The format is:
 
 ### Code Changes
 
-- [commit type]: [PR title] by @letehaha in [PR URL]
+- [commit type]: [PR title] by @<pr-author-login> in [PR URL]
 - [repeat for each PR]
+
+## New Contributors
+
+- @<login> made their first contribution in [first PR URL]
 
 **Full Changelog**: https://github.com/letehaha/moneymatter/compare/<previous-tag>...<new-tag>
 ```
@@ -164,7 +188,9 @@ Follow the **exact format** observed from recent releases. The format is:
 - **Release title selection**: The title should highlight the **biggest user-facing feature(s)**, not dev/infrastructure work. Never put dev-oriented features (like "AI discoverability," ".well-known endpoints," "OAuth metadata," "MCP server card") in the title unless that _is_ the headline release. Prefer user-visible features in the title: new UI, new workflows, new user-visible AI capabilities (e.g., categorization, tools the user interacts with).
 - **When multiple related features fall under the same theme, use an umbrella phrase** in the title instead of naming just one. Example: if a release ships custom AI categorization _and_ investments MCP tools _and_ AI discoverability, the title should say "improved AI workflows" (covers all three) rather than "smarter AI categorization" (covers only one, undersells the rest). Umbrella phrases also scale better when contents shift late in the release cycle.
 - If there's a single dominant feature, it can be the main section title (see v0.10.6 "Walutomat Integration" as reference)
-- The "Code Changes" section lists all PRs with links
+- The "Code Changes" section lists all PRs with links, each credited to its real author from the credits list (never a hardcoded `@letehaha`)
+- Include `## New Contributors` only when someone made their first contribution in this release
+- Fix and feature lines that came from an outside report end with `Thanks to @<login> for the report.`
 - Always end with the Full Changelog compare link
 - Skip `chore:` commits from feature descriptions (but still list in Code Changes)
 
@@ -205,7 +231,7 @@ Examples from past releases:
 
 ### Step 8: Present to User
 
-Output the release text as a markdown code block so the user can copy it directly. Also state the suggested release title separately.
+Output the release text as a markdown code block so the user can copy it directly. Also state the suggested release title separately, and list the credits from Step 3 (PR authors other than `letehaha`, new contributors, reporters thanked).
 
 Remind the user that the `packages/frontend/package.json` version bump from Step 4 must be committed to the `Release vX.Y.Z` PR before it merges.
 

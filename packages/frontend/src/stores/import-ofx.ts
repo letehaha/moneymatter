@@ -28,7 +28,7 @@ import { useQueryClient } from '@tanstack/vue-query';
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-export type OfxImportStepKey = 'upload' | 'resolve' | 'review' | 'results';
+type OfxImportStepKey = 'upload' | 'resolve' | 'review' | 'results';
 
 const OFX_STEP_KEYS: readonly OfxImportStepKey[] = ['upload', 'resolve', 'review', 'results'];
 

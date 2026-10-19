@@ -67,6 +67,10 @@
           "transfersImported": "Giao dịch chuyển khoản đã nhập",
           "splitsDetected": "Nhóm giao dịch đã phát hiện",
           "errorsTitle": "{count} dòng không nhập được",
+          "errors": {
+            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"
         }

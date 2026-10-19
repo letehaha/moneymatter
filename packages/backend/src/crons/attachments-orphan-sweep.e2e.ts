@@ -2,6 +2,7 @@ import type { RecordId } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { attachmentsOrphanSweepCron } from '@root/crons/attachments-orphan-sweep';
 import { deleteObject, listObjects, putObject, storageKey } from '@services/attachments/storage';
+import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { v7 as uuidv7 } from 'uuid';
 
@@ -41,6 +42,16 @@ describe('Attachments orphan sweep', () => {
 
     expect(result).toEqual({ deleted: 1, scanned: 2 });
     expect(await storedIds()).toEqual([live.attachmentId]);
+  });
+
+  it('deletes a logo image blob no row references and keeps a referenced one', async () => {
+    const tracker = await helpers.createCustomBudget({ name: 'Logo', logoImage: PNG_1X1_DATA_URL, raw: true });
+    await putObject({ key: `logos/${uuidv7()}`, body: PNG_BYTES, contentType: 'image/png' });
+
+    const result = await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 });
+
+    expect(result).toEqual({ deleted: 1, scanned: 2 });
+    expect(await storedIds()).toEqual([tracker.logoImageId]);
   });
 
   it('leaves a fresh orphan alone under the default minimum age', async () => {

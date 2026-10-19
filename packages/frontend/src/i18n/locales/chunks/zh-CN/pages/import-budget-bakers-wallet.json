@@ -73,6 +73,11 @@
           "duplicatesSkipped": "Duplicates skipped",
           "errorsTitle": "{count} row(s) failed | {count} row failed | {count} rows failed",
           "errorsOverflow": "+{count} more",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
+            "accountBalanceDesync": "An account balance could not be updated after the import and may be incorrect."
+          },
           "balanceWarningTitle": "Some account balances may be incorrect",
           "balanceWarningBody": "We couldn't reset the balance on one or more existing accounts after import. Review the affected accounts.",
           "viewTransactions": "View transactions",
@@ -127,6 +132,9 @@
           "back": "Back",
           "importButton": "Import {count} transactions",
           "importing": "Importing…"
+        },
+        "errors": {
+          "fileMissing": "No file loaded. Please upload your Wallet export again."
         }
       }
     }

@@ -40,6 +40,7 @@
 
 <script setup lang="ts">
 import { Callout } from '@/components/lib/ui/callout';
+import { importJobFailureMessage } from '@/pages/import-export/utils/import-error-message';
 import { useImportExportStore } from '@/stores/import-export';
 import type { CsvImportProgress } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
@@ -70,10 +71,9 @@ const progressPercent = computed(() => {
 
 const statusLabel = computed(() => (progress.value ? t(STATUS_LABEL_KEYS[progress.value.status]) : ''));
 
-/** null when the job hasn't failed; the server's error string when it has.
- *  Narrows the discriminated union once so the template doesn't have to. */
+/** null when the job hasn't failed; the translated failure detail when it has, empty for an unknown cause. */
 const failureMessage = computed<string | null>(() => {
   if (progress.value?.status !== 'failed') return null;
-  return progress.value.error ?? '';
+  return importJobFailureMessage({ failure: progress.value.failure, t }) ?? '';
 });
 </script>

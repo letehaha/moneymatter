@@ -3,6 +3,7 @@
  * Types for AI-powered bank statement extraction from PDF, CSV, TXT and image files
  */
 import type { Decimal } from '../money';
+import type { ImportJobFailure } from './core';
 
 /** The base64 of an image must stay under the AI provider's 5MB limit. */
 export const STATEMENT_IMAGE_MAX_BYTES = Math.floor((5 * 1024 * 1024 * 3) / 4);
@@ -247,11 +248,27 @@ export interface StatementExecuteImportRequest {
 }
 
 /**
+ * Why one row was not imported. The import runs in a worker with no request
+ * locale, so the client renders the text from `code` and `params`.
+ */
+export type StatementImportErrorCode =
+  /** params: date */
+  | 'INVALID_DATE'
+  /** params: date */
+  | 'FUTURE_DATE'
+  /** params: amount */
+  | 'AMOUNT_NOT_POSITIVE'
+  /** params: amount, max */
+  | 'AMOUNT_TOO_LARGE'
+  | 'ROW_FAILED';
+
+/**
  * Import error for a specific transaction
  */
 export interface StatementImportError {
   transactionIndex: number;
-  error: string;
+  code: StatementImportErrorCode;
+  params?: Record<string, string | number>;
 }
 
 /**
@@ -297,7 +314,7 @@ interface StatementImportProgressBase {
 export type StatementImportProgress =
   | (StatementImportProgressBase & { status: 'queued' | 'running' })
   | (StatementImportProgressBase & { status: 'completed'; summary: StatementImportSummary })
-  | (StatementImportProgressBase & { status: 'failed'; error: string });
+  | (StatementImportProgressBase & { status: 'failed'; error: string; failure?: ImportJobFailure });
 
 // Re-export old names for backward compatibility during migration
 // TODO: Remove these after full migration

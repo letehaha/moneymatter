@@ -7,10 +7,13 @@ import { storeToRefs } from 'pinia';
 import { type InjectionKey, computed, inject, provide } from 'vue';
 
 /** Everything a chip needs to render a referenced row: its name plus whatever drives its avatar. */
-export type AutomationRefVisual = { name: string } & (
+type AutomationRefVisual = { name: string } & (
   | {
       type: 'account';
-      account: Pick<AccountModel, 'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'accountCategory'>;
+      account: Pick<
+        AccountModel,
+        'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'logoIcon' | 'logoImageId' | 'accountCategory'
+      >;
     }
   | { type: 'payee'; payee: PayeeLookupItem }
   | { type: 'category'; categoryId: RecordId }
@@ -20,7 +23,7 @@ export type AutomationRefVisual = { name: string } & (
 );
 
 /** Resolves the ids stored inside a rule's JSONB to display names; `undefined` means the row is gone. */
-export const useAutomationRefs = () => {
+const useAutomationRefs = () => {
   const { categoriesMap, isFetched: isCategoriesFetched } = storeToRefs(useCategoriesStore());
   const { tagsMap, isFetched: isTagsFetched } = storeToRefs(useTagsStore());
   const { accountsRecord, isAccountsFetched } = storeToRefs(useAccountsStore());

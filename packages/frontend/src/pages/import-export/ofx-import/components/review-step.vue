@@ -65,7 +65,6 @@ async function handleImport() {
         <ul class="mt-2 list-disc pl-5 text-xs">
           <li v-for="warning in store.parsedResult.warnings" :key="warning.code">
             {{ $t(warningKeys[warning.code], { count: warning.count }) }}
-            <span class="text-muted-foreground">{{ warning.message }}</span>
           </li>
         </ul></Callout
       >

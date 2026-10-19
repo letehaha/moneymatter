@@ -121,7 +121,7 @@ import { Callout } from '@/components/lib/ui/callout';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';
-import { OAuthProviderNotConfiguredError } from '@/js/errors';
+import { OAuthProviderNotConfiguredError, getAuthErrorMessage } from '@/js/errors';
 import { email, required } from '@/js/helpers/validators';
 import { getLastLoginMethod } from '@/lib/last-login-method';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -139,12 +139,12 @@ const { login, loginWithOAuth, loginWithPasskey } = authStore;
 const { addErrorNotification } = useNotificationCenter();
 const { t } = useI18n();
 
-// Map better-auth error codes to user-friendly messages
-const BETTER_AUTH_ERROR_MESSAGES: Record<string, string> = {
-  INVALID_EMAIL_OR_PASSWORD: t('auth.login.errors.incorrectEmailOrPassword'),
-  INVALID_PASSWORD: t('auth.login.errors.incorrectPassword'),
-  USER_NOT_FOUND: t('auth.login.errors.userNotFound'),
-  EMAIL_NOT_VERIFIED: t('auth.login.errors.emailNotVerified'),
+const LOGIN_ERROR_KEYS: Record<string, string> = {
+  INVALID_EMAIL_OR_PASSWORD: 'auth.login.errors.incorrectEmailOrPassword',
+  INVALID_EMAIL: 'validation.emailInvalid',
+  INVALID_PASSWORD: 'auth.login.errors.incorrectPassword',
+  USER_NOT_FOUND: 'auth.login.errors.userNotFound',
+  EMAIL_NOT_VERIFIED: 'auth.login.errors.emailNotVerified',
 };
 
 const form = ref({
@@ -235,18 +235,12 @@ const submit = async () => {
     isFormLoading.value = true;
     await login({ email: userEmail, password });
     navigateAfterLogin();
-  } catch (e) {
-    const error = e as Error;
-
-    // Check for better-auth error codes
-    for (const [code, message] of Object.entries(BETTER_AUTH_ERROR_MESSAGES)) {
-      if (error.message?.includes(code)) {
-        formError.value = message;
-        return;
-      }
-    }
-
-    formError.value = error.message || t('auth.login.errors.genericErrorRetry');
+  } catch (error) {
+    formError.value = await getAuthErrorMessage({
+      error,
+      codeKeys: LOGIN_ERROR_KEYS,
+      fallbackKey: 'auth.login.errors.genericErrorRetry',
+    });
   } finally {
     isFormLoading.value = false;
   }
@@ -260,7 +254,11 @@ const handleOAuthLogin = async ({ provider }: { provider: OAUTH_PROVIDER }) => {
     addErrorNotification(
       error instanceof OAuthProviderNotConfiguredError
         ? t('auth.login.errors.oauthNotConfigured', { provider: OAUTH_PROVIDER_NAMES[provider] })
-        : t('auth.login.errors.oauthFailed', { provider }),
+        : await getAuthErrorMessage({
+            error,
+            fallbackKey: 'auth.login.errors.oauthFailed',
+            params: { provider: OAUTH_PROVIDER_NAMES[provider] },
+          }),
     );
   } finally {
     isOAuthLoading.value = false;
@@ -272,8 +270,8 @@ const handlePasskeyLogin = async () => {
     isPasskeyLoading.value = true;
     await loginWithPasskey();
     navigateAfterLogin();
-  } catch {
-    addErrorNotification(t('auth.login.errors.passkeyFailed'));
+  } catch (error) {
+    addErrorNotification(await getAuthErrorMessage({ error, fallbackKey: 'auth.login.errors.passkeyFailed' }));
   } finally {
     isPasskeyLoading.value = false;
   }

@@ -132,6 +132,18 @@
             <span class="text-sm tracking-wider whitespace-nowrap">
               {{ category ? category.name : t('common.ui.other') }}
             </span>
+            <ResponsiveTooltip v-if="aiMatchReason" content-class-name="max-w-64" :delay-duration="100">
+              <template #content>
+                <p class="font-medium">{{ $t('common.transactions.record.matchedByAi') }}</p>
+                <p class="text-muted-foreground">{{ aiMatchReason }}</p>
+              </template>
+              <SparklesIcon
+                class="text-primary-text size-3.5 shrink-0 cursor-help"
+                role="img"
+                :aria-label="$t('common.transactions.record.matchedByAi')"
+                @click="isTouch && $event.stopPropagation()"
+              />
+            </ResponsiveTooltip>
             <ResponsiveTooltip
               v-if="addedByTooltip"
               :content="addedByTooltip"
@@ -142,7 +154,7 @@
             </ResponsiveTooltip>
             <PlannedIndicator v-if="!(hidePlannedMarker && transaction.isPlanned)" :transaction="transaction" />
             <SplitIndicator :transaction="transaction" />
-            <RefundIndicator :transaction="transaction" />
+            <RefundIndicator v-if="!hideRefundMarker" :transaction="transaction" />
             <TagsIndicator :tags="transaction.tags ?? []" :variant="tagsVariant" />
             <AttachmentIndicator :transaction="transaction" />
             <ResponsiveTooltip
@@ -259,6 +271,7 @@ import {
   HandCoinsIcon,
   MapPinIcon,
   RocketIcon,
+  SparklesIcon,
   UsersIcon,
 } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
@@ -291,9 +304,12 @@ const props = withDefaults(
     compact?: boolean;
     /** Set where planned rows already sit under their own collapsible header. */
     hidePlannedMarker?: boolean;
+    hideRefundMarker?: boolean;
     tagsVariant?: TagsIndicatorVariant;
     /** Badges the category circle with the account logo, so it applies to category-circle rows only. */
     showAccount?: boolean;
+    /** Marks a row smart tracking linked; the reason shows in its tooltip. */
+    aiMatchReason?: string;
   }>(),
   {
     asButton: true,

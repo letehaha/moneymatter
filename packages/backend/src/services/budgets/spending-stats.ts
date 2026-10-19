@@ -1,17 +1,21 @@
-import type { RecordId } from '@bt/shared/types';
+import type { BudgetSpendingGranularity, EntityLogoFields, RecordId } from '@bt/shared/types';
 import { BUDGET_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
 import Budgets from '@models/budget.model';
 import Categories from '@models/categories.model';
+import Payees from '@models/payees.model';
 import TransactionSplits from '@models/transaction-splits.model';
 import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
 import * as Transactions from '@models/transactions.model';
+import { EMPTY_LOGO_FIELDS, serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import { statsTransactions } from '@services/stats/stats-transactions';
 import {
+  addDays,
   addMonths,
   addWeeks,
+  differenceInCalendarDays,
   endOfDay,
   endOfMonth,
   endOfWeek,
@@ -19,6 +23,7 @@ import {
   isBefore,
   max,
   min,
+  startOfDay,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
@@ -27,6 +32,7 @@ import { Op } from 'sequelize';
 import { authorizeBudgetRead } from './authorize-budget-access';
 import { buildDateFilter } from './utils/build-date-filter';
 import { type BudgetRefundPair, fetchBudgetRefundPairs } from './utils/refund-pairs';
+import { OTHER_CATEGORY_ID, buildSharedBudgetMergeMap } from './utils/shared-category-merge-map';
 
 interface CategoryInfo {
   id: RecordId;
@@ -55,17 +61,40 @@ interface SpendingPeriod {
   income: number; // cents, positive
 }
 
-interface SpendingStatsResponse {
-  spendingsByCategory: SpendingByCategoryItem[];
-  spendingOverTime: {
-    granularity: 'monthly' | 'weekly';
-    periods: SpendingPeriod[];
-  };
+interface SpendingByCurrencyItem {
+  currencyCode: string;
+  amount: number; // cents in currencyCode, positive
+  refAmount: number; // cents, positive
 }
 
-type Granularity = 'monthly' | 'weekly';
+interface SpendingPayeeItem extends EntityLogoFields {
+  payeeId: RecordId | null;
+  name: string | null;
+  amount: number; // cents, positive
+  transactionsCount: number;
+}
+
+export interface SpendingStatsResponse {
+  spendingsByCategory: SpendingByCategoryItem[];
+  spendingOverTime: {
+    granularity: Granularity;
+    periods: SpendingPeriod[];
+  };
+  spendingsByCurrency: SpendingByCurrencyItem[];
+  topPayees: SpendingPayeeItem[];
+  biggestDay: { date: string; expense: number } | null; // cents
+}
+
+type Granularity = BudgetSpendingGranularity;
+
+const TOP_PAYEES_LIMIT = 5;
 
 const PERIOD_CONFIG = {
+  daily: {
+    getStart: (date: Date) => startOfDay(date),
+    getEnd: (date: Date) => endOfDay(date),
+    advance: (date: Date) => addDays(date, 1),
+  },
   monthly: {
     getStart: (date: Date) => startOfMonth(date),
     getEnd: (date: Date) => endOfMonth(date),
@@ -162,10 +191,11 @@ const getTopLevelTargetCategoryId = ({
   return topLevel;
 };
 
+// 184 is the longest six calendar months (e.g. Jul–Dec), so every half-year tracker stays weekly.
 const determineGranularity = ({ from, to }: { from: Date; to: Date }): Granularity => {
-  const diffMs = to.getTime() - from.getTime();
-  const diffDays = diffMs / (1000 * 60 * 60 * 24);
-  return diffDays <= 60 ? 'weekly' : 'monthly';
+  const days = differenceInCalendarDays(to, from) + 1;
+  if (days <= 62) return 'daily';
+  return days <= 184 ? 'weekly' : 'monthly';
 };
 
 const getEmptyResponse = (): SpendingStatsResponse => ({
@@ -174,6 +204,9 @@ const getEmptyResponse = (): SpendingStatsResponse => ({
     granularity: 'monthly',
     periods: [],
   },
+  spendingsByCurrency: [],
+  topPayees: [],
+  biggestDay: null,
 });
 
 const buildCategoryMap = ({
@@ -258,8 +291,13 @@ const buildSpendingsByCategory = ({
 };
 
 interface NormalizedTxData {
+  transactionId: string;
   time: Date;
   amount: number; // cents
+  /** Cents in `currencyCode`. Absent on refund adjustments. */
+  nativeAmount?: number;
+  currencyCode?: string;
+  payeeId?: RecordId | null;
   isExpense: boolean;
   categoryId: RecordId | null; // aggregation target (root or top-level target), null = skip category aggregation
   originalCategoryId: RecordId | null; // the actual leaf category
@@ -286,7 +324,66 @@ const determineDateRange = ({
   };
 };
 
-const aggregateTransactionData = ({
+const buildSpendingsByCurrency = ({ txDataList }: { txDataList: NormalizedTxData[] }): SpendingByCurrencyItem[] => {
+  const byCurrency = new Map<string, SpendingByCurrencyItem>();
+  for (const txData of txDataList) {
+    if (!txData.isExpense || txData.negative || !txData.currencyCode) continue;
+    const entry = byCurrency.get(txData.currencyCode) ?? { currencyCode: txData.currencyCode, amount: 0, refAmount: 0 };
+    entry.amount += txData.nativeAmount ?? 0;
+    entry.refAmount += txData.amount;
+    byCurrency.set(txData.currencyCode, entry);
+  }
+  return [...byCurrency.values()].toSorted((a, b) => b.refAmount - a.refAmount);
+};
+
+const buildTopPayees = async ({ txDataList }: { txDataList: NormalizedTxData[] }): Promise<SpendingPayeeItem[]> => {
+  const byPayee = new Map<RecordId | null, { amount: number; transactionIds: Set<string> }>();
+  for (const txData of txDataList) {
+    if (!txData.isExpense || txData.negative || txData.payeeId === undefined) continue;
+    const entry = byPayee.get(txData.payeeId) ?? { amount: 0, transactionIds: new Set<string>() };
+    entry.amount += txData.amount;
+    entry.transactionIds.add(txData.transactionId);
+    byPayee.set(txData.payeeId, entry);
+  }
+
+  const top = [...byPayee.entries()].toSorted((a, b) => b[1].amount - a[1].amount).slice(0, TOP_PAYEES_LIMIT);
+  const payeeIds = top.map(([payeeId]) => payeeId).filter((id): id is RecordId => id !== null);
+  const payees = payeeIds.length
+    ? await Payees.findAll({
+        where: { id: { [Op.in]: payeeIds } },
+        attributes: ['id', 'name', 'logoDomain', 'logoInitials', 'logoColor', 'logoIcon', 'logoImageId'],
+      })
+    : [];
+  const payeeById = new Map(payees.map((payee) => [payee.id, payee]));
+
+  return top.map(([payeeId, entry]) => {
+    const payee = payeeId === null ? undefined : payeeById.get(payeeId);
+    return {
+      payeeId,
+      name: payee?.name ?? null,
+      ...serializeLogoFields({ entity: payee ?? EMPTY_LOGO_FIELDS }),
+      amount: entry.amount,
+      transactionsCount: entry.transactionIds.size,
+    };
+  });
+};
+
+const findBiggestDay = ({ txDataList }: { txDataList: NormalizedTxData[] }): SpendingStatsResponse['biggestDay'] => {
+  const expenseByDay = new Map<string, number>();
+  for (const txData of txDataList) {
+    if (!txData.isExpense) continue;
+    const day = format(txData.time, 'yyyy-MM-dd');
+    expenseByDay.set(day, (expenseByDay.get(day) ?? 0) + (txData.negative ? -txData.amount : txData.amount));
+  }
+
+  let biggest: SpendingStatsResponse['biggestDay'] = null;
+  for (const [date, expense] of expenseByDay) {
+    if (expense > 0 && (!biggest || expense > biggest.expense)) biggest = { date, expense };
+  }
+  return biggest;
+};
+
+const aggregateTransactionData = async ({
   txDataList,
   budgetStartDate,
   budgetEndDate,
@@ -296,7 +393,7 @@ const aggregateTransactionData = ({
   budgetStartDate: Date | null;
   budgetEndDate: Date | null;
   categoryMap: Map<string, CategoryInfo>;
-}): SpendingStatsResponse => {
+}): Promise<SpendingStatsResponse> => {
   const { from: rangeFrom, to: rangeTo } = determineDateRange({
     budgetStartDate,
     budgetEndDate,
@@ -350,6 +447,10 @@ const aggregateTransactionData = ({
   return {
     spendingsByCategory: buildSpendingsByCategory({ categoryAmounts, categoryMap }),
     spendingOverTime: buildSpendingOverTime({ buckets, granularity, periodData }),
+    // ponytail: refund pairs carry no currency/payee, so these two report gross spend; thread them through refund-pairs to net.
+    spendingsByCurrency: buildSpendingsByCurrency({ txDataList }),
+    topPayees: await buildTopPayees({ txDataList }),
+    biggestDay: findBiggestDay({ txDataList }),
   };
 };
 
@@ -382,6 +483,7 @@ const buildRefundAdjustments = ({
       const targetCategoryId = overrideCategoryId ?? tx.categoryId;
       const resolved = isExpense ? resolveCategoryBucket(targetCategoryId) : null;
       adjustments.push({
+        transactionId: tx.id,
         time: tx.time,
         amount: adjustmentAmount,
         isExpense,
@@ -397,58 +499,6 @@ const buildRefundAdjustments = ({
   }
 
   return adjustments;
-};
-
-/** Synthetic categoryId used to bucket recipients' null-key (custom) categories in the
- *  shared-budget spending breakdown. Owner-side customs stay as their own rows; only
- *  recipient-side null-key categories fold here, per the MVP decision (cross-user custom
- *  alignment is a deferred follow-up). Carries a unique non-UUID shape so it can't collide
- *  with a real `Categories.id`. Cast to `RecordId` so it slots into the existing maps
- *  without widening every signature to `string | RecordId`. */
-const OTHER_CATEGORY_ID = '__shared_budget_other__' as RecordId;
-
-/** Build a categoryId -> canonical categoryId map for shared-budget aggregation.
- *
- *  Strategy (per the "merge by Categories.key" decision):
- *    - Owner's category: maps to itself (no change).
- *    - Recipient's seeded category whose `key` matches an owner category: maps to the
- *      owner's matching id, so owner + recipient contributions land in the same bucket
- *      and the breakdown displays owner's name/color.
- *    - Recipient's seeded category whose `key` has no owner counterpart: maps to itself
- *      (rendered with the recipient's own name/color — uncommon since seeded keys are
- *      consistent across users by construction).
- *    - Recipient's null-key (custom) category: maps to `OTHER_CATEGORY_ID`. The breakdown
- *      shows a single "Other" row aggregating all such contributions.
- */
-const buildSharedBudgetMergeMap = ({
-  categories,
-  ownerUserId,
-}: {
-  categories: { id: RecordId; key: string | null; userId: number }[];
-  ownerUserId: number;
-}): Map<RecordId, RecordId> => {
-  const ownerKeyToId = new Map<string, RecordId>();
-  for (const cat of categories) {
-    if (cat.userId === ownerUserId && cat.key !== null) {
-      ownerKeyToId.set(cat.key, cat.id);
-    }
-  }
-
-  const mergeMap = new Map<RecordId, RecordId>();
-  for (const cat of categories) {
-    if (cat.userId === ownerUserId) {
-      mergeMap.set(cat.id, cat.id);
-    } else if (cat.key !== null && ownerKeyToId.has(cat.key)) {
-      mergeMap.set(cat.id, ownerKeyToId.get(cat.key)!);
-    } else if (cat.key === null) {
-      mergeMap.set(cat.id, OTHER_CATEGORY_ID);
-    } else {
-      // Recipient seeded category with a key the owner doesn't have — render under the
-      // recipient's own name/color rather than burying it in "Other".
-      mergeMap.set(cat.id, cat.id);
-    }
-  }
-  return mergeMap;
 };
 
 /**
@@ -482,7 +532,18 @@ const getManualBudgetSpendingStats = async ({
     planned: { visibleTo: callerUserId },
     access: 'pre-scoped',
     balanceAdjustments: 'include',
-    attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'refundLinked', 'userId'],
+    attributes: [
+      'id',
+      'time',
+      'amount',
+      'refAmount',
+      'currencyCode',
+      'payeeId',
+      'transactionType',
+      'categoryId',
+      'refundLinked',
+      'userId',
+    ],
   });
 
   if (transactions.length === 0) return getEmptyResponse();
@@ -532,8 +593,12 @@ const getManualBudgetSpendingStats = async ({
       ? canonicalize(getRootCategoryId({ categoryId: tx.categoryId, categoryMap }))
       : null;
     return {
+      transactionId: tx.id,
       time: tx.time,
       amount: tx.refAmount.toCents(),
+      nativeAmount: tx.amount.toCents(),
+      currencyCode: tx.currencyCode,
+      payeeId: tx.payeeId,
       isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
       categoryId: rootCatId,
       // Apply the merge map to the child id too — otherwise we'd render duplicate
@@ -638,7 +703,7 @@ const getCategoryBudgetSpendingStats = async ({
           transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
           ...dateFilter,
         },
-        attributes: ['id', 'time', 'transactionType', 'refundLinked'],
+        attributes: ['id', 'time', 'transactionType', 'refundLinked', 'currencyCode', 'payeeId'],
         include: [{ model: Accounts, where: { excludeFromStats: false }, attributes: [] }],
       }),
     ],
@@ -659,8 +724,12 @@ const getCategoryBudgetSpendingStats = async ({
     });
 
     txDataList.push({
+      transactionId: tx.id,
       time: tx.time,
       amount: tx.refAmount.toCents(),
+      nativeAmount: tx.amount.toCents(),
+      currencyCode: tx.currencyCode,
+      payeeId: tx.payeeId,
       isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
       categoryId: topLevelCatId,
       originalCategoryId: tx.categoryId!,
@@ -680,8 +749,12 @@ const getCategoryBudgetSpendingStats = async ({
     });
 
     txDataList.push({
+      transactionId: transaction.id,
       time: transaction.time,
       amount: split.refAmount.toCents(),
+      nativeAmount: split.amount.toCents(),
+      currencyCode: transaction.currencyCode,
+      payeeId: transaction.payeeId,
       isExpense: transaction.transactionType === TRANSACTION_TYPES.expense,
       categoryId: topLevelCatId,
       originalCategoryId: split.categoryId,

@@ -150,9 +150,11 @@ export interface RestoreBackupResult {
 export async function restoreBackup({
   fileContent,
   acknowledgeSharing,
+  headers,
 }: {
   fileContent: string;
   acknowledgeSharing?: boolean;
+  headers?: Record<string, string>;
 }): Promise<RestoreBackupResult> {
   const payload: Record<string, unknown> = { fileContent };
   if (acknowledgeSharing !== undefined) payload.acknowledgeSharing = acknowledgeSharing;
@@ -162,6 +164,7 @@ export async function restoreBackup({
       method: 'post',
       url: '/user/backup/restore',
       payload,
+      headers,
     },
   );
 

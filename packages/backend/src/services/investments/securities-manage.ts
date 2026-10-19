@@ -1,117 +1,110 @@
-import { SecuritySearchResult } from '@bt/shared/types/investments';
+import { SUPPORTED_ASSET_CLASSES, SecuritySearchResult } from '@bt/shared/types/investments';
+import { t } from '@i18n/index';
+import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Securities from '@models/investments/securities.model';
 import { withTransaction } from '@services/common/with-transaction';
 
-import { securityIdentityBatchWhere, securityIdentityKey } from './securities/identity';
+import { SecurityIdentity, securityIdentityBatchWhere, securityIdentityKey } from './securities/identity';
+import { getVerifiedSearchResults } from './securities/verified-search-cache';
 
-const addOrUpdateFromProviderImpl = async (
-  securitiesFromProvider: SecuritySearchResult[],
-): Promise<{ newCount: number }> => {
-  if (!securitiesFromProvider || securitiesFromProvider.length === 0) {
-    logger.info('No securities provided to sync. Aborting.');
-    return { newCount: 0 };
+const REFRESHABLE_FIELDS = [
+  'name',
+  'exchangeMic',
+  'exchangeAcronym',
+  'exchangeName',
+  'cryptoCurrencyCode',
+  'logoUrl',
+  'priceSourceSymbol',
+] as const;
+
+const findByIdentity = async ({ identities }: { identities: SecurityIdentity[] }) => {
+  const where = securityIdentityBatchWhere(identities);
+  const rows = where === null ? [] : await Securities.findAll({ where });
+  return new Map(rows.map((row) => [securityIdentityKey(row), row]));
+};
+
+const upsertSecuritiesFromSearchImpl = async ({
+  securities: incoming,
+}: {
+  securities: SecurityIdentity[];
+}): Promise<{ newCount: number; securities: Securities[] }> => {
+  if (incoming.length === 0) {
+    return { newCount: 0, securities: [] };
   }
 
-  // Look up potential existing matches in a single query. The where clause
-  // mixes a crypto branch (providerName + providerSymbol) and a non-crypto
-  // branch (symbol + currency) so the same logical security doesn't get a
-  // second row when an incoming search comes from a different provider.
-  const lookupWhere = securityIdentityBatchWhere(securitiesFromProvider);
+  // Securities rows are shared by every user and the incoming results come from request bodies,
+  // so request fields only pick the provider-returned copy remembered at search time; only that
+  // copy is ever written, and its identity decides which row is resolved.
+  const verifiedCopies = await getVerifiedSearchResults({ securities: incoming });
+  const identities: SecurityIdentity[] = incoming.map((sec, index) => verifiedCopies[index] ?? sec);
 
-  const existingSecurities =
-    lookupWhere === null
-      ? []
-      : await Securities.findAll({
-          where: lookupWhere,
-          attributes: ['id', 'providerName', 'providerSymbol', 'symbol', 'currencyCode', 'assetClass'],
-          raw: true,
-        });
+  const existingByKey = await findByIdentity({ identities });
+  const securitiesToCreate: SecuritySearchResult[] = [];
 
-  const existingByKey = new Map<string, (typeof existingSecurities)[number]>();
-  for (const e of existingSecurities) {
-    existingByKey.set(securityIdentityKey(e), e);
-  }
-  logger.info(
-    `Found ${existingByKey.size} matching existing securities for ${securitiesFromProvider.length} incoming entries.`,
-  );
+  for (const [index, identity] of identities.entries()) {
+    const verified = verifiedCopies[index];
+    const existing = existingByKey.get(securityIdentityKey(identity));
 
-  // Partition incoming securities into new inserts vs updates in a single pass
-  const [newSecurities, existingToUpdate] = securitiesFromProvider.reduce<
-    [SecuritySearchResult[], SecuritySearchResult[]]
-  >(
-    (acc, sec) => {
-      (existingByKey.has(securityIdentityKey(sec)) ? acc[1] : acc[0]).push(sec);
-      return acc;
-    },
-    [[], []],
-  );
+    if (!existing) {
+      if (!verified || !SUPPORTED_ASSET_CLASSES.includes(verified.assetClass)) {
+        throw new ValidationError({ message: t({ key: 'investments.securitySearchResultNotRecognized' }) });
+      }
+      securitiesToCreate.push(verified);
+      continue;
+    }
 
-  const newCount = newSecurities.length;
-  logger.info(`New securities to add: ${newCount}. Records to update: ${existingToUpdate.length}.`);
+    if (
+      !verified ||
+      existing.providerName !== verified.providerName ||
+      existing.providerSymbol !== verified.providerSymbol
+    ) {
+      continue;
+    }
 
-  // Prepare bulk insert payload for new securities
-  const securitiesToCreate = newSecurities.map((security) => ({
-    symbol: security.symbol,
-    providerSymbol: security.providerSymbol,
-    priceSourceSymbol: security.priceSourceSymbol ?? null,
-    name: security.name,
-    assetClass: security.assetClass,
-    providerName: security.providerName,
-    currencyCode: security.currencyCode.toUpperCase(),
-    cryptoCurrencyCode: security.cryptoCurrencyCode ?? null,
-    exchangeMic: security.exchangeMic,
-    exchangeAcronym: security.exchangeAcronym || null,
-    exchangeName: security.exchangeName || null,
-    logoUrl: security.logoUrl ?? null,
-    isBrokerageCash: false,
-  }));
-
-  if (securitiesToCreate.length) {
-    await Securities.bulkCreate(securitiesToCreate);
+    const refresh = Object.fromEntries(
+      REFRESHABLE_FIELDS.map((field) => [field, verified[field]]).filter(([, value]) => value != null && value !== ''),
+    );
+    if (Object.keys(refresh).length > 0) {
+      await existing.update(refresh);
+    }
   }
 
-  // Update existing securities metadata where necessary. Update BY ID because
-  // the existing row's (providerName, providerSymbol) may differ from the
-  // incoming search result's – they were matched by symbol+currency for non-crypto.
-  // The row's canonical (providerName, providerSymbol) is preserved; only
-  // mutable metadata is refreshed.
-  if (existingToUpdate.length) {
-    const updatePromises = existingToUpdate.map((sec) => {
-      const existing = existingByKey.get(securityIdentityKey(sec))!;
-      return Securities.update(
-        {
-          symbol: sec.symbol,
-          name: sec.name,
-          assetClass: sec.assetClass,
-          currencyCode: sec.currencyCode.toUpperCase(),
-          cryptoCurrencyCode: sec.cryptoCurrencyCode ?? null,
-          exchangeMic: sec.exchangeMic,
-          exchangeAcronym: sec.exchangeAcronym || null,
-          exchangeName: sec.exchangeName || null,
-          // Preserve existing logoUrl when the incoming row doesn't carry one.
-          // Stock providers leave logoUrl undefined; overwriting would wipe a
-          // value another provider (e.g. CoinGecko) populated.
-          ...(sec.logoUrl !== undefined ? { logoUrl: sec.logoUrl } : {}),
-          // Preserve existing priceSourceSymbol when the incoming row doesn't
-          // carry one. The field is only set by the Yahoo ISIN-fallback path;
-          // ordinary search results would otherwise clear a previously chosen
-          // local-ticker source.
-          ...(sec.priceSourceSymbol != null ? { priceSourceSymbol: sec.priceSourceSymbol } : {}),
-        },
-        { where: { id: existing.id } },
-      );
-    });
-    await Promise.all(updatePromises);
+  const newCount = securitiesToCreate.length;
+  logger.info(`New securities to add: ${newCount}. Existing rows matched: ${incoming.length - newCount}.`);
+
+  if (newCount) {
+    await Securities.bulkCreate(
+      securitiesToCreate.map((security) => ({
+        symbol: security.symbol,
+        providerSymbol: security.providerSymbol,
+        priceSourceSymbol: security.priceSourceSymbol ?? null,
+        name: security.name,
+        assetClass: security.assetClass,
+        providerName: security.providerName,
+        currencyCode: security.currencyCode.toUpperCase(),
+        cryptoCurrencyCode: security.cryptoCurrencyCode ?? null,
+        exchangeMic: security.exchangeMic,
+        exchangeAcronym: security.exchangeAcronym || null,
+        exchangeName: security.exchangeName || null,
+        logoUrl: security.logoUrl ?? null,
+        isBrokerageCash: false,
+      })),
+    );
   }
 
-  logger.info(`Securities sync completed. New: ${newCount}, updated: ${existingToUpdate.length}.`);
+  const resolvedByKey = newCount ? await findByIdentity({ identities }) : existingByKey;
+  const securities = identities.map((identity) => resolvedByKey.get(securityIdentityKey(identity)));
+  if (securities.some((security) => !security)) {
+    throw new Error('Security upsert completed but a security row was not found.');
+  }
 
-  return { newCount };
+  return { newCount, securities: securities as Securities[] };
 };
 
 /**
- * Takes a list of security search results from any provider, checks against
- * the local database, and saves any new securities within a DB transaction.
+ * Creates or refreshes Securities rows from search results the server itself received from a
+ * provider, and returns the resolved row for each input in input order. A result with no
+ * remembered copy can't create a row and leaves an existing row as is.
  */
-export const addOrUpdateFromProvider = withTransaction(addOrUpdateFromProviderImpl);
+export const upsertSecuritiesFromSearch = withTransaction(upsertSecuritiesFromSearchImpl);

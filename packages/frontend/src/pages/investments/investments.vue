@@ -6,12 +6,12 @@
       <DemoRestricted feature="create_portfolio_header" :message="$t('demo.featureNotAvailable')">
         <CreatePortfolioDialog v-if="!isDemo">
           <UiButton>
-            <PlusIcon class="mr-2 size-4" />
+            <PlusIcon class="size-4" />
             {{ $t('investments.createButton') }}
           </UiButton>
         </CreatePortfolioDialog>
         <UiButton v-else disabled>
-          <PlusIcon class="mr-2 size-4" />
+          <PlusIcon class="size-4" />
           {{ $t('investments.createButton') }}
         </UiButton>
       </DemoRestricted>
@@ -180,12 +180,12 @@
         <DemoRestricted feature="create_portfolio_empty_state" :message="$t('demo.featureNotAvailable')">
           <CreatePortfolioDialog v-if="!isDemo">
             <UiButton size="lg">
-              <PlusIcon class="mr-2 size-4" />
+              <PlusIcon class="size-4" />
               {{ $t('investments.empty.createFirstButton') }}
             </UiButton>
           </CreatePortfolioDialog>
           <UiButton v-else size="lg" disabled>
-            <PlusIcon class="mr-2 size-4" />
+            <PlusIcon class="size-4" />
             {{ $t('investments.empty.createFirstButton') }}
           </UiButton>
         </DemoRestricted>

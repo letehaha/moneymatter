@@ -1,4 +1,5 @@
 import type { BackupRestoreWarning } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import Securities from '@models/investments/securities.model';
 import { Model, type ModelStatic } from 'sequelize';
 
@@ -23,7 +24,7 @@ export interface ArchiveAnalysis {
   /** Column plans keyed by data-file / reference base name. */
   plans: Map<string, TableColumnPlan>;
   warnings: BackupRestoreWarning[];
-  /** Human-readable reasons the restore cannot proceed (drives the 422). */
+  /** Translated reasons the restore cannot proceed (drives the 422). */
   hardFailReasons: string[];
 }
 
@@ -83,13 +84,13 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
   // empty transactions/accounts dump is fine here: only the missing user record
   // or empty manifest is the corruption signal, never zero data rows.
   if (!archive.user) {
-    hardFailReasons.push('Backup contains no user record; refusing to wipe existing data.');
+    hardFailReasons.push(t({ key: 'backup.restore.errors.noUserRecord' }));
   }
   const manifestFiles = archive.manifest?.files;
   const hasManifestFiles =
     !!manifestFiles && typeof manifestFiles === 'object' && Object.keys(manifestFiles).length > 0;
   if (!hasManifestFiles) {
-    hardFailReasons.push('Backup manifest lists no files; refusing to wipe existing data.');
+    hardFailReasons.push(t({ key: 'backup.restore.errors.emptyManifest' }));
   }
 
   const addTablePlan = ({
@@ -106,11 +107,7 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
     ignoreFileColumns?: Set<string>;
   }) => {
     if (!present) {
-      warnings.push({
-        code: 'table_missing_treated_empty',
-        table: key,
-        message: `Backup has no file for "${key}"; treated as empty.`,
-      });
+      warnings.push({ code: 'table_missing_treated_empty', table: key });
       return;
     }
     if (rows.length === 0) {
@@ -121,15 +118,18 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
     plans.set(key, plan);
     if (plan.missingRequired.length > 0) {
       hardFailReasons.push(
-        `Backup table "${key}" is missing required column(s): ${plan.missingRequired.join(', ')}. The backup predates a schema change and cannot be restored on this version.`,
+        t({
+          key: 'backup.restore.errors.missingRequiredColumns',
+          variables: { table: key, columns: plan.missingRequired.join(', '), count: plan.missingRequired.length },
+        }),
       );
     }
     if (plan.droppedColumns.length > 0) {
       warnings.push({
         code: 'unknown_column_dropped',
         table: key,
-        message: `Dropped unknown column(s) on "${key}": ${plan.droppedColumns.join(', ')}.`,
         count: plan.droppedColumns.length,
+        columns: plan.droppedColumns,
       });
     }
   };
@@ -153,11 +153,7 @@ export function analyzeArchive({ archive }: { archive: ParsedArchive }): Archive
   });
 
   for (const name of archive.unknownFileNames) {
-    warnings.push({
-      code: 'unknown_table_ignored',
-      table: name,
-      message: `Backup contains an unknown table "${name}" that this app doesn't recognize; ignored.`,
-    });
+    warnings.push({ code: 'unknown_table_ignored', table: name });
   }
 
   return { plans, warnings, hardFailReasons };

@@ -273,10 +273,10 @@ const { mutate, isPending } = useDataExport();
 
 const resolveErrorMessage = (e: unknown): string => {
   if (e instanceof ApiErrorResponseError) {
-    if (e.data?.message) return e.data.message;
     if (e.data?.code === API_ERROR_CODES.payloadTooLarge) {
       return t('settings.dataManagement.export.notifications.tooLarge');
     }
+    if (e.data?.message) return e.data.message;
   }
   if (e instanceof DataExportDownloadFailedError) {
     return t('settings.dataManagement.export.notifications.downloadBlocked');

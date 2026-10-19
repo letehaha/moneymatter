@@ -2,6 +2,7 @@ import type { PivotMeasure, PivotRowDimension } from '@bt/shared/types';
 import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 import Transactions from '@models/transactions.model';
+import { EMPTY_LOGO_FIELDS, serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import { AccessibleCategoryInfo } from '@services/categories/get-accessible-category-map.service';
 import { Includeable, Op } from 'sequelize';
 
@@ -143,7 +144,7 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
 
     const payees = await Payees.findAll({
       where: { userId, id: { [Op.in]: payeeIds } },
-      attributes: ['id', 'name', 'logoDomain', 'logoInitials', 'logoColor'],
+      attributes: ['id', 'name', 'logoDomain', 'logoInitials', 'logoColor', 'logoIcon', 'logoImageId'],
       raw: true,
     });
     const payeeById = new Map<string, (typeof payees)[number]>(payees.map((payee) => [payee.id, payee]));
@@ -154,9 +155,7 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
       // A payee id with no matching row means the payee was deleted or belongs to another user;
       // fall back to an explicit label rather than leaking the raw uuid to the client.
       row.label = payee?.name ?? UNKNOWN_PAYEE_LABEL;
-      row.logoDomain = payee?.logoDomain ?? null;
-      row.logoInitials = payee?.logoInitials ?? null;
-      row.logoColor = payee?.logoColor ?? null;
+      Object.assign(row, serializeLogoFields({ entity: payee ?? EMPTY_LOGO_FIELDS }));
     }
   },
 });

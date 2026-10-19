@@ -12,12 +12,14 @@ import {
 } from '@bt/shared/types';
 import { pickRandomColor } from '@common/lib/random-color';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
 import { type OpenImportBatch, withImportBatchRecord } from '@services/import-export/core/import-batch-record';
 import { partitionReconcileAccounts } from '@services/import-export/core/partition-reconcile-accounts';
+import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
 import { startBalanceReconciliation } from '@services/import-export/core/reconcile-account-balances';
 import { createAccountsIfNeeded } from '@services/import-export/core/resolve/create-accounts-if-needed';
 import { createCategoriesIfNeeded } from '@services/import-export/core/resolve/create-categories-if-needed';
@@ -92,8 +94,10 @@ async function executeBudgetBakersWalletImportImpl({
   // Validate every distinct account name in the parser output has a mapping.
   const missingMappings = parsed.accounts.filter((a) => !accountMapping[a.originalName]);
   if (missingMappings.length > 0) {
-    throw new ValidationError({
-      message: `Missing account mapping for: ${missingMappings.map((a) => a.originalName).join(', ')}`,
+    const accounts = missingMappings.map((a) => a.originalName).join(', ');
+    throw new ImportJobError({
+      message: `Missing account mapping for: ${accounts}`,
+      failure: { code: 'account-mapping-missing', params: { accounts } },
     });
   }
 
@@ -184,13 +188,18 @@ async function executeBudgetBakersWalletImportImpl({
 
     const existing = await Accounts.getAccountById({ userId, id: mapping.accountId });
     if (!existing) {
-      throw new ValidationError({
+      throw new ImportJobError({
         message: `Account "${account.originalName}" is linked to an account that does not exist or is not yours.`,
+        failure: { code: 'linked-account-not-found', params: { account: account.originalName } },
       });
     }
     if (existing.currencyCode !== account.currency) {
-      throw new ValidationError({
-        message: `Account "${account.originalName}" (${account.currency}) cannot be linked to "${existing.name}" (${existing.currencyCode}) — currencies must match.`,
+      const params = {
+        mismatches: `"${account.originalName}" (${account.currency}) → "${existing.name}" (${existing.currencyCode})`,
+      };
+      throw new ImportJobError({
+        message: t({ key: 'csvImport.linkedAccountCurrencyMismatch', variables: params }),
+        failure: { code: 'account-currency-mismatch', params },
       });
     }
     summary.accountsLinked += 1;
@@ -399,6 +408,7 @@ async function executeBudgetBakersWalletImportImpl({
             });
             summary.errors.push({
               rowIndex: tx.rowIndex,
+              code: 'payee-default-tags-failed',
               error: 'Transaction was imported, but the payee default tags could not be applied',
             });
           }

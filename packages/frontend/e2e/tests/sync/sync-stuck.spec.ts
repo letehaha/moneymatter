@@ -52,7 +52,7 @@ test.describe('Sync popover — stuck-state watchdog', () => {
     // Override the watchdog threshold to ~1.5s so the test runs fast.
     // The composable reads this from window before scheduling its setTimeout.
     await page.addInitScript((thresholdMs) => {
-      (window as unknown as { __TEST_SYNC_STUCK_MS__: number }).__TEST_SYNC_STUCK_MS__ = thresholdMs;
+      (window as unknown as { testSyncStuckMs: number }).testSyncStuckMs = thresholdMs;
     }, STUCK_THRESHOLD_MS);
 
     // Mock the sync endpoints to return a perpetually-syncing state.

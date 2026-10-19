@@ -211,6 +211,7 @@ import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { UnexpectedError, getAuthErrorMessage } from '@/js/errors';
 import { authClient } from '@/lib/auth-client';
 import { useAuthStore, useUserStore } from '@/stores';
 import { OAUTH_PROVIDER, OAUTH_PROVIDERS_LIST } from '@bt/shared/types';
@@ -226,6 +227,7 @@ import {
   TrashIcon,
   XIcon,
 } from '@lucide/vue';
+import { format } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { type Component, computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -285,9 +287,7 @@ const loginMethodCount = computed(() => {
 
 const canDisconnect = computed(() => loginMethodCount.value > 1);
 
-const formatDate = (dateStr: string | Date) => {
-  return new Date(dateStr).toLocaleDateString();
-};
+const formatDate = (dateStr: string | Date) => format(new Date(dateStr), 'P');
 
 const loadAccounts = async () => {
   try {
@@ -318,13 +318,18 @@ const handleConnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) =>
   try {
     isConnecting.value = true;
     sessionStorage.setItem('oauth_return_url', window.location.pathname);
-    await authClient.linkSocial({
+    const { error } = await authClient.linkSocial({
       provider,
       callbackURL: `${window.location.origin}/auth/callback`,
     });
-  } catch {
+    if (error) throw new UnexpectedError(error.message, error);
+  } catch (error) {
     addErrorNotification(
-      t('settings.security.loginMethods.notifications.oauthConnectFailed', { provider: providerName }),
+      await getAuthErrorMessage({
+        error,
+        fallbackKey: 'settings.security.loginMethods.notifications.oauthConnectFailed',
+        params: { provider: providerName },
+      }),
     );
   } finally {
     isConnecting.value = false;
@@ -339,17 +344,22 @@ const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER })
 
   try {
     isDisconnecting.value = true;
-    await authClient.unlinkAccount({
+    const { error } = await authClient.unlinkAccount({
       providerId: provider,
       accountId: account.accountId,
     });
+    if (error) throw new UnexpectedError(error.message, error);
     addSuccessNotification(
       t('settings.security.loginMethods.notifications.oauthDisconnectSuccess', { provider: providerName }),
     );
     await loadAccounts();
-  } catch {
+  } catch (error) {
     addErrorNotification(
-      t('settings.security.loginMethods.notifications.oauthDisconnectFailed', { provider: providerName }),
+      await getAuthErrorMessage({
+        error,
+        fallbackKey: 'settings.security.loginMethods.notifications.oauthDisconnectFailed',
+        params: { provider: providerName },
+      }),
     );
   } finally {
     isDisconnecting.value = false;
@@ -362,8 +372,13 @@ const handleAddPasskey = async () => {
     await authStore.registerPasskey();
     addSuccessNotification(t('settings.security.loginMethods.notifications.passkeyAddSuccess'));
     await loadPasskeys();
-  } catch {
-    addErrorNotification(t('settings.security.loginMethods.notifications.passkeyAddFailed'));
+  } catch (error) {
+    addErrorNotification(
+      await getAuthErrorMessage({
+        error,
+        fallbackKey: 'settings.security.loginMethods.notifications.passkeyAddFailed',
+      }),
+    );
   } finally {
     isAddingPasskey.value = false;
   }
@@ -380,11 +395,17 @@ const handleRenamePasskey = async (passkeyId: string) => {
 
   try {
     isRenamingPasskey.value = true;
-    await authClient.passkey.updatePasskey({ id: passkeyId, name });
+    const { error } = await authClient.passkey.updatePasskey({ id: passkeyId, name });
+    if (error) throw new UnexpectedError(error.message, error);
     editingPasskeyId.value = null;
     await loadPasskeys();
-  } catch {
-    addErrorNotification(t('settings.security.loginMethods.notifications.passkeyRenameFailed'));
+  } catch (error) {
+    addErrorNotification(
+      await getAuthErrorMessage({
+        error,
+        fallbackKey: 'settings.security.loginMethods.notifications.passkeyRenameFailed',
+      }),
+    );
   } finally {
     isRenamingPasskey.value = false;
   }
@@ -396,12 +417,18 @@ const handleDeletePasskey = async () => {
 
   try {
     isDeletingPasskey.value = passkeyId;
-    await authClient.passkey.deletePasskey({ id: passkeyId });
+    const { error } = await authClient.passkey.deletePasskey({ id: passkeyId });
+    if (error) throw new UnexpectedError(error.message, error);
     addSuccessNotification(t('settings.security.loginMethods.notifications.passkeyRemoveSuccess'));
     passkeyToDelete.value = null;
     await loadPasskeys();
-  } catch {
-    addErrorNotification(t('settings.security.loginMethods.notifications.passkeyRemoveFailed'));
+  } catch (error) {
+    addErrorNotification(
+      await getAuthErrorMessage({
+        error,
+        fallbackKey: 'settings.security.loginMethods.notifications.passkeyRemoveFailed',
+      }),
+    );
   } finally {
     isDeletingPasskey.value = null;
   }

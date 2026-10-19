@@ -78,7 +78,7 @@
                 class="border-border/60 border-b last:border-b-0"
               >
                 <td class="px-3 py-2 font-mono tabular-nums">{{ error.transactionIndex + 1 }}</td>
-                <td class="text-destructive-text px-3 py-2">{{ error.error }}</td>
+                <td class="text-destructive-text px-3 py-2">{{ formatStatementImportRowError({ error, t }) }}</td>
               </tr>
             </tbody>
           </table>
@@ -205,8 +205,12 @@ import { ROUTES_NAMES } from '@/routes';
 import { useStatementParserStore } from '@/stores/statement-parser';
 import { ArrowLeftIcon, CircleCheckIcon, Loader2Icon, TriangleAlertIcon } from '@lucide/vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
+import { formatStatementImportRowError } from '../utils/import-row-error-message';
+
+const { t } = useI18n();
 const store = useStatementParserStore();
 const router = useRouter();
 

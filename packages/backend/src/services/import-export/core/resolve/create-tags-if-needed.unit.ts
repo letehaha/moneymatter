@@ -1,6 +1,7 @@
 import type { TagMappingConfig } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Op } from 'sequelize';
 
 // ── Mocks (hoisted before importing the module under test) ──────────────────
@@ -27,6 +28,10 @@ jest.mock('@services/tags/create-tag', () => ({
 import { createTagsIfNeeded } from './create-tags-if-needed';
 
 const USER_ID = 1;
+
+beforeAll(async () => {
+  await i18nextReady;
+});
 
 beforeEach(() => {
   findOne.mockReset();
@@ -60,7 +65,9 @@ describe('createTagsIfNeeded', () => {
 
     const tagMapping: TagMappingConfig = { Food: { action: 'link-existing', tagId } };
 
-    await expect(createTagsIfNeeded({ userId: USER_ID, tagMapping })).rejects.toThrow(`Tag with ID ${tagId} not found`);
+    await expect(createTagsIfNeeded({ userId: USER_ID, tagMapping })).rejects.toThrow(
+      t({ key: 'importExport.tagIdNotFound', variables: { id: tagId }, locale: 'en' }),
+    );
     expect(createTag).not.toHaveBeenCalled();
   });
 

@@ -1,4 +1,4 @@
-import { SSEEventPayload, SSEEventType } from '@bt/shared/types';
+import { ImportJobFailure, SSEEventPayload, SSEEventType } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import { SentryTraceData, withQueueProcessSpan, withQueuePublishSpan } from '@js/utils/sentry';
@@ -8,6 +8,7 @@ import { sseManager } from '@services/common/sse';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { Job, Queue, Worker } from 'bullmq';
 
+import { ImportJobError } from './import-job-error';
 import { isStalledPastLimitFailure } from './stalled-job-failure';
 
 /**
@@ -52,6 +53,7 @@ interface ImportPayloadBuilders<TSummary, TProgress extends SSEEventPayload> {
     processedCount: number;
     totalCount: number;
     error: string;
+    failure?: ImportJobFailure;
   }) => TProgress;
 }
 
@@ -86,13 +88,14 @@ function makeDefaultImportPayloadBuilders<TSummary, TProgress extends SSEEventPa
         totalCount,
         summary,
       }) as unknown as TProgress,
-    buildFailedPayload: ({ jobId, processedCount, totalCount, error }) =>
+    buildFailedPayload: ({ jobId, processedCount, totalCount, error, failure }) =>
       ({
         jobId,
         status: 'failed',
         processedCount,
         totalCount,
         error,
+        ...(failure && { failure }),
       }) as unknown as TProgress,
   };
 }
@@ -127,7 +130,7 @@ interface ImportJobQueueBundle<TJobData extends SentryTraceData, TSummary, TProg
   sendProgress: (params: { userId: number; payload: TProgress }) => void;
   /** Pull the throttled `{processedCount, totalCount}` blob the worker persists
    *  via `job.updateProgress`. Zeros when nothing has been recorded yet. */
-  readJobProgress: (job: Job<TJobData>) => { processedCount: number; totalCount: number };
+  readJobProgress: (job: Job<TJobData>) => { processedCount: number; totalCount: number; failure?: ImportJobFailure };
   /** Enqueue a job and emit the initial `queued` SSE event. The `queued` payload
    *  is built from the factory's `queued`-shape default. */
   enqueue: (params: { userId: number; jobId: string; data: TJobData }) => Promise<void>;
@@ -161,11 +164,12 @@ const PROGRESS_SSE_THROTTLE = 25;
 /** Pull the throttled `{processedCount, totalCount}` blob the worker persists via
  *  `job.updateProgress`. Zeros when nothing has been recorded yet (e.g. the job
  *  died before the first tick). */
-function readJobProgress(job: Job): { processedCount: number; totalCount: number } {
-  const progress = (job.progress ?? {}) as { processedCount?: number; totalCount?: number };
+function readJobProgress(job: Job): { processedCount: number; totalCount: number; failure?: ImportJobFailure } {
+  const progress = (job.progress ?? {}) as { processedCount?: number; totalCount?: number; failure?: ImportJobFailure };
   return {
     processedCount: progress.processedCount ?? 0,
     totalCount: progress.totalCount ?? 0,
+    failure: progress.failure,
   };
 }
 
@@ -228,62 +232,77 @@ export function createImportJobQueue<
   const worker = new Worker<TJobData, ImportJobResult<TSummary>>(
     queueName,
     async (job: Job<TJobData>) => {
-      return withQueueProcessSpan({
-        queueName,
-        job,
-        fn: async () => {
-          const { userId } = job.data;
+      try {
+        return await withQueueProcessSpan({
+          queueName,
+          job,
+          fn: async () => {
+            const { userId } = job.data;
 
-          // A base-currency recalculation holds this user's lock: it drains
-          // in-flight writers before snapshotting rows, so an import committing
-          // transactions now would land amounts against the wrong base. Fail the
-          // job (attempts: 1, no retry) with a message the import UI surfaces. The
-          // enqueue route is already lock-guarded; this only catches jobs queued
-          // in the brief window before the lock landed.
-          if (await isBaseCurrencyChangeLocked({ userId })) {
-            throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
-          }
+            // A base-currency recalculation holds this user's lock: it drains
+            // in-flight writers before snapshotting rows, so an import committing
+            // transactions now would land amounts against the wrong base. Fail the
+            // job (attempts: 1, no retry) with a message the import UI surfaces. The
+            // enqueue route is already lock-guarded; this only catches jobs queued
+            // in the brief window before the lock landed.
+            if (await isBaseCurrencyChangeLocked({ userId })) {
+              throw new ImportJobError({
+                message: t({ key: 'currencies.baseCurrencyChangeInProgress' }),
+                failure: { code: 'base-currency-change-in-progress' },
+              });
+            }
 
-          sendProgress({
-            userId,
-            payload: buildRunningPayload({ jobId: job.id!, processedCount: 0, totalCount: 0 }),
-          });
+            sendProgress({
+              userId,
+              payload: buildRunningPayload({ jobId: job.id!, processedCount: 0, totalCount: 0 }),
+            });
 
-          let lastEmittedAt = 0;
-          let lastTotal = 0;
-          const summary = await runWithBalanceRevalueBatch(() =>
-            processJob({
-              job,
-              onProgress: async (processedCount, totalCount) => {
-                lastTotal = totalCount;
-                // Progress reporting is best-effort: a committed row must not be
-                // failed and the job must not abort because persisting progress or
-                // pushing the SSE update threw (Redis hiccup, dropped SSE channel).
-                // Swallow and log so the import keeps writing rows.
-                try {
-                  // Persist progress on the job itself so /status polling works even
-                  // with no SSE listener (e.g. user closed the tab).
-                  await job.updateProgress({ processedCount, totalCount });
-                  if (processedCount - lastEmittedAt >= PROGRESS_SSE_THROTTLE || processedCount === totalCount) {
-                    lastEmittedAt = processedCount;
-                    sendProgress({
-                      userId,
-                      payload: buildRunningPayload({ jobId: job.id!, processedCount, totalCount }),
+            let lastEmittedAt = 0;
+            let lastTotal = 0;
+            const summary = await runWithBalanceRevalueBatch(() =>
+              processJob({
+                job,
+                onProgress: async (processedCount, totalCount) => {
+                  lastTotal = totalCount;
+                  // Progress reporting is best-effort: a committed row must not be
+                  // failed and the job must not abort because persisting progress or
+                  // pushing the SSE update threw (Redis hiccup, dropped SSE channel).
+                  // Swallow and log so the import keeps writing rows.
+                  try {
+                    // Persist progress on the job itself so /status polling works even
+                    // with no SSE listener (e.g. user closed the tab).
+                    await job.updateProgress({ processedCount, totalCount });
+                    if (processedCount - lastEmittedAt >= PROGRESS_SSE_THROTTLE || processedCount === totalCount) {
+                      lastEmittedAt = processedCount;
+                      sendProgress({
+                        userId,
+                        payload: buildRunningPayload({ jobId: job.id!, processedCount, totalCount }),
+                      });
+                    }
+                  } catch (err) {
+                    logger.error({
+                      message: `[${logLabel} Worker] Progress update failed for job ${job.id}`,
+                      error: err instanceof Error ? err : new Error(String(err)),
                     });
                   }
-                } catch (err) {
-                  logger.error({
-                    message: `[${logLabel} Worker] Progress update failed for job ${job.id}`,
-                    error: err instanceof Error ? err : new Error(String(err)),
-                  });
-                }
-              },
-            }),
-          );
+                },
+              }),
+            );
 
-          return { summary, totalCount: lastTotal };
-        },
-      });
+            return { summary, totalCount: lastTotal };
+          },
+        });
+      } catch (err) {
+        // BullMQ persists only the message, so the status poll reads the code from progress.
+        if (err instanceof ImportJobError) {
+          await job
+            .updateProgress({ ...readJobProgress(job), failure: err.failure })
+            .catch((error) =>
+              logger.error({ message: `[${logLabel} Worker] Failed to record failure for job ${job.id}`, error }),
+            );
+        }
+        throw err;
+      }
     },
     {
       connection,
@@ -303,6 +322,9 @@ export function createImportJobQueue<
 
   const describeFailure = <TReason extends string | undefined>({ reason }: { reason: TReason }): TReason | string =>
     isStalledPastLimitFailure({ reason }) ? t({ key: interruptedMessageKey }) : reason;
+
+  const failureOf = ({ reason, failure }: { reason: string | undefined; failure?: ImportJobFailure }) =>
+    isStalledPastLimitFailure({ reason }) ? ({ code: 'interrupted' } satisfies ImportJobFailure) : failure;
 
   worker.on('failed', (job, err) => {
     // Every deploy that restarts the process mid-job ends here, so it is not an error.
@@ -335,6 +357,7 @@ export function createImportJobQueue<
         processedCount,
         totalCount,
         error: describeFailure({ reason: err.message }),
+        failure: failureOf({ reason: err.message, failure: err instanceof ImportJobError ? err.failure : undefined }),
       }),
     });
   });
@@ -413,7 +436,8 @@ export function createImportJobQueue<
         jobId,
         processedCount,
         totalCount,
-        error: describeFailure({ reason: settled.failedReason || 'Unknown error' }),
+        error: describeFailure({ reason: settled.failedReason || t({ key: 'errors.unexpected' }) }),
+        failure: failureOf({ reason: settled.failedReason, failure: readJobProgress(settled).failure }),
       });
     }
     if (state === 'waiting' || state === 'delayed') {

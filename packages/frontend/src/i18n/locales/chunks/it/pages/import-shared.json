@@ -4,6 +4,20 @@
       "progress": {
         "jobExpired": "The import job expired or could not be found.",
         "lostContact": "Lost contact with the import job."
+      },
+      "balanceDesync": {
+        "createdAccount": "{account}: the entered balance could not be applied after import, so this account balance may be incorrect.",
+        "linkedAccount": "{account}: the balance could not be updated after import, so this account balance may be incorrect.",
+        "unnamedAccount": "An account balance could not be updated after import and may be incorrect."
+      },
+      "jobFailure": {
+        "interrupted": "The import was interrupted by a server restart. Some rows may already have been imported; undo this import from the import history before retrying.",
+        "baseCurrencyChangeInProgress": "A base currency change is in progress. Wait for it to finish, then retry the import.",
+        "accountCurrencyMismatch": "Currencies must match to link an existing account: {mismatches}. Link an account with the same currency or create a new one.",
+        "categoryNameTooLong": "Category name \"{name}\" is too long ({length} characters); the maximum is {max}.",
+        "payeeNameTooLong": "Payee name \"{name}\" is too long ({length} characters); the maximum is {max}.",
+        "accountMappingMissing": "These accounts from the file have no mapping: {accounts}. Go back and map each of them.",
+        "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one."
       }
     }
   },

@@ -1,6 +1,13 @@
-import { BUDGET_STATUSES, BUDGET_TYPES } from '@bt/shared/types';
+import {
+  BUDGET_STATUSES,
+  BUDGET_TYPES,
+  TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS,
+  TRACKER_AI_DESCRIPTION_MAX_LENGTH,
+  TRACKER_AI_PRE_WINDOW_DAYS,
+} from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
+import { smartTrackingFieldsShape } from '@controllers/budgets/smart-tracking-fields.schema';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createBudget } from '@services/budgets/create-budget';
@@ -31,6 +38,15 @@ const inputSchema = {
     .number()
     .optional()
     .describe("Spending limit as a decimal amount in the user's base currency (e.g. 500.00)"),
+  aiEnabled: smartTrackingFieldsShape.aiEnabled.describe(
+    'Turn on smart tracking: an AI scans the date range and links or suggests matching transactions. Manual trackers only; requires aiDescription and startDate',
+  ),
+  aiDescription: smartTrackingFieldsShape.aiDescription.describe(
+    `Plain-language description of what belongs in the tracker (max ${TRACKER_AI_DESCRIPTION_MAX_LENGTH} chars), e.g. "Trip to Lisbon: flights, hotels, food"`,
+  ),
+  aiPreWindowDays: smartTrackingFieldsShape.aiPreWindowDays.describe(
+    `Days before startDate the AI also scans, for things booked in advance. One of ${TRACKER_AI_PRE_WINDOW_DAYS.join(', ')}. Default: ${TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS}`,
+  ),
 };
 
 export function registerCreateBudget(server: McpServer) {
@@ -38,7 +54,7 @@ export function registerCreateBudget(server: McpServer) {
     'create_budget',
     {
       description:
-        'Create a tracker (a "budget" in tool and field names) with an optional spending limit, date range, and linked categories. It does not create or change the period-based Budget plan. Returns the created tracker with its ID, status, type, and associated categories.',
+        'Create a tracker (a "budget" in tool and field names) with an optional spending limit, date range, and linked categories. It does not create or change the period-based Budget plan. Set aiEnabled with aiDescription and startDate to turn on smart tracking (manual trackers only); review its suggestions with list_budget_suggestions. Returns the created tracker with its ID, status, type, and associated categories.',
       inputSchema,
     },
     async (args, extra) => {
@@ -56,6 +72,9 @@ export function registerCreateBudget(server: McpServer) {
         endDate: args.endDate ? new Date(args.endDate) : undefined,
         autoInclude: args.autoInclude,
         limitAmount: args.limitAmount !== undefined ? Money.fromDecimal(args.limitAmount) : undefined,
+        aiEnabled: args.aiEnabled,
+        aiDescription: args.aiDescription,
+        aiPreWindowDays: args.aiPreWindowDays,
       });
 
       return jsonContent({ data: budget });

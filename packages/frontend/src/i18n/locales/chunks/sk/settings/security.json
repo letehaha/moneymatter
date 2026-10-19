@@ -58,6 +58,7 @@
         "unknownLocation": "Neznáma poloha",
         "lastActive": "Naposledy aktívna: {date}",
         "noSessions": "Nenašli sa žiadne aktívne relácie",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Odhlásiť zo všetkých ostatných relácií",
         "deviceTypes": {
           "unknownDevice": "Neznáme zariadenie",
@@ -70,7 +71,6 @@
           "daysAgo": "pred {count} dňom | pred {count} dňami | pred {count} dňami"
         },
         "notifications": {
-          "loadFailed": "Relácie sa nepodarilo načítať",
           "revokeSuccess": "Relácia ukončená",
           "revokeFailed": "Reláciu sa nepodarilo ukončiť",
           "revokeAllSuccess": "Všetky ostatné relácie boli odhlásené",
@@ -120,6 +120,10 @@
           "setFailed": "Heslo sa nepodarilo nastaviť",
           "unexpectedError": "Vyskytla sa neočakávaná chyba",
           "updateFailed": "Heslo sa nepodarilo aktualizovať"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "Current password is incorrect.",
+          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
         }
       },
       "dangerZone": "Nebezpečná zóna",
@@ -248,11 +252,27 @@
             "noRecords": "Nebol obnovený žiadny záznam.",
             "doneButton": "Hotovo"
           },
+          "warnings": {
+            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
+            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
+            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
+            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
+            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
+            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
+            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
+            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
+            "noSettings": "The backup had no saved settings; defaults were applied.",
+            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
+            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
+            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+          },
           "failed": {
             "title": "Obnova zlyhala",
             "genericError": "Pri obnove vašej zálohy sa niečo pokazilo.",
             "unconfirmed": "Stav obnovy sa nepodarilo overiť. Načítajte stránku znova a skontrolujte svoje údaje.",
-            "closeButton": "Zavrieť"
+            "closeButton": "Zavrieť",
+            "technicalDetails": "Technical details"
           },
           "overlay": {
             "title": "Obnovujú sa vaše údaje",

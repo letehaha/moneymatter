@@ -30,7 +30,7 @@
         "errorNotification": "Failed to update bank sync schedule"
       },
       "quickStart": {
-        "label": "Quick Start guide",
+        "label": "Quick start guide",
         "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
       },
       "savingsCategories": {

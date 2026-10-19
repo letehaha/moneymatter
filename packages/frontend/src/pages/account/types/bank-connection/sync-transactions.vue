@@ -61,7 +61,11 @@ const { mutate: syncMutate, isPending: isSyncing } = useMutation({
     // Check if response has jobGroupId (queue-based sync like Monobank)
     if ('jobGroupId' in response) {
       addNotification({
-        text: `${response.message}. Processing ${response.totalBatches} batch(es)...`,
+        text: t(
+          'pages.account.syncTransactions.syncQueued',
+          { batches: response.totalBatches, minutes: response.estimatedMinutes },
+          response.totalBatches,
+        ),
         type: NotificationType.info,
       });
       // SSE will provide updates as sync progresses

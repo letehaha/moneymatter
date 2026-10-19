@@ -3,6 +3,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import BrandLogos from '@models/brand-logos.model';
+import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 
 // ---------------------------------------------------------------------------
@@ -444,5 +445,64 @@ describe('Account logo', () => {
       expect(shared?.logoDomain).toBeNull();
       expect(shared).not.toHaveProperty('logoSource');
     });
+  });
+});
+
+describe('Account logo icon and image slots', () => {
+  it('creates with logoIcon + logoColor', async () => {
+    const created = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ name: 'Groceries', logoIcon: 'food-24-regular', logoColor: '#7355be' }),
+      raw: true,
+    });
+
+    expect(created).toMatchObject({ logoIcon: 'food-24-regular', logoColor: '#7355be', logoInitials: null });
+  });
+
+  it('sets logoIcon on update and evicts the monogram', async () => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ name: 'Monogram', logoInitials: 'MO' }),
+      raw: true,
+    });
+
+    const updated = await helpers.updateAccount({
+      id: account.id,
+      payload: { logoIcon: 'food-24-regular' },
+      raw: true,
+    });
+
+    expect(updated).toMatchObject({ logoIcon: 'food-24-regular', logoInitials: null, logoDomain: null });
+  });
+
+  it('clears every slot with the three-null payload', async () => {
+    const account = await helpers.createAccount({
+      payload: helpers.buildAccountPayload({ name: 'Icon', logoIcon: 'food-24-regular' }),
+      raw: true,
+    });
+
+    const response = await helpers.updateAccount({
+      id: account.id,
+      payload: { logoDomain: null, logoInitials: null, logoIcon: null },
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(await helpers.getAccount({ id: account.id, raw: true })).toMatchObject({
+      logoDomain: null,
+      logoInitials: null,
+      logoIcon: null,
+    });
+  });
+
+  it('ignores logoImage', async () => {
+    const account = await helpers.createAccount({ payload: helpers.buildAccountPayload({ name: 'Plain' }), raw: true });
+
+    const response = await helpers.updateAccount({
+      id: account.id,
+      payload: { ...({ logoImage: PNG_1X1_DATA_URL } as object) },
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect((await helpers.getAccount({ id: account.id, raw: true })).logoImageId).toBeNull();
   });
 });

@@ -650,15 +650,18 @@ interface ParseBudgetBakersWalletParams {
 
 export function parseBudgetBakersWallet<R extends boolean | undefined = false>({
   payload,
+  headers,
   raw,
 }: {
   payload: ParseBudgetBakersWalletParams;
+  headers?: object;
   raw?: R;
 }): UtilizeReturnType<() => ParseBudgetBakersWalletResponse, R> {
   return makeRequest<ParseBudgetBakersWalletResponse, R>({
     method: 'post',
     url: '/import/budget-bakers-wallet/parse',
     payload,
+    headers,
     raw,
   });
 }
@@ -804,12 +807,15 @@ export interface UploadOfxResult {
 export async function uploadOfx({
   file,
   contentType = 'application/octet-stream',
+  locale,
 }: {
   file: Buffer;
   contentType?: string;
+  locale?: string;
 }): Promise<UploadOfxResult> {
   const base = request(app).post(`${API_PREFIX}/import/ofx/upload`).set('Content-Type', contentType);
   if (global.APP_AUTH_COOKIES) base.set('Cookie', global.APP_AUTH_COOKIES);
+  if (locale) base.set('Accept-Language', locale);
   const result = await base.send(file);
   const body = result.body as { response?: OfxUploadResponse & { message?: string } };
   return {
@@ -913,14 +919,17 @@ export async function uploadMsMoney({
   file,
   password,
   contentType = 'application/octet-stream',
+  locale,
 }: {
   file: Buffer;
   password?: string;
   contentType?: string;
+  locale?: string;
 }): Promise<UploadMsMoneyResult> {
   const base = request(app).post(`${API_PREFIX}/import/ms-money/upload`).set('Content-Type', contentType);
   if (global.APP_AUTH_COOKIES) base.set('Cookie', global.APP_AUTH_COOKIES);
   if (password !== undefined) base.set('x-file-password', password);
+  if (locale) base.set('Accept-Language', locale);
 
   const result = await base.send(file);
   const body = result.body as { response?: MsMoneyUploadResponse & { message?: string } };

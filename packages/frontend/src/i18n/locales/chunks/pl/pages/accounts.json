@@ -12,10 +12,10 @@
       "bankConnections": "Bank connections"
     },
     "empty": {
-      "title": "No Accounts Yet",
+      "title": "No accounts yet",
       "description": "Connect your bank or create a manual account to start tracking your finances, balances, and transactions.",
-      "connectBank": "Connect Bank Account",
-      "createManual": "Create Manual Account"
+      "connectBank": "Connect bank account",
+      "createManual": "Create manual account"
     },
     "overview": {
       "totalBalance": "Total balance",

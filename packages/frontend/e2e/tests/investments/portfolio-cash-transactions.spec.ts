@@ -14,8 +14,8 @@ import { pickDialogSelect } from '../../helpers/ui';
 const CURRENCY = 'USD';
 const creds = buildTestCredentials({ prefix: 'pct' });
 
-let portfolio: { id: number; name: string };
-let testAccount: { id: number; name: string };
+let portfolio: { id: string; name: string };
+let testAccount: { id: string; name: string };
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });

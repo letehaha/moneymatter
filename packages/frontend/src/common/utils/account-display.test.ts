@@ -29,6 +29,8 @@ const makeAccount = (overrides: Partial<AccountModel> = {}): AccountModel => ({
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   ...overrides,
 });
 

@@ -1,9 +1,9 @@
 {
   "investments": {
     "title": "Investments",
-    "createButton": "Create Portfolio",
+    "createButton": "Create portfolio",
     "loadError": "Failed to load portfolios",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "menu": {
       "view": "View",
       "delete": "Elimina"
@@ -14,9 +14,9 @@
       "costBasis": "Cost basis"
     },
     "empty": {
-      "title": "No Portfolios Yet",
+      "title": "No portfolios yet",
       "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
-      "createFirstButton": "Create Your First Portfolio"
+      "createFirstButton": "Create your first portfolio"
     },
     "trash": {
       "title": "Trash",

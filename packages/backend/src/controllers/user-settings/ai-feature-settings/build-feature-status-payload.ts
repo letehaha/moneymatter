@@ -1,4 +1,4 @@
-import { AIFeatureStatus, AI_FEATURE, FEATURES } from '@bt/shared/types';
+import { AIFeatureStatus, AI_FEATURE, FEATURES, hasServerAiEntitlement } from '@bt/shared/types';
 import { getRequestEntitlements, getRequestFeatureAccess } from '@middlewares/entitlements';
 import type { StoredAiSettings } from '@models/user-settings.model';
 import { isWithinAiAllowance } from '@services/ai/ai-allowance';
@@ -13,7 +13,7 @@ export const resolveEntitledToServerKeys = async ({
   req: Request;
   feature: AI_FEATURE;
 }): Promise<boolean> => {
-  if ((await getRequestFeatureAccess({ req, feature: FEATURES.operator_ai })) === 'plan') return true;
+  if (hasServerAiEntitlement({ entitlements: await getRequestEntitlements({ req }), feature })) return true;
 
   return (
     feature === AI_FEATURE.receiptParsing &&

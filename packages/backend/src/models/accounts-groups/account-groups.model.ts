@@ -78,6 +78,18 @@ export default class AccountGroup extends Model {
   })
   logoColor!: string | null;
 
+  @Column({
+    type: DataType.STRING(64),
+    allowNull: true,
+  })
+  logoIcon!: string | null;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  logoImageId!: string | null;
+
   @BelongsTo(() => Users)
   user!: Users;
 

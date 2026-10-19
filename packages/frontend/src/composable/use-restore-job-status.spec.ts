@@ -83,15 +83,15 @@ describe('sseToStatus', () => {
     });
   });
 
-  it('maps a failed push and preserves the server-provided reason', () => {
+  it('maps a failed push to the localized generic message, never the worker-built English reason', () => {
     expect(sseToStatus({ ...base, status: 'failed', error: 'disk full' })).toEqual({
       state: 'failed',
       jobId: 'r-1',
-      error: 'disk full',
+      error: 't:settings.security.backup.restore.failedGeneric',
     });
   });
 
-  it('falls back to the localized generic message when a failed push carries no reason', () => {
+  it('uses the localized generic message when a failed push carries no reason', () => {
     expect(sseToStatus({ ...base, status: 'failed' })).toEqual({
       state: 'failed',
       jobId: 'r-1',

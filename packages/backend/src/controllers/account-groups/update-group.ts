@@ -12,7 +12,7 @@ export default createController(
         name: z.string().min(1),
         parentGroupId: recordId().nullable().optional(),
         // Absent key → no change; a present key is written as given (null clears
-        // it), and a brand domain and monogram letters evict each other.
+        // it), and domain, initials and icon evict each other.
         ...logoFieldsShape,
       })
       .strict()

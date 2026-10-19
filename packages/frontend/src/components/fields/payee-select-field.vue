@@ -11,6 +11,7 @@ import { useI18n } from 'vue-i18n';
 import type { PayeeModel, TransactionLocation } from '@bt/shared/types';
 import PayeeFormDialog from '@/pages/settings/subpages/payees/components/payee-form-dialog.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import FieldLabel from './components/field-label.vue';
 
 const DEBOUNCE_MS = 200;
@@ -192,9 +193,7 @@ function handlePayeeCreated(payee: PayeeModel) {
         >
           <BrandLogo
             v-if="selectedPayee"
-            :domain="selectedPayee.logoDomain ?? null"
-            :initials="selectedPayee.logoInitials ?? null"
-            :color="selectedPayee.logoColor ?? null"
+            v-bind="toEntityLogoDisplayProps(selectedPayee)"
             :name="selectedPayee.name"
             class="size-5 shrink-0"
           />
@@ -245,13 +244,7 @@ function handlePayeeCreated(payee: PayeeModel) {
               :class="{ 'bg-primary/15 hover:bg-primary/20': modelValue === item.id }"
               @click="selectPayee(item)"
             >
-              <BrandLogo
-                :domain="item.logoDomain ?? null"
-                :initials="item.logoInitials ?? null"
-                :color="item.logoColor ?? null"
-                :name="item.name"
-                class="size-6 shrink-0"
-              />
+              <BrandLogo v-bind="toEntityLogoDisplayProps(item)" :name="item.name" class="size-6 shrink-0" />
               <span class="min-w-0 grow truncate">{{ item.name }}</span>
             </button>
 

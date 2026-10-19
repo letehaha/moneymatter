@@ -36,6 +36,10 @@ export const useFiltersFromQuery = () => {
         : [query.accountIds as string];
     }
 
+    if (query.budgetIds) {
+      filters.budgetIds = Array.isArray(query.budgetIds) ? (query.budgetIds as string[]) : [query.budgetIds as string];
+    }
+
     if (query.start) {
       filters.start = parseISO(query.start as string);
     }

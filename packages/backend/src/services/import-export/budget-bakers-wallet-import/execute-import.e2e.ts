@@ -421,6 +421,8 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     expect(progress.status).toBe('failed');
     if (progress.status !== 'failed') throw new Error('unreachable');
     expect(progress.error).toMatch(/Missing account mapping/i);
+    expect(progress.failure?.code).toBe('account-mapping-missing');
+    expect(progress.failure?.params?.accounts).toEqual(expect.any(String));
   });
 
   /**
@@ -679,6 +681,7 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     if (progress.status !== 'failed') throw new Error('unreachable');
     // The service error names the problem explicitly.
     expect(progress.error).toMatch(/does not exist or is not yours/i);
+    expect(progress.failure).toEqual({ code: 'linked-account-not-found', params: { account: 'WalletAcc AED' } });
 
     // No transactions must have been created on user B's account.
     const userBTxs = await asUser({
@@ -726,6 +729,9 @@ describe('Execute Budget Bakers Wallet import endpoint', () => {
     if (progress.status !== 'failed') throw new Error('unreachable');
     // The service error calls out the currency conflict explicitly.
     expect(progress.error).toMatch(/currencies must match/i);
+    expect(progress.failure?.code).toBe('account-currency-mismatch');
+    expect(progress.failure?.params?.mismatches).toContain('UAH');
+    expect(progress.failure?.params?.mismatches).toContain('AED');
 
     // The AED account must be completely untouched.
     const txs = await helpers.getTransactions({ raw: true });

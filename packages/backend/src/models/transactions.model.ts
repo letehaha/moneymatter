@@ -801,6 +801,31 @@ function buildRefundCondition(filter: FILTER_OPERATION | undefined): Record<stri
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// A required include can't express "in none", so the blank case is a correlated subquery.
+// Ids are interpolated into raw SQL, so the UUID check is what keeps it injection-safe.
+function buildNoneOrAnyJunctionCondition({
+  ids,
+  paramName,
+  junctionTable,
+  alias,
+  column,
+}: {
+  ids: string[];
+  paramName: string;
+  junctionTable: string;
+  alias: string;
+  column: string;
+}) {
+  if (ids.some((id) => !UUID_PATTERN.test(id))) {
+    throw new ValidationError({ message: `"${paramName}" must contain valid record ids` });
+  }
+  const junction = `SELECT 1 FROM "${junctionTable}" ${alias} WHERE ${alias}."transactionId" = "Transactions"."id"`;
+  const inNone = `NOT EXISTS (${junction})`;
+  if (!ids.length) return literal(inNone);
+  const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${ids.map((id) => `'${id}'`).join(', ')}))`;
+  return literal(`(${inNone} OR ${inAny})`);
+}
+
 // `refundLinked` can't express this filter: it is true for BOTH sides of a link, while
 // only the refund side is barred from being linked again.
 function buildExcludeRefundTxsCondition({ keepRefundsForTxId }: { keepRefundsForTxId?: string }) {
@@ -1075,7 +1100,18 @@ export const findWithFilters = async ({
     }
   }
 
-  if (budgetIds?.length) {
+  const hasBlankBudget = !!budgetIds?.includes(BLANK_FILTER_VALUE);
+  if (hasBlankBudget) {
+    pushAndCondition(
+      buildNoneOrAnyJunctionCondition({
+        ids: budgetIds!.filter((id) => id !== BLANK_FILTER_VALUE),
+        paramName: 'budgetIds',
+        junctionTable: 'BudgetTransactions',
+        alias: 'bt',
+        column: 'budgetId',
+      }),
+    );
+  } else if (budgetIds?.length) {
     const budgetTransactionIds = await BudgetTransactions.findAll({
       attributes: ['transactionId'],
       where: {
@@ -1111,15 +1147,16 @@ export const findWithFilters = async ({
 
   const hasBlankTag = !!requestedTagIds?.includes(BLANK_FILTER_VALUE);
   const tagIds = hasBlankTag ? requestedTagIds!.filter((id) => id !== BLANK_FILTER_VALUE) : requestedTagIds;
-  // A required include can't express "no tags", so the blank case is a correlated subquery.
   if (hasBlankTag) {
-    if (tagIds!.some((id) => !UUID_PATTERN.test(id))) {
-      throw new ValidationError({ message: '"tagIds" must contain valid record ids' });
-    }
-    const junction = `SELECT 1 FROM "TransactionTags" tt WHERE tt."transactionId" = "Transactions"."id"`;
-    const untagged = `NOT EXISTS (${junction})`;
-    const taggedWithAny = `EXISTS (${junction} AND tt."tagId" IN (${tagIds!.map((id) => `'${id}'`).join(', ')}))`;
-    pushAndCondition(literal(tagIds!.length ? `(${untagged} OR ${taggedWithAny})` : untagged));
+    pushAndCondition(
+      buildNoneOrAnyJunctionCondition({
+        ids: tagIds!,
+        paramName: 'tagIds',
+        junctionTable: 'TransactionTags',
+        alias: 'tt',
+        column: 'tagId',
+      }),
+    );
   }
 
   // Filter by tagIds - include only transactions with these tags

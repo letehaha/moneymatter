@@ -16,6 +16,7 @@ import type {
   ImportError,
   ImportErrorCode,
   ImportExecuteRequestBase,
+  ImportJobFailure,
   ImportJobStatus,
   ImportSummaryBase,
 } from './core';
@@ -276,7 +277,7 @@ export type BudgetBakersWalletImportErrorCode = ImportErrorCode;
  * Aliases the shared `ImportError` so the Wallet and CSV importers cannot drift
  * apart. Kept under the Wallet-specific name because external consumers rely on
  * it. Row-level errors (`rowIndex: number`, the human-visible CSV line) carry
- * no code; account-level failures (`rowIndex: null`) always do.
+ * at most an `ImportRowErrorCode`; account-level failures (`rowIndex: null`) always carry a code.
  */
 export type BudgetBakersWalletImportError = ImportError;
 
@@ -319,4 +320,4 @@ interface BudgetBakersWalletImportProgressBase {
 export type BudgetBakersWalletImportProgress =
   | (BudgetBakersWalletImportProgressBase & { status: 'queued' | 'running' })
   | (BudgetBakersWalletImportProgressBase & { status: 'completed'; summary: BudgetBakersWalletImportSummary })
-  | (BudgetBakersWalletImportProgressBase & { status: 'failed'; error: string });
+  | (BudgetBakersWalletImportProgressBase & { status: 'failed'; error: string; failure?: ImportJobFailure });

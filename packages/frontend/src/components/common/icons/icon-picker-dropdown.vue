@@ -5,7 +5,7 @@
         ref="searchInputRef"
         v-model="search"
         type="text"
-        :placeholder="$t('settings.tags.form.iconSearchPlaceholder')"
+        :placeholder="$t('common.iconPicker.searchPlaceholder')"
         class="border-input bg-input-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring w-full rounded-md border px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden"
         @input="resetScroll"
       />
@@ -36,7 +36,7 @@
       </div>
 
       <Button v-if="modelValue" variant="ghost-destructive" size="sm" @click="clearIcon">
-        {{ $t('settings.tags.form.clearIcon') }}
+        {{ $t('common.iconPicker.clear') }}
       </Button>
     </div>
   </TooltipProvider>

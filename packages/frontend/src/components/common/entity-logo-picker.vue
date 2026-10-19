@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { type LogoSelection, toLogoPayload, toLogoSelection } from '@/components/common/logo-selection';
+import { type LogoSelection, type LogoTab, toLogoPayload, toLogoSelection } from '@/components/common/logo-selection';
 import LogoSearch from '@/components/common/logo-search.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { extractApiErrorMessage, isApiErrorWithCode, isNotFoundError } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
-import { API_ERROR_CODES, type EntityLogoPayload } from '@bt/shared/types';
+import { API_ERROR_CODES, type EntityLogoWritePayload } from '@bt/shared/types';
 import { RotateCcwIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
@@ -24,8 +24,9 @@ const props = defineProps<{
   errorMessage: string;
   /** Names the owning feature in Sentry reports. */
   flow: string;
-  save: (params: { payload: EntityLogoPayload }) => Promise<unknown>;
+  save: (params: { payload: EntityLogoWritePayload }) => Promise<unknown>;
   reset: () => Promise<unknown>;
+  tabs?: LogoTab[];
 }>();
 
 const emit = defineEmits<{
@@ -106,7 +107,12 @@ async function handleReset() {
     <template #default>
       <div class="flex flex-col gap-4 p-4">
         <div class="border-input overflow-hidden rounded-md border">
-          <LogoSearch :selection="currentSelection" :name-for-search="nameForSearch" @select="handleSelect" />
+          <LogoSearch
+            :selection="currentSelection"
+            :name-for-search="nameForSearch"
+            :tabs="tabs"
+            @select="handleSelect"
+          />
         </div>
 
         <div class="flex items-center justify-between gap-2 border-t pt-2">

@@ -96,7 +96,7 @@
         "accounts": {
           "label": "Akun",
           "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "Semua akun"
+          "placeholder": "Semua Akun"
         },
         "listDescription": "Unduh zip untuk spreadsheet, pajak, atau migrasi"
       }

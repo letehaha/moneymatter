@@ -1,7 +1,8 @@
 import type { RecordId } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
-import * as Transactions from '@models/transactions.model';
+import { findTransactions } from '@models/transactions-query';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
+import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 
@@ -12,6 +13,7 @@ interface GetTransactionsByIdsParams {
   ids: RecordId[];
 }
 
+/** Returns the requested transactions on accounts the caller can currently access; other ids are omitted. */
 export const getTransactionsByIds = withTransaction(async ({ userId, ids }: GetTransactionsByIdsParams) => {
   if (ids.length > MAX_IDS) {
     throw new ValidationError({
@@ -23,10 +25,12 @@ export const getTransactionsByIds = withTransaction(async ({ userId, ids }: GetT
     return [];
   }
 
-  const transactions = await Transactions.getTransactionsByArrayOfField({
-    fieldName: 'id',
-    fieldValues: ids,
-    userId,
+  const transactions = await findTransactions({
+    planned: { visibleTo: userId },
+    access: { accessibleTo: userId },
+    balanceAdjustments: 'include',
+    completeness: 'all',
+    where: { id: { [Op.in]: ids } },
   });
 
   return serializeTransactions(transactions);

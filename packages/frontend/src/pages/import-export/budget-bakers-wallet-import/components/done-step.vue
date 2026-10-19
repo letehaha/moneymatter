@@ -93,7 +93,7 @@
               {{ $t('pages.importExport.budgetBakersWalletImport.preview.rowPrefix', { rowIndex: e.rowIndex }) }}
             </span>
           </template>
-          {{ e.error }}
+          {{ errorText(e) }}
         </li>
       </ul>
       <!-- Overflow indicator when the error list is truncated -->
@@ -125,12 +125,15 @@ import AccountBalanceChangesTable from '@/pages/import-export/components/account
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
 import { ROUTES_NAMES } from '@/routes';
 import { useImportBudgetBakersWalletStore } from '@/stores/import-budget-bakers-wallet';
+import type { BudgetBakersWalletImportError } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const MAX_ERRORS_SHOWN = 10;
 
+const { t } = useI18n();
 const router = useRouter();
 const store = useImportBudgetBakersWalletStore();
 const { progress } = storeToRefs(store);
@@ -156,6 +159,13 @@ const importOutcome = computed(() => {
   if (totalImported > 0) return 'partial';
   return 'failure';
 });
+
+function errorText(e: BudgetBakersWalletImportError): string {
+  const prefix = 'pages.importExport.budgetBakersWalletImport.done.errors';
+  if (e.code === 'account-balance-desync') return t(`${prefix}.accountBalanceDesync`);
+  if (e.code === 'payee-default-tags-failed') return t(`${prefix}.payeeDefaultTagsFailed`);
+  return t(`${prefix}.rowImportFailed`);
+}
 
 function goToTransactions() {
   store.reset();

@@ -169,8 +169,8 @@ describe('buildSuppressedFailuresEntry', () => {
     const entry = buildSuppressedFailuresEntry({ tally });
 
     expect(entry?.rowIndex).toBe(10 + MAX_RETAINED_ERROR_ENTRIES);
-    expect(entry?.error).toContain('3 more rows failed to import');
-    expect(entry?.error).toContain(String(MAX_RETAINED_ERROR_ENTRIES));
+    expect(entry?.code).toBe('rows-suppressed');
+    expect(entry?.params).toEqual({ count: 3, listed: MAX_RETAINED_ERROR_ENTRIES });
   });
 });
 

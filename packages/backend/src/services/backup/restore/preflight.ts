@@ -1,5 +1,6 @@
 import { API_ERROR_CODES } from '@bt/shared/types';
 import { isSelfHost } from '@config/is-self-host';
+import { t } from '@i18n/index';
 import { ConflictError, ValidationError } from '@js/errors';
 import Users from '@models/users.model';
 import { getEmailForUser } from '@services/sharing/find-user-by-email.service';
@@ -56,8 +57,6 @@ async function assertArchiveOwner({
   const sameEmail = Boolean(manifestUser.email && email && manifestUser.email.toLowerCase() === email.toLowerCase());
   const sameUsername = Boolean(user && manifestUser.username === user.username);
   if (!sameEmail && !sameUsername) {
-    throw new ValidationError({
-      message: 'This backup was exported by a different account and cannot be restored here.',
-    });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.differentAccount' }) });
   }
 }

@@ -20,7 +20,7 @@ interface NominatimAddress {
   country?: string;
 }
 
-export interface NominatimPlace {
+interface NominatimPlace {
   lat: string;
   lon: string;
   name?: string;

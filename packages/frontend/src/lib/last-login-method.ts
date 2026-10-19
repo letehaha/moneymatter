@@ -2,7 +2,7 @@ import { OAUTH_PROVIDERS_LIST } from '@bt/shared/types';
 
 const LOGIN_METHODS = ['email', 'passkey', ...OAUTH_PROVIDERS_LIST] as const;
 
-export type LoginMethod = (typeof LOGIN_METHODS)[number];
+type LoginMethod = (typeof LOGIN_METHODS)[number];
 
 const LAST_LOGIN_METHOD_KEY = 'last-login-method';
 // OAuth only succeeds after the provider redirect, so the method waits here until the callback confirms the session.

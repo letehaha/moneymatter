@@ -93,10 +93,10 @@
           "emptyDescription": "Tất cả giao dịch đều đã bị bỏ qua hoặc đã có trong sổ giao dịch của bạn.",
           "failedTitle": "Không có giao dịch nào được nhập",
           "failedDescription": "Không thể tạo giao dịch nào. Hãy xem lại các lỗi bên dưới.",
-          "accountsCreated": "Tài khoản đã tạo",
+          "accountsCreated": "Accounts created",
           "accountsLinked": "Tài khoản đã liên kết",
           "accountsSkipped": "Tài khoản bị bỏ qua",
-          "payeesCreated": "Người nhận đã tạo",
+          "payeesCreated": "Payees created",
           "transactionsImported": "Giao dịch đã nhập",
           "duplicatesSkipped": "Giao dịch trùng lặp bị bỏ qua",
           "mergedIntoPlanned": "Đã gộp vào giao dịch dự kiến",
@@ -104,6 +104,11 @@
           "balanceWarningBody": "Không thể đặt số dư cuối cùng cho một số tài khoản. Hãy kiểm tra và điều chỉnh số dư nếu cần.",
           "errorsTitle": "Không thể nhập {count} giao dịch | Không thể nhập {count} giao dịch",
           "errorsOverflow": "…và {count} mục khác",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "accountBalanceDesync": "An account balance could not be updated after the import.",
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+          },
           "rowPrefix": "Dòng {rowIndex}:",
           "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"

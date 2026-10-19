@@ -41,6 +41,8 @@ interface AccountsAttributes {
   logoDomain: string | null;
   logoInitials: string | null;
   logoColor: string | null;
+  logoIcon: string | null;
+  logoImageId: string | null;
 }
 
 @Table({
@@ -166,6 +168,18 @@ export default class Accounts extends Model {
     allowNull: true,
   })
   logoColor!: string | null;
+
+  @Column({
+    type: DataType.STRING(64),
+    allowNull: true,
+  })
+  logoIcon!: string | null;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  logoImageId!: string | null;
 
   @AfterCreate
   static async updateAccountBalanceAfterCreate(instance: Accounts) {

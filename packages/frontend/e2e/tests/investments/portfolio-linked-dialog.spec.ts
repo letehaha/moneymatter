@@ -13,9 +13,9 @@ import { buildTestCredentials, signUpAndVerify } from '../../helpers/test-setup'
 const CURRENCY = 'USD';
 const creds = buildTestCredentials({ prefix: 'pld' });
 
-let portfolio: { id: number; name: string };
-let testAccount: { id: number };
-let linkedTxId: number;
+let portfolio: { id: string; name: string };
+let testAccount: { id: string };
+let linkedTxId: string;
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });

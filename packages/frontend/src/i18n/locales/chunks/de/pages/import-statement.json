@@ -2,7 +2,7 @@
   "pages": {
     "statementParser": {
       "pageTitle": "Kontoauszug-Parser",
-      "pageDescription": "Lade einen Kontoauszug (PDF, CSV oder TXT) hoch, um Transaktionen mithilfe von KI zu extrahieren. Füge in den Einstellungen dein eigenes KI-Modell für unbegrenzten Zugriff hinzu.",
+      "pageDescription": "Lade einen Kontoauszug (PDF, CSV oder TXT), ein Foto eines Belegs oder einen Screenshot einer Banking-App hoch, um Transaktionen mithilfe von KI zu extrahieren. Füge dein eigenes KI-Modell in den Einstellungen hinzu, um unbegrenzten Zugriff zu erhalten.",
       "stepper": {
         "steps": {
           "upload": "Hochladen",
@@ -21,7 +21,7 @@
       "selectAccount": "Wähle ein Konto aus",
       "searchAccounts": "Konten suchen...",
       "uploadExtract": {
-        "supportedFormats": "Unterstützte Formate: PDF, CSV, TXT (max. 10 MB)",
+        "supportedFormats": "Unterstützte Formate: PDF, CSV, TXT, JPG, PNG, WebP (max. 10 MB)",
         "clickOrDragStatements": "Klicke hier oder ziehe Kontoauszugsdateien hierher",
         "filesLabel": "Dateien",
         "analyzingFiles": "Analysiere Dateien...",
@@ -32,12 +32,15 @@
         "progressFile": "Verarbeite {name} ({current} von {total})",
         "acrossFiles": "über {count} Dateien",
         "currencyConflict": "Die ausgewählten Kontoauszüge weisen unterschiedliche Währungen aus ({currencies}). Sie werden alle in ein Konto mit der Währung dieses Kontos importiert.",
-        "unsupportedFileNamed": "{name} ist keine PDF-, CSV- oder TXT-Datei",
-        "unreadableImageNamed": "{name} could not be read as an image",
-        "pasteImageButton": "Paste image",
-        "pasteShortcutHint": "or press {shortcut}",
-        "clipboardNoImage": "No image found in the clipboard.",
-        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
+        "unsupportedFileNamed": "{name} ist keine PDF-, CSV-, TXT-, JPG-, PNG- oder WebP-Datei",
+        "unreadableImageNamed": "{name} konnte nicht als Bild gelesen werden",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
+        "pasteImageButton": "Bild einfügen",
+        "pasteShortcutHint": "oder drücke {shortcut}",
+        "clipboardNoImage": "Kein Bild in der Zwischenablage gefunden.",
+        "clipboardReadFailed": "Die Zwischenablage konnte nicht gelesen werden. Erlaube den Zugriff auf die Zwischenablage oder füge es mit der Tastenkombination ein.",
         "unreadableFiles": "Konnte nicht gelesen werden: {files}",
         "fileStatus": {
           "pending": "Nicht analysiert",
@@ -75,8 +78,6 @@
             "description": "Die Verarbeitung kann 5+ Minuten dauern. Erwäge, die Datei in kleinere Teile aufzuteilen, um die Verarbeitung zu beschleunigen."
           }
         },
-        "freeApiWarning": "Du nutzt die enthaltene MoneyMatter-KI, die Nutzungslimits hat.",
-        "addApiKeyLink": "Eigenes KI-Modell hinzufügen",
         "status": {
           "sendingFile": "Sende Datei an KI...",
           "readingDocument": "KI liest das Dokument...",
@@ -153,9 +154,15 @@
         "backButton": "Zurück",
         "continueButton": "Weiter zum Import",
         "transactionCount": "({count} Transaktionen)",
-        "duplicateCheckFailed": "Wir konnten diesen Kontoauszug nicht mit deinen bestehenden Transaktionen abgleichen, daher ist die Anzahl der Duplikate unten nicht verfügbar. Überprüfe die Liste vor dem Import."
+        "duplicateCheckFailed": "Wir konnten diesen Kontoauszug nicht mit deinen bestehenden Transaktionen abgleichen, daher ist die Anzahl der Duplikate unten nicht verfügbar. Überprüfe die Liste vor dem Import.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} Zeile aus der KI-Antwort konnte nicht gelesen werden und wurde übersprungen. Die unten angezeigte Anzahl der importierten Zeilen ist möglicherweise niedriger als in deiner Datei. | {count} Zeilen aus der KI-Antwort konnten nicht gelesen werden und wurden übersprungen. Die unten angezeigte Anzahl der importierten Zeilen ist möglicherweise niedriger als in deiner Datei.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
         "readyTitle": "Bereit zum Importieren",
         "readyDescription": "Überprüfe die Zusammenfassung unten und klicke auf \"Transaktionen importieren\", um fortzufahren.",
@@ -182,7 +189,14 @@
         "errorHeader": "Fehler",
         "batchIdNote": "Import-Stapel-ID: {batchId}. Du kannst diese ID verwenden, um alle importierten Transaktionen zu finden und zu verwalten.",
         "viewTransactionsButton": "Transaktionen anzeigen",
-        "startNewImportButton": "Neuen Import starten"
+        "startNewImportButton": "Neuen Import starten",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

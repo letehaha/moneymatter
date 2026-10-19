@@ -116,32 +116,6 @@ export function buildGuardedReferenceMap(): Map<BackupFileName, GuardedFk[]> {
   return map;
 }
 
-/** English warning text a restore surfaces when a foreign reference is dropped
- *  (the whole row) or nulled (one column). Rendered verbatim by the frontend. */
-export function foreignReferenceDroppedMessage({
-  table,
-  column,
-  count,
-}: {
-  table: string;
-  column: string;
-  count: number;
-}): string {
-  return `Dropped ${count} row(s) from "${table}" whose "${column}" referenced data outside this backup.`;
-}
-
-export function foreignReferenceNulledMessage({
-  table,
-  column,
-  count,
-}: {
-  table: string;
-  column: string;
-  count: number;
-}): string {
-  return `Cleared "${column}" on ${count} row(s) in "${table}" that referenced data outside this backup.`;
-}
-
 type GuardRowResult =
   | {
       keep: true;

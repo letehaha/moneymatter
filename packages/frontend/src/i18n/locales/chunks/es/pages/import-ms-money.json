@@ -37,7 +37,7 @@
             "currentBalanceLabel": "Saldo actual",
             "currentBalancePlaceholder": "Déjelo en blanco para usar el total importado",
             "willCreateHint": "Se creará en {currency}.",
-            "currencyNotInFile": "Not in file",
+            "currencyNotInFile": "No está en archivo",
             "skippedNote": "{count} cuenta(s) se omitirán. Sus transacciones — y cualquier transferencia hacia o desde ellas — no se importarán."
           },
           "categories": {
@@ -73,7 +73,7 @@
             "orphanRowSkipped": "{count} transacción(es) omitidas",
             "transferCounterpartNotImported": "{count} lado(s) de transferencia importados como fuera de cartera",
             "rowLimitReached": "{count} transacción(es) por encima del límite se descartaron",
-            "accountCurrencyMissing": "{count} account(s) had no currency in the file, so your base currency was used — change it on the accounts step if that is wrong",
+            "accountCurrencyMissing": "Las cuentas {count} no tenían ninguna moneda en el archivo, así que tu moneda base fue utilizada — cámbiala en el paso de cuentas si no está bien",
             "rowMissingDate": "{count} transacción(es) sin fecha legible se omitieron",
             "accountNameMissing": "{count} cuenta(s) no tenían nombre",
             "accountNameDuplicated": "{count} cuenta(s) compartían el mismo nombre",
@@ -125,6 +125,11 @@
           "errorsTitle": "{count} fila(s) no se pudieron importar",
           "errorsOverflow": "…y {count} más",
           "rowPrefix": "Fila {rowIndex}:",
+          "errors": {
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
+            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "Ver transacciones",
           "importAnother": "Importar otro archivo"
         },

@@ -12,7 +12,7 @@ import { stripConnectionKeys } from '../dump-tables.service';
 import { BACKUP_TABLES } from '../registry';
 import { type ParsedArchive } from './load-archive';
 import { loadValidatedArchive } from './load-validated-archive';
-import { USER_ROW_GUARDED_FK, foreignReferenceNulledMessage } from './owned-reference-guard';
+import { USER_ROW_GUARDED_FK } from './owned-reference-guard';
 import { triggerPostRestorePriceSync } from './post-restore-price-sync';
 import {
   remapFireSettingsIds,
@@ -64,7 +64,7 @@ async function restoreUserRow({
       warnings.push({
         code: 'foreign_reference_nulled',
         table: 'user',
-        message: foreignReferenceNulledMessage({ table: 'user', column: USER_ROW_GUARDED_FK.attrName, count: 1 }),
+        column: USER_ROW_GUARDED_FK.attrName,
         count: 1,
       });
     } else {
@@ -98,11 +98,7 @@ async function upsertUserSettings({
   const src = rows[0];
 
   if (!src || src.settings == null) {
-    warnings.push({
-      code: 'no_settings',
-      table: 'user-settings',
-      message: 'Backup had no saved settings; defaults were applied.',
-    });
+    warnings.push({ code: 'no_settings', table: 'user-settings' });
     await UserSettings.create({ userId, settings: ZodSettingsSchema.parse({}) });
     return;
   }
@@ -117,22 +113,14 @@ async function upsertUserSettings({
     // A backup taken across a settings-schema change can carry a blob the current
     // schema rejects. Reset to defaults and warn rather than aborting an otherwise
     // valid restore over a non-critical field.
-    warnings.push({
-      code: 'settings_reset',
-      table: 'user-settings',
-      message: 'Saved settings did not match the current schema and were reset to defaults.',
-    });
+    warnings.push({ code: 'settings_reset', table: 'user-settings' });
     await UserSettings.create({ userId, settings: ZodSettingsSchema.parse({}) });
     return;
   }
 
   if (!parsed.success) {
     logger.warn('Backup restore: FIRE settings failed schema and were reset', { userId, issues: parsed.error.issues });
-    warnings.push({
-      code: 'fire_settings_reset',
-      table: 'user-settings',
-      message: 'Saved FIRE settings did not match the current schema and were reset to defaults.',
-    });
+    warnings.push({ code: 'fire_settings_reset', table: 'user-settings' });
   }
   const restoredSettings: SettingsSchema = restored.data;
 

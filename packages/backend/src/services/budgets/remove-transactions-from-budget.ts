@@ -7,6 +7,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import Sequelize, { Op } from 'sequelize';
 
 import { authorizeBudgetAccess } from './authorize-budget-access';
+import { rejectUnlinkedTransactions } from './smart-tracking/suggestion-feedback';
 
 interface RemoveTransactionsPayload {
   budgetId: string;
@@ -23,7 +24,7 @@ export const removeTransactionsFromBudget = withTransaction(async (payload: Remo
     requiredPermission: SHARE_PERMISSIONS.write,
   });
 
-  await findOrThrowNotFound({
+  const budget = await findOrThrowNotFound({
     query: Budgets.findOne({ where: { id: budgetId, userId: ownerUserId } }),
     message: t({ key: 'budgets.budgetNotFound' }),
   });
@@ -31,12 +32,12 @@ export const removeTransactionsFromBudget = withTransaction(async (payload: Remo
   if (isOwner) {
     // Owner can detach anything attached to their budget — recipient-attached rows
     // (metadata.addedByUserId set) and owner-attached rows alike.
-    const removedCount = await BudgetTransactions.destroy({
-      where: {
-        budgetId,
-        transactionId: { [Op.in]: transactionIds },
-      },
-    });
+    const where = { budgetId, transactionId: { [Op.in]: transactionIds } };
+    const unlinkedIds = budget.aiEnabled
+      ? (await BudgetTransactions.findAll({ where, attributes: ['transactionId'] })).map((row) => row.transactionId)
+      : [];
+    const removedCount = await BudgetTransactions.destroy({ where });
+    await rejectUnlinkedTransactions({ userId, budgetId, transactionIds: unlinkedIds });
     return { removedCount };
   }
 

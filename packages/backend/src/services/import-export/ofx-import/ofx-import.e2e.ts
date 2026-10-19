@@ -1,4 +1,5 @@
 import { ImportSource, OFX_MAX_FILE_BYTES, PAYMENT_TYPES } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -59,11 +60,25 @@ describe('OFX import HTTP endpoints', () => {
     it('rejects empty and malformed uploads through the HTTP error envelope', async () => {
       const empty = await helpers.uploadOfx({ file: Buffer.alloc(0) });
       expect(empty.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(empty.errorMessage).toMatch(/No file was uploaded/i);
+      expect(empty.errorMessage).toBe(t({ key: 'ofxImport.noFileUploaded', locale: 'en' }));
 
       const malformed = await helpers.uploadOfx({ file: Buffer.from('not an OFX document', 'utf8') });
       expect(malformed.statusCode).toBe(ERROR_CODES.ValidationError);
-      expect(malformed.errorMessage).toBeTruthy();
+      expect(malformed.errorMessage).toBe(t({ key: 'ofxImport.errors.headerMissing', locale: 'en' }));
+    });
+
+    it('translates parse errors into the request locale', async () => {
+      const result = await helpers.uploadOfx({
+        file: Buffer.from(
+          'OFXHEADER:100\nDATA:OFXSGML\nVERSION:102\nENCODING:EBCDIC\nCHARSET:500\nCOMPRESSION:NONE\n\n<OFX></OFX>',
+        ),
+        locale: 'uk',
+      });
+      const variables = { encoding: 'EBCDIC', charset: '500' };
+
+      expect(result.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(result.errorMessage).toBe(t({ key: 'ofxImport.errors.unsupportedEncoding', variables, locale: 'uk' }));
+      expect(result.errorMessage).not.toBe(t({ key: 'ofxImport.errors.unsupportedEncoding', variables, locale: 'en' }));
     });
 
     it('rejects the wrong media type and files over the upload limit', async () => {
@@ -237,22 +252,28 @@ describe('OFX import HTTP endpoints', () => {
     });
   });
 
-  it('fails execution when a linked account has another currency', async () => {
+  it('rejects execution when a linked account has another currency', async () => {
     const account = await helpers.createAccount({
       payload: helpers.buildAccountPayload({ name: `OFX wrong currency ${Date.now()}`, currencyCode: 'EUR' }),
       raw: true,
     });
     const upload = await helpers.uploadOfxFixture({ filename: 'bank-v1.ofx' });
-    const sourceKey = upload.result.accounts[0]!.sourceAccountKey;
-    const progress = await runImport({
-      uploadId: upload.uploadId,
-      accountMapping: { [sourceKey]: { action: 'link-existing', accountId: account.id } },
-      skipDuplicateIndices: [],
+    const source = upload.result.accounts[0]!;
+    const response = await helpers.executeOfx({
+      payload: {
+        uploadId: upload.uploadId,
+        accountMapping: { [source.sourceAccountKey]: { action: 'link-existing', accountId: account.id } },
+      },
     });
 
-    expect(progress.status).toBe('failed');
-    if (progress.status !== 'failed') throw new Error('unreachable');
-    expect(progress.error).toMatch(/cannot be linked across currencies/i);
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((response.body.response as unknown as helpers.ErrorResponse).message).toBe(
+      t({
+        key: 'ofxImport.crossCurrencyLink',
+        variables: { account: source.maskedDisplayName, currency: source.currency },
+        locale: 'en',
+      }),
+    );
   });
 
   it('does not let another user import into an account they do not own', async () => {
@@ -262,21 +283,30 @@ describe('OFX import HTTP endpoints', () => {
     });
     const otherUser = await provisionSecondUserWithBaseCurrency({ currencyCode: 'USD' });
 
-    const progress = await asUser({
+    const { response, source } = await asUser({
       cookies: otherUser.cookies,
       fn: async () => {
         const upload = await helpers.uploadOfxFixture({ filename: 'bank-v1.ofx' });
-        const sourceKey = upload.result.accounts[0]!.sourceAccountKey;
-        return runImport({
-          uploadId: upload.uploadId,
-          accountMapping: { [sourceKey]: { action: 'link-existing', accountId: ownerAccount.id } },
-          skipDuplicateIndices: [],
+        const sourceAccount = upload.result.accounts[0]!;
+        const executeResponse = await helpers.executeOfx({
+          payload: {
+            uploadId: upload.uploadId,
+            accountMapping: {
+              [sourceAccount.sourceAccountKey]: { action: 'link-existing', accountId: ownerAccount.id },
+            },
+          },
         });
+        return { response: executeResponse, source: sourceAccount };
       },
     });
 
-    expect(progress.status).toBe('failed');
-    if (progress.status !== 'failed') throw new Error('unreachable');
-    expect(progress.error).toMatch(/was not found/i);
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((response.body.response as unknown as helpers.ErrorResponse).message).toBe(
+      t({
+        key: 'ofxImport.linkedAccountNotFound',
+        variables: { account: source.maskedDisplayName, currency: source.currency },
+        locale: 'en',
+      }),
+    );
   });
 });

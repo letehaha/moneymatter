@@ -15,7 +15,7 @@ import { pickDialogSelect, waitForSuccessToast } from '../../helpers/ui';
 const CURRENCY = 'USD';
 const creds = buildTestCredentials({ prefix: 'pm' });
 
-let portfolioId: number;
+let portfolioId: string;
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });
@@ -35,13 +35,7 @@ async function seedTestData({ request }: { request: import('@playwright/test').A
   const holdingRes = await createHolding({
     request,
     portfolioId,
-    searchResult: {
-      symbol: 'ETEST',
-      name: 'E2E Test Corp',
-      assetClass: 'stocks',
-      providerName: 'fmp',
-      currencyCode: 'USD',
-    },
+    symbol: 'ETEST',
   });
 
   await setPortfolioCash({ request, portfolioId, currencyCode: CURRENCY, amount: '10000' });

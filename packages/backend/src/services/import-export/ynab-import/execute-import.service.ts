@@ -22,6 +22,7 @@ import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
 import { type OpenImportBatch, withImportBatchRecord } from '../core/import-batch-record';
+import { ImportJobError } from '../core/queue/import-job-error';
 import { createAccountsIfNeeded } from '../core/resolve/create-accounts-if-needed';
 import { createTwoLevelCategoriesIfNeeded } from '../core/resolve/create-categories-if-needed';
 import { createNamedTagsIfNeeded } from '../core/resolve/create-tags-if-needed';
@@ -65,8 +66,10 @@ async function executeYnabImportImpl({
   // Skipped accounts need one too: `skip` is an explicit entry, not an omission.
   const missingMappings = parsed.accounts.filter((a) => !accountMapping[a.originalName]);
   if (missingMappings.length > 0) {
-    throw new ValidationError({
-      message: `Missing account mapping for: ${missingMappings.map((a) => a.originalName).join(', ')}`,
+    const accounts = missingMappings.map((a) => a.originalName).join(', ');
+    throw new ImportJobError({
+      message: `Missing account mapping for: ${accounts}`,
+      failure: { code: 'account-mapping-missing', params: { accounts } },
     });
   }
 
@@ -199,7 +202,12 @@ async function executeYnabImportImpl({
       // payee was dropped — transactions referencing it will land without a
       // payeeId rather than fail. rowIndex is -1 because the failure spans
       // every row that used this payee, not a single CSV line.
-      summary.errors.push({ rowIndex: -1, error: `Failed to create payee "${payeeName}": ${message}` });
+      summary.errors.push({
+        rowIndex: -1,
+        code: 'payee-create-failed',
+        payeeName,
+        error: `Failed to create payee "${payeeName}": ${message}`,
+      });
     }
   }
 

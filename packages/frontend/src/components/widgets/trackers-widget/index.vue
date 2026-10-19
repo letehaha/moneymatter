@@ -6,13 +6,15 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
 import { cn } from '@/lib/utils';
-import { utilizationClasses } from '@/pages/budgets/budget-list-cards/shared/utilization-classes';
+import { getTrackerSpent } from '@/pages/budgets/budgets-info/tracker-summary';
+import UtilizationBar from '@/pages/budgets/components/utilization-bar.vue';
+import { getTrackerTimeStatus } from '@/pages/budgets/tracker-time-status';
+import { utilizationClasses } from '@/pages/budgets/utilization-classes';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useRootStore } from '@/stores';
 import { BUDGET_STATUSES } from '@bt/shared/types';
-import { ArrowUpRightIcon, TagsIcon } from '@lucide/vue';
+import { ArrowUpRightIcon, TargetIcon } from '@lucide/vue';
 import { useQueries, useQuery } from '@tanstack/vue-query';
-import { isPast } from 'date-fns';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
@@ -53,7 +55,7 @@ const rows = computed(() =>
           tracker,
           summary,
           utilizationRate,
-          ended: !!tracker.endDate && isPast(new Date(tracker.endDate)),
+          ended: getTrackerTimeStatus({ startDate: tracker.startDate, endDate: tracker.endDate }).kind === 'ended',
           tone: utilizationClasses({ rate: utilizationRate ?? 0 }),
         },
       ];
@@ -105,7 +107,7 @@ const retry = () => {
     </div>
 
     <div v-else-if="!rows.length" class="flex min-h-[220px] flex-col items-center justify-center gap-3 text-center">
-      <TagsIcon class="text-muted-foreground size-10" />
+      <TargetIcon class="text-muted-foreground size-10" />
       <p class="text-muted-foreground text-sm">{{ $t('dashboard.widgets.trackers.empty') }}</p>
       <router-link
         :class="buttonVariants({ variant: 'outline', size: 'sm' })"
@@ -143,19 +145,14 @@ const retry = () => {
             </span>
           </span>
 
-          <span v-if="row.utilizationRate !== null" class="bg-muted mt-1.5 block h-1.5 overflow-hidden rounded-full">
-            <span
-              :class="cn('block h-full rounded-full', row.tone.bg)"
-              :style="{ width: `${Math.min(row.utilizationRate, 100)}%` }"
-            />
-          </span>
+          <UtilizationBar v-if="row.utilizationRate !== null" :rate="row.utilizationRate" class="mt-1.5" />
 
           <span class="text-muted-foreground mt-1 flex justify-between gap-3 text-xs leading-4 tabular-nums">
             <span class="min-w-0 truncate">
               {{
                 row.utilizationRate !== null
                   ? $t('dashboard.widgets.trackers.spentOfLimit', {
-                      spent: formatBaseCurrency(row.summary.actualExpense),
+                      spent: formatBaseCurrency(getTrackerSpent({ summary: row.summary })),
                       limit: formatBaseCurrency(row.tracker.limitAmount ?? 0),
                     })
                   : $t('dashboard.widgets.trackers.inOut', {

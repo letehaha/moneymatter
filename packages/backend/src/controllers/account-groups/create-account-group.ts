@@ -10,15 +10,14 @@ export default createController(
       .object({
         name: z.string().min(1),
         parentGroupId: recordId().nullable().optional(),
-        // Absent key → column stays null; a brand domain and monogram letters
-        // evict each other.
+        // Absent key → column stays null; domain, initials and icon evict each other.
         ...logoFieldsShape,
       })
       .strict()
       .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx })),
   }),
   async ({ user, body }) => {
-    const { name, parentGroupId, logoDomain, logoInitials, logoColor } = body;
+    const { name, parentGroupId, logoDomain, logoInitials, logoColor, logoIcon } = body;
 
     const data = await accountGroupService.createAccountGroup({
       userId: user.id,
@@ -27,6 +26,7 @@ export default createController(
       logoDomain,
       logoInitials,
       logoColor,
+      logoIcon,
     });
 
     return { data };

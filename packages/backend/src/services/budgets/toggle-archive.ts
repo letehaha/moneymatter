@@ -1,23 +1,23 @@
-import { BUDGET_STATUSES, SHARE_PERMISSIONS } from '@bt/shared/types';
+import { BUDGET_STATUSES, type RecordId, SHARE_PERMISSIONS } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import Budgets from '@models/budget.model';
+import { getBudgetById } from '@services/budget.service';
 import { withTransaction } from '@services/common/with-transaction';
 
 import { authorizeBudgetAccess } from './authorize-budget-access';
 
 export const toggleBudgetArchive = withTransaction(
-  async ({ id, userId, isArchived }: { id: string; userId: number; isArchived: boolean }) => {
+  async ({ id, userId, isArchived }: { id: RecordId; userId: number; isArchived: boolean }) => {
     // Archive/unarchive is `manage`-only — a lifecycle action, gated above routine edits
     // (and `write` doesn't include any metadata mutation per the reduced-scope decision).
-    const { ownerUserId } = await authorizeBudgetAccess({
+    await authorizeBudgetAccess({
       userId,
       budgetId: id,
       requiredPermission: SHARE_PERMISSIONS.manage,
     });
 
     const budget = await findOrThrowNotFound({
-      query: Budgets.findOne({ where: { id, userId: ownerUserId } }),
+      query: getBudgetById({ userId, id }),
       message: t({ key: 'budgets.budgetNotFound' }),
     });
 

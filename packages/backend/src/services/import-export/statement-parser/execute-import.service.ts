@@ -15,6 +15,7 @@ import {
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
+import { logger } from '@js/utils';
 import { trackImportCompleted } from '@js/utils/posthog';
 import * as Accounts from '@models/accounts.model';
 import { getCurrencies } from '@models/currencies.model';
@@ -142,10 +143,7 @@ async function executeImportImpl({
       // The extraction prompt only emits ISO dates, so the field order is never consulted.
       const parsedDate = parseImportDate({ value: tx.date, format: { fieldOrder: 'day-first' } });
       if (!parsedDate) {
-        errors.push({
-          transactionIndex: i,
-          error: `Invalid date format: "${tx.date}"`,
-        });
+        errors.push({ transactionIndex: i, code: 'INVALID_DATE', params: { date: tx.date } });
         continue;
       }
       const txDate = anchorImportDate({ parsed: parsedDate, timezone });
@@ -155,29 +153,20 @@ async function executeImportImpl({
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(23, 59, 59, 999);
       if (txDate > tomorrow) {
-        errors.push({
-          transactionIndex: i,
-          error: `Transaction date "${tx.date}" is in the future`,
-        });
+        errors.push({ transactionIndex: i, code: 'FUTURE_DATE', params: { date: tx.date } });
         continue;
       }
 
       // Validate: amount must be positive (type determines income/expense direction)
       if (tx.amount <= 0) {
-        errors.push({
-          transactionIndex: i,
-          error: `Amount must be positive, got: ${tx.amount}`,
-        });
+        errors.push({ transactionIndex: i, code: 'AMOUNT_NOT_POSITIVE', params: { amount: tx.amount } });
         continue;
       }
 
       // Validate: amount should not exceed reasonable threshold (1 billion)
       const MAX_AMOUNT = 1_000_000_000;
       if (tx.amount > MAX_AMOUNT) {
-        errors.push({
-          transactionIndex: i,
-          error: `Amount ${tx.amount} exceeds maximum allowed value of ${MAX_AMOUNT}`,
-        });
+        errors.push({ transactionIndex: i, code: 'AMOUNT_TOO_LARGE', params: { amount: tx.amount, max: MAX_AMOUNT } });
         continue;
       }
 
@@ -227,10 +216,11 @@ async function executeImportImpl({
         newTransactionIds.push(transaction.id);
       }
     } catch (error) {
-      errors.push({
+      logger.warn('[Statement Parser] Import row failed', {
         transactionIndex: i,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        reason: error instanceof Error ? error.message : String(error),
       });
+      errors.push({ transactionIndex: i, code: 'ROW_FAILED' });
     } finally {
       // `finally`, not a trailing call: the per-row validation branches above
       // `continue` out of the loop body.

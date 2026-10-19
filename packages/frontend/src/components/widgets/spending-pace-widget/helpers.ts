@@ -14,7 +14,7 @@ export type PaceTone = 'over' | 'under' | 'neutral';
 
 type DailyPeriod = Pick<CashFlowPeriodData, 'periodStart' | 'income' | 'expenses'>;
 
-export interface PaceComparison {
+interface PaceComparison {
   cumulative: number[];
   byToday: number;
   total: number;
@@ -25,13 +25,13 @@ export interface PaceComparison {
   monthsCount: number;
 }
 
-export interface SpendingPace {
+interface SpendingPace {
   spentCumulative: number[];
   spent: number;
   comparison: PaceComparison | null;
 }
 
-export const cumulative = ({ values }: { values: number[] }): number[] => {
+const cumulative = ({ values }: { values: number[] }): number[] => {
   let total = 0;
   return values.map((value) => (total += value));
 };

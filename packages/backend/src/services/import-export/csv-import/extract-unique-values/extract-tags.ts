@@ -1,4 +1,5 @@
 import { type ColumnMappingConfig, TagOptionValue } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { splitTagCell } from '@services/import-export/core/parse/split-tag-cell';
 
@@ -27,7 +28,7 @@ export function extractTags({
   const tagIndex = headers.indexOf(tagOption.columnName);
   if (tagIndex === -1) {
     throw new ValidationError({
-      message: `Tag column "${tagOption.columnName}" not found in CSV`,
+      message: t({ key: 'csvImport.tagColumnNotFound', variables: { columnName: tagOption.columnName } }),
     });
   }
 

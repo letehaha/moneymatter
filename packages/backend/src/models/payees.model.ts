@@ -86,6 +86,18 @@ export default class Payees extends Model {
   })
   logoColor!: string | null;
 
+  @Column({
+    type: DataType.STRING(64),
+    allowNull: true,
+  })
+  logoIcon!: string | null;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+  })
+  logoImageId!: string | null;
+
   declare createdAt: Date;
   declare updatedAt: Date;
 

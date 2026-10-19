@@ -1,4 +1,4 @@
-import { AINativeProvider, AI_FEATURE, AI_PROVIDER, FEATURES } from '@bt/shared/types';
+import { AINativeProvider, AI_FEATURE, AI_PROVIDER, hasServerAiEntitlement } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
 import type { StoredConnection } from '@models/user-settings.model';
 
@@ -57,7 +57,7 @@ export async function resolveAIConfiguration({
   const connections = aiSettings?.connections ?? [];
   const config = aiSettings?.featureConfigs?.find((candidate) => candidate.feature === feature) ?? null;
   const entitlements = await getEntitlementsByUserId({ userId });
-  const entitled = allowOperatorKey || entitlements.features.includes(FEATURES.operator_ai);
+  const entitled = allowOperatorKey || hasServerAiEntitlement({ entitlements, feature });
   const withinAllowance = entitled ? await isWithinAiAllowance({ userId, entitlements }) : undefined;
   const serverKeysAllowed = withinAllowance === true;
   const excludedConnectionIds = new Set<string>();

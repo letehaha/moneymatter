@@ -16,7 +16,7 @@ const MONOBANK_CARD_GRADIENTS: Record<string, string> = {
   madeInUkraine: 'linear-gradient(180deg, #2b6cb8 50%, #e8c11c 50%)',
 };
 
-export type AccountVisual =
+type AccountVisual =
   | { kind: 'logo'; src: string }
   | { kind: 'favicon'; src: string; code: string }
   | { kind: 'card'; gradient: string }

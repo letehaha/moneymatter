@@ -1,13 +1,13 @@
 {
   "auth": {
     "welcome": {
-      "title": "Select Base Currency",
+      "title": "Select base currency",
       "description": "Your base currency should ideally be the one you use most often. All transactions in other currencies will be calculated based on this one.",
-      "submitButton": "Confirm Currency",
+      "submitButton": "Confirm currency",
       "trialStarted": "Your free trial has started, everything is unlocked for {count} day. {link} | Your free trial has started, everything is unlocked for {count} days. {link}",
       "logout": "Logout",
       "labels": {
-        "baseCurrency": "Base Currency"
+        "baseCurrency": "Base currency"
       },
       "placeholders": {
         "loading": "Loading..."

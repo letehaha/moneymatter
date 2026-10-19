@@ -1,50 +1,54 @@
 <template>
-  <div v-if="data.length === 0" class="text-muted-foreground py-16 text-center text-sm">
-    {{ $t('pages.budgetDetails.statistics.noTimelineData') }}
-  </div>
+  <div class="flex flex-col">
+    <div ref="containerRef" class="relative h-64 w-full">
+      <svg
+        ref="svgRef"
+        class="h-full w-full"
+        role="img"
+        :aria-label="$t('pages.budgetDetails.statistics.timelineAria')"
+      />
 
-  <template v-else>
-    <div class="flex flex-col">
-      <div ref="containerRef" class="relative h-72 w-full">
-        <svg ref="svgRef" class="h-full w-full"></svg>
-
-        <!-- Tooltip -->
-        <div
-          v-show="tooltip.visible"
-          ref="tooltipRef"
-          class="pointer-events-none absolute z-10"
-          :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
-        >
-          <ChartTooltip>
-            <ChartTooltipHeader>{{ tooltip.period }}</ChartTooltipHeader>
-            <ChartTooltipRow
-              v-if="tooltip.income > 0"
-              color="var(--success-text)"
-              :label="$t('pages.budgetDetails.statistics.incomeLabel')"
-              :value="formatBaseCurrency(tooltip.income)"
-            />
-            <ChartTooltipRow
-              color="var(--destructive-text)"
-              :label="$t('pages.budgetDetails.statistics.expensesLabel')"
-              :value="formatBaseCurrency(tooltip.expense)"
-            />
-          </ChartTooltip>
-        </div>
-      </div>
-
-      <!-- Legend -->
-      <div class="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm">
-        <div v-if="hasIncome" class="flex items-center gap-2">
-          <span class="bg-success-text inline-block size-3 rounded-sm"></span>
-          <span class="text-muted-foreground">{{ $t('pages.budgetDetails.statistics.income') }}</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="bg-destructive-text inline-block size-3 rounded-sm"></span>
-          <span class="text-muted-foreground">{{ $t('pages.budgetDetails.statistics.expenses') }}</span>
-        </div>
+      <div
+        v-show="tooltip.visible"
+        ref="tooltipRef"
+        class="pointer-events-none fixed z-50"
+        :style="{ left: `${tooltip.x}px`, top: `${tooltip.y}px` }"
+      >
+        <ChartTooltip>
+          <ChartTooltipHeader>{{ tooltip.period }}</ChartTooltipHeader>
+          <ChartTooltipRow
+            color="var(--primary)"
+            :label="$t('pages.budgetDetails.statistics.expensesLabel')"
+            :value="formatBaseCurrency(tooltip.expense)"
+          />
+          <ChartTooltipRow
+            color="var(--muted-foreground)"
+            :label="$t('pages.budgetDetails.statistics.cumulativeLabel')"
+            :value="formatBaseCurrency(tooltip.cumulative)"
+          />
+        </ChartTooltip>
       </div>
     </div>
-  </template>
+
+    <div class="text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+      <span class="flex items-center gap-1.5">
+        <i class="bg-primary inline-block h-0.5 w-3" />{{ $t('pages.budgetDetails.statistics.legend.cumulative') }}
+      </span>
+      <span v-if="limit" class="flex items-center gap-1.5">
+        <i class="bg-muted-foreground inline-block h-0.5 w-3" />{{
+          $t('pages.budgetDetails.statistics.legend.evenPace')
+        }}
+      </span>
+      <span v-if="projectedTotal !== null" class="flex items-center gap-1.5">
+        <i class="bg-destructive-text inline-block h-0.5 w-3" />{{
+          $t('pages.budgetDetails.statistics.legend.projection')
+        }}
+      </span>
+      <span class="flex items-center gap-1.5">
+        <i class="bg-primary/40 inline-block h-2.5 w-3" />{{ perPeriodLabel }}
+      </span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -55,233 +59,251 @@ import { getChartColors } from '@/composable/charts/chart-colors';
 import { formatAxisCurrency } from '@/composable/charts/format-axis-currency';
 import { useChartTooltipPosition } from '@/composable/charts/use-chart-tooltip-position';
 import { useDateLocale } from '@/composable/use-date-locale';
-import type { BudgetSpendingPeriod } from '@bt/shared/types';
-import * as d3 from 'd3';
-import { parseISO } from 'date-fns';
+import type { BudgetSpendingGranularity } from '@bt/shared/types';
 import { useResizeObserver } from '@vueuse/core';
+import * as d3 from 'd3';
+import { addDays, isSameMonth, max as maxDate, min as minDate, parseISO } from 'date-fns';
 import { computed, reactive, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+import { type CumulativePoint, getPercent } from './tracker-insights';
 
 const props = defineProps<{
-  data: BudgetSpendingPeriod[];
-  granularity: 'monthly' | 'weekly';
+  series: CumulativePoint[];
+  granularity: BudgetSpendingGranularity;
+  rangeStart: Date | null;
+  rangeEnd: Date | null;
+  /** Only set when the tracker has both a limit and dates. */
+  limit: number | null;
+  /** Only set while the tracker is in progress and has a limit. */
+  projectedTotal: number | null;
 }>();
 
+const { t } = useI18n();
+
+const perPeriodLabel = computed(
+  () =>
+    ({
+      daily: t('pages.budgetDetails.statistics.legend.daily'),
+      weekly: t('pages.budgetDetails.statistics.legend.weekly'),
+      monthly: t('pages.budgetDetails.statistics.legend.monthly'),
+    })[props.granularity],
+);
 const { format } = useDateLocale();
-const { formatBaseCurrency, getCurrencySymbol } = useFormatCurrency();
+const { formatBaseCurrency, formatWholeBaseCurrency, getCurrencySymbol } = useFormatCurrency();
 
 const containerRef = ref<HTMLDivElement | null>(null);
 const svgRef = ref<SVGSVGElement | null>(null);
 const tooltipRef = ref<HTMLDivElement | null>(null);
 
-const tooltip = reactive({
-  visible: false,
-  x: 0,
-  y: 0,
-  period: '',
-  income: 0,
-  expense: 0,
-});
+const tooltip = reactive({ visible: false, x: 0, y: 0, period: '', expense: 0, cumulative: 0 });
 
-const { updateTooltipPosition } = useChartTooltipPosition({
-  containerRef,
-  tooltipRef,
-  tooltip,
-});
+const { updateTooltipPosition } = useChartTooltipPosition({ containerRef, tooltipRef, tooltip, strategy: 'fixed' });
 
-const hasIncome = computed(() => props.data.some((d) => d.income > 0));
+const MIN_PX_PER_X_TICK = 110;
+const BAR_PADDING_RATIO = 0.15;
 
-const getColors = () => {
-  const { grid, text, successText, destructiveText } = getChartColors();
-  return {
-    grid,
-    text,
-    income: successText,
-    expenses: destructiveText,
-  };
+const formatPeriod = (point: CumulativePoint) => {
+  const start = parseISO(point.periodStart);
+  const end = parseISO(point.periodEnd);
+  if (props.granularity === 'daily') return format(start, 'MMM d, yyyy');
+  if (props.granularity === 'monthly' && isSameMonth(start, end)) return format(start, 'MMMM yyyy');
+  return `${format(start, 'MMM d')} – ${format(end, 'MMM d, yyyy')}`;
 };
-
-const formatPeriodLabel = (periodStart: string): string => {
-  const date = parseISO(periodStart);
-  return props.granularity === 'monthly' ? format(date, 'MMM yy') : format(date, 'MMM d');
-};
-
-const formatAxisValue = (value: number) => formatAxisCurrency({ value, symbol: getCurrencySymbol() });
 
 const renderChart = () => {
-  if (!svgRef.value || !containerRef.value || props.data.length === 0) return;
+  if (!svgRef.value || !containerRef.value || props.series.length === 0) return;
 
-  const colors = getColors();
+  const colors = getChartColors();
   const svg = d3.select(svgRef.value);
   svg.selectAll('*').remove();
 
   const width = containerRef.value.clientWidth;
   const height = containerRef.value.clientHeight;
-  const isMobile = width < 400;
-
-  const spacePerLabel = width / props.data.length;
-  const shouldRotateLabels = spacePerLabel < 55 || props.data.length >= 12;
-
-  const margin = {
-    top: 20,
-    right: isMobile ? 10 : 20,
-    left: isMobile ? 40 : 60,
-    bottom: shouldRotateLabels ? 70 : 40,
-  };
+  const margin = { top: 28, right: 16, bottom: 28, left: width < 400 ? 52 : 64 };
   const innerWidth = width - margin.left - margin.right;
   const innerHeight = height - margin.top - margin.bottom;
-
   const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-  const xScale = d3
-    .scaleBand()
-    .domain(props.data.map((d) => d.periodStart))
-    .range([0, innerWidth])
-    .padding(0.2);
+  const periodBounds = props.series.map((p) => ({
+    start: parseISO(p.periodStart),
+    end: addDays(parseISO(p.periodEnd), 1),
+  }));
+  const domainStart = minDate([...(props.rangeStart ? [props.rangeStart] : []), periodBounds[0]!.start]);
+  const domainEnd = maxDate([
+    ...(props.rangeEnd ? [addDays(props.rangeEnd, 1)] : []),
+    periodBounds[periodBounds.length - 1]!.end,
+  ]);
+  const now = new Date();
+  const showToday = props.projectedTotal !== null;
+  const spent = props.series[props.series.length - 1]!.cumulative;
 
-  const maxExpense = d3.max(props.data, (d) => d.expense) || 0;
-  const maxIncome = d3.max(props.data, (d) => d.income) || 0;
-  const maxValue = Math.max(maxExpense, maxIncome);
+  const xScale = d3.scaleTime().domain([domainStart, domainEnd]).range([0, innerWidth]);
+  const yMax = Math.max(
+    spent,
+    d3.max(props.series, (d) => d.expense) ?? 0,
+    props.limit ?? 0,
+    props.projectedTotal ?? 0,
+  );
+  const yScale = d3
+    .scaleLinear()
+    .domain([0, yMax || 1])
+    .nice()
+    .range([innerHeight, 0]);
 
-  const yScale = d3.scaleLinear().domain([0, maxValue]).nice().range([innerHeight, 0]);
-
-  // Grid lines
   g.append('g')
-    .attr('class', 'grid')
     .call(
       d3
         .axisLeft(yScale)
+        .ticks(4)
         .tickSize(-innerWidth)
-        .tickFormat(() => ''),
+        .tickFormat((d) => formatAxisCurrency({ value: d as number, symbol: getCurrencySymbol() })),
     )
-    .call((grid) => {
-      grid.select('.domain').remove();
-      grid.selectAll('.tick line').attr('stroke', colors.grid).attr('stroke-opacity', 0.5);
-    });
-
-  // X axis
-  const labelRotation = shouldRotateLabels ? -45 : 0;
-  const fontSize = isMobile ? '10px' : '12px';
-
-  g.append('g')
-    .attr('class', 'x-axis')
-    .attr('transform', `translate(0,${innerHeight})`)
-    .call(d3.axisBottom(xScale).tickFormat((d) => formatPeriodLabel(d as string)))
     .call((axis) => {
-      axis.select('.domain').attr('stroke', colors.grid);
-      axis
-        .selectAll('.tick text')
-        .attr('fill', colors.text)
-        .attr('font-size', fontSize)
-        .attr('transform', `rotate(${labelRotation})`)
-        .attr('text-anchor', shouldRotateLabels ? 'end' : 'middle')
-        .attr('dx', shouldRotateLabels ? '-0.5em' : '0')
-        .attr('dy', shouldRotateLabels ? '0.5em' : '0.7em');
-      axis.selectAll('.tick line').attr('stroke', colors.grid);
+      axis.select('.domain').remove();
+      axis.selectAll('.tick line').attr('stroke', colors.grid).attr('stroke-opacity', 0.5);
+      axis.selectAll('.tick text').attr('fill', colors.text).style('font-size', '14px');
     });
 
-  // Y axis
   g.append('g')
-    .attr('class', 'y-axis')
+    .attr('transform', `translate(0,${innerHeight})`)
     .call(
       d3
-        .axisLeft(yScale)
-        .ticks(isMobile ? 5 : 6)
-        .tickFormat((d) => formatAxisValue(d as number)),
+        .axisBottom<Date>(xScale)
+        .ticks(Math.max(2, Math.floor(innerWidth / MIN_PX_PER_X_TICK)))
+        .tickSizeOuter(0)
+        .tickFormat((d) => format(d, props.granularity === 'monthly' ? 'MMM yy' : 'MMM d')),
     )
     .call((axis) => {
       axis.select('.domain').attr('stroke', colors.grid);
-      axis.selectAll('.tick text').attr('fill', colors.text).attr('font-size', fontSize);
-      axis.selectAll('.tick line').attr('stroke', colors.grid);
+      axis.selectAll('.tick line').remove();
+      axis.selectAll('.tick text').attr('fill', colors.text).style('font-size', '14px');
     });
 
-  const MAX_BAR_WIDTH = 60;
-  const bandwidth = xScale.bandwidth();
-  const showIncome = hasIncome.value;
+  periodBounds.forEach((bounds, index) => {
+    const point = props.series[index]!;
+    const x0 = xScale(bounds.start);
+    const bandWidth = xScale(bounds.end) - x0;
+    const padding = bandWidth * BAR_PADDING_RATIO;
 
-  if (showIncome) {
-    // Grouped bars: income + expense side by side
-    const halfBarWidth = Math.min(bandwidth / 2 - 2, MAX_BAR_WIDTH / 2);
-    const barOffset = (bandwidth - halfBarWidth * 2 - 4) / 2;
+    g.append('rect')
+      .attr('x', x0 + padding)
+      .attr('y', yScale(point.expense))
+      .attr('width', Math.max(1, bandWidth - padding * 2))
+      .attr('height', innerHeight - yScale(point.expense))
+      .attr('fill', colors.primary)
+      .attr('fill-opacity', 0.3)
+      .attr('rx', 2);
 
-    // Income bars (left)
-    g.selectAll('.bar-income')
-      .data(props.data)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar-income')
-      .attr('x', (d) => xScale(d.periodStart)! + barOffset)
-      .attr('y', (d) => yScale(d.income))
-      .attr('width', halfBarWidth)
-      .attr('height', (d) => innerHeight - yScale(d.income))
-      .attr('fill', colors.income)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .on('mouseenter', handleMouseEnter)
-      .on('mousemove', handleMouseMove)
-      .on('mouseleave', handleMouseLeave);
+    g.append('rect')
+      .attr('x', x0)
+      .attr('y', 0)
+      .attr('width', Math.max(1, bandWidth))
+      .attr('height', innerHeight)
+      .attr('fill', 'transparent')
+      .on('mouseenter', (event: MouseEvent) => {
+        tooltip.period = formatPeriod(point);
+        tooltip.expense = point.expense;
+        tooltip.cumulative = point.cumulative;
+        tooltip.visible = true;
+        updateTooltipPosition(event);
+      })
+      .on('mousemove', (event: MouseEvent) => updateTooltipPosition(event))
+      .on('mouseleave', () => {
+        tooltip.visible = false;
+      });
+  });
 
-    // Expense bars (right)
-    g.selectAll('.bar-expenses')
-      .data(props.data)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar-expenses')
-      .attr('x', (d) => xScale(d.periodStart)! + barOffset + halfBarWidth + 4)
-      .attr('y', (d) => yScale(d.expense))
-      .attr('width', halfBarWidth)
-      .attr('height', (d) => innerHeight - yScale(d.expense))
-      .attr('fill', colors.expenses)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .on('mouseenter', handleMouseEnter)
-      .on('mousemove', handleMouseMove)
-      .on('mouseleave', handleMouseLeave);
-  } else {
-    // Single expense bars
-    const barWidth = Math.min(bandwidth, MAX_BAR_WIDTH);
-    const barOffset = (bandwidth - barWidth) / 2;
+  if (props.limit && props.rangeStart && props.rangeEnd) {
+    const limitY = yScale(props.limit);
+    g.append('line')
+      .attr('x1', 0)
+      .attr('x2', innerWidth)
+      .attr('y1', limitY)
+      .attr('y2', limitY)
+      .attr('stroke', colors.grid)
+      .attr('stroke-dasharray', '3 4');
+    g.append('text')
+      .attr('x', 0)
+      .attr('y', limitY - 6)
+      .attr('fill', colors.text)
+      .style('font-size', '14px')
+      .text(t('pages.budgetDetails.statistics.limitLabel', { amount: formatWholeBaseCurrency(props.limit) }));
 
-    g.selectAll('.bar-expenses')
-      .data(props.data)
-      .enter()
-      .append('rect')
-      .attr('class', 'bar-expenses')
-      .attr('x', (d) => xScale(d.periodStart)! + barOffset)
-      .attr('y', (d) => yScale(d.expense))
-      .attr('width', barWidth)
-      .attr('height', (d) => innerHeight - yScale(d.expense))
-      .attr('fill', colors.expenses)
-      .attr('rx', 4)
-      .attr('ry', 4)
-      .on('mouseenter', handleMouseEnter)
-      .on('mousemove', handleMouseMove)
-      .on('mouseleave', handleMouseLeave);
+    g.append('line')
+      .attr('x1', xScale(props.rangeStart))
+      .attr('y1', yScale(0))
+      .attr('x2', xScale(addDays(props.rangeEnd, 1)))
+      .attr('y2', limitY)
+      .attr('stroke', colors.text)
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '4 4');
+  }
+
+  const capX = (date: Date) => (showToday ? minDate([date, now]) : date);
+  const linePoints: [Date, number][] = [
+    [domainStart, 0],
+    ...props.series.map((p, i): [Date, number] => [capX(periodBounds[i]!.end), p.cumulative]),
+  ];
+  g.append('path')
+    .datum(linePoints)
+    .attr('fill', 'none')
+    .attr('stroke', colors.primary)
+    .attr('stroke-width', 2.5)
+    .attr('stroke-linejoin', 'round')
+    .attr(
+      'd',
+      d3
+        .line<[Date, number]>()
+        .x((d) => xScale(d[0]))
+        .y((d) => yScale(d[1])),
+    );
+
+  if (showToday && props.projectedTotal !== null) {
+    const todayX = xScale(now);
+    const spentY = yScale(spent);
+
+    g.append('line')
+      .attr('x1', todayX)
+      .attr('y1', yScale(spent))
+      .attr('x2', xScale(domainEnd))
+      .attr('y2', yScale(props.projectedTotal))
+      .attr('stroke', colors.destructiveText)
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '3 3');
+
+    g.append('line')
+      .attr('x1', todayX)
+      .attr('x2', todayX)
+      .attr('y1', 0)
+      .attr('y2', innerHeight)
+      .attr('stroke', colors.foreground)
+      .attr('stroke-dasharray', '2 3');
+
+    g.append('circle')
+      .attr('cx', todayX)
+      .attr('cy', spentY)
+      .attr('r', 4)
+      .attr('fill', colors.primary)
+      .attr('stroke', colors.card)
+      .attr('stroke-width', 2);
+
+    const label = props.limit
+      ? `${formatWholeBaseCurrency(spent)} · ${Math.round(getPercent({ part: spent, total: props.limit }))}%`
+      : formatWholeBaseCurrency(spent);
+    const anchorEnd = todayX > innerWidth * 0.6;
+    g.append('text')
+      .attr('x', todayX + (anchorEnd ? -6 : 6))
+      .attr('y', -8)
+      .attr('text-anchor', anchorEnd ? 'end' : 'start')
+      .attr('fill', colors.foreground)
+      .style('font-size', '14px')
+      .style('font-weight', '700')
+      .text(label);
   }
 };
 
-function handleMouseEnter(event: MouseEvent, d: BudgetSpendingPeriod) {
-  const startDate = parseISO(d.periodStart);
-  const endDate = parseISO(d.periodEnd);
-  const isSameMonth = startDate.getMonth() === endDate.getMonth() && startDate.getFullYear() === endDate.getFullYear();
-
-  tooltip.period = isSameMonth
-    ? format(startDate, 'MMMM yyyy')
-    : `${format(startDate, 'MMM d')} - ${format(endDate, 'MMM d, yyyy')}`;
-  tooltip.income = d.income;
-  tooltip.expense = d.expense;
-  tooltip.visible = true;
-  updateTooltipPosition(event);
-}
-
-function handleMouseMove(event: MouseEvent) {
-  updateTooltipPosition(event);
-}
-
-function handleMouseLeave() {
-  tooltip.visible = false;
-}
-
 useResizeObserver(containerRef, renderChart);
 
-watch([() => props.data, () => props.granularity, currentTheme], renderChart, { deep: true });
+watch([() => props, currentTheme], renderChart, { deep: true });
 </script>

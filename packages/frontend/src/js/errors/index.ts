@@ -5,6 +5,7 @@ export * from './network.error';
 export * from './auth.error';
 export * from './unexpected.error';
 export * from './oauth-provider-not-configured.error';
+export * from './auth-error-message';
 
 export class ApiErrorResponseError extends Error {
   data: ApiBaseError;

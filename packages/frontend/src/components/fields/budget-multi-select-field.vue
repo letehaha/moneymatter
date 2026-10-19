@@ -11,6 +11,19 @@
   >
     <ScrollArea class="max-h-85 lg:max-h-60" viewport-class="max-h-85 lg:max-h-60">
       <div class="p-1.25">
+        <template v-if="allowBlank && !searchTerm.trim()">
+          <Button
+            type="button"
+            variant="ghost"
+            class="text-muted-foreground mb-1 h-auto w-full justify-start px-2 py-1 font-normal"
+            @click="toggle(BLANK_FILTER_VALUE)"
+          >
+            <CircleDashedIcon class="size-4 shrink-0" />
+            <span class="min-w-0 grow truncate text-left">{{ $t('fields.budgetMultiSelect.blankOption') }}</span>
+            <CheckIcon v-if="budgetIds.includes(BLANK_FILTER_VALUE)" class="size-4 shrink-0" />
+          </Button>
+          <div class="bg-border mb-1 h-px" />
+        </template>
         <div v-if="isFetching && displayedBudgets.length === 0" class="text-muted-foreground py-3 text-center text-xs">
           {{ $t('common.loading') }}
         </div>
@@ -36,16 +49,20 @@
 import { loadSystemBudgets } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import MultiSelectField from '@/components/fields/multi-select-field.vue';
+import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useNotificationCenter } from '@/components/notification-center';
+import { BLANK_FILTER_VALUE } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
-import { CheckIcon } from '@lucide/vue';
+import { CheckIcon, CircleDashedIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
   budgetIds: string[];
   hideClearButton?: boolean;
+  /** Offer a pseudo-option (`BLANK_FILTER_VALUE`) matching transactions linked to no tracker. */
+  allowBlank?: boolean;
 }>();
 
 const emit = defineEmits<{ 'update:budgetIds': [value: string[]] }>();
@@ -77,6 +94,7 @@ const displayedBudgets = computed(() => {
 const selectedLabel = computed(() => {
   if (props.budgetIds.length !== 1) return t('fields.budgetMultiSelect.selectedMany', { n: props.budgetIds.length });
   const [onlyId] = props.budgetIds;
+  if (onlyId === BLANK_FILTER_VALUE) return t('fields.budgetMultiSelect.blankOption');
   return budgets.value?.find((b) => b.id === onlyId)?.name ?? t('fields.budgetMultiSelect.unknownBudget');
 });
 

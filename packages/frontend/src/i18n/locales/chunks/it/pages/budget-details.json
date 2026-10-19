@@ -2,6 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
+        "loadError": "Couldn't load transactions.",
         "selectionModeWarning": "Selezione Diretta – Scegli transazioni da scollegare",
         "selectAll": "Seleziona tutto",
         "selected": "{count} selezionato",
@@ -15,7 +16,9 @@
         "resetFilters": "Reimposta filtri",
         "addTransactions": "Aggiungere transazioni",
         "add": "Aggiungere",
-        "loadingMore": "Caricamento di altri risultati..."
+        "loadingMore": "Caricamento di altri risultati...",
+        "unlinkError": "Failed to unlink transactions",
+        "addError": "Failed to add transactions"
       }
     },
     "budgetDetails": {
@@ -57,11 +60,45 @@
         "income": "Entrata",
         "expenses": "Uscite",
         "incomeLabel": "Entrata:",
-        "expensesLabel": "Uscite:"
+        "expensesLabel": "Uscite:",
+        "kpi": {
+          "dailyPace": "Daily pace",
+          "perDay": "/ day",
+          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "daysElapsed": "{elapsed} of {total} days",
+          "projectedTotal": "Projected total",
+          "projectedLimit": "at this pace · limit {amount}",
+          "averagePerDay": "Average per day",
+          "firstTransaction": "First transaction",
+          "lastTransaction": "Last transaction",
+          "transactions": "Transactions",
+          "avgAmount": "avg {amount}",
+          "biggestDay": "Biggest day",
+          "shareOfTotal": "{percent}% of total"
+        },
+        "byCategory": "By category",
+        "categoriesCount": "{count} category | {count} categories",
+        "byCurrency": "By currency",
+        "asPaid": "as paid",
+        "timeline": "Cronologia",
+        "todayMarker": "today {date}",
+        "timelineAria": "Cumulative spending over time with per-period bars",
+        "limitLabel": "{amount} limit",
+        "cumulativeLabel": "Cumulative",
+        "legend": {
+          "cumulative": "Spent, cumulative",
+          "evenPace": "Even pace to the limit",
+          "projection": "Projection",
+          "daily": "Per day",
+          "weekly": "Per week",
+          "monthly": "Per month"
+        },
+        "topPayees": "Top payees",
+        "bySpend": "by spend",
+        "noPayee": "No payee",
+        "txCount": "{count} tx"
       },
       "sharing": {
-        "title": "Condivisione",
-        "description": "Gestici chi può vedere e contribuire a questo budget.",
         "inviteAnother": "Invita qualcuno",
         "membersHeading": "Membri",
         "pendingHeading": "Richieste in attesa",

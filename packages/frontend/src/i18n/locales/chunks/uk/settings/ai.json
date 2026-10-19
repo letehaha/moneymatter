@@ -93,13 +93,15 @@
           "categorization": "Коротка повторювана задача. Невелика модель добре з нею впорається, а витрати залишаться низькими.",
           "statementParsing": "Читає всю виписку й повертає кожен рядок, тому потрібна модель, яка залишається точною на довгому тексті.",
           "investmentTransactionsParsing": "Перетворює брокерські вивантаження на рядки купівлі й продажу. Довгі вивантаження потребують моделі, здатної писати довгі відповіді.",
-          "receiptParsing": "Модель переглядає сам файл інвойсу, тому їй потрібно вміти читати зображення й PDF."
+          "receiptParsing": "Модель переглядає сам файл інвойсу, тому їй потрібно вміти читати зображення й PDF.",
+          "trackerMatching": "Коротка повторювана задача, яка запускається щодня. Невелика модель добре з нею впорається, а витрати залишаться низькими."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Добре підходить",

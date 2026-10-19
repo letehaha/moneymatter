@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Не удаётся подключиться к серверу. Backend всё ещё может запускаться (около 30 секунд после старта), либо переменная окружения ALLOWED_ORIGINS не содержит этот URL.",
       "unexpectedError": "Непредвиденная ошибка.",
       "sessionExpired": "Срок действия сеанса истёк. Войдите снова",
-      "payloadTooLarge": "Запрос слишком большой. Попробуйте импортировать меньше элементов за один раз"
+      "payloadTooLarge": "Запрос слишком большой. Попробуйте импортировать меньше элементов за один раз",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Пароль слишком короткий.",
+      "passwordTooLong": "Пароль слишком длинный.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Эта страница не найдена",

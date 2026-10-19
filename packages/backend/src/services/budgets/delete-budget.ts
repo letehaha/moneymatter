@@ -5,6 +5,7 @@ import BudgetTransactions from '@models/budget-transactions.model';
 import Budgets from '@models/budget.model';
 import Users from '@models/users.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { deleteLogoImage } from '@services/logo-images/logo-images.service';
 import {
   BudgetShareCleanupResult,
   cleanupBudgetSharesInTx,
@@ -86,6 +87,7 @@ const deleteBudgetInTx = withTransaction(
     // pre-share semantics. Once the budget row goes, FK CASCADE from `budgetId` would also
     // remove these — but the explicit destroy keeps the intent obvious in the diff.
     await BudgetTransactions.destroy({ where: { budgetId: id } });
+    if (budget.logoImageId) await deleteLogoImage({ id: budget.logoImageId });
     await budget.destroy();
 
     return {

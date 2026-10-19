@@ -25,8 +25,8 @@
     "shared": {
       "divider": "Or continue with",
       "passkeyButton": {
-        "signIn": "Sign in with Passkey",
-        "register": "Add Passkey"
+        "signIn": "Sign in with passkey",
+        "register": "Add passkey"
       },
       "oauthButton": {
         "signIn": "Sign in with {provider}",

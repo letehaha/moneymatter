@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BrandLogo from '@/components/common/brand-logo.vue';
-import { type LogoSelection, toLogoDisplayProps } from '@/components/common/logo-selection';
+import { type LogoSelection, type LogoTab, toLogoDisplayProps } from '@/components/common/logo-selection';
 import LogoSearch from '@/components/common/logo-search.vue';
 import { Button } from '@/components/lib/ui/button';
 import * as Popover from '@/components/lib/ui/popover';
@@ -10,11 +10,12 @@ import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
-  /** Chosen brand or monogram. null = let the backend auto-resolve from the name. */
+  /** Chosen logo. null = let the backend auto-resolve from the name. */
   modelValue: LogoSelection | null;
   /** Entity name – drives the monogram preview and seeds the search query. */
   nameForSearch: string;
   disabled?: boolean;
+  tabs?: LogoTab[];
 }>();
 
 const emit = defineEmits<{
@@ -30,9 +31,9 @@ const logoDisplay = computed(() => toLogoDisplayProps({ selection: props.modelVa
 const triggerLabel = computed(() => {
   const selection = props.modelValue;
   if (!selection) return t('common.logo.autoLabel');
-  return selection.kind === 'brand'
-    ? selection.domain
-    : t('common.logo.lettersSelectedLabel', { letters: selection.initials });
+  if (selection.kind === 'brand') return selection.domain;
+  if (selection.kind === 'monogram') return t('common.logo.lettersSelectedLabel', { letters: selection.initials });
+  return selection.kind === 'icon' ? t('common.logo.tabs.icon') : t('common.logo.tabs.custom');
 });
 
 function handleSelect(selection: LogoSelection) {
@@ -77,7 +78,7 @@ function clearSelection() {
     </Popover.PopoverTrigger>
 
     <Popover.PopoverContent class="w-(--reka-popover-trigger-width) p-0" align="start" :side-offset="4">
-      <LogoSearch :selection="modelValue" :name-for-search="nameForSearch" @select="handleSelect" />
+      <LogoSearch :selection="modelValue" :name-for-search="nameForSearch" :tabs="tabs" @select="handleSelect" />
     </Popover.PopoverContent>
   </Popover.Popover>
 </template>

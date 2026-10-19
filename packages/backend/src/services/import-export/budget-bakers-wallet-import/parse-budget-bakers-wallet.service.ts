@@ -11,6 +11,7 @@ import {
   type BudgetBakersWalletParseTransfer,
   type BudgetBakersWalletParseWarning,
 } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { roundCurrency } from '@services/import-export/core/round-currency';
 import { parse } from 'csv-parse/sync';
@@ -70,7 +71,7 @@ interface ParsedLeg {
  */
 export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: string }): BudgetBakersWalletParseResult {
   if (typeof fileContent !== 'string' || fileContent.trim() === '') {
-    throw new ValidationError({ message: 'Wallet CSV is empty.' });
+    throw new ValidationError({ message: t({ key: 'importExport.budgetBakersWallet.parse.fileEmpty' }) });
   }
 
   let records: Record<string, string>[];
@@ -83,19 +84,20 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
       relax_column_count: true,
       bom: true,
     }) as Record<string, string>[];
-  } catch (err) {
-    throw new ValidationError({
-      message: `Wallet CSV could not be parsed: ${err instanceof Error ? err.message : 'unknown error'}`,
-    });
+  } catch {
+    throw new ValidationError({ message: t({ key: 'importExport.budgetBakersWallet.parse.unparseable' }) });
   }
 
   if (records.length === 0) {
-    throw new ValidationError({ message: 'Wallet CSV contains no transactions.' });
+    throw new ValidationError({ message: t({ key: 'importExport.budgetBakersWallet.parse.noTransactions' }) });
   }
 
   if (records.length > BUDGET_BAKERS_WALLET_MAX_ROWS) {
     throw new ValidationError({
-      message: `Wallet CSV has ${records.length} rows; max supported is ${BUDGET_BAKERS_WALLET_MAX_ROWS}.`,
+      message: t({
+        key: 'importExport.budgetBakersWallet.parse.tooManyRows',
+        variables: { rows: records.length, max: BUDGET_BAKERS_WALLET_MAX_ROWS },
+      }),
     });
   }
 
@@ -103,7 +105,10 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
   const missing = REQUIRED_HEADERS.filter((h) => !(h in firstRow));
   if (missing.length > 0) {
     throw new ValidationError({
-      message: `Wallet CSV is missing required column(s): ${missing.join(', ')}. The export format may have changed.`,
+      message: t({
+        key: 'importExport.budgetBakersWallet.parse.missingColumns',
+        variables: { columns: missing.join(', ') },
+      }),
     });
   }
 
@@ -120,7 +125,11 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
 
     const accountName = (record['account'] ?? '').trim();
     if (!accountName) {
-      warnings.push({ rowIndex, code: 'row-skipped', message: 'Row has no account; skipped.' });
+      warnings.push({
+        rowIndex,
+        code: 'row-skipped',
+        message: t({ key: 'importExport.budgetBakersWallet.warnings.noAccount' }),
+      });
       return;
     }
 
@@ -130,7 +139,7 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
       warnings.push({
         rowIndex,
         code: 'unparseable-date',
-        message: `Could not parse date "${rawDate}"; row skipped.`,
+        message: t({ key: 'importExport.budgetBakersWallet.warnings.unparseableDate', variables: { value: rawDate } }),
       });
       return;
     }
@@ -141,7 +150,10 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
       warnings.push({
         rowIndex,
         code: 'unparseable-amount',
-        message: `Could not parse amount "${rawAmount}"; row skipped.`,
+        message: t({
+          key: 'importExport.budgetBakersWallet.warnings.unparseableAmount',
+          variables: { value: rawAmount },
+        }),
       });
       return;
     }
@@ -152,7 +164,10 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
       warnings.push({
         rowIndex,
         code: 'unparseable-amount',
-        message: `Could not parse ref_currency_amount "${rawRef}"; row skipped.`,
+        message: t({
+          key: 'importExport.budgetBakersWallet.warnings.unparseableRefAmount',
+          variables: { value: rawRef },
+        }),
       });
       return;
     }
@@ -164,7 +179,7 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
       warnings.push({
         rowIndex,
         code: 'row-skipped',
-        message: `Unknown type "${rawType}"; row skipped.`,
+        message: t({ key: 'importExport.budgetBakersWallet.warnings.unknownType', variables: { value: rawType } }),
       });
       return;
     }
@@ -213,14 +228,14 @@ export function parseBudgetBakersWalletCsv({ fileContent }: { fileContent: strin
     // request their language, instead of the generic "unparseable" message.
     if (sawUnknownTypeRow) {
       throw new ValidationError({
-        message:
-          'Could not recognize the transaction type (income/expense) values in this Wallet export. ' +
-          'Only English and Spanish exports are supported for now. ' +
-          `Request another language on the roadmap: ${EXTERNAL_URLS.featurebaseRoadmap}`,
+        message: t({
+          key: 'importExport.budgetBakersWallet.parse.unsupportedLanguage',
+          variables: { url: EXTERNAL_URLS.featurebaseRoadmap },
+        }),
       });
     }
     throw new ValidationError({
-      message: 'No usable rows found in Wallet CSV (all rows were skipped or unparseable).',
+      message: t({ key: 'importExport.budgetBakersWallet.parse.noUsableRows' }),
     });
   }
 
@@ -367,7 +382,10 @@ function pairTransfers({ legs, warnings }: { legs: ParsedLeg[]; warnings: Budget
       warnings.push({
         rowIndex: expense.rowIndex,
         code: 'transfer-counterpart-missing',
-        message: `Transfer expense from "${expense.accountName}" at ${date} has no matching income leg; imported as out-of-wallet transfer.`,
+        message: t({
+          key: 'importExport.budgetBakersWallet.warnings.transferNoIncome',
+          variables: { account: expense.accountName, date },
+        }),
       });
     }
 
@@ -377,7 +395,10 @@ function pairTransfers({ legs, warnings }: { legs: ParsedLeg[]; warnings: Budget
       warnings.push({
         rowIndex: income.rowIndex,
         code: 'transfer-counterpart-missing',
-        message: `Transfer income to "${income.accountName}" at ${date} has no matching expense leg; imported as out-of-wallet transfer.`,
+        message: t({
+          key: 'importExport.budgetBakersWallet.warnings.transferNoExpense',
+          variables: { account: income.accountName, date },
+        }),
       });
     }
   }

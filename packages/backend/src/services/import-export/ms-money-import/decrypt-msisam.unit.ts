@@ -1,4 +1,6 @@
-import { describe, expect, it } from '@jest/globals';
+import { requestContext } from '@common/request-context';
+import { i18nextReady, t } from '@i18n/index';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 /**
  * Runs against real Microsoft Money sample databases. They are not committed —
  * see `src/tests/fixtures/ms-money-fixtures.ts`. Without them the whole file
@@ -28,6 +30,18 @@ const sameBytes = ({ left, right }: { left: Buffer; right: Buffer }): boolean =>
 const hasFixtures = msMoneyFixturesAvailable();
 if (!hasFixtures) console.warn(`[decrypt-msisam.unit] skipped. ${MS_MONEY_FIXTURES_MISSING_MESSAGE}`);
 const describeWithFixtures = hasFixtures ? describe : describe.skip;
+
+beforeAll(async () => {
+  await i18nextReady;
+});
+
+describe('decryptMsisam error language', () => {
+  it("reports a rejected file in the requester's locale", () => {
+    expect(() => requestContext.run({ locale: 'uk' }, () => decryptMsisam({ buffer: Buffer.alloc(0) }))).toThrow(
+      t({ key: 'importExport.msMoney.notMsMoneyFile', locale: 'uk' }),
+    );
+  });
+});
 
 describe('isMsMoneyFile', () => {
   it('rejects buffers that are not Money databases', () => {
@@ -106,7 +120,7 @@ describeWithFixtures('decryptMsisam', () => {
     it('does not tolerate surrounding whitespace', () => {
       expect(() =>
         decryptMsisam({ buffer: readMsMoneyFixture({ file: 'money2005-pwd.mny' }), password: ' 123@abc!' }),
-      ).toThrow('Incorrect password');
+      ).toThrow(t({ key: 'importExport.msMoney.incorrectPassword' }));
     });
   });
 
@@ -116,7 +130,7 @@ describeWithFixtures('decryptMsisam', () => {
 
       expect(() => decryptMsisam({ buffer, password: 'not-the-password' })).toThrow(ValidationError);
       expect(() => decryptMsisam({ buffer, password: 'not-the-password' })).toThrow(
-        'Incorrect password for this Microsoft Money file.',
+        t({ key: 'importExport.msMoney.incorrectPassword' }),
       );
     });
 
@@ -124,16 +138,14 @@ describeWithFixtures('decryptMsisam', () => {
       const buffer = readMsMoneyFixture({ file: 'money2005-pwd.mny' });
 
       expect(() => decryptMsisam({ buffer })).toThrow(ValidationError);
-      expect(() => decryptMsisam({ buffer })).toThrow(
-        'This Microsoft Money file is password-protected. Enter its password to continue.',
-      );
+      expect(() => decryptMsisam({ buffer })).toThrow(t({ key: 'importExport.msMoney.passwordRequired' }));
     });
 
     it('rejects a wrong password on a file whose password is not the empty one', () => {
       // sunset02 is protected too, and its check bytes are written for a
       // non-empty password, unlike its sibling sunset01.
       expect(() => decryptMsisam({ buffer: readMsMoneyFixture({ file: 'sunset02.mny' }), password: 'wrong' })).toThrow(
-        'Incorrect password for this Microsoft Money file.',
+        t({ key: 'importExport.msMoney.incorrectPassword' }),
       );
     });
 
@@ -143,7 +155,7 @@ describeWithFixtures('decryptMsisam', () => {
       ['a full page of noise', Buffer.alloc(PAGE_SIZE * 4, 0x07)],
     ])('rejects %s as not a Money database', (_label, buffer) => {
       expect(() => decryptMsisam({ buffer })).toThrow(ValidationError);
-      expect(() => decryptMsisam({ buffer })).toThrow('This file is not a Microsoft Money database.');
+      expect(() => decryptMsisam({ buffer })).toThrow(t({ key: 'importExport.msMoney.notMsMoneyFile' }));
     });
   });
 

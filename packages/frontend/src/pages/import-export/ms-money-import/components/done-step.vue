@@ -94,7 +94,7 @@
               {{ $t('pages.importExport.msMoneyImport.done.rowPrefix', { rowIndex: e.rowIndex }) }}
             </span>
           </template>
-          {{ e.error }}
+          {{ errorText(e) }}
         </li>
       </ul>
       <!-- Overflow indicator when the error list is truncated -->
@@ -127,12 +127,15 @@ import BalanceDesyncCallout from '@/pages/import-export/components/balance-desyn
 import { deriveImportOutcome } from '@/pages/import-export/ms-money-import/utils/import-outcome';
 import { ROUTES_NAMES } from '@/routes';
 import { useImportMsMoneyStore } from '@/stores/import-ms-money';
+import type { MsMoneyImportError } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
 const MAX_ERRORS_SHOWN = 10;
 
+const { t } = useI18n();
 const router = useRouter();
 const store = useImportMsMoneyStore();
 const { progress } = storeToRefs(store);
@@ -140,6 +143,13 @@ const { progress } = storeToRefs(store);
 const summary = computed(() => (progress.value?.status === 'completed' ? progress.value.summary : null));
 
 const importOutcome = computed(() => (summary.value ? deriveImportOutcome({ summary: summary.value }) : null));
+
+function errorText(e: MsMoneyImportError): string {
+  const prefix = 'pages.importExport.msMoneyImport.done.errors';
+  if (e.code === 'rows-suppressed') return t(`${prefix}.rowsSuppressed`, e.params, e.params.count);
+  if (e.code === 'account-balance-desync') return t(`${prefix}.accountBalanceDesync`);
+  return t(`${prefix}.rowImportFailed`);
+}
 
 function goToTransactions() {
   store.reset();

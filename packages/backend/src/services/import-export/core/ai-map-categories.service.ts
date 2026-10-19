@@ -1,4 +1,5 @@
 import { AI_FEATURE, type AiMapImportCategoriesResponse } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import { CacheClient } from '@js/utils/cache';
@@ -173,7 +174,7 @@ Match each source name to the best existing category, or "none". Output one line
 
     if (answered.size === 0) {
       logger.info('[AI Category Mapping] Unparseable AI response', { userId, excerpt: text.slice(0, 500) });
-      throw new ValidationError({ message: 'Failed to parse AI response. The output was not in expected format.' });
+      throw new ValidationError({ message: t({ key: 'importExport.aiUnparseableResponse' }) });
     }
     if (answered.size < sources.length) {
       logger.warn('[AI Category Mapping] AI answered only some sources', {

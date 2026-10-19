@@ -11,7 +11,7 @@ import { storeToRefs } from 'pinia';
 import { type AccountsListItem, type AccountsSortKey, accountBaseValue, sortItems, sortMixed } from './accounts-sort';
 
 /** One Bank connections row: the connection plus every account linked to it. */
-export interface ConnectionRow {
+interface ConnectionRow {
   connection: BankConnection;
   accounts: AccountModel[];
 }

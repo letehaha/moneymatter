@@ -1,5 +1,6 @@
 import type { MsMoneyUploadResponse } from '@bt/shared/types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { getUserBaseCurrencyCode } from '@services/common/transaction-linking';
 import { parseMsMoneyFile, storeMsMoneyUpload } from '@services/import-export/ms-money-import';
@@ -31,13 +32,13 @@ export const uploadMsMoneyController = createController(z.object({}), async ({ u
   // `express.raw` leaves the body as an empty object when the request carried no
   // octet-stream payload at all.
   if (!Buffer.isBuffer(body) || body.length === 0) {
-    throw new ValidationError({ message: 'No file was uploaded. Send the .mny file as the raw request body.' });
+    throw new ValidationError({ message: t({ key: 'importExport.msMoney.noFileUploaded' }) });
   }
 
   const rawPassword = req.headers[PASSWORD_HEADER];
   const parsedPassword = passwordHeaderSchema.safeParse(Array.isArray(rawPassword) ? rawPassword[0] : rawPassword);
   if (!parsedPassword.success) {
-    throw new ValidationError({ message: 'The supplied file password is not valid.' });
+    throw new ValidationError({ message: t({ key: 'importExport.msMoney.invalidPasswordHeader' }) });
   }
 
   const result = parseMsMoneyFile({

@@ -1,4 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -12,6 +13,13 @@ function loadFixture(name: string): string {
 
 const YNAB_HEADERS =
   '"Account","Flag","Date","Payee","Category Group/Category","Category Group","Category","Memo","Outflow","Inflow","Cleared"';
+
+const en = ({ key, variables }: { key: string; variables?: Record<string, unknown> }) =>
+  t({ key, variables, locale: 'en' });
+
+beforeAll(async () => {
+  await i18nextReady;
+});
 
 describe('parseYnabRegister', () => {
   describe('happy path against the basic fixture', () => {
@@ -81,12 +89,17 @@ describe('parseYnabRegister', () => {
 
   describe('input validation', () => {
     it('throws on an empty file', () => {
-      expect(() => parseYnabRegister({ fileContent: '   ' })).toThrow(/empty/i);
+      expect(() => parseYnabRegister({ fileContent: '   ' })).toThrow(en({ key: 'importExport.ynab.parse.fileEmpty' }));
     });
 
     it('throws on a file missing required YNAB columns', () => {
       const fileContent = '"Date","Payee","Outflow","Inflow"\n"06/01/2026","Test","$0.00","$1.00"\n';
-      expect(() => parseYnabRegister({ fileContent })).toThrow(/missing required column/i);
+      expect(() => parseYnabRegister({ fileContent })).toThrow(
+        en({
+          key: 'importExport.ynab.parse.missingColumns',
+          variables: { columns: 'Account, Flag, Category Group/Category, Category Group, Category, Memo' },
+        }),
+      );
     });
   });
 
@@ -164,8 +177,10 @@ describe('parseYnabRegister', () => {
         `"Checking (USD) – 1234","","not-a-date","Cafe","Wants: Dining","Wants","Dining","Coffee",$3.50,$0.00,"Cleared"`,
         '',
       ].join('\n');
-      expect(() => parseYnabRegister({ fileContent })).toThrow(/No usable rows found/i);
-      expect(() => parseYnabRegister({ fileContent })).toThrow(/First problem: Could not parse date "not-a-date"/);
+      const problem = en({ key: 'importExport.ynab.warnings.unparseableDate', variables: { value: 'not-a-date' } });
+      expect(() => parseYnabRegister({ fileContent })).toThrow(
+        en({ key: 'importExport.ynab.parse.noUsableRowsWithProblem', variables: { problem } }),
+      );
     });
   });
 
@@ -262,7 +277,7 @@ describe('parseYnabRegister', () => {
       const ambiguous = result.warnings.filter((w) => w.code === 'ambiguous-date-order');
       expect(ambiguous).toHaveLength(1);
       expect(ambiguous[0]!.rowIndex).toBeUndefined();
-      expect(ambiguous[0]!.message).toMatch(/MM\/DD\/YYYY/);
+      expect(ambiguous[0]!.message).toBe(en({ key: 'importExport.ynab.warnings.ambiguousDateOrder' }));
     });
 
     it('throws when the Date column mixes contradictory day/month orders', () => {
@@ -272,7 +287,7 @@ describe('parseYnabRegister', () => {
         `"Checking (USD) – 1234","","06/25/2026","Cafe","Wants: Dining","Wants","Dining","Coffee",$3.50,$0.00,"Cleared"`,
         '',
       ].join('\n');
-      expect(() => parseYnabRegister({ fileContent })).toThrow(/Date column/i);
+      expect(() => parseYnabRegister({ fileContent })).toThrow(en({ key: 'importExport.ynab.parse.mixedDateOrders' }));
     });
   });
 });

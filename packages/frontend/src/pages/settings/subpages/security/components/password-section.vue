@@ -115,6 +115,7 @@ import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';
+import { getAuthErrorMessage } from '@/js/errors';
 import { minLength, required, sameAs } from '@/js/helpers/validators';
 import { PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
 import { authClient, setPassword } from '@/lib/auth-client';
@@ -222,19 +223,10 @@ const loadPasswordStatus = async () => {
   }
 };
 
-/**
- * App-owned auth routes answer with `{ status, response: { message, code } }`, which the
- * better-auth fetch client spreads into `error`; native better-auth errors keep both at
- * the top level.
- */
-const resolveAuthError = (error: {
-  message?: string;
-  code?: string;
-  response?: { message?: string; code?: string };
-}) => ({
-  message: error.message || error.response?.message,
-  code: error.code ?? error.response?.code,
-});
+const PASSWORD_ERROR_KEYS: Record<string, string> = {
+  INVALID_PASSWORD: 'settings.security.passwordSection.errors.incorrectCurrentPassword',
+  PASSWORD_ALREADY_SET: 'settings.security.passwordSection.errors.passwordAlreadySet',
+};
 
 const handleSubmit = async () => {
   // Skip current password validation for OAuth-only users
@@ -255,8 +247,11 @@ const handleSubmit = async () => {
       });
 
       if (result.error) {
-        const { message } = resolveAuthError(result.error);
-        errorMessage.value = message || t('settings.security.passwordSection.notifications.changeFailed');
+        errorMessage.value = await getAuthErrorMessage({
+          error: result.error,
+          codeKeys: PASSWORD_ERROR_KEYS,
+          fallbackKey: 'settings.security.passwordSection.notifications.changeFailed',
+        });
         return;
       }
 
@@ -266,11 +261,14 @@ const handleSubmit = async () => {
       const result = await setPassword({ newPassword: form.value.newPassword });
 
       if (result.error) {
-        const { message, code } = resolveAuthError(result.error);
-        errorMessage.value = message || t('settings.security.passwordSection.notifications.setFailed');
+        errorMessage.value = await getAuthErrorMessage({
+          error: result.error,
+          codeKeys: PASSWORD_ERROR_KEYS,
+          fallbackKey: 'settings.security.passwordSection.notifications.setFailed',
+        });
         // The mount-time provider probe can be stale or have failed, so trust the server
         // over `hasPassword` and switch the form to its change-password variant.
-        if (code === 'PASSWORD_ALREADY_SET') hasPassword.value = true;
+        if ((result.error.code ?? result.error.response?.code) === 'PASSWORD_ALREADY_SET') hasPassword.value = true;
         return;
       }
 
@@ -283,8 +281,11 @@ const handleSubmit = async () => {
     form.value.newPassword = '';
     form.value.confirmPassword = '';
     resetValidation();
-  } catch {
-    errorMessage.value = t('settings.security.passwordSection.notifications.unexpectedError');
+  } catch (error) {
+    errorMessage.value = await getAuthErrorMessage({
+      error,
+      fallbackKey: 'settings.security.passwordSection.notifications.unexpectedError',
+    });
     addErrorNotification(t('settings.security.passwordSection.notifications.updateFailed'));
   } finally {
     isSubmitting.value = false;

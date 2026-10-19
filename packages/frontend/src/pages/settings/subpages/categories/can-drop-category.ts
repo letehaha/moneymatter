@@ -20,7 +20,7 @@ export type CategoryDropError =
   | 'already-top-level';
 
 /** `target: null` is the top-level drop zone; a real target requires its depth (roots count as 1). */
-export type DropTarget = { target: null } | { target: FormattedCategory; targetDepth: number };
+type DropTarget = { target: null } | { target: FormattedCategory; targetDepth: number };
 
 /**
  * Returns why the drop is forbidden, or `null` when it is allowed.

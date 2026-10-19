@@ -1,51 +1,89 @@
 <script setup lang="ts">
-import { deleteBudget as deleteBudgetApi, loadBudgetStats } from '@/api';
-import { archiveBudget as archiveBudgetApi, loadSystemBudgets } from '@/api/budgets';
+import { loadBudgetStats, loadSystemBudgets } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import PillTabs from '@/components/lib/ui/pill-tabs/pill-tabs.vue';
-import { useNotificationCenter } from '@/components/notification-center';
-import { ROUTES_NAMES } from '@/routes';
-import { BUDGET_STATUSES, BUDGET_TYPES, BudgetModel } from '@bt/shared/types';
-import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/vue-query';
-import { useLocalStorage } from '@vueuse/core';
-import { differenceInDays, isPast, isWithinInterval } from 'date-fns';
-import { ArchiveRestoreIcon, TagsIcon, WalletIcon } from '@lucide/vue';
+import InputField from '@/components/fields/input-field.vue';
+import Button from '@/components/lib/ui/button/Button.vue';
+import { Card } from '@/components/lib/ui/card';
+import ErrorState from '@/components/widgets/components/error-state.vue';
+import { cn } from '@/lib/utils';
+import { BUDGET_TYPES, type BudgetModel } from '@bt/shared/types';
+import { PlusIcon, SearchIcon, TargetIcon } from '@lucide/vue';
+import { useQueries, useQuery } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
-import BudgetCardSkeleton from './budget-card-skeleton.vue';
-import CategoryBudgetCard from './budget-list-cards/category-budget-card.vue';
-import ManualBudgetCard from './budget-list-cards/manual-budget-card.vue';
+import ArchivePromptDialog from './components/archive-prompt-dialog.vue';
+import TrackerRow from './components/tracker-row.vue';
+import { TRACKER_ROW_GRID } from './components/tracker-row-grid';
+import { TRACKER_GROUP_ORDER, type TrackerGroup, getTrackerGroup, parseTrackerDate } from './tracker-time-status';
 
-const { t } = useI18n();
-const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
-const router = useRouter();
-const queryClient = useQueryClient();
+const VISIBLE_ENDED_ROWS = 3;
+const SKELETON_GROUPS = [2, 3];
 
-const showArchived = ref(false);
+const GROUP_LABEL_KEYS: Record<TrackerGroup, string> = {
+  active: 'budgets.list.groups.active',
+  upcoming: 'budgets.list.groups.upcoming',
+  noDates: 'budgets.list.groups.noDates',
+  ended: 'budgets.list.groups.ended',
+  archived: 'budgets.list.groups.archived',
+};
 
-const statusFilter = computed(() => (showArchived.value ? 'active,archived' : 'active'));
+const emit = defineEmits<{ create: [] }>();
 
 const {
   data: budgetsList,
-  isPlaceholderData: isBudgetsListPlaceholder,
-  isFetching: isBudgetsListFetching,
+  isPending,
+  isError,
+  refetch,
 } = useQuery({
-  queryFn: () => loadSystemBudgets({ status: statusFilter.value }),
-  queryKey: [...VUE_QUERY_CACHE_KEYS.budgetsList, statusFilter],
+  queryKey: [...VUE_QUERY_CACHE_KEYS.budgetsList, 'active,archived'],
+  queryFn: () => loadSystemBudgets({ status: 'active,archived' }),
   staleTime: Infinity,
-  placeholderData: (previousData) => previousData ?? [],
 });
 
-// True only on very first load when we have no data at all
-const isInitialLoading = computed(() => isBudgetsListPlaceholder.value && !budgetsList.value?.length);
-// True when we have existing data but are fetching updated results (e.g. toggling archived)
-const isLoadingMore = computed(() => isBudgetsListFetching.value && !isInitialLoading.value);
+const budgets = computed(() => budgetsList.value ?? []);
 
-const budgetStatsQueries = useQueries({
+const search = ref('');
+const typeFilter = ref<'all' | BUDGET_TYPES>('all');
+const showArchived = ref(false);
+const showAllEnded = ref(false);
+
+const groupedAll = computed(() => budgets.value.map((budget) => ({ budget, group: getTrackerGroup({ budget }) })));
+
+const counts = computed(() => {
+  const live = groupedAll.value.filter(({ group }) => group !== 'archived');
+  return {
+    manual: live.filter(({ budget }) => budget.type === BUDGET_TYPES.manual).length,
+    category: live.filter(({ budget }) => budget.type === BUDGET_TYPES.category).length,
+    archived: groupedAll.value.length - live.length,
+  };
+});
+
+const groups = computed(() => {
+  const query = search.value.trim().toLowerCase();
+  const byGroup = new Map<TrackerGroup, BudgetModel[]>();
+  for (const { budget, group } of groupedAll.value) {
+    if (typeFilter.value !== 'all' && budget.type !== typeFilter.value) continue;
+    if (query && !budget.name.toLowerCase().includes(query)) continue;
+    byGroup.set(group, [...(byGroup.get(group) ?? []), budget]);
+  }
+  const endTime = (budget: BudgetModel) => parseTrackerDate(budget.endDate)?.getTime() ?? 0;
+  byGroup.get('ended')?.sort((a, b) => endTime(b) - endTime(a));
+
+  return TRACKER_GROUP_ORDER.flatMap((key) => {
+    const items = byGroup.get(key) ?? [];
+    if (!items.length) return [];
+    let visible = items;
+    if (key === 'archived' && !showArchived.value) visible = [];
+    if (key === 'ended' && !showAllEnded.value) visible = items.slice(0, VISIBLE_ENDED_ROWS);
+    return [{ key, items, visible, hiddenCount: key === 'ended' ? items.length - visible.length : 0 }];
+  });
+});
+
+const visibleBudgets = computed(() => groups.value.flatMap((group) => group.visible));
+
+const statsQueries = useQueries({
   queries: computed(() =>
-    (budgetsList.value || []).map((budget: BudgetModel) => ({
+    visibleBudgets.value.map((budget) => ({
       queryKey: [...VUE_QUERY_CACHE_KEYS.budgetStats, budget.id],
       queryFn: () => loadBudgetStats({ budgetId: budget.id }),
       staleTime: Infinity,
@@ -53,209 +91,193 @@ const budgetStatsQueries = useQueries({
   ),
 });
 
-const getBudgetStats = (budgetId: string) => {
-  const index = budgetsList.value?.findIndex((b: BudgetModel) => b.id === budgetId) ?? -1;
-  if (index === -1) return null;
-  return budgetStatsQueries.value[index]?.data ?? null;
-};
-
-const isBudgetStatsLoading = (budgetId: string) => {
-  const index = budgetsList.value?.findIndex((b: BudgetModel) => b.id === budgetId) ?? -1;
-  if (index === -1) return true;
-  const query = budgetStatsQueries.value[index];
-  if (!query) return true;
-  if (query.isPending) return true;
-  if (query.isFetching && !query.data) return true;
-  if (query.data === undefined || query.data === null) return true;
-  return false;
-};
-
-const navigateToBudget = ({ budgetId }: { budgetId: string }) => {
-  router.push({ name: ROUTES_NAMES.plannedBudgetDetails, params: { id: budgetId } });
-};
-
-const deleteBudget = async ({ budgetId }: { budgetId: string }) => {
-  try {
-    await deleteBudgetApi(budgetId);
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsList });
-    addSuccessNotification(t('budgets.list.deleteSuccess'));
-  } catch {
-    addErrorNotification(t('budgets.list.deleteError'));
-  }
-};
-
-const { mutate: archiveBudget } = useMutation({
-  mutationFn: archiveBudgetApi,
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsList });
-  },
-  onError: () => {
-    addErrorNotification(t('budgets.list.archiveError'));
-  },
-});
-
-const handleArchive = ({ budgetId, isArchived }: { budgetId: string; isArchived: boolean }) => {
-  archiveBudget({ budgetId, isArchived });
-};
-
-const getBudgetTimeStatus = (budget: BudgetModel) => {
-  if (!budget.startDate && !budget.endDate) return null;
-
-  const now = new Date();
-  const startDate = budget.startDate ? new Date(budget.startDate) : null;
-  const endDate = budget.endDate ? new Date(budget.endDate) : null;
-
-  if (endDate && isPast(endDate)) {
-    return { status: 'ended' as const, text: t('budgets.list.status.ended') };
-  }
-
-  if (startDate && endDate && isWithinInterval(now, { start: startDate, end: endDate })) {
-    const daysLeft = differenceInDays(endDate, now);
-    if (daysLeft === 0) return { status: 'active' as const, text: t('budgets.list.status.lastDay') };
-    if (daysLeft === 1) return { status: 'active' as const, text: t('budgets.list.status.oneDayLeft') };
-    return { status: 'active' as const, text: t('budgets.list.status.daysLeft', { count: daysLeft }) };
-  }
-
-  if (startDate && !isPast(startDate)) {
-    const daysUntil = differenceInDays(startDate, now);
-    if (daysUntil === 0) return { status: 'upcoming' as const, text: t('budgets.list.status.startsToday') };
-    if (daysUntil === 1) return { status: 'upcoming' as const, text: t('budgets.list.status.startsTomorrow') };
-    return { status: 'upcoming' as const, text: t('budgets.list.status.startsInDays', { count: daysUntil }) };
-  }
-
-  if (endDate && !isPast(endDate)) {
-    const daysLeft = differenceInDays(endDate, now);
-    if (daysLeft === 0) return { status: 'active' as const, text: t('budgets.list.status.lastDay') };
-    if (daysLeft === 1) return { status: 'active' as const, text: t('budgets.list.status.oneDayLeft') };
-    return { status: 'active' as const, text: t('budgets.list.status.daysLeft', { count: daysLeft }) };
-  }
-
-  return null;
-};
-
-const activeTab = useLocalStorage<BUDGET_TYPES>('budgets-active-tab', BUDGET_TYPES.category);
-
-const isArchived = (budget: BudgetModel) => budget.status === BUDGET_STATUSES.archived;
-
-// Sort priority: active/upcoming (0) > no dates (1) > ended (2) > archived (3)
-const getBudgetSortPriority = (budget: BudgetModel): number => {
-  if (isArchived(budget)) return 3;
-  const status = getBudgetTimeStatus(budget);
-  if (!status) return 1; // No dates set
-  if (status.status === 'ended') return 2;
-  return 0; // active or upcoming
-};
-
-const sortBudgetsByStatus = (budgets: BudgetModel[]): BudgetModel[] => {
-  return [...budgets].sort((a, b) => getBudgetSortPriority(a) - getBudgetSortPriority(b));
-};
-
-const categoryBudgets = computed(() =>
-  sortBudgetsByStatus((budgetsList.value || []).filter((b: BudgetModel) => b.type === BUDGET_TYPES.category)),
+const statsById = computed(
+  () => new Map(visibleBudgets.value.map((budget, index) => [budget.id, statsQueries.value[index]] as const)),
 );
 
-const manualBudgets = computed(() =>
-  sortBudgetsByStatus((budgetsList.value || []).filter((b: BudgetModel) => b.type === BUDGET_TYPES.manual)),
-);
+const hasVisibleRows = computed(() => groups.value.some((group) => group.visible.length > 0));
+const hasArchivedMatches = computed(() => groups.value.some((group) => group.key === 'archived'));
 
-const tabItems = computed(() => [
-  {
-    value: BUDGET_TYPES.category,
-    label: categoryBudgets.value.length
-      ? `${t('budgets.list.tabCategory')}  (${categoryBudgets.value.length})`
-      : t('budgets.list.tabCategory'),
-  },
-  {
-    value: BUDGET_TYPES.manual,
-    label: manualBudgets.value.length
-      ? `${t('budgets.list.tabManual')}  (${manualBudgets.value.length})`
-      : t('budgets.list.tabManual'),
-  },
-]);
+const formatCount = (count: number) => (count ? ` · ${count}` : '');
+
+const archivePromptBudget = ref<BudgetModel | null>(null);
+const isArchivePromptOpen = ref(false);
+const openArchivePrompt = ({ budget }: { budget: BudgetModel }) => {
+  archivePromptBudget.value = budget;
+  isArchivePromptOpen.value = true;
+};
+
+const chipClass = ({ active }: { active: boolean }) =>
+  cn(
+    'h-6 rounded-full px-2.5 text-[11px] font-semibold shadow-none',
+    active && 'bg-foreground text-background hover:bg-foreground/90',
+  );
 </script>
 
 <template>
-  <div>
-    <!-- Initial full-page skeleton (no data yet) -->
-    <BudgetCardSkeleton v-if="isInitialLoading" />
-
-    <template v-else>
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <PillTabs v-model="activeTab" :items="tabItems" />
-
-        <button
-          type="button"
-          class="text-muted-foreground hover:text-foreground flex shrink-0 items-center gap-1.5 text-xs transition-colors"
-          @click="showArchived = !showArchived"
-        >
-          <ArchiveRestoreIcon class="size-3.5" />
-          {{ showArchived ? $t('budgets.list.hideArchived') : $t('budgets.list.showArchived') }}
-        </button>
+  <Card class="@container/trackers overflow-hidden rounded-xl">
+    <div class="divide-border divide-y">
+      <div class="flex flex-wrap items-center gap-2 px-3 py-2.5 @2xl/trackers:px-3.5">
+        <div class="min-w-40 flex-1">
+          <InputField
+            v-model="search"
+            type="search"
+            :placeholder="$t('budgets.list.searchPlaceholder')"
+            :aria-label="$t('budgets.list.searchPlaceholder')"
+          >
+            <template #iconLeading>
+              <SearchIcon class="text-muted-foreground size-4" />
+            </template>
+          </InputField>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5">
+          <Button
+            variant="secondary"
+            size="sm"
+            :class="chipClass({ active: typeFilter === 'all' })"
+            :aria-pressed="typeFilter === 'all'"
+            @click="typeFilter = 'all'"
+          >
+            {{ $t('budgets.list.filters.all') }}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            :class="chipClass({ active: typeFilter === BUDGET_TYPES.manual })"
+            :aria-pressed="typeFilter === BUDGET_TYPES.manual"
+            @click="typeFilter = BUDGET_TYPES.manual"
+          >
+            {{ $t('budgets.list.filters.manual') }}{{ formatCount(counts.manual) }}
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            :class="chipClass({ active: typeFilter === BUDGET_TYPES.category })"
+            :aria-pressed="typeFilter === BUDGET_TYPES.category"
+            @click="typeFilter = BUDGET_TYPES.category"
+          >
+            {{ $t('budgets.list.filters.category') }}{{ formatCount(counts.category) }}
+          </Button>
+          <Button
+            v-if="isPending || counts.archived"
+            variant="secondary"
+            size="sm"
+            :class="chipClass({ active: showArchived })"
+            :aria-pressed="showArchived"
+            @click="showArchived = !showArchived"
+          >
+            {{ $t('budgets.list.filters.archived') }}{{ formatCount(counts.archived) }}
+          </Button>
+        </div>
       </div>
 
-      <!-- Category Budgets Tab -->
-      <div v-if="activeTab === BUDGET_TYPES.category">
-        <div
-          v-if="categoryBudgets.length === 0 && !isLoadingMore"
-          class="flex flex-col items-center justify-center py-12 text-center"
-        >
-          <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-            <TagsIcon class="text-muted-foreground size-8" />
+      <template v-if="isPending">
+        <template v-for="(rowCount, groupIndex) in SKELETON_GROUPS" :key="groupIndex">
+          <div class="bg-muted/40 px-3.5 py-2.5">
+            <div class="bg-muted h-2.5 w-20 animate-pulse rounded" />
           </div>
-          <h3 class="mb-1 font-medium">{{ $t('budgets.list.emptyState.title') }}</h3>
-          <p class="text-muted-foreground max-w-sm text-sm">
-            {{ $t('budgets.list.emptyState.description') }}
-          </p>
+          <div v-for="row in rowCount" :key="row" :class="cn(TRACKER_ROW_GRID, 'animate-pulse')" aria-hidden="true">
+            <div class="bg-muted size-7 rounded-[7px]" />
+            <div class="grid gap-1.5">
+              <div class="bg-muted h-3 w-2/5 rounded" />
+              <div class="bg-muted h-2.5 w-1/4 rounded" />
+            </div>
+            <div class="bg-muted hidden h-1.5 rounded-full @2xl/trackers:block" />
+            <div class="bg-muted hidden h-4.5 w-16 rounded-full @2xl/trackers:block" />
+            <div class="bg-muted ml-auto h-3 w-14 rounded" />
+            <div class="bg-muted mx-auto size-4 rounded" />
+          </div>
+        </template>
+      </template>
+
+      <ErrorState v-else-if="isError" :message="$t('budgets.list.loadError')" @retry="refetch()" />
+
+      <div v-else-if="!budgets.length" class="grid justify-items-center gap-1.5 px-4 py-7 text-center">
+        <div class="bg-muted text-muted-foreground mb-1 grid size-11 place-items-center rounded-full">
+          <TargetIcon class="size-5" />
         </div>
-        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-          <CategoryBudgetCard
-            v-for="budget in categoryBudgets"
+        <p class="text-sm font-semibold">{{ $t('budgets.list.emptyState.title') }}</p>
+        <p class="text-muted-foreground max-w-[36ch] text-xs leading-relaxed">
+          {{ $t('budgets.list.emptyState.description') }}
+        </p>
+        <Button size="sm" class="mt-1.5" @click="emit('create')">
+          <PlusIcon class="size-4" />
+          {{ $t('budgets.newBudget') }}
+        </Button>
+      </div>
+
+      <div v-else-if="!hasVisibleRows" class="grid justify-items-center gap-1.5 px-4 py-7 text-center">
+        <div class="bg-muted text-muted-foreground mb-1 grid size-11 place-items-center rounded-full">
+          <SearchIcon class="size-5" />
+        </div>
+        <p class="text-sm font-semibold">
+          {{
+            search.trim()
+              ? $t('budgets.list.noMatch.title', { query: search.trim() })
+              : $t('budgets.list.noMatch.titleNoQuery')
+          }}
+        </p>
+        <p class="text-muted-foreground max-w-[36ch] text-xs leading-relaxed">
+          {{ $t('budgets.list.noMatch.description') }}
+        </p>
+        <Button
+          v-if="!showArchived && hasArchivedMatches"
+          variant="outline"
+          size="sm"
+          class="mt-1.5"
+          @click="showArchived = true"
+        >
+          {{ $t('budgets.list.noMatch.includeArchived') }}
+        </Button>
+      </div>
+
+      <template v-else>
+        <template v-for="group in groups" :key="group.key">
+          <Button
+            v-if="group.key === 'archived'"
+            variant="ghost"
+            :class="
+              cn(
+                'bg-muted/40 text-muted-foreground hover:bg-muted/60 h-auto w-full justify-start gap-2 rounded-none px-3.5 py-2 text-[11px] font-bold tracking-[0.08em] uppercase',
+                !showArchived && 'opacity-60',
+              )
+            "
+            :aria-expanded="showArchived"
+            @click="showArchived = !showArchived"
+          >
+            {{ $t(GROUP_LABEL_KEYS.archived) }}
+            <span class="font-medium tracking-normal normal-case">
+              · {{ group.items.length }} ·
+              {{ showArchived ? $t('budgets.list.groups.hide') : $t('budgets.list.groups.show') }}
+            </span>
+          </Button>
+          <div
+            v-else
+            class="bg-muted/40 text-muted-foreground flex items-center gap-2 px-3.5 py-2 text-[11px] font-bold tracking-[0.08em] uppercase"
+          >
+            {{ $t(GROUP_LABEL_KEYS[group.key]) }}
+            <span class="font-medium tracking-normal normal-case">· {{ group.items.length }}</span>
+          </div>
+
+          <TrackerRow
+            v-for="budget in group.visible"
             :key="budget.id"
             :budget="budget"
-            :is-archived="isArchived(budget)"
-            :stats="(getBudgetStats(budget.id)?.summary as any) ?? null"
-            :is-stats-loading="isBudgetStatsLoading(budget.id)"
-            :time-status="getBudgetTimeStatus(budget)"
-            @click="navigateToBudget({ budgetId: budget.id })"
-            @edit="navigateToBudget({ budgetId: budget.id })"
-            @delete="deleteBudget({ budgetId: budget.id })"
-            @archive="handleArchive({ budgetId: budget.id, isArchived: !isArchived(budget) })"
+            :stats="statsById.get(budget.id)?.data?.summary ?? null"
+            :is-stats-loading="statsById.get(budget.id)?.isPending ?? true"
+            :is-stats-error="statsById.get(budget.id)?.isError ?? false"
+            @suggest-archive="openArchivePrompt({ budget })"
           />
-          <BudgetCardSkeleton v-if="isLoadingMore" :count="2" inline />
-        </div>
-      </div>
 
-      <!-- Manual Budgets Tab -->
-      <div v-if="activeTab === BUDGET_TYPES.manual">
-        <div
-          v-if="manualBudgets.length === 0 && !isLoadingMore"
-          class="flex flex-col items-center justify-center py-12 text-center"
-        >
-          <div class="bg-muted mb-4 flex size-16 items-center justify-center rounded-full">
-            <WalletIcon class="text-muted-foreground size-8" />
+          <div v-if="group.hiddenCount > 0" class="flex justify-center px-3.5 py-1.5">
+            <Button variant="ghost" size="sm" class="text-muted-foreground" @click="showAllEnded = true">
+              {{ $t('budgets.list.showMoreEnded', { count: group.hiddenCount }) }}
+            </Button>
           </div>
-          <h3 class="mb-1 font-medium">{{ $t('budgets.list.emptyState.title') }}</h3>
-          <p class="text-muted-foreground max-w-sm text-sm">
-            {{ $t('budgets.list.emptyState.description') }}
-          </p>
-        </div>
-        <div v-else class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
-          <ManualBudgetCard
-            v-for="budget in manualBudgets"
-            :key="budget.id"
-            :budget="budget"
-            :is-archived="isArchived(budget)"
-            :stats="(getBudgetStats(budget.id)?.summary as any) ?? null"
-            :is-stats-loading="isBudgetStatsLoading(budget.id)"
-            :time-status="getBudgetTimeStatus(budget)"
-            @click="navigateToBudget({ budgetId: budget.id })"
-            @edit="navigateToBudget({ budgetId: budget.id })"
-            @delete="deleteBudget({ budgetId: budget.id })"
-            @archive="handleArchive({ budgetId: budget.id, isArchived: !isArchived(budget) })"
-          />
-          <BudgetCardSkeleton v-if="isLoadingMore" :count="2" inline />
-        </div>
-      </div>
-    </template>
-  </div>
+        </template>
+      </template>
+    </div>
+
+    <ArchivePromptDialog v-model:open="isArchivePromptOpen" :budget="archivePromptBudget" />
+  </Card>
 </template>

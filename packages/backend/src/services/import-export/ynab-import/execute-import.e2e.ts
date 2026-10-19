@@ -203,6 +203,8 @@ describe('Execute YNAB import endpoint', () => {
     expect(progress.status).toBe('failed');
     if (progress.status !== 'failed') throw new Error('unreachable');
     expect(progress.error).toMatch(/Missing account mapping/i);
+    expect(progress.failure?.code).toBe('account-mapping-missing');
+    expect(progress.failure?.params?.accounts).toEqual(expect.any(String));
   });
 
   it("refuses to leak another user's job status (cross-user authZ)", async () => {

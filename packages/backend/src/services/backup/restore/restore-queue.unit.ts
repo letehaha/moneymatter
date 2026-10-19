@@ -14,7 +14,6 @@ jest.mock('@services/import-export/core/queue/create-import-job-queue', () => ({
     queue: { getJob: jest.fn(), getJobs: jest.fn() },
     worker: {},
     enqueue: jest.fn(),
-    describeFailure: jest.fn(),
   })),
 }));
 
@@ -37,6 +36,7 @@ jest.mock('@services/currencies/base-currency-lock', () => ({
 jest.mock('@i18n/index', () => ({ __esModule: true, t: jest.fn(() => 'translated') }));
 
 /* eslint-disable import/first */
+import { t } from '@i18n/index';
 import { redisClient } from '@root/redis-client';
 import { acquireBaseCurrencyLock, releaseBaseCurrencyLockIfOwned } from '@services/currencies/base-currency-lock';
 import { createImportJobQueue } from '@services/import-export/core/queue/create-import-job-queue';
@@ -57,12 +57,10 @@ const factoryParams = jest.mocked(createImportJobQueue).mock.calls[0]![0] as unk
 const factoryBundle = jest.mocked(createImportJobQueue).mock.results[0]!.value as unknown as {
   queue: { getJob: AsyncMock; getJobs: AsyncMock };
   enqueue: AsyncMock;
-  describeFailure: jest.Mock<(params: { reason: string | undefined }) => string | undefined>;
 };
 const getJobMock = factoryBundle.queue.getJob;
 const getJobsMock = factoryBundle.queue.getJobs;
 const enqueueMock = factoryBundle.enqueue;
-const describeFailureMock = factoryBundle.describeFailure;
 const redisSetMock = jest.mocked(redisClient.set) as unknown as AsyncMock;
 const acquireLockMock = jest.mocked(acquireBaseCurrencyLock);
 const releaseLockMock = jest.mocked(releaseBaseCurrencyLockIfOwned);
@@ -135,16 +133,44 @@ describe('queueBackupRestore concurrent-restore enqueue guard', () => {
 });
 
 describe('getBackupRestoreStatus', () => {
-  it('reports a stalled job with the queue-mapped failure message and releases its orphaned lock', async () => {
+  it('reports a stalled job with the translated interrupted message and releases its orphaned lock', async () => {
     const jobId = `backup-restore-${USER_ID}-stalled`;
     getJobMock.mockResolvedValue(buildJob({ state: 'failed', failedReason: STALLED_REASON }));
-    describeFailureMock.mockReturnValue('interrupted message');
+    jest.mocked(t).mockReturnValue('interrupted message');
 
     const status = await getBackupRestoreStatus({ userId: USER_ID, jobId });
 
-    expect(describeFailureMock).toHaveBeenCalledWith({ reason: STALLED_REASON });
+    expect(t).toHaveBeenCalledWith({ key: 'common.jobInterruptedByServerUpdate' });
     expect(status).toEqual({ jobId, status: 'failed', progress: undefined, error: 'interrupted message' });
     expect(releaseLockMock).toHaveBeenCalledWith({ userId: USER_ID, jobId });
+  });
+
+  it('reports any other failure with a translated generic message and the raw reason as detail', async () => {
+    const jobId = `backup-restore-${USER_ID}-crashed`;
+    const failedReason = 'Backup restore failed: SequelizeUniqueConstraintError: Validation error';
+    getJobMock.mockResolvedValue(buildJob({ state: 'failed', failedReason }));
+    jest.mocked(t).mockReturnValue('generic failure');
+
+    const status = await getBackupRestoreStatus({ userId: USER_ID, jobId });
+
+    expect(t).toHaveBeenCalledWith({ key: 'backup.restore.errors.failed' });
+    expect(status).toEqual({
+      jobId,
+      status: 'failed',
+      progress: undefined,
+      error: 'generic failure',
+      errorDetail: failedReason,
+    });
+  });
+
+  it('omits the detail when BullMQ recorded no failure reason', async () => {
+    const jobId = `backup-restore-${USER_ID}-empty`;
+    getJobMock.mockResolvedValue(buildJob({ state: 'failed', failedReason: '' }));
+    jest.mocked(t).mockReturnValue('generic failure');
+
+    const status = await getBackupRestoreStatus({ userId: USER_ID, jobId });
+
+    expect(status).toMatchObject({ status: 'failed', error: 'generic failure', errorDetail: undefined });
   });
 
   it('builds its queue with the interrupted message of a job that rolls back as a whole', () => {

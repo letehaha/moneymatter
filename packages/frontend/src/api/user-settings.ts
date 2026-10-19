@@ -131,6 +131,8 @@ export interface UserSettingsSchema {
    * Accounts panel. Defaults to visible/off when unset.
    */
   hideZeroBalances?: boolean;
+  /** Hides the "turn on smart tracking" tip on every tracker. */
+  hideSmartTrackingTip?: boolean;
   accounts?: {
     /** Account preselected in the account pickers. `null` means the user explicitly cleared it. */
     defaultAccountId?: string | null;

@@ -89,17 +89,23 @@ export interface DownloadAttachmentResult {
   nosniff: string | null;
 }
 
-export async function downloadAttachment({ id }: { id: string }): Promise<DownloadAttachmentResult> {
-  const base = request(app).get(`${API_PREFIX}/attachments/${id}/file`);
+export async function downloadBinary({ url }: { url: string }) {
+  const base = request(app).get(`${API_PREFIX}${url}`);
   if (global.APP_AUTH_COOKIES) base.set('Cookie', global.APP_AUTH_COOKIES);
 
   const result = await base.buffer(true).parse(bufferParser);
+  const header = ({ name }: { name: string }) => (result.headers[name] as string | undefined) ?? null;
+  return { statusCode: result.status, body: result.body as Buffer, header };
+}
+
+export async function downloadAttachment({ id }: { id: string }): Promise<DownloadAttachmentResult> {
+  const { statusCode, body, header } = await downloadBinary({ url: `/attachments/${id}/file` });
   return {
-    statusCode: result.status,
-    body: result.body as Buffer,
-    contentType: (result.headers['content-type'] as string | undefined) ?? null,
-    contentDisposition: (result.headers['content-disposition'] as string | undefined) ?? null,
-    nosniff: (result.headers['x-content-type-options'] as string | undefined) ?? null,
+    statusCode,
+    body,
+    contentType: header({ name: 'content-type' }),
+    contentDisposition: header({ name: 'content-disposition' }),
+    nosniff: header({ name: 'x-content-type-options' }),
   };
 }
 

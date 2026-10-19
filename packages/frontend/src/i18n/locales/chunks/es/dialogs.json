@@ -574,6 +574,7 @@
       "analyzing": "Leyendo la factura y buscando sus transacciones…",
       "attaching": "Adjuntar la factura a la transacción…",
       "privacyNote": "El archivo va al proveedor de IA sólo para lectura. Nada se guarda hasta que lo vincule a una transacción.",
+      "aiPausedHint": "La lectura de facturas está en pausa. Abre el icono de IA de arriba para ver las opciones disponibles.",
       "direction": {
         "paid": "Pagué esto",
         "gotPaid": "Recibí pago",

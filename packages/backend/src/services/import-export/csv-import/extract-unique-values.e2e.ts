@@ -7,6 +7,7 @@ import {
   TransactionTypeOptionValue,
 } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -436,6 +437,25 @@ describe('Extract Unique Values endpoint', () => {
         'currency.currencyCode',
       );
     }, 60_000);
+
+    it("reports an account with mixed currencies in the request's locale", async () => {
+      const fileContent = `Date,Amount,Category,Currency,Account
+01/15/2024,10.00,Food,USD,Main
+01/16/2024,20.00,Food,EUR,Main`;
+
+      const result = await helpers.makeRequest({
+        method: 'post',
+        url: '/import/csv/extract-unique-values',
+        payload: { fileContent, delimiter: ',', columnMapping: baseMapping },
+        headers: { 'Accept-Language': 'uk' },
+      });
+
+      const variables = { accountName: 'Main', currencies: 'USD, EUR' };
+      const expected = t({ key: 'csvImport.accountMultipleCurrencies', variables, locale: 'uk' });
+      expect(result.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((result.body.response as unknown as ErrorResponse).message).toBe(expected);
+      expect(expected).not.toBe(t({ key: 'csvImport.accountMultipleCurrencies', variables, locale: 'en' }));
+    });
   });
 
   describe('sourceTags', () => {

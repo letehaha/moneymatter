@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "无法访问服务器。后端可能仍在启动 (~30秒后)，或者您的 ALLOWED_ORIGINS 环境变量不包含此 URL。",
       "unexpectedError": "未知错误。",
       "sessionExpired": "您的会话已过期。请重新登录",
-      "payloadTooLarge": "请求过大。请尝试导入更少的项目"
+      "payloadTooLarge": "请求过大。请尝试导入更少的项目",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "密码太短了。",
+      "passwordTooLong": "密码太长了。",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "这个页面不存在",

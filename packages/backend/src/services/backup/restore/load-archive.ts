@@ -1,4 +1,5 @@
 import { BACKUP_FORMAT_VERSION, BACKUP_REFERENCE_FILE_NAMES, type BackupManifest } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import JSZip from 'jszip';
 import isPlainObject from 'lodash/isPlainObject';
@@ -22,10 +23,6 @@ type Row = Record<string, unknown>;
  */
 const MAX_TOTAL_UNCOMPRESSED_BYTES = 1024 * 1024 * 1024;
 
-const OVER_BUDGET_MESSAGE = 'Backup archive is too large to restore: its uncompressed contents exceed the size limit.';
-
-const CORRUPT_ENTRY_MESSAGE = 'Backup archive is corrupt or has been tampered with.';
-
 /**
  * Reject up front when the archive's declared uncompressed size blows the budget,
  * before a single file is decompressed. Reads JSZip's per-entry `uncompressedSize`
@@ -43,7 +40,7 @@ function assertUncompressedBudget({ zip, maxUncompressedBytes }: { zip: JSZip; m
     if (typeof size === 'number') declaredTotal += size;
   }
   if (declaredTotal > maxUncompressedBytes) {
-    throw new ValidationError({ message: OVER_BUDGET_MESSAGE });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.archiveTooLarge' }) });
   }
 }
 
@@ -68,11 +65,11 @@ function createBudgetedEntryReader({
       // size, CRC). A forged entry — e.g. a zip bomb that understated its
       // central-directory size to slip past assertUncompressedBudget — trips it and
       // throws a raw error. Surface it as a 422 instead of letting it escape as a 500.
-      throw new ValidationError({ message: CORRUPT_ENTRY_MESSAGE });
+      throw new ValidationError({ message: t({ key: 'backup.restore.errors.archiveCorrupt' }) });
     }
     decompressedBytes += bytes.length;
     if (decompressedBytes > maxUncompressedBytes) {
-      throw new ValidationError({ message: OVER_BUDGET_MESSAGE });
+      throw new ValidationError({ message: t({ key: 'backup.restore.errors.archiveTooLarge' }) });
     }
     return bytes;
   };
@@ -98,7 +95,7 @@ function parseJson({ buffer, path }: { buffer: Buffer; path: string }): unknown 
   try {
     return JSON.parse(buffer.toString('utf8'));
   } catch {
-    throw new ValidationError({ message: `Backup file ${path} is not valid JSON.` });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.invalidJson', variables: { path } }) });
   }
 }
 
@@ -112,13 +109,13 @@ function parseJson({ buffer, path }: { buffer: Buffer; path: string }): unknown 
 function assertRowArray({ value, path }: { value: unknown; path: string }): Row[] {
   if (!Array.isArray(value)) {
     throw new ValidationError({
-      message: `Backup file ${path} is corrupt: expected a JSON array of rows.`,
+      message: t({ key: 'backup.restore.errors.rowsNotArray', variables: { path } }),
     });
   }
   for (const row of value) {
     if (!isPlainObject(row)) {
       throw new ValidationError({
-        message: `Backup file ${path} is corrupt: every row must be a JSON object.`,
+        message: t({ key: 'backup.restore.errors.rowNotObject', variables: { path } }),
       });
     }
   }
@@ -149,7 +146,7 @@ export async function loadBackupArchive({
   try {
     zip = await JSZip.loadAsync(buffer);
   } catch {
-    throw new ValidationError({ message: 'Backup upload is not a readable zip archive.' });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.notZip' }) });
   }
 
   assertUncompressedBudget({ zip, maxUncompressedBytes });
@@ -160,14 +157,14 @@ export async function loadBackupArchive({
 
   const manifestFile = zip.file('manifest.json');
   if (!manifestFile) {
-    throw new ValidationError({ message: 'Backup archive is missing manifest.json.' });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.missingManifest' }) });
   }
   const rawManifest = parseJson({
     buffer: await readEntry({ file: manifestFile }),
     path: 'manifest.json',
   });
   if (!isPlainObject(rawManifest)) {
-    throw new ValidationError({ message: 'Backup archive has a malformed manifest.json (not a JSON object).' });
+    throw new ValidationError({ message: t({ key: 'backup.restore.errors.malformedManifest' }) });
   }
   const manifest = rawManifest as unknown as BackupManifest;
 
@@ -177,12 +174,15 @@ export async function loadBackupArchive({
   // corrupt/forged manifest fails as a 422 rather than sliding through as v1.
   if (typeof formatVersion !== 'number' || !Number.isInteger(formatVersion) || formatVersion < 1) {
     throw new ValidationError({
-      message: `Backup manifest declares an invalid format version (${String(formatVersion)}).`,
+      message: t({ key: 'backup.restore.errors.invalidFormatVersion', variables: { version: String(formatVersion) } }),
     });
   }
   if (formatVersion > BACKUP_FORMAT_VERSION) {
     throw new ValidationError({
-      message: `Backup format version ${formatVersion} is newer than this app supports (max ${BACKUP_FORMAT_VERSION}). Update the app to restore it.`,
+      message: t({
+        key: 'backup.restore.errors.formatVersionTooNew',
+        variables: { version: formatVersion, max: BACKUP_FORMAT_VERSION },
+      }),
     });
   }
 
@@ -190,7 +190,7 @@ export async function loadBackupArchive({
   // the upload is truncated/corrupt — safer to reject than to restore a partial.
   if (manifest.files !== undefined && !isPlainObject(manifest.files)) {
     throw new ValidationError({
-      message: 'Backup archive has a malformed manifest.json (its file list is not an object).',
+      message: t({ key: 'backup.restore.errors.malformedManifestFiles' }),
     });
   }
   const parsedByPath = new Map<string, unknown>();
@@ -202,17 +202,17 @@ export async function loadBackupArchive({
     const expectedSha = isPlainObject(entry) ? (entry as Record<string, unknown>).sha256 : undefined;
     if (typeof expectedSha !== 'string') {
       throw new ValidationError({
-        message: `Backup archive has a malformed manifest entry for ${path}.`,
+        message: t({ key: 'backup.restore.errors.malformedManifestEntry', variables: { path } }),
       });
     }
     const file = zip.file(path);
     if (!file) {
-      throw new ValidationError({ message: `Backup archive is missing ${path} listed in its manifest.` });
+      throw new ValidationError({ message: t({ key: 'backup.restore.errors.missingFile', variables: { path } }) });
     }
     const bytes = await readEntry({ file });
     const digest = sha256Hex({ buffer: bytes });
     if (digest !== expectedSha) {
-      throw new ValidationError({ message: `Backup file ${path} failed its integrity check (checksum mismatch).` });
+      throw new ValidationError({ message: t({ key: 'backup.restore.errors.checksumMismatch', variables: { path } }) });
     }
     parsedByPath.set(path, parseJson({ buffer: bytes, path }));
   }
@@ -229,7 +229,7 @@ export async function loadBackupArchive({
       // "contains no user record" path, which misdescribes a corrupt file.
       if (!isPlainObject(value)) {
         throw new ValidationError({
-          message: `Backup file ${path} is corrupt: the user record must be a JSON object.`,
+          message: t({ key: 'backup.restore.errors.userNotObject', variables: { path } }),
         });
       }
       user = value as Row;

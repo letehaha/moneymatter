@@ -58,6 +58,7 @@
         "unknownLocation": "Неизвестное местоположение",
         "lastActive": "Последняя активность: {date}",
         "noSessions": "Активные сеансы не найдены",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Выйти из всех остальных сеансов",
         "deviceTypes": {
           "unknownDevice": "Неизвестное устройство",
@@ -70,7 +71,6 @@
           "daysAgo": "{count} день назад | {count} дня назад | {count} дней назад"
         },
         "notifications": {
-          "loadFailed": "Не удалось загрузить сеансы",
           "revokeSuccess": "Сеанс завершён",
           "revokeFailed": "Не удалось завершить сеанс",
           "revokeAllSuccess": "Все остальные сеансы завершены",
@@ -120,6 +120,10 @@
           "setFailed": "Не удалось установить пароль",
           "unexpectedError": "Произошла непредвиденная ошибка",
           "updateFailed": "Не удалось обновить пароль"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "Current password is incorrect.",
+          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
         }
       },
       "dangerZone": "Опасная зона",
@@ -248,11 +252,27 @@
             "noRecords": "Записи не были восстановлены.",
             "doneButton": "Готово"
           },
+          "warnings": {
+            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
+            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
+            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
+            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
+            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
+            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
+            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
+            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
+            "noSettings": "The backup had no saved settings; defaults were applied.",
+            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
+            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
+            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+          },
           "failed": {
             "title": "Ошибка восстановления",
             "genericError": "При восстановлении резервной копии произошла ошибка.",
             "unconfirmed": "Не удалось подтвердить статус восстановления. Перезагрузите страницу и проверьте данные.",
-            "closeButton": "Закрыть"
+            "closeButton": "Закрыть",
+            "technicalDetails": "Technical details"
           },
           "overlay": {
             "title": "Восстановление данных",

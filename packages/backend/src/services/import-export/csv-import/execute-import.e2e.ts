@@ -1027,6 +1027,10 @@ describe('Execute Import endpoint (async)', () => {
       if (overlongCategory.progress.status !== 'failed') throw new Error('unreachable');
       expect(overlongCategory.progress.error).toMatch(/category name.*too long|too long.*category/i);
       expect(overlongCategory.progress.error).not.toMatch(/character varying|sequelize/i);
+      expect(overlongCategory.progress.failure).toEqual({
+        code: 'category-name-too-long',
+        params: { name: expect.any(String), length: tooLongCategoryName.length, max: 255 },
+      });
     }, 60_000);
 
     it('fails the job when link-existing rows carry a different currency than the linked account', async () => {
@@ -1047,6 +1051,8 @@ describe('Execute Import endpoint (async)', () => {
       expect(progress.error).toMatch(/currencies must match/i);
       expect(progress.error).toContain(mismatchedCurrency);
       expect(progress.error).toContain(account.currencyCode);
+      expect(progress.failure?.code).toBe('account-currency-mismatch');
+      expect(progress.failure?.params?.mismatches).toContain(mismatchedCurrency);
 
       // Zero state: no rows were written and the balance never moved.
       const after = await helpers.getAccount({ id: account.id, raw: true });

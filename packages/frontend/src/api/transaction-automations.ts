@@ -8,7 +8,7 @@ import type {
   TransactionAutomationModel,
 } from '@bt/shared/types';
 
-export interface TransactionAutomationPayload {
+interface TransactionAutomationPayload {
   name: string;
   isEnabled?: boolean;
   conditions: AutomationConditions;

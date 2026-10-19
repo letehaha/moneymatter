@@ -90,6 +90,7 @@ import { Button } from '@/components/lib/ui/button';
 import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
+import { extractApiErrorMessage } from '@/js/errors';
 import { useCurrenciesStore } from '@/stores';
 import { ACCOUNT_CATEGORIES, type AccountModel } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -157,6 +158,8 @@ const logoPlaceholderAccount = computed(() => ({
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   accountCategory: ACCOUNT_CATEGORIES.general,
 }));
 
@@ -232,7 +235,7 @@ async function handleSubmit() {
     isOpen.value = false;
   } catch (error) {
     addNotification({
-      text: error instanceof Error ? error.message : t('pages.statementParser.createAccountDialog.error'),
+      text: extractApiErrorMessage(error) || t('pages.statementParser.createAccountDialog.error'),
       type: NotificationType.error,
     });
   } finally {

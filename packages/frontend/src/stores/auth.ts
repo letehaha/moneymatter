@@ -132,7 +132,7 @@ export const useAuthStore = defineStore('auth', () => {
     });
 
     if (result.error) {
-      throw new UnexpectedError(result.error.message || 'Login failed');
+      throw new UnexpectedError(result.error.message, result.error);
     }
 
     await userStore.loadUser();
@@ -177,7 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (code === 'PROVIDER_NOT_FOUND' || status === 404) {
         throw new OAuthProviderNotConfiguredError(provider);
       }
-      throw new UnexpectedError(result.error.message || `${provider} login failed`);
+      throw new UnexpectedError(result.error.message, result.error);
     }
   };
 
@@ -188,7 +188,7 @@ export const useAuthStore = defineStore('auth', () => {
     const result = await authClient.signIn.passkey();
 
     if (result.error) {
-      throw new UnexpectedError(result.error.message || 'Passkey login failed');
+      throw new UnexpectedError(result.error.message, result.error);
     }
 
     await userStore.loadUser();
@@ -213,7 +213,7 @@ export const useAuthStore = defineStore('auth', () => {
     });
 
     if (result.error) {
-      throw new UnexpectedError(result.error.message || 'Failed to register passkey');
+      throw new UnexpectedError(result.error.message, result.error);
     }
 
     return result;
@@ -267,7 +267,7 @@ export const useAuthStore = defineStore('auth', () => {
     });
 
     if (result.error) {
-      throw new UnexpectedError(result.error.message || 'Signup failed', result.error);
+      throw new UnexpectedError(result.error.message, result.error);
     }
 
     // Don't auto-login - user needs to verify email first

@@ -195,6 +195,7 @@ describe('isAspspDateRangeRejection', () => {
     'The date must be less than 24 months',
     'Period must be no more than 90 days',
     'You can not request transactions more than 90 days in the past',
+    'One or more date fields are more than two years in the past.',
   ])('matches generic limit phrasings: "%s"', (aspspMessage) => {
     expect(isAspspDateRangeRejection(makeAspspBadRequest({ aspspMessage }))).toBe(true);
   });

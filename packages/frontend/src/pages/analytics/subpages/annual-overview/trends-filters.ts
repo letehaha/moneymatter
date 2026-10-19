@@ -19,7 +19,7 @@ export const emptyTrendsFilters = (): TrendsFilters => ({
   accountIds: [],
 });
 
-export interface StatsFilterParams {
+interface StatsFilterParams {
   categoryIds?: string[];
   excludedCategoryIds?: string[];
   payeeIds?: string[];

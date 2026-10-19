@@ -36,7 +36,7 @@ type FileValidationResult =
   | { valid: true }
   | {
       valid: false;
-      error: string;
+      /** The caller words the message from this, so it reads in the user's language. */
       reason: FileRejectionReason;
       /** Leading bytes of the file, set when a content check failed. */
       headerHex?: string;
@@ -115,7 +115,6 @@ async function validateFileContent({ file }: { file: File }): Promise<FileValida
     if (!isPdf && !isPkcs7) {
       return {
         valid: false,
-        error: 'File does not appear to be a valid PDF. The file may be corrupted or renamed.',
         reason: 'invalid_pdf',
         headerHex,
       };
@@ -124,7 +123,6 @@ async function validateFileContent({ file }: { file: File }): Promise<FileValida
     if (!isImageHeader({ header })) {
       return {
         valid: false,
-        error: 'File does not appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.',
         reason: 'invalid_image',
         headerHex,
       };
@@ -136,7 +134,6 @@ async function validateFileContent({ file }: { file: File }): Promise<FileValida
     if (!isText) {
       return {
         valid: false,
-        error: `File does not appear to be a valid ${ext.toUpperCase().slice(1)} file. The file may be binary or renamed.`,
         reason: 'invalid_text',
         headerHex,
       };
@@ -157,7 +154,6 @@ export async function validateStatementFile({ file }: { file: File }): Promise<F
   if (!isValidExtension) {
     return {
       valid: false,
-      error: 'Unsupported file type. Please upload a PDF, CSV, TXT, JPG, PNG or WebP file.',
       reason: 'unsupported_extension',
     };
   }
@@ -166,7 +162,6 @@ export async function validateStatementFile({ file }: { file: File }): Promise<F
   if (file.size > MAX_FILE_SIZE) {
     return {
       valid: false,
-      error: `File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds maximum of 10MB`,
       reason: 'too_large',
     };
   }

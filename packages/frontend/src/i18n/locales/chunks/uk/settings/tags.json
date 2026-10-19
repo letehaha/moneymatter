@@ -16,8 +16,6 @@
         "color": "Колір",
         "icon": "Іконка",
         "iconPlaceholder": "Виберіть іконку",
-        "iconSearchPlaceholder": "Пошук іконок...",
-        "clearIcon": "Очистити іконку",
         "description": "Опис",
         "descriptionPlaceholder": "Необов'язковий опис",
         "saveButton": "Зберегти",
@@ -74,7 +72,7 @@
           "monthly": "Щомісяця",
           "monthlyDescription": "Перевіряти певного дня кожного місяця",
           "quarterly": "Щокварталу",
-          "quarterlyDescription": "Перевіряти кожні 3 місяці (Січ, Квіт, Лип, Жовт)",
+          "quarterlyDescription": "Перевіряти кожні 3 місяці (січ, квіт, лип, жовт)",
           "yearly": "Щороку",
           "yearlyDescription": "Перевіряти раз на рік у січні"
         },

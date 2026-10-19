@@ -209,7 +209,9 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useStatementParserStore } from '@/stores/statement-parser';
 import { ArrowLeftIcon, Loader2Icon } from '@lucide/vue';
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 
+const { t } = useI18n();
 const store = useStatementParserStore();
 
 // Count existing transactions that are not duplicates
@@ -302,7 +304,7 @@ const timelineItems = computed((): TimelineItem[] => {
       transactionIndex: -1, // Not applicable for existing transactions
       existingId: tx.id,
       date: dateStr,
-      description: tx.note || 'No description',
+      description: tx.note || t('pages.statementParser.transactionReview.noDescription'),
       amount: Math.abs(tx.amount),
       txType: tx.transactionType,
     });

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { SubscriptionListItem } from '@/api/subscriptions';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -87,13 +88,7 @@ const due = computed<{ label: string; chipClass: string } | null>(() => {
   >
     <!-- Identity: logo + name/badges, subtitle underneath -->
     <div class="col-start-1 row-start-1 flex min-w-0 items-center gap-2.5">
-      <BrandLogo
-        :domain="subscription.logoDomain"
-        :initials="subscription.logoInitials"
-        :color="subscription.logoColor"
-        :name="subscription.name"
-        class="size-8 shrink-0"
-      />
+      <BrandLogo v-bind="toEntityLogoDisplayProps(subscription)" :name="subscription.name" class="size-8 shrink-0" />
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
           <h3 class="min-w-0 truncate font-medium">{{ subscription.name }}</h3>

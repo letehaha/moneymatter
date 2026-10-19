@@ -3,6 +3,7 @@ import { categorizationCandidatesController } from '@controllers/ai-categorizati
 import { categorizationStatusController } from '@controllers/ai-categorization/categorization-status.controller';
 import { categorizationHistoryController } from '@controllers/ai-categorization/history.controller';
 import { triggerCategorizationController } from '@controllers/ai-categorization/trigger-categorization.controller';
+import { listAuthSessionsController } from '@controllers/auth-sessions.controller';
 import { activeRestoreStatusController } from '@controllers/backup/active-restore-status.controller';
 import { exportBackupController } from '@controllers/backup/export-backup.controller';
 import { restoreBackupController } from '@controllers/backup/restore-backup.controller';
@@ -68,6 +69,8 @@ const router = Router({});
 router.use(authenticateSession);
 
 router.get('/', getUser);
+// Read here rather than through better-auth's /list-sessions, which refuses sessions older than its freshAge.
+router.get('/sessions', listAuthSessionsController);
 router.post('/feature-trials/:feature', startFeatureTrial);
 router.put('/update', updateUser);
 router.delete('/delete', checkBaseCurrencyLock, deleteUser);

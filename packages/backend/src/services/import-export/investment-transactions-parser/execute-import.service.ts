@@ -2,7 +2,7 @@
  * Commit a reviewed batch of parsed investment transactions to the DB.
  *
  * For each holding row:
- *   1. Ensure the Security exists (create from the resolvedSecurity snapshot if not).
+ *   1. Ensure the Security exists (create it from the search result remembered at preview time if not).
  *   2. Ensure the Holding for (portfolio, security) exists – create or merge.
  *   3. Insert each child transaction via the canonical
  *      `createInvestmentTransaction` service so cash balance, refAmount, and
@@ -17,15 +17,19 @@
  * Instead we collect per-row errors and return them.
  */
 import { INVESTMENT_TRANSACTION_CATEGORY, isTradeSide } from '@bt/shared/types/investments';
-import type { InvestmentImportExecuteResponse, InvestmentImportHolding } from '@bt/shared/types/investments';
+import type {
+  InvestmentImportExecuteResponse,
+  InvestmentImportHolding,
+  InvestmentImportWarning,
+} from '@bt/shared/types/investments';
+import { CustomError } from '@js/errors';
 import { logger } from '@js/utils';
 import Holdings from '@models/investments/holdings.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
-import { addOrUpdateFromProvider } from '@services/investments/securities-manage';
+import { upsertSecuritiesFromSearch } from '@services/investments/securities-manage';
 import { syncHistoricalPrices } from '@services/investments/securities-price/historical-sync.service';
-import { findSecurityByIdentity } from '@services/investments/securities/identity';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
 
 interface ExecuteImportParams {
@@ -34,6 +38,13 @@ interface ExecuteImportParams {
   /** tempIds of transactions the user opted to skip (possible duplicates). */
   skipTempIds: string[];
 }
+
+/**
+ * Holding setup only throws translated CustomErrors; createInvestmentTransaction still throws English
+ * ValidationErrors, so TRANSACTION_FAILED carries no reason.
+ */
+const userFacingReason = ({ error }: { error: unknown }): { reason?: string } =>
+  error instanceof CustomError ? { reason: error.message } : {};
 
 export async function executeInvestmentImport({
   userId,
@@ -49,7 +60,7 @@ export async function executeInvestmentImport({
   let skippedPossibleDuplicates = 0;
   let skippedHoldings = 0;
   let failedTransactions = 0;
-  const warnings: string[] = [];
+  const warnings: InvestmentImportWarning[] = [];
 
   const newSecurityIds = new Set<string>();
 
@@ -58,17 +69,16 @@ export async function executeInvestmentImport({
     // to defend itself. Same for the per-row validation below. Each guard
     // bumps `skippedHoldings` and pushes a warning so the response actually
     // tells the user why N rows didn't land.
+    const symbol = holding.parsedSymbol;
     if (!holding.resolvedSecurity) {
-      const reason = `Skipped "${holding.parsedSymbol}": no resolved security.`;
-      logger.warn(reason);
-      warnings.push(reason);
+      logger.warn(`Skipped "${symbol}": no resolved security.`);
+      warnings.push({ code: 'NO_RESOLVED_SECURITY', params: { symbol } });
       skippedHoldings += 1;
       continue;
     }
     if (!holding.currencyCode) {
-      const reason = `Skipped "${holding.parsedSymbol}": no currency selected.`;
-      logger.warn(reason);
-      warnings.push(reason);
+      logger.warn(`Skipped "${symbol}": no currency selected.`);
+      warnings.push({ code: 'NO_CURRENCY', params: { symbol } });
       skippedHoldings += 1;
       continue;
     }
@@ -79,9 +89,8 @@ export async function executeInvestmentImport({
       where: { id: holding.portfolioId, userId },
     });
     if (!portfolio) {
-      const reason = `Skipped "${holding.parsedSymbol}": target portfolio not found.`;
-      logger.warn(reason);
-      warnings.push(reason);
+      logger.warn(`Skipped "${symbol}": target portfolio not found.`);
+      warnings.push({ code: 'PORTFOLIO_NOT_FOUND', params: { symbol } });
       skippedHoldings += 1;
       continue;
     }
@@ -89,7 +98,7 @@ export async function executeInvestmentImport({
     const resolvedSecurity = holding.resolvedSecurity;
     const { providerName } = resolvedSecurity;
 
-    // Steps 1+2 below all run unguarded queries (`addOrUpdateFromProvider`,
+    // Steps 1+2 below all run unguarded queries (`upsertSecuritiesFromSearch`,
     // `addUserCurrencies`, `Holdings.create`) that can throw on FK violations,
     // unique-key collisions from concurrent imports, or provider lookups that
     // hit a transient error. Without this wrapper a single throw would abort
@@ -103,27 +112,18 @@ export async function executeInvestmentImport({
         security = await Securities.findByPk(resolvedSecurity.securityId);
       }
       if (!security) {
-        // Build a SecuritySearchResult from the full resolvedSecurity snapshot –
-        // it carries every field the upsert needs (assetClass, providerName,
-        // currencyCode, exchangeName, cryptoCurrencyCode).
-        const provisional = {
-          symbol: resolvedSecurity.symbol.toUpperCase(),
-          providerSymbol: resolvedSecurity.providerSymbol,
-          name: resolvedSecurity.name,
-          assetClass: resolvedSecurity.assetClass,
-          providerName,
-          currencyCode: resolvedSecurity.currencyCode,
-          cryptoCurrencyCode: resolvedSecurity.cryptoCurrencyCode,
-          exchangeName: resolvedSecurity.exchangeName,
-        };
-        await addOrUpdateFromProvider([provisional]);
-        // Resolve via the same identity helper the upsert used so a non-crypto
-        // row sourced under a different provider name still finds the existing
-        // securityId instead of looking like a fresh insert.
-        security = await findSecurityByIdentity(provisional);
-        if (!security) {
-          throw new Error('Provider upsert completed but the security row was not created.');
-        }
+        const { securities } = await upsertSecuritiesFromSearch({
+          securities: [
+            {
+              symbol: resolvedSecurity.symbol.toUpperCase(),
+              providerSymbol: resolvedSecurity.providerSymbol,
+              assetClass: resolvedSecurity.assetClass,
+              providerName,
+              currencyCode: resolvedSecurity.currencyCode,
+            },
+          ],
+        });
+        security = securities[0]!;
         createdSecurities += 1;
         newSecurityIds.add(security.id);
       }
@@ -166,12 +166,11 @@ export async function executeInvestmentImport({
       // without restructuring the existing variable scope.
       preloadedHoldingRef = loadedHolding;
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
       logger.error({
-        message: `Failed to set up holding for "${holding.parsedSymbol}"`,
+        message: `Failed to set up holding for "${symbol}"`,
         error: error as Error,
       });
-      warnings.push(`Skipped "${holding.parsedSymbol}": ${message}`);
+      warnings.push({ code: 'HOLDING_SETUP_FAILED', params: { symbol, ...userFacingReason({ error }) } });
       skippedHoldings += 1;
       continue;
     }
@@ -192,9 +191,8 @@ export async function executeInvestmentImport({
       // is right for sell/dividend but wrong for fee/tax – reject the rest
       // instead of silently misclassifying them.
       if (!isTradeSide(tx.side) && tx.side !== INVESTMENT_TRANSACTION_CATEGORY.dividend) {
-        const reason = `Skipped "${holding.parsedSymbol}" ${tx.side} on ${tx.date}: this category is not yet supported.`;
-        logger.warn(reason);
-        warnings.push(reason);
+        logger.warn(`Skipped "${symbol}" ${tx.side} on ${tx.date}: this category is not yet supported.`);
+        warnings.push({ code: 'UNSUPPORTED_CATEGORY', params: { symbol, side: tx.side, date: tx.date } });
         failedTransactions += 1;
         continue;
       }
@@ -217,13 +215,14 @@ export async function executeInvestmentImport({
       } catch (error) {
         // Don't abort the whole batch – surface the failure in the response so
         // the user knows N rows didn't actually land despite the 200.
-        const message = error instanceof Error ? error.message : String(error);
-        const reason = `Failed to import a "${holding.parsedSymbol}" ${tx.side} on ${tx.date}: ${message}`;
         logger.error({
-          message: `Failed to import transaction (tempId=${tx.tempId}, symbol=${holding.parsedSymbol})`,
+          message: `Failed to import transaction (tempId=${tx.tempId}, symbol=${symbol})`,
           error: error as Error,
         });
-        warnings.push(reason);
+        warnings.push({
+          code: 'TRANSACTION_FAILED',
+          params: { symbol, side: tx.side, date: tx.date },
+        });
         failedTransactions += 1;
       }
     }

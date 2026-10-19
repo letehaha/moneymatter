@@ -18,6 +18,7 @@ import { trackAnalyticsEvent } from '@/lib/posthog';
 import { useCurrenciesStore } from '@/stores';
 import { useOnboardingStore } from '@/stores/onboarding';
 import { ACCOUNT_CATEGORIES, isDedicatedFlowAccountCategory } from '@bt/shared/types';
+import { PlusIcon } from '@lucide/vue';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed, defineAsyncComponent, reactive } from 'vue';
@@ -72,6 +73,8 @@ const logoPlaceholderAccount = computed(() => ({
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   accountCategory: form.accountCategory,
 }));
 
@@ -167,6 +170,7 @@ const submit = async () => {
 
             <AddCurrencyDialog @added="form.currencyCode = String($event)">
               <ui-button type="button" class="mt-4 w-full" variant="link">
+                <PlusIcon class="size-4" />
                 {{ $t('forms.createAccount.addCurrencyButton') }}
               </ui-button>
             </AddCurrencyDialog>

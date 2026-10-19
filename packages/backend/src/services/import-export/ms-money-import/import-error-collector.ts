@@ -1,4 +1,4 @@
-import type { ImportError } from '@bt/shared/types';
+import type { ImportRowsSuppressedError } from '@bt/shared/types';
 
 /**
  * Failure bookkeeping for an importer that writes rows one at a time. Separates
@@ -97,11 +97,17 @@ export function recordImportFailure({
  * was dropped. Anchored to the first dropped row so the "Row N:" prefix the UI
  * renders reads as the point the listing stops.
  */
-export function buildSuppressedFailuresEntry({ tally }: { tally: ImportFailureTally }): ImportError | null {
+export function buildSuppressedFailuresEntry({
+  tally,
+}: {
+  tally: ImportFailureTally;
+}): ImportRowsSuppressedError | null {
   if (tally.suppressedRows === 0) return null;
   return {
     rowIndex: tally.firstSuppressedRowIndex ?? 0,
     error: `${tally.suppressedRows} more rows failed to import from this row onward. Only the first ${MAX_RETAINED_ERROR_ENTRIES} errors are listed.`,
+    code: 'rows-suppressed',
+    params: { count: tally.suppressedRows, listed: MAX_RETAINED_ERROR_ENTRIES },
   };
 }
 

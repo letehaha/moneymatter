@@ -20,7 +20,7 @@
       "options": "Optionen"
     },
     "cashFlow": {
-      "subtitle": "Einnahmen gegenüber Ausgaben im Zeitverlauf und wohin das Geld geflossen ist.",
+      "subtitle": "Einnahmen vs. Ausgaben im Zeitverlauf und wohin das Geld geflossen ist.",
       "income": "Einnahmen",
       "expenses": "Ausgaben",
       "netSavings": "Netto-Ersparnisse",

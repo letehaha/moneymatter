@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import BrandLogo from '@/components/common/brand-logo.vue';
-import { type LogoSelection, toLogoDisplayProps } from '@/components/common/logo-selection';
+import { type LogoSelection, type LogoTab, toLogoDisplayProps } from '@/components/common/logo-selection';
 import LogoSearch from '@/components/common/logo-search.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -9,7 +9,7 @@ import { PencilIcon, RotateCcwIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
-  /** Chosen brand or monogram. null = nothing chosen; the fallback depends on the entity. */
+  /** Chosen logo. null = nothing chosen; the fallback depends on the entity. */
   modelValue: LogoSelection | null;
   /** Entity name – drives the monogram preview and seeds the search query. */
   nameForSearch: string;
@@ -20,6 +20,7 @@ const props = defineProps<{
   resetLabel?: string;
   /** 'with-labeled-field' pushes the square down past a sibling field's caption so both line up on the input row. */
   align?: 'default' | 'with-labeled-field';
+  tabs?: LogoTab[];
 }>();
 
 const emit = defineEmits<{
@@ -76,7 +77,7 @@ function handleReset() {
       <template #default>
         <div class="flex flex-col gap-4">
           <div class="border-input min-h-86 flex-1 overflow-hidden rounded-md border">
-            <LogoSearch :selection="modelValue" :name-for-search="nameForSearch" @select="handleSelect" />
+            <LogoSearch :selection="modelValue" :name-for-search="nameForSearch" :tabs="tabs" @select="handleSelect" />
           </div>
 
           <div class="flex items-center justify-between gap-2 border-t pt-2">

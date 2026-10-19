@@ -15,13 +15,13 @@ describe('parseOfxDate', () => {
   });
 
   it('rejects an invalid calendar date', () => {
-    expect(() => parseOfxDate({ value: '20260230' })).toThrow('Invalid OFX date');
+    expect(() => parseOfxDate({ value: '20260230' })).toThrow('ofxImport.errors.invalidDate');
   });
 
   it.each(['20260801990000', '20260801126000', '20260801120060', '20260801120000[99:BAD]'])(
     'rejects an invalid time or offset in %s',
     (value) => {
-      expect(() => parseOfxDate({ value })).toThrow('Invalid OFX date');
+      expect(() => parseOfxDate({ value })).toThrow('ofxImport.errors.invalidDate');
     },
   );
 });

@@ -214,7 +214,8 @@
         "notLinked": "Akun ini tidak terhubung ke koneksi bank",
         "syncStarted": "Sinkronisasi dimulai...",
         "accessForbidden": "Akses ditolak",
-        "failed": "Gagal menyinkronkan transaksi"
+        "failed": "Gagal menyinkronkan transaksi",
+        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
       },
       "reconcileDuplicates": {
         "title": "Merge duplicate transactions",

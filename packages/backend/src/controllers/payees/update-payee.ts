@@ -40,6 +40,7 @@ export default createController(schema, async ({ user, params, body }) => {
     logoDomain: body.logoDomain,
     logoInitials: body.logoInitials,
     logoColor: body.logoColor,
+    logoIcon: body.logoIcon,
   });
   return { data: serializePayee(payee) };
 });

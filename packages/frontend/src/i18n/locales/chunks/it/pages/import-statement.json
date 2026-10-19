@@ -12,7 +12,7 @@
         }
       },
       "steps": {
-        "accountTitle": "Select Account",
+        "accountTitle": "Select account",
         "accountDescription": "Choose or create an account for the transactions"
       },
       "selectCurrency": "Select currency",
@@ -34,6 +34,9 @@
         "currencyConflict": "The selected statements report different currencies ({currencies}). They will all be imported into one account, using that account's currency.",
         "unsupportedFileNamed": "{name} is not a PDF, CSV, TXT, JPG, PNG or WebP file",
         "unreadableImageNamed": "{name} could not be read as an image",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
         "pasteImageButton": "Paste image",
         "pasteShortcutHint": "or press {shortcut}",
         "clipboardNoImage": "No image found in the clipboard.",
@@ -48,19 +51,19 @@
           "extracted": "{count} transaction | {count} transactions",
           "failed": "Failed"
         },
-        "analyzeButton": "Analyze File | Analyze {count} Files",
-        "tryAgain": "Try Again",
+        "analyzeButton": "Analyze file | Analyze {count} files",
+        "tryAgain": "Try again",
         "modelLabel": "Model",
-        "estimatedCostLabel": "Estimated Cost",
-        "estimatedTokensLabel": "Estimated Tokens",
-        "extractButton": "Extract Transactions",
+        "estimatedCostLabel": "Estimated cost",
+        "estimatedTokensLabel": "Estimated tokens",
+        "extractButton": "Extract transactions",
         "progressMessage": "This may take 30-60 seconds depending on the document size",
         "foundLabel": "Found:",
         "transactions": "transactions",
         "fromLabel": "from",
         "inLabel": "in",
         "continueMessage": "Continue to select an account for these transactions.",
-        "continueButton": "Continue to Account",
+        "continueButton": "Continue to account",
         "tokenWarning": {
           "medium": {
             "title": "Large file detected",
@@ -75,8 +78,6 @@
             "description": "Processing may take 5+ minutes. Consider splitting the file into smaller parts for faster processing."
           }
         },
-        "freeApiWarning": "You're using the included MoneyMatter AI, which has usage limits.",
-        "addApiKeyLink": "Add your own AI model",
         "status": {
           "sendingFile": "Sending file to AI...",
           "readingDocument": "AI is reading the document...",
@@ -93,8 +94,8 @@
       },
       "accountSelect": {
         "newlyCreated": "(newly created)",
-        "differentCurrency": "Different Currency",
-        "linkedToBanks": "Linked to Banks",
+        "differentCurrency": "Different currency",
+        "linkedToBanks": "Linked to banks",
         "linkedToBanksTooltip": "For now, statement import is limited to system accounts only.",
         "noAccountsFound": "No accounts found",
         "currencyAccounts": "{currency} Accounts"
@@ -110,13 +111,13 @@
         "currencyMismatch": "The statement currency ({statementCurrency}) differs from the account currency ({accountCurrency}). Transactions will be imported using the account currency.",
         "yourCurrenciesGroup": "Your currencies",
         "allCurrenciesGroup": "All currencies",
-        "createNew": "Create New",
+        "createNew": "Create new",
         "back": "Indietro",
-        "importTransactions": "Import Transactions",
-        "checkForDuplicates": "Check for Duplicates"
+        "importTransactions": "Import transactions",
+        "checkForDuplicates": "Check for duplicates"
       },
       "createAccountDialog": {
-        "title": "Create Account for Import",
+        "title": "Create account for import",
         "description": "Create a new account to import your statement transactions.",
         "accountNameLabel": "Nome del conto",
         "currencyLabel": "Currency",
@@ -125,7 +126,7 @@
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
         "cancel": "Cancella",
         "creating": "Creating...",
-        "createAccount": "Create Account",
+        "createAccount": "Create account",
         "validation": {
           "nameRequired": "Account name is required",
           "currencyRequired": "Please select a currency"
@@ -137,10 +138,10 @@
         "checkingDuplicates": "Checking for duplicates...",
         "extractedLabel": "Extracted:",
         "fromFiles": "from {count} statements",
-        "duplicatesLabel": "Potential Duplicates:",
-        "willImportLabel": "Will Import:",
-        "alreadyInAccountLabel": "Already in Account:",
-        "timelineTitle": "Transaction Timeline",
+        "duplicatesLabel": "Potential duplicates:",
+        "willImportLabel": "Will import:",
+        "alreadyInAccountLabel": "Already in account:",
+        "timelineTitle": "Transaction timeline",
         "legendNew": "Nuovo",
         "legendDuplicate": "Duplicate",
         "legendExisting": "Already in account",
@@ -151,38 +152,51 @@
         "duplicateInfoOverridden": "{count} duplicates have been overridden and will be imported.",
         "toggleInfo": "Checked rows will be imported. Duplicates start unchecked – check one to import it anyway.",
         "backButton": "Indietro",
-        "continueButton": "Continue to Import",
+        "continueButton": "Continue to import",
         "transactionCount": "({count} transactions)",
-        "duplicateCheckFailed": "We couldn't check this statement against your existing transactions, so the duplicate count below is unavailable. Review the list before importing."
+        "duplicateCheckFailed": "We couldn't check this statement against your existing transactions, so the duplicate count below is unavailable. Review the list before importing.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} line from the AI response couldn't be read and was skipped. The imported count below may be lower than what's in your file. | {count} lines from the AI response couldn't be read and were skipped. The imported count below may be lower than what's in your file.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
-        "readyTitle": "Ready to Import",
+        "readyTitle": "Ready to import",
         "readyDescription": "Review the summary below and click \"Import Transactions\" to proceed.",
         "accountLabel": "Account:",
         "statementsLabel": "Statements:",
         "toImportLabel": "Transactions to import:",
         "toSkipLabel": "Transactions to skip:",
         "backButton": "Indietro",
-        "importButton": "Import {count} Transactions",
-        "importingTitle": "Importing Transactions",
+        "importButton": "Import {count} transactions",
+        "importingTitle": "Importing transactions",
         "importingDescription": "Please wait while we import your transactions...",
-        "failedTitle": "Import Failed",
+        "failedTitle": "Import failed",
         "failedDescription": "Nothing was imported. The details below come from the server.",
         "jobFailedDescription": "The import stopped before it finished. Some transactions may already have been created. Check your transactions before importing this statement again.",
-        "tryAgainButton": "Try Again",
-        "completeTitle": "Import Complete!",
-        "completeWithIssuesTitle": "Import Completed with Issues",
+        "tryAgainButton": "Try again",
+        "completeTitle": "Import complete!",
+        "completeWithIssuesTitle": "Import completed with issues",
         "successDescription": "Your transactions have been successfully imported.",
         "partialDescription": "Some transactions could not be imported.",
         "importedLabel": "Imported:",
         "skippedLabel": "Skipped:",
-        "errorsTitle": "Import Errors",
+        "errorsTitle": "Import errors",
         "transactionNumberHeader": "Transaction #",
         "errorHeader": "Error",
-        "batchIdNote": "Import Batch ID: {batchId}. You can use this ID to find and manage all imported transactions.",
-        "viewTransactionsButton": "View Transactions",
-        "startNewImportButton": "Start New Import"
+        "batchIdNote": "Import batch ID: {batchId}. You can use this ID to find and manage all imported transactions.",
+        "viewTransactionsButton": "View transactions",
+        "startNewImportButton": "Start new import",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

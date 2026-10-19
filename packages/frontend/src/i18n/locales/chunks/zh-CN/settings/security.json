@@ -1,17 +1,17 @@
 {
   "settings": {
     "security": {
-      "title": "Security Settings",
+      "title": "Security settings",
       "description": "Manage your login methods, active sessions, and password",
       "tabs": {
-        "loginMethods": "Login Methods",
-        "activeSessions": "Active Sessions",
+        "loginMethods": "Login methods",
+        "activeSessions": "Active sessions",
         "password": "Password",
         "backup": "Backup & restore",
-        "dangerZone": "Danger Zone"
+        "dangerZone": "Danger zone"
       },
       "loginMethods": {
-        "title": "Login Methods",
+        "title": "Login methods",
         "description": "Manage how you sign in to your account",
         "oauth": {
           "connectedAs": "Connected as {email}",
@@ -24,8 +24,8 @@
           "title": "Password",
           "passwordSet": "Password is set",
           "noPassword": "No password set",
-          "manageInTab": "Manage in Password tab",
-          "setupInTab": "Set up in Password tab"
+          "manageInTab": "Manage in password tab",
+          "setupInTab": "Set up in password tab"
         },
         "passkeys": {
           "title": "Passkeys",
@@ -52,16 +52,17 @@
         }
       },
       "activeSessions": {
-        "title": "Active Sessions",
+        "title": "Active sessions",
         "description": "Manage devices where you're currently signed in",
         "currentBadge": "Current",
         "unknownLocation": "Unknown location",
         "lastActive": "Last active: {date}",
         "noSessions": "No active sessions found",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Sign out of all other sessions",
         "deviceTypes": {
-          "unknownDevice": "Unknown Device",
-          "unknownBrowser": "Unknown Browser"
+          "unknownDevice": "Unknown device",
+          "unknownBrowser": "Unknown browser"
         },
         "timeAgo": {
           "justNow": "刚刚",
@@ -70,7 +71,6 @@
           "daysAgo": "{count} 天前 | {count} 天前"
         },
         "notifications": {
-          "loadFailed": "Failed to load sessions",
           "revokeSuccess": "Session revoked",
           "revokeFailed": "Failed to revoke session",
           "revokeAllSuccess": "All other sessions have been signed out",
@@ -82,10 +82,10 @@
         "descriptionChange": "Change your password",
         "descriptionSet": "Set up a password for your account",
         "labels": {
-          "currentPassword": "Current Password",
-          "newPassword": "New Password",
+          "currentPassword": "Current password",
+          "newPassword": "New password",
           "password": "Password",
-          "confirmPassword": "Confirm Password"
+          "confirmPassword": "Confirm password"
         },
         "placeholders": {
           "currentPassword": "Enter current password",
@@ -93,8 +93,8 @@
           "confirmPassword": "Confirm new password"
         },
         "buttons": {
-          "change": "Change Password",
-          "set": "Set Password"
+          "change": "Change password",
+          "set": "Set password"
         },
         "strength": {
           "veryWeak": "Very weak",
@@ -120,6 +120,10 @@
           "setFailed": "Failed to set password",
           "unexpectedError": "An unexpected error occurred",
           "updateFailed": "Failed to update password"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "Current password is incorrect.",
+          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
         }
       },
       "dangerZone": "Danger zone",
@@ -248,11 +252,27 @@
             "noRecords": "No records were restored.",
             "doneButton": "Done"
           },
+          "warnings": {
+            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
+            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
+            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
+            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
+            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
+            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
+            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
+            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
+            "noSettings": "The backup had no saved settings; defaults were applied.",
+            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
+            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
+            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+          },
           "failed": {
             "title": "Restore failed",
             "genericError": "Something went wrong while restoring your backup.",
             "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
-            "closeButton": "Close"
+            "closeButton": "Close",
+            "technicalDetails": "Technical details"
           },
           "overlay": {
             "title": "Restoring your data",

@@ -115,7 +115,7 @@
         "error": "Účet sa nepodarilo aktualizovať",
         "archivedTitle": "Archivovaný účet",
         "archivedDescription": "Tento účet je archivovaný. Nezobrazuje sa v bočnom paneli a neprijíma nové transakcie.",
-        "unarchiveButton": "Obnoviť účet z archívu"
+        "unarchiveButton": "Odarchivovať účet"
       },
       "link": {
         "selectConnection": "Vyberte bankové pripojenie",
@@ -214,7 +214,8 @@
         "notLinked": "Tento účet nie je prepojený s bankovým pripojením",
         "syncStarted": "Synchronizácia začala...",
         "accessForbidden": "Prístup zamietnutý",
-        "failed": "Synchronizácia transakcií zlyhala"
+        "failed": "Synchronizácia transakcií zlyhala",
+        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
       },
       "reconcileDuplicates": {
         "title": "Zlúčiť duplicitné transakcie",

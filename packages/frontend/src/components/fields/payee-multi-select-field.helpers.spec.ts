@@ -15,6 +15,8 @@ const payee = (
   logoDomain,
   logoInitials,
   logoColor,
+  logoIcon: null,
+  logoImageId: null,
 });
 
 describe('hydrateSelectedPayees', () => {
@@ -22,7 +24,17 @@ describe('hydrateSelectedPayees', () => {
     // A restored selection starts with name === id because no source has resolved it yet.
     const selected = [payee('019ea731-0e4e', '019ea731-0e4e')];
     const lookup = new Map([
-      ['019ea731-0e4e', { name: 'Glovo', logoDomain: 'glovoapp.com', logoInitials: null, logoColor: null }],
+      [
+        '019ea731-0e4e',
+        {
+          name: 'Glovo',
+          logoDomain: 'glovoapp.com',
+          logoInitials: null,
+          logoColor: null,
+          logoIcon: null,
+          logoImageId: null,
+        },
+      ],
     ]);
 
     const result = hydrateSelectedPayees({ selected, lookup });
@@ -39,7 +51,19 @@ describe('hydrateSelectedPayees', () => {
 
   it('keeps object identity when name and logo are unchanged', () => {
     const row = payee('a', 'Amazon', 'amazon.com');
-    const lookup = new Map([['a', { name: 'Amazon', logoDomain: 'amazon.com', logoInitials: null, logoColor: null }]]);
+    const lookup = new Map([
+      [
+        'a',
+        {
+          name: 'Amazon',
+          logoDomain: 'amazon.com',
+          logoInitials: null,
+          logoColor: null,
+          logoIcon: null,
+          logoImageId: null,
+        },
+      ],
+    ]);
 
     const result = hydrateSelectedPayees({ selected: [row], lookup });
 
@@ -48,7 +72,12 @@ describe('hydrateSelectedPayees', () => {
 
   it('normalizes an undefined lookup logo to null', () => {
     const row = payee('a', 'a', null);
-    const lookup = new Map([['a', { name: 'Amazon', logoDomain: null, logoInitials: null, logoColor: null }]]);
+    const lookup = new Map([
+      [
+        'a',
+        { name: 'Amazon', logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null, logoImageId: null },
+      ],
+    ]);
 
     const result = hydrateSelectedPayees({ selected: [row], lookup });
 
@@ -57,10 +86,42 @@ describe('hydrateSelectedPayees', () => {
 
   it('refreshes a custom monogram when only the initials/color changed', () => {
     const row = payee('a', 'Amazon', null, 'AM', '#7355be');
-    const lookup = new Map([['a', { name: 'Amazon', logoDomain: null, logoInitials: 'AZ', logoColor: '#c2410c' }]]);
+    const lookup = new Map([
+      [
+        'a',
+        {
+          name: 'Amazon',
+          logoDomain: null,
+          logoInitials: 'AZ',
+          logoColor: '#c2410c',
+          logoIcon: null,
+          logoImageId: null,
+        },
+      ],
+    ]);
 
     const result = hydrateSelectedPayees({ selected: [row], lookup });
 
     expect(result[0]).toEqual(payee('a', 'Amazon', null, 'AZ', '#c2410c'));
+  });
+
+  it('refreshes a row when only the icon changed', () => {
+    const row = { ...payee('a', 'Amazon', null, null, '#7355be'), logoIcon: 'cart' };
+    const fresh = { ...row, logoIcon: 'box' };
+
+    const result = hydrateSelectedPayees({ selected: [row], lookup: new Map([['a', fresh]]) });
+
+    expect(result[0]).not.toBe(row);
+    expect(result[0]).toEqual(fresh);
+  });
+
+  it('refreshes a row when only the image changed', () => {
+    const row = { ...payee('a', 'Amazon'), logoImageId: 'image-1' };
+    const fresh = { ...row, logoImageId: 'image-2' };
+
+    const result = hydrateSelectedPayees({ selected: [row], lookup: new Map([['a', fresh]]) });
+
+    expect(result[0]).not.toBe(row);
+    expect(result[0]).toEqual(fresh);
   });
 });

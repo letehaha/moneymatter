@@ -128,7 +128,7 @@
       "namePlaceholder": "Назва рахунку",
       "currencyLabel": "Валюта",
       "currencyPlaceholder": "Виберіть валюту",
-      "addCurrencyButton": "Додати нову валюту +",
+      "addCurrencyButton": "Додати нову валюту",
       "initialBalanceLabel": "Початковий баланс",
       "initialBalancePlaceholder": "Початковий баланс",
       "initialBalanceHelpLink": "Що тут вказати?",
@@ -371,6 +371,7 @@
       "searchPlaceholder": "Пошук трекерів",
       "noResults": "Трекерів не знайдено",
       "unknownBudget": "Невідомий трекер",
+      "blankOption": "Не в жодному трекері",
       "loadError": "Не вдалося завантажити трекери. Спробуйте ще раз."
     },
     "payeeSelect": {

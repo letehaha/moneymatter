@@ -1,21 +1,21 @@
 {
   "settings": {
     "dataManagement": {
-      "title": "Import Data",
+      "title": "Import data",
       "description": "Import your financial data from various sources",
       "tabs": {
         "import": "Import",
         "export": "Export"
       },
       "textSource": {
-        "title": "Import from any Text Source",
+        "title": "Import from any text source",
         "aiBadge": "AI-powered",
         "listDescription": "Bank statements, receipts, screenshots, or any text"
       },
       "csv": {
         "title": "Import CSV",
         "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
-        "button": "Import CSV File",
+        "button": "Import CSV file",
         "cta": "Import CSV file",
         "listDescription": "Map columns and handle duplicates"
       },
@@ -36,11 +36,11 @@
         "listDescription": "Import a .mny file from Microsoft Money"
       },
       "importHistory": {
-        "title": "Import History",
+        "title": "Import history",
         "listDescription": "View past imports and what they created"
       },
       "import": {
-        "back": "Back to Import",
+        "back": "Back to import",
         "whichImporterHint": "Not sure which one to use?",
         "groups": {
           "filesAndText": "Files & text",
@@ -59,7 +59,7 @@
           "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
           "confirmLabel": "Download",
           "confirmLoading": "Preparing…",
-          "back": "Back to Export"
+          "back": "Back to export"
         },
         "format": {
           "label": "Format",

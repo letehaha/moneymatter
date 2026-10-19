@@ -9,6 +9,7 @@ import { withTransaction } from '@services/common/with-transaction';
 import { Op } from 'sequelize';
 
 import { authorizeBudgetAccess } from './authorize-budget-access';
+import { acceptLinkedTransactions } from './smart-tracking/suggestion-feedback';
 
 interface AddTransactionsPayload {
   budgetId: string;
@@ -68,6 +69,7 @@ export const addTransactionsToBudget = withTransaction(async (payload: AddTransa
   }));
 
   await BudgetTransactions.bulkCreate(budgetTransactions);
+  await acceptLinkedTransactions({ budgetId, transactionIds });
 
   return {
     message: t({ key: 'budgets.transactionsAddedSuccessfully' }),

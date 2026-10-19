@@ -458,6 +458,32 @@ function validateSizeAndExtension(file: File): string | null {
   return null;
 }
 
+function fileRejectionMessage({ file, reason }: { file: File; reason: FileRejectionReason }): string {
+  const name = file.name;
+  switch (reason) {
+    case 'unsupported_extension':
+      return t('pages.statementParser.uploadExtract.unsupportedFileNamed', { name });
+    case 'too_large':
+      return t('fileDropzone.fileTooLargeNamed', { name, max: formatBytes({ bytes: MAX_FILE_SIZE }) });
+    case 'invalid_pdf':
+      return t('pages.statementParser.uploadExtract.invalidPdfNamed', { name });
+    case 'invalid_image':
+      return t('pages.statementParser.uploadExtract.invalidImageNamed', { name });
+    case 'invalid_text':
+      return t('pages.statementParser.uploadExtract.invalidTextNamed', {
+        name,
+        ext: (name.split('.').pop() ?? '').toUpperCase(),
+      });
+    case 'unreadable_image':
+      return t('pages.statementParser.uploadExtract.unreadableImageNamed', { name });
+    case 'unreadable':
+      return t('pages.statementParser.uploadExtract.unreadableFiles', { files: name });
+    default:
+      reason satisfies never;
+      return t('pages.statementParser.uploadExtract.unsupportedFileNamed', { name });
+  }
+}
+
 function logFileRejection({
   file,
   reason,
@@ -495,7 +521,7 @@ async function handleSelectionChange(files: File[]) {
       }
       const validation = await validateStatementFile({ file });
       if (!validation.valid) {
-        rejections.push(`${file.name} — ${validation.error}`);
+        rejections.push(fileRejectionMessage({ file, reason: validation.reason }));
         logFileRejection({ file, reason: validation.reason, headerHex: validation.headerHex });
         continue;
       }

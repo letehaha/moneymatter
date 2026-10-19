@@ -9,6 +9,7 @@ import { useImportJobProgress } from '@/composable/use-import-job-progress';
 import { useRecalculateBalanceToggle } from '@/composable/use-recalculate-balance-toggle';
 import { useResolveMapping } from '@/composable/use-resolve-mapping';
 import { useWizardSteps } from '@/composable/use-wizard-steps';
+import { i18n } from '@/i18n';
 import { captureException } from '@/lib/sentry';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
 import { useAccountsStore } from '@/stores/accounts';
@@ -494,7 +495,7 @@ export const useImportBudgetBakersWalletStore = defineStore('import-budget-baker
       goToStep('resolve');
       await prepareResolveStep();
     } catch (err) {
-      parseError.value = err instanceof Error ? err.message : 'Unknown error';
+      parseError.value = err instanceof Error ? err.message : i18n.global.t('errors.api.unexpectedError');
       throw err;
     }
   }
@@ -509,7 +510,7 @@ export const useImportBudgetBakersWalletStore = defineStore('import-budget-baker
       // The parsed file content is gone — there is nothing to detect against.
       // Surface a real error and send the user back to re-upload rather than
       // silently doing nothing.
-      detectError.value = 'No file loaded. Please upload your Wallet export again.';
+      detectError.value = i18n.global.t('pages.importExport.budgetBakersWalletImport.errors.fileMissing');
       goToStep('upload');
       return;
     }
@@ -534,7 +535,7 @@ export const useImportBudgetBakersWalletStore = defineStore('import-budget-baker
       markStepCompleted('resolve');
       goToStep('review');
     } catch (err) {
-      detectError.value = err instanceof Error ? err.message : 'Unknown error';
+      detectError.value = err instanceof Error ? err.message : i18n.global.t('errors.api.unexpectedError');
       throw err;
     } finally {
       isDetectingDuplicates.value = false;
@@ -546,7 +547,7 @@ export const useImportBudgetBakersWalletStore = defineStore('import-budget-baker
       // The parsed file content is gone — the job cannot be started. Surface a
       // real error and send the user back to re-upload rather than silently
       // doing nothing when they click Import.
-      jobProgress.setExecuteError('No file loaded. Please upload your Wallet export again.');
+      jobProgress.setExecuteError(i18n.global.t('pages.importExport.budgetBakersWalletImport.errors.fileMissing'));
       goToStep('upload');
       return;
     }
@@ -571,7 +572,7 @@ export const useImportBudgetBakersWalletStore = defineStore('import-budget-baker
     } catch (err) {
       // The call never started the job — keep the user on `review` (not marked
       // complete) so they can correct the input and retry.
-      jobProgress.setExecuteError(err instanceof Error ? err.message : 'Unknown error');
+      jobProgress.setExecuteError(err instanceof Error ? err.message : i18n.global.t('errors.api.unexpectedError'));
       return;
     }
 

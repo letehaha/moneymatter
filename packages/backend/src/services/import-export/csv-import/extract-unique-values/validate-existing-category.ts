@@ -1,5 +1,6 @@
 import { CategoryOptionValue, type ColumnMappingConfig } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
 import Categories from '@models/categories.model';
 
 interface ValidateExistingCategoryParams {
@@ -24,7 +25,7 @@ export async function validateExistingCategory({
           userId,
         },
       }),
-      message: `Category with ID ${categoryOption.categoryId} not found or does not belong to you.`,
+      message: t({ key: 'csvImport.selectedCategoryNotFound' }),
     });
   }
 }

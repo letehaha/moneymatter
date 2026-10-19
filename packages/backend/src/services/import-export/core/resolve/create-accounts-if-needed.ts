@@ -1,5 +1,6 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, type AccountMappingValue } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
 import { assertNotDerivedBalanceAccount } from '@services/accounts/derived-balance-guard';
@@ -83,7 +84,7 @@ export async function createAccountsIfNeeded({
 
     if (!currencyCode) {
       throw new ValidationError({
-        message: `Cannot determine currency for new account "${accountName}"`,
+        message: t({ key: 'importExport.newAccountCurrencyUnknown', variables: { accountName } }),
       });
     }
 
@@ -116,7 +117,9 @@ export async function createAccountsIfNeeded({
     // resolved" errors that never reveal account creation was what failed. Mirrors
     // the fail-fast in `createCategoriesIfNeeded`.
     if (!newAccount) {
-      throw new ValidationError({ message: `Failed to create account "${accountName}".` });
+      throw new ValidationError({
+        message: t({ key: 'importExport.accountCreateFailed', variables: { accountName } }),
+      });
     }
     accountNameToId.set(accountName, newAccount.id);
   };
@@ -128,7 +131,7 @@ export async function createAccountsIfNeeded({
     const account = await Accounts.getAccountById({ userId, id });
     if (!account) {
       throw new ValidationError({
-        message: `Account with ID ${id} not found`,
+        message: t({ key: 'importExport.accountIdNotFound', variables: { id } }),
       });
     }
     assertNotDerivedBalanceAccount({ account, actionPhrase: 'be an import target' });
@@ -158,7 +161,7 @@ export async function createAccountsIfNeeded({
       }
 
       throw new ValidationError({
-        message: `No mapping found for account "${accountName}"`,
+        message: t({ key: 'importExport.accountMappingMissing', variables: { accountName } }),
       });
     }
 

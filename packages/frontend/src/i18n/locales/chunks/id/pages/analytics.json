@@ -165,9 +165,9 @@
       "rangeMin": "Min",
       "rangeMax": "Maks",
       "indicators": {
-        "worldStock": "Total World Stock",
-        "usTreasury": "US Treasury Bonds",
-        "corporateBonds": "Corporate Bonds"
+        "worldStock": "Total world stock",
+        "usTreasury": "US Treasury bonds",
+        "corporateBonds": "Corporate bonds"
       }
     },
     "portfolioFilter": {
@@ -193,8 +193,8 @@
         "enterContribution": "Enter a contribution",
         "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
         "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
-        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to World stocks.",
-        "customMissing": "Enter a custom return. Until then, the plan uses World stocks.",
+        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to world stocks.",
+        "customMissing": "Enter a custom return. Until then, the plan uses world stocks.",
         "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
         "hide": "Hide warning",
         "hideTitle": "Hide this warning?",
@@ -208,7 +208,7 @@
         "spendingPlaceholder": "e.g. 40000",
         "requiredBadge": "Required",
         "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
-        "backToAuto": "Back to Auto ({amount})",
+        "backToAuto": "Back to auto ({amount})",
         "excludedLabel": "Not counted as spending",
         "excludedPlaceholder": "Kecualikan kategori",
         "savingsNote": "Savings categories are excluded too. {link}",

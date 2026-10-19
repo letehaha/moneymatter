@@ -1,6 +1,7 @@
 import { executeYnabImport, getYnabImportStatus, parseYnab } from '@/api/import-ynab';
 import { useImportJobProgress } from '@/composable/use-import-job-progress';
 import { useWizardSteps } from '@/composable/use-wizard-steps';
+import { i18n } from '@/i18n';
 import { useAccountsStore } from '@/stores/accounts';
 import { useCategoriesStore } from '@/stores/categories/categories';
 import { useCurrenciesStore } from '@/stores/currencies';
@@ -135,7 +136,7 @@ export const useImportYnabStore = defineStore('importYnab', () => {
       markStepCompleted('upload');
       goToStep('preview');
     } catch (err) {
-      parseError.value = err instanceof Error ? err.message : 'Unknown error';
+      parseError.value = err instanceof Error ? err.message : i18n.global.t('errors.api.unexpectedError');
       throw err;
     } finally {
       isParsing.value = false;
@@ -155,7 +156,7 @@ export const useImportYnabStore = defineStore('importYnab', () => {
     } catch (err) {
       // The call never started the job — keep the user on the picker step (2)
       // so they can correct the input and retry.
-      executeError.value = err instanceof Error ? err.message : 'Unknown error';
+      executeError.value = err instanceof Error ? err.message : i18n.global.t('errors.api.unexpectedError');
       return;
     }
 

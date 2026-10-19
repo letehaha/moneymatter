@@ -6,6 +6,7 @@ import AccountBalanceChangesTable from '@/pages/import-export/components/account
 import BalanceDesyncCallout from '@/pages/import-export/components/balance-desync-callout.vue';
 import { ROUTES_NAMES } from '@/routes';
 import { useImportOfxStore } from '@/stores/import-ofx';
+import type { ImportError } from '@bt/shared/types';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
@@ -45,6 +46,12 @@ const outcomeCopy = computed(() => {
     description: t('pages.importExport.ofxImport.done.failedDescription'),
   };
 });
+function errorText(error: ImportError): string {
+  const prefix = 'pages.importExport.ofxImport.done.errors';
+  if (error.code === 'rows-suppressed') return t(`${prefix}.rowsSuppressed`, error.params, error.params.count);
+  if (error.code === 'account-balance-desync') return t(`${prefix}.accountBalanceDesync`);
+  return t(`${prefix}.rowImportFailed`);
+}
 function viewTransactions() {
   if (!summary.value) return;
   const batchId = summary.value.batchId;
@@ -109,7 +116,7 @@ function viewTransactions() {
           <span v-if="error.rowIndex != null">{{
             $t('pages.importExport.ofxImport.done.rowPrefix', { rowIndex: error.rowIndex })
           }}</span>
-          {{ error.error }}
+          {{ errorText(error) }}
         </li>
       </ul>
       <p v-if="summary.errors.length > 10" class="text-muted-foreground mt-1 text-xs">

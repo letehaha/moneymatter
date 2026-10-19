@@ -19,27 +19,38 @@ export type LogoSource = 'auto' | 'manual';
 export type LogoResolutionState = LogoSource | null;
 
 /**
- * Denormalized logo config shared by every logo-bearing entity (payees,
- * subscriptions, accounts, account groups). A brand domain and custom monogram
- * letters are mutually exclusive – every write path evicts one when the other
- * is set.
+ * Denormalized logo config shared by every logo-bearing entity. Domain,
+ * initials, icon and image are mutually exclusive, enforced server-side.
  */
 export interface EntityLogoFields {
   /** Resolved brand domain used to fetch the logo (e.g. "netflix.com"). Null
    *  when no logo is set, or when the brand resolver has not matched the
    *  entity. */
   logoDomain: string | null;
-  /** 1-2 graphemes rendered as a monogram in place of a brand image. Mutually
-   *  exclusive with logoDomain. Null when no custom monogram is set. */
+  /** 1-2 graphemes rendered as a monogram. Null when no custom monogram is set. */
   logoInitials: string | null;
-  /** '#rrggbb' lowercase background for logoInitials. Null renders the initials
-   *  on the app's default monogram color. */
+  /** '#rrggbb' lowercase background behind logoInitials or logoIcon. */
   logoColor: string | null;
+  /** Iconify icon name without the `fluent:` prefix (same vocabulary as category icons). */
+  logoIcon: string | null;
+  /** UUID of an uploaded image, served at GET /api/v1/logo-images/:id. */
+  logoImageId: string | null;
 }
+
+/** Decoded byte cap of an uploaded logo image. */
+export const LOGO_IMAGE_MAX_BYTES = 51_200;
 
 /** Write-path shape of the logo fields: absent key = leave the stored column
  *  untouched, null = clear it. */
 export type EntityLogoPayload = Partial<EntityLogoFields>;
+
+/**
+ * What a client sends. `logoImage` is a `data:image/(png|jpeg|webp);base64,…`
+ * URL the server stores and turns into `logoImageId`; null clears the image.
+ */
+export type EntityLogoWritePayload = Partial<Omit<EntityLogoFields, 'logoImageId'>> & {
+  logoImage?: string | null;
+};
 
 /** Logo columns a write path may set on an entity a background resolver also
  *  writes (payees, subscriptions): the payload keys plus the ownership stamp

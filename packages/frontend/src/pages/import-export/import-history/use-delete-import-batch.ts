@@ -38,7 +38,9 @@ export function useDeleteImportBatch({ onSuccess }: { onSuccess?: () => void } =
     },
     onError: (error) => {
       if (error instanceof ApiErrorResponseError) {
-        addErrorNotification(error.data.message ?? 'Unknown error');
+        addErrorNotification(
+          error.data.message ?? i18n.global.t('pages.importExport.importHistory.deleteUnexpectedError'),
+        );
       } else {
         // eslint-disable-next-line no-console
         console.error(error);

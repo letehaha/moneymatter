@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Impossibile raggiungere il server. Il backend potrebbe essere ancora in avvio (fino a circa 30s dopo l'avvio), o il tuo ALLOWED_ORIGINS env var non include questo URL.",
       "unexpectedError": "Errore inatteso.",
       "sessionExpired": "La sessione è scaduta. Effettua di nuovo il login.",
-      "payloadTooLarge": "La richiesta è troppo grande. Si prega di provare a importare meno valori alla volta"
+      "payloadTooLarge": "La richiesta è troppo grande. Si prega di provare a importare meno valori alla volta",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "La password è troppo corta.",
+      "passwordTooLong": "La password è troppo lunga.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Questa pagina non è disponibile",

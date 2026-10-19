@@ -35,9 +35,9 @@ export type AutomationChip =
   | { kind: 'ref'; refType: AutomationRefType; id: RecordId; negated: boolean }
   | { kind: 'note'; labelKey: string; value: string };
 
-export type AutomationRulePreview = Pick<TransactionAutomationModel, 'conditions' | 'actions'>;
+type AutomationRulePreview = Pick<TransactionAutomationModel, 'conditions' | 'actions'>;
 
-export interface AutomationChips {
+interface AutomationChips {
   when: AutomationChip[];
   match: 'all' | 'any';
   then: AutomationChip[];

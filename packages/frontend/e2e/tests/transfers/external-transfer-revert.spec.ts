@@ -23,8 +23,8 @@ const creds = buildTestCredentials({ prefix: 'ext-rev' });
 // than failing CI for an environmental constraint.
 const isPreviewEnv = API_BASE_URL.includes('preview.');
 
-let externalAccount: { id: number; name: string };
-let systemAccount: { id: number; name: string };
+let externalAccount: { id: string; name: string };
+let systemAccount: { id: string; name: string };
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });
@@ -92,7 +92,7 @@ test.describe('Manage transaction dialog: external transfer revert', () => {
   }: {
     request: import('@playwright/test').APIRequestContext;
     amount: number;
-  }): Promise<{ externalIncomeId: number; systemExpenseId: number }> {
+  }): Promise<{ externalIncomeId: string; systemExpenseId: string }> {
     const incomeRes = await createTransaction({
       request,
       accountId: externalAccount.id,

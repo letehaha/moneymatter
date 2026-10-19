@@ -9,6 +9,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import Payees from '@models/payees.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
+import TrackerLines from '@models/tracker-lines.model';
 import TransactionGroups from '@models/transaction-groups.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import Transactions from '@models/transactions.model';
@@ -62,6 +63,11 @@ export function createScopeResolver({ userId }: { userId: number }) {
       const planIds = await getScope({ scope: 'budgetPlans' });
       if (planIds.length === 0) return [];
       return idsWhere({ model: BudgetLines, where: { planId: { [Op.in]: planIds } } });
+    },
+    trackerLines: async () => {
+      const budgetIds = await getScope({ scope: 'budgets' });
+      if (budgetIds.length === 0) return [];
+      return idsWhere({ model: TrackerLines, where: { budgetId: { [Op.in]: budgetIds } } });
     },
   };
 

@@ -678,7 +678,7 @@ const archiveSelected = () => {
       v-if="!view.lines.length && !view.groups.length"
       class="border-border m-4 flex flex-col items-center gap-3 rounded-lg border border-dashed p-8 text-center"
     >
-      <div class="bg-primary/10 text-primary-text flex size-12 items-center justify-center rounded-full">
+      <div class="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
         <ListPlusIcon class="size-6" />
       </div>
       <h2 class="text-lg font-semibold">

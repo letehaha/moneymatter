@@ -14,6 +14,7 @@ export const updateAccountGroup = withTransaction(
     logoDomain,
     logoInitials,
     logoColor,
+    logoIcon,
     ...updates
   }: {
     groupId: string;
@@ -33,8 +34,8 @@ export const updateAccountGroup = withTransaction(
     }
 
     const logoPatch = applyManualLogoPatch({
-      patch: { logoDomain, logoInitials, logoColor },
-      stored: { logoDomain: group.logoDomain, logoInitials: group.logoInitials, logoColor: group.logoColor },
+      patch: { logoDomain, logoInitials, logoColor, logoIcon },
+      stored: group,
     });
 
     const patch = { ...updates, ...logoPatch };

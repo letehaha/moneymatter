@@ -6,6 +6,7 @@ import { computed } from 'vue';
 
 import BankConnectionLogo, { type BankConnectionLogoSize } from './bank-connection-logo.vue';
 import BrandLogo from './brand-logo.vue';
+import { toLogoDisplayProps, toLogoSelection } from './logo-selection';
 
 /** Tailwind sizing utilities this logo is laid out against. */
 export type GroupLogoSize = BankConnectionLogoSize | 'size-9';
@@ -34,7 +35,10 @@ const EMPTY_ICON_SIZE: Record<GroupLogoSize, string> = {
 
 const props = withDefaults(
   defineProps<{
-    group: Pick<AccountGroups, 'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'bankDataProviderConnectionId'>;
+    group: Pick<
+      AccountGroups,
+      'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'logoIcon' | 'logoImageId' | 'bankDataProviderConnectionId'
+    >;
     size?: GroupLogoSize;
     rounded?: GroupLogoRounding;
     /** `tile` frames the bank logo and the empty state in a muted square. */
@@ -43,7 +47,7 @@ const props = withDefaults(
   { size: 'size-4', rounded: 'lg', variant: 'plain' },
 );
 
-const hasCustomLogo = computed(() => Boolean(props.group.logoDomain || props.group.logoInitials));
+const selection = computed(() => toLogoSelection(props.group));
 
 const bankLogoSize = computed(() => BANK_LOGO_SIZE[props.size]);
 const brandLogoClass = computed(() => cn(props.size, ROUNDING_CLASS[props.rounded]));
@@ -54,14 +58,7 @@ const emptyIconClass = computed(() => cn('text-muted-foreground shrink-0', EMPTY
 </script>
 
 <template>
-  <BrandLogo
-    v-if="hasCustomLogo"
-    :domain="group.logoDomain"
-    :initials="group.logoInitials"
-    :color="group.logoColor"
-    :name="group.name"
-    :class="brandLogoClass"
-  />
+  <BrandLogo v-if="selection" v-bind="toLogoDisplayProps({ selection })" :name="group.name" :class="brandLogoClass" />
 
   <div v-else-if="variant === 'tile'" :class="tileClass">
     <BankConnectionLogo

@@ -2,6 +2,7 @@
 import { VERBOSE_PAYMENT_TYPES } from '@/common/const';
 import AccountLogo from '@/components/common/account-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
@@ -127,13 +128,7 @@ const paymentTypeLabel = computed(() => {
         <template v-if="payee">
           <dt class="text-muted-foreground">{{ $t('dialogs.manageTransaction.form.payeeLabel') }}</dt>
           <dd class="flex min-w-0 items-center gap-1.5">
-            <BrandLogo
-              :domain="payee.logoDomain"
-              :initials="payee.logoInitials"
-              :color="payee.logoColor"
-              :name="payee.name"
-              class="size-5 shrink-0"
-            />
+            <BrandLogo v-bind="toEntityLogoDisplayProps(payee)" :name="payee.name" class="size-5 shrink-0" />
             <span class="truncate">{{ payee.name }}</span>
           </dd>
         </template>

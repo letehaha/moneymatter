@@ -224,6 +224,35 @@ describe('Category-Based Budgets', () => {
       expect(updatedBudget.categories).toHaveLength(1);
       expect(updatedBudget.categories![0]!.id).toBe(category.id);
     });
+
+    it('rejects an empty or foreign category list and keeps categories and lines', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Cat1', color: '#FF0000', raw: true });
+      const budget = await helpers.createCustomBudget({
+        name: 'Test Budget',
+        type: BUDGET_TYPES.category,
+        categoryIds: [category.id],
+        raw: true,
+      });
+      const line = await helpers.createTrackerLine({
+        budgetId: budget.id,
+        payload: { name: 'Line', categoryIds: [category.id] },
+        raw: true,
+      });
+      const stranger = await helpers.provisionSecondUserWithBaseCurrency();
+      const foreignCategory = await helpers.asUser({
+        cookies: stranger.cookies,
+        fn: () => helpers.addCustomCategory({ name: 'Foreign', color: '#00FF00', raw: true }),
+      });
+
+      for (const categoryIds of [[], [foreignCategory.id]]) {
+        const response = await helpers.editCustomBudget({ id: budget.id, params: { categoryIds }, raw: false });
+        expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      }
+
+      const fetched = (await helpers.getCustomBudgetById({ id: budget.id, raw: true }))!;
+      expect(fetched.categories!.map((c) => c.id)).toEqual([category.id]);
+      expect(fetched.lines!.map((l) => l.id)).toEqual([line.id]);
+    });
   });
 
   describe('Stats Calculation - Basic', () => {

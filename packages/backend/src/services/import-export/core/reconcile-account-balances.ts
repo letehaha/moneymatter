@@ -1,6 +1,7 @@
 import type { AccountBalanceChange, ImportError, RecordId } from '@bt/shared/types';
 import { isDedicatedFlowAccountCategory } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
@@ -283,6 +284,8 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
         errors.push({
           rowIndex: null,
           code: 'account-balance-desync',
+          accountName: created.accountName,
+          accountCreated: true,
           error: `${created.accountName}: entered balance could not be applied after import; this account balance may be incorrect`,
         });
       }
@@ -342,6 +345,8 @@ class BalanceReconciliationSessionImpl implements BalanceReconciliationSession {
           errors.push({
             rowIndex: null,
             code: 'account-balance-desync',
+            accountName: capture.accountName,
+            accountCreated: false,
             error: `${capture.accountName}: balance could not be updated after import; this account balance may be incorrect`,
           });
           continue;
@@ -440,7 +445,9 @@ export async function startBalanceReconciliation({
   for (const accountId of new Set(accountIds)) {
     const account = await Accounts.getAccountById({ userId, id: accountId });
     if (!account) {
-      throw new ValidationError({ message: `Account with ID ${accountId} not found` });
+      throw new ValidationError({
+        message: t({ key: 'importExport.accountIdNotFound', variables: { id: accountId } }),
+      });
     }
     if (isDedicatedFlowAccountCategory(account.accountCategory)) {
       // Unreachable through the importers — `assertNotDerivedBalanceAccount`

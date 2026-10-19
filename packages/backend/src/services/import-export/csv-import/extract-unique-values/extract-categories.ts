@@ -1,4 +1,5 @@
 import { CategoryOptionValue, type ColumnMappingConfig } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 
 /**
@@ -23,7 +24,7 @@ export function extractCategories({
     const categoryIndex = headers.indexOf(categoryOption.columnName);
     if (categoryIndex === -1) {
       throw new ValidationError({
-        message: `Category column "${categoryOption.columnName}" not found in CSV`,
+        message: t({ key: 'csvImport.categoryColumnNotFound', variables: { columnName: categoryOption.columnName } }),
       });
     }
 

@@ -39,55 +39,47 @@ type SeedSecurityPayload = {
 };
 
 /**
- * Seeds the database with securities using the new search-based approach.
- * This is the preferred way to create securities in tests.
- *
- * @param securitiesToSeed - An array of security objects to be "created" via search.
- * @returns A promise that resolves to the array of created Sequelize security models.
+ * Runs `security` through the search endpoint with FMP mocked to return it, so the server
+ * remembers the result as provider-verified. Returns the search result as the client gets it.
  */
-export async function seedSecurities(securitiesToSeed: SeedSecurityPayload[]) {
+export async function searchSecurityViaFmp(security: SeedSecurityPayload) {
   const { dataProviderFactory } = await import('@root/services/investments/data-providers/provider-factory');
-  // Access private property to clear cache
   dataProviderFactory.clearCache();
-  // Get the global FMP client mock
   const mockedFmpClient = jest.mocked(FmpClient);
   mockedFmpClient.mockReset();
-  const mockFmpSearch = jest.fn<() => Promise<FmpSearchResult[]>>();
+  const mockFmpSearch = jest.fn<() => Promise<FmpSearchResult[]>>().mockResolvedValue([
+    {
+      symbol: security.symbol,
+      name: security.name,
+      currency: security.currencyCode || 'USD',
+      stockExchange: 'NASDAQ Global Select',
+      exchangeShortName: 'NASDAQ',
+    },
+  ]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   mockedFmpClient.mockImplementation(() => ({ search: mockFmpSearch }) as any);
 
-  // For each security, mock the search and add it to database
+  const [searchResult] = await searchSecurities({
+    payload: { query: security.symbol },
+    raw: true,
+  });
+  mockFmpSearch.mockReset();
+
+  if (!searchResult) {
+    throw new Error(`Failed to get search result for ${security.symbol}`);
+  }
+
+  return searchResult;
+}
+
+/** Creates securities through the search endpoint followed by `addSecurityFromSearch`. */
+export async function seedSecurities(securitiesToSeed: SeedSecurityPayload[]) {
   const createdSecurities: Securities[] = [];
 
   for (const security of securitiesToSeed) {
-    // Mock FMP search to return this security
-    mockFmpSearch.mockResolvedValue([
-      {
-        symbol: security.symbol,
-        name: security.name,
-        currency: security.currencyCode || 'USD',
-        stockExchange: 'NASDAQ Global Select', // Default exchange
-        exchangeShortName: 'NASDAQ',
-      },
-    ]);
-
-    // Search for the security (which will use our mock)
-    const searchResults = await searchSecurities({
-      payload: { query: security.symbol },
-      raw: true,
-    });
-
-    if (searchResults.length === 0) {
-      throw new Error(`Failed to get search result for ${security.symbol}`);
-    }
-
-    // Add the security to database using the search result
-    const { security: createdSecurity } = await addSecurityFromSearch({
-      searchResult: searchResults[0]!,
-    });
-
+    const searchResult = await searchSecurityViaFmp(security);
+    const { security: createdSecurity } = await addSecurityFromSearch({ searchResult });
     createdSecurities.push(createdSecurity);
-    mockFmpSearch.mockReset();
   }
 
   // Wait until the database reflects all changes

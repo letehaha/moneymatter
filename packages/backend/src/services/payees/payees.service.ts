@@ -20,6 +20,7 @@ import Subscriptions from '@models/subscriptions.model';
 import Tags from '@models/tags.model';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
+import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import {
   applyCachedLogos,
   clearManualLogoFields,
@@ -273,15 +274,13 @@ export const listPayees = withTransaction(
 export const getPayeesLookup = async ({ userId }: { userId: number }): Promise<PayeeLookupItem[]> => {
   const payees = await Payees.findAll({
     where: { userId },
-    attributes: ['id', 'name', 'logoDomain', 'logoInitials', 'logoColor'],
+    attributes: ['id', 'name', 'logoDomain', 'logoInitials', 'logoColor', 'logoIcon', 'logoImageId'],
     order: [['name', 'ASC']],
   });
   return payees.map((payee) => ({
     id: payee.id,
     name: payee.name,
-    logoDomain: payee.logoDomain,
-    logoInitials: payee.logoInitials,
-    logoColor: payee.logoColor,
+    ...serializeLogoFields({ entity: payee }),
   }));
 };
 
@@ -319,6 +318,7 @@ export const createPayee = withTransaction(
     logoDomain,
     logoInitials,
     logoColor,
+    logoIcon,
   }: CreatePayeeParams): Promise<Payees> => {
     const { display, normalized } = parsePayeeName({ raw: name, emptyMessageKey: 'payees.nameRequired' });
 
@@ -354,7 +354,7 @@ export const createPayee = withTransaction(
       // A supplied logo value is a manual override (`logoSource: 'manual'` makes
       // the resolver treat it as authoritative); null keys on create change
       // nothing, so they resolve to no writes and the resolver stays in charge.
-      ...resolveManualLogoFields({ input: { logoDomain, logoInitials, logoColor } }),
+      ...resolveManualLogoFields({ input: { logoDomain, logoInitials, logoColor, logoIcon } }),
     });
     await addPayeeTags({ payeeId: created.id, tagIds: defaultTagIds ?? [] });
     // Covers both the manual POST /payees route and the YNAB import loop.
@@ -413,6 +413,7 @@ export const updatePayee = withTransaction(
     logoDomain,
     logoInitials,
     logoColor,
+    logoIcon,
   }: UpdatePayeeParams): Promise<Payees> => {
     const payee = await loadPayeeOrThrow({ userId, id });
 
@@ -475,8 +476,8 @@ export const updatePayee = withTransaction(
     // background resolver keeps ownership of the logo.
     payee.set(
       resolveManualLogoFields({
-        input: { logoDomain, logoInitials, logoColor },
-        stored: { logoDomain: payee.logoDomain, logoInitials: payee.logoInitials, logoColor: payee.logoColor },
+        input: { logoDomain, logoInitials, logoColor, logoIcon },
+        stored: payee,
       }),
     );
 

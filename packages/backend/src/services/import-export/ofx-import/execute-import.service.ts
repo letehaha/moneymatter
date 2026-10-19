@@ -5,12 +5,14 @@ import {
   ImportSource,
   type OfxAccountMapping,
   type OfxImportSummary,
+  type OfxParseResult,
   PAYMENT_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   type TransactionImportDetails,
 } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
@@ -62,6 +64,44 @@ function resolvePaymentType({ transactionType }: { transactionType: string }): P
   }
 }
 
+export async function readValidatedOfxUpload({
+  userId,
+  uploadId,
+  accountMapping,
+}: {
+  userId: number;
+  uploadId: string;
+  accountMapping: OfxAccountMapping;
+}): Promise<OfxParseResult> {
+  const parsed = await readOfxUpload({ userId, uploadId });
+  const missing = parsed.accounts.filter((account) => !accountMapping[account.sourceAccountKey]);
+  if (missing.length > 0) {
+    throw new ValidationError({
+      message: t({
+        key: 'ofxImport.missingAccountMapping',
+        variables: { accounts: missing.map((a) => a.maskedDisplayName).join(', ') },
+      }),
+    });
+  }
+
+  for (const account of parsed.accounts) {
+    const mapping = accountMapping[account.sourceAccountKey]!;
+    const variables = { account: account.maskedDisplayName, currency: account.currency };
+    if (mapping.action === 'create-new' && mapping.currencyCode !== account.currency) {
+      throw new ValidationError({ message: t({ key: 'ofxImport.accountCurrencyMismatch', variables }) });
+    }
+    if (mapping.action !== 'link-existing') continue;
+    const existing = await Accounts.getAccountById({ userId, id: mapping.accountId });
+    if (!existing) {
+      throw new ValidationError({ message: t({ key: 'ofxImport.linkedAccountNotFound', variables }) });
+    }
+    if (existing.currencyCode !== account.currency) {
+      throw new ValidationError({ message: t({ key: 'ofxImport.crossCurrencyLink', variables }) });
+    }
+  }
+  return parsed;
+}
+
 async function executeOfxImportImpl({
   userId,
   uploadId,
@@ -79,13 +119,7 @@ async function executeOfxImportImpl({
   onProgress?: (processedCount: number, totalCount: number) => void | Promise<void>;
   openImportBatch: OpenImportBatch;
 }): Promise<OfxImportSummary> {
-  const parsed = await readOfxUpload({ userId, uploadId });
-  const missing = parsed.accounts.filter((account) => !accountMapping[account.sourceAccountKey]);
-  if (missing.length > 0) {
-    throw new ValidationError({
-      message: `Missing account mapping for: ${missing.map((a) => a.maskedDisplayName).join(', ')}`,
-    });
-  }
+  const parsed = await readValidatedOfxUpload({ userId, uploadId, accountMapping });
 
   const skippedKeys = new Set(
     parsed.accounts
@@ -120,25 +154,9 @@ async function executeOfxImportImpl({
     .map((account) => ({ userId, currencyCode: account.currency }));
   if (currenciesToAdd.length > 0) await addUserCurrencies(currenciesToAdd);
 
-  for (const account of importableAccounts) {
-    const mapping = accountMapping[account.sourceAccountKey]!;
-    if (mapping.action === 'create-new') {
-      if (mapping.currencyCode !== account.currency) {
-        throw new ValidationError({ message: `Account ${account.maskedDisplayName} must use ${account.currency}.` });
-      }
-      continue;
-    }
-    if (mapping.action !== 'link-existing') continue;
-    const existing = await Accounts.getAccountById({ userId, id: mapping.accountId });
-    if (!existing)
-      throw new ValidationError({ message: `Linked account for ${account.maskedDisplayName} was not found.` });
-    if (existing.currencyCode !== account.currency) {
-      throw new ValidationError({
-        message: `Account ${account.maskedDisplayName} cannot be linked across currencies.`,
-      });
-    }
-    summary.accountsLinked += 1;
-  }
+  summary.accountsLinked = importableAccounts.filter(
+    (account) => accountMapping[account.sourceAccountKey]!.action === 'link-existing',
+  ).length;
 
   const fxDate = parsed.dateRange ? new Date(parsed.dateRange.from) : new Date();
   const { accountNameToId: accountIdByKey, accountsCreated } = await createAccountsIfNeeded({

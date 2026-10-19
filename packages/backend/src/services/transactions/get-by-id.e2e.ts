@@ -9,6 +9,7 @@ import {
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
+import { addDays } from 'date-fns';
 
 /**
  * CRIT9 — GET /transactions/:id — 4-branch coverage for getTransactionById service.
@@ -259,6 +260,7 @@ describe('GET /transactions/:id — budget-share visibility fallback', () => {
   // attached rows in the budget list, so the detail lookup for the same id should also
   // return the row (with `canEdit: false`). Otherwise the FE edit-dialog's lazy probe
   // reads a null detail response as "unknown" and unlocks the form.
+  // oxlint-disable-next-line unicorn/consistent-function-scoping
   async function shareBudgetWithRecipient({
     budgetId,
     recipient,
@@ -419,6 +421,99 @@ describe('GET /transactions/by-ids', () => {
 
     expect(missing.statusCode).toBe(422);
     expect(missing.body.status).toBe(API_RESPONSE_STATUS.error);
+  });
+});
+
+describe('GET /transactions/by-ids — access follows the current share, not the row author', () => {
+  it('returns the owner-authored transactions of a shared account to the read-only viewer', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [ownerTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id, amount: 70 }),
+      raw: true,
+    });
+    const privateAccount = await helpers.createAccount({ raw: true });
+    const [privateTx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: privateAccount.id, amount: 80 }),
+      raw: true,
+    });
+
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({ accountId: account.id, recipient, permission: SHARE_PERMISSIONS.read });
+
+    const viewed = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [ownerTx.id, privateTx.id], raw: true }),
+    });
+
+    expect(viewed.map((tx) => tx.id)).toEqual([ownerTx.id]);
+    expect(viewed[0]!.amount).toBe(70);
+  });
+
+  it("hides the owner's planned transactions from the share recipient but not from the owner", async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const [plannedTx] = await helpers.createPlannedTransaction({
+      payload: { accountId: account.id, amount: 40, time: addDays(new Date(), 5).toISOString() },
+      raw: true,
+    });
+
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({ accountId: account.id, recipient, permission: SHARE_PERMISSIONS.read });
+
+    const viewed = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [plannedTx.id], raw: true }),
+    });
+    expect(viewed).toEqual([]);
+
+    const ownerView = await helpers.getTransactionsByIds({ ids: [plannedTx.id], raw: true });
+    expect(ownerView.map((tx) => tx.id)).toEqual([plannedTx.id]);
+  });
+
+  it('stops returning a transaction the recipient authored once the owner revokes the share', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const ownerCategory = await helpers.addCustomCategory({ name: 'by-ids-cat', color: '#00AA00', raw: true });
+    const recipient = await provisionRecipient();
+    await shareAccountWithRecipient({
+      accountId: account.id,
+      recipient,
+      permission: SHARE_PERMISSIONS.write,
+      transactionsWriteScope: TRANSACTIONS_WRITE_SCOPES.all,
+    });
+    const [recipientTx] = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () =>
+        helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 25,
+            categoryId: ownerCategory.id,
+          }),
+          raw: true,
+        }),
+    });
+
+    const whileShared = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true }),
+    });
+    expect(whileShared.map((tx) => tx.id)).toEqual([recipientTx.id]);
+
+    const recipientApp = await helpers.findAppUserByEmail({ email: recipient.email });
+    await helpers.revokeShareMember({
+      resourceType: RESOURCE_TYPES.account,
+      resourceId: account.id,
+      memberUserId: recipientApp.id,
+      raw: true,
+    });
+
+    const afterRevoke = await helpers.asUser({
+      cookies: recipient.cookies,
+      fn: () => helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true }),
+    });
+    expect(afterRevoke).toEqual([]);
+
+    const ownerView = await helpers.getTransactionsByIds({ ids: [recipientTx.id], raw: true });
+    expect(ownerView.map((tx) => tx.id)).toEqual([recipientTx.id]);
   });
 });
 

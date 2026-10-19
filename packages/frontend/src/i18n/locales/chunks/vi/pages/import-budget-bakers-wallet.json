@@ -55,17 +55,17 @@
           "partialImportNote": "Một số hàng có thể đã được nhập trước khi xảy ra lỗi này. Nhập lại có thể tạo giao dịch trùng lặp."
         },
         "done": {
-          "successTitle": "Nhập dữ liệu hoàn tất",
+          "successTitle": "Import complete",
           "successDescription": "Đã nhập dữ liệu Wallet thành công.",
           "partialTitle": "Đã nhập nhưng có {count} lỗi",
           "partialDescription": "Một số hàng đã được nhập thành công nhưng một số khác gặp lỗi.",
           "allFailedTitle": "Không thể nhập",
           "allFailedDescription": "Không có hàng nào được nhập. Hãy xem lại các lỗi bên dưới rồi thử lại.",
-          "accountsCreated": "Tài khoản đã tạo",
+          "accountsCreated": "Accounts created",
           "accountsLinked": "Tài khoản đã liên kết",
           "accountsSkipped": "Đã bỏ qua tài khoản",
-          "categoriesCreated": "Danh mục đã tạo",
-          "tagsCreated": "Thẻ đã tạo",
+          "categoriesCreated": "Categories created",
+          "tagsCreated": "Tags created",
           "transactionsImported": "Giao dịch đã nhập",
           "transfersImported": "Giao dịch chuyển khoản đã nhập",
           "outOfWalletImported": "Đã nhập giao dịch ngoài Wallet",
@@ -73,6 +73,11 @@
           "duplicatesSkipped": "Đã bỏ qua giao dịch trùng lặp",
           "errorsTitle": "{count} hàng thất bại | {count} hàng thất bại | {count} hàng thất bại",
           "errorsOverflow": "+{count} mục nữa",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
+            "accountBalanceDesync": "An account balance could not be updated after the import and may be incorrect."
+          },
           "balanceWarningTitle": "Một số số dư tài khoản có thể không chính xác",
           "balanceWarningBody": "Không thể đặt lại số dư của một hoặc nhiều tài khoản hiện có sau khi nhập. Hãy kiểm tra các tài khoản bị ảnh hưởng.",
           "viewTransactions": "Xem giao dịch",
@@ -127,6 +132,9 @@
           "back": "Quay lại",
           "importButton": "Nhập {count} giao dịch",
           "importing": "Đang nhập…"
+        },
+        "errors": {
+          "fileMissing": "No file loaded. Please upload your Wallet export again."
         }
       }
     }

@@ -18,6 +18,7 @@ import {
   type InvestmentImportHolding,
   type InvestmentImportSideSkip,
   type InvestmentImportTransactionSide,
+  type InvestmentImportWarning,
 } from '@bt/shared/types/investments';
 import { useMutation } from '@tanstack/vue-query';
 import { ArrowLeftIcon, InfoIcon, Loader2Icon, SparklesIcon } from '@lucide/vue';
@@ -42,7 +43,11 @@ const props = defineProps<{
 const emit = defineEmits<{
   (
     e: 'extracted',
-    payload: { holdings: InvestmentImportHolding[]; warnings: string[]; mapping: InvestmentColumnMapping },
+    payload: {
+      holdings: InvestmentImportHolding[];
+      warnings: InvestmentImportWarning[];
+      mapping: InvestmentColumnMapping;
+    },
   ): void;
   (e: 'back'): void;
 }>();

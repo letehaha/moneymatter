@@ -145,16 +145,12 @@ export const updateSubscription = withTransaction(
     // that just re-states the stored values resolves to no writes, keeping the
     // resolver's ownership. Raw logo keys are stripped so only the resolved patch
     // reaches `subscription.update`.
-    const { logoDomain, logoInitials, logoColor, ...nonLogoFields } = fields;
+    const { logoDomain, logoInitials, logoColor, logoIcon, ...nonLogoFields } = fields;
     fields = {
       ...nonLogoFields,
       ...resolveManualLogoFields({
-        input: { logoDomain, logoInitials, logoColor },
-        stored: {
-          logoDomain: subscription.logoDomain,
-          logoInitials: subscription.logoInitials,
-          logoColor: subscription.logoColor,
-        },
+        input: { logoDomain, logoInitials, logoColor, logoIcon },
+        stored: subscription,
       }),
     } as typeof fields & { logoSource?: 'manual' };
 

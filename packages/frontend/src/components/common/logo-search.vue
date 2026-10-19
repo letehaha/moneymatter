@@ -1,11 +1,17 @@
 <script setup lang="ts">
 import { config } from '@/common/config';
 import { getServiceLogoUrl } from '@/common/utils/logo-url';
-import { getMonogramTextColor } from '@/common/utils/monogram-color';
 import { clampInitials, deriveInitials } from '@/common/utils/monogram-initials';
 import AsyncLogo from '@/components/common/async-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
-import { DEFAULT_MONOGRAM_COLOR, type LogoSelection } from '@/components/common/logo-selection';
+import IconPickerDropdown from '@/components/common/icons/icon-picker-dropdown.vue';
+import LogoColorPicker from '@/components/common/logo-color-picker.vue';
+import {
+  DEFAULT_LOGO_TABS,
+  DEFAULT_MONOGRAM_COLOR,
+  type LogoSelection,
+  type LogoTab,
+} from '@/components/common/logo-selection';
 import { Button } from '@/components/lib/ui/button';
 import { Label } from '@/components/lib/ui/label';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
@@ -16,17 +22,23 @@ import {
   useSearchBrandLogo,
 } from '@/composable/data-queries/brand-logos';
 import { cn } from '@/lib/utils';
-import { AlertCircleIcon, CheckIcon, PipetteIcon, SearchIcon } from '@lucide/vue';
+import { AlertCircleIcon, CheckIcon, SearchIcon } from '@lucide/vue';
 import { useDebounce } from '@vueuse/core';
-import { computed, ref, useId } from 'vue';
+import { computed, defineAsyncComponent, ref, useId } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-const props = defineProps<{
-  /** Current logo (null = none). Highlights the matching brand row and prefills the Letters tab. */
-  selection: LogoSelection | null;
-  /** Seeds the search field so the panel opens already showing matches for the entity. */
-  nameForSearch: string;
-}>();
+const LogoImageTab = defineAsyncComponent(() => import('./logo-image-tab.vue'));
+
+const props = withDefaults(
+  defineProps<{
+    /** Current logo (null = none). Highlights the matching brand row and prefills the matching tab. */
+    selection: LogoSelection | null;
+    /** Seeds the search field so the panel opens already showing matches for the entity. */
+    nameForSearch: string;
+    tabs?: LogoTab[];
+  }>(),
+  { tabs: () => DEFAULT_LOGO_TABS },
+);
 
 const emit = defineEmits<{
   (e: 'select', value: LogoSelection): void;
@@ -40,10 +52,26 @@ const selectedDomain = computed(() => (props.selection?.kind === 'brand' ? props
 // tab must not offer choices that cannot render.
 const brandLogosAvailable = Boolean(config.logoDevToken);
 
-// Panel re-mounts on each open, so an entity that already carries a monogram
-// lands on the tab that owns it.
+const TAB_BY_KIND: Record<LogoSelection['kind'], LogoTab> = {
+  brand: 'brand',
+  monogram: 'letters',
+  icon: 'icon',
+  image: 'custom',
+  'image-upload': 'custom',
+};
+
+// Panel re-mounts on each open, so an entity that already carries a logo lands
+// on the tab that owns it.
+const selectionTab = props.selection ? TAB_BY_KIND[props.selection.kind] : null;
+const activeTab = ref<string>(
+  selectionTab && props.tabs.includes(selectionTab)
+    ? selectionTab
+    : (props.tabs.find((tab) => tab !== 'brand' || brandLogosAvailable) ?? props.tabs[0]!),
+);
+const tabsGridStyle = computed(() => ({ gridTemplateColumns: `repeat(${props.tabs.length}, minmax(0, 1fr))` }));
+
 const currentMonogram = props.selection?.kind === 'monogram' ? props.selection : null;
-const activeTab = ref<string>(currentMonogram || !brandLogosAvailable ? 'letters' : 'brand');
+const currentIcon = props.selection?.kind === 'icon' ? props.selection : null;
 
 // Brand search waits this long after the last keystroke before firing, so a
 // fast typist produces one request per word rather than one per character.
@@ -121,29 +149,10 @@ function selectAllOnFocus(event: FocusEvent) {
 const letters = ref(
   currentMonogram ? clampInitials({ value: currentMonogram.initials }) : deriveInitials({ name: props.nameForSearch }),
 );
-const monogramColor = ref(currentMonogram?.color ?? DEFAULT_MONOGRAM_COLOR);
+const fillColor = ref(currentMonogram?.color ?? currentIcon?.color ?? DEFAULT_MONOGRAM_COLOR);
 const lettersInputId = useId();
 
-// Curated swatches (violet, gray, red, amber, green, teal, blue, pink, stone).
-// Storage is plain hex either way, so this list can change freely.
-const COLOR_PRESETS = [
-  DEFAULT_MONOGRAM_COLOR,
-  '#6b7280',
-  '#dc2626',
-  '#f59e0b',
-  '#16a34a',
-  '#0d9488',
-  '#2563eb',
-  '#db2777',
-  '#78716c',
-];
-
 const trimmedLetters = computed(() => letters.value.trim());
-const isCustomColor = computed(() => !COLOR_PRESETS.includes(monogramColor.value));
-const customSwatchStyle = computed(() => ({
-  backgroundColor: monogramColor.value,
-  color: getMonogramTextColor({ hex: monogramColor.value }),
-}));
 
 function handleLettersInput(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -154,26 +163,39 @@ function handleLettersInput(event: Event) {
   letters.value = clamped;
 }
 
-function handleCustomColor(event: Event) {
-  monogramColor.value = (event.target as HTMLInputElement).value.toLowerCase();
-}
-
 function applyMonogram() {
   if (!trimmedLetters.value) return;
-  emit('select', { kind: 'monogram', initials: trimmedLetters.value, color: monogramColor.value });
+  emit('select', { kind: 'monogram', initials: trimmedLetters.value, color: fillColor.value });
+}
+
+const iconName = ref(currentIcon?.icon ?? '');
+
+function applyIcon() {
+  if (!iconName.value) return;
+  emit('select', { kind: 'icon', icon: iconName.value, color: fillColor.value });
 }
 </script>
 
 <template>
   <Tabs v-model="activeTab" class="flex flex-col">
     <div class="border-input border-b p-2">
-      <TabsList class="grid w-full grid-cols-2">
-        <TabsTrigger value="brand" data-test="logo-tab-brand">{{ $t('common.logo.tabs.brand') }}</TabsTrigger>
-        <TabsTrigger value="letters" data-test="logo-tab-letters">{{ $t('common.logo.tabs.letters') }}</TabsTrigger>
+      <TabsList class="grid w-full" :style="tabsGridStyle">
+        <TabsTrigger v-if="tabs.includes('brand')" value="brand" data-test="logo-tab-brand">
+          {{ $t('common.logo.tabs.brand') }}
+        </TabsTrigger>
+        <TabsTrigger v-if="tabs.includes('letters')" value="letters" data-test="logo-tab-letters">
+          {{ $t('common.logo.tabs.letters') }}
+        </TabsTrigger>
+        <TabsTrigger v-if="tabs.includes('icon')" value="icon" data-test="logo-tab-icon">
+          {{ $t('common.logo.tabs.icon') }}
+        </TabsTrigger>
+        <TabsTrigger v-if="tabs.includes('custom')" value="custom" data-test="logo-tab-custom">
+          {{ $t('common.logo.tabs.custom') }}
+        </TabsTrigger>
       </TabsList>
     </div>
 
-    <TabsContent value="brand" class="mt-0 flex flex-col">
+    <TabsContent v-if="tabs.includes('brand')" value="brand" class="mt-0 flex flex-col">
       <div
         v-if="!brandLogosAvailable"
         class="text-muted-foreground flex flex-col items-center gap-1.5 px-4 py-6 text-center"
@@ -286,14 +308,14 @@ function applyMonogram() {
       </template>
     </TabsContent>
 
-    <TabsContent value="letters" class="mt-0">
+    <TabsContent v-if="tabs.includes('letters')" value="letters" class="mt-0">
       <div class="flex flex-col gap-4 p-3">
         <div class="flex items-center gap-3">
           <BrandLogo
             :domain="null"
             :name="nameForSearch"
             :initials="trimmedLetters || null"
-            :color="monogramColor"
+            :color="fillColor"
             class="size-12 text-lg"
           />
           <div class="flex min-w-0 flex-1 flex-col gap-1.5">
@@ -313,58 +335,43 @@ function applyMonogram() {
               data-test="logo-letters-input"
               @input="handleLettersInput"
             />
+            <p class="text-muted-foreground text-xs">{{ $t('common.logo.lettersHint') }}</p>
           </div>
         </div>
 
-        <div class="flex flex-col gap-2">
-          <Label class="text-xs font-medium">{{ $t('common.logo.colorLabel') }}</Label>
-          <div class="flex flex-wrap items-center gap-2">
-            <Button
-              v-for="preset in COLOR_PRESETS"
-              :key="preset"
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              :class="
-                cn(
-                  'border-border size-7 rounded-full border p-0',
-                  monogramColor === preset && 'ring-primary ring-offset-background ring-2 ring-offset-2',
-                )
-              "
-              :style="{ backgroundColor: preset }"
-              :aria-label="t('common.logo.colorSwatchAriaLabel', { color: preset })"
-              data-test="logo-color-swatch"
-              @click="monogramColor = preset"
-            />
-
-            <!-- Native color input for anything outside the presets, layered
-                 invisibly over a swatch that mirrors the current pick. -->
-            <label
-              :class="
-                cn(
-                  'border-border relative flex size-7 cursor-pointer items-center justify-center rounded-full border',
-                  isCustomColor && 'ring-primary ring-offset-background ring-2 ring-offset-2',
-                )
-              "
-              :style="customSwatchStyle"
-            >
-              <PipetteIcon class="size-3.5" />
-              <input
-                type="color"
-                :value="monogramColor"
-                class="absolute inset-0 size-full cursor-pointer opacity-0"
-                :aria-label="t('common.logo.customColorAriaLabel')"
-                data-test="logo-color-custom"
-                @input="handleCustomColor"
-              />
-            </label>
-          </div>
-        </div>
+        <LogoColorPicker v-model="fillColor" />
 
         <Button type="button" :disabled="!trimmedLetters" data-test="logo-letters-apply" @click="applyMonogram">
-          {{ $t('common.logo.applyLetters') }}
+          {{ $t('common.actions.apply') }}
         </Button>
       </div>
+    </TabsContent>
+
+    <TabsContent v-if="tabs.includes('icon')" value="icon" class="mt-0">
+      <div class="flex flex-col gap-4 p-3">
+        <div class="flex items-start gap-3">
+          <BrandLogo
+            :domain="null"
+            :name="nameForSearch"
+            :icon="iconName || null"
+            :color="fillColor"
+            class="size-12 shrink-0 text-lg"
+          />
+          <div class="min-w-0 flex-1">
+            <IconPickerDropdown v-model="iconName" />
+          </div>
+        </div>
+
+        <LogoColorPicker v-model="fillColor" />
+
+        <Button type="button" :disabled="!iconName" data-test="logo-icon-apply" @click="applyIcon">
+          {{ $t('common.actions.apply') }}
+        </Button>
+      </div>
+    </TabsContent>
+
+    <TabsContent v-if="tabs.includes('custom')" value="custom" class="mt-0">
+      <LogoImageTab :selection="selection" :name="nameForSearch" @select="emit('select', $event)" />
     </TabsContent>
   </Tabs>
 </template>

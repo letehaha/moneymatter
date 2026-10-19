@@ -182,11 +182,51 @@ export interface InvestmentColumnMapping {
   sideValueMapping: Record<string, InvestmentImportTransactionSide | InvestmentImportSideSkip>;
 }
 
+/** Per-row reasons a CSV row was rejected; params carry `row` and, where one exists, the raw cell `value`. */
+export type InvestmentImportCsvRowWarningCode =
+  | 'CSV_ROW_MISSING_SYMBOL'
+  | 'CSV_ROW_INVALID_DATE'
+  | 'CSV_ROW_UNMAPPED_SIDE'
+  | 'CSV_ROW_INVALID_QUANTITY'
+  | 'CSV_ROW_INVALID_PRICE'
+  | 'CSV_ROW_INVALID_FEES';
+
+export type InvestmentImportWarningCode =
+  | InvestmentImportCsvRowWarningCode
+  /** params: count */
+  | 'AI_ROWS_DROPPED'
+  /** params: count, total */
+  | 'CSV_ROWS_INVALID'
+  /** params: count */
+  | 'CSV_ROWS_SKIPPED'
+  /** params: symbol, count */
+  | 'UNSUPPORTED_QUOTE_CURRENCY'
+  | 'DUPLICATE_CHECK_FAILED'
+  /** params: symbol */
+  | 'PROVIDER_LOOKUP_FAILED'
+  /** params: symbol */
+  | 'NO_RESOLVED_SECURITY'
+  /** params: symbol */
+  | 'NO_CURRENCY'
+  /** params: symbol */
+  | 'PORTFOLIO_NOT_FOUND'
+  /** params: symbol, reason (already localized, only when known) */
+  | 'HOLDING_SETUP_FAILED'
+  /** params: symbol, side, date */
+  | 'UNSUPPORTED_CATEGORY'
+  /** params: symbol, side, date */
+  | 'TRANSACTION_FAILED';
+
+/** Rendered by the client from `code`, so it reads in the viewer's language. */
+export interface InvestmentImportWarning {
+  code: InvestmentImportWarningCode;
+  params?: Record<string, string | number>;
+}
+
 export interface InvestmentImportExtractionResult {
   /** Hierarchical: one row per parsed security with child transactions. */
   holdings: InvestmentImportHolding[];
-  /** Human-readable warnings (e.g. "12 rows had no symbol — skipped"). */
-  warnings: string[];
+  warnings: InvestmentImportWarning[];
   /** Detected file type (matches statement-parser). */
   fileType: StatementFileType;
   /** Approximate token usage from the AI call. */
@@ -261,7 +301,6 @@ export interface InvestmentImportExecuteResponse {
    * validation. Counted separately from successful creates so the summary
    * doesn't claim a full import when some rows actually failed. */
   failedTransactions: number;
-  /** Human-readable details about anything that was skipped/failed. Empty when
-   * everything imported cleanly. */
-  warnings: string[];
+  /** Details about anything that was skipped/failed. Empty when everything imported cleanly. */
+  warnings: InvestmentImportWarning[];
 }

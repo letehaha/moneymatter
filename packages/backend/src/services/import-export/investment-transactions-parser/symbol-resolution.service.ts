@@ -5,7 +5,12 @@
  * to be testable in isolation from the rest of the import pipeline.
  */
 import { ASSET_CLASS, SECURITY_PROVIDER, type SecuritySearchResult } from '@bt/shared/types/investments';
-import type { ResolvedSecurityRef, SymbolResolutionConfidence } from '@bt/shared/types/investments';
+import type {
+  InvestmentImportWarning,
+  ResolvedSecurityRef,
+  SymbolResolutionConfidence,
+} from '@bt/shared/types/investments';
+import { logger } from '@js/utils';
 import Holdings from '@models/investments/holdings.model';
 import Portfolios from '@models/investments/portfolios.model';
 import Securities from '@models/investments/securities.model';
@@ -94,9 +99,9 @@ interface ResolvedSymbol {
 
 interface SymbolResolutionResult {
   bySymbol: Map<string, ResolvedSymbol>;
-  /** Human-readable issues that the UI should surface (e.g. provider failure
-   * for a specific ticker). Empty when the resolver had a clean run. */
-  warnings: string[];
+  /** Issues the UI should surface (e.g. provider failure for a specific
+   * ticker). Empty when the resolver had a clean run. */
+  warnings: InvestmentImportWarning[];
 }
 
 const hintToAssetClass = ({ hint }: { hint: 'crypto' | 'stocks' }): ASSET_CLASS =>
@@ -152,7 +157,7 @@ export async function resolveSymbols({
   defaultPortfolioId,
 }: ResolveSymbolsParams): Promise<SymbolResolutionResult> {
   const out = new Map<string, ResolvedSymbol>();
-  const warnings: string[] = [];
+  const warnings: InvestmentImportWarning[] = [];
   if (symbolsWithHints.length === 0) return { bySymbol: out, warnings };
 
   // Dedupe by ticker — if the AI tagged the same ticker with conflicting
@@ -233,8 +238,10 @@ export async function resolveSymbols({
           // converted to "unmapped" — now we record the symbol + reason so the
           // UI can show "couldn't reach CoinGecko for SOL, try again later"
           // instead of misleadingly suggesting SOL doesn't exist.
-          const message = error instanceof Error ? error.message : String(error);
-          warnings.push(`Provider lookup failed for "${ticker}": ${message}.`);
+          logger.warn(`[Investment import] Provider lookup failed for "${ticker}"`, {
+            reason: error instanceof Error ? error.message : String(error),
+          });
+          warnings.push({ code: 'PROVIDER_LOOKUP_FAILED', params: { symbol: ticker } });
           providerHits.set(ticker, []);
         }
       }),

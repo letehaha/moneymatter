@@ -1,10 +1,11 @@
 import { authPool } from '@config/auth';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 import { makeAuthRequest } from '@tests/helpers/common';
 
-const setPasswordRequest = ({ newPassword }: { newPassword: string }) =>
-  makeAuthRequest({ method: 'post', url: '/auth/set-password', payload: { newPassword } });
+const setPasswordRequest = ({ newPassword, headers }: { newPassword: string; headers?: Record<string, string> }) =>
+  makeAuthRequest({ method: 'post', url: '/auth/set-password', payload: { newPassword }, headers });
 
 /** Simulate an OAuth/passkey-only user by removing the credential account created by
  *  email+password signup. Direct auth-schema fixture surgery — there is no HTTP path
@@ -35,8 +36,19 @@ describe('POST /auth/set-password', () => {
 
     expect(res.statusCode).toBe(400);
     expect(res.body.response.code).toBe('PASSWORD_ALREADY_SET');
-    expect(res.body.response.message).toBeTruthy();
-    expect(res.body.response.message).not.toBe('Unexpected error.');
+    expect(res.body.response.message).toBe(t({ key: 'auth.errors.passwordAlreadySet', locale: 'en' }));
+  });
+
+  it('translates the error message into the requested locale', async () => {
+    const res = await setPasswordRequest({
+      newPassword: 'another-valid-password-1',
+      headers: { 'Accept-Language': 'uk' },
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.body.response.code).toBe('PASSWORD_ALREADY_SET');
+    expect(res.body.response.message).toBe(t({ key: 'auth.errors.passwordAlreadySet', locale: 'uk' }));
+    expect(res.body.response.message).not.toBe(t({ key: 'auth.errors.passwordAlreadySet', locale: 'en' }));
   });
 
   it('returns 401 without a session', async () => {

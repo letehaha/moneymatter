@@ -1,5 +1,6 @@
 import { AccountOptionValue, type ColumnMappingConfig } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { t } from '@i18n/index';
 import * as Accounts from '@models/accounts.model';
 
 interface ValidateExistingAccountParams {
@@ -19,7 +20,7 @@ export async function validateExistingAccount({ userId, columnMapping }: Validat
         userId,
         id: accountOption.accountId,
       }),
-      message: `Account with ID ${accountOption.accountId} not found or does not belong to you.`,
+      message: t({ key: 'csvImport.selectedAccountNotFound' }),
     });
   }
 }

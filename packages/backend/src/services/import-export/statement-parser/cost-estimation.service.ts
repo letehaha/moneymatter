@@ -3,6 +3,7 @@
  */
 import type { StatementCostEstimate, StatementFileType } from '@bt/shared/types';
 import { AI_FEATURE } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import {
   estimateModelCostUsd,
   resolveEstimationPrelude,
@@ -83,8 +84,18 @@ export async function estimateExtractionCost({
       success: false,
       error: {
         code: 'TOKEN_LIMIT_EXCEEDED',
-        message: `File is too large for the selected model. Estimated ${estimatedInputTokens.toLocaleString()} tokens, but the limit is ${tokenLimit.maxInputTokens.toLocaleString()} tokens (${tokenLimit.modelName} context: ${tokenLimit.contextWindow.toLocaleString()}).`,
-        details: `Please use a smaller file or split your statement into multiple parts. Recommended: statements with up to ~${Math.floor(tokenLimit.maxInputTokens / 100)} transactions.`,
+        message: t({
+          key: 'statementParser.tokenLimitExceeded',
+          variables: {
+            estimatedTokens: estimatedInputTokens,
+            maxTokens: tokenLimit.maxInputTokens,
+            modelName: tokenLimit.modelName,
+          },
+        }),
+        details: t({
+          key: 'statementParser.tokenLimitExceededSuggestion',
+          variables: { maxTransactions: Math.floor(tokenLimit.maxInputTokens / 100) },
+        }),
       },
     };
   }

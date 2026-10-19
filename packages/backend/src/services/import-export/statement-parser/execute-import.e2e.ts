@@ -555,9 +555,17 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(result.imported).toBe(4);
       expect(result.errors).toHaveLength(2);
 
-      const errorByIndex = new Map(result.errors.map((e) => [e.transactionIndex, e.error]));
-      expect(errorByIndex.get(1)).toContain('is in the future');
-      expect(errorByIndex.get(3)).toContain('exceeds maximum allowed value');
+      const errorByIndex = new Map(result.errors.map((e) => [e.transactionIndex, e]));
+      expect(errorByIndex.get(1)).toEqual({
+        transactionIndex: 1,
+        code: 'FUTURE_DATE',
+        params: { date: futureDateStr },
+      });
+      expect(errorByIndex.get(3)).toEqual({
+        transactionIndex: 3,
+        code: 'AMOUNT_TOO_LARGE',
+        params: { amount: 2_000_000_000, max: 1_000_000_000 },
+      });
       expect(errorByIndex.has(4)).toBe(false);
       expect(errorByIndex.has(5)).toBe(false);
     });
@@ -762,7 +770,11 @@ describe('Statement Parser - Execute Import endpoint', () => {
       // Two good rows imported; only the middle (index 1) row is reported as an error.
       expect(result.imported).toBe(2);
       expect(result.errors).toHaveLength(1);
-      expect(result.errors[0]!.transactionIndex).toBe(1);
+      expect(result.errors[0]).toEqual({
+        transactionIndex: 1,
+        code: 'INVALID_DATE',
+        params: { date: 'definitely-not-a-date' },
+      });
       expect(result.newTransactionIds).toHaveLength(2);
 
       // Honesty assertion: the rows reported as imported are actually in the

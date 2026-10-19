@@ -5,6 +5,7 @@ import type { SentryTraceData } from '@js/utils/sentry';
 import { sseManager } from '@services/common/sse';
 
 import { createImportJobQueue } from './create-import-job-queue';
+import { ImportJobError } from './import-job-error';
 
 jest.mock('bullmq', () => ({
   __esModule: true,
@@ -57,11 +58,13 @@ const failJob = ({ bundle, error }: { bundle: ReturnType<typeof buildBundle>; er
   handler({ id: JOB_ID, data: { userId: USER_ID } }, error);
 };
 
-const expectFailedPayload = ({ error }: { error: string }) =>
+const INTERRUPTED_FAILURE = { code: 'interrupted' } as const;
+
+const expectFailedPayload = ({ error, failure }: { error: string; failure?: object }) =>
   expect(sseManager.sendToUser).toHaveBeenCalledWith({
     userId: USER_ID,
     event: SSE_EVENT_TYPES.IMPORT_BATCH_DELETE_PROGRESS,
-    data: { jobId: JOB_ID, status: 'failed', processedCount: 0, totalCount: 0, error },
+    data: { jobId: JOB_ID, status: 'failed', processedCount: 0, totalCount: 0, error, ...(failure && { failure }) },
   });
 
 beforeEach(() => {
@@ -75,7 +78,7 @@ describe('createImportJobQueue failure reporting', () => {
 
     expect(logger.warn).toHaveBeenCalledWith(expect.any(String), { jobId: JOB_ID, userId: USER_ID });
     expect(logger.error).not.toHaveBeenCalled();
-    expectFailedPayload({ error: DEFAULT_INTERRUPTED_KEY });
+    expectFailedPayload({ error: DEFAULT_INTERRUPTED_KEY, failure: INTERRUPTED_FAILURE });
   });
 
   it("finishes the user's unfinished import batches when a job fails as stalled, so undo is allowed", () => {
@@ -98,7 +101,7 @@ describe('createImportJobQueue failure reporting', () => {
 
     failJob({ bundle: buildBundle({ interruptedMessageKey }), error: new Error(STALLED_REASON) });
 
-    expectFailedPayload({ error: interruptedMessageKey });
+    expectFailedPayload({ error: interruptedMessageKey, failure: INTERRUPTED_FAILURE });
   });
 
   it('logs an ordinary failure as an error and sends its message', () => {
@@ -107,6 +110,14 @@ describe('createImportJobQueue failure reporting', () => {
     expect(logger.error).toHaveBeenCalled();
     expect(logger.warn).not.toHaveBeenCalled();
     expectFailedPayload({ error: 'boom' });
+  });
+
+  it('forwards the failure code of an ImportJobError so the UI can translate it', () => {
+    const failure = { code: 'category-name-too-long', params: { name: 'A…', length: 300, max: 255 } } as const;
+
+    failJob({ bundle: buildBundle(), error: new ImportJobError({ message: 'too long', failure }) });
+
+    expectFailedPayload({ error: 'too long', failure });
   });
 
   it('reports a stalled job as interrupted on the status poll', async () => {
@@ -126,6 +137,30 @@ describe('createImportJobQueue failure reporting', () => {
       processedCount: 0,
       totalCount: 0,
       error: DEFAULT_INTERRUPTED_KEY,
+      failure: INTERRUPTED_FAILURE,
+    });
+  });
+
+  it('reports the failure code recorded on the job progress on the status poll', async () => {
+    const bundle = buildBundle();
+    const failure = { code: 'base-currency-change-in-progress' } as const;
+    const getJobMock = bundle.queue.getJob as unknown as jest.Mock<() => Promise<unknown>>;
+    getJobMock.mockResolvedValue({
+      data: { userId: USER_ID },
+      progress: { processedCount: 0, totalCount: 0, failure },
+      failedReason: 'locked',
+      getState: async () => 'failed',
+    });
+
+    const progress = await bundle.getImportProgress({ userId: USER_ID, jobId: JOB_ID });
+
+    expect(progress).toEqual({
+      jobId: JOB_ID,
+      status: 'failed',
+      processedCount: 0,
+      totalCount: 0,
+      error: 'locked',
+      failure,
     });
   });
 });

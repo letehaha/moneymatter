@@ -420,7 +420,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
     </DefineStepper>
 
     <div v-if="isGated" class="flex h-full flex-col items-center justify-center gap-2 text-center">
-      <span class="bg-primary/10 text-primary-text flex size-12 items-center justify-center rounded-full">
+      <span class="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
         <LockIcon class="size-6" />
       </span>
       <p class="font-bold">{{ $t('widgets.fireProgress.locked.title') }}</p>
@@ -496,7 +496,7 @@ const [DefineSkeletonDots, ReuseSkeletonDots] = createReusableTemplate();
     <ErrorState v-else-if="hasError" :message="$t('widgets.fireProgress.loadFailed')" @retry="retry" />
 
     <div v-else-if="needsSetup" class="flex h-full flex-col items-center justify-center gap-2 text-center">
-      <span class="bg-primary/10 text-primary-text flex size-12 items-center justify-center rounded-full">
+      <span class="bg-muted text-muted-foreground flex size-12 items-center justify-center rounded-full">
         <TargetIcon class="size-6" />
       </span>
       <p class="font-bold">{{ $t('widgets.fireProgress.setup.title') }}</p>

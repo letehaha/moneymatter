@@ -1,12 +1,16 @@
-import { LogoResolutionState } from '@bt/shared/types';
+import type { EntityLogoFields, LogoResolutionState } from '@bt/shared/types';
 
 /** The logo columns every logo-carrying entity row declares. */
-interface LogoColumns {
-  logoDomain: string | null;
-  logoSource: LogoResolutionState;
-  logoInitials: string | null;
-  logoColor: string | null;
-}
+type LogoColumns = EntityLogoFields & { logoSource: LogoResolutionState };
+
+const CLEARED_LOGO_COLUMNS: { [Key in keyof LogoColumns]: null } = {
+  logoDomain: null,
+  logoSource: null,
+  logoInitials: null,
+  logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
+};
 
 /**
  * Wipes the logo columns on the instance in memory – the caller persists it.
@@ -14,8 +18,5 @@ interface LogoColumns {
  * so entities with auto-resolution must also enqueue one after the commit.
  */
 export const clearManualLogoFields = ({ instance }: { instance: LogoColumns }): void => {
-  instance.logoDomain = null;
-  instance.logoSource = null;
-  instance.logoInitials = null;
-  instance.logoColor = null;
+  Object.assign(instance, CLEARED_LOGO_COLUMNS);
 };

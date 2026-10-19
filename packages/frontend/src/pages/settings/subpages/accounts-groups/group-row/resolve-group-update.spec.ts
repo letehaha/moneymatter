@@ -51,6 +51,7 @@ describe('resolveGroupUpdate', () => {
     expect(plan({ draftName: 'Cash', currentName: 'Cash', logo: null, storedLogo: brand }).updates).toEqual({
       logoDomain: null,
       logoInitials: null,
+      logoIcon: null,
     });
   });
 
@@ -59,6 +60,7 @@ describe('resolveGroupUpdate', () => {
       name: 'Savings',
       logoDomain: null,
       logoInitials: null,
+      logoIcon: null,
     });
   });
 

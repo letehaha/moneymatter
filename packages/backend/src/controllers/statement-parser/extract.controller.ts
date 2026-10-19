@@ -1,3 +1,4 @@
+import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { UnexpectedError, ValidationError } from '@js/errors';
@@ -53,9 +54,7 @@ export const extractController = createController(
     });
 
     if (!extractionResult.success) {
-      throw new UnexpectedError({
-        message: extractionResult.error.message,
-      });
+      throw toAiExtractionHttpError({ error: extractionResult.error });
     }
 
     return {

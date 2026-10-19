@@ -1,4 +1,5 @@
 import { AI_PROVIDER } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils';
 import {
   type AIClientResult,
@@ -20,8 +21,6 @@ export interface AIExtractionError {
   message: string;
   details?: string;
 }
-
-const TEMPORARY_ERROR_MESSAGE = 'AI provider temporarily unavailable. Please try again later.';
 
 /**
  * Turns a failed AI call into the error the parser answers with, and flags the failing
@@ -47,7 +46,10 @@ export async function resolveAiExtractionFailure({
   if (kind === 'endpoint-down' && !isCustomEndpoint) {
     logger.info(`${logPrefix} AI provider connection failed`, { modelId: aiClient.modelId });
 
-    return { error: { code: 'AI_ERROR', message: TEMPORARY_ERROR_MESSAGE, details }, cause };
+    return {
+      error: { code: 'AI_ERROR', message: t({ key: 'importExport.aiTemporarilyUnavailable' }), details },
+      cause,
+    };
   }
 
   switch (kind) {
@@ -86,7 +88,7 @@ export async function resolveAiExtractionFailure({
       return {
         error: {
           code: 'RATE_LIMITED',
-          message: 'AI provider rate limit reached. Please try again in a few minutes.',
+          message: t({ key: 'importExport.aiRateLimited' }),
           details,
         },
         cause,
@@ -107,13 +109,16 @@ export async function resolveAiExtractionFailure({
     case 'temporary': {
       logger.info(`${logPrefix} AI provider temporarily unavailable`, { modelId: aiClient.modelId });
 
-      return { error: { code: 'AI_ERROR', message: TEMPORARY_ERROR_MESSAGE, details }, cause };
+      return {
+        error: { code: 'AI_ERROR', message: t({ key: 'importExport.aiTemporarilyUnavailable' }), details },
+        cause,
+      };
     }
 
     default: {
       logger.error({ message: `${logPrefix} AI extraction failed`, error: cause });
 
-      return { error: { code: 'AI_ERROR', message: 'AI extraction failed', details }, cause };
+      return { error: { code: 'AI_ERROR', message: t({ key: 'importExport.aiExtractionFailed' }), details }, cause };
     }
   }
 }

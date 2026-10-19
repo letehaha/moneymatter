@@ -1371,6 +1371,13 @@
     "ukNote": "«FIRE» stays in Latin script; only «число» is translated."
   },
   {
+    "term": "FITID",
+    "partOfSpeech": "noun",
+    "definition": "The financial institution transaction ID field in OFX/QFX files, used to detect repeated transactions. Technical field name, keep as is.",
+    "translatable": false,
+    "uk": "FITID"
+  },
+  {
     "term": "focus mode",
     "partOfSpeech": "noun",
     "definition": "Full-screen view of the transactions table that hides the rest of the interface.",

@@ -64,6 +64,7 @@ export const createSubscription = withTransaction(
     logoDomain,
     logoInitials,
     logoColor,
+    logoIcon,
     ...rest
   }: CreateSubscriptionParams) => {
     if (accountId) {
@@ -137,7 +138,7 @@ export const createSubscription = withTransaction(
       // A supplied logo value is a manual override (`logoSource: 'manual'` makes
       // the resolver treat it as authoritative); null keys on create change
       // nothing, so they resolve to no writes and the resolver stays in charge.
-      ...resolveManualLogoFields({ input: { logoDomain, logoInitials, logoColor } }),
+      ...resolveManualLogoFields({ input: { logoDomain, logoInitials, logoColor, logoIcon } }),
     });
 
     if (uniqueTagIds.length > 0) {

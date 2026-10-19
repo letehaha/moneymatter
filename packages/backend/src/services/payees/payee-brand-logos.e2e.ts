@@ -3,6 +3,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import BrandLogos from '@models/brand-logos.model';
+import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { getLogoDevSearchMock } from '@tests/mocks/logo-dev/mock-api';
 
@@ -589,5 +590,40 @@ describe('Payee monogram', () => {
 
       expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
     });
+  });
+});
+
+describe('Payee logo icon and image slots', () => {
+  it('creates with logoIcon and stamps logoSource as manual', async () => {
+    const created = await helpers.createPayee({
+      payload: { ...helpers.buildPayeePayload({ name: 'Bakery' }), logoIcon: 'food-24-regular' },
+      raw: true,
+    });
+
+    expect(created).toMatchObject({ logoIcon: 'food-24-regular', logoSource: 'manual', logoDomain: null });
+  });
+
+  it('sets logoIcon on update and evicts the domain', async () => {
+    const payee = await helpers.createPayee({
+      payload: { ...helpers.buildPayeePayload({ name: 'Coffee' }), logoDomain: 'starbucks.com' },
+      raw: true,
+    });
+
+    const updated = await helpers.updatePayee({ id: payee.id, payload: { logoIcon: 'food-24-regular' }, raw: true });
+
+    expect(updated).toMatchObject({ logoIcon: 'food-24-regular', logoDomain: null, logoSource: 'manual' });
+  });
+
+  it('ignores logoImage', async () => {
+    const payee = await helpers.createPayee({ payload: helpers.buildPayeePayload({ name: 'Plain' }), raw: true });
+
+    const response = await helpers.updatePayee({
+      id: payee.id,
+      payload: { ...({ logoImage: PNG_1X1_DATA_URL } as object) },
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect((await helpers.getPayeeById({ id: payee.id, raw: true })).logoImageId).toBeNull();
   });
 });

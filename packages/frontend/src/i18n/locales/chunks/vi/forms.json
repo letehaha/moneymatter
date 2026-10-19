@@ -1,7 +1,7 @@
 {
   "forms": {
     "investmentTransaction": {
-      "typeLabel": "Transaction Type",
+      "typeLabel": "Transaction type",
       "types": {
         "buy": "Mua",
         "sell": "Bán",
@@ -13,16 +13,16 @@
       "securityPlaceholder": "Select a security",
       "quantityLabel": "Số lượng",
       "quantityPlaceholder": "0.00",
-      "priceLabel": "Price per Share",
+      "priceLabel": "Price per share",
       "pricePlaceholder": "0.00",
       "priceHelp": "Use 0 for staking rewards, airdrops or balance adjustments.",
       "feesLabel": "Fees (optional)",
       "feesPlaceholder": "0.00",
-      "dateLabel": "Transaction Date",
+      "dateLabel": "Transaction date",
       "noteLabel": "Note",
       "notePlaceholder": "Optional. Add a note about this transaction",
       "cancelButton": "Hủy",
-      "submitButton": "Create Transaction",
+      "submitButton": "Create transaction",
       "submitButtonLoading": "Creating...",
       "notifications": {
         "success": "Transaction created successfully.",
@@ -55,10 +55,10 @@
       }
     },
     "portfolioSettings": {
-      "nameLabel": "Portfolio Name",
-      "namePlaceholder": "My Investment Portfolio",
+      "nameLabel": "Portfolio name",
+      "namePlaceholder": "My investment portfolio",
       "nameRequired": "Name is required",
-      "typeLabel": "Portfolio Type",
+      "typeLabel": "Portfolio type",
       "typePlaceholder": "Select portfolio type",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "A brief description of this portfolio...",
@@ -67,7 +67,7 @@
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
       "cancelButton": "Hủy",
-      "submitButton": "Save Changes",
+      "submitButton": "Save changes",
       "submitButtonLoading": "Saving...",
       "notifications": {
         "success": "Portfolio updated successfully.",
@@ -75,20 +75,20 @@
       }
     },
     "portfolioTransfer": {
-      "transferTypeLabel": "Transfer Type",
+      "transferTypeLabel": "Transfer type",
       "transferTypes": {
-        "portfolioToPortfolio": "To Another Portfolio",
-        "portfolioToAccount": "To Account",
-        "accountToPortfolio": "To Portfolio"
+        "portfolioToPortfolio": "To another portfolio",
+        "portfolioToAccount": "To account",
+        "accountToPortfolio": "To portfolio"
       },
       "comingSoonNotice": "💡 Account-to-portfolio transfers are coming in a future update!",
-      "fromPortfolioLabel": "From Portfolio",
+      "fromPortfolioLabel": "From portfolio",
       "fromPortfolioPlaceholder": "Select source portfolio",
-      "fromAccountLabel": "From Account",
+      "fromAccountLabel": "From account",
       "fromAccountPlaceholder": "Select source account",
-      "toPortfolioLabel": "To Portfolio",
+      "toPortfolioLabel": "To portfolio",
       "toPortfolioPlaceholder": "Select destination portfolio",
-      "toAccountLabel": "To Account",
+      "toAccountLabel": "To account",
       "toAccountPlaceholder": "Select destination account",
       "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
@@ -102,13 +102,13 @@
       "submitButton": "Chuyển tiền",
       "submitButtonLoading": "Đang xử lý...",
       "confirmDialog": {
-        "title": "Confirm Transfer",
+        "title": "Confirm transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
         "actionTransfer": "transfer",
         "actionWithdrawal": "withdrawal",
         "actionDeposit": "deposit",
         "cancelButton": "Hủy",
-        "confirmButton": "Confirm Transfer"
+        "confirmButton": "Confirm transfer"
       },
       "validation": {
         "required": "This field is required",
@@ -128,11 +128,11 @@
       "namePlaceholder": "Account name",
       "currencyLabel": "Đơn vị tiền tệ",
       "currencyPlaceholder": "Chọn tiền tệ",
-      "addCurrencyButton": "Add new currency +",
+      "addCurrencyButton": "Add new currency",
       "initialBalanceLabel": "Initial balance",
       "initialBalancePlaceholder": "Initial balance",
       "initialBalanceHelpLink": "What should I enter?",
-      "accountCategoryLabel": "Account Category",
+      "accountCategoryLabel": "Account category",
       "accountCategoryPlaceholder": "Select account category",
       "creditLimitLabel": "Credit limit",
       "creditLimitPlaceholder": "Credit limit",
@@ -152,8 +152,8 @@
         "deposit": "Nạp tiền",
         "withdrawal": "Rút tiền"
       },
-      "fromAccountLabel": "From Account",
-      "toAccountLabel": "To Account",
+      "fromAccountLabel": "From account",
+      "toAccountLabel": "To account",
       "accountPlaceholder": "Select account",
       "orSeparator": "or",
       "linkExistingTransaction": "Link existing transaction",
@@ -165,13 +165,13 @@
       "dateLabel": "Ngày",
       "descriptionLabel": "Description",
       "adjustmentLabel": "This is a balance correction",
-      "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the Investment Contributions report.",
+      "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the investment contributions report.",
       "descriptionPlaceholder": "Optional description",
       "cancelButton": "Hủy",
       "submitButton": "Submit",
       "submitButtonLoading": "Submitting...",
       "confirmDialog": {
-        "title": "Confirm Transfer",
+        "title": "Confirm transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
         "cancelButton": "Hủy",
         "confirmButton": "Confirm",
@@ -192,14 +192,14 @@
       "mustBePositive": "Amount must be positive"
     },
     "exchangeCurrency": {
-      "fromCurrencyLabel": "From Currency",
-      "toCurrencyLabel": "To Currency",
+      "fromCurrencyLabel": "From currency",
+      "toCurrencyLabel": "To currency",
       "currencyPlaceholder": "Chọn tiền tệ",
-      "fromAmountLabel": "From Amount",
-      "toAmountLabel": "To Amount",
+      "fromAmountLabel": "From amount",
+      "toAmountLabel": "To amount",
       "amountPlaceholder": "0.00",
       "maxButton": "Max: {amount}",
-      "dateLabel": "Exchange Date",
+      "dateLabel": "Exchange date",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this exchange...",
       "cancelButton": "Hủy",
@@ -208,7 +208,7 @@
       "validation": {
         "required": "This field is required",
         "minValue": "Amount must be greater than 0",
-        "sameCurrency": "From and To currencies must be different"
+        "sameCurrency": "From and to currencies must be different"
       },
       "notifications": {
         "success": "Currency exchanged successfully",
@@ -371,6 +371,7 @@
       "searchPlaceholder": "Search trackers",
       "noResults": "No trackers found",
       "unknownBudget": "Unknown tracker",
+      "blankOption": "Not in any tracker",
       "loadError": "Couldn't load trackers. Please try again."
     },
     "payeeSelect": {

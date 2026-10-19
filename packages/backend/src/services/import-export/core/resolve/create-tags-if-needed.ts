@@ -1,4 +1,5 @@
 import type { TagMappingConfig } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import Tags from '@models/tags.model';
 import { createTag } from '@services/tags/create-tag';
 import { Op } from 'sequelize';
@@ -54,7 +55,7 @@ export async function createTagsIfNeeded({
     mapping,
     findOne: (args) => Tags.findOne(args),
     create: ({ userId: ownerId, name, color }) => createTag({ userId: ownerId, name, color }),
-    notFoundMessage: (id) => `Tag with ID ${id} not found`,
+    notFoundMessage: (id) => t({ key: 'importExport.tagIdNotFound', variables: { id } }),
   });
 
   return { tagNameToId: nameToId, tagsCreated: created };

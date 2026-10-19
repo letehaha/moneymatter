@@ -192,12 +192,7 @@ const isSelfRow = (member: ShareMemberRow) => user.value?.id === member.user.id;
 
 <template>
   <div class="@container/sharing-panel grid gap-6">
-    <div class="flex items-start justify-between gap-3">
-      <div>
-        <h3 class="text-base font-medium">{{ $t('pages.budgetDetails.sharing.title') }}</h3>
-        <p class="text-muted-foreground text-sm">{{ $t('pages.budgetDetails.sharing.description') }}</p>
-      </div>
-
+    <div v-if="isOwner" class="flex items-start justify-end gap-3">
       <DemoRestricted v-if="isOwner" feature="share_budget_invite">
         <Button variant="outline" size="sm" :disabled="isDemo" @click="inviteDialogOpen = true">
           <UserPlusIcon class="mr-2 size-4" />

@@ -1,6 +1,7 @@
 import type { CategoryMappingConfig } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
-import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { Op } from 'sequelize';
 
 // ── Mocks (hoisted before importing the module under test) ──────────────────
@@ -24,6 +25,10 @@ jest.mock('@models/categories.model', () => ({
 import { createCategoriesIfNeeded } from './create-categories-if-needed';
 
 const USER_ID = 1;
+
+beforeAll(async () => {
+  await i18nextReady;
+});
 
 beforeEach(() => {
   findOne.mockReset();
@@ -61,7 +66,7 @@ describe('createCategoriesIfNeeded', () => {
     const categoryMapping: CategoryMappingConfig = { Food: { action: 'link-existing', categoryId } };
 
     await expect(createCategoriesIfNeeded({ userId: USER_ID, categoryMapping })).rejects.toThrow(
-      `Category with ID ${categoryId} not found`,
+      t({ key: 'importExport.categoryIdNotFound', variables: { id: categoryId }, locale: 'en' }),
     );
     expect(create).not.toHaveBeenCalled();
   });

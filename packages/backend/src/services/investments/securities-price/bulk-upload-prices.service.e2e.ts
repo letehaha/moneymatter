@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import ExchangeRates from '@models/exchange-rates.model';
+import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
 import { exchangeRateProviderRegistry } from '@services/exchange-rates/providers';
 import * as helpers from '@tests/helpers';
@@ -113,9 +114,9 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
       // Its own symbol keeps the SSP security separate from the USD cases below.
       const missingRates = await helpers.bulkUploadSecurityPrices({
         payload: {
-          searchResult: helpers.buildSecuritySearchResult({
+          searchResult: await helpers.searchSecurityViaFmp({
             symbol: 'TESTSSP',
-            providerSymbol: 'TESTSSP',
+            name: 'Test Security',
             currencyCode: 'SSP',
           }),
           prices: [{ price: 100, date: '2024-01-01', currency: 'SSP' }],
@@ -123,9 +124,11 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
       });
       expect(missingRates.statusCode).toBe(ERROR_CODES.ValidationError);
 
+      const usdSearchResult = await helpers.searchSecurityViaFmp({ symbol: 'TEST', name: 'Test Security' });
+
       const currencyMismatch = await helpers.bulkUploadSecurityPrices({
         payload: {
-          searchResult: helpers.buildSecuritySearchResult({ currencyCode: 'USD' }),
+          searchResult: usdSearchResult,
           prices: [{ price: 100, date: '2024-01-01', currency: 'EUR' }],
         },
       });
@@ -133,7 +136,7 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
 
       const outOfRange = await helpers.bulkUploadSecurityPrices({
         payload: {
-          searchResult: helpers.buildSecuritySearchResult({ currencyCode: 'USD' }),
+          searchResult: usdSearchResult,
           prices: [{ price: 100, date: futureDateStr, currency: 'USD' }],
           autoFilter: false,
         },
@@ -142,18 +145,41 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
 
       const everythingFiltered = await helpers.bulkUploadSecurityPrices({
         payload: {
-          searchResult: helpers.buildSecuritySearchResult({ currencyCode: 'USD' }),
+          searchResult: usdSearchResult,
           prices: [{ price: 100, date: futureDateStr, currency: 'USD' }],
           autoFilter: true,
         },
       });
       expect(everythingFiltered.statusCode).toBe(ERROR_CODES.ValidationError);
     }, 30000);
+
+    it('rejects a new security that no provider search returned', async () => {
+      const exchangeRate = await ExchangeRates.findOne({
+        where: { [Op.or]: [{ baseCode: 'USD' }, { quoteCode: 'USD' }] },
+        order: [['date', 'DESC']],
+        attributes: ['date'],
+        raw: true,
+      });
+      if (!exchangeRate) {
+        throw new Error('No exchange rates found for USD');
+      }
+
+      const response = await helpers.bulkUploadSecurityPrices({
+        payload: {
+          searchResult: helpers.buildSecuritySearchResult({ symbol: 'NEVERSEARCHED', providerSymbol: 'NEVERSEARCHED' }),
+          prices: [{ price: 100, date: exchangeRate.date.toISOString().split('T')[0]!, currency: 'USD' }],
+        },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(await Securities.findOne({ where: { providerSymbol: 'NEVERSEARCHED' } })).toBeNull();
+      expect(await SecurityPricing.count()).toBe(0);
+    });
   });
 
   describe('Successful Upload', () => {
     it('should successfully upload prices for new security', async () => {
-      const searchResult = helpers.buildSecuritySearchResult({
+      const searchResult = await helpers.searchSecurityViaFmp({
         symbol: 'TESTUPLOAD',
         name: 'Test Upload Security',
         currencyCode: 'USD',
@@ -204,7 +230,7 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
     });
 
     it('should ignore duplicates when override is false', async () => {
-      const searchResult = helpers.buildSecuritySearchResult({
+      const searchResult = await helpers.searchSecurityViaFmp({
         symbol: 'TESTDUP',
         name: 'Test Duplicate Security',
         currencyCode: 'USD',
@@ -259,7 +285,7 @@ describe('POST /investments/securities/prices/bulk-upload', () => {
     });
 
     it('should override duplicates when override is true', async () => {
-      const searchResult = helpers.buildSecuritySearchResult({
+      const searchResult = await helpers.searchSecurityViaFmp({
         symbol: 'TESTOVERRIDE',
         name: 'Test Override Security',
         currencyCode: 'USD',

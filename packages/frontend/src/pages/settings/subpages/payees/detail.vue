@@ -21,9 +21,7 @@
       <div class="mt-3 flex items-center gap-3 px-5 sm:px-6">
         <div class="group relative shrink-0">
           <BrandLogo
-            :domain="payeeData?.logoDomain ?? null"
-            :initials="payeeData?.logoInitials ?? null"
-            :color="payeeData?.logoColor ?? null"
+            v-bind="toEntityLogoDisplayProps(payeeData ?? {})"
             :name="payeeData?.name ?? ''"
             class="size-11 text-lg"
           />
@@ -356,6 +354,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 
 import PayeeActionsDropdown from './components/payee-actions-dropdown.vue';
 import PayeeDefaultLocationField from './components/payee-default-location-field.vue';

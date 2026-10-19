@@ -48,7 +48,7 @@
           "absoluteThresholdTooltip": "Mindeständerung des absoluten Saldos (in deiner Basiswährung), damit ein Ausschlag vorliegt. Entweder dieser Wert oder der prozentuale Schwellwert muss überschritten werden.",
           "maxMarkers": "Max. Markierungen",
           "maxMarkersTooltip": "Maximale Anzahl der angezeigten Markierungen im Diagramm. Gibt es mehr Ausschläge als dieses Limit, werden nur die bedeutendsten angezeigt.",
-          "resetDefaults": "Auf Standardwerte zurücksetzen",
+          "resetDefaults": "Standardwerte",
           "accept": "Anwenden",
           "validation": {
             "outOfRange": "Wert liegt außerhalb des zulässigen Bereichs",
@@ -176,6 +176,79 @@
         "utilized": "genutzt",
         "noAccounts": "Keine Konten mit Kreditrahmen"
       },
+      "cashAccounts": {
+        "vsLastMonth": "vs. Vormonat",
+        "runwayUnit": "Mon.",
+        "runwayLabel": "an Ausgaben",
+        "loadFailed": "Deine Konten konnten nicht geladen werden",
+        "runwayHint": {
+          "description": "Es wird generell empfohlen, einen Notgroschen für 3–6 Monate deiner Ausgaben bereitzuhalten.",
+          "critical": "Unter 1 Monat: sehr wenig Puffer",
+          "low": "1–3 Monate: unter der Empfehlung",
+          "good": "3+ Monate: empfohlener Bereich"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Nettovermögen",
+        "owesShare": "Du schuldest {percent} deines Vermögens",
+        "noDebt": "Keine Schulden",
+        "assets": "Vermögenswerte",
+        "liabilities": "Verbindlichkeiten",
+        "loadFailed": "Deine Vermögenswerte und Verbindlichkeiten konnten nicht geladen werden",
+        "buckets": {
+          "cash": "Bargeld",
+          "investments": "Investments",
+          "ventures": "Beteiligungen",
+          "vehicles": "Fahrzeuge",
+          "loans": "Kredite",
+          "creditAndOverdrafts": "Kredite & Dispos"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "vs. Vormonat",
+          "average": "vs. 3-Monats-Ø"
+        },
+        "spentIn": "Ausgegeben im {month}",
+        "onTrackFor": "Auf Kurs für {amount}",
+        "vsComparison": "{percent} vs. {name}",
+        "comparison": {
+          "average": "{n}-Monats-Ø"
+        },
+        "stats": {
+          "byToday": "{name} bis heute",
+          "total": "{name} gesamt",
+          "daysLeft": "Verbleibende Tage"
+        },
+        "chart": {
+          "today": "Heute",
+          "ariaLabel": "Ausgaben diesen Monat"
+        },
+        "tooltip": {
+          "spent": "Ausgegeben",
+          "forecast": "Prognose",
+          "spikeFrom": "Ausgegeben am {date}"
+        },
+        "legend": {
+          "thisMonth": "Diesen Monat",
+          "forecast": "Prognose",
+          "averageMonth": "Durchschnittlicher Monat"
+        },
+        "hints": {
+          "noHistory": "Der Vergleich erscheint nach deinem ersten vollen Monat.",
+          "fewMonths": "Durchschnitt des {n} vollen Monats, den du bisher hast. | Durchschnitt der {n} vollen Monate, die du bisher hast."
+        },
+        "loadFailed": "Deine Ausgaben konnten nicht geladen werden.",
+        "settings": {
+          "spikes": {
+            "title": "Ausschlag-Marker",
+            "summary": "Tage mit ≥{percent}% der Monatsausgaben",
+            "inputLabel": "Einen Tag markieren, wenn er folgendes erreicht",
+            "hint": "Anteil an den Gesamtausgaben des Vormonats, 1–100%. Markierungen werden im Modus \"vs. Vormonat\" angezeigt."
+          },
+          "saved": "Einstellung aktualisiert"
+        }
+      },
       "plannedOverview": {
         "title": "Geplant",
         "projectedBy": "Hochgerechnet bis {date}",
@@ -269,6 +342,18 @@
         "creditUtilization": {
           "name": "Kreditrahmenauslastung",
           "description": "Nutzung des Kreditrahmens über deine Konten"
+        },
+        "cashAccounts": {
+          "name": "Cash & Konten",
+          "description": "Gesamte Cash-Bestände auf deinen Konten, deren Veränderung seit dem Vormonat und für wie viele Monate an Ausgaben sie reichen"
+        },
+        "assetsLiabilities": {
+          "name": "Vermögen & Verbindlichkeiten",
+          "description": "Was du besitzt, was du schuldest und das Nettovermögen dazwischen"
+        },
+        "spendingPace": {
+          "name": "Ausgabentempo",
+          "description": "Ausgaben im laufenden Monat mit einer Prognose für den Rest des Monats, verglichen mit dem Vormonat oder deinem 3-Monats-Durchschnitt."
         },
         "plannedOverview": {
           "name": "Übersicht geplanter Zahlungen",

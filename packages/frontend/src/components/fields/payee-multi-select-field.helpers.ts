@@ -1,4 +1,6 @@
+import { pickLogoFields } from '@/components/common/logo-selection';
 import type { EntityLogoFields, RecordId } from '@bt/shared/types';
+import { isEqual } from 'lodash-es';
 
 export interface SelectedPayee extends EntityLogoFields {
   id: RecordId;
@@ -28,16 +30,7 @@ export const hydrateSelectedPayees = ({
   selected.map((sel) => {
     const fresh = lookup.get(sel.id);
     if (!fresh) return sel;
-    const nextLogo = fresh.logoDomain ?? null;
-    const nextInitials = fresh.logoInitials ?? null;
-    const nextColor = fresh.logoColor ?? null;
-    if (
-      fresh.name === sel.name &&
-      nextLogo === sel.logoDomain &&
-      nextInitials === sel.logoInitials &&
-      nextColor === sel.logoColor
-    ) {
-      return sel;
-    }
-    return { id: sel.id, name: fresh.name, logoDomain: nextLogo, logoInitials: nextInitials, logoColor: nextColor };
+    const nextLogo = pickLogoFields(fresh);
+    if (fresh.name === sel.name && isEqual(nextLogo, pickLogoFields(sel))) return sel;
+    return { id: sel.id, name: fresh.name, ...nextLogo };
   });

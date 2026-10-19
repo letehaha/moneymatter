@@ -1,6 +1,7 @@
 import { API_ERROR_CODES, ALL_EXPORT_GROUPS, EXPORT_FORMATS } from '@bt/shared/types';
 import { dateRange, uniqueRecordIds, withDateOrder } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
+import { t } from '@i18n/index';
 import { ConflictError } from '@js/errors';
 import { logger } from '@js/utils';
 import { exportUserData, ExportTooLargeError } from '@services/data-export';
@@ -58,7 +59,7 @@ export const exportDataController = createController(
         // copy ("your data exceeds X rows…") rather than a generic 500.
         throw new ConflictError({
           code: API_ERROR_CODES.payloadTooLarge,
-          message: `Export would contain ${err.rowCount.toLocaleString()} rows which exceeds the limit of ${err.limit.toLocaleString()}.`,
+          message: t({ key: 'dataExport.tooManyRows', variables: { rowCount: err.rowCount, limit: err.limit } }),
           details: { rowCount: err.rowCount, limit: err.limit },
         });
       }

@@ -1,4 +1,4 @@
-import { type LogoSelection, logoSelectionKey, toLogoPayload } from '@/components/common/logo-selection';
+import { type LogoSelection, toLogoPatch } from '@/components/common/logo-selection';
 import type { EntityLogoPayload } from '@bt/shared/types';
 
 import type { RenameResolution } from './resolve-rename';
@@ -29,11 +29,9 @@ export const resolveGroupUpdate = ({
     return { updates: null, blockedBy: 'empty-name' };
   }
 
-  const logoChanged = logoSelectionKey({ selection: logo }) !== logoSelectionKey({ selection: storedLogo });
-
   const updates: GroupUpdatePayload = {
     ...(rename.outcome === 'submit' ? { name: rename.name } : {}),
-    ...(logoChanged ? toLogoPayload({ selection: logo }) : {}),
+    ...toLogoPatch({ selection: logo, stored: storedLogo }),
   };
 
   return {

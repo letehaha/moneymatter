@@ -15,7 +15,7 @@ import { Op, WhereOptions } from 'sequelize';
  * is ambiguous (CoinGecko uses slugs like `bitcoin`; other providers may use
  * `BTC` directly).
  */
-type SecurityIdentity = {
+export type SecurityIdentity = {
   assetClass: ASSET_CLASS;
   providerName: string;
   providerSymbol: string;

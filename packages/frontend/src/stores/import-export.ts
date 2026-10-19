@@ -30,7 +30,7 @@ import { useRecalculateBalanceToggle } from '@/composable/use-recalculate-balanc
 import { useResolveMapping } from '@/composable/use-resolve-mapping';
 import { useWizardSteps } from '@/composable/use-wizard-steps';
 import { i18n } from '@/i18n';
-import { ApiErrorResponseError } from '@/js/errors';
+import { ApiErrorResponseError, NetworkError, extractApiErrorMessage } from '@/js/errors';
 import { captureException } from '@/lib/sentry';
 import {
   type ColumnMatchResult,
@@ -227,8 +227,7 @@ export const useImportExportStore = defineStore('importExport', () => {
         }
       }
     },
-    // On failure the wizard stays on the results step, where the failed status
-    // callout (with the server's error message) is rendered.
+    // On failure the wizard stays on the results step, where the failed status callout is rendered.
     onFailure: () => {},
     onLostContact: () => goToStep('review'),
   });
@@ -679,9 +678,10 @@ export const useImportExportStore = defineStore('importExport', () => {
       if (needsCategoriesResolveStep.value) markStepCompleted('resolve-categories');
       goToStep('review');
     } catch (error) {
-      // Surface the error message so the UI can render it; re-throw so callers
-      // (e.g. handleContinue) can decide whether to show a global error boundary.
-      detectError.value = error instanceof Error ? error.message : String(error);
+      // Re-throw so callers (e.g. handleContinue) can decide whether to show a global error boundary.
+      detectError.value =
+        extractApiErrorMessage(error) ??
+        (error instanceof NetworkError ? error.message : i18n.global.t('pages.importExport.resolveValues.detectError'));
       captureException({ error, context: { scope: 'import-csv:detect-duplicates' } });
       throw error;
     } finally {

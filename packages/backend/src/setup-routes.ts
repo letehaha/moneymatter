@@ -35,6 +35,7 @@ import ynabImportRoutes from './routes/import-export/ynab.route';
 import investmentsRoutes from './routes/investments.route';
 import landingRoutes from './routes/landing.route';
 import loansRoutes from './routes/loans.route';
+import logoImagesRoutes from './routes/logo-images.route';
 import mcpRoutes from './routes/mcp.route';
 import notificationsRoutes from './routes/notifications.route';
 import { setupOAuthMetadataRoutes } from './routes/oauth-metadata.route';
@@ -117,6 +118,8 @@ export function setupRoutes(app: Express) {
           method: 'POST',
           headers: {
             ...req.headers,
+            // The inner hop arrives from trusted loopback, so a caller-sent X-Forwarded-For would be believed.
+            'x-forwarded-for': req.ip ?? '',
             'content-length': body.length.toString(),
             'x-register-patched': '1',
           },
@@ -179,6 +182,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/accounts`, accountsRoutes);
   app.use(`${API_PREFIX}/transactions`, transactionsRoutes);
   app.use(`${API_PREFIX}/attachments`, attachmentsRoutes);
+  app.use(`${API_PREFIX}/logo-images`, logoImagesRoutes);
   app.use(`${API_PREFIX}/categories`, categoriesRoutes);
   app.use(`${API_PREFIX}/models/currencies`, modelsCurrenciesRoutes);
   app.use(`${API_PREFIX}/bank-data-providers`, bankDataProvidersRoutes);

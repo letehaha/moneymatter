@@ -19,21 +19,19 @@ const isModalClosed = () => {
 </script>
 
 <template>
-  <div>
-    <!-- Page Header -->
-    <div class="mb-6 flex items-center justify-between gap-3">
-      <div>
-        <h1 class="text-2xl font-semibold tracking-tight">{{ $t('budgets.title') }}</h1>
-        <p class="text-muted-foreground mt-1 text-sm">{{ $t('budgets.description') }}</p>
+  <div class="max-w-5xl">
+    <div class="mb-4 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-bold tracking-tight">{{ $t('budgets.title') }}</h1>
+        <p class="text-muted-foreground mt-0.5 text-xs">{{ $t('budgets.description') }}</p>
       </div>
-      <Button @click="openModal">
-        <PlusIcon class="mr-2 size-4" />
+      <Button class="shrink-0" @click="openModal">
+        <PlusIcon class="size-4" />
         {{ $t('budgets.newBudget') }}
       </Button>
     </div>
 
-    <!-- Budget List -->
-    <BudgetList />
+    <BudgetList @create="openModal" />
 
     <ResponsiveDialog v-model:open="isOpen">
       <template #title> {{ $t('budgets.createBudget') }} </template>

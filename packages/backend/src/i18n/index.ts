@@ -1,4 +1,5 @@
 import { SUPPORTED_LOCALES as LOCALES } from '@bt/shared/i18n/locales';
+import { requestContext } from '@common/request-context';
 import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import path from 'path';
@@ -58,5 +59,6 @@ export function t({
   variables?: Record<string, unknown>;
   locale?: string;
 }): string {
-  return i18next.t(key, { ...variables, lng: locale });
+  // i18next's own language is process-wide, so a concurrent request would overwrite it mid-flight.
+  return i18next.t(key, { ...variables, lng: locale ?? requestContext.getContext()?.locale });
 }

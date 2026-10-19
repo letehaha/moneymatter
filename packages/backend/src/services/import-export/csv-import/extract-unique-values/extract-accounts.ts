@@ -1,4 +1,5 @@
 import { AccountOption, AccountOptionValue, SourceAccount } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 
 interface AccountExtractionResult {
@@ -20,7 +21,7 @@ export function extractAccounts(
     const accountIndex = headers.indexOf(accountOption.columnName);
     if (accountIndex === -1) {
       throw new ValidationError({
-        message: `Account column "${accountOption.columnName}" not found in CSV`,
+        message: t({ key: 'csvImport.accountColumnNotFound', variables: { columnName: accountOption.columnName } }),
       });
     }
 
@@ -49,7 +50,10 @@ export function extractAccounts(
     for (const [accountName, currencies] of accountCurrencyMap.entries()) {
       if (currencies.size > 1) {
         throw new ValidationError({
-          message: `Account "${accountName}" has transactions with multiple currencies: ${Array.from(currencies).join(', ')}. System accounts can only have one currency.`,
+          message: t({
+            key: 'csvImport.accountMultipleCurrencies',
+            variables: { accountName, currencies: Array.from(currencies).join(', ') },
+          }),
         });
       }
     }

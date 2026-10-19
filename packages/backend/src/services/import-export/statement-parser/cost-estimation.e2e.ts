@@ -1,5 +1,6 @@
 import type { StatementFileType, StatementTextExtractionFailure } from '@bt/shared/types';
 import { AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import {
   ENCRYPTED_STATEMENT_PASSWORD,
@@ -215,5 +216,18 @@ describe('Statement parser cost estimation', () => {
 
     expect(cleanEstimate!.textExtraction.success).toBe(true);
     expect(prefixedEstimate!.textExtraction).toEqual(cleanEstimate!.textExtraction);
+  });
+
+  it('rejects a file too small to be a statement in the language the request asks for', async () => {
+    const response = await helpers.makeRequest({
+      method: 'post',
+      url: '/import/text-source/estimate-cost',
+      payload: { fileBase64: Buffer.from('abc').toString('base64') },
+      headers: { 'Accept-Language': 'uk' },
+    });
+
+    expect(response.statusCode).not.toBe(200);
+    expect(response.body.response.message).toBe(t({ key: 'statementParser.fileTooSmall', locale: 'uk' }));
+    expect(response.body.response.message).not.toBe(t({ key: 'statementParser.fileTooSmall', locale: 'en' }));
   });
 });

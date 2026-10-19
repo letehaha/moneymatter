@@ -137,6 +137,10 @@
       "receiptParsing": {
         "name": "Invoice matching",
         "description": "Reads an uploaded invoice or receipt and finds the transaction it belongs to."
+      },
+      "trackerMatching": {
+        "name": "Tracker matching",
+        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       }
     },
     "transactions": {
@@ -152,6 +156,7 @@
       },
       "record": {
         "addedByTooltip": "This transaction was attached to the tracker by {handle}",
+        "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
         "attachmentsTooltip": "Has attachments",
@@ -162,7 +167,7 @@
         }
       }
     },
-    "outOfWallet": "Out of Wallet",
+    "outOfWallet": "Out of wallet",
     "dateSelector": {
       "dialogTitle": "Date range",
       "dueDate": "Due date",
@@ -218,7 +223,9 @@
     "logo": {
       "tabs": {
         "brand": "Brand",
-        "letters": "Letters"
+        "letters": "Letters",
+        "icon": "Icon",
+        "custom": "Image"
       },
       "searchPlaceholder": "Brand name or domain",
       "searchHint": "Type a brand name, or a domain like amazon.com",
@@ -238,8 +245,17 @@
       "colorLabel": "Color",
       "colorSwatchAriaLabel": "Use color {color}",
       "customColorAriaLabel": "Pick a custom color",
-      "applyLetters": "Apply",
-      "lettersSelectedLabel": "Letters “{letters}”"
+      "lettersSelectedLabel": "Letters “{letters}”",
+      "lettersHint": "1–2 letters or an emoji",
+      "chooseImage": "Choose image",
+      "replaceImage": "Replace image",
+      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
+      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
+      "imageUnreadable": "That file couldn't be read as an image."
+    },
+    "iconPicker": {
+      "searchPlaceholder": "Cerca icona...",
+      "clear": "Cancella icona"
     },
     "importBatchDeleteOverlay": {
       "title": "Deleting imported transactions",
@@ -301,6 +317,13 @@
     "viewOnGitHub": "View on GitHub",
     "newVersion": "New version {version}",
     "newRelease": "New release",
+    "trackerAiMatches": {
+      "title": "{name}: {summary}",
+      "added": "{count} transaction added | {count} transactions added",
+      "toReview": "{count} transaction to review | {count} transactions to review",
+      "toReviewShort": "{count} to review",
+      "both": "{added}, {toReview}"
+    },
     "tagReminder": {
       "thresholdMessage": "spent {amount} (threshold: {threshold})",
       "existenceMessage": "{count} transaction | {count} transactions"
@@ -385,7 +408,7 @@
     "featureNotAvailable": "This feature is not available in demo mode",
     "passwordChangeRestricted": "Password changes are not available in demo mode",
     "investmentsRestricted": {
-      "title": "Investments Unavailable in Demo",
+      "title": "Investments unavailable in demo",
       "description": "The investments feature is not available in demo mode. Please sign up for a full account to access investments tracking."
     },
     "banner": {
@@ -401,6 +424,7 @@
   },
   "billing": {
     "seePlans": "See plans",
+    "trialStartFailed": "Couldn't start the free trial. Try again.",
     "updatePaymentMethod": "Update your payment method",
     "planRequired": {
       "essential": "Included in the Essential plan",
@@ -447,9 +471,42 @@
       "setByEndpoint": "Priced by your provider"
     }
   },
+  "aiUsage": {
+    "title": "Included AI usage",
+    "used": "used",
+    "percentUsed": "{percent}% used",
+    "resetsOn": "Resets on {date}",
+    "connectOwnModel": "Connect your own model",
+    "gotIt": "Got it",
+    "badge": {
+      "used": "{percent}% AI used",
+      "reached": "AI limit reached"
+    },
+    "dialog": {
+      "description": "Statement parsing, categorization, receipts and budget suggestions share this allowance.",
+      "status": {
+        "plusWarning": "You've used most of this month's included AI. When it runs out, AI features pause until {date}.",
+        "plusReached": "You've used this month's included AI. AI features are paused until {date}.",
+        "trialWarning": "You've used most of the AI included in your plan this month. When it runs out, AI features pause.",
+        "trialReached": "You've used the AI included in your plan this month. Subscribe to Plus or connect your own model to keep using AI features."
+      }
+    },
+    "options": {
+      "connectDescription": "Use your own Anthropic, OpenAI, Gemini or local model. It's never counted toward this limit.",
+      "subscribeTitle": "Subscribe to Plus",
+      "subscribeDescription": "Get more included AI every month.",
+      "waitTitle": "Wait for the reset",
+      "waitDescription": "Included AI comes back on {date}."
+    },
+    "meter": {
+      "ok": "Resets on {date}. Your own connected models are never counted.",
+      "warning": "When it runs out, AI features pause until {date} unless you connect your own model.",
+      "reached": "Used up until {date}. AI features are paused."
+    }
+  },
   "transactionGroups": {
     "groupDialog": {
-      "editTitle": "Edit Group",
+      "editTitle": "Edit group",
       "nameLabel": "Name",
       "noteLabel": "Note (optional)",
       "notePlaceholder": "Optional note...",
@@ -457,7 +514,7 @@
       "savingAction": "Save",
       "cancelButton": "Cancella",
       "editAction": "Edit",
-      "deleteAction": "Delete Group",
+      "deleteAction": "Delete group",
       "transactionsLabel": "Transactions",
       "deleteGroupTitle": "Delete group",
       "deleteGroupDescription": "Are you sure you want to delete \"{groupName}\"? The transactions will not be deleted.",
@@ -465,7 +522,7 @@
       "removeTransactionDescription": "This will leave fewer than 2 transactions in the group, so the group will be deleted. Continue?",
       "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
       "removeButtonText": "Remove",
-      "removeAndDeleteButtonText": "Remove & Delete Group",
+      "removeAndDeleteButtonText": "Remove & delete group",
       "summary": {
         "transactions": "Transactions",
         "net": "Net",

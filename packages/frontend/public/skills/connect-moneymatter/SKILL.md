@@ -56,14 +56,20 @@ page.
 | `search_transactions`                   | Filter transactions by date, category, tag, amount, etc.                                                         |
 | `get_categories`                        | List spending/income categories                                                                                  |
 | `get_tags`                              | List transaction tags                                                                                            |
-| `get_budgets`                           | Trackers ("budget" in tool names) with progress and overspend state                                              |
-| `create_budget`                         | Create a new tracker with limit, date range, categories (`finance:write`)                                        |
-| `update_budget`                         | Update name, date range, limit, or categories of a tracker (`finance:write`)                                     |
+| `get_budgets`                           | Trackers ("budget" in tool names) with limits, categories and lines                                              |
+| `create_budget`                         | Create a new tracker with limit, date range, categories, smart tracking (`finance:write`)                        |
+| `update_budget`                         | Update name, dates, limit (null clears), categories, or smart tracking of a tracker (`finance:write`)            |
 | `delete_budget`                         | Permanently delete a tracker and its transaction links (`finance:delete`)                                        |
 | `archive_budget`                        | Archive or restore a tracker — active ↔ archived (`finance:write`)                                               |
 | `add_transactions_to_budget`            | Link transactions to a manual tracker (`finance:write`)                                                          |
 | `remove_transactions_from_budget`       | Unlink transactions from a tracker (`finance:write`)                                                             |
-| `get_budget_spending_stats`             | Category breakdown and time-series spending for a tracker                                                        |
+| `get_budget_spending_stats`             | Category breakdown, time-series, per-line spent and "other" spending for a tracker                               |
+| `create_budget_line`                    | Add a line (category set + optional limit) to a tracker (`finance:write`)                                        |
+| `update_budget_line`                    | Update a tracker line's name, categories, limit, or position (`finance:write`)                                   |
+| `delete_budget_line`                    | Permanently delete a tracker line (`finance:delete`)                                                             |
+| `list_budget_suggestions`               | Smart-tracking suggestions (score, AI reason), AI-matched transactions, scan status of an owned tracker          |
+| `accept_budget_suggestions`             | Accept pending suggestions, linking their transactions (`finance:write`)                                         |
+| `reject_budget_suggestions`             | Reject suggestions; also unlinks AI-linked or accepted ones (`finance:write`)                                    |
 | `get_spending_by_categories`            | Aggregate spending by category over a range                                                                      |
 | `get_cash_flow`                         | Income vs expenses over a range                                                                                  |
 | `get_balance_history`                   | Time-series of account balances                                                                                  |
@@ -113,11 +119,11 @@ page.
 | `update_transaction_automation`         | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
 | `delete_transaction_automation`         | Permanently delete an automation rule (`finance:delete`)                                                         |
 | `reorder_transaction_automations`       | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
-| `create_transaction`                    | Create an income, expense, or transfer with optional splits/tags/original-currency amount (`finance:write`)      |
-| `update_transaction`                    | Update amount, date, category, tags, note, splits, or original-currency amount (`finance:write`)                 |
+| `create_transaction`                    | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
+| `update_transaction`                    | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
 | `delete_transaction`                    | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |
 | `create_attachment_upload_url`          | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`)   |
-| `bulk_update_transactions`              | Update category, note, or tags on multiple transactions at once (`finance:write`)                                |
+| `bulk_update_transactions`              | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
 | `split_transaction`                     | Split a transaction across multiple categories (`finance:write`)                                                 |
 | `delete_split`                          | Delete a single split by split ID (`finance:delete`)                                                             |
 | `link_transfer`                         | Link two existing transactions as a transfer pair (`finance:write`)                                              |
@@ -159,6 +165,14 @@ multi-currency data.
   saved rule in the app. The first rule that applies an action wins. Test conditions with `preview_transaction_automation` before
   saving a rule, and pass the full current id set to
   `reorder_transaction_automations`.
+- Tracker lines split a tracker's spending into named category sets, each with
+  an optional limit. A transaction lands in at most one line: the first by
+  `position` whose categories (expanded to children) contain it. Spending that
+  matches no line is reported as `otherSpent` by `get_budget_spending_stats`.
+- Smart tracking (`aiEnabled`) is owner-only and works on manual trackers with
+  an `aiDescription` and a `startDate`. The AI links transactions it is sure of
+  (score >= 0.85) and suggests weaker matches (>= 0.5) as pending in
+  `list_budget_suggestions`. Rejected transactions are not suggested again.
 - Portfolio queries are gated by `portfolioId`. Call `get_portfolios` first
   to discover ids before calling `get_portfolio_summary`,
   `get_portfolio_holdings`, or `get_portfolio_balances`.

@@ -1,6 +1,6 @@
 export type ChecklistRowStatus = 'done' | 'now' | 'pending';
 
-export interface ChecklistRow {
+interface ChecklistRow {
   labelKey: string;
   status: ChecklistRowStatus;
 }

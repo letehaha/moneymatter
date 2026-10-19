@@ -140,11 +140,61 @@ export type ImportErrorCode = 'account-balance-desync';
  * failure that maps to no single row (`rowIndex: null`). Discriminated so the
  * code implies the level: `account-balance-desync` — an account's target
  * balance could not be applied after the rows landed, so its balance may now
- * be wrong — is always account-level, and row-level errors never carry a code.
+ * be wrong — is always account-level, and row-level errors carry at most an `ImportRowErrorCode`.
  */
 export type ImportError =
-  | { rowIndex: number; error: string; code?: undefined }
-  | { rowIndex: null; error: string; code: ImportErrorCode };
+  | { rowIndex: number; error: string; code?: ImportRowErrorCode }
+  | ImportRowsSuppressedError
+  | {
+      rowIndex: null;
+      error: string;
+      code: ImportErrorCode;
+      /** Optional only for results retained from before the field existed. */
+      accountName?: string;
+      /** True when the account was created by this import (its entered balance failed), false when linked. */
+      accountCreated?: boolean;
+    };
+
+/**
+ * Stands in for every row error dropped once the summary hit its retention cap.
+ * `count` is how many rows were dropped, `listed` how many errors were kept.
+ */
+export interface ImportRowsSuppressedError {
+  rowIndex: number;
+  error: string;
+  code: 'rows-suppressed';
+  params: { count: number; listed: number };
+}
+
+/**
+ * Row-level codes the UI translates. Import workers run without a request
+ * locale, so a row error without a code is shown as a generic row failure and
+ * its English `error` stays for logs and API consumers.
+ * `payee-default-tags-failed`: the row was imported but its payee's default tags were not applied.
+ * `account-unresolved`: the row's account could not be resolved, so the row was skipped.
+ * `read-back-failed`: the row was written but could not be read back, so it is missing from the counts.
+ */
+export type ImportRowErrorCode = 'payee-default-tags-failed' | 'account-unresolved' | 'read-back-failed';
+
+/**
+ * Why a background import job failed as a whole. Workers have no request
+ * locale, so the UI translates `code` with `params` and falls back to a generic
+ * message for unknown or missing codes; the English `error` stays for logs.
+ * `interrupted`: a server restart killed the job mid-run.
+ */
+export type ImportJobFailureCode =
+  | 'interrupted'
+  | 'base-currency-change-in-progress'
+  | 'account-currency-mismatch'
+  | 'category-name-too-long'
+  | 'payee-name-too-long'
+  | 'account-mapping-missing'
+  | 'linked-account-not-found';
+
+export interface ImportJobFailure {
+  code: ImportJobFailureCode;
+  params?: Record<string, string | number>;
+}
 
 /**
  * Per-account balance summary of an executed import, rendered in the done step.

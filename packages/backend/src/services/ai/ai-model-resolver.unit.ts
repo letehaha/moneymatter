@@ -141,6 +141,21 @@ describe('resolveAIConfiguration', () => {
     });
   });
 
+  it('serves tracker matching from the server key only with smart_tracking, not operator_ai', async () => {
+    const feature = AI_FEATURE.trackerMatching;
+    process.env.ANTHROPIC_API_KEY = 'anthropic-key';
+    grantEntitlements({ features: [FEATURES.operator_ai] });
+
+    expect(await resolveAIConfiguration({ userId: USER_ID, feature })).toBeNull();
+
+    grantEntitlements({ features: [FEATURES.smart_tracking] });
+
+    expect(await resolveAIConfiguration({ userId: USER_ID, feature })).toMatchObject({
+      kind: 'server',
+      usingUserKey: false,
+    });
+  });
+
   it('dials a native connection with its decrypted key and a provider/model id', async () => {
     storeSettings({ connections: [CLAUDE] });
     decryptConnectionKeyMock.mockReturnValue('user-key');

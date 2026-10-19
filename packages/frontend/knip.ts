@@ -2,7 +2,7 @@ import type { KnipConfig } from 'knip';
 
 const config: KnipConfig = {
   // TODO: fix because it's wrong ignoring them
-  ignoreBinaries: ['knip', 'vue-tsc', 'vitest', 'playwright', 'oxlint', 'vite'],
+  ignoreBinaries: ['knip', 'vue-tsc', 'vitest', 'playwright', 'oxlint'],
   // Colocated unit tests, so exports consumed only by a test are not flagged.
   entry: ['src/**/*.{test,spec}.{ts,tsx}'],
   ignore: [
@@ -11,6 +11,8 @@ const config: KnipConfig = {
     'e2e/**/**',
     // keep them all for now
     'src/components/lib/**/**',
+    // Only consumer is the kept-but-unused lib ActionButton
+    'src/composable/use-action-state.ts',
     // Loaded by a <script src="/config.js"> tag in index.html, which knip does
     // not follow. The self-host container entrypoint overwrites it at boot.
     'public/config.js',

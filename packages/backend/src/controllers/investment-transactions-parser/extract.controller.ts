@@ -2,10 +2,13 @@ import {
   INVESTMENT_IMPORT_SIDE_SKIP,
   INVESTMENT_TRANSACTION_CATEGORY,
   type InvestmentImportExtractionResult,
+  type InvestmentImportWarning,
 } from '@bt/shared/types/investments';
 import { recordId } from '@common/lib/zod/custom-types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
+import { toAiExtractionHttpError } from '@controllers/helpers/ai-extraction-http-error';
 import { createController } from '@controllers/helpers/controller-factory';
+import { t } from '@i18n/index';
 import { CustomError, UnexpectedError } from '@js/errors';
 import { logger } from '@js/utils';
 import Portfolios from '@models/investments/portfolios.model';
@@ -14,7 +17,11 @@ import {
   groupRowsIntoHoldings,
   parseInvestmentCsv,
 } from '@services/import-export/investment-transactions-parser';
-import { extractTextFromFile, validateFileBuffer } from '@services/import-export/statement-parser';
+import {
+  extractTextFromFile,
+  resolveTextExtractionSuggestion,
+  validateFileBuffer,
+} from '@services/import-export/statement-parser';
 import { z } from 'zod';
 
 /**
@@ -84,9 +91,7 @@ export const extractController = createController(
       // connection messages, and stack-trace fragments would leak through.
       // The full error is logged for server-side debugging.
       logger.error({ message: 'Investment txn import extract failed', error: err as Error });
-      throw new UnexpectedError({
-        message: 'Investment transactions import failed. Check server logs for details.',
-      });
+      throw new UnexpectedError({ message: t({ key: 'investments.import.extractFailed' }) });
     }
   },
 );
@@ -101,7 +106,7 @@ async function extractHandler({ userId, body }: { userId: number; body: ExtractB
   // already routes to its not-found state.
   await findOrThrowNotFound({
     query: Portfolios.findOne({ where: { id: body.defaultPortfolioId, userId } }),
-    message: 'Portfolio not found.',
+    message: t({ key: 'investments.portfolioNotFound' }),
   });
 
   if (body.source === 'csv') {
@@ -123,7 +128,7 @@ async function extractFromAi({ userId, body }: { userId: number; body: z.infer<t
   });
   if (!textResult.success) {
     throw new UnexpectedError({
-      message: textResult.error ?? 'Failed to extract text from file',
+      message: resolveTextExtractionSuggestion({ fileType: validation.fileType, errorCode: textResult.errorCode }),
     });
   }
 
@@ -133,19 +138,15 @@ async function extractFromAi({ userId, body }: { userId: number; body: z.infer<t
   });
 
   if (!aiResult.success) {
-    throw new UnexpectedError({
-      message: aiResult.error.message,
-    });
+    throw toAiExtractionHttpError({ error: aiResult.error });
   }
 
   // Surface rows the AI parser silently dropped. Without this warning the user
   // would see N transactions in the review step having uploaded a file that
   // contained more — and assume the source had only N trades.
-  const extraWarnings: string[] = [];
+  const extraWarnings: InvestmentImportWarning[] = [];
   if (aiResult.result.droppedRowCount > 0) {
-    extraWarnings.push(
-      `AI emitted ${aiResult.result.droppedRowCount} row(s) we couldn't parse (bad date, side, or numbers) — they were skipped.`,
-    );
+    extraWarnings.push({ code: 'AI_ROWS_DROPPED', params: { count: aiResult.result.droppedRowCount } });
   }
 
   const { holdings, warnings } = await groupRowsIntoHoldings({
@@ -177,20 +178,18 @@ async function extractFromCsv({ userId, body }: { userId: number; body: z.infer<
   // the review step. Cap detail lines so the warnings array stays readable —
   // first 5 reasons + a summary count covers the common cases without dumping
   // 50K row indices on a malformed file.
-  const extraWarnings: string[] = [];
+  const extraWarnings: InvestmentImportWarning[] = [];
   if (invalidRows.length > 0) {
-    const sample = invalidRows
-      .slice(0, 5)
-      .map((r) => `row ${r.rowIndex}: ${r.reason}`)
-      .join('; ');
-    const suffix = invalidRows.length > 5 ? ` (+ ${invalidRows.length - 5} more)` : '';
-    extraWarnings.push(`${invalidRows.length} of ${totalRows} CSV row(s) were skipped — ${sample}${suffix}.`);
+    extraWarnings.push({ code: 'CSV_ROWS_INVALID', params: { count: invalidRows.length, total: totalRows } });
+    for (const { rowIndex, code, value } of invalidRows.slice(0, 5)) {
+      extraWarnings.push({ code, params: { row: rowIndex, ...(value !== undefined && { value }) } });
+    }
   }
   if (skippedRowsCount > 0) {
     // Separate from invalidRows because these are deliberate, not failures.
     // Without this warning the user wonders why their 500-row file produced
     // only 300 transactions.
-    extraWarnings.push(`${skippedRowsCount} row(s) were skipped because their side value was mapped to "Skip".`);
+    extraWarnings.push({ code: 'CSV_ROWS_SKIPPED', params: { count: skippedRowsCount } });
   }
 
   const { holdings, warnings } = await groupRowsIntoHoldings({

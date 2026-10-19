@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Không thể kết nối tới máy chủ. Máy chủ có thể vẫn đang khởi động (khoảng 30s sau khi bắt đầu), hoặc biến môi trường ALLOWED_ORGINS chưa bao gồm URL này.",
       "unexpectedError": "Lỗi bất thường.",
       "sessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại",
-      "payloadTooLarge": "Yêu cầu vượt quá dung lượng cho phép. Vui lòng thử import với số lượng mục ít hơn"
+      "payloadTooLarge": "Yêu cầu vượt quá dung lượng cho phép. Vui lòng thử import với số lượng mục ít hơn",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Mật khẩu quá ngắn.",
+      "passwordTooLong": "Mật khẩu quá dài.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Trang này không nằm trong sổ sách",

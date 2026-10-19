@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Cannot reach the server. The backend may still be starting (~30s after startup), or your ALLOWED_ORIGINS env var does not include this URL.",
       "unexpectedError": "Unexpected error.",
       "sessionExpired": "Your session has expired. Please sign in again",
-      "payloadTooLarge": "The request is too large. Please try importing fewer items at a time"
+      "payloadTooLarge": "The request is too large. Please try importing fewer items at a time",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Password is too short.",
+      "passwordTooLong": "Password is too long.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "This page is off the books",

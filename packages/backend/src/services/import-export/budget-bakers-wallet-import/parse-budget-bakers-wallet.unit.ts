@@ -1,4 +1,6 @@
+import { EXTERNAL_URLS } from '@bt/shared/const/external-urls';
 import { BUDGET_BAKERS_WALLET_MAX_ROWS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { i18nextReady, t } from '@i18n/index';
 import { beforeAll, describe, expect, it } from '@jest/globals';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -13,6 +15,13 @@ function loadFixture(name: string): string {
 
 const WALLET_HEADERS =
   'account;category;currency;amount;ref_currency_amount;type;payment_type;note;date;transfer;payee;labels';
+
+const en = ({ key, variables }: { key: string; variables?: Record<string, unknown> }) =>
+  t({ key, variables, locale: 'en' });
+
+beforeAll(async () => {
+  await i18nextReady;
+});
 
 describe('parseBudgetBakersWalletCsv', () => {
   describe('happy path against the basic fixture', () => {
@@ -318,17 +327,28 @@ describe('parseBudgetBakersWalletCsv', () => {
 
   describe('input validation', () => {
     it('throws on an empty file', () => {
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: '   ' })).toThrow(/empty/i);
+      expect(() => parseBudgetBakersWalletCsv({ fileContent: '   ' })).toThrow(
+        en({ key: 'importExport.budgetBakersWallet.parse.fileEmpty' }),
+      );
     });
 
     it('throws on a file missing required columns', () => {
       const csv = 'account;currency;amount\nBank;USD;100\n';
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(/missing required column/i);
+      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(
+        en({
+          key: 'importExport.budgetBakersWallet.parse.missingColumns',
+          variables: {
+            columns: 'category, ref_currency_amount, type, payment_type, note, date, transfer, payee, labels',
+          },
+        }),
+      );
     });
 
     it('throws when all rows are unparseable', () => {
       const csv = [WALLET_HEADERS, ';Food;USD;10;10;Expense;Cash;;2025-01-01T00:00:00.000Z;false;;'].join('\n');
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(/no usable rows/i);
+      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(
+        en({ key: 'importExport.budgetBakersWallet.parse.noUsableRows' }),
+      );
     });
 
     // T2: BUDGET_BAKERS_WALLET_MAX_ROWS boundary — one row over the limit must throw.
@@ -337,7 +357,12 @@ describe('parseBudgetBakersWalletCsv', () => {
       const dataRow = 'Bank;Food;USD;10;10;Expense;Cash;;2025-01-01T00:00:00.000Z;false;;';
       const rows = Array.from({ length: BUDGET_BAKERS_WALLET_MAX_ROWS + 1 }, () => dataRow);
       const csv = [WALLET_HEADERS, ...rows].join('\n');
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(/max/i);
+      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(
+        en({
+          key: 'importExport.budgetBakersWallet.parse.tooManyRows',
+          variables: { rows: BUDGET_BAKERS_WALLET_MAX_ROWS + 1, max: BUDGET_BAKERS_WALLET_MAX_ROWS },
+        }),
+      );
     });
   });
 
@@ -357,7 +382,9 @@ describe('parseBudgetBakersWalletCsv', () => {
       // A row-skipped warning must be emitted for the unknown type.
       const skipped = result.warnings.filter((w) => w.code === 'row-skipped');
       expect(skipped).toHaveLength(1);
-      expect(skipped[0]!.message).toMatch(/savings/i);
+      expect(skipped[0]!.message).toBe(
+        en({ key: 'importExport.budgetBakersWallet.warnings.unknownType', variables: { value: 'Savings' } }),
+      );
     });
   });
 
@@ -392,7 +419,12 @@ describe('parseBudgetBakersWalletCsv', () => {
       expect(result.transactions).toHaveLength(1);
       const warnings = result.warnings.filter((w) => w.code === 'unparseable-amount');
       expect(warnings).toHaveLength(1);
-      expect(warnings[0]!.message).toMatch(/ref_currency_amount/i);
+      expect(warnings[0]!.message).toBe(
+        en({
+          key: 'importExport.budgetBakersWallet.warnings.unparseableRefAmount',
+          variables: { value: 'garbage_ref' },
+        }),
+      );
     });
   });
 
@@ -490,8 +522,12 @@ describe('parseBudgetBakersWalletCsv', () => {
         'Konto;Essen;EUR;10;10;Ausgabe;Bar;;2025-01-01T10:00:00.000Z;false;;',
         'Konto;Gehalt;EUR;100;100;Einnahme;Bar;;2025-01-02T10:00:00.000Z;false;;',
       ].join('\n');
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(/only english and spanish/i);
-      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(/roadmap/i);
+      expect(() => parseBudgetBakersWalletCsv({ fileContent: csv })).toThrow(
+        en({
+          key: 'importExport.budgetBakersWallet.parse.unsupportedLanguage',
+          variables: { url: EXTERNAL_URLS.featurebaseRoadmap },
+        }),
+      );
     });
 
     it('still skips a lone unrecognized-type row when other rows parse', () => {

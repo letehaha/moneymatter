@@ -165,7 +165,7 @@
       },
       "pets": {
         "question": "Do you have pets?",
-        "kindQuestion": "What kind? (Optional)",
+        "kindQuestion": "What kind? (optional)",
         "dog": "Dog",
         "cat": "Cat",
         "other": "Other"
@@ -315,7 +315,7 @@
       "summary": "Spending outside your lines: {amount} in {count} category | Spending outside your lines: {amount} in {count} categories"
     },
     "pool": {
-      "readyToAssign": "Ready to Assign",
+      "readyToAssign": "Ready to assign",
       "assign": "Assign",
       "assignTitle": "Assign from the pool",
       "toLabel": "To",
@@ -342,15 +342,15 @@
         "leftOverFrom": "Left over from {period}"
       },
       "settingLabel": "Fund from a pool",
-      "settingHint": "Income goes into a Ready to Assign pool that you hand out to lines.",
-      "createHint": "Income goes into a Ready to Assign pool that you hand out to lines. You can change this later in settings.",
+      "settingHint": "Income goes into a ready to assign pool that you hand out to lines.",
+      "createHint": "Income goes into a ready to assign pool that you hand out to lines. You can change this later in settings.",
       "enableConfirm": "Turn on",
       "enableConfirmTitle": "Fund this plan from a pool?",
-      "enableConfirmDescription": "The pool starts from the current period. Earlier periods won't show Ready to Assign.",
-      "zeroSumLabel": "Keep Ready to Assign at 0",
-      "zeroSumHint": "The header asks you to assign what's left until Ready to Assign is 0.",
+      "enableConfirmDescription": "The pool starts from the current period. Earlier periods won't show ready to assign.",
+      "zeroSumLabel": "Keep ready to assign at 0",
+      "zeroSumHint": "The header asks you to assign what's left until ready to assign is 0.",
       "assignAmount": "Assign {amount}",
-      "zeroSumNag": "Assign the rest to keep Ready to Assign at 0",
+      "zeroSumNag": "Assign the rest to keep ready to assign at 0",
       "allAssigned": "All money assigned",
       "overAssigned": "Over-assigned by {amount}",
       "fix": "Fix this",

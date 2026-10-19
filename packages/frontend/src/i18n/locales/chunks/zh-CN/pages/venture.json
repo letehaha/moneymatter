@@ -48,7 +48,7 @@
       }
     },
     "metrics": {
-      "costBasis": "成本基础",
+      "costBasis": "Cost basis",
       "currentValue": "Current value",
       "totalDistributions": "Distributions",
       "pnl": "P&L",

@@ -6,8 +6,7 @@ import { withTransaction } from '@services/common/with-transaction';
 
 import { dataProviderFactory } from '../data-providers';
 import { toProviderSymbol } from '../data-providers/base-provider';
-import { addOrUpdateFromProvider } from '../securities-manage';
-import { findSecurityByIdentity } from './identity';
+import { upsertSecuritiesFromSearch } from '../securities-manage';
 
 interface AddSecurityFromSearchParams {
   searchResult: SecuritySearchResult;
@@ -31,34 +30,19 @@ const addSecurityFromSearchImpl = async ({
 }: AddSecurityFromSearchParams): Promise<AddSecurityFromSearchResult> => {
   logger.info(`Adding security from search: ${searchResult.symbol} - ${searchResult.name}`);
 
-  // Step 1: Create or update the security using existing service
-  await addOrUpdateFromProvider([searchResult]);
+  // Step 1: Create or refresh the security from the provider's copy of the search result.
+  const security = (await upsertSecuritiesFromSearch({ securities: [searchResult] })).securities[0]!;
 
-  // Step 2: Resolve the created/updated row via the shared identity helper –
-  // the same key shape `addOrUpdateFromProvider` used for dedup. A non-crypto
-  // search result whose existing row was sourced from a different provider
-  // (e.g. an FMP-sourced VOO matched against a Yahoo hit) resolves to that
-  // existing row instead of looking like a fresh insert.
-  const security = await findSecurityByIdentity(searchResult);
-
-  if (!security) {
-    throw new Error(
-      `Failed to create/find security with providerSymbol: ${searchResult.providerSymbol} (provider: ${searchResult.providerName})`,
-    );
-  }
-
-  // Step 3: Fetch and store the latest price immediately (unless skipped)
+  // Step 2: Fetch and store the latest price immediately (unless skipped)
   let latestPrice: AddSecurityFromSearchResult['latestPrice'];
 
-  // Route the latest-price call through `priceSourceSymbol` when set so the
-  // row's first stored price comes from a venue with dense data instead of
-  // the sparse ISIN-suffix listing (Yahoo ISIN-fallback path). Declared outside
-  // the try so the catch can reference it when annotating failure logs.
-  const priceQuerySymbol = searchResult.priceSourceSymbol ?? searchResult.providerSymbol;
+  // Provider and symbol come from the stored row, never the request: the price lands on a row
+  // every user shares.
+  const priceQuerySymbol = security.priceQuerySymbol;
 
   if (!skipPriceFetch) {
     try {
-      const provider = dataProviderFactory.getProvider(searchResult.providerName);
+      const provider = dataProviderFactory.getProvider(security.providerName);
       // TODO: consider using composite provider here
       const priceData = await provider.getLatestPrice(toProviderSymbol(priceQuerySymbol));
 
@@ -79,7 +63,7 @@ const addSecurityFromSearchImpl = async ({
       security.pricingLastSyncedAt = new Date();
       await security.save();
 
-      logger.info(`Successfully fetched latest price for ${searchResult.symbol}: ${priceData.priceClose}`);
+      logger.info(`Successfully fetched latest price for ${security.symbol}: ${priceData.priceClose}`);
     } catch (error) {
       // The immediate price fetch is optional and best-effort: the security was
       // created successfully and the daily price-sync cron backfills its price on
@@ -88,9 +72,9 @@ const addSecurityFromSearchImpl = async ({
       // actionable — keep it visible in Loki via info, but never page Sentry.
       // Persistent provider breakage surfaces through the daily sync instead.
       const routedVia =
-        priceQuerySymbol !== searchResult.providerSymbol ? ` (routed via priceSourceSymbol=${priceQuerySymbol})` : '';
+        priceQuerySymbol !== security.providerSymbol ? ` (routed via priceSourceSymbol=${priceQuerySymbol})` : '';
       logger.info(
-        `Failed to fetch latest price for ${searchResult.symbol}${routedVia} (will be backfilled by daily sync)`,
+        `Failed to fetch latest price for ${security.symbol}${routedVia} (will be backfilled by daily sync)`,
         {
           error: error instanceof Error ? error.message : String(error),
         },
@@ -99,7 +83,7 @@ const addSecurityFromSearchImpl = async ({
     }
   }
 
-  logger.info(`Successfully added security from search: ${searchResult.symbol}`);
+  logger.info(`Successfully added security from search: ${security.symbol}`);
 
   return {
     security,
@@ -113,6 +97,6 @@ const addSecurityFromSearchImpl = async ({
  *
  * @param params - The search result selected by the user
  * @param params.skipPriceFetch - If true, skips fetching the latest price from external API
- * @returns The created/updated security with optional latest price info
+ * @returns The created or existing security with optional latest price info
  */
 export const addSecurityFromSearch = withTransaction(addSecurityFromSearchImpl);

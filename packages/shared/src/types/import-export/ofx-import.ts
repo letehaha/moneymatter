@@ -42,7 +42,6 @@ export interface OfxParseTransaction {
 
 export interface OfxParseWarning {
   code: 'date-user-fallback' | 'fitid-missing' | 'fitid-duplicate';
-  message: string;
   count: number;
 }
 

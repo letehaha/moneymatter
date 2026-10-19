@@ -12,7 +12,7 @@
       "movesQueued": "{n} presun čaká | {n} presuny čakajú | {n} presunov čaká",
       "unqueueMove": "Odstrániť tento presun",
       "topLevel": "Najvyššia úroveň",
-      "saveChanges": "Ulož zmeny",
+      "saveChanges": "Uložiť zmeny",
       "parentField": {
         "label": "Nadradená kategória",
         "placeholder": "Vyberte nadradenú kategóriu",

@@ -40,6 +40,7 @@
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useNotificationCenter } from '@/components/notification-center';
+import { UnexpectedError, getAuthErrorMessage } from '@/js/errors';
 import { authClient } from '@/lib/auth-client';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAuthStore } from '@/stores';
@@ -115,14 +116,15 @@ const handleResend = async () => {
 
   try {
     isResending.value = true;
-    await authClient.sendVerificationEmail({
+    const { error } = await authClient.sendVerificationEmail({
       email: email.value,
       callbackURL: `${window.location.origin}/auth/callback`,
     });
+    if (error) throw new UnexpectedError(error.message, error);
     addSuccessNotification(t('auth.verifyEmail.resendSuccess'));
     startCooldown();
-  } catch {
-    addErrorNotification(t('auth.verifyEmail.resendError'));
+  } catch (error) {
+    addErrorNotification(await getAuthErrorMessage({ error, fallbackKey: 'auth.verifyEmail.resendError' }));
   } finally {
     isResending.value = false;
   }

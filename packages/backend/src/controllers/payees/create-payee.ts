@@ -34,6 +34,7 @@ export default createController(schema, async ({ user, body }) => {
     logoDomain: body.logoDomain,
     logoInitials: body.logoInitials,
     logoColor: body.logoColor,
+    logoIcon: body.logoIcon,
   });
   return { data: serializePayee(payee), statusCode: 201 };
 });

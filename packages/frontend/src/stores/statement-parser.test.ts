@@ -358,9 +358,25 @@ describe('useStatementParserStore', () => {
       store.clearFailures({ phase: 'extract' });
       await store.extractAll();
 
-      expect(store.fileEntries[0]!.extractionError).toBe('AI is down');
+      expect(store.fileEntries[0]!.extractionError).toBe('pages.statementParser.errors.extractFailed');
       expect(mockExtract).toHaveBeenCalledTimes(2);
       expect(lastExtractPassword()).toBe('hunter2');
+    });
+
+    it("shows the server's own message for a failed extraction", async () => {
+      const store = useStatementParserStore();
+      mockExtract.mockRejectedValue(
+        new ApiErrorResponseError('Ліміт запитів вичерпано', {
+          code: API_ERROR_CODES.tooManyRequests,
+          message: 'Ліміт запитів вичерпано',
+        }),
+      );
+      await store.setFiles({ files: [aPdf()] });
+      await store.estimateCosts();
+
+      await store.extractAll();
+
+      expect(store.fileEntries[0]!.extractionError).toBe('Ліміт запитів вичерпано');
     });
 
     it('skips a file whose estimate failed without blocking the others', async () => {
@@ -549,13 +565,13 @@ describe('useStatementParserStore', () => {
       return store;
     };
 
-    it('reports a failed enqueue as importError, with no job error', async () => {
+    it('reports a failed enqueue as a translated importError, with no job error', async () => {
       const store = await readyStore();
       mockExecuteImport.mockRejectedValue(new Error('network down'));
 
       await store.executeImport();
 
-      expect(store.importError).toBe('network down');
+      expect(store.importError).toBe('pages.statementParser.errors.importFailed');
       expect(store.isImporting).toBe(false);
       expect(store.importJobError).toBeNull();
     });

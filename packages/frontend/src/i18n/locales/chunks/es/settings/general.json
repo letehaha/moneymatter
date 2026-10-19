@@ -18,16 +18,16 @@
       "pendingBankTransactions": {
         "label": "Importar transacciones bancarias pendientes",
         "description": "Almacenar Enable Banking transacciones antes de que el banco las reserve. Están marcadas como pendientes, nunca cambiar el saldo de la cuenta, y a menudo carecen de datos de comerciante hasta reservar. Otros proveedores no se ven afectados: SimpleFIN y LunchFlow siempre importan transacciones reservadas únicamente, y Monobank importa cada transacción como una regular.",
-        "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
+        "descriptionSelfHost": "Almacenar Enable Banking transacciones antes de que el banco las reserve. Están marcadas como pendientes, nunca cambiar el saldo de la cuenta, y a menudo carecen de datos de comerciante hasta reservar. Otros proveedores no se ven afectados: SimpleFIN y LunchFlow siempre importan transacciones reservadas únicamente, y Monobank importa cada transacción como una regular.",
         "successNotification": "Configuración de transacciones pendientes actualizada",
         "errorNotification": "Error al actualizar la configuración de transacciones pendientes"
       },
       "bankSyncSchedule": {
-        "label": "Bank sync schedule",
-        "description": "Connected bank accounts sync automatically at these times, shown in your local time. Pick the same time twice to sync once a day.",
-        "placeholder": "Select time",
-        "successNotification": "Bank sync schedule updated",
-        "errorNotification": "Failed to update bank sync schedule"
+        "label": "Programación de sincronización bancaria",
+        "description": "Las cuentas bancarias conectadas se sincronizan automáticamente en estos momentos, mostradas en tu hora local. Elige la misma hora dos veces para sincronizar una vez al día.",
+        "placeholder": "Seleccionar hora",
+        "successNotification": "Programa de sincronización bancaria actualizada",
+        "errorNotification": "Error al actualizar el programa de sincronización bancaria"
       },
       "quickStart": {
         "label": "Guía de Inicio Rápido",
@@ -46,16 +46,16 @@
         "errorNotification": "Error al actualizar las categorías de impuestos"
       },
       "filterCategoriesByType": {
-        "label": "Match categories to transaction type",
-        "description": "The transaction form lists only income categories for income and all other categories for expenses. Search still finds every category.",
-        "successNotification": "Category list setting updated",
-        "errorNotification": "Failed to update the category list setting"
+        "label": "Coincidir categorías a tipo de transacción",
+        "description": "El formulario de transacción muestra solo las categorías de ingresos para los ingresos y todas las demás categorías para los gastos. Busca todavía todas las categorías.",
+        "successNotification": "Configuración de la lista de categorías actualizada",
+        "errorNotification": "Error al actualizar la configuración de la lista de categorías"
       },
       "incomeCategories": {
-        "label": "Income categories",
-        "description": "Categories that count as income. Subcategories are included.",
-        "successNotification": "Income categories updated",
-        "errorNotification": "Failed to update income categories"
+        "label": "Categorías de ingresos",
+        "description": "Categorías que cuentan como ingresos. Las subcategorías están incluidas.",
+        "successNotification": "Categorías de ingresos actualizadas",
+        "errorNotification": "Error al actualizar las categorías de ingresos"
       },
       "accountDropdowns": {
         "defaultAccount": {

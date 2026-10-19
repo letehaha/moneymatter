@@ -2,6 +2,7 @@ import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import BrandLogos from '@models/brand-logos.model';
+import { PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 
 async function findGroupInList({ id }: { id: string }) {
@@ -461,5 +462,57 @@ describe('AccountGroup logo read path', () => {
     expect(monogramItem?.logoColor).toBe('#7355be');
     expect(monogramItem?.logoDomain).toBeNull();
     expect(monogramItem).not.toHaveProperty('logoSource');
+  });
+});
+
+describe('AccountGroup logo icon and image slots', () => {
+  it('creates with logoIcon + logoColor', async () => {
+    const group = await helpers.createAccountGroup({
+      name: 'Icon Group',
+      logoIcon: 'food-24-regular',
+      logoColor: '#7355be',
+      raw: true,
+    });
+
+    expect(group).toMatchObject({ logoIcon: 'food-24-regular', logoColor: '#7355be', logoInitials: null });
+  });
+
+  it('sets logoIcon on update and evicts the monogram', async () => {
+    const group = await helpers.createAccountGroup({ name: 'Mono Group', logoInitials: 'MG', raw: true });
+
+    const [updated] = await helpers.updateAccountGroup({ groupId: group.id, logoIcon: 'food-24-regular', raw: true });
+
+    expect(updated).toMatchObject({ logoIcon: 'food-24-regular', logoInitials: null });
+  });
+
+  it('clears every slot with the three-null payload', async () => {
+    const group = await helpers.createAccountGroup({ name: 'Reset Icon', logoIcon: 'food-24-regular', raw: true });
+
+    const response = await helpers.updateAccountGroup({
+      groupId: group.id,
+      logoDomain: null,
+      logoInitials: null,
+      logoIcon: null,
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(await findGroupInList({ id: group.id })).toMatchObject({
+      logoDomain: null,
+      logoInitials: null,
+      logoIcon: null,
+    });
+  });
+
+  it('rejects logoImage because the body is strict', async () => {
+    const group = await helpers.createAccountGroup({ name: 'Strict Group', raw: true });
+
+    const response = await helpers.updateAccountGroup({
+      groupId: group.id,
+      ...({ logoImage: PNG_1X1_DATA_URL } as object),
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 });

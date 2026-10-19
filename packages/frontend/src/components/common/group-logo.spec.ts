@@ -14,7 +14,7 @@ vi.mock('@/api/bank-data-providers', () => ({
 
 type LogoGroup = Pick<
   AccountGroups,
-  'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'bankDataProviderConnectionId'
+  'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'logoIcon' | 'logoImageId' | 'bankDataProviderConnectionId'
 >;
 
 const buildGroup = (overrides: Partial<LogoGroup> = {}): LogoGroup => ({
@@ -22,6 +22,8 @@ const buildGroup = (overrides: Partial<LogoGroup> = {}): LogoGroup => ({
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   bankDataProviderConnectionId: null,
   ...overrides,
 });

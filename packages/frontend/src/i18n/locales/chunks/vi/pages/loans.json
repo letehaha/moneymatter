@@ -147,7 +147,7 @@
         },
         "cost": {
           "title": "What this loan cost",
-          "totalLabel": "Total cost",
+          "totalLabel": "Tổng giá vốn",
           "principal": "Principal",
           "interest": "Interest (est.)",
           "estimateFootnote": "Interest is an amortization-schedule estimate — payments are recorded as principal, so no exact interest split is stored.",

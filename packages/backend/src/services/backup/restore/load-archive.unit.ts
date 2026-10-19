@@ -1,4 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 import JSZip from 'jszip';
 
 import { sha256Hex } from '../sha256';
@@ -90,12 +91,16 @@ async function buildArchiveFromFiles({ files }: { files: Record<string, string> 
   return zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
 }
 
+beforeAll(async () => {
+  await i18nextReady;
+});
+
 describe('loadBackupArchive file-shape guards', () => {
   it('rejects a data file whose array carries a non-object element', async () => {
     const buffer = await buildArchiveFromFiles({ files: { 'data/transactions.json': '[null]' } });
 
     await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
-      /every row must be a JSON object/,
+      t({ key: 'backup.restore.errors.rowNotObject', variables: { path: 'data/transactions.json' } }),
     );
   });
 
@@ -103,7 +108,7 @@ describe('loadBackupArchive file-shape guards', () => {
     const buffer = await buildArchiveFromFiles({ files: { 'reference/securities.json': '{}' } });
 
     await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
-      /expected a JSON array of rows/,
+      t({ key: 'backup.restore.errors.rowsNotArray', variables: { path: 'reference/securities.json' } }),
     );
   });
 
@@ -111,7 +116,7 @@ describe('loadBackupArchive file-shape guards', () => {
     const buffer = await buildArchiveFromFiles({ files: { 'reference/securities.json': '[null]' } });
 
     await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
-      /every row must be a JSON object/,
+      t({ key: 'backup.restore.errors.rowNotObject', variables: { path: 'reference/securities.json' } }),
     );
   });
 
@@ -119,7 +124,7 @@ describe('loadBackupArchive file-shape guards', () => {
     const buffer = await buildArchiveFromFiles({ files: { 'data/user.json': '42' } });
 
     await expect(loadBackupArchive({ fileContent: buffer.toString('base64') })).rejects.toThrow(
-      /the user record must be a JSON object/,
+      t({ key: 'backup.restore.errors.userNotObject', variables: { path: 'data/user.json' } }),
     );
   });
 
@@ -140,7 +145,7 @@ describe('loadBackupArchive uncompressed-size budget', () => {
 
     await expect(
       loadBackupArchive({ fileContent: buffer.toString('base64'), maxUncompressedBytes: SMALL_BUDGET }),
-    ).rejects.toThrow(/exceed the size limit/);
+    ).rejects.toThrow(t({ key: 'backup.restore.errors.archiveTooLarge' }));
   });
 
   it('rejects a forged archive that understates its declared sizes as a clean 422', async () => {
@@ -154,7 +159,7 @@ describe('loadBackupArchive uncompressed-size budget', () => {
     // error escape as a generic 500.
     await expect(
       loadBackupArchive({ fileContent: buffer.toString('base64'), maxUncompressedBytes: SMALL_BUDGET }),
-    ).rejects.toThrow(/corrupt or has been tampered with/);
+    ).rejects.toThrow(t({ key: 'backup.restore.errors.archiveCorrupt' }));
   });
 
   it('accepts an archive whose uncompressed contents fit the budget', async () => {

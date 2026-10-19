@@ -190,7 +190,15 @@ describe('Payees API', () => {
       expect(lookup.map((p) => p.name)).toEqual(['Aaa Lookup', 'Bbb Lookup', 'Ccc Lookup', 'Ddd Lookup']);
 
       for (const item of lookup) {
-        expect(Object.keys(item).toSorted()).toEqual(['id', 'logoColor', 'logoDomain', 'logoInitials', 'name']);
+        expect(Object.keys(item).toSorted()).toEqual([
+          'id',
+          'logoColor',
+          'logoDomain',
+          'logoIcon',
+          'logoImageId',
+          'logoInitials',
+          'name',
+        ]);
         expect(item).not.toHaveProperty('stats');
       }
 

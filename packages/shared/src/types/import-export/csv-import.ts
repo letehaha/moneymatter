@@ -4,6 +4,7 @@ import type {
   DuplicateMatch,
   ImportError,
   ImportExecuteRequestBase,
+  ImportJobFailure,
   ImportSummaryBase,
   ParsedTransactionRow,
 } from './core';
@@ -296,4 +297,4 @@ interface CsvImportProgressBase {
 export type CsvImportProgress =
   | (CsvImportProgressBase & { status: 'queued' | 'running' })
   | (CsvImportProgressBase & { status: 'completed'; summary: CsvImportSummary })
-  | (CsvImportProgressBase & { status: 'failed'; error: string });
+  | (CsvImportProgressBase & { status: 'failed'; error: string; failure?: ImportJobFailure });

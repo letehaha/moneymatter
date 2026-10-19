@@ -104,6 +104,11 @@
           "balanceWarningBody": "Konečný zostatok sa nepodarilo nastaviť pri každom účte. Skontrolujte tieto účty a v prípade potreby upravte ich zostatky.",
           "errorsTitle": "{count} transakciu sa nepodarilo importovať | {count} transakcie sa nepodarilo importovať | {count} transakcií sa nepodarilo importovať",
           "errorsOverflow": "…a {count} ďalších",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "accountBalanceDesync": "An account balance could not be updated after the import.",
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+          },
           "rowPrefix": "Riadok {rowIndex}:",
           "viewTransactions": "Zobraziť transakcie",
           "importAnother": "Importovať ďalší súbor"

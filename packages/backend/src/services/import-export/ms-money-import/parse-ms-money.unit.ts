@@ -11,7 +11,8 @@
  */
 import { MsMoneyAccountType, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { MsMoneyParseResult } from '@bt/shared/types';
-import { describe, expect, it } from '@jest/globals';
+import { i18nextReady, t } from '@i18n/index';
+import { beforeAll, describe, expect, it } from '@jest/globals';
 import { ValidationError } from '@js/errors';
 import {
   MS_MONEY_FIXTURES,
@@ -22,6 +23,10 @@ import {
 
 import type { AcctRow } from './parse-ms-money.service';
 import { buildAccountIndex, describeSchemaGaps, parseMsMoneyFile, readAmount } from './parse-ms-money.service';
+
+beforeAll(async () => {
+  await i18nextReady;
+});
 
 const hasFixtures = msMoneyFixturesAvailable();
 if (!hasFixtures) console.warn(`[parse-ms-money.unit] skipped. ${MS_MONEY_FIXTURES_MISSING_MESSAGE}`);
@@ -361,14 +366,14 @@ describeWithFixtures('parseMsMoneyFile', () => {
     it('throws for a wrong password', () => {
       expect(() => parseFixture({ file: 'money2005-pwd.mny', password: 'wrong' })).toThrow(ValidationError);
       expect(() => parseFixture({ file: 'money2005-pwd.mny', password: 'wrong' })).toThrow(
-        'Incorrect password for this Microsoft Money file.',
+        t({ key: 'importExport.msMoney.incorrectPassword' }),
       );
     });
 
     it('throws when a protected file arrives without a password', () => {
       expect(() => parseFixture({ file: 'money2005-pwd.mny' })).toThrow(ValidationError);
       expect(() => parseFixture({ file: 'money2005-pwd.mny' })).toThrow(
-        'This Microsoft Money file is password-protected. Enter its password to continue.',
+        t({ key: 'importExport.msMoney.passwordRequired' }),
       );
     });
 
@@ -377,7 +382,7 @@ describeWithFixtures('parseMsMoneyFile', () => {
 
       expect(() => parseMsMoneyFile({ buffer, fallbackCurrency: 'USD' })).toThrow(ValidationError);
       expect(() => parseMsMoneyFile({ buffer, fallbackCurrency: 'USD' })).toThrow(
-        'This file is not a Microsoft Money database.',
+        t({ key: 'importExport.msMoney.notMsMoneyFile' }),
       );
     });
 
@@ -386,7 +391,7 @@ describeWithFixtures('parseMsMoneyFile', () => {
       // produces garbage pages instead of failing the check-byte comparison.
       expect(() => parseFixture({ file: 'money2002.mny', password: 'unnecessary' })).toThrow(ValidationError);
       expect(() => parseFixture({ file: 'money2002.mny', password: 'unnecessary' })).toThrow(
-        'This Microsoft Money file could not be read',
+        t({ key: 'importExport.msMoney.unreadableFile' }),
       );
     });
   });
@@ -502,7 +507,11 @@ describe('describeSchemaGaps', () => {
       ],
     });
 
-    expect(message).toContain('TRN_XFER (missing)');
-    expect(message).toContain('TRN (missing columns: amt, grftt)');
+    expect(message).toContain(
+      t({ key: 'importExport.msMoney.schemaGapTableMissing', variables: { table: 'TRN_XFER' } }),
+    );
+    expect(message).toContain(
+      t({ key: 'importExport.msMoney.schemaGapColumnsMissing', variables: { table: 'TRN', columns: 'amt, grftt' } }),
+    );
   });
 });

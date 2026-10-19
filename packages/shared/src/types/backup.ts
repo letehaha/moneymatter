@@ -80,13 +80,20 @@ export type BackupRestoreWarningCode =
   // was reset to null and the row kept.
   | 'foreign_reference_nulled';
 
+/**
+ * Built inside the restore worker, which has no request locale, so it carries
+ * only a code plus params and the frontend renders the translated text.
+ */
 export interface BackupRestoreWarning {
   code: BackupRestoreWarningCode;
   /** Table the warning applies to, when table-scoped. */
   table?: string;
-  message: string;
   /** How many rows/columns the warning covers, when countable. */
   count?: number;
+  /** Foreign-key column, for `foreign_reference_dropped` / `foreign_reference_nulled`. */
+  column?: string;
+  /** Dropped column names, for `unknown_column_dropped`. */
+  columns?: string[];
 }
 
 /** Coarse restore phases reported through job progress and the poll fallback. */
@@ -114,8 +121,10 @@ export interface BackupRestoreStatusResponse {
   status: BackupRestoreJobStatus;
   progress?: BackupRestoreProgress;
   summary?: BackupRestoreSummary;
-  /** Human-readable failure reason when status is `failed`. */
+  /** Translated failure reason when status is `failed`. */
   error?: string;
+  /** Untranslated technical diagnostics (table, constraint) for support, when available. */
+  errorDetail?: string;
 }
 
 /**

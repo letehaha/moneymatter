@@ -3,44 +3,44 @@
     "loading": "Loading...",
     "loadingDetails": "Loading portfolio details...",
     "loadError": "Failed to load portfolio details.",
-    "tryAgain": "Try Again",
+    "tryAgain": "Try again",
     "notFoundTitle": "Portfolio not found",
     "notFoundDescription": "We couldn't find this portfolio. It may have been deleted or you might not have access to it.",
-    "backToInvestments": "Back to Investments",
-    "subtitle": "Portfolio Overview",
+    "backToInvestments": "Back to investments",
+    "subtitle": "Portfolio overview",
     "actions": {
       "transfer": "Transfer",
       "edit": "Edit",
       "delete": "Delete",
-      "exchangeCurrency": "Exchange Currency"
+      "exchangeCurrency": "Exchange currency"
     },
     "balance": {
-      "totalValue": "Total Value",
+      "totalValue": "Total value",
       "baseCurrencyEquivalent": "≈ {value} in {code}",
       "loadError": "Failed to load portfolio summary.",
       "metrics": {
-        "costBasis": "Cost Basis",
+        "costBasis": "Cost basis",
         "unrealized": "Unrealized",
         "realized": "Realized",
-        "totalReturn": "Total Return"
+        "totalReturn": "Total return"
       }
     },
     "cashBalances": {
-      "title": "Cash Balances",
+      "title": "Cash balances",
       "emptyState": "No cash balances",
       "tabs": {
         "balances": "Balances",
         "cashTransactions": "Transactions",
-        "buysSells": "Buys & Sells"
+        "buysSells": "Buys & sells"
       },
       "cashTransactions": {
-        "addButton": "Add Cash Transaction",
+        "addButton": "Add cash transaction",
         "emptyState": "No cash transactions yet",
         "deposit": "Deposit",
         "withdrawal": "Withdrawal",
-        "transferIn": "Transfer In",
-        "transferOut": "Transfer Out",
-        "exchange": "Currency Exchange",
+        "transferIn": "Transfer in",
+        "transferOut": "Transfer out",
+        "exchange": "Currency exchange",
         "deleteConfirm": "Delete this cash transaction?",
         "linkedTransactionNote": "This transfer has a linked account transaction. What would you like to do with it?",
         "keepLinkedTransaction": "Keep account transaction. Original transaction details will be restored.",
@@ -68,7 +68,7 @@
       "title": "Holdings",
       "subtitle": "{count} symbols",
       "filterPlaceholder": "Filter by symbol or name...",
-      "addButton": "Add Symbol",
+      "addButton": "Add symbol",
       "importButton": "Import transactions",
       "importButtonShort": "Import"
     },
@@ -84,15 +84,15 @@
         "shares": "Shares",
         "price": "Price",
         "avgCostPerShare": "AC/Share",
-        "totalCost": "Total Cost",
-        "marketValue": "Market Value",
-        "unrealizedGain": "Unrealized Gain",
-        "realizedGain": "Realized Gain"
+        "totalCost": "Total cost",
+        "marketValue": "Market value",
+        "unrealizedGain": "Unrealized gain",
+        "realizedGain": "Realized gain"
       },
       "transactions": {
         "loading": "Loading transactions…",
         "empty": "No transactions found.",
-        "addFirstButton": "Add first Transaction"
+        "addFirstButton": "Add first transaction"
       },
       "closedPositions": "Closed positions ({count})",
       "stalePrice": "Last available price. Market value and gains may be outdated.",
@@ -105,7 +105,7 @@
         "error": "Failed to delete the holding."
       },
       "addTransactionDialog": {
-        "title": "Add Transaction",
+        "title": "Add transaction",
         "description": "Add a new transaction to your portfolio."
       },
       "tryAgainLater": "Please try again later",

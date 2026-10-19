@@ -57,6 +57,7 @@ import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 
 import { AUTOMATION_MODES, type AutomationMode, deriveAutomationMode } from './automation-editor-state';
 import EditAutomationDialog from './components/edit-automation-dialog.vue';
@@ -496,13 +497,7 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
     <div class="mb-6 flex flex-wrap items-start justify-between gap-4">
       <div>
         <div class="flex items-center gap-3">
-          <BrandLogo
-            :domain="subscription.logoDomain"
-            :initials="subscription.logoInitials"
-            :color="subscription.logoColor"
-            :name="subscription.name"
-            class="size-10"
-          />
+          <BrandLogo v-bind="toEntityLogoDisplayProps(subscription)" :name="subscription.name" class="size-10" />
           <h1 class="text-2xl font-semibold tracking-tight">{{ subscription.name }}</h1>
           <SubscriptionTypeBadge :type="subscription.type" size="md" />
           <span
@@ -737,9 +732,7 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
               <dd class="flex items-center gap-1.5 text-right font-medium">
                 <template v-if="resolvedPayee">
                   <BrandLogo
-                    :domain="resolvedPayee.logoDomain"
-                    :initials="resolvedPayee.logoInitials"
-                    :color="resolvedPayee.logoColor"
+                    v-bind="toEntityLogoDisplayProps(resolvedPayee)"
                     :name="resolvedPayee.name"
                     class="size-5 shrink-0"
                   />

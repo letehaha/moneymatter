@@ -51,8 +51,7 @@ export const createAccount = createController(
         // Amount fields now accept decimals - conversion to cents happens below
         initialBalance: z.number().optional().default(0),
         creditLimit: z.number().min(0).optional().default(0),
-        // Absent key → column stays null; a brand domain and monogram letters
-        // evict each other.
+        // Absent key → column stays null; domain, initials and icon evict each other.
         ...logoFieldsShape,
       })
       .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx })),
@@ -68,6 +67,7 @@ export const createAccount = createController(
       logoDomain,
       logoInitials,
       logoColor,
+      logoIcon,
     } = body;
     const { id: userId } = user;
 
@@ -89,6 +89,7 @@ export const createAccount = createController(
       logoDomain,
       logoInitials,
       logoColor,
+      logoIcon,
     });
 
     // Serialize: convert cents to decimal for API response
@@ -112,7 +113,7 @@ export const updateAccount = createController(
         currentBalance: z.number().optional(),
         initialBalance: z.number().optional(),
         // Absent key → no change; a present key is written as given (null clears
-        // it), and a brand domain and monogram letters evict each other.
+        // it), and domain, initials and icon evict each other.
         ...logoFieldsShape,
       })
       .superRefine((data, ctx) => refineLogoFields({ data, ctx })),
@@ -131,6 +132,7 @@ export const updateAccount = createController(
       logoDomain,
       logoInitials,
       logoColor,
+      logoIcon,
     } = body;
 
     const account = await findOrThrowNotFound({
@@ -180,6 +182,7 @@ export const updateAccount = createController(
         logoDomain,
         logoInitials,
         logoColor,
+        logoIcon,
       }),
     });
 

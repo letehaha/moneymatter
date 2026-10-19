@@ -5,30 +5,27 @@ import ResourceNotFound from '@/components/common/resource-not-found.vue';
 import { useNotificationCenter } from '@/components/notification-center';
 import { isNotFoundError } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { BUDGET_TYPES } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
-import { computed, ref, watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
 import BudgetDetailSkeleton from './budget-detail-skeleton.vue';
-import CategoryBudgetInfo from './category-budget-info.vue';
-import ManualBudgetInfo from './manual-budget-info.vue';
+import TrackerDetails from './tracker-details.vue';
 
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const { addErrorNotification } = useNotificationCenter();
-const currentBudgetId = ref<string>(String(route.params.id));
+const currentBudgetId = computed(() => String(route.params.id));
 
 const {
   data: budgetItem,
-  isLoading,
   isError,
   error,
 } = useQuery({
   queryFn: () => loadBudgetById(currentBudgetId.value),
-  queryKey: [VUE_QUERY_CACHE_KEYS.budgetsListItem, currentBudgetId.value],
+  queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.budgetsListItem, currentBudgetId.value]),
   staleTime: Infinity,
   retry: false,
 });
@@ -36,16 +33,14 @@ const {
 const isNotFound = computed(() => isError.value && isNotFoundError(error.value));
 
 watch(
-  isError,
-  (errored) => {
-    if (!errored || isNotFound.value) return;
+  error,
+  (latestError) => {
+    if (!latestError || isNotFound.value) return;
     addErrorNotification(t('errors.api.unexpectedError'));
-    router.replace({ name: ROUTES_NAMES.plannedBudgets });
+    if (!budgetItem.value) router.replace({ name: ROUTES_NAMES.plannedBudgets });
   },
   { immediate: true },
 );
-
-const isCategoryBudget = computed(() => budgetItem.value?.type === BUDGET_TYPES.category);
 </script>
 
 <template>
@@ -56,7 +51,6 @@ const isCategoryBudget = computed(() => budgetItem.value?.type === BUDGET_TYPES.
     :link-label="t('budgets.backToList')"
     :link-to="{ name: ROUTES_NAMES.plannedBudgets }"
   />
-  <BudgetDetailSkeleton v-else-if="isLoading || isError" />
-  <CategoryBudgetInfo v-else-if="isCategoryBudget" />
-  <ManualBudgetInfo v-else />
+  <TrackerDetails v-else-if="budgetItem" :key="budgetItem.id" :budget="budgetItem" />
+  <BudgetDetailSkeleton v-else />
 </template>

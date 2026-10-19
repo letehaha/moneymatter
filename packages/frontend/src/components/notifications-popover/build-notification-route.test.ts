@@ -162,6 +162,32 @@ describe('buildNotificationRoute', () => {
     });
   });
 
+  describe('tracker_ai_matches', () => {
+    it('opens the tracker transactions tab with the review expanded', () => {
+      const route = buildNotificationRoute(
+        baseNotification({
+          type: NOTIFICATION_TYPES.trackerAiMatches,
+          payload: { budgetId: 'b-1', budgetName: 'Greece 2026', linkedCount: 3, suggestedCount: 4 },
+        }),
+      );
+
+      expect(route).toEqual({
+        kind: 'spa',
+        to: {
+          name: ROUTES_NAMES.plannedBudgetDetails,
+          params: { id: 'b-1' },
+          query: { tab: 'transactions', review: '1' },
+        },
+      });
+    });
+
+    it('returns null without a budgetId', () => {
+      expect(
+        buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.trackerAiMatches, payload: {} })),
+      ).toBeNull();
+    });
+  });
+
   describe('subscription_reminder', () => {
     it('returns SPA route to subscription details when subscriptionId present', () => {
       const route = buildNotificationRoute(

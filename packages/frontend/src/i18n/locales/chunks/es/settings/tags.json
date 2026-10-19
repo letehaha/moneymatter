@@ -16,8 +16,6 @@
         "color": "Color",
         "icon": "Icono",
         "iconPlaceholder": "Seleccionar icono",
-        "iconSearchPlaceholder": "Buscar iconos...",
-        "clearIcon": "Quitar icono",
         "description": "Descripción",
         "descriptionPlaceholder": "Descripción opcional",
         "saveButton": "Guardar",

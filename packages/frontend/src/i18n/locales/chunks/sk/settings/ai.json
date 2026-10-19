@@ -32,7 +32,7 @@
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Nahrajte bankový výpis (PDF, CSV alebo TXT) a AI automaticky vyťaží všetky transakcie.",
+            "upload": "Nahrajte bankový výpis (PDF, CSV alebo TXT), fotografiu účtenky alebo snímku obrazovky bankovej aplikácie a AI automaticky vyťaží všetky transakcie.",
             "analysis": "AI analyzuje štruktúru dokumentu a identifikuje dátumy, popisy, sumy a typy transakcií.",
             "review": "Pred importom do účtu si môžete vyťažené údaje prezrieť a opraviť.",
             "cost": "Cena sa odhaduje pred spracovaním, ide však len o približný odhad."
@@ -52,8 +52,6 @@
           "server": "Server",
           "serverTooltip": "Beží na MoneyMatter AI, zahrnutom vo vašom pláne. Platia limity používania."
         },
-        "sharedPoolNote": "Vo vašom súčasnom pláne beží zahrnutý model v zdieľanom fonde, preto pri vysokom celkovom dopyte môžu platiť limity. {link} a vyhnite sa im.",
-        "sharedPoolNoteLink": "Prejdite na Plus",
         "modelLabel": "Model",
         "modelInfo": {
           "estimatedCost": "Odh. cena:",
@@ -95,13 +93,15 @@
           "categorization": "Krátka, opakujúca sa úloha. Malý model si s ňou dobre poradí a udrží nízke náklady.",
           "statementParsing": "Prečíta celý výpis a vráti každý riadok, preto potrebuje model, ktorý si udrží presnosť aj pri dlhom texte.",
           "investmentTransactionsParsing": "Prevádza exporty od brokera na riadky nákupov a predajov. Dlhé exporty vyžadujú model schopný písať dlhé odpovede.",
-          "receiptParsing": "Model si prezerá priamo súbor faktúry, preto musí vedieť čítať obrázky a PDF."
+          "receiptParsing": "Model si prezerá priamo súbor faktúry, preto musí vedieť čítať obrázky a PDF.",
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Dobre vyhovuje",

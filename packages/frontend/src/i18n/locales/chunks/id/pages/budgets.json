@@ -27,6 +27,7 @@
       "submitButton": "Tambah anggaran"
     },
     "list": {
+      "loadError": "Couldn't load trackers.",
       "tabCategory": "Anggaran Kategori",
       "tabManual": "Anggaran Manual",
       "edit": "Sunting",
@@ -68,6 +69,55 @@
       "emptyState": {
         "title": "Belum ada anggaran",
         "description": "Buat anggaran untuk mulai melacak pengeluaran atau memantau peristiwa tertentu."
+      },
+      "searchPlaceholder": "Cari anggaran",
+      "filters": {
+        "all": "Semua",
+        "manual": "Manual",
+        "category": "Kategori",
+        "archived": "Diarsipkan"
+      },
+      "groups": {
+        "active": "Active now",
+        "upcoming": "Akan Datang",
+        "noDates": "No dates",
+        "ended": "Berakhir",
+        "archived": "Diarsipkan",
+        "show": "show",
+        "hide": "hide"
+      },
+      "showMoreEnded": "Show {count} more ended",
+      "row": {
+        "auto": "auto",
+        "transactions": "{count} transaksi | {count} transaksi",
+        "moreCategories": "+{count} lagi",
+        "noLimit": "no limit",
+        "archiveSuggestion": "Archive?"
+      },
+      "menu": {
+        "moreActions": "Tindakan lainnya",
+        "open": "Open",
+        "duplicate": "Duplikat"
+      },
+      "duplicateSuccess": "Tracker duplicated",
+      "duplicateError": "Failed to duplicate tracker",
+      "archiveSuccess": "Tracker archived",
+      "unarchiveSuccess": "Tracker unarchived",
+      "noMatch": {
+        "title": "Nothing matches \"{query}\"",
+        "titleNoQuery": "No trackers match these filters",
+        "description": "Try another name, or include archived trackers.",
+        "includeArchived": "Include archived"
+      },
+      "archivePrompt": {
+        "title": "Archive \"{name}\"?",
+        "endedDaysAgo": "{count} hari lalu | {count} hari lalu",
+        "endedMonthsAgo": "{count} bulan lalu | {count} bulan lalu",
+        "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
+        "dontAsk": "Don't ask for this tracker",
+        "notNow": "Nanti saja",
+        "dismissError": "Gagal memperbarui anggaran",
+        "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
     },
     "settings": {
@@ -108,6 +158,193 @@
     },
     "share": {
       "sharedByBadge": "Dibagikan oleh {handle}"
+    },
+    "details": {
+      "statsLoadError": "Couldn't load this tracker's totals.",
+      "transactionsCount": "{count} transaksi | {count} transaksi",
+      "strip": {
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left",
+        "overBy": "Over by",
+        "income": "Pemasukan",
+        "expenses": "Pengeluaran",
+        "net": "Bersih",
+        "transactions": "Transaksi",
+        "perDay": "{amount} / day"
+      },
+      "tabs": {
+        "limits": "Batas"
+      },
+      "tracks": "Tracks",
+      "membersLabel": "Members: {count}",
+      "actions": {
+        "share": "Share",
+        "setLimits": "Set limits",
+        "removeLimits": "Remove limits",
+        "duplicate": "Duplikat",
+        "openInTransactions": "Open in Transactions",
+        "more": "Tindakan lainnya"
+      },
+      "shareDialog": {
+        "title": "Share \"{name}\""
+      },
+      "removeLimitsDialog": {
+        "title": "Remove all limits?",
+        "description": "The line and its limit will be removed. Linked transactions stay in the tracker. | All {count} lines and their limits will be removed. Linked transactions stay in the tracker."
+      },
+      "edit": {
+        "limitHint": "Clear it to track without a limit.",
+        "datesHint": "Changing the dates does not add or remove transactions already linked.",
+        "categoriesHint": "Removing a category also removes it from any line."
+      }
+    },
+    "lines": {
+      "addLine": "Add line",
+      "empty": {
+        "title": "Split spending into lines",
+        "titleWithLimit": "Split the {amount} into lines",
+        "description": "A line is a set of categories with its own limit. Spending that fits no line shows as \"Other\"."
+      },
+      "columns": {
+        "line": "Line",
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left"
+      },
+      "usage": "{percent}% · {spent} of {limit}",
+      "overUsage": "Over by {amount} · {spent} of {limit}",
+      "spentOnly": "{amount} spent",
+      "categoriesCount": "{count} category | {count} categories",
+      "ofLimit": "of {limit}",
+      "editLimitAria": "Edit limit for {name}",
+      "noLimitPlaceholder": "No limit",
+      "other": {
+        "title": "Other spending",
+        "hint": "not in any line"
+      },
+      "total": {
+        "title": "Total · {count} line | Total · {count} lines",
+        "limitOfOverall": "{sum} of {limit}"
+      },
+      "menu": {
+        "ariaLabel": "Line actions",
+        "edit": "Edit line",
+        "delete": "Delete line"
+      },
+      "delete": {
+        "title": "Delete line?",
+        "description": "\"{name}\" will be removed and its spending will show under Other. Transactions are not affected."
+      },
+      "dialog": {
+        "addTitle": "Add line",
+        "editTitle": "Edit line",
+        "nameLabel": "Nama",
+        "namePlaceholder": "e.g. Hotels",
+        "nameRequired": "Enter a name",
+        "categoriesLabel": "Kategori",
+        "categoriesPlaceholder": "Pick categories",
+        "categoriesRequired": "Pick at least one category",
+        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
+        "limitLabel": "Limit (optional)",
+        "limitPlaceholder": "No limit",
+        "limitHint": "Leave empty to group spending without a limit."
+      },
+      "notifications": {
+        "limitsRemoved": "Limits removed",
+        "created": "Line added",
+        "updated": "Line updated",
+        "deleted": "Line deleted",
+        "createError": "Couldn't add the line",
+        "updateError": "Couldn't update the line",
+        "deleteError": "Couldn't delete the line"
+      }
+    },
+    "smartTracking": {
+      "fields": {
+        "heading": "Smart tracking",
+        "switchLabel": "Find matching transactions for me",
+        "switchHint": "Checks new and edited transactions every night. Sure matches are added for you, the rest wait for your review.",
+        "needsStartDate": "Set a start date first, AI looks from there.",
+        "noAi": "Set up an AI model in {link} to use this.",
+        "noAiLink": "Settings → AI",
+        "allowanceUsed": "AI allowance used up. {link} to keep it running.",
+        "running": "Matching is running. You can change these once it finishes.",
+        "descriptionLabel": "What belongs in this tracker?",
+        "descriptionPlaceholder": "e.g. Two weeks in Greece: flights, ferries, rental car, island hotels",
+        "descriptionRequired": "Describe what belongs here so AI knows what to look for.",
+        "preWindowLabel": "Also look before the start date",
+        "preWindowPlaceholder": "Choose how far back to look",
+        "preWindowHint": "Catches flights and hotels booked in advance.",
+        "preWindowOptions": {
+          "none": "Don't look earlier",
+          "twoWeeks": "2 weeks",
+          "oneMonth": "1 month",
+          "twoMonths": "2 months",
+          "threeMonths": "3 months",
+          "sixMonths": "6 months"
+        },
+        "usesIncluded": "Uses the included AI. Counts toward your monthly AI allowance.",
+        "usesOwnModel": "Uses your own model · {model}"
+      },
+      "pausedUntil": "Paused until {date}",
+      "connectOwnModel": "Connect your own model",
+      "plan": {
+        "locked": "Smart tracking is part of Plus. Upgrade, or connect your own AI key to keep using it.",
+        "connectOwnKey": "Connect your own key",
+        "upgrade": "Upgrade",
+        "startTrial": "Start free trial",
+        "trialDaysLeft": "Free trial: {n} day left | Free trial: {n} days left",
+        "trialHint": "Includes a {days}-day free trial. It starts when you turn smart tracking on."
+      },
+      "turnedOn": "Smart tracking is on. First results in a minute or two.",
+      "undo": "Undo",
+      "unlinked": "Unlinked. AI won't add it again. | Unlinked {count} transactions. AI won't add them again.",
+      "relinkError": "Couldn't add the transactions back. Try again.",
+      "strip": {
+        "tip": "Let AI find transactions for this tracker",
+        "turnOn": "Turn on",
+        "hide": "Sembunyikan",
+        "scanning": "Looking for matching transactions…",
+        "startedAt": "Started {time}",
+        "toReview": "{count} to review",
+        "checkedAt": "checked {when}",
+        "review": "Tinjau",
+        "idle": "Smart tracking is on · nothing new to review",
+        "settings": "Pengaturan",
+        "paused": "Dijeda",
+        "allowanceUsed": "AI allowance used up",
+        "unavailable": "AI connection stopped working",
+        "fixInSettings": "Fix in Settings",
+        "ended": "Smart tracking stopped · the tracker ended more than 14 days ago",
+        "noStartDate": "Set a start date to use smart tracking"
+      },
+      "hideTip": {
+        "title": "Hide this tip?",
+        "description": "You can still turn on smart tracking in the tracker's settings.",
+        "neverShow": "Never show again",
+        "neverShowHint": "Hides it on every tracker, not just this one.",
+        "confirm": "Sembunyikan"
+      },
+      "review": {
+        "sectionTitle": "To review ({count})",
+        "confidence": {
+          "likely": "Likely",
+          "possible": "Possible"
+        },
+        "add": "Tambah",
+        "skip": "Lewati",
+        "addAria": "Add {name} to {tracker}",
+        "skipAria": "Skip {name}",
+        "addAll": "Add all {count}",
+        "addAllShort": "Add all",
+        "skipAll": "Lewati semua",
+        "added": "Added {count} transaction to {name} | Added {count} transactions to {name}",
+        "skipped": "Skipped. AI won't suggest it again. | Skipped {count} transactions. AI won't suggest them again.",
+        "acceptError": "Couldn't add the suggested transactions. Try again.",
+        "rejectError": "Couldn't skip the suggested transactions. Try again.",
+        "restoreError": "Couldn't undo the skip. Try again."
+      }
     }
   }
 }

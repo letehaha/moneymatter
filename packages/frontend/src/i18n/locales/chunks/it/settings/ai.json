@@ -1,10 +1,10 @@
 {
   "settings": {
     "ai": {
-      "title": "AI Settings",
+      "title": "AI settings",
       "description": "Pick which AI model powers each feature, add your own models, and connect AI apps like Claude or ChatGPT to your data.",
       "tabs": {
-        "features": "AI Features",
+        "features": "AI features",
         "models": "AI models",
         "connectedApps": "Connectors (MCP)",
         "invalidConnectionsTooltip": "One of your AI models needs attention"
@@ -15,7 +15,7 @@
         "invalidBadge": "Non valido"
       },
       "features": {
-        "title": "AI Features",
+        "title": "AI features",
         "description": "Configure which model to use for each AI-powered feature",
         "howItWorks": "How it works",
         "loadError": "Couldn't load your AI features."
@@ -52,8 +52,6 @@
           "server": "Server",
           "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
         },
-        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
-        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Model",
         "modelInfo": {
           "estimatedCost": "Est. cost:",
@@ -95,13 +93,15 @@
           "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
           "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
           "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
-          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs.",
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Good fit",
@@ -225,7 +225,7 @@
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",
           "testButton": "Test connection",
-          "saveButton": "Save changes",
+          "saveButton": "Salva modifiche",
           "localNetworkOnly": "MoneyMatter can't reach a server on your own computer, like {hostname} or {ip}. Expose it through a tunnel such as ngrok or Cloudflare Tunnel, then paste the tunnel's URL here.",
           "dockerHost": "If you run this app in Docker on the same machine as the model server, use {dockerHost} instead of {ip}."
         },
@@ -261,7 +261,7 @@
         }
       },
       "customInstructions": {
-        "title": "Custom Instructions",
+        "title": "Custom instructions",
         "description": "Provide context to help AI categorize your transactions. These instructions are included when categorizing transactions during bank sync and manual import.",
         "placeholder": "e.g., Transactions from 'Starbucks' should be 'Coffee'. My freelance income comes from 'Acme Corp'.",
         "serverModelHint": "Custom instructions only apply when one of your own AI models handles categorization. Pick one above.",

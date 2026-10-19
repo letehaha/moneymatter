@@ -574,6 +574,7 @@
       "analyzing": "Rechnung wird ausgelesen und deine Transaktionen werden durchsucht…",
       "attaching": "Rechnung wird an die Transaktion angehängt…",
       "privacyNote": "Die Datei wird ausschließlich zum Auslesen an den KI-Anbieter übermittelt. Nichts wird gespeichert, bis du sie mit einer Transaktion verknüpfst.",
+      "aiPausedHint": "Das Auslesen von Rechnungen ist pausiert. Öffne den KI-Badge oben, um deine Optionen zu sehen.",
       "direction": {
         "paid": "Ich habe das bezahlt",
         "gotPaid": "Ich habe eine Zahlung erhalten",

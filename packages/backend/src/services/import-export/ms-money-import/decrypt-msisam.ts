@@ -12,6 +12,7 @@
  * de-facto reference implementation for this format.
  */
 import type { MsMoneyEncryption } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import crypto from 'node:crypto';
 
@@ -191,7 +192,7 @@ export function decryptMsisam({
 }): DecryptMsisamResult {
   if (!isMsMoneyFile({ buffer })) {
     throw new ValidationError({
-      message: 'This file is not a Microsoft Money database. Expected a .mny file saved by Microsoft Money.',
+      message: t({ key: 'importExport.msMoney.notMsMoneyFile' }),
     });
   }
 
@@ -217,9 +218,9 @@ export function decryptMsisam({
       const decrypted = rc4({ key: Buffer.concat([passwordDigest, salt]), data: checkBytes });
       if (!decrypted.equals(baseSalt)) {
         throw new ValidationError({
-          message: password
-            ? 'Incorrect password for this Microsoft Money file.'
-            : 'This Microsoft Money file is password-protected. Enter its password to continue.',
+          message: t({
+            key: password ? 'importExport.msMoney.incorrectPassword' : 'importExport.msMoney.passwordRequired',
+          }),
         });
       }
       passwordVerified = true;

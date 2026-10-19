@@ -1,6 +1,7 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { serializeBudget } from '@root/serializers/budgets.serializer';
 import { toggleBudgetArchive } from '@services/budgets/toggle-archive';
 import { z } from 'zod';
 
@@ -26,7 +27,7 @@ export function registerArchiveBudget(server: McpServer) {
 
       const budget = await toggleBudgetArchive({ id: args.budgetId, userId, isArchived: args.isArchived });
 
-      return jsonContent({ data: budget });
+      return jsonContent({ data: serializeBudget(budget) });
     },
   );
 }

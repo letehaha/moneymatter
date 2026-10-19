@@ -1,3 +1,4 @@
+import { BLANK_FILTER_VALUE } from '@bt/shared/types';
 import BudgetTransactions, { type BudgetTransactionMetadata } from '@models/budget-transactions.model';
 import Budgets from '@models/budget.model';
 import * as Transactions from '@models/transactions.model';
@@ -67,15 +68,20 @@ export const getTransactions = async (params: GetTransactionsParams) => {
   // not instead of it). Inaccessible budget ids are silently dropped — same shape as
   // the inaccessible-account behaviour above, so the response is "empty" rather than
   // "403" when the caller filters to something they can't see.
+  // The blank pseudo-id ("in no tracker") must stay account-scoped: letting it widen
+  // visibility would expose other users' unassigned rows.
+  const hasBlankBudget = budgetIds?.includes(BLANK_FILTER_VALUE) ?? false;
+  const requestedBudgetIds = budgetIds?.filter((id) => id !== BLANK_FILTER_VALUE);
   let scopedBudgetIds: string[] | undefined;
   let budgetGrantsVisibility = false;
-  if (budgetIds && budgetIds.length > 0) {
+  if (requestedBudgetIds && requestedBudgetIds.length > 0) {
     const accessibleBudgets = await getAccessibleBudgetIdsForUser({ userId });
     const accessibleSet = new Set(accessibleBudgets);
-    scopedBudgetIds = budgetIds.filter((id) => accessibleSet.has(id));
-    if (scopedBudgetIds.length === 0) return [];
-    budgetGrantsVisibility = true;
+    scopedBudgetIds = requestedBudgetIds.filter((id) => accessibleSet.has(id));
+    if (scopedBudgetIds.length === 0 && !hasBlankBudget) return [];
+    budgetGrantsVisibility = !hasBlankBudget && scopedBudgetIds.length > 0;
   }
+  if (hasBlankBudget) scopedBudgetIds = [BLANK_FILTER_VALUE, ...(scopedBudgetIds ?? [])];
 
   // Account-share path: if budgets grant visibility we skip the account filter (budget
   // membership is the source of truth for what's in the budget). If the caller passed

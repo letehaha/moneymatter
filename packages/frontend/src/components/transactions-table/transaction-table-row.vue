@@ -110,13 +110,7 @@
       <!-- Payee -->
       <template v-else-if="column.id === TABLE_COLUMN.payee">
         <div v-if="payee" class="flex items-center gap-2">
-          <BrandLogo
-            :domain="payee.logoDomain"
-            :initials="payee.logoInitials"
-            :color="payee.logoColor"
-            :name="payee.name"
-            class="size-5 shrink-0"
-          />
+          <BrandLogo v-bind="toEntityLogoDisplayProps(payee)" :name="payee.name" class="size-5 shrink-0" />
           <DesktopOnlyTooltip :content="payee.name" only-when-truncated>
             <span class="max-w-32 truncate">{{ payee.name }}</span>
           </DesktopOnlyTooltip>
@@ -237,6 +231,7 @@
 <script lang="ts" setup>
 import AccountLogo from '@/components/common/account-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';

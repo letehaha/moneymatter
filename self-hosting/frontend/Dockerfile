@@ -51,13 +51,17 @@ COPY packages/shared ./packages/shared
 COPY packages/frontend ./packages/frontend
 COPY packages/landing ./packages/landing
 
+# vue-tsc + vite exceed Node's default heap on hosts with less than ~16 GB RAM
+# (the default scales with system memory), so the heap is set explicitly.
+ARG NODE_BUILD_HEAP_MB=6144
+
 # Build frontend SPA
 WORKDIR /app/packages/frontend
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=$NODE_BUILD_HEAP_MB" npm run build
 
 # Build Astro landing
 WORKDIR /app/packages/landing
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=$NODE_BUILD_HEAP_MB" npm run build
 
 # 🚀 Stage 2️⃣: Production
 FROM nginx:1.27-alpine AS production-stage

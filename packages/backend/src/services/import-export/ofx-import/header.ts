@@ -6,7 +6,7 @@ const XML_REQUIRED_FIELDS = ['OFXHEADER', 'VERSION', 'SECURITY', 'OLDFILEUID', '
 
 export function parseOfxHeader({ bytes }: { bytes: Buffer }): { bodyOffset: number; header: OfxHeader } {
   if (bytes.length === 0) {
-    throw new OfxParseError({ code: 'empty-file', message: 'The OFX file is empty.' });
+    throw new OfxParseError({ code: 'empty-file', key: 'ofxImport.errors.emptyFile' });
   }
 
   // The UTF-8 BOM must be dropped at the byte level: a Latin-1 decode turns it
@@ -28,7 +28,7 @@ export function parseOfxHeader({ bytes }: { bytes: Buffer }): { bodyOffset: numb
   const isXmlHeader = processingInstructionStart >= 0;
   if (isXmlHeader) {
     if (processingInstructionEnd < 0) {
-      throw new OfxParseError({ code: 'invalid-header', message: 'The OFX XML declaration is incomplete.' });
+      throw new OfxParseError({ code: 'invalid-header', key: 'ofxImport.errors.xmlDeclarationIncomplete' });
     }
     const instruction = prefix.slice(processingInstructionStart + 5, processingInstructionEnd);
     const attributePattern = /([A-Z]+)\s*=\s*(["'])(.*?)\2/gi;
@@ -43,28 +43,32 @@ export function parseOfxHeader({ bytes }: { bytes: Buffer }): { bodyOffset: numb
     }
     bodyOffset = bomLength + separator.index + separator[0].length;
   } else {
-    throw new OfxParseError({ code: 'invalid-header', message: 'The OFX header is missing or too large.' });
+    throw new OfxParseError({ code: 'invalid-header', key: 'ofxImport.errors.headerMissing' });
   }
 
   for (const field of isXmlHeader ? XML_REQUIRED_FIELDS : SGML_REQUIRED_FIELDS) {
     if (!values.get(field)) {
-      throw new OfxParseError({ code: 'invalid-header', message: `The OFX header field ${field} is missing.` });
+      throw new OfxParseError({
+        code: 'invalid-header',
+        key: 'ofxImport.errors.headerFieldMissing',
+        params: { field },
+      });
     }
   }
 
   const headerVersion = values.get('OFXHEADER')!;
   const version = values.get('VERSION')!;
   if (!/^\d{3}$/.test(headerVersion) || !/^\d{3}$/.test(version)) {
-    throw new OfxParseError({ code: 'unsupported-version', message: 'The OFX version is invalid.' });
+    throw new OfxParseError({ code: 'unsupported-version', key: 'ofxImport.errors.invalidVersion' });
   }
   if (!isXmlHeader) {
     const data = values.get('DATA')!.toUpperCase();
     const compression = values.get('COMPRESSION')!.toUpperCase();
     if (data !== 'OFXSGML') {
-      throw new OfxParseError({ code: 'unsupported-data', message: `OFX data type ${data} is not supported.` });
+      throw new OfxParseError({ code: 'unsupported-data', key: 'ofxImport.errors.unsupportedData', params: { data } });
     }
     if (compression !== 'NONE') {
-      throw new OfxParseError({ code: 'compressed-file', message: 'Compressed OFX files are not supported.' });
+      throw new OfxParseError({ code: 'compressed-file', key: 'ofxImport.errors.compressedFile' });
     }
   }
 

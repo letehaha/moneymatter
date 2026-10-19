@@ -18,6 +18,7 @@ import {
   releaseBaseCurrencyLockIfOwned,
 } from '@services/currencies/base-currency-lock';
 import { createImportJobQueue } from '@services/import-export/core/queue/create-import-job-queue';
+import { isStalledPastLimitFailure } from '@services/import-export/core/queue/stalled-job-failure';
 import { randomUUID } from 'node:crypto';
 
 import { describeRestoreError } from './describe-restore-error';
@@ -39,16 +40,17 @@ const LOCK_HEARTBEAT_INTERVAL_MS = 10 * 60 * 1000;
 // deployment needs a shared marker such as a Redis key.
 const jobIdsRunningInThisProcess = new Set<string>();
 
+const INTERRUPTED_MESSAGE_KEY = 'common.jobInterruptedByServerUpdate';
+
 const {
   queue: backupRestoreQueue,
   worker: backupRestoreWorker,
   enqueue,
-  describeFailure,
 } = createImportJobQueue<BackupRestoreJobData, BackupRestoreSummary, BackupRestoreSseProgress>({
   baseName: 'backup-restore',
   sseEventType: SSE_EVENT_TYPES.BACKUP_RESTORE_PROGRESS,
   logLabel: 'Backup Restore',
-  interruptedMessageKey: 'common.jobInterruptedByServerUpdate',
+  interruptedMessageKey: INTERRUPTED_MESSAGE_KEY,
   processJob: async ({ job }) => {
     const { userId, fileContent } = job.data;
     const jobId = job.id!;
@@ -133,7 +135,7 @@ export async function queueBackupRestore({
   if (inflight.some((existing) => existing?.data?.userId === userId)) {
     throw new LockedError({
       code: API_ERROR_CODES.locked,
-      message: 'A backup restore is already in progress. Wait for it to finish before starting another.',
+      message: t({ key: 'backup.restore.errors.alreadyInProgress' }),
     });
   }
 
@@ -171,16 +173,16 @@ export async function queueBackupRestore({
 type RestoreJobStateSnapshot =
   | { kind: 'missing' }
   | { kind: 'completed'; summary: BackupRestoreSummary; progress?: BackupRestoreProgress }
-  | { kind: 'failed'; failedReason?: string; progress?: BackupRestoreProgress }
+  | { kind: 'failed'; error: string; errorDetail?: string; progress?: BackupRestoreProgress }
   | { kind: 'queued'; progress?: BackupRestoreProgress }
   | { kind: 'running'; progress?: BackupRestoreProgress };
 
 /**
  * Read a restore job's current state, scoped to its owner. Resolves `missing`
- * when the job is gone or belongs to another user. The failed branch carries the
- * translated interrupted message for a stalled job, otherwise BullMQ's
- * `failedReason` (possibly empty) so each caller applies its own fallback
- * message; every other branch is fully normalized.
+ * when the job is gone or belongs to another user. Runs inside the status
+ * request, so the failed branch translates here: the interrupted message for a
+ * stalled job, otherwise a generic failure with BullMQ's English `failedReason`
+ * kept apart as technical detail.
  */
 async function readRestoreJobState({
   userId,
@@ -210,14 +212,17 @@ async function readRestoreJobState({
     // Re-fetch once: a job that flips active → failed between getJob and getState
     // can report `failed` while the first snapshot's failedReason is still empty.
     const settled = (await backupRestoreQueue.getJob(jobId)) ?? job;
-    const failedReason = describeFailure({ reason: settled.failedReason });
+    const failedReason = settled.failedReason || undefined;
     // Never release while this job's processor still runs here: BullMQ can fail a
     // live job as stalled, and a freed lock lets writes interleave with its open
     // transaction. A killed worker never reaches its `finally`, so its lock is freed here.
     if (!jobIdsRunningInThisProcess.has(jobId)) {
       await releaseBaseCurrencyLockIfOwned({ userId, jobId });
     }
-    return { kind: 'failed', failedReason, progress };
+    if (isStalledPastLimitFailure({ reason: failedReason })) {
+      return { kind: 'failed', error: t({ key: INTERRUPTED_MESSAGE_KEY }), progress };
+    }
+    return { kind: 'failed', error: t({ key: 'backup.restore.errors.failed' }), errorDetail: failedReason, progress };
   }
   if (state === 'waiting' || state === 'delayed') {
     return { kind: 'queued', progress };
@@ -240,7 +245,13 @@ export async function getBackupRestoreStatus({
     case 'completed':
       return { jobId, status: 'completed', progress: snapshot.progress, summary: snapshot.summary };
     case 'failed':
-      return { jobId, status: 'failed', progress: snapshot.progress, error: snapshot.failedReason || 'Unknown error' };
+      return {
+        jobId,
+        status: 'failed',
+        progress: snapshot.progress,
+        error: snapshot.error,
+        errorDetail: snapshot.errorDetail,
+      };
     case 'queued':
       return { jobId, status: 'pending', progress: snapshot.progress };
     case 'running':
@@ -270,7 +281,7 @@ export async function getUserActiveRestoreStatus({ userId }: { userId: number })
     case 'completed':
       return { state: 'completed', jobId, summary: snapshot.summary };
     case 'failed':
-      return { state: 'failed', jobId, error: snapshot.failedReason || 'Backup restore failed' };
+      return { state: 'failed', jobId, error: snapshot.error };
     case 'queued':
       return { state: 'queued', jobId };
     case 'running':

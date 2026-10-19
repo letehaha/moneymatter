@@ -30,7 +30,7 @@ export const transactionFilterFields = {
   transactionType: z.nativeEnum(TRANSACTION_TYPES).optional(),
   accountType: z.nativeEnum(ACCOUNT_TYPES).optional(),
   accountIds: csvArray({ item: recordId() }).optional(),
-  budgetIds: csvArray({ item: recordId() }).optional(),
+  budgetIds: csvArray({ item: idOrBlank }).optional(),
   excludedBudgetIds: csvArray({ item: recordId() }).optional(),
   tagIds: csvArray({ item: idOrBlank }).optional(),
   excludedTagIds: csvArray({ item: recordId() }).optional(),

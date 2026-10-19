@@ -60,7 +60,7 @@
       },
       "payees": {
         "label": "Beneficiari",
-        "selectedOne": "1 Payee selected",
+        "selectedOne": "1 payee selected",
         "selectedMany": "{n} Payees selected"
       },
       "removeFilter": "Remove filter",
@@ -139,23 +139,23 @@
         "noGroupsMessage": "No groups yet. Create one first.",
         "noSearchResultsMessage": "No groups match your search.",
         "addingText": "Aggiunta in corso...",
-        "buttonLabel": "Add to Group",
+        "buttonLabel": "Add to group",
         "cancelButton": "Cancella",
         "transactionCountLabel": "transactions"
       },
       "createGroupDialog": {
-        "title": "Create Transaction Group",
+        "title": "Create transaction group",
         "descriptionPrefix": "Group",
         "groupNameLabel": "Name",
         "groupNamePlaceholder": "e.g. May salary transfer",
         "noteLabel": "Note (optional)",
         "notePlaceholder": "Optional description...",
         "creatingText": "Creating...",
-        "buttonLabel": "Create Group",
+        "buttonLabel": "Create group",
         "cancelButton": "Cancella"
       },
       "groupsPage": {
-        "title": "Transaction Groups",
+        "title": "Transaction groups",
         "searchPlaceholder": "Search groups...",
         "noGroupsMessage": "No transaction groups yet.",
         "emptyStateHint": "Select transactions on the Transactions page and click \"Create Group\" to get started.",

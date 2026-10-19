@@ -8,9 +8,9 @@ import { pickDialogSelect, waitForSuccessToast } from '../../helpers/ui';
 const CURRENCY = 'USD';
 const creds = buildTestCredentials({ prefix: 'ptx' });
 
-let portfolioA: { id: number; name: string };
-let portfolioB: { id: number; name: string };
-let testAccount: { id: number; name: string };
+let portfolioA: { id: string; name: string };
+let portfolioB: { id: string; name: string };
+let testAccount: { id: string; name: string };
 let dataSeeded = false;
 
 test.describe.configure({ mode: 'serial' });

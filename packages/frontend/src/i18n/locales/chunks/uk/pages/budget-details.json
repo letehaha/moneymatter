@@ -2,6 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
+        "loadError": "Не вдалося завантажити транзакції.",
         "selectionModeWarning": "Режим вибору — виберіть транзакції для відв'язання",
         "selectAll": "Вибрати все",
         "selected": "{count} вибрано",
@@ -15,7 +16,9 @@
         "resetFilters": "Скинути фільтри",
         "addTransactions": "Додати транзакції",
         "add": "Додати",
-        "loadingMore": "Завантаження більше..."
+        "loadingMore": "Завантаження більше...",
+        "unlinkError": "Не вдалося відв'язати транзакції",
+        "addError": "Не вдалося додати транзакції"
       }
     },
     "budgetDetails": {
@@ -57,11 +60,45 @@
         "income": "Дохід",
         "expenses": "Витрати",
         "incomeLabel": "Дохід:",
-        "expensesLabel": "Витрати:"
+        "expensesLabel": "Витрати:",
+        "kpi": {
+          "dailyPace": "Денний темп",
+          "perDay": "/ день",
+          "allowedPerDay": "дозволено {amount} / день · {elapsed} з {total} днів",
+          "daysElapsed": "{elapsed} з {total} днів",
+          "projectedTotal": "Прогнозована сума",
+          "projectedLimit": "за такого темпу · ліміт {amount}",
+          "averagePerDay": "Середнє за день",
+          "firstTransaction": "Перша транзакція",
+          "lastTransaction": "Остання транзакція",
+          "transactions": "Транзакції",
+          "avgAmount": "сер. {amount}",
+          "biggestDay": "Найбільший день",
+          "shareOfTotal": "{percent}% від усієї суми"
+        },
+        "byCategory": "За категоріями",
+        "categoriesCount": "{count} категорія | {count} категорії | {count} категорій",
+        "byCurrency": "За валютами",
+        "asPaid": "як сплачено",
+        "timeline": "Хронологія",
+        "todayMarker": "сьогодні, {date}",
+        "timelineAria": "Накопичені витрати в часі та стовпчики за періодами",
+        "limitLabel": "Ліміт: {amount}",
+        "cumulativeLabel": "Накопичено",
+        "legend": {
+          "cumulative": "Витрачено, наростаючим підсумком",
+          "evenPace": "Рівномірний темп до ліміту",
+          "projection": "Прогноз",
+          "daily": "За день",
+          "weekly": "За тиждень",
+          "monthly": "За місяць"
+        },
+        "topPayees": "Топ отримувачів",
+        "bySpend": "за витратами",
+        "noPayee": "Без отримувача",
+        "txCount": "{count} тр."
       },
       "sharing": {
-        "title": "Спільний доступ",
-        "description": "Керуйте тим, хто може бачити цей трекер та прив'язувати до нього свої транзакції.",
         "inviteAnother": "Запросити користувача",
         "membersHeading": "Учасники",
         "pendingHeading": "Запрошення в очікуванні",

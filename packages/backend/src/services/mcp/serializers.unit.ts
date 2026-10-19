@@ -31,6 +31,8 @@ const fullAccount: AccountApiResponse = {
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   needsRelink: true,
   share: { isOwner: true } as AccountApiResponse['share'],
 };

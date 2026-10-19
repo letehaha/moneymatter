@@ -9,7 +9,7 @@ import { REDIS_KEYS } from '../sync/sync-status-tracker';
 
 const PSU_USER_AGENT = 'Mozilla/5.0 (PSU headers e2e)';
 // Express trusts loopback proxies, so supertest's X-Forwarded-For becomes req.ip.
-const PSU_IP = '203.0.113.7';
+const PSU_IP = '8.8.8.8';
 const PSU_REQUEST_HEADERS = { 'User-Agent': PSU_USER_AGENT, 'X-Forwarded-For': PSU_IP };
 
 const ACCOUNT_ENDPOINT_RE = /^\/accounts\/[^/]+\/(details|balances|transactions)$/;
@@ -133,6 +133,23 @@ describe('Enable Banking PSU headers', () => {
       expect(requestsOf({ kind: 'transactions' }).length).toBeGreaterThan(0);
       expectAllWithPsuHeaders();
     });
+  });
+
+  it('omits PSU headers when the user IP is not public (self-host on LAN/Docker)', async () => {
+    const connectionId = await authorizeConnection();
+    recordedRequests = [];
+
+    const response = await helpers.makeRequest({
+      method: 'get',
+      url: `/bank-data-providers/connections/${connectionId}/available-accounts`,
+      headers: { 'User-Agent': PSU_USER_AGENT, 'X-Forwarded-For': '192.168.1.50' },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(recordedRequests.length).toBeGreaterThan(0);
+    for (const request of recordedRequests) {
+      expect(request).toEqual({ path: request.path, psuIpAddress: null, psuUserAgent: null });
+    }
   });
 
   describe('background requests omit PSU headers', () => {

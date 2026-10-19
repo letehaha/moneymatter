@@ -36,13 +36,8 @@ async function seedTestData({ request }: { request: APIRequestContext }): Promis
   const holdingRes = await createHolding({
     request,
     portfolioId,
-    searchResult: {
-      symbol: 'ETEST',
-      name: 'E2E Test Corp',
-      assetClass: 'stocks',
-      providerName: 'fmp',
-      currencyCode: HOLDING_CURRENCY,
-    },
+    symbol: 'ETEST',
+    currencyCode: HOLDING_CURRENCY,
   });
 
   // Seed a buy tx so the holding row isn't collapsed under "Closed positions"

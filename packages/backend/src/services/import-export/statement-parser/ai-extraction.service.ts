@@ -8,6 +8,7 @@ import type {
   StatementFileType,
 } from '@bt/shared/types';
 import { AI_FEATURE } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils';
 import {
   AI_MAX_OUTPUT_TOKENS,
@@ -154,7 +155,7 @@ export async function extractTransactionsWithAI({
         success: false,
         error: {
           code: 'EXTRACTION_FAILED',
-          message: 'Failed to parse AI response. The output was not in expected format.',
+          message: t({ key: 'statementParser.aiResponseUnparseable' }),
           details: responseText.slice(0, 500),
         },
       };
@@ -173,7 +174,7 @@ export async function extractTransactionsWithAI({
           success: false,
           error: {
             code: 'EXTRACTION_FAILED',
-            message: `The model returned ${parsed.droppedRowCount} row(s), but none of them had both a readable date and a positive amount. Try extracting again, or switch to a different model.`,
+            message: t({ key: 'statementParser.allRowsDropped', variables: { count: parsed.droppedRowCount } }),
             details: responseText.slice(0, 500),
           },
         };
@@ -191,8 +192,7 @@ export async function extractTransactionsWithAI({
         success: false,
         error: {
           code: 'NO_TRANSACTIONS_FOUND',
-          message:
-            'No transactions found in the file. It may not be a bank statement, receipt or banking app screenshot.',
+          message: t({ key: 'statementParser.noTransactionsFound' }),
         },
       };
     }

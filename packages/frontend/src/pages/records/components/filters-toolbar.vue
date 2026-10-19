@@ -106,6 +106,7 @@
         <div v-else-if="filterKey === 'budgets'" class="w-44">
           <BudgetMultiSelectField
             hide-clear-button
+            allow-blank
             :budget-ids="filters.budgetIds"
             @update:budget-ids="emitFilters({ ...filters, budgetIds: $event })"
           />

@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Tidak dapat menjangkau server. Backend mungkin masih memulai (~30 detik setelah startup), atau variabel env ALLOWED_ORIGINS Anda tidak menyertakan URL ini.",
       "unexpectedError": "Kesalahan tak terduga.",
       "sessionExpired": "Sesi Anda telah kedaluwarsa. Silakan masuk lagi",
-      "payloadTooLarge": "Permintaan terlalu besar. Coba impor lebih sedikit item sekaligus"
+      "payloadTooLarge": "Permintaan terlalu besar. Coba impor lebih sedikit item sekaligus",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Kata sandi terlalu pendek.",
+      "passwordTooLong": "Kata sandi terlalu panjang.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Halaman ini tidak ditemukan",

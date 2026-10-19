@@ -176,6 +176,79 @@
         "utilized": "využité",
         "noAccounts": "Žiadne účty s úverovým limitom"
       },
+      "cashAccounts": {
+        "vsLastMonth": "oproti minulému mesiacu",
+        "runwayUnit": "mes.",
+        "runwayLabel": "výdavkov",
+        "loadFailed": "Vaše účty sa nepodarilo načítať",
+        "runwayHint": {
+          "description": "Všeobecne sa odporúča mať rezervný fond, ktorý pokryje 3 – 6 mesiacov vašich výdavkov.",
+          "critical": "Menej než 1 mesiac: veľmi malá rezerva",
+          "low": "1 – 3 mesiace: pod odporúčanou hranicou",
+          "good": "3+ mesiace: odporúčaný rozsah"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Čistá hodnota majetku",
+        "owesShare": "Dlžíte {percent} z toho, čo vlastníte",
+        "noDebt": "Žiadny dlh",
+        "assets": "Aktíva",
+        "liabilities": "Záväzky",
+        "loadFailed": "Vaše aktíva a záväzky sa nepodarilo načítať",
+        "buckets": {
+          "cash": "Hotovosť",
+          "investments": "Investície",
+          "ventures": "Rizikové kapitály",
+          "vehicles": "Vozidlá",
+          "loans": "Pôžičky",
+          "creditAndOverdrafts": "Úvery a prečerpania"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "oproti minulému mesiacu",
+          "average": "oproti 3-mes. priemeru"
+        },
+        "spentIn": "Minuté v {month}",
+        "onTrackFor": "Smeruje k sume {amount}",
+        "vsComparison": "{percent} oproti {name}",
+        "comparison": {
+          "average": "{n}-mes. priem."
+        },
+        "stats": {
+          "byToday": "{name} do dnešného dňa",
+          "total": "{name} spolu",
+          "daysLeft": "Zostáva dní"
+        },
+        "chart": {
+          "today": "Dnes",
+          "ariaLabel": "Výdavky tento mesiac"
+        },
+        "tooltip": {
+          "spent": "Minuté",
+          "forecast": "Predpoveď",
+          "spikeFrom": "Minuté {date}"
+        },
+        "legend": {
+          "thisMonth": "Tento mesiac",
+          "forecast": "Predpoveď",
+          "averageMonth": "Priemerný mesiac"
+        },
+        "hints": {
+          "noHistory": "Porovnanie sa zobrazí po vašom prvom celom mesiaci.",
+          "fewMonths": "Priemer za {n} celý mesiac, ktorý zatiaľ máte. | Priemer za {n} celé mesiace, ktoré zatiaľ máte. | Priemer za {n} celých mesiacov, ktoré zatiaľ máte."
+        },
+        "loadFailed": "Vaše výdavky sa nepodarilo načítať.",
+        "settings": {
+          "spikes": {
+            "title": "Značky výkyvov",
+            "summary": "Dni s ≥{percent} % mesačných výdavkov",
+            "inputLabel": "Označiť deň, keď dosiahne",
+            "hint": "Podiel na celkových výdavkoch minulého mesiaca, 1 – 100 %. Značky sa zobrazujú v režime „oproti minulému mesiacu”."
+          },
+          "saved": "Nastavenie aktualizované"
+        }
+      },
       "plannedOverview": {
         "title": "Plánované",
         "projectedBy": "Predpokladané do {date}",
@@ -269,6 +342,18 @@
         "creditUtilization": {
           "name": "Využitie úverového limitu",
           "description": "Využitie úverového limitu na vašich účtoch"
+        },
+        "cashAccounts": {
+          "name": "Hotovosť a účty",
+          "description": "Celková hotovosť naprieč vašimi účtami, jej zmena od minulého mesiaca a koľko mesiacov výdavkov pokrýva"
+        },
+        "assetsLiabilities": {
+          "name": "Aktíva a záväzky",
+          "description": "Čo vlastníte, čo dlžíte, a čistá hodnota majetku medzi nimi"
+        },
+        "spendingPace": {
+          "name": "Tempo čerpania",
+          "description": "Výdavky od začiatku mesiaca doteraz s predpoveďou na zvyšok mesiaca, porovnané s minulým mesiacom alebo vaším 3-mesačným priemerom."
         },
         "plannedOverview": {
           "name": "Prehľad plánovaných platieb",

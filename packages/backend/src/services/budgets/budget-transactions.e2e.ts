@@ -5,27 +5,62 @@ import { ERROR_CODES } from '@js/errors';
 import BudgetTransactions from '@models/budget-transactions.model';
 import * as helpers from '@tests/helpers';
 
+const seedBudgetWithAttachedTransaction = async () => {
+  const [transaction] = await helpers.createTransaction({ raw: true });
+
+  const budget = await helpers.createCustomBudget({
+    name: 'Budget For Removal Test',
+    startDate: '2025-03-01T00:00:00Z',
+    endDate: '2025-03-04T23:59:59Z',
+    autoInclude: true,
+    limitAmount: 500,
+    raw: true,
+  });
+
+  await helpers.addTransactionToCustomBudget({
+    id: budget.id,
+    payload: { transactionIds: [transaction.id] },
+  });
+
+  return { budget, transaction };
+};
+
+const seedBudgetWithPlannedTransaction = async () => {
+  const account = await helpers.createAccount({ raw: true });
+
+  const [realTx] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      amount: 100,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-03-02T10:00:00Z',
+    }),
+    raw: true,
+  });
+
+  const [plannedTx] = await helpers.createPlannedTransaction({
+    payload: {
+      accountId: account.id,
+      amount: 250,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-03-03T10:00:00Z',
+    },
+    raw: true,
+  });
+
+  const budget = await helpers.createCustomBudget({
+    name: 'Planned Attach Budget',
+    startDate: '2025-03-01T00:00:00Z',
+    endDate: '2025-03-31T23:59:59Z',
+    autoInclude: false,
+    limitAmount: 500,
+    raw: true,
+  });
+
+  return { account, realTx, plannedTx, budget };
+};
+
 describe('Budget Transactions', () => {
-  const seedBudgetWithAttachedTransaction = async () => {
-    const [transaction] = await helpers.createTransaction({ raw: true });
-
-    const budget = await helpers.createCustomBudget({
-      name: 'Budget For Removal Test',
-      startDate: '2025-03-01T00:00:00Z',
-      endDate: '2025-03-04T23:59:59Z',
-      autoInclude: true,
-      limitAmount: 500,
-      raw: true,
-    });
-
-    await helpers.addTransactionToCustomBudget({
-      id: budget.id,
-      payload: { transactionIds: [transaction.id] },
-    });
-
-    return { budget, transaction };
-  };
-
   describe('Attach', () => {
     it('fails when adding duplicate transaction to the same budget if unique constraint exists', async () => {
       const account = await helpers.createAccount({ raw: true });
@@ -114,41 +149,6 @@ describe('Budget Transactions', () => {
     });
 
     describe('planned transactions', () => {
-      const seedBudgetWithPlannedTransaction = async () => {
-        const account = await helpers.createAccount({ raw: true });
-
-        const [realTx] = await helpers.createTransaction({
-          payload: helpers.buildTransactionPayload({
-            accountId: account.id,
-            amount: 100,
-            transactionType: TRANSACTION_TYPES.expense,
-            time: '2025-03-02T10:00:00Z',
-          }),
-          raw: true,
-        });
-
-        const [plannedTx] = await helpers.createPlannedTransaction({
-          payload: {
-            accountId: account.id,
-            amount: 250,
-            transactionType: TRANSACTION_TYPES.expense,
-            time: '2025-03-03T10:00:00Z',
-          },
-          raw: true,
-        });
-
-        const budget = await helpers.createCustomBudget({
-          name: 'Planned Attach Budget',
-          startDate: '2025-03-01T00:00:00Z',
-          endDate: '2025-03-31T23:59:59Z',
-          autoInclude: false,
-          limitAmount: 500,
-          raw: true,
-        });
-
-        return { account, realTx, plannedTx, budget };
-      };
-
       it('attaches an owner-selected planned transaction alongside real ones', async () => {
         const { realTx, plannedTx, budget } = await seedBudgetWithPlannedTransaction();
 

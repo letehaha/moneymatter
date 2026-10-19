@@ -1,7 +1,6 @@
 import { logger } from '@js/utils/logger';
-import { namespace } from '@models/connection';
+import { runAfterCommit } from '@services/common/run-after-commit';
 import { Job, Queue, Worker } from 'bullmq';
-import type { Transaction } from 'sequelize';
 
 import { LogoEntity, resolveBrandLogo } from './resolve-brand-logo.service';
 
@@ -112,18 +111,8 @@ export async function enqueueLogoResolution({ entity, id }: { entity: LogoEntity
  * A row created inside a transaction isn't visible to the worker (a separate
  * connection) until commit, and the row vanishes entirely on rollback – so
  * enqueuing before commit risks the worker reading a not-yet-visible or
- * rolled-back row. The active transaction is read from the Sequelize CLS
- * namespace (`withTransaction` runs queries inside it). When one is in scope we
- * defer via `afterCommit`; otherwise (no ambient transaction) we enqueue
- * directly.
+ * rolled-back row. Without an ambient transaction it enqueues directly.
  */
 export function enqueueLogoResolutionAfterCommit({ entity, id }: { entity: LogoEntity; id: string }): void {
-  // `finished` ('commit' | 'rollback') isn't on the public Transaction type, but
-  // `withTransaction` checks it the same way to detect stale CLS transactions.
-  const transaction = namespace.get('transaction') as (Transaction & { finished?: string }) | undefined;
-  if (transaction && !transaction.finished) {
-    transaction.afterCommit(() => enqueueLogoResolution({ entity, id }));
-  } else {
-    void enqueueLogoResolution({ entity, id });
-  }
+  void runAfterCommit({ fn: () => enqueueLogoResolution({ entity, id }) });
 }

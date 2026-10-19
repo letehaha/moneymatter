@@ -16,8 +16,6 @@
         "color": "Warna",
         "icon": "Ikon",
         "iconPlaceholder": "Pilih ikon",
-        "iconSearchPlaceholder": "Cari ikon...",
-        "clearIcon": "Hapus ikon",
         "description": "Deskripsi",
         "descriptionPlaceholder": "Deskripsi opsional",
         "saveButton": "Simpan",

@@ -15,12 +15,10 @@ const config: KnipConfig = {
     // Reached only through a test file's `@jest-environment` docblock
     'src/services/budget-plans/periods/new-york-timezone-environment.ts',
   ],
-  ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'vite', 'tsc'],
+  ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'tsc'],
   ignore: [
     'config/**',
     'src/migrations/*.js',
-    // Loaded by oxlint via jsPlugins in .oxlintrc.json, not imported
-    'lint/**',
     // Barrel file re-exporting 3rd-party API types - @public is set on source files
     'src/services/bank-data-providers/enablebanking/types/index.ts',
   ],
@@ -33,7 +31,6 @@ const config: KnipConfig = {
     'nodemon',
     // Sub-packages bundled with their parent; available at runtime without being listed
     '@jest/globals', // bundled with jest
-    'jest-environment-node', // bundled with jest
     'umzug', // bundled with sequelize-cli
     // A test's `@jest-environment <rootDir>/...` docblock, read as a package name
     'vitest-environment-<rootDir>',

@@ -139,7 +139,7 @@
         "previousPeriodsTrend": "Tren periode sebelumnya",
         "viewDetails": "Lihat detail",
         "savingsRateLine": "Show savings rate line",
-        "savingsRate": "Savings rate",
+        "savingsRate": "Rasio Tabungan",
         "noIncome": "no income"
       },
       "netWorth": {
@@ -176,6 +176,79 @@
         "utilized": "digunakan",
         "noAccounts": "Tidak ada akun dengan batas kredit"
       },
+      "cashAccounts": {
+        "vsLastMonth": "vs last month",
+        "runwayUnit": "bln",
+        "runwayLabel": "of expenses",
+        "loadFailed": "Couldn't load your accounts",
+        "runwayHint": {
+          "description": "It's generally recommended to keep an emergency fund that covers 3–6 months of your expenses.",
+          "critical": "Under 1 month: very little buffer",
+          "low": "1–3 months: below recommended",
+          "good": "3+ months: recommended range"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Kekayaan bersih",
+        "owesShare": "You owe {percent} of what you own",
+        "noDebt": "No debt",
+        "assets": "Aset",
+        "liabilities": "Kewajiban",
+        "loadFailed": "Couldn't load your assets and liabilities",
+        "buckets": {
+          "cash": "Tunai",
+          "investments": "Investasi",
+          "ventures": "Ventura",
+          "vehicles": "Kendaraan",
+          "loans": "Pinjaman",
+          "creditAndOverdrafts": "Credit & overdrafts"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "vs last month",
+          "average": "vs 3-mo avg"
+        },
+        "spentIn": "Spent in {month}",
+        "onTrackFor": "On track for {amount}",
+        "vsComparison": "{percent} vs {name}",
+        "comparison": {
+          "average": "{n}-mo avg"
+        },
+        "stats": {
+          "byToday": "{name} by today",
+          "total": "{name} total",
+          "daysLeft": "Days left"
+        },
+        "chart": {
+          "today": "Hari ini",
+          "ariaLabel": "Spending this month"
+        },
+        "tooltip": {
+          "spent": "Spent",
+          "forecast": "Forecast",
+          "spikeFrom": "Spent on {date}"
+        },
+        "legend": {
+          "thisMonth": "Bulan ini",
+          "forecast": "Forecast",
+          "averageMonth": "Average month"
+        },
+        "hints": {
+          "noHistory": "The comparison appears after your first full month.",
+          "fewMonths": "Average of the {n} full month you have so far. | Average of the {n} full months you have so far."
+        },
+        "loadFailed": "Couldn't load your spending.",
+        "settings": {
+          "spikes": {
+            "title": "Spike marks",
+            "summary": "Days with ≥{percent}% of the month's spending",
+            "inputLabel": "Mark a day when it reaches",
+            "hint": "Share of last month's total spending, 1–100%. Marks show in “vs last month” mode."
+          },
+          "saved": "Pengaturan diperbarui"
+        }
+      },
       "plannedOverview": {
         "title": "Terencana",
         "projectedBy": "Projected by {date}",
@@ -183,7 +256,7 @@
         "loadFailed": "Tidak dapat memuat transaksi terencana"
       },
       "taxes": {
-        "title": "Average Tax Rate",
+        "title": "Average tax rate",
         "description": "Spending in your tax categories as a share of income, averaged over the period chosen in the widget settings. Bars show the last 12 months.",
         "ofIncome": "of income",
         "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
@@ -270,6 +343,18 @@
           "name": "Penggunaan Kredit",
           "description": "Penggunaan batas kredit di semua akun Anda"
         },
+        "cashAccounts": {
+          "name": "Kas & akun",
+          "description": "Total cash across your accounts, its change since last month, and how many months of expenses it covers"
+        },
+        "assetsLiabilities": {
+          "name": "Assets & liabilities",
+          "description": "What you own, what you owe, and the net worth between them"
+        },
+        "spendingPace": {
+          "name": "Spending pace",
+          "description": "Month-to-date spending with a forecast for the rest of the month, compared with last month or your 3-month average."
+        },
         "plannedOverview": {
           "name": "Ikhtisar terencana",
           "description": "Transaksi terencana yang tertunda dan proyeksi saldo Anda"
@@ -279,7 +364,7 @@
           "description": "How close you are to financial independence"
         },
         "taxes": {
-          "name": "Average Tax Rate",
+          "name": "Average tax rate",
           "description": "Share of income paid in taxes, with a 12-month trend"
         },
         "budget": {

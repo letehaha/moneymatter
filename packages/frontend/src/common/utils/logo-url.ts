@@ -1,3 +1,4 @@
+import { API_HTTP, API_VER } from '@/api/api-base-url';
 import { config } from '@/common/config';
 
 /**
@@ -13,4 +14,9 @@ export function getServiceLogoUrl({ domain }: { domain: string }): string | null
   const token = config.logoDevToken;
   if (!token) return null;
   return `https://img.logo.dev/${domain}?token=${token}&format=png&size=64`;
+}
+
+/** Uploaded logo image, served behind session auth – the browser sends the cookie with the <img> request. */
+export function getLogoImageUrl({ id }: { id: string }): string {
+  return `${API_HTTP}${API_VER}/logo-images/${id}`;
 }

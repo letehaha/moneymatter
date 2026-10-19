@@ -1,3 +1,4 @@
+import { t } from '@i18n/index';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
@@ -65,6 +66,49 @@ describe('Parse Budget Bakers Wallet endpoint', () => {
       const malformedCsv = 'date,description,amount\n2025-01-01,Coffee,5.00\n';
       const malformed = await helpers.parseBudgetBakersWallet({ payload: { fileContent: malformedCsv } });
       expect(malformed.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('returns parser errors and row warnings in the request locale', async () => {
+      const header =
+        'account;category;currency;amount;ref_currency_amount;type;payment_type;note;date;transfer;payee;labels';
+      const malformed = await helpers.parseBudgetBakersWallet({
+        payload: { fileContent: 'account;currency;amount\nBank;USD;100\n' },
+        headers: { 'Accept-Language': 'uk' },
+      });
+      const missingColumns = {
+        key: 'importExport.budgetBakersWallet.parse.missingColumns',
+        variables: {
+          columns: 'category, ref_currency_amount, type, payment_type, note, date, transfer, payee, labels',
+        },
+      };
+      const expectedError = t({ ...missingColumns, locale: 'uk' });
+      expect(expectedError).not.toBe(t({ ...missingColumns, locale: 'en' }));
+      expect(malformed.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((malformed as unknown as helpers.CustomResponse<{ message: string }>).body.response.message).toBe(
+        expectedError,
+      );
+
+      const fileContent = [
+        header,
+        'Bank;Food;USD;10;10;Savings;Cash;;2025-01-01T10:00:00.000Z;false;;',
+        'Bank;Food;USD;50;50;Income;Cash;;2025-01-02T10:00:00.000Z;false;;',
+      ].join('\n');
+      const { result } = await helpers.parseBudgetBakersWallet({
+        payload: { fileContent },
+        headers: { 'Accept-Language': 'uk' },
+        raw: true,
+      });
+      expect(result.warnings).toEqual([
+        {
+          rowIndex: 2,
+          code: 'row-skipped',
+          message: t({
+            key: 'importExport.budgetBakersWallet.warnings.unknownType',
+            variables: { value: 'Savings' },
+            locale: 'uk',
+          }),
+        },
+      ]);
     });
   });
 });

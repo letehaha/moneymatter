@@ -16,13 +16,14 @@ function resolveEncoding({ charset, encoding }: { charset: string; encoding: str
 
   throw new OfxParseError({
     code: 'unsupported-encoding',
-    message: `OFX encoding ${encoding}/${charset} is not supported.`,
+    key: 'ofxImport.errors.unsupportedEncoding',
+    params: { encoding, charset },
   });
 }
 
 export function decodeOfxFile({ bytes }: { bytes: Buffer }): OfxDecodedFile {
   if (bytes.length > OFX_MAX_FILE_BYTES) {
-    throw new OfxParseError({ code: 'file-too-large', message: 'The OFX file is larger than 10 MB.' });
+    throw new OfxParseError({ code: 'file-too-large', key: 'ofxImport.errors.fileTooLarge' });
   }
 
   const { bodyOffset, header } = parseOfxHeader({ bytes });
@@ -31,7 +32,7 @@ export function decodeOfxFile({ bytes }: { bytes: Buffer }): OfxDecodedFile {
   // `ofx-js` accepts a string, not bytes. Decode here only after the byte-safe
   // header pass has told us which charset the financial institution used.
   const body = encoding === 'windows-1252' ? decodeBuffer(bodyBytes, encoding) : bodyBytes.toString(encoding);
-  if (!body.trim()) throw new OfxParseError({ code: 'empty-body', message: 'The OFX file has no body.' });
+  if (!body.trim()) throw new OfxParseError({ code: 'empty-body', key: 'ofxImport.errors.emptyBody' });
 
   return { body, formatVersion: Number(header.version) >= 200 ? '2.x' : '1.x' };
 }

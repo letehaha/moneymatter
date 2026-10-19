@@ -1,4 +1,5 @@
 import { type ColumnMappingConfig, TransactionTypeOptionValue } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 
 export function validateTransactionType({
@@ -16,7 +17,10 @@ export function validateTransactionType({
     const typeIndex = headers.indexOf(transactionTypeOption.columnName);
     if (typeIndex === -1) {
       throw new ValidationError({
-        message: `Transaction type column "${transactionTypeOption.columnName}" not found in CSV`,
+        message: t({
+          key: 'csvImport.transactionTypeColumnNotFound',
+          variables: { columnName: transactionTypeOption.columnName },
+        }),
       });
     }
 
@@ -36,7 +40,10 @@ export function validateTransactionType({
     if (!allCovered) {
       const uncovered = typesArray.filter((type) => !incomeValues.includes(type) && !expenseValues.includes(type));
       throw new ValidationError({
-        message: `Transaction type column has values not covered by income/expense lists: ${uncovered.join(', ')}. Found values: ${typesArray.join(', ')}`,
+        message: t({
+          key: 'csvImport.transactionTypeValuesNotCovered',
+          variables: { uncovered: uncovered.join(', '), found: typesArray.join(', ') },
+        }),
       });
     }
   }

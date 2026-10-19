@@ -28,7 +28,7 @@ export const restoreDialogPresenting = ref(false);
  * Exported for unit tests: it is a pure mapping and each SSE branch is worth pinning.
  */
 export function sseToStatus(payload: BackupRestoreSseProgress): BackupRestoreActiveStatus | null {
-  const { jobId, status, phase, processedCount, summary, error } = payload;
+  const { jobId, status, phase, processedCount, summary } = payload;
   switch (status) {
     case 'queued':
       return { state: 'queued', jobId };
@@ -37,13 +37,9 @@ export function sseToStatus(payload: BackupRestoreSseProgress): BackupRestoreAct
     case 'completed':
       return summary ? { state: 'completed', jobId, summary } : { state: 'running', jobId, phase };
     case 'failed':
-      // A `failed` push without a reason falls back to the localized generic message
-      // so the overlay's failure panel never renders a raw English string.
-      return {
-        state: 'failed',
-        jobId,
-        error: error ?? i18n.global.t('settings.security.backup.restore.failedGeneric'),
-      };
+      // The push's `error` is built in the worker, which has no request locale, so it
+      // is English; show the localized generic message instead.
+      return { state: 'failed', jobId, error: i18n.global.t('settings.security.backup.restore.failedGeneric') };
     default:
       return null;
   }

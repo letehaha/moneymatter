@@ -12,9 +12,11 @@ import {
   INVESTMENT_IMPORT_SIDE_SKIP,
   type InvestmentColumnMapping,
   INVESTMENT_TRANSACTION_CATEGORY,
+  type InvestmentImportCsvRowWarningCode,
   type InvestmentImportSideSkip,
   type InvestmentImportTransactionSide,
 } from '@bt/shared/types/investments';
+import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { parseDate } from '@services/import-export/core/parse/parse-date';
 import { Big } from 'big.js';
@@ -27,7 +29,9 @@ import { normaliseCurrency } from './symbol-resolution.service';
 interface InvalidRow {
   /** 1-based row index in the source CSV (data row 1 = the first non-header row). */
   rowIndex: number;
-  reason: string;
+  code: InvestmentImportCsvRowWarningCode;
+  /** The raw cell that failed to parse. */
+  value?: string;
 }
 
 interface ParseInvestmentCsvResult {
@@ -153,28 +157,27 @@ export function parseInvestmentCsv({
   // Validate every mapped column actually exists in the headers. Without this
   // guard a typo in the column-mapping UI would silently produce empty-string
   // fields and we'd fail every row with "bad date / bad number".
-  const mappedColumns: { key: keyof InvestmentColumnMapping; header: string | null }[] = [
-    { key: 'symbol', header: columnMapping.symbol },
-    { key: 'date', header: columnMapping.date },
-    { key: 'side', header: columnMapping.side },
-    { key: 'quantity', header: columnMapping.quantity },
-    { key: 'price', header: columnMapping.price },
-    { key: 'fees', header: columnMapping.fees },
-    { key: 'currency', header: columnMapping.currency },
-    { key: 'name', header: columnMapping.name },
+  const mappedHeaders = [
+    columnMapping.symbol,
+    columnMapping.date,
+    columnMapping.side,
+    columnMapping.quantity,
+    columnMapping.price,
+    columnMapping.fees,
+    columnMapping.currency,
+    columnMapping.name,
   ];
-  for (const { key, header } of mappedColumns) {
+  for (const header of mappedHeaders) {
     if (header && !headers.includes(header)) {
       throw new ValidationError({
-        message: `Column "${header}" (mapped as ${key}) was not found in the CSV headers.`,
+        message: t({ key: 'investments.import.csvColumnNotFound', variables: { column: header } }),
       });
     }
   }
 
   // Wrap the full-content parse: csv-parse throws on mid-file structural
   // issues (unterminated quote, etc.) that parseCSV's preview-only scan can
-  // miss. Surface as ValidationError with the underlying message so the user
-  // sees something more useful than "Check server logs".
+  // miss. Surface as ValidationError so the user sees a malformed-file message.
   let records: string[][];
   try {
     records = parse(fileContent, {
@@ -184,9 +187,8 @@ export function parseInvestmentCsv({
       trim: true,
       columns: false,
     }) as string[][];
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    throw new ValidationError({ message: `Failed to parse CSV: ${message}` });
+  } catch {
+    throw new ValidationError({ message: t({ key: 'csvImport.csvFileMalformed' }) });
   }
 
   // First row is header (already validated by parseCSV above). Walk data rows.
@@ -195,7 +197,7 @@ export function parseInvestmentCsv({
 
   if (totalRows > MAX_CSV_ROWS) {
     throw new ValidationError({
-      message: `CSV exceeds the ${MAX_CSV_ROWS}-row limit.`,
+      message: t({ key: 'csvImport.csvFileTooManyRows', variables: { max: MAX_CSV_ROWS } }),
     });
   }
 
@@ -207,7 +209,7 @@ export function parseInvestmentCsv({
     const rowIndex = dataRowIdx + 1;
     const rawSymbol = readCell({ row: dataRow, header: columnMapping.symbol, headers }).toUpperCase();
     if (!rawSymbol) {
-      invalidRows.push({ rowIndex, reason: 'Missing symbol' });
+      invalidRows.push({ rowIndex, code: 'CSV_ROW_MISSING_SYMBOL' });
       return;
     }
     // Compound tickers (SOL-USD, BTC-USDT) get split — security symbol is the
@@ -217,14 +219,14 @@ export function parseInvestmentCsv({
     const dateRaw = readCell({ row: dataRow, header: columnMapping.date, headers });
     const date = parseDate(dateRaw);
     if (!date) {
-      invalidRows.push({ rowIndex, reason: `Unparseable date "${dateRaw}"` });
+      invalidRows.push({ rowIndex, code: 'CSV_ROW_INVALID_DATE', value: dateRaw });
       return;
     }
 
     const sideRaw = readCell({ row: dataRow, header: columnMapping.side, headers });
     const side = resolveSide({ raw: sideRaw, mapping: columnMapping.sideValueMapping });
     if (!side) {
-      invalidRows.push({ rowIndex, reason: `Unmapped side value "${sideRaw}"` });
+      invalidRows.push({ rowIndex, code: 'CSV_ROW_UNMAPPED_SIDE', value: sideRaw });
       return;
     }
     // User explicitly marked this side value as "skip" — drop the row, but
@@ -239,7 +241,7 @@ export function parseInvestmentCsv({
     const quantityRaw = readCell({ row: dataRow, header: columnMapping.quantity, headers });
     const quantity = parseDecimal(quantityRaw);
     if (!quantity || new Big(quantity).lte(0)) {
-      invalidRows.push({ rowIndex, reason: `Invalid quantity "${quantityRaw}"` });
+      invalidRows.push({ rowIndex, code: 'CSV_ROW_INVALID_QUANTITY', value: quantityRaw });
       return;
     }
 
@@ -253,7 +255,7 @@ export function parseInvestmentCsv({
       // Trades MUST have a parseable price (even if zero) — a non-numeric value
       // is a parsing failure, not a "free" trade.
       if (isTrade) {
-        invalidRows.push({ rowIndex, reason: `Invalid price "${priceRaw}"` });
+        invalidRows.push({ rowIndex, code: 'CSV_ROW_INVALID_PRICE', value: priceRaw });
         return;
       }
     }
@@ -261,7 +263,7 @@ export function parseInvestmentCsv({
     const feesRaw = readCell({ row: dataRow, header: columnMapping.fees, headers });
     const fees = feesRaw ? parseDecimal(feesRaw) : '0';
     if (fees === null) {
-      invalidRows.push({ rowIndex, reason: `Invalid fees "${feesRaw}"` });
+      invalidRows.push({ rowIndex, code: 'CSV_ROW_INVALID_FEES', value: feesRaw });
       return;
     }
 

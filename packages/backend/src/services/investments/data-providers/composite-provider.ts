@@ -4,6 +4,7 @@ import { ServiceUnavailableError } from '@js/errors';
 import { logger } from '@js/utils';
 import { isAxiosError } from 'axios';
 
+import { rememberSearchResults } from '../securities/verified-search-cache';
 import { AlphaVantageDataProvider } from './alphavantage-provider';
 import {
   BaseSecurityDataProvider,
@@ -18,6 +19,7 @@ import {
 import { CoinGeckoDataProvider } from './coingecko-provider';
 import { FmpDataProvider } from './fmp-provider';
 import { PolygonDataProvider } from './polygon-provider';
+import { findTestFixtureSecurity } from './test-fixture-securities';
 import {
   getHistoricalPriceProviderPreference,
   getLatestPriceProviderPreference,
@@ -80,6 +82,12 @@ export class CompositeDataProvider extends BaseSecurityDataProvider {
    * round-trip when the user has filtered to one class).
    */
   public async searchSecurities(query: string, options?: SearchOptions): Promise<SecuritySearchResult[]> {
+    const testFixture = findTestFixtureSecurity({ query });
+    if (testFixture) {
+      await rememberSearchResults({ results: [testFixture] });
+      return [testFixture];
+    }
+
     const preference = getSearchProviderPreference();
     const cryptoProvider = this.providers.get(SECURITY_PROVIDER.coingecko);
 
@@ -137,7 +145,9 @@ export class CompositeDataProvider extends BaseSecurityDataProvider {
     // and CoinGecko's "BTC".
     const stockResults = rawStockResults.filter((r) => r.assetClass !== ASSET_CLASS.crypto);
 
-    return [...stockResults, ...cryptoResults];
+    const results = [...stockResults, ...cryptoResults];
+    await rememberSearchResults({ results });
+    return results;
   }
 
   /**

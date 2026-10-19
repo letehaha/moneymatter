@@ -24,9 +24,8 @@
         </div>
       </div>
 
-      <Callout v-if="failureMessage !== null" variant="destructive" role="alert">
+      <Callout v-if="progress.status === 'failed'" variant="destructive" role="alert">
         {{ $t('pages.importExport.msMoneyImport.execute.failed') }}
-        <p v-if="failureMessage" class="mt-1 text-xs opacity-80">{{ failureMessage }}</p>
         <p class="mt-2 text-xs opacity-80">
           {{ $t('pages.importExport.msMoneyImport.execute.partialImportNote') }}
         </p>
@@ -73,12 +72,4 @@ const progressPercent = computed(() => {
 });
 
 const statusLabel = computed(() => (progress.value ? t(STATUS_LABEL_KEYS[progress.value.status]) : ''));
-
-/** null when the job hasn't failed; the server's error string (or empty
- *  string when none) when it has. Narrows the discriminated union once so
- *  the template doesn't have to. */
-const failureMessage = computed<string | null>(() => {
-  if (progress.value?.status !== 'failed') return null;
-  return progress.value.error ?? '';
-});
 </script>

@@ -64,15 +64,15 @@
     },
     {
       "name": "get_budgets",
-      "description": "Retrieve active and historical trackers (called budgets in tool names) with progress and overspending details."
+      "description": "Retrieve active and historical trackers (called budgets in tool names) with their limits, categories, and lines."
     },
     {
       "name": "create_budget",
-      "description": "Create a new tracker with an optional spending limit, date range, and linked categories."
+      "description": "Create a new tracker with an optional spending limit, date range, linked categories, and smart tracking."
     },
     {
       "name": "update_budget",
-      "description": "Update an existing tracker's name, date range, spending limit, or linked categories."
+      "description": "Update an existing tracker's name, date range, spending limit, linked categories, or smart tracking settings."
     },
     {
       "name": "delete_budget",
@@ -92,7 +92,31 @@
     },
     {
       "name": "get_budget_spending_stats",
-      "description": "Spending breakdown by category and time-series of expense vs income for a tracker."
+      "description": "Spending breakdown by category, time-series of expense vs income, and per-line spent for a tracker."
+    },
+    {
+      "name": "create_budget_line",
+      "description": "Add a line (named category set with an optional limit) to a tracker."
+    },
+    {
+      "name": "update_budget_line",
+      "description": "Update a tracker line's name, categories, limit, or position."
+    },
+    {
+      "name": "delete_budget_line",
+      "description": "Permanently delete a line from a tracker."
+    },
+    {
+      "name": "list_budget_suggestions",
+      "description": "Smart-tracking suggestions, AI-matched transactions, and scan status for a tracker the user owns."
+    },
+    {
+      "name": "accept_budget_suggestions",
+      "description": "Accept pending smart-tracking suggestions, linking their transactions to the tracker."
+    },
+    {
+      "name": "reject_budget_suggestions",
+      "description": "Reject smart-tracking suggestions; AI-linked or accepted ones are also unlinked from the tracker."
     },
     {
       "name": "get_spending_by_categories",
@@ -268,7 +292,7 @@
     },
     {
       "name": "create_transaction",
-      "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, and original (foreign-currency) amount."
+      "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, payee, and original (foreign-currency) amount."
     },
     {
       "name": "create_attachment_upload_url",
@@ -276,7 +300,7 @@
     },
     {
       "name": "update_transaction",
-      "description": "Update an existing transaction's amount, date, category, tags, note, splits, or original (foreign-currency) amount. Requires finance:write scope."
+      "description": "Update an existing transaction's amount, date, category, payee, tags, note, splits, or original (foreign-currency) amount. Requires finance:write scope."
     },
     {
       "name": "delete_transaction",
@@ -284,7 +308,7 @@
     },
     {
       "name": "bulk_update_transactions",
-      "description": "Update multiple transactions at once — set category, note, or add/replace/remove tags. Requires finance:write scope."
+      "description": "Update multiple transactions at once — set category, payee, note, or add/replace/remove tags. Requires finance:write scope."
     },
     {
       "name": "split_transaction",

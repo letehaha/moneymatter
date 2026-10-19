@@ -4,6 +4,7 @@
  * shape, but token counts come from the same tokeniser.
  */
 import { AI_FEATURE, type StatementCostEstimate, type StatementFileType } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import {
   estimateModelCostUsd,
   resolveEstimationPrelude,
@@ -65,8 +66,15 @@ export async function estimateInvestmentExtractionCost({
       success: false,
       error: {
         code: 'TOKEN_LIMIT_EXCEEDED',
-        message: `File too large. Estimated ${estimatedInputTokens.toLocaleString()} tokens vs limit ${tokenLimit.maxInputTokens.toLocaleString()} (model ${tokenLimit.modelName}).`,
-        details: `Split the upload into smaller files or use a model with a larger context window.`,
+        message: t({
+          key: 'statementParser.tokenLimitExceeded',
+          variables: {
+            estimatedTokens: estimatedInputTokens,
+            maxTokens: tokenLimit.maxInputTokens,
+            modelName: tokenLimit.modelName,
+          },
+        }),
+        details: t({ key: 'investments.import.tokenLimitExceededSuggestion' }),
       },
     };
   }

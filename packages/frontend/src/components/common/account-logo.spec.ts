@@ -4,13 +4,18 @@ import { ACCOUNT_CATEGORIES, type AccountModel } from '@bt/shared/types';
 import { mount } from '@vue/test-utils';
 import { describe, expect, it } from 'vitest';
 
-type LogoAccount = Pick<AccountModel, 'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'accountCategory'>;
+type LogoAccount = Pick<
+  AccountModel,
+  'name' | 'logoDomain' | 'logoInitials' | 'logoColor' | 'logoIcon' | 'logoImageId' | 'accountCategory'
+>;
 
 const buildAccount = (overrides: Partial<LogoAccount> = {}): LogoAccount => ({
   name: 'Everyday',
   logoDomain: null,
   logoInitials: null,
   logoColor: null,
+  logoIcon: null,
+  logoImageId: null,
   accountCategory: ACCOUNT_CATEGORIES.general,
   ...overrides,
 });

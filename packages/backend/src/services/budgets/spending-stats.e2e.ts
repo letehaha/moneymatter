@@ -1,4 +1,4 @@
-import { BUDGET_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { BUDGET_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -33,6 +33,9 @@ describe('Get budget spending stats', () => {
     });
     expect(manualResult.spendingsByCategory).toEqual([]);
     expect(manualResult.spendingOverTime.periods).toEqual([]);
+    expect(manualResult.spendingsByCurrency).toEqual([]);
+    expect(manualResult.topPayees).toEqual([]);
+    expect(manualResult.biggestDay).toBeNull();
 
     const categoryResult = await helpers.getSpendingStats({
       id: categoryBudget.id,
@@ -40,6 +43,9 @@ describe('Get budget spending stats', () => {
     });
     expect(categoryResult.spendingsByCategory).toEqual([]);
     expect(categoryResult.spendingOverTime.periods).toEqual([]);
+    expect(categoryResult.spendingsByCurrency).toEqual([]);
+    expect(categoryResult.topPayees).toEqual([]);
+    expect(categoryResult.biggestDay).toBeNull();
   }, 60_000);
 
   describe('Manual budget', () => {
@@ -127,8 +133,7 @@ describe('Get budget spending stats', () => {
       expect(result.spendingsByCategory[1]!.amount).toBe(300);
 
       // Verify spendingOverTime
-      // 31 days → weekly granularity
-      expect(result.spendingOverTime.granularity).toBe('weekly');
+      expect(result.spendingOverTime.granularity).toBe('daily');
       expect(result.spendingOverTime.periods.length).toBeGreaterThan(0);
 
       // Sum of all period expenses should equal total expenses
@@ -297,8 +302,7 @@ describe('Get budget spending stats', () => {
 
       expect(result.spendingsByCategory).toHaveLength(1);
       expect(result.spendingOverTime.periods.length).toBeGreaterThan(0);
-      // 14 days → weekly
-      expect(result.spendingOverTime.granularity).toBe('weekly');
+      expect(result.spendingOverTime.granularity).toBe('daily');
     });
   });
 
@@ -358,8 +362,7 @@ describe('Get budget spending stats', () => {
       expect(result.spendingsByCategory[1]!.name).toBe('Dining');
       expect(result.spendingsByCategory[1]!.amount).toBe(400);
 
-      // 30 days → weekly
-      expect(result.spendingOverTime.granularity).toBe('weekly');
+      expect(result.spendingOverTime.granularity).toBe('daily');
       expect(result.spendingOverTime.periods.length).toBeGreaterThan(0);
     });
 
@@ -566,6 +569,7 @@ describe('Get budget spending stats', () => {
       const totalIncome = result.spendingOverTime.periods.reduce((sum, p) => sum + p.income, 0);
       expect(totalExpense).toBe(300);
       expect(totalIncome).toBe(0);
+      expect(result.biggestDay).toEqual({ date: '2025-04-10', expense: 300 });
     }, 60_000);
 
     it('attaches a split-targeted refund to the split’s category, not the original primary category', async () => {
@@ -677,6 +681,272 @@ describe('Get budget spending stats', () => {
       expect(result.spendingsByCategory).toHaveLength(1);
       // 600 expense - 250 refund-income = 350
       expect(result.spendingsByCategory[0]!.amount).toBe(350);
+    });
+  });
+
+  describe('Granularity and biggest day', () => {
+    it('buckets a 10-day tracker per day and picks the day with the highest expense', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const txs = await Promise.all(
+        [
+          { amount: 100, time: '2025-08-03T10:00:00Z' },
+          { amount: 200, time: '2025-08-05T09:00:00Z' },
+          { amount: 150, time: '2025-08-05T18:00:00Z' },
+          { amount: 300, time: '2025-08-08T12:00:00Z' },
+        ].map(({ amount, time }) =>
+          helpers.createTransaction({
+            raw: true,
+            payload: helpers.buildTransactionPayload({
+              accountId: account.id,
+              amount,
+              transactionType: TRANSACTION_TYPES.expense,
+              time,
+            }),
+          }),
+        ),
+      );
+
+      const budget = await helpers.createCustomBudget({
+        name: 'daily-budget',
+        startDate: '2025-08-01T00:00:00Z',
+        endDate: '2025-08-10T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionToCustomBudget({
+        id: budget.id,
+        payload: { transactionIds: txs.map(([tx]) => tx.id) },
+      });
+
+      const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+
+      expect(result.spendingOverTime.granularity).toBe('daily');
+      expect(result.spendingOverTime.periods).toHaveLength(10);
+      result.spendingOverTime.periods.forEach((period) => expect(period.periodStart).toBe(period.periodEnd));
+      expect(result.spendingOverTime.periods[4]).toMatchObject({ periodStart: '2025-08-05', expense: 350 });
+      expect(result.biggestDay).toEqual({ date: '2025-08-05', expense: 350 });
+    });
+
+    it('buckets a 90-day tracker per week', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [tx] = await helpers.createTransaction({
+        raw: true,
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: '2025-02-10T10:00:00Z',
+        }),
+      });
+
+      const budget = await helpers.createCustomBudget({
+        name: 'weekly-budget',
+        startDate: '2025-01-01T00:00:00Z',
+        endDate: '2025-03-31T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionToCustomBudget({ id: budget.id, payload: { transactionIds: [tx.id] } });
+
+      const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+
+      expect(result.spendingOverTime.granularity).toBe('weekly');
+      expect(result.biggestDay).toEqual({ date: '2025-02-10', expense: 100 });
+    });
+
+    it('picks granularity by inclusive calendar days', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const granularityFor = async ({ startDate, endDate }: { startDate: string; endDate: string }) => {
+        const [tx] = await helpers.createTransaction({
+          raw: true,
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount: 100,
+            transactionType: TRANSACTION_TYPES.expense,
+            time: startDate,
+          }),
+        });
+        const budget = await helpers.createCustomBudget({ name: 'granularity-budget', startDate, endDate, raw: true });
+        await helpers.addTransactionToCustomBudget({ id: budget.id, payload: { transactionIds: [tx!.id] } });
+        const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+        return result.spendingOverTime.granularity;
+      };
+
+      const firstHalf = await granularityFor({ startDate: '2025-01-01T00:00:00Z', endDate: '2025-06-30T23:59:59Z' });
+      const secondHalf = await granularityFor({ startDate: '2025-07-01T00:00:00Z', endDate: '2025-12-31T23:59:59Z' });
+      expect(firstHalf).toBe('weekly');
+      expect(secondHalf).toBe(firstHalf);
+
+      expect(await granularityFor({ startDate: '2025-07-01T00:00:00Z', endDate: '2025-08-31T23:59:59Z' })).toBe(
+        'daily',
+      );
+      expect(await granularityFor({ startDate: '2025-07-01T00:00:00Z', endDate: '2025-09-01T23:59:59Z' })).toBe(
+        'weekly',
+      );
+    });
+  });
+
+  describe('Spendings by currency', () => {
+    it('groups expenses by the transaction currency, largest base amount first', async () => {
+      const baseAccount = await helpers.createAccount({ raw: true });
+      const {
+        currencies: [foreignCurrency],
+      } = await helpers.addUserCurrencies({ currencyCodes: ['UAH'], raw: true });
+      const foreignAccount = await helpers.createAccount({
+        payload: { ...helpers.buildAccountPayload(), currencyCode: foreignCurrency!.currencyCode },
+        raw: true,
+      });
+
+      const createExpense = async ({ accountId, amount }: { accountId: RecordId; amount: number }) => {
+        const [tx] = await helpers.createTransaction({
+          raw: true,
+          payload: helpers.buildTransactionPayload({
+            accountId,
+            amount,
+            transactionType: TRANSACTION_TYPES.expense,
+            time: '2025-09-10T10:00:00Z',
+          }),
+        });
+        return tx;
+      };
+
+      const baseTxs = [
+        await createExpense({ accountId: baseAccount.id, amount: 100 }),
+        await createExpense({ accountId: baseAccount.id, amount: 50 }),
+      ];
+      const foreignTxs = [
+        await createExpense({ accountId: foreignAccount.id, amount: 4000 }),
+        await createExpense({ accountId: foreignAccount.id, amount: 1000 }),
+      ];
+
+      const budget = await helpers.createCustomBudget({
+        name: 'currency-budget',
+        startDate: '2025-09-01T00:00:00Z',
+        endDate: '2025-09-30T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionToCustomBudget({
+        id: budget.id,
+        payload: { transactionIds: [...baseTxs, ...foreignTxs].map((tx) => tx.id) },
+      });
+
+      const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+
+      const sumRef = (txs: typeof baseTxs) => txs.reduce((sum, tx) => sum + Number(tx.refAmount), 0);
+      const expected = [
+        { currencyCode: baseAccount.currencyCode, amount: 150, refAmount: sumRef(baseTxs) },
+        { currencyCode: foreignCurrency!.currencyCode, amount: 5000, refAmount: sumRef(foreignTxs) },
+      ].sort((a, b) => b.refAmount - a.refAmount);
+
+      expect(result.spendingsByCurrency).toHaveLength(2);
+      expected.forEach((item, index) => {
+        expect(result.spendingsByCurrency[index]!.currencyCode).toBe(item.currencyCode);
+        expect(result.spendingsByCurrency[index]!.amount).toBeCloseTo(item.amount, 2);
+        expect(result.spendingsByCurrency[index]!.refAmount).toBeCloseTo(item.refAmount, 2);
+      });
+    });
+  });
+
+  describe('Split transactions in currency and payee breakdowns', () => {
+    it('counts a split transaction once per payee and in full per currency', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [first, second] = await Promise.all(
+        ['SplitPayeeCat1', 'SplitPayeeCat2'].map((name) =>
+          helpers.addCustomCategory({ name, color: '#123456', raw: true }),
+        ),
+      );
+      const payee = await helpers.createPayee({
+        payload: helpers.buildPayeePayload({ name: 'stats-split-payee' }),
+        raw: true,
+      });
+      await helpers.createTransaction({
+        raw: true,
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 100,
+          categoryId: first!.id,
+          payeeId: payee.id,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: '2025-11-10T10:00:00Z',
+          splits: [
+            { categoryId: first!.id, amount: 60 },
+            { categoryId: second!.id, amount: 40 },
+          ],
+        }),
+      });
+
+      const budget = await helpers.createCustomBudget({
+        name: 'split-payee-budget',
+        type: BUDGET_TYPES.category,
+        categoryIds: [first!.id, second!.id],
+        startDate: '2025-11-01T00:00:00Z',
+        endDate: '2025-11-30T23:59:59Z',
+        raw: true,
+      });
+
+      const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+
+      expect(result.spendingsByCurrency).toHaveLength(1);
+      expect(result.spendingsByCurrency[0]!.currencyCode).toBe(account.currencyCode);
+      expect(result.spendingsByCurrency[0]!.amount).toBeCloseTo(100, 2);
+      expect(result.topPayees).toHaveLength(1);
+      expect(result.topPayees[0]).toMatchObject({ payeeId: payee.id, transactionsCount: 1 });
+      expect(result.topPayees[0]!.amount).toBeCloseTo(100, 2);
+    });
+  });
+
+  describe('Top payees', () => {
+    it('returns the top 5 payees by expense, including the no-payee group when it ranks', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const payees = await Promise.all(
+        ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'].map((name) =>
+          helpers.createPayee({ payload: helpers.buildPayeePayload({ name: `stats-${name}` }), raw: true }),
+        ),
+      );
+
+      const expenses: { amount: number; payeeId: RecordId | null }[] = [
+        { amount: 350, payeeId: payees[0]!.id },
+        { amount: 250, payeeId: payees[0]!.id },
+        { amount: 500, payeeId: payees[1]!.id },
+        { amount: 400, payeeId: payees[2]!.id },
+        { amount: 300, payeeId: payees[3]!.id },
+        { amount: 200, payeeId: payees[4]!.id },
+        { amount: 100, payeeId: payees[5]!.id },
+        { amount: 250, payeeId: null },
+        { amount: 200, payeeId: null },
+      ];
+
+      const txIds: string[] = [];
+      for (const { amount, payeeId } of expenses) {
+        const [tx] = await helpers.createTransaction({
+          raw: true,
+          payload: helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount,
+            payeeId,
+            transactionType: TRANSACTION_TYPES.expense,
+            time: '2025-10-10T10:00:00Z',
+          }),
+        });
+        txIds.push(tx.id);
+      }
+
+      const budget = await helpers.createCustomBudget({
+        name: 'payees-budget',
+        startDate: '2025-10-01T00:00:00Z',
+        endDate: '2025-10-31T23:59:59Z',
+        raw: true,
+      });
+      await helpers.addTransactionToCustomBudget({ id: budget.id, payload: { transactionIds: txIds } });
+
+      const result = await helpers.getSpendingStats({ id: budget.id, raw: true });
+
+      const noLogo = { logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null, logoImageId: null };
+      expect(result.topPayees).toEqual([
+        { payeeId: payees[0]!.id, name: 'stats-P1', amount: 600, transactionsCount: 2, ...noLogo },
+        { payeeId: payees[1]!.id, name: 'stats-P2', amount: 500, transactionsCount: 1, ...noLogo },
+        { payeeId: null, name: null, amount: 450, transactionsCount: 2, ...noLogo },
+        { payeeId: payees[2]!.id, name: 'stats-P3', amount: 400, transactionsCount: 1, ...noLogo },
+        { payeeId: payees[3]!.id, name: 'stats-P4', amount: 300, transactionsCount: 1, ...noLogo },
+      ]);
     });
   });
 

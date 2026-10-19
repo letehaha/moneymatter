@@ -36,6 +36,52 @@ set to the URL people type in the browser (e.g. `https://budget.example.com`)
 – see [setup-guide.md](setup-guide.md#3-behind-your-own-reverse-proxy),
 step 2.
 
+## Cloudflare Tunnel
+
+A Cloudflare Tunnel (`cloudflared`) needs no open port at all: run the
+`cloudflared` container on the app's `budget-tracker` Docker network and point
+the tunnel's public hostname at `http://budget-tracker:80`, the same address
+the other containerized proxies use (see
+[Proxy running in Docker on the same server](#proxy-running-in-docker-on-the-same-server)).
+Put Cloudflare Access in front if you want a sign-in before the app is even
+reachable.
+
+Nothing else to set for the client address either: the tunnel container sits
+on a private Docker address, which the backend trusts by default. See
+[Client IP address](#client-ip-address).
+
+## Client IP address
+
+The backend stores the address a session was created from (Settings → Security
+→ Active Sessions) and counts sign-in attempts per address. Behind a proxy it
+reads that address from `X-Forwarded-For`, but only when the request really
+arrives from a proxy it trusts. A request from any other address has the
+header ignored, so nobody can claim a different address by sending their own.
+
+Proxies on private addresses are trusted by default: the same host
+(`127.0.0.1`), or the app's Docker network (`172.16.0.0/12` and the other
+private ranges). That covers every setup on this page, including Cloudflare
+Tunnel, Nginx Proxy Manager, Caddy and Traefik running in Docker, so you
+usually don't set anything. When the addresses come out wrong, the symptom is
+"Unknown location" on every session, or sessions that all show the proxy's
+own address.
+
+If a proxy in front of the app sits on a **public** address (for example a
+proxy on another server), add it to the defaults in `.env`, then run
+`docker compose up -d`:
+
+```
+TRUSTED_PROXIES=loopback,linklocal,uniquelocal,203.0.113.10
+```
+
+Always keep `loopback,linklocal,uniquelocal` in the list: the bundled frontend
+container reaches the backend from a private Docker address, and the backend
+also calls itself over loopback. Without them every session shows the
+frontend container's address. The value is a comma-separated list of IP
+addresses and CIDR ranges. A typo fails the start with a message naming the bad
+entry, rather than trusting the wrong host. Don't list addresses you don't
+control.
+
 ## Nginx Proxy Manager
 
 Add a **Proxy Host**: forward to `http://<host>:8080`, and enable

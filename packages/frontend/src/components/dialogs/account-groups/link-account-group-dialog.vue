@@ -173,9 +173,9 @@ const rowClass = (isSelected: boolean) =>
       </template>
       <template v-else>
         <CreateAccountGroupDialog>
-          <UiButton variant="secondary" class="w-full gap-2">
+          <UiButton variant="secondary" class="w-full">
+            <PlusIcon class="size-4" />
             {{ t('dialogs.linkAccountGroup.createNewGroup') }}
-            <PlusIcon class="size-5" />
           </UiButton>
         </CreateAccountGroupDialog>
       </template>

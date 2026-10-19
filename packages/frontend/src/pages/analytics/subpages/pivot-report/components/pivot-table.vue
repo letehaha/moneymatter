@@ -109,9 +109,7 @@
                 </DesktopOnlyTooltip>
                 <BrandLogo
                   v-if="rowDimension === 'payee'"
-                  :domain="row.logoDomain ?? null"
-                  :initials="row.logoInitials ?? null"
-                  :color="row.logoColor ?? null"
+                  v-bind="toEntityLogoDisplayProps(row)"
                   :name="row.label"
                   class="size-4 shrink-0"
                 />
@@ -188,6 +186,7 @@
 
 <script setup lang="ts">
 import BrandLogo from '@/components/common/brand-logo.vue';
+import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';

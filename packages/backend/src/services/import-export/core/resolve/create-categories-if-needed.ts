@@ -1,10 +1,11 @@
 import type { CategoryMappingConfig } from '@bt/shared/types';
 import { CATEGORY_TYPES } from '@bt/shared/types';
 import { pickRandomColor } from '@common/lib/random-color';
-import { ValidationError } from '@js/errors';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import Categories from '@models/categories.model';
 import { createCategory } from '@services/categories/create-category';
+import { ImportJobError } from '@services/import-export/core/queue/import-job-error';
 import { Op } from 'sequelize';
 
 import { resolveOrCreateByName } from './resolve-or-create-by-name';
@@ -47,8 +48,10 @@ export async function createCategoriesIfNeeded({
     if (sourceName.length > CATEGORY_NAME_MAX_LENGTH) {
       const preview = `${sourceName.slice(0, 50)}…`;
       logger.info(`Tried to import too long category name: ${preview}`);
-      throw new ValidationError({
-        message: `Category name "${preview}" is too long (${sourceName.length} characters); maximum is ${CATEGORY_NAME_MAX_LENGTH}.`,
+      const params = { name: preview, length: sourceName.length, max: CATEGORY_NAME_MAX_LENGTH };
+      throw new ImportJobError({
+        message: t({ key: 'importExport.categoryNameTooLong', variables: params }),
+        failure: { code: 'category-name-too-long', params },
       });
     }
   }
@@ -66,7 +69,7 @@ export async function createCategoriesIfNeeded({
     findOne: (args) => Categories.findOne(args),
     create: ({ userId: ownerId, name, color }) =>
       Categories.create({ userId: ownerId, name, color, type: CATEGORY_TYPES.custom }),
-    notFoundMessage: (id) => `Category with ID ${id} not found`,
+    notFoundMessage: (id) => t({ key: 'importExport.categoryIdNotFound', variables: { id } }),
   });
 
   return { categoryNameToId: nameToId, categoriesCreated: created };

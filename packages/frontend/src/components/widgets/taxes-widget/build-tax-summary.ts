@@ -4,7 +4,7 @@ export const OTHER_SEGMENT_ID = 'other';
 /** Segments shown in the breakdown bar; past this the smallest fold into one "other" segment. */
 const MAX_SEGMENTS = 4;
 
-export interface TaxSegment {
+interface TaxSegment {
   id: string;
   name: string;
   color: string;
@@ -15,7 +15,7 @@ export interface TaxSegment {
   children?: TaxSegment[];
 }
 
-export interface TaxMonth {
+interface TaxMonth {
   periodStart: string;
   /** Net of refunds, so negative when a refund lands in a later month than its payment. */
   taxes: number;
@@ -31,7 +31,7 @@ interface TaxTotals {
   rate: number | null;
 }
 
-export interface TaxSummary {
+interface TaxSummary {
   months: TaxMonth[];
   current: TaxTotals;
   trailing: TaxTotals;

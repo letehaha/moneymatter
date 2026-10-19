@@ -21,7 +21,7 @@ const percent = computed(() =>
       ? 100
       : 5,
 );
-const failure = computed(() => (progress.value?.status === 'failed' ? progress.value.error : null));
+const isFailed = computed(() => progress.value?.status === 'failed');
 </script>
 <template>
   <div class="space-y-6">
@@ -43,9 +43,8 @@ const failure = computed(() => (progress.value?.status === 'failed' ? progress.v
           <div class="bg-primary h-full transition-[width]" :style="{ width: percent + '%' }" />
         </div>
       </div>
-      <Callout v-if="failure !== null" variant="destructive" role="alert"
+      <Callout v-if="isFailed" variant="destructive" role="alert"
         >{{ $t('pages.importExport.ofxImport.execute.failed') }}
-        <p v-if="failure" class="mt-1 text-xs">{{ failure }}</p>
         <p class="mt-2 text-xs">{{ $t('pages.importExport.ofxImport.execute.partialImportNote') }}</p></Callout
       >
       <Callout v-if="executeError" variant="destructive" role="alert">{{ executeError }}</Callout>

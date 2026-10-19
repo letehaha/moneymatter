@@ -26,7 +26,7 @@ export const isSubscriptionOverdue = ({
   return days < 0;
 };
 
-export const DUE_SOON_DAYS = 3;
+const DUE_SOON_DAYS = 3;
 
 export type SubscriptionDueStatus = 'overdue' | 'dueSoon' | null;
 

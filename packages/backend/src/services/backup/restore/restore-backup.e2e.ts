@@ -2,6 +2,7 @@ import {
   AI_FEATURE,
   AI_PROVIDER,
   API_ERROR_CODES,
+  BACKUP_FORMAT_VERSION,
   BANK_PROVIDER_TYPE,
   DEACTIVATION_REASON,
   ImportSource,
@@ -18,8 +19,10 @@ import type { BudgetPlanPeriodView } from '@bt/shared/types';
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
 import { VENTURE_CASH_FLOW_MODE, VENTURE_EVENT_TYPE } from '@bt/shared/types/venture';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
+import { t } from '@i18n/index';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { RateLimitService } from '@services/common/rate-limit.service';
+import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 import { VALID_ANTHROPIC_API_KEY } from '@tests/mocks/anthropic/mock-api';
 import { VALID_MONOBANK_TOKEN } from '@tests/mocks/monobank/mock-api';
@@ -194,6 +197,11 @@ async function seedRichData() {
     raw: true,
   });
   await helpers.addTransactionToCustomBudget({ id: budget.id, payload: { transactionIds: [expense!.id] }, raw: true });
+  await helpers.createTrackerLine({
+    budgetId: budget.id,
+    payload: { name: 'Groceries', categoryIds: [childCategory.id] },
+    raw: true,
+  });
 
   // Subscription (generates periods).
   await helpers.createSubscription({
@@ -427,6 +435,8 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       expect((firstArchive.readData({ name: 'transaction-templates' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'transaction-template-tags' }) as unknown[]).length).toBeGreaterThan(0);
       expect((firstArchive.readData({ name: 'category-tags' }) as unknown[]).length).toBeGreaterThan(0);
+      expect((firstArchive.readData({ name: 'tracker-lines' }) as unknown[]).length).toBeGreaterThan(0);
+      expect((firstArchive.readData({ name: 'tracker-line-categories' }) as unknown[]).length).toBeGreaterThan(0);
 
       const restore = await helpers.restoreBackup({ fileContent: first.base64 });
       expect(restore.statusCode).toBe(200);
@@ -678,6 +688,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
           expect(targetAccountIds.has(ruleAccountIds[0]!)).toBe(true);
 
           const targetCategoryIds = new Set<string>((await helpers.getCategoriesList()).map((row) => row.id));
+
+          const restoredTracker = (await helpers.getCustomBudgets({ raw: true })).find((row) => row.name === 'Monthly');
+          const lineCategoryIds = restoredTracker!.lines.flatMap((line) => line.categories.map((row) => row.id));
+          expect(lineCategoryIds).toHaveLength(1);
+          expect(targetCategoryIds.has(lineCategoryIds[0]!)).toBe(true);
+
           expect(automations[0]!.actions).toHaveLength(2);
           for (const action of automations[0]!.actions) {
             if (action.type === 'set_category') expect(targetCategoryIds.has(action.categoryId)).toBe(true);
@@ -1042,6 +1058,36 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
   // existing row. The restore only accepts ids it inserted this run: a required
   // column drops the row, a nullable column is nulled, and the victim's data is
   // never touched.
+  describe('Tracker logo images', () => {
+    it('gives a tracker restored onto another user its own copy of the logo image', async () => {
+      const source = await helpers.createCustomBudget({ name: 'Logo tracker', logoImage: PNG_1X1_DATA_URL, raw: true });
+      expect(source.logoImageId).toBeTruthy();
+      const { base64 } = await exportArchive();
+
+      const target = await helpers.provisionSecondUserWithBaseCurrency();
+      const restoredLogoImageId = await helpers.asUser({
+        cookies: target.cookies,
+        fn: async () => {
+          const restore = await helpers.withSelfHost(() => helpers.restoreBackup({ fileContent: base64 }));
+          expect(restore.statusCode).toBe(200);
+          const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+          expect(status.status).toBe('completed');
+
+          const restored = (await helpers.getCustomBudgets({ raw: true })).find((b) => b.name === 'Logo tracker');
+          expect(restored?.logoImageId).toBeTruthy();
+          expect(restored!.logoImageId).not.toBe(source.logoImageId);
+          return restored!.logoImageId!;
+        },
+      });
+
+      expect((await helpers.deleteCustomBudget({ id: source.id })).statusCode).toBe(200);
+
+      const image = await helpers.getLogoImage({ id: restoredLogoImageId });
+      expect(image.statusCode).toBe(200);
+      expect(image.body.equals(PNG_1X1_BYTES)).toBe(true);
+    });
+  });
+
   describe('Cross-user reference forgery guard', () => {
     /** Provision a second user (the would-be victim) and seed a real account,
      *  category, payee and transaction whose ids a forged backup can point at. */
@@ -1139,6 +1185,13 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       );
       expect(hasWarning({ status: statusRow, code: 'foreign_reference_nulled', table: 'categories' })).toBe(true);
       expect(hasWarning({ status: statusRow, code: 'foreign_reference_nulled', table: 'user' })).toBe(true);
+      expect(status.summary?.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: 'foreign_reference_dropped', table: 'balances', column: 'accountId' }),
+          expect.objectContaining({ code: 'foreign_reference_nulled', table: 'categories', column: 'parentId' }),
+          expect.objectContaining({ code: 'foreign_reference_nulled', table: 'user', column: 'defaultCategoryId' }),
+        ]),
+      );
 
       // The restore still succeeded and re-owned the restorer's own accounts.
       expect((await helpers.getAccounts()).some((a) => a.id === accountA.id)).toBe(true);
@@ -1521,7 +1574,30 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
       expect(restore.statusCode).toBe(422);
-      expect(restore.message).toMatch(/version/i);
+      expect(restore.message).toBe(
+        t({ key: 'backup.restore.errors.formatVersionTooNew', variables: { version: 2, max: BACKUP_FORMAT_VERSION } }),
+      );
+    });
+
+    it('translates a rejection into the locale the request asked for', async () => {
+      await seedBasicData();
+      const { buffer } = await exportArchive();
+      const { files, manifest } = helpers.parseBackupArchive({ buffer });
+
+      manifest.formatVersion = 2;
+      writeArchiveJson({ files, path: 'manifest.json', value: manifest });
+      const base64 = await helpers.repackBackup({ files });
+
+      const restore = await helpers.restoreBackup({
+        fileContent: base64,
+        headers: { 'Accept-Language': 'uk' },
+      });
+      const variables = { version: 2, max: BACKUP_FORMAT_VERSION };
+      expect(restore.statusCode).toBe(422);
+      expect(restore.message).toBe(t({ key: 'backup.restore.errors.formatVersionTooNew', variables, locale: 'uk' }));
+      expect(restore.message).not.toBe(
+        t({ key: 'backup.restore.errors.formatVersionTooNew', variables, locale: 'en' }),
+      );
     });
 
     it('rejects a backup whose file checksum no longer matches the manifest (422)', async () => {
@@ -1537,7 +1613,9 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
       expect(restore.statusCode).toBe(422);
-      expect(restore.message).toMatch(/checksum|integrity/i);
+      expect(restore.message).toBe(
+        t({ key: 'backup.restore.errors.checksumMismatch', variables: { path: 'data/categories.json' } }),
+      );
     });
 
     it('rejects a backup missing a required column and names the column (422)', async () => {
@@ -1574,7 +1652,8 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
       expect(restore.statusCode).toBe(422);
-      expect(restore.message).toMatch(/no user record|no files|refusing to wipe/i);
+      expect(restore.message).toContain(t({ key: 'backup.restore.errors.noUserRecord' }));
+      expect(restore.message).toContain(t({ key: 'backup.restore.errors.emptyManifest' }));
 
       // The wipe never ran: the pre-restore account and transaction are still there.
       const accountsAfter = await helpers.getAccounts();
@@ -1595,7 +1674,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
       expect(restore.statusCode).toBe(422);
-      expect(restore.message).toMatch(/malformed manifest/i);
+      expect(restore.message).toBe(t({ key: 'backup.restore.errors.malformedManifest' }));
     });
 
     it('requires a sharing acknowledgement when the user owns shared resources (409)', async () => {
@@ -1650,7 +1729,7 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
       expect(restore.statusCode).toBe(422);
-      expect(restore.message).toMatch(/different account/i);
+      expect(restore.message).toBe(t({ key: 'backup.restore.errors.differentAccount' }));
     });
 
     it('accepts the same archive on a self-hosted instance', async () => {

@@ -60,6 +60,7 @@ COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/package.json
 
 # Copy .sequelizerc and config folder
 COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/.sequelizerc ./packages/backend/.sequelizerc
+COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/tsconfig.json ./packages/backend/tsconfig.json
 COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/config ./packages/backend/config
 COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/src/migrations ./packages/backend/src/migrations
 COPY --from=build-stage --chown=nodejs:nodejs /app/packages/backend/src/resources ./packages/backend/src/resources

@@ -9,7 +9,7 @@
  */
 
 import { IMPORT_JOB_STATUSES } from './core';
-import type { ImportJobStatus } from './core';
+import type { ImportJobFailure, ImportJobStatus } from './core';
 
 /** YNAB Register.csv flag colors. Empty/unflagged rows are omitted. */
 export const YNAB_FLAG_COLORS = ['red', 'orange', 'yellow', 'green', 'blue', 'purple'] as const;
@@ -185,8 +185,18 @@ export interface YnabImportSummary {
   /** Split groups detected by the parser. Their child rows are counted in
    *  `transactionsImported`; this is a nudge for post-import cleanup. */
   splitsDetected: number;
-  errors: { rowIndex: number; error: string }[];
+  errors: YnabImportError[];
 }
+
+/**
+ * Per-row failure in a finished import. The worker has no request locale, so the
+ * UI renders text from `code` (a missing code means a generic row failure) and
+ * never shows the English `error`, which is kept for logs and API consumers.
+ * `payee-create-failed` spans every row using that payee, so its `rowIndex` is -1.
+ */
+export type YnabImportError =
+  | { rowIndex: number; error: string; code?: undefined }
+  | { rowIndex: -1; error: string; code: 'payee-create-failed'; payeeName: string };
 
 /** Common counters every progress event carries. */
 interface YnabImportProgressBase {
@@ -203,4 +213,4 @@ interface YnabImportProgressBase {
 export type YnabImportProgress =
   | (YnabImportProgressBase & { status: 'queued' | 'running' })
   | (YnabImportProgressBase & { status: 'completed'; summary: YnabImportSummary })
-  | (YnabImportProgressBase & { status: 'failed'; error: string });
+  | (YnabImportProgressBase & { status: 'failed'; error: string; failure?: ImportJobFailure });

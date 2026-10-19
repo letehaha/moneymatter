@@ -456,6 +456,8 @@ describe('finalize — captured (linked) accounts', () => {
       {
         rowIndex: null,
         code: 'account-balance-desync',
+        accountName: firstName,
+        accountCreated: false,
         error: `${firstName}: balance could not be updated after import; this account balance may be incorrect`,
       },
     ]);
@@ -562,6 +564,8 @@ describe('finalize — created accounts', () => {
       {
         rowIndex: null,
         code: 'account-balance-desync',
+        accountName: 'Desynced',
+        accountCreated: true,
         error: 'Desynced: entered balance could not be applied after import; this account balance may be incorrect',
       },
     ]);

@@ -32,7 +32,7 @@ function getStuckSyncThresholdMs(): number {
   // Allow Playwright e2e tests to shorten the threshold without waiting 5 min.
   // No-op when the flag isn't set (production / dev), so prod code is unaffected.
   if (typeof window !== 'undefined') {
-    const override = (window as unknown as { __TEST_SYNC_STUCK_MS__?: number }).__TEST_SYNC_STUCK_MS__;
+    const override = (window as unknown as { testSyncStuckMs?: number }).testSyncStuckMs;
     if (typeof override === 'number' && override > 0) return override;
   }
   return DEFAULT_STUCK_SYNC_THRESHOLD_MS;

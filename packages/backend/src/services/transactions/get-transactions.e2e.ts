@@ -496,6 +496,30 @@ describe('Retrieve transactions with filters', () => {
       expect(sortedIds(blankOrPayee)).toEqual(sortedIds([withPayee, withoutPayee]));
     });
 
+    it('budgetIds: blank matches rows in no tracker and ORs with real ids', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [inBudget] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id }),
+        raw: true,
+      });
+      const [unassigned] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({ accountId: account.id }),
+        raw: true,
+      });
+      const budget = await helpers.createCustomBudget({ name: 'Trip', raw: true });
+      await helpers.addTransactionToCustomBudget({
+        id: budget.id,
+        payload: { transactionIds: [inBudget.id] },
+        raw: true,
+      });
+
+      const blankOnly = await helpers.getTransactions({ budgetIds: [BLANK_FILTER_VALUE], raw: true });
+      expect(sortedIds(blankOnly)).toEqual([unassigned.id]);
+
+      const blankOrBudget = await helpers.getTransactions({ budgetIds: [BLANK_FILTER_VALUE, budget.id], raw: true });
+      expect(sortedIds(blankOrBudget)).toEqual(sortedIds([inBudget, unassigned]));
+    });
+
     it('tagIds: blank matches untagged rows and ORs with real tag ids', async () => {
       const account = await helpers.createAccount({ raw: true });
       const tagA = await helpers.createTag({ payload: { name: 'A', color: '#ff0000' }, raw: true });

@@ -12,8 +12,9 @@ import { fileToBase64 } from '@/common/utils/file-to-base64';
 import { useImportJobProgress } from '@/composable/use-import-job-progress';
 import { useWizardSteps } from '@/composable/use-wizard-steps';
 import { i18n } from '@/i18n';
-import { isApiErrorWithCode } from '@/js/errors';
+import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
 import { trackAnalyticsEvent } from '@/lib/posthog';
+import { importJobFailureMessage } from '@/pages/import-export/utils/import-error-message';
 import {
   API_ERROR_CODES,
   type AccountModel,
@@ -164,7 +165,12 @@ export const useStatementParserStore = defineStore('statementParser', () => {
     if (jobProgress.progress.value?.status === 'failed') {
       // A failed job with an empty message would read as "no error" and drop the
       // user back on the ready-to-import screen with a live Import button.
-      return jobProgress.progress.value.error || i18n.global.t('pages.statementParser.importResults.failedTitle');
+      const { failure, error } = jobProgress.progress.value;
+      return (
+        importJobFailureMessage({ failure, t: i18n.global.t }) ||
+        error ||
+        i18n.global.t('pages.statementParser.importResults.failedTitle')
+      );
     }
     return jobProgress.executeError.value;
   });
@@ -419,7 +425,10 @@ export const useStatementParserStore = defineStore('statementParser', () => {
 
           if ('success' in result && (result as StatementCostEstimateFailure).success === false) {
             const failure = result as StatementCostEstimateFailure;
-            entry.estimateError = failure.error?.message || failure.suggestion || 'Failed to analyze file';
+            entry.estimateError =
+              failure.error?.message ||
+              failure.suggestion ||
+              i18n.global.t('pages.statementParser.errors.estimateFailed');
             entry.estimateErrorCode = failure.textExtraction.success
               ? null
               : (failure.textExtraction.errorCode ?? null);
@@ -430,7 +439,8 @@ export const useStatementParserStore = defineStore('statementParser', () => {
             entry.estimateErrorCode = null;
           }
         } catch (error) {
-          entry.estimateError = error instanceof Error ? error.message : 'Failed to estimate cost';
+          entry.estimateError =
+            extractApiErrorMessage(error) || i18n.global.t('pages.statementParser.errors.estimateFailed');
           entry.estimateErrorCode = null;
         }
       }
@@ -467,7 +477,8 @@ export const useStatementParserStore = defineStore('statementParser', () => {
             properties: { feature: 'statement_parser' },
           });
         } catch (error) {
-          entry.extractionError = error instanceof Error ? error.message : 'Failed to extract transactions';
+          entry.extractionError =
+            extractApiErrorMessage(error) || i18n.global.t('pages.statementParser.errors.extractFailed');
         }
       }
     } finally {
@@ -580,7 +591,8 @@ export const useStatementParserStore = defineStore('statementParser', () => {
     } catch (error) {
       // A missing duplicate check does not block the import, so record the reason
       // instead of throwing.
-      duplicateDetectionError.value = error instanceof Error ? error.message : 'Failed to check for duplicates';
+      duplicateDetectionError.value =
+        extractApiErrorMessage(error) || i18n.global.t('pages.statementParser.transactionReview.duplicateCheckFailed');
     } finally {
       isDetectingDuplicates.value = false;
     }
@@ -644,7 +656,7 @@ export const useStatementParserStore = defineStore('statementParser', () => {
         });
         return;
       }
-      importError.value = error instanceof Error ? error.message : 'Failed to import transactions';
+      importError.value = extractApiErrorMessage(error) || i18n.global.t('pages.statementParser.errors.importFailed');
     } finally {
       isEnqueuing.value = false;
     }

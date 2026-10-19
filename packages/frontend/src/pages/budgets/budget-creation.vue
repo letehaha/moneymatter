@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { createBudget } from '@/api/budgets';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { ALL_LOGO_TABS, type LogoSelection, toOptionalLogoPayload } from '@/components/common/logo-selection';
+import LogoSquareField from '@/components/common/logo-square-field.vue';
 import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
 import InputField from '@/components/fields/input-field.vue';
@@ -9,7 +11,6 @@ import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
 import { Label } from '@/components/lib/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { useNotificationCenter } from '@/components/notification-center';
-import { ApiErrorResponseError } from '@/js/errors';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { cn } from '@/lib/utils';
 import { useOnboardingStore } from '@/stores/onboarding';
@@ -17,6 +18,17 @@ import { BUDGET_TYPES } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+
+import {
+  SMART_TRACKING_DEFAULTS,
+  type SmartTrackingValues,
+  buildBudgetPayload,
+  buildSmartTrackingPatch,
+  isSmartTrackingIncomplete,
+} from './build-budget-payload';
+import SmartTrackingFields from './components/smart-tracking-fields.vue';
+import TrackerLogo from './components/tracker-logo.vue';
+import { reportTrackerError, useRefreshSmartTrackingAccess } from './components/use-tracker-actions';
 
 const BUDGET_DEFAULT_VALUES: {
   id: string | null;
@@ -28,6 +40,7 @@ const BUDGET_DEFAULT_VALUES: {
   endDate?: Date | null;
   limitAmount?: number | null;
   autoInclude?: boolean;
+  logo: LogoSelection | null;
 } = {
   id: null,
   name: null,
@@ -38,20 +51,25 @@ const BUDGET_DEFAULT_VALUES: {
   endDate: null,
   limitAmount: null,
   autoInclude: false,
+  logo: null,
 } as const;
 
 const emits = defineEmits(['create-budget']);
 const { t } = useI18n();
-const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
+const { addSuccessNotification } = useNotificationCenter();
 
 const queryClient = useQueryClient();
+const refreshSmartTrackingAccess = useRefreshSmartTrackingAccess();
 const form = ref({ ...BUDGET_DEFAULT_VALUES });
 const categoriesFieldTouched = ref(false);
+const smartTracking = ref<SmartTrackingValues>({ ...SMART_TRACKING_DEFAULTS });
+const showSmartTrackingErrors = ref(false);
 
 const { isPending: isMutating, mutate: createBudgetItem } = useMutation({
   mutationFn: createBudget,
-  onSuccess: () => {
+  onSuccess: (_created, payload) => {
     queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.budgetsList });
+    refreshSmartTrackingAccess({ aiEnabled: payload.aiEnabled });
     trackAnalyticsEvent({ event: 'budget_created' });
 
     // Mark onboarding task as complete
@@ -59,14 +77,10 @@ const { isPending: isMutating, mutate: createBudgetItem } = useMutation({
     onboardingStore.completeTask('create-budget');
 
     emits('create-budget');
-    addSuccessNotification(t('budgets.creation.success'));
+    addSuccessNotification(payload.aiEnabled ? t('budgets.smartTracking.turnedOn') : t('budgets.creation.success'));
   },
   onError(error) {
-    if (error instanceof ApiErrorResponseError) {
-      addErrorNotification(error.data.message ?? '');
-    } else {
-      addErrorNotification(t('budgets.creation.error'));
-    }
+    reportTrackerError({ error, fallbackKey: 'budgets.creation.error', context: { source: 'trackerCreate' } });
   },
 });
 
@@ -80,6 +94,21 @@ const categoryErrorMessage = computed(() => {
   return t('budgets.creation.categoriesRequired');
 });
 const isSubmitDisabled = computed(() => isMutating.value || !form.value.name || !isCategoryValid.value);
+
+const submit = () => {
+  const { name, type, categoryIds, startDate, endDate, limitAmount, autoInclude, logo } = form.value;
+  if (!name) return;
+  const withSmartTracking = type === BUDGET_TYPES.manual && smartTracking.value.aiEnabled;
+  showSmartTrackingErrors.value = true;
+  if (withSmartTracking && isSmartTrackingIncomplete({ values: smartTracking.value })) return;
+  createBudgetItem({
+    ...buildBudgetPayload({ name, limitAmount, startDate, endDate, categoryIds }),
+    type,
+    autoInclude,
+    ...toOptionalLogoPayload({ selection: logo }),
+    ...(withSmartTracking ? buildSmartTrackingPatch({ values: smartTracking.value }) : {}),
+  });
+};
 
 const onCategoriesUpdate = (value: string[]) => {
   form.value.categoryIds = value;
@@ -96,12 +125,27 @@ const onBudgetTypeChange = (type: BUDGET_TYPES) => {
 </script>
 
 <template>
-  <form class="grid gap-4" @submit.prevent="() => createBudgetItem(form as any)">
-    <InputField
-      v-model="form.name"
-      :label="$t('budgets.creation.nameLabel')"
-      :placeholder="$t('budgets.creation.namePlaceholder')"
-    />
+  <form class="grid gap-4" @submit.prevent="submit">
+    <div class="flex items-start gap-3">
+      <LogoSquareField
+        v-model="form.logo"
+        :name-for-search="form.name ?? ''"
+        :reset-label="$t('common.logo.remove')"
+        :tabs="ALL_LOGO_TABS"
+        align="with-labeled-field"
+      >
+        <template #placeholder>
+          <TrackerLogo class="size-10 rounded-lg" />
+        </template>
+      </LogoSquareField>
+      <div class="min-w-0 flex-1">
+        <InputField
+          v-model="form.name"
+          :label="$t('budgets.creation.nameLabel')"
+          :placeholder="$t('budgets.creation.namePlaceholder')"
+        />
+      </div>
+    </div>
 
     <div>
       <Label class="mb-2 block text-sm font-medium">{{ $t('budgets.creation.typeLabel') }}</Label>
@@ -155,6 +199,7 @@ const onBudgetTypeChange = (type: BUDGET_TYPES) => {
         :calendar-options="{
           maxDate: form.endDate ?? undefined,
         }"
+        mode="date"
         :label="$t('budgets.creation.fromDateLabel')"
         @update:model-value="(v: Date | undefined) => (form.startDate = v ?? null)"
       />
@@ -163,6 +208,7 @@ const onBudgetTypeChange = (type: BUDGET_TYPES) => {
         :calendar-options="{
           minDate: form.startDate ?? undefined,
         }"
+        mode="date"
         :label="$t('budgets.creation.toDateLabel')"
         @update:model-value="(v: Date | undefined) => (form.endDate = v ?? null)"
       />
@@ -182,6 +228,13 @@ const onBudgetTypeChange = (type: BUDGET_TYPES) => {
         :placeholder="$t('budgets.creation.limitPlaceholder')"
       />
     </div>
+
+    <SmartTrackingFields
+      v-if="!isCategoryBudget"
+      v-model="smartTracking"
+      :has-start-date="!!form.startDate"
+      :show-errors="showSmartTrackingErrors"
+    />
 
     <div class="mt-4">
       <Button :disabled="isSubmitDisabled" type="submit">{{ $t('budgets.creation.submitButton') }}</Button>
