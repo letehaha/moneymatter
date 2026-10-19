@@ -8,17 +8,10 @@ const SEEDED_SESSION_TOKEN = 'test-session-token';
 
 describe('GET /user/sessions', () => {
   it('returns 401 when not authenticated', async () => {
-    const savedCookies = global.APP_AUTH_COOKIES;
-    global.APP_AUTH_COOKIES = '';
+    const res = await helpers.withoutSession(() => helpers.listAuthSessions({ raw: false }));
 
-    try {
-      const res = await helpers.listAuthSessions({ raw: false });
-
-      expect(res.statusCode).toBe(401);
-      expect(res.body.status).toBe(API_RESPONSE_STATUS.error);
-    } finally {
-      global.APP_AUTH_COOKIES = savedCookies;
-    }
+    expect(res.statusCode).toBe(401);
+    expect(res.body.status).toBe(API_RESPONSE_STATUS.error);
   });
 
   it("returns the user's session with the fields the revoke actions need", async () => {
@@ -38,7 +31,9 @@ describe('GET /user/sessions', () => {
   });
 
   it('lists every active session even when the current one was created more than 24 hours ago', async () => {
-    await helpers.backdateAuthSession({ token: SEEDED_SESSION_TOKEN, createdAt: new Date(Date.now() - 3 * DAY_MS) });
+    await authPool.query(`UPDATE ba_session SET "createdAt" = NOW() - INTERVAL '3 days' WHERE token = $1`, [
+      SEEDED_SESSION_TOKEN,
+    ]);
     await helpers.createTestAuthSession({
       token: 'other-device-token',
       createdAt: new Date(Date.now() - 5 * DAY_MS),

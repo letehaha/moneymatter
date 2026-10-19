@@ -72,6 +72,28 @@ describe('active sessions', () => {
     expect(wrapper.find('[data-testid="sessions-load-error"]').exists()).toBe(false);
   });
 
+  it('puts the current session first and offers revoke only on the others', async () => {
+    mockGetAuthSessions.mockResolvedValue([buildSession({ token: 'other' }), buildSession({ token: 'current-token' })]);
+
+    const wrapper = await mountComponent();
+    const [first, second] = wrapper.findAll('[data-testid="session-item"]');
+
+    expect(first!.text()).toContain('currentBadge');
+    expect(first!.find('button').exists()).toBe(false);
+    expect(second!.text()).not.toContain('currentBadge');
+    expect(second!.find('button').exists()).toBe(true);
+  });
+
+  it('shows the error state when the current session cannot be resolved', async () => {
+    mockGetSession.mockResolvedValue({ data: null, error: { message: 'boom' } });
+    mockGetAuthSessions.mockResolvedValue([buildSession({ token: 'current-token' })]);
+
+    const wrapper = await mountComponent();
+
+    expect(wrapper.find('[data-testid="sessions-load-error"]').exists()).toBe(true);
+    expect(wrapper.findAll('[data-testid="session-item"]')).toHaveLength(0);
+  });
+
   it('shows the empty message only when the API returns no sessions', async () => {
     mockGetAuthSessions.mockResolvedValue([]);
 

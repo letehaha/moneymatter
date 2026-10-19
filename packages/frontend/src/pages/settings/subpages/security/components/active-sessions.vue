@@ -100,7 +100,7 @@ import { format } from 'date-fns';
 import { type Component, computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-type Session = AuthSessionInfo & { isCurrent?: boolean };
+type Session = AuthSessionInfo & { isCurrent: boolean };
 
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 const { t } = useI18n();
@@ -170,7 +170,8 @@ const loadSessions = async () => {
   try {
     // Get current session to identify it
     const currentSession = await getSession();
-    if (currentSession?.data?.session) {
+    if (currentSession.error) throw new UnexpectedError(currentSession.error.message, currentSession.error);
+    if (currentSession.data?.session) {
       currentSessionToken.value = currentSession.data.session.token;
     }
 
@@ -224,9 +225,5 @@ const handleRevokeAll = async () => {
   }
 };
 
-onMounted(async () => {
-  isLoading.value = true;
-  await loadSessions();
-  isLoading.value = false;
-});
+onMounted(retryLoad);
 </script>

@@ -48,8 +48,3 @@ export async function createTestAuthSession({
     [`${token}-id`, userId, token, expiresAt, userAgent, createdAt],
   );
 }
-
-/** Move a session's `createdAt` back in time, as if the user had signed in long ago. */
-export async function backdateAuthSession({ token, createdAt }: { token: string; createdAt: Date }) {
-  await authPool.query(`UPDATE ba_session SET "createdAt" = $2 WHERE token = $1`, [token, createdAt]);
-}
