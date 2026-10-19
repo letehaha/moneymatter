@@ -1,7 +1,11 @@
-import { afterEach, describe, expect, it } from '@jest/globals';
+import { afterEach, describe, expect, it, jest } from '@jest/globals';
 import os from 'os';
 
 import { PtySession, redactSecrets, startPtySession } from './pty-session';
+
+// These tests start real fake-CLI processes in PTYs; jest's default 5 s is too tight on a loaded runner, and
+// fake timers cannot help with a child process. Each flow fails with its own message before this timeout does.
+jest.setTimeout(30_000);
 
 const TOKEN = `sk-ant-oat01-${'A'.repeat(12)}${'B'.repeat(12)}`;
 

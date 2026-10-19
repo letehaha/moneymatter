@@ -13,6 +13,10 @@ jest.mock('@i18n/index', () => ({
 const AUTH_URL =
   'https://claude.com/cai/oauth/authorize?code=true&client_id=fake-client&response_type=code' +
   '&redirect_uri=https%3A%2F%2Fplatform.claude.com%2Foauth%2Fcode%2Fcallback&scope=user%3Ainference&state=fake-state';
+// These tests start real fake-CLI processes in PTYs; jest's default 5 s is too tight on a loaded runner, and
+// fake timers cannot help with a child process. Each flow fails with its own message before this timeout does.
+jest.setTimeout(30_000);
+
 const TOKEN = 'sk-ant-oat01-FAKE0123456789abcdefghijklmnopqrstuvwxyz';
 
 describe('startClaudeSetupTokenFlow', () => {
