@@ -1,9 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 import * as mcpHelpers from '@tests/helpers/mcp';
 
-// Cloudflare Access adds this cookie to every request it forwards to the origin.
-const CLOUDFLARE_ACCESS_HEADERS = { Cookie: 'CF_Authorization=dummy' };
-
 const publicClientBody = {
   client_name: 'Cloudflare Access MCP client',
   redirect_uris: ['http://localhost:34567/callback'],
@@ -13,30 +10,23 @@ const publicClientBody = {
 };
 
 describe('POST /auth/oauth2/register behind Cloudflare Access', () => {
-  it('registers a public client when the request has no cookie and no Origin', async () => {
-    const res = await mcpHelpers.registerOAuthClient({ body: publicClientBody });
-
-    expect(res.statusCode).toBeGreaterThanOrEqual(200);
-    expect(res.statusCode).toBeLessThan(300);
-    expect(res.body.client_id).toEqual(expect.any(String));
-  });
-
-  it('registers a public client when only the CF_Authorization cookie is present and there is no Origin', async () => {
-    const res = await mcpHelpers.registerOAuthClient({ body: publicClientBody, headers: CLOUDFLARE_ACCESS_HEADERS });
-
-    expect(res.statusCode).toBeGreaterThanOrEqual(200);
-    expect(res.statusCode).toBeLessThan(300);
-    expect(res.body.client_id).toEqual(expect.any(String));
-  });
-
-  it('treats a request with only the CF_Authorization cookie as unauthenticated, downgrading a confidential client to public', async () => {
+  it('registers a client when only Cloudflare Access cookies are present and there is no Origin', async () => {
     const res = await mcpHelpers.registerOAuthClient({
-      body: { ...publicClientBody, token_endpoint_auth_method: 'client_secret_basic' },
-      headers: CLOUDFLARE_ACCESS_HEADERS,
+      body: publicClientBody,
+      headers: { Cookie: 'CF_Authorization=dummy; CF_AppSession=dummy' },
     });
 
-    expect(res.statusCode).toBeGreaterThanOrEqual(200);
-    expect(res.statusCode).toBeLessThan(300);
-    expect(res.body.token_endpoint_auth_method).toBe('none');
+    expect(res.statusCode).toBe(200);
+    expect(res.body.client_id).toEqual(expect.any(String));
+  });
+
+  it('still requires an Origin when any other cookie is present', async () => {
+    const res = await mcpHelpers.registerOAuthClient({
+      body: publicClientBody,
+      headers: { Cookie: 'CF_Authorization=dummy; theme=dark' },
+    });
+
+    expect(res.statusCode).toBe(403);
+    expect(res.body.code).toBe('MISSING_OR_NULL_ORIGIN');
   });
 });

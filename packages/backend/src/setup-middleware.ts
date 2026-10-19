@@ -23,10 +23,7 @@ export function setupMiddleware(app: Express) {
 
   app.use(requestIdMiddleware);
 
-  // Behind Cloudflare Access every forwarded request carries a `CF_Authorization` cookie. The app
-  // never reads it, but better-auth sees a cookie, requires an `Origin` header, and rejects MCP/OAuth
-  // clients (which send none) with MISSING_OR_NULL_ORIGIN. Dropping Cloudflare's cookies here, ahead
-  // of every auth handler, makes those requests reach better-auth cookie-less.
+  // Must run before the auth routes, including the register patch, which treats any cookie as a session.
   app.use(stripCloudflareAccessCookiesMiddleware);
 
   // Opt-in (PERF_DEBUG=true): tag responses with per-request query count + timing.

@@ -25,10 +25,7 @@ export async function getOAuthClientInfo({
   return result;
 }
 
-/**
- * Dynamic client registration as an MCP client sends it: no session cookies, and
- * only the headers the caller passes (no `Origin` unless given).
- */
+// Bypasses makeRequest so no session cookie is attached, as with a real MCP client.
 export async function registerOAuthClient({
   body,
   headers = {},
