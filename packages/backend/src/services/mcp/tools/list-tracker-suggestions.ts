@@ -2,10 +2,10 @@ import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
-import { slimTransactionsForMcp } from '@services/mcp/serializers';
 import { getTrackerSuggestions } from '@services/trackers/smart-tracking/get-suggestions';
 
 import { getUserId, jsonContent } from './helpers';
+import { presentTransactions } from './transaction-output';
 
 const inputSchema = { trackerId: recordId().describe('ID of a tracker the user owns') };
 
@@ -22,7 +22,10 @@ export function registerListTrackerSuggestions(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'list_tracker_suggestions', clientId: extra.authInfo?.clientId });
 
       const result = await getTrackerSuggestions({ userId, trackerId: args.trackerId });
-      const transactions = slimTransactionsForMcp(serializeTransactions(result.pending.map((s) => s.transaction)));
+      const transactions = await presentTransactions({
+        userId,
+        transactions: serializeTransactions(result.pending.map((s) => s.transaction)),
+      });
 
       return jsonContent({
         data: { ...result, pending: result.pending.map((s, index) => ({ ...s, transaction: transactions[index] })) },

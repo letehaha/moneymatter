@@ -1,11 +1,8 @@
-import { BUDGET_STATUSES, BUDGET_TYPES, TAG_REMINDER_FREQUENCIES, TAG_REMINDER_TYPES } from '@bt/shared/types';
+import { TRACKER_STATUSES, TRACKER_TYPES, TAG_REMINDER_FREQUENCIES, TAG_REMINDER_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { createReminderBodySchema, updateReminderBodySchema } from '@controllers/tag-reminders/shared-schemas';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
-import { getBudgetById } from '@services/budget.service';
-import { getCategoryBudgetTransactions } from '@services/budgets/get-category-budget-transactions';
-import { getBudgetStats } from '@services/budgets/stats';
 import {
   createReminder,
   deleteReminder,
@@ -14,14 +11,19 @@ import {
   getRemindersForTag,
   updateReminder,
 } from '@services/tag-reminders';
+import { getCategoryTrackerTransactions } from '@services/trackers/get-category-tracker-transactions';
+import { getTrackerById } from '@services/trackers/get-trackers';
+import { getTrackerStats } from '@services/trackers/stats';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
 import { z } from 'zod';
 
 // Block the real services, whose import chains build queues at module scope and would open
 // Redis connections in a unit test. The serializers run for real on the fakes below.
-jest.mock('@services/budget.service', () => ({ getBudgetById: jest.fn(), getBudgets: jest.fn() }));
-jest.mock('@services/budgets/stats', () => ({ getBudgetStats: jest.fn() }));
-jest.mock('@services/budgets/get-category-budget-transactions', () => ({ getCategoryBudgetTransactions: jest.fn() }));
+jest.mock('@services/trackers/get-trackers', () => ({ getTrackerById: jest.fn(), getTrackers: jest.fn() }));
+jest.mock('@services/trackers/stats', () => ({ getTrackerStats: jest.fn() }));
+jest.mock('@services/trackers/get-category-tracker-transactions', () => ({
+  getCategoryTrackerTransactions: jest.fn(),
+}));
 jest.mock('@services/tag-reminders', () => ({
   createReminder: jest.fn(),
   deleteReminder: jest.fn(),
@@ -36,9 +38,9 @@ import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-l
 
 import { registerCreateTagReminder } from './create-tag-reminder';
 import { registerDeleteTagReminder } from './delete-tag-reminder';
-import { registerGetBudget } from './get-budget';
-import { registerGetBudgetTransactions } from './get-budget-transactions';
 import { registerGetTagReminders } from './get-tag-reminders';
+import { registerGetTracker } from './get-tracker';
+import { registerGetTrackerTransactions } from './get-tracker-transactions';
 import { registerUpdateTagReminder } from './update-tag-reminder';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
@@ -48,9 +50,9 @@ const NO_WRITE_SCOPE = makeExtra({ scopes: ['finance:read'] });
 const LOCKED = /currencies.baseCurrencyChangeInProgress/;
 
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
-const budgetById = jest.mocked(getBudgetById);
-const budgetStats = jest.mocked(getBudgetStats);
-const categoryTransactions = jest.mocked(getCategoryBudgetTransactions);
+const trackerById = jest.mocked(getTrackerById);
+const trackerStats = jest.mocked(getTrackerStats);
+const categoryTransactions = jest.mocked(getCategoryTrackerTransactions);
 const createRem = jest.mocked(createReminder);
 const deleteRem = jest.mocked(deleteReminder);
 const allRem = jest.mocked(getAllReminders);
@@ -58,7 +60,7 @@ const remById = jest.mocked(getReminderById);
 const remsForTag = jest.mocked(getRemindersForTag);
 const updateRem = jest.mocked(updateReminder);
 
-const BUDGET_ID = '11111111-1111-4111-8111-111111111111';
+const TRACKER_ID = '11111111-1111-4111-8111-111111111111';
 const TAG_ID = '22222222-2222-4222-8222-222222222222';
 const REMINDER_ID = '33333333-3333-4333-8333-333333333333';
 const CATEGORY_ID = '44444444-4444-4444-8444-444444444444';
@@ -73,12 +75,12 @@ const call = async ({
   extra?: ReturnType<typeof makeExtra>;
 }) => parseToolResult({ result: await (args === undefined ? tool.handler(extra) : tool.handler(args, extra)) });
 
-const makeBudget = (patch: Record<string, unknown> = {}) => ({
-  id: BUDGET_ID,
+const makeTracker = (patch: Record<string, unknown> = {}) => ({
+  id: TRACKER_ID,
   userId: 42,
   name: 'Groceries',
-  status: BUDGET_STATUSES.active,
-  type: BUDGET_TYPES.category,
+  status: TRACKER_STATUSES.active,
+  type: TRACKER_TYPES.category,
   startDate: new Date('2026-10-01T00:00:00.000Z'),
   endDate: new Date('2026-10-31T23:59:59.000Z'),
   autoInclude: false,
@@ -127,38 +129,38 @@ beforeEach(() => {
   lockCheck.mockResolvedValue(false);
 });
 
-describe('get_budget', () => {
-  const tool = captureTools({ register: registerGetBudget })[0]!;
+describe('get_tracker', () => {
+  const tool = captureTools({ register: registerGetTracker })[0]!;
   const schema = z.object(tool.config.inputSchema ?? {}).strict();
 
   it('registers under its name, takes only a tracker id and says it reads one tracker with its stats', () => {
-    expect(tool.name).toBe('get_budget');
-    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['budgetId']);
-    expect(schema.safeParse({ budgetId: BUDGET_ID }).success).toBe(true);
+    expect(tool.name).toBe('get_tracker');
+    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['trackerId']);
+    expect(schema.safeParse({ trackerId: TRACKER_ID }).success).toBe(true);
     expect(schema.safeParse({}).success).toBe(false);
-    expect(schema.safeParse({ budgetId: 'nope' }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, userId: 7 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: 'nope' }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, userId: 7 }).success).toBe(false);
     expect(tool.config.description).toMatch(/tracker/i);
     expect(tool.config.description).toMatch(/stats|spent/i);
   });
 
   it('reads the tracker and its stats for the caller, as decimals, and works for a read-only user during the lock', async () => {
     lockCheck.mockResolvedValue(true);
-    budgetById.mockResolvedValue(makeBudget() as never);
-    budgetStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
+    trackerById.mockResolvedValue(makeTracker() as never);
+    trackerStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
 
-    const data = await call({ tool, args: { budgetId: BUDGET_ID }, extra: READ_ONLY });
+    const data = await call({ tool, args: { trackerId: TRACKER_ID }, extra: READ_ONLY });
 
-    expect(budgetById).toHaveBeenCalledWith({ id: BUDGET_ID, userId: 42 });
-    expect(budgetStats).toHaveBeenCalledWith({ userId: 42, budgetId: BUDGET_ID });
+    expect(trackerById).toHaveBeenCalledWith({ id: TRACKER_ID, userId: 42 });
+    expect(trackerStats).toHaveBeenCalledWith({ userId: 42, trackerId: TRACKER_ID });
     expect(lockCheck).not.toHaveBeenCalled();
     expect(data).toEqual({
-      budget: {
-        id: BUDGET_ID,
+      tracker: {
+        id: TRACKER_ID,
         userId: 42,
         name: 'Groceries',
-        status: BUDGET_STATUSES.active,
-        type: BUDGET_TYPES.category,
+        status: TRACKER_STATUSES.active,
+        type: TRACKER_TYPES.category,
         startDate: '2026-10-01T00:00:00.000Z',
         endDate: '2026-10-31T23:59:59.000Z',
         autoInclude: false,
@@ -183,10 +185,10 @@ describe('get_budget', () => {
   });
 
   it('converts the minor-unit sums at the decimals the stats service reports', async () => {
-    budgetById.mockResolvedValue(makeBudget() as never);
-    budgetStats.mockResolvedValue({ stats: makeStats({ actualExpense: 1234 }), decimals: 3 } as never);
+    trackerById.mockResolvedValue(makeTracker() as never);
+    trackerStats.mockResolvedValue({ stats: makeStats({ actualExpense: 1234 }), decimals: 3 } as never);
 
-    const data = (await call({ tool, args: { budgetId: BUDGET_ID } })) as {
+    const data = (await call({ tool, args: { trackerId: TRACKER_ID } })) as {
       stats: { summary: { actualExpense: number } };
     };
 
@@ -201,53 +203,53 @@ describe('get_budget', () => {
       policy: null,
       accessSource: 'direct',
     };
-    budgetById.mockResolvedValue(makeBudget({ _shareContext: share }) as never);
-    budgetStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
+    trackerById.mockResolvedValue(makeTracker({ _shareContext: share }) as never);
+    trackerStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
 
-    const data = (await call({ tool, args: { budgetId: BUDGET_ID } })) as { budget: { share?: unknown } };
+    const data = (await call({ tool, args: { trackerId: TRACKER_ID } })) as { tracker: { share?: unknown } };
 
-    expect(data.budget.share).toEqual(share);
+    expect(data.tracker.share).toEqual(share);
   });
 
   it('answers not found, without reading stats, when the lookup finds no tracker for the caller', async () => {
-    budgetById.mockResolvedValue(null);
+    trackerById.mockResolvedValue(null);
 
-    await expect(call({ tool, args: { budgetId: BUDGET_ID } })).rejects.toThrow(/budgets.budgetNotFound/);
-    expect(budgetStats).not.toHaveBeenCalled();
+    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow(/budgets.budgetNotFound/);
+    expect(trackerStats).not.toHaveBeenCalled();
   });
 
   it('lets the stats service not-found through, as for a tracker the caller has no claim on', async () => {
-    budgetById.mockResolvedValue(makeBudget() as never);
-    budgetStats.mockRejectedValue(new NotFoundError({ message: 'Tracker not found.' }));
+    trackerById.mockResolvedValue(makeTracker() as never);
+    trackerStats.mockRejectedValue(new NotFoundError({ message: 'Tracker not found.' }));
 
-    await expect(call({ tool, args: { budgetId: BUDGET_ID } })).rejects.toThrow('Tracker not found.');
+    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Tracker not found.');
   });
 });
 
-describe('get_budget_transactions', () => {
-  const tool = captureTools({ register: registerGetBudgetTransactions })[0]!;
+describe('get_tracker_transactions', () => {
+  const tool = captureTools({ register: registerGetTrackerTransactions })[0]!;
   const schema = z.object(tool.config.inputSchema ?? {}).strict();
 
   it('registers under its name and points manual trackers to search_transactions', () => {
-    expect(tool.name).toBe('get_budget_transactions');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['budgetId', 'from', 'limit']);
+    expect(tool.name).toBe('get_tracker_transactions');
+    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['from', 'limit', 'trackerId']);
     expect(tool.config.description).toMatch(/category/i);
     expect(tool.config.description).toMatch(/search_transactions/);
-    expect(tool.config.description).toMatch(/budgetIds/);
+    expect(tool.config.description).toMatch(/trackerIds/);
   });
 
   it('applies the REST bounds: from 0 or more, limit 1 to 100, defaults 0 and 50', () => {
-    expect(schema.parse({ budgetId: BUDGET_ID })).toMatchObject({ from: 0, limit: 50 });
-    expect(schema.safeParse({ budgetId: BUDGET_ID, from: 0, limit: 1 }).success).toBe(true);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, from: 200, limit: 100 }).success).toBe(true);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, from: -1 }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, from: 1.5 }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, limit: 0 }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, limit: 101 }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, limit: 1.5 }).success).toBe(false);
+    expect(schema.parse({ trackerId: TRACKER_ID })).toMatchObject({ from: 0, limit: 50 });
+    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 0, limit: 1 }).success).toBe(true);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 200, limit: 100 }).success).toBe(true);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, from: -1 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 1.5 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 0 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 101 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 1.5 }).success).toBe(false);
     expect(schema.safeParse({ from: 0 }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: 'nope' }).success).toBe(false);
-    expect(schema.safeParse({ budgetId: BUDGET_ID, userId: 7 }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: 'nope' }).success).toBe(false);
+    expect(schema.safeParse({ trackerId: TRACKER_ID, userId: 7 }).success).toBe(false);
   });
 
   it('passes the caller and the window to the service and returns its result, for a read-only user', async () => {
@@ -268,9 +270,9 @@ describe('get_budget_transactions', () => {
       total: 7,
     } as never);
 
-    const data = await call({ tool, args: { budgetId: BUDGET_ID, from: 5, limit: 20 }, extra: READ_ONLY });
+    const data = await call({ tool, args: { trackerId: TRACKER_ID, from: 5, limit: 20 }, extra: READ_ONLY });
 
-    expect(categoryTransactions).toHaveBeenCalledWith({ userId: 42, budgetId: BUDGET_ID, from: 5, limit: 20 });
+    expect(categoryTransactions).toHaveBeenCalledWith({ userId: 42, trackerId: TRACKER_ID, from: 5, limit: 20 });
     expect(lockCheck).not.toHaveBeenCalled();
     expect(data).toEqual({
       transactions: [
@@ -291,10 +293,10 @@ describe('get_budget_transactions', () => {
 
   it('lets the service errors through: a manual tracker and a tracker the caller has no claim on', async () => {
     categoryTransactions.mockRejectedValueOnce(new ValidationError({ message: 'Not a category tracker.' }));
-    await expect(call({ tool, args: { budgetId: BUDGET_ID } })).rejects.toThrow('Not a category tracker.');
+    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Not a category tracker.');
 
     categoryTransactions.mockRejectedValueOnce(new NotFoundError({ message: 'Tracker not found.' }));
-    await expect(call({ tool, args: { budgetId: BUDGET_ID } })).rejects.toThrow('Tracker not found.');
+    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Tracker not found.');
   });
 });
 
