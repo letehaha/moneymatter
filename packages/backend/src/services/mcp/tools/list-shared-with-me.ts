@@ -24,7 +24,7 @@ export function registerListSharedWithMe(server: McpServer) {
     'list_shared_with_me',
     {
       description:
-        'List the accounts, households and budgets other people shared with the signed-in user. Each share has resourceType, resourceId, resourceName (null when the resource is gone), permission, policy, acceptedAt, owner ({ id, username }) and accessSource (share: shared on its own; household: through a household membership). Returns { shares, total }, newest first; total counts the shares before limit. Read-only: leaving a share is done in the app.',
+        'List the accounts, households and trackers other people shared with the signed-in user. Each share has resourceType, resourceId, resourceName (null when the resource is gone), permission, policy, acceptedAt, owner ({ id, username }) and accessSource (share: shared on its own; household: through a household membership). Returns { shares, total }, newest first; total counts the shares before limit. Read-only: leaving a share is done in the app.',
       inputSchema,
     },
     async (args, extra) => {

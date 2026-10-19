@@ -28,7 +28,7 @@ export function registerListShareInvitations(server: McpServer) {
     'list_share_invitations',
     {
       description:
-        'List the sharing invitations of the signed-in user: the ones they sent (every status: pending, accepted, declined, revoked, expired) and the pending ones addressed to them. Each has id, direction (sent or received), resourceType (account, household or budget), resourceId, resourceName, permission, policy, status, owner and invitee ({ id, username }, the invitee null until the address belongs to a registered user), expiresAt, createdAt and the accepted/declined/revoked dates. A sent invitation also carries inviteeEmail. Returns { invitations, total }, newest first; total counts the invitations before limit. Read-only: sending, accepting, declining and cancelling invitations is done in the app.',
+        'List the sharing invitations of the signed-in user: the ones they sent (every status: pending, accepted, declined, revoked, expired) and the pending ones addressed to them. Each has id, direction (sent or received), resourceType (account, household or tracker), resourceId, resourceName, permission, policy, status, owner and invitee ({ id, username }, the invitee null until the address belongs to a registered user), expiresAt, createdAt and the accepted/declined/revoked dates. A sent invitation also carries inviteeEmail. Returns { invitations, total }, newest first; total counts the invitations before limit. Read-only: sending, accepting, declining and cancelling invitations is done in the app.',
       inputSchema,
     },
     async (args, extra) => {

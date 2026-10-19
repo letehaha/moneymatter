@@ -174,13 +174,13 @@ describe('get_notifications', () => {
 
     await call({
       tool,
-      args: { status: NOTIFICATION_STATUSES.dismissed, type: NOTIFICATION_TYPES.budgetAlert, limit: 50, offset: 0 },
+      args: { status: NOTIFICATION_STATUSES.dismissed, type: NOTIFICATION_TYPES.trackerAlert, limit: 50, offset: 0 },
     });
 
     expect(listNotifications).toHaveBeenCalledWith({
       userId: 42,
       status: NOTIFICATION_STATUSES.dismissed,
-      type: NOTIFICATION_TYPES.budgetAlert,
+      type: NOTIFICATION_TYPES.trackerAlert,
       limit: 50,
       offset: 0,
     });
@@ -383,7 +383,7 @@ describe('update_user_settings', () => {
       { locale: 'fr' },
       { includeCreditLimitInStats: true },
       { includeCreditLimitInStats: 'yes' },
-      { notifications: { enabled: false, types: { [NOTIFICATION_TYPES.budgetAlert]: false } } },
+      { notifications: { enabled: false, types: { [NOTIFICATION_TYPES.trackerAlert]: false } } },
       { notifications: { enabled: 'no' } },
       { sidebarSections: { loans: true } },
       { payeePromotionThreshold: 2 },

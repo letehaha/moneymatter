@@ -19,7 +19,7 @@ export function registerMergeDuplicateTransactions(server: McpServer) {
     'merge_duplicate_transactions',
     {
       description:
-        'Merge duplicate transactions of one account into a survivor: the other rows are removed and their budget, group and subscription links move to the survivor, which keeps its own data. The removed rows are soft-deleted, so restore_removed_transactions brings them back, but a restored row does not get its links back (they stay on the survivor). Planned rows, transfers, refund-linked rows and system-account rows are refused, as is a merge whose rows link to different budgets, groups or subscriptions than the survivor can take. Returns { removedIds }, the merged rows. Requires finance:write scope.',
+        'Merge duplicate transactions of one account into a survivor: the other rows are removed and their tracker, group and subscription links move to the survivor, which keeps its own data. The removed rows are soft-deleted, so restore_removed_transactions brings them back, but a restored row does not get its links back (they stay on the survivor). Planned rows, transfers, refund-linked rows and system-account rows are refused, as is a merge whose rows link to different budgets, groups or subscriptions than the survivor can take. Returns { removedIds }, the merged rows. Requires finance:write scope.',
       inputSchema,
     },
     async (args, extra) => {
