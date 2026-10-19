@@ -1,4 +1,4 @@
-import { afterAll, describe, expect, it, jest } from '@jest/globals';
+import { afterAll, afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ConflictError, NotFoundError } from '@js/errors';
 import { randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
@@ -29,7 +29,23 @@ const makeCache = ({ idleTtlMs, maxLifetimeMs }: { idleTtlMs: number; maxLifetim
   };
 };
 
-const wait = ({ ms }: { ms: number }) => new Promise((resolve) => setTimeout(resolve, ms));
+// Time passes by moving the clock the cache reads, never by sleeping: a slow runner cannot age an entry
+// past a window the test meant to stay inside, and no test waits in real time.
+const realNow = Date.now;
+let elapsedMs = 0;
+
+const wait = async ({ ms }: { ms: number }) => {
+  elapsedMs += ms;
+};
+
+beforeEach(() => {
+  elapsedMs = 0;
+  jest.spyOn(Date, 'now').mockImplementation(() => realNow() + elapsedMs);
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 const msUntil = ({ iso }: { iso: string }) => new Date(iso).getTime() - Date.now();
 
@@ -278,20 +294,12 @@ describe('createExpiringUploadCache', () => {
 
     const expired = await cache.store({ userId: 1, payload: { label: 'expired' } });
 
-    // Jumping the clock instead of sleeping keeps a slow CI runner from aging the
-    // live entry past its idle window too. Under a minute, so `store` does not
-    // fire a second background sweep.
-    const realNow = Date.now;
-    const clock = jest.spyOn(Date, 'now').mockImplementation(() => realNow() + 5_000);
-    let live: Awaited<ReturnType<typeof cache.store>>;
-    try {
-      live = await cache.store({ userId: 1, payload: { label: 'live' } });
-      // `store` fires the sweep in the background and at most once a minute, so
-      // driving it here is what makes the assertions below deterministic.
-      await cache.sweepExpired();
-    } finally {
-      clock.mockRestore();
-    }
+    // Under a minute, so `store` does not fire a second background sweep.
+    await wait({ ms: 5_000 });
+    const live = await cache.store({ userId: 1, payload: { label: 'live' } });
+    // `store` fires the sweep in the background and at most once a minute, so
+    // driving it here is what makes the assertions below deterministic.
+    await cache.sweepExpired();
 
     const remaining = await fs.readdir(directory);
     expect(remaining.filter((entry) => entry.includes(expired.id))).toEqual([]);
