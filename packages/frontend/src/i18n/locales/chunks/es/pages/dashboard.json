@@ -176,6 +176,79 @@
         "utilized": "utilizado",
         "noAccounts": "No hay cuentas con límites de crédito"
       },
+      "cashAccounts": {
+        "vsLastMonth": "vs. el mes pasado",
+        "runwayUnit": "m",
+        "runwayLabel": "de gastos",
+        "loadFailed": "No se pudieron cargar tus cuentas.",
+        "runwayHint": {
+          "description": "Generalmente se recomienda mantener un fondo de emergencia que cubra entre 3 y 6 meses de sus gastos.",
+          "critical": "Menos de 1 mes: muy poco buffer",
+          "low": "1–3 meses: por debajo de lo recomendado",
+          "good": "Más de 3 meses: rango recomendado"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Patrimonio neto",
+        "owesShare": "Te debes {percent} de lo que posees",
+        "noDebt": "Sin deuda",
+        "assets": "Activos",
+        "liabilities": "Pasivos",
+        "loadFailed": "No se pudieron cargar tus activos y pasivos",
+        "buckets": {
+          "cash": "Efectivo",
+          "investments": "Inversiones",
+          "ventures": "Ventures",
+          "vehicles": "Vehículos",
+          "loans": "Préstamos",
+          "creditAndOverdrafts": "Créditos y descubiertos"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "vs. el mes pasado",
+          "average": "vs. promedio de 3 meses"
+        },
+        "spentIn": "Gastado en {month}",
+        "onTrackFor": "En camino para {amount}",
+        "vsComparison": "{percent} vs {name}",
+        "comparison": {
+          "average": "Promedio de {n} meses"
+        },
+        "stats": {
+          "byToday": "{name} para hoy",
+          "total": "{name} total",
+          "daysLeft": "Días restantes"
+        },
+        "chart": {
+          "today": "Hoy",
+          "ariaLabel": "Gasto de este mes"
+        },
+        "tooltip": {
+          "spent": "Gastado",
+          "forecast": "Pronóstico",
+          "spikeFrom": "Gastado en {date}"
+        },
+        "legend": {
+          "thisMonth": "Este mes",
+          "forecast": "Pronóstico",
+          "averageMonth": "Mes promedio"
+        },
+        "hints": {
+          "noHistory": "La comparación aparece después de tu primer mes completo.",
+          "fewMonths": "Promedio del mes completo de {n} que tienes hasta ahora. | Promedio de los {n} meses completos que tengas hasta ahora."
+        },
+        "loadFailed": "No se pudo cargar tu gasto.",
+        "settings": {
+          "spikes": {
+            "title": "Marcadores de pico",
+            "summary": "Días con ≥{percent}% de los gastos mensuales",
+            "inputLabel": "Marcar un día cuando llegue",
+            "hint": "Porcentaje del gasto total del mes pasado, 1–100%. Las marcas se muestran en modo \"vs. el mes pasado\"."
+          },
+          "saved": "Configuración actualizada"
+        }
+      },
       "plannedOverview": {
         "title": "Planificadas",
         "projectedBy": "Proyectado por {date}",
@@ -269,6 +342,18 @@
         "creditUtilization": {
           "name": "Utilización de crédito",
           "description": "Uso del límite de crédito en sus cuentas"
+        },
+        "cashAccounts": {
+          "name": "Efectivo y Cuentas",
+          "description": "Total de efectivo en todas tus cuentas, su cambio desde el mes pasado y cuántos meses de gastos cubre"
+        },
+        "assetsLiabilities": {
+          "name": "Activos y Pasivos",
+          "description": "Lo que posees, lo que debes, y el valor neto entre ellos"
+        },
+        "spendingPace": {
+          "name": "Ritmo de gasto",
+          "description": "Gastos mensuales con una previsión para el resto del mes, en comparación con el mes pasado o su promedio de los últimos 3 meses."
         },
         "plannedOverview": {
           "name": "Resumen de planificadas",

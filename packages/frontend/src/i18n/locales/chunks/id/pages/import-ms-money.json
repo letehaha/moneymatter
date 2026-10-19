@@ -125,6 +125,11 @@
           "errorsTitle": "{count} baris tidak dapat diimpor",
           "errorsOverflow": "…dan {count} lainnya",
           "rowPrefix": "Baris {rowIndex}:",
+          "errors": {
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
+            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "Lihat transaksi",
           "importAnother": "Impor file lain"
         },

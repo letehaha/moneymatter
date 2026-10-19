@@ -6,7 +6,7 @@
       "submitButton": "Anmelden",
       "noAccount": "Noch kein Konto?",
       "signupsDisabledTooltip": "Neue Registrierungen wurden vom Administrator dieser Instanz deaktiviert",
-      "forgotPassword": "Forgot password?",
+      "forgotPassword": "Passwort vergessen?",
       "errors": {
         "incorrectEmailOrPassword": "Ungültige E-Mail-Adresse oder falsches Passwort.",
         "incorrectPassword": "Falsches Passwort.",
@@ -32,7 +32,7 @@
         "signIn": "Mit {provider} anmelden",
         "signUp": "Mit {provider} registrieren"
       },
-      "lastUsed": "Last used"
+      "lastUsed": "Zuletzt verwendet"
     }
   }
 }

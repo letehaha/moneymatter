@@ -52,8 +52,6 @@
           "server": "Máy chủ",
           "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
         },
-        "sharedPoolNote": "On your current plan, the included model runs in a shared pool, so limits may apply when overall demand is high. {link} to avoid them.",
-        "sharedPoolNoteLink": "Upgrade to Plus",
         "modelLabel": "Mô hình",
         "modelInfo": {
           "estimatedCost": "Chi phí ước tính:",
@@ -95,13 +93,15 @@
           "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
           "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
           "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
-          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs."
+          "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs.",
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Good fit",
@@ -213,7 +213,7 @@
           "nameLabel": "Tên",
           "baseUrlLabel": "Base URL",
           "baseUrlPlaceholder": "https://example.com/v1",
-          "apiKeyLabel": "API key",
+          "apiKeyLabel": "Khóa API",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
           "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",

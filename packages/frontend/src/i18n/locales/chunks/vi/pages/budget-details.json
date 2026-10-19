@@ -2,6 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
+        "loadError": "Couldn't load transactions.",
         "selectionModeWarning": "Chế độ chọn — chọn giao dịch muốn gỡ liên kết",
         "selectAll": "Chọn tất cả",
         "selected": "Đã chọn {count}",
@@ -15,7 +16,9 @@
         "resetFilters": "Đặt lại bộ lọc",
         "addTransactions": "Thêm giao dịch",
         "add": "Thêm",
-        "loadingMore": "Đang tải thêm…"
+        "loadingMore": "Đang tải thêm…",
+        "unlinkError": "Failed to unlink transactions",
+        "addError": "Failed to add transactions"
       }
     },
     "budgetDetails": {
@@ -57,11 +60,45 @@
         "income": "Thu nhập",
         "expenses": "Chi tiêu",
         "incomeLabel": "Thu nhập:",
-        "expensesLabel": "Chi tiêu:"
+        "expensesLabel": "Chi tiêu:",
+        "kpi": {
+          "dailyPace": "Daily pace",
+          "perDay": "/ day",
+          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "daysElapsed": "{elapsed} of {total} days",
+          "projectedTotal": "Projected total",
+          "projectedLimit": "at this pace · limit {amount}",
+          "averagePerDay": "Average per day",
+          "firstTransaction": "First transaction",
+          "lastTransaction": "Last transaction",
+          "transactions": "Giao dịch",
+          "avgAmount": "avg {amount}",
+          "biggestDay": "Biggest day",
+          "shareOfTotal": "{percent}% of total"
+        },
+        "byCategory": "By category",
+        "categoriesCount": "{count} category | {count} categories",
+        "byCurrency": "By currency",
+        "asPaid": "as paid",
+        "timeline": "Dòng thời gian",
+        "todayMarker": "today {date}",
+        "timelineAria": "Cumulative spending over time with per-period bars",
+        "limitLabel": "{amount} limit",
+        "cumulativeLabel": "Cumulative",
+        "legend": {
+          "cumulative": "Spent, cumulative",
+          "evenPace": "Even pace to the limit",
+          "projection": "Projection",
+          "daily": "Per day",
+          "weekly": "Per week",
+          "monthly": "Per month"
+        },
+        "topPayees": "Top payees",
+        "bySpend": "by spend",
+        "noPayee": "No payee",
+        "txCount": "{count} tx"
       },
       "sharing": {
-        "title": "Chia sẻ",
-        "description": "Quản lý những người được phép xem và đóng góp vào ngân sách này.",
         "inviteAnother": "Mời người khác",
         "membersHeading": "Thành viên",
         "pendingHeading": "Lời mời đang chờ",

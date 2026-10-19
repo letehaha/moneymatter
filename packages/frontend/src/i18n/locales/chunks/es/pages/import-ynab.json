@@ -67,6 +67,10 @@
           "transfersImported": "Transferencias importadas",
           "splitsDetected": "Grupos de divisiones detectados",
           "errorsTitle": "No se pudieron importar {count} filas",
+          "errors": {
+            "payeeCreateFailed": "Could not create payee \"{payeeName}\". Its transactions were imported without a payee.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "Ver transacciones",
           "importAnother": "Importar otro archivo"
         }

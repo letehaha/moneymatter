@@ -230,7 +230,7 @@
             "title": "مميزات الذكاء الاصطناعي"
           },
           "sharing": {
-            "title": "Sharing & Household"
+            "title": "Sharing & household"
           }
         },
         "tasks": {
@@ -320,13 +320,13 @@
           }
         },
         "ui": {
-          "title": "Quick Start",
-          "subtitle": "Use our Quick Start guide to learn about everything MoneyMatter can do for you.",
+          "title": "Quick start",
+          "subtitle": "Use our quick start guide to learn about everything MoneyMatter can do for you.",
           "dismissButton": "Dismiss permanently",
-          "dismissConfirmTitle": "Dismiss Quick Start?",
-          "dismissConfirmDescription": "You can always reopen the Quick Start guide from settings if you change your mind.",
+          "dismissConfirmTitle": "Dismiss quick start?",
+          "dismissConfirmDescription": "You can always reopen the quick start guide from settings if you change your mind.",
           "dismissConfirmButton": "Dismiss",
-          "triggerTooltip": "Quick Start - {count} tasks remaining",
+          "triggerTooltip": "Quick start - {count} tasks remaining",
           "srDescription": "Complete these tasks to get started with the app",
           "progressText": "{completed} of {total} complete",
           "categoryProgress": "{completed} of {total} complete"

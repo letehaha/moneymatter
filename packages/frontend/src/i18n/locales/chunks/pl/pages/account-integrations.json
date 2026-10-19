@@ -2,7 +2,7 @@
   "pages": {
     "integrations": {
       "addDialog": {
-        "titleSelect": "Add Integration",
+        "titleSelect": "Add integration",
         "titleConnect": "Connect {provider}",
         "selectProviderHint": "Where do you bank? Pick a region to see what works there.",
         "betaBadge": "Beta"
@@ -30,8 +30,8 @@
         }
       },
       "monobank": {
-        "apiTokenLabel": "API Token",
-        "connectionNameLabel": "Connection Name (optional)",
+        "apiTokenLabel": "API token",
+        "connectionNameLabel": "Connection name (optional)",
         "tokenPlaceholder": "Enter your Monobank API token",
         "accountNamePlaceholder": "e.g., Personal Account",
         "help": {
@@ -56,13 +56,13 @@
       },
       "enableBankingConnector": {
         "beta": {
-          "title": "Beta Feature - Developer-Oriented",
+          "title": "Beta feature - developer-oriented",
           "description": "This integration requires technical knowledge to set up. You'll need to register your own Enable Banking application and provide API credentials. The setup process and API may change in future updates."
         },
         "credentials": {
           "appIdLabel": "Application ID",
           "appIdHint": "Get from Enable Banking portal after uploading your certificate",
-          "privateKeyLabel": "Private Key",
+          "privateKeyLabel": "Private key",
           "privateKeyHint": "Your PEM-encoded RSA private key (stored encrypted)",
           "bicLabel": "BIC:"
         },
@@ -95,13 +95,13 @@
         "syncSuccess": "Connected {count} account(s). Transactions are syncing in the background."
       },
       "instructionsDialog": {
-        "title": "How to Obtain Enable Banking Credentials",
+        "title": "How to obtain Enable Banking credentials",
         "overview": {
           "title": "Overview",
           "text": "Enable Banking requires you to register an application and generate security credentials to access banking data. Follow these steps to get your Application ID and Private Key."
         },
         "step1": {
-          "title": "Register & Create Application",
+          "title": "Register & create application",
           "intro": "Visit {link} and create an account if you don't have one already.",
           "createApp": "Then create an application:",
           "steps": {
@@ -125,7 +125,7 @@
           }
         },
         "step2": {
-          "title": "Link Your Bank Accounts",
+          "title": "Link your bank accounts",
           "intro": "Before using the application with MoneyMatter, you must first link your bank accounts through the Enable Banking portal. Look for the \"Link accounts\" button inside the created application's tile and follow all the steps required there.",
           "breakdown": "Here's the details breakdown:",
           "steps": {
@@ -147,18 +147,18 @@
           "infoAddMoreStrong": "Keep in mind"
         },
         "step3": {
-          "title": "Get Your Credentials",
+          "title": "Get your credentials",
           "intro": "From the Enable Banking portal:",
           "appId": "{strong} Copy the {code} from your application details",
           "appIdStrong": "Application ID:",
           "appIdCode": "app_id",
           "appIdExample": "Example:",
           "privateKey": "{strong} Open your saved {code} file via some text editor (TextEdit on MacOS or Notepad on Windows) and copy its entire content (including the BEGIN and END lines)",
-          "privateKeyStrong": "Private Key:",
+          "privateKeyStrong": "Private key:",
           "privateKeyCode": "private.pem"
         },
         "securityNote": {
-          "title": "Security Note",
+          "title": "Security note",
           "text": "Your private key is stored encrypted in our database and is only used to authenticate with Enable Banking on your behalf. Token is limited to read-only data. Yet, never share your private key with anyone else."
         },
         "gotItButton": "Got it"
@@ -181,7 +181,7 @@
         }
       },
       "lunchflow": {
-        "apiKeyLabel": "API Key",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your LunchFlow API key",
         "help": {
           "trigger": "Where do I find my API key?",
@@ -251,10 +251,10 @@
         "help": {
           "trigger": "How do I set up Walutomat API access?"
         },
-        "apiKeyLabel": "API Key",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your Walutomat API key",
         "apiKeyHint": "Found in your Walutomat dashboard under Settings → API",
-        "privateKeyLabel": "Private Key (PEM)",
+        "privateKeyLabel": "Private key (PEM)",
         "privateKeyPlaceholder": "-----BEGIN RSA PRIVATE KEY-----\n...\n-----END RSA PRIVATE KEY-----",
         "privateKeyHint": "Paste the contents of your private.key file (RSA 4096-bit PEM format)",
         "backButton": "Back",
@@ -271,22 +271,22 @@
           "importFailed": "Failed to import wallets."
         },
         "instructions": {
-          "title": "Walutomat API Setup Instructions",
+          "title": "Walutomat API setup instructions",
           "overviewTitle": "Overview",
           "overviewText": "To connect Walutomat, you need an API key and an RSA private key. The API key authenticates your account, while the private key signs each request for security.",
-          "step1Title": "Generate RSA Key Pair",
+          "step1Title": "Generate RSA key pair",
           "step1Intro": "Open a terminal and run these commands:",
           "step1FilesCreated": "This creates two files: {privateKey} (keep secret!) and {publicKey} (upload to Walutomat).",
-          "step2Title": "Upload Public Key to Walutomat",
+          "step2Title": "Upload public key to Walutomat",
           "step2Login": "1. Log in to",
           "step2GoToSettings": "2. Go to {settings} → {api}",
           "step2Upload": "3. Upload your {publicKey} file",
           "step2ApiKeyGenerated": "4. Walutomat will generate an API key for you",
-          "step3Title": "Enter Credentials Here",
+          "step3Title": "Enter credentials here",
           "step3Intro": "You need two things:",
           "step3ApiKeyDesc": "{apiKey} — Copy it from the Walutomat API settings page",
           "step3PrivateKeyDesc": "{privateKey} — Open {filename} in a text editor and copy the entire contents (including the BEGIN/END lines)",
-          "securityNoteTitle": "Security Note",
+          "securityNoteTitle": "Security note",
           "securityNoteText": "Your private key is encrypted before storage and is only used to sign API requests. It is never exposed or transmitted to anyone other than Walutomat.",
           "closeButton": "Got it"
         }
@@ -306,7 +306,7 @@
           "notFoundDescription": "This integration may have been removed or the link is incorrect. Check your integrations list to find what you're looking for.",
           "unexpectedTitle": "Something went wrong",
           "unexpectedDescription": "We couldn't load this connection. Please try again later.",
-          "backButton": "Back to Integrations"
+          "backButton": "Back to integrations"
         },
         "connectionDetails": {
           "statusActive": "Active",
@@ -318,12 +318,12 @@
           "statusActive": "Active",
           "daysCount": "{count} day | {count} days",
           "notAvailable": "N/A",
-          "reconnectButton": "Reconnect Now"
+          "reconnectButton": "Reconnect now"
         },
         "connectedAccounts": {
-          "title": "Connected Accounts",
+          "title": "Connected accounts",
           "empty": "No accounts connected yet.",
-          "connectButton": "Connect Accounts",
+          "connectButton": "Connect accounts",
           "currencyFallback": "The bank didn't report a currency for this account — {currency} was assigned when it was connected and can't be changed.",
           "columnAccount": "Account",
           "columnExternalId": "External ID",
@@ -338,22 +338,22 @@
         },
         "actions": {
           "renameButton": "Rename connection",
-          "disconnectButton": "Disconnect Integration",
+          "disconnectButton": "Disconnect integration",
           "manage": "Manage"
         },
         "fetchAccountsDialog": {
-          "title": "Connect Remaining Accounts",
+          "title": "Connect remaining accounts",
           "description": "Select available accounts from {providerName} that are not yet connected.",
           "missingAccountsQuestion": "Don't see your accounts?",
           "missingAccountsHint": "If you can't see some of your accounts, try reconnecting your bank connection from the {section} section by clicking {button}.",
-          "missingAccountsSectionName": "Connection Validity",
-          "missingAccountsButtonName": "Reconnect Now",
+          "missingAccountsSectionName": "Connection validity",
+          "missingAccountsButtonName": "Reconnect now",
           "missingAccountsPersist": "If the issue persists, please report it for further investigation.",
           "sessionExpired": "Your session has expired. Please reconnect your bank connection to continue.",
           "loadFailed": "Failed to load available accounts. Please try again.",
           "noAdditionalAccounts": "No additional accounts available to connect.",
-          "connectSelectedButton": "Connect Selected Accounts ({count})",
-          "selectAccountsButton": "Select Accounts",
+          "connectSelectedButton": "Connect selected accounts ({count})",
+          "selectAccountsButton": "Select accounts",
           "alreadyConnected": "Already connected",
           "creditLimitMeta": "Limit {amount}"
         },
@@ -385,7 +385,7 @@
       },
       "dialogs": {
         "disconnect": {
-          "title": "Disconnect Integration",
+          "title": "Disconnect integration",
           "description": "Are you sure you want to disconnect this integration? This action cannot be undone.",
           "removeAccounts": "Also remove associated accounts",
           "removeAccountsHint": "This will permanently delete all accounts linked to this integration",
@@ -393,14 +393,14 @@
           "disconnect": "Disconnect"
         },
         "editName": {
-          "title": "Edit Connection Name",
+          "title": "Edit connection name",
           "description": "Give your connection a custom name to easily identify it.",
-          "label": "Connection Name",
+          "label": "Connection name",
           "saving": "Saving...",
           "save": "Save"
         },
         "reconnect": {
-          "title": "Reconnect Integration",
+          "title": "Reconnect integration",
           "description": "By starting the reconnection flow, {warning}. You must finish the flow to make the connection active again.",
           "warning": "your current connection will immediately become invalid",
           "preparing": "Preparing...",
@@ -409,11 +409,11 @@
       },
       "authFailure": {
         "description": "This connection needs to be reconnected before it can sync again.",
-        "updateButton": "Update Credentials"
+        "updateButton": "Update credentials"
       },
       "updateCredentials": {
-        "title": "Update Credentials",
-        "apiKeyLabel": "API Key",
+        "title": "Update credentials",
+        "apiKeyLabel": "API key",
         "apiKeyPlaceholder": "Enter your API key",
         "updatingButton": "Updating...",
         "updateButton": "Update",
@@ -455,17 +455,17 @@
     },
     "bankCallback": {
       "processing": {
-        "title": "Completing Authorization...",
+        "title": "Completing authorization...",
         "description": "Please wait while we verify your bank connection"
       },
       "error": {
-        "title": "Authorization Failed",
-        "backToIntegrations": "Back to Integrations"
+        "title": "Authorization failed",
+        "backToIntegrations": "Back to integrations"
       },
       "success": {
-        "title": "Connection Successful!",
+        "title": "Connection successful!",
         "description": "Your bank account has been connected successfully.",
-        "viewAccounts": "View Accounts"
+        "viewAccounts": "View accounts"
       },
       "errors": {
         "authorizationDenied": "Authorization was denied or failed",

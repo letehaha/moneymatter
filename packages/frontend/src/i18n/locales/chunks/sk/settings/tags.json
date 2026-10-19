@@ -16,8 +16,6 @@
         "color": "Farba",
         "icon": "Ikona",
         "iconPlaceholder": "Vyberte ikonu",
-        "iconSearchPlaceholder": "Hľadať ikony...",
-        "clearIcon": "Vymazať ikonu",
         "description": "Popis",
         "descriptionPlaceholder": "Voliteľný popis",
         "saveButton": "Uložiť",

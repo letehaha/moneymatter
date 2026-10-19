@@ -7,7 +7,7 @@
         "loadError": "Vašu históriu importov sa nepodarilo načítať.",
         "emptyTitle": "Zatiaľ žiadne importy",
         "emptyDescription": "Keď importujete transakcie, zobrazia sa tu.",
-        "emptyAction": "Importovať údaje",
+        "emptyAction": "Import údajov",
         "transactionCount": "{count} transakcia | {count} transakcie | {count} transakcií",
         "accountCount": "{count} účet | {count} účty | {count} účtov",
         "deleteButton": "Zmazať import",

@@ -128,7 +128,7 @@
       },
       "statementParsing": {
         "name": "Analyzátor výpisov",
-        "description": "Vyťaženie transakcií z bankových výpisov (PDF, CSV, TXT) pomocou AI"
+        "description": "Vyťažte transakcie z bankových výpisov (PDF, CSV, TXT), účteniek a snímok obrazovky pomocou AI"
       },
       "investmentTransactionsParsing": {
         "name": "Import investičných transakcií",
@@ -137,6 +137,10 @@
       "receiptParsing": {
         "name": "Priraďovanie faktúr",
         "description": "Prečíta nahranú faktúru alebo účtenku a nájde transakciu, ku ktorej patrí."
+      },
+      "trackerMatching": {
+        "name": "Tracker matching",
+        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       }
     },
     "transactions": {
@@ -152,6 +156,7 @@
       },
       "record": {
         "addedByTooltip": "Túto transakciu priradil k sledovaču používateľ {handle}",
+        "matchedByAi": "Priradené pomocou AI",
         "externalLinkTooltip": "Otvoriť externý odkaz",
         "locationTooltip": "Otvoriť polohu na mape",
         "attachmentsTooltip": "Obsahuje prílohy",
@@ -218,7 +223,9 @@
     "logo": {
       "tabs": {
         "brand": "Značka",
-        "letters": "Písmená"
+        "letters": "Písmená",
+        "icon": "Ikona",
+        "custom": "Image"
       },
       "searchPlaceholder": "Názov značky alebo doména",
       "searchHint": "Zadajte názov značky alebo doménu, napríklad amazon.com",
@@ -238,8 +245,17 @@
       "colorLabel": "Farba",
       "colorSwatchAriaLabel": "Použiť farbu {color}",
       "customColorAriaLabel": "Vybrať vlastnú farbu",
-      "applyLetters": "Použiť",
-      "lettersSelectedLabel": "Písmená “{letters}”"
+      "lettersSelectedLabel": "Písmená “{letters}”",
+      "lettersHint": "1–2 letters or an emoji",
+      "chooseImage": "Choose image",
+      "replaceImage": "Replace image",
+      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
+      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
+      "imageUnreadable": "That file couldn't be read as an image."
+    },
+    "iconPicker": {
+      "searchPlaceholder": "Hľadať ikony...",
+      "clear": "Vymazať ikonu"
     },
     "importBatchDeleteOverlay": {
       "title": "Mažú sa importované transakcie",
@@ -301,6 +317,13 @@
     "viewOnGitHub": "Zobraziť na GitHub",
     "newVersion": "Nová verzia {version}",
     "newRelease": "Nová verzia",
+    "trackerAiMatches": {
+      "title": "{name}: {summary}",
+      "added": "{count} transaction added | {count} transactions added",
+      "toReview": "{count} transaction to review | {count} transactions to review",
+      "toReviewShort": "{count} to review",
+      "both": "{added}, {toReview}"
+    },
     "tagReminder": {
       "thresholdMessage": "minuté {amount} (hranica: {threshold})",
       "existenceMessage": "{count} transakcia | {count} transakcie | {count} transakcií"
@@ -401,6 +424,7 @@
   },
   "billing": {
     "seePlans": "Zobraziť plány",
+    "trialStartFailed": "Couldn't start the free trial. Try again.",
     "updatePaymentMethod": "Aktualizovať spôsob platby",
     "planRequired": {
       "essential": "Súčasť plánu Essential",
@@ -445,6 +469,39 @@
     "estimatedCost": {
       "yourApiKey": "(váš API kľúč)",
       "setByEndpoint": "Ocenené vaším poskytovateľom"
+    }
+  },
+  "aiUsage": {
+    "title": "Zahrnuté využitie AI",
+    "used": "využité",
+    "percentUsed": "využitých {percent} %",
+    "resetsOn": "Obnovuje sa {date}",
+    "connectOwnModel": "Pripojiť vlastný model",
+    "gotIt": "Rozumiem",
+    "badge": {
+      "used": "Využitých {percent} % AI",
+      "reached": "Dosiahnutý limit AI"
+    },
+    "dialog": {
+      "description": "Toto pridelené množstvo zdieľa spracúvanie výpisov, kategorizácia, účtenky a návrhy rozpočtu.",
+      "status": {
+        "plusWarning": "Vyčerpali ste väčšinu zahrnutej AI na tento mesiac. Keď sa minie, funkcie AI sa pozastavia do {date}.",
+        "plusReached": "Vyčerpali ste zahrnutú AI na tento mesiac. Funkcie AI sú pozastavené do {date}.",
+        "trialWarning": "Vyčerpali ste väčšinu AI zahrnutej vo vašom pláne na tento mesiac. Keď sa minie, funkcie AI sa pozastavia.",
+        "trialReached": "Vyčerpali ste AI zahrnutú vo vašom pláne na tento mesiac. Ak chcete pokračovať v používaní funkcií AI, predplaťte si Plus alebo pripojte vlastný model."
+      }
+    },
+    "options": {
+      "connectDescription": "Použite vlastný model Anthropic, OpenAI, Gemini alebo lokálny model. Do tohto limitu sa nikdy nezapočítava.",
+      "subscribeTitle": "Predplatiť Plus",
+      "subscribeDescription": "Získajte viac zahrnutej AI každý mesiac.",
+      "waitTitle": "Počkať na obnovenie",
+      "waitDescription": "Zahrnutá AI sa obnoví {date}."
+    },
+    "meter": {
+      "ok": "Obnovuje sa {date}. Vaše vlastné pripojené modely sa nikdy nezapočítavajú.",
+      "warning": "Keď sa minie, funkcie AI sa pozastavia do {date}, pokiaľ nepripojíte vlastný model.",
+      "reached": "Vyčerpané do {date}. Funkcie AI sú pozastavené."
     }
   },
   "transactionGroups": {

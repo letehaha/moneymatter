@@ -2,7 +2,7 @@
   "pages": {
     "importExport": {
       "importHistory": {
-        "pageTitle": "Import History",
+        "pageTitle": "Import history",
         "pageDescription": "See your past imports and drill into exactly what accounts and transactions each one created.",
         "loadError": "Couldn't load your import history.",
         "emptyTitle": "No imports yet",

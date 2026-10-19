@@ -2,22 +2,20 @@
   "settings": {
     "tags": {
       "title": "标签",
-      "addButton": "Add Tag",
+      "addButton": "Add tag",
       "empty": "No tags yet. Create your first tag to organize your transactions.",
       "tabs": {
         "details": "Details",
         "reminders": "Reminders"
       },
       "form": {
-        "createTitle": "Create Tag",
-        "editTitle": "Edit Tag",
+        "createTitle": "Create tag",
+        "editTitle": "Edit tag",
         "name": "Name",
         "namePlaceholder": "Tag name",
         "color": "颜色",
         "icon": "图标",
         "iconPlaceholder": "选择图标",
-        "iconSearchPlaceholder": "Search icons...",
-        "clearIcon": "Clear icon",
         "description": "Description",
         "descriptionPlaceholder": "Optional description",
         "saveButton": "Save",
@@ -38,16 +36,16 @@
         "deleteFailed": "Failed to delete tag"
       },
       "reminders": {
-        "addButton": "Add Reminder",
+        "addButton": "Add reminder",
         "empty": "No reminders yet. Create a reminder to get notified about this tag's activity.",
         "enabled": "Enabled",
         "disabled": "Disabled",
         "form": {
-          "createTitle": "Create Reminder",
-          "editTitle": "Edit Reminder",
-          "type": "Reminder Type",
+          "createTitle": "Create reminder",
+          "editTitle": "Edit reminder",
+          "type": "Reminder type",
           "typePlaceholder": "Select type",
-          "amountThreshold": "Amount Threshold",
+          "amountThreshold": "Amount threshold",
           "amountThresholdPlaceholder": "Enter threshold amount",
           "amountThresholdHint": "Get notified when spending on this tag exceeds this amount",
           "frequency": "Frequency",
@@ -59,9 +57,9 @@
           "saveButton": "Save"
         },
         "types": {
-          "amountThreshold": "Amount Threshold",
+          "amountThreshold": "Amount threshold",
           "amountThresholdDescription": "Notify when spending exceeds a certain amount",
-          "existenceCheck": "Activity Check",
+          "existenceCheck": "Activity check",
           "existenceCheckDescription": "Notify when there are transactions with this tag"
         },
         "frequencies": {

@@ -325,6 +325,12 @@
         "errorColumns": {
           "row": "Baris",
           "error": "Kesalahan"
+        },
+        "rowErrors": {
+          "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
+          "accountUnresolved": "The account for this row could not be resolved, so the row was skipped.",
+          "readBackFailed": "The transaction was created but could not be read back, so it is missing from the imported count.",
+          "generic": "This row could not be imported."
         }
       }
     }

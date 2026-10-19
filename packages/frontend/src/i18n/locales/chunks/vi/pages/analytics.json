@@ -1,15 +1,15 @@
 {
   "analytics": {
-    "backToAnalytics": "Back to Analytics",
+    "backToAnalytics": "Back to analytics",
     "timePeriods": {},
     "navigation": {
-      "cashFlow": "Cash Flow",
-      "trendsComparison": "Trends Comparison",
-      "investmentCalculator": "Investment Projection",
+      "cashFlow": "Cash flow",
+      "trendsComparison": "Trends comparison",
+      "investmentCalculator": "Investment projection",
       "pivotReport": "Pivot",
-      "netWorthDrivers": "Net Worth Drivers",
+      "netWorthDrivers": "Net worth drivers",
       "investmentContributions": "Contributions",
-      "netWorthHistory": "Net Worth History",
+      "netWorthHistory": "Net worth history",
       "collapse": "Thu gọn",
       "sections": {
         "investments": "Đầu tư"
@@ -23,15 +23,15 @@
       "subtitle": "Income against expenses over time, and where the money went.",
       "income": "Income",
       "expenses": "Expenses",
-      "netSavings": "Net Savings",
-      "netFlow": "Net Flow",
-      "savingsRate": "Savings Rate",
+      "netSavings": "Net savings",
+      "netFlow": "Net flow",
+      "savingsRate": "Savings rate",
       "loadError": "Failed to load cash flow data",
       "noData": "No transactions found",
       "noDataHint": "Try selecting a different period or check if you have any transactions",
       "showTrendLine": "Show trend line",
       "showTrendLineHint": "Smoothed average of net cash flow",
-      "trendLine": "Trend Line",
+      "trendLine": "Trend line",
       "vsPreviousPeriod": "vs previous period",
       "chartTypes": {
         "stacked": "Stacked",
@@ -95,21 +95,21 @@
         "cumulativeNote": "Cumulative total up to this point"
       },
       "categoryBreakdown": {
-        "title": "Category Breakdown",
+        "title": "Category breakdown",
         "noData": "No data for this period",
         "viewAll": "View all categories",
         "moreCount": "{count} more"
       },
       "monthlyComparison": {
-        "title": "Monthly Comparison",
-        "allCategories": "All Categories",
+        "title": "Monthly comparison",
+        "allCategories": "All categories",
         "average": "Average",
         "total": "Total",
         "vsLastMonth": "vs previous month",
         "viewTransactions": "View transactions"
       },
       "cumulativeProgress": {
-        "title": "Cumulative Progress"
+        "title": "Cumulative progress"
       },
       "filters": {
         "button": "Filters",
@@ -151,7 +151,7 @@
       "ofMoneyInvested": "of money invested",
       "customIndicator": "Custom",
       "customReturnRate": "Enter rate (%)",
-      "inflationAdjustedSuffix": "(Inflation Adjusted)",
+      "inflationAdjustedSuffix": "(Inflation adjusted)",
       "yearN": "Year {n}",
       "disclaimer": "Based on constant {rate}%/yr return. S&P 500 historical average is ~10%/yr. Does not account for taxes or fees.",
       "useAvgNetIncomeTooltip": "Your average monthly net income (income minus expenses) over the selected period, based on your transaction history",
@@ -165,9 +165,9 @@
       "rangeMin": "Min",
       "rangeMax": "Max",
       "indicators": {
-        "worldStock": "Total World Stock",
-        "usTreasury": "US Treasury Bonds",
-        "corporateBonds": "Corporate Bonds"
+        "worldStock": "Total world stock",
+        "usTreasury": "US Treasury bonds",
+        "corporateBonds": "Corporate bonds"
       }
     },
     "portfolioFilter": {
@@ -193,8 +193,8 @@
         "enterContribution": "Enter a contribution",
         "returnBelowInflation": "Your return assumption doesn't beat inflation ({real} real), so the balance shrinks in today's money.",
         "portfolioShortHistory": "Your portfolio's return is based on only {years} years. Short or bull-market history rarely repeats. Consider a market preset.",
-        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to World stocks.",
-        "customMissing": "Enter a custom return. Until then, the plan uses World stocks.",
+        "portfolioUnavailable": "The portfolio this plan used is gone or has too little history. Return switched to world stocks.",
+        "customMissing": "Enter a custom return. Until then, the plan uses world stocks.",
         "historyDegraded": "Some holdings are valued at cost, or an exchange rate is missing. Your balance may be understated until prices sync.",
         "hide": "Hide warning",
         "hideTitle": "Hide this warning?",
@@ -208,7 +208,7 @@
         "spendingPlaceholder": "e.g. 40000",
         "requiredBadge": "Required",
         "autoSpendingHint": "Average of the last {n} full month × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments. | Average of the last {n} full months × 12, only accounts you own, transfers and savings categories excluded. Typical month: {typical}. Includes loan and mortgage payments.",
-        "backToAuto": "Back to Auto ({amount})",
+        "backToAuto": "Back to auto ({amount})",
         "excludedLabel": "Not counted as spending",
         "excludedPlaceholder": "Exclude categories",
         "savingsNote": "Savings categories are excluded too. {link}",
@@ -550,7 +550,7 @@
     "states": {
       "noData": "No contributions in this range",
       "noDataHint": "Move money into a portfolio during this period to see it here.",
-      "noPortfoliosTitle": "No portfolios yet",
+      "noPortfoliosTitle": "Chưa có danh mục đầu tư nào",
       "noPortfoliosPlaceholder": "Create a portfolio and start investing to track your contributions here.",
       "noPortfoliosAction": "Add a portfolio",
       "loadError": "Couldn't load contributions"

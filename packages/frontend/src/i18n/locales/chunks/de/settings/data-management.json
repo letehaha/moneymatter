@@ -10,7 +10,7 @@
       "textSource": {
         "title": "Aus beliebiger Textquelle importieren",
         "aiBadge": "KI-gestützt",
-        "listDescription": "Kontoauszüge, E-Mails oder beliebige Textquellen"
+        "listDescription": "Kontoauszüge, Belege, Screenshots oder beliebiger Text"
       },
       "csv": {
         "title": "CSV importieren",

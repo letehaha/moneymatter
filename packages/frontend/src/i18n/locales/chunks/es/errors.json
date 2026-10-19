@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "No se puede conectar con el servidor. Es posible que el backend aún se esté iniciando (~30s después del arranque), o que su variable de entorno ALLOWED_ORIGINS no incluya esta URL.",
       "unexpectedError": "Error inesperado.",
       "sessionExpired": "Su sesión ha caducado. Inicie sesión de nuevo",
-      "payloadTooLarge": "La solicitud es demasiado grande. Intente importar menos elementos a la vez"
+      "payloadTooLarge": "La solicitud es demasiado grande. Intente importar menos elementos a la vez",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "La contraseña es demasiado corta.",
+      "passwordTooLong": "La contraseña es demasiado larga.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Esta página no está en los registros",

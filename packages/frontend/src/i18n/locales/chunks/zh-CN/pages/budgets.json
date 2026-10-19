@@ -5,7 +5,7 @@
     "notFound": "Tracker not found",
     "notFoundDescription": "We couldn't find this tracker. It may have been deleted or you might not have access to it.",
     "backToList": "Back to trackers",
-    "newBudget": "New Tracker",
+    "newBudget": "New tracker",
     "createBudget": "Create tracker",
     "creation": {
       "success": "Tracker created",
@@ -27,8 +27,9 @@
       "submitButton": "Add tracker"
     },
     "list": {
-      "tabCategory": "Category Trackers",
-      "tabManual": "Manual Trackers",
+      "loadError": "Couldn't load trackers.",
+      "tabCategory": "Category trackers",
+      "tabManual": "Manual trackers",
       "edit": "编辑",
       "delete": "删除",
       "deleteSuccess": "Tracker deleted successfully!",
@@ -68,6 +69,55 @@
       "emptyState": {
         "title": "No trackers yet",
         "description": "Create a tracker to start tracking your spending or monitoring specific events."
+      },
+      "searchPlaceholder": "Search trackers",
+      "filters": {
+        "all": "All",
+        "manual": "Manual",
+        "category": "Category",
+        "archived": "Archived"
+      },
+      "groups": {
+        "active": "Active now",
+        "upcoming": "Upcoming",
+        "noDates": "No dates",
+        "ended": "Ended",
+        "archived": "Archived",
+        "show": "show",
+        "hide": "hide"
+      },
+      "showMoreEnded": "Show {count} more ended",
+      "row": {
+        "auto": "auto",
+        "transactions": "{count} transaction | {count} transactions",
+        "moreCategories": "+{count} more",
+        "noLimit": "no limit",
+        "archiveSuggestion": "Archive?"
+      },
+      "menu": {
+        "moreActions": "More actions",
+        "open": "Open",
+        "duplicate": "Duplicate"
+      },
+      "duplicateSuccess": "Tracker duplicated",
+      "duplicateError": "Failed to duplicate tracker",
+      "archiveSuccess": "Tracker archived",
+      "unarchiveSuccess": "Tracker unarchived",
+      "noMatch": {
+        "title": "Nothing matches \"{query}\"",
+        "titleNoQuery": "No trackers match these filters",
+        "description": "Try another name, or include archived trackers.",
+        "includeArchived": "Include archived"
+      },
+      "archivePrompt": {
+        "title": "Archive \"{name}\"?",
+        "endedDaysAgo": "{count} 天前 | {count} 天前",
+        "endedMonthsAgo": "{count} 个月前 | {count} 个月前",
+        "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
+        "dontAsk": "Don't ask for this tracker",
+        "notNow": "以后再说",
+        "dismissError": "Failed to update tracker",
+        "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
       }
     },
     "settings": {
@@ -80,12 +130,12 @@
       "notSet": "Not set"
     },
     "addTransactionsDialog": {
-      "title": "Add Transactions to Tracker",
-      "addSelected": "Add Selected",
+      "title": "Add transactions to tracker",
+      "addSelected": "Add selected",
       "clearSelection": "Clear selection"
     },
     "categoryBudget": {
-      "trackedCategories": "Tracked Categories",
+      "trackedCategories": "Tracked categories",
       "categoriesCount": "{count} categories tracked",
       "autoTrackedInfo": "Transactions are automatically tracked based on categories",
       "transactionsTitle": "Transactions",
@@ -93,21 +143,208 @@
       "noTransactions": "No transactions yet",
       "noTransactionsDescription": "Transactions matching your tracked categories will appear here automatically.",
       "transactionsLoadError": "Failed to load transactions",
-      "categoryBreakdown": "Category Breakdown",
+      "categoryBreakdown": "Category breakdown",
       "edit": "编辑",
-      "editTitle": "Edit Tracker",
+      "editTitle": "Edit tracker",
       "showMore": "Show more",
       "showLess": "Show less",
       "settings": {
-        "categoriesLabel": "Tracked Categories"
+        "categoriesLabel": "Tracked categories"
       }
     },
     "manualBudget": {
       "edit": "编辑",
-      "editTitle": "Edit Tracker"
+      "editTitle": "Edit tracker"
     },
     "share": {
       "sharedByBadge": "Shared by {handle}"
+    },
+    "details": {
+      "statsLoadError": "Couldn't load this tracker's totals.",
+      "transactionsCount": "{count} transaction | {count} transactions",
+      "strip": {
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left",
+        "overBy": "Over by",
+        "income": "Income",
+        "expenses": "Expenses",
+        "net": "Net",
+        "transactions": "Transactions",
+        "perDay": "{amount} / day"
+      },
+      "tabs": {
+        "limits": "Limits"
+      },
+      "tracks": "Tracks",
+      "membersLabel": "Members: {count}",
+      "actions": {
+        "share": "Share",
+        "setLimits": "Set limits",
+        "removeLimits": "Remove limits",
+        "duplicate": "Duplicate",
+        "openInTransactions": "Open in Transactions",
+        "more": "More actions"
+      },
+      "shareDialog": {
+        "title": "Share \"{name}\""
+      },
+      "removeLimitsDialog": {
+        "title": "Remove all limits?",
+        "description": "The line and its limit will be removed. Linked transactions stay in the tracker. | All {count} lines and their limits will be removed. Linked transactions stay in the tracker."
+      },
+      "edit": {
+        "limitHint": "Clear it to track without a limit.",
+        "datesHint": "Changing the dates does not add or remove transactions already linked.",
+        "categoriesHint": "Removing a category also removes it from any line."
+      }
+    },
+    "lines": {
+      "addLine": "Add line",
+      "empty": {
+        "title": "Split spending into lines",
+        "titleWithLimit": "Split the {amount} into lines",
+        "description": "A line is a set of categories with its own limit. Spending that fits no line shows as \"Other\"."
+      },
+      "columns": {
+        "line": "Line",
+        "limit": "Limit",
+        "spent": "Spent",
+        "left": "Left"
+      },
+      "usage": "{percent}% · {spent} of {limit}",
+      "overUsage": "Over by {amount} · {spent} of {limit}",
+      "spentOnly": "{amount} spent",
+      "categoriesCount": "{count} category | {count} categories",
+      "ofLimit": "of {limit}",
+      "editLimitAria": "Edit limit for {name}",
+      "noLimitPlaceholder": "No limit",
+      "other": {
+        "title": "Other spending",
+        "hint": "not in any line"
+      },
+      "total": {
+        "title": "Total · {count} line | Total · {count} lines",
+        "limitOfOverall": "{sum} of {limit}"
+      },
+      "menu": {
+        "ariaLabel": "Line actions",
+        "edit": "Edit line",
+        "delete": "Delete line"
+      },
+      "delete": {
+        "title": "Delete line?",
+        "description": "\"{name}\" will be removed and its spending will show under Other. Transactions are not affected."
+      },
+      "dialog": {
+        "addTitle": "Add line",
+        "editTitle": "Edit line",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Hotels",
+        "nameRequired": "Enter a name",
+        "categoriesLabel": "分类",
+        "categoriesPlaceholder": "Pick categories",
+        "categoriesRequired": "Pick at least one category",
+        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
+        "limitLabel": "Limit (optional)",
+        "limitPlaceholder": "No limit",
+        "limitHint": "Leave empty to group spending without a limit."
+      },
+      "notifications": {
+        "limitsRemoved": "Limits removed",
+        "created": "Line added",
+        "updated": "Line updated",
+        "deleted": "Line deleted",
+        "createError": "Couldn't add the line",
+        "updateError": "Couldn't update the line",
+        "deleteError": "Couldn't delete the line"
+      }
+    },
+    "smartTracking": {
+      "fields": {
+        "heading": "Smart tracking",
+        "switchLabel": "Find matching transactions for me",
+        "switchHint": "Checks new and edited transactions every night. Sure matches are added for you, the rest wait for your review.",
+        "needsStartDate": "Set a start date first, AI looks from there.",
+        "noAi": "Set up an AI model in {link} to use this.",
+        "noAiLink": "Settings → AI",
+        "allowanceUsed": "AI allowance used up. {link} to keep it running.",
+        "running": "Matching is running. You can change these once it finishes.",
+        "descriptionLabel": "What belongs in this tracker?",
+        "descriptionPlaceholder": "e.g. Two weeks in Greece: flights, ferries, rental car, island hotels",
+        "descriptionRequired": "Describe what belongs here so AI knows what to look for.",
+        "preWindowLabel": "Also look before the start date",
+        "preWindowPlaceholder": "Choose how far back to look",
+        "preWindowHint": "Catches flights and hotels booked in advance.",
+        "preWindowOptions": {
+          "none": "Don't look earlier",
+          "twoWeeks": "2 weeks",
+          "oneMonth": "1 month",
+          "twoMonths": "2 months",
+          "threeMonths": "3 months",
+          "sixMonths": "6 months"
+        },
+        "usesIncluded": "Uses the included AI. Counts toward your monthly AI allowance.",
+        "usesOwnModel": "Uses your own model · {model}"
+      },
+      "pausedUntil": "Paused until {date}",
+      "connectOwnModel": "Connect your own model",
+      "plan": {
+        "locked": "Smart tracking is part of Plus. Upgrade, or connect your own AI key to keep using it.",
+        "connectOwnKey": "Connect your own key",
+        "upgrade": "Upgrade",
+        "startTrial": "Start free trial",
+        "trialDaysLeft": "Free trial: {n} day left | Free trial: {n} days left",
+        "trialHint": "Includes a {days}-day free trial. It starts when you turn smart tracking on."
+      },
+      "turnedOn": "Smart tracking is on. First results in a minute or two.",
+      "undo": "Undo",
+      "unlinked": "Unlinked. AI won't add it again. | Unlinked {count} transactions. AI won't add them again.",
+      "relinkError": "Couldn't add the transactions back. Try again.",
+      "strip": {
+        "tip": "Let AI find transactions for this tracker",
+        "turnOn": "Turn on",
+        "hide": "Hide",
+        "scanning": "Looking for matching transactions…",
+        "startedAt": "Started {time}",
+        "toReview": "{count} to review",
+        "checkedAt": "checked {when}",
+        "review": "Review",
+        "idle": "Smart tracking is on · nothing new to review",
+        "settings": "设置",
+        "paused": "Paused",
+        "allowanceUsed": "AI allowance used up",
+        "unavailable": "AI connection stopped working",
+        "fixInSettings": "Fix in Settings",
+        "ended": "Smart tracking stopped · the tracker ended more than 14 days ago",
+        "noStartDate": "Set a start date to use smart tracking"
+      },
+      "hideTip": {
+        "title": "Hide this tip?",
+        "description": "You can still turn on smart tracking in the tracker's settings.",
+        "neverShow": "Never show again",
+        "neverShowHint": "Hides it on every tracker, not just this one.",
+        "confirm": "Hide"
+      },
+      "review": {
+        "sectionTitle": "To review ({count})",
+        "confidence": {
+          "likely": "Likely",
+          "possible": "Possible"
+        },
+        "add": "添加",
+        "skip": "Skip",
+        "addAria": "Add {name} to {tracker}",
+        "skipAria": "Skip {name}",
+        "addAll": "Add all {count}",
+        "addAllShort": "Add all",
+        "skipAll": "Skip all",
+        "added": "Added {count} transaction to {name} | Added {count} transactions to {name}",
+        "skipped": "Skipped. AI won't suggest it again. | Skipped {count} transactions. AI won't suggest them again.",
+        "acceptError": "Couldn't add the suggested transactions. Try again.",
+        "rejectError": "Couldn't skip the suggested transactions. Try again.",
+        "restoreError": "Couldn't undo the skip. Try again."
+      }
     }
   }
 }

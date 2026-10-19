@@ -574,6 +574,7 @@
       "analyzing": "Čítanie faktúry a vyhľadávanie vo vašich transakciách...",
       "attaching": "Prikladanie faktúry k transakcii...",
       "privacyNote": "Súbor sa pošle poskytovateľovi AI len na prečítanie. Nič sa neuloží, kým ho neprepojíte s transakciou.",
+      "aiPausedHint": "Čítanie faktúr je pozastavené. Otvorte odznak AI vyššie a zobrazte si svoje možnosti.",
       "direction": {
         "paid": "Moja platba",
         "gotPaid": "Platba pre mňa",
@@ -649,7 +650,7 @@
       }
     },
     "exchangeCurrency": {
-      "title": "Zmena meny",
+      "title": "Výmena meny",
       "description": "Vymeňte hotovosť medzi rôznymi menami v rámci svojho portfólia"
     },
     "shareAccountDialog": {

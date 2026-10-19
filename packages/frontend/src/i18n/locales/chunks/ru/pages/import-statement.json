@@ -34,6 +34,9 @@
         "currencyConflict": "В выбранных выписках указаны разные валюты ({currencies}). Все они будут импортированы в один счёт в валюте этого счёта.",
         "unsupportedFileNamed": "{name} не является файлом PDF, CSV или TXT",
         "unreadableImageNamed": "{name} could not be read as an image",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
         "pasteImageButton": "Paste image",
         "pasteShortcutHint": "or press {shortcut}",
         "clipboardNoImage": "No image found in the clipboard.",
@@ -75,8 +78,6 @@
             "description": "Обработка может занять более 5 минут. Для ускорения разделите файл на меньшие части."
           }
         },
-        "freeApiWarning": "Вы используете бесплатный доступ к AI с дневными лимитами. Для быстрого и непрерывного сервиса добавьте собственный API-ключ.",
-        "addApiKeyLink": "Добавить API-ключ в настройках →",
         "status": {
           "sendingFile": "Отправка файла в AI...",
           "readingDocument": "AI читает документ...",
@@ -153,9 +154,15 @@
         "backButton": "Назад",
         "continueButton": "Перейти к импорту",
         "transactionCount": "({count} транзакций)",
-        "duplicateCheckFailed": "Не удалось проверить выписку на совпадения с существующими транзакциями, поэтому число дубликатов недоступно. Просмотрите список перед импортом."
+        "duplicateCheckFailed": "Не удалось проверить выписку на совпадения с существующими транзакциями, поэтому число дубликатов недоступно. Просмотрите список перед импортом.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} строку из ответа AI не удалось прочитать, она пропущена. Итоговое число импортированных транзакций может быть меньше, чем в файле. | {count} строки из ответа AI не удалось прочитать, они пропущены. Итоговое число импортированных транзакций может быть меньше, чем в файле. | {count} строк из ответа AI не удалось прочитать, они пропущены. Итоговое число импортированных транзакций может быть меньше, чем в файле.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
         "readyTitle": "Готово к импорту",
         "readyDescription": "Проверьте сводку ниже и нажмите «Импортировать транзакции».",
@@ -182,7 +189,14 @@
         "errorHeader": "Ошибка",
         "batchIdNote": "ID пакета импорта: {batchId}. Используйте его для поиска и управления всеми импортированными транзакциями.",
         "viewTransactionsButton": "Просмотреть транзакции",
-        "startNewImportButton": "Начать новый импорт"
+        "startNewImportButton": "Начать новый импорт",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

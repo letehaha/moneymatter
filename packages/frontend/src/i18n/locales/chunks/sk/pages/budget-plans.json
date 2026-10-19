@@ -119,6 +119,7 @@
       "suggestedLinesHint": "Premení vaše výdavky za posledné 3 mesiace na pomenované skupiny a riadky, kde je sumou priemer. Bez histórie sa pridá úvodná sada. Trvá to pár sekúnd. Ktorýkoľvek z nich môžete neskôr zmeniť alebo odstrániť.",
       "askQuestionsLabel": "Najprv mi položte pár otázok",
       "askQuestionsHint": "Pár krátkych krokov pre presnejšie prispôsobenie.",
+      "askQuestionsNeedsAi": "Vyžaduje AI. Navrhované riadky namiesto toho použijú štandardnú šablónu.",
       "customEveryLabel": "Každých",
       "customEveryPlaceholder": "napr. 10",
       "customUnitLabel": "Jednotka",

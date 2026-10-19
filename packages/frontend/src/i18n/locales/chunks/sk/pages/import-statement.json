@@ -2,7 +2,7 @@
   "pages": {
     "statementParser": {
       "pageTitle": "Analyzátor výpisov",
-      "pageDescription": "Nahrajte bankový výpis (PDF, CSV alebo TXT) a vyťažte transakcie pomocou AI. Ak chcete neobmedzený prístup, pridajte si v nastaveniach vlastný model AI.",
+      "pageDescription": "Nahrajte bankový výpis (PDF, CSV alebo TXT), fotografiu účtenky alebo snímku obrazovky bankovej aplikácie a vyťažte transakcie pomocou AI. Ak chcete neobmedzený prístup, pridajte si v nastaveniach vlastný model AI.",
       "stepper": {
         "steps": {
           "upload": "Nahratie",
@@ -21,7 +21,7 @@
       "selectAccount": "Vyberte účet",
       "searchAccounts": "Hľadať účty...",
       "uploadExtract": {
-        "supportedFormats": "Podporované formáty: PDF, CSV, TXT (max. 10 MB)",
+        "supportedFormats": "Podporované formáty: PDF, CSV, TXT, JPG, PNG, WebP (max. 10 MB)",
         "clickOrDragStatements": "Kliknite sem alebo sem presuňte súbory výpisov",
         "filesLabel": "Súbory",
         "analyzingFiles": "Analyzovanie súborov...",
@@ -32,12 +32,15 @@
         "progressFile": "Spracúvanie {name} ({current} z {total})",
         "acrossFiles": "naprieč {count} súbormi",
         "currencyConflict": "Vybrané výpisy uvádzajú rôzne meny ({currencies}). Všetky sa importujú do jedného účtu, v mene tohto účtu.",
-        "unsupportedFileNamed": "{name} nie je súbor PDF, CSV ani TXT",
-        "unreadableImageNamed": "{name} could not be read as an image",
-        "pasteImageButton": "Paste image",
-        "pasteShortcutHint": "or press {shortcut}",
-        "clipboardNoImage": "No image found in the clipboard.",
-        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
+        "unsupportedFileNamed": "{name} nie je súbor PDF, CSV, TXT, JPG, PNG alebo WebP",
+        "unreadableImageNamed": "{name} sa nepodarilo prečítať ako obrázok",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
+        "pasteImageButton": "Vložte obrázok",
+        "pasteShortcutHint": "alebo stlačte {shortcut}",
+        "clipboardNoImage": "V schránke sa nenašiel žiadny obrázok.",
+        "clipboardReadFailed": "Schránku sa nepodarilo prečítať. Povoľte prístup k schránke, alebo vložte obsah klávesovou skratkou.",
         "unreadableFiles": "Nepodarilo sa prečítať: {files}",
         "fileStatus": {
           "pending": "Neanalyzované",
@@ -75,8 +78,6 @@
             "description": "Spracovanie môže trvať viac než 5 minút. Ak chcete rýchlejšie spracovanie, zvážte rozdelenie súboru na menšie časti."
           }
         },
-        "freeApiWarning": "Používate zahrnuté MoneyMatter AI, ktoré má limity používania.",
-        "addApiKeyLink": "Pridať vlastný model AI",
         "status": {
           "sendingFile": "Odosielanie súboru do AI...",
           "readingDocument": "AI číta dokument...",
@@ -153,9 +154,15 @@
         "backButton": "Späť",
         "continueButton": "Pokračovať na import",
         "transactionCount": "(Transakcie: {count})",
-        "duplicateCheckFailed": "Tento výpis sa nepodarilo porovnať s vašimi existujúcimi transakciami, preto počet duplicít nižšie nie je dostupný. Pred importom si zoznam skontrolujte."
+        "duplicateCheckFailed": "Tento výpis sa nepodarilo porovnať s vašimi existujúcimi transakciami, preto počet duplicít nižšie nie je dostupný. Pred importom si zoznam skontrolujte.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} riadok z odpovede AI sa nepodarilo prečítať a bol preskočený. Počet importovaných nižšie môže byť nižší než v súbore. | {count} riadky z odpovede AI sa nepodarilo prečítať a boli preskočené. Počet importovaných nižšie môže byť nižší než v súbore. | {count} riadkov z odpovede AI sa nepodarilo prečítať a boli preskočené. Počet importovaných nižšie môže byť nižší než v súbore.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
         "readyTitle": "Pripravené na import",
         "readyDescription": "Skontrolujte súhrn nižšie a pokračujte kliknutím na „Importovať transakcie\".",
@@ -182,7 +189,14 @@
         "errorHeader": "Chyba",
         "batchIdNote": "ID dávky importu: {batchId}. Pomocou tohto ID nájdete všetky importované transakcie a môžete ich spravovať.",
         "viewTransactionsButton": "Zobraziť transakcie",
-        "startNewImportButton": "Spustiť nový import"
+        "startNewImportButton": "Spustiť nový import",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

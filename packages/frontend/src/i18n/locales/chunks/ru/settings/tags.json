@@ -16,8 +16,6 @@
         "color": "Цвет",
         "icon": "Значок",
         "iconPlaceholder": "Выберите значок",
-        "iconSearchPlaceholder": "Поиск значков...",
-        "clearIcon": "Убрать значок",
         "description": "Описание",
         "descriptionPlaceholder": "Необязательное описание",
         "saveButton": "Сохранить",

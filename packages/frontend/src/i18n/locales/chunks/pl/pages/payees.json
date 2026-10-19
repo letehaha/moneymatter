@@ -2,7 +2,7 @@
   "payees": {
     "title": "Payees",
     "subtitle": "Master list of merchants you transact with",
-    "newPayeeButton": "New Payee",
+    "newPayeeButton": "New payee",
     "searchPlaceholder": "Search payees…",
     "columns": {
       "name": "Name",
@@ -66,20 +66,20 @@
     "detail": {
       "categorizationSection": "Categorization",
       "aliasesHeading": "Aliases",
-      "aliasesEmpty": "No aliases yet. New variants will appear here when this Payee matches another merchant name.",
-      "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the Payee's name. Rename the Payee instead.",
+      "aliasesEmpty": "No aliases yet. New variants will appear here when this payee matches another merchant name.",
+      "cannotDeleteCanonicalAlias": "Cannot delete the alias matching the payee's name. Rename the payee instead.",
       "deleteAliasConfirm": "Remove this alias?",
       "addAlias": "Add",
       "addAliasTitle": "Add alias",
-      "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this Payee. Past transactions are unchanged.",
+      "addAliasDescription": "Future transactions whose merchant text normalizes to this alias will automatically link to this payee. Past transactions are unchanged.",
       "addAliasInputLabel": "Merchant name",
       "addAliasPlaceholder": "e.g. ACME STORE #1234",
-      "aliasDuplicate": "This alias is already attached to this Payee.",
+      "aliasDuplicate": "This alias is already attached to this payee.",
       "aliasUsedByOtherPayee": "This alias is already used by \"{name}\".",
       "deletePayeeTitle": "Delete payee?",
       "deletePayeeDescription": "Linked transactions keep their category but lose the payee link. This cannot be undone.",
-      "deleteAndIgnoreTitle": "Delete this Payee and ignore future matches?",
-      "deleteAndIgnoreDescription": "Deletes this Payee AND adds its names (canonical + all aliases) to the ignored-names blocklist. Future syncs won't recreate it from raw merchant text. Linked transactions stay but lose their payee link.",
+      "deleteAndIgnoreTitle": "Delete this payee and ignore future matches?",
+      "deleteAndIgnoreDescription": "Deletes this payee AND adds its names (canonical + all aliases) to the ignored-names blocklist. Future syncs won't recreate it from raw merchant text. Linked transactions stay but lose their payee link.",
       "mergeTitle": "Merge into another payee",
       "mergeDescription": "Pick the target payee. All transactions and aliases move to the target; this payee is deleted.",
       "confirmMerge": "Merge",
@@ -97,7 +97,7 @@
     },
     "logo": {
       "change": "Change logo",
-      "dialogTitle": "Change Logo",
+      "dialogTitle": "Change logo",
       "dialogDescription": "Search for a brand logo to represent this payee.",
       "resetToAuto": "Reset to automatic",
       "updatedToast": "Logo updated.",
@@ -136,11 +136,11 @@
     },
     "settings": {
       "title": "Payee detection settings",
-      "description": "Control how the app auto-detects Payees from your synced transactions.",
+      "description": "Control how the app auto-detects payees from your synced transactions.",
       "howDetectionWorks": "How detection works",
       "payeeFromDescription": {
         "label": "Detect payees from transaction descriptions",
-        "description": "When your bank doesn't provide a dedicated merchant field, fall back to the transaction description (note) to auto-detect Payees. Useful for bank connections that have merchant fields empty or absent. May produce noisier Payee names (e.g. installment-payment prefixes) which you can rename or merge afterwards.",
+        "description": "When your bank doesn't provide a dedicated merchant field, fall back to the transaction description (note) to auto-detect payees. Useful for bank connections that have merchant fields empty or absent. May produce noisier payee names (e.g. installment-payment prefixes) which you can rename or merge afterwards.",
         "successNotification": "Preference updated",
         "errorNotification": "Failed to update preference"
       },
@@ -162,7 +162,7 @@
     },
     "ignoredNames": {
       "title": "Ignored merchant names",
-      "description": "Raw merchant strings that should never automatically create a Payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a Payee manually — only automatic matching is blocked.",
+      "description": "Raw merchant strings that should never automatically create a payee. Useful for noise like 'Card transfer', 'From: <name>', or refund prefixes. You can still link these names to a payee manually — only automatic matching is blocked.",
       "addPlaceholder": "e.g. Spotify",
       "addButton": "Add",
       "addedToast": "Added to ignored names",
@@ -172,9 +172,9 @@
       "removeError": "Failed to remove",
       "empty": "No ignored names yet.",
       "normalizedLabel": "Normalized",
-      "conflictTitle": "An existing Payee matches",
-      "conflictDescription": "A Payee with the same normalized name as \"{name}\" already exists. Continuing will delete that Payee (transactions stay, lose link).",
-      "forceConfirm": "Delete Payee and ignore"
+      "conflictTitle": "An existing payee matches",
+      "conflictDescription": "A payee with the same normalized name as \"{name}\" already exists. Continuing will delete that payee (transactions stay, lose link).",
+      "forceConfirm": "Delete payee and ignore"
     },
     "loadingMore": "Loading more…",
     "txCount": "{count} tx"

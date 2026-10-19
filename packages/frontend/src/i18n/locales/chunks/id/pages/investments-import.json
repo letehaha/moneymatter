@@ -75,6 +75,38 @@
       "estimateFailed": "Gagal memperkirakan biaya impor",
       "csvParseFailed": "Tidak dapat mengurai CSV. Periksa format file dan coba lagi."
     },
+    "errors": {
+      "csv": {
+        "empty": "CSV file is empty.",
+        "noHeaders": "CSV file has no header row.",
+        "forbiddenHeader": "CSV header uses a reserved name (e.g. __proto__).",
+        "tooManyRows": "CSV exceeds the {max}-row limit.",
+        "parseError": "Couldn't parse the CSV file. Check that it's a valid CSV."
+      }
+    },
+    "warnings": {
+      "csvRowMissingSymbol": "Row {row}: missing symbol",
+      "csvRowInvalidDate": "Row {row}: unparseable date \"{value}\"",
+      "csvRowUnmappedSide": "Row {row}: unmapped side value \"{value}\"",
+      "csvRowInvalidQuantity": "Row {row}: invalid quantity \"{value}\"",
+      "csvRowInvalidPrice": "Row {row}: invalid price \"{value}\"",
+      "csvRowInvalidFees": "Row {row}: invalid fees \"{value}\"",
+      "aiRowsDropped": "The AI returned {count} row that couldn't be parsed (bad date, side or numbers), so it was skipped. | The AI returned {count} rows that couldn't be parsed (bad date, side or numbers), so they were skipped.",
+      "csvRowsInvalid": "{count} of {total} CSV rows was skipped: | {count} of {total} CSV rows were skipped:",
+      "csvRowsSkipped": "{count} row was skipped because its side value is mapped to \"Skip\". | {count} rows were skipped because their side value is mapped to \"Skip\".",
+      "unsupportedQuoteCurrency": "{symbol}: {count} row has an unsupported quote currency. | {symbol}: {count} rows have an unsupported quote currency.",
+      "duplicateCheckFailed": "Couldn't check for possible duplicates. Review your existing transactions manually.",
+      "providerLookupFailed": "Couldn't look up \"{symbol}\" with the market data provider. Try again later.",
+      "noResolvedSecurity": "Skipped \"{symbol}\": no security selected.",
+      "noCurrency": "Skipped \"{symbol}\": no currency selected.",
+      "portfolioNotFound": "Skipped \"{symbol}\": target portfolio not found.",
+      "holdingSetupFailed": "Skipped \"{symbol}\": its holding could not be set up.",
+      "holdingSetupFailedWithReason": "Skipped \"{symbol}\": {reason}",
+      "unsupportedCategory": "Skipped a \"{symbol}\" {side} on {date}: this category isn't supported yet.",
+      "transactionFailed": "Failed to import a \"{symbol}\" {side} on {date}.",
+      "transactionFailedWithReason": "Failed to import a \"{symbol}\" {side} on {date}: {reason}",
+      "unknown": "Some rows may not have been imported as expected."
+    },
     "columnMapping": {
       "rowsAndDelimiter": "{rows} baris · pemisah '{delimiter}'",
       "backToUpload": "Kembali",

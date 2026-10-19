@@ -16,8 +16,6 @@
         "color": "Màu sắc",
         "icon": "Biểu tượng",
         "iconPlaceholder": "Chọn biểu tượng",
-        "iconSearchPlaceholder": "Tìm biểu tượng…",
-        "clearIcon": "Xóa biểu tượng",
         "description": "Mô tả",
         "descriptionPlaceholder": "Mô tả không bắt buộc",
         "saveButton": "Lưu",

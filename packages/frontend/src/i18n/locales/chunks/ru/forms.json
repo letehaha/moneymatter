@@ -371,6 +371,7 @@
       "searchPlaceholder": "Поиск бюджетов",
       "noResults": "Бюджеты не найдены",
       "unknownBudget": "Неизвестный бюджет",
+      "blankOption": "Not in any tracker",
       "loadError": "Не удалось загрузить бюджеты. Попробуйте снова."
     },
     "payeeSelect": {

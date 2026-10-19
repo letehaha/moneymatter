@@ -7,8 +7,8 @@
       "alreadyHaveAccount": "Already have an account?",
       "signInLink": "Sign in",
       "labels": {
-        "displayName": "Display Name",
-        "verifyPassword": "Verify Password"
+        "displayName": "Display name",
+        "verifyPassword": "Verify password"
       },
       "placeholders": {
         "displayName": "ie. John Snow",
@@ -29,8 +29,8 @@
     "shared": {
       "divider": "Or continue with",
       "passkeyButton": {
-        "signIn": "Sign in with Passkey",
-        "register": "Add Passkey"
+        "signIn": "Sign in with passkey",
+        "register": "Add passkey"
       },
       "oauthButton": {
         "signIn": "Sign in with {provider}",

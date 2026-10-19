@@ -9,7 +9,7 @@
       "resend": "click here to resend",
       "sending": "Sending...",
       "resendIn": "Resend in {count}s",
-      "backToSignIn": "Back to Sign In",
+      "backToSignIn": "Back to sign in",
       "resendSuccess": "Verification email sent! Please check your inbox.",
       "resendError": "Failed to resend verification email. Please try again."
     }

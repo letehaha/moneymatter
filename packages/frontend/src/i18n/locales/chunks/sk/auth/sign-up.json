@@ -29,7 +29,7 @@
     "shared": {
       "divider": "alebo pokračujte pomocou",
       "passkeyButton": {
-        "signIn": "Prihláste sa pomocou prístupového kľúča",
+        "signIn": "Prihlásiť sa pomocou prístupového kľúča",
         "register": "Pridať prístupový kľúč"
       },
       "oauthButton": {

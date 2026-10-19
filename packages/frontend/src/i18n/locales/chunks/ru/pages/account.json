@@ -214,7 +214,8 @@
         "notLinked": "Этот счёт не привязан к банковскому подключению",
         "syncStarted": "Синхронизация запущена...",
         "accessForbidden": "Доступ запрещён",
-        "failed": "Не удалось синхронизировать транзакции"
+        "failed": "Не удалось синхронизировать транзакции",
+        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
       },
       "reconcileDuplicates": {
         "title": "Merge duplicate transactions",

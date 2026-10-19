@@ -10,7 +10,7 @@
       "textSource": {
         "title": "Import z ľubovoľného textového zdroja",
         "aiBadge": "Poháňané AI",
-        "listDescription": "Bankové výpisy, emaily alebo akýkoľvek textový zdroj"
+        "listDescription": "Bankové výpisy, účtenky, snímky obrazovky alebo ľubovoľný text"
       },
       "csv": {
         "title": "Import CSV",

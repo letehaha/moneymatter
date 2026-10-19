@@ -125,6 +125,11 @@
           "errorsTitle": "{count} row(s) could not be imported",
           "errorsOverflow": "…and {count} more",
           "rowPrefix": "Row {rowIndex}:",
+          "errors": {
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
+            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "View transactions",
           "importAnother": "Import another file"
         },

@@ -5,7 +5,17 @@
       "failedToFetchSelfHost": "Server kann nicht erreicht werden. Das Backend startet möglicherweise noch (~30 Sek. nach dem Start) oder deine ALLOWED_ORIGINS-Umgebungsvariable enthält diese URL nicht.",
       "unexpectedError": "Unerwarteter Fehler.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an",
-      "payloadTooLarge": "Die Anfrage ist zu groß. Bitte versuche, weniger Elemente auf einmal zu importieren."
+      "payloadTooLarge": "Die Anfrage ist zu groß. Bitte versuche, weniger Elemente auf einmal zu importieren.",
+      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+    },
+    "auth": {
+      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "passwordTooShort": "Passwort ist zu kurz.",
+      "passwordTooLong": "Passwort ist zu lang.",
+      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
+      "accountAlreadyLinked": "This account is already linked to another user.",
+      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
+      "passkeyAlreadyRegistered": "This passkey is already registered."
     },
     "notFound": {
       "title": "Diese Seite ist nicht verbucht",

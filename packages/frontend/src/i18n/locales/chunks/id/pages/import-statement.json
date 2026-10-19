@@ -34,6 +34,9 @@
         "currencyConflict": "The selected statements report different currencies ({currencies}). They will all be imported into one account, using that account's currency.",
         "unsupportedFileNamed": "{name} is not a PDF, CSV, TXT, JPG, PNG or WebP file",
         "unreadableImageNamed": "{name} could not be read as an image",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
         "pasteImageButton": "Paste image",
         "pasteShortcutHint": "or press {shortcut}",
         "clipboardNoImage": "No image found in the clipboard.",
@@ -60,7 +63,7 @@
         "fromLabel": "dari",
         "inLabel": "dalam",
         "continueMessage": "Lanjutkan untuk memilih akun untuk transaksi ini.",
-        "continueButton": "Continue to Account",
+        "continueButton": "Continue to account",
         "tokenWarning": {
           "medium": {
             "title": "File besar terdeteksi",
@@ -75,8 +78,6 @@
             "description": "Pemrosesan mungkin memakan waktu 5+ menit. Pertimbangkan untuk membagi file menjadi bagian yang lebih kecil untuk pemrosesan yang lebih cepat."
           }
         },
-        "freeApiWarning": "Anda menggunakan akses AI gratis yang memiliki batas harian. Untuk layanan cepat dan tanpa gangguan, tambahkan kunci API Anda sendiri.",
-        "addApiKeyLink": "Tambah kunci API Anda di pengaturan →",
         "status": {
           "sendingFile": "Mengirim file ke AI...",
           "readingDocument": "AI sedang membaca dokumen...",
@@ -153,9 +154,15 @@
         "backButton": "Kembali",
         "continueButton": "Lanjut ke Impor",
         "transactionCount": "({count} transaksi)",
-        "duplicateCheckFailed": "Kami tidak dapat memeriksa laporan ini terhadap transaksi Anda yang sudah ada, sehingga jumlah duplikat di bawah tidak tersedia. Tinjau daftar sebelum mengimpor."
+        "duplicateCheckFailed": "Kami tidak dapat memeriksa laporan ini terhadap transaksi Anda yang sudah ada, sehingga jumlah duplikat di bawah tidak tersedia. Tinjau daftar sebelum mengimpor.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} baris dari respons AI tidak dapat dibaca dan dilewati. Jumlah yang diimpor di bawah mungkin lebih rendah dari yang ada di file Anda.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
         "readyTitle": "Siap Diimpor",
         "readyDescription": "Tinjau ringkasan di bawah dan klik \"Impor Transaksi\" untuk melanjutkan.",
@@ -182,7 +189,14 @@
         "errorHeader": "Kesalahan",
         "batchIdNote": "ID Batch Impor: {batchId}. Anda dapat menggunakan ID ini untuk menemukan dan mengelola semua transaksi yang diimpor.",
         "viewTransactionsButton": "Lihat Transaksi",
-        "startNewImportButton": "Mulai Impor Baru"
+        "startNewImportButton": "Mulai Impor Baru",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

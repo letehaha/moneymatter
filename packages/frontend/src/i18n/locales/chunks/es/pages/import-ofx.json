@@ -104,6 +104,11 @@
           "balanceWarningBody": "No se pudo establecer el saldo final en todas las cuentas. Revise estas cuentas y ajuste sus saldos si es necesario.",
           "errorsTitle": "{count} transacción no se pudo importar | {count} transacciones no se pudieron importar",
           "errorsOverflow": "…y {count} más",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "accountBalanceDesync": "An account balance could not be updated after the import.",
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+          },
           "rowPrefix": "Fila {rowIndex}:",
           "viewTransactions": "Ver transacciones",
           "importAnother": "Importar otro archivo"

@@ -88,7 +88,7 @@
           "duplicatesHint": "Các giao dịch này có vẻ đã có trong tài khoản của bạn. Chọn một hàng để vẫn nhập giao dịch đó; các mục trùng lặp không được chọn sẽ bị bỏ qua.",
           "back": "Quay lại",
           "importing": "Đang bắt đầu nhập…",
-          "importButton": "Nhập {count} giao dịch"
+          "importButton": "Import {count} transactions"
         },
         "execute": {
           "starting": "Đang bắt đầu nhập…",
@@ -109,11 +109,11 @@
           "emptyDescription": "Mọi hàng đều đã bị bỏ qua hoặc đã có trong sổ giao dịch, nên không có giao dịch nào được tạo.",
           "allFailedTitle": "Không có dữ liệu nào được nhập",
           "allFailedDescription": "Không thể tạo giao dịch nào. Hãy xem các lỗi bên dưới.",
-          "accountsCreated": "Tài khoản đã tạo",
+          "accountsCreated": "Accounts created",
           "accountsLinked": "Tài khoản đã liên kết",
           "accountsSkipped": "Đã bỏ qua tài khoản",
-          "categoriesCreated": "Danh mục đã tạo",
-          "payeesCreated": "Người nhận đã tạo",
+          "categoriesCreated": "Categories created",
+          "payeesCreated": "Payees created",
           "transactionsImported": "Giao dịch đã nhập",
           "transfersImported": "Giao dịch chuyển khoản đã nhập",
           "outOfWalletImported": "Đã nhập giao dịch chuyển tiền ngoài Wallet",
@@ -125,6 +125,11 @@
           "errorsTitle": "Không thể nhập {count} hàng",
           "errorsOverflow": "…và {count} mục nữa",
           "rowPrefix": "Dòng {rowIndex}:",
+          "errors": {
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
+            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
+            "rowImportFailed": "This row could not be imported."
+          },
           "viewTransactions": "Xem giao dịch",
           "importAnother": "Nhập tệp khác"
         },

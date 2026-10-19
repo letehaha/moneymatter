@@ -16,8 +16,6 @@
         "color": "Farbe",
         "icon": "Symbol",
         "iconPlaceholder": "Symbol auswählen",
-        "iconSearchPlaceholder": "Symbol suchen...",
-        "clearIcon": "Symbol entfernen",
         "description": "Beschreibung",
         "descriptionPlaceholder": "Optionale Beschreibung",
         "saveButton": "Speichern",

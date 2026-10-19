@@ -2,35 +2,38 @@
   "pages": {
     "budgets": {
       "transactionsList": {
+        "loadError": "Couldn't load transactions.",
         "selectionModeWarning": "Selection mode — choose transactions to unlink",
         "selectAll": "Select all",
         "selected": "{count} selected",
         "unlink": "Unlink",
         "cancel": "Cancel",
-        "unlinkSelected": "Unlink Selected",
+        "unlinkSelected": "Unlink selected",
         "noMatchingTransactions": "No matching transactions",
         "noTransactionsLinked": "No transactions linked",
         "filterAdjustmentHint": "Try adjusting your filters to see more transactions.",
         "addTransactionsHint": "Add transactions to this tracker to start tracking your spending.",
-        "resetFilters": "Reset Filters",
-        "addTransactions": "Add Transactions",
+        "resetFilters": "Reset filters",
+        "addTransactions": "Add transactions",
         "add": "Add",
-        "loadingMore": "Loading more..."
+        "loadingMore": "Loading more...",
+        "unlinkError": "Failed to unlink transactions",
+        "addError": "Failed to add transactions"
       }
     },
     "budgetDetails": {
       "notSet": "Not set",
       "saving": "Saving...",
-      "saveChanges": "Save Changes",
+      "saveChanges": "Save changes",
       "loading": "جار التحميل...",
       "uncategorized": "Uncategorized",
       "stats": {
         "income": "Income",
         "expenses": "Expenses",
-        "netBalance": "Net Balance"
+        "netBalance": "Net balance"
       },
       "utilization": {
-        "title": "Tracker Utilization",
+        "title": "Tracker utilization",
         "summary": "{spent} of {limit} limit",
         "na": "N/A"
       },
@@ -57,11 +60,45 @@
         "income": "Income",
         "expenses": "Expenses",
         "incomeLabel": "Income:",
-        "expensesLabel": "Expenses:"
+        "expensesLabel": "Expenses:",
+        "kpi": {
+          "dailyPace": "Daily pace",
+          "perDay": "/ day",
+          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "daysElapsed": "{elapsed} of {total} days",
+          "projectedTotal": "Projected total",
+          "projectedLimit": "at this pace · limit {amount}",
+          "averagePerDay": "Average per day",
+          "firstTransaction": "First transaction",
+          "lastTransaction": "Last transaction",
+          "transactions": "Transactions",
+          "avgAmount": "avg {amount}",
+          "biggestDay": "Biggest day",
+          "shareOfTotal": "{percent}% of total"
+        },
+        "byCategory": "By category",
+        "categoriesCount": "{count} category | {count} categories",
+        "byCurrency": "By currency",
+        "asPaid": "as paid",
+        "timeline": "Timeline",
+        "todayMarker": "today {date}",
+        "timelineAria": "Cumulative spending over time with per-period bars",
+        "limitLabel": "{amount} limit",
+        "cumulativeLabel": "Cumulative",
+        "legend": {
+          "cumulative": "Spent, cumulative",
+          "evenPace": "Even pace to the limit",
+          "projection": "Projection",
+          "daily": "Per day",
+          "weekly": "Per week",
+          "monthly": "Per month"
+        },
+        "topPayees": "Top payees",
+        "bySpend": "by spend",
+        "noPayee": "No payee",
+        "txCount": "{count} tx"
       },
       "sharing": {
-        "title": "Sharing",
-        "description": "Manage who can see this tracker and contribute to it.",
         "inviteAnother": "Invite someone",
         "membersHeading": "Members",
         "pendingHeading": "Pending invitations",

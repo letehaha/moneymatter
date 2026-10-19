@@ -58,6 +58,7 @@
         "unknownLocation": "Unbekannter Standort",
         "lastActive": "Zuletzt aktiv: {date}",
         "noSessions": "Keine aktiven Sitzungen gefunden",
+        "loadError": "We couldn't load your active sessions.",
         "revokeAllButton": "Aus allen anderen Sitzungen abmelden",
         "deviceTypes": {
           "unknownDevice": "Unbekanntes Gerät",
@@ -70,7 +71,6 @@
           "daysAgo": "Vor {count} Tag | Vor {count} Tagen"
         },
         "notifications": {
-          "loadFailed": "Sitzungen konnten nicht geladen werden",
           "revokeSuccess": "Sitzung beendet",
           "revokeFailed": "Sitzung konnte nicht beendet werden",
           "revokeAllSuccess": "Du wurdest aus allen anderen Sitzungen abgemeldet",
@@ -120,6 +120,10 @@
           "setFailed": "Passwort konnte nicht festgelegt werden",
           "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten",
           "updateFailed": "Passwort konnte nicht aktualisiert werden"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "Current password is incorrect.",
+          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
         }
       },
       "dangerZone": "Gefahrenzone",
@@ -248,11 +252,27 @@
             "noRecords": "Es wurden keine Datensätze wiederhergestellt.",
             "doneButton": "Fertig"
           },
+          "warnings": {
+            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
+            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
+            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
+            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
+            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
+            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
+            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
+            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
+            "noSettings": "The backup had no saved settings; defaults were applied.",
+            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
+            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
+            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
+            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+          },
           "failed": {
             "title": "Wiederherstellung fehlgeschlagen",
             "genericError": "Beim Wiederherstellen deiner Sicherung ist etwas schiefgelaufen.",
             "unconfirmed": "Der Wiederherstellungsstatus konnte nicht bestätigt werden. Lade die Seite neu und überprüfe deine Daten.",
-            "closeButton": "Schließen"
+            "closeButton": "Schließen",
+            "technicalDetails": "Technical details"
           },
           "overlay": {
             "title": "Deine Daten werden wiederhergestellt",

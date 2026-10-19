@@ -32,7 +32,7 @@
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Lade einen Kontoauszug (PDF, CSV oder TXT) hoch und die KI extrahiert automatisch alle Transaktionen.",
+            "upload": "Lade einen Kontoauszug (PDF, CSV oder TXT), ein Foto eines Belegs oder einen Screenshot einer Banking-App hoch und KI extrahiert alle Transaktionen automatisch.",
             "analysis": "Die KI analysiert die Dokumentenstruktur, um Daten, Beschreibungen, Beträge und Transaktionstypen zu erkennen.",
             "review": "Du kannst alle extrahierten Daten überprüfen und korrigieren, bevor du sie in dein Konto importierst.",
             "cost": "Die Kosten werden vor der Verarbeitung geschätzt, stellen jedoch nur Näherungswerte dar."
@@ -52,8 +52,6 @@
           "server": "Server",
           "serverTooltip": "Läuft auf MoneyMatter KI, in deinem Paket enthalten. Es gelten Nutzungslimits."
         },
-        "sharedPoolNote": "In deinem aktuellen Paket läuft das enthaltene Modell in einem gemeinsamen Pool, sodass bei hoher Gesamtnachfrage Limits gelten können. {link}, um diese zu vermeiden.",
-        "sharedPoolNoteLink": "Auf Plus upgraden",
         "modelLabel": "Modell",
         "modelInfo": {
           "estimatedCost": "Geschätzte Kosten:",
@@ -95,13 +93,15 @@
           "categorization": "Eine kurze, wiederkehrende Aufgabe. Ein kleines Modell meistert das gut und hält die Kosten niedrig.",
           "statementParsing": "Liest den gesamten Kontoauszug und gibt jede Zeile zurück – erfordert daher ein Modell, das auch bei langen Texten präzise bleibt.",
           "investmentTransactionsParsing": "Wandelt Broker-Exporte in Kauf- und Verkaufenzeilen um. Lange Exporte benötigen ein Modell, das lange Antworten schreiben kann.",
-          "receiptParsing": "Das Modell analysiert die Belegdatei selbst, muss also Bilder und PDFs lesen können."
+          "receiptParsing": "Das Modell analysiert die Belegdatei selbst, muss also Bilder und PDFs lesen können.",
+          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
-          "receiptParsing": "Gemini Flash · Claude Sonnet"
+          "receiptParsing": "Gemini Flash · Claude Sonnet",
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Gut geeignet",

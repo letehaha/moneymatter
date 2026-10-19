@@ -104,6 +104,11 @@
           "balanceWarningBody": "The final balance could not be set on each account. Review these accounts and adjust their balances if necessary.",
           "errorsTitle": "{count} transaction could not be imported | {count} transactions could not be imported",
           "errorsOverflow": "…and {count} more",
+          "errors": {
+            "rowImportFailed": "This row could not be imported.",
+            "accountBalanceDesync": "An account balance could not be updated after the import.",
+            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+          },
           "rowPrefix": "Row {rowIndex}:",
           "viewTransactions": "View transactions",
           "importAnother": "Import another file"

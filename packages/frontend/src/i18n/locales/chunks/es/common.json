@@ -55,7 +55,7 @@
     },
     "errors": {
       "copyToClipboardFailed": "Error al copiar al portapapeles",
-      "settingsSaveFailed": "Couldn't save your settings. Please try again."
+      "settingsSaveFailed": "No se pudo guardar tu configuración. Inténtelo de nuevo."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "El resumen de suscripciones no puede convertir {currencies} a su moneda base. Conecte la moneda en Ajustes → Monedas.",
@@ -137,6 +137,10 @@
       "receiptParsing": {
         "name": "Coincidencia de factura",
         "description": "Lee una factura o recibo subido y encuentra la transacción a la que pertenece."
+      },
+      "trackerMatching": {
+        "name": "Tracker matching",
+        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       }
     },
     "transactions": {
@@ -152,6 +156,7 @@
       },
       "record": {
         "addedByTooltip": "{handle} adjuntó esta transacción al presupuesto",
+        "matchedByAi": "Coincidencia por IA",
         "externalLinkTooltip": "Abrir enlace externo",
         "locationTooltip": "Abrir ubicación en el mapa",
         "attachmentsTooltip": "Tiene adjuntos",
@@ -218,7 +223,9 @@
     "logo": {
       "tabs": {
         "brand": "Marca",
-        "letters": "Letras"
+        "letters": "Letras",
+        "icon": "Icono",
+        "custom": "Image"
       },
       "searchPlaceholder": "Nombre de marca o dominio",
       "searchHint": "Escriba un nombre de marca o un dominio como amazon.com",
@@ -238,8 +245,17 @@
       "colorLabel": "Color",
       "colorSwatchAriaLabel": "Usar color {color}",
       "customColorAriaLabel": "Elegir un color personalizado",
-      "applyLetters": "Aplicar",
-      "lettersSelectedLabel": "Letras “{letters}”"
+      "lettersSelectedLabel": "Letras “{letters}”",
+      "lettersHint": "1–2 letters or an emoji",
+      "chooseImage": "Choose image",
+      "replaceImage": "Replace image",
+      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
+      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
+      "imageUnreadable": "That file couldn't be read as an image."
+    },
+    "iconPicker": {
+      "searchPlaceholder": "Buscar iconos...",
+      "clear": "Quitar icono"
     },
     "importBatchDeleteOverlay": {
       "title": "Eliminando transacciones importadas",
@@ -301,6 +317,13 @@
     "viewOnGitHub": "Ver en GitHub",
     "newVersion": "Nueva versión {version}",
     "newRelease": "Nueva versión publicada",
+    "trackerAiMatches": {
+      "title": "{name}: {summary}",
+      "added": "{count} transaction added | {count} transactions added",
+      "toReview": "{count} transaction to review | {count} transactions to review",
+      "toReviewShort": "{count} to review",
+      "both": "{added}, {toReview}"
+    },
     "tagReminder": {
       "thresholdMessage": "gastado {amount} (umbral: {threshold})",
       "existenceMessage": "{count} transacción | {count} transacciones"
@@ -401,6 +424,7 @@
   },
   "billing": {
     "seePlans": "Ver planes",
+    "trialStartFailed": "Couldn't start the free trial. Try again.",
     "updatePaymentMethod": "Actualice su método de pago",
     "planRequired": {
       "essential": "Incluido en el Plan Esencial",
@@ -445,6 +469,39 @@
     "estimatedCost": {
       "yourApiKey": "(su clave de API)",
       "setByEndpoint": "Definido por su endpoint"
+    }
+  },
+  "aiUsage": {
+    "title": "Incluye uso IA",
+    "used": "usado",
+    "percentUsed": "{percent}% usado",
+    "resetsOn": "Se reinicia en {date}",
+    "connectOwnModel": "Conecte su propio modelo",
+    "gotIt": "Entendido",
+    "badge": {
+      "used": "{percent}% IA utilizada",
+      "reached": "Límite de IA alcanzado"
+    },
+    "dialog": {
+      "description": "El análisis de declaraciones, la categorización, los recibos y las sugerencias de presupuesto comparten este permiso.",
+      "status": {
+        "plusWarning": "Has utilizado la mayor parte de la IA incluida este mes. Cuando se acabe, las funciones de IA se pausan hasta {date}.",
+        "plusReached": "Has usado la IA incluida este mes. Las funciones de IA están en pausa hasta {date}.",
+        "trialWarning": "Has usado la mayor parte de la IA incluida en tu plan de este mes. Cuando se acabe, las funciones de IA se pausaran.",
+        "trialReached": "Has usado la IA incluida en tu plan este mes. Suscríbete a Plus o conecta tu propio modelo para seguir usando las funciones de IA."
+      }
+    },
+    "options": {
+      "connectDescription": "Utilice su propio modelo Anthropic, OpenAI, Gemini o Modelo local. Nunca se contabilizará para este límite.",
+      "subscribeTitle": "Suscríbete a Plus",
+      "subscribeDescription": "Obtén más IA incluida cada mes.",
+      "waitTitle": "Espere a que se restablezca",
+      "waitDescription": "La IA incluida vuelve el {date}."
+    },
+    "meter": {
+      "ok": "Se reinicia el {date}. Tus propios modelos conectados nunca se contabilizan.",
+      "warning": "Cuando se termina, las características de IA se pausan hasta el {date} a menos que conectes tu propio modelo.",
+      "reached": "Utilizado hasta el {date}. Las funciones de IA están en pausa."
     }
   },
   "transactionGroups": {

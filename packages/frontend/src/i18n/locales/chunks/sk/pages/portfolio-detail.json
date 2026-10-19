@@ -56,7 +56,7 @@
         "editDialog": {
           "title": "Upraviť hotovostnú transakciu",
           "description": "Zmeňte, ako sa táto transakcia zohľadňuje v prehľadoch.",
-          "save": "Ulož zmeny"
+          "save": "Uložiť zmeny"
         }
       },
       "buysSells": {

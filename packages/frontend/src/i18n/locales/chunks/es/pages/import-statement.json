@@ -33,11 +33,14 @@
         "acrossFiles": "en {count} archivos",
         "currencyConflict": "Los extractos seleccionados indican monedas diferentes ({currencies}). Todos se importarán a una sola cuenta, usando la moneda de esa cuenta.",
         "unsupportedFileNamed": "{name} no es un archivo PDF, CSV o TXT",
-        "unreadableImageNamed": "{name} could not be read as an image",
-        "pasteImageButton": "Paste image",
-        "pasteShortcutHint": "or press {shortcut}",
-        "clipboardNoImage": "No image found in the clipboard.",
-        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
+        "unreadableImageNamed": "No se ha podido leer {name} como una imagen",
+        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
+        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
+        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
+        "pasteImageButton": "Pegar imagen",
+        "pasteShortcutHint": "o presiona {{shortcut}}",
+        "clipboardNoImage": "No se ha encontrado ninguna imagen en el portapapeles.",
+        "clipboardReadFailed": "No se pudo leer el portapapeles. Permitir el acceso al portapapeles o pegar con el acceso directo del teclado.",
         "unreadableFiles": "No se pudieron leer: {files}",
         "fileStatus": {
           "pending": "Sin analizar",
@@ -75,8 +78,6 @@
             "description": "El procesamiento puede tardar más de 5 minutos. Considere dividir el archivo en partes más pequeñas para un procesamiento más rápido."
           }
         },
-        "freeApiWarning": "Está usando el acceso gratuito a IA, que tiene límites de uso diario. Para un servicio rápido e ininterrumpido, añada su propia clave de API.",
-        "addApiKeyLink": "Añadir su clave de API en ajustes →",
         "status": {
           "sendingFile": "Enviando archivo a la IA...",
           "readingDocument": "La IA está leyendo el documento...",
@@ -153,9 +154,15 @@
         "backButton": "Atrás",
         "continueButton": "Continuar a la importación",
         "transactionCount": "({count} transacciones)",
-        "duplicateCheckFailed": "No pudimos comparar este extracto con sus transacciones existentes, por lo que el recuento de duplicados que aparece abajo no está disponible. Revise la lista antes de importar."
+        "duplicateCheckFailed": "No pudimos comparar este extracto con sus transacciones existentes, por lo que el recuento de duplicados que aparece abajo no está disponible. Revise la lista antes de importar.",
+        "noDescription": "No description"
       },
       "droppedRowsWarning": "{count} línea de la respuesta de la IA no se pudo leer y fue omitida. El número de transacciones importadas que aparece abajo puede ser menor que el de su archivo. | {count} líneas de la respuesta de la IA no se pudieron leer y fueron omitidas. El número de transacciones importadas que aparece abajo puede ser menor que el de su archivo.",
+      "errors": {
+        "estimateFailed": "Failed to analyze the file",
+        "extractFailed": "Failed to extract transactions",
+        "importFailed": "Failed to start the import"
+      },
       "importResults": {
         "readyTitle": "Listo para importar",
         "readyDescription": "Revise el resumen a continuación y haga clic en \"Importar transacciones\" para continuar.",
@@ -182,7 +189,14 @@
         "errorHeader": "Error",
         "batchIdNote": "ID de lote de importación: {batchId}. Puede usar este ID para encontrar y gestionar todas las transacciones importadas.",
         "viewTransactionsButton": "Ver transacciones",
-        "startNewImportButton": "Iniciar nueva importación"
+        "startNewImportButton": "Iniciar nueva importación",
+        "rowErrors": {
+          "invalidDate": "Unrecognized date \"{date}\"",
+          "futureDate": "Date {date} is in the future",
+          "amountNotPositive": "Amount must be greater than zero (got {amount})",
+          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
+          "rowFailed": "This transaction could not be imported"
+        }
       }
     }
   }

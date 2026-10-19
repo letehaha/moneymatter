@@ -55,7 +55,7 @@
     },
     "errors": {
       "copyToClipboardFailed": "Kopieren in die Zwischenablage fehlgeschlagen",
-      "settingsSaveFailed": "Couldn't save your settings. Please try again."
+      "settingsSaveFailed": "Deine Einstellungen konnten nicht gespeichert werden. Bitte versuche es erneut."
     },
     "notifications": {
       "subscriptionCurrencyNotConnected": "Die Abo-Übersicht kann {currencies} nicht in deine Basiswährung umrechnen. Verbinde die Währung unter Einstellungen → Währungen.",
@@ -128,7 +128,7 @@
       },
       "statementParsing": {
         "name": "Kontoauszug-Parser",
-        "description": "Transaktionen aus Kontoauszügen (PDF, CSV, TXT) mittels KI extrahieren"
+        "description": "Extrahiere Transaktionen aus Kontoauszügen (PDF, CSV, TXT), Belegen und Screenshots mithilfe von KI"
       },
       "investmentTransactionsParsing": {
         "name": "Import von Investment-Transaktionen",
@@ -137,6 +137,10 @@
       "receiptParsing": {
         "name": "Rechnungsabgleich",
         "description": "Liest eine hochgeladene Rechnung oder einen Beleg und findet die dazugehörige Transaktion."
+      },
+      "trackerMatching": {
+        "name": "Tracker matching",
+        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
       }
     },
     "transactions": {
@@ -152,6 +156,7 @@
       },
       "record": {
         "addedByTooltip": "Diese Transaktion wurde dem Tracker von {handle} hinzugefügt",
+        "matchedByAi": "Durch KI zugeordnet",
         "externalLinkTooltip": "Externen Link öffnen",
         "locationTooltip": "Standort auf Karte öffnen",
         "attachmentsTooltip": "Enthält Anhänge",
@@ -218,7 +223,9 @@
     "logo": {
       "tabs": {
         "brand": "Marke",
-        "letters": "Buchstaben"
+        "letters": "Buchstaben",
+        "icon": "Symbol",
+        "custom": "Image"
       },
       "searchPlaceholder": "Markenname oder Domain",
       "searchHint": "Gib einen Markennamen oder eine Domain wie amazon.com ein",
@@ -238,8 +245,17 @@
       "colorLabel": "Farbe",
       "colorSwatchAriaLabel": "Farbe {color} verwenden",
       "customColorAriaLabel": "Benutzerdefinierte Farbe wählen",
-      "applyLetters": "Anwenden",
-      "lettersSelectedLabel": "Buchstaben \"{letters}\""
+      "lettersSelectedLabel": "Buchstaben \"{letters}\"",
+      "lettersHint": "1–2 letters or an emoji",
+      "chooseImage": "Choose image",
+      "replaceImage": "Replace image",
+      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
+      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
+      "imageUnreadable": "That file couldn't be read as an image."
+    },
+    "iconPicker": {
+      "searchPlaceholder": "Symbol suchen...",
+      "clear": "Symbol entfernen"
     },
     "importBatchDeleteOverlay": {
       "title": "Importierte Transaktionen werden gelöscht",
@@ -301,6 +317,13 @@
     "viewOnGitHub": "Auf GitHub ansehen",
     "newVersion": "Neue Version {version}",
     "newRelease": "Neues Release",
+    "trackerAiMatches": {
+      "title": "{name}: {summary}",
+      "added": "{count} transaction added | {count} transactions added",
+      "toReview": "{count} transaction to review | {count} transactions to review",
+      "toReviewShort": "{count} to review",
+      "both": "{added}, {toReview}"
+    },
     "tagReminder": {
       "thresholdMessage": "{amount} ausgegeben (Schwellenwert: {threshold})",
       "existenceMessage": "{count} Transaktion | {count} Transaktionen"
@@ -401,6 +424,7 @@
   },
   "billing": {
     "seePlans": "Tarife ansehen",
+    "trialStartFailed": "Couldn't start the free trial. Try again.",
     "updatePaymentMethod": "Zahlungsmethode aktualisieren",
     "planRequired": {
       "essential": "Enthalten im Essential-Tarif",
@@ -445,6 +469,39 @@
     "estimatedCost": {
       "yourApiKey": "(dein API-Schlüssel)",
       "setByEndpoint": "Bepreist durch deinen Anbieter"
+    }
+  },
+  "aiUsage": {
+    "title": "Enthaltene KI-Nutzung",
+    "used": "genutzt",
+    "percentUsed": "{percent}% genutzt",
+    "resetsOn": "Wird am {date} zurückgesetzt",
+    "connectOwnModel": "Eigenes Modell verbinden",
+    "gotIt": "Verstanden",
+    "badge": {
+      "used": "{percent}% KI genutzt",
+      "reached": "KI-Limit erreicht"
+    },
+    "dialog": {
+      "description": "Kontoauszug-Analyse, Kategorisierung, Belege und Budget-Vorschläge teilen sich dieses Kontingent.",
+      "status": {
+        "plusWarning": "Du hast den Großteil der in diesem Monat enthaltenen KI genutzt. Wenn sie aufgebraucht ist, pausieren die KI-Funktionen bis zum {date}.",
+        "plusReached": "Du hast die in diesem Monat enthaltene KI aufgebraucht. KI-Funktionen sind bis zum {date} pausiert.",
+        "trialWarning": "Du hast den Großteil der in deinem Tarif enthaltenen KI diesen Monat genutzt. Wenn sie aufgebraucht ist, pausieren die KI-Funktionen.",
+        "trialReached": "Du hast die in deinem Tarif enthaltene KI diesen Monat aufgebraucht. Abonniere Plus oder verbinde dein eigenes Modell, um KI-Funktionen weiterhin zu nutzen."
+      }
+    },
+    "options": {
+      "connectDescription": "Nutze dein eigenes Anthropic-, OpenAI-, Gemini- oder lokales Modell. Es wird nie auf dieses Limit angerechnet.",
+      "subscribeTitle": "Plus abonnieren",
+      "subscribeDescription": "Erhalte jeden Monat mehr enthaltene KI.",
+      "waitTitle": "Auf Zurücksetzung warten",
+      "waitDescription": "Enthaltene KI steht ab dem {date} wieder zur Verfügung."
+    },
+    "meter": {
+      "ok": "Wird am {date} zurückgesetzt. Deine eigenen verbundenen Modelle werden nie angerechnet.",
+      "warning": "Wenn sie aufgebraucht ist, pausieren die KI-Funktionen bis zum {date}, außer du verbindest dein eigenes Modell.",
+      "reached": "Aufgebraucht bis zum {date}. KI-Funktionen sind pausiert."
     }
   },
   "transactionGroups": {

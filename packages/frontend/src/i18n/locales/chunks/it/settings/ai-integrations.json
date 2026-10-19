@@ -2,15 +2,15 @@
   "settings": {
     "aiIntegrations": {
       "mcpServer": {
-        "title": "MCP Server",
+        "title": "MCP server",
         "description": "Use this URL to connect AI assistants to your MoneyMatter account. Your data is shared read-only.",
         "copyTooltip": "Copy URL",
         "copiedNotification": "MCP server URL copied to clipboard"
       },
       "quickConnect": {
-        "title": "Quick Connect",
+        "title": "Quick connect",
         "description": "Choose an AI assistant below. Click the button to open its settings, then follow the steps.",
-        "openSettings": "Open Settings",
+        "openSettings": "Open settings",
         "claude": {
           "steps": {
             "createConnector": "Click the {icon} icon next to \"Connectors\" to create a new connector",
@@ -48,7 +48,7 @@
       "revokeDialog": {
         "title": "Revoca accesso?",
         "description": "This will immediately disconnect the app and invalidate all its tokens. You can reconnect later.",
-        "confirm": "Revoke Access",
+        "confirm": "Revoca accesso",
         "successNotification": "App access revoked successfully",
         "errorNotification": "Failed to revoke app access"
       },

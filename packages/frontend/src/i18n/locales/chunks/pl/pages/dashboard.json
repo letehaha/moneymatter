@@ -80,20 +80,20 @@
         }
       },
       "expensesStructure": {
-        "title": "Expenses Structure",
+        "title": "Expenses structure",
         "today": "Today",
         "vsPreviousPeriod": "vs previous period",
         "viewButton": "View"
       },
       "latestTransactions": {
-        "title": "Latest Transactions",
+        "title": "Latest transactions",
         "showAll": "View all"
       },
       "subscriptions": {
-        "title": "Subscriptions & Bills",
+        "title": "Subscriptions & bills",
         "titleSubscriptions": "Subscriptions",
         "titleBills": "Bills",
-        "titleAll": "Recurring Payments",
+        "titleAll": "Recurring payments",
         "titleInstallments": "Installments",
         "configTypeAll": "All",
         "configTypeSubscriptions": "Subscriptions",
@@ -118,9 +118,9 @@
         }
       },
       "categoryTracker": {
-        "title": "Categories Watchlist",
+        "title": "Categories watchlist",
         "addCategory": "Add category",
-        "selectCategories": "Select Categories",
+        "selectCategories": "Select categories",
         "sort": {
           "title": "Sort by",
           "custom": "Custom order",
@@ -129,7 +129,7 @@
         }
       },
       "cashFlow": {
-        "title": "Cash Flow",
+        "title": "Cash flow",
         "description": "Shows your net savings: income minus expenses for the selected period, with a trend of previous periods",
         "vsPrevious": "vs previous",
         "notAvailable": "N/A",
@@ -143,7 +143,7 @@
         "noIncome": "no income"
       },
       "netWorth": {
-        "title": "Net Worth",
+        "title": "Net worth",
         "description": "How your net worth changed over the selected period. Counts every balance change: accounts, investments, loans, and asset values.",
         "vsPrevious": "vs previous",
         "start": "Start",
@@ -171,10 +171,83 @@
         }
       },
       "creditUtilization": {
-        "title": "Credit Utilization",
+        "title": "Credit utilization",
         "description": "Shows how much of your credit limits are currently used across all accounts",
         "utilized": "utilized",
         "noAccounts": "No accounts with credit limits"
+      },
+      "cashAccounts": {
+        "vsLastMonth": "vs last month",
+        "runwayUnit": "mo",
+        "runwayLabel": "of expenses",
+        "loadFailed": "Couldn't load your accounts",
+        "runwayHint": {
+          "description": "It's generally recommended to keep an emergency fund that covers 3–6 months of your expenses.",
+          "critical": "Under 1 month: very little buffer",
+          "low": "1–3 months: below recommended",
+          "good": "3+ months: recommended range"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Net worth",
+        "owesShare": "You owe {percent} of what you own",
+        "noDebt": "No debt",
+        "assets": "Assets",
+        "liabilities": "Liabilities",
+        "loadFailed": "Couldn't load your assets and liabilities",
+        "buckets": {
+          "cash": "Cash",
+          "investments": "Investments",
+          "ventures": "Ventures",
+          "vehicles": "Vehicles",
+          "loans": "Loans",
+          "creditAndOverdrafts": "Credit & overdrafts"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "vs last month",
+          "average": "vs 3-mo avg"
+        },
+        "spentIn": "Spent in {month}",
+        "onTrackFor": "On track for {amount}",
+        "vsComparison": "{percent} vs {name}",
+        "comparison": {
+          "average": "{n}-mo avg"
+        },
+        "stats": {
+          "byToday": "{name} by today",
+          "total": "{name} total",
+          "daysLeft": "Days left"
+        },
+        "chart": {
+          "today": "Today",
+          "ariaLabel": "Spending this month"
+        },
+        "tooltip": {
+          "spent": "Spent",
+          "forecast": "Forecast",
+          "spikeFrom": "Spent on {date}"
+        },
+        "legend": {
+          "thisMonth": "This month",
+          "forecast": "Forecast",
+          "averageMonth": "Average month"
+        },
+        "hints": {
+          "noHistory": "The comparison appears after your first full month.",
+          "fewMonths": "Average of the {n} full month you have so far. | Average of the {n} full months you have so far."
+        },
+        "loadFailed": "Couldn't load your spending.",
+        "settings": {
+          "spikes": {
+            "title": "Spike marks",
+            "summary": "Days with ≥{percent}% of the month's spending",
+            "inputLabel": "Mark a day when it reaches",
+            "hint": "Share of last month's total spending, 1–100%. Marks show in “vs last month” mode."
+          },
+          "saved": "Setting updated"
+        }
       },
       "plannedOverview": {
         "title": "Planned",
@@ -183,7 +256,7 @@
         "loadFailed": "Couldn't load planned transactions"
       },
       "taxes": {
-        "title": "Average Tax Rate",
+        "title": "Average tax rate",
         "description": "Spending in your tax categories as a share of income, averaged over the period chosen in the widget settings. Bars show the last 12 months.",
         "ofIncome": "of income",
         "vsTrailingRate": "{delta} pp vs 12-month rate {rate}",
@@ -239,36 +312,48 @@
       "emptyState": "There are no data in selected time interval.",
       "registry": {
         "balanceTrend": {
-          "name": "Balance Trend",
+          "name": "Balance trend",
           "description": "Track your balance over time"
         },
         "categoryTracker": {
-          "name": "Categories Watchlist",
+          "name": "Categories watchlist",
           "description": "Watch spending and income for selected categories"
         },
         "spendingCategories": {
-          "name": "Spending by Categories",
+          "name": "Spending by categories",
           "description": "See where your money goes"
         },
         "latestRecords": {
-          "name": "Latest Records",
+          "name": "Latest records",
           "description": "Your most recent transactions"
         },
         "subscriptions": {
-          "name": "Subscriptions & Bills",
+          "name": "Subscriptions & bills",
           "description": "Overview of recurring payments"
         },
         "cashFlow": {
-          "name": "Cash Flow",
+          "name": "Cash flow",
           "description": "Income vs expenses with savings rate"
         },
         "netWorth": {
-          "name": "Net Worth",
+          "name": "Net worth",
           "description": "How your total net worth changes over time, including investments, loans, and assets."
         },
         "creditUtilization": {
-          "name": "Credit Utilization",
+          "name": "Credit utilization",
           "description": "Credit limit usage across your accounts"
+        },
+        "cashAccounts": {
+          "name": "Cash & accounts",
+          "description": "Total cash across your accounts, its change since last month, and how many months of expenses it covers"
+        },
+        "assetsLiabilities": {
+          "name": "Assets & liabilities",
+          "description": "What you own, what you owe, and the net worth between them"
+        },
+        "spendingPace": {
+          "name": "Spending pace",
+          "description": "Month-to-date spending with a forecast for the rest of the month, compared with last month or your 3-month average."
         },
         "plannedOverview": {
           "name": "Planned overview",
@@ -279,7 +364,7 @@
           "description": "How close you are to financial independence"
         },
         "taxes": {
-          "name": "Average Tax Rate",
+          "name": "Average tax rate",
           "description": "Share of income paid in taxes, with a 12-month trend"
         },
         "budget": {
@@ -294,12 +379,12 @@
     },
     "periodSelector": {
       "presets": {
-        "currentMonth": "Current Month",
-        "last3Months": "Last 3 Months",
-        "last6Months": "Last 6 Months",
-        "lastYear": "Last 12 Months",
-        "thisYear": "This Year",
-        "previousYear": "Previous Year"
+        "currentMonth": "Current month",
+        "last3Months": "Last 3 months",
+        "last6Months": "Last 6 months",
+        "lastYear": "Last 12 months",
+        "thisYear": "This year",
+        "previousYear": "Previous year"
       }
     }
   },

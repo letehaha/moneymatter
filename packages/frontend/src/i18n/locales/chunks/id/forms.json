@@ -371,6 +371,7 @@
       "searchPlaceholder": "Cari anggaran",
       "noResults": "Tidak ada anggaran ditemukan",
       "unknownBudget": "Anggaran tidak diketahui",
+      "blankOption": "Not in any tracker",
       "loadError": "Tidak dapat memuat anggaran. Silakan coba lagi."
     },
     "payeeSelect": {
