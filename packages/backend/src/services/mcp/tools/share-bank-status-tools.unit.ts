@@ -261,7 +261,7 @@ describe('list_share_members', () => {
     expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['resourceType', 'resourceId']);
     expect(schema.safeParse({ resourceType: 'account', resourceId: ACCOUNT_ID }).success).toBe(true);
     expect(schema.safeParse({ resourceType: 'household', resourceId: '9' }).success).toBe(true);
-    expect(schema.safeParse({ resourceType: 'budget', resourceId: '9' }).success).toBe(true);
+    expect(schema.safeParse({ resourceType: 'tracker', resourceId: '9' }).success).toBe(true);
     expect(schema.safeParse({ resourceType: 'loan', resourceId: '9' }).success).toBe(false);
     expect(schema.safeParse({ resourceType: 'account' }).success).toBe(false);
     expect(schema.safeParse({ resourceType: 'account', resourceId: '' }).success).toBe(false);

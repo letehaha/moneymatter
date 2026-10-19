@@ -355,7 +355,7 @@ describe('remove_duplicate_transactions description', () => {
 
   it('says removed rows can be restored and that their links are dropped', () => {
     expect(tool.config.description).toMatch(/restore_removed_transactions/);
-    expect(tool.config.description).toMatch(/budget|group|subscription/i);
+    expect(tool.config.description).toMatch(/tracker|group|subscription/i);
   });
 });
 
@@ -452,7 +452,7 @@ describe('merge_duplicate_transactions', () => {
     const description = tool.config.description!;
 
     expect(description).toMatch(/restore_removed_transactions/);
-    expect(description).toMatch(/budget/i);
+    expect(description).toMatch(/tracker/i);
     expect(description).toMatch(/group/i);
     expect(description).toMatch(/subscription/i);
     expect(description).toMatch(/survivor/i);

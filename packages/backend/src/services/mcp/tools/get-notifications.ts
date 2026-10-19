@@ -15,7 +15,7 @@ const inputSchema = {
   status: notificationStatusSchema
     .optional()
     .describe('"unread", "read" or "dismissed". Without it the list holds unread and read notifications only'),
-  type: notificationTypeSchema.optional().describe('Only notifications of this type, e.g. "budget_alert" or "system"'),
+  type: notificationTypeSchema.optional().describe('Only notifications of this type, e.g. "tracker_alert" or "system"'),
   limit: z.number().min(1).max(100).default(50).describe('Page size, 1 to 100. Default 50'),
   offset: z.number().min(0).default(0).describe('Offset into the list, 0 or more. Default 0'),
 };
@@ -25,7 +25,7 @@ export function registerGetNotifications(server: McpServer) {
     'get_notifications',
     {
       description:
-        'List the in-app notifications of the user, newest first: budget alerts, tag and subscription reminders, bank sync messages and release notes. Without status the list leaves out dismissed notifications. Returns { data, total, unreadCount }; page with limit and offset. unreadCount counts every unread notification, whatever the filters. With notificationId returns that one notification instead. To mark them read use mark_notifications_read, to hide one use dismiss_notification.',
+        'List the in-app notifications of the user, newest first: tracker alerts, tag and subscription reminders, bank sync messages and release notes. Without status the list leaves out dismissed notifications. Returns { data, total, unreadCount }; page with limit and offset. unreadCount counts every unread notification, whatever the filters. With notificationId returns that one notification instead. To mark them read use mark_notifications_read, to hide one use dismiss_notification.',
       inputSchema,
     },
     async (args, extra) => {

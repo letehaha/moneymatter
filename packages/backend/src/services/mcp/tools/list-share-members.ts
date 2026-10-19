@@ -8,8 +8,8 @@ import { getUserId, jsonContent } from './helpers';
 import { presentShareMembers } from './share-output';
 
 const inputSchema = {
-  resourceType: shareableResourceTypeEnum.describe('What is shared: account, household or budget'),
-  resourceId: z.string().min(1).max(255).describe('The id of the shared account, household or budget'),
+  resourceType: shareableResourceTypeEnum.describe('What is shared: account, household or tracker'),
+  resourceId: z.string().min(1).max(255).describe('The id of the shared account, household or tracker'),
 };
 
 export function registerListShareMembers(server: McpServer) {
@@ -17,7 +17,7 @@ export function registerListShareMembers(server: McpServer) {
     'list_share_members',
     {
       description:
-        'List who has access to an account, household or budget the signed-in user manages: the owner and every member who accepted. Returns { resourceType, resourceId, resourceName, members }, each member with user ({ id, username }), role (owner or recipient), permission, policy and acceptedAt (null for the owner). Pending invitations are not members: see list_share_invitations. A resource the user does not manage reads as not found. Read-only: changing or removing members is done in the app.',
+        'List who has access to an account, household or tracker the signed-in user manages: the owner and every member who accepted. Returns { resourceType, resourceId, resourceName, members }, each member with user ({ id, username }), role (owner or recipient), permission, policy and acceptedAt (null for the owner). Pending invitations are not members: see list_share_invitations. A resource the user does not manage reads as not found. Read-only: changing or removing members is done in the app.',
       inputSchema,
     },
     async (args, extra) => {

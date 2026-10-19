@@ -37,8 +37,8 @@ export const transactionFilterInput = {
   accountType: z.nativeEnum(ACCOUNT_TYPES).optional().describe('Only rows on accounts of this type'),
   accountIds: z.array(recordId()).optional().describe('Only rows on these account IDs'),
   excludeAccountIds: z.array(recordId()).optional().describe('Leave out rows on these account IDs'),
-  budgetIds: z.array(recordId()).optional().describe('Only rows linked to these tracker (budget) IDs'),
-  excludedBudgetIds: z.array(recordId()).optional().describe('Leave out rows linked to these tracker (budget) IDs'),
+  trackerIds: z.array(recordId()).optional().describe('Only rows linked to these tracker IDs'),
+  excludedTrackerIds: z.array(recordId()).optional().describe('Leave out rows linked to these tracker IDs'),
   categoryIds: z.array(recordId()).optional().describe('Only rows in these category IDs'),
   tagIds: z
     .array(idOrBlank)
@@ -105,8 +105,8 @@ export function hasNarrowingFilter({ filters }: { filters: ReturnType<typeof par
   const hasList = [
     filters.accountIds,
     filters.excludeAccountIds,
-    filters.budgetIds,
-    filters.excludedBudgetIds,
+    filters.trackerIds,
+    filters.excludedTrackerIds,
     filters.categoryIds,
     filters.tagIds,
     filters.excludedTagIds,
