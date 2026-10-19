@@ -16,7 +16,10 @@ vi.mock('@/api/ai-settings', () => ({
   cancelCliAuthSession: cancelMock,
 }));
 
-vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }));
+vi.mock('vue-i18n', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('vue-i18n')>()),
+  useI18n: () => ({ t: (key: string) => key }),
+}));
 vi.mock('@/components/notification-center', () => ({
   useNotificationCenter: () => ({ addErrorNotification: vi.fn() }),
 }));
