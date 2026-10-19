@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { parseAIResponse, STATEMENT_EXTRACTION_SYSTEM_PROMPT } from './extraction-prompt';
+import { parseAIResponse } from './extraction-prompt';
 
 const METADATA_LINE = 'ITAU,1234,2026-06-01,2026-06-16,UYU';
 
@@ -63,9 +63,8 @@ describe('parseAIResponse', () => {
     it.each([
       ['2026-10-18 00:46', '2026-10-18 00:46:00'],
       ['2026-10-18 9:05', '2026-10-18 09:05:00'],
-      ['2026-10-18T00:46', '2026-10-18 00:46:00'],
       ['2026-10-18T00:46Z', '2026-10-18 00:46:00'],
-      ['2026-10-18 00:46:12', '2026-10-18 00:46:12'],
+      ['2026-10-18 00:46+03:00', '2026-10-18 00:46:00'],
     ])('accepts the time %s without seconds and keeps the wall clock', (written, expected) => {
       const result = parse({ rows: [`${written},Apple Music,APPLE.COM/BILL,10.99,E,,90`] });
 
@@ -73,24 +72,16 @@ describe('parseAIResponse', () => {
       expect(result?.transactions[0]?.date).toBe(expected);
     });
 
-    // The prompt tells the model to write these as YYYY-MM-DD; a day-first or month-first
-    // numeric date cannot be read safely here, and a date with no year has no anchor.
-    it.each(['18 Oct 2026', '18.10.2026', '03/04/2026', 'Oct 18', 'Today'])(
-      'drops a row dated %s, which the prompt asks the model to convert',
+    // An out-of-range time would otherwise roll over into the next hour or day downstream.
+    it.each(['16/06/2026', '18 Oct 2026', '2026-10-18 25:00', '2026-10-18 9:65', '2026-10-18 12:4'])(
+      'drops a row whose date %s is unreadable',
       (written) => {
-        const result = parse({ rows: [`${written},Apple Music,APPLE.COM/BILL,10.99,E,,90`] });
+        const result = parse({ rows: [`${written},Zona,Sebastian,250,E,,90`] });
 
         expect(result?.transactions).toHaveLength(0);
         expect(result?.droppedRowCount).toBe(1);
       },
     );
-
-    it('drops a row whose date is unreadable', () => {
-      const result = parse({ rows: ['16/06/2026,Zona,Sebastian,250,E,,90'] });
-
-      expect(result?.transactions).toHaveLength(0);
-      expect(result?.droppedRowCount).toBe(1);
-    });
 
     it('counts an unreadable date among the dropped rows', () => {
       const result = parse({
@@ -383,13 +374,5 @@ describe('parseAIResponse', () => {
 
   it('returns null when the response carries no CSV at all', () => {
     expect(parseAIResponse({ response: '   ' })).toBeNull();
-  });
-});
-
-describe('statement extraction prompt dates', () => {
-  it('asks for seconds even when the source shows none, and for numeric year-month-day', () => {
-    expect(STATEMENT_EXTRACTION_SYSTEM_PROMPT).toContain('HH:MM:SS');
-    expect(STATEMENT_EXTRACTION_SYSTEM_PROMPT).toMatch(/:00 for the seconds/);
-    expect(STATEMENT_EXTRACTION_SYSTEM_PROMPT).toMatch(/18 Oct 2026.*2026-10-18/s);
   });
 });

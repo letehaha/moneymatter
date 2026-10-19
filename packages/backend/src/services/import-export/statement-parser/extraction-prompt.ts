@@ -148,17 +148,18 @@ const EXTERNAL_REFERENCE_MAX_LENGTH = 255;
  * optional. The model also copies full ISO timestamps out of app exports, so the `T`
  * separator, fractional seconds and a zone are all tolerated.
  */
-const DATE_PATTERN = /^(\d{4}-\d{2}-\d{2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
+const DATE_PATTERN =
+  /^(\d{4}-\d{2}-\d{2})(?:[ T]([01]?\d|2[0-3]):([0-5]\d)(?::([0-5]\d)(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})?)?$/;
 
 /** Drops sub-second precision and any zone designator, so the wall clock stands as the statement wrote it. */
 function normalizeDate({ date }: { date: string }): string | null {
   const match = DATE_PATTERN.exec(date);
   if (!match) return null;
 
-  const [, day, hours, minutes, seconds] = match;
-  if (hours === undefined) return day!;
+  const [, ymd, hours, minutes, seconds] = match;
+  if (hours === undefined) return ymd!;
 
-  return `${day} ${hours.padStart(2, '0')}:${minutes}:${seconds ?? '00'}`;
+  return `${ymd} ${hours.padStart(2, '0')}:${minutes}:${seconds ?? '00'}`;
 }
 
 interface TransactionFields {
