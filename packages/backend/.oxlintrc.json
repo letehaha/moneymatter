@@ -38,7 +38,7 @@
         "src/models/transactions.model.ts",
         "src/services/transactions/planned-matching/**",
         "src/services/transactions/create-transaction.ts",
-        "src/services/transactions/update-transaction.ts",
+        "src/services/transactions/update-transaction/update-transaction.ts",
         "src/services/transactions/delete-transaction.ts",
         "src/services/transactions/bulk-delete.ts",
         "src/services/transactions/bulk-update.ts"

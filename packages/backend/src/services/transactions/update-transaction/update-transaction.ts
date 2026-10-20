@@ -26,20 +26,20 @@ import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-curre
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
 import * as refundsService from '@services/tx-refunds';
 
-import { withTransaction } from '../common/with-transaction';
-import { calcTransferTransactionRefAmount, createOppositeTransaction } from './create-transaction';
-import { getWritableTransactionById } from './get-by-id';
-import { buildManualCategorizationMeta } from './manual-categorization-meta';
-import { matchEditedTransactionToSubscriptions } from './match-edited-transaction-to-subscriptions';
+import { withTransaction } from '../../common/with-transaction';
+import { calcTransferTransactionRefAmount, createOppositeTransaction } from '../create-transaction';
+import { getWritableTransactionById } from '../get-by-id';
+import { buildManualCategorizationMeta } from '../manual-categorization-meta';
 import {
   assertAccountCanHoldPlans,
   assertPlannedFlipAllowed,
   assertPlannedStandalone,
   assertPlannedWriteAllowed,
-} from './planned-matching/assert-planned-invariants';
-import { manageSplits } from './splits';
-import { linkTransactions } from './transactions-linking';
-import { type UpdateTransactionParams } from './types';
+} from '../planned-matching/assert-planned-invariants';
+import { manageSplits } from '../splits';
+import { linkTransactions } from '../transactions-linking';
+import { type UpdateTransactionParams } from '../types';
+import { matchEditedTransactionToSubscriptions } from './match-edited-transaction-to-subscriptions';
 
 /**
  * Resolved auth context computed once at the top of `updateTransaction`. Threaded into

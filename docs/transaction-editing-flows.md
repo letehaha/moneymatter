@@ -203,7 +203,7 @@ sequenceDiagram
     Note over U: User sees income again<br/>because dialog re-opens<br/>on the new income leg
 ```
 
-The hardcode is in `packages/backend/src/services/transactions/update-transaction.ts` (line 329), inside `updateTransferTransaction()`:
+The hardcode is in `packages/backend/src/services/transactions/update-transaction/update-transaction.ts` (line 329), inside `updateTransferTransaction()`:
 
 ```ts
 transactionType: TRANSACTION_TYPES.income, // opposite leg, always
@@ -363,7 +363,7 @@ For engineers extending these rules, the canonical files are:
 
 | Concern                                       | File                                                                                                             |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Backend update entry                          | `packages/backend/src/services/transactions/update-transaction.ts`                                               |
+| Backend update entry                          | `packages/backend/src/services/transactions/update-transaction/update-transaction.ts`                            |
 | Transfer link/unlink                          | `packages/backend/src/services/transactions/link-transfer/`, `.../unlink-transfer/`                              |
 | External-account guard                        | `update-transaction.ts:51–84` (`validateTransaction`)                                                            |
 | Portfolio-link guard                          | `update-transaction.ts:92`                                                                                       |
