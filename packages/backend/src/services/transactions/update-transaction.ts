@@ -1,11 +1,4 @@
-import {
-  ACCOUNT_TYPES,
-  CATEGORIZATION_SOURCE,
-  RESOURCE_TYPES,
-  SHARE_PERMISSIONS,
-  TRANSACTION_TRANSFER_NATURE,
-  isTwoLegTransfer,
-} from '@bt/shared/types';
+import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -29,16 +22,15 @@ import {
   assertSharedWritePhase1Guards,
   assertTxWriteAccess,
 } from '@services/sharing/auth/authorize-account-write.service';
-import { canUserAccessResource } from '@services/sharing/auth/can-user-access-resource.service';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
-import { matchTransactionToSubscriptions } from '@services/subscriptions/matching-engine';
 import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-match';
 import * as refundsService from '@services/tx-refunds';
 
 import { withTransaction } from '../common/with-transaction';
-import { abortsTransaction, calcTransferTransactionRefAmount, createOppositeTransaction } from './create-transaction';
+import { calcTransferTransactionRefAmount, createOppositeTransaction } from './create-transaction';
 import { getWritableTransactionById } from './get-by-id';
 import { buildManualCategorizationMeta } from './manual-categorization-meta';
+import { matchEditedTransactionToSubscriptions } from './match-edited-transaction-to-subscriptions';
 import {
   assertAccountCanHoldPlans,
   assertPlannedFlipAllowed,
@@ -593,38 +585,6 @@ const isDiscardingTransfer = (payload: UpdateTransactionParams, prevData: Transa
   );
 };
 
-/** Does the edit change a field subscription matching reads? */
-const changesMatchingFields = ({
-  payload,
-  prevData,
-}: {
-  payload: UpdateTransactionParams;
-  prevData: Transactions.default;
-}): boolean =>
-  (payload.note !== undefined && payload.note !== prevData.note) ||
-  (payload.amount !== undefined && !payload.amount.equals(prevData.amount)) ||
-  (payload.accountId !== undefined && payload.accountId !== prevData.accountId) ||
-  (payload.transactionType !== undefined && payload.transactionType !== prevData.transactionType) ||
-  (payload.time !== undefined && payload.time.getTime() !== prevData.time.getTime());
-
-/**
- * May a subscription match replace the row's category? Only a category nobody chose: the
- * default ("uncategorized") one, or one an automatic source set. A manual choice stays.
- */
-const isReplaceableCategory = async ({
-  categoryId,
-  source,
-  ownerUserId,
-}: {
-  categoryId: string;
-  source: CATEGORIZATION_SOURCE | undefined;
-  ownerUserId: number;
-}): Promise<boolean> => {
-  if (source) return source !== CATEGORIZATION_SOURCE.manual;
-
-  return categoryId === (await getUserDefaultCategory({ id: ownerUserId }));
-};
-
 /**
  * Updates transaction and updates account balance.
  */
@@ -818,45 +778,12 @@ export const updateTransaction = withTransaction(
         }
       }
 
-      // A revoked recipient's subscriptions must not reach a row on the owner's account, and a
-      // category the user chose is never overwritten by the subscription's.
-      const [matchedTx] = updatedTransactions;
-      if (
-        (changesMatchingFields({ payload, prevData }) || isTwoLegTransfer(prevData.transferNature)) &&
-        !isTwoLegTransfer(matchedTx.transferNature)
-      ) {
-        try {
-          const authorCanRead = await canUserAccessResource({
-            userId: matchedTx.userId,
-            resourceType: RESOURCE_TYPES.account,
-            resourceId: matchedTx.accountId,
-            requiredPermission: SHARE_PERMISSIONS.read,
-          });
-
-          if (!authorCanRead.granted) {
-            logger.info(`Skipped subscription matching of ${matchedTx.id}: its author no longer reads the account`);
-          } else {
-            const matched = await matchTransactionToSubscriptions({
-              transaction: matchedTx,
-              userId: matchedTx.userId,
-              preserveCategory:
-                (payload.categoryId !== undefined && payload.categoryId !== prevData.categoryId) ||
-                !(await isReplaceableCategory({
-                  categoryId: prevData.categoryId,
-                  source: prevData.categorizationMeta?.source,
-                  ownerUserId: ctx.accountOwnerUserId,
-                })),
-            });
-            if (matched) await matchedTx.reload();
-          }
-        } catch (error) {
-          if (abortsTransaction(error)) throw error;
-          logger.error({
-            message: `Failed to match edited transaction ${matchedTx.id} to subscriptions`,
-            error: error as Error,
-          });
-        }
-      }
+      await matchEditedTransactionToSubscriptions({
+        transaction: updatedTransactions[0],
+        payload,
+        prevData,
+        accountOwnerUserId: ctx.accountOwnerUserId,
+      });
 
       // Confirming a plan is the moment its money moves, so a subscription it is linked to
       // can settle its period now.
