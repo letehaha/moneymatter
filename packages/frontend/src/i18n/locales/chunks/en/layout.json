@@ -22,7 +22,8 @@
       "budgets": "Trackers"
     },
     "venture": "Venture",
-    "budget": "Budget"
+    "budget": "Budget",
+    "chat": "AI chat"
   },
   "sidebar": {
     "collapse": "Collapse sidebar",
@@ -88,7 +89,8 @@
       "allSkipped": "AI couldn't confidently categorize the transaction | AI couldn't confidently categorize any of the {count} transactions",
       "queued": "Waiting to start...",
       "transactions": "transactions"
-    }
+    },
+    "chat": "Open AI chat"
   },
   "themeSelector": {
     "light": "Light",

@@ -4,7 +4,7 @@ import { useRoute } from 'vue-router';
 declare module 'vue-router' {
   interface RouteMeta {
     /** Top-level sidebar group this route highlights. Inherited from parent routes. */
-    navSection?: 'accounts' | 'transactions' | 'budget' | 'planned';
+    navSection?: 'accounts' | 'transactions' | 'budget' | 'planned' | 'chat';
   }
 }
 
@@ -16,6 +16,7 @@ export const useSidebarNavRoutes = () => {
   const isTransactionsRoute = computed(() => route.meta.navSection === 'transactions');
   const isBudgetRoute = computed(() => route.meta.navSection === 'budget');
   const isPlannedRoute = computed(() => route.meta.navSection === 'planned');
+  const isChatRoute = computed(() => route.meta.navSection === 'chat');
 
-  return { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute };
+  return { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute, isChatRoute };
 };

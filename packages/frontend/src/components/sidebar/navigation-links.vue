@@ -12,19 +12,25 @@ import {
 } from '@lucide/vue';
 import { watch } from 'vue';
 
-import { SIDEBAR_BUDGET_NAV_ITEM, SIDEBAR_NAV_CHILDREN, useAccountsNavChildren } from './nav-items';
+import {
+  SIDEBAR_BUDGET_NAV_ITEM,
+  SIDEBAR_CHAT_NAV_ITEM,
+  SIDEBAR_NAV_CHILDREN,
+  useAccountsNavChildren,
+} from './nav-items';
 import { useSidebarNavCollapse } from './use-nav-collapse';
 import { useSidebarNavRoutes } from './use-nav-routes';
 
-withDefaults(defineProps<{ bottomNav?: boolean }>(), { bottomNav: false });
+const props = withDefaults(defineProps<{ bottomNav?: boolean }>(), { bottomNav: false });
 
-const navItemBase = 'w-full gap-2 px-3';
+// The bottom bar is icon-only: every cell is the same width, with the icon (and its highlight) centred in it.
+const navItemBase = props.bottomNav ? 'w-full min-w-0 justify-center gap-0 px-0 sm:gap-2 sm:px-3' : 'w-full gap-2 px-3';
 const navItemActive = 'bg-primary/10 text-foreground';
 const navIconBase = 'size-4 shrink-0';
 const navIconActive = 'text-primary-text';
 
 const { isAccountsOpen, isTransactionsOpen, isPlannedOpen } = useSidebarNavCollapse();
-const { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute } = useSidebarNavRoutes();
+const { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute, isChatRoute } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
 
 watch(
@@ -53,7 +59,11 @@ watch(
 </script>
 
 <template>
-  <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.home }">
+  <router-link
+    v-slot="{ isActive }"
+    :to="{ name: ROUTES_NAMES.home }"
+    :aria-label="bottomNav ? $t('navigation.dashboard') : undefined"
+  >
     <ui-button
       variant="ghost"
       as="span"
@@ -66,7 +76,7 @@ watch(
   </router-link>
 
   <template v-if="bottomNav">
-    <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.accounts }">
+    <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.accounts }" :aria-label="$t('navigation.accounts')">
       <ui-button variant="ghost" as="span" :class="[navItemBase, isActive && navItemActive]" size="default">
         <LayersIcon :class="[navIconBase, isActive && navIconActive]" />
         <span class="max-sm:hidden"> {{ $t('navigation.accounts') }} </span>
@@ -122,7 +132,11 @@ watch(
   </Collapsible>
 
   <template v-if="bottomNav">
-    <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.transactions }">
+    <router-link
+      v-slot="{ isActive }"
+      :to="{ name: ROUTES_NAMES.transactions }"
+      :aria-label="$t('navigation.transactions')"
+    >
       <ui-button variant="ghost" as="span" :class="[navItemBase, isActive && navItemActive]" size="default">
         <CreditCardIcon :class="[navIconBase, isActive && navIconActive]" />
         <span class="max-sm:hidden"> {{ $t('navigation.transactions') }} </span>
@@ -215,7 +229,11 @@ watch(
     </CollapsibleContent>
   </Collapsible>
 
-  <router-link v-slot="{ isActive }" :to="{ name: ROUTES_NAMES.analytics }">
+  <router-link
+    v-slot="{ isActive }"
+    :to="{ name: ROUTES_NAMES.analytics }"
+    :aria-label="bottomNav ? $t('navigation.analytics') : undefined"
+  >
     <ui-button
       variant="ghost"
       as="span"
@@ -224,6 +242,21 @@ watch(
     >
       <ChartColumnIcon :class="[navIconBase, isActive && navIconActive]" />
       <span :class="{ 'max-sm:hidden': bottomNav }"> {{ $t('navigation.analytics') }} </span>
+    </ui-button>
+  </router-link>
+
+  <router-link
+    :to="{ name: SIDEBAR_CHAT_NAV_ITEM.routeName }"
+    :aria-label="bottomNav ? $t(SIDEBAR_CHAT_NAV_ITEM.labelKey) : undefined"
+  >
+    <ui-button
+      variant="ghost"
+      as="span"
+      :class="[navItemBase, !bottomNav && 'justify-start', isChatRoute && navItemActive]"
+      size="default"
+    >
+      <component :is="SIDEBAR_CHAT_NAV_ITEM.icon" :class="[navIconBase, isChatRoute && navIconActive]" />
+      <span :class="{ 'max-sm:hidden': bottomNav }">{{ $t(SIDEBAR_CHAT_NAV_ITEM.labelKey) }}</span>
     </ui-button>
   </router-link>
 </template>

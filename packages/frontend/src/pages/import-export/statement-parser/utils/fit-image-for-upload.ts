@@ -6,13 +6,16 @@ const MAX_IMAGE_PIXELS = 4_000_000;
 const MAX_IMAGE_EDGE_PX = 7500;
 const JPEG_QUALITY = 0.85;
 
+/** What the server reads as is; anything else (HEIC/HEIF from an iPhone) is re-encoded to JPEG. */
+const PASSTHROUGH_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
 /** Factor (at most 1) that brings the image within the pixel and edge caps. */
 export function imageScale({ width, height }: { width: number; height: number }): number {
   return Math.min(1, Math.sqrt(MAX_IMAGE_PIXELS / (width * height)), MAX_IMAGE_EDGE_PX / Math.max(width, height));
 }
 
 /**
- * Shrinks an image the AI provider would reject into a JPEG. Decoding happens here rather
+ * Shrinks an image the AI provider would reject into a JPEG, and turns a format the server cannot read (HEIC) into one. Decoding happens here rather
  * than on the server, where a corrupt file can crash the native decoder. Throws when the
  * browser can't decode the file.
  */
@@ -23,7 +26,7 @@ export async function fitImageForUpload({ file }: { file: File }): Promise<File>
     if (!width || !height) throw new Error('Image has no pixels');
 
     const scale = imageScale({ width, height });
-    if (scale === 1 && file.size <= STATEMENT_IMAGE_MAX_BYTES) return file;
+    if (scale === 1 && file.size <= STATEMENT_IMAGE_MAX_BYTES && PASSTHROUGH_TYPES.has(file.type)) return file;
 
     const canvas = document.createElement('canvas');
     canvas.width = Math.floor(width * scale);
@@ -38,7 +41,10 @@ export async function fitImageForUpload({ file }: { file: File }): Promise<File>
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/jpeg', JPEG_QUALITY));
     if (!blob) throw new Error('Image could not be encoded');
 
-    return new File([blob], file.name, { type: 'image/jpeg', lastModified: file.lastModified });
+    return new File([blob], file.name.replace(/\.(heic|heif)$/i, '.jpg'), {
+      type: 'image/jpeg',
+      lastModified: file.lastModified,
+    });
   } finally {
     bitmap.close();
   }

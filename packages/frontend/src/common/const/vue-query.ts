@@ -252,6 +252,12 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   // user settings
   userSettings: ['user-settings'] as const,
 
+  // chat: append the threadId (and the `before` message id of an older page) when using
+  chatThreads: ['chat', 'threads'] as const,
+  chatThread: ['chat', 'thread'] as const,
+  chatAppliedCards: ['chat', 'applied'] as const,
+  chatDefaultConnection: ['chat', 'default-connection'] as const,
+
   // MCP connected apps
   mcpConnectedApps: ['mcp-connected-apps'] as const,
 

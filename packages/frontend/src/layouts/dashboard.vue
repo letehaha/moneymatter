@@ -21,6 +21,10 @@
       <BottomNavbar />
     </template>
 
+    <!-- Chat panel (desktop only): docked beside the page so the page and its context stay in view.
+         The Chat page is the conversation itself, so the panel steps aside there. -->
+    <ChatPanel v-if="!isMobileView && chatPanelStore.isOpen && !isChatRoute" />
+
     <!-- Quick Start Onboarding Sidebar (desktop only) -->
     <template v-if="!isMobileView">
       <QuickStartSidebar />
@@ -53,9 +57,13 @@ import { useIdleEnabled } from '@/composable/use-idle-enabled';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore, useOnboardingStore, useRootStore } from '@/stores';
+import { useChatPanelStore } from '@/stores/chat-panel';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+// The panel is opened on demand, so its code is not part of the dashboard's first load.
+const ChatPanel = defineAsyncComponent(() => import('@/components/chat/chat-panel.vue'));
 
 useHead({
   meta: [{ name: 'robots', content: 'noindex, nofollow' }],
@@ -66,6 +74,8 @@ const route = useRoute();
 const rootStore = useRootStore();
 const userCurrenciesStore = useCurrenciesStore();
 const onboardingStore = useOnboardingStore();
+const chatPanelStore = useChatPanelStore();
+const isChatRoute = computed(() => route.name === ROUTES_NAMES.chat || route.name === ROUTES_NAMES.chatThread);
 const idleEnabled = useIdleEnabled();
 const { isCollapsed } = useSidebarCollapsed();
 const isMobileView = useWindowBreakpoints(CUSTOM_BREAKPOINTS.uiMobile, {

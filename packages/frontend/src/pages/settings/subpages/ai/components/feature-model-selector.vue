@@ -36,6 +36,8 @@
         </template>
       </ModelSelectorCard>
     </div>
+
+    <ChatSettings />
   </div>
 </template>
 
@@ -48,6 +50,7 @@ import { RotateCwIcon, TriangleAlertIcon } from '@lucide/vue';
 import type { Component } from 'vue';
 
 import AiUsageMeterCard from './ai-usage-meter-card.vue';
+import ChatSettings from './features/chat-settings.vue';
 import CustomInstructions from './features/custom-instructions.vue';
 import ModelSelectorCard from './shared/model-selector-card.vue';
 
