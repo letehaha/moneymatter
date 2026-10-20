@@ -1,29 +1,30 @@
-import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
-import { currencyCode, dateString, decimalString, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
+import { updateVentureDealBodyShape, updateVentureDealBodySchema } from '@controllers/venture/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateVentureDeal } from '@services/venture/deals/update.service';
-import { z } from 'zod';
 
 import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   dealId: recordId().describe('Venture deal ID (from list_venture_deals)'),
-  name: z.string().optional().describe('New deal name'),
-  platformId: recordId().nullable().optional().describe('Move to a different platform (or null to clear)'),
-  spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional().describe('New SPV subtype'),
-  targetCompany: z.string().nullable().optional().describe('New target company name'),
-  currencyCode: currencyCode().optional().describe('New currency code (locked once events exist)'),
-  status: z.nativeEnum(VENTURE_DEAL_STATUS).optional().describe('Override the deal status manually'),
-  principal: decimalString().optional().describe('New principal (locked once events exist)'),
-  entryFee: decimalString().optional().describe('New entry fee amount (locked once events exist)'),
-  entryFeePct: percentageFraction().optional().describe('New entry fee fraction in [0,1] (locked once events exist)'),
-  mgmtFeePct: percentageFraction().optional().describe('New management fee fraction in [0,1]'),
-  carryPct: percentageFraction().optional().describe('New carry fraction in [0,1] (locked once events exist)'),
-  hurdlePct: percentageFraction().optional().describe('New hurdle fraction in [0,1] (locked once events exist)'),
-  investmentDate: dateString().optional().describe('New investment date (locked once events exist)'),
-  expectedExitDate: dateString().nullable().optional().describe('New expected exit date (or null to clear)'),
-  notes: z.string().nullable().optional().describe('New notes (or null to clear)'),
+  name: updateVentureDealBodyShape.name.describe('New deal name'),
+  platformId: updateVentureDealBodyShape.platformId.describe('Move to a different platform (or null to clear)'),
+  spvSubtype: updateVentureDealBodyShape.spvSubtype.describe('New SPV subtype'),
+  targetCompany: updateVentureDealBodyShape.targetCompany.describe('New target company name'),
+  currencyCode: updateVentureDealBodyShape.currencyCode.describe('New currency code (locked once events exist)'),
+  status: updateVentureDealBodyShape.status.describe('Override the deal status manually'),
+  principal: updateVentureDealBodyShape.principal.describe('New principal (locked once events exist)'),
+  entryFee: updateVentureDealBodyShape.entryFee.describe('New entry fee amount (locked once events exist)'),
+  entryFeePct: updateVentureDealBodyShape.entryFeePct.describe(
+    'New entry fee fraction in [0,1] (locked once events exist)',
+  ),
+  mgmtFeePct: updateVentureDealBodyShape.mgmtFeePct.describe('New management fee fraction in [0,1]'),
+  carryPct: updateVentureDealBodyShape.carryPct.describe('New carry fraction in [0,1] (locked once events exist)'),
+  hurdlePct: updateVentureDealBodyShape.hurdlePct.describe('New hurdle fraction in [0,1] (locked once events exist)'),
+  investmentDate: updateVentureDealBodyShape.investmentDate.describe('New investment date (locked once events exist)'),
+  expectedExitDate: updateVentureDealBodyShape.expectedExitDate.describe('New expected exit date (or null to clear)'),
+  notes: updateVentureDealBodyShape.notes.describe('New notes (or null to clear)'),
 };
 
 export function registerUpdateVentureDeal(server: McpServer) {
@@ -40,25 +41,10 @@ export function registerUpdateVentureDeal(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_venture_deal', clientId: extra.authInfo?.clientId });
 
-      const deal = await updateVentureDeal({
-        userId,
-        dealId: args.dealId,
-        name: args.name,
-        platformId: args.platformId,
-        spvSubtype: args.spvSubtype,
-        targetCompany: args.targetCompany,
-        currencyCode: args.currencyCode,
-        status: args.status,
-        principal: args.principal,
-        entryFee: args.entryFee,
-        entryFeePct: args.entryFeePct,
-        mgmtFeePct: args.mgmtFeePct,
-        carryPct: args.carryPct,
-        hurdlePct: args.hurdlePct,
-        investmentDate: args.investmentDate,
-        expectedExitDate: args.expectedExitDate,
-        notes: args.notes,
-      });
+      // The at-least-one-field rule spans fields, so it runs on the REST body schema.
+      const { dealId, ...fields } = args;
+      const body = updateVentureDealBodySchema.parse(fields);
+      const deal = await updateVentureDeal({ userId, dealId, ...body });
 
       return jsonContent({ data: deal });
     },
