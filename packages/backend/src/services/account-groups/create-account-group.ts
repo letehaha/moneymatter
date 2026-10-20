@@ -31,7 +31,9 @@ export const createAccountGroup = withTransaction(
       userId,
       name,
       parentGroupId,
-      ...applyManualLogoPatch({ patch: { logoDomain, logoInitials, logoColor, logoIcon } }),
+      ...applyManualLogoPatch({
+        patch: { logoDomain, logoInitials, logoColor, logoIcon },
+      }),
     });
   },
 );

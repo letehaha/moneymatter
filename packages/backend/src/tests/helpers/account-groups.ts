@@ -63,6 +63,21 @@ export async function deleteAccountGroup<R extends boolean | undefined = undefin
   });
 }
 
+export async function moveAccountGroup<R extends boolean | undefined = undefined>({
+  groupId,
+  newParentGroupId,
+  raw,
+}: Omit<Parameters<typeof accountGroupService.moveAccountGroup>[0], 'userId'> & {
+  raw?: R;
+}) {
+  return makeRequest<Awaited<ReturnType<typeof accountGroupService.moveAccountGroup>>[1][number], R>({
+    method: 'put',
+    url: `/account-group/${groupId}/move`,
+    payload: { newParentGroupId },
+    raw,
+  });
+}
+
 export async function removeAccountFromGroup<R extends boolean | undefined = undefined>({
   groupId,
   accountIds,

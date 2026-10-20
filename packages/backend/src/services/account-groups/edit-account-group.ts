@@ -3,6 +3,7 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { UnexpectedError } from '@js/errors';
 import AccountGroup from '@models/accounts-groups/account-groups.model';
+import { assertValidParentGroup } from '@services/account-groups/assert-valid-parent-group';
 import { applyManualLogoPatch } from '@services/brand-logos';
 
 import { withTransaction } from '../common/with-transaction';
@@ -27,10 +28,7 @@ export const updateAccountGroup = withTransaction(
     });
 
     if (updates.parentGroupId) {
-      await findOrThrowNotFound({
-        query: AccountGroup.findOne({ where: { id: updates.parentGroupId, userId } }),
-        message: t({ key: 'accountGroups.parentGroupNotExist' }),
-      });
+      await assertValidParentGroup({ groupId, parentGroupId: updates.parentGroupId, userId });
     }
 
     const logoPatch = applyManualLogoPatch({

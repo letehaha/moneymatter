@@ -278,6 +278,107 @@ describe('Delete account group', () => {
 
     expect(result.statusCode).toBe(200);
   });
+
+  it("moves the deleted group's subgroups up to its own parent", async () => {
+    const root = await helpers.createAccountGroup({ name: 'root', raw: true });
+    const middle = await helpers.createAccountGroup({
+      name: 'middle',
+      parentGroupId: root.id,
+      raw: true,
+    });
+    const leaf = await helpers.createAccountGroup({
+      name: 'leaf',
+      parentGroupId: middle.id,
+      raw: true,
+    });
+
+    const result = await helpers.deleteAccountGroup({ groupId: middle.id });
+
+    expect(result.statusCode).toBe(200);
+    expect(await findGroupInList({ id: middle.id })).toBeUndefined();
+    expect((await findGroupInList({ id: leaf.id }))?.parentGroupId).toBe(root.id);
+  });
+
+  it('makes subgroups of a deleted root group top-level', async () => {
+    const root = await helpers.createAccountGroup({ name: 'root', raw: true });
+    const child = await helpers.createAccountGroup({
+      name: 'child',
+      parentGroupId: root.id,
+      raw: true,
+    });
+
+    const result = await helpers.deleteAccountGroup({ groupId: root.id });
+
+    expect(result.statusCode).toBe(200);
+    expect((await findGroupInList({ id: child.id }))?.parentGroupId).toBeNull();
+  });
+});
+
+describe('Account group parent cycles', () => {
+  it('rejects setting a group as its own parent', async () => {
+    const group = await helpers.createAccountGroup({
+      name: 'group',
+      raw: true,
+    });
+
+    const update = await helpers.updateAccountGroup({
+      groupId: group.id,
+      parentGroupId: group.id,
+    });
+    const move = await helpers.moveAccountGroup({
+      groupId: group.id,
+      newParentGroupId: group.id,
+    });
+
+    expect(update.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(move.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await findGroupInList({ id: group.id }))?.parentGroupId).toBeNull();
+  });
+
+  it('rejects moving a group under one of its own descendants', async () => {
+    const root = await helpers.createAccountGroup({ name: 'root', raw: true });
+    const middle = await helpers.createAccountGroup({
+      name: 'middle',
+      parentGroupId: root.id,
+      raw: true,
+    });
+    const leaf = await helpers.createAccountGroup({
+      name: 'leaf',
+      parentGroupId: middle.id,
+      raw: true,
+    });
+
+    const update = await helpers.updateAccountGroup({
+      groupId: root.id,
+      parentGroupId: leaf.id,
+    });
+    const move = await helpers.moveAccountGroup({
+      groupId: root.id,
+      newParentGroupId: leaf.id,
+    });
+
+    expect(update.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(move.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await findGroupInList({ id: root.id }))?.parentGroupId).toBeNull();
+  });
+
+  it('still allows moving a group under a non-descendant', async () => {
+    const a = await helpers.createAccountGroup({ name: 'a', raw: true });
+    const b = await helpers.createAccountGroup({ name: 'b', raw: true });
+    const bChild = await helpers.createAccountGroup({
+      name: 'b-child',
+      parentGroupId: b.id,
+      raw: true,
+    });
+
+    const moved = await helpers.moveAccountGroup({
+      groupId: a.id,
+      newParentGroupId: bChild.id,
+      raw: true,
+    });
+
+    expect(moved.parentGroupId).toBe(bChild.id);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -299,7 +400,10 @@ describe('AccountGroup POST logo', () => {
         source: 'seed',
       });
 
-      const created = await helpers.createAccountGroup({ name: 'Notion', raw: true });
+      const created = await helpers.createAccountGroup({
+        name: 'Notion',
+        raw: true,
+      });
       expect(created.logoDomain).toBeNull();
 
       const found = await findGroupInList({ id: created.id });
@@ -332,7 +436,10 @@ describe('AccountGroup POST logo', () => {
 describe('AccountGroup PUT logo', () => {
   describe('PUT /account-group/:groupId', () => {
     it('sets a logoDomain', async () => {
-      const group = await helpers.createAccountGroup({ name: 'Banking', raw: true });
+      const group = await helpers.createAccountGroup({
+        name: 'Banking',
+        raw: true,
+      });
 
       const [updated] = await helpers.updateAccountGroup({
         groupId: group.id,
@@ -352,7 +459,10 @@ describe('AccountGroup PUT logo', () => {
         raw: true,
       });
 
-      const noopRes = await helpers.updateAccountGroup({ groupId: group.id, raw: false });
+      const noopRes = await helpers.updateAccountGroup({
+        groupId: group.id,
+        raw: false,
+      });
       expect(noopRes.statusCode).toBe(200);
 
       const [stored] = helpers.extractResponse(noopRes);
@@ -398,7 +508,10 @@ describe('AccountGroup PUT logo', () => {
     });
 
     it('returns 422 when the payload carries both logoDomain and logoInitials', async () => {
-      const group = await helpers.createAccountGroup({ name: 'Both On Update', raw: true });
+      const group = await helpers.createAccountGroup({
+        name: 'Both On Update',
+        raw: true,
+      });
 
       const res = await helpers.updateAccountGroup({
         groupId: group.id,
@@ -474,19 +587,38 @@ describe('AccountGroup logo icon and image slots', () => {
       raw: true,
     });
 
-    expect(group).toMatchObject({ logoIcon: 'food-24-regular', logoColor: '#7355be', logoInitials: null });
+    expect(group).toMatchObject({
+      logoIcon: 'food-24-regular',
+      logoColor: '#7355be',
+      logoInitials: null,
+    });
   });
 
   it('sets logoIcon on update and evicts the monogram', async () => {
-    const group = await helpers.createAccountGroup({ name: 'Mono Group', logoInitials: 'MG', raw: true });
+    const group = await helpers.createAccountGroup({
+      name: 'Mono Group',
+      logoInitials: 'MG',
+      raw: true,
+    });
 
-    const [updated] = await helpers.updateAccountGroup({ groupId: group.id, logoIcon: 'food-24-regular', raw: true });
+    const [updated] = await helpers.updateAccountGroup({
+      groupId: group.id,
+      logoIcon: 'food-24-regular',
+      raw: true,
+    });
 
-    expect(updated).toMatchObject({ logoIcon: 'food-24-regular', logoInitials: null });
+    expect(updated).toMatchObject({
+      logoIcon: 'food-24-regular',
+      logoInitials: null,
+    });
   });
 
   it('clears every slot with the three-null payload', async () => {
-    const group = await helpers.createAccountGroup({ name: 'Reset Icon', logoIcon: 'food-24-regular', raw: true });
+    const group = await helpers.createAccountGroup({
+      name: 'Reset Icon',
+      logoIcon: 'food-24-regular',
+      raw: true,
+    });
 
     const response = await helpers.updateAccountGroup({
       groupId: group.id,
@@ -505,7 +637,10 @@ describe('AccountGroup logo icon and image slots', () => {
   });
 
   it('rejects logoImage because the body is strict', async () => {
-    const group = await helpers.createAccountGroup({ name: 'Strict Group', raw: true });
+    const group = await helpers.createAccountGroup({
+      name: 'Strict Group',
+      raw: true,
+    });
 
     const response = await helpers.updateAccountGroup({
       groupId: group.id,

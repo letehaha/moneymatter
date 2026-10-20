@@ -23,6 +23,9 @@ export const deleteAccountGroup = withTransaction(
 
     await pauseAutomationsReferencing({ userId, refType: 'accountGroup', refId: group.id, label: group.name });
 
+    const newParentGroupId = group.parentGroupId === group.id ? null : group.parentGroupId;
+    await AccountGroup.update({ parentGroupId: newParentGroupId }, { where: { parentGroupId: group.id, userId } });
+
     await group.destroy();
   },
 );

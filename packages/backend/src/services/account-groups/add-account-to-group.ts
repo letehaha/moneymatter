@@ -28,7 +28,9 @@ export const addAccountToGroup = withTransaction(
       requiredPermission: SHARE_PERMISSIONS.read,
     });
     if (!access.granted) {
-      throw new NotFoundError({ message: t({ key: 'accountGroups.accountNotFound' }) });
+      throw new NotFoundError({
+        message: t({ key: 'accountGroups.accountNotFound' }),
+      });
     }
 
     await findOrThrowNotFound({

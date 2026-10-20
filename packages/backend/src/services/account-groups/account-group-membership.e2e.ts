@@ -99,8 +99,14 @@ describe('Account group membership', () => {
   describe('Remove', () => {
     it('removes one, many, and already-removed memberships', async () => {
       const accountB = await helpers.createAccount({ raw: true });
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
-      await helpers.addAccountToGroup({ accountId: accountB.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
+      await helpers.addAccountToGroup({
+        accountId: accountB.id,
+        groupId: group.id,
+      });
 
       const single = await helpers.removeAccountFromGroup({
         accountIds: [account.id],
@@ -108,7 +114,10 @@ describe('Account group membership', () => {
       });
       expect(single.statusCode).toBe(200);
 
-      const afterSingle = await helpers.getAccountsInGroup({ groupId: group.id, raw: true });
+      const afterSingle = await helpers.getAccountsInGroup({
+        groupId: group.id,
+        raw: true,
+      });
       expect(afterSingle.map((row) => row.accountId)).toEqual([accountB.id]);
 
       const repeat = await helpers.removeAccountFromGroup({
@@ -117,14 +126,20 @@ describe('Account group membership', () => {
       });
       expect(repeat.statusCode).toBe(200);
 
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
       const both = await helpers.removeAccountFromGroup({
         accountIds: [account.id, accountB.id],
         groupId: group.id,
       });
       expect(both.statusCode).toBe(200);
 
-      const afterBoth = await helpers.getAccountsInGroup({ groupId: group.id, raw: true });
+      const afterBoth = await helpers.getAccountsInGroup({
+        groupId: group.id,
+        raw: true,
+      });
       expect(afterBoth).toHaveLength(0);
     }, 60_000);
 
@@ -183,6 +198,7 @@ describe('Account group membership', () => {
    * shared account independently.
    */
   describe('Shared accounts', () => {
+    // oxlint-disable-next-line unicorn/consistent-function-scoping
     async function shareWithRecipient({
       accountId,
       recipient,
@@ -204,7 +220,10 @@ describe('Account group membership', () => {
     }
 
     it("recipient can group a shared account into their own group without touching the owner's grouping", async () => {
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
 
       const recipient = await helpers.provisionSecondUserWithBaseCurrency();
       await shareWithRecipient({ accountId: account.id, recipient });
@@ -225,14 +244,19 @@ describe('Account group membership', () => {
 
       expect(res.statusCode).toBe(200);
 
-      const groupings = await AccountGrouping.findAll({ where: { accountId: account.id } });
+      const groupings = await AccountGrouping.findAll({
+        where: { accountId: account.id },
+      });
       expect(groupings).toHaveLength(2);
       const groupIds = groupings.map((g) => g.groupId).toSorted((a, b) => a.localeCompare(b));
       expect(groupIds).toEqual([group.id, recipientGroup.id].toSorted((a, b) => a.localeCompare(b)));
     });
 
     it("recipient removing their grouping leaves the owner's grouping intact", async () => {
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
 
       const recipient = await helpers.provisionSecondUserWithBaseCurrency();
       await shareWithRecipient({ accountId: account.id, recipient });
@@ -244,7 +268,11 @@ describe('Account group membership', () => {
 
       await helpers.asUser({
         cookies: recipient.cookies,
-        fn: () => helpers.addAccountToGroup({ accountId: account.id, groupId: recipientGroup.id }),
+        fn: () =>
+          helpers.addAccountToGroup({
+            accountId: account.id,
+            groupId: recipientGroup.id,
+          }),
       });
 
       const removeRes = await helpers.asUser({
@@ -258,13 +286,18 @@ describe('Account group membership', () => {
 
       expect(removeRes.statusCode).toBe(200);
 
-      const remaining = await AccountGrouping.findAll({ where: { accountId: account.id } });
+      const remaining = await AccountGrouping.findAll({
+        where: { accountId: account.id },
+      });
       expect(remaining).toHaveLength(1);
       expect(remaining[0]!.groupId).toBe(group.id);
     });
 
     it("stranger requesting the owner's groupId gets an empty result, never the owner's account ids", async () => {
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
 
       const stranger = await helpers.provisionSecondUserWithBaseCurrency();
 
@@ -280,9 +313,15 @@ describe('Account group membership', () => {
     });
 
     it('owner can list the accounts in their own group', async () => {
-      await helpers.addAccountToGroup({ accountId: account.id, groupId: group.id });
+      await helpers.addAccountToGroup({
+        accountId: account.id,
+        groupId: group.id,
+      });
 
-      const res = await helpers.getAccountsInGroup({ groupId: group.id, raw: true });
+      const res = await helpers.getAccountsInGroup({
+        groupId: group.id,
+        raw: true,
+      });
 
       expect(res).toHaveLength(1);
       expect(res[0]!.accountId).toBe(account.id);
