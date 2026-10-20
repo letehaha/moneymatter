@@ -219,7 +219,27 @@ Delegate to the `test-runner` subagent (per CLAUDE.md rules).
 
 **e2e:** the gate also runs the MCP e2e suites (`services/mcp/(connected-apps|mcp-scope-gate)`) plus the REST suites of the routes the tool wraps, in one batched run: `lockf -t 7200 /tmp/mm-e2e.lock npm run test:e2e -- --testPathPattern='...'`. Tools themselves cannot be called end to end, so a check that moves out of a controller into a service gets an e2e case first, run green against the unmoved code, and stays green after the move.
 
-### 7. Lint check (optional but cheap)
+### 7. Chat capability
+
+The in-app AI chat builds its tools from the same catalog, so a new tool reaches it with no registration. A read tool is offered as is. A write tool becomes a card the user approves, and `services/chat/policies/chat-capabilities-drift.unit.ts` (it runs in the unit suite) fails until the tool is classified. Check, in `services/chat/policies/`:
+
+- **Policy.** The tool's name decides its card (`create_*`, `update_*`, `delete_*`, `bulk_*`, `merge_*`); `deriveFromName` in `rules.ts` gives the kind, the entity and the danger. Add an entry to `EXPLICIT_POLICIES` in `explicit.ts` only where the name rule gets it wrong: another entity, a target argument other than `<entity>Id` (`targetFields`), a `previewResolver`, a `kind`, a danger level. Every id-like argument needs an entity in the tool's `entityFields`, or an acknowledgement in the drift suite.
+- **Preview resolver.** A destructive or bulk tool (every `delete_*`, `bulk_*`, `merge_*`, a name in `DESTRUCTIVE_TOOLS`, `CONDITIONAL_DELETE_TOOLS` or `HIGH_IMPACT_TOOLS`) is a red card and needs a real resolver from `services/chat/proposals/previews/` (count, sample rows, frozen target set) that is registered under a name in `PREVIEW_RESOLVER_NAMES`. A red tool is never in `CHAT_ARGS_ONLY_TOOLS`. Any other write tool either gets a resolver or goes into `CHAT_ARGS_ONLY_TOOLS` in `excluded.ts`, and the suite requires that list to equal the tools without a resolver.
+- **Credential-returning tool.** A tool that returns a token, an upload URL or any other secret goes into `CHAT_EXCLUDED_TOOLS` in `excluded.ts` with a reason, so the secret never sits in chat history or the model's context. The same goes for a probe whose only effect is an outbound request.
+- **Cross-field rules.** A tool whose handler checks rules across fields registers its validator in `services/mcp/tool-arg-validators.ts` (step 1). The chat runs it on proposal, on every edit and at approval, so the card is refused the way the MCP tool refuses it.
+- **Egress.** A tool that makes the server call a host named by its arguments goes into `EGRESS_TOOLS` in `explicit.ts`, as a function of the arguments that returns the host and URL (or `null` when the arguments name no host). Its card is amber, shows the host, needs a confirmation that repeats it, and is never applied by "Approve all safe".
+- **Standalone.** A tool that queues work or commits on its own (outside the database transaction) goes into `STANDALONE_TOOLS`. It cannot be part of a card chain, and its card is red.
+- **Card text.** Add `chat.fields.<argument>` labels and, for a new entity, `chat.entities.<entity>` to `pages/chat.json` in `en` and `uk` (the i18n-editor does this). The drift suite fails on a missing label.
+- **Gate pattern.** If the new tool introduces a gate pattern the chat has to respect (a new kind of guard beyond scope, feature, lock and rate limit), add its rule under `services/chat/policies/` so the card is refused or confirmed the same way, with a unit case in `rules.unit.ts`.
+
+Run the suite with the rest of the gate:
+
+```bash
+cd packages/backend
+npm run test:unit -- --testPathPattern='services/(mcp|chat/policies)/'
+```
+
+### 8. Lint check (optional but cheap)
 
 Delegate to the `linter` subagent. Existing MCP tool files may show 4 `TS1005`-style errors from an `ioredis` env issue — that's pre-existing noise and not caused by new tools. Real errors look different (unused imports, mistyped service args, wrong Zod shape).
 

@@ -68,6 +68,16 @@ Ignored unless you use the [Traefik overlay](traefik-overlay.md)
 | `ATTACHMENTS_PATH`                                                             | Where transaction attachments live on the host. Unset = the Docker-managed `attachments_data` volume. Set to a host directory (absolute, or starting with `./`) to use a NAS/shared mount. The backend runs inside the container as user id 1001 and must be able to write there, otherwise uploads fail with "permission denied": on a local disk run `sudo chown -R 1001:1001 <dir>`; on an SMB share mount it with `uid=1001,gid=1001`; on NFS set the owner on the NAS side |
 | `ATTACHMENTS_S3_BUCKET`                                                        | Store attachments in S3-compatible object storage (e.g. Cloudflare R2) instead of on disk. Needs `ATTACHMENTS_S3_ENDPOINT`, `ATTACHMENTS_S3_ACCESS_KEY_ID` and `ATTACHMENTS_S3_SECRET_ACCESS_KEY`                                                                                                                                                                                                                                                                               |
 
+## AI chat
+
+The in-app [Chat](https://docs.moneymatter.app/ai/chat/) needs no new environment variable: it uses the AI models users already set up in Settings → AI, and it ships in the published images.
+
+**Sandbox.** Calculations the chat runs (QuickJS in WebAssembly, in two worker threads) have no setting. Each run is capped at 64 MB of heap growth, 2 s of compute time and 5 s in total. The pool of two workers needs about 128 MB in normal use, and up to about 640 MB at the hard ceiling, which matters only on a very small server. Worker code is in `dist/sandbox-worker.js` of the backend image.
+
+**History and backups.** Conversations are deleted after the retention time each user picks (default 30 days) by a background job that runs on every install, offline ones included. They are not part of backups, and a restore removes them.
+
+**Operators.** Chat has no included server model. To offer one, add an entry for the `chat` feature to `FALLBACK_SERVER_MODELS` in `packages/backend/src/services/ai/resolution-ladder.ts` and rebuild; users with the operator AI feature then get it, with no other change.
+
 ## Frontend runtime (optional)
 
 Interpolated into the frontend container's `environment:` block. Change and
