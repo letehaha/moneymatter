@@ -36,6 +36,7 @@ const { t } = useI18n();
 const providerConfig: Record<OAUTH_PROVIDER, { name: string; icon: null }> = {
   [OAUTH_PROVIDER.google]: { name: 'Google', icon: null },
   [OAUTH_PROVIDER.github]: { name: 'GitHub', icon: null },
+  [OAUTH_PROVIDER.apple]: { name: 'Apple', icon: null },
 };
 
 const providerIcon = computed(() => providerConfig[props.provider]?.icon);
