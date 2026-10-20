@@ -5,7 +5,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { setAssignment } from '@services/budget-plans/set-assignment';
 import { setAssignmentBodyFields, setAssignmentBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeatureAccess,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -22,6 +29,11 @@ const inputSchema = {
   ),
 };
 
+export function validateSetBudgetPlanAssignmentArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, periodId, lineId, ...body } = args;
+  return { planId, periodId, lineId, ...setAssignmentBodySchema.parse(body) };
+}
+
 export function registerSetBudgetPlanAssignment(server: McpServer) {
   server.registerTool(
     'set_budget_plan_assignment',
@@ -37,8 +49,7 @@ export function registerSetBudgetPlanAssignment(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'set_budget_plan_assignment', clientId: extra.authInfo?.clientId });
 
-      const { planId, periodId, lineId, ...body } = args;
-      const data = await setAssignment({ userId, planId, periodId, lineId, ...setAssignmentBodySchema.parse(body) });
+      const data = await setAssignment({ userId, ...validateSetBudgetPlanAssignmentArgs({ args }) });
 
       return jsonContent({ data });
     },

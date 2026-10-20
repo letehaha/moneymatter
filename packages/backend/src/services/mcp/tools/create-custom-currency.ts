@@ -3,9 +3,13 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createCustomCurrency } from '@services/currencies/custom-currencies.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = createCustomCurrencyBodySchema.shape;
+
+export function validateCreateCustomCurrencyArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createCustomCurrencyBodySchema.parse(args);
+}
 
 export function registerCreateCustomCurrency(server: McpServer) {
   server.registerTool(
@@ -21,7 +25,7 @@ export function registerCreateCustomCurrency(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_custom_currency', clientId: extra.authInfo?.clientId });
 
-      const body = createCustomCurrencyBodySchema.parse(args);
+      const body = validateCreateCustomCurrencyArgs({ args });
       const currency = await createCustomCurrency({ userId, ...body });
       return jsonContent({ data: currency });
     },

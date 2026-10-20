@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateVentureDeal } from '@services/venture/deals/update.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   dealId: recordId().describe('Venture deal ID (from list_venture_deals)'),
@@ -27,6 +27,12 @@ const inputSchema = {
   notes: updateVentureDealBodyShape.notes.describe('New notes (or null to clear)'),
 };
 
+/** The at-least-one-field rule spans fields, so it runs on the REST body schema. */
+export function validateUpdateVentureDealArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { dealId, ...fields } = args;
+  return { dealId, ...updateVentureDealBodySchema.parse(fields) };
+}
+
 export function registerUpdateVentureDeal(server: McpServer) {
   server.registerTool(
     'update_venture_deal',
@@ -41,9 +47,7 @@ export function registerUpdateVentureDeal(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_venture_deal', clientId: extra.authInfo?.clientId });
 
-      // The at-least-one-field rule spans fields, so it runs on the REST body schema.
-      const { dealId, ...fields } = args;
-      const body = updateVentureDealBodySchema.parse(fields);
+      const { dealId, ...body } = validateUpdateVentureDealArgs({ args });
       const deal = await updateVentureDeal({ userId, dealId, ...body });
 
       return jsonContent({ data: deal });

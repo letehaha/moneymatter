@@ -8,12 +8,17 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateAccountGroup } from '@services/account-groups';
 
 import { presentAccountGroup } from './account-group-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   groupId: recordId().describe('ID of the account group to update.'),
   ...updateAccountGroupBodyFields,
 };
+
+export function validateUpdateAccountGroupArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { groupId, ...body } = args;
+  return { groupId, ...updateAccountGroupBodySchema.parse(body) };
+}
 
 export function registerUpdateAccountGroup(server: McpServer) {
   server.registerTool(
@@ -29,12 +34,7 @@ export function registerUpdateAccountGroup(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_account_group', clientId: extra.authInfo?.clientId });
 
-      const { groupId, ...body } = args;
-      const group = await updateAccountGroup({
-        groupId,
-        userId,
-        ...updateAccountGroupBodySchema.parse(body),
-      });
+      const group = await updateAccountGroup({ userId, ...validateUpdateAccountGroupArgs({ args }) });
 
       return jsonContent({ data: presentAccountGroup({ group }) });
     },

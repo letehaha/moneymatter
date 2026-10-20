@@ -6,7 +6,7 @@ import { httpRateSourceConfigSchema, testRateSourceBodySchema } from '@services/
 import { testHttpRateSource } from '@services/currencies/rate-sources/test-http-rate-source.service';
 import { z } from 'zod';
 
-import { enforceUserRateLimit, getUserId, jsonContent, requireScope } from './helpers';
+import { enforceUserRateLimit, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   code: currencyCode().describe('Code of the custom currency the source would price.'),
@@ -15,6 +15,11 @@ const inputSchema = {
   ),
   date: z.iso.date().optional().describe('The day to ask for (YYYY-MM-DD). Defaults to today.'),
 };
+
+export function validateTestCurrencyRateSourceArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { code, config, date } = args;
+  return { code, body: testRateSourceBodySchema.parse({ rateSource: 'http', config, date }) };
+}
 
 export function registerTestCurrencyRateSource(server: McpServer) {
   server.registerTool(
@@ -30,8 +35,7 @@ export function registerTestCurrencyRateSource(server: McpServer) {
       await enforceUserRateLimit({ userId, limit: RATE_SOURCE_TEST_LIMIT });
       trackMcpToolUsed({ userId, tool: 'test_currency_rate_source', clientId: extra.authInfo?.clientId });
 
-      const { code, config, date } = args;
-      const body = testRateSourceBodySchema.parse({ rateSource: 'http', config, date });
+      const { code, body } = validateTestCurrencyRateSourceArgs({ args });
       const result = await testHttpRateSource({ userId, code, body });
       return jsonContent({ data: result });
     },

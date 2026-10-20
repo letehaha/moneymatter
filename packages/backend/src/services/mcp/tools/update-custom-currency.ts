@@ -4,12 +4,17 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateCustomCurrency } from '@services/currencies/custom-currencies.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   code: currencyCode().describe('Code of the custom currency to update.'),
   ...updateCustomCurrencyBodySchema.shape,
 };
+
+export function validateUpdateCustomCurrencyArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { code, ...rest } = args;
+  return { code, ...updateCustomCurrencyBodySchema.parse(rest) };
+}
 
 export function registerUpdateCustomCurrency(server: McpServer) {
   server.registerTool(
@@ -25,9 +30,7 @@ export function registerUpdateCustomCurrency(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_custom_currency', clientId: extra.authInfo?.clientId });
 
-      const { code, ...rest } = args;
-      const body = updateCustomCurrencyBodySchema.parse(rest);
-      const currency = await updateCustomCurrency({ userId, code, ...body });
+      const currency = await updateCustomCurrency({ userId, ...validateUpdateCustomCurrencyArgs({ args }) });
       return jsonContent({ data: currency });
     },
   );

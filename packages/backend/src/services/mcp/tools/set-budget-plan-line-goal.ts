@@ -5,7 +5,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { lineGoalSchema } from '@services/budget-plans/line-goal-schema';
 import { setLineGoal } from '@services/budget-plans/line-goals';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeatureAccess,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const goalFields = lineGoalSchema.shape;
 
@@ -42,6 +49,11 @@ const inputSchema = {
   ),
 };
 
+export function validateSetBudgetPlanLineGoalArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, lineId, ...goal } = args;
+  return { planId, lineId, ...lineGoalSchema.parse(goal) };
+}
+
 export function registerSetBudgetPlanLineGoal(server: McpServer) {
   server.registerTool(
     'set_budget_plan_line_goal',
@@ -57,8 +69,7 @@ export function registerSetBudgetPlanLineGoal(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'set_budget_plan_line_goal', clientId: extra.authInfo?.clientId });
 
-      const { planId, lineId, ...goal } = args;
-      const data = await setLineGoal({ userId, planId, lineId, ...lineGoalSchema.parse(goal) });
+      const data = await setLineGoal({ userId, ...validateSetBudgetPlanLineGoalArgs({ args }) });
 
       return jsonContent({ data });
     },

@@ -5,7 +5,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateLine } from '@services/budget-plans/update-line';
 import { updateLineBodyFields, updateLineBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeatureAccess,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -23,6 +30,11 @@ const inputSchema = {
   ),
 };
 
+export function validateUpdateBudgetPlanLineArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, lineId, ...patch } = args;
+  return { planId, lineId, ...updateLineBodySchema.parse(patch) };
+}
+
 export function registerUpdateBudgetPlanLine(server: McpServer) {
   server.registerTool(
     'update_budget_plan_line',
@@ -38,8 +50,7 @@ export function registerUpdateBudgetPlanLine(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_budget_plan_line', clientId: extra.authInfo?.clientId });
 
-      const { planId, lineId, ...patch } = args;
-      const line = await updateLine({ userId, planId, lineId, ...updateLineBodySchema.parse(patch) });
+      const line = await updateLine({ userId, ...validateUpdateBudgetPlanLineArgs({ args }) });
 
       return jsonContent({ data: line });
     },

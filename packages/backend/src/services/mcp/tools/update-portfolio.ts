@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updatePortfolio } from '@services/investments/portfolios/update.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
@@ -18,6 +18,12 @@ const inputSchema = {
     'New display currency (ISO code, must be one of the user currencies); null = use base currency, omit = keep',
   ),
 };
+
+/** The at-least-one-field rule spans fields, so it runs on the REST body schema. */
+export function validateUpdatePortfolioArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { portfolioId, ...fields } = args;
+  return { portfolioId, ...updatePortfolioBodySchema.parse(fields) };
+}
 
 export function registerUpdatePortfolio(server: McpServer) {
   server.registerTool(
@@ -33,9 +39,7 @@ export function registerUpdatePortfolio(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_portfolio', clientId: extra.authInfo?.clientId });
 
-      // The either-or rule (at least one field) spans fields, so it runs on the REST body schema.
-      const { portfolioId, ...fields } = args;
-      const body = updatePortfolioBodySchema.parse(fields);
+      const { portfolioId, ...body } = validateUpdatePortfolioArgs({ args });
 
       const portfolio = await updatePortfolio({ userId, portfolioId, ...body });
 

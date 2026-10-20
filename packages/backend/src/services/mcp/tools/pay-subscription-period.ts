@@ -5,7 +5,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { markPeriodPaid } from '@services/subscriptions/mark-period-paid';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const bodyShape = markPeriodPaidBodySchema.shape;
 
@@ -32,6 +32,12 @@ const inputSchema = {
   notes: bodyShape.notes.describe('Note to keep on the period'),
 };
 
+/** The either-or rule spans fields, so it runs on the REST body schema, not on the shape. */
+export function validatePaySubscriptionPeriodArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { subscriptionId, periodId, ...rest } = args;
+  return { subscriptionId, periodId, ...markPeriodPaidBodySchema.parse(rest) };
+}
+
 export function registerPaySubscriptionPeriod(server: McpServer) {
   server.registerTool(
     'pay_subscription_period',
@@ -46,9 +52,7 @@ export function registerPaySubscriptionPeriod(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'pay_subscription_period', clientId: extra.authInfo?.clientId });
 
-      // The either-or rule spans fields, so it runs on the REST body schema, not on the shape.
-      const { subscriptionId, periodId, ...rest } = args;
-      const body = markPeriodPaidBodySchema.parse(rest);
+      const { subscriptionId, periodId, ...body } = validatePaySubscriptionPeriodArgs({ args });
 
       const result = await markPeriodPaid({
         userId,

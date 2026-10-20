@@ -11,7 +11,14 @@ import {
 import { saveCurrencyRateSource } from '@services/currencies/rate-sources/save-rate-source.service';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, enforceUserRateLimit, getUserId, jsonContent, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  enforceUserRateLimit,
+  getUserId,
+  jsonContent,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 // The REST body is a union keyed by `rateSource`, which a tool's plain input shape cannot hold, so the
 // shape lists the fields and the handler runs the REST schema over them.
@@ -28,6 +35,14 @@ const inputSchema = {
     .optional()
     .describe('coingecko only: the coin logo to store (https URL); omit to keep the current one, null clears it.'),
 };
+
+export function validateSetCurrencyRateSourceArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { code, ...fields } = args;
+  const body = updateRateSourceBodySchema.parse(
+    Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined)),
+  );
+  return { code, body };
+}
 
 export function registerSetCurrencyRateSource(server: McpServer) {
   server.registerTool(
@@ -51,10 +66,7 @@ export function registerSetCurrencyRateSource(server: McpServer) {
       await enforceUserRateLimit({ userId, limit: RATE_SOURCE_SAVE_LIMIT });
       trackMcpToolUsed({ userId, tool: 'set_currency_rate_source', clientId: extra.authInfo?.clientId });
 
-      const { code, ...fields } = args;
-      const body = updateRateSourceBodySchema.parse(
-        Object.fromEntries(Object.entries(fields).filter(([, value]) => value !== undefined)),
-      );
+      const { code, body } = validateSetCurrencyRateSourceArgs({ args });
       const saved = await saveCurrencyRateSource({ userId, code, body });
       return jsonContent({ data: saved });
     },

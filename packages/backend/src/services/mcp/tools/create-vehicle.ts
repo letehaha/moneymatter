@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createVehicle } from '@services/vehicles/create-vehicle.service';
 import { createVehicleBodyFields, createVehicleBodySchema } from '@services/vehicles/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { presentVehicle } from './vehicle-output';
 
 const inputSchema = {
@@ -33,6 +33,10 @@ const inputSchema = {
   currentMileage: createVehicleBodyFields.currentMileage.describe('Odometer reading, a whole number; null for unknown'),
 };
 
+export function validateCreateVehicleArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createVehicleBodySchema.parse(args);
+}
+
 export function registerCreateVehicle(server: McpServer) {
   server.registerTool(
     'create_vehicle',
@@ -47,7 +51,7 @@ export function registerCreateVehicle(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_vehicle', clientId: extra.authInfo?.clientId });
 
-      const vehicle = await createVehicle({ userId, ...createVehicleBodySchema.parse(args) });
+      const vehicle = await createVehicle({ userId, ...validateCreateVehicleArgs({ args }) });
 
       return jsonContent({ data: presentVehicle({ vehicle, userId }) });
     },

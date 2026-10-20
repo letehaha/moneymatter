@@ -18,6 +18,7 @@ import {
   getUserId,
   jsonContent,
   requireScope,
+  type ToolArgs,
 } from './helpers';
 
 const inputSchema = {
@@ -110,6 +111,14 @@ const inputSchema = {
     .describe("true runs the user's enabled automation rules on this transaction. Default false"),
 };
 
+/** The cross-field rules the plain input shape cannot hold: the original-currency pair, and a payee id or a merchant name, not both. */
+export function validateCreateTransactionArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  assertOriginalCurrencyArgs({ args });
+  if (args.payeeId != null && args.merchantName) {
+    throw new Error('"payeeId" and "merchantName" cannot be used together');
+  }
+}
+
 export function registerCreateTransaction(server: McpServer) {
   server.registerTool(
     'create_transaction',
@@ -124,10 +133,7 @@ export function registerCreateTransaction(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_transaction', clientId: extra.authInfo?.clientId });
 
-      assertOriginalCurrencyArgs({ args });
-      if (args.payeeId != null && args.merchantName) {
-        throw new Error('"payeeId" and "merchantName" cannot be used together');
-      }
+      validateCreateTransactionArgs({ args });
 
       const params = deserializeCreateTransaction(
         {

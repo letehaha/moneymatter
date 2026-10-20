@@ -5,7 +5,7 @@ import { bulkDelete } from '@services/transactions/bulk-delete';
 import { resolveBulkTargetIds } from '@services/transactions/matching-transactions';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { hasNarrowingFilter, parseBulkTarget, transactionFilterInput } from './transaction-filter-input';
 
 const inputSchema = {
@@ -30,6 +30,23 @@ const inputSchema = {
     ),
 };
 
+/** Explicit ids or strict filters, never both; and a filter that narrows the selection. REST accepts `filters: {}`, which selects everything the caller owns. For an AI client that is one forgotten argument away from wiping the account, so MCP requires a filter that restricts the selection once the REST schema has normalised it, not just a key that is present. */
+export function validateBulkDeleteTransactionsArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const target = parseBulkTarget({
+    transactionIds: args.transactionIds,
+    filters: args.filters,
+    excludedIds: args.excludedIds,
+  });
+
+  if (target.selection && !hasNarrowingFilter({ filters: target.selection.filters })) {
+    throw new Error(
+      'Refusing to delete without a narrowing filter: empty filters would select every transaction you own. Give at least one filter (a date range, account, category, …) or explicit transactionIds',
+    );
+  }
+
+  return target;
+}
+
 export function registerBulkDeleteTransactions(server: McpServer) {
   server.registerTool(
     'bulk_delete_transactions',
@@ -44,20 +61,7 @@ export function registerBulkDeleteTransactions(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'bulk_delete_transactions', clientId: extra.authInfo?.clientId });
 
-      const target = parseBulkTarget({
-        transactionIds: args.transactionIds,
-        filters: args.filters,
-        excludedIds: args.excludedIds,
-      });
-
-      // REST accepts `filters: {}`, which selects everything the caller owns. For an AI client that
-      // is one forgotten argument away from wiping the account, so MCP requires a filter that
-      // restricts the selection once the REST schema has normalised it, not just a key that is present.
-      if (target.selection && !hasNarrowingFilter({ filters: target.selection.filters })) {
-        throw new Error(
-          'Refusing to delete without a narrowing filter: empty filters would select every transaction you own. Give at least one filter (a date range, account, category, …) or explicit transactionIds',
-        );
-      }
+      const target = validateBulkDeleteTransactionsArgs({ args });
 
       const transactionIds = await resolveBulkTargetIds({ userId, ...target });
       const result = await bulkDelete({ userId, transactionIds });

@@ -7,9 +7,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createAccountGroup } from '@services/account-groups';
 
 import { presentAccountGroup } from './account-group-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = createAccountGroupBodyFields;
+
+export function validateCreateAccountGroupArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createAccountGroupBodySchema.parse(args);
+}
 
 export function registerCreateAccountGroup(server: McpServer) {
   server.registerTool(
@@ -25,7 +29,7 @@ export function registerCreateAccountGroup(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_account_group', clientId: extra.authInfo?.clientId });
 
-      const { name, parentGroupId, logoDomain, logoInitials, logoColor } = createAccountGroupBodySchema.parse(args);
+      const { name, parentGroupId, logoDomain, logoInitials, logoColor } = validateCreateAccountGroupArgs({ args });
 
       const group = await createAccountGroup({
         userId,

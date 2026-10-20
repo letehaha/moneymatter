@@ -5,7 +5,14 @@ import { createPlan } from '@services/budget-plans/create-plan';
 import { createPlanBodyFields, createPlanBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeatureAccess,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   name: createPlanBodyFields.name.describe('Name of the plan, 1 to 200 characters, e.g. "Household"'),
@@ -47,6 +54,10 @@ const inputSchema = {
   ),
 };
 
+export function validateCreateBudgetPlanArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createPlanBodySchema.parse(args);
+}
+
 export function registerCreateBudgetPlan(server: McpServer) {
   server.registerTool(
     'create_budget_plan',
@@ -64,7 +75,7 @@ export function registerCreateBudgetPlan(server: McpServer) {
 
       const { suggestedLinesFailed, suggestionAnswersIgnored, ...details } = await createPlan({
         userId,
-        ...createPlanBodySchema.parse(args),
+        ...validateCreateBudgetPlanArgs({ args }),
       });
 
       return jsonContent({

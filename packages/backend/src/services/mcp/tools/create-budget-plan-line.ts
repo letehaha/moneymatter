@@ -5,7 +5,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createLine } from '@services/budget-plans/create-line';
 import { createLineBodyFields, createLineBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeatureAccess,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -24,6 +31,11 @@ const inputSchema = {
   ),
 };
 
+export function validateCreateBudgetPlanLineArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, ...body } = args;
+  return { planId, ...createLineBodySchema.parse(body) };
+}
+
 export function registerCreateBudgetPlanLine(server: McpServer) {
   server.registerTool(
     'create_budget_plan_line',
@@ -39,8 +51,7 @@ export function registerCreateBudgetPlanLine(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_budget_plan_line', clientId: extra.authInfo?.clientId });
 
-      const { planId, ...body } = args;
-      const line = await createLine({ userId, planId, ...createLineBodySchema.parse(body) });
+      const line = await createLine({ userId, ...validateCreateBudgetPlanLineArgs({ args }) });
 
       return jsonContent({ data: line });
     },

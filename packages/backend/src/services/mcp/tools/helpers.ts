@@ -4,6 +4,10 @@ import { logger } from '@js/utils/logger';
 import { RateLimitService } from '@services/common/rate-limit.service';
 import type { UserRateLimit } from '@services/common/user-rate-limits';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
+import type { z } from 'zod';
+
+/** The arguments a tool handler receives, typed from the plain shape it registers as `inputSchema`. */
+export type ToolArgs<Shape extends z.ZodRawShape> = z.infer<z.ZodObject<Shape>>;
 
 /**
  * Extract the app user ID from MCP request auth info.

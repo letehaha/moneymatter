@@ -8,12 +8,17 @@ import { updateAccount } from '@services/accounts.service';
 import { assertAccountUpdateAllowed } from '@services/accounts/assert-account-update-allowed';
 
 import { presentAccount } from './account-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   accountId: recordId().describe('ID of the account to update.'),
   ...updateAccountBodyFields,
 };
+
+export function validateUpdateAccountArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { accountId, ...body } = args;
+  return { accountId, ...updateAccountBodySchema.parse(body) };
+}
 
 export function registerUpdateAccount(server: McpServer) {
   server.registerTool(
@@ -29,9 +34,16 @@ export function registerUpdateAccount(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_account', clientId: extra.authInfo?.clientId });
 
-      const { accountId, ...body } = args;
-      const { accountCategory, name, creditLimit, excludeFromStats, currentBalance, initialBalance, ...logo } =
-        updateAccountBodySchema.parse(body);
+      const {
+        accountId,
+        accountCategory,
+        name,
+        creditLimit,
+        excludeFromStats,
+        currentBalance,
+        initialBalance,
+        ...logo
+      } = validateUpdateAccountArgs({ args });
 
       await assertAccountUpdateAllowed({ userId, id: accountId, accountCategory, currentBalance });
 
