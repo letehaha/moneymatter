@@ -11,7 +11,7 @@ import {
 } from '@bt/shared/types';
 import { decryptToken, encryptToken } from '@common/utils/encryption';
 import { t } from '@i18n/index';
-import { NotFoundError, ValidationError } from '@js/errors';
+import { NotFoundError, TooManyRequests, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import UserSettings, {
   DEFAULT_SETTINGS,
@@ -23,6 +23,13 @@ import { randomUUID } from 'node:crypto';
 
 import { validateConnection } from '../ai/connection-validation';
 import { listConnectionModels } from '../ai/list-connection-models';
+import {
+  AI_PROBE_RATE_LIMIT_MAX_ATTEMPTS,
+  AI_PROBE_RATE_LIMIT_WINDOW_SECONDS,
+  aiProbeRateLimitKey,
+} from '../ai/probe-rate-limit';
+import { getCachedServedModels } from '../ai/served-models-cache';
+import { RateLimitService } from '../common/rate-limit.service';
 import { withTransaction } from '../common/with-transaction';
 import { getOrCreateUserSettings } from './get-or-create-user-settings';
 
@@ -543,6 +550,81 @@ export const listAvailableModels = async ({
   const effectiveApiKey = apiKey ?? (saved ? decryptConnectionKey({ connection: saved, userId }) : null);
 
   return listConnectionModels({ provider, baseUrl: effectiveBaseUrl, apiKey: effectiveApiKey });
+};
+
+/**
+ * Spends one live probe from the user's budget, the one the connection routes share. A model pick that has
+ * to probe is not behind those routes' middleware, so it takes the budget here. Fails open, like the middleware.
+ */
+async function spendProbeBudget({ userId }: { userId: number }): Promise<void> {
+  const budget = await RateLimitService.checkRateLimit(
+    aiProbeRateLimitKey({ userId }),
+    AI_PROBE_RATE_LIMIT_WINDOW_SECONDS,
+    AI_PROBE_RATE_LIMIT_MAX_ATTEMPTS,
+  );
+
+  if (!budget.allowed) {
+    throw new TooManyRequests({
+      message: t({ key: 'middleware.tooManyRequests' }),
+      details: { retryAfter: budget.remainingSeconds ?? 0, resetTime: budget.resetTime?.toISOString() },
+    });
+  }
+}
+
+/**
+ * Throws unless `connectionId` can serve `modelId`, so a feature or a chat thread never stores a model
+ * the connection's provider does not offer. Returns what to store: the model, or null when it is the
+ * connection's own model (always accepted: it is what the connection was validated with).
+ *
+ * The check reads the provider's model listing, cached for a few minutes per connection. Only a provider that
+ * lists nothing gets the live probe a connection create runs, and that one is paid for, so it is spent from the
+ * shared probe budget.
+ */
+export const assertConnectionServesModel = async ({
+  userId,
+  connectionId,
+  modelId,
+}: {
+  userId: number;
+  connectionId: string;
+  modelId: string;
+}): Promise<string | null> => {
+  const connection = findConnectionOrThrow({ connections: await readStoredConnections({ userId }), connectionId });
+  const model = normalizeModel({ model: modelId });
+
+  if (model === connection.model) return null;
+
+  const listed = await getCachedServedModels({
+    key: [connection.id, connection.baseUrl ?? '', connection.keyEncrypted ?? ''].join('|'),
+    load: () =>
+      listConnectionModels({
+        provider: connection.provider,
+        baseUrl: connection.baseUrl,
+        apiKey: readStoredKey({ connection, userId }),
+      }),
+  });
+
+  if (listed.length > 0) {
+    if (!listed.includes(model)) {
+      throw new ValidationError({ message: t({ key: 'ai.connectionModelNotOffered', variables: { model } }) });
+    }
+    return model;
+  }
+
+  await spendProbeBudget({ userId });
+
+  const validation = await validateConnection({
+    provider: connection.provider,
+    model,
+    apiKey: readStoredKey({ connection, userId }),
+    baseUrl: connection.baseUrl,
+  });
+
+  if (!validation.isValid) {
+    throw new ValidationError({ message: validation.error });
+  }
+
+  return model;
 };
 
 async function patchConnectionStatus({

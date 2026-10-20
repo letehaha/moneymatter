@@ -6,7 +6,7 @@ import { type RedactedSettingsSchema, redactKeyMaterial } from './redact-key-mat
 import { mergeIntoStoredSettings, stripServiceOwnedSlices } from './service-owned-slices';
 
 type IncomingSettings = Omit<SettingsSchema, 'ai' | 'fire'> & {
-  ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs'>;
+  ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs' | 'chat'>;
 };
 
 export const updateUserSettings = withTransaction(

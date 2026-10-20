@@ -9,7 +9,7 @@ import { z } from 'zod';
  * later-tightened limit must not break unrelated PUTs.
  */
 const ZodUpdateSettingsBodySchema = ZodSettingsSchema.omit({ fire: true }).extend({
-  ai: ZodSettingsSchema.shape.ai.unwrap().omit({ connections: true, featureConfigs: true }).optional(),
+  ai: ZodSettingsSchema.shape.ai.unwrap().omit({ connections: true, featureConfigs: true, chat: true }).optional(),
 });
 
 const schema = z.object({

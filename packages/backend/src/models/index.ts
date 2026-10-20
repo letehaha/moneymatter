@@ -20,6 +20,10 @@ import BudgetPlanAccountsModel from './budget-plan-accounts.model';
 import BudgetPlansModel from './budget-plans.model';
 import CategoriesModel from './categories.model';
 import CategoryTagsModel from './category-tags.model';
+import ChatAttachmentsModel from './chat-attachments.model';
+import ChatMessagesModel from './chat-messages.model';
+import ChatProposalsModel from './chat-proposals.model';
+import ChatThreadsModel from './chat-threads.model';
 import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
 import ExchangeRatesModel from './exchange-rates.model';
@@ -174,6 +178,10 @@ const models = [
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,
+  ChatThreadsModel,
+  ChatMessagesModel,
+  ChatProposalsModel,
+  ChatAttachmentsModel,
 ];
 
 const sequelize = new Sequelize({

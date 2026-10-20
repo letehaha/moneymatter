@@ -19,12 +19,13 @@ export const getAiFeaturesStatus = async (): Promise<AIFeaturesStatusResponse> =
   return api.get('/user/settings/ai/features');
 };
 
-/** `connectionId: null` picks the included server model. */
+/** `connectionId: null` picks the included server model. `modelId` runs the feature on another model of the connection. */
 export const setAiFeatureConfig = async ({
   feature,
   connectionId,
+  modelId,
 }: SetAIFeatureConfigBody & { feature: AI_FEATURE }): Promise<AIFeatureStatus> => {
-  return api.put(`/user/settings/ai/features/${feature}`, { connectionId });
+  return api.put(`/user/settings/ai/features/${feature}`, { connectionId, ...(modelId ? { modelId } : {}) });
 };
 
 export const resetAiFeatureConfig = async ({ feature }: { feature: AI_FEATURE }): Promise<AIFeatureStatus> => {

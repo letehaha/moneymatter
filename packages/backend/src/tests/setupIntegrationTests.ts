@@ -17,6 +17,7 @@ import { backupRestoreQueue, backupRestoreWorker } from '@services/backup/restor
 import { closeAllMonobankQueueBundles } from '@services/bank-data-providers/monobank/transaction-sync-queue';
 import { accountSyncQueue, accountSyncWorker } from '@services/bank-data-providers/sync/account-sync-queue';
 import { logoResolutionQueue, logoResolutionWorker } from '@services/brand-logos';
+import { chatTailHub } from '@services/chat/runs/tail-hub';
 import { baseCurrencyChangeQueue, baseCurrencyChangeWorker } from '@services/currencies/base-currency-change-queue';
 import {
   budgetBakersWalletImportQueue,
@@ -518,6 +519,9 @@ async function closeAllE2eResources() {
     await baseCurrencyChangeQueue.close();
     await trackerScanWorker.close();
     await trackerScanQueue.close();
+
+    // The chat tail holds a connection of its own to Redis.
+    await chatTailHub.close();
 
     // Now safe to close Redis client
     await redisClient.quit();

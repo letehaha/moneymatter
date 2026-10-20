@@ -14,6 +14,8 @@ const config: KnipConfig = {
     'src/migrations/*.ts',
     // Reached only through a test file's `@jest-environment` docblock
     'src/services/budget-plans/periods/new-york-timezone-environment.ts',
+    // Started by `new Worker(...)` in sandbox-pool.ts, and built by vite.sandbox-worker.config.mjs
+    'src/services/chat/sandbox/sandbox-worker.mts',
   ],
   ignoreBinaries: ['knip', 'ts-node', 'nodemon', 'cross-env', 'sequelize-cli', 'jest', 'oxlint', 'tsc'],
   ignore: [

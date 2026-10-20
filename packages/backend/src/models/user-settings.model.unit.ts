@@ -62,3 +62,30 @@ describe('ZodSettingsPatchSchema – locale field', () => {
     if (result.success) expect(result.data.locale).toBeUndefined();
   });
 });
+
+describe('ZodSettingsSchema – ai.chat.retentionDays', () => {
+  it.each([7, 30, 90, 365, null])('accepts %s', (retentionDays) => {
+    const result = ZodSettingsSchema.safeParse({ ai: { chat: { retentionDays } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.ai?.chat?.retentionDays).toBe(retentionDays);
+  });
+
+  it('refuses a period that is not on the list', () => {
+    expect(ZodSettingsSchema.safeParse({ ai: { chat: { retentionDays: 14 } } }).success).toBe(false);
+  });
+
+  it('adds no default, so a read of a user who never chose leaves it unset', () => {
+    const result = ZodSettingsSchema.safeParse({ ai: { chat: {} } });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.ai?.chat?.retentionDays).toBeUndefined();
+  });
+
+  it('is not writable through the PATCH schema', () => {
+    const result = ZodSettingsPatchSchema.safeParse({ ai: { chat: { retentionDays: 7 } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.ai).toStrictEqual({});
+  });
+});

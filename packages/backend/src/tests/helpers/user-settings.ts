@@ -4,6 +4,7 @@ import {
   AIFeaturesStatusResponse,
   AI_FEATURE,
   AI_PROVIDER,
+  type ChatRetentionDays,
   CreateAIConnectionBody,
   FireSettings,
   ListAIConnectionModelsBody,
@@ -236,20 +237,22 @@ export async function getAiFeatureConfig<R extends boolean | undefined = undefin
   });
 }
 
-/** `connectionId: null` pins the included server model. */
+/** `connectionId: null` pins the included server model. `modelId` runs the feature on another model of the connection. */
 export async function setAiFeatureConfig<R extends boolean | undefined = undefined>({
   feature,
   connectionId,
+  modelId,
   raw,
 }: {
   feature: AI_FEATURE;
   connectionId: string | null;
+  modelId?: string;
   raw?: R;
 }) {
   return makeRequest<AIFeatureStatus, R>({
     method: 'put',
     url: `/user/settings/ai/features/${feature}`,
-    payload: { connectionId },
+    payload: { connectionId, ...(modelId === undefined ? {} : { modelId }) },
     raw,
   });
 }
@@ -336,6 +339,48 @@ export async function patchStoredConnection({
 export async function readStoredFeatureConfigs({ userId }: { userId: number }) {
   const settings = await UserSettings.findOne({ where: { userId } });
   return settings?.settings?.ai?.featureConfigs ?? [];
+}
+
+/** Arranges a feature config the way `PUT /user/settings/ai/features/:feature` once left it. The settings row has to exist already. */
+export async function seedStoredFeatureConfig({
+  feature,
+  connectionId,
+}: {
+  feature: AI_FEATURE;
+  connectionId: string | null;
+}): Promise<void> {
+  const userId = await getTestUserId();
+  const settings = await UserSettings.findOne({ where: { userId } });
+  if (!settings) throw new Error('Expected the test user to have a settings row by now');
+
+  const ai = settings.settings.ai ?? {};
+  settings.settings = {
+    ...settings.settings,
+    ai: { ...ai, featureConfigs: [...(ai.featureConfigs ?? []), { feature, connectionId }] },
+  };
+  await settings.save();
+}
+
+/** Arranges a stored retention the way `PUT /chat/settings` leaves it. The settings row has to exist already. */
+export async function seedStoredChatRetention({
+  retentionDays,
+}: {
+  retentionDays: ChatRetentionDays | null;
+}): Promise<void> {
+  const userId = await getTestUserId();
+  const settings = await UserSettings.findOne({ where: { userId } });
+  if (!settings) throw new Error('Expected the test user to have a settings row by now');
+
+  settings.settings = {
+    ...settings.settings,
+    ai: { ...settings.settings.ai, chat: { retentionDays } },
+  };
+  await settings.save();
+}
+
+export async function readStoredChatRetention({ userId }: { userId: number }) {
+  const settings = await UserSettings.findOne({ where: { userId } });
+  return settings?.settings?.ai?.chat?.retentionDays;
 }
 
 export const FIRST_CONNECTION_NAME = 'Home Ollama';

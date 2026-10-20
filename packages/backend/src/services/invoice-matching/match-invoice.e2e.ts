@@ -79,7 +79,7 @@ const mockAiAnswer = ({ content }: { content: string }) => {
 };
 
 /** The model the server key runs for receipt parsing, which is what a trial upload dials. */
-const OPERATOR_MODEL_NAME = FALLBACK_SERVER_MODELS[AI_FEATURE.receiptParsing].model;
+const OPERATOR_MODEL_NAME = FALLBACK_SERVER_MODELS[AI_FEATURE.receiptParsing]!.model;
 
 const TRIAL_LIMIT = FEATURE_TRIAL_LIMITS[FEATURES.invoice_matching]!;
 

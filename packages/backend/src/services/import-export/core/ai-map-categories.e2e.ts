@@ -14,7 +14,7 @@ import {
 } from '@tests/mocks/gemini/mock-api';
 import { HttpResponse, http } from 'msw';
 
-const EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization].model;
+const EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization]!.model;
 
 /** Collects every `text` field of the Gemini request body (system + user parts). */
 function extractPromptText(body: unknown): string {

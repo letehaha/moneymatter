@@ -80,6 +80,21 @@ describe('pickResolutionStep', () => {
       });
     });
 
+    it('carries the model override of the configured connection', () => {
+      expect(pick({ config: { ...PICK_SECOND, modelId: 'other-model' }, connections: [FIRST, SECOND] })).toEqual({
+        kind: 'configured',
+        connection: SECOND,
+        modelId: 'other-model',
+      });
+    });
+
+    it('leaves the default connection on its own model when the configured one is gone', () => {
+      expect(pick({ config: { ...PICK_SECOND, modelId: 'other-model' }, connections: [FIRST] })).toEqual({
+        kind: 'default-connection',
+        connection: FIRST,
+      });
+    });
+
     it('treats a config naming a deleted connection as automatic', () => {
       expect(pick({ config: PICK_SECOND, connections: [FIRST] })).toEqual({
         kind: 'default-connection',

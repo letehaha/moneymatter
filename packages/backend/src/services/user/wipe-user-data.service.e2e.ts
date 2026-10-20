@@ -8,6 +8,8 @@ import BudgetLineGroups from '@models/budget-line-groups.model';
 import BudgetLines from '@models/budget-lines.model';
 import BudgetPlans from '@models/budget-plans.model';
 import Categories from '@models/categories.model';
+import ChatMessages from '@models/chat-messages.model';
+import ChatThreads from '@models/chat-threads.model';
 import { connection } from '@models/index';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import MerchantCategoryCodes from '@models/merchant-category-codes.model';
@@ -150,6 +152,39 @@ describe('User data wipe (POST /user/wipe-data)', () => {
     // Subsequent authenticated request on the same cookies still resolves the user.
     const meRes = await helpers.makeRequest({ method: 'get', url: '/user' });
     expect(meRes.statusCode).toBe(200);
+  }, 60_000);
+
+  it('deletes the chat history of the wiped user and leaves other users’ threads alone', async () => {
+    const userId = (await Users.findOne({ where: { username: 'test1' } }))!.id;
+    const thread = await helpers.createChatThread({ title: 'Wipe me', raw: true });
+    await ChatMessages.create({
+      threadId: thread.id,
+      userId,
+      role: 'user',
+      status: 'complete',
+      parts: [{ type: 'text', id: randomUUID(), text: 'remember this' }],
+      plainText: 'remember this',
+    });
+    const pinned = await helpers.createChatThread({ title: 'Pinned too', raw: true });
+    await helpers.updateChatThread({ threadId: pinned.id, payload: { pinned: true } });
+    const other = await helpers.provisionSecondUserWithBaseCurrency();
+    const otherThread = await helpers.asUser({
+      cookies: other.cookies,
+      fn: () => helpers.createChatThread({ title: 'Not yours', raw: true }),
+    });
+
+    const wipeRes = await helpers.wipeUserData();
+    expect(wipeRes.statusCode).toBe(200);
+
+    expect(await ChatThreads.count({ where: { userId } })).toBe(0);
+    expect(await ChatMessages.count({ where: { userId } })).toBe(0);
+    expect((await helpers.listChatThreads({ raw: true })).threads).toEqual([]);
+    expect((await helpers.getChatThread({ threadId: thread.id })).statusCode).toBe(404);
+    const stillThere = await helpers.asUser({
+      cookies: other.cookies,
+      fn: () => helpers.listChatThreads({ raw: true }),
+    });
+    expect(stillThere.threads.map((item) => item.id)).toEqual([otherThread.id]);
   }, 60_000);
 
   it('wipes when UserMerchantCategoryCodes rows reference user categories', async () => {
