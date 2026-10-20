@@ -12,9 +12,8 @@ import { stampSubscriptionPayeeAndTags } from './stamp-payee-and-tags';
 
 interface MatchTransactionParams {
   transaction: Transactions.default;
-  /** The row's author, as on create: the subscriptions looked up and the writes made are theirs. */
   userId: number;
-  /** Link and settle, but leave the row's category as it is: the user just set it. */
+  /** Link and settle, but leave the row's category as it is. */
   preserveCategory?: boolean;
 }
 

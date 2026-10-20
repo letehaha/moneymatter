@@ -14,18 +14,49 @@ const dayFromToday = (days: number): Date =>
   startOfDay(days >= 0 ? addDays(new Date(), days) : subDays(new Date(), -days));
 const formatDay = (date: Date): string => format(date, 'yyyy-MM-dd');
 
-const createRuleSubscription = async ({ accountId, dueDate }: { accountId: string; dueDate: string }) =>
+const createRuleSubscription = ({
+  accountId,
+  categoryId,
+  dueDate,
+  rule = { field: 'note', operator: 'contains_any', value: ['apple music'] },
+}: {
+  accountId?: RecordId;
+  categoryId?: RecordId;
+  dueDate: string;
+  rule?: Record<string, unknown>;
+}) =>
   helpers.createSubscription({
     name: 'Apple Music',
     frequency: SUBSCRIPTION_FREQUENCIES.monthly,
     startDate: dueDate,
     dueDate,
     accountId,
+    categoryId,
     expectedAmount: 10,
     expectedCurrencyCode: global.BASE_CURRENCY.code,
-    matchingRules: { rules: [{ field: 'note', operator: 'contains_any', value: ['apple music'] }] },
+    matchingRules: { rules: [rule] },
     raw: true,
   });
+
+/** Where an uncategorized row lands. `global.DEFAULT_CATEGORY_ID` is only the first seeded category. */
+const userDefaultCategoryId = async () => (await helpers.getUserInfo({ raw: true })).defaultCategoryId;
+
+const createUnmatchedRow = async ({ accountId, categoryId }: { accountId: RecordId; categoryId?: RecordId }) => {
+  const [tx] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId,
+      ...(categoryId ? { categoryId } : {}),
+      amount: 10,
+      note: 'APPLE.COM/BILL',
+      time: dayFromToday(-3).toISOString(),
+    }),
+    raw: true,
+  });
+  return tx;
+};
+
+const linkedTxIds = async ({ subscriptionId }: { subscriptionId: RecordId }) =>
+  (await helpers.getSubscriptionById({ id: subscriptionId, raw: true })).transactions.map((t: { id: string }) => t.id);
 
 describe('Editing a transaction re-runs subscription rule matching', () => {
   it('links the row and settles the period once an edit makes its note match', async () => {
@@ -86,53 +117,43 @@ describe('Editing a transaction re-runs subscription rule matching', () => {
     const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
     expect(detail.transactions.map((t: { id: string }) => t.id)).not.toContain(tx.id);
   });
+
+  it('matches only once an edit changes a field the rules read', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const tx = await createUnmatchedRow({ accountId: account.id });
+    await helpers.updateTransaction({ id: tx.id, payload: { note: 'Apple Music' }, raw: true });
+    const sub = await createRuleSubscription({ accountId: account.id, dueDate: formatDay(dayFromToday(-3)) });
+    const otherCategory = await helpers.addCustomCategory({ name: 'Other', color: '#112233', raw: true });
+
+    await helpers.updateTransaction({ id: tx.id, payload: { categoryId: otherCategory.id }, raw: true });
+    expect(await linkedTxIds({ subscriptionId: sub.id })).not.toContain(tx.id);
+
+    await helpers.updateTransaction({ id: tx.id, payload: { note: 'Apple Music renewal' }, raw: true });
+    expect(await linkedTxIds({ subscriptionId: sub.id })).toContain(tx.id);
+  });
+
+  it('links the row once an amount-only edit fits an amount rule', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const sub = await createRuleSubscription({
+      accountId: account.id,
+      dueDate: formatDay(dayFromToday(-3)),
+      rule: { field: 'amount', operator: 'between', value: { min: 20, max: 30 } },
+    });
+    const tx = await createUnmatchedRow({ accountId: account.id });
+    expect(await linkedTxIds({ subscriptionId: sub.id })).not.toContain(tx.id);
+
+    await helpers.updateTransaction({ id: tx.id, payload: { amount: 25 }, raw: true });
+
+    expect(await linkedTxIds({ subscriptionId: sub.id })).toContain(tx.id);
+  });
 });
 
 describe('Editing a transaction re-runs subscription matching: category and author', () => {
-  const createCategorizedSubscription = ({
-    accountId,
-    categoryId,
-    dueDate,
-  }: {
-    accountId?: RecordId;
-    categoryId: RecordId;
-    dueDate: string;
-  }) =>
-    helpers.createSubscription({
-      name: 'Apple Music',
-      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      startDate: dueDate,
-      dueDate,
-      accountId,
-      categoryId,
-      expectedAmount: 10,
-      expectedCurrencyCode: global.BASE_CURRENCY.code,
-      matchingRules: { rules: [{ field: 'note', operator: 'contains_any', value: ['apple music'] }] },
-      raw: true,
-    });
-
-  /** Where an uncategorized row lands. `global.DEFAULT_CATEGORY_ID` is only the first seeded category. */
-  const userDefaultCategoryId = async () => (await helpers.getUserInfo({ raw: true })).defaultCategoryId;
-
-  const createUnmatchedRow = async ({ accountId, categoryId }: { accountId: RecordId; categoryId?: RecordId }) => {
-    const [tx] = await helpers.createTransaction({
-      payload: helpers.buildTransactionPayload({
-        accountId,
-        ...(categoryId ? { categoryId } : {}),
-        amount: 10,
-        note: 'APPLE.COM/BILL',
-        time: dayFromToday(-3).toISOString(),
-      }),
-      raw: true,
-    });
-    return tx;
-  };
-
   it("applies the subscription's category to an uncategorized row and answers with the row as stored", async () => {
     const account = await helpers.createAccount({ raw: true });
     const dueDate = formatDay(dayFromToday(-3));
     const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
-    await createCategorizedSubscription({ accountId: account.id, categoryId: musicCategory.id, dueDate });
+    await createRuleSubscription({ accountId: account.id, categoryId: musicCategory.id, dueDate });
     const tx = await createUnmatchedRow({ accountId: account.id, categoryId: await userDefaultCategoryId() });
 
     const [edited] = await helpers.updateTransaction({
@@ -146,12 +167,29 @@ describe('Editing a transaction re-runs subscription matching: category and auth
     expect(stored!.categoryId).toBe(musicCategory.id);
   });
 
+  it("applies the subscription's category when the edit re-sends the row's unchanged default category", async () => {
+    const account = await helpers.createAccount({ raw: true });
+    const dueDate = formatDay(dayFromToday(-3));
+    const defaultCategoryId = await userDefaultCategoryId();
+    const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
+    await createRuleSubscription({ accountId: account.id, categoryId: musicCategory.id, dueDate });
+    const tx = await createUnmatchedRow({ accountId: account.id, categoryId: defaultCategoryId });
+
+    const [edited] = await helpers.updateTransaction({
+      id: tx.id,
+      payload: { note: 'Apple Music subscription', categoryId: defaultCategoryId },
+      raw: true,
+    });
+
+    expect(edited.categoryId).toBe(musicCategory.id);
+  });
+
   it('keeps the category the same edit sets, and still links the row and settles the period', async () => {
     const account = await helpers.createAccount({ raw: true });
     const dueDate = formatDay(dayFromToday(-3));
     const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
     const giftsCategory = await helpers.addCustomCategory({ name: 'Gifts', color: '#445566', raw: true });
-    const sub = await createCategorizedSubscription({
+    const sub = await createRuleSubscription({
       accountId: account.id,
       categoryId: musicCategory.id,
       dueDate,
@@ -197,7 +235,7 @@ describe('Editing a transaction re-runs subscription matching: category and auth
       cookies: recipient.cookies,
       fn: async () => {
         const category = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
-        const subscription = await createCategorizedSubscription({ categoryId: category.id, dueDate });
+        const subscription = await createRuleSubscription({ categoryId: category.id, dueDate });
         const [row] = await helpers.createTransaction({
           payload: helpers.buildTransactionPayload({
             accountId: ownerAccount.id,
@@ -234,7 +272,7 @@ describe('Editing a transaction re-runs subscription matching: category and auth
     const dueDate = formatDay(dayFromToday(-3));
     const musicCategory = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
     const giftsCategory = await helpers.addCustomCategory({ name: 'Gifts', color: '#445566', raw: true });
-    const sub = await createCategorizedSubscription({
+    const sub = await createRuleSubscription({
       accountId: account.id,
       categoryId: musicCategory.id,
       dueDate,
@@ -280,7 +318,7 @@ describe('Editing a transaction re-runs subscription matching: category and auth
       cookies: recipient.cookies,
       fn: async () => {
         const category = await helpers.addCustomCategory({ name: 'Music', color: '#112233', raw: true });
-        const subscription = await createCategorizedSubscription({ categoryId: category.id, dueDate });
+        const subscription = await createRuleSubscription({ categoryId: category.id, dueDate });
         const [row] = await helpers.createTransaction({
           payload: helpers.buildTransactionPayload({
             accountId: ownerAccount.id,

@@ -52,7 +52,7 @@ import type { CreateTransactionParams, UpdateTransactionParams } from './types';
  * COMMIT into a silent rollback. `UniqueConstraintError` is server-side but extends
  * `ValidationError`, not `DatabaseError`.
  */
-const abortsTransaction = (error: unknown) =>
+export const abortsTransaction = (error: unknown) =>
   error instanceof DatabaseError || error instanceof UniqueConstraintError || error instanceof ConnectionError;
 
 /**

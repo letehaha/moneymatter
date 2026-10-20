@@ -36,7 +36,7 @@ import { settlePeriodOnConfirm } from '@services/subscriptions/settle-period-on-
 import * as refundsService from '@services/tx-refunds';
 
 import { withTransaction } from '../common/with-transaction';
-import { calcTransferTransactionRefAmount, createOppositeTransaction } from './create-transaction';
+import { abortsTransaction, calcTransferTransactionRefAmount, createOppositeTransaction } from './create-transaction';
 import { getWritableTransactionById } from './get-by-id';
 import { buildManualCategorizationMeta } from './manual-categorization-meta';
 import {
@@ -593,10 +593,7 @@ const isDiscardingTransfer = (payload: UpdateTransactionParams, prevData: Transa
   );
 };
 
-/**
- * Does the edit change a field the subscription matching rules read (note, amount, account,
- * type, time) or the payee? Only then can a row that matched nothing before match now.
- */
+/** Does the edit change a field subscription matching reads? */
 const changesMatchingFields = ({
   payload,
   prevData,
@@ -608,7 +605,6 @@ const changesMatchingFields = ({
   (payload.amount !== undefined && !payload.amount.equals(prevData.amount)) ||
   (payload.accountId !== undefined && payload.accountId !== prevData.accountId) ||
   (payload.transactionType !== undefined && payload.transactionType !== prevData.transactionType) ||
-  (payload.payeeId !== undefined && payload.payeeId !== prevData.payeeId) ||
   (payload.time !== undefined && payload.time.getTime() !== prevData.time.getTime());
 
 /**
@@ -713,10 +709,6 @@ export const updateTransaction = withTransaction(
           message: 'Category not found or does not belong to user.',
         });
       }
-
-      // Read before the update, which may change `prevData` in place.
-      const editChangesMatchingFields = changesMatchingFields({ payload, prevData });
-      const prevCategory = { categoryId: prevData.categoryId, source: prevData.categorizationMeta?.source };
 
       // Make basic updation to the base transaction. "Transfer" transactions
       // handled down in the code
@@ -826,15 +818,13 @@ export const updateTransaction = withTransaction(
         }
       }
 
-      // A row that matched no subscription when it was created can match after an edit, say a
-      // note reworded to name the service. It matches as it would on create, as its author, and
-      // only while the author can still read the account: a revoked recipient's subscriptions
-      // must not reach a row on the owner's account. The engine skips a row that has any link
-      // row, so an unlinked one is never matched again, and a match settles the period. The
-      // subscription's category replaces only one nobody chose, and never one this edit sets.
-      // The response carries the row as the match left it.
+      // A revoked recipient's subscriptions must not reach a row on the owner's account, and a
+      // category the user chose is never overwritten by the subscription's.
       const [matchedTx] = updatedTransactions;
-      if (editChangesMatchingFields && !isTwoLegTransfer(matchedTx.transferNature)) {
+      if (
+        (changesMatchingFields({ payload, prevData }) || isTwoLegTransfer(prevData.transferNature)) &&
+        !isTwoLegTransfer(matchedTx.transferNature)
+      ) {
         try {
           const authorCanRead = await canUserAccessResource({
             userId: matchedTx.userId,
@@ -850,19 +840,17 @@ export const updateTransaction = withTransaction(
               transaction: matchedTx,
               userId: matchedTx.userId,
               preserveCategory:
-                payload.categoryId !== undefined ||
-                !(await isReplaceableCategory({ ...prevCategory, ownerUserId: ctx.accountOwnerUserId })),
+                (payload.categoryId !== undefined && payload.categoryId !== prevData.categoryId) ||
+                !(await isReplaceableCategory({
+                  categoryId: prevData.categoryId,
+                  source: prevData.categorizationMeta?.source,
+                  ownerUserId: ctx.accountOwnerUserId,
+                })),
             });
             if (matched) await matchedTx.reload();
           }
         } catch (error) {
-          if (
-            error instanceof DatabaseError ||
-            error instanceof UniqueConstraintError ||
-            error instanceof ConnectionError
-          ) {
-            throw error;
-          }
+          if (abortsTransaction(error)) throw error;
           logger.error({
             message: `Failed to match edited transaction ${matchedTx.id} to subscriptions`,
             error: error as Error,
