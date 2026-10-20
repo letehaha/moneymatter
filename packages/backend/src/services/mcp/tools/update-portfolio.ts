@@ -1,27 +1,22 @@
-import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
+import { updatePortfolioBodySchema, updatePortfolioBodyShape } from '@controllers/investments/portfolios/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updatePortfolio } from '@services/investments/portfolios/update.service';
-import { z } from 'zod';
 
 import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
-  name: z.string().optional().describe('New portfolio name (must be unique for this user)'),
-  portfolioType: z
-    .enum([PORTFOLIO_TYPE.investment, PORTFOLIO_TYPE.retirement, PORTFOLIO_TYPE.savings, PORTFOLIO_TYPE.other])
-    .optional()
-    .describe('New portfolio type: investment, retirement, savings, or other'),
-  description: z.string().nullable().optional().describe('New description (pass null to clear)'),
-  isEnabled: z.boolean().optional().describe('Enable or disable the portfolio'),
-  displayCurrencyCode: isoCurrencyCode()
-    .nullable()
-    .optional()
-    .describe(
-      'New display currency (ISO code, must be one of the user currencies); null = use base currency, omit = keep',
-    ),
+  name: updatePortfolioBodyShape.name.describe('New portfolio name (must be unique for this user), 1-255 characters'),
+  portfolioType: updatePortfolioBodyShape.portfolioType.describe(
+    'New portfolio type: investment, retirement, savings, or other',
+  ),
+  description: updatePortfolioBodyShape.description.describe('New description (pass null to clear)'),
+  isEnabled: updatePortfolioBodyShape.isEnabled.describe('Enable or disable the portfolio'),
+  displayCurrencyCode: updatePortfolioBodyShape.displayCurrencyCode.describe(
+    'New display currency (ISO code, must be one of the user currencies); null = use base currency, omit = keep',
+  ),
 };
 
 export function registerUpdatePortfolio(server: McpServer) {
@@ -38,15 +33,11 @@ export function registerUpdatePortfolio(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_portfolio', clientId: extra.authInfo?.clientId });
 
-      const portfolio = await updatePortfolio({
-        userId,
-        portfolioId: args.portfolioId,
-        name: args.name,
-        portfolioType: args.portfolioType as PORTFOLIO_TYPE | undefined,
-        description: args.description,
-        displayCurrencyCode: args.displayCurrencyCode,
-        isEnabled: args.isEnabled,
-      });
+      // The either-or rule (at least one field) spans fields, so it runs on the REST body schema.
+      const { portfolioId, ...fields } = args;
+      const body = updatePortfolioBodySchema.parse(fields);
+
+      const portfolio = await updatePortfolio({ userId, portfolioId, ...body });
 
       return jsonContent({ data: portfolio });
     },

@@ -123,21 +123,17 @@ describe('create_venture_deal vehicleType', () => {
   });
 });
 
-describe('update_tracker archivePromptDismissed and nullable dates', () => {
+describe('update_tracker nullable dates', () => {
   const { tool, schema } = toolOf(registerUpdateTracker);
 
-  it('accepts a boolean flag and null dates, rejects a non-boolean flag', () => {
-    expect(schema.safeParse({ trackerId: ID_A, archivePromptDismissed: true }).success).toBe(true);
+  it('accepts null dates so an end date can be cleared', () => {
     expect(schema.safeParse({ trackerId: ID_A, startDate: null, endDate: null }).success).toBe(true);
-    expect(schema.safeParse({ trackerId: ID_A, archivePromptDismissed: 'yes' }).success).toBe(false);
   });
 
   it('passes them to the service', async () => {
     edit.mockResolvedValue({ id: ID_A } as never);
-    await tool.handler({ trackerId: ID_A, archivePromptDismissed: true, startDate: null, endDate: null }, WRITE);
-    expect(edit).toHaveBeenCalledWith(
-      expect.objectContaining({ archivePromptDismissed: true, startDate: null, endDate: null }),
-    );
+    await tool.handler({ trackerId: ID_A, startDate: null, endDate: null }, WRITE);
+    expect(edit).toHaveBeenCalledWith(expect.objectContaining({ startDate: null, endDate: null }));
   });
 });
 
