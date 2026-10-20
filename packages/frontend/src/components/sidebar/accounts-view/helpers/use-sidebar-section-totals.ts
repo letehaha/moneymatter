@@ -1,5 +1,4 @@
-import { loadAccountGroups } from '@/api/account-groups';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { useAccountGroupsQuery } from '@/composable/data-queries/account-groups';
 import { useLoans } from '@/composable/data-queries/loans';
 import { usePortfolioSummaries } from '@/composable/data-queries/portfolio-summary';
 import { useVentureDeals } from '@/composable/data-queries/venture/deals';
@@ -9,12 +8,10 @@ import { useSidebarSections } from '@/composable/use-sidebar-sections';
 import { partitionLoans } from '@/pages/loans/utils/partition-loans';
 import { useAccountsStore } from '@/stores';
 import { ACCOUNT_CATEGORIES, AccountModel } from '@bt/shared/types';
-import { useQuery } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
 import { flattenAccounts } from './account-totals';
-import { buildAccountGroupTree } from './build-account-group-tree';
 
 /**
  * Per-section account splits, base-currency totals and visibility flags for the accounts view.
@@ -23,15 +20,8 @@ import { buildAccountGroupTree } from './build-account-group-tree';
  */
 export const useSidebarSectionTotals = () => {
   const { activeAccounts, isAccountsFetched } = storeToRefs(useAccountsStore());
-  const { data: accountGroupsData, isLoading: isGroupsLoading } = useQuery({
-    queryFn: () => loadAccountGroups(),
-    queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
-    staleTime: Infinity,
-    placeholderData: [],
-  });
-
-  // The endpoint returns a flat list; the sidebar renders a tree, so nest children under their parents.
-  const accountGroups = computed(() => buildAccountGroupTree({ groups: accountGroupsData.value ?? [] }));
+  const { data: accountGroupsData, isLoading: isGroupsLoading } = useAccountGroupsQuery({ placeholderData: [] });
+  const accountGroups = computed(() => accountGroupsData.value ?? []);
 
   // Wait for both accounts and groups to load to prevent layout shift
   const isLoading = computed(() => !isAccountsFetched.value || isGroupsLoading.value);

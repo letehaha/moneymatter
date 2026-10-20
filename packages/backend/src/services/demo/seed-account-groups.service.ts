@@ -12,10 +12,6 @@ import { DEMO_CONFIG, type DemoAccountKey } from './demo-config';
  * accounts but presented as their own entities (Vehicles section, `/loans`
  * page), and the accounts UI filters them out of the manual account list — a
  * group holding them would render as an empty row.
- *
- * Groups stay flat: `getAccountGroups` returns a child group's accounts
- * unhydrated, so the settings page renders every group at one level and names
- * its parent instead of nesting. Seeding a hierarchy would surface that edge.
  */
 export const DEMO_ACCOUNT_GROUPS: {
   name: string;

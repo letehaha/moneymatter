@@ -28,9 +28,7 @@ const router = useRouter();
 
 const group = computed(() => props.item.group);
 const isBankLinked = computed(() => !!group.value.bankDataProviderConnectionId);
-// Single-open accordion shared by the whole tree: this row's panel is open when it holds the id.
 const expanded = computed(() => props.expandedGroupId === group.value.id);
-const ownAccountsCount = computed(() => group.value.accounts.length);
 // The whole subtree: a parent whose accounts all sit in subgroups still reads as populated.
 const subtreeAccounts = computed(() => collectGroupAccounts({ group: group.value }));
 const accountsCount = computed(() => subtreeAccounts.value.length);
@@ -132,7 +130,7 @@ const subtitle = computed(() => {
       </h4>
 
       <div
-        v-if="ownAccountsCount"
+        v-if="group.accounts.length"
         class="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-lg border"
       >
         <GroupAccountRow v-for="account in group.accounts" :key="account.id" :account="account" :group-id="group.id" />

@@ -8,6 +8,7 @@ import {
 } from '@/api/account-groups';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { AccountGroups } from '@/common/types/models';
+import { buildAccountGroupTree } from '@/common/utils/build-account-group-tree';
 import { listAccountGroupPaths } from '@/components/sidebar/accounts-view/helpers/list-account-group-paths';
 import { type EntityLogoPayload } from '@bt/shared/types';
 import { useQuery, useQueryClient } from '@tanstack/vue-query';
@@ -15,17 +16,18 @@ import { MaybeRefOrGetter, Ref, computed, toValue } from 'vue';
 
 import { useInvalidatingMutation } from './use-invalidating-mutation';
 
-export const useAccountGroupsQuery = () =>
+const selectTree = (groups: AccountGroups[]) => buildAccountGroupTree({ groups });
+
+export const useAccountGroupsQuery = ({ placeholderData }: { placeholderData?: AccountGroups[] } = {}) =>
   useQuery({
     queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
     queryFn: () => loadAccountGroups(),
     staleTime: Infinity,
+    placeholderData,
+    select: selectTree,
   });
 
-/**
- * The account groups as a pick list: parents followed by their subgroups, each labelled with its
- * full path (`Banks / Indonesia`) so same-named subgroups of different parents stay distinguishable.
- */
+/** Groups as a depth-first pick list, each labelled with its full path (`Banks / Indonesia`). */
 export const useAccountGroupPaths = () => {
   const query = useAccountGroupsQuery();
   const entries = computed(() => listAccountGroupPaths({ groups: query.data.value ?? [] }));

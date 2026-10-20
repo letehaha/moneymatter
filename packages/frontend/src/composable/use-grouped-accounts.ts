@@ -1,10 +1,7 @@
-import { loadAccountGroups } from '@/api/account-groups';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { AccountGroups } from '@/common/types/models';
-import { buildAccountGroupTree } from '@/components/sidebar/accounts-view/helpers/build-account-group-tree';
+import { collectGroupAccounts } from '@/components/sidebar/accounts-view/helpers/account-totals';
+import { useAccountGroupsQuery } from '@/composable/data-queries/account-groups';
 import { useAccountsStore } from '@/stores';
 import { ACCOUNT_STATUSES, AccountModel, isDedicatedFlowAccountCategory } from '@bt/shared/types';
-import { useQuery } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 
@@ -27,41 +24,6 @@ export const sortAccounts = ({ accounts }: { accounts: AccountModel[] }): Accoun
     if (aHasBalance !== bHasBalance) return aHasBalance ? -1 : 1;
     return a.name.localeCompare(b.name);
   });
-
-/**
- * Collapses a nested `AccountGroups` node — the group plus every descendant group —
- * into a single flat list of accounts. Child groups are folded into their top-level
- * ancestor rather than shown as their own rows.
- */
-export const flattenGroupAccounts = ({ group }: { group: AccountGroups }): AccountModel[] => {
-  const accounts = [...group.accounts];
-  for (const child of group.childGroups ?? []) {
-    accounts.push(...flattenGroupAccounts({ group: child }));
-  }
-  return accounts;
-};
-
-/**
- * The endpoint returns every group in one flat list (nested ones carry their own accounts, while
- * their `childGroups` stubs do not), so the tree is rebuilt first. Only root groups come out, each
- * folding in its descendants' visible accounts; groups left with no accounts are dropped.
- */
-export const buildGroupedAccountsGroups = ({
-  accountGroups,
-  visibleAccountIds,
-}: {
-  accountGroups: AccountGroups[];
-  visibleAccountIds: { has: (id: string) => boolean };
-}): GroupedAccountsGroup[] =>
-  buildAccountGroupTree({ groups: accountGroups })
-    .map((group) => ({
-      id: group.id,
-      name: group.name,
-      accounts: sortAccounts({
-        accounts: flattenGroupAccounts({ group }).filter((account) => visibleAccountIds.has(account.id)),
-      }),
-    }))
-    .filter((group) => group.accounts.length > 0);
 
 /**
  * Narrows the account store to the set a multi-select should offer: active accounts only unless
@@ -105,12 +67,7 @@ export const useGroupedAccounts = ({
 }: { includeArchived?: boolean; excludeDedicatedFlow?: boolean } = {}) => {
   const { accounts: storeAccounts, isAccountsFetched } = storeToRefs(useAccountsStore());
 
-  const { data: accountGroups, isLoading: isGroupsLoading } = useQuery({
-    queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
-    queryFn: () => loadAccountGroups(),
-    staleTime: Infinity,
-    placeholderData: [],
-  });
+  const { data: accountGroups, isLoading: isGroupsLoading } = useAccountGroupsQuery({ placeholderData: [] });
 
   /** The selectable universe — see `filterSelectableAccounts`. */
   const allAccounts = computed<AccountModel[]>(() =>
@@ -122,9 +79,18 @@ export const useGroupedAccounts = ({
   );
 
   /** Top-level groups, each carrying a flat list of its visible descendant accounts. Empty groups are dropped. */
-  const groups = computed<GroupedAccountsGroup[]>(() =>
-    buildGroupedAccountsGroups({ accountGroups: accountGroups.value ?? [], visibleAccountIds: accountsById.value }),
-  );
+  const groups = computed<GroupedAccountsGroup[]>(() => {
+    const visible = accountsById.value;
+    return (accountGroups.value ?? [])
+      .map((group) => ({
+        id: group.id,
+        name: group.name,
+        accounts: sortAccounts({
+          accounts: collectGroupAccounts({ group }).filter((account) => visible.has(account.id)),
+        }),
+      }))
+      .filter((group) => group.accounts.length > 0);
+  });
 
   /** Ids that belong to any group — used to derive the ungrouped remainder. */
   const groupedAccountIds = computed<Set<string>>(() => {

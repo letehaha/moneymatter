@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { loadAccountGroups } from '@/api/account-groups';
-import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import CreateAccountGroupDialog from '@/components/dialogs/account-groups/create-account-group-dialog.vue';
 import { Button } from '@/components/lib/ui/button';
-import { useQuery } from '@tanstack/vue-query';
+import { useAccountGroupsQuery } from '@/composable/data-queries/account-groups';
 import { LayersIcon, PlusIcon, RotateCwIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
@@ -12,24 +10,14 @@ import GroupListRow from './group-list-row.vue';
 
 const SKELETON_ROWS = 3;
 
-const {
-  data: accountGroups,
-  isPending,
-  isError,
-  isFetching,
-  refetch,
-} = useQuery({
-  queryFn: () => loadAccountGroups(),
-  queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
-  staleTime: Infinity,
-});
+const { data: accountGroups, isPending, isError, isFetching, refetch } = useAccountGroupsQuery();
 
 const groupsList = computed(() => buildAccountGroupList({ groups: accountGroups.value ?? [] }));
 
 // Single-open accordion: expanding a row collapses whichever other row was open.
 const expandedGroupId = ref<string | null>(null);
 
-const toggleExpanded = (id: string) => {
+const toggleExpanded = ({ id }: { id: string }) => {
   expandedGroupId.value = expandedGroupId.value === id ? null : id;
 };
 </script>
@@ -69,7 +57,7 @@ const toggleExpanded = (id: string) => {
         :key="item.group.id"
         :item="item"
         :expanded-group-id="expandedGroupId"
-        @toggle="toggleExpanded"
+        @toggle="(id) => toggleExpanded({ id })"
       />
     </div>
 
