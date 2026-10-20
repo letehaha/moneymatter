@@ -87,9 +87,10 @@ const useAccountGroupMutation = <TVariables = void>({
 }) =>
   useInvalidatingMutation<unknown, TVariables>({
     mutationFn,
-    // The per-account key is a prefix — it drops the cached group for every account, not
-    // just the one written.
-    invalidateKeys: [VUE_QUERY_CACHE_KEYS.accountGroups, VUE_QUERY_CACHE_KEYS.accountGroupForAccount],
+    invalidateKeys: [],
+    // Refreshed on failure too: a multi-account link can fail midway with earlier moves applied.
+    // The per-account key is a prefix, so it drops the cached group for every account.
+    invalidateOnSettleKeys: [VUE_QUERY_CACHE_KEYS.accountGroups, VUE_QUERY_CACHE_KEYS.accountGroupForAccount],
     successKey,
     errorKey,
     onSuccess,
@@ -97,17 +98,25 @@ const useAccountGroupMutation = <TVariables = void>({
 
 export const useCreateAccountGroup = ({ onSuccess }: { onSuccess?: () => void } = {}) =>
   useAccountGroupMutation({
-    mutationFn: (payload: { name: string } & EntityLogoPayload) => createAccountsGroup(payload),
+    mutationFn: (payload: { name: string; parentGroupId?: string | null } & EntityLogoPayload) =>
+      createAccountsGroup(payload),
     errorKey: 'accountGroups.create.error',
     onSuccess,
   });
 
-export const useUpdateAccountGroup = ({ groupId }: { groupId: MaybeRefOrGetter<string> }) =>
+export const useUpdateAccountGroup = ({
+  groupId,
+  onSuccess,
+}: {
+  groupId: MaybeRefOrGetter<string>;
+  onSuccess?: () => void;
+}) =>
   useAccountGroupMutation({
-    mutationFn: (updates: { name?: string } & EntityLogoPayload) =>
+    mutationFn: (updates: { name?: string; parentGroupId?: string | null } & EntityLogoPayload) =>
       updateAccountGroup({ groupId: toValue(groupId), updates }),
     successKey: 'accountGroups.update.success',
     errorKey: 'accountGroups.update.error',
+    onSuccess,
   });
 
 export const useDeleteAccountGroup = ({
@@ -130,6 +139,18 @@ export const useLinkAccountToGroup = ({ onSuccess }: { onSuccess?: () => void } 
       linkAccountToGroup({ accountId, groupId }),
     successKey: 'accountGroups.link.success',
     errorKey: 'accountGroups.link.error',
+    onSuccess,
+  });
+
+export const useLinkAccountsToGroup = ({ onSuccess }: { onSuccess?: () => void } = {}) =>
+  useAccountGroupMutation({
+    mutationFn: async ({ accountIds, groupId }: { accountIds: string[]; groupId: string }) => {
+      for (const accountId of accountIds) {
+        await linkAccountToGroup({ accountId, groupId });
+      }
+    },
+    successKey: 'accountGroups.linkMany.success',
+    errorKey: 'accountGroups.linkMany.error',
     onSuccess,
   });
 

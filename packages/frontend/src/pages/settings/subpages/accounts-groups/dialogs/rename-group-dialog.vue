@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { AccountGroups } from '@/common/types/models';
-import { type LogoSelection, logoSelectionKey, toLogoSelection } from '@/components/common/logo-selection';
+import { type LogoSelection, toLogoSelection } from '@/components/common/logo-selection';
 import LogoSquareField from '@/components/common/logo-square-field.vue';
+import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { useUpdateAccountGroup } from '@/composable/data-queries/account-groups';
-import { FolderIcon, SaveIcon } from '@lucide/vue';
+import { FolderIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -13,19 +14,9 @@ import { resolveGroupUpdate } from './resolve-group-update';
 import { resolveRename } from './resolve-rename';
 
 const props = defineProps<{ group: AccountGroups }>();
+const isOpen = defineModel<boolean>('open', { default: false });
 
 const { t } = useI18n();
-
-const name = ref(props.group.name);
-
-// Renaming elsewhere (or collapsing and reopening the row) should not leave a stale
-// draft in the field.
-watch(
-  () => props.group.name,
-  (value) => {
-    name.value = value;
-  },
-);
 
 const storedLogo = computed(() =>
   toLogoSelection({
@@ -35,14 +26,17 @@ const storedLogo = computed(() =>
   }),
 );
 
-const logo = ref<LogoSelection | null>(storedLogo.value);
-// Keyed on structure, not object identity: every refetch rebuilds the group object,
-// and an identity-based watch would wipe an unsaved pick with an unchanged stored logo.
+const name = ref('');
+const logo = ref<LogoSelection | null>(null);
+
 watch(
-  () => logoSelectionKey({ selection: storedLogo.value }),
-  () => {
+  isOpen,
+  (open) => {
+    if (!open) return;
+    name.value = props.group.name;
     logo.value = storedLogo.value;
   },
+  { immediate: true },
 );
 
 const plan = computed(() =>
@@ -52,51 +46,61 @@ const plan = computed(() =>
     storedLogo: storedLogo.value,
   }),
 );
-const canSubmit = computed(() => plan.value.updates !== null);
 const nameError = computed(() =>
   plan.value.blockedBy === 'empty-name' ? t('settings.accountGroups.update.emptyNameError') : undefined,
 );
 
-const { mutate, isPending } = useUpdateAccountGroup({ groupId: () => props.group.id });
+const { mutate, isPending } = useUpdateAccountGroup({
+  groupId: () => props.group.id,
+  onSuccess: () => {
+    isOpen.value = false;
+  },
+});
 
 const submit = () => {
   const { updates } = plan.value;
   if (!updates || isPending.value) return;
-
   mutate(updates);
 };
 </script>
 
 <template>
-  <form
-    class="flex flex-col gap-2 @[30rem]/account-groups:flex-row @[30rem]/account-groups:items-end"
-    @submit.prevent="submit"
-  >
-    <div class="flex flex-1 items-end gap-2">
+  <ResponsiveDialog v-model:open="isOpen">
+    <template #title>{{ $t('settings.accountGroups.dialogs.rename.title') }}</template>
+    <template #description>{{ $t('settings.accountGroups.dialogs.rename.description') }}</template>
+
+    <form class="flex items-start gap-3" @submit.prevent="submit">
       <LogoSquareField
         v-model="logo"
         :name-for-search="name"
         :reset-label="$t('common.logo.remove')"
-        size-class="size-10 rounded-lg"
+        size-class="size-14 rounded-xl"
       >
         <template #placeholder>
-          <div class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg">
-            <FolderIcon class="text-muted-foreground size-5" aria-hidden="true" />
+          <div class="bg-muted flex size-14 shrink-0 items-center justify-center rounded-xl">
+            <FolderIcon class="text-muted-foreground size-6" aria-hidden="true" />
           </div>
         </template>
       </LogoSquareField>
+
       <InputField
         v-model="name"
-        class="flex-1"
+        class="min-w-0 flex-1"
         :label="$t('settings.accountGroups.update.label')"
         :placeholder="$t('settings.accountGroups.update.placeholder')"
         :error-message="nameError"
       />
-    </div>
+    </form>
 
-    <Button type="submit" size="sm" :disabled="!canSubmit || isPending">
-      <SaveIcon class="size-4" />
-      {{ $t('settings.accountGroups.update.saveButton') }}
-    </Button>
-  </form>
+    <template #footer>
+      <div class="grid w-full grid-cols-2 gap-2">
+        <Button variant="outline" :disabled="isPending" @click="isOpen = false">
+          {{ $t('common.actions.cancel') }}
+        </Button>
+        <Button :disabled="!plan.updates || isPending" @click="submit">
+          {{ $t('settings.accountGroups.dialogs.rename.submit') }}
+        </Button>
+      </div>
+    </template>
+  </ResponsiveDialog>
 </template>

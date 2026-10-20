@@ -6,41 +6,45 @@ import { collectGroupAccounts } from '@/components/sidebar/accounts-view/helpers
 import GroupTotal from '@/components/sidebar/accounts-view/group-total.vue';
 import { useBaseBalanceTotals } from '@/composable/use-base-balance-totals';
 import { cn } from '@/lib/utils';
-import { goToConnectionDetails } from '@/routes/navigation';
 import { useAccountsStore } from '@/stores';
-import { ChevronDownIcon, Settings2Icon } from '@lucide/vue';
+import { ChevronRightIcon, GripVerticalIcon, PencilIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
-import { useRouter } from 'vue-router';
 
 import type { AccountGroupListItem } from './build-account-group-list';
-import DeleteGroup from './group-row/delete-group.vue';
-import EditGroupForm from './group-row/edit-group-form.vue';
-import GroupAccountRow from './group-row/group-account-row.vue';
+import GroupRowMenu, { type GroupRowAction } from './group-row/group-row-menu.vue';
+import { AMOUNT_COLUMN_CLASS, HOVER_ACTIONS_CLASS } from './row-styles';
 
-const props = defineProps<{ item: AccountGroupListItem; expandedGroupId: string | null }>();
+const props = defineProps<{
+  item: AccountGroupListItem;
+  depth: number;
+  expanded: boolean;
+  organizing: boolean;
+  touch: boolean;
+  dragDisabled?: boolean;
+  moved?: boolean;
+  dimmed?: boolean;
+  dropTarget?: boolean;
+}>();
 
-const emit = defineEmits<{ toggle: [id: string] }>();
+const emit = defineEmits<{ toggle: []; action: [action: GroupRowAction] }>();
 
 const { t } = useI18n();
-const router = useRouter();
 
 const group = computed(() => props.item.group);
 const isBankLinked = computed(() => !!group.value.bankDataProviderConnectionId);
-const expanded = computed(() => props.expandedGroupId === group.value.id);
+const isExpandable = computed(() => props.item.children.length > 0 || group.value.accounts.length > 0);
 // The whole subtree: a parent whose accounts all sit in subgroups still reads as populated.
 const subtreeAccounts = computed(() => collectGroupAccounts({ group: group.value }));
 const accountsCount = computed(() => subtreeAccounts.value.length);
 
 const { baseCurrencyCode, sumBaseBalance } = useBaseBalanceTotals();
-
-// A parent's total rolls up its subgroups, so it matches what the nested rows add up to.
 const total = computed(() => sumBaseBalance({ accounts: subtreeAccounts.value }));
 
 const { accounts: allAccounts } = storeToRefs(useAccountsStore());
 
-// A connection group the user emptied by regrouping its accounts still syncs them —
+// A connection group the user emptied by regrouping its accounts still syncs them;
 // plain "No accounts" reads like the connection lost them, so call out where they live.
 const linkedAccountsElsewhereCount = computed(() => {
   if (!isBankLinked.value || accountsCount.value > 0) return 0;
@@ -49,130 +53,109 @@ const linkedAccountsElsewhereCount = computed(() => {
   ).length;
 });
 
-const subtitle = computed(() => {
-  const emptyLabel =
-    linkedAccountsElsewhereCount.value > 0
-      ? t(
-          'settings.accountGroups.row.accountsElsewhere',
-          { count: linkedAccountsElsewhereCount.value },
-          linkedAccountsElsewhereCount.value,
-        )
-      : t('settings.accountGroups.row.noAccounts');
-
-  return accountsCount.value > 0
-    ? t('settings.accountGroups.row.accountsCount', { count: accountsCount.value }, accountsCount.value)
-    : emptyLabel;
+const countLabel = computed(() => {
+  if (accountsCount.value > 0) {
+    return t('settings.accountGroups.row.accountsCount', { count: accountsCount.value }, accountsCount.value);
+  }
+  return linkedAccountsElsewhereCount.value > 0
+    ? t(
+        'settings.accountGroups.row.accountsElsewhere',
+        { count: linkedAccountsElsewhereCount.value },
+        linkedAccountsElsewhereCount.value,
+      )
+    : t('settings.accountGroups.row.noAccounts');
 });
+
+const toggle = () => {
+  if (!props.organizing && isExpandable.value) emit('toggle');
+};
 </script>
 
 <template>
-  <div>
-    <button
-      type="button"
+  <div
+    :draggable="organizing && !dragDisabled"
+    :class="
+      cn(
+        'group/row flex h-10 items-center pr-3 pl-2 transition-colors',
+        organizing ? 'cursor-grab active:cursor-grabbing' : 'hover:bg-muted/40',
+        !organizing && isExpandable && 'cursor-pointer',
+        dimmed && 'cursor-not-allowed opacity-40',
+        dropTarget && 'bg-primary/15 ring-primary ring-2 ring-inset',
+      )
+    "
+    @click="toggle"
+  >
+    <GripVerticalIcon v-if="organizing" class="text-muted-foreground mr-1 size-4 shrink-0" aria-hidden="true" />
+
+    <span v-for="level in depth" :key="level" class="flex w-4 shrink-0 justify-center self-stretch" aria-hidden="true">
+      <span class="bg-border w-px" />
+    </span>
+
+    <Button
+      v-if="isExpandable && !organizing"
+      variant="ghost"
+      size="icon-sm"
+      class="size-4 shrink-0 rounded-sm"
       :aria-expanded="expanded"
-      :class="
-        cn(
-          'grid w-full grid-cols-[minmax(0,1fr)_auto_14px] items-center gap-3 px-4 py-3 text-left',
-          'hover:bg-muted/40 focus-visible:ring-ring/40 cursor-pointer transition-colors focus-visible:ring-2 focus-visible:outline-none',
-        )
-      "
-      @click="emit('toggle', group.id)"
+      :aria-label="expanded ? $t('settings.accountGroups.tree.collapse') : $t('settings.accountGroups.tree.expand')"
+      @click.stop="emit('toggle')"
     >
-      <div class="flex min-w-0 items-center gap-3">
-        <GroupLogo :group="group" size="size-9" variant="tile" />
-
-        <div class="min-w-0">
-          <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-            <span class="truncate text-sm font-semibold">{{ group.name }}</span>
-
-            <DesktopOnlyTooltip
-              v-if="isBankLinked"
-              :content="$t('settings.accountGroups.row.bankBadgeTooltip')"
-              content-class-name="max-w-80"
-            >
-              <span class="bg-primary/15 text-primary-text shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold">
-                <span class="hidden @[30rem]/account-groups:inline">
-                  {{ $t('settings.accountGroups.row.bankBadge') }}
-                </span>
-                <span class="@[30rem]/account-groups:hidden">
-                  {{ $t('settings.accountGroups.row.bankBadgeShort') }}
-                </span>
-              </span>
-            </DesktopOnlyTooltip>
-          </div>
-
-          <div class="text-muted-foreground mt-0.5 truncate text-xs">{{ subtitle }}</div>
-        </div>
-      </div>
-
-      <GroupTotal
-        v-if="baseCurrencyCode"
-        :amount="total.total"
-        :currency-code="baseCurrencyCode"
-        :is-approx="total.isApprox"
-        show-zero
-      />
-
-      <ChevronDownIcon
-        class="text-muted-foreground size-3.5 transition-transform"
-        :class="{ 'rotate-180': expanded }"
+      <ChevronRightIcon
+        :class="cn('text-muted-foreground size-4 transition-transform', expanded && 'rotate-90')"
         aria-hidden="true"
       />
-    </button>
+    </Button>
+    <span v-else class="w-4 shrink-0" aria-hidden="true" />
 
-    <div v-if="expanded" class="border-border/60 bg-muted/20 border-t px-4 py-4">
-      <EditGroupForm :group="group" />
+    <div class="ml-2 flex min-w-0 flex-1 items-center gap-2">
+      <GroupLogo :group="group" size="size-5" rounded="md" variant="tile" />
 
-      <div class="bg-border/60 my-4 h-px w-full" />
+      <span class="truncate font-semibold">{{ group.name }}</span>
 
-      <h4 class="text-muted-foreground mb-2 text-xs font-medium tracking-wide uppercase">
-        {{ $t('settings.accountGroups.accounts.heading') }}
-      </h4>
-
-      <div
-        v-if="group.accounts.length"
-        class="border-border/60 bg-card divide-border/60 divide-y overflow-hidden rounded-lg border"
+      <DesktopOnlyTooltip
+        v-if="isBankLinked"
+        :content="$t('settings.accountGroups.row.bankBadgeTooltip')"
+        content-class-name="max-w-80"
       >
-        <GroupAccountRow v-for="account in group.accounts" :key="account.id" :account="account" :group-id="group.id" />
-      </div>
-      <p v-else class="text-muted-foreground text-sm">
-        {{
-          linkedAccountsElsewhereCount > 0
-            ? $t('settings.accountGroups.accounts.emptyBankLinked')
-            : $t('settings.accountGroups.accounts.empty')
-        }}
-      </p>
+        <span class="border-border text-muted-foreground shrink-0 rounded-full border px-2 py-0.5 text-xs">
+          {{ $t('settings.accountGroups.tree.syncedBadge') }}
+        </span>
+      </DesktopOnlyTooltip>
 
-      <div class="mt-4 flex flex-wrap items-center justify-end gap-3">
-        <Button
-          v-if="isBankLinked"
-          variant="outline"
-          size="sm"
-          class="mr-auto"
-          @click="goToConnectionDetails({ router, connectionId: group.bankDataProviderConnectionId })"
-        >
-          <Settings2Icon class="size-4" />
-          {{ $t('settings.accountGroups.row.manageConnection') }}
-        </Button>
+      <template v-if="organizing">
+        <span v-if="dropTarget" class="text-primary-text shrink-0 text-xs font-medium">
+          {{ $t('settings.accountGroups.organize.moveInside') }}
+        </span>
+        <span v-else-if="moved" class="text-primary-text shrink-0 text-xs">
+          {{ $t('settings.accountGroups.organize.moved') }}
+        </span>
+      </template>
 
-        <DeleteGroup :group="group" />
-      </div>
+      <span v-else-if="!touch" :class="HOVER_ACTIONS_CLASS">
+        <DesktopOnlyTooltip :content="$t('settings.accountGroups.tree.renameTooltip')">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            class="size-7"
+            :aria-label="$t('settings.accountGroups.tree.renameTooltip')"
+            @click.stop="emit('action', 'rename')"
+          >
+            <PencilIcon class="size-4" />
+          </Button>
+        </DesktopOnlyTooltip>
+
+        <GroupRowMenu :group="group" align="start" @action="emit('action', $event)" />
+      </span>
     </div>
 
-    <!-- Subgroups nest under their parent; each is a full row, so edit and delete work the same. -->
-    <div
-      v-if="item.children.length"
-      class="border-border/60 divide-border/60 ml-4 divide-y border-t border-l"
-      role="group"
-      :aria-label="group.name"
-    >
-      <GroupListRow
-        v-for="child in item.children"
-        :key="child.group.id"
-        :item="child"
-        :expanded-group-id="expandedGroupId"
-        @toggle="emit('toggle', $event)"
-      />
+    <span class="text-muted-foreground ml-3 hidden shrink-0 text-sm @md/account-groups:inline">{{ countLabel }}</span>
+
+    <div v-if="!organizing && baseCurrencyCode" :class="AMOUNT_COLUMN_CLASS">
+      <GroupTotal :amount="total.total" :currency-code="baseCurrencyCode" :is-approx="total.isApprox" show-zero />
     </div>
+
+    <span v-if="touch && !organizing" class="ml-1 shrink-0">
+      <GroupRowMenu :group="group" align="end" @action="emit('action', $event)" />
+    </span>
   </div>
 </template>

@@ -555,7 +555,11 @@
         "title": "Create group",
         "nameLabel": "Group name",
         "namePlaceholder": "Investments",
-        "createButton": "Create"
+        "createButton": "Create",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

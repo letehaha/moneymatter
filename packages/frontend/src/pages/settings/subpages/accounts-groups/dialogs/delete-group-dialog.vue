@@ -3,26 +3,16 @@ import { AccountGroups } from '@/common/types/models';
 import AccountLogo from '@/components/common/account-logo.vue';
 import GroupLogo from '@/components/common/group-logo.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
-import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { useDeleteAccountGroup } from '@/composable/data-queries/account-groups';
-import { CheckIcon, Trash2Icon } from '@lucide/vue';
-import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
+import { CheckIcon } from '@lucide/vue';
+import { computed } from 'vue';
 
 const props = defineProps<{ group: AccountGroups }>();
-
-const { t } = useI18n();
-
-const isConfirmOpen = ref(false);
+const isConfirmOpen = defineModel<boolean>('open', { default: false });
 
 const isBankLinked = computed(() => props.group.bankDataProviderConnectionId != null);
 const accountsCount = computed(() => props.group.accounts.length);
-
-const metaLine = computed(() => {
-  const count = t('settings.accountGroups.row.accountsCount', { count: accountsCount.value }, accountsCount.value);
-  return isBankLinked.value ? `${t('settings.accountGroups.row.bankBadge')} · ${count}` : count;
-});
 
 const { mutate: removeGroup, isPending } = useDeleteAccountGroup({
   groupId: () => props.group.id,
@@ -33,11 +23,6 @@ const { mutate: removeGroup, isPending } = useDeleteAccountGroup({
 </script>
 
 <template>
-  <Button variant="soft-destructive" size="sm" :disabled="isPending" @click="isConfirmOpen = true">
-    <Trash2Icon class="size-4" />
-    {{ $t('settings.accountGroups.delete.button') }}
-  </Button>
-
   <ResponsiveAlertDialog
     v-model:open="isConfirmOpen"
     :confirm-label="$t('settings.accountGroups.delete.button')"
@@ -51,7 +36,14 @@ const { mutate: removeGroup, isPending } = useDeleteAccountGroup({
 
         <div class="min-w-0">
           <div class="truncate">{{ $t('settings.accountGroups.delete.confirmTitle', { name: group.name }) }}</div>
-          <div class="text-muted-foreground truncate text-xs font-normal">{{ metaLine }}</div>
+          <div class="text-muted-foreground flex min-w-0 items-center gap-2 text-xs font-normal">
+            <span v-if="isBankLinked" class="border-border shrink-0 rounded-full border px-2 py-0.5">
+              {{ $t('settings.accountGroups.tree.syncedBadge') }}
+            </span>
+            <span class="truncate">
+              {{ $t('settings.accountGroups.row.accountsCount', { count: accountsCount }, accountsCount) }}
+            </span>
+          </div>
         </div>
       </div>
     </template>

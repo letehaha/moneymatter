@@ -8,7 +8,9 @@ export const loadAccountGroups = async (
   return api.get('/account-group', payload);
 };
 
-export const createAccountsGroup = async (payload: { name: string } & EntityLogoPayload): Promise<void> => {
+export const createAccountsGroup = async (
+  payload: { name: string; parentGroupId?: string | null } & EntityLogoPayload,
+): Promise<void> => {
   await api.post('/account-group', payload);
 };
 

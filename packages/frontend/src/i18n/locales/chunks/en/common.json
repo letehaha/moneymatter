@@ -297,6 +297,10 @@
       "success": "Account has been added to the group",
       "error": "Failed to add the account to the group"
     },
+    "linkMany": {
+      "success": "Accounts added to the group",
+      "error": "Failed to add accounts to the group"
+    },
     "unlink": {
       "success": "Account has been removed from the group",
       "error": "Failed to remove the account from the group"

@@ -555,7 +555,11 @@
         "title": "Створити групу",
         "nameLabel": "Назва групи",
         "namePlaceholder": "Інвестиції",
-        "createButton": "Створити"
+        "createButton": "Створити",
+        "subgroupTitle": "Нова підгрупа",
+        "insideLabel": "Всередині",
+        "subgroupNamePlaceholder": "напр., Заощадження",
+        "createSubgroupButton": "Створити підгрупу"
       }
     },
     "directCashTransaction": {
