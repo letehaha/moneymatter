@@ -428,11 +428,11 @@
     },
     {
       "name": "create_subscription",
-      "description": "Create a new subscription, recurring bill, or installment plan — an expense by default, or a recurring income (e.g. salary) via transactionType. Requires finance:write scope."
+      "description": "Create a new subscription, recurring bill, or installment plan — an expense by default, or a recurring income (e.g. salary) via transactionType. Accepts matching rules, payee, tags, reminders and auto-record. Requires finance:write scope."
     },
     {
       "name": "update_subscription",
-      "description": "Update fields on an existing subscription or bill. Requires finance:write scope."
+      "description": "Update fields on an existing subscription or bill, including matching rules, payee, tags, reminders and auto-record. Requires finance:write scope."
     },
     {
       "name": "delete_subscription",
@@ -680,7 +680,7 @@
     },
     {
       "name": "delete_payee",
-      "description": "Delete a Payee. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
+      "description": "Delete a Payee, optionally adding its names to the ignore list. Linked transactions retain their categoryId but their payeeId is set to null. Requires finance:delete scope."
     },
     {
       "name": "set_payees_categorization_mode",

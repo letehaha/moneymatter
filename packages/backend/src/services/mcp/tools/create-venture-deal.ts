@@ -1,5 +1,5 @@
-import { VENTURE_CASH_FLOW_MODE, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
-import { currencyCode, dateString, decimalString, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { VENTURE_CASH_FLOW_MODE, VENTURE_SPV_SUBTYPE, VENTURE_VEHICLE_TYPE } from '@bt/shared/types/venture';
+import { dateString, decimalString, isoCurrencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createVentureDeal } from '@services/venture/deals/create.service';
@@ -13,6 +13,7 @@ const inputSchema = {
   principal: decimalString().describe('Principal amount as a decimal string (e.g. "16000")'),
   investmentDate: dateString().describe('Investment date in YYYY-MM-DD'),
   platformId: recordId().nullable().optional().describe('Optional platform id (from list_venture_platforms)'),
+  vehicleType: z.nativeEnum(VENTURE_VEHICLE_TYPE).optional().describe('Vehicle type (default and only value: spv)'),
   spvSubtype: z
     .nativeEnum(VENTURE_SPV_SUBTYPE)
     .nullable()
@@ -65,6 +66,7 @@ export function registerCreateVentureDeal(server: McpServer) {
         principal: args.principal,
         investmentDate: args.investmentDate,
         platformId: args.platformId,
+        vehicleType: args.vehicleType,
         spvSubtype: args.spvSubtype,
         targetCompany: args.targetCompany,
         entryFeePct: args.entryFeePct,

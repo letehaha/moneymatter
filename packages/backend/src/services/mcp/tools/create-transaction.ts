@@ -4,6 +4,7 @@ import {
   nonNegativeAmountSchema,
   payeeIdSchema,
   positiveAmountSchema,
+  transactionDetailFieldsSchema,
 } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -92,6 +93,21 @@ const inputSchema = {
     .describe(
       'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
     ),
+  externalUrl: transactionDetailFieldsSchema.externalUrl.describe(
+    'http(s) link to the source document, e.g. an invoice (max 2048 characters)',
+  ),
+  externalReference: transactionDetailFieldsSchema.externalReference.describe(
+    'External reference such as an invoice or order number (max 255 characters)',
+  ),
+  location: transactionDetailFieldsSchema.location.describe('Where it happened: { latitude, longitude } in degrees'),
+  payeeLocked: z
+    .boolean()
+    .optional()
+    .describe('true pins the payee so later automations and bank sync never change it'),
+  applyAutomations: z
+    .boolean()
+    .optional()
+    .describe("true runs the user's enabled automation rules on this transaction. Default false"),
 };
 
 export function registerCreateTransaction(server: McpServer) {
@@ -132,6 +148,11 @@ export function registerCreateTransaction(server: McpServer) {
           originalAmount: args.originalAmount,
           originalCurrencyCode: args.originalCurrencyCode,
           payeeId: args.payeeId,
+          externalUrl: args.externalUrl,
+          externalReference: args.externalReference,
+          location: args.location,
+          payeeLocked: args.payeeLocked,
+          applyAutomations: args.applyAutomations,
         },
         userId,
       );
