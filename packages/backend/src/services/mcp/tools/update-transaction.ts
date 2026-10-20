@@ -5,6 +5,7 @@ import {
   nonNegativeAmountSchema,
   payeeIdSchema,
   positiveAmountSchema,
+  transactionDetailFieldsSchema,
 } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -94,6 +95,18 @@ const inputSchema = {
     .describe(
       'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
     ),
+  externalUrl: transactionDetailFieldsSchema.externalUrl.describe(
+    'http(s) link to the source document (max 2048 characters). Pass null to clear',
+  ),
+  externalReference: transactionDetailFieldsSchema.externalReference.describe(
+    'External reference such as an invoice number (max 255 characters). Pass null to clear',
+  ),
+  location: transactionDetailFieldsSchema.location.describe('{ latitude, longitude } in degrees. Pass null to clear'),
+  payeeLocked: z.boolean().optional().describe('true pins the payee so automations and bank sync never change it'),
+  isPlanned: z
+    .boolean()
+    .optional()
+    .describe('true marks it planned, false marks it as happened (see also confirm_planned_transaction)'),
 };
 
 export function registerUpdateTransaction(server: McpServer) {
@@ -137,6 +150,11 @@ export function registerUpdateTransaction(server: McpServer) {
         tagIds: args.tagIds,
         originalAmount: args.originalAmount != null ? Money.fromDecimal(args.originalAmount) : args.originalAmount,
         originalCurrencyCode: args.originalCurrencyCode,
+        externalUrl: args.externalUrl,
+        externalReference: args.externalReference,
+        location: args.location,
+        payeeLocked: args.payeeLocked,
+        isPlanned: args.isPlanned,
         // null clears the link, so only an omitted payeeId is left out
         ...(args.payeeId !== undefined ? { payeeId: args.payeeId } : {}),
       });

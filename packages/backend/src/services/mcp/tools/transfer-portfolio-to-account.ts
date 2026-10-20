@@ -14,6 +14,11 @@ const inputSchema = {
   currencyCode: isoCurrencyCode().describe('Currency of the cash withdrawn from the portfolio (ISO 4217, e.g. "USD")'),
   date: dateString().describe('Transfer date in YYYY-MM-DD format'),
   description: z.string().optional().describe('Optional note for the transfer'),
+  existingTransactionId: recordId()
+    .optional()
+    .describe(
+      'Link an existing income transaction on the destination account (from search_transactions) instead of creating a new one; it must not be linked to a portfolio already',
+    ),
 };
 
 export function registerTransferPortfolioToAccount(server: McpServer) {
@@ -38,6 +43,7 @@ export function registerTransferPortfolioToAccount(server: McpServer) {
         currencyCode: args.currencyCode,
         date: args.date,
         description: args.description ?? null,
+        existingTransactionId: args.existingTransactionId,
       });
 
       return jsonContent({ data: slimPortfolioTransferForMcp(transfer) });

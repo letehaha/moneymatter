@@ -13,8 +13,8 @@ import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to update'),
   name: z.string().optional().describe('New tracker name'),
-  startDate: z.string().optional().describe('New start date (ISO 8601)'),
-  endDate: z.string().optional().describe('New end date (ISO 8601)'),
+  startDate: z.string().nullable().optional().describe('New start date (ISO 8601); null clears it'),
+  endDate: z.string().nullable().optional().describe('New end date (ISO 8601); null clears it'),
   limitAmount: z
     .number()
     .positive()
@@ -24,6 +24,10 @@ const inputSchema = {
       "New spending limit as a decimal amount in the user's base currency (e.g. 500.00). Pass null to remove the limit",
     ),
   autoInclude: z.boolean().optional().describe('Whether to auto-include transactions in the date range'),
+  archivePromptDismissed: z
+    .boolean()
+    .optional()
+    .describe('true hides the "archive this finished tracker" prompt in the app; false shows it again'),
   categoryIds: z
     .array(recordId())
     .optional()
@@ -61,6 +65,7 @@ export function registerUpdateTracker(server: McpServer) {
         endDate: args.endDate,
         limitAmount: args.limitAmount == null ? args.limitAmount : Money.fromDecimal(args.limitAmount),
         autoInclude: args.autoInclude,
+        archivePromptDismissed: args.archivePromptDismissed,
         categoryIds: args.categoryIds,
         aiEnabled: args.aiEnabled,
         aiDescription: args.aiDescription,
