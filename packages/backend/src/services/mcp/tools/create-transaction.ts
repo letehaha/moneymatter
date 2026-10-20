@@ -5,6 +5,7 @@ import {
   payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
+  transactionDetailFieldsSchema,
 } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -99,6 +100,21 @@ const inputSchema = {
     .describe(
       "Pay this income/expense from up to 4 more accounts. Each item is either { accountId, amount } to create a part on another account, or { transactionId } to link an existing transaction as a part (its amount stays). amount is in that account's currency; when it differs from this transaction's currency also pass paymentAmount, the part's value in this transaction's currency. Not allowed for transfers, refunds, planned or category-split transactions",
     ),
+  externalUrl: transactionDetailFieldsSchema.externalUrl.describe(
+    'http(s) link to the source document, e.g. an invoice (max 2048 characters)',
+  ),
+  externalReference: transactionDetailFieldsSchema.externalReference.describe(
+    'External reference such as an invoice or order number (max 255 characters)',
+  ),
+  location: transactionDetailFieldsSchema.location.describe('Where it happened: { latitude, longitude } in degrees'),
+  payeeLocked: z
+    .boolean()
+    .optional()
+    .describe('true pins the payee so later automations and bank sync never change it'),
+  applyAutomations: z
+    .boolean()
+    .optional()
+    .describe("true runs the user's enabled automation rules on this transaction. Default false"),
 };
 
 export function registerCreateTransaction(server: McpServer) {
@@ -140,6 +156,11 @@ export function registerCreateTransaction(server: McpServer) {
           originalCurrencyCode: args.originalCurrencyCode,
           paymentLegs: args.paymentLegs,
           payeeId: args.payeeId,
+          externalUrl: args.externalUrl,
+          externalReference: args.externalReference,
+          location: args.location,
+          payeeLocked: args.payeeLocked,
+          applyAutomations: args.applyAutomations,
         },
         userId,
       );

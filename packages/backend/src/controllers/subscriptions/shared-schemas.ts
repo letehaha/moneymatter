@@ -1,7 +1,7 @@
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
-export const matchingRuleSchema = z.discriminatedUnion('field', [
+const matchingRuleSchema = z.discriminatedUnion('field', [
   z.object({
     field: z.literal('note'),
     operator: z.literal('contains_any'),
@@ -24,6 +24,9 @@ export const matchingRuleSchema = z.discriminatedUnion('field', [
     value: recordId(),
   }),
 ]);
+
+/** A subscription's matching rules: the REST controllers and the MCP tools share it. */
+export const matchingRulesSchema = z.object({ rules: z.array(matchingRuleSchema) });
 
 /** Body of accepting a detected candidate: the REST controller and the MCP tool share it. */
 export const acceptCandidateBodySchema = z.object({

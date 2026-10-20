@@ -13,8 +13,8 @@ import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to update'),
   name: z.string().optional().describe('New tracker name'),
-  startDate: z.string().optional().describe('New start date (ISO 8601)'),
-  endDate: z.string().optional().describe('New end date (ISO 8601)'),
+  startDate: z.string().nullable().optional().describe('New start date (ISO 8601); null clears it'),
+  endDate: z.string().nullable().optional().describe('New end date (ISO 8601); null clears it'),
   limitAmount: z
     .number()
     .positive()
@@ -28,6 +28,10 @@ const inputSchema = {
     .optional()
     .describe("Auto-add the user's transactions in the date range matching the rule categories or tags"),
   rulesCleanup: z.boolean().optional().describe('Remove rule-added transactions that stop matching the rules'),
+  archivePromptDismissed: z
+    .boolean()
+    .optional()
+    .describe('true hides the "archive this finished tracker" prompt in the app; false shows it again'),
   categoryIds: z
     .array(recordId())
     .optional()
@@ -67,6 +71,7 @@ export function registerUpdateTracker(server: McpServer) {
         limitAmount: args.limitAmount == null ? args.limitAmount : Money.fromDecimal(args.limitAmount),
         rulesEnabled: args.rulesEnabled,
         rulesCleanup: args.rulesCleanup,
+        archivePromptDismissed: args.archivePromptDismissed,
         categoryIds: args.categoryIds,
         tagIds: args.tagIds,
         aiEnabled: args.aiEnabled,

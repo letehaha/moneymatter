@@ -1533,8 +1533,8 @@ Includes detected candidates and billing periods.
 | `remove_transactions_from_group`         | Remove transactions from a group, optionally dissolving it (`finance:write`)                                     |
 | `get_subscriptions`                      | List subscriptions/bills with frequency, amount, and linked count                                                |
 | `get_subscription_by_id`                 | Single subscription with linked transactions and next payment date                                               |
-| `create_subscription`                    | Create a subscription, bill, or installment — expense by default or income via transactionType (`finance:write`) |
-| `update_subscription`                    | Update subscription fields (`finance:write`)                                                                     |
+| `create_subscription`                    | Create a subscription, bill, or installment, expense or income with matchingRules, payee, tags (`finance:write`) |
+| `update_subscription`                    | Update subscription fields, matching rules, payee, tags, reminders, auto-record (`finance:write`)                |
 | `delete_subscription`                    | Delete a subscription and its transaction links (`finance:delete`)                                               |
 | `toggle_subscription_active`             | Activate or deactivate a subscription (`finance:write`)                                                          |
 | `detect_subscription_candidates`         | Scan 12 months of transactions to auto-detect recurring patterns (`finance:write`)                               |
@@ -1728,6 +1728,12 @@ multi-currency data.
   get back the tracker, group and subscription links it lost. Bank rows pending for over
   a week show up in `list_stuck_pending_transactions` with the booked row that likely
   replaced each.
+- A subscription's `matchingRules` (`create_subscription`, `update_subscription`) link imported
+  transactions to it automatically: `{ rules: [...] }`, every rule must pass. A rule is a note
+  keyword list (`contains_any`), an amount range (`between`, optional `currencyCode` to match
+  other currencies within 5%), a transaction type or an account (`equals`). An update replaces
+  the whole list, `{ rules: [] }` turns matching off, and rules cannot be combined with
+  `autoRecord`. `list_subscription_match_suggestions` shows what a rule set would match.
 - A subscription period is one billing cycle. `get_subscription_periods` lists them,
   `preview_subscription_payment` shows what a payment would book, and
   `pay_subscription_period` either links an existing transaction or books a new one.
