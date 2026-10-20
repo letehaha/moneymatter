@@ -6,6 +6,7 @@ import {
   payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
+  transactionDetailFieldsSchema,
 } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -101,6 +102,18 @@ const inputSchema = {
     .describe(
       "Replace the payment's other accounts (same item shape as create_transaction). Keep a current part by passing its transactionId (see paymentParts in search_transactions), optionally with a new amount unless it is a linked part; an omitted created part is deleted, an omitted linked part becomes a standalone transaction again. Pass null or [] to make it a single-account transaction. Omit to leave the parts unchanged",
     ),
+  externalUrl: transactionDetailFieldsSchema.externalUrl.describe(
+    'http(s) link to the source document (max 2048 characters). Pass null to clear',
+  ),
+  externalReference: transactionDetailFieldsSchema.externalReference.describe(
+    'External reference such as an invoice number (max 255 characters). Pass null to clear',
+  ),
+  location: transactionDetailFieldsSchema.location.describe('{ latitude, longitude } in degrees. Pass null to clear'),
+  payeeLocked: z.boolean().optional().describe('true pins the payee so automations and bank sync never change it'),
+  isPlanned: z
+    .boolean()
+    .optional()
+    .describe('true marks it planned, false marks it as happened (see also confirm_planned_transaction)'),
 };
 
 export function registerUpdateTransaction(server: McpServer) {
@@ -145,6 +158,11 @@ export function registerUpdateTransaction(server: McpServer) {
         originalAmount: args.originalAmount != null ? Money.fromDecimal(args.originalAmount) : args.originalAmount,
         originalCurrencyCode: args.originalCurrencyCode,
         paymentLegs: args.paymentLegs && deserializePaymentLegs({ legs: args.paymentLegs }),
+        externalUrl: args.externalUrl,
+        externalReference: args.externalReference,
+        location: args.location,
+        payeeLocked: args.payeeLocked,
+        isPlanned: args.isPlanned,
         // null clears the link, so only an omitted payeeId is left out
         ...(args.payeeId !== undefined ? { payeeId: args.payeeId } : {}),
       });

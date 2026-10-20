@@ -16,6 +16,15 @@ const inputSchema = {
     .enum([CATEGORY_TYPES.custom, CATEGORY_TYPES.internal])
     .optional()
     .describe('Category type: "custom" (default, user-editable) or "internal" (system-managed).'),
+  defaultTagIds: z
+    .array(recordId())
+    .max(20)
+    .optional()
+    .describe('Tag IDs (from get_tags) that new transactions in this category get by default. Max 20'),
+  applyDefaultTagsOnAiCategorization: z
+    .boolean()
+    .optional()
+    .describe('true also applies defaultTagIds when AI categorization picks this category'),
 };
 
 export function registerCreateCategory(server: McpServer) {

@@ -1,5 +1,6 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
+import { transactionTimeSchema } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { adjustAccountBalance } from '@services/accounts/balance-adjustment';
@@ -13,6 +14,7 @@ const inputSchema = {
     .number()
     .describe('Target balance as a decimal (e.g. 1500.00). An adjustment transaction is created for the diff.'),
   note: z.string().max(1000).optional().describe('Optional note to attach to the adjustment transaction.'),
+  time: transactionTimeSchema().optional().describe('ISO 8601 date the adjustment is recorded against. Default: now'),
 };
 
 export function registerAdjustAccountBalance(server: McpServer) {
@@ -34,6 +36,7 @@ export function registerAdjustAccountBalance(server: McpServer) {
         accountId: args.accountId,
         targetBalance: Money.fromDecimal(args.newBalance),
         note: args.note,
+        time: args.time ? new Date(args.time) : undefined,
       });
 
       return jsonContent({

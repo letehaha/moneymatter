@@ -1,5 +1,5 @@
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { recordId } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updatePortfolio } from '@services/investments/portfolios/update.service';
@@ -16,6 +16,12 @@ const inputSchema = {
     .describe('New portfolio type: investment, retirement, savings, or other'),
   description: z.string().nullable().optional().describe('New description (pass null to clear)'),
   isEnabled: z.boolean().optional().describe('Enable or disable the portfolio'),
+  displayCurrencyCode: isoCurrencyCode()
+    .nullable()
+    .optional()
+    .describe(
+      'New display currency (ISO code, must be one of the user currencies); null = use base currency, omit = keep',
+    ),
 };
 
 export function registerUpdatePortfolio(server: McpServer) {
@@ -38,6 +44,7 @@ export function registerUpdatePortfolio(server: McpServer) {
         name: args.name,
         portfolioType: args.portfolioType as PORTFOLIO_TYPE | undefined,
         description: args.description,
+        displayCurrencyCode: args.displayCurrencyCode,
         isEnabled: args.isEnabled,
       });
 

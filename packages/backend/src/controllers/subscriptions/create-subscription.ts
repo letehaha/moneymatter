@@ -13,7 +13,7 @@ import { t } from '@i18n/index';
 import * as subscriptionsService from '@services/subscriptions';
 import { z } from 'zod';
 
-import { matchingRuleSchema } from './shared-schemas';
+import { matchingRulesSchema } from './shared-schemas';
 
 const remindBeforePresetValues = Object.values(REMIND_BEFORE_PRESETS) as [RemindBeforePreset, ...RemindBeforePreset[]];
 
@@ -42,10 +42,7 @@ const schema = z.object({
         categoryId: recordId().nullable().optional(),
         payeeId: recordId().nullable().optional(),
         tagIds: z.array(recordId()).optional(),
-        matchingRules: z
-          .object({ rules: z.array(matchingRuleSchema) })
-          .optional()
-          .default({ rules: [] }),
+        matchingRules: matchingRulesSchema.optional().default({ rules: [] }),
         notes: z.string().max(5000).nullable().optional(),
         dueDate: dateBound().nullable().optional(),
         maxOccurrences: z.number().int().positive().nullable().optional(),
