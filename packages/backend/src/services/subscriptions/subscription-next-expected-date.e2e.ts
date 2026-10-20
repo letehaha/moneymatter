@@ -113,24 +113,6 @@ describe('Subscription next expected date', () => {
       expect(listed.nextDueDate).toBeNull();
     });
 
-    it('has no next date once the end date is in the past', async () => {
-      const sub = await helpers.createSubscription({
-        name: 'Ended',
-        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-        startDate: daysFromToday(-200),
-        endDate: daysFromToday(-20),
-        expectedAmount: 10,
-        expectedCurrencyCode: global.BASE_CURRENCY.code,
-        raw: true,
-      });
-
-      const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
-      expect(detail.nextExpectedDate).toBeNull();
-
-      const listed = await findInList({ id: sub.id });
-      expect(listed.nextDueDate).toBeNull();
-    });
-
     it('has no next date when the end date falls before the scheduled due date', async () => {
       const sub = await helpers.createSubscription({
         name: 'Ends before due',
@@ -148,23 +130,6 @@ describe('Subscription next expected date', () => {
 
       const listed = await findInList({ id: sub.id });
       expect(listed.nextDueDate).toBeNull();
-    });
-
-    it('keeps the next date when the end date is still ahead of it', async () => {
-      const dueDate = daysFromToday(10);
-      const sub = await helpers.createSubscription({
-        name: 'Ends later',
-        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-        startDate: daysFromToday(-60),
-        dueDate,
-        endDate: daysFromToday(100),
-        expectedAmount: 10,
-        expectedCurrencyCode: global.BASE_CURRENCY.code,
-        raw: true,
-      });
-
-      const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
-      expect(detail.nextExpectedDate).toBe(dueDate);
     });
   });
 });

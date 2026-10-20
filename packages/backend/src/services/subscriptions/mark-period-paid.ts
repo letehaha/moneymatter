@@ -85,8 +85,6 @@ export const markPeriodPaid = withTransaction(
       const createParams = await buildTransactionFromSubscription({ subscription, amount, time });
       // createTransaction joins the active transaction via `withTransaction`, so
       // the created tx rolls back with the period update if anything below throws.
-      // The rule matcher also sees this transaction; it already belongs to this period, so
-      // the matcher must only link it, not settle a period of its own.
       const [createdBaseTx] = await withoutPeriodSettlement({ run: () => createTransaction(createParams) });
       linkedTransactionId = createdBaseTx.id;
     } else if (transactionId != null) {

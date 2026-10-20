@@ -1,10 +1,12 @@
-import { SUBSCRIPTION_LINK_STATUS, SUBSCRIPTION_PERIOD_STATUSES } from '@bt/shared/types';
+import { SUBSCRIPTION_LINK_STATUS } from '@bt/shared/types';
+import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
 import Subscriptions from '@models/subscriptions.model';
-import { ConnectionError, DatabaseError, Op, UniqueConstraintError } from 'sequelize';
+import { Op } from 'sequelize';
 
+import { OPEN_STATUSES } from './ensure-next-period';
 import { markPeriodPaid } from './mark-period-paid';
 import { pickNearestOpenPeriod } from './period-match-window';
 import { isPeriodSettlementSuppressed } from './period-settlement-context';
@@ -30,7 +32,7 @@ export const settleNearestOpenPeriod = async ({
   const openPeriods = await SubscriptionPeriods.findAll({
     where: {
       subscriptionId: subscription.id,
-      status: { [Op.in]: [SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue] },
+      status: { [Op.in]: OPEN_STATUSES },
     },
     order: [['dueDate', 'ASC']],
   });
@@ -50,16 +52,14 @@ export const settleNearestOpenPeriod = async ({
       transactionId,
     });
   } catch (error) {
-    // The link already exists, so a refused settlement (e.g. the transaction already backs
-    // a period) must not fail the match. Errors that abort the open Postgres transaction
-    // still propagate, otherwise the COMMIT would silently become a rollback.
-    if (error instanceof DatabaseError || error instanceof UniqueConstraintError || error instanceof ConnectionError) {
+    // markPeriodPaid throws these refusals before any write, so the link can stand alone.
+    // Anything else may follow a partial write and must fail the whole transaction.
+    if (!(error instanceof ConflictError || error instanceof ValidationError || error instanceof NotFoundError)) {
       throw error;
     }
-    logger.error({
-      message: `Failed to settle subscription "${subscription.name}" period ${period.dueDate} with transaction ${transactionId}`,
-      error: error as Error,
-    });
+    logger.warn(
+      `Skipped settling subscription "${subscription.name}" period ${period.dueDate} with transaction ${transactionId}: ${error.message}`,
+    );
     return;
   }
 
@@ -69,11 +69,8 @@ export const settleNearestOpenPeriod = async ({
 };
 
 /**
- * A planned row linked to a subscription settles nothing while it is only a plan. Once it
- * is confirmed (edited to not planned, or merged with the bank's row) the money has moved,
- * so this settles the open period it belongs to, the same way a rule match on a real row does.
- * Does nothing for a row that is still planned, has no active subscription link, or already
- * backs a period.
+ * A linked plan settles nothing until it is confirmed (edited to real, or merged with the
+ * bank's row); then its money has moved, so it settles its open period like a rule match.
  */
 export const settlePeriodOnConfirm = async ({
   transaction,
@@ -82,7 +79,7 @@ export const settlePeriodOnConfirm = async ({
   transaction: { id: string; time: Date; isPlanned: boolean };
   userId: number;
 }): Promise<void> => {
-  if (transaction.isPlanned || isPeriodSettlementSuppressed()) return;
+  if (transaction.isPlanned) return;
 
   const link = await SubscriptionTransactions.findOne({
     where: { transactionId: transaction.id, status: SUBSCRIPTION_LINK_STATUS.active },

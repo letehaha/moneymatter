@@ -1,7 +1,6 @@
-import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
 import { afterAll, beforeAll, describe, expect, it, jest } from '@jest/globals';
 
-import { computeEffectiveNextDueDate, sortSubscriptions, type SubscriptionSortBy } from './sort-subscriptions';
+import { sortSubscriptions, type SubscriptionSortBy } from './sort-subscriptions';
 
 const FROZEN_NOW = new Date('2025-06-15T12:00:00Z');
 
@@ -24,48 +23,6 @@ function makeDefaults() {
 const make = (over: Partial<ReturnType<typeof makeDefaults>>) => ({ ...makeDefaults(), ...over });
 const run = ({ items, sortBy }: { items: ReturnType<typeof makeDefaults>[]; sortBy: SubscriptionSortBy }) =>
   sortSubscriptions({ items, sortBy }).map((i) => i.name);
-
-describe('computeEffectiveNextDueDate', () => {
-  it('returns the earliest open period dueDate when one exists (ignores derived math)', () => {
-    const result = computeEffectiveNextDueDate({
-      earliestPeriodDueDate: '2026-03-29',
-      startDate: '2020-01-01T00:00:00Z',
-      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      latestTransactionTime: null,
-    });
-    expect(result).toBe('2026-03-29');
-  });
-
-  it('derives from startDate when there is no open period and no transactions', () => {
-    const result = computeEffectiveNextDueDate({
-      earliestPeriodDueDate: null,
-      startDate: '2025-05-20T00:00:00Z',
-      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      latestTransactionTime: null,
-    });
-    expect(result).toBe('2025-06-20');
-  });
-
-  it('derives from the latest linked transaction time when no open period', () => {
-    const result = computeEffectiveNextDueDate({
-      earliestPeriodDueDate: null,
-      startDate: '2024-01-01T00:00:00Z',
-      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      latestTransactionTime: '2025-06-10T00:00:00Z',
-    });
-    expect(result).toBe('2025-07-10');
-  });
-
-  it('accepts a Date object for the latest transaction time', () => {
-    const result = computeEffectiveNextDueDate({
-      earliestPeriodDueDate: null,
-      startDate: '2024-01-01T00:00:00Z',
-      frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      latestTransactionTime: new Date('2025-06-10T00:00:00Z'),
-    });
-    expect(result).toBe('2025-07-10');
-  });
-});
 
 describe('sortSubscriptions', () => {
   describe('dueDate', () => {

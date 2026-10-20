@@ -36,17 +36,18 @@ export const scheduleInclude: Includeable[] = [
 
 type ScheduledSubscription = Pick<
   Subscriptions,
-  'startDate' | 'frequency' | 'dueDate' | 'anchorDay' | 'transactions' | 'periods'
+  'startDate' | 'frequency' | 'dueDate' | 'isActive' | 'endDate' | 'transactions' | 'periods'
 >;
 
-/** The earliest open period's dueDate; with no open period it follows the schedule, then the payments. */
+/** The earliest open period's dueDate; an unscheduled subscription derives it from its payments. */
 const nextPaymentDate = ({ subscription }: { subscription: ScheduledSubscription }): string | null =>
   resolveNextExpectedDate({
     startDate: subscription.startDate,
     frequency: subscription.frequency,
     transactions: subscription.transactions,
+    isActive: subscription.isActive,
+    endDate: subscription.endDate,
     dueDate: subscription.dueDate,
-    anchorDay: subscription.anchorDay,
     openPeriodDueDate: subscription.periods?.[0]?.dueDate ?? null,
   });
 

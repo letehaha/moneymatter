@@ -77,6 +77,14 @@ describe('isSubscriptionOverdue', () => {
     expect(isSubscriptionOverdue({ subscription: scheduled({ nextDueDate: '2025-06-24' }), now: NOW })).toBe(false);
   });
 
+  it('is false for a stored overdue period when there is no next due date (paused or ended)', () => {
+    const subscription = buildSubscription({
+      nextDueDate: null,
+      currentPeriod: { id: 'period-1', dueDate: '2025-06-12', status: SUBSCRIPTION_PERIOD_STATUSES.overdue },
+    });
+    expect(isSubscriptionOverdue({ subscription, now: NOW })).toBe(false);
+  });
+
   it('is false without a due date', () => {
     expect(isSubscriptionOverdue({ subscription: scheduled({ nextDueDate: null }), now: NOW })).toBe(false);
   });

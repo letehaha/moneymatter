@@ -15,7 +15,8 @@ import type { TransactionsAttributes } from '@models/transactions.model';
 import { applyCachedLogos, enqueueLogoResolution } from '@services/brand-logos';
 import { col, fn, literal, Op } from 'sequelize';
 
-import { computeEffectiveNextDueDate, sortSubscriptions, type SubscriptionSortBy } from './sort-subscriptions';
+import { OPEN_STATUSES } from './ensure-next-period';
+import { sortSubscriptions, type SubscriptionSortBy } from './sort-subscriptions';
 import { resolveNextExpectedDate } from './subscription-date.utils';
 import { getSubscriptionTagIds, loadSubscriptionTagIds } from './subscription-tags';
 
@@ -46,7 +47,6 @@ interface SubscriptionBase extends Pick<
   | 'startDate'
   | 'endDate'
   | 'dueDate'
-  | 'anchorDay'
   | 'accountId'
   | 'categoryId'
   | 'payeeId'
@@ -103,11 +103,10 @@ interface SubscriptionListItem extends SubscriptionBase {
    *  "N of M paid" installment progress without fetching the full periods array. */
   paidPeriodsCount: number;
   /**
-   * Effective next-due date (YYYY-MM-DD) computed for EVERY item: the earliest
-   * open period's `dueDate` when one exists, else the subscription's own
-   * `dueDate`/`anchorDay` schedule, else the date derived from the latest linked
-   * active transaction. Null when uncomputable, when the subscription is inactive,
-   * or when it ends before that date. Drives the "in N days" chip and dueDate sort.
+   * Effective next-due date (YYYY-MM-DD): the earliest open period's `dueDate` for a
+   * scheduled subscription, else derived from the latest linked active non-planned
+   * transaction. Null when inactive, past `endDate`, or the schedule is consumed.
+   * Drives the "in N days" chip and dueDate sort.
    */
   nextDueDate: string | null;
 }
@@ -273,20 +272,20 @@ export const getSubscriptions = async ({
 
   const items: SubscriptionListItem[] = mapped.map((item) => {
     const currentPeriod = earliestBySubscriptionId.get(item.id) ?? null;
+    const latestTxTime = latestTxTimeBySubscriptionId.get(item.id);
     return {
       ...item,
       tagIds: tagIdsBySubscriptionId.get(item.id) ?? [],
       currentPeriod,
       paidPeriodsCount: paidCountBySubscriptionId.get(item.id) ?? 0,
-      nextDueDate: computeEffectiveNextDueDate({
-        earliestPeriodDueDate: currentPeriod?.dueDate ?? null,
+      nextDueDate: resolveNextExpectedDate({
         startDate: item.startDate,
         frequency: item.frequency,
-        latestTransactionTime: latestTxTimeBySubscriptionId.get(item.id) ?? null,
+        transactions: latestTxTime ? [{ time: latestTxTime }] : [],
         isActive: item.isActive,
         endDate: item.endDate,
         dueDate: item.dueDate,
-        anchorDay: item.anchorDay,
+        openPeriodDueDate: currentPeriod?.dueDate ?? null,
       }),
     };
   });
@@ -351,9 +350,7 @@ export const getSubscriptionById = async ({
 
   const periods = raw.periods ?? [];
   // `periods` arrive ordered by dueDate ASC, so the first open one is the earliest.
-  const openPeriod = periods.find(
-    (p) => p.status === SUBSCRIPTION_PERIOD_STATUSES.upcoming || p.status === SUBSCRIPTION_PERIOD_STATUSES.overdue,
-  );
+  const openPeriod = periods.find((p) => OPEN_STATUSES.some((status) => status === p.status));
 
   const nextExpectedDate = resolveNextExpectedDate({
     startDate: raw.startDate,
@@ -362,7 +359,6 @@ export const getSubscriptionById = async ({
     isActive: raw.isActive,
     endDate: raw.endDate,
     dueDate: raw.dueDate,
-    anchorDay: raw.anchorDay,
     openPeriodDueDate: openPeriod?.dueDate ?? null,
   });
 

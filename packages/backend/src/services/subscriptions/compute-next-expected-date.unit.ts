@@ -172,6 +172,9 @@ describe('resolveNextExpectedDate', () => {
   const base = {
     startDate: '2025-01-08T00:00:00Z',
     frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+    isActive: true,
+    endDate: null,
+    dueDate: null,
   };
 
   describe('with a schedule', () => {
@@ -180,45 +183,24 @@ describe('resolveNextExpectedDate', () => {
         ...base,
         openPeriodDueDate: '2025-07-08',
         dueDate: '2025-07-08',
-        anchorDay: 8,
         transactions: [{ time: '2025-06-06T00:00:00Z' }],
       });
       expect(result).toBe('2025-07-08');
     });
 
     it('keeps a past open period dueDate as is (overdue)', () => {
-      const result = resolveNextExpectedDate({ ...base, openPeriodDueDate: '2025-06-01' });
+      const result = resolveNextExpectedDate({ ...base, dueDate: '2025-06-01', openPeriodDueDate: '2025-06-01' });
       expect(result).toBe('2025-06-01');
     });
 
-    it('uses a future dueDate when no period is open, ignoring the last payment', () => {
+    it('is null once the schedule has no open period left', () => {
       const result = resolveNextExpectedDate({
         ...base,
-        dueDate: '2025-07-10',
-        anchorDay: 10,
-        transactions: [{ time: '2025-06-08T00:00:00Z' }],
+        dueDate: '2025-03-08',
+        openPeriodDueDate: null,
+        transactions: [{ time: '2025-06-06T00:00:00Z' }],
       });
-      expect(result).toBe('2025-07-10');
-    });
-
-    it('steps a stale dueDate forward on the anchor day until it is not in the past', () => {
-      const result = resolveNextExpectedDate({ ...base, dueDate: '2025-03-08', anchorDay: 8 });
-      expect(result).toBe('2025-07-08');
-    });
-
-    it('returns today when the dueDate is today', () => {
-      const result = resolveNextExpectedDate({ ...base, dueDate: '2025-06-15', anchorDay: 15 });
-      expect(result).toBe('2025-06-15');
-    });
-
-    it('restores the anchor day after month-end clamping', () => {
-      const result = resolveNextExpectedDate({
-        ...base,
-        dueDate: '2025-01-31',
-        anchorDay: 31,
-        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
-      });
-      expect(result).toBe('2025-06-30');
+      expect(result).toBeNull();
     });
   });
 
@@ -231,13 +213,19 @@ describe('resolveNextExpectedDate', () => {
 
   describe('inactive and ended subscriptions', () => {
     it('is null when the subscription is inactive', () => {
-      expect(resolveNextExpectedDate({ ...base, isActive: false, dueDate: '2025-07-08', anchorDay: 8 })).toBeNull();
+      expect(
+        resolveNextExpectedDate({ ...base, isActive: false, dueDate: '2025-07-08', openPeriodDueDate: '2025-07-08' }),
+      ).toBeNull();
     });
 
     it('is null when the endDate is before the next date', () => {
-      expect(
-        resolveNextExpectedDate({ ...base, endDate: '2025-06-01', dueDate: '2025-07-08', anchorDay: 8 }),
-      ).toBeNull();
+      const result = resolveNextExpectedDate({
+        ...base,
+        endDate: '2025-06-01',
+        dueDate: '2025-07-08',
+        openPeriodDueDate: '2025-07-08',
+      });
+      expect(result).toBeNull();
     });
 
     it('is null for a payment-based estimate past the endDate', () => {
@@ -250,15 +238,13 @@ describe('resolveNextExpectedDate', () => {
     });
 
     it('keeps the date when it falls exactly on the endDate', () => {
-      expect(resolveNextExpectedDate({ ...base, endDate: '2025-07-08', dueDate: '2025-07-08', anchorDay: 8 })).toBe(
-        '2025-07-08',
-      );
-    });
-
-    it('treats a null endDate and an explicit active flag as unrestricted', () => {
-      expect(
-        resolveNextExpectedDate({ ...base, isActive: true, endDate: null, dueDate: '2025-07-08', anchorDay: 8 }),
-      ).toBe('2025-07-08');
+      const result = resolveNextExpectedDate({
+        ...base,
+        endDate: '2025-07-08',
+        dueDate: '2025-07-08',
+        openPeriodDueDate: '2025-07-08',
+      });
+      expect(result).toBe('2025-07-08');
     });
   });
 });

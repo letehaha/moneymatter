@@ -822,14 +822,14 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
     </div>
 
     <!-- Next Due (scheduled subscriptions only) -->
-    <div v-if="isScheduled && currentPeriod && upcomingPeriod" class="bg-card mb-6 rounded-lg border p-4">
+    <div v-if="isScheduled && upcomingPeriod" class="bg-card mb-6 rounded-lg border p-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p class="text-muted-foreground text-xs font-medium uppercase">
             {{ $t('planned.subscriptions.periods.nextDue') }}
           </p>
           <p class="mt-0.5 text-sm font-medium">
-            {{ format(parseISO(currentPeriod.dueDate), 'MMM d, yyyy') }}
+            {{ format(parseISO(upcomingPeriod.dueDate), 'MMM d, yyyy') }}
           </p>
           <p
             :class="[
@@ -842,10 +842,10 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
             <template v-if="currentPeriodStatus === SUBSCRIPTION_PERIOD_STATUSES.overdue">
               {{ $t('planned.subscriptions.periods.overdueBadge') }}
             </template>
-            <template v-else-if="getDaysUntilDue({ dueDate: currentPeriod.dueDate }) !== null">
+            <template v-else-if="getDaysUntilDue({ dueDate: upcomingPeriod.dueDate }) !== null">
               {{
                 $t('planned.subscriptions.periods.inDays', {
-                  count: getDaysUntilDue({ dueDate: currentPeriod.dueDate })!,
+                  count: getDaysUntilDue({ dueDate: upcomingPeriod.dueDate })!,
                 })
               }}
             </template>
@@ -857,7 +857,7 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
               variant="ghost"
               size="sm"
               :disabled="isPeriodActionPending"
-              @click="skipMutation({ id: subscription.id, periodId: currentPeriod.id })"
+              @click="skipMutation({ id: subscription.id, periodId: upcomingPeriod.id })"
             >
               <SkipForwardIcon class="size-4" />
               {{ $t('planned.subscriptions.periods.actions.skip') }}
@@ -867,7 +867,7 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
             variant="soft-success"
             size="sm"
             :disabled="isPeriodActionPending"
-            @click="payPeriod({ periodId: currentPeriod.id })"
+            @click="payPeriod({ periodId: upcomingPeriod.id })"
           >
             <CheckIcon class="size-4" />
             {{ $t('planned.subscriptions.periods.actions.markPaid') }}

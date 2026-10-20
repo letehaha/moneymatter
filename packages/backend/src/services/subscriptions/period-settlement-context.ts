@@ -1,9 +1,8 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
 /**
- * `markPeriodPaid` in CREATE mode books a transaction that the matching engine then sees
- * too. That transaction already belongs to the period being paid, so the engine must not
- * settle a period for it.
+ * A transaction `markPeriodPaid` books in CREATE mode already pays its own period; the
+ * matcher must not settle another subscription's period with it too.
  */
 const suppressSettlement = new AsyncLocalStorage<true>();
 

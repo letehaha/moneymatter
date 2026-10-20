@@ -8,7 +8,7 @@ import { finalizeInstallmentCompletion, isSubscriptionInstallmentCapReached } fr
 import { resolveOpenPeriodStatus } from './resolve-period-status';
 
 /** Statuses that count as a live, un-consumed period (one is allowed at a time). */
-const OPEN_STATUSES = [SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue];
+export const OPEN_STATUSES = [SUBSCRIPTION_PERIOD_STATUSES.upcoming, SUBSCRIPTION_PERIOD_STATUSES.overdue];
 
 /**
  * After a period is marked paid or skipped, ensures the next open period

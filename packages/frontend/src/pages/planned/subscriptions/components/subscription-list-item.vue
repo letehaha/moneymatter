@@ -19,7 +19,7 @@ import { useI18n } from 'vue-i18n';
 
 import LinkedTransactionsBadge from './linked-transactions-badge.vue';
 import SubscriptionTypeBadge from './subscription-type-badge.vue';
-import { daysUntilDue, hasUpcomingDue, isSubscriptionOverdue } from '../subscription-due-status';
+import { daysUntilDue, isSubscriptionOverdue } from '../subscription-due-status';
 import { formatFrequency, getTransactionTypePrefix, getTransactionTypeStyles } from '../utils';
 
 const props = defineProps<{
@@ -60,7 +60,7 @@ const installmentProgress = computed<{ paid: number; total: number } | null>(() 
 // rather than rendered with a meaningless day count.
 const due = computed<{ label: string; chipClass: string } | null>(() => {
   const { nextDueDate } = props.subscription;
-  if (!nextDueDate || !hasUpcomingDue({ subscription: props.subscription, dueDate: nextDueDate })) return null;
+  if (!nextDueDate) return null;
 
   const days = daysUntilDue({ dueDate: nextDueDate, now: props.now });
   if (days === null) return null;

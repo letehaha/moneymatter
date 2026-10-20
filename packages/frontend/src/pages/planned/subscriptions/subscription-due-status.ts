@@ -9,11 +9,7 @@ export const daysUntilDue = ({ dueDate, now }: { dueDate: string; now: Date }): 
   return differenceInCalendarDays(parsed, startOfDay(now));
 };
 
-/**
- * Whether a due date still counts as "coming up" for the subscription: not when it is
- * paused, nor when its end date lies before the due date. The backend nulls `nextDueDate`
- * for those; this keeps views that read a period's own `dueDate` consistent with it.
- */
+/** False when the subscription is paused or the due date falls after its end date. */
 export const hasUpcomingDue = ({
   subscription,
   dueDate,
@@ -35,8 +31,8 @@ export const isSubscriptionOverdue = ({
   subscription: SubscriptionListItem;
   now: Date;
 }): boolean => {
-  if (subscription.currentPeriod?.status === SUBSCRIPTION_PERIOD_STATUSES.overdue) return true;
   if (!subscription.nextDueDate) return false;
+  if (subscription.currentPeriod?.status === SUBSCRIPTION_PERIOD_STATUSES.overdue) return true;
   const days = daysUntilDue({ dueDate: subscription.nextDueDate, now });
   if (days === null) return false;
   return days < 0;

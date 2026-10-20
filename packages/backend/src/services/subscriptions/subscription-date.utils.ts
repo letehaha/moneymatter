@@ -1,8 +1,6 @@
 import { SUBSCRIPTION_FREQUENCIES } from '@bt/shared/types';
 import { addMonths, addWeeks, addYears, max, parseISO } from 'date-fns';
 
-import { calculateNextDueDate } from './calculate-next-due-date';
-
 export const computeNextExpectedDate = ({
   startDate,
   frequency,
@@ -38,67 +36,32 @@ interface ResolveNextExpectedDateParams {
   startDate: string;
   frequency: SUBSCRIPTION_FREQUENCIES;
   transactions?: Array<{ time?: Date | string }>;
-  /** Defaults to active. An inactive subscription has no next date. */
-  isActive?: boolean;
-  /** A date on or after this makes the subscription over, so there is no next date. */
-  endDate?: string | null;
-  /** The subscription's scheduled due date (YYYY-MM-DD), when it has a schedule. */
-  dueDate?: string | null;
-  /** Day of month the schedule is anchored to; falls back to the dueDate's day. */
-  anchorDay?: number | null;
+  isActive: boolean;
+  /** Inclusive last day: a next date after it means the subscription is over. */
+  endDate: string | null;
+  dueDate: string | null;
   /** Due date of the earliest unpaid, unskipped period, when one exists. */
   openPeriodDueDate?: string | null;
 }
 
 /**
- * The next date a subscription is expected to be paid.
- *
- * A subscription with a schedule (an open period, or `dueDate`/`anchorDay`) follows it:
- * the earliest open period's `dueDate`, else the `dueDate` stepped forward on the anchor
- * day until it is not in the past. Without a schedule it falls back to the payment-based
- * estimate (`computeNextExpectedDate`). Null when the subscription is inactive or the
- * resolved date lies beyond its `endDate`.
+ * A scheduled subscription (`dueDate` set) is due on its open period and has no next date
+ * once the schedule is consumed; an unscheduled one is estimated from its payments.
  */
 export const resolveNextExpectedDate = ({
   startDate,
   frequency,
   transactions,
-  isActive = true,
+  isActive,
   endDate,
   dueDate,
-  anchorDay,
   openPeriodDueDate,
 }: ResolveNextExpectedDateParams): string | null => {
   if (!isActive) return null;
 
-  const next =
-    openPeriodDueDate ??
-    computeScheduledDueDate({ frequency, dueDate, anchorDay }) ??
-    computeNextExpectedDate({ startDate, frequency, transactions });
+  const next = openPeriodDueDate ?? (dueDate ? null : computeNextExpectedDate({ startDate, frequency, transactions }));
 
   if (next && endDate && next > endDate.slice(0, 10)) return null;
-
-  return next;
-};
-
-const computeScheduledDueDate = ({
-  frequency,
-  dueDate,
-  anchorDay,
-}: {
-  frequency: SUBSCRIPTION_FREQUENCIES;
-  dueDate?: string | null;
-  anchorDay?: number | null;
-}): string | null => {
-  if (!dueDate) return null;
-
-  const today = toUtcDay({ date: new Date() });
-  const anchor = anchorDay ?? Number(dueDate.slice(8, 10));
-
-  let next = dueDate.slice(0, 10);
-  while (next < today) {
-    next = calculateNextDueDate({ currentDueDate: next, frequency, anchorDay: anchor });
-  }
 
   return next;
 };

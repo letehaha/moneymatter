@@ -478,16 +478,7 @@ export const createTransaction = withTransaction(
 
         if (merged) {
           // The plan may already be linked to a subscription; confirming it is the payment.
-          try {
-            await settlePeriodOnConfirm({ transaction: merged, userId: accountOwnerUserId });
-          } catch (error) {
-            if (abortsTransaction(error)) throw error;
-
-            logger.error({
-              message: `Failed to settle a subscription period for merged transaction ${merged.id}`,
-              error: error as Error,
-            });
-          }
+          await settlePeriodOnConfirm({ transaction: merged, userId: accountOwnerUserId });
 
           const mergedResult: CreateTxResult = [merged];
           mergedResult.mergedIntoPlanned = true;

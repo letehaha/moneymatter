@@ -264,6 +264,37 @@ describe('Planned transactions – merge on sync', () => {
       expect(period.transactionId).toBe(plan!.id);
     }, 30000);
 
+    it('settles the subscription period with a synced row its matching rule picks up', async () => {
+      const now = new Date();
+      const { connectionId, accountId } = await anchoredAccount({ anchorTime: subDays(startOfDay(now), 10) });
+
+      const dueDate = format(subDays(startOfDay(now), 1), 'yyyy-MM-dd');
+      const subscription = await helpers.createSubscription({
+        name: 'Netflix',
+        frequency: SUBSCRIPTION_FREQUENCIES.monthly,
+        startDate: dueDate,
+        dueDate,
+        accountId,
+        expectedAmount: 10,
+        expectedCurrencyCode: global.BASE_CURRENCY.code,
+        matchingRules: { rules: [{ field: 'note', operator: 'contains_any', value: ['netflix'] }] },
+        raw: true,
+      });
+
+      const incoming = helpers.monobank.buildTransaction({
+        amount: -1000,
+        time: subDays(startOfDay(now), 1),
+        description: 'NETFLIX.COM',
+      });
+      await syncAccount({ connectionId, accountId, transactions: [incoming] });
+
+      const synced = (await listAccountTransactions({ accountId })).find((tx) => tx.note === 'NETFLIX.COM')!;
+      const after = await helpers.getSubscriptionById({ id: subscription.id, raw: true });
+      const period = after.periods.find((p) => p.dueDate === dueDate)!;
+      expect(period.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.paid);
+      expect(period.transactionId).toBe(synced.id);
+    }, 30000);
+
     it('carries the bank receipt id onto the merged plan', async () => {
       const now = new Date();
       const anchorTime = subDays(startOfDay(now), 10);
