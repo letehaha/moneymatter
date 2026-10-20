@@ -27,6 +27,16 @@
               <GithubIcon />
             </template>
           </OAuthButton>
+          <OAuthButton
+            :provider="OAUTH_PROVIDER.apple"
+            mode="signup"
+            :is-loading="isOAuthLoading"
+            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.apple })"
+          >
+            <template #icon>
+              <AppleIcon />
+            </template>
+          </OAuthButton>
         </div>
 
         <AuthDivider :text="$t('auth.signup.divider')" />
@@ -85,7 +95,7 @@
 </template>
 
 <script lang="ts" setup>
-import { AuthDivider, GithubIcon, GoogleIcon, OAUTH_PROVIDER_NAMES, OAuthButton } from '@/components/auth';
+import { AppleIcon, AuthDivider, GithubIcon, GoogleIcon, OAUTH_PROVIDER_NAMES, OAuthButton } from '@/components/auth';
 import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';

@@ -28,6 +28,17 @@
               <GithubIcon />
             </template>
           </OAuthButton>
+          <OAuthButton
+            :provider="OAUTH_PROVIDER.apple"
+            mode="signin"
+            :is-loading="isOAuthLoading"
+            :is-last-used="lastLoginMethod === OAUTH_PROVIDER.apple"
+            @click="handleOAuthLogin({ provider: OAUTH_PROVIDER.apple })"
+          >
+            <template #icon>
+              <AppleIcon />
+            </template>
+          </OAuthButton>
           <PasskeyButton
             mode="signin"
             :is-loading="isPasskeyLoading"
@@ -106,6 +117,7 @@ import { DEMO_SESSION_EXPIRED_REASON } from '@/common/const';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import {
+  AppleIcon,
   AuthDivider,
   GithubIcon,
   GoogleIcon,

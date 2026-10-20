@@ -4,4 +4,5 @@ import { OAUTH_PROVIDER } from '@bt/shared/types';
 export const OAUTH_PROVIDER_NAMES: Record<OAUTH_PROVIDER, string> = {
   [OAUTH_PROVIDER.google]: 'Google',
   [OAUTH_PROVIDER.github]: 'GitHub',
+  [OAUTH_PROVIDER.apple]: 'Apple',
 };

@@ -204,7 +204,7 @@
 </template>
 
 <script setup lang="ts">
-import { GithubIcon, GoogleIcon } from '@/components/auth';
+import { AppleIcon, GithubIcon, GoogleIcon } from '@/components/auth';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
 import InputField from '@/components/fields/input-field.vue';
@@ -236,6 +236,7 @@ import { useRoute, useRouter } from 'vue-router';
 const providerConfig: Record<OAUTH_PROVIDER, { name: string; icon: Component }> = {
   [OAUTH_PROVIDER.google]: { name: 'Google', icon: GoogleIcon },
   [OAUTH_PROVIDER.github]: { name: 'GitHub', icon: GithubIcon },
+  [OAUTH_PROVIDER.apple]: { name: 'Apple', icon: AppleIcon },
 };
 
 interface Passkey {

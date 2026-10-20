@@ -21,6 +21,7 @@ export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export enum OAUTH_PROVIDER {
   google = 'google',
   github = 'github',
+  apple = 'apple',
 }
 
 // Array of all providers for iteration (e.g., trustedProviders config)
