@@ -17,6 +17,23 @@ export const readFeatureSelectValue = ({ status }: { status: AIFeatureStatus }):
   return status.configuredConnectionId ?? SERVER_OPTION;
 };
 
+/**
+ * The model that answers, as the connection labels it. The status carries it whether it is the
+ * connection's own or an override; the provider comes from the connection list when it has loaded.
+ */
+export const formatAnsweringModel = ({
+  status,
+  connections,
+}: {
+  status: AIFeatureStatus;
+  connections: AIConnectionInfo[];
+}): string => {
+  const model = getModelNameFromModelId({ modelId: status.modelId });
+  const connection = connections.find(({ id }) => id === status.connectionId);
+
+  return connection ? formatConnectionModelName({ provider: connection.provider, model }) : model;
+};
+
 /** What "Automatic" resolves to. Only an unconfigured status says: a configured one describes the pick. */
 const describeAutomaticTarget = ({
   status,
@@ -29,15 +46,7 @@ const describeAutomaticTarget = ({
   if (status.servedBy === 'server') return { kind: 'server' };
   if (status.servedBy !== 'connection' || !status.connectionName) return null;
 
-  // The status carries the model that answers, whether the connection's own or an override.
-  const model = getModelNameFromModelId({ modelId: status.modelId });
-  const connection = connections.find(({ id }) => id === status.connectionId);
-
-  return {
-    kind: 'connection',
-    name: status.connectionName,
-    model: connection ? formatConnectionModelName({ provider: connection.provider, model }) : model,
-  };
+  return { kind: 'connection', name: status.connectionName, model: formatAnsweringModel({ status, connections }) };
 };
 
 export const buildFeatureModelOptions = ({
