@@ -43,6 +43,7 @@
         "placeholder": "Виберіть модель",
         "automaticOption": "Автоматично",
         "automaticOptionWithTarget": "Автоматично · {target}",
+        "automaticOptionWithConnection": "Автоматично · {name} · {model}",
         "serverOption": "MoneyMatter AI · входить у план",
         "connectionOption": "{name} · {model}",
         "connectionOptionNeedsAttention": "{name} · {model} (потребує уваги)",
