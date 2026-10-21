@@ -188,7 +188,7 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Введіть коректну суму (до 2 знаків після коми)",
+      "invalidCurrencyDecimal": "Введіть коректну суму (до {decimals} знаків після коми)",
       "mustBePositive": "Сума має бути додатною"
     },
     "exchangeCurrency": {

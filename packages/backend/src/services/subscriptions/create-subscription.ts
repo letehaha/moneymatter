@@ -6,7 +6,8 @@ import {
   TRANSACTION_TYPES,
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { roundToCurrency } from '@common/lib/currency-precision';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { enqueueLogoResolutionAfterCommit, resolveManualLogoFields } from '@services/brand-logos';
@@ -119,8 +120,17 @@ export const createSubscription = withTransaction(
     // future periods to the same day-of-month without reparsing the date.
     const anchorDay = dueDate ? new Date(dueDate + 'T00:00:00Z').getUTCDate() : null;
 
-    // The API exchanges decimals; the cents-backed column takes a Money directly.
-    const expectedAmountMoney = expectedAmount != null ? Money.fromDecimal(expectedAmount) : null;
+    // The API exchanges decimals; the DECIMAL column takes a Money directly.
+    // It is stored at the decimals of the currency it is billed in.
+    const expectedAmountMoney =
+      expectedAmount != null
+        ? await roundToCurrency({
+            money: Money.fromDecimal(expectedAmount),
+            userId,
+            currencyCode: expectedCurrencyCode!,
+            mode: 'half-up',
+          })
+        : null;
 
     const subscription = await Subscriptions.create({
       userId,
@@ -161,12 +171,11 @@ export const createSubscription = withTransaction(
     // sees a committed row.
     enqueueLogoResolutionAfterCommit({ entity: 'subscription', id: subscription.id });
 
-    // Surface expectedAmount as a decimal so the response matches GET (the
-    // column holds raw cents).
+    // Surface expectedAmount as a decimal number so the response matches GET.
     const plain = subscription.toJSON() as Subscriptions;
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       tagIds: uniqueTagIds,
     };
   },

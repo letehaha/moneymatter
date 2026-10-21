@@ -113,7 +113,7 @@ const linkLoanPaymentsImpl = async ({
   const { projectedBalance, overpaysBy } = projectLoanOverpay({
     projectedBalance: loanAccount.currentBalance.add(postAnchorSum),
   });
-  if (overpaysBy.toCents() > 0 && !confirmOverpay) {
+  if (overpaysBy.isPositive() && !confirmOverpay) {
     const details: LoanPaymentOverpayDetails = {
       projectedBalance: projectedBalance.toNumber(),
       maxLinkable: loanAccount.currentBalance.abs().toNumber(),

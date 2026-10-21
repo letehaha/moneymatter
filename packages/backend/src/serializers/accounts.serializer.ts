@@ -5,7 +5,7 @@
  * Money fields auto-convert via .toNumber().
  */
 import { type AccountApiResponse, BANK_PROVIDER_TYPE } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { moneyToApiDecimal } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type { AccountShareContext } from '@services/sharing/get-shared-accounts.service';
 
@@ -39,12 +39,12 @@ export function serializeAccount(
   const response: AccountApiResponse = {
     id: account.id,
     name: account.name,
-    initialBalance: centsToApiDecimal(account.initialBalance),
-    refInitialBalance: centsToApiDecimal(account.refInitialBalance),
-    currentBalance: centsToApiDecimal(account.currentBalance),
-    refCurrentBalance: centsToApiDecimal(account.refCurrentBalance),
-    creditLimit: centsToApiDecimal(account.creditLimit),
-    refCreditLimit: centsToApiDecimal(account.refCreditLimit),
+    initialBalance: moneyToApiDecimal(account.initialBalance),
+    refInitialBalance: moneyToApiDecimal(account.refInitialBalance),
+    currentBalance: moneyToApiDecimal(account.currentBalance),
+    refCurrentBalance: moneyToApiDecimal(account.refCurrentBalance),
+    creditLimit: moneyToApiDecimal(account.creditLimit),
+    refCreditLimit: moneyToApiDecimal(account.refCreditLimit),
     type: account.type,
     accountCategory: account.accountCategory,
     currencyCode: account.currencyCode,

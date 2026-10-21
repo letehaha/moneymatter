@@ -1,3 +1,4 @@
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -24,12 +25,19 @@ import { startOfDay } from 'date-fns';
  */
 export async function writeBankBalanceWithHistory({
   account,
-  balance,
+  balance: providerBalance,
 }: {
   account: Accounts;
   balance: Money;
 }): Promise<void> {
   const today = startOfDay(new Date());
+
+  const balance = await roundToCurrency({
+    money: providerBalance,
+    userId: account.userId,
+    currencyCode: account.currencyCode,
+    mode: 'half-up',
+  });
 
   const refBalance = await calculateRefAmount({
     amount: balance,

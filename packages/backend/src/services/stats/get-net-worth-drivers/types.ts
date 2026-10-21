@@ -1,4 +1,4 @@
-import type { Cents, NetWorthDriversDegraded, NetWorthDriversPortfolioMeta } from '@bt/shared/types';
+import type { MinorUnits, NetWorthDriversDegraded, NetWorthDriversPortfolioMeta } from '@bt/shared/types';
 
 import type { TransactionRow } from '../get-combined-balance-history/types';
 
@@ -20,50 +20,50 @@ export type ReportTransactionRow = TransactionRow & {
  */
 export type InvestmentFlowRow = Pick<ReportTransactionRow, 'category' | 'date' | 'refAmount' | 'refFees'>;
 
-/** Per-bucket investment cash flows, in base-currency cents. */
-export interface InvestmentFlowsCents {
+/** Per-bucket investment cash flows, in base-currency minor units. */
+export interface InvestmentFlowsMinor {
   /** Purchase notional (quantity x price), fees excluded. */
-  buyNotional: Cents;
+  buyNotional: MinorUnits;
   /** Sale notional (quantity x price), fees excluded. */
-  sellNotional: Cents;
+  sellNotional: MinorUnits;
   /** Dividend notional, before the dividend's own fee. */
-  dividendsGross: Cents;
+  dividendsGross: MinorUnits;
   /** Every fee and tax that reduced the return: trade-embedded plus standalone rows. */
-  feesAndTaxes: Cents;
+  feesAndTaxes: MinorUnits;
 }
 
-/** One portfolio's share of a bucket's investment growth, in base-currency cents. */
-export interface NetWorthDriversPortfolioSliceCents {
+/** One portfolio's share of a bucket's investment growth, in base-currency minor units. */
+export interface NetWorthDriversPortfolioSliceMinor {
   portfolioId: string;
   /** Signed: negative when the portfolio lost value over the bucket. */
-  growth: Cents;
+  growth: MinorUnits;
 }
 
-/** Per-bucket result, all money in base-currency cents. */
-export interface NetWorthDriversBucketCents {
+/** Per-bucket result, all money in base-currency minor units. */
+export interface NetWorthDriversBucketMinor {
   periodStart: string;
   periodEnd: string;
   savings: {
-    income: Cents;
-    expenses: Cents;
-    net: Cents;
+    income: MinorUnits;
+    expenses: MinorUnits;
+    net: MinorUnits;
   };
   investments: {
-    growth: Cents;
-    priceEffect: Cents;
-    dividends: Cents;
-    feesAndTaxes: Cents;
+    growth: MinorUnits;
+    priceEffect: MinorUnits;
+    dividends: MinorUnits;
+    feesAndTaxes: MinorUnits;
     /** Only portfolios with non-zero growth this bucket (sparse); sums to `growth` exactly. */
-    byPortfolio: NetWorthDriversPortfolioSliceCents[];
+    byPortfolio: NetWorthDriversPortfolioSliceMinor[];
   };
   composition: {
-    holdingsValue: Cents;
-    cashValue: Cents;
+    holdingsValue: MinorUnits;
+    cashValue: MinorUnits;
   };
 }
 
-export interface NetWorthDriversResultCents {
-  buckets: NetWorthDriversBucketCents[];
+export interface NetWorthDriversResultMinor {
+  buckets: NetWorthDriversBucketMinor[];
   /**
    * Active portfolios ordered largest absolute total growth first; the serializer
    * forwards this untouched. Typed off the wire contract rather than restated here

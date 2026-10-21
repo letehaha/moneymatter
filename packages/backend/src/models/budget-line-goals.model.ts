@@ -25,7 +25,7 @@ export default class BudgetLineGoals extends Model {
   @Column({ type: DataType.STRING(20), allowNull: false })
   behavior!: BudgetLineGoalBehavior;
 
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare amount: Money;
 
   @Column({ type: DataType.SMALLINT, allowNull: true })
@@ -40,10 +40,10 @@ export default class BudgetLineGoals extends Model {
   @Column({ type: DataType.STRING(10), allowNull: true })
   repeatUnit!: BudgetLineGoalRepeatUnit | null;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare stopAtBalance: Money | null;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare fundingCap: Money | null;
 
   @Column({ type: DataType.DATEONLY, allowNull: false })

@@ -1,3 +1,4 @@
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
@@ -46,12 +47,24 @@ export const manageSplits = async ({
   transactionId,
   userId,
   categoryOwnerUserId,
-  splits,
-  transactionAmount,
+  splits: requestedSplits,
+  transactionAmount: requestedTransactionAmount,
   transactionCurrencyCode,
   transactionTime,
   transferNature,
 }: ManageSplitsParams): Promise<TransactionSplits[]> => {
+  // Splits and the transaction they divide are compared and stored at the transaction currency's
+  // decimals, so the sum check judges exactly the values that end up in the table.
+  const transactionDecimals = await getCurrencyDecimals({
+    userId: categoryOwnerUserId ?? userId,
+    code: transactionCurrencyCode,
+  });
+  const transactionAmount = requestedTransactionAmount.round(transactionDecimals);
+  const splits = requestedSplits?.map((split) => ({
+    ...split,
+    amount: split.amount?.round(transactionDecimals) ?? split.amount,
+  }));
+
   // Fetch existing splits — keyed by transactionId; userId is creator metadata only.
   const existingSplits = await TransactionSplits.findAll({
     where: { transactionId },
@@ -105,6 +118,7 @@ export const manageSplits = async ({
   await assertValidSplits({
     splits,
     transactionAmount,
+    minSplitAmount: Money.fromDecimal(1).divide(10 ** transactionDecimals),
     categoryOwnerUserId: categoryOwnerUserId ?? userId,
     transferNature: transferNature as Parameters<typeof assertValidSplits>[0]['transferNature'],
   });
@@ -116,6 +130,7 @@ export const manageSplits = async ({
   });
 
   const isBaseCurrency = transactionCurrencyCode === baseCurrency.code;
+  const baseDecimals = await getCurrencyDecimals({ userId, code: baseCurrency.code });
 
   // Prepare split payloads with calculated refAmounts
   const splitPayloads: CreateSplitPayload[] = await Promise.all(
@@ -126,7 +141,7 @@ export const manageSplits = async ({
       if (!isBaseCurrency) {
         if (split.refAmount !== undefined) {
           // Use provided refAmount if available
-          refAmount = split.refAmount;
+          refAmount = split.refAmount.round(baseDecimals);
         } else {
           // Calculate refAmount based on exchange rate
           refAmount = await calculateRefAmount({

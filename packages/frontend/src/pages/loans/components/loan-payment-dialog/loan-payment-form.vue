@@ -22,6 +22,7 @@ import { useAccountDropdownPrefs } from '@/composable/use-account-dropdown-prefs
 import { useFormValidation } from '@/composable/form-validator';
 import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormatCurrency } from '@/composable/formatters';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useAccountsStore, useCategoriesStore, useCurrenciesStore } from '@/stores';
 import { AccountModel, type TransactionModel } from '@bt/shared/types';
 import { helpers, minValue, required } from '@vuelidate/validators';
@@ -76,6 +77,8 @@ const sourceCurrency = computed(() => {
   return code ? currenciesMap.value[code]?.currency?.code : undefined;
 });
 const loanCurrency = computed(() => currenciesMap.value[props.loanAccount.currencyCode]?.currency?.code);
+const sourceDecimals = computed(() => getCurrencyDecimals({ code: sourceCurrency.value }));
+const loanDecimals = computed(() => getCurrencyDecimals({ code: loanCurrency.value }));
 
 const isCurrenciesDifferent = computed(
   () => !!form.value.account && form.value.account.currencyCode !== props.loanAccount.currencyCode,
@@ -334,6 +337,7 @@ const unlinkPayment = () => {
           v-model="form.amount"
           :label="$t('dialogs.loanPayment.amountLabel')"
           type="number"
+          :decimals="sourceDecimals"
           only-positive
           :placeholder="$t('dialogs.loanPayment.amountPlaceholder')"
           :disabled="isLoading"
@@ -355,6 +359,7 @@ const unlinkPayment = () => {
           v-model="form.targetAmount"
           :label="$t('dialogs.loanPayment.targetAmountLabel')"
           type="number"
+          :decimals="loanDecimals"
           only-positive
           :placeholder="$t('dialogs.loanPayment.targetAmountPlaceholder')"
           :disabled="isLoading"

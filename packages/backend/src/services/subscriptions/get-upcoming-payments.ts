@@ -1,5 +1,5 @@
 import { SUBSCRIPTION_LINK_STATUS, SUBSCRIPTION_PERIOD_STATUSES, SUBSCRIPTION_TYPES } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import Categories from '@models/categories.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
@@ -102,7 +102,7 @@ export const getUpcomingPayments = async ({ userId, limit = 5, type }: GetUpcomi
         subscriptionId: plain.id,
         subscriptionName: plain.name,
         ...serializeLogoFields({ entity: plain }),
-        expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+        expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
         expectedCurrencyCode: plain.expectedCurrencyCode,
         transactionType: plain.transactionType,
         nextPaymentDate: nextPaymentDate({ subscription: plain }),

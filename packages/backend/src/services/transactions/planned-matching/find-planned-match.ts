@@ -1,5 +1,6 @@
 import { PLANNED_MATCH_WINDOW_DAYS, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { namespace } from '@models/connection';
 import Transactions from '@models/transactions.model';
 import { addDays, subDays } from 'date-fns';
@@ -64,7 +65,7 @@ export const findPlannedMatch = async ({
       transactionType,
       currencyCode,
       transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-      amount: amount.toCents(),
+      amount: toMoneyColumnValue({ money: amount }),
       time: {
         [Op.between]: [subDays(time, PLANNED_MATCH_WINDOW_DAYS), addDays(time, PLANNED_MATCH_WINDOW_DAYS)],
       },

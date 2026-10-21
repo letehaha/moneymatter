@@ -67,6 +67,39 @@ describe('Transaction templates', () => {
     });
   });
 
+  describe('amount precision', () => {
+    it('stores a pinned amount at the decimals of the account currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+      const jpyAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'JPY' }),
+        raw: true,
+      });
+      const kwdAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }),
+        raw: true,
+      });
+
+      const jpy = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Rent', amount: 42.6, accountId: jpyAccount.id }),
+        raw: true,
+      });
+      const kwd = await helpers.createTransactionTemplate({
+        payload: buildPayload({ name: 'Fuel', amount: 1.2345, accountId: kwdAccount.id }),
+        raw: true,
+      });
+
+      expect(jpy.amount).toBe(43);
+      expect(kwd.amount).toBe(1.235);
+
+      const moved = await helpers.updateTransactionTemplate({
+        id: jpy.id,
+        payload: { accountId: kwdAccount.id, amount: 3.4567 },
+        raw: true,
+      });
+      expect(moved.amount).toBe(3.457);
+    });
+  });
+
   describe('POST /transaction-templates', () => {
     it('round-trips a null amount', async () => {
       const created = await helpers.createTransactionTemplate({ payload: buildPayload(), raw: true });

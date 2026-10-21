@@ -7,7 +7,7 @@
  */
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { CategorizationMeta, RecordId, TransactionLocation } from '@bt/shared/types';
-import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
 import type TransactionSplits from '@models/transaction-splits.model';
@@ -189,8 +189,8 @@ function serializeTransactionSplit(
   return {
     id: split.id,
     categoryId: split.categoryId,
-    amount: centsToApiDecimal(split.amount),
-    refAmount: centsToApiDecimal(split.refAmount),
+    amount: moneyToApiDecimal(split.amount),
+    refAmount: moneyToApiDecimal(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -226,12 +226,12 @@ export function serializeTransaction(
 
   return {
     id: tx.id,
-    amount: centsToApiDecimal(tx.amount),
-    refAmount: centsToApiDecimal(tx.refAmount),
-    commissionRate: centsToApiDecimal(tx.commissionRate),
-    refCommissionRate: centsToApiDecimal(tx.refCommissionRate),
-    cashbackAmount: centsToApiDecimal(tx.cashbackAmount),
-    originalAmount: centsToApiDecimalOrNull(tx.originalAmount),
+    amount: moneyToApiDecimal(tx.amount),
+    refAmount: moneyToApiDecimal(tx.refAmount),
+    commissionRate: moneyToApiDecimal(tx.commissionRate),
+    refCommissionRate: moneyToApiDecimal(tx.refCommissionRate),
+    cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
+    originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
     note: tx.note,
     externalUrl: tx.externalUrl ?? null,
@@ -331,7 +331,7 @@ export function serializeTransactionTuple(
 // ============================================================================
 
 /**
- * Deserialize a create transaction request from API decimal format to internal cents format
+ * Deserialize a create transaction request from API decimal format to internal `Money` values
  */
 export function deserializeCreateTransaction(req: CreateTransactionRequest, userId: number): CreateTransactionInternal {
   return {

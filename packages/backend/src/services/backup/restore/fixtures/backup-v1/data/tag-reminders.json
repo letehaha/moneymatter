@@ -1,0 +1,18 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000031",
+    "userId": 1,
+    "tagId": "0191a000-0000-7000-8000-000000000030",
+    "type": "amount_threshold",
+    "frequency": null,
+    "dayOfMonth": null,
+    "settings": {
+      "amountThreshold": 150050
+    },
+    "isEnabled": true,
+    "lastCheckedAt": null,
+    "lastTriggeredAt": null,
+    "createdAt": "2025-03-01T10:00:00.000Z",
+    "updatedAt": "2025-03-01T10:00:00.000Z"
+  }
+]

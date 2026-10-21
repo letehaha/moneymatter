@@ -32,6 +32,8 @@ interface GetCumulativeDataParams extends StatsScopeFilters {
   categoryIds?: string[];
   /** Expanded to descendants before the query, so hiding a parent hides its children. */
   excludedCategoryIds?: string[];
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
 /** Both category id lists are already expanded to descendants. */
@@ -60,6 +62,7 @@ export const getCumulativeData = async ({
   excludedTagIds,
   categoryIds,
   excludedCategoryIds,
+  decimals,
 }: GetCumulativeDataParams): Promise<GetCumulativeResponse> => {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
@@ -100,9 +103,9 @@ export const getCumulativeData = async ({
     excludeCategoryIds,
   };
 
-  const currentPeriodData = await getPeriodData({ userId, from, to, metric, ...scope });
+  const currentPeriodData = await getPeriodData({ userId, from, to, metric, decimals, ...scope });
 
-  const previousPeriodData = await getPeriodData({ userId, from: prevFrom, to: prevTo, metric, ...scope });
+  const previousPeriodData = await getPeriodData({ userId, from: prevFrom, to: prevTo, metric, decimals, ...scope });
 
   // Calculate period-over-period percent change
   let percentChange = 0;
@@ -136,6 +139,7 @@ async function getPeriodData({
   excludedTagIds,
   includeCategoryIds,
   excludeCategoryIds,
+  decimals,
 }: PeriodDataParams): Promise<CumulativePeriodData> {
   // Use parseISO for consistent date parsing (treats dates as local time, not UTC)
   const fromDate = parseISO(from);
@@ -152,6 +156,7 @@ async function getPeriodData({
     access: { accessibleTo: userId },
     planned: 'exclude',
     refunds: 'net',
+    decimals,
     window: { from, to: effectiveTo },
     // ponytail: query-level category filter ignores split legs; route through computeCategoryAllocations if totals must match cash-flow exactly
     where: {
@@ -182,9 +187,9 @@ async function getPeriodData({
     const monthEntry = monthlyDataMap.get(monthKey)!;
 
     if (tx.transactionType === TRANSACTION_TYPES.income) {
-      monthEntry.income += tx.refAmount.toCents();
+      monthEntry.income += tx.refAmount.toMinorUnits({ decimals });
     } else if (tx.transactionType === TRANSACTION_TYPES.expense) {
-      monthEntry.expenses += Math.abs(tx.refAmount.toCents());
+      monthEntry.expenses += Math.abs(tx.refAmount.toMinorUnits({ decimals }));
     }
   }
 
@@ -198,8 +203,8 @@ async function getPeriodData({
     const monthEntry = monthlyDataMap.get(`${getYear(refundTime)}-${getMonth(refundTime)}`);
     if (!monthEntry) continue;
 
-    monthEntry.income -= pair.cents;
-    monthEntry.expenses -= pair.cents;
+    monthEntry.income -= pair.minor;
+    monthEntry.expenses -= pair.minor;
   }
 
   // Build cumulative data based on metric

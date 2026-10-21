@@ -1,5 +1,7 @@
 import type { TrackerSpendingGranularity, EntityLogoFields, RecordId } from '@bt/shared/types';
 import { TRACKER_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import Accounts from '@models/accounts.model';
@@ -45,7 +47,7 @@ interface SpendingByCategoryItem {
   categoryId: RecordId;
   name: string;
   color: string;
-  amount: number; // cents, positive (expenses only)
+  amount: number; // minor units, positive (expenses only)
   children?: SpendingByCategoryItem[];
 }
 
@@ -57,20 +59,20 @@ interface CategoryAmountEntry {
 interface SpendingPeriod {
   periodStart: string; // yyyy-MM-dd
   periodEnd: string;
-  expense: number; // cents, positive
-  income: number; // cents, positive
+  expense: number; // minor units, positive
+  income: number; // minor units, positive
 }
 
 interface SpendingByCurrencyItem {
   currencyCode: string;
-  amount: number; // cents in currencyCode, positive
-  refAmount: number; // cents, positive
+  amount: Money; // in currencyCode, positive
+  refAmount: number; // minor units, positive
 }
 
 interface SpendingPayeeItem extends EntityLogoFields {
   payeeId: RecordId | null;
   name: string | null;
-  amount: number; // cents, positive
+  amount: number; // minor units, positive
   transactionsCount: number;
 }
 
@@ -82,7 +84,7 @@ export interface SpendingStatsResponse {
   };
   spendingsByCurrency: SpendingByCurrencyItem[];
   topPayees: SpendingPayeeItem[];
-  biggestDay: { date: string; expense: number } | null; // cents
+  biggestDay: { date: string; expense: number } | null; // minor units
 }
 
 type Granularity = TrackerSpendingGranularity;
@@ -293,9 +295,9 @@ const buildSpendingsByCategory = ({
 interface NormalizedTxData {
   transactionId: string;
   time: Date;
-  amount: number; // cents
-  /** Cents in `currencyCode`. Absent on refund adjustments. */
-  nativeAmount?: number;
+  amount: number; // minor units
+  /** The amount in `currencyCode`. Absent on refund adjustments. */
+  nativeAmount?: Money;
   currencyCode?: string;
   payeeId?: RecordId | null;
   isExpense: boolean;
@@ -328,8 +330,12 @@ const buildSpendingsByCurrency = ({ txDataList }: { txDataList: NormalizedTxData
   const byCurrency = new Map<string, SpendingByCurrencyItem>();
   for (const txData of txDataList) {
     if (!txData.isExpense || txData.negative || !txData.currencyCode) continue;
-    const entry = byCurrency.get(txData.currencyCode) ?? { currencyCode: txData.currencyCode, amount: 0, refAmount: 0 };
-    entry.amount += txData.nativeAmount ?? 0;
+    const entry = byCurrency.get(txData.currencyCode) ?? {
+      currencyCode: txData.currencyCode,
+      amount: Money.zero(),
+      refAmount: 0,
+    };
+    entry.amount = entry.amount.add(txData.nativeAmount ?? Money.zero());
     entry.refAmount += txData.amount;
     byCurrency.set(txData.currencyCode, entry);
   }
@@ -463,14 +469,16 @@ const aggregateTransactionData = async ({
 const buildRefundAdjustments = ({
   pairs,
   resolveCategoryBucket,
+  decimals,
 }: {
   pairs: TrackerRefundPair[];
   resolveCategoryBucket: (categoryId: RecordId) => RecordId | null;
+  decimals: number;
 }): NormalizedTxData[] => {
   const adjustments: NormalizedTxData[] = [];
 
   for (const pair of pairs) {
-    const adjustmentAmount = pair.refundTx.refAmount.toCents();
+    const adjustmentAmount = pair.refundTx.refAmount.toMinorUnits({ decimals });
 
     const pushSide = ({
       tx,
@@ -515,10 +523,12 @@ const getManualTrackerSpendingStats = async ({
   userId: ownerUserId,
   trackerId,
   callerUserId,
+  decimals,
 }: {
   userId: number;
   trackerId: string;
   callerUserId: number;
+  decimals: number;
 }): Promise<SpendingStatsResponse> => {
   const trackerDetails = await findOrThrowNotFound({
     query: Trackers.findOne({ where: { id: trackerId, userId: ownerUserId } }),
@@ -588,15 +598,19 @@ const getManualTrackerSpendingStats = async ({
     return canonical === OTHER_CATEGORY_ID ? null : canonical;
   };
 
-  const txDataList: NormalizedTxData[] = transactions.map((tx) => {
+  // A row with no base-currency amount (custom currency, no rate yet) cannot be added to a base-currency
+  // figure, so every budget aggregate leaves it out.
+  const txDataList: NormalizedTxData[] = transactions.flatMap((tx) => {
+    if (tx.refAmount === null) return [];
+
     const rootCatId = tx.categoryId
       ? canonicalize(getRootCategoryId({ categoryId: tx.categoryId, categoryMap }))
       : null;
     return {
       transactionId: tx.id,
       time: tx.time,
-      amount: tx.refAmount.toCents(),
-      nativeAmount: tx.amount.toCents(),
+      amount: tx.refAmount.toMinorUnits({ decimals }),
+      nativeAmount: tx.amount,
       currencyCode: tx.currencyCode,
       payeeId: tx.payeeId,
       isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
@@ -612,6 +626,7 @@ const getManualTrackerSpendingStats = async ({
   const refundAdjustments = buildRefundAdjustments({
     pairs: refundPairs,
     resolveCategoryBucket: (categoryId) => canonicalize(getRootCategoryId({ categoryId, categoryMap })),
+    decimals,
   });
 
   return aggregateTransactionData({
@@ -629,10 +644,12 @@ const getCategoryTrackerSpendingStats = async ({
   userId,
   trackerId,
   isOwner,
+  decimals,
 }: {
   userId: number;
   trackerId: string;
   isOwner: boolean;
+  decimals: number;
 }): Promise<SpendingStatsResponse> => {
   const trackerDetails = await findOrThrowNotFound({
     query: Trackers.findOne({
@@ -716,6 +733,7 @@ const getCategoryTrackerSpendingStats = async ({
   for (const tx of primaryCategoryTransactions) {
     const splits = tx.get('splits') as TransactionSplits[] | undefined;
     if (splits && splits.length > 0) continue;
+    if (tx.refAmount === null) continue;
 
     const topLevelCatId = getTopLevelTargetCategoryId({
       categoryId: tx.categoryId!,
@@ -726,8 +744,8 @@ const getCategoryTrackerSpendingStats = async ({
     txDataList.push({
       transactionId: tx.id,
       time: tx.time,
-      amount: tx.refAmount.toCents(),
-      nativeAmount: tx.amount.toCents(),
+      amount: tx.refAmount.toMinorUnits({ decimals }),
+      nativeAmount: tx.amount,
       currencyCode: tx.currencyCode,
       payeeId: tx.payeeId,
       isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
@@ -740,7 +758,7 @@ const getCategoryTrackerSpendingStats = async ({
   // Process splits
   for (const split of matchingSplits) {
     const transaction = split.get('transaction') as Transactions.default;
-    if (!transaction) continue;
+    if (!transaction || split.refAmount === null) continue;
 
     const topLevelCatId = getTopLevelTargetCategoryId({
       categoryId: split.categoryId,
@@ -751,8 +769,8 @@ const getCategoryTrackerSpendingStats = async ({
     txDataList.push({
       transactionId: transaction.id,
       time: transaction.time,
-      amount: split.refAmount.toCents(),
-      nativeAmount: split.amount.toCents(),
+      amount: split.refAmount.toMinorUnits({ decimals }),
+      nativeAmount: split.amount,
       currencyCode: transaction.currencyCode,
       payeeId: transaction.payeeId,
       isExpense: transaction.transactionType === TRANSACTION_TYPES.expense,
@@ -768,6 +786,7 @@ const getCategoryTrackerSpendingStats = async ({
   const refundAdjustments = buildRefundAdjustments({
     pairs: refundPairs,
     resolveCategoryBucket: (categoryId) => getTopLevelTargetCategoryId({ categoryId, categoryMap, targetCategoryIds }),
+    decimals,
   });
 
   return aggregateTransactionData({
@@ -778,13 +797,19 @@ const getCategoryTrackerSpendingStats = async ({
   });
 };
 
+/** The stats with the `decimals` their minor units are at, which the serializer needs to turn them into decimals. */
+interface TrackerSpendingStatsResult {
+  stats: SpendingStatsResponse;
+  decimals: number;
+}
+
 export const getTrackerSpendingStats = async ({
   userId,
   trackerId,
 }: {
   userId: number;
   trackerId: string;
-}): Promise<SpendingStatsResponse> => {
+}): Promise<TrackerSpendingStatsResult> => {
   // Share-aware auth: recipient sees the same numbers the owner would (per PRD
   // visibility decision). Downstream queries scope against the owner's userId so
   // a recipient's unrelated transactions don't filter the result.
@@ -795,9 +820,13 @@ export const getTrackerSpendingStats = async ({
     message: t({ key: 'budgets.budgetNotFound' }),
   });
 
-  if (trackerDetails.type === TRACKER_TYPES.category) {
-    return getCategoryTrackerSpendingStats({ userId: ownerUserId, trackerId, isOwner });
-  }
+  // The tracker's amounts are in its owner's base currency, whoever reads them.
+  const decimals = await getBaseCurrencyDecimals({ userId: ownerUserId });
 
-  return getManualTrackerSpendingStats({ userId: ownerUserId, trackerId, callerUserId: userId });
+  const stats =
+    trackerDetails.type === TRACKER_TYPES.category
+      ? await getCategoryTrackerSpendingStats({ userId: ownerUserId, trackerId, isOwner, decimals })
+      : await getManualTrackerSpendingStats({ userId: ownerUserId, trackerId, callerUserId: userId, decimals });
+
+  return { stats, decimals };
 };

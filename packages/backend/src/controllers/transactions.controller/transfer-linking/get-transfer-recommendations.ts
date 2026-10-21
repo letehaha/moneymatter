@@ -100,9 +100,9 @@ export default createController(schema, async ({ user, query }) => {
   }
 
   // Calculate refAmount range (±10%)
-  const centerCents = refAmountCenter.toCents();
-  const refAmountGte = Money.fromCents(Math.max(0, Math.floor(centerCents * (1 - RECOMMENDATION_PERCENT_RANGE))));
-  const refAmountLte = Money.fromCents(Math.ceil(centerCents * (1 + RECOMMENDATION_PERCENT_RANGE)));
+  const lowerBound = refAmountCenter.multiply(1 - RECOMMENDATION_PERCENT_RANGE);
+  const refAmountGte = lowerBound.isNegative() ? Money.zero() : lowerBound;
+  const refAmountLte = refAmountCenter.multiply(1 + RECOMMENDATION_PERCENT_RANGE);
 
   // ±N days from the transaction date (symmetric window).
   // For form data (new transaction), sourceTime is already set to `new Date()` above

@@ -164,12 +164,25 @@ describe('BalanceAdjustmentDialog', () => {
       expect(confirmBtn(w).attributes('disabled')).toBeUndefined();
     });
 
-    it('blocks submit for amount with more than 2 decimal places', async () => {
+    it('drops decimals past the 2 a USD account stores before submitting', async () => {
       const w = mountDialog();
       await enterAmountAndSubmit(w, 100.123);
 
-      expect(mockMutateAsync).not.toHaveBeenCalled();
-      expect(w.text()).toContain(t('forms.validators.invalidCurrencyDecimal'));
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 100.12 }));
+    });
+
+    it('keeps 3 decimals for a KWD account', async () => {
+      const w = mountDialog({ currencyCode: 'KWD' });
+      await enterAmountAndSubmit(w, 100.1234);
+
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 100.123 }));
+    });
+
+    it('drops the fraction for a JPY account', async () => {
+      const w = mountDialog({ currencyCode: 'JPY' });
+      await enterAmountAndSubmit(w, 1500.6);
+
+      expect(mockMutateAsync).toHaveBeenCalledWith(expect.objectContaining({ targetBalance: 1500 }));
     });
 
     it('allows submit for amount with exactly 2 decimal places', async () => {

@@ -5,7 +5,7 @@ import CategorySelectField from '@/components/fields/category-select-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals, trimAmountNoise } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { PlusIcon, SplitIcon, XIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
@@ -64,13 +64,18 @@ watch(isOpen, (open) => {
 
 const hasExistingSplits = computed(() => props.modelValue && props.modelValue.length > 0);
 
-const splitsTotal = computed(() => {
-  return localSplits.value.reduce((sum, split) => sum + (split.amount ?? 0), 0);
-});
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode }));
+
+const splitsTotal = computed(() =>
+  trimAmountNoise({
+    value: localSplits.value.reduce((sum, split) => sum + (split.amount ?? 0), 0),
+    decimals: decimals.value,
+  }),
+);
 
 const mainCategoryAmount = computed(() => {
   const total = props.totalAmount ?? 0;
-  return total - splitsTotal.value;
+  return trimAmountNoise({ value: total - splitsTotal.value, decimals: decimals.value });
 });
 
 const isValid = computed(() => {
@@ -231,6 +236,7 @@ const handleClearAll = () => {
               <InputField
                 :model-value="split.amount"
                 type="number"
+                :decimals="decimals"
                 only-positive
                 :placeholder="$t('dialogs.manageTransaction.splitDialog.amountPlaceholder')"
                 trailing-icon-css-class="px-3"

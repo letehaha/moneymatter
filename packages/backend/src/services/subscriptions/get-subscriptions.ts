@@ -33,7 +33,7 @@ type SubscriptionCategory = Pick<Categories, 'id' | 'name' | 'color' | 'icon'>;
 
 /**
  * Subscription scalar columns plus its trimmed account/category associations.
- * `expectedAmount` is a cents-backed Money on the model but is surfaced here as a
+ * `expectedAmount` is a Money on the model but is surfaced here as a
  * decimal number, so it is re-typed rather than picked from the model.
  */
 interface SubscriptionBase extends Pick<

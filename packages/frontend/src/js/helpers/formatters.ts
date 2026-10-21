@@ -1,6 +1,8 @@
 import type { CurrencyDisplayPreference } from '@bt/shared/types';
 import { ref } from 'vue';
 
+import { getCurrencyDecimals, isIntlCurrencyCode } from './currency-decimals';
+
 export const formatFiat = (value: unknown): string => Number(value).toFixed(2);
 
 // Module-level so plain helpers, not just composables, follow the user's setting.
@@ -22,45 +24,20 @@ export function toLocalNumber(
   return String(value);
 }
 
-// Fraction digits a fiat currency renders per ISO-4217/CLDR (KRW→0, USD→2, BHD→3),
-// clamped to 2 because Money stores cents (×100) so only 2 decimals are ever real.
-// Codes Intl rejects (malformed, e.g. a stray ticker from DB data) resolve to null so
-// callers can skip currency-styled formatting instead of crashing the render. Cached —
-// building an Intl formatter per render is costly.
-const currencyFractionDigitsCache = new Map<string, number | null>();
-
-function resolveCurrencyDigits(currency: string): number | null {
-  const cached = currencyFractionDigitsCache.get(currency);
-  if (cached !== undefined) return cached;
-
-  let digits: number | null;
-  try {
-    const cldrDigits = new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency,
-    }).resolvedOptions().maximumFractionDigits;
-    digits = Math.min(cldrDigits ?? 2, 2);
-  } catch {
-    digits = null;
-  }
-
-  currencyFractionDigitsCache.set(currency, digits);
-  return digits;
-}
-
 function toLocalFiatCurrency(
   value: string | number | undefined | null,
   options: Intl.NumberFormatOptions = {},
 ): string {
   if (value !== undefined && value !== null) {
     const currency = options.currency || 'USD';
-    const currencyDigits = resolveCurrencyDigits(currency);
-    // Intl rejects the code — render a bare 2-decimal number with the code appended
-    // instead of letting toLocaleString throw a RangeError mid-render.
-    if (currencyDigits === null) {
+    const currencyDigits = getCurrencyDecimals({ code: currency });
+    // Intl rejects the code (custom or malformed) — render a bare number with the
+    // currency's own decimals and the code appended instead of letting toLocaleString
+    // throw a RangeError mid-render.
+    if (!isIntlCurrencyCode({ code: currency })) {
       return `${toLocalNumber(value, {
-        minimumFractionDigits: options.minimumFractionDigits ?? 2,
-        maximumFractionDigits: options.maximumFractionDigits ?? 2,
+        minimumFractionDigits: options.minimumFractionDigits ?? currencyDigits,
+        maximumFractionDigits: options.maximumFractionDigits ?? currencyDigits,
         useGrouping: options.useGrouping ?? true,
       })} ${currency}`;
     }
@@ -80,18 +57,19 @@ function toLocalFiatCurrency(
 /**
  * Bare amount (no symbol) with the fraction digits its currency uses — for the
  * "1,500 KRW" layout where the code is rendered separately. KRW → "1,500", USD →
- * "1,500.00". Unknown/non-ISO codes fall back to 2.
+ * "1,500.00", KWD → "1,500.000". Codes without registered decimals fall back to the
+ * ISO value, then to 2.
  */
 export function toLocalCurrencyNumber(
   value: string | number | undefined | null,
   options: Omit<Intl.NumberFormatOptions, 'style' | 'currency' | 'currencyDisplay'> & {
-    /** ISO-4217 code whose fraction digits to apply; only affects digits, never adds a symbol. */
+    /** Currency code whose fraction digits to apply; only affects digits, never adds a symbol. */
     currency?: string;
     locale?: Intl.LocalesArgument;
   } = {},
 ): string {
   const { currency, ...numberOptions } = options;
-  const digits = resolveCurrencyDigits(currency || 'USD') ?? 2;
+  const digits = getCurrencyDecimals({ code: currency || 'USD' });
   return toLocalNumber(value, {
     ...numberOptions,
     minimumFractionDigits: numberOptions.minimumFractionDigits ?? digits,

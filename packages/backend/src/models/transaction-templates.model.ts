@@ -42,7 +42,7 @@ export default class TransactionTemplates extends Model {
   transactionType!: TRANSACTION_TYPES;
 
   /** Null means the user types the amount each time. Non-null requires `accountId`. */
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare amount: Money | null;
 
   @ForeignKey(() => Accounts)

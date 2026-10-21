@@ -147,7 +147,7 @@ interface CheckResult {
   triggered: boolean;
   reason?: string;
   transactionCount?: number;
-  totalAmount?: number;
+  totalAmount?: Money;
   transactionIds?: string[];
 }
 
@@ -203,7 +203,7 @@ async function checkReminder({
     case TAG_REMINDER_TYPES.amountThreshold: {
       // Calculate totals for amount threshold check
       const transactionCount = transactions.length;
-      const totalAmount = transactions.reduce((sum, tx) => sum + tx.refAmount.toCents(), 0);
+      const totalAmount = Money.sum(transactions.map((tx) => tx.refAmount));
       const transactionIds = transactions.map((tx) => tx.id);
 
       result.transactionCount = transactionCount;
@@ -212,9 +212,9 @@ async function checkReminder({
 
       // Trigger if total amount exceeds threshold
       const amountThreshold = (reminder.settings as AmountThresholdSettings)?.amountThreshold;
-      if (amountThreshold && totalAmount > amountThreshold) {
+      if (amountThreshold && totalAmount.greaterThan(Money.fromDecimal(amountThreshold))) {
         result.triggered = true;
-        result.reason = `Total amount (${totalAmount}) exceeds threshold (${amountThreshold})`;
+        result.reason = `Total amount (${totalAmount.toNumber()}) exceeds threshold (${amountThreshold})`;
       }
       break;
     }
@@ -252,12 +252,8 @@ async function createReminderNotification({
     // Default to USD if not found
   }
 
-  // Amount threshold is stored in cents, convert to decimal for display
-  const amountThresholdCents = (reminder.settings as AmountThresholdSettings)?.amountThreshold;
-  const amountThreshold = amountThresholdCents ? Money.fromCents(amountThresholdCents).toNumber() : undefined;
-
-  // Total amount from transactions is in cents, convert to decimal for display
-  const actualAmount = checkResult.totalAmount ? Money.fromCents(checkResult.totalAmount).toNumber() : undefined;
+  const amountThreshold = (reminder.settings as AmountThresholdSettings)?.amountThreshold || undefined;
+  const actualAmount = checkResult.totalAmount?.isZero() === false ? checkResult.totalAmount.toNumber() : undefined;
 
   const tag = reminder.tag;
 
@@ -288,7 +284,7 @@ async function createReminderNotification({
         key: 'tagReminders.notifications.thresholdExceeded.message',
         variables: {
           tagName: checkResult.tagName,
-          actualAmount: String(checkResult.totalAmount),
+          actualAmount: String(actualAmount),
           thresholdAmount: String(amountThreshold),
         },
       });

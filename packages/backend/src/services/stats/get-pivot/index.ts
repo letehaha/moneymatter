@@ -18,9 +18,9 @@ import { Op } from 'sequelize';
 import { findBucketIndex } from '../utils';
 import { generatePivotBuckets, getBucketKey, getBucketLabel } from './buckets';
 import { getPivotStrategy } from './dimensions';
-import type { PivotReportResultCents, PivotReportRowCents } from './rows';
+import type { PivotReportResultMinor, PivotReportRowMinor } from './rows';
 
-export type { PivotReportResultCents } from './rows';
+export type { PivotReportResultMinor } from './rows';
 
 interface GetPivotReportParams {
   userId: number;
@@ -32,11 +32,13 @@ interface GetPivotReportParams {
   accountIds?: string[];
   categoryIds?: string[];
   payeeIds?: string[];
+  /** Decimals of the base currency: the scale the returned amounts are summed at (minor units). */
+  decimals: number;
 }
 
 /**
  * Cross-tabs a row dimension (category / subcategory / payee / tag) against a time dimension,
- * summing `refAmount` (base currency) into integer cents. Split transactions are distributed and
+ * summing `refAmount` (base currency) into integer minor units. Split transactions are distributed and
  * refunds are netted (cash-basis, in the bucket the money returned in) across every dimension —
  * a refunded amount never counts as spend regardless of how the report is grouped. Netting is
  * skipped for `measure === 'income'` (an income report's "refund" leg is itself the income).
@@ -54,7 +56,8 @@ export const getPivotReport = async ({
   accountIds,
   categoryIds,
   payeeIds,
-}: GetPivotReportParams): Promise<PivotReportResultCents> => {
+  decimals,
+}: GetPivotReportParams): Promise<PivotReportResultMinor> => {
   const buckets = generatePivotBuckets({ from, to, granularity });
   const columnKeys = buckets.map((bucket) => getBucketKey({ periodStart: bucket.periodStart, granularity }));
 
@@ -96,15 +99,15 @@ export const getPivotReport = async ({
     attributes: ['id', 'time', 'refAmount', 'transactionType', 'categoryId', 'payeeId', 'accountId', 'refundLinked'],
   });
 
-  // rowKey -> (columnKey -> cents). Filled by the dimension strategy.
+  // rowKey -> (columnKey -> minor units). Filled by the dimension strategy.
   const cellData = new Map<string, Map<string, number>>();
-  const addCell = ({ rowKey, columnKey, cents }: { rowKey: string; columnKey: string; cents: number }): void => {
+  const addCell = ({ rowKey, columnKey, minor }: { rowKey: string; columnKey: string; minor: number }): void => {
     let columns = cellData.get(rowKey);
     if (!columns) {
       columns = new Map<string, number>();
       cellData.set(rowKey, columns);
     }
-    columns.set(columnKey, (columns.get(columnKey) ?? 0) + cents);
+    columns.set(columnKey, (columns.get(columnKey) ?? 0) + minor);
   };
 
   const bucketIndexForTime = (time: Date): number => findBucketIndex({ transactionTime: time, buckets });
@@ -118,9 +121,10 @@ export const getPivotReport = async ({
     measure,
     cellData,
     addCell,
+    decimals,
   });
 
-  const rows: PivotReportRowCents[] = strategy.assembleRows({ cellData, categoryMap, getRootCategoryId });
+  const rows: PivotReportRowMinor[] = strategy.assembleRows({ cellData, categoryMap, getRootCategoryId });
 
   // Column totals sum only top-level rows (parents already roll up their children) to avoid
   // double counting.
@@ -128,8 +132,8 @@ export const getPivotReport = async ({
   for (const columnKey of columnKeys) columnTotals[columnKey] = 0;
   for (const row of rows) {
     if (row.kind === 'child') continue;
-    for (const [columnKey, cents] of Object.entries(row.values)) {
-      columnTotals[columnKey] = (columnTotals[columnKey] ?? 0) + cents;
+    for (const [columnKey, minor] of Object.entries(row.values)) {
+      columnTotals[columnKey] = (columnTotals[columnKey] ?? 0) + minor;
     }
   }
   let grandTotal = 0;

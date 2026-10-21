@@ -1,0 +1,13 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000080",
+    "name": "Monthly",
+    "status": "active",
+    "type": "manual",
+    "startDate": null,
+    "endDate": null,
+    "autoInclude": false,
+    "limitAmount": 5000025,
+    "userId": 1
+  }
+]

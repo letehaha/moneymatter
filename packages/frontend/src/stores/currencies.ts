@@ -1,5 +1,6 @@
 import { getAllCurrencies, loadUserBaseCurrency, loadUserCurrencies } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { registerCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { invalidatePersistedQuery, queryClient } from '@/lib/query-client';
 import { CurrencyModel, UserCurrencyModel } from '@bt/shared/types';
 import { defineStore } from 'pinia';
@@ -47,6 +48,13 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     );
   };
 
+  // Formatters and amount inputs outside the store resolve decimals by code, so every
+  // list the store receives is registered with the registry they read.
+  const registerDecimals = ({ items }: { items: Array<CurrencyModel | undefined> }) =>
+    registerCurrencyDecimals({
+      entries: items.flatMap((item) => (item ? [{ code: item.code, decimals: item.digits }] : [])),
+    });
+
   // Both fetches run through the vue-query cache (staleTime Infinity) so they dedupe on
   // init and can be persisted/invalidated by key. `force` drops the cached entries first,
   // so post-mutation reloads pull fresh data instead of returning the cache.
@@ -76,6 +84,7 @@ export const useCurrenciesStore = defineStore('currencies', () => {
 
     currencies.value = userCurrencies;
     systemCurrencies.value = systemOnes;
+    registerDecimals({ items: [...systemOnes, ...userCurrencies.map((item) => item.currency)] });
     orderLinkedFirst();
   };
 
@@ -95,6 +104,7 @@ export const useCurrenciesStore = defineStore('currencies', () => {
 
     if (result) {
       baseCurrency.value = result;
+      registerDecimals({ items: [result.currency] });
 
       if (!currencies.value.find((item) => item.id === result.id)) {
         currencies.value.push(result);

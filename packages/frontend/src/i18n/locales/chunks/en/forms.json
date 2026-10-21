@@ -188,7 +188,7 @@
       }
     },
     "validators": {
-      "invalidCurrencyDecimal": "Enter a valid amount (up to 2 decimal places)",
+      "invalidCurrencyDecimal": "Enter a valid amount (up to {decimals} decimal places)",
       "mustBePositive": "Amount must be positive"
     },
     "exchangeCurrency": {

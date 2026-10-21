@@ -1,6 +1,6 @@
 import { RecordId } from '@bt/shared/types';
 import { BudgetPlanTrends } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { minorUnitsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import { t } from '@i18n/index';
 import { NotFoundError } from '@js/errors';
@@ -24,7 +24,10 @@ export const getTrends = async ({
   const plan = await findPlan({ planId, userId });
 
   const today = toUtcDateString(new Date());
-  const views = foldPlan(await loadFoldInput({ plan, today }));
+  const foldInput = await loadFoldInput({ plan, today });
+  const { decimals } = foldInput;
+  const views = foldPlan(foldInput);
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
 
   const last = until
     ? views.findIndex((view) => view.period.id === until)
@@ -38,15 +41,15 @@ export const getTrends = async ({
       periodId: period.id,
       startDate: period.startDate,
       endDate: period.endDate,
-      assigned: centsToApiDecimal(header.totalAssigned),
-      activity: centsToApiDecimal(header.totalActivity),
-      carriedIn: centsToApiDecimal(header.totalCarriedIn),
-      available: centsToApiDecimal(header.totalAvailable),
+      assigned: toDecimal(header.totalAssigned),
+      activity: toDecimal(header.totalActivity),
+      carriedIn: toDecimal(header.totalCarriedIn),
+      available: toDecimal(header.totalAvailable),
       lines: lines.map((line) => ({
         lineId: line.lineId,
-        assigned: centsToApiDecimal(line.assigned),
-        activity: centsToApiDecimal(line.activity),
-        available: centsToApiDecimal(line.available),
+        assigned: toDecimal(line.assigned),
+        activity: toDecimal(line.activity),
+        available: toDecimal(line.available),
       })),
     })),
   };

@@ -49,6 +49,35 @@ describe('Tracker CRUD', () => {
       expect(trackerById?.name).toBe(trackerName);
     });
 
+    it('rounds the limit half-up to the decimals of the base currency', async () => {
+      const tracker = await helpers.createTracker({
+        name: trackerName,
+        startDate: '2025-03-01T00:00:00Z',
+        endDate: '2025-03-31T23:59:59Z',
+        limitAmount: 100.555,
+        raw: true,
+      });
+      expect(tracker.limitAmount).toBe(100.56);
+
+      const edited = await helpers.editTracker({ id: tracker.id, raw: true, params: { limitAmount: 77.774 } });
+      expect(edited.limitAmount).toBe(77.77);
+
+      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+      await helpers.asUser({
+        cookies: kwdUser.cookies,
+        fn: async () => {
+          const kwdTracker = await helpers.createTracker({
+            name: trackerName,
+            startDate: '2025-03-01T00:00:00Z',
+            endDate: '2025-03-31T23:59:59Z',
+            limitAmount: 100.5555,
+            raw: true,
+          });
+          expect(kwdTracker.limitAmount).toBe(100.556);
+        },
+      });
+    });
+
     it('can create trackers with the same name', async () => {
       await helpers.createTracker({
         name: trackerName,

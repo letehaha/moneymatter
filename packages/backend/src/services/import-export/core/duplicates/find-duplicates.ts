@@ -1,7 +1,9 @@
 import type { DuplicateMatch, ParsedTransactionRow } from '@bt/shared/types';
 import { TRANSACTION_TYPES } from '@bt/shared/types';
 import * as Transactions from '@models/transactions.model';
+import { duplicateAmountKey } from '@services/transactions/duplicates-detection/amount-key';
 
+import { getAccountDecimals } from './get-account-decimals';
 import { importDayKey } from './import-day-key';
 
 interface FindDuplicatesParams {
@@ -15,6 +17,9 @@ interface FindDuplicatesParams {
  * 1. originalId match (if present)
  * 2. Exact match (accountId + date + amount)
  * 3. Fuzzy match (accountId + date + amount + similar description)
+ *
+ * Amounts are keyed as decimals rounded to the account currency's decimals, so a row that
+ * carries more digits than the account stores meets the stored amount it would be written as.
  */
 export async function findDuplicates({
   userId,
@@ -44,6 +49,8 @@ export async function findDuplicates({
   const minDay = importDayKey({ iso: dates.reduce((a, b) => (a < b ? a : b)) });
   const maxDay = importDayKey({ iso: dates.reduce((a, b) => (a > b ? a : b)) });
 
+  const decimalsByAccountId = await getAccountDecimals({ accountIds: Array.from(existingAccountIds) });
+
   // Fetch existing transactions in the date range for these accounts
   const existingTransactions = await Transactions.findWithFilters({
     access: { creator: userId },
@@ -59,8 +66,11 @@ export async function findDuplicates({
   // Build lookup maps for efficient matching
   const exactMatchMap = new Map<string, Transactions.default[]>();
   for (const tx of existingTransactions) {
+    const decimals = decimalsByAccountId.get(tx.accountId);
+    if (decimals === undefined) continue;
+
     const dateStr = importDayKey({ iso: new Date(tx.time).toISOString() });
-    const key = `${tx.accountId}:${dateStr}:${Math.abs(tx.amount.toCents())}`;
+    const key = `${tx.accountId}:${dateStr}:${duplicateAmountKey({ amount: tx.amount, decimals })}`;
 
     if (!exactMatchMap.has(key)) {
       exactMatchMap.set(key, []);
@@ -79,8 +89,14 @@ export async function findDuplicates({
     // `row.date` is a full ISO instant, but existing transactions are keyed by
     // calendar day above — normalise the row to the same day granularity so a
     // same-day match still lands in the same bucket.
+    const decimals = decimalsByAccountId.get(accountId);
+    if (decimals === undefined) {
+      // Not one of the user's accounts, so nothing of theirs can match
+      continue;
+    }
+
     const rowDateStr = importDayKey({ iso: new Date(row.date).toISOString() });
-    const key = `${accountId}:${rowDateStr}:${row.amount}`;
+    const key = `${accountId}:${rowDateStr}:${duplicateAmountKey({ amount: row.amount, decimals })}`;
     const candidates = exactMatchMap.get(key) || [];
 
     if (candidates.length === 0) {
@@ -148,7 +164,7 @@ export async function findDuplicates({
         existingTransaction: {
           id: bestMatch.id,
           date: importDayKey({ iso: new Date(bestMatch.time).toISOString() }),
-          amount: bestMatch.amount.toCents(),
+          amount: bestMatch.amount.toNumber(),
           note: bestMatch.note || '',
           accountId: bestMatch.accountId,
         },

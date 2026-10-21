@@ -22,7 +22,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "knip": "npx knip",
     "backfill:payee-logos": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register src/scripts/backfill-payee-logos.ts",
-    "fixtures:ms-money": "ts-node -T scripts/fetch-ms-money-fixtures.ts"
+    "fixtures:ms-money": "ts-node -T scripts/fetch-ms-money-fixtures.ts",
+    "check:money-migration": "ts-node -T scripts/check-money-migration.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",

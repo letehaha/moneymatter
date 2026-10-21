@@ -4,6 +4,7 @@ import FormattedAmountField from '@/components/fields/formatted-amount-field.vue
 import SelectField from '@/components/fields/select-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Label } from '@/components/lib/ui/label';
+import { useFormatCurrency } from '@/composable/formatters';
 import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { Separator } from '@/components/lib/ui/separator';
 import {
@@ -21,6 +22,7 @@ import { CARRY_POLICY_OPTIONS, buildAssignmentPayload, defaultAssignmentScope } 
 const props = defineProps<{ planId: string; periodId: string; line: BudgetPlanPeriodViewLine }>();
 
 const { t } = useI18n();
+const { baseCurrencyDecimals } = useFormatCurrency();
 
 const isOpen = ref(false);
 const contentRef = ref<HTMLElement | null>(null);
@@ -79,6 +81,7 @@ const resetToBaseline = () => submit({ payload: { scope: 'this_period', amount: 
 
     <div ref="contentRef" class="grid gap-3">
       <FormattedAmountField
+        :decimals="baseCurrencyDecimals"
         :model-value="amount"
         :label="$t('budgetPlans.assign.amountLabel')"
         :placeholder="$t('budgetPlans.assign.amountPlaceholder')"

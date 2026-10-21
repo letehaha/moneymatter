@@ -533,7 +533,7 @@ async function seedPortfolioFunding({
     return {
       transactionId: uuidv7(),
       time,
-      amountCents: item.amount.toCents(),
+      amount: item.amount,
       amountDecimal: item.amount.toDecimalString(10),
       description: `${item.description} (${portfolioName})`,
     };
@@ -545,8 +545,8 @@ async function seedPortfolioFunding({
     planned.map((item) => ({
       id: item.transactionId,
       userId,
-      amount: item.amountCents,
-      refAmount: item.amountCents,
+      amount: item.amount,
+      refAmount: item.amount,
       transactionType: TRANSACTION_TYPES.expense,
       paymentType: PAYMENT_TYPES.bankTransfer,
       accountId: savingsAccountId,

@@ -1737,4 +1737,69 @@ describe('Execute Import endpoint (async)', () => {
       });
     });
   });
+
+  describe('amounts at the account currency decimals', () => {
+    const importAmounts = async ({ currencyCode, amounts }: { currencyCode: string; amounts: string[] }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode }),
+        raw: true,
+      });
+
+      const { progress } = await runImport({
+        fileContent: buildCsv(
+          amounts.map((amount, index) => ({
+            date: `2024-01-${String(index + 10).padStart(2, '0')}`,
+            amount,
+            description: `Row ${amount}`,
+            account: 'CSV Account',
+            currency: currencyCode,
+            type: 'expense' as const,
+          })),
+        ),
+        accountMapping: { 'CSV Account': { action: 'link-existing', accountId: account.id } },
+      });
+      expectCsvImportCompleted(progress);
+      expect(progress.summary.errors).toHaveLength(0);
+
+      const transactions = await helpers.getTransactions({ raw: true });
+
+      return (amount: string) => transactions.find((tx) => tx.note === `Row ${amount}`)?.amount;
+    };
+
+    it('imports a KWD 1.234 exactly and rounds 1.2345 half-up to 1.235', async () => {
+      const storedAmount = await importAmounts({ currencyCode: 'KWD', amounts: ['1.234', '1.2345'] });
+
+      expect(storedAmount('1.234')).toBe(1.234);
+      expect(storedAmount('1.2345')).toBe(1.235);
+    });
+
+    it('stores a JPY 1500.6 as 1501', async () => {
+      const storedAmount = await importAmounts({ currencyCode: 'JPY', amounts: ['1500.6'] });
+
+      expect(storedAmount('1500.6')).toBe(1501);
+    });
+
+    it('stores a 2-decimal 12.345 as 12.35', async () => {
+      const account = await helpers.createAccount({ raw: true });
+
+      const { progress } = await runImport({
+        fileContent: buildCsv([
+          {
+            date: '2024-01-10',
+            amount: '12.345',
+            description: 'Row 12.345',
+            account: 'CSV Account',
+            currency: account.currencyCode,
+            type: 'expense',
+          },
+        ]),
+        accountMapping: { 'CSV Account': { action: 'link-existing', accountId: account.id } },
+      });
+      expectCsvImportCompleted(progress);
+
+      const transactions = await helpers.getTransactions({ raw: true });
+      expect(transactions.find((tx) => tx.note === 'Row 12.345')?.amount).toBe(12.35);
+    });
+  });
 });

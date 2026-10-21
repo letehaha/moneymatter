@@ -34,16 +34,20 @@ interface StatsWindow {
   to?: string | Date;
 }
 
-interface StatsTransactionsOptions {
+type StatsRefundsOptions =
+  | { refunds: Exclude<StatsRefundsPolicy, 'net'> }
+  /** `decimals` of the base currency: the scale the resolved pairs' minor units are at. */
+  | { refunds: 'net'; decimals: number };
+
+type StatsTransactionsOptions = StatsRefundsOptions & {
   access: AccessPolicy;
   planned: PlannedPolicy;
-  refunds: StatsRefundsPolicy;
   window: StatsWindow;
   where?: WhereOptions;
   attributes?: FindAttributeOptions;
   include?: Includeable[];
   order?: Order;
-}
+};
 
 export interface StatsTransactionsResult {
   rows: Transactions[];
@@ -86,16 +90,8 @@ const windowWhere = ({ window }: { window: StatsWindow }): WhereOptions | null =
  * `refunds: 'net'` needs the projection to carry `id`, `refAmount`, `categoryId`,
  * `transactionType`, `time` and `refundLinked` — the pair resolver reads them off the rows.
  */
-export const statsTransactions = async ({
-  access,
-  planned,
-  refunds,
-  window,
-  where,
-  attributes,
-  include = [],
-  order,
-}: StatsTransactionsOptions): Promise<StatsTransactionsResult> => {
+export const statsTransactions = async (options: StatsTransactionsOptions): Promise<StatsTransactionsResult> => {
+  const { access, planned, refunds, window, where, attributes, include = [], order } = options;
   // Op.and rather than a merged object: a caller's own `time` clause or Op.or must never
   // overwrite (or be overwritten by) the window and refund fragments.
   const timeWhere = windowWhere({ window });
@@ -119,6 +115,9 @@ export const statsTransactions = async ({
 
   return {
     rows,
-    refundPairs: refunds === 'net' && rows.length > 0 ? await resolveRefundPairs({ transactions: rows }) : [],
+    refundPairs:
+      options.refunds === 'net' && rows.length > 0
+        ? await resolveRefundPairs({ transactions: rows, decimals: options.decimals })
+        : [],
   };
 };

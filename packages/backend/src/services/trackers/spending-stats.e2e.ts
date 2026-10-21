@@ -4,6 +4,53 @@ import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 
+const seed = async ({
+  currencyCode,
+  amounts,
+}: {
+  currencyCode: string;
+  amounts: { expense: number; income: number };
+}) => {
+  await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+  const account = await helpers.createAccount({
+    payload: helpers.buildAccountPayload({ currencyCode }),
+    raw: true,
+  });
+  const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
+  const [expense] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      categoryId: category.id,
+      amount: amounts.expense,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-03-15T10:00:00Z',
+    }),
+    raw: true,
+  });
+  const [income] = await helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId: account.id,
+      categoryId: category.id,
+      amount: amounts.income,
+      transactionType: TRANSACTION_TYPES.income,
+      time: '2025-03-16T10:00:00Z',
+    }),
+    raw: true,
+  });
+  const tracker = await helpers.createTracker({
+    name: 'decimals-spending-stats',
+    startDate: '2025-03-01T00:00:00Z',
+    endDate: '2025-03-31T23:59:59Z',
+    raw: true,
+  });
+  await helpers.addTransactionsToTracker({
+    id: tracker.id,
+    payload: { transactionIds: [expense.id, income.id] },
+  });
+
+  return { trackerId: tracker.id, categoryId: category.id };
+};
+
 describe('Get tracker spending stats', () => {
   it('returns empty stats for empty manual and category trackers', async () => {
     const manualTracker = await helpers.createTracker({
@@ -963,6 +1010,43 @@ describe('Get tracker spending stats', () => {
         raw: false,
       });
       expect(invalid.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+  });
+
+  describe('Base currency decimals', () => {
+    it('reports categories and periods at 3 decimals for a KWD-base user', async () => {
+      const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+
+      await helpers.asUser({
+        cookies: kwdUser.cookies,
+        fn: async () => {
+          const { trackerId, categoryId } = await seed({
+            currencyCode: 'KWD',
+            amounts: { expense: 1.234, income: 2.005 },
+          });
+
+          const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
+
+          expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.234 }]);
+          const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
+          const totalIncome = result.spendingOverTime.periods.reduce((sum, period) => sum + period.income, 0);
+          expect(Number(totalExpense.toFixed(3))).toBe(1.234);
+          expect(Number(totalIncome.toFixed(3))).toBe(2.005);
+        },
+      });
+    });
+
+    it('keeps the 2-decimal values for a 2-decimal base user', async () => {
+      const { trackerId, categoryId } = await seed({
+        currencyCode: global.BASE_CURRENCY.code,
+        amounts: { expense: 1.23, income: 2.01 },
+      });
+
+      const result = await helpers.getTrackerSpendingStats({ id: trackerId, raw: true });
+
+      expect(result.spendingsByCategory).toMatchObject([{ categoryId, amount: 1.23 }]);
+      const totalExpense = result.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0);
+      expect(Number(totalExpense.toFixed(2))).toBe(1.23);
     });
   });
 });

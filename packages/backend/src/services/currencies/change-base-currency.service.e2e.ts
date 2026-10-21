@@ -423,6 +423,8 @@ describe('Change Base Currency', () => {
 
       // Validate UAH transaction calculation using the actual service function
       const expectedUahRefAmount = calculateRefAmountFromParams({
+        baseDecimals: 2,
+        quoteDecimals: 2,
         amount: Money.fromCents(Number(sampleUahTx.amount)),
         rate: uahExchangeRate.rate,
       });
@@ -430,6 +432,8 @@ describe('Change Base Currency', () => {
 
       // Validate EUR transaction calculation using the actual service function
       const expectedEurRefAmount = calculateRefAmountFromParams({
+        baseDecimals: 2,
+        quoteDecimals: 2,
         amount: Money.fromCents(Number(sampleEurTx.amount)),
         rate: eurExchangeRate.rate,
       });
