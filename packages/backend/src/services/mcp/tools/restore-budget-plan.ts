@@ -6,7 +6,7 @@ import { restorePlan } from '@services/budget-plans/restore-plan';
 import { restorePlanBodyFields, restorePlanBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('ID of a plan in the trash (from list_budget_plans with includeDeleted)'),
@@ -26,7 +26,7 @@ export function registerRestoreBudgetPlan(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'restore_budget_plan', clientId: extra.authInfo?.clientId });
 

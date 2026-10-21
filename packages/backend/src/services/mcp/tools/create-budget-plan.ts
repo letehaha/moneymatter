@@ -5,7 +5,7 @@ import { createPlan } from '@services/budget-plans/create-plan';
 import { createPlanBodyFields, createPlanBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   name: createPlanBodyFields.name.describe('Name of the plan, 1 to 200 characters, e.g. "Household"'),
@@ -58,7 +58,7 @@ export function registerCreateBudgetPlan(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_budget_plan', clientId: extra.authInfo?.clientId });
 

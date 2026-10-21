@@ -8,7 +8,6 @@ import {
   assertNotDemoUser,
   assertOriginalCurrencyArgs,
   requireFeature,
-  requireFeatureAccess,
   requireScope,
 } from './helpers';
 
@@ -110,8 +109,6 @@ describe('requireScope with allowReadOnly', () => {
   });
 });
 
-const withFeatures = ({ features }: { features?: string[] }) => ({ authInfo: { extra: { features } } });
-
 describe('assertNotDemoUser', () => {
   it('refuses a demo user whatever the scopes and plan', () => {
     const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:read'], readOnly: true });
@@ -124,31 +121,6 @@ describe('assertNotDemoUser', () => {
     expect(() =>
       assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [], readOnly: true }) }),
     ).not.toThrow();
-  });
-});
-
-describe('requireFeatureAccess', () => {
-  it('passes when the plan includes the feature', () => {
-    const extra = withFeatures({ features: [FEATURES.budget_plan, FEATURES.attachments] });
-
-    expect(() => requireFeatureAccess({ extra: extra as never, feature: FEATURES.budget_plan })).not.toThrow();
-  });
-
-  it('throws the plan message when the feature is missing', () => {
-    const extra = withFeatures({ features: [FEATURES.attachments] });
-
-    expect(() => requireFeatureAccess({ extra: extra as never, feature: FEATURES.budget_plan })).toThrow(
-      'This feature is not included in your current plan.',
-    );
-  });
-
-  it('throws when features is absent from the auth payload', () => {
-    expect(() => requireFeatureAccess({ extra: withFeatures({}) as never, feature: FEATURES.attachments })).toThrow(
-      'This feature is not included in your current plan.',
-    );
-    expect(() => requireFeatureAccess({ extra: {} as never, feature: FEATURES.attachments })).toThrow(
-      'This feature is not included in your current plan.',
-    );
   });
 });
 

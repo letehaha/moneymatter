@@ -69,7 +69,7 @@ const READ_ONLY_ROUTE_TOOLS = [
 ];
 
 // Budget plan writes sit behind `requireFeature(FEATURES.budget_plan)` in REST, so every write tool
-// on `/budget-plans` calls `requireFeatureAccess` for it. The one exception is kept by hand:
+// on `/budget-plans` calls `requireFeature` for it. The one exception is kept by hand:
 // `DELETE /budget-plans/:planId` is ungated, because an active plan blocks base-currency changes
 // and a lapsed user must be able to drop it.
 const BUDGET_PLAN_UNGATED_TOOLS = ['delete_budget_plan'];
@@ -206,7 +206,7 @@ describe('MCP tool scopes', () => {
     const writes = tools.filter((t) => t.name.includes('budget_plan') && !READ_TOOL_NAME.test(t.name));
     expect(writes.length).toBeGreaterThan(0);
 
-    const gate = 'requireFeatureAccess({ extra, feature: FEATURES.budget_plan })';
+    const gate = 'requireFeature({ userId, feature: FEATURES.budget_plan })';
     const ungated = writes.filter((t) => !t.content.includes(gate)).map((t) => t.name);
     expect(ungated.toSorted()).toEqual(BUDGET_PLAN_UNGATED_TOOLS.toSorted());
   });

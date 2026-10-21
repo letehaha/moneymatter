@@ -1,5 +1,7 @@
 import { type Feature, USER_ROLES } from '@bt/shared/types';
+import { jest } from '@jest/globals';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import * as entitlementsService from '@services/entitlements/resolve-entitlements.service';
 import type { z } from 'zod';
 
 /**
@@ -28,6 +30,21 @@ export interface CapturedTool {
   handler: ToolHandler;
 }
 
+/**
+ * `requireFeature` reads the plan from the entitlements service, so each call answers with the
+ * features its `extra` carries, the way the live token carries the user's plan.
+ */
+function withPlanOfExtra({ handler }: { handler: ToolHandler }): ToolHandler {
+  return (...params) => {
+    const extra = params[params.length - 1] as McpExtra;
+    jest.spyOn(entitlementsService, 'getEntitlementsByUserId').mockResolvedValue({
+      readOnly: extra.authInfo.extra.readOnly,
+      features: extra.authInfo.extra.features,
+    } as never);
+    return handler(...params);
+  };
+}
+
 /** Runs the register function(s) against a fake server and returns what they registered. */
 export function captureTools({
   register,
@@ -37,7 +54,7 @@ export function captureTools({
   const tools: CapturedTool[] = [];
   const server = {
     registerTool: (name: string, config: CapturedTool['config'], handler: ToolHandler) => {
-      tools.push({ name, config, handler });
+      tools.push({ name, config, handler: withPlanOfExtra({ handler }) });
     },
   } as unknown as McpServer;
 
@@ -45,7 +62,7 @@ export function captureTools({
   return tools;
 }
 
-/** The `extra` the MCP SDK hands a tool handler, as `getUserId`, `requireScope` and `requireFeatureAccess` read it. */
+/** The `extra` the MCP SDK hands a tool handler, as `getUserId`, `requireScope` read it; `features` is the plan `requireFeature` sees. */
 export function makeExtra({
   userId = 42,
   scopes = ['finance:read', 'finance:write', 'finance:delete'],
