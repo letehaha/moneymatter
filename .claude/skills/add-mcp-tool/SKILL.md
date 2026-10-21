@@ -47,18 +47,10 @@ import { FEATURES } from '@bt/shared/types'; // only for a feature-gated tool
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { SOME_RATE_LIMIT } from '@services/common/user-rate-limits'; // only for a rate-limited route
 import { myService } from '@services/path/to/my-service';
 import { z } from 'zod';
 
-import {
-  assertBaseCurrencyUnlocked,
-  enforceUserRateLimit,
-  getUserId,
-  jsonContent,
-  requireFeature,
-  requireScope,
-} from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   someId: recordId().describe('...'),
@@ -77,7 +69,6 @@ export function registerMyNewTool(server: McpServer) {
       requireScope({ extra, scope: 'finance:write' }); // write and delete tools only
       await requireFeature({ userId, feature: FEATURES.budget_plan }); // only when the REST route has requireFeature
       await assertBaseCurrencyUnlocked({ userId }); // unless the REST route has no checkBaseCurrencyLock
-      await enforceUserRateLimit({ userId, limit: SOME_RATE_LIMIT }); // only when the REST route is rate-limited
       trackMcpToolUsed({ userId, tool: 'my_new_tool', clientId: extra.authInfo?.clientId });
 
       const result = await myService({ userId, ...args });
@@ -94,7 +85,7 @@ Rules:
 - `inputSchema` is a **plain object of Zod schemas** (no outer `z.object(...)`), declared as a **module-scope `const`**, never inline inside `registerTool()`. Every MCP session builds its own `McpServer`, so an inline shape is rebuilt per session (zod v4 schemas are ~30 KB each).
 - For tools with no inputs: omit `inputSchema` and drop the `args` parameter — handler becomes `async (extra) => {...}`.
 - Always call `getUserId({ extra })` first — it enforces auth and returns `userId`.
-- Write guard order: `getUserId` → `requireScope` → `requireFeature` (when gated) → `assertBaseCurrencyUnlocked` (unless exempt) → `enforceUserRateLimit` (when rate-limited) → `trackMcpToolUsed` → service.
+- Write guard order: `getUserId` → `requireScope` → `requireFeature` (when gated) → `assertBaseCurrencyUnlocked` (unless exempt) → `trackMcpToolUsed` → service.
 - Always call `trackMcpToolUsed({ userId, tool, clientId: extra.authInfo?.clientId })` after the guards, before the service call.
 - Wrap the final response in `jsonContent({ data })`. Money instances auto-serialize to decimals via `toJSON()` in `JSON.stringify`.
 - Use `z.enum([...])` for enum args — match the style in `search-transactions.ts`.
@@ -109,11 +100,10 @@ Rules:
   - a write tool whose route has no lock goes into `LOCK_EXEMPT_TOOLS` (with the route in a comment);
   - a read-named tool whose route carries the lock (`preview_transaction_automation`) calls `getUserId` → `assertBaseCurrencyUnlocked` → `trackMcpToolUsed`, and goes into `LOCK_GUARDED_READ_TOOLS`.
 - **Feature gates:** `await requireFeature({ userId, feature })` where the route has `requireFeature`. It reads the user's entitlements, active trials included, and throws the same message as REST's 402.
-- **Rate limits:** where the REST route is rate-limited, put the budget in `services/common/user-rate-limits.ts`, read it from both `middlewares/rate-limit.ts` and the tool, and call `enforceUserRateLimit({ userId, limit })`, so the two paths share one counter per user.
 
 ### Mirror the REST route
 
-Every tool is a thin wrapper over the service its REST route uses. Parity with REST is the rule: the same service, validation, lock, feature gate, rate limit and read-only handling, and the same serializer (slimmed for MCP in `serializers.ts` where the output is large). When a controller holds logic a tool needs (validation, orchestration), move it into a service or a shared schema that both the controller and the tool call. Never copy it into the tool.
+Every tool is a thin wrapper over the service its REST route uses. Parity with REST is the rule: the same service, validation, lock, feature gate, and read-only handling, and the same serializer (slimmed for MCP in `serializers.ts` where the output is large). When a controller holds logic a tool needs (validation, orchestration), move it into a service or a shared schema that both the controller and the tool call. Never copy it into the tool.
 
 **Refined inputs:** the SDK's `inputSchema` is a plain shape of Zod fields, so a rule that spans fields (an either-or, a mutually exclusive pair, a `superRefine`) cannot sit in it. Expose the shared schema's `.shape` as `inputSchema` and run the full shared schema (or an `assert…Args` helper like `assertOriginalCurrencyArgs`) in the handler, on the schema's own fields only: when the tool adds ids beside a strict body schema, destructure them off first (`const { planId, ...body } = args; schema.parse(body)`), or the strict parse rejects the ids. The unit test asserts that the **tool** rejects, not the shape.
 
@@ -252,7 +242,6 @@ Helpers available from `./helpers`:
 - `requireScope({ extra, scope, allowReadOnly? })` — scope check; rejects demo and read-only users unless `allowReadOnly` (only the `READ_ONLY_ROUTES` tools)
 - `assertBaseCurrencyUnlocked({ userId })` — refuses while a base-currency change runs; fails closed if Redis is down
 - `requireFeature({ userId, feature })` — refuses when the plan lacks the feature
-- `enforceUserRateLimit({ userId, limit })` — draws from a per-user budget shared with the REST middleware
 - `jsonContent({ data })` — wraps in MCP content envelope
 - `assertOriginalCurrencyArgs({ args })` — the original-currency pair rule of the transaction tools
 - `parseScopes({ scopes })` — only useful in auth-adjacent code, not individual tools
