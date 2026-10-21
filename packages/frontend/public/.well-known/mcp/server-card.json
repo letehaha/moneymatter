@@ -493,6 +493,14 @@
     {
       "name": "delete_venture_event",
       "description": "Delete a venture event; unlinks bank transactions first. Cannot delete initial_investment while other events exist. Requires finance:delete scope."
+    },
+    {
+      "name": "set_exchange_rates",
+      "description": "Set exchange rates for currency pairs, each pair with its opposite in the same call. Requires finance:write scope."
+    },
+    {
+      "name": "delete_exchange_rates",
+      "description": "Remove the user's own exchange rates for pairs, each with its opposite, so they fall back to market rates. Requires finance:delete scope."
     }
   ],
   "prompts": [

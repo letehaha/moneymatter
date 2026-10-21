@@ -1,5 +1,8 @@
 import { type Feature, type GoalModel, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
@@ -63,6 +66,28 @@ export const goalsForMcp = async ({ userId, goals }: { userId: number; goals: Go
     : [];
   return slimGoalsForMcp({ goals, accountNames: new Map(accounts.map(({ id, name }) => [id, name])) });
 };
+
+/**
+ * Refuses a write while a base-currency change is recalculating the user's amounts, as the
+ * `checkBaseCurrencyLock` middleware does on the REST routes. Fails closed when Redis is
+ * unreachable, since a write that slips past the lock would be rewritten by the recalculation.
+ */
+export async function assertBaseCurrencyUnlocked({ userId }: { userId: number }): Promise<void> {
+  let locked: boolean;
+  try {
+    locked = await isBaseCurrencyChangeLocked({ userId });
+  } catch (error) {
+    logger.error({
+      message: 'Base currency lock check failed',
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw new Error(t({ key: 'common.serviceTemporarilyUnavailable' }), { cause: error });
+  }
+
+  if (locked) {
+    throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
+  }
+}
 
 /**
  * Mirrors the REST transaction schemas: the original-currency pair is set (or cleared)

@@ -28,6 +28,7 @@ import { registerCreateTransaction } from './tools/create-transaction';
 import { registerCreateTransactionAutomation } from './tools/create-transaction-automation';
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
 import { registerDeleteCategory } from './tools/delete-category';
+import { registerDeleteExchangeRates } from './tools/delete-exchange-rates';
 import { registerDeleteGoal } from './tools/delete-goal';
 import { registerDeleteInvestmentTransaction } from './tools/delete-investment-transaction';
 import { registerDeletePayee } from './tools/delete-payee';
@@ -82,6 +83,7 @@ import { registerRemoveTransactionsFromTracker } from './tools/remove-transactio
 import { registerReorderTransactionAutomations } from './tools/reorder-transaction-automations';
 import { registerSearchSecurities } from './tools/search-securities';
 import { registerSearchTransactions } from './tools/search-transactions';
+import { registerSetExchangeRates } from './tools/set-exchange-rates';
 import { registerSplitTransaction } from './tools/split-transaction';
 import { registerToggleSubscriptionActive } from './tools/toggle-subscription-active';
 import { registerTransferAccountToPortfolio } from './tools/transfer-account-to-portfolio';
@@ -293,6 +295,10 @@ export function createMcpServer(): McpServer {
   registerCreateVentureEvent(server);
   registerUpdateVentureEvent(server);
   registerDeleteVentureEvent(server);
+
+  // Exchange rates
+  registerSetExchangeRates(server);
+  registerDeleteExchangeRates(server);
 
   return server;
 }

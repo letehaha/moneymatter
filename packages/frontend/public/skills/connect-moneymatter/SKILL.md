@@ -142,6 +142,8 @@ page.
 | `create_tag`                            | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                            | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                            | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+| `set_exchange_rates`                    | Set the user's own rates for pairs, each with its opposite (`finance:write`)                                     |
+| `delete_exchange_rates`                 | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                                 |
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize
