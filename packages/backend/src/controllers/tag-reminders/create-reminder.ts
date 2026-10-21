@@ -22,7 +22,7 @@ const schema = z.object({
       .nullable()
       .optional(),
     dayOfMonth: z.number().int().min(1).max(31).nullable().optional(),
-    // amountThreshold now accepts decimal values - conversion to cents happens in deserializer
+    // amountThreshold is a decimal in the user's base currency and is stored as sent
     settings: z
       .object({
         amountThreshold: z.number().min(0.01).optional(),
@@ -35,7 +35,6 @@ const schema = z.object({
 export default createController(schema, async ({ user, params, body }) => {
   const { tagId } = params;
 
-  // Deserialize: convert decimal amounts to cents
   const deserialized = deserializeCreateTagReminder(body);
 
   const reminder = await tagRemindersService.createReminder({
@@ -48,6 +47,5 @@ export default createController(schema, async ({ user, params, body }) => {
     isEnabled: deserialized.isEnabled,
   });
 
-  // Serialize: convert cents to decimal for API response
   return { data: serializeTagReminder(reminder) };
 });

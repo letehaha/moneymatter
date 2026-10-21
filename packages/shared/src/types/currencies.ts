@@ -18,12 +18,69 @@ export enum EXCHANGE_RATE_PROVIDER_TYPE {
   UNKNOWN = 'unknown',
 }
 
+/** Shortest currency code, ISO 4217 or user-defined. */
+export const CURRENCY_CODE_MIN_LENGTH = 2;
+/** Longest currency code; the width of every currency-code column. */
+export const CURRENCY_CODE_MAX_LENGTH = 16;
+/** Shape of a currency code: uppercase letters and digits. Says nothing about whether the code exists. */
+export const CURRENCY_CODE_PATTERN = new RegExp(`^[A-Z0-9]{${CURRENCY_CODE_MIN_LENGTH},${CURRENCY_CODE_MAX_LENGTH}}$`);
+
+export const CUSTOM_CURRENCY_NAME_MAX_LENGTH = 255;
+export const CUSTOM_CURRENCY_SYMBOL_MAX_LENGTH = 8;
+/** Longest logo URL a custom currency stores. */
+export const CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH = 2048;
+export const CUSTOM_CURRENCY_DECIMALS_MIN = 0;
+export const CUSTOM_CURRENCY_DECIMALS_MAX = 18;
+
 export interface CurrencyModel {
   currency: string;
   digits: number;
-  number: number;
+  /** ISO 4217 numeric code; `null` on a custom currency. */
+  number: number | null;
   code: string;
   isDisabled: boolean;
+  /** `true` for a user-defined code, `false` for the ISO 4217 seed. */
+  isCustom: boolean;
+  /** Symbol of a custom currency; `null` on ISO currencies. */
+  symbol: string | null;
+}
+
+/**
+ * How an amount in a currency is formatted, as the account owner defines it. Accounts and
+ * transactions carry it so a collaborator's UI formats by the account rather than by its own list.
+ */
+export interface CurrencyMeta {
+  /** Decimals the amounts in this currency keep. */
+  decimals: number;
+  /** Symbol of a custom currency; `null` for ISO currencies, which the client formats itself. */
+  symbol: string | null;
+  isCustom: boolean;
+}
+
+/** A user's custom currency as `/user/currencies/custom` returns it, overrides applied. */
+export interface CustomCurrencyModel extends CurrencyMeta {
+  code: string;
+  name: string;
+  isCustom: true;
+  /** https URL of the image the user picked for the currency; `null` draws a monogram instead. */
+  logoUrl: string | null;
+}
+
+export interface CreateCustomCurrencyBody {
+  code: string;
+  name: string;
+  /** 0 to 18. */
+  decimals: number;
+  symbol?: string | null;
+}
+
+export interface UpdateCustomCurrencyBody {
+  name?: string;
+  /** Changing it is allowed only while none of the user's rows use the currency. */
+  decimals?: number;
+  symbol?: string | null;
+  /** An https URL, or `null` to clear the logo; absent keeps the stored one. */
+  logoUrl?: string | null;
 }
 
 export interface UserCurrencyModel {
@@ -33,6 +90,14 @@ export interface UserCurrencyModel {
   exchangeRate: number;
   liveRateUpdate: boolean;
   isDefaultCurrency: boolean;
+  /** Name the user gave the currency; `null` keeps `currency.currency`. */
+  nameOverride: string | null;
+  /** Symbol the user gave the currency; `null` keeps `currency.symbol`. */
+  symbolOverride: string | null;
+  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps `currency.digits`. */
+  decimalsOverride: number | null;
+  /** https URL of the image the user picked for a custom currency; always `null` on an ISO currency. */
+  logoUrl: string | null;
   currency?: CurrencyModel;
   user?: UserModel;
 }

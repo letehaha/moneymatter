@@ -12,6 +12,7 @@ import {
   asCents,
   asDecimal,
 } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -52,8 +53,12 @@ const mockBankBalance = ({ amount }: { amount: number }) =>
     response: { balance: { amount: asDecimal(amount), currency: 'USD' } },
   });
 
+// The list reads raw rows, so `amount` is the DECIMAL column's exact string.
 const sumSignedCents = (transactions: Transactions[]) =>
-  transactions.reduce((acc, tx) => acc + (tx.transactionType === 'income' ? Number(tx.amount) : -Number(tx.amount)), 0);
+  transactions.reduce((acc, tx) => {
+    const cents = Money.fromDecimal(tx.amount as unknown as string).toCents();
+    return acc + (tx.transactionType === 'income' ? cents : -cents);
+  }, 0);
 
 const filterBalanceAdjustments = (transactions: Transactions[]) =>
   transactions.filter((tx) => (tx.externalData as { balanceAdjustment?: boolean } | null)?.balanceAdjustment === true);
@@ -194,14 +199,14 @@ describe('Balance reconciliation when linking account to a bank connection', () 
     // The USD opening balance moved, so its base-currency stamp must be re-derived
     // rather than left on the pre-link value.
     expect(updatedAccount.refInitialBalance).not.toBeNull();
-    expect(updatedAccount.refInitialBalance.toCents()).not.toBe(preLinkAccount.refInitialBalance.toCents());
-    expect(updatedAccount.refInitialBalance.toCents()).toBeGreaterThan(preLinkAccount.refInitialBalance.toCents());
+    expect(updatedAccount.refInitialBalance!.toCents()).not.toBe(preLinkAccount.refInitialBalance!.toCents());
+    expect(updatedAccount.refInitialBalance!.toCents()).toBeGreaterThan(preLinkAccount.refInitialBalance!.toCents());
 
     // The restamp cascade shifts every Balances row, including today's, which
     // the sync pinned to the bank's authoritative balance. It must stay pinned.
     const todayRow = await readTodayBalanceRow({ accountId: account.id });
     expect(todayRow).not.toBeNull();
-    expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
+    expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
   });
 
   it('absorbs the whole pre-link gap without importing pre-link bank history over manual rows', async () => {
@@ -413,7 +418,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       expect(adjustments.length).toBe(1);
       const adjustment = adjustments[0]!;
       expect(adjustment.transactionType).toBe(TRANSACTION_TYPES.expense);
-      expect(Number(adjustment.amount)).toBe(5_000);
+      expect(Money.fromDecimal(adjustment.amount as unknown as string).toCents()).toBe(5_000);
       expect(adjustment.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.transfer_out_wallet);
       expect(new Date(adjustment.time).toISOString()).toBe(updatedAccount.externalData!.bankConnection!.linkedAt);
 
@@ -433,7 +438,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       );
 
       const todayRow = await readTodayBalanceRow({ accountId: account.id });
-      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
+      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
     });
 
     it('creates no adjustment row when the synced transactions explain the whole gap', async () => {
@@ -498,7 +503,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       const adjustments = filterBalanceAdjustments(transactions);
       expect(adjustments.length).toBe(1);
       expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-      expect(Number(adjustments[0]!.amount)).toBe(10_000);
+      expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(10_000);
       expect(readReconciliation(updatedAccount).adjustmentTransactionId).toBeNull();
 
       expect(updatedAccount.initialBalance.toNumber()).toBe(1000);
@@ -811,7 +816,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       const adjustments = filterBalanceAdjustments(transactions);
       expect(adjustments.length).toBe(1);
       expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-      expect(Number(adjustments[0]!.amount)).toBe(5_000);
+      expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(5_000);
       expect(new Date(adjustments[0]!.time).toISOString()).toBe(updatedAccount.externalData!.bankConnection!.linkedAt);
 
       expect(reconciliation.pendingAbsorb).toBe(false);
@@ -830,7 +835,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
       );
 
       const todayRow = await readTodayBalanceRow({ accountId: account.id });
-      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance.toCents());
+      expect(todayRow!.amount.toCents()).toBe(updatedAccount.refCurrentBalance!.toCents());
     });
     // Stored balances include the credit limit, so linking adopts the bank's
     // limit and rebases the stored balance before comparing own funds.
@@ -855,7 +860,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
         const adjustments = filterBalanceAdjustments(transactions);
         expect(adjustments.length).toBe(1);
         expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-        expect(Number(adjustments[0]!.amount)).toBe(3_449_752);
+        expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(3_449_752);
 
         expect(updatedAccount.creditLimit.toNumber()).toBe(0);
         expect(updatedAccount.currentBalance.toNumber()).toBe(0);
@@ -883,7 +888,7 @@ describe('Balance reconciliation when linking account to a bank connection', () 
         const adjustments = filterBalanceAdjustments(transactions);
         expect(adjustments.length).toBe(1);
         expect(adjustments[0]!.transactionType).toBe(TRANSACTION_TYPES.income);
-        expect(Number(adjustments[0]!.amount)).toBe(600_000);
+        expect(Money.fromDecimal(adjustments[0]!.amount as unknown as string).toCents()).toBe(600_000);
 
         expect(updatedAccount.creditLimit.toNumber()).toBe(50_000);
         expect(updatedAccount.currentBalance.toNumber()).toBe(60_000);

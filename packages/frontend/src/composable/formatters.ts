@@ -1,6 +1,14 @@
-import { formatCompactFiat, formatLargeNumber, formatShortFiat, formatUIAmount } from '@/js/helpers';
+import {
+  formatCompactFiat,
+  formatLargeNumber,
+  formatShortFiat,
+  formatUIAmount,
+  getCurrencyDecimals,
+} from '@/js/helpers';
 import { useCurrenciesStore } from '@/stores';
+import type { CurrencyMeta } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 /**
@@ -50,6 +58,9 @@ export const useCurrencyName = () => {
 export const useFormatCurrency = () => {
   const { baseCurrency } = storeToRefs(useCurrenciesStore());
 
+  /** Decimals the base currency's amounts (budgets, reference values) are stored with. */
+  const baseCurrencyDecimals = computed(() => getCurrencyDecimals({ code: baseCurrency.value?.currency?.code }));
+
   const formatBaseCurrency = (amount: number, { fractionDigits }: { fractionDigits?: number } = {}) =>
     formatUIAmount(amount, {
       currency: baseCurrency.value?.currency?.code,
@@ -64,9 +75,15 @@ export const useFormatCurrency = () => {
   const formatShortBaseCurrency = ({ amount }: { amount: number }) =>
     formatShortFiat({ amount, currency: baseCurrency.value?.currency?.code });
 
-  const formatAmountByCurrencyCode = (amount: number, currencyCode: string) =>
+  /**
+   * `meta` is the owner's definition of the currency (an account's or transaction's
+   * `currencyMeta`); pass it for amounts that live on an account so a shared account
+   * formats by its owner's decimals rather than by the viewer's own list.
+   */
+  const formatAmountByCurrencyCode = (amount: number, currencyCode: string, meta?: CurrencyMeta | null) =>
     formatUIAmount(amount, {
       currency: currencyCode,
+      meta,
     });
 
   /**
@@ -113,6 +130,7 @@ export const useFormatCurrency = () => {
   };
 
   return {
+    baseCurrencyDecimals,
     formatBaseCurrency,
     formatWholeBaseCurrency,
     formatAmountByCurrencyCode,

@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, VEHICLE_CLASS, asDecimal } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
 import { connection } from '@models/connection';
@@ -20,13 +21,15 @@ const writeBalanceRow = async ({ accountId, date, cents }: { accountId: string; 
     `INSERT INTO "Balances" ("id", "accountId", "date", "amount", "createdAt", "updatedAt")
      VALUES (:id, :accountId, :date, :amount, NOW(), NOW())
      ON CONFLICT ("accountId", "date") DO UPDATE SET "amount" = EXCLUDED."amount"`,
-    { replacements: { id: uuidv7(), accountId, date: dayKey(date), amount: cents } },
+    {
+      replacements: { id: uuidv7(), accountId, date: dayKey(date), amount: Money.fromCents(cents).toDecimalString(18) },
+    },
   );
 };
 
 const readBalanceRow = async ({ accountId, date }: { accountId: string; date: Date }): Promise<number | null> => {
   const [row] = (await connection.sequelize.query(
-    `SELECT "amount"::bigint AS "cents" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
+    `SELECT ROUND("amount" * 100)::bigint AS "cents" FROM "Balances" WHERE "accountId" = :accountId AND "date" = :date`,
     { type: QueryTypes.SELECT, replacements: { accountId, date: dayKey(date) } },
   )) as { cents: string }[];
 

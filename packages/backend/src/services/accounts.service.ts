@@ -9,10 +9,12 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   isDedicatedFlowAccountCategory,
 } from '@bt/shared/types';
+import { roundMoneyValues, roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { CustomError, ERROR_CODES, NotFoundError, UnexpectedError, ValidationError } from '@js/errors';
+import { removeUndefinedKeys } from '@js/helpers';
 import { logger } from '@js/utils/logger';
 import * as Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -24,7 +26,8 @@ import Users from '@models/users.model';
 import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/revalue-balance-history.service';
 import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
   cleanupAccountSharesInTx,
@@ -206,7 +209,7 @@ export const createAccount = withTransaction(
   ): Promise<Accounts.default | null> => {
     try {
       const { logoDomain, logoInitials, logoColor, logoIcon, ...rest } = payload;
-      const { userId, accountCategory, creditLimit, currencyCode, initialBalance } = rest;
+      const { userId, accountCategory, currencyCode } = rest;
 
       if (accountCategory && isDedicatedFlowAccountCategory(accountCategory)) {
         throw new ValidationError({
@@ -214,9 +217,21 @@ export const createAccount = withTransaction(
         });
       }
 
+      await assertCurrencyCodesVisible({ userId, codes: [currencyCode] });
       await ensureUserCurrencyConnected({ userId, currencyCode });
 
-      const refCreditLimit = await calculateRefAmount({
+      // Rounded before the ref stamps are derived from them: a same-currency stamp is the native
+      // value itself.
+      const { creditLimit, initialBalance } = await roundMoneyValues({
+        values: { creditLimit: rest.creditLimit, initialBalance: rest.initialBalance },
+        userId,
+        currencyCode,
+        mode: 'half-up',
+      });
+
+      // A custom currency without a rate yields `null` rather than failing the creation; the
+      // stamps are filled in when a rate arrives.
+      const refCreditLimit = await calculateRefAmountOrNull({
         userId: userId,
         amount: creditLimit,
         baseCode: currencyCode,
@@ -227,7 +242,7 @@ export const createAccount = withTransaction(
       // correct stamp. Once transactions older than the account appear (imports,
       // backdated entries), `restampRefInitialBalance` re-derives this at the
       // ledger-boundary date's rate.
-      const refInitialBalance = await calculateRefAmount({
+      const refInitialBalance = await calculateRefAmountOrNull({
         userId,
         amount: initialBalance,
         baseCode: currencyCode,
@@ -236,6 +251,8 @@ export const createAccount = withTransaction(
 
       return await Accounts.createAccount({
         ...rest,
+        creditLimit,
+        initialBalance,
         refCreditLimit,
         refInitialBalance,
         ...applyManualLogoPatch({ patch: { logoDomain, logoInitials, logoColor, logoIcon } }),
@@ -267,7 +284,13 @@ const updateInitialBalance = withTransaction(
       });
     }
 
-    const delta = initialBalance.subtract(account.initialBalance);
+    const roundedInitialBalance = await roundToCurrency({
+      money: initialBalance,
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
+    const delta = roundedInitialBalance.subtract(account.initialBalance);
     if (delta.isZero()) return;
 
     await absorbBalanceAdjustment({ userId, accountId, amountDelta: delta });
@@ -358,10 +381,19 @@ export const updateAccount = withTransaction(
       await BudgetPlanAccounts.destroy({ where: { accountId: accountData.id } });
     }
 
+    // Rounded to the account currency's decimals before the change checks and the ref stamps.
+    const roundedBalances = await roundMoneyValues({
+      values: { currentBalance: payload.currentBalance, creditLimit: payload.creditLimit },
+      userId: accountData.userId,
+      currencyCode: accountData.currencyCode,
+      mode: 'half-up',
+    });
+    payload = { ...payload, ...removeUndefinedKeys(roundedBalances) };
+
     const currentBalanceIsChanging =
       payload.currentBalance !== undefined && !payload.currentBalance.equals(accountData.currentBalance);
     let initialBalance: Money = accountData.initialBalance;
-    let refCurrentBalance: Money = accountData.refCurrentBalance;
+    let refCurrentBalance: Money | null = accountData.refCurrentBalance;
 
     /**
      * If `currentBalance` is changing, it means user want to change current balance
@@ -381,7 +413,7 @@ export const updateAccount = withTransaction(
       // `refCurrentBalance` is a spot measure – the new native balance at the latest
       // rate – not the stored ref plus a delta (that would keep the stored blend of
       // historical rates alive). Cache bypassed so a just-edited rate is observed.
-      refCurrentBalance = await calculateRefAmount({
+      refCurrentBalance = await calculateRefAmountOrNull({
         userId: accountData.userId,
         amount: payload.currentBalance!,
         baseCode: accountData.currencyCode,
@@ -395,10 +427,10 @@ export const updateAccount = withTransaction(
     // it via `displayBalance = currentBalance - creditLimit`.
     const creditLimitIsChanging =
       payload.creditLimit !== undefined && !payload.creditLimit.equals(accountData.creditLimit);
-    let adjustedRefCreditLimit: Money | undefined;
+    let adjustedRefCreditLimit: Money | null | undefined;
 
     if (creditLimitIsChanging) {
-      adjustedRefCreditLimit = await calculateRefAmount({
+      adjustedRefCreditLimit = await calculateRefAmountOrNull({
         userId: accountData.userId,
         amount: payload.creditLimit!,
         baseCode: accountData.currencyCode,

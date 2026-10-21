@@ -4,8 +4,7 @@ import type {
   DuplicateMatch,
   ParsedTransactionRow,
 } from '@bt/shared/types';
-import { asCents, TRANSACTION_TYPES } from '@bt/shared/types';
-import { Money } from '@common/types/money';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { findDuplicates } from '@services/import-export/core/duplicates/find-duplicates';
 
 import { parseBudgetBakersWalletCsv } from './parse-budget-bakers-wallet.service';
@@ -69,7 +68,7 @@ export async function detectBudgetBakersWalletDuplicates({
     validRows.push({
       rowIndex: tx.rowIndex,
       date: tx.date,
-      amount: asCents(Money.fromDecimal(Math.abs(tx.amount)).toCents()),
+      amount: Math.abs(tx.amount),
       description: tx.note,
       accountName: tx.accountName,
       currencyCode: account.currency,

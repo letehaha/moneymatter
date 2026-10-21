@@ -17,12 +17,12 @@ const FALLBACK_COLOR = '#000000';
 type PivotRowKind = PivotRow['kind'];
 
 /**
- * A single pivot row, still in integer cents. The serializer converts every amount to an API
+ * A single pivot row, still in integer minor units. The serializer converts every amount to an API
  * decimal. `values` only contains columns with a non-zero net amount (frontend defaults
  * missing columns to 0).
  */
 // The logo fields are set for the payee dimension only (via its hydrate step).
-export interface PivotReportRowCents extends Partial<EntityLogoFields> {
+export interface PivotReportRowMinor extends Partial<EntityLogoFields> {
   id: string;
   label: string;
   color: string | null;
@@ -33,12 +33,12 @@ export interface PivotReportRowCents extends Partial<EntityLogoFields> {
 }
 
 /**
- * Cents-domain result of `getPivotReport`. Structurally mirrors `GetPivotReportResponse` but
- * every monetary field is integer cents.
+ * Minor-units result of `getPivotReport`. Structurally mirrors `GetPivotReportResponse` but
+ * every monetary field is an integer count of the base currency's minor units.
  */
-export interface PivotReportResultCents {
+export interface PivotReportResultMinor {
   columns: PivotColumn[];
-  rows: PivotReportRowCents[];
+  rows: PivotReportRowMinor[];
   columnTotals: Record<string, number>;
   grandTotal: number;
   currencyCode: string;
@@ -55,15 +55,15 @@ interface RowMeta {
 const finalizePivotValues = (columns: Map<string, number>): { values: Record<string, number>; total: number } => {
   const values: Record<string, number> = {};
   let total = 0;
-  for (const [columnKey, cents] of columns) {
-    total += cents;
-    if (cents !== 0) values[columnKey] = cents;
+  for (const [columnKey, minor] of columns) {
+    total += minor;
+    if (minor !== 0) values[columnKey] = minor;
   }
   return { values, total };
 };
 
 const mergeColumns = ({ target, source }: { target: Map<string, number>; source: Map<string, number> }): void => {
-  for (const [columnKey, cents] of source) target.set(columnKey, (target.get(columnKey) ?? 0) + cents);
+  for (const [columnKey, minor] of source) target.set(columnKey, (target.get(columnKey) ?? 0) + minor);
 };
 
 /** Label + color for a category row key (a root/exact category id, or the uncategorized bucket). */
@@ -89,8 +89,8 @@ export const assembleFlatRows = ({
 }: {
   cellData: Map<string, Map<string, number>>;
   resolveMeta: (rowKey: string) => RowMeta;
-}): PivotReportRowCents[] => {
-  const flatRows: PivotReportRowCents[] = [];
+}): PivotReportRowMinor[] => {
+  const flatRows: PivotReportRowMinor[] = [];
   for (const [rowKey, columns] of cellData) {
     const { values, total } = finalizePivotValues(columns);
     if (Object.keys(values).length === 0) continue;
@@ -116,7 +116,7 @@ export const assembleSubcategoryRows = ({
   cellData: Map<string, Map<string, number>>;
   categoryMap: Map<string, AccessibleCategoryInfo>;
   getRootCategoryId: (categoryId: string) => string;
-}): PivotReportRowCents[] => {
+}): PivotReportRowMinor[] => {
   interface RootGroup {
     own: Map<string, number>;
     children: { id: string; columns: Map<string, number> }[];
@@ -146,14 +146,14 @@ export const assembleSubcategoryRows = ({
   }
 
   interface AssembledGroup {
-    parent: PivotReportRowCents;
-    children: PivotReportRowCents[];
+    parent: PivotReportRowMinor;
+    children: PivotReportRowMinor[];
   }
   const assembled: AssembledGroup[] = [];
 
   for (const [rootId, group] of rootGroups) {
     const childRows = group.children
-      .map((child): { row: PivotReportRowCents; hasData: boolean } => {
+      .map((child): { row: PivotReportRowMinor; hasData: boolean } => {
         const { values, total } = finalizePivotValues(child.columns);
         const { label, color } = resolveCategoryMeta({ categoryId: child.id, categoryMap });
         return {
@@ -205,7 +205,7 @@ export const assembleSubcategoryRows = ({
 
   assembled.sort((a, b) => b.parent.total - a.parent.total);
 
-  const rows: PivotReportRowCents[] = [];
+  const rows: PivotReportRowMinor[] = [];
   for (const group of assembled) {
     rows.push(group.parent);
     rows.push(...group.children);

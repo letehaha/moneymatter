@@ -1,9 +1,22 @@
 import { RecordId } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { IdColumn } from '@common/types/id-column';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { removeUndefinedKeys } from '@js/helpers';
 import { Op } from 'sequelize';
-import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  ForeignKey,
+  BelongsTo,
+  DataType,
+  AfterSave,
+  AfterDestroy,
+  AfterBulkUpdate,
+  AfterBulkDestroy,
+} from 'sequelize-typescript';
 
 import Currencies from './currencies.model';
 import Users from './users.model';
@@ -22,7 +35,7 @@ export default class UsersCurrencies extends Model {
   userId!: number;
 
   @ForeignKey(() => Currencies)
-  @Column({ allowNull: false, type: DataType.STRING(3) })
+  @Column({ allowNull: false, type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH) })
   currencyCode!: string;
 
   @BelongsTo(() => Users, {
@@ -57,6 +70,35 @@ export default class UsersCurrencies extends Model {
     type: DataType.BOOLEAN,
   })
   isDefaultCurrency!: boolean;
+
+  /** Display name the user gave the currency; `null` keeps the name from "Currencies". */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(255) })
+  nameOverride!: string | null;
+
+  /** Symbol the user gave the currency; `null` keeps the symbol from "Currencies". */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.STRING(8) })
+  symbolOverride!: string | null;
+
+  /** Decimals the user's amounts keep in this currency (0 to 18); `null` keeps "Currencies"."digits". */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.INTEGER, validate: { min: 0, max: 18 } })
+  decimalsOverride!: number | null;
+
+  /** https URL of the image the user picked for a custom currency; `null` draws a monogram. Always `null` on an ISO row. */
+  @Column({ allowNull: true, defaultValue: null, type: DataType.TEXT })
+  logoUrl!: string | null;
+
+  // Cached decimals (`getCurrencyDecimals`) read `decimalsOverride`, so any change to a row drops them.
+  @AfterSave
+  @AfterDestroy
+  static invalidateDecimalsCacheForRow(instance: UsersCurrencies) {
+    invalidateCurrencyDecimalsCache({ userId: instance.userId, code: instance.currencyCode });
+  }
+
+  @AfterBulkUpdate
+  @AfterBulkDestroy
+  static invalidateDecimalsCacheForBulk() {
+    invalidateCurrencyDecimalsCache();
+  }
 }
 
 export async function getCurrencies({ userId, codes }: { userId: number; codes?: string[] }) {

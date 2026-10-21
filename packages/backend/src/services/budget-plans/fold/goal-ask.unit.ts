@@ -409,4 +409,24 @@ describe('evaluateGoal', () => {
       ).toMatchObject({ ask: 10_000, budgetAmount: 10_000 });
     });
   });
+
+  describe('3-decimal minor units', () => {
+    it('asks for 10.125 less what is assigned, with no rounding step', () => {
+      expect(
+        evaluate({
+          goal: { frequency: 'every_period', behavior: 'budget_another', amount: 10_125 },
+          line: { assigned: 1_234, available: 1_234 },
+        }),
+      ).toMatchObject({ ask: 8_891, target: 10_125, periodTarget: 10_125, progress: 1_234, budgetAmount: 8_891 });
+    });
+
+    it('splits a by-date need over the periods left, rounding the share up to a whole minor unit', () => {
+      const result = evaluate({
+        goal: { frequency: 'by_date', behavior: 'reach_balance', amount: 10_126, anchorDate: '2026-11-15' },
+      });
+
+      expect(result.periodTarget).toBe(3_376);
+      expect(result.ask).toBe(3_376);
+    });
+  });
 });

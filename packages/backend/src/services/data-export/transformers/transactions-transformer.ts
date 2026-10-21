@@ -345,7 +345,7 @@ export async function transformTransactions({
       }),
       amount: tx.amount.toNumber(),
       currency: tx.currencyCode ?? '',
-      amountInBaseCurrency: tx.refAmount.toNumber(),
+      amountInBaseCurrency: tx.refAmount?.toNumber() ?? null,
       baseCurrency: tx.refCurrencyCode ?? '',
       note: tx.note ?? '',
       externalUrl: tx.externalUrl ?? '',

@@ -2,6 +2,7 @@ import { SHARE_PERMISSIONS, TRANSACTIONS_WRITE_SCOPES } from '@bt/shared/types';
 import { booleanQuery, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransaction, serializeTransactions } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import { isPermissionAtLeast } from '@services/sharing/auth/permission-rank';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
@@ -47,6 +48,7 @@ export const getTransactionById = createController(
 
     // Mutate the tx instance so the serializer's property-existence check picks it up.
     Object.assign(tx, { canEdit });
+    await attachTransactionCurrencyMeta({ transactions: [tx] });
 
     return { data: serializeTransaction(tx) };
   },

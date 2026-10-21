@@ -18,10 +18,14 @@ export const getAmountSeparators = (): AmountSeparators => {
   };
 };
 
+/** Decimals applied when a field is not told its currency's. */
+export const DEFAULT_AMOUNT_DECIMALS = 2;
+
 /**
  * Splits typed input into a numeric value + fragment (the decimal tail a Number
- * round-trip would lose, e.g. "1234." or "2.00"). Decimals cap at 2 digits — extra
- * typed precision is dropped rather than letting model and display diverge.
+ * round-trip would lose, e.g. "1234." or "2.00"). Decimals cap at `decimals` digits —
+ * extra typed precision is dropped rather than letting model and display diverge. With
+ * `decimals` 0 the decimal separator and everything after it is dropped.
  *
  * `groupSeparator`, when given, is stripped before the decimal separator gets
  * canonicalized to '.'. This matters for locales (de-DE, es-ES, ...) whose
@@ -34,10 +38,12 @@ export const parseAmountInput = ({
   raw,
   decimalSeparator,
   groupSeparator = '',
+  decimals: maxDecimals = DEFAULT_AMOUNT_DECIMALS,
 }: {
   raw: string;
   decimalSeparator: string;
   groupSeparator?: string;
+  decimals?: number;
 }): { fragment: string; numeric: number | null } => {
   const withoutGroups = groupSeparator ? raw.split(groupSeparator).join('') : raw;
   const canonical = decimalSeparator === '.' ? withoutGroups : withoutGroups.split(decimalSeparator).join('.');
@@ -49,22 +55,25 @@ export const parseAmountInput = ({
 
   if (collapsed === '' || collapsed === '.') return { fragment: '', numeric: null };
 
-  const hasDot = collapsed.includes('.');
+  const hasDot = maxDecimals > 0 && collapsed.includes('.');
   const [intPart = '', decRaw = ''] = collapsed.split('.');
-  const decimals = decRaw.slice(0, 2);
-  const normalized = hasDot ? `${intPart}.${decimals}` : intPart;
+  const decimalDigits = decRaw.slice(0, maxDecimals);
+  const normalized = hasDot ? `${intPart}.${decimalDigits}` : intPart;
+
+  // Zero decimals leave nothing of a pasted ".5" once the fraction is dropped.
+  if (normalized === '') return { fragment: '', numeric: null };
 
   let fragment = '';
   if (hasDot) {
-    if (decimals === '') {
+    if (decimalDigits === '') {
       fragment = '.';
     } else {
-      const significant = decimals.replace(/0+$/, '');
+      const significant = decimalDigits.replace(/0+$/, '');
       if (significant === '') {
         // All-zero decimals ("2.00"): the numeric value drops the dot too.
-        fragment = `.${decimals}`;
-      } else if (significant.length < decimals.length) {
-        fragment = decimals.slice(significant.length);
+        fragment = `.${decimalDigits}`;
+      } else if (significant.length < decimalDigits.length) {
+        fragment = decimalDigits.slice(significant.length);
       }
     }
   }

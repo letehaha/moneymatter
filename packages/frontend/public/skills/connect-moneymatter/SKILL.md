@@ -138,6 +138,10 @@ page.
 | `create_tag`                            | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                            | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                            | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+| `list_custom_currencies`                | List the user's custom currencies (code, name, symbol, decimals, logo)                                           |
+| `create_custom_currency`                | Define a custom currency such as points or a token; needs a rate source for base values (`finance:write`)        |
+| `update_custom_currency`                | Change a custom currency's name, decimals, symbol, or logo; decimals locked while in use (`finance:write`)       |
+| `delete_custom_currency`                | Delete an unused custom currency and its exchange rates (`finance:delete`)                                       |
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize

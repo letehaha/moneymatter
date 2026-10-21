@@ -1,11 +1,11 @@
-import { ACCOUNT_CATEGORIES, type Cents, asCents } from '@bt/shared/types';
+import { ACCOUNT_CATEGORIES, type MinorUnits, asMinorUnits } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 
 import { type AccountSignSplit, assembleNetWorthPoint } from './assemble-point';
 
 const split = (owed: number, surplus: number): AccountSignSplit => ({
-  owedCents: asCents(owed),
-  surplusCents: asCents(surplus),
+  owedMinor: asMinorUnits(owed),
+  surplusMinor: asMinorUnits(surplus),
 });
 
 const NO_SPLIT = split(0, 0);
@@ -16,10 +16,10 @@ const assemble = (overrides: Partial<Parameters<typeof assembleNetWorthPoint>[0]
     assetAccounts: NO_SPLIT,
     creditCard: NO_SPLIT,
     overdraft: NO_SPLIT,
-    loanCents: asCents(0),
-    portfolioCents: asCents(0),
-    vehicleCents: asCents(0),
-    ventureCents: asCents(0),
+    loanMinor: asMinorUnits(0),
+    portfolioMinor: asMinorUnits(0),
+    vehicleMinor: asMinorUnits(0),
+    ventureMinor: asMinorUnits(0),
     ...overrides,
   });
 
@@ -70,11 +70,11 @@ describe('assembleNetWorthPoint', () => {
   });
 
   it('carries a loan at its whole signed value, and an overpaid loan reads positive', () => {
-    const owing = assemble({ loanCents: asCents(-1000) });
+    const owing = assemble({ loanMinor: asMinorUnits(-1000) });
     expect(owing.liabilities[ACCOUNT_CATEGORIES.loan]).toBe(-1000);
     expect(owing.liabilitiesTotal).toBe(-1000);
 
-    const overpaid = assemble({ loanCents: asCents(250) });
+    const overpaid = assemble({ loanMinor: asMinorUnits(250) });
     expect(overpaid.liabilities[ACCOUNT_CATEGORIES.loan]).toBe(250);
     expect(overpaid.liabilitiesTotal).toBe(250);
     expect(overpaid.netWorth).toBe(250);
@@ -83,9 +83,9 @@ describe('assembleNetWorthPoint', () => {
   it('sums every asset kind into assetsTotal and net worth', () => {
     const point = assemble({
       assetAccounts: split(0, 100),
-      portfolioCents: asCents(200),
-      vehicleCents: asCents(300),
-      ventureCents: asCents(400),
+      portfolioMinor: asMinorUnits(200),
+      vehicleMinor: asMinorUnits(300),
+      ventureMinor: asMinorUnits(400),
     });
 
     expect(point.assets).toEqual({ cash: 100, investments: 200, vehicles: 300, ventures: 400 });
@@ -96,26 +96,35 @@ describe('assembleNetWorthPoint', () => {
   it('nets assets against liabilities in net worth', () => {
     const point = assemble({
       assetAccounts: split(0, 5000),
-      portfolioCents: asCents(3000),
+      portfolioMinor: asMinorUnits(3000),
       creditCard: split(-800, 0),
-      loanCents: asCents(-1200),
+      loanMinor: asMinorUnits(-1200),
     });
 
     expect(point.assetsTotal).toBe(8000);
     expect(point.liabilitiesTotal).toBe(-2000);
     expect(point.netWorth).toBe(6000);
   });
+
+  it('sums 3-decimal minor units exactly', () => {
+    // 0.778 held, 1.234 owed on an overdrawn account, 0.001 on a card: 3-decimal minor units.
+    const point = assemble({ assetAccounts: split(-1234, 778), creditCard: split(0, 1) });
+
+    expect(point.assets.cash).toBe(779);
+    expect(point.liabilitiesTotal).toBe(-1234);
+    expect(point.netWorth).toBe(-455);
+  });
 });
 
-// Type-only guard: assembleNetWorthPoint returns Cents-typed money everywhere.
-const _cents: Cents = assembleNetWorthPoint({
+// Type-only guard: assembleNetWorthPoint returns MinorUnits-typed money everywhere.
+const _minor: MinorUnits = assembleNetWorthPoint({
   date: '2026-01-31',
   assetAccounts: NO_SPLIT,
   creditCard: NO_SPLIT,
   overdraft: NO_SPLIT,
-  loanCents: asCents(0),
-  portfolioCents: asCents(0),
-  vehicleCents: asCents(0),
-  ventureCents: asCents(0),
+  loanMinor: asMinorUnits(0),
+  portfolioMinor: asMinorUnits(0),
+  vehicleMinor: asMinorUnits(0),
+  ventureMinor: asMinorUnits(0),
 }).netWorth;
-void _cents;
+void _minor;

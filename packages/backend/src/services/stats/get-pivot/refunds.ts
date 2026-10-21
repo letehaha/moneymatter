@@ -10,8 +10,8 @@ interface WholeTxRefund {
   payeeId: string | null;
   /** Tag ids of the original expense. Empty when the caller didn't request tags or it had none. */
   tagIds: string[];
-  /** Refund magnitude in integer cents (base currency); callers subtract it. */
-  refundCents: number;
+  /** Refund magnitude in integer minor units of the base currency; callers subtract it. */
+  refundMinor: number;
   /** The refund tx's own date, so the reduction lands in the bucket the money returned in. */
   refundTime: Date;
 }
@@ -31,9 +31,12 @@ interface WholeTxRefund {
 export const resolveWholeTxRefunds = async ({
   transactions,
   needTags,
+  decimals,
 }: {
   transactions: { id: string; refundLinked: boolean }[];
   needTags: boolean;
+  /** Decimals of the base currency: the scale the refund magnitudes are at. */
+  decimals: number;
 }): Promise<WholeTxRefund[]> => {
   const txIdsWithRefunds = transactions.filter((tx) => tx.refundLinked).map((tx) => tx.id);
   if (txIdsWithRefunds.length === 0) return [];
@@ -74,13 +77,15 @@ export const resolveWholeTxRefunds = async ({
     const baseTx = byId.get(refund.originalTxId);
     const refundTx = byId.get(refund.refundTxId);
     if (!baseTx || !refundTx) continue;
+    // A refund with no base-currency amount has no magnitude to net.
+    if (refundTx.refAmount === null) continue;
 
     // Attribute to the expense side of the pair (mirrors the category netting's leg choice).
     const expenseSide = baseTx.transactionType === TRANSACTION_TYPES.expense ? baseTx : refundTx;
     result.push({
       payeeId: expenseSide.payeeId,
       tagIds: needTags ? (expenseSide.tags ?? []).map((tag) => tag.id) : [],
-      refundCents: refundTx.refAmount.toCents(),
+      refundMinor: refundTx.refAmount.toMinorUnits({ decimals }),
       refundTime: new Date(refundTx.time),
     });
   }

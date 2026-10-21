@@ -157,6 +157,7 @@
             <RefundIndicator v-if="!hideRefundMarker" :transaction="transaction" />
             <TagsIndicator :tags="transaction.tags ?? []" :variant="tagsVariant" />
             <AttachmentIndicator :transaction="transaction" />
+            <MissingRateIndicator :transaction="transaction" />
             <ResponsiveTooltip
               v-if="externalLinkHref && !compact"
               :content="$t('common.transactions.record.externalLinkTooltip')"
@@ -281,6 +282,7 @@ import { useI18n } from 'vue-i18n';
 
 import PlannedIndicator from './indicators/planned-indicator.vue';
 import AttachmentIndicator from './indicators/attachment-indicator.vue';
+import MissingRateIndicator from './indicators/missing-rate-indicator.vue';
 import RefundIndicator from './indicators/refund-indicator.vue';
 import SplitIndicator from './indicators/split-indicator.vue';
 import TagsIndicator, { type TagsIndicatorVariant } from '@/components/common/tags-indicator.vue';
@@ -477,6 +479,7 @@ const formattedAmount = computed(() => {
 
   return formatUIAmount(amount, {
     currency: props.tx.currencyCode,
+    meta: props.tx.currencyMeta,
   });
 });
 
@@ -485,6 +488,7 @@ const formattedExpenseAmount = computed(() => {
   if (!leg) return '';
   return formatUIAmount(-leg.amount, {
     currency: leg.currencyCode,
+    meta: leg.currencyMeta,
   });
 });
 
@@ -493,6 +497,7 @@ const formattedIncomeAmount = computed(() => {
   if (!leg) return '';
   return formatUIAmount(leg.amount, {
     currency: leg.currencyCode,
+    meta: leg.currencyMeta,
   });
 });
 </script>

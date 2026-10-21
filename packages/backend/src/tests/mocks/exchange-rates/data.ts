@@ -45,6 +45,7 @@ export const CURRENCY_RATES_API_SUPPORTED_CURRENCIES = [
 // expected conversions from the exact values the mocked providers serve below.
 export const EUR_PER_USD = 0.949355;
 export const AED_PER_USD = 3.672898;
+export const JPY_PER_USD = 154.671022;
 
 export const getApiLayerResposeMock = (date: string) => ({
   base: 'USD',
@@ -125,7 +126,7 @@ export const getApiLayerResposeMock = (date: string) => ({
     JEP: 0.789317,
     JMD: 159.290693,
     JOD: 0.7091,
-    JPY: 154.671022,
+    JPY: JPY_PER_USD,
     KES: 129.894268,
     KGS: 86.49797,
     KHR: 4051.965293,
@@ -264,7 +265,7 @@ export const getCurrencyRatesApiResponseMock = (date: string) => ({
     ILS: 3.749297,
     INR: 84.47775,
     ISK: 137.650273,
-    JPY: 154.671022,
+    JPY: JPY_PER_USD,
     KRW: 1395.925003,
     KZT: 498.449576,
     LBP: 89819.638708,

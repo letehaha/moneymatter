@@ -8,7 +8,7 @@ export interface PoolPeriodInput {
 type PoolLedgerEntry = Omit<BudgetPlanPool, 'balance'>;
 
 /**
- * Pure: the pool periods oldest first, integer cents. What lines carry into the
+ * Pure: the pool periods oldest first, integer minor units. What lines carry into the
  * first period is theirs, the rest of the opening cash is the pool. A period's
  * readyToAssign is its level lowered by the deepest dip later income, outside
  * spending and assignments reach; later `fromLines` is past money, so it is left out.

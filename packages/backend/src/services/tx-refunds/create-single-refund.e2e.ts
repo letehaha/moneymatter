@@ -478,7 +478,7 @@ describe('Refund Transactions service', () => {
 
         expect(baseTx.currencyCode !== refundTx.currencyCode).toBe(true);
         expect(refundTx.amount > baseTx.amount).toBe(true);
-        expect(baseTx.refAmount > refundTx.refAmount).toBe(true);
+        expect(baseTx.refAmount! > refundTx.refAmount!).toBe(true);
         expect(result.originalTxId).toEqual(baseTx.id);
         expect(result.refundTxId).toEqual(refundTx.id);
       });
@@ -537,7 +537,7 @@ describe('Refund Transactions service', () => {
         );
 
         expect(baseTx.currencyCode !== refundTx2.currencyCode).toBe(true);
-        expect(refundTx2.refAmount > baseTx.refAmount).toBe(true);
+        expect(refundTx2.refAmount! > baseTx.refAmount!).toBe(true);
         expect(result.originalTxId).toEqual(baseTx.id);
         expect(result.refundTxId).toEqual(refundTx2.id);
       });
@@ -932,7 +932,7 @@ describe('Refund Transactions service', () => {
 
         expect(baseTx.currencyCode).toEqual(refundTx.currencyCode);
         expect(baseTx.amount).toEqual(refundTx.amount);
-        expect(refundTx.refAmount > baseTx.refAmount).toBe(true);
+        expect(refundTx.refAmount! > baseTx.refAmount!).toBe(true);
         expect(result.originalTxId).toEqual(baseTx.id);
         expect(result.refundTxId).toEqual(refundTx.id);
       });
@@ -1053,7 +1053,7 @@ describe('Refund Transactions service', () => {
           true,
         );
 
-        expect(refundTx.refAmount > split.refAmount).toBe(true);
+        expect(refundTx.refAmount! > split.refAmount!).toBe(true);
         expect(result.originalTxId).toEqual(expenseTx.id);
         expect(result.splitId).toEqual(split.id);
       });
@@ -1090,7 +1090,7 @@ describe('Refund Transactions service', () => {
         });
 
         expect(refundTx.amount > baseTx.amount).toBe(true);
-        expect(refundTx.refAmount < baseTx.refAmount).toBe(true);
+        expect(refundTx.refAmount! < baseTx.refAmount!).toBe(true);
         expect(result.statusCode).toEqual(ERROR_CODES.ValidationError);
         expect(helpers.extractResponse(result).message).toContain('cannot be greater than');
       });

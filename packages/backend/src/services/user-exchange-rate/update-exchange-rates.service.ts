@@ -2,10 +2,16 @@ import * as UserExchangeRates from '@models/user-exchange-rates.model';
 import { remeasureRefBalances } from '@services/accounts/remeasure-ref-balances';
 
 import { withTransaction } from '../common/with-transaction';
+import { assertCurrencyCodesVisible } from '../currencies/assert-currency-codes-visible';
 import { revalueAccountsInCurrencies } from './revalue-accounts-in-currencies';
 
 export const editUserExchangeRates = withTransaction(
   async ({ userId, pairs }: { userId: number; pairs: UserExchangeRates.UpdateExchangeRatePair[] }) => {
+    await assertCurrencyCodesVisible({
+      userId,
+      codes: pairs.flatMap((pair) => [pair.baseCode, pair.quoteCode]),
+    });
+
     const rates = await UserExchangeRates.updateRates({
       userId,
       pairs,

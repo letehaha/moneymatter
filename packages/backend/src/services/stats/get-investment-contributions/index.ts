@@ -1,4 +1,9 @@
-import { type Cents, type InvestmentContributionsGranularity, type RecordId, asCents } from '@bt/shared/types';
+import {
+  type MinorUnits,
+  type InvestmentContributionsGranularity,
+  type RecordId,
+  asMinorUnits,
+} from '@bt/shared/types';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { fetchSavingsTransactions, generatePeriodBuckets, getScopedEnabledPortfolios } from '@services/stats/utils';
@@ -6,9 +11,9 @@ import { format } from 'date-fns';
 import { Op } from 'sequelize';
 
 import { accumulateContributions, accumulateSavingsNet, orderLegend } from './derivations';
-import type { InvestmentContributionsResultCents } from './types';
+import type { InvestmentContributionsResultMinor } from './types';
 
-export type { InvestmentContributionsResultCents } from './types';
+export type { InvestmentContributionsResultMinor } from './types';
 
 interface GetInvestmentContributionsParams {
   userId: number;
@@ -22,6 +27,8 @@ interface GetInvestmentContributionsParams {
    * every enabled portfolio. Savings stays user-wide and unaffected by this filter.
    */
   portfolioIds?: RecordId[];
+  /** Decimals of the base currency: the minor-unit scale every amount is summed at. */
+  decimals: number;
 }
 
 /**
@@ -40,7 +47,7 @@ interface GetInvestmentContributionsParams {
  * `savingsNet` rides alongside as the user-wide income-minus-expense per bucket for
  * the "share of savings" card, deliberately unscoped by `portfolioIds`.
  *
- * All amounts are base-currency cents; the serializer converts to decimals.
+ * All amounts are base-currency minor units at `decimals`; the serializer converts to decimals.
  */
 export const getInvestmentContributions = async ({
   userId,
@@ -48,7 +55,8 @@ export const getInvestmentContributions = async ({
   to,
   granularity,
   portfolioIds,
-}: GetInvestmentContributionsParams): Promise<InvestmentContributionsResultCents> => {
+  decimals,
+}: GetInvestmentContributionsParams): Promise<InvestmentContributionsResultMinor> => {
   const buckets = generatePeriodBuckets({ from, to, granularity });
 
   if (buckets.length === 0) {
@@ -81,7 +89,7 @@ export const getInvestmentContributions = async ({
           })
         : Promise.resolve([] as PortfolioTransfers[]),
       // Savings intake — real income and expense only, transfers dropped, user-wide.
-      fetchSavingsTransactions({ userId, from, to }),
+      fetchSavingsTransactions({ userId, from, to, decimals }),
     ]);
 
     // Only the net of the intake is read here, and refund netting subtracts the same
@@ -96,33 +104,33 @@ export const getInvestmentContributions = async ({
     transfers: transfers.map((transfer) => ({
       fromPortfolioId: transfer.fromPortfolioId,
       toPortfolioId: transfer.toPortfolioId,
-      refAmountCents: transfer.refAmount.toCents(),
+      refAmountMinor: transfer.refAmount.toMinorUnits({ decimals }),
       date: transfer.date,
     })),
     buckets,
     scope,
   });
 
-  const savingsNet = accumulateSavingsNet({ transactions: savingsTransactions, buckets });
+  const savingsNet = accumulateSavingsNet({ transactions: savingsTransactions, buckets, decimals });
 
   const legend = orderLegend({ byBucket, activePortfolioIds, nameById });
 
   const resultBuckets = buckets.map((bucket, index) => {
     const bucketMap = byBucket[index]!;
-    const byPortfolio: { portfolioId: string; amount: Cents }[] = [];
-    let totalCents = 0;
+    const byPortfolio: { portfolioId: string; amount: MinorUnits }[] = [];
+    let totalMinor = 0;
     for (const [portfolioId, amount] of bucketMap) {
       if (amount === 0) continue;
-      byPortfolio.push({ portfolioId, amount: asCents(amount) });
-      totalCents += amount;
+      byPortfolio.push({ portfolioId, amount: asMinorUnits(amount) });
+      totalMinor += amount;
     }
 
     return {
       periodStart: format(bucket.periodStart, 'yyyy-MM-dd'),
       periodEnd: format(bucket.periodEnd, 'yyyy-MM-dd'),
-      total: asCents(totalCents),
+      total: asMinorUnits(totalMinor),
       byPortfolio,
-      savingsNet: asCents(savingsNet[index]!),
+      savingsNet: asMinorUnits(savingsNet[index]!),
     };
   });
 

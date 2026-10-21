@@ -138,7 +138,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
               amount: 120.5,
               type: 'expense',
               originalAmount: 5000.55,
-              originalCurrencyCode: 'JPY',
+              originalCurrencyCode: 'CHF',
               externalReference: 'Ref 8F2K91',
             },
             {
@@ -167,7 +167,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
       expect(byNote('Hotel abroad')).toMatchObject({
         amount: 120.5,
         originalAmount: 5000.55,
-        originalCurrencyCode: 'JPY',
+        originalCurrencyCode: 'CHF',
         externalReference: 'Ref 8F2K91',
       });
       expect(byNote('Local shop')).toMatchObject({
@@ -199,7 +199,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
               amount: 120.5,
               type: 'expense',
               originalAmount: 5000.55,
-              originalCurrencyCode: 'JPY',
+              originalCurrencyCode: 'CHF',
             },
           ],
           skipIndices: [],
@@ -213,7 +213,7 @@ describe('Statement Parser - Execute Import endpoint', () => {
         isPlanned: false,
         amount: 120.5,
         originalAmount: 5000.55,
-        originalCurrencyCode: 'JPY',
+        originalCurrencyCode: 'CHF',
       });
     });
 

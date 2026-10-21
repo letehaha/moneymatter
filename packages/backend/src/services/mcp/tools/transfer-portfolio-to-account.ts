@@ -1,4 +1,4 @@
-import { currencyCode, dateString, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { portfolioToAccountTransfer } from '@services/investments/portfolios/transfers';
@@ -11,7 +11,7 @@ const inputSchema = {
   portfolioId: recordId().describe('Source portfolio ID (from get_portfolios)'),
   accountId: recordId().describe('Destination account ID (from get_accounts)'),
   amount: positiveAmountString().describe('Amount as a positive decimal string (e.g. "500.00")'),
-  currencyCode: currencyCode().describe('Currency of the cash withdrawn from the portfolio (ISO 4217, e.g. "USD")'),
+  currencyCode: isoCurrencyCode().describe('Currency of the cash withdrawn from the portfolio (ISO 4217, e.g. "USD")'),
   date: dateString().describe('Transfer date in YYYY-MM-DD format'),
   description: z.string().optional().describe('Optional note for the transfer'),
 };

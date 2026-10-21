@@ -229,6 +229,7 @@
     "securitySearchResultNotRecognized": "Security search result is not recognized or has expired. Search for the security again.",
     "currencyForSecurityNotFound": "Currency for security not found.",
     "currencyNotFound": "Currency not found",
+    "customCurrencyNotSupported": "Portfolios support ISO 4217 currencies only. \"{{code}}\" is a custom currency",
     "transactionNotFound": "Investment transaction not found",
     "userBaseCurrencyNotFound": "User base currency not found",
     "insufficientSharesToSell": "Insufficient shares to sell. After this update, you would have {{adjustedQuantity}} shares but are trying to sell {{sellQuantity}} shares.",
@@ -560,7 +561,16 @@
     "cannotFindForRefAmount": "Cannot find currency to calculate ref amount!",
     "cannotCalculateRefAmount": "Cannot calculate ref amount",
     "currencyNotConnected": "Asked currency is not connected",
-    "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}"
+    "exchangeRateNotAvailable": "Exchange rate not available for {{baseCode}}/{{quoteCode}} on {{date}}",
+    "unknownCurrencyCode": "Unknown currency code: {{code}}",
+    "amountExceedsDecimals": "{{code}} allows at most {{decimals}} decimal places",
+    "customCurrencyNotFound": "Custom currency \"{{code}}\" was not found",
+    "customCurrencyIsoCode": "\"{{code}}\" is an ISO 4217 currency code and cannot be defined as a custom currency",
+    "customCurrencyAlreadyDefined": "You already have a currency with the code \"{{code}}\"",
+    "customCurrencyInUse": "Cannot delete \"{{code}}\": your {{usedBy}} still use it",
+    "customCurrencyDecimalsInUse": "Cannot change the decimals of \"{{code}}\": your {{usedBy}} still use it",
+    "customCurrencyUseCustomEndpoint": "\"{{code}}\" is a custom currency. Remove it from your custom currencies instead",
+    "customCurrencyCannotBeBase": "\"{{code}}\" is a custom currency and cannot be the base currency"
   },
   "userSettings": {
     "userSettingsNotFound": "User settings not found"

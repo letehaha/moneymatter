@@ -18,15 +18,7 @@
       >
         <div class="flex min-w-0 items-center gap-3 @[30rem]/currencies:flex-1">
           <div class="bg-muted flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-lg">
-            <img
-              v-if="flagUrl && !flagFailed"
-              :src="flagUrl"
-              :alt="code"
-              class="size-5"
-              loading="lazy"
-              @error="flagFailed = true"
-            />
-            <CoinsIcon v-else class="text-muted-foreground size-4.5" aria-hidden="true" />
+            <CurrencyIcon :code="code" size="size-5" />
           </div>
 
           <div class="min-w-0">
@@ -42,6 +34,14 @@
 
               <template v-else>
                 <span
+                  v-if="isCustomCurrency"
+                  class="bg-primary/15 text-primary-text shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold"
+                  data-testid="custom-currency-badge"
+                >
+                  {{ $t('settings.currencies.row.customCurrency') }}
+                </span>
+                <span
+                  v-else
                   :class="
                     cn(
                       'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-semibold',
@@ -118,7 +118,20 @@
         <div class="bg-border/60 my-4 h-px w-full" />
 
         <div class="flex items-center justify-between gap-3">
+          <Button
+            v-if="isCustomCurrency"
+            variant="outline"
+            size="sm"
+            class="whitespace-nowrap"
+            :disabled="isFormDisabled"
+            data-testid="edit-custom-currency"
+            @click="isEditOpen = true"
+          >
+            <PencilIcon class="size-4" />
+            {{ $t('settings.currencies.row.edit') }}
+          </Button>
           <SetBaseCurrency
+            v-else
             :currency="currency"
             :is-form-disabled="isFormDisabled"
             @submit="handleSubmit"
@@ -135,24 +148,33 @@
       </div>
     </CollapsibleContent>
   </Collapsible>
+
+  <CustomCurrencyDialog
+    v-if="editableCurrency"
+    v-model:open="isEditOpen"
+    :currency="editableCurrency"
+    :accounts-count="accountsCount"
+  />
 </template>
 
 <script setup lang="ts">
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useCurrencyName } from '@/composable';
-import { getCurrencyIcon } from '@/js/helpers/currencyImage';
+import CurrencyIcon from '@/components/common/currency-icon.vue';
+import { Button } from '@/components/lib/ui/button';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useCurrenciesStore } from '@/stores';
 import { useQueryClient } from '@tanstack/vue-query';
-import { ChevronDownIcon, CoinsIcon } from '@lucide/vue';
+import { ChevronDownIcon, PencilIcon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
+import CustomCurrencyDialog from './custom-currency-dialog.vue';
 import ExchangeRateForm from './currency-row/exchange-rate-form.vue';
 import DeleteCurrency from './currency-row/delete-currency.vue';
 import SetBaseCurrency from './currency-row/set-base-currency.vue';
-import { CurrencyWithExchangeRate } from './types';
+import { CurrencyWithExchangeRate, EditableCustomCurrency } from './types';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
@@ -171,21 +193,37 @@ const queryClient = useQueryClient();
 const { getCurrencyName } = useCurrencyName();
 
 const isFormDisabled = ref(false);
-const flagFailed = ref(false);
 
 const isBase = computed(() => props.currency.isDefaultCurrency);
+const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
+const isEditOpen = ref(false);
+const editableCurrency = computed<EditableCustomCurrency | null>(() => {
+  const effective = props.currency.currency;
+  if (!effective?.isCustom) return null;
+
+  return { code: effective.code, name: effective.currency, symbol: effective.symbol, decimals: effective.digits };
+});
 const code = computed(() => props.currency.currency?.code ?? '');
 const baseCode = computed(() => baseCurrency.value?.currency?.code ?? '');
+// A custom currency carries the name its owner gave it; a translated ISO name could shadow it.
 const currencyName = computed(() =>
-  getCurrencyName({
-    code: code.value,
-    fallbackName: props.currency.currency?.currency,
-  }),
+  isCustomCurrency.value
+    ? (props.currency.currency?.currency ?? code.value)
+    : getCurrencyName({
+        code: code.value,
+        fallbackName: props.currency.currency?.currency,
+      }),
 );
 
-const flagUrl = computed(() => (code.value ? getCurrencyIcon(code.value) : ''));
-
-const formatRate = (value: number) => (Number.isFinite(value) ? value.toLocaleString() : '—');
+// A custom currency can be worth a tiny fraction of its quote, so its rate shows more digits.
+const CUSTOM_RATE_MAX_FRACTION_DIGITS = 12;
+const formatRate = (value: number) =>
+  Number.isFinite(value)
+    ? value.toLocaleString(
+        undefined,
+        isCustomCurrency.value ? { maximumFractionDigits: CUSTOM_RATE_MAX_FRACTION_DIGITS } : undefined,
+      )
+    : '—';
 const rateDisplay = computed(() => formatRate(props.currency.rate));
 const quoteRateDisplay = computed(() => formatRate(props.currency.quoteRate));
 

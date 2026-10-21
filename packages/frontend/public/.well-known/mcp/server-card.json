@@ -477,6 +477,22 @@
     {
       "name": "delete_venture_event",
       "description": "Delete a venture event; unlinks bank transactions first. Cannot delete initial_investment while other events exist. Requires finance:delete scope."
+    },
+    {
+      "name": "list_custom_currencies",
+      "description": "List the user's custom currencies (points, tokens, local units) with code, name, symbol, decimals, and logo."
+    },
+    {
+      "name": "create_custom_currency",
+      "description": "Define a custom currency for the user. The code must not be an ISO code; base-currency values need a rate source or manual rates. Requires finance:write scope."
+    },
+    {
+      "name": "update_custom_currency",
+      "description": "Change a custom currency's name, decimals, symbol, or logo. Decimals cannot change while the currency is in use. Requires finance:write scope."
+    },
+    {
+      "name": "delete_custom_currency",
+      "description": "Delete a custom currency and the user's exchange rates for it. Refused while any account, transaction, or other record uses it. Requires finance:delete scope."
     }
   ],
   "prompts": [

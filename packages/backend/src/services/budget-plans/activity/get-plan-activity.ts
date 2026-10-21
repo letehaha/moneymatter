@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import BudgetPeriods from '@models/budget-periods.model';
 import BudgetPlans from '@models/budget-plans.model';
 import { connection } from '@models/connection';
@@ -10,12 +11,12 @@ import { FoldActivityRow } from '../fold/fold-plan';
 interface RawActivityRow {
   periodId: RecordId;
   categoryId: RecordId | null;
-  /** Cents. SUM over BIGINT returns numeric, which pg hands back as a string. */
+  /** Decimal string: a SUM over the DECIMAL ref amounts, which pg hands back as text. */
   activity: string;
 }
 
 /**
- * Signed cents per period x category, on the stats scope rules plus "the
+ * Signed minor units (at `decimals`) per period x category, on the stats scope rules plus "the
  * account is in this plan". Expense is negative, income positive, so a line's
  * activity is usually <= 0. From `poolFrom` on, transfers crossing the plan
  * boundary and uncategorised money (`categoryId` NULL) count too; before it,
@@ -27,9 +28,12 @@ interface RawActivityRow {
 export const getPlanActivity = async ({
   plan,
   periods,
+  decimals,
 }: {
   plan: BudgetPlans;
   periods: BudgetPeriods[];
+  /** The plan currency's decimals. */
+  decimals: number;
 }): Promise<FoldActivityRow[]> => {
   const lastEnd = periods.at(-1)?.endDate;
   if (!lastEnd) return [];
@@ -67,6 +71,8 @@ export const getPlanActivity = async ({
       UNION ALL
       SELECT s.id, s."time", s."transactionType", sp."categoryId", sp."refAmount"
       FROM scoped s JOIN "TransactionSplits" sp ON sp."transactionId" = s.id
+      -- A split with no base-currency amount (custom currency, no rate yet) has no value to count.
+      WHERE sp."refAmount" IS NOT NULL
     ),
     attributed AS (
       -- A refund lands in ITS period. On an original this plan counted it takes
@@ -106,6 +112,6 @@ export const getPlanActivity = async ({
   return rows.map((row) => ({
     periodId: row.periodId,
     categoryId: row.categoryId,
-    activity: Number(row.activity),
+    activity: Money.fromDecimal(row.activity).toMinorUnits({ decimals }),
   }));
 };

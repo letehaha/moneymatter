@@ -6,7 +6,7 @@ import { buildSelectSections } from '@/components/fields/utils/select-sections';
 import { Button } from '@/components/lib/ui/button';
 import * as Select from '@/components/lib/ui/select';
 import { useLinkedCurrencyGroup } from '@/composable/use-linked-currency-group';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { cn } from '@/lib/utils';
 import { type CurrencyModel } from '@bt/shared/types';
 import { format } from 'date-fns';
@@ -79,6 +79,8 @@ const selectedKey = computed({
   },
 });
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: props.currency?.code }));
+
 const onAmountUpdate = (value: string | number | null) => {
   emit('update:amount', value === '' || value == null ? null : Number(value));
 };
@@ -135,6 +137,7 @@ watch(
         <InputField
           :model-value="amount"
           type="number"
+          :decimals="amountDecimals"
           only-positive
           :placeholder="placeholder"
           :disabled="disabled"

@@ -54,16 +54,22 @@ export const dedupeTransferLegs = <
  * Splits amounts on `transactionType`, never on the sign: amounts are stored positive.
  * Internal transfers stay out of income, expense and net, since only one leg of a pair
  * is ever counted and either side would book a full-value amount that never happened.
- * Unit-agnostic: the result is in whatever unit `refAmount` carries.
+ * Unit-agnostic: the result is in whatever unit `refAmount` carries. A row whose `refAmount` is `null`
+ * (a custom currency with no rate yet) has no base-currency value and is left out of every figure.
  */
 export const sumTransactionTotals = (
-  rows: { transferNature: TRANSACTION_TRANSFER_NATURE; transactionType: TRANSACTION_TYPES; refAmount: number }[],
+  rows: {
+    transferNature: TRANSACTION_TRANSFER_NATURE;
+    transactionType: TRANSACTION_TYPES;
+    refAmount: number | null;
+  }[],
 ) => {
   let income = 0;
   let expense = 0;
   let transfers = 0;
 
   for (const row of rows) {
+    if (row.refAmount === null) continue;
     if (isInternalTransfer(row.transferNature)) transfers += row.refAmount;
     else if (row.transactionType === TRANSACTION_TYPES.income) income += row.refAmount;
     else expense += row.refAmount;

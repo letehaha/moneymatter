@@ -28,7 +28,13 @@
       </Button>
     </div>
 
+    <p v-if="isCustomCurrency" class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
+      <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
+      {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
+    </p>
+
     <label
+      v-else
       class="mt-4 flex cursor-pointer items-start justify-between gap-4 aria-disabled:cursor-default"
       :aria-disabled="isFormDisabled"
     >
@@ -65,10 +71,16 @@ import { useI18n } from 'vue-i18n';
 
 import { CurrencyWithExchangeRate } from '../types';
 
-const calculateRatio = (value: number) => {
-  const exp = 10 ** 6;
-  const num = 1 / value;
-  const result = Math.round(num * exp) / exp;
+const RATIO_DIGITS = 6;
+// A custom currency can be worth a tiny fraction of its quote, so its inverse keeps significant
+// digits rather than a fixed number of decimals.
+const CUSTOM_RATIO_SIGNIFICANT_DIGITS = 12;
+
+const calculateRatio = ({ value, isCustomCurrency }: { value: number | string; isCustomCurrency: boolean }) => {
+  const num = 1 / Number(value);
+  const result = isCustomCurrency
+    ? Number(num.toPrecision(CUSTOM_RATIO_SIGNIFICANT_DIGITS))
+    : Math.round(num * 10 ** RATIO_DIGITS) / 10 ** RATIO_DIGITS;
 
   return Number.isFinite(result) ? result : 0;
 };
@@ -96,17 +108,24 @@ const notifyIfBalancesNotRefreshed = (failed: number) => {
   }
 };
 
-const form = reactive({
-  baseRate: props.currency.rate,
-  quoteRate: props.currency.quoteRate,
+const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
+
+// A custom currency starts without a rate; the fields stay empty until the user enters one.
+const toFieldValue = (value: number): number | string => (Number.isFinite(value) ? value : '');
+
+const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
+  baseRate: toFieldValue(props.currency.rate),
+  quoteRate: toFieldValue(props.currency.quoteRate),
 });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
-const isLiveRateEnabled = ref<boolean>(!props.currency.custom);
+// A custom currency has no market rate to follow, so only the user's own rate applies.
+const isLiveRateEnabled = ref<boolean>(!isCustomCurrency.value && !props.currency.custom);
 
 const isRateChanged = computed(
   () => +props.currency.rate !== +form.baseRate || +props.currency.quoteRate !== +form.quoteRate,
 );
+const hasRateValue = computed(() => Number(form.baseRate) > 0 && Number(form.quoteRate) > 0);
 
 // Disabling live update reveals Save immediately (even before an edit) so the row shows
 // the intended next action. Re-enabling live update also needs Save to drop the custom rate.
@@ -114,8 +133,11 @@ const shouldShowSaveButton = computed(() => {
   return !isLiveRateEnabled.value || props.currency.custom;
 });
 
-// Live off: only actionable once the rate actually changed. Live on: Save drops the custom rate.
-const canSubmit = computed(() => (isLiveRateEnabled.value ? true : isRateChanged.value));
+// Live off: only actionable once the rate actually changed (a custom currency also needs a usable
+// rate). Live on: Save drops the custom rate.
+const canSubmit = computed(() =>
+  isLiveRateEnabled.value ? true : isRateChanged.value && (!isCustomCurrency.value || hasRateValue.value),
+);
 
 const onBaseFocus = () => {
   isBaseEditing.value = true;
@@ -134,7 +156,7 @@ watch(
   () => form.baseRate,
   (value) => {
     if (isBaseEditing.value) {
-      form.quoteRate = calculateRatio(value);
+      form.quoteRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
     }
   },
 );
@@ -142,7 +164,7 @@ watch(
   () => form.quoteRate,
   (value) => {
     if (isQuoteEditing.value) {
-      form.baseRate = calculateRatio(value);
+      form.baseRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
     }
   },
 );

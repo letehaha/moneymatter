@@ -1,5 +1,4 @@
 import { PayeeAliasModel, PayeeModel, PayeeStats, RecordId } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
 import Payees from '@models/payees.model';
 import { serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 import type { PayeeStatsRow } from '@services/payees/payee-stats';
@@ -35,7 +34,7 @@ function serializeStats(stats: PayeeStatsRow): PayeeStats {
   return {
     payeeId: stats.payeeId as RecordId,
     transactionCount: stats.transactionCount,
-    netFlowRef: centsToApiDecimal(stats.netFlowRefCents),
+    netFlowRef: stats.netFlowRef.toNumber(),
     firstSeenAt: stats.firstSeenAt,
     lastSeenAt: stats.lastSeenAt,
     topCategoryId: stats.topCategoryId as RecordId | null,

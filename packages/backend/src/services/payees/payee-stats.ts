@@ -1,3 +1,4 @@
+import { Money } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import { FindTransactionsOptions, findTransactions } from '@models/transactions-query';
 import { Op, col, fn, literal } from 'sequelize';
@@ -5,17 +6,17 @@ import { Op, col, fn, literal } from 'sequelize';
 export interface PayeeStatsRow {
   payeeId: string;
   transactionCount: number;
-  netFlowRefCents: number;
+  netFlowRef: Money;
   firstSeenAt: Date | null;
   lastSeenAt: Date | null;
   topCategoryId: string | null;
 }
 
-/** COUNT lands as a number (the INT8 parser in `models/index`), SUM over BIGINT as a numeric string. */
+/** COUNT lands as a number (the INT8 parser in `models/index`), SUM over DECIMAL as an exact numeric string. */
 interface TotalsRow {
   payeeId: string;
   transactionCount: number;
-  netFlowRefCents: string | null;
+  netFlowRef: string | null;
   firstSeenAt: Date | null;
   lastSeenAt: Date | null;
 }
@@ -87,7 +88,7 @@ async function getPayeeStats({
       attributes: [
         'payeeId',
         [rowCount, 'transactionCount'],
-        [signedRefAmountSum, 'netFlowRefCents'],
+        [signedRefAmountSum, 'netFlowRef'],
         [fn('MIN', col('Transactions.time')), 'firstSeenAt'],
         [fn('MAX', col('Transactions.time')), 'lastSeenAt'],
       ],
@@ -114,7 +115,7 @@ async function getPayeeStats({
   return totals.map((row) => ({
     payeeId: row.payeeId,
     transactionCount: row.transactionCount,
-    netFlowRefCents: Number(row.netFlowRefCents ?? 0),
+    netFlowRef: Money.fromDecimal(row.netFlowRef ?? 0),
     firstSeenAt: row.firstSeenAt,
     lastSeenAt: row.lastSeenAt,
     topCategoryId: topCategoryByPayee.get(row.payeeId)?.categoryId ?? null,

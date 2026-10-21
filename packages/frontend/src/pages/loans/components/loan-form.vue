@@ -8,6 +8,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useCurrencyName, useFormatCurrency } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { useCurrenciesStore } from '@/stores';
 import { type CurrencyModel, LOAN_TYPE, SUPPORTED_LOAN_TYPES } from '@bt/shared/types';
 import { between, helpers, integer, maxLength, required } from '@vuelidate/validators';
@@ -47,12 +48,12 @@ const { t } = useI18n();
 const currenciesStore = useCurrenciesStore();
 const { formatCurrencyLabel } = useCurrencyName();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(currenciesStore);
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(currenciesStore);
 
 const defaultCurrency = computed(
   () =>
-    systemCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
-    systemCurrenciesVerbose.value.linked[0]?.code ??
+    isoCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
+    isoCurrenciesVerbose.value.linked[0]?.code ??
     '',
 );
 
@@ -124,8 +125,9 @@ const loanTypeOptions = computed(() =>
 
 const selectedLoanType = computed(() => loanTypeOptions.value.find((o) => o.value === form.loanType) ?? null);
 
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
 const selectedCurrency = computed(
-  () => systemCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
+  () => isoCurrenciesVerbose.value.linked.find((item) => item.code === form.currencyCode) ?? null,
 );
 
 const currencyLabel = (item: CurrencyModel): string =>
@@ -319,7 +321,7 @@ const submit = () => {
     <SelectField
       v-if="!isEdit"
       :model-value="selectedCurrency"
-      :values="systemCurrenciesVerbose.linked"
+      :values="isoCurrenciesVerbose.linked"
       :label-key="currencyLabel"
       value-key="code"
       :label="$t('forms.loan.currencyLabel')"
@@ -331,6 +333,7 @@ const submit = () => {
       <FormattedAmountField
         v-if="!isEdit"
         v-model="form.originalPrincipal"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.originalPrincipalLabel')"
         :placeholder="$t('forms.loan.originalPrincipalPlaceholder')"
         :error-message="getFieldErrorMessage('form.originalPrincipal')"
@@ -338,6 +341,7 @@ const submit = () => {
       />
       <FormattedAmountField
         v-model="form.balance"
+        :decimals="amountDecimals"
         :label="isEdit ? $t('forms.loan.currentBalanceLabel') : $t('forms.loan.initialBalanceLabel')"
         :placeholder="$t('forms.loan.initialBalancePlaceholder')"
         :error-message="getFieldErrorMessage('form.balance')"
@@ -390,6 +394,7 @@ const submit = () => {
       <InputField
         v-model="form.plannedPayment"
         type="number"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.plannedPaymentLabel')"
         :placeholder="$t('forms.loan.plannedPaymentPlaceholder')"
         :error-message="getFieldErrorMessage('form.plannedPayment')"
@@ -398,6 +403,7 @@ const submit = () => {
       <InputField
         v-model="form.minPayment"
         type="number"
+        :decimals="amountDecimals"
         :label="$t('forms.loan.minPaymentLabel')"
         :placeholder="$t('forms.loan.minPaymentPlaceholder')"
         :error-message="getFieldErrorMessage('form.minPayment')"

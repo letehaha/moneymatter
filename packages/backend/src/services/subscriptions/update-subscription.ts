@@ -6,11 +6,13 @@ import {
   SUBSCRIPTION_TYPES,
   SubscriptionMatchingRules,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { roundToCurrency } from '@common/lib/currency-precision';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import Subscriptions from '@models/subscriptions.model';
 import { resolveManualLogoFields } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import { Op } from 'sequelize';
 
@@ -61,6 +63,8 @@ export const updateSubscription = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateSubscriptionParams) => {
     const subscription = await findSubscriptionOrThrow({ id, userId });
 
+    await assertCurrencyCodesVisible({ userId, codes: [fields.expectedCurrencyCode] });
+
     if (fields.accountId !== undefined && fields.accountId !== null) {
       await validateAccountOwnership({ accountId: fields.accountId, userId });
     }
@@ -88,7 +92,7 @@ export const updateSubscription = withTransaction(
     });
 
     // Validate the merged amount/currency pairing (only null-ness matters, so the
-    // stored cents vs. the incoming decimal is irrelevant). Covers MCP callers that
+    // stored Money vs. the incoming decimal is irrelevant). Covers MCP callers that
     // send a partial payload the controller's request schema can't reconcile.
     assertAmountCurrencyConsistent({
       expectedAmount: fields.expectedAmount !== undefined ? fields.expectedAmount : subscription.expectedAmount,
@@ -161,14 +165,26 @@ export const updateSubscription = withTransaction(
     const wasInstallment = subscription.type === SUBSCRIPTION_TYPES.installment;
     const previousDueDate = subscription.dueDate;
 
-    // The API exchanges decimals; the cents-backed column takes a Money (or null
+    // The API exchanges decimals; the DECIMAL column takes a Money (or null
     // to clear). Convert only when the caller sent the field, so an omitted
     // expectedAmount leaves the stored amount untouched.
     const { expectedAmount: expectedAmountInput, ...restFields } = fields;
+    const expectedCurrencyCode = fields.expectedCurrencyCode ?? subscription.expectedCurrencyCode;
     await subscription.update({
       ...restFields,
       ...(expectedAmountInput !== undefined
-        ? { expectedAmount: expectedAmountInput != null ? Money.fromDecimal(expectedAmountInput) : null }
+        ? {
+            // Stored at the decimals of the currency it is billed in.
+            expectedAmount:
+              expectedAmountInput != null && expectedCurrencyCode
+                ? await roundToCurrency({
+                    money: Money.fromDecimal(expectedAmountInput),
+                    userId,
+                    currencyCode: expectedCurrencyCode,
+                    mode: 'half-up',
+                  })
+                : null,
+          }
         : {}),
     });
 
@@ -250,12 +266,11 @@ export const updateSubscription = withTransaction(
       await subscription.$set('tags', uniqueTagIds);
     }
 
-    // Surface expectedAmount as a decimal so the response matches GET (the
-    // column holds raw cents).
+    // Surface expectedAmount as a decimal number so the response matches GET.
     const plain = subscription.toJSON() as Subscriptions;
     return {
       ...plain,
-      expectedAmount: centsToApiDecimalOrNull(plain.expectedAmount),
+      expectedAmount: moneyToApiDecimalOrNull(plain.expectedAmount),
       tagIds: uniqueTagIds ?? (await getSubscriptionTagIds({ subscriptionId: id })),
     };
   },

@@ -27,15 +27,16 @@ export const SUPPORTED_LOAN_TYPES = [
 /**
  * Append-only audit/timeline entries on `LoanDetails.events` (JSONB). `at` is
  * ISO 8601; rate values are APR percent; `null` from/to means "not set". Money
- * fields are cents at rest — the API serializer converts to decimals (see
- * `LoanEventApi`). `balance_correction` records a manual outstanding edit
- * (positive amounts) that bypasses the payment flow.
+ * fields are decimals at rest, in the loan account's currency; the keys keep the
+ * `fromCents`/`toCents` names they had when the amounts were cents, and the API
+ * serializer renames them (see `LoanEventApi`). `balance_correction` records a
+ * manual outstanding edit (positive amounts) that bypasses the payment flow.
  *
  * Adding an event type: extend this union and the Zod schema. `LoanEventApi` is
  * derived from this union, so the wire shape updates automatically. Only a
- * branch that carries cents (`fromCents`/`toCents`) needs a matching case in
- * `serializeLoanEvent` — its exhaustiveness check turns a forgotten conversion
- * into a compile error; cents-free branches pass through untouched.
+ * branch that carries money (`fromCents`/`toCents`) needs a matching case in
+ * `serializeLoanEvent` — its exhaustiveness check turns a forgotten rename
+ * into a compile error; money-free branches pass through untouched.
  */
 export type LoanEvent =
   | { type: 'rate_change'; at: string; from: number; to: number }
@@ -48,8 +49,8 @@ export type LoanEvent =
 export type LoanEventType = LoanEvent['type'];
 
 /**
- * Renames the cents-denominated `fromCents`/`toCents` fields of a single event
- * branch to the decimal `from`/`to` the API emits; every other field passes
+ * Renames the `fromCents`/`toCents` money fields of a single event
+ * branch to the `from`/`to` the API emits; every other field passes
  * through unchanged. Distributes over a union of branches.
  */
 type LoanEventBranchToApi<T> = T extends unknown
@@ -57,9 +58,8 @@ type LoanEventBranchToApi<T> = T extends unknown
   : never;
 
 /**
- * Wire shape of `LoanEvent`, derived mechanically: cents fields become decimal
- * `from`/`to` per the decimals-in-API convention. Never hand-edit — it tracks
- * `LoanEvent`.
+ * Wire shape of `LoanEvent`, derived mechanically: the `fromCents`/`toCents`
+ * fields become `from`/`to`. Never hand-edit — it tracks `LoanEvent`.
  */
 export type LoanEventApi = LoanEventBranchToApi<LoanEvent>;
 
@@ -148,8 +148,8 @@ interface AmortizingLoanProjection extends LoanProjectionProgress {
 export type LoanProjection = PaidOffLoanProjection | StalledLoanProjection | AmortizingLoanProjection;
 
 /**
- * Serialized loan-details sidecar. Money fields are decimals (cents converted
- * on the way out); `events` carry the decimal `LoanEventApi` wire shape.
+ * Serialized loan-details sidecar. Money fields are decimals; `events` carry the decimal
+ * `LoanEventApi` wire shape.
  */
 export interface LoanDetailsApiResponse {
   id: RecordId;
@@ -199,8 +199,8 @@ export interface LoanBalanceHistoryPoint {
 /**
  * 1:1 sidecar on `Accounts` for loan-category accounts (APR, payment plan,
  * lender metadata, event log); the Account still owns the balance (stored
- * negative) and currency. Monetary values are cents (BIGINT), surfaced as
- * Money via model getters.
+ * negative) and currency. Monetary values are decimals (DECIMAL(36,18)),
+ * surfaced as Money via model getters.
  */
 export interface LoanDetailsModel {
   id: RecordId;
@@ -209,7 +209,7 @@ export interface LoanDetailsModel {
   /** Sub-type (mortgage, auto, student…) – drives UI grouping only. */
   loanType: LOAN_TYPE;
   /**
-   * Lender-issued principal in cents, immutable after create —
+   * Lender-issued principal, immutable after create —
    * Account.initialBalance drifts with balance corrections, so this frozen
    * field preserves the amortization reference.
    */

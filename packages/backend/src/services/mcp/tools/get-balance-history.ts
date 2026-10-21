@@ -1,3 +1,4 @@
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeBalanceHistory, serializeCombinedBalanceHistory } from '@root/serializers/stats.serializer';
@@ -44,8 +45,9 @@ export function registerGetBalanceHistory(server: McpServer) {
         return jsonContent({ data: serializeBalanceHistory(balances) });
       }
 
-      const combined = await getCombinedBalanceHistory({ userId, from, to });
-      return jsonContent({ data: serializeCombinedBalanceHistory(combined) });
+      const decimals = await getBaseCurrencyDecimals({ userId });
+      const combined = await getCombinedBalanceHistory({ userId, from, to, decimals });
+      return jsonContent({ data: serializeCombinedBalanceHistory({ items: combined, decimals }) });
     },
   );
 }

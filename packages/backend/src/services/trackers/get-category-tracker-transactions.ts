@@ -109,6 +109,10 @@ export const getCategoryTrackerTransactions = async ({
       continue;
     }
 
+    // Budgets spend in base currency; a row with no base-currency amount (custom currency, no rate
+    // yet) is not part of the spent figure, so it is not listed under it either.
+    if (tx.refAmount === null) continue;
+
     seenTransactionIds.add(tx.id);
     results.push({
       id: tx.id,
@@ -135,7 +139,7 @@ export const getCategoryTrackerTransactions = async ({
     const transaction = split.get('transaction') as Transactions.default;
     const category = split.get('category') as Categories | undefined;
 
-    if (!transaction) continue;
+    if (!transaction || split.refAmount === null) continue;
 
     results.push({
       id: transaction.id,

@@ -38,12 +38,12 @@ const queryClient = useQueryClient();
 const currenciesStore = useCurrenciesStore();
 const { addNotification } = useNotificationCenter();
 const { formatCurrencyLabel } = useCurrencyName();
-const { baseCurrency, systemCurrenciesVerbose } = storeToRefs(currenciesStore);
+const { baseCurrency, isoCurrenciesVerbose } = storeToRefs(currenciesStore);
 
 const defaultCurrency = computed(
   () =>
-    systemCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
-    systemCurrenciesVerbose.value.linked[0]?.code ??
+    isoCurrenciesVerbose.value.linked.find((i) => i.code === baseCurrency.value?.currencyCode)?.code ??
+    isoCurrenciesVerbose.value.linked[0]?.code ??
     '',
 );
 
@@ -185,7 +185,7 @@ const submit = async () => {
             <Select.SelectValue />
           </Select.SelectTrigger>
           <Select.SelectContent>
-            <template v-for="item of systemCurrenciesVerbose.linked" :key="item.code">
+            <template v-for="item of isoCurrenciesVerbose.linked" :key="item.code">
               <Select.SelectItem :value="String(item.code)">
                 {{ formatCurrencyLabel({ code: item.code, fallbackName: item.currency }) }}
               </Select.SelectItem>

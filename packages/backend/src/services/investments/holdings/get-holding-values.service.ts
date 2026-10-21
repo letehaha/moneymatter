@@ -8,6 +8,7 @@ import Securities from '@models/investments/securities.model';
 import SecurityPricing from '@models/investments/security-pricing.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
+import { INVESTMENT_CONVERSION_DECIMALS } from '@services/calculate-ref-amount.utils';
 import { withDeduplication } from '@services/common/with-deduplication';
 import { calculateAllGains } from '@services/investments/gains/gains-calculator.utils';
 import * as userExchangeRateService from '@services/user-exchange-rate';
@@ -231,7 +232,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
 
   // oxlint-disable-next-line unicorn/consistent-function-scoping
   const toDisplay = ({ decimal, rate }: { decimal: string; rate: number }): string =>
-    calculateRefAmountFromParams({ amount: Money.fromDecimal(decimal), rate })
+    calculateRefAmountFromParams({ amount: Money.fromDecimal(decimal), rate, ...INVESTMENT_CONVERSION_DECIMALS })
       .toNumber()
       .toFixed(2);
 
@@ -260,6 +261,7 @@ const getHoldingValuesImpl = async ({ portfolioId, date, userId }: GetHoldingVal
           refMarketValue = calculateRefAmountFromParams({
             amount: Money.fromDecimal(marketValue),
             rate: baseRate,
+            ...INVESTMENT_CONVERSION_DECIMALS,
           }).toDecimalString(INVESTMENT_DECIMAL_SCALE);
         }
       }

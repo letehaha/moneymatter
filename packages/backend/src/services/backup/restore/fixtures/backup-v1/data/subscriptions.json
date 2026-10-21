@@ -1,0 +1,15 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000090",
+    "userId": 1,
+    "name": "Streaming",
+    "type": "subscription",
+    "transactionType": "expense",
+    "expectedAmount": 1599,
+    "expectedCurrencyCode": "AED",
+    "frequency": "monthly",
+    "startDate": "2025-01-01",
+    "createdAt": "2025-03-01T10:00:00.000Z",
+    "updatedAt": "2025-03-01T10:00:00.000Z"
+  }
+]

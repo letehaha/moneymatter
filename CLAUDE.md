@@ -89,14 +89,16 @@ Other instructions:
    ast-grep --pattern '<button>$TEXT</button>' src/**/*.vue
    ```
 
-6. **Money Convention: `Money` class everywhere, decimals in API, decimals in Frontend**
-   - The database stores monetary amounts as **cents** (INTEGER columns) or **decimal strings** (DECIMAL columns for investments).
-   - All Sequelize models declare money fields with the `@MoneyField` decorator (from `@common/types/money-column`): `@MoneyField({ storage: 'cents' }) declare amount: Money;`. It registers attribute-level getters/setters that return `Money` instances (from `@common/types/money`). **Do NOT use `raw: true`** on queries that include Money fields – it bypasses getters and returns raw integers/strings instead of `Money`.
+6. **Money Convention: `Money` class everywhere, decimals in the DB, API and Frontend**
+   - The database stores every monetary amount as a **decimal** (`DECIMAL(36,18)` columns), never as cents. The list of money columns and JSON fields lives in `@common/lib/money-columns`; a unit test keeps it in step with the model declarations.
+   - All Sequelize models declare money fields with the `@MoneyField` decorator (from `@common/types/money-column`): `@MoneyField({ storage: 'decimal', precision: 36, scale: 18 }) declare amount: Money;`. Do not declare a `storage: 'cents'` field. The decorator registers attribute-level getters/setters that return `Money` instances (from `@common/types/money`). **Do NOT use `raw: true`** on queries that include Money fields – it bypasses getters and returns decimal strings instead of `Money`.
+   - **Report engines compute in integer minor units at the currency's decimals** (stats, budgets, loans, vehicle history): `toMinorUnits({ decimals })`, `Money.fromMinorUnits({ value, decimals })`, `minorUnitsToApiDecimal({ value, decimals })`, with `decimals` from `getCurrencyDecimals` / `getBaseCurrencyDecimals` (`@common/lib/currency-precision`). At 2 decimals they equal the cents helpers. `toCents` / `fromCents` / `centsToApiDecimal` are only for values that really are cents (provider minor units).
    - Use `Money` methods for all monetary operations:
-     - Construction: `Money.fromCents(n)`, `Money.fromDecimal(n)`, `Money.zero()`
+     - Construction: `Money.fromDecimal(n)`, `Money.zero()` (`Money.fromCents(n)` only for provider minor units that really are cents)
      - Arithmetic: `.add()`, `.subtract()`, `.multiply()`, `.divide()`, `.abs()`, `.negate()`
-     - Output: `.toCents()` (for DB writes / cents arithmetic), `.toNumber()` (for API decimals), `.toJSON()` (auto-called by `res.json()`)
-   - All API responses MUST return monetary amounts as **decimals** (not cents). `Money` auto-serializes via `toJSON()` in `res.json()`. For explicit conversion, use serializers with `centsToApiDecimal()` from `@common/types/money`.
+     - Output: `.toNumber()` (for API decimals), `.toJSON()` (auto-called by `res.json()`). **Never `.toCents()` for DB writes**: assign the `Money` itself, and in raw SQL (`literal`, replacements, bulk inserts) format it with `toMoneyColumnValue` from `@common/types/money-column`.
+   - **Round every money write to its currency's decimals** (`getCurrencyDecimals`, `roundToCurrency`, `roundMoneyValues` from `@common/lib/currency-precision`; `roundTransactionMoney` for transaction fields). Amounts a user or provider enters round **half-up**; converted values (ref amounts, balance revaluation) round **half-even**. Conversions get both currencies' decimals from `getConversionDecimals`. A partial update rounds only the money fields in its payload, so editing a note never rewrites a stored amount.
+   - All API responses MUST return monetary amounts as **decimals** (not cents). `Money` auto-serializes via `toJSON()` in `res.json()`. For explicit conversion (including raw rows), use serializers with `moneyToApiDecimal()` / `moneyToApiDecimalOrNull()` from `@common/types/money`. `centsToApiDecimal()` is only for values that really are cents; report engines use `minorUnitsToApiDecimal()`.
    - Money fields on transactions: `amount`, `refAmount`, `commissionRate`, `refCommissionRate`, `cashbackAmount`
    - **Frontend ALWAYS works with decimals.** The API returns decimals, forms accept decimals, and the frontend sends decimals back. **NEVER** manually convert between cents and decimals in frontend code.
 7. **i18n Files - use the `i18n-editor` subagent**

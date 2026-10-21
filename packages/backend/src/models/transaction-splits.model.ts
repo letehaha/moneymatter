@@ -54,12 +54,12 @@ export default class TransactionSplits extends Model {
   categoryId!: RecordId;
 
   /** Amount in account currency (same as transaction.amount) */
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare amount: Money;
 
   /** Amount in base currency (same as transaction.refAmount) */
-  @MoneyField({ storage: 'cents' })
-  declare refAmount: Money;
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true, defaultValue: '0' })
+  declare refAmount: Money | null;
 
   // Optional per-split note, max 100 chars
   @Length({ max: 100 })
@@ -86,7 +86,8 @@ export interface CreateSplitPayload {
   userId: number;
   categoryId: string;
   amount: Money;
-  refAmount: Money;
+  /** `null` while a custom currency has no rate on the transaction's date. */
+  refAmount: Money | null;
   note?: string | null;
 }
 

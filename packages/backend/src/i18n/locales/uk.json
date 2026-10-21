@@ -231,6 +231,7 @@
     "securitySearchResultNotRecognized": "Результат пошуку цінного папера не розпізнано або він застарів. Виконайте пошук цінного папера ще раз.",
     "currencyForSecurityNotFound": "Валюту для цінного папера не знайдено.",
     "currencyNotFound": "Валюту не знайдено",
+    "customCurrencyNotSupported": "Портфелі підтримують лише валюти ISO 4217. \"{{code}}\" — це власна валюта",
     "transactionNotFound": "Інвестиційну транзакцію не знайдено",
     "userBaseCurrencyNotFound": "Базову валюту користувача не знайдено",
     "insufficientSharesToSell": "Недостатня кількість для продажу. Після цього оновлення кількість становитиме {{adjustedQuantity}}, а кількість для продажу — {{sellQuantity}}.",
@@ -564,7 +565,16 @@
     "cannotFindForRefAmount": "Не вдалося знайти валюту для розрахунку базової суми!",
     "cannotCalculateRefAmount": "Не вдалося розрахувати базову суму",
     "currencyNotConnected": "Запитана валюта не підключена",
-    "exchangeRateNotAvailable": "Курс обміну недоступний для {{baseCode}}/{{quoteCode}} на {{date}}"
+    "exchangeRateNotAvailable": "Курс обміну недоступний для {{baseCode}}/{{quoteCode}} на {{date}}",
+    "unknownCurrencyCode": "Невідомий код валюти: {{code}}",
+    "amountExceedsDecimals": "{{code}} дозволяє не більше {{decimals}} знаків після коми",
+    "customCurrencyNotFound": "Власну валюту «{{code}}» не знайдено",
+    "customCurrencyIsoCode": "«{{code}}» — це код валюти за ISO 4217, його не можна визначити як власну валюту",
+    "customCurrencyAlreadyDefined": "У вас уже є валюта з кодом «{{code}}»",
+    "customCurrencyInUse": "Неможливо видалити «{{code}}»: вона ще використовується ({{usedBy}})",
+    "customCurrencyDecimalsInUse": "Неможливо змінити кількість знаків після коми для «{{code}}»: вона ще використовується ({{usedBy}})",
+    "customCurrencyUseCustomEndpoint": "«{{code}}» — це власна валюта. Видаліть її зі своїх власних валют",
+    "customCurrencyCannotBeBase": "«{{code}}» — це власна валюта, її не можна зробити базовою"
   },
   "userSettings": {
     "userSettingsNotFound": "Налаштування користувача не знайдено"

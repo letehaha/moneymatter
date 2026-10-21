@@ -2,6 +2,7 @@ import { SORT_DIRECTIONS, TRANSACTION_SORT_FIELD } from '@bt/shared/types';
 import { booleanQuery, withDateOrder } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTransactions } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
@@ -43,6 +44,8 @@ export default createController(schema, async ({ user, query }) => {
     from: offset,
     userId: user.id,
   });
+
+  await attachTransactionCurrencyMeta({ transactions });
 
   // Serialize: convert cents to decimal for API response
   return { data: serializeTransactions(transactions) };

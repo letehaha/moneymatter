@@ -9,6 +9,35 @@ import { getResponseInitialState } from './stats';
 const findFood = (categories: Awaited<ReturnType<typeof helpers.getCategoriesList>>) =>
   categories.find((category) => category.key === 'food' && category.parentId === null)!;
 
+/** Runs the flow as a KWD-base user (3 decimals) with a KWD account. */
+const inKwdBook = async (fn: (book: { accountId: RecordId; categoryId: RecordId }) => Promise<void>): Promise<void> => {
+  const kwdUser = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+
+  await helpers.asUser({
+    cookies: kwdUser.cookies,
+    fn: async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+      const account = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }),
+        raw: true,
+      });
+      const category = await helpers.addCustomCategory({ name: 'Precision', color: '#AABBCC', raw: true });
+      await fn({ accountId: account.id, categoryId: category.id });
+    },
+  });
+};
+
+const expenseOf = ({ accountId, categoryId, amount }: { accountId: RecordId; categoryId: RecordId; amount: number }) =>
+  helpers.createTransaction({
+    payload: helpers.buildTransactionPayload({
+      accountId,
+      categoryId,
+      amount,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-06-15T10:00:00Z',
+    }),
+    raw: true,
+  });
 describe('Get tracker stats', () => {
   it('successfully returns stats', async () => {
     const [baseTx] = await helpers.createTransaction({ raw: true });
@@ -536,6 +565,91 @@ describe('Get tracker stats', () => {
       expect(stats.summary.actualExpense).toBe(300);
       expect(stats.lines).toEqual([{ lineId: line.id, spent: 500 }]);
       expect(stats.otherSpent).toBe(0);
+    });
+  });
+
+  describe('Base currency decimals', () => {
+    it('reports a manual tracker at 3 decimals for a KWD-base user', async () => {
+      await inKwdBook(async ({ accountId, categoryId }) => {
+        const [tx] = await expenseOf({ accountId, categoryId, amount: 1.234 });
+        const tracker = await helpers.createTracker({ name: 'kwd-manual', limitAmount: 10.125, raw: true });
+        await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
+
+        const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+
+        expect(stats.summary.actualExpense).toBe(1.234);
+        expect(stats.summary.balance).toBe(-1.234);
+        expect(stats.summary.actualIncome).toBe(0);
+        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((1.234 / 10.125) * 100).toFixed(2));
+      });
+    });
+
+    it('reports a category tracker at 3 decimals for a KWD-base user', async () => {
+      await inKwdBook(async ({ accountId, categoryId }) => {
+        await expenseOf({ accountId, categoryId, amount: 1.234 });
+        const tracker = await helpers.createTracker({
+          name: 'kwd-category',
+          type: TRACKER_TYPES.category,
+          categoryIds: [categoryId],
+          startDate: '2025-06-01T00:00:00Z',
+          endDate: '2025-06-30T23:59:59Z',
+          limitAmount: 10.125,
+          raw: true,
+        });
+
+        const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+
+        expect(stats.summary.actualExpense).toBe(1.234);
+        expect(stats.summary.balance).toBe(-1.234);
+        expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((1.234 / 10.125) * 100).toFixed(2));
+      });
+    });
+
+    it('keeps the 2-decimal values for a 2-decimal base user', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 1.23,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      const tracker = await helpers.createTracker({ name: 'two-decimals', limitAmount: 10.12, raw: true });
+      await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx.id] } });
+
+      const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
+
+      expect(stats.summary.actualExpense).toBe(1.23);
+      expect(stats.summary.balance).toBe(-1.23);
+      expect(stats.summary.utilizationRate?.toFixed(2)).toBe(((123 / 1012) * 100).toFixed(2));
+    });
+  });
+
+  describe('Cross-user isolation', () => {
+    it('answers 404 to a user with no claim on the tracker, on every read route', async () => {
+      const category = await helpers.addCustomCategory({ name: 'Isolation', color: '#AABBCC', raw: true });
+      const categoryBudget = await helpers.createTracker({
+        name: 'isolated-category',
+        type: TRACKER_TYPES.category,
+        categoryIds: [category.id],
+        raw: true,
+      });
+      const manualBudget = await helpers.createTracker({ name: 'isolated-manual', raw: true });
+
+      const stranger = await helpers.signUpSecondUser();
+      await helpers.asUser({
+        cookies: stranger.cookies,
+        fn: async () => {
+          for (const id of [categoryBudget.id, manualBudget.id]) {
+            expect((await helpers.getTrackerById({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
+            expect((await helpers.getTrackerStats({ id, raw: false })).statusCode).toBe(ERROR_CODES.NotFoundError);
+          }
+          expect((await helpers.getCategoryTrackerTransactions({ id: categoryBudget.id, raw: false })).statusCode).toBe(
+            ERROR_CODES.NotFoundError,
+          );
+        },
+      });
     });
   });
 });

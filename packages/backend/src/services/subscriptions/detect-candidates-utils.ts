@@ -44,6 +44,7 @@ export function buildGroupingKey({
 
 export interface TransactionForGrouping {
   id: string;
+  /** Decimal amount in the transaction's currency. Grouping compares ratios only, so the scale does not matter. */
   amount: number;
   note: string;
   time: Date;

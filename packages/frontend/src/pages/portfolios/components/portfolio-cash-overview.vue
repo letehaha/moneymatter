@@ -25,11 +25,7 @@
       :key="balance.currencyCode"
       class="bg-muted/30 flex items-center gap-3 rounded-lg p-3"
     >
-      <img
-        :src="getCurrencyIcon(balance.currencyCode)"
-        :alt="balance.currencyCode"
-        class="size-8 rounded-full object-cover"
-      />
+      <CurrencyIcon :code="balance.currencyCode" size="size-8" />
       <div class="min-w-0 flex-1">
         <p class="text-sm font-semibold">{{ balance.currencyCode }}</p>
         <p v-if="balance.currency?.currency" class="text-muted-foreground truncate text-xs">
@@ -50,9 +46,9 @@
 </template>
 
 <script setup lang="ts">
+import CurrencyIcon from '@/components/common/currency-icon.vue';
 import { usePortfolioBalances } from '@/composable/data-queries/portfolio-balances';
 import { useFormatCurrency } from '@/composable/formatters';
-import { getCurrencyIcon } from '@/js/helpers/currencyImage';
 import { useCurrenciesStore } from '@/stores/currencies';
 import { storeToRefs } from 'pinia';
 import { computed, toRef } from 'vue';

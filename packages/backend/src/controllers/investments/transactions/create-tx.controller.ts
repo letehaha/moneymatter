@@ -1,5 +1,5 @@
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
-import { currencyCode, numericString, recordId } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode, numericString, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
 import { z } from 'zod';
@@ -26,7 +26,7 @@ export default createController(
         // cash moved and wants the fee derived. Whether settlementFees is
         // required depends on the holding's currency, so that check lives in
         // the service (resolveSettlement).
-        settlementCurrencyCode: currencyCode().optional(),
+        settlementCurrencyCode: isoCurrencyCode().optional(),
         settlementAmount: numericString({ allowZero: true }).optional(),
         settlementFees: numericString({ allowZero: true }).optional(),
         // Known security→settlement rate; the fee is derived as the residual.

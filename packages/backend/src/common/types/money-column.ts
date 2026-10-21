@@ -1,3 +1,4 @@
+import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import { DataType, addAttribute } from 'sequelize-typescript';
 
 import { Money } from './money';
@@ -18,7 +19,10 @@ import { Money } from './money';
  *
  * Value contracts (same as the underlying setters):
  * - cents: accepts `Money` or a raw number of CENTS
- * - decimal: accepts `Money` or a raw decimal string/number
+ * - decimal: accepts `Money` or a raw decimal string/number, stored as given up to the column scale.
+ *   Rounding to a currency's own decimals happens before the value reaches the model (see
+ *   `roundToCurrency` / `roundMoneyValues` in `@common/lib/currency-precision`), because the
+ *   decimals depend on a currency the attribute setter cannot see.
  *
  * @example
  * // BIGINT column storing cents:
@@ -55,7 +59,7 @@ export function MoneyField(opts: MoneyColumnOptions): PropertyDecorator {
                 return moneyGetDecimal(this, key);
               },
               set(this: ModelDataAccess, val: Money | string | number | null): void {
-                moneySetDecimal(this, key, val, scale);
+                moneySetDecimal({ model: this, field: key, val, scale });
               },
             };
           })();
@@ -98,6 +102,19 @@ function buildColumnConfig(opts: MoneyColumnOptions): MoneyColumnConfig {
 }
 
 // ---------------------------------------------------------------------------
+// Raw SQL values
+// ---------------------------------------------------------------------------
+
+/**
+ * Decimal string for a money column in raw SQL (`literal`, `query` replacements, bulk inserts).
+ * Raw SQL bypasses the `@MoneyField` setters, so this formats the value exactly as they store it.
+ * It does not round to a currency: the caller rounds the value first, like any other write.
+ */
+export function toMoneyColumnValue({ money }: { money: Money }): string {
+  return money.toDecimalString(MONEY_COLUMN_SCALE);
+}
+
+// ---------------------------------------------------------------------------
 // Value conversion helpers used by the @MoneyField accessors
 // ---------------------------------------------------------------------------
 
@@ -137,18 +154,23 @@ function moneyGetDecimal(model: ModelDataAccess, field: string): Money {
 }
 
 /** Setter helper for DECIMAL columns ← accepts Money or raw value */
-function moneySetDecimal(
-  model: ModelDataAccess,
-  field: string,
-  val: Money | string | number | null,
-  scale: number,
-): void {
+function moneySetDecimal({
+  model,
+  field,
+  val,
+  scale,
+}: {
+  model: ModelDataAccess;
+  field: string;
+  val: Money | string | number | null;
+  scale: number;
+}): void {
   if (val === null) {
     model.setDataValue(field, null);
   } else if (Money.isMoney(val)) {
     model.setDataValue(field, val.toDecimalString(scale));
   } else {
-    // Backward compatibility: accept raw values
+    // Raw values (decimal strings/numbers, Sequelize Literals) pass through unchanged
     model.setDataValue(field, val);
   }
 }

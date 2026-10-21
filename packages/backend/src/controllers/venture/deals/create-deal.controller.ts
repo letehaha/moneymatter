@@ -1,5 +1,5 @@
 import { VENTURE_CASH_FLOW_MODE, VENTURE_SPV_SUBTYPE, VENTURE_VEHICLE_TYPE } from '@bt/shared/types/venture';
-import { currencyCode, dateString, decimalString, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { dateString, decimalString, isoCurrencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeVentureDeal } from '@root/serializers';
 import { createVentureDeal } from '@services/venture/deals/create.service';
@@ -9,7 +9,7 @@ export default createController(
   z.object({
     body: z.object({
       name: z.string().trim().min(1).max(255),
-      currencyCode: currencyCode(),
+      currencyCode: isoCurrencyCode(),
       principal: decimalString(),
       investmentDate: dateString(),
       platformId: recordId().nullable().optional(),

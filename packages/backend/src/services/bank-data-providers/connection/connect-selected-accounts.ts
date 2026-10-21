@@ -5,6 +5,7 @@ import {
   BANK_PROVIDER_TYPE,
   NO_CURRENCY_CODE,
 } from '@bt/shared/types';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { BadRequestError, NotFoundError, ValidationError } from '@js/errors';
@@ -14,15 +15,16 @@ import AccountGrouping from '@models/accounts-groups/account-grouping.model';
 import AccountGroup from '@models/accounts-groups/account-groups.model';
 import Accounts from '@models/accounts.model';
 import BankDataProviderConnections from '@models/bank-data-provider-connections.model';
-import { NON_CURRENCY_CODES, getCurrency } from '@models/currencies.model';
+import { NON_CURRENCY_CODES } from '@models/currencies.model';
 import Subscriptions from '@models/subscriptions.model';
-import { calculateRefAmount } from '@root/services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@root/services/calculate-ref-amount.service';
 import { withTransaction } from '@root/services/common/with-transaction';
 import {
   PROVIDER_TO_ACCOUNT_TYPE,
   restoreRelinkedTransactionsAccountType,
 } from '@services/accounts/restore-relinked-transactions-account-type';
 import { addUserCurrencies } from '@services/currencies/add-user-currency';
+import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
 
 import { bankProviderRegistry } from '../registry';
 import { enqueueAccountSync } from '../sync/account-sync-queue';
@@ -212,9 +214,12 @@ const createAccountsForConnection = withTransaction(
           providerAccount.currency = override;
         }
 
-        // Reject unknown codes and ISO 4217 non-currencies (metals, test codes):
-        // they have no exchange rate, so calculateRefAmount below would throw a 500.
-        const currency = await getCurrency({ code: providerAccount.currency.toUpperCase() });
+        // Reject unknown codes, other users' custom codes (the user's own are fine, e.g. a
+        // currency override picked for an "XXX" account) and ISO 4217 non-currencies (metals,
+        // test codes): they have no exchange rate, so calculateRefAmount below would throw a 500.
+        const {
+          visible: [currency],
+        } = await resolveVisibleCurrencies({ userId, codes: [providerAccount.currency] });
         if (!currency || NON_CURRENCY_CODES.includes(currency.code)) {
           throw new BadRequestError({
             message: t({
@@ -225,24 +230,33 @@ const createAccountsForConnection = withTransaction(
         }
         await addUserCurrencies([{ userId, currencyCode: currency.code }]);
 
+        // `ProviderAccount.balance` and the `creditLimit` metadata are minor units (cents).
+        const { providerBalance, creditLimit } = await roundMoneyValues({
+          values: {
+            providerBalance: Money.fromCents(providerAccount.balance),
+            creditLimit: Money.fromCents((providerAccount.metadata?.creditLimit as number) || 0),
+          },
+          userId,
+          currencyCode: providerAccount.currency,
+          mode: 'half-up',
+        });
+
         const now = new Date();
-        const accountRefBalance = await calculateRefAmount({
-          amount: Money.fromCents(providerAccount.balance),
+        const accountRefBalance = await calculateRefAmountOrNull({
+          amount: providerBalance,
           userId,
           date: now,
           baseCode: providerAccount.currency,
         });
 
-        const creditLimitCents = (providerAccount.metadata?.creditLimit as number) || 0;
-        const refCreditLimit =
-          creditLimitCents > 0
-            ? await calculateRefAmount({
-                amount: Money.fromCents(creditLimitCents),
-                userId,
-                date: now,
-                baseCode: providerAccount.currency,
-              })
-            : Money.zero();
+        const refCreditLimit = creditLimit.isPositive()
+          ? await calculateRefAmountOrNull({
+              amount: creditLimit,
+              userId,
+              date: now,
+              baseCode: providerAccount.currency,
+            })
+          : Money.zero();
 
         // Create new account
         const accountName =
@@ -256,11 +270,11 @@ const createAccountsForConnection = withTransaction(
           type: PROVIDER_TO_ACCOUNT_TYPE[connection.providerType as BANK_PROVIDER_TYPE],
           accountCategory: ACCOUNT_CATEGORIES.general,
           currencyCode: providerAccount.currency,
-          initialBalance: providerAccount.balance,
+          initialBalance: providerBalance,
           refInitialBalance: accountRefBalance,
-          currentBalance: providerAccount.balance,
+          currentBalance: providerBalance,
           refCurrentBalance: accountRefBalance,
-          creditLimit: creditLimitCents,
+          creditLimit,
           refCreditLimit,
           externalId: providerAccount.externalId,
           externalData: { ...(providerAccount.metadata || {}), ...(currencyFallback && { currencyFallback }) },

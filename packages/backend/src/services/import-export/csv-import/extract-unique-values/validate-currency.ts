@@ -1,15 +1,9 @@
 import { AccountOptionValue, type ColumnMappingConfig, CurrencyOptionValue } from '@bt/shared/types';
+import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import * as Accounts from '@models/accounts.model';
-import * as Currencies from '@models/currencies.model';
-
-/**
- * Validate currency code format (3-letter uppercase)
- */
-function isValidCurrencyCode(code: string): boolean {
-  return /^[A-Z]{3}$/.test(code);
-}
+import { resolveVisibleCurrencies } from '@services/currencies/assert-currency-codes-visible';
 
 interface CurrencyValidationResult {
   currencyColumnIndex: number;
@@ -51,7 +45,7 @@ export async function validateCurrency({
     dataRows.forEach((row, index) => {
       const currency = row[currencyColumnIndex]?.trim().toUpperCase();
       if (currency) {
-        if (!isValidCurrencyCode(currency)) {
+        if (!isCurrencyCodeFormat(currency)) {
           invalidCurrencies.push(t({ key: 'csvImport.invalidCurrencyRow', variables: { row: index + 2, currency } }));
         } else {
           uniqueCurrencies.add(currency);
@@ -69,16 +63,15 @@ export async function validateCurrency({
       });
     }
 
-    // Validate that all unique currencies exist in the system
+    // Validate that all unique currencies exist and are visible to the user (an ISO code, or
+    // one of their own custom currencies)
     const currencyCodes = Array.from(uniqueCurrencies);
     if (currencyCodes.length > 0) {
-      const existingCurrencies = await Currencies.getCurrencies({ codes: currencyCodes });
-      const existingCodes = new Set(existingCurrencies.map((c) => c.code));
-      const missingCurrencies = currencyCodes.filter((code) => !existingCodes.has(code));
+      const { rejected } = await resolveVisibleCurrencies({ userId, codes: currencyCodes });
 
-      if (missingCurrencies.length > 0) {
+      if (rejected.length > 0) {
         throw new ValidationError({
-          message: t({ key: 'csvImport.unknownCurrencyCodes', variables: { codes: missingCurrencies.join(', ') } }),
+          message: t({ key: 'csvImport.unknownCurrencyCodes', variables: { codes: rejected.join(', ') } }),
         });
       }
     }
@@ -105,15 +98,15 @@ export async function validateCurrency({
   } else if (currencyOption.option === CurrencyOptionValue.existingCurrency) {
     defaultCurrency = currencyOption.currencyCode.toUpperCase();
 
-    if (!isValidCurrencyCode(defaultCurrency)) {
+    if (!isCurrencyCodeFormat(defaultCurrency)) {
       throw new ValidationError({
         message: t({ key: 'csvImport.invalidDefaultCurrency', variables: { defaultCurrency } }),
       });
     }
 
-    // Validate that the currency exists in the system
-    const currency = await Currencies.getCurrency({ code: defaultCurrency });
-    if (!currency) {
+    // Validate that the currency exists and is visible to the user
+    const { rejected } = await resolveVisibleCurrencies({ userId, codes: [defaultCurrency] });
+    if (rejected.length > 0) {
       throw new ValidationError({
         message: t({ key: 'csvImport.currencyNotSupported', variables: { currency: defaultCurrency } }),
       });

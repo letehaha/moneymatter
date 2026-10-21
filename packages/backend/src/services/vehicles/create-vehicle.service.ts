@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES, DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts, { createAccount as createAccountInDb } from '@models/accounts.model';
@@ -56,16 +57,24 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
   const now = new Date();
   const anchorDate = parseISO(purchaseDate);
 
+  // The depreciation curve starts from a price held at the currency's decimals.
+  const anchorPrice = await roundToCurrency({ money: purchasePrice, userId, currencyCode, mode: 'half-up' });
+
   // Compute today's depreciated value — that becomes the account's initial balance.
   // Historical Balances rows are not backfilled in P1 (documented limitation).
-  const currentValue = computeVehicleValue({
-    anchorValue: purchasePrice,
-    anchorDate,
-    asOf: now,
-    vehicleClass,
-    preset: depreciationPreset,
-    customAnnualRatePct,
-    salvageFloorPct,
+  const currentValue = await roundToCurrency({
+    money: computeVehicleValue({
+      anchorValue: anchorPrice,
+      anchorDate,
+      asOf: now,
+      vehicleClass,
+      preset: depreciationPreset,
+      customAnnualRatePct,
+      salvageFloorPct,
+    }),
+    userId,
+    currencyCode,
+    mode: 'half-up',
   });
 
   const refCurrentValue = await calculateRefAmount({
@@ -101,7 +110,7 @@ const createVehicleImpl = async (params: CreateVehicleParams) => {
     trim,
     year,
     vehicleClass,
-    purchasePrice,
+    purchasePrice: anchorPrice,
     purchaseDate,
     depreciationPreset,
     customAnnualRatePct,

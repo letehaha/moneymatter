@@ -168,7 +168,9 @@
         "selectRow": "Select transaction",
         "unselectableReasons": {
           "sharedAccount": "Can't be selected: this transaction is on an account shared with you, and only its owner can edit it."
-        }
+        },
+        "missingRate": "No rate",
+        "missingRateTooltip": "No exchange rate was available for this currency on the transaction date, so the amount is left out of base-currency totals. Set a rate in Settings → Currencies, then edit the transaction to value it."
       }
     },
     "outOfWallet": "Out of wallet",

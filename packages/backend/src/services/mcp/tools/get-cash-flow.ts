@@ -1,3 +1,4 @@
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -27,6 +28,7 @@ export function registerGetCashFlow(server: McpServer) {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'get_cash_flow', clientId: extra.authInfo?.clientId });
 
+      const decimals = await getBaseCurrencyDecimals({ userId });
       const cashFlow = await getCashFlow({
         userId,
         from: args.startDate,
@@ -34,9 +36,10 @@ export function registerGetCashFlow(server: McpServer) {
         granularity: args.granularity ?? 'monthly',
         accountId: args.accountId,
         categoryIds: args.categoryIds,
+        decimals,
       });
 
-      return jsonContent({ data: serializeCashFlow(cashFlow) });
+      return jsonContent({ data: serializeCashFlow({ cashFlow, decimals }) });
     },
   );
 }

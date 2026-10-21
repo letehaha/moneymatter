@@ -5,10 +5,10 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   RecordId,
 } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
-import { MoneyField } from '@common/types/money-column';
-import { roundHalfToEven } from '@common/utils/round-half-to-even';
+import { MoneyField, toMoneyColumnValue } from '@common/types/money-column';
 import { logger } from '@js/utils';
 import { runInSavepoint } from '@services/common/run-in-savepoint';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
@@ -45,7 +45,7 @@ export default class Balances extends Model {
    * specific date.
    * `amount` is in the BASE currency. So it represents a `refAmount` (`refBalance`)
    */
-  @MoneyField({ storage: 'cents' })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
   declare amount: Money;
 
   @ForeignKey(() => Accounts)
@@ -123,7 +123,9 @@ export default class Balances extends Model {
     isDelete?: boolean;
   }) {
     const { accountId, time } = data;
-    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? data.refAmount : data.refAmount.negate();
+    // A row without a base-currency amount (a custom currency with no rate yet) moves no balance.
+    const refAmount = data.refAmount ?? Money.zero();
+    let amount: Money = data.transactionType === TRANSACTION_TYPES.income ? refAmount : refAmount.negate();
     const date = startOfDay(new Date(time));
 
     switch (data.accountType) {
@@ -166,8 +168,9 @@ export default class Balances extends Model {
           amount = amount.negate(); // Reverse the amount if it's a deletion
         } else if (prevData) {
           const originalDate = startOfDay(new Date(prevData.time));
+          const prevRefAmount = prevData.refAmount ?? Money.zero();
           const originalAmount =
-            prevData.transactionType === TRANSACTION_TYPES.income ? prevData.refAmount : prevData.refAmount.negate();
+            prevData.transactionType === TRANSACTION_TYPES.income ? prevRefAmount : prevRefAmount.negate();
 
           if (
             // If the account ID changed,
@@ -251,7 +254,10 @@ export default class Balances extends Model {
             baseCode: data.currencyCode,
             quoteCode: data.refCurrencyCode,
           });
-          const refBalance = Money.fromCents(roundHalfToEven(balance * exchangeRateData.rate));
+          // Monobank reports the balance in minor units (cents) of the account currency.
+          const refBalance = Money.fromCents(balance)
+            .multiply(exchangeRateData.rate)
+            .roundHalfEven(await getCurrencyDecimals({ userId: data.userId, code: data.refCurrencyCode }));
 
           await this.updateAccountBalance({ accountId, date, refBalance });
         }
@@ -400,7 +406,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date: subDays(new Date(date), 1),
-              amount: account!.refInitialBalance,
+              amount: account!.refInitialBalance ?? Money.zero(),
             }),
           );
         } catch (err) {
@@ -415,7 +421,7 @@ export default class Balances extends Model {
             this.create({
               accountId,
               date,
-              amount: account!.refInitialBalance.add(amount),
+              amount: (account!.refInitialBalance ?? Money.zero()).add(amount),
             }),
           );
         } catch (err) {
@@ -442,7 +448,7 @@ export default class Balances extends Model {
 
     // Update the amount of all balances for the account that come after the date
     await this.update(
-      { amount: Balances.sequelize!.literal(`amount + ${amount.toCents()}`) },
+      { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: amount })})`) },
       {
         where: {
           accountId,
@@ -466,7 +472,10 @@ export default class Balances extends Model {
    * @param prevAccount - The previous account state (undefined for new accounts)
    */
   static async handleAccountChange({ account, prevAccount }: { account: Accounts; prevAccount?: Accounts }) {
-    const { id: accountId, refInitialBalance } = account;
+    const { id: accountId } = account;
+    // An account whose opening balance has no base-currency value yet (a custom currency without
+    // a rate) contributes nothing to the history.
+    const refInitialBalance = account.refInitialBalance ?? Money.zero();
 
     // Try to find an existing balance for the account
     const record = await this.findOne({
@@ -477,11 +486,11 @@ export default class Balances extends Model {
 
     // If record exists, then it's account updating, otherwise account creation
     if (record && prevAccount) {
-      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance);
+      const diff = refInitialBalance.subtract(prevAccount.refInitialBalance ?? Money.zero());
 
       // Update history for all the records related to that account
       await this.update(
-        { amount: Balances.sequelize!.literal(`amount + ${diff.toCents()}`) },
+        { amount: Balances.sequelize!.literal(`amount + (${toMoneyColumnValue({ money: diff })})`) },
         {
           where: { accountId },
         },
@@ -516,7 +525,7 @@ export default class Balances extends Model {
        WHERE "accountId" = :accountId AND "date" = :date`,
       {
         replacements: {
-          delta: delta.toCents(),
+          delta: toMoneyColumnValue({ money: delta }),
           accountId,
           date,
         },
@@ -566,7 +575,7 @@ export default class Balances extends Model {
           id: uuidv7(),
           accountId,
           date: normalizedDate,
-          amount: refBalance.toCents(),
+          amount: toMoneyColumnValue({ money: refBalance }),
         },
       },
     );
@@ -591,6 +600,8 @@ export default class Balances extends Model {
    */
   static async setTodayRowToSpot({ account }: { account: Accounts }): Promise<void> {
     if (account.accountCategory === ACCOUNT_CATEGORIES.loan) return;
+    // No spot value to pin while a custom currency has no rate.
+    if (account.refCurrentBalance == null) return;
 
     await this.updateAccountBalance({
       accountId: account.id,

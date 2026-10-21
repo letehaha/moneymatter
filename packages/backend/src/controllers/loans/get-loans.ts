@@ -14,11 +14,13 @@ export default createController(z.object({}), async ({ user }) => {
     accountIds: loanRecords.map((loanDetails) => loanDetails.accountId),
   });
 
-  const decorated = loanRecords.map((loanDetails) => ({
-    loanDetails,
-    projection: projectLoan({ loanDetails, account: loanDetails.account, today }),
-    paymentsCount: paymentCounts.get(loanDetails.accountId) ?? 0,
-  }));
+  const decorated = await Promise.all(
+    loanRecords.map(async (loanDetails) => ({
+      loanDetails,
+      projection: await projectLoan({ loanDetails, account: loanDetails.account, today }),
+      paymentsCount: paymentCounts.get(loanDetails.accountId) ?? 0,
+    })),
+  );
 
   return { data: serializeLoans(decorated) };
 });

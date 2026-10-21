@@ -5,8 +5,8 @@ import { BalanceRelevantSnapshot, hasBalanceRelevantChange } from './transaction
 const baseSnapshot = (): BalanceRelevantSnapshot => ({
   accountId: 'acc-1',
   accountType: 'system',
-  amount: 12500,
-  refAmount: 12500,
+  amount: '125.000000000000000000',
+  refAmount: '125.000000000000000000',
   time: new Date('2024-03-15T10:00:00.000Z'),
   transactionType: 'expense',
   currencyCode: 'USD',
@@ -28,14 +28,20 @@ describe('hasBalanceRelevantChange', () => {
   it.each([
     ['accountId', { accountId: 'acc-2' }],
     ['accountType', { accountType: 'monobank' }],
-    ['amount', { amount: 12501 }],
-    ['refAmount', { refAmount: 9900 }],
+    ['amount', { amount: '125.010000000000000000' }],
+    ['refAmount', { refAmount: '99.000000000000000000' }],
     ['transactionType', { transactionType: 'income' }],
     ['currencyCode', { currencyCode: 'EUR' }],
     ['refCurrencyCode', { refCurrencyCode: 'EUR' }],
     ['transferNature', { transferNature: 'transfer_to_loan' }],
   ] as [string, Partial<BalanceRelevantSnapshot>][])('returns true when %s changed', (_field, patch) => {
     expect(hasBalanceRelevantChange({ next: withChange(patch), prev: baseSnapshot() })).toBe(true);
+  });
+
+  it('treats equal amounts written with a different number of decimals as unchanged', () => {
+    const next = withChange({ amount: '125', refAmount: 125 });
+
+    expect(hasBalanceRelevantChange({ next, prev: baseSnapshot() })).toBe(false);
   });
 
   it('returns true when time moved to another day', () => {

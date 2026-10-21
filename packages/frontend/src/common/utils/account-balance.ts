@@ -1,9 +1,10 @@
 /** The balance fields the credit-limit display adjustment reads. */
 interface CreditLimitBalanceInput {
   currentBalance: number;
-  refCurrentBalance: number;
+  /** `null` while a custom currency has no rate: the account adds nothing to a base-currency total. */
+  refCurrentBalance: number | null;
   creditLimit: number;
-  refCreditLimit: number;
+  refCreditLimit: number | null;
   /** When true, an account carrying a credit limit shows its balance net of that limit. */
   includeCreditLimit: boolean;
 }
@@ -12,7 +13,7 @@ interface AccountDisplayBalances {
   hasCreditLimitAdjustment: boolean;
   /** Balance in the account's own currency, net of the credit limit when adjusting. */
   displayBalance: number;
-  /** Balance in the user's base currency, net of the credit limit when adjusting. */
+  /** Balance in the user's base currency, net of the credit limit when adjusting; 0 while there is no rate. */
   displayRefBalance: number;
 }
 
@@ -53,13 +54,15 @@ export const computeAccountDisplayBalances = ({
   includeCreditLimit,
 }: CreditLimitBalanceInput): AccountDisplayBalances => {
   const hasCreditLimitAdjustment = includeCreditLimit && creditLimit > 0;
+  // A missing base-currency value counts as nothing, so the account drops out of base-currency sums.
+  const refBalance = refCurrentBalance ?? 0;
   if (!hasCreditLimitAdjustment) {
-    return { hasCreditLimitAdjustment, displayBalance: currentBalance, displayRefBalance: refCurrentBalance };
+    return { hasCreditLimitAdjustment, displayBalance: currentBalance, displayRefBalance: refBalance };
   }
 
   return {
     hasCreditLimitAdjustment,
     displayBalance: currentBalance - creditLimit,
-    displayRefBalance: refCurrentBalance - refCreditLimit,
+    displayRefBalance: refCurrentBalance === null ? 0 : refBalance - (refCreditLimit ?? 0),
   };
 };
