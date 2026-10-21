@@ -10,7 +10,7 @@ export function registerGetUserCurrencies(server: McpServer) {
     'get_user_currencies',
     {
       description:
-        "Get the currencies the user holds: baseCurrency (the reporting currency, null before one is set), currencies (every held currency with its settings: liveRateUpdate, rateSource, exchangeRate and, for custom currencies, the user's own name, symbol and decimals) and exchangeRates (today's rate of each currency to the base). Use list_supported_currencies for the codes that can still be added.",
+        "Get the currencies the user holds: baseCurrency (the reporting currency, null before one is set), currencies (every held currency with its settings: liveRateUpdate and exchangeRate) and exchangeRates (today's rate of each currency to the base). Use list_supported_currencies for the codes that can still be added.",
     },
     async (extra) => {
       const userId = getUserId({ extra });

@@ -24,7 +24,7 @@ export function registerGetAccount(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'get_account', clientId: extra.authInfo?.clientId });
 
       const account = await getAccountById({ userId, id: args.accountId });
-      const detail = await presentAccount({ account });
+      const detail = presentAccount({ account });
 
       // The count is owner-scoped, as in REST: a share recipient can read the account but
       // cannot delete it.

@@ -1,4 +1,4 @@
-import { isoCurrencyCode } from '@common/lib/zod/custom-types';
+import { currencyCode } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { startBaseCurrencyChange } from '@services/currencies/start-base-currency-change.service';
@@ -7,7 +7,7 @@ import { getUserBaseCurrency, setBaseUserCurrency } from '@services/user.service
 import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  newCurrencyCode: isoCurrencyCode().describe('ISO 4217 code of the new base currency, such as "USD".'),
+  newCurrencyCode: currencyCode().describe('ISO 4217 code of the new base currency, such as "USD".'),
 };
 
 export function registerChangeBaseCurrency(server: McpServer) {

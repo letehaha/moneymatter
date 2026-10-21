@@ -4,13 +4,13 @@ import {
   VENTURE_SPV_SUBTYPE,
   VENTURE_VEHICLE_TYPE,
 } from '@bt/shared/types/venture';
-import { dateString, decimalString, isoCurrencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { dateString, decimalString, currencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
 /** Fields of `POST /venture/deals`; the MCP `create_venture_deal` tool reads its shape. */
 export const createVentureDealBodyShape = {
   name: z.string().trim().min(1).max(255),
-  currencyCode: isoCurrencyCode(),
+  currencyCode: currencyCode(),
   principal: decimalString(),
   investmentDate: dateString(),
   platformId: recordId().nullable().optional(),
@@ -38,7 +38,7 @@ export const updateVentureDealBodyShape = {
   platformId: recordId().nullable().optional(),
   spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
   targetCompany: z.string().max(255).nullable().optional(),
-  currencyCode: isoCurrencyCode().optional(),
+  currencyCode: currencyCode().optional(),
   status: z.nativeEnum(VENTURE_DEAL_STATUS).optional(),
   principal: decimalString().optional(),
   entryFee: decimalString().optional(),

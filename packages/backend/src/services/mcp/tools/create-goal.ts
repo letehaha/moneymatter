@@ -4,7 +4,14 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createGoal } from '@services/goals/create-goal';
 
-import { getUserId, goalsForMcp, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  goalsForMcp,
+  jsonContent,
+  requireFeature,
+  requireScope,
+} from './helpers';
 
 const inputSchema = {
   name: goalFieldsShape.name.describe('Goal name'),
@@ -36,6 +43,7 @@ export function registerCreateGoal(server: McpServer) {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
       await requireFeature({ userId, feature: FEATURES.goals });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_goal', clientId: extra.authInfo?.clientId });
 
       const goal = await createGoal({ userId, ...args });

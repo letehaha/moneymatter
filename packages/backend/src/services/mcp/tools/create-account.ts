@@ -14,7 +14,7 @@ export function registerCreateAccount(server: McpServer) {
   server.registerTool(
     'create_account',
     {
-      description: `Create a manual account. currencyCode is an ISO code or one of the user's custom currencies. accountCategory defaults to "general"; "${ACCOUNT_CATEGORIES.loan}" and "${ACCOUNT_CATEGORIES.vehicle}" are refused here (they have their own flows). initialBalance and creditLimit are decimals in the account currency. Give a logo as either logoDomain or logoInitials (+ logoColor), not both.`,
+      description: `Create a manual account. currencyCode is an ISO currency code. accountCategory defaults to "general"; "${ACCOUNT_CATEGORIES.loan}" and "${ACCOUNT_CATEGORIES.vehicle}" are refused here (they have their own flows). initialBalance and creditLimit are decimals in the account currency. Give a logo as either logoDomain or logoInitials (+ logoColor), not both.`,
       inputSchema,
     },
     async (args, extra) => {
@@ -37,7 +37,7 @@ export function registerCreateAccount(server: McpServer) {
         ...logo,
       });
 
-      return jsonContent({ data: await presentAccount({ account }) });
+      return jsonContent({ data: presentAccount({ account }) });
     },
   );
 }

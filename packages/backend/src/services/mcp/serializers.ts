@@ -51,7 +51,6 @@ export function slimAccountDetailForMcp(account: AccountApiResponse) {
     logoDomain: account.logoDomain,
     logoInitials: account.logoInitials,
     logoColor: account.logoColor,
-    currencyMeta: account.currencyMeta,
     share: account.share,
   };
 }

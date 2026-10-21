@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { ExchangeRateUnavailableError } from '@js/errors';
-import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { getBaseCurrencyChangeStatus } from '@services/currencies/base-currency-change-status.service';
 import { startBaseCurrencyChange } from '@services/currencies/start-base-currency-change.service';
 import { getExchangeRatesForDate } from '@services/exchange-rates';
@@ -22,7 +21,6 @@ jest.mock('@services/currencies/add-user-currency', () => ({ addUserCurrencies: 
 jest.mock('@services/user-exchange-rate', () => ({ getExchangeRate: jest.fn(), getUserExchangeRates: jest.fn() }));
 jest.mock('@services/exchange-rates', () => ({ getExchangeRatesForDate: jest.fn() }));
 jest.mock('@services/system-currencies', () => ({ getAllSystemCurrencies: jest.fn() }));
-jest.mock('@services/currencies/assert-currency-codes-visible', () => ({ assertCurrencyCodesVisible: jest.fn() }));
 jest.mock('@services/currencies/start-base-currency-change.service', () => ({ startBaseCurrencyChange: jest.fn() }));
 jest.mock('@services/currencies/base-currency-change-status.service', () => ({
   getBaseCurrencyChangeStatus: jest.fn(),
@@ -54,7 +52,6 @@ const addCurrencies = jest.mocked(addUserCurrencies);
 const startChange = jest.mocked(startBaseCurrencyChange);
 const changeStatus = jest.mocked(getBaseCurrencyChangeStatus);
 const systemCurrencies = jest.mocked(getAllSystemCurrencies);
-const visible = jest.mocked(assertCurrencyCodesVisible);
 
 const LOCKED = /currencies.baseCurrencyChangeInProgress/;
 
@@ -68,11 +65,11 @@ describe('get_user_currencies', () => {
 
   it('returns the currencies, the base currency and the pair rates in one result, with no scope helper', async () => {
     const eur = { currencyCode: 'EUR', isDefaultCurrency: true, currency: { code: 'EUR', digits: 2 } };
-    const pts = { currencyCode: 'PTS', isDefaultCurrency: false, currency: { code: 'PTS', digits: 0, isCustom: true } };
-    users.getUserCurrencies.mockResolvedValueOnce([eur, pts] as never);
+    const usd = { currencyCode: 'USD', isDefaultCurrency: false, currency: { code: 'USD', digits: 2 } };
+    users.getUserCurrencies.mockResolvedValueOnce([eur, usd] as never);
     users.getUserBaseCurrency.mockResolvedValueOnce(eur as never);
     rates.getUserExchangeRates.mockResolvedValueOnce([
-      { baseCode: 'PTS', quoteCode: 'EUR', rate: 0.01, date: new Date('2026-10-18T00:00:00Z') },
+      { baseCode: 'USD', quoteCode: 'EUR', rate: 0.92, date: new Date('2026-10-18T00:00:00Z') },
     ] as never);
 
     const result = await tool.handler(makeExtra({ scopes: ['finance:read'], readOnly: true }));
@@ -83,8 +80,8 @@ describe('get_user_currencies', () => {
     expect(rates.getUserExchangeRates).toHaveBeenCalledWith({ userId: 42 });
     expect(data).toEqual({
       baseCurrency: eur,
-      currencies: [eur, pts],
-      exchangeRates: [{ baseCode: 'PTS', quoteCode: 'EUR', rate: 0.01, date: '2026-10-18T00:00:00.000Z' }],
+      currencies: [eur, usd],
+      exchangeRates: [{ baseCode: 'USD', quoteCode: 'EUR', rate: 0.92, date: '2026-10-18T00:00:00.000Z' }],
     });
   });
 
@@ -130,7 +127,7 @@ describe('get_exchange_rate', () => {
     expect(schema.safeParse({ date: '2026-02-31' }).success).toBe(false);
   });
 
-  it('reads one pair after checking both codes are visible to the user, without a user connection', async () => {
+  it('reads one pair without a user connection', async () => {
     rates.getExchangeRate.mockResolvedValueOnce({
       baseCode: 'USD',
       quoteCode: 'EUR',
@@ -140,7 +137,6 @@ describe('get_exchange_rate', () => {
 
     const result = await tool.handler({ date: '2026-10-18', from: 'USD', to: 'EUR' }, readOnly);
 
-    expect(visible).toHaveBeenCalledWith({ userId: 42, codes: ['USD', 'EUR'] });
     expect(rates.getExchangeRate).toHaveBeenCalledWith({
       userId: 42,
       baseCode: 'USD',
@@ -165,13 +161,9 @@ describe('get_exchange_rate', () => {
     );
   });
 
-  it('does not read a pair for a code the user cannot see', async () => {
-    visible.mockRejectedValueOnce(new Error('Unknown currency'));
-
-    await expect(tool.handler({ date: '2026-10-18', from: 'USD', to: 'ZZZ' }, readOnly)).rejects.toThrow(
-      'Unknown currency',
-    );
-    expect(rates.getExchangeRate).not.toHaveBeenCalled();
+  it('rejects a code that is not a currency code', () => {
+    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'EU' }).success).toBe(false);
+    expect(schema.safeParse({ date: '2026-10-18', from: 'USD', to: 'EURO' }).success).toBe(false);
   });
 
   it('returns the global rates of the date when no code is given', async () => {
@@ -182,7 +174,6 @@ describe('get_exchange_rate', () => {
     const result = await tool.handler({ date: '2026-10-18' }, readOnly);
 
     expect(ratesForDate).toHaveBeenCalledWith({ date: '2026-10-18' });
-    expect(visible).not.toHaveBeenCalled();
     expect(parseToolResult({ result })).toEqual({
       date: '2026-10-18',
       rates: [{ baseCode: 'USD', quoteCode: 'EUR', rate: 0.92 }],
@@ -209,7 +200,7 @@ describe('add_user_currencies', () => {
   const tool = captureTools({ register: registerAddUserCurrencies })[0]!;
   const schema = z.object(tool.config.inputSchema!);
   const args = {
-    currencies: [{ currencyCode: 'EUR', exchangeRate: 2, liveRateUpdate: true }, { currencyCode: 'PTS' }],
+    currencies: [{ currencyCode: 'EUR', exchangeRate: 2, liveRateUpdate: true }, { currencyCode: 'USD' }],
   };
 
   it('accepts currencies with optional rate fields, and rejects an empty list, a bad rate and unknown keys', () => {
@@ -220,15 +211,15 @@ describe('add_user_currencies', () => {
   });
 
   it('adds the currencies for the user and returns the service result', async () => {
-    addCurrencies.mockResolvedValueOnce({ currencies: [], alreadyExistingCodes: ['PTS'] } as never);
+    addCurrencies.mockResolvedValueOnce({ currencies: [], alreadyExistingCodes: ['USD'] } as never);
 
     const result = await tool.handler(args, WRITE);
 
     expect(addCurrencies).toHaveBeenCalledWith([
       { userId: 42, currencyCode: 'EUR', exchangeRate: 2, liveRateUpdate: true },
-      { userId: 42, currencyCode: 'PTS' },
+      { userId: 42, currencyCode: 'USD' },
     ]);
-    expect(parseToolResult({ result })).toEqual({ currencies: [], alreadyExistingCodes: ['PTS'] });
+    expect(parseToolResult({ result })).toEqual({ currencies: [], alreadyExistingCodes: ['USD'] });
   });
 });
 
