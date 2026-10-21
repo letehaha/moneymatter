@@ -30,6 +30,7 @@ export * from './attachments';
 export * from './invoice-matching';
 export * from './entity-logo';
 export * from './ai';
+export * from './chat';
 export * from './import-export';
 export * from './backup';
 export * from './external-services';

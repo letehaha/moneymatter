@@ -1,5 +1,6 @@
 import { AIConnectionStatus, AIFeatureConfig, AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
 import { logger } from '@js/utils/logger';
+import type { StoredAiSettings } from '@models/user-settings.model';
 
 // The one place that decides which model answers an AI feature. The runtime resolver and
 // the settings screens both walk this ladder, so what runs and what the UI names cannot
@@ -42,8 +43,11 @@ export const getServerApiKey = ({ provider = AI_PROVIDER.google }: { provider?: 
   return process.env[SERVER_API_KEY_ENV_VARS[provider]] || null;
 };
 
-/** The Gemini model per feature, used while the primary model has no usable key. */
-export const FALLBACK_SERVER_MODELS: Record<AI_FEATURE, ServerModel & { provider: AI_PROVIDER.google }> = {
+/**
+ * The Gemini model per feature, used while the primary model has no usable key. A feature without an entry has
+ * no included model and needs one of the user's own connections (chat is one).
+ */
+export const FALLBACK_SERVER_MODELS: Partial<Record<AI_FEATURE, ServerModel & { provider: AI_PROVIDER.google }>> = {
   [AI_FEATURE.categorization]: { provider: AI_PROVIDER.google, model: 'gemma-4-31b-it' },
   [AI_FEATURE.statementParsing]: { provider: AI_PROVIDER.google, model: 'gemini-3.8-flash' },
   [AI_FEATURE.investmentTransactionsParsing]: { provider: AI_PROVIDER.google, model: 'gemini-3.8-flash' },
@@ -64,14 +68,33 @@ export function getServerModel({
   serverKeysAllowed: boolean;
 }): ServerModel | null {
   if (!serverKeysAllowed) return null;
+
+  const fallback = FALLBACK_SERVER_MODELS[feature];
+  if (!fallback) return null;
   if (getServerApiKey({ provider: PRIMARY_SERVER_MODEL.provider })) return PRIMARY_SERVER_MODEL;
 
-  return getServerApiKey() ? FALLBACK_SERVER_MODELS[feature] : null;
+  return getServerApiKey() ? fallback : null;
 }
 
 /** `provider/model`, e.g. `anthropic/claude-sonnet-5` or `custom/llama3.2`. */
 export function buildConnectionModelId({ provider, model }: { provider: AI_PROVIDER; model: string }): string {
   return `${provider}/${model}`;
+}
+
+/**
+ * The user's stored pick for a feature. Chat has none: each chat thread carries its own connection, so a
+ * chat config left in the settings by an earlier version is never read.
+ */
+export function findStoredFeatureConfig({
+  aiSettings,
+  feature,
+}: {
+  aiSettings: StoredAiSettings | null;
+  feature: AI_FEATURE;
+}): AIFeatureConfig | null {
+  if (feature === AI_FEATURE.chat) return null;
+
+  return aiSettings?.featureConfigs?.find((candidate) => candidate.feature === feature) ?? null;
 }
 
 export interface LadderConnection {
@@ -81,7 +104,7 @@ export interface LadderConnection {
 
 type ResolutionStep<C extends LadderConnection> =
   /** An explicit pick is dialled even while flagged invalid, so a recovered connection heals itself on the next run. */
-  | { kind: 'configured'; connection: C }
+  | { kind: 'configured'; connection: C; modelId?: string }
   | { kind: 'configured-server'; model: ServerModel }
   /** No usable config: the first connection not flagged invalid answers. */
   | { kind: 'default-connection'; connection: C }
@@ -92,7 +115,7 @@ type ResolutionStep<C extends LadderConnection> =
   | { kind: 'unserved' };
 
 /**
- * Priority order: explicit feature config, then the user's first dialable connection, then
+ * Priority order: explicit feature config (with its model override), then the user's first dialable connection, then
  * the included server model, but only for a user who owns no connections at all. Pure over
  * its inputs plus the server-key env vars and the Anthropic key suspension.
  *
@@ -125,7 +148,8 @@ export function pickResolutionStep<C extends LadderConnection>({
       const connection = connections.find(
         (candidate) => candidate.id === config.connectionId && !excluded.has(candidate.id),
       );
-      if (connection) return { kind: 'configured', connection };
+      // The override belongs to the picked connection: a fall-through to another one runs on its own model.
+      if (connection) return { kind: 'configured', connection, ...(config.modelId ? { modelId: config.modelId } : {}) };
     }
   }
 

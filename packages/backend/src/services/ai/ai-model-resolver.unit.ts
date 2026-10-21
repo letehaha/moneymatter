@@ -135,7 +135,7 @@ describe('resolveAIConfiguration', () => {
 
     expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toMatchObject({
       kind: 'server',
-      modelId: buildConnectionModelId(FALLBACK_SERVER_MODELS[FEATURE]),
+      modelId: buildConnectionModelId(FALLBACK_SERVER_MODELS[FEATURE]!),
       apiKey: 'server-key',
       usingUserKey: false,
     });
@@ -168,6 +168,68 @@ describe('resolveAIConfiguration', () => {
       apiKey: 'user-key',
       connectionId: CLAUDE.id,
       usingUserKey: true,
+    });
+  });
+
+  describe('model override', () => {
+    beforeEach(() => {
+      decryptConnectionKeyMock.mockReturnValue('user-key');
+    });
+
+    it('dials the stored override on the configured connection, keeping its credentials', async () => {
+      storeSettings({
+        connections: [OLLAMA, CLAUDE],
+        featureConfigs: [{ feature: FEATURE, connectionId: CLAUDE.id, modelId: 'claude-haiku-5-5' }],
+      });
+
+      expect(await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE })).toEqual({
+        kind: 'connection',
+        provider: AI_PROVIDER.anthropic,
+        model: 'claude-haiku-5-5',
+        modelId: 'anthropic/claude-haiku-5-5',
+        modelOverridden: true,
+        apiKey: 'user-key',
+        connectionId: CLAUDE.id,
+        usingUserKey: true,
+      });
+    });
+
+    it('does not carry the override over to another connection when the configured one cannot be dialled', async () => {
+      storeSettings({
+        connections: [CLAUDE, OLLAMA],
+        featureConfigs: [{ feature: FEATURE, connectionId: CLAUDE.id, modelId: 'claude-haiku-5-5' }],
+      });
+      decryptConnectionKeyMock.mockReturnValue(null);
+
+      const resolution = await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE });
+
+      expect(resolution).toMatchObject({ connectionId: OLLAMA.id, model: 'llama3.2' });
+      expect(resolution).not.toHaveProperty('modelOverridden');
+    });
+
+    it('lets a pinned connection carry its own model, which a chat thread uses', async () => {
+      storeSettings({ connections: [OLLAMA, CLAUDE] });
+
+      expect(
+        await resolveAIConfiguration({
+          userId: USER_ID,
+          feature: AI_FEATURE.chat,
+          pinnedConnectionId: CLAUDE.id,
+          pinnedModelId: 'claude-opus-5',
+        }),
+      ).toMatchObject({ connectionId: CLAUDE.id, model: 'claude-opus-5', modelOverridden: true });
+    });
+
+    it('runs on the connection model when no override is stored', async () => {
+      storeSettings({
+        connections: [CLAUDE],
+        featureConfigs: [{ feature: FEATURE, connectionId: CLAUDE.id }],
+      });
+
+      const resolution = await resolveAIConfiguration({ userId: USER_ID, feature: FEATURE });
+
+      expect(resolution).toMatchObject({ model: CLAUDE.model });
+      expect(resolution).not.toHaveProperty('modelOverridden');
     });
   });
 

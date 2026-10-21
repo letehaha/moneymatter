@@ -30,7 +30,7 @@
     </div>
 
     <div v-else class="space-y-3">
-      <ModelSelectorCard v-for="status in featuresStatus" :key="status.feature" :feature-status="status">
+      <ModelSelectorCard v-for="status in configurableFeaturesStatus" :key="status.feature" :feature-status="status">
         <template v-if="FEATURE_EXTRAS[status.feature]" #extras>
           <component :is="FEATURE_EXTRAS[status.feature]" />
         </template>
@@ -40,6 +40,7 @@
 </template>
 
 <script setup lang="ts">
+import { type ConfigurableAIFeature } from '@/common/const';
 import { Button } from '@/components/lib/ui/button';
 import { useAiSettings } from '@/composable/data-queries/ai-settings';
 import { AI_FEATURE } from '@bt/shared/types';
@@ -50,9 +51,10 @@ import AiUsageMeterCard from './ai-usage-meter-card.vue';
 import CustomInstructions from './features/custom-instructions.vue';
 import ModelSelectorCard from './shared/model-selector-card.vue';
 
-const FEATURE_EXTRAS: Partial<Record<AI_FEATURE, Component>> = {
+const FEATURE_EXTRAS: Partial<Record<ConfigurableAIFeature, Component>> = {
   [AI_FEATURE.categorization]: CustomInstructions,
 };
 
-const { featuresStatus, isLoadingFeatures, featuresUnknown, isRefetchingFeatures, refetchFeatures } = useAiSettings();
+const { configurableFeaturesStatus, isLoadingFeatures, featuresUnknown, isRefetchingFeatures, refetchFeatures } =
+  useAiSettings();
 </script>
