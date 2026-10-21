@@ -215,7 +215,7 @@
       "usage": "{percent}% · {spent} of {limit}",
       "overUsage": "Over by {amount} · {spent} of {limit}",
       "spentOnly": "{amount} spent",
-      "categoriesCount": "{count} category | {count} categories",
+      "categoriesCount": "{count} categoría | {count} categorías",
       "ofLimit": "of {limit}",
       "editLimitAria": "Edit limit for {name}",
       "noLimitPlaceholder": "Sin límite",

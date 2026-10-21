@@ -1,10 +1,12 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
+import type { SidebarNavChild } from './nav-items';
+
 declare module 'vue-router' {
   interface RouteMeta {
     /** Top-level sidebar group this route highlights. Inherited from parent routes. */
-    navSection?: 'accounts' | 'transactions' | 'budget' | 'planned';
+    navSection?: 'accounts' | 'transactions' | 'planned';
   }
 }
 
@@ -14,8 +16,10 @@ export const useSidebarNavRoutes = () => {
 
   const isAccountsRoute = computed(() => route.meta.navSection === 'accounts');
   const isTransactionsRoute = computed(() => route.meta.navSection === 'transactions');
-  const isBudgetRoute = computed(() => route.meta.navSection === 'budget');
   const isPlannedRoute = computed(() => route.meta.navSection === 'planned');
 
-  return { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute };
+  const isChildActive = ({ child, isActive }: { child: SidebarNavChild; isActive: boolean }) =>
+    isActive || (child.activeRouteNames?.includes(String(route.name)) ?? false);
+
+  return { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive };
 };

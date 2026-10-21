@@ -139,8 +139,12 @@
         "description": "Prečíta nahranú faktúru alebo účtenku a nájde transakciu, ku ktorej patrí."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Priraďovanie k sledovaču",
+        "description": "Prehľadáva nové transakcie a navrhuje tie, ktoré patria do inteligentného sledovača."
+      },
+      "transferMatching": {
+        "name": "Priraďovanie prevodov",
+        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
       }
     },
     "transactions": {
@@ -225,7 +229,7 @@
         "brand": "Značka",
         "letters": "Písmená",
         "icon": "Ikona",
-        "custom": "Image"
+        "custom": "Obrázok"
       },
       "searchPlaceholder": "Názov značky alebo doména",
       "searchHint": "Zadajte názov značky alebo doménu, napríklad amazon.com",
@@ -246,12 +250,12 @@
       "colorSwatchAriaLabel": "Použiť farbu {color}",
       "customColorAriaLabel": "Vybrať vlastnú farbu",
       "lettersSelectedLabel": "Písmená “{letters}”",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1 – 2 písmená alebo emoji",
+      "chooseImage": "Vyberte obrázok",
+      "replaceImage": "Nahradiť obrázok",
+      "imageHint": "Na vašom zariadení sa oreže na štvorec a zmení veľkosť na 200×200.",
+      "imageTooLarge": "Obrázok má po zmenšení stále viac než 50 KB. Skúste jednoduchší obrázok.",
+      "imageUnreadable": "Tento súbor sa nepodarilo prečítať ako obrázok."
     },
     "iconPicker": {
       "searchPlaceholder": "Hľadať ikony...",
@@ -297,6 +301,10 @@
       "success": "Účet bol pridaný do skupiny",
       "error": "Účet sa nepodarilo pridať do skupiny"
     },
+    "linkMany": {
+      "success": "Accounts added to the group",
+      "error": "Failed to add accounts to the group"
+    },
     "unlink": {
       "success": "Účet bol odstránený zo skupiny",
       "error": "Účet sa nepodarilo odstrániť zo skupiny"
@@ -319,9 +327,9 @@
     "newRelease": "Nová verzia",
     "trackerAiMatches": {
       "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "added": "Pridaná {count} transakcia | Pridané {count} transakcie | Pridaných {count} transakcií",
+      "toReview": "{count} transakcia na kontrolu | {count} transakcie na kontrolu | {count} transakcií na kontrolu",
+      "toReviewShort": "{count} na kontrolu",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -424,7 +432,7 @@
   },
   "billing": {
     "seePlans": "Zobraziť plány",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "Bezplatnú skúšku sa nepodarilo spustiť. Skúste to znova.",
     "updatePaymentMethod": "Aktualizovať spôsob platby",
     "planRequired": {
       "essential": "Súčasť plánu Essential",

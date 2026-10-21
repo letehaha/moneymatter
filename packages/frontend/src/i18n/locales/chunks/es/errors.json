@@ -6,16 +6,16 @@
       "unexpectedError": "Error inesperado.",
       "sessionExpired": "Su sesión ha caducado. Inicie sesión de nuevo",
       "payloadTooLarge": "La solicitud es demasiado grande. Intente importar menos elementos a la vez",
-      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+      "tooManyRequests": "Demasiados intentos. Por favor, espere un momento y vuelva a intentarlo."
     },
     "auth": {
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "reauthenticationRequired": "Por su seguridad, inicie sesión de nuevo para hacer este cambio.",
       "passwordTooShort": "La contraseña es demasiado corta.",
       "passwordTooLong": "La contraseña es demasiado larga.",
-      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
-      "accountAlreadyLinked": "This account is already linked to another user.",
-      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
-      "passkeyAlreadyRegistered": "This passkey is already registered."
+      "providerNotConfigured": "Este proveedor de inicio de sesión no está configurado en este servidor.",
+      "accountAlreadyLinked": "Esta cuenta ya está vinculada a otro usuario",
+      "cannotUnlinkLastAccount": "No puede eliminar su único método de inicio de sesión.",
+      "passkeyAlreadyRegistered": "Esta clave de acceso ya está registrada."
     },
     "notFound": {
       "title": "Esta página no está en los registros",

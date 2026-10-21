@@ -17,9 +17,10 @@
     "appVersion": "App version {version}",
     "settings": "Settings",
     "planned": {
-      "planned": "Planned",
+      "planned": "Planning",
       "subscriptions": "Recurring payments",
-      "budgets": "Trackers"
+      "budgets": "Trackers",
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Budget"

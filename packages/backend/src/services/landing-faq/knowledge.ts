@@ -21,7 +21,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   turns read-only: you can sign in, view and export data, or delete the account. Nothing is deleted.
 - There is no free cloud plan, only the trial. Self-hosting is free forever with every feature.
 - Essential: $30/year or $5/month. Manual tracking, imports (CSV, OFX, YNAB, Wallet, MS Money),
-  budgets, investments, loans, vehicles, venture, reports, backup export and restore, AI features
+  budgets, savings goals, investments, loans, vehicles, venture, reports, backup export and restore, AI features
   with your own API key, MCP server for AI agents, 2 household seats. No bank sync.
 - Plus: $55/year or $8/month. Everything in Essential, plus bank sync, AI features on our key
   with no setup, 5 household seats.
@@ -91,7 +91,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Rollover: carry leftovers into the next period, carry overspending too, or start fresh. Set for
   the budget, and each line can have its own rule.
 - Goals on a line: fund it every period, refill it up to an amount, or save up to a balance by a
-  date.
+  date. These budget line goals are separate from the savings Goals page described below.
 - A new budget can be pre-filled with lines and amounts from your own spending history, and you
   choose which accounts it counts.
 - Trackers are separate: one spending limit over a date range you choose freely, for a set of
@@ -106,6 +106,32 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Not supported today: zero-based budgeting with a "Ready to Assign" pool, balance forecasts,
   "safe to spend", percentage rules like 50/30/20, budgets by tag or payee.
 - Debt payoff: the Loans feature projects the payoff date and remaining balance.
+
+## Savings goals
+
+- A goal is a target amount, in any currency, with an optional target date. It lives on its own
+  Goals page (sidebar, Planned > Goals), separate from budgets.
+- Progress is read from real account balances; goals never move money or create transactions.
+  Each linked account counts by a percentage share of its balance (minus its credit limit,
+  never below 0). One account can back several goals, but its shares across active and paused
+  goals cannot pass 100%. Archiving a goal frees its shares; pausing keeps them.
+- Accounts that can back a goal: your own general, cash, current, savings, investment and crypto
+  accounts. Not credit cards, overdrafts, loans, vehicles or accounts shared with you. On
+  investment and crypto accounts market moves count as progress; projections assume no growth.
+- Each goal shows saved, left, pace, a projected finish month and how much is needed per month to
+  hit the date. Pace is the median monthly change over the last 6 full months and needs at least
+  3; an optional planned monthly amount replaces it. Statuses: ahead, on track, behind, overdue,
+  reached, and a projected month for goals without a date.
+- A What-if tab tries another monthly amount, date or account shares without saving anything. A
+  banner compares what all active goals need per month with the median monthly net cash flow of
+  the last 12 complete months and says whether they fit.
+- A dashboard widget lists active goals. Reaching a goal sends one in-app notification.
+- The MCP server can list goals with their progress and create, update or delete them.
+- Goals are included in Essential and Plus (and the 40-day trial). The Early Adopter grant does
+  not include them: early adopters can start a 14-day goals trial from the Goals page. No limit on
+  the number of goals.
+- Not supported: portfolios as goal sources, fixed-amount earmarks ("$3,000 of this account"),
+  moving money into a goal, investment growth projections.
 
 ## Transactions
 
@@ -182,7 +208,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
   payee and your category names. For parsing, the text or image you submit.
 - Without a key on Essential or self-hosted, AI stays off. There is no single off switch on Plus.
 - The MCP server lets an AI assistant work with your data: accounts, transactions, categories,
-  tags, payees, budgets, analytics, investments, subscriptions, automation rules and venture
+  tags, payees, budgets, goals, analytics, investments, subscriptions, automation rules and venture
   deals. You pick one of three access levels when connecting it: read, write, or write and
   delete. It signs in through OAuth (no API tokens) and access can be revoked in settings.
 - Connect it from Settings > AI > Connectors (MCP), with guided setup for Claude and ChatGPT. It

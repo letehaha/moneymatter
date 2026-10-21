@@ -7,6 +7,8 @@
  * tokens. These helpers take the already-serialized, already-decimal output and keep only the
  * fields an assistant reasons about. The shared serializers stay untouched.
  */
+import { goalDisplayStatus, toGoalCurrency } from '@bt/shared/goals/goal-math';
+import type { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
 import { INVESTMENT_DECIMAL_SCALE } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type Categories from '@models/categories.model';
@@ -151,4 +153,40 @@ export function slimSubscriptionDetailForMcp(sub: SubscriptionDetailForMcp) {
       matchedAt: tx.SubscriptionTransactions?.matchedAt ?? null,
     })),
   };
+}
+
+const goalProgressForMcp = ({ goal, insights }: { goal: GoalModel; insights: GoalInsights }) => {
+  const inGoalCurrency = (amount: number | null) => toGoalCurrency({ amount, rateToBase: insights.rateToBase });
+
+  return {
+    status: goalDisplayStatus(goal),
+    currentValue: inGoalCurrency(insights.currentValue),
+    remaining: inGoalCurrency(insights.remaining),
+    pace: inGoalCurrency(insights.pace),
+    historicalPace: inGoalCurrency(insights.historicalPace),
+    neededMonthly: inGoalCurrency(insights.neededMonthly),
+    etaMonths: insights.etaMonths,
+    daysLeft: insights.daysLeft,
+  };
+};
+
+/** Every amount is in the goal currency; the per-account history behind the insights is dropped. */
+export function slimGoalsForMcp({ goals, accountNames }: { goals: GoalModel[]; accountNames: Map<RecordId, string> }) {
+  return goals.map((goal) => ({
+    id: goal.id,
+    name: goal.name,
+    status: goal.status,
+    currencyCode: goal.currencyCode,
+    targetAmount: goal.targetAmount,
+    targetDate: goal.targetDate,
+    plannedMonthly: goal.plannedMonthly,
+    achievedAt: goal.achievedAt,
+    achievedAmount: goal.achievedAmount,
+    progress: goal.insights ? goalProgressForMcp({ goal, insights: goal.insights }) : null,
+    accounts: goal.accounts.map(({ accountId, sharePercent }) => ({
+      accountId,
+      accountName: accountNames.get(accountId) ?? null,
+      sharePercent,
+    })),
+  }));
 }

@@ -1,4 +1,4 @@
-import { MAX_SAVED_TRANSACTION_VIEWS, PAYMENT_TYPES } from '@bt/shared/types';
+import { CATEGORY_ORDER_ROOT_KEY, MAX_SAVED_TRANSACTION_VIEWS, PAYMENT_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -26,6 +26,32 @@ describe('Patch user settings', () => {
   it('rejects incomeCategoryIds that are not uuids', async () => {
     const res = await helpers.patchUserSettings({ patch: { incomeCategoryIds: ['nope'] } });
     expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+  });
+
+  it('persists categoryOrder per parent, replacing only the patched lists', async () => {
+    const [first, second, third] = (await helpers.getCategoriesList()).map((category) => category.id);
+    expect((await helpers.getUserSettings({ raw: true })).categoryOrder).toBeUndefined();
+
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: [first!, second!], [first!]: [third!] } },
+    });
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: [second!] } },
+    });
+
+    expect(patched.categoryOrder).toStrictEqual({ [CATEGORY_ORDER_ROOT_KEY]: [second], [first!]: [third] });
+  });
+
+  it('rejects categoryOrder ids and parent keys that are not uuids', async () => {
+    const badId = await helpers.patchUserSettings({
+      patch: { categoryOrder: { [CATEGORY_ORDER_ROOT_KEY]: ['nope'] } },
+    });
+    expect(badId.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const badKey = await helpers.patchUserSettings({ patch: { categoryOrder: { Root: [] } } });
+    expect(badKey.statusCode).toBe(ERROR_CODES.ValidationError);
   });
 
   it('creates settings from defaults when the user has none stored yet', async () => {

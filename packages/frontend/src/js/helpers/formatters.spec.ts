@@ -1,6 +1,7 @@
 import {
   currencyDisplayPreference,
   formatCompactFiat,
+  formatCompactUIAmount,
   formatShortFiat,
   formatFiat,
   formatLargeNumber,
@@ -176,6 +177,30 @@ describe('js/helpers/formatters', () => {
       [2_440_000, '$2.44M'],
     ])('%d → %s', (amount, expected) => {
       expect(formatShortFiat({ amount, currency: 'USD' })).toBe(expected);
+    });
+  });
+
+  describe('formatCompactUIAmount', () => {
+    it.each([
+      [0, '$0.00'],
+      [9_400, '$9,400.00'],
+      [9_999.99, '$9,999.99'],
+      [10_000, '$10k'],
+      [60_000, '$60k'],
+      [50_400, '$50.4k'],
+      [50_550, '$50.55k'],
+      [99_996, '$100k'],
+      [385_400, '$385k'],
+      [491_800, '$492k'],
+      [999_600, '$1M'],
+      [1_000_000, '$1M'],
+      [1_240_000, '$1.24M'],
+      [2_500_000, '$2.5M'],
+      [999_996_000, '$1B'],
+      [-42_600, '-$42.6k'],
+      [-385_400, '-$385k'],
+    ])('%d → %s', (amount, expected) => {
+      expect(formatCompactUIAmount({ amount, currency: 'USD' })).toBe(expected);
     });
   });
 });

@@ -8,10 +8,12 @@ export { default as PillTabs } from './pill-tabs.vue';
  * Discriminated union: `iconClass` is only meaningful when an `icon` is set —
  * declaring `iconClass` without an `icon` would silently do nothing.
  */
-export type PillTabItem = { value: string; label: string; disabled?: boolean } & (
-  | { icon?: undefined; iconClass?: never }
-  | { icon: Component; iconClass?: string }
-);
+export type PillTabItem = {
+  value: string;
+  label: string;
+  disabled?: boolean;
+  count?: number;
+} & ({ icon?: undefined; iconClass?: never } | { icon: Component; iconClass?: string });
 
 export const pillTabsContainerVariants = cva(
   'bg-muted border-border/50 relative inline-flex items-center self-start overflow-x-auto border no-scrollbar max-w-full',

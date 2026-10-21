@@ -1,4 +1,11 @@
-import { ACCOUNT_STATUSES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import {
+  ACCOUNT_STATUSES,
+  type GoalInsights,
+  type GoalModel,
+  type RecordId,
+  TRANSACTION_TRANSFER_NATURE,
+  TRANSACTION_TYPES,
+} from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import type { AccountApiResponse } from '@root/serializers/accounts.serializer';
 import type { TransactionApiResponse } from '@root/serializers/transactions.serializer';
@@ -6,6 +13,7 @@ import type { TransactionApiResponse } from '@root/serializers/transactions.seri
 import {
   type SubscriptionDetailForMcp,
   slimAccountsForMcp,
+  slimGoalsForMcp,
   slimSubscriptionDetailForMcp,
   slimTransactionsForMcp,
 } from './serializers';
@@ -246,6 +254,112 @@ describe('MCP serializers', () => {
           matchedAt: '2026-01-05T01:00:00.000Z',
         },
       ]);
+    });
+  });
+
+  describe('slimGoalsForMcp', () => {
+    const accountId = 'acc-1' as RecordId;
+    const insights = {
+      status: 'behind',
+      currentValue: 2000,
+      remaining: 8000,
+      monthEndValues: [1000, 1500, 2000],
+      historicalPace: 400,
+      historyMonths: 6,
+      pace: 400,
+      etaMonths: 20,
+      neededMonthly: 1000,
+      daysLeft: 240,
+      input: {
+        today: '2026-10-20',
+        months: [],
+        accounts: [],
+        targetAmount: 10000,
+        targetDate: null,
+        plannedMonthly: null,
+      },
+      rateToBase: 2,
+      baseCurrencyCode: 'UAH',
+    } as GoalInsights;
+    const goal = {
+      id: 'goal-1',
+      name: 'Car',
+      currencyCode: 'USD',
+      targetAmount: 5000,
+      targetDate: '2027-06-20',
+      plannedMonthly: null,
+      status: 'active',
+      achievedAt: null,
+      achievedAmount: null,
+      sortOrder: 0,
+      logoDomain: null,
+      accounts: [{ accountId, sharePercent: 50 }],
+      insights,
+      createdAt: '2026-10-01T00:00:00.000Z',
+      updatedAt: '2026-10-01T00:00:00.000Z',
+    } as unknown as GoalModel;
+
+    it('converts insight amounts to the goal currency and names each account', () => {
+      const [slim] = slimGoalsForMcp({ goals: [goal], accountNames: new Map([[accountId, 'Savings']]) });
+
+      expect(slim).toEqual({
+        id: 'goal-1',
+        name: 'Car',
+        status: 'active',
+        currencyCode: 'USD',
+        targetAmount: 5000,
+        targetDate: '2027-06-20',
+        plannedMonthly: null,
+        achievedAt: null,
+        achievedAmount: null,
+        progress: {
+          status: 'behind',
+          currentValue: 1000,
+          remaining: 4000,
+          pace: 200,
+          historicalPace: 200,
+          neededMonthly: 500,
+          etaMonths: 20,
+          daysLeft: 240,
+        },
+        accounts: [{ accountId, accountName: 'Savings', sharePercent: 50 }],
+      });
+    });
+
+    it('drops the per-account history, logo and audit fields', () => {
+      const slim = slimGoalsForMcp({ goals: [goal], accountNames: new Map() })[0];
+
+      for (const dropped of ['insights', 'logoDomain', 'sortOrder', 'createdAt', 'updatedAt']) {
+        expect(slim).not.toHaveProperty(dropped);
+      }
+      expect(JSON.stringify(slim)).not.toContain('monthEndValues');
+    });
+
+    it('keeps nulls for missing pace and unknown accounts', () => {
+      const noPace = { ...insights, pace: null, historicalPace: null, etaMonths: null, neededMonthly: null };
+      const [slim] = slimGoalsForMcp({ goals: [{ ...goal, insights: noPace }], accountNames: new Map() });
+
+      expect(slim!.progress).toMatchObject({ pace: null, historicalPace: null, etaMonths: null, neededMonthly: null });
+      expect(slim!.accounts).toEqual([{ accountId, accountName: null, sharePercent: 50 }]);
+    });
+
+    it.each([
+      { overrides: { status: 'paused' }, expected: 'paused' },
+      { overrides: { achievedAt: '2026-10-01T00:00:00.000Z' }, expected: 'reached' },
+    ])('reports the displayed status: $expected', ({ overrides, expected }) => {
+      const [slim] = slimGoalsForMcp({ goals: [{ ...goal, ...overrides } as GoalModel], accountNames: new Map() });
+
+      expect(slim!.progress!.status).toBe(expected);
+    });
+
+    it('returns null progress when the goal currency has no rate', () => {
+      const [slim] = slimGoalsForMcp({ goals: [{ ...goal, insights: null }], accountNames: new Map() });
+
+      expect(slim!.progress).toBeNull();
+    });
+
+    it('returns an empty list for no goals', () => {
+      expect(slimGoalsForMcp({ goals: [], accountNames: new Map() })).toEqual([]);
     });
   });
 });

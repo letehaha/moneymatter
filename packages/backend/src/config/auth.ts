@@ -1,3 +1,4 @@
+import { expo } from '@better-auth/expo';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
@@ -75,6 +76,9 @@ export const auth = betterAuth({
       .map((o) => o.trim())
       .filter(Boolean),
     ...DEV_TRUSTED_ORIGINS,
+    // Native iOS app: callback scheme, and the `expo-origin` value its cookie-bearing requests must send.
+    // Kept out of ALLOWED_ORIGINS, which also feeds browser CORS.
+    'moneymatter://',
   ],
 
   // Custom table names with ba_ prefix to avoid conflicts
@@ -292,6 +296,9 @@ export const auth = betterAuth({
         },
       },
     }),
+    // Native iOS app: /expo-authorization-proxy for OAuth, and the session cookie appended
+    // as ?cookie= on redirects to non-http trusted callbacks. Web flows are untouched.
+    expo(),
   ],
 
   // Enable rate limiting in production only. Disable in test/dev/preview

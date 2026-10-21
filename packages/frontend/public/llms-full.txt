@@ -32,6 +32,10 @@ MoneyMatter uses AI to categorize new transactions after every bank sync and imp
 
 Build a budget with a line per category and an amount for each period. Leftovers roll into the next period, and overspending can too. Add goals for bills and savings, and group lines your way. Budgets reset monthly, weekly, or on a schedule you pick.
 
+### Savings Goals
+
+Set a target in any currency, with an optional date, and point it at the accounts that hold the money: a percentage of each account's balance counts toward the goal, and one account can back several goals up to 100% in total. Cash, savings, current, investment and crypto accounts all work; market moves count as progress, and projections assume no growth. Progress is read from real balances, so there is nothing to update by hand. Each goal shows its pace (the median monthly change over the last 6 full months, or your own planned monthly amount), when you will reach the target, how much you need each month and whether you are ahead, on track or behind. A What-if sandbox tries other amounts, dates and shares, a banner checks whether all goals fit in what you typically save, a dashboard widget shows them at a glance, and you get a notification when a goal is reached. Goals are included in Essential and Plus.
+
 ### Investment Portfolio Tracking
 
 Track investment portfolios alongside your regular budget. Monitor performance, gains/losses, and asset allocation in one place. Security prices update automatically.
@@ -77,6 +81,7 @@ Ask complex questions that go beyond what any dashboard can show:
 - "I want to save $500/month — analyze my spending and suggest where to realistically cut"
 - "What's my average weekly grocery spend and how has it trended?"
 - "Show me all transactions over $100 in the last quarter that weren't recurring"
+- "Am I on track for my holiday goal, and what would I need to save each month to get there by June?"
 
 ### Automation with AI agents
 

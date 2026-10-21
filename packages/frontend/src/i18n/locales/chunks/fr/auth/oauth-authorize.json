@@ -1,43 +1,43 @@
 {
   "oauth": {
     "authorize": {
-      "title": "{name} wants access to your MoneyMatter data",
-      "redirect_notice": "After approval you will be redirected to {host}. Only continue if you recognize this address.",
-      "description": "This app is requesting these permissions:",
-      "approve": "Approve",
-      "deny": "Deny",
-      "footer": "You can revoke access at any time from Settings → AI → Connectors (MCP).",
-      "error": "Failed to process request. Please try again.",
-      "unexpected_response": "Unexpected response from server. Please try again.",
-      "always_granted": "Always granted",
-      "optional": "Optional",
-      "delete_warning": "Grant only to apps you fully trust",
-      "unknown_app": "An application"
+      "title": "{name} souhaite accéder à vos données MoneyMatter",
+      "redirect_notice": "Après approbation, vous serez redirigé vers {host}. Ne continuez que si vous reconnaissez cette adresse.",
+      "description": "Cette application demande les autorisations suivantes :",
+      "approve": "Autoriser",
+      "deny": "Refuser",
+      "footer": "Vous pouvez révoquer cet accès à tout moment depuis Paramètres → IA → Connecteurs (MCP).",
+      "error": "Échec du traitement de la demande. Veuillez réessayer.",
+      "unexpected_response": "Réponse inattendue du serveur. Veuillez réessayer.",
+      "always_granted": "Toujours accordé",
+      "optional": "Facultatif",
+      "delete_warning": "À n'accorder qu'aux applications de confiance absolue",
+      "unknown_app": "Une application"
     },
     "scopes": {
       "finance_read": {
-        "label": "View your financial data",
-        "desc": "Read accounts, transactions, trackers, categories, tags, portfolios, and spending stats."
+        "label": "Consulter vos données financières",
+        "desc": "Consulter les comptes, opérations, suivis, catégories, étiquettes, portefeuilles et statistiques de dépenses."
       },
       "finance_write": {
-        "label": "Create and edit your financial data",
-        "desc": "Add and update transactions, trackers, subscriptions, investment positions, and more."
+        "label": "Créer et modifier vos données financières",
+        "desc": "Ajouter et mettre à jour des opérations, suivis, abonnements, positions d'investissement et plus encore."
       },
       "finance_delete": {
-        "label": "Delete your financial data",
-        "desc": "Permanently remove transactions, accounts, trackers, and other records."
+        "label": "Supprimer vos données financières",
+        "desc": "Supprimer définitivement des opérations, comptes, suivis et autres enregistrements."
       },
       "profile_read": {
-        "label": "View your profile",
-        "desc": "See your name, email, and default currency."
+        "label": "Consulter votre profil",
+        "desc": "Voir votre nom, adresse e-mail et devise par défaut."
       },
       "offline_access": {
-        "label": "Stay connected in the background",
-        "desc": "Keep access active without asking you again each session."
+        "label": "Rester connecté en arrière-plan",
+        "desc": "Maintenir l'accès actif sans vous le redemander à chaque session."
       },
       "unknown": {
-        "label": "Additional permission",
-        "desc": "The app requested a permission that is not recognized by MoneyMatter."
+        "label": "Autorisation supplémentaire",
+        "desc": "L'application a demandé une autorisation non reconnue par MoneyMatter."
       }
     }
   }

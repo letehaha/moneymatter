@@ -12,7 +12,7 @@ import {
 } from '@lucide/vue';
 import { watch } from 'vue';
 
-import { SIDEBAR_BUDGET_NAV_ITEM, SIDEBAR_NAV_CHILDREN, useAccountsNavChildren } from './nav-items';
+import { SIDEBAR_NAV_CHILDREN, useAccountsNavChildren } from './nav-items';
 import { useSidebarNavCollapse } from './use-nav-collapse';
 import { useSidebarNavRoutes } from './use-nav-routes';
 
@@ -24,7 +24,7 @@ const navIconBase = 'size-4 shrink-0';
 const navIconActive = 'text-primary-text';
 
 const { isAccountsOpen, isTransactionsOpen, isPlannedOpen } = useSidebarNavCollapse();
-const { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute } = useSidebarNavRoutes();
+const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
 
 watch(
@@ -110,10 +110,10 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isActive && navItemActive]"
+            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
             size="sm"
           >
-            <component :is="child.icon" :class="[navIconBase, isActive && navIconActive]" />
+            <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
             <span>{{ $t(child.labelKey) }}</span>
           </ui-button>
         </router-link>
@@ -155,28 +155,16 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isActive && navItemActive]"
+            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
             size="sm"
           >
-            <component :is="child.icon" :class="[navIconBase, isActive && navIconActive]" />
+            <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
             <span>{{ $t(child.labelKey) }}</span>
           </ui-button>
         </router-link>
       </div>
     </CollapsibleContent>
   </Collapsible>
-
-  <router-link v-if="!bottomNav" :to="{ name: SIDEBAR_BUDGET_NAV_ITEM.routeName }">
-    <ui-button
-      variant="ghost"
-      as="span"
-      :class="[navItemBase, 'justify-start', isBudgetRoute && navItemActive]"
-      size="default"
-    >
-      <component :is="SIDEBAR_BUDGET_NAV_ITEM.icon" :class="[navIconBase, isBudgetRoute && navIconActive]" />
-      <span>{{ $t(SIDEBAR_BUDGET_NAV_ITEM.labelKey) }}</span>
-    </ui-button>
-  </router-link>
 
   <Collapsible v-if="!bottomNav" v-model:open="isPlannedOpen">
     <CollapsibleTrigger class="w-full">
@@ -204,10 +192,10 @@ watch(
           <ui-button
             variant="ghost"
             as="span"
-            :class="['w-full justify-start gap-2 px-3', isActive && navItemActive]"
+            :class="['w-full justify-start gap-2 px-3', isChildActive({ child, isActive }) && navItemActive]"
             size="sm"
           >
-            <component :is="child.icon" :class="[navIconBase, isActive && navIconActive]" />
+            <component :is="child.icon" :class="[navIconBase, isChildActive({ child, isActive }) && navIconActive]" />
             <span>{{ $t(child.labelKey) }}</span>
           </ui-button>
         </router-link>

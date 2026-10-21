@@ -53,6 +53,7 @@ export const FEATURES = {
   fire_planner: 'fire_planner',
   budget_plan: 'budget_plan',
   smart_tracking: 'smart_tracking',
+  goals: 'goals',
 } as const;
 export type Feature = (typeof FEATURES)[keyof typeof FEATURES];
 
@@ -66,6 +67,7 @@ export const TRIALABLE_FEATURES = Object.keys(FEATURE_TRIAL_LIMITS) as Feature[]
 export const FEATURE_TRIAL_DAYS = {
   [FEATURES.fire_planner]: 14,
   [FEATURES.smart_tracking]: 14,
+  [FEATURES.goals]: 14,
 } as const satisfies Partial<Record<Feature, number>>;
 export type DayTrialableFeature = keyof typeof FEATURE_TRIAL_DAYS;
 export const DAY_TRIALABLE_FEATURES = Object.keys(FEATURE_TRIAL_DAYS) as DayTrialableFeature[];
@@ -81,6 +83,7 @@ const ESSENTIAL_FEATURES: readonly Feature[] = [
   FEATURES.data_export,
   FEATURES.attachments,
   FEATURES.budget_plan,
+  FEATURES.goals,
 ];
 const PLUS_FEATURES: readonly Feature[] = [
   ...ESSENTIAL_FEATURES,

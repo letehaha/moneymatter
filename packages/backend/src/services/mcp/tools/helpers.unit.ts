@@ -1,7 +1,30 @@
-import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
-import { describe, expect, it } from '@jest/globals';
+import { type Entitlements, FEATURES, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { describe, expect, it, jest } from '@jest/globals';
+import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
-import { assertOriginalCurrencyArgs, requireScope } from './helpers';
+import { assertOriginalCurrencyArgs, requireFeature, requireScope } from './helpers';
+
+jest.mock('@services/entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
+
+const mockFeatures = (features: string[]) =>
+  jest.mocked(getEntitlementsByUserId).mockResolvedValueOnce({ features } as unknown as Entitlements);
+
+describe('requireFeature', () => {
+  it('passes when the plan or an active trial includes the feature', async () => {
+    mockFeatures([FEATURES.goals]);
+
+    await expect(requireFeature({ userId: 1, feature: FEATURES.goals })).resolves.toBeUndefined();
+  });
+
+  it.each([{ features: [FEATURES.budget_plan] }, { features: [] }])(
+    'rejects when the feature is not included ($features)',
+    async ({ features }) => {
+      mockFeatures(features);
+
+      await expect(requireFeature({ userId: 1, feature: FEATURES.goals })).rejects.toThrow(/not included/);
+    },
+  );
+});
 
 const authInfoFor = ({ role, scopes, readOnly = false }: { role: string; scopes: string[]; readOnly?: boolean }) => ({
   authInfo: { scopes, extra: { role, readOnly } },

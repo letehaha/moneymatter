@@ -2,7 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "loadError": "Couldn't load transactions.",
+        "loadError": "Transakcie sa nepodarilo načítať.",
         "selectionModeWarning": "Režim výberu — vyberte transakcie na odpojenie",
         "selectAll": "Vybrať všetko",
         "selected": "Vybraných: {count}",
@@ -17,8 +17,8 @@
         "addTransactions": "Pridať transakcie",
         "add": "Pridať",
         "loadingMore": "Načítavanie ďalších...",
-        "unlinkError": "Failed to unlink transactions",
-        "addError": "Failed to add transactions"
+        "unlinkError": "Režim výberu — vyberte transakcie na odpojenie",
+        "addError": "Transakcie sa nepodarilo pridať do skupiny"
       }
     },
     "budgetDetails": {
@@ -62,39 +62,39 @@
         "incomeLabel": "Príjmy:",
         "expensesLabel": "Výdavky:",
         "kpi": {
-          "dailyPace": "Daily pace",
-          "perDay": "/ day",
-          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
-          "daysElapsed": "{elapsed} of {total} days",
-          "projectedTotal": "Projected total",
-          "projectedLimit": "at this pace · limit {amount}",
-          "averagePerDay": "Average per day",
-          "firstTransaction": "First transaction",
-          "lastTransaction": "Last transaction",
+          "dailyPace": "Denné tempo",
+          "perDay": "/ deň",
+          "allowedPerDay": "povolené {amount} / deň · {elapsed} z {total} dní",
+          "daysElapsed": "{elapsed} z {total} dní",
+          "projectedTotal": "Predpokladané celkom",
+          "projectedLimit": "pri tomto tempe · limit {amount}",
+          "averagePerDay": "Priemerne za deň",
+          "firstTransaction": "Prvá transakcia",
+          "lastTransaction": "Posledná transakcia",
           "transactions": "Transakcie",
           "avgAmount": "priem. {amount}",
-          "biggestDay": "Biggest day",
-          "shareOfTotal": "{percent}% of total"
+          "biggestDay": "Deň s najväčšími výdavkami",
+          "shareOfTotal": "{percent} % z celku"
         },
-        "byCategory": "By category",
-        "categoriesCount": "{count} category | {count} categories",
-        "byCurrency": "By currency",
-        "asPaid": "as paid",
+        "byCategory": "Podľa kategórií",
+        "categoriesCount": "{count} kategória | {count} kategórie | {count} kategórií",
+        "byCurrency": "Podľa meny",
+        "asPaid": "v zaplatenej mene",
         "timeline": "Časová os",
-        "todayMarker": "today {date}",
-        "timelineAria": "Cumulative spending over time with per-period bars",
-        "limitLabel": "{amount} limit",
-        "cumulativeLabel": "Cumulative",
+        "todayMarker": "dnes {date}",
+        "timelineAria": "Kumulatívne výdavky v čase so stĺpcami za jednotlivé obdobia",
+        "limitLabel": "limit {amount}",
+        "cumulativeLabel": "Kumulatívne",
         "legend": {
-          "cumulative": "Spent, cumulative",
-          "evenPace": "Even pace to the limit",
+          "cumulative": "Vyčerpané, kumulatívne",
+          "evenPace": "Rovnomerné tempo k limitu",
           "projection": "Projekcia",
-          "daily": "Per day",
-          "weekly": "Per week",
-          "monthly": "Per month"
+          "daily": "Za deň",
+          "weekly": "Za týždeň",
+          "monthly": "Za mesiac"
         },
-        "topPayees": "Top payees",
-        "bySpend": "by spend",
+        "topPayees": "Najčastejšie protistrany",
+        "bySpend": "podľa výdavkov",
         "noPayee": "Bez protistrany",
         "txCount": "{count} tr."
       },

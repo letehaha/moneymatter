@@ -11,6 +11,7 @@ import { cryptoPricesSyncCron } from './crons/crypto-prices-sync';
 import { demoCleanupCron } from './crons/demo-cleanup';
 import { demoTemplateRefreshCron } from './crons/demo-template-refresh';
 import { loadCurrencyRatesJob } from './crons/exchange-rates';
+import { goalsReachedCheckCron } from './crons/goals-reached-check';
 import { purgeDeletedPortfoliosCron } from './crons/purge-deleted-portfolios';
 import { securitiesDailySyncCron } from './crons/securities-daily-sync';
 import { shareInvitationsExpireCron } from './crons/share-invitations-expire';
@@ -30,6 +31,7 @@ const prodOnlyCrons = [
   cryptoPricesSyncCron,
   tagRemindersCron,
   stuckPendingCheckCron,
+  goalsReachedCheckCron,
   subscriptionRemindersCron,
   subscriptionAutoRecordCron,
   subscriptionCandidateDetectionCron,

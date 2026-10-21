@@ -7,10 +7,12 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/pop
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { Separator } from '@/components/lib/ui/separator';
+import { Switch } from '@/components/lib/ui/switch';
 import { useNotificationCenter } from '@/components/notification-center';
 import IncludePlannedMenuItem from '@/components/widgets/components/include-planned-menu-item.vue';
-import { useIncludePlannedConfig } from '@/components/widgets/use-include-planned-config';
+import { useIncludePlannedConfig, useWidgetConfigFlag } from '@/components/widgets/use-include-planned-config';
 import { useFormatCurrency } from '@/composable/formatters';
+import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCategoriesStore } from '@/stores/categories/categories';
 import { format } from 'date-fns';
@@ -34,6 +36,7 @@ import { VueDraggable } from 'vue-draggable-plus';
 
 import WidgetWrapper from '../components/widget-wrapper.vue';
 import CategoryPickerDialog from './category-picker-dialog.vue';
+import CategoryTrendSparkline from './category-trend-sparkline.vue';
 import {
   CATEGORY_SORT_LABELS,
   CATEGORY_SORT_OPTIONS,
@@ -71,10 +74,16 @@ const visibleSlots = computed(() => ((widgetConfigRef?.value?.rowSpan ?? 1) >= 2
 
 const { includePlanned } = useIncludePlannedConfig();
 
-const { spendingByCategory, isFetching, hasData } = useCategorySpendingData({
+const { isOn: showTrend, setFlag: setShowTrend } = useWidgetConfigFlag({
+  key: 'showTrend',
+  saveErrorKey: 'errors.api.unexpectedError',
+});
+
+const { spendingByCategory, trendByCategory, isTrendFetching, isFetching, hasData } = useCategorySpendingData({
   selectedPeriod: () => props.selectedPeriod,
   categoryIds: selectedCategoryIds,
   includePlanned,
+  showTrend,
 });
 
 const categoryRows = computed(() =>
@@ -92,7 +101,9 @@ const categoryRows = computed(() =>
 );
 
 const sortBy = computed(() => readCategorySort({ config: widgetConfigRef?.value?.config }));
-const displayRows = computed(() => sortCategoryRows({ rows: categoryRows.value, sortBy: sortBy.value }));
+const displayRows = computed(() =>
+  sortCategoryRows({ rows: categoryRows.value, sortBy: sortBy.value, getAmount: (row) => row.netAmount }),
+);
 
 // Mutable copy for drag-and-drop reordering
 const draggableRows = ref<typeof categoryRows.value>([]);
@@ -341,6 +352,16 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
                   </span>
                   <ChevronRightIcon class="text-muted-foreground size-4" />
                 </button>
+                <div class="flex items-center justify-between gap-2 rounded-md px-2 py-2">
+                  <span class="text-sm font-medium">{{ t('dashboard.widgets.categoryTracker.showTrend') }}</span>
+                  <Switch
+                    class="shrink-0"
+                    :model-value="showTrend"
+                    :aria-label="t('dashboard.widgets.categoryTracker.showTrend')"
+                    data-testid="cst-show-trend-switch"
+                    @update:model-value="(value: boolean) => setShowTrend({ value })"
+                  />
+                </div>
                 <IncludePlannedMenuItem test-id-prefix="cst" />
               </div>
             </template>
@@ -391,7 +412,7 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
 
     <template v-else>
       <ScrollArea class="-mx-2 min-h-0 flex-1">
-        <div class="flex flex-col gap-2">
+        <div class="@container/cst flex flex-col gap-2">
           <!-- Customize mode: draggable rows -->
           <VueDraggable
             v-if="isCustomizing"
@@ -446,6 +467,17 @@ const navigateToTransactions = ({ categoryId }: { categoryId: string }) => {
               <CategoryCircle :category-id="item.id" />
 
               <span class="min-w-0 flex-1 truncate text-sm">{{ item.name }}</span>
+
+              <CategoryTrendSparkline
+                v-if="showTrend && trendByCategory[item.id]"
+                :class="cn('hidden @xs/cst:block', getAmountClass({ netAmount: item.netAmount }))"
+                :values="trendByCategory[item.id]!"
+                :net-amount="item.netAmount"
+              />
+              <div
+                v-else-if="showTrend && isTrendFetching"
+                class="bg-muted hidden h-5 w-16 shrink-0 animate-pulse rounded @xs/cst:block"
+              />
 
               <span class="text-amount shrink-0 text-sm" :class="getAmountClass({ netAmount: item.netAmount })">
                 {{ formatAmount({ netAmount: item.netAmount }) }}

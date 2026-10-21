@@ -185,11 +185,16 @@ export async function createAccount({
   currencyCode,
   initialBalance,
   type,
+  accountCategory = 'general',
+  creditLimit = 0,
 }: {
   request: APIRequestContext;
   name: string;
   currencyCode: string;
   initialBalance: number;
+  /** `ACCOUNT_CATEGORIES` value; loan and vehicle are rejected here (use createLoan / createVehicle). */
+  accountCategory?: string;
+  creditLimit?: number;
   /**
    * Account type. Defaults to "system" (regular user account).
    * Use "monobank" to create an external account — only allowed outside production.
@@ -205,8 +210,8 @@ export async function createAccount({
       name,
       currencyCode,
       initialBalance,
-      creditLimit: 0,
-      accountCategory: 'general',
+      creditLimit,
+      accountCategory,
       ...(type !== undefined && { type }),
     },
   });
@@ -366,7 +371,7 @@ export async function setPortfolioCash({
 
 // ─── Categories ──────────────────────────────────────────────────────
 
-async function apiGet({ request, path }: { request: APIRequestContext; path: string }) {
+export async function apiGet({ request, path }: { request: APIRequestContext; path: string }) {
   const response = await request.get(`${API_BASE_URL}${path}`);
   await assertOk({ response, label: `API GET ${path} failed` });
   return response.json();

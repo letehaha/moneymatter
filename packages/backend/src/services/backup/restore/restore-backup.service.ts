@@ -15,6 +15,7 @@ import { loadValidatedArchive } from './load-validated-archive';
 import { USER_ROW_GUARDED_FK } from './owned-reference-guard';
 import { triggerPostRestorePriceSync } from './post-restore-price-sync';
 import {
+  remapCategoryOrderIds,
   remapFireSettingsIds,
   remapIncomeCategoryIds,
   remapSavedPivotViewIds,
@@ -125,12 +126,13 @@ async function upsertUserSettings({
   const restoredSettings: SettingsSchema = restored.data;
 
   // Category/account/payee/portfolio UUIDs may be reminted on restore, so rewrite the ids saved
-  // inside Pivot views, Transactions views, the FIRE slice and the income categories before persisting
-  // the settings blob.
+  // inside Pivot views, Transactions views, the FIRE slice, the income categories and the
+  // category order before persisting the settings blob.
   remapSavedPivotViewIds({ views: restoredSettings.savedPivotViews, insertedIds });
   remapSavedTransactionViewIds({ views: restoredSettings.savedTransactionViews, insertedIds });
   remapFireSettingsIds({ fire: restoredSettings.fire, insertedIds });
   remapIncomeCategoryIds({ settings: restoredSettings, insertedIds });
+  remapCategoryOrderIds({ settings: restoredSettings, insertedIds });
 
   await UserSettings.create({ userId, settings: restoredSettings });
 }

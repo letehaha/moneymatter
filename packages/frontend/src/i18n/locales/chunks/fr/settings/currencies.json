@@ -2,87 +2,87 @@
   "settings": {
     "currencies": {
       "page": {
-        "title": "Currencies",
-        "description": "Manage the currencies you track and the exchange rates used across your accounts."
+        "title": "Devises",
+        "description": "Gérez les devises suivies et les taux de change appliqués à vos comptes."
       },
       "addNew": {
-        "loading": "Loading...",
-        "selectCurrency": "Select currency",
-        "addButton": "Add",
-        "sectionLabel": "Add a currency",
-        "successfullyAdded": "Currency added",
+        "loading": "Chargement...",
+        "selectCurrency": "Sélectionner une devise",
+        "addButton": "Ajouter",
+        "sectionLabel": "Ajouter une devise",
+        "successfullyAdded": "Devise ajoutée",
         "errors": {
-          "addFailed": "Unexpected error. Currency is not added."
+          "addFailed": "Erreur inattendue. La devise n'a pas été ajoutée."
         }
       },
       "howItWorks": {
-        "trigger": "How it works?",
-        "body": "Your base currency is the one every balance is converted into for totals and reports. Each added currency updates automatically from live market rates, or you can set a custom rate to override it."
+        "trigger": "Comment ça marche ?",
+        "body": "Votre devise principale sert de référence pour convertir tous les soldes des totaux et des rapports. Chaque devise ajoutée est automatiquement actualisée selon les cours du marché en temps réel, ou vous pouvez définir un taux personnalisé."
       },
       "row": {
-        "baseBadge": "Base",
-        "custom": "Custom",
-        "live": "Live",
-        "unused": "Unused",
+        "baseBadge": "Principale",
+        "custom": "Personnalisé",
+        "live": "En direct",
+        "unused": "Inutilisée",
         "accountsCount": "{count} compte | {count} comptes"
       },
       "empty": {
-        "title": "No other currencies yet",
-        "description": "Add a currency above to track balances and exchange rates alongside your base currency."
+        "title": "Aucune autre devise pour l'instant",
+        "description": "Ajoutez une devise ci-dessus pour suivre les soldes et les taux de change en plus de votre devise principale."
       },
       "exchangeRate": {
-        "disableLiveUpdate": "Disable live updation to be able to set custom exchange rate.",
-        "liveUpdateInfo": "When enabled, custom rate is ignored.",
-        "liveUpdateLabel": "Live update",
+        "disableLiveUpdate": "Désactivez l'actualisation automatique pour saisir un taux de change personnalisé.",
+        "liveUpdateInfo": "Lorsqu'elle est activée, le taux personnalisé est ignoré.",
+        "liveUpdateLabel": "Actualisation en direct",
         "ratePlaceholder": "0.00",
-        "saveButton": "Save",
-        "successfullyUpdated": "Successfully updated.",
-        "balancesNotRefreshed": "{count} account balance(s) could not be refreshed with the new rate yet — they'll update automatically once a rate is available.",
+        "saveButton": "Enregistrer",
+        "successfullyUpdated": "Mis à jour avec succès.",
+        "balancesNotRefreshed": "{count} solde(s) de compte n'a pas pu être actualisé avec le nouveau taux pour le moment — la mise à jour s'effectuera automatiquement dès qu'un taux sera disponible.",
         "errors": {
-          "unexpectedError": "Unexpected error",
-          "updateFailed": "Unexpected error. Currency is not updated."
+          "unexpectedError": "Erreur inattendue",
+          "updateFailed": "Erreur inattendue. La devise n'a pas été mise à jour."
         }
       },
       "delete": {
-        "confirmTitle": "Delete currency?",
-        "description": "Currency can only be deleted/disconnected if there's no accounts and/or transactions associated with it.",
-        "button": "Delete currency",
-        "buttonShort": "Delete",
-        "disabledTooltip": "You cannot delete this currency because it is still connected to account(s).",
-        "successfullyDeleted": "Successfully deleted.",
+        "confirmTitle": "Supprimer la devise ?",
+        "description": "Une devise ne peut être supprimée ou dissociée que si aucun compte et/ou aucune opération n'y est associé.",
+        "button": "Supprimer la devise",
+        "buttonShort": "Supprimer",
+        "disabledTooltip": "Impossible de supprimer cette devise car elle est toujours associée à un ou plusieurs comptes.",
+        "successfullyDeleted": "Supprimée avec succès.",
         "errors": {
-          "deleteFailed": "Unexpected error. Currency is not deleted."
+          "deleteFailed": "Erreur inattendue. La devise n'a pas été supprimée."
         }
       },
       "setBase": {
-        "button": "Set as base currency",
-        "buttonShort": "Set as base",
-        "processing": "Processing...",
-        "tooltip": "Mark as a base currency. All statistics and dashboard information will be displayed in this currency.\n\nTransactions will be recalculated by exchange rate as of date of when transaction was recorded.",
+        "button": "Définir comme devise principale",
+        "buttonShort": "Définir comme principale",
+        "processing": "Traitement en cours...",
+        "tooltip": "Définir comme devise principale. Toutes les statistiques et informations du tableau de bord seront affichées dans cette devise.\n\nLes opérations seront recalculées selon le taux de change à la date d'enregistrement de l'opération.",
         "dialog": {
-          "title": "Change base currency?",
-          "warningTitle": "Warning:",
-          "warningText": "Changing the base currency should be a very well-considered decision. Ideally, this action should be performed only once, even though there are no actual restrictions.",
-          "descriptionText": "Each time you change the base currency, all transactions will be recalculated using historical exchange rates. Because of floating-point arithmetic and normal variations between base and quote currency rates, repeated recalculations may introduce small discrepancies in your reference amounts over time. Reference amounts are used to display statistics and to set your budget limits.",
-          "roundingTitle": "How exactly is rounding calculated?",
-          "roundingIntro": "Currency conversions use Banker's rounding (IEEE 754 standard), also known as \"round half to even\". This minimizes cumulative rounding errors over many calculations.",
-          "roundingHow": "How it works:",
-          "roundingRule1": "When a value is exactly halfway (e.g., 0.5), it rounds to the nearest even number",
-          "roundingRule2": "Example: 0.5 → 0, 1.5 → 2, 2.5 → 2, 3.5 → 4",
-          "roundingStandard": "This method is recommended by IFRS/GAAP accounting standards and used by major financial systems to prevent systematic bias in currency conversions.",
-          "untouchedWarning": "Original transactions amount will always remain untouched!",
-          "processingTimeInfo": "This might take a while if your currency is not widely-common.",
-          "restrictionWarning": "You won't be able to create new accounts, transactions, and anything related to \"amounts\" while the process is in progress.",
-          "confirmation": "Are you sure you want to proceed?",
-          "changeButton": "Change base currency",
-          "cancelButton": "Cancel"
+          "title": "Changer de devise principale ?",
+          "warningTitle": "Attention :",
+          "warningText": "Modifier la devise principale doit être une décision mûrement réfléchie. Idéalement, cette action ne devrait être effectuée qu'une seule fois, même si aucune restriction ne vous en empêche.",
+          "descriptionText": "Chaque fois que vous modifiez la devise principale, toutes les opérations sont recalculées à l'aide des taux de change historiques. En raison des calculs en virgule flottante et des variations normales de taux entre les devises, des recalculs répétés peuvent entraîner de légers écarts dans vos montants de référence au fil du temps. Les montants de référence servent à afficher vos statistiques et à définir vos plafonds de budget.",
+          "roundingTitle": "Comment l'arrondi est-il calculé exactement ?",
+          "roundingIntro": "Les conversions de devises utilisent l'arrondi bancaire (norme IEEE 754), également appelé « arrondi au chiffre pair le plus proche ». Cela limite les erreurs d'arrondi cumulatives lors de calculs successifs.",
+          "roundingHow": "Comment ça fonctionne :",
+          "roundingRule1": "Lorsqu'une valeur se situe exactement à mi-chemin (ex. 0,5), elle est arrondie au nombre pair le plus proche",
+          "roundingRule2": "Exemple : 0,5 → 0, 1,5 → 2, 2,5 → 2, 3,5 → 4",
+          "roundingStandard": "Cette méthode est recommandée par les normes comptables IFRS/GAAP et utilisée par les grands systèmes financiers pour éviter tout biais systématique dans les conversions de devises.",
+          "untouchedWarning": "Le montant d'origine des opérations ne sera jamais modifié !",
+          "processingTimeInfo": "Cela peut prendre un moment si votre devise est peu courante.",
+          "restrictionWarning": "Vous ne pourrez pas créer de nouveaux comptes, opérations ou tout élément lié aux montants pendant toute la durée du traitement.",
+          "confirmation": "Voulez-vous vraiment continuer ?",
+          "changeButton": "Changer la devise principale",
+          "cancelButton": "Annuler"
         },
-        "successMessage": "Base currency changed successfully.",
+        "successMessage": "Devise principale modifiée avec succès.",
         "errors": {
-          "changeFailed": "Unexpected error. Failed to change base currency.",
-          "lockedHousehold": "You're in {count} active household membership. Leave it from Settings → Household first. | You're in {count} active household memberships. Leave them from Settings → Household first.",
-          "lockedShares": "You have {count} active account share. Revoke it from the account first. | You have {count} active account shares. Revoke them from each account first.",
-          "lockedBudgetPlan": "An active budget plan is blocking the change. Delete it first. | {count} active budget plans are blocking the change. Delete them first."
+          "changeFailed": "Erreur inattendue. Impossible de modifier la devise principale.",
+          "lockedHousehold": "Vous êtes membre de {count} foyer actif. Quittez-le d'abord depuis Paramètres → Foyer. | Vous êtes membre de {count} foyers actifs. Quittez-les d'abord depuis Paramètres → Foyer.",
+          "lockedShares": "Vous avez {count} accès partagé actif. Révoquez-le d'abord depuis le compte. | Vous avez {count} accès partagés actifs. Révoquez-les d'abord depuis chaque compte.",
+          "lockedBudgetPlan": "Un budget prévisionnel actif bloque la modification. Supprimez-le d'abord. | {count} budgets prévisionnels actifs bloquent la modification. Supprimez-les d'abord."
         }
       }
     }

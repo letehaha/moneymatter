@@ -6,16 +6,16 @@
       "unexpectedError": "Unerwarteter Fehler.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde dich erneut an",
       "payloadTooLarge": "Die Anfrage ist zu groß. Bitte versuche, weniger Elemente auf einmal zu importieren.",
-      "tooManyRequests": "Too many attempts. Please wait a moment and try again."
+      "tooManyRequests": "Zu viele Versuche. Bitte warte einen Moment und versuche es erneut."
     },
     "auth": {
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "reauthenticationRequired": "Zu deiner Sicherheit melde dich erneut an, um diese Änderung vorzunehmen.",
       "passwordTooShort": "Passwort ist zu kurz.",
       "passwordTooLong": "Passwort ist zu lang.",
-      "providerNotConfigured": "This sign-in provider isn't configured on this server.",
-      "accountAlreadyLinked": "This account is already linked to another user.",
-      "cannotUnlinkLastAccount": "You can't remove your only sign-in method.",
-      "passkeyAlreadyRegistered": "This passkey is already registered."
+      "providerNotConfigured": "Dieser Anmeldeanbieter ist auf diesem Server nicht konfiguriert.",
+      "accountAlreadyLinked": "Dieses Konto ist bereits mit einem anderen Benutzer verknüpft.",
+      "cannotUnlinkLastAccount": "Du kannst deine einzige Anmeldemethode nicht entfernen.",
+      "passkeyAlreadyRegistered": "Dieser Passkey ist bereits registriert."
     },
     "notFound": {
       "title": "Diese Seite ist nicht verbucht",

@@ -3,7 +3,7 @@
     "name": "MoneyMatter Finance Tracker",
     "version": "2.0.0",
     "title": "MoneyMatter — Personal Finance MCP Server",
-    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), trackers, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances.",
+    "description": "OAuth-secured read/write access to your MoneyMatter financial data: accounts, transactions (including splits, refunds, transfers, and groups), trackers, savings goals, subscriptions, transaction automations (rules engine), categories, tags, cash flow, balance history, spending analytics, and investment portfolios (holdings, cash balances, and investment transactions). Supports creating, editing, and deleting records when the corresponding scopes are granted. Enables natural-language queries and automation of your personal finances.",
     "website": "https://moneymatter.app",
     "documentation": "https://moneymatter.app/llms-full.txt",
     "vendor": {
@@ -117,6 +117,22 @@
     {
       "name": "reject_tracker_suggestions",
       "description": "Reject smart-tracking suggestions; AI-linked or accepted ones are also unlinked from the tracker."
+    },
+    {
+      "name": "get_goals",
+      "description": "List savings goals with target, backing accounts and their shares, and progress (current value, pace, ETA, needed per month) in the goal currency."
+    },
+    {
+      "name": "create_goal",
+      "description": "Create a savings goal funded by percentage shares of one or more accounts."
+    },
+    {
+      "name": "update_goal",
+      "description": "Update a savings goal's target, date, monthly plan, accounts, or status (active, paused, archived)."
+    },
+    {
+      "name": "delete_goal",
+      "description": "Permanently delete a savings goal and free its account shares."
     },
     {
       "name": "get_spending_by_categories",

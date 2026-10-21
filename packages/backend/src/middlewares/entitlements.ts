@@ -1,7 +1,12 @@
 import { API_ERROR_CODES, API_RESPONSE_STATUS, Entitlements, FEATURES, Feature } from '@bt/shared/types';
 import { ERROR_CODES } from '@js/errors';
 import { API_PREFIX } from '@root/config';
-import { type FeatureAccess, getFeatureAccess } from '@services/entitlements/feature-trial.service';
+import {
+  FEATURE_NOT_IN_PLAN_MESSAGE,
+  type FeatureAccess,
+  getFeatureAccess,
+  hasFeature,
+} from '@services/entitlements/feature-trial.service';
 import { resolveEntitlements } from '@services/entitlements/resolve-entitlements.service';
 import type { NextFunction, Request, Response } from 'express';
 
@@ -50,9 +55,8 @@ export const requireFeature =
   (feature: Feature) =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { features } = await getRequestEntitlements({ req });
-      if (!features.includes(feature)) {
-        planRequired({ res, message: 'This feature is not included in your current plan.' });
+      if (!hasFeature({ entitlements: await getRequestEntitlements({ req }), feature })) {
+        planRequired({ res, message: FEATURE_NOT_IN_PLAN_MESSAGE });
         return;
       }
       next();
@@ -80,7 +84,7 @@ export const requireFeatureOrTrial =
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       if ((await getRequestFeatureAccess({ req, feature })) === 'denied') {
-        planRequired({ res, message: 'This feature is not included in your current plan.' });
+        planRequired({ res, message: FEATURE_NOT_IN_PLAN_MESSAGE });
         return;
       }
       next();

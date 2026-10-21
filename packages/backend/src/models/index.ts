@@ -24,6 +24,8 @@ import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
 import ExchangeRatesModel from './exchange-rates.model';
 import FeatureUsagesModel from './feature-usages.model';
+import GoalAccountsModel from './goal-accounts.model';
+import GoalsModel from './goals.model';
 import ImportBatchAccountEffectsModel from './import-batch-account-effects.model';
 import ImportBatchesModel from './import-batches.model';
 import HoldingsModel from './investments/holdings.model';
@@ -175,6 +177,8 @@ const models = [
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,
   PushSubscriptionsModel,
+  GoalsModel,
+  GoalAccountsModel,
 ];
 
 const sequelize = new Sequelize({

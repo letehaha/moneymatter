@@ -9,6 +9,7 @@ MoneyMatter is a privacy-first alternative to apps like Mint and YNAB. It is AGP
 - Bank account synchronization (LunchFlow, SimpleFIN, Monobank and Walutomat)
 - AI-powered transaction categorization that follows your own instructions
 - Budgets with a line per category, rollover and goals
+- Savings goals that track progress from shares of your accounts, with pace, ETA, what-if and an affordability check
 - Investment portfolio tracking with automatic price updates
 - Multi-currency support with automatic exchange rates
 - CSV and bank statement import (including AI-assisted parsing)
@@ -37,7 +38,7 @@ Works with Claude, ChatGPT, OpenClaw, and any MCP-compatible client. Access can 
 ## Links
 
 - [Homepage](https://moneymatter.app/): Landing page with feature overview and sign-up
-- [Documentation](https://docs.moneymatter.app/llms.txt): User guides on accounts, transactions, transfers, refunds, stats, imports and bank connections
+- [Documentation](https://docs.moneymatter.app/llms.txt): User guides on accounts, transactions, budgeting, goals, transfers, refunds, stats, imports and bank connections
 - [GitHub Repository](https://github.com/letehaha/moneymatter): Source code, Docker setup guide, and issue tracker
 - [Privacy Policy](https://moneymatter.app/privacy-policy): Data handling and privacy practices
 - [Terms of Use](https://moneymatter.app/terms-of-use): Terms of service

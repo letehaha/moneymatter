@@ -107,6 +107,7 @@
         "paymentTypeLabel": "Payment type",
         "noteLabel": "Note",
         "notePlaceholder": "Note",
+        "addFieldsLabel": "Add",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -427,8 +428,6 @@
         "announceApplied": "Applied {name} — {count} field filled. Amount is empty. | Applied {name} — {count} fields filled. Amount is empty.",
         "announceAppliedWithAmount": "Applied {name} — {count} field filled. Amount set to {amount}. | Applied {name} — {count} fields filled. Amount set to {amount}.",
         "categoryDeletedHint": "This template’s category was deleted — pick one.",
-        "alsoSet": "Template also set: {fields}",
-        "tagsCount": "{count} tag | {count} tags",
         "applyConfirmTitle": "Apply template?",
         "applyConfirmDescription": "Applying replaces your splits and refund link.",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "Create group",
         "nameLabel": "Group name",
         "namePlaceholder": "Investments",
-        "createButton": "Create"
+        "createButton": "Create",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

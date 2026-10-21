@@ -34,9 +34,9 @@
         "currencyConflict": "Die ausgewählten Kontoauszüge weisen unterschiedliche Währungen aus ({currencies}). Sie werden alle in ein Konto mit der Währung dieses Kontos importiert.",
         "unsupportedFileNamed": "{name} ist keine PDF-, CSV-, TXT-, JPG-, PNG- oder WebP-Datei",
         "unreadableImageNamed": "{name} konnte nicht als Bild gelesen werden",
-        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
-        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
-        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
+        "invalidPdfNamed": "{name} scheint keine gültige PDF-Datei zu sein. Die Datei ist möglicherweise beschädigt oder umbenannt.",
+        "invalidImageNamed": "{name} scheint kein gültiges JPG-, PNG- oder WebP-Bild zu sein. Die Datei ist möglicherweise beschädigt oder umbenannt.",
+        "invalidTextNamed": "{name} scheint keine gültige {ext}-Datei zu sein. Die Datei ist möglicherweise eine Binärdatei oder umbenannt.",
         "pasteImageButton": "Bild einfügen",
         "pasteShortcutHint": "oder drücke {shortcut}",
         "clipboardNoImage": "Kein Bild in der Zwischenablage gefunden.",
@@ -155,13 +155,13 @@
         "continueButton": "Weiter zum Import",
         "transactionCount": "({count} Transaktionen)",
         "duplicateCheckFailed": "Wir konnten diesen Kontoauszug nicht mit deinen bestehenden Transaktionen abgleichen, daher ist die Anzahl der Duplikate unten nicht verfügbar. Überprüfe die Liste vor dem Import.",
-        "noDescription": "No description"
+        "noDescription": "Keine Beschreibung"
       },
       "droppedRowsWarning": "{count} Zeile aus der KI-Antwort konnte nicht gelesen werden und wurde übersprungen. Die unten angezeigte Anzahl der importierten Zeilen ist möglicherweise niedriger als in deiner Datei. | {count} Zeilen aus der KI-Antwort konnten nicht gelesen werden und wurden übersprungen. Die unten angezeigte Anzahl der importierten Zeilen ist möglicherweise niedriger als in deiner Datei.",
       "errors": {
-        "estimateFailed": "Failed to analyze the file",
-        "extractFailed": "Failed to extract transactions",
-        "importFailed": "Failed to start the import"
+        "estimateFailed": "Analyse der Datei fehlgeschlagen",
+        "extractFailed": "Extrahieren der Transaktionen fehlgeschlagen",
+        "importFailed": "Starten des Imports fehlgeschlagen"
       },
       "importResults": {
         "readyTitle": "Bereit zum Importieren",
@@ -191,11 +191,11 @@
         "viewTransactionsButton": "Transaktionen anzeigen",
         "startNewImportButton": "Neuen Import starten",
         "rowErrors": {
-          "invalidDate": "Unrecognized date \"{date}\"",
-          "futureDate": "Date {date} is in the future",
-          "amountNotPositive": "Amount must be greater than zero (got {amount})",
-          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
-          "rowFailed": "This transaction could not be imported"
+          "invalidDate": "Nicht erkanntes Datum \"{date}\"",
+          "futureDate": "Datum {date} liegt in der Zukunft",
+          "amountNotPositive": "Betrag muss größer als Null sein (erhalten: {amount})",
+          "amountTooLarge": "Betrag {amount} überschreitet das Maximum von {max}",
+          "rowFailed": "Diese Transaktion konnte nicht importiert werden"
         }
       }
     }

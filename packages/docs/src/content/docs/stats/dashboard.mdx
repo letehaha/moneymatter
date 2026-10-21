@@ -43,7 +43,7 @@ To pick a different range:
 <Aside type="note" title="Good to know">
 - The forward arrow is disabled once the period reaches the current month.
 - A custom period is kept in the page address, so reloading the page keeps it.
-- **Latest Transactions**, **Credit Utilization** and **FIRE progress** don't follow the period. They always show your latest data. **Budget** always shows the current budget period. **Trackers** shows each tracker's own dates.
+- **Latest Transactions**, **Credit Utilization** and **FIRE progress** don't follow the period. They always show your latest data. **Budget** always shows the current budget period. **Trackers** shows each tracker's own dates. **Goals** shows where each goal stands today.
 </Aside>
 
 ## Customize the layout
@@ -88,9 +88,10 @@ The **Add widgets** panel and the widget itself sometimes use different names. H
 | **Credit Utilization** | **Credit Utilization** | How much of your credit limits you're using |
 | **Latest Records** | **Latest Transactions** | Your most recent transactions |
 | **FIRE progress** | **FIRE progress** | How close you are to financial independence (Plus) |
-| **Budget** | **Budget** | What's left in the current budget period, line by line |
+| **Budget** | **Budget** | What's left in the current budget period, line by line. Use **Sort by** in the gear menu to rank lines by **Highest spend first**, **Lowest spend first** or **Most overspent first** (least left at the top); **Custom order** keeps your plan's order |
 | **Trackers** | **Trackers** | Each active tracker with how much of its limit is used and its net |
 | **Average tax rate** | **Average tax rate** | The share of your income paid in taxes, with a 12-month trend |
+| **Goals** | **Goals** | Progress toward your savings goals |
 
 **Subscriptions & Bills** and **Planned overview** are also available as widgets.
 
@@ -168,6 +169,7 @@ Keep an eye on the categories you care about. Each row shows what came in minus 
 - Click the pencil icon to edit the list: drag rows to reorder, click a row to swap its category, or click the bin icon to remove it. Click the save icon when you're done.
 - Click a row to open its transactions for the period.
 - The gear menu has **Include planned transactions**.
+- Each row has a small trend line, which you can turn off with **Show 6-month trend** in the gear menu. It covers the six full months before the month your period ends in, and a higher point means more money moved: more spending on a red row, more income on a green one. The line is hidden when the widget is too narrow.
 
 If you add both a parent category and one of its subcategories, the subcategory's money shows only on its own row, not on the parent's.
 
@@ -229,6 +231,16 @@ The widget always covers the last 12 months and doesn't follow the dashboard's d
   alt="The Average tax rate widget showing the rate as a share of income, taxes and income totals, twelve monthly bars with a dashed average line, and a breakdown bar by tax category."
   hint="Set Tax categories in /settings/general, make sure the user has income and tax payments over the last 12 months, and add the Average tax rate widget to /dashboard. Crop to the widget."
 />
+
+### Goals
+
+A summary of your [goals](/goals/overview/): each active goal with its progress bar, how much you've saved of the target, its status and its date. Paused goals are listed too. Reached and archived goals aren't. Click a goal to open it, or the arrow icon (↗) in the widget's top corner (**View all**) to open the **Goals** page.
+
+The widget comes in **1×1**, **1×2** and **2×1**. When it's wide enough, goals are laid out in two columns.
+
+Goals read their accounts' balances, so accounts with **Exclude from statistics** turned on still count here. See [How progress is calculated](/goals/how-progress-is-calculated/).
+
+With no active goals, the widget shows **Create a goal**. If your plan doesn't include goals either, it shows **Goals are locked** with a **Learn more** link to the **Goals** page.
 
 ### Latest Transactions
 

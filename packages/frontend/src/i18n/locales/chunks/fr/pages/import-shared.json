@@ -2,109 +2,112 @@
   "pages": {
     "importExport": {
       "progress": {
-        "jobExpired": "The import job expired or could not be found.",
-        "lostContact": "Lost contact with the import job."
+        "jobExpired": "La tâche d'importation a expiré ou est introuvable.",
+        "lostContact": "Connexion perdue avec la tâche d'importation."
       },
       "balanceDesync": {
-        "createdAccount": "{account}: the entered balance could not be applied after import, so this account balance may be incorrect.",
-        "linkedAccount": "{account}: the balance could not be updated after import, so this account balance may be incorrect.",
-        "unnamedAccount": "An account balance could not be updated after import and may be incorrect."
+        "createdAccount": "{account} : impossible d'appliquer le solde saisi après l'importation. Le solde de ce compte est peut-être incorrect.",
+        "linkedAccount": "{account} : impossible de mettre à jour le solde après l'importation. Le solde de ce compte est peut-être incorrect.",
+        "unnamedAccount": "Impossible de mettre à jour le solde d'un compte après l'importation. Il est peut-être incorrect."
       },
       "jobFailure": {
-        "interrupted": "The import was interrupted by a server restart. Some rows may already have been imported; undo this import from the import history before retrying.",
-        "baseCurrencyChangeInProgress": "A base currency change is in progress. Wait for it to finish, then retry the import.",
-        "accountCurrencyMismatch": "Currencies must match to link an existing account: {mismatches}. Link an account with the same currency or create a new one.",
-        "categoryNameTooLong": "Category name \"{name}\" is too long ({length} characters); the maximum is {max}.",
-        "payeeNameTooLong": "Payee name \"{name}\" is too long ({length} characters); the maximum is {max}.",
-        "accountMappingMissing": "These accounts from the file have no mapping: {accounts}. Go back and map each of them.",
-        "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one."
+        "interrupted": "L'importation a été interrompue par un redémarrage du serveur. Certaines lignes ont peut-être déjà été importées ; annulez cette importation depuis l'historique avant de réessayer.",
+        "baseCurrencyChangeInProgress": "Un changement de devise principale est en cours. Veuillez patienter jusqu'à la fin de l'opération avant de relancer l'importation.",
+        "accountCurrencyMismatch": "Les devises doivent correspondre pour lier un compte existant : {mismatches}. Associez un compte dans la même devise ou créez-en un nouveau.",
+        "categoryNameTooLong": "Le nom de catégorie « {name} » est trop long ({length} caractères) ; la limite est de {max}.",
+        "payeeNameTooLong": "Le nom de tiers « {name} » est trop long ({length} caractères) ; la limite est de {max}.",
+        "accountMappingMissing": "Ces comptes du fichier ne sont pas associés : {accounts}. Revenez en arrière pour associer chacun d'eux.",
+        "linkedAccountNotFound": "Le compte associé à « {account} » n'existe plus. Revenez en arrière et sélectionnez un autre compte ou créez-en un nouveau."
+      },
+      "importResults": {
+        "findTransfers": "Rechercher les transferts"
       }
     }
   },
   "importShared": {
     "action": {
-      "createNew": "Create new",
-      "linkExisting": "Link to existing",
-      "skip": "Skip"
+      "createNew": "Créer nouveau",
+      "linkExisting": "Lier à l'existant",
+      "skip": "Ignorer"
     },
-    "selectAction": "Select action",
-    "resolvedCounterWord": "resolved",
-    "quickActionsMenuLabel": "Bulk actions",
+    "selectAction": "Sélectionner une action",
+    "resolvedCounterWord": "résolu",
+    "quickActionsMenuLabel": "Actions groupées",
     "quickActions": {
       "menu": "Actions"
     },
     "columns": {
-      "sourceName": "Source name",
-      "currency": "Currency",
+      "sourceName": "Nom source",
+      "currency": "Devise",
       "action": "Action",
-      "target": "Target"
+      "target": "Cible"
     },
     "account": {
-      "selectTarget": "Select account",
-      "noMatchingCurrency": "No account with currency {currency}",
-      "willCreate": "Will create {name} ({currency})",
-      "empty": "No accounts to map",
-      "willSkip": "Will not be imported"
+      "selectTarget": "Sélectionner un compte",
+      "noMatchingCurrency": "Aucun compte en {currency}",
+      "willCreate": "Créera {name} ({currency})",
+      "empty": "Aucun compte à associer",
+      "willSkip": "Ne sera pas importé"
     },
     "category": {
-      "selectTarget": "Select category",
-      "willCreate": "Will create {name}",
-      "empty": "No categories to map"
+      "selectTarget": "Sélectionner une catégorie",
+      "willCreate": "Créera {name}",
+      "empty": "Aucune catégorie à associer"
     },
     "recalculateBalance": {
-      "label": "Update account balances from imported transactions",
-      "hint": "Transactions older than an account's latest existing transaction are treated as backfill and don't change its current balance.",
-      "loadFailedHint": "Couldn't load your saved preference — defaulting to off."
+      "label": "Mettre à jour les soldes à partir des opérations importées",
+      "hint": "Les opérations antérieures à la plus récente de ce compte sont considérées comme un historique et ne modifient pas son solde actuel.",
+      "loadFailedHint": "Impossible de charger votre préférence enregistrée — désactivée par défaut."
     },
     "balanceChanges": {
-      "title": "Account balance changes",
+      "title": "Évolution des soldes des comptes",
       "columns": {
-        "account": "Account",
-        "before": "Before",
-        "after": "After",
-        "delta": "Change",
-        "newRows": "New rows",
-        "backfillRows": "Backfill rows"
+        "account": "Compte",
+        "before": "Avant",
+        "after": "Après",
+        "delta": "Variation",
+        "newRows": "Nouvelles lignes",
+        "backfillRows": "Lignes antérieures"
       },
-      "newAccount": "New account"
+      "newAccount": "Nouveau compte"
     },
     "duplicatesTable": {
       "columnHeaders": {
-        "row": "Row",
-        "match": "Match",
-        "csvTransaction": "CSV transaction",
-        "existingTransaction": "Existing transaction",
+        "row": "Ligne",
+        "match": "Correspondance",
+        "csvTransaction": "Opération CSV",
+        "existingTransaction": "Opération existante",
         "csvShort": "CSV",
-        "existingShort": "Existing"
+        "existingShort": "Existante"
       },
       "matchTypeLabels": {
-        "exact": "Exact",
-        "idMatch": "ID match",
-        "fuzzy": "Fuzzy"
+        "exact": "Exacte",
+        "idMatch": "Par identifiant",
+        "fuzzy": "Approximative"
       },
       "fieldLabels": {
-        "amount": "Amount",
+        "amount": "Montant",
         "date": "Date",
         "note": "Note",
-        "category": "Category"
+        "category": "Catégorie"
       },
-      "importAnywayAriaLabel": "Import row {row} anyway"
+      "importAnywayAriaLabel": "Importer quand même la ligne {row}"
     },
     "aiMapping": {
-      "action": "AI match",
-      "tooltipCategories": "Let AI link each source category to the closest existing category. Rows you already linked to a category are left untouched.",
-      "failed": "AI matching failed. Please try again.",
-      "inProgress": "AI matching in progress…"
+      "action": "Correspondance IA",
+      "tooltipCategories": "Laisser l'IA associer chaque catégorie source à la catégorie existante la plus proche. Les lignes déjà associées ne seront pas modifiées.",
+      "failed": "Échec de la correspondance IA. Veuillez réessayer.",
+      "inProgress": "Correspondance IA en cours…"
     },
     "categoryPreset": {
-      "menuTrigger": "Apply mapping",
-      "currentLayout": "This file's layout",
-      "savedTemplates": "Saved templates",
-      "lastUsed": "Last used mapping",
-      "namePlaceholder": "Name this mapping",
-      "renameAria": "Rename mapping",
-      "deleteAria": "Delete mapping",
-      "confirmRenameAria": "Save name"
+      "menuTrigger": "Appliquer le mappage",
+      "currentLayout": "Structure de ce fichier",
+      "savedTemplates": "Modèles enregistrés",
+      "lastUsed": "Dernier mappage utilisé",
+      "namePlaceholder": "Nommer ce mappage",
+      "renameAria": "Renommer le mappage",
+      "deleteAria": "Supprimer le mappage",
+      "confirmRenameAria": "Enregistrer le nom"
     }
   }
 }

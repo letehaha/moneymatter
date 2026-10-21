@@ -1,0 +1,88 @@
+---
+title: Savings and investment accounts
+description: Track savings accounts, GICs, and investment accounts your bank manages, so interest, dividends and changes in value show up correctly in your balance and net worth.
+sidebar:
+  order: 5
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+Some accounts don't just hold money, they earn on it: a savings account that pays interest, a GIC or term deposit, or an investment account where your bank picks the funds. This page shows how to track them so their balance matches your statement and your net worth stays right, without making your income look bigger than it was.
+
+If you choose the stocks or ETFs yourself, use an investment portfolio instead (the **Portfolios** section in the sidebar). A portfolio tracks each holding and its price for you.
+
+## Create the account
+
+Create a [manual account](/accounts/create-an-account/) for it. Pick **Saving account** or **Investment** as the **Account Category**. The category only sets the icon and label, so pick whichever reads better to you. For **Initial balance**, enter the value from your latest statement.
+
+## Record what happens to it
+
+| What happens | How to record it | Counts as income or spending? |
+|---|---|---|
+| You move money in from another account | A [transfer](/transfers-and-refunds/how-transfers-work/) | No |
+| You take money out to another account | A transfer | No |
+| Interest or a dividend is paid | An income in **Interests, dividends** | Yes, income |
+| The bank charges a fee | An expense in **Charges, Fees** | Yes, spending |
+| The value goes up or down | [Adjust balance](/accounts/manage-accounts/#adjust-a-balance) → **Set to balance** | No |
+
+**Interests, dividends** is under **Income** and **Charges, Fees** is under **Financial expenses** in the [categories](/transactions/categories/) you start with.
+
+### Contributions and withdrawals
+
+Moving money from your checking account into the savings or investment account isn't spending, so record it as a transfer. Both balances change, and your income and spending stay the same. If the money comes from an account you don't track in MoneyMatter, use an [Out of Wallet transfer](/transfers-and-refunds/how-transfers-work/#out-of-wallet-transfers).
+
+### Interest and dividends
+
+Interest and dividends are money you earned, so record them as an income on this account. They count in your income and in your **Savings Rate**.
+
+If your bank reinvests dividends inside a fund and your statement doesn't list them separately, skip this step. They're already part of the fund's value, and the next balance update picks them up.
+
+### Changes in value
+
+Investments go up and down without any money moving. To bring the account in line with your statement, use **Set to balance**:
+
+<Steps>
+
+1. Open the account.
+2. Click the balance, or click the ⋮ button (**Account actions**) and choose **Adjust balance**.
+3. Keep **Set to balance** and type the value from your statement in **New balance**.
+4. Click **Confirm**.
+
+</Steps>
+
+The difference is recorded as a balance adjustment. It changes the account's balance, its balance history and your net worth, but it's left out of income and spending. A 300 EUR market gain raises your net worth by 300 EUR without counting as 300 EUR of income.
+
+<Aside type="tip" title="Record income before you update the balance">
+**Set to balance** fills whatever gap is left. If you set the balance first and then add an interest payment, the interest is counted twice. Add interest, dividends and fees first, then set the balance.
+</Aside>
+
+## A monthly routine
+
+When your statement arrives:
+
+<Steps>
+
+1. Record any contributions or withdrawals as transfers, if you haven't already.
+2. Add the interest, dividends and fees the statement lists.
+3. Use **Set to balance** with the statement's closing value.
+
+</Steps>
+
+For example, your investment account shows 10,000 EUR in MoneyMatter. This month you moved 200 EUR in from checking and received a 15 EUR dividend, so it now shows 10,215 EUR. Your statement says 10,480 EUR. Set the balance to 10,480, and the 265 EUR difference is recorded as a gain that changes your net worth but not your income.
+
+<Aside type="note" title="Updating late">
+The number you type in **Set to balance** is always the balance for **today**. If you update a few days after the statement date and the value has moved since, use the value your bank shows today. You can still set an earlier **Effective date** so the change appears on the statement date in your balance history. See [backdate an adjustment](/accounts/manage-accounts/#backdate-an-adjustment).
+</Aside>
+
+## Good to know
+
+- **Accounts connected to your bank** take their balance from the bank, so they stay up to date on their own. **Adjust balance** isn't available for them.
+- **Your net worth includes these accounts** like any other account, unless you turn on [**Exclude from statistics**](/accounts/manage-accounts/#exclude-an-account-from-statistics).
+- **Fixed-term deposits like GICs** work the same way. Add the interest when it's paid, or once at maturity if that's when your bank pays it.
+
+## Related
+
+- [Create an account](/accounts/create-an-account/)
+- [Adjust a balance](/accounts/manage-accounts/#adjust-a-balance)
+- [How transfers work](/transfers-and-refunds/how-transfers-work/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)

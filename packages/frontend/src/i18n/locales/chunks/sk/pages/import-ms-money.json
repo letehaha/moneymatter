@@ -126,9 +126,9 @@
           "errorsOverflow": "…a {count} ďalších",
           "rowPrefix": "Riadok {rowIndex}:",
           "errors": {
-            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed.",
-            "accountBalanceDesync": "An account balance could not be updated after the import. Check it and correct it manually.",
-            "rowImportFailed": "This row could not be imported."
+            "rowsSuppressed": "Od tohto riadku ďalej sa nepodarilo importovať ešte {count} riadok. Zobrazených je len prvých {listed} chýb. | Od tohto riadku ďalej sa nepodarilo importovať ešte {count} riadky. Zobrazených je len prvých {listed} chýb. | Od tohto riadku ďalej sa nepodarilo importovať ešte {count} riadkov. Zobrazených je len prvých {listed} chýb.",
+            "accountBalanceDesync": "Zostatok účtu sa po importe nepodarilo aktualizovať. Skontrolujte ho a opravte manuálne.",
+            "rowImportFailed": "Tento riadok sa nepodarilo importovať."
           },
           "viewTransactions": "Zobraziť transakcie",
           "importAnother": "Importovať ďalší súbor"

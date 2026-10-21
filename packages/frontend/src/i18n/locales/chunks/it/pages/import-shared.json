@@ -18,6 +18,9 @@
         "payeeNameTooLong": "Payee name \"{name}\" is too long ({length} characters); the maximum is {max}.",
         "accountMappingMissing": "These accounts from the file have no mapping: {accounts}. Go back and map each of them.",
         "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one."
+      },
+      "importResults": {
+        "findTransfers": "Find transfers"
       }
     }
   },

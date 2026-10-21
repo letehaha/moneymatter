@@ -20,7 +20,10 @@ const { gated, userStore, invalidateQueries, addErrorNotification, captureExcept
 
 vi.mock('@/stores', () => ({ useUserStore: () => userStore }));
 vi.mock('@tanstack/vue-query', () => ({ useQueryClient: () => ({ invalidateQueries }) }));
-vi.mock('vue-i18n', () => ({ useI18n: () => ({ t: (key: string) => key }) }));
+vi.mock('vue-i18n', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('vue-i18n')>()),
+  useI18n: () => ({ t: (key: string) => key }),
+}));
 vi.mock('@/components/notification-center', () => ({ useNotificationCenter: () => ({ addErrorNotification }) }));
 vi.mock('@/lib/sentry', () => ({ captureException }));
 

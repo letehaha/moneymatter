@@ -180,13 +180,13 @@ const routes: RouteRecordRaw[] = [
         path: '/budget',
         name: ROUTES_NAMES.budget,
         component: () => import('@/pages/budget/budget.vue'),
-        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+        meta: { navSection: 'planned', i18nChunks: ['pages/budget-plans'] },
       },
       {
         path: '/budget/:planId',
         name: ROUTES_NAMES.budgetPlan,
         component: () => import('@/pages/budget/budget-plan.vue'),
-        meta: { navSection: 'budget', i18nChunks: ['pages/budget-plans'] },
+        meta: { navSection: 'planned', i18nChunks: ['pages/budget-plans'] },
       },
       {
         path: '/planned',
@@ -220,6 +220,18 @@ const routes: RouteRecordRaw[] = [
             },
           },
         ],
+      },
+      {
+        path: '/goals',
+        name: ROUTES_NAMES.goals,
+        component: () => import('@/pages/goals/goals.vue'),
+        meta: { navSection: 'planned', i18nChunks: ['pages/goals'] },
+      },
+      {
+        path: '/goals/:goalId',
+        name: ROUTES_NAMES.goalDetails,
+        component: () => import('@/pages/goals/goal-details.vue'),
+        meta: { navSection: 'planned', i18nChunks: ['pages/goals'] },
       },
       // Backward-compat redirects for the old /planned/subscriptions URLs, so links
       // already sent (e.g. payment reminder emails) still resolve after the rename

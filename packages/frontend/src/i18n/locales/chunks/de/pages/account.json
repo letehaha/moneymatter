@@ -115,7 +115,7 @@
         "error": "Konto konnte nicht aktualisiert werden",
         "archivedTitle": "Archiviertes Konto",
         "archivedDescription": "Dieses Konto ist archiviert. Es erscheint nicht in deiner Seitenleiste und akzeptiert keine neuen Transaktionen.",
-        "unarchiveButton": "Konto dearchivieren"
+        "unarchiveButton": "Konto reaktivieren"
       },
       "link": {
         "selectConnection": "Bankverbindung auswählen",
@@ -215,7 +215,7 @@
         "syncStarted": "Synchronisierung gestartet...",
         "accessForbidden": "Zugriff verweigert",
         "failed": "Transaktionen konnten nicht synchronisiert werden",
-        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
+        "syncQueued": "Transaktions-Synchronisierung eingereiht: {batches} Paket, ca. {minutes} Min. | Transaktions-Synchronisierung eingereiht: {batches} Pakete, ca. {minutes} Min."
       },
       "reconcileDuplicates": {
         "title": "Doppelte Transaktionen zusammenführen",

@@ -3,6 +3,26 @@ import { type CategoryModel, type RecordId } from '@bt/shared/types';
 
 import { categoryDropError } from './can-drop-category';
 
+/** `siblingIds` with `draggedId` moved next to `targetId`, or `null` when the target isn't among them. */
+export const reorderSiblingIds = ({
+  siblingIds,
+  draggedId,
+  targetId,
+  position,
+}: {
+  siblingIds: RecordId[];
+  draggedId: RecordId;
+  targetId: RecordId;
+  position: 'before' | 'after';
+}): RecordId[] | null => {
+  const ids = siblingIds.filter((id) => id !== draggedId);
+  const targetIndex = ids.indexOf(targetId);
+  if (targetIndex === -1) return null;
+
+  ids.splice(targetIndex + (position === 'after' ? 1 : 0), 0, draggedId);
+  return ids;
+};
+
 export interface PendingCategoryMove {
   categoryId: RecordId;
   parentId: RecordId | null;
@@ -95,7 +115,7 @@ export const sanitizeMoves = ({
     if (move.parentId !== null && !ids.has(move.parentId)) continue;
 
     const current = applyPendingMoves({ categories, moves: accepted });
-    const tree = buildCategoriesObjectGraph(current);
+    const tree = buildCategoriesObjectGraph({ items: current });
     const dragged = findFormattedCategoryById(tree, move.categoryId);
     if (!dragged) continue;
 

@@ -1,47 +1,47 @@
 {
   "auth": {
     "welcome": {
-      "title": "Select base currency",
-      "description": "Your base currency should ideally be the one you use most often. All transactions in other currencies will be calculated based on this one.",
-      "submitButton": "Confirm currency",
-      "trialStarted": "Your free trial has started, everything is unlocked for {count} day. {link} | Your free trial has started, everything is unlocked for {count} days. {link}",
-      "logout": "Logout",
+      "title": "Sélectionner la devise principale",
+      "description": "Votre devise principale doit idéalement être celle que vous utilisez le plus souvent. Toutes les opérations dans d'autres devises seront calculées à partir de celle-ci.",
+      "submitButton": "Confirmer la devise",
+      "trialStarted": "Votre essai gratuit a commencé, tout est débloqué pendant {count} jour. {link} | Votre essai gratuit a commencé, tout est débloqué pendant {count} jours. {link}",
+      "logout": "Déconnexion",
       "labels": {
-        "baseCurrency": "Base currency"
+        "baseCurrency": "Devise principale"
       },
       "placeholders": {
-        "loading": "Loading..."
+        "loading": "Chargement..."
       },
       "errors": {
-        "unableToLoadCurrencies": "Unable to load currencies list. Try later",
-        "unableToSetCurrency": "Unexpected error. Cannot set base currency. Please try later or contact support."
+        "unableToLoadCurrencies": "Impossible de charger la liste des devises. Réessayez plus tard.",
+        "unableToSetCurrency": "Erreur inattendue. Impossible de définir la devise principale. Veuillez réessayer plus tard ou contacter l'assistance."
       }
     },
     "oauthCallback": {
-      "completingSignIn": "Completing sign in...",
+      "completingSignIn": "Connexion en cours...",
       "errors": {
         "accessDenied": {
-          "signIn": "Sign in was cancelled or access was denied",
-          "signUp": "Sign up was cancelled or access was denied",
-          "link": "Linking was cancelled or access was denied"
+          "signIn": "La connexion a été annulée ou l'accès a été refusé",
+          "signUp": "L'inscription a été annulée ou l'accès a été refusé",
+          "link": "L'association a été annulée ou l'accès a été refusé"
         },
         "userAlreadyExists": {
-          "signIn": "An account with this email already exists",
-          "signUp": "An account with this email already exists",
-          "link": "This account is already linked to another user"
+          "signIn": "Un compte existe déjà avec cette adresse e-mail",
+          "signUp": "Un compte existe déjà avec cette adresse e-mail",
+          "link": "Ce compte est déjà associé à un autre utilisateur"
         },
         "accountNotLinked": {
-          "signIn": "No account found with this email. Please sign up first.",
-          "signUp": "Failed to create account. Please try again.",
-          "link": "Failed to link account. Please try again."
+          "signIn": "Aucun compte trouvé avec cette adresse e-mail. Veuillez d'abord vous inscrire.",
+          "signUp": "Échec de la création du compte. Veuillez réessayer.",
+          "link": "Échec de l'association du compte. Veuillez réessayer."
         },
         "genericError": {
-          "signIn": "Failed to sign in. Please try again.",
-          "signUp": "Failed to sign up. Please try again.",
-          "link": "Failed to link account. Please try again."
+          "signIn": "Échec de la connexion. Veuillez réessayer.",
+          "signUp": "Échec de l'inscription. Veuillez réessayer.",
+          "link": "Échec de l'association du compte. Veuillez réessayer."
         },
-        "unauthorizedClient": "This application is not authorized to use this authentication method",
-        "temporarilyUnavailable": "The authentication service is temporarily unavailable. Please try again later."
+        "unauthorizedClient": "Cette application n'est pas autorisée à utiliser cette méthode d'authentification",
+        "temporarilyUnavailable": "Le service d'authentification est temporairement indisponible. Veuillez réessayer plus tard."
       }
     }
   }

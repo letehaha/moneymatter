@@ -29,7 +29,8 @@ export type BackupParentScope =
   | 'importBatches'
   | 'budgetPlans'
   | 'budgetLines'
-  | 'trackerLines';
+  | 'trackerLines'
+  | 'goals';
 
 /**
  * How a table's rows are selected for the current user.
@@ -311,6 +312,13 @@ const TABLE_DEFS = [
     paranoid: true,
     isValidRow: isRestorablePlanRow,
   },
+  {
+    fileName: 'goals',
+    model: models.Goals,
+    tier: 3,
+    scope: { strategy: 'userColumn', column: 'userId' },
+    restoreMode: 'insert',
+  },
 
   // tier 4
   {
@@ -397,6 +405,13 @@ const TABLE_DEFS = [
     model: models.BudgetPlanAccounts,
     tier: 4,
     scope: { strategy: 'viaParent', fk: 'planId', parent: 'budgetPlans' },
+    restoreMode: 'insert',
+  },
+  {
+    fileName: 'goal-accounts',
+    model: models.GoalAccounts,
+    tier: 4,
+    scope: { strategy: 'viaParent', fk: 'goalId', parent: 'goals' },
     restoreMode: 'insert',
   },
   {

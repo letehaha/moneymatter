@@ -16,25 +16,18 @@
         "retry": "重试"
       },
       "row": {
-        "bankBadge": "由银行链接创建",
-        "bankBadgeShort": "链接",
         "bankBadgeTooltip": "此分组是在您连接银行时自动创建的，但它并不代表银行链接本身。您可以自由重命名、移动账户或删除分组，账户仍会继续同步，不受影响。",
         "accountsCount": "{count} 个账号 | {count} 个账号",
         "noAccounts": "无账户",
         "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
-        "inParent": "in {name}",
         "manageConnection": "Manage connection"
       },
       "update": {
         "label": "组名",
         "placeholder": "Enter group name",
-        "saveButton": "Save",
         "emptyNameError": "Group name can't be empty"
       },
       "accounts": {
-        "heading": "Accounts in this group",
-        "empty": "No accounts in this group yet. Add accounts to a group from the account page.",
-        "emptyBankLinked": "This connection's accounts are organized into other groups — moving them doesn't affect syncing.",
         "unlinkTooltip": "Remove from group",
         "removeConfirmTitle": "Remove \"{name}\" from this group?",
         "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
@@ -46,6 +39,74 @@
         "accountsKept": "Accounts are kept — they simply become ungrouped.",
         "syncContinues": "Bank syncing continues — the connection is separate from this group.",
         "ungroupedHeading": "Becoming ungrouped"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Rename group",
+          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "submit": "Save changes"
+        },
+        "move": {
+          "title": "移动 “{name}”",
+          "description": "Its subgroups and accounts move with it.",
+          "parentLabel": "Parent group",
+          "parentPlaceholder": "Select a parent group",
+          "noParent": "No parent",
+          "hint": "Pick “No parent” to make it a top-level group.",
+          "submit": "移动"
+        },
+        "addAccounts": {
+          "title": "Add accounts to “{name}”",
+          "description": "An account belongs to one group. Picking one from another group moves it here.",
+          "searchPlaceholder": "Search accounts",
+          "sections": {
+            "ungrouped": "Not in a group",
+            "inOtherGroups": "In other groups",
+            "alreadyInGroup": "Already in {name}"
+          },
+          "inGroupCaption": "In {path}",
+          "noResults": "No accounts match your search",
+          "noAccounts": "No accounts to add",
+          "summary": {
+            "selected": "{selected} selected",
+            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
+            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+          },
+          "submit": "Add {count} account | Add {count} accounts"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} group | {count} groups",
+        "syncedBadge": "已同步",
+        "expand": "Expand",
+        "collapse": "Collapse",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
+        "menu": {
+          "rename": "Rename and change logo",
+          "move": "Move to another group",
+          "newSubgroup": "New subgroup",
+          "addAccounts": "Add accounts",
+          "delete": "Delete group"
+        }
+      },
+      "organize": {
+        "button": "Organize",
+        "hint": "Drag a group onto another to nest it",
+        "save": "Save changes",
+        "topLevel": "顶层",
+        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
+        "movesCount": "{count} move | {count} moves",
+        "moveInside": "Move inside",
+        "moved": "Moved",
+        "saveSuccess": "Groups reorganized",
+        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
+        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropErrors": {
+          "currentParent": "Already in this group",
+          "insideItself": "Can't move a group inside its own subgroup",
+          "alreadyTopLevel": "Already a top-level group"
+        }
       }
     }
   }

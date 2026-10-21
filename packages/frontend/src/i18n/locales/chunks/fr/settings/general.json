@@ -1,115 +1,115 @@
 {
   "settings": {
     "general": {
-      "title": "General",
-      "description": "Control how your financial data is calculated and displayed across the app.",
+      "title": "Général",
+      "description": "Gérez le calcul et l'affichage de vos données financières dans l'application.",
       "creditLimit": {
-        "label": "Include credit limits in balance",
-        "description": "When enabled, credit limits are subtracted from account balances in statistics and the balance trend chart. This shows your actual financial position instead of available credit.",
-        "successNotification": "Setting updated successfully",
-        "errorNotification": "Failed to update setting"
+        "label": "Inclure les plafonds de crédit dans le solde",
+        "description": "Lorsque cette option est activée, les plafonds de crédit sont déduits des soldes de compte dans les statistiques et le graphique d'évolution du solde. Cela affiche votre situation financière réelle plutôt que le crédit disponible.",
+        "successNotification": "Paramètre mis à jour",
+        "errorNotification": "Échec de la mise à jour du paramètre"
       },
       "manualTransferMatching": {
-        "label": "Match transfers with manual accounts",
-        "description": "Allow automatically detected transfers to link a synced bank transaction with one you created manually.",
-        "successNotification": "Transfer matching setting updated",
-        "errorNotification": "Failed to update transfer matching setting"
+        "label": "Associer les virements aux comptes manuels",
+        "description": "Permettre aux virements détectés automatiquement de relier une opération bancaire synchronisée à une opération créée manuellement.",
+        "successNotification": "Paramètre d'association des virements mis à jour",
+        "errorNotification": "Échec de la mise à jour du paramètre d'association des virements"
       },
       "pendingBankTransactions": {
-        "label": "Import pending bank transactions",
-        "description": "Import transactions your bank reports before it has booked them. They're marked as pending, don't change the account balance, and can lack the merchant name and final details. Once the bank books or cancels them, they're updated or removed.",
-        "descriptionSelfHost": "Store Enable Banking transactions before the bank books them. They're marked as pending, never change the account balance, and often lack merchant details until booked. Other providers aren't affected: SimpleFIN and LunchFlow always import booked transactions only, and Monobank imports every transaction as a regular one.",
-        "successNotification": "Pending transactions setting updated",
-        "errorNotification": "Failed to update pending transactions setting"
+        "label": "Importer les opérations bancaires en attente",
+        "description": "Importez les opérations signalées par votre banque avant leur comptabilisation définitive. Elles sont marquées comme en attente, ne modifient pas le solde du compte et peuvent ne pas comporter le nom du commerçant ni les détails finaux. Dès que la banque les comptabilise ou les annule, elles sont mises à jour ou supprimées.",
+        "descriptionSelfHost": "Enregistrez les opérations Enable Banking avant leur comptabilisation par la banque. Elles sont marquées comme en attente, ne modifient jamais le solde du compte et manquent souvent de détails sur le commerçant jusqu'à leur comptabilisation. Les autres fournisseurs ne sont pas affectés : SimpleFIN et LunchFlow importent toujours uniquement les opérations comptabilisées, et Monobank importe chaque opération comme une opération standard.",
+        "successNotification": "Paramètre des opérations en attente mis à jour",
+        "errorNotification": "Échec de la mise à jour du paramètre des opérations en attente"
       },
       "bankSyncSchedule": {
-        "label": "Bank sync schedule",
-        "description": "Connected bank accounts sync automatically at these times, shown in your local time. Pick the same time twice to sync once a day.",
-        "placeholder": "Select time",
-        "successNotification": "Bank sync schedule updated",
-        "errorNotification": "Failed to update bank sync schedule"
+        "label": "Planification de la synchronisation bancaire",
+        "description": "Les comptes bancaires connectés se synchronisent automatiquement à ces horaires, affichés selon votre heure locale. Choisissez deux fois la même heure pour ne synchroniser qu'une fois par jour.",
+        "placeholder": "Sélectionner l'heure",
+        "successNotification": "Planification de la synchronisation bancaire mise à jour",
+        "errorNotification": "Échec de la mise à jour de la planification de la synchronisation bancaire"
       },
       "quickStart": {
-        "label": "Quick start guide",
-        "description": "Show the onboarding checklist on the dashboard. Turn it off to hide the guide; turn it back on to bring it back at any time."
+        "label": "Guide de démarrage rapide",
+        "description": "Affichez la liste des étapes initiales sur le tableau de bord. Désactivez-la pour masquer le guide ; réactivez-la pour le faire réapparaître à tout moment."
       },
       "savingsCategories": {
-        "label": "Count categories as savings",
-        "description": "Spending in these categories (and their subcategories) is excluded from expenses in cash-flow analytics, so it counts toward monthly savings and the savings rate.",
-        "successNotification": "Savings categories updated",
-        "errorNotification": "Failed to update savings categories"
+        "label": "Considérer les catégories comme de l'épargne",
+        "description": "Les dépenses effectuées dans ces catégories (et leurs sous-catégories) sont exclues des dépenses dans l'analyse des flux de trésorerie, de sorte qu'elles sont comptabilisées dans l'épargne mensuelle et le taux d'épargne.",
+        "successNotification": "Catégories d'épargne mises à jour",
+        "errorNotification": "Échec de la mise à jour des catégories d'épargne"
       },
       "taxCategories": {
-        "label": "Tax categories",
-        "description": "Spending in these categories is shown as taxes in the money flow chart instead of as an expense. Subcategories are included.",
-        "successNotification": "Tax categories updated",
-        "errorNotification": "Failed to update tax categories"
+        "label": "Catégories fiscales",
+        "description": "Les dépenses de ces catégories apparaissent comme des impôts et taxes dans le graphique des flux de trésorerie au lieu d'une dépense classique. Les sous-catégories sont incluses.",
+        "successNotification": "Catégories fiscales mises à jour",
+        "errorNotification": "Échec de la mise à jour des catégories fiscales"
       },
       "filterCategoriesByType": {
-        "label": "Match categories to transaction type",
-        "description": "The transaction form lists only income categories for income and all other categories for expenses. Search still finds every category.",
-        "successNotification": "Category list setting updated",
-        "errorNotification": "Failed to update the category list setting"
+        "label": "Adapter les catégories au type d'opération",
+        "description": "Le formulaire d'opération n'affiche que les catégories de revenus pour un revenu et toutes les autres pour une dépense. La recherche permet toujours de trouver chaque catégorie.",
+        "successNotification": "Paramètre de la liste des catégories mis à jour",
+        "errorNotification": "Échec de la mise à jour du paramètre de la liste des catégories"
       },
       "incomeCategories": {
-        "label": "Income categories",
-        "description": "Categories that count as income. Subcategories are included.",
-        "successNotification": "Income categories updated",
-        "errorNotification": "Failed to update income categories"
+        "label": "Catégories de revenus",
+        "description": "Catégories comptabilisées comme des revenus. Les sous-catégories sont incluses.",
+        "successNotification": "Catégories de revenus mises à jour",
+        "errorNotification": "Échec de la mise à jour des catégories de revenus"
       },
       "accountDropdowns": {
         "defaultAccount": {
-          "label": "Default account",
-          "description": "Pre-selected when you create a transaction.",
-          "placeholder": "No default — first account"
+          "label": "Compte par défaut",
+          "description": "Présélectionné lors de la création d'une opération.",
+          "placeholder": "Aucun compte par défaut — premier compte"
         },
         "showArchived": {
-          "label": "Show archived accounts",
-          "description": "When off, archived accounts are hidden from account pickers."
+          "label": "Afficher les comptes archivés",
+          "description": "Lorsque cette option est désactivée, les comptes archivés sont masqués dans les sélecteurs de compte."
         },
-        "successNotification": "Account dropdown settings updated",
-        "errorNotification": "Failed to update account dropdown settings"
+        "successNotification": "Paramètres des listes déroulantes de comptes mis à jour",
+        "errorNotification": "Échec de la mise à jour des paramètres des listes déroulantes de comptes"
       },
       "showUpcomingTransactions": {
-        "label": "Show upcoming transactions",
-        "description": "Pin a section with overdue scheduled payments and ones due within the next 3 days at the top of the transactions list.",
-        "successNotification": "Upcoming transactions setting updated",
-        "errorNotification": "Failed to update upcoming transactions setting"
+        "label": "Afficher les opérations à venir",
+        "description": "Épingler en haut de la liste des opérations une section avec les paiements récurrents en retard et ceux prévus dans les 3 prochains jours.",
+        "successNotification": "Paramètre des opérations à venir mis à jour",
+        "errorNotification": "Échec de la mise à jour du paramètre des opérations à venir"
       },
       "transactionFields": {
-        "label": "Optional transaction fields",
-        "description": "Extra fields shown in the transaction form. A field that already has a value is always shown.",
-        "successNotification": "Transaction fields updated",
-        "errorNotification": "Unexpected error happened. Setting not saved",
+        "label": "Champs facultatifs de l'opération",
+        "description": "Champs supplémentaires affichés dans le formulaire d'opération. Un champ contenant déjà une valeur reste toujours visible.",
+        "successNotification": "Champs d'opération mis à jour",
+        "errorNotification": "Une erreur inattendue est survenue. Paramètre non enregistré",
         "fields": {
           "externalUrl": {
-            "label": "External URL",
-            "description": "Link the transaction to an order page, booking confirmation or receipt."
+            "label": "URL externe",
+            "description": "Lier l'opération à une page de commande, une confirmation de réservation ou un reçu."
           },
           "externalReference": {
-            "label": "External reference",
-            "description": "Keep an order number, invoice number or booking reference with the transaction."
+            "label": "Référence externe",
+            "description": "Associez un numéro de commande, de facture ou de réservation à l'opération."
           },
           "originalAmount": {
-            "label": "Original amount",
-            "description": "The amount actually charged in another currency, when it differs from the account's currency."
+            "label": "Montant d'origine",
+            "description": "Le montant réellement débité dans une autre devise, lorsqu'elle diffère de celle du compte."
           },
           "location": {
-            "label": "Location",
-            "description": "GPS coordinates of where the purchase happened. Fill from your device's location or type them in"
+            "label": "Lieu",
+            "description": "Coordonnées GPS du lieu de l'achat. Renseignez-les via la position de votre appareil ou saisissez-les manuellement."
           }
         },
         "mapPicker": {
-          "label": "Map picker",
-          "description": "Pick transaction locations on a map and search addresses. Map tiles and search come from OpenStreetMap, which receives your IP address when the map opens."
+          "label": "Sélecteur de carte",
+          "description": "Sélectionnez le lieu des opérations sur une carte et recherchez des adresses. Les fonds de carte et la recherche proviennent d'OpenStreetMap, qui reçoit votre adresse IP à l'ouverture de la carte."
         }
       },
       "defaultPaymentType": {
-        "label": "Default payment type",
-        "description": "Preselected when you add a new transaction.",
-        "placeholder": "Select a payment type",
-        "successNotification": "Default payment type updated",
-        "errorNotification": "Failed to update default payment type"
+        "label": "Moyen de paiement par défaut",
+        "description": "Présélectionné lorsque vous ajoutez une nouvelle opération.",
+        "placeholder": "Sélectionner un moyen de paiement",
+        "successNotification": "Moyen de paiement par défaut mis à jour",
+        "errorNotification": "Échec de la mise à jour du moyen de paiement par défaut"
       }
     }
   }

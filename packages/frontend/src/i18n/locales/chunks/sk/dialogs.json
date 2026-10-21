@@ -107,6 +107,7 @@
         "paymentTypeLabel": "Typ platby",
         "noteLabel": "Poznámka",
         "notePlaceholder": "Poznámka",
+        "addFieldsLabel": "Pridať",
         "externalUrlLabel": "Externá URL",
         "externalUrlPlaceholder": "Odkaz na stránku objednávky, rezervácie alebo účtenky",
         "externalReferenceLabel": "Externý odkaz",
@@ -427,8 +428,6 @@
         "announceApplied": "Použitá šablóna {name} — {count} vyplnené pole. Suma je prázdna. | Použitá šablóna {name} — {count} vyplnené polia. Suma je prázdna. | Použitá šablóna {name} — {count} vyplnených polí. Suma je prázdna.",
         "announceAppliedWithAmount": "Použitá šablóna {name} — {count} vyplnené pole. Suma nastavená na {amount}. | Použitá šablóna {name} — {count} vyplnené polia. Suma nastavená na {amount}. | Použitá šablóna {name} — {count} vyplnených polí. Suma nastavená na {amount}.",
         "categoryDeletedHint": "Kategória tejto šablóny bola zmazaná — vyberte inú.",
-        "alsoSet": "Šablóna zároveň nastavila: {fields}",
-        "tagsCount": "{count} štítok | {count} štítky | {count} štítkov",
         "applyConfirmTitle": "Použiť šablónu?",
         "applyConfirmDescription": "Použitím sa nahradí vaše rozdelenie aj prepojenie na vrátenie platby.",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "Vytvoriť skupinu",
         "nameLabel": "Názov skupiny",
         "namePlaceholder": "Investície",
-        "createButton": "Vytvoriť"
+        "createButton": "Vytvoriť",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

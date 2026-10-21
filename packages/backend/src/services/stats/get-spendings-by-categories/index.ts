@@ -1,6 +1,7 @@
 import {
   type GetSpendingsByCategoriesByTypeReturnType,
   type GetSpendingsByCategoriesReturnType,
+  type MonthlySpendingsByCategoriesByType,
   type RecordId,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
@@ -14,9 +15,11 @@ import {
 } from '@services/categories/get-accessible-category-map.service';
 import { withTransaction } from '@services/common/with-transaction';
 import type { StatsScopeFilters } from '@services/stats/stats-scope-filters';
+import { format } from 'date-fns';
 
 import { CategoryAllocations, computeCategoryAllocations } from '../category-allocation';
 import { getExpensesHistory } from '../get-expenses-history';
+import { findBucketIndex, generatePeriodBuckets } from '../utils';
 
 interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
   userId: number;
@@ -34,6 +37,30 @@ interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
   excludePlanned?: boolean;
 }
 
+const loadCategoryAllocations = async (params: GetSpendingsByCategoriesParams) => {
+  const transactions = await getExpensesHistory(params);
+
+  // Split distribution + refund netting is shared with the pivot report; this service only
+  // differs in how the resulting per-category legs are grouped (see `groupAllocations`).
+  const [allocations, { categories, byId }] = await Promise.all([
+    computeCategoryAllocations({
+      transactions,
+      applyRefunds: true,
+      refundSide: params.transactionType,
+    }),
+    getAccessibleCategoryMap({ userId: params.userId }),
+  ]);
+
+  // Hiding a parent hides everything under it, including subcategories created after the caller
+  // saved the exclusion list.
+  const excludedCategoryIds =
+    params.excludedCategoryIds && params.excludedCategoryIds.length > 0
+      ? expandCategoryIdsWithDescendants({ categoryIds: params.excludedCategoryIds, categories, byId })
+      : [];
+
+  return { allocations, categories, excludedCategoryIds };
+};
+
 /**
  * Wrapped in a transaction so the expenses read and the allocation/category-map
  * fan-out below share one pinned Postgres connection instead of a pool checkout
@@ -42,25 +69,7 @@ interface GetSpendingsByCategoriesParams extends StatsScopeFilters {
  */
 export const getSpendingsByCategories = withTransaction(
   async (params: GetSpendingsByCategoriesParams): Promise<GetSpendingsByCategoriesReturnType> => {
-    const transactions = await getExpensesHistory(params);
-
-    // Split distribution + refund netting is shared with the pivot report; this service only
-    // differs in how the resulting per-category legs are grouped (see `groupAllocations`).
-    const [allocations, { categories, byId }] = await Promise.all([
-      computeCategoryAllocations({
-        transactions,
-        applyRefunds: true,
-        refundSide: params.transactionType,
-      }),
-      getAccessibleCategoryMap({ userId: params.userId }),
-    ]);
-
-    // Hiding a parent hides everything under it, including subcategories created after the caller
-    // saved the exclusion list.
-    const excludedCategoryIds =
-      params.excludedCategoryIds && params.excludedCategoryIds.length > 0
-        ? expandCategoryIdsWithDescendants({ categoryIds: params.excludedCategoryIds, categories, byId })
-        : [];
+    const { allocations, categories, excludedCategoryIds } = await loadCategoryAllocations(params);
 
     return groupAllocations({
       categories,
@@ -71,23 +80,41 @@ export const getSpendingsByCategories = withTransaction(
   },
 );
 
-/**
- * Same category grouping as `getSpendingsByCategories`, but split into per-category
- * income and expense buckets in a single response. The category-spending-tracker widget
- * needs both directions per category (to show net = income - expense); returning them
- * together lets it issue one request instead of one per transaction type.
- *
- * Runs the two type-scoped computations concurrently and merges by category, so the
- * refund/split adjustment logic stays shared and untouched.
- */
-export async function getSpendingsByCategoriesByType(
-  params: Omit<GetSpendingsByCategoriesParams, 'transactionType'>,
-): Promise<GetSpendingsByCategoriesByTypeReturnType> {
-  const [expenseByCategory, incomeByCategory] = await Promise.all([
-    getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.expense }),
-    getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.income }),
-  ]);
+type MonthlyParams = GetSpendingsByCategoriesParams & { from: string; to: string };
 
+/** Same as `getSpendingsByCategories`, grouped separately for every calendar month in the range. */
+const getMonthlySpendingsByCategories = withTransaction(
+  async (params: MonthlyParams): Promise<{ month: string; spendings: GetSpendingsByCategoriesReturnType }[]> => {
+    const { allocations, categories, excludedCategoryIds } = await loadCategoryAllocations(params);
+
+    const buckets = generatePeriodBuckets({ from: params.from, to: params.to, granularity: 'monthly' });
+    const byBucket = buckets.map((): CategoryAllocations => ({ base: [], refunds: [] }));
+    // A refund dated outside the range has no month here, so it is left out.
+    for (const side of ['base', 'refunds'] as const) {
+      for (const leg of allocations[side]) {
+        byBucket[findBucketIndex({ transactionTime: leg.time, buckets })]?.[side].push(leg);
+      }
+    }
+
+    return buckets.map(({ periodStart }, index) => ({
+      month: format(periodStart, 'yyyy-MM'),
+      spendings: groupAllocations({
+        categories,
+        allocations: byBucket[index]!,
+        selectedCategoryIds: params.categoryIds,
+        excludedCategoryIds,
+      }),
+    }));
+  },
+);
+
+const mergeByType = ({
+  expenseByCategory,
+  incomeByCategory,
+}: {
+  expenseByCategory: GetSpendingsByCategoriesReturnType;
+  incomeByCategory: GetSpendingsByCategoriesReturnType;
+}): GetSpendingsByCategoriesByTypeReturnType => {
   const result: GetSpendingsByCategoriesByTypeReturnType = {};
 
   for (const categoryId of new Set([
@@ -108,6 +135,43 @@ export async function getSpendingsByCategoriesByType(
   }
 
   return result;
+};
+
+/**
+ * Same category grouping as `getSpendingsByCategories`, but split into per-category
+ * income and expense buckets in a single response. The category-spending-tracker widget
+ * needs both directions per category (to show net = income - expense); returning them
+ * together lets it issue one request instead of one per transaction type.
+ *
+ * Runs the two type-scoped computations concurrently and merges by category, so the
+ * refund/split adjustment logic stays shared and untouched.
+ */
+export async function getSpendingsByCategoriesByType(
+  params: Omit<GetSpendingsByCategoriesParams, 'transactionType'>,
+): Promise<GetSpendingsByCategoriesByTypeReturnType> {
+  const [expenseByCategory, incomeByCategory] = await Promise.all([
+    getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.expense }),
+    getSpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.income }),
+  ]);
+
+  return mergeByType({ expenseByCategory, incomeByCategory });
+}
+
+/** Per-type spendings for every calendar month in the range, oldest first. */
+export async function getMonthlySpendingsByCategoriesByType(
+  params: Omit<MonthlyParams, 'transactionType'>,
+): Promise<MonthlySpendingsByCategoriesByType> {
+  const [expenseMonths, incomeMonths] = await Promise.all([
+    getMonthlySpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.expense }),
+    getMonthlySpendingsByCategories({ ...params, transactionType: TRANSACTION_TYPES.income }),
+  ]);
+
+  const incomeByMonth = new Map(incomeMonths.map(({ month, spendings }) => [month, spendings]));
+
+  return expenseMonths.map(({ month, spendings }) => ({
+    month,
+    categories: mergeByType({ expenseByCategory: spendings, incomeByCategory: incomeByMonth.get(month) ?? {} }),
+  }));
 }
 
 /**

@@ -1,5 +1,6 @@
 import AccountGroups from '@models/accounts-groups/account-groups.model';
 import Accounts from '@models/accounts.model';
+import Goals from '@models/goals.model';
 import Payees from '@models/payees.model';
 import Subscriptions from '@models/subscriptions.model';
 import Trackers from '@models/trackers.model';
@@ -15,7 +16,7 @@ const MIN_AGE_MS = 24 * 60 * 60 * 1000;
 const LOOKUP_BATCH = 500;
 const MASS_DELETE_MIN_SCANNED = 50;
 
-const LOGO_OWNER_MODELS: ModelStatic<Model>[] = [Trackers, Accounts, AccountGroups, Payees, Subscriptions];
+const LOGO_OWNER_MODELS: ModelStatic<Model>[] = [Trackers, Accounts, AccountGroups, Payees, Subscriptions, Goals];
 
 const findOrphanAttachmentKeys = async ({ keys }: { keys: string[] }): Promise<string[]> => {
   const orphans: string[] = [];

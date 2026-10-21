@@ -1,292 +1,292 @@
 {
   "settings": {
     "security": {
-      "title": "Security settings",
-      "description": "Manage your login methods, active sessions, and password",
+      "title": "Paramètres de sécurité",
+      "description": "Gérez vos modes de connexion, sessions actives et mot de passe",
       "tabs": {
-        "loginMethods": "Login methods",
-        "activeSessions": "Active sessions",
-        "password": "Password",
-        "backup": "Backup & restore",
-        "dangerZone": "Danger zone"
+        "loginMethods": "Modes de connexion",
+        "activeSessions": "Sessions actives",
+        "password": "Mot de passe",
+        "backup": "Sauvegarde et restauration",
+        "dangerZone": "Zone de danger"
       },
       "loginMethods": {
-        "title": "Login methods",
-        "description": "Manage how you sign in to your account",
+        "title": "Modes de connexion",
+        "description": "Gérez la façon dont vous vous connectez à votre compte",
         "oauth": {
-          "connectedAs": "Connected as {email}",
-          "accountName": "{provider} Account",
-          "notConnected": "Not connected",
-          "disconnect": "Disconnect",
-          "connect": "Connect"
+          "connectedAs": "Connecté en tant que {email}",
+          "accountName": "Compte {provider}",
+          "notConnected": "Non connecté",
+          "disconnect": "Déconnecter",
+          "connect": "Connecter"
         },
         "password": {
-          "title": "Password",
-          "passwordSet": "Password is set",
-          "noPassword": "No password set",
-          "manageInTab": "Manage in password tab",
-          "setupInTab": "Set up in password tab"
+          "title": "Mot de passe",
+          "passwordSet": "Mot de passe configuré",
+          "noPassword": "Aucun mot de passe configuré",
+          "manageInTab": "Gérer dans l'onglet Mot de passe",
+          "setupInTab": "Configurer dans l'onglet Mot de passe"
         },
         "passkeys": {
-          "title": "Passkeys",
-          "noPasskeys": "No passkeys registered",
-          "passkeyCount": "{count} passkey(s) registered",
-          "addButton": "Add passkey",
-          "passkeyName": "Passkey",
-          "added": "Added {date}",
-          "rename": "Rename",
-          "renamePlaceholder": "Enter passkey name",
-          "deleteConfirmTitle": "Remove passkey?",
-          "deleteConfirmDescription": "\"{name}\" will no longer be able to sign in to your account. This cannot be undone."
+          "title": "Clés d'accès (passkeys)",
+          "noPasskeys": "Aucune clé d'accès enregistrée",
+          "passkeyCount": "{count} clé(s) d'accès enregistrée(s)",
+          "addButton": "Ajouter une clé d'accès",
+          "passkeyName": "Clé d'accès",
+          "added": "Ajoutée le {date}",
+          "rename": "Renommer",
+          "renamePlaceholder": "Saisir le nom de la clé d'accès",
+          "deleteConfirmTitle": "Supprimer la clé d'accès ?",
+          "deleteConfirmDescription": "\"{name}\" ne permettra plus de vous connecter à votre compte. Cette action est irréversible."
         },
-        "warningOneMethod": "Add another login method before disconnecting your OAuth account.",
+        "warningOneMethod": "Ajoutez un autre mode de connexion avant de déconnecter votre compte OAuth.",
         "notifications": {
-          "oauthConnectFailed": "Failed to connect {provider} account",
-          "oauthDisconnectSuccess": "{provider} account disconnected",
-          "oauthDisconnectFailed": "Failed to disconnect {provider} account",
-          "passkeyAddSuccess": "Passkey added successfully",
-          "passkeyAddFailed": "Failed to add passkey. Make sure your device supports passkeys.",
-          "passkeyRemoveSuccess": "Passkey removed",
-          "passkeyRemoveFailed": "Failed to remove passkey",
-          "passkeyRenameFailed": "Failed to rename passkey"
+          "oauthConnectFailed": "Échec de la connexion du compte {provider}",
+          "oauthDisconnectSuccess": "Compte {provider} déconnecté",
+          "oauthDisconnectFailed": "Échec de la déconnexion du compte {provider}",
+          "passkeyAddSuccess": "Clé d'accès ajoutée avec succès",
+          "passkeyAddFailed": "Échec de l'ajout de la clé d'accès. Assurez-vous que votre appareil prend en charge les clés d'accès.",
+          "passkeyRemoveSuccess": "Clé d'accès supprimée",
+          "passkeyRemoveFailed": "Échec de la suppression de la clé d'accès",
+          "passkeyRenameFailed": "Échec du renommage de la clé d'accès"
         }
       },
       "activeSessions": {
-        "title": "Active sessions",
-        "description": "Manage devices where you're currently signed in",
-        "currentBadge": "Current",
-        "unknownLocation": "Unknown location",
-        "lastActive": "Last active: {date}",
-        "noSessions": "No active sessions found",
-        "loadError": "We couldn't load your active sessions.",
-        "revokeAllButton": "Sign out of all other sessions",
+        "title": "Sessions actives",
+        "description": "Gérez les appareils sur lesquels vous êtes actuellement connecté",
+        "currentBadge": "Actuelle",
+        "unknownLocation": "Lieu inconnu",
+        "lastActive": "Dernière activité : {date}",
+        "noSessions": "Aucune session active trouvée",
+        "loadError": "Impossible de charger vos sessions actives.",
+        "revokeAllButton": "Déconnecter toutes les autres sessions",
         "deviceTypes": {
-          "unknownDevice": "Unknown device",
-          "unknownBrowser": "Unknown browser"
+          "unknownDevice": "Appareil inconnu",
+          "unknownBrowser": "Navigateur inconnu"
         },
         "timeAgo": {
-          "justNow": "Just now",
-          "minutesAgo": "{count} minute ago | {count} minutes ago",
-          "hoursAgo": "{count} hour ago | {count} hours ago",
-          "daysAgo": "{count} day ago | {count} days ago"
+          "justNow": "À l'instant",
+          "minutesAgo": "Il y a {count} minute | Il y a {count} minutes",
+          "hoursAgo": "Il y a {count} heure | Il y a {count} heures",
+          "daysAgo": "Il y a {count} jour | Il y a {count} jours"
         },
         "notifications": {
-          "revokeSuccess": "Session revoked",
-          "revokeFailed": "Failed to revoke session",
-          "revokeAllSuccess": "All other sessions have been signed out",
-          "revokeAllFailed": "Failed to revoke sessions"
+          "revokeSuccess": "Session déconnectée",
+          "revokeFailed": "Échec de la déconnexion de la session",
+          "revokeAllSuccess": "Toutes les autres sessions ont été déconnectées",
+          "revokeAllFailed": "Échec de la déconnexion des sessions"
         }
       },
       "passwordSection": {
-        "title": "Password",
-        "descriptionChange": "Change your password",
-        "descriptionSet": "Set up a password for your account",
+        "title": "Mot de passe",
+        "descriptionChange": "Modifier votre mot de passe",
+        "descriptionSet": "Définir un mot de passe pour votre compte",
         "labels": {
-          "currentPassword": "Current password",
-          "newPassword": "New password",
-          "password": "Password",
-          "confirmPassword": "Confirm password"
+          "currentPassword": "Mot de passe actuel",
+          "newPassword": "Nouveau mot de passe",
+          "password": "Mot de passe",
+          "confirmPassword": "Confirmer le mot de passe"
         },
         "placeholders": {
-          "currentPassword": "Enter current password",
-          "newPassword": "Enter new password",
-          "confirmPassword": "Confirm new password"
+          "currentPassword": "Saisir le mot de passe actuel",
+          "newPassword": "Saisir le nouveau mot de passe",
+          "confirmPassword": "Confirmer le nouveau mot de passe"
         },
         "buttons": {
-          "change": "Change password",
-          "set": "Set password"
+          "change": "Modifier le mot de passe",
+          "set": "Définir le mot de passe"
         },
         "strength": {
-          "veryWeak": "Very weak",
-          "weak": "Weak",
-          "fair": "Fair",
-          "strong": "Strong",
-          "veryStrong": "Very strong"
+          "veryWeak": "Très faible",
+          "weak": "Faible",
+          "fair": "Moyen",
+          "strong": "Fort",
+          "veryStrong": "Très fort"
         },
         "requirements": {
-          "title": "Password requirements",
-          "minLength": "Minimum 8 characters",
-          "mixedCase": "Mix of uppercase and lowercase letters recommended",
-          "specialChars": "Include numbers and special characters for stronger security"
+          "title": "Exigences du mot de passe",
+          "minLength": "8 caractères minimum",
+          "mixedCase": "Mélange de majuscules et minuscules recommandé",
+          "specialChars": "Inclure des chiffres et des caractères spéciaux pour plus de sécurité"
         },
         "validation": {
-          "minLength": "Password must be at least 8 characters",
-          "passwordsNoMatch": "Passwords do not match"
+          "minLength": "Le mot de passe doit comporter au moins 8 caractères",
+          "passwordsNoMatch": "Les mots de passe ne correspondent pas"
         },
         "notifications": {
-          "changeSuccess": "Password changed successfully",
-          "changeFailed": "Failed to change password",
-          "setSuccess": "Password set successfully",
-          "setFailed": "Failed to set password",
-          "unexpectedError": "An unexpected error occurred",
-          "updateFailed": "Failed to update password"
+          "changeSuccess": "Mot de passe modifié avec succès",
+          "changeFailed": "Échec de la modification du mot de passe",
+          "setSuccess": "Mot de passe défini avec succès",
+          "setFailed": "Échec de la définition du mot de passe",
+          "unexpectedError": "Une erreur inattendue est survenue",
+          "updateFailed": "Échec de la mise à jour du mot de passe"
         },
         "errors": {
-          "incorrectCurrentPassword": "Current password is incorrect.",
-          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
+          "incorrectCurrentPassword": "Le mot de passe actuel est incorrect.",
+          "passwordAlreadySet": "Votre compte a déjà un mot de passe. Utilisez le formulaire pour le modifier."
         }
       },
-      "dangerZone": "Danger zone",
+      "dangerZone": "Zone dangereuse",
       "wipeData": {
-        "title": "Wipe all data",
-        "warningFull": "{strong} This action removes everything in your workspace. Your login stays so you can start over.",
-        "warningStrong": "Warning:",
-        "button": "Wipe data",
+        "title": "Effacer toutes les données",
+        "warningFull": "{strong} Cette action supprime l'ensemble de votre espace. Vos identifiants sont conservés pour vous permettre de repartir à zéro.",
+        "warningStrong": "Attention :",
+        "button": "Effacer les données",
         "dialog": {
-          "title": "Wipe all your data?",
-          "description": "This permanently deletes everything in your workspace, including:",
+          "title": "Effacer toutes vos données ?",
+          "description": "Cette action supprime définitivement tous les éléments de votre espace, y compris :",
           "list": {
-            "accounts": "Accounts and balances",
-            "transactions": "Transactions, refunds, and transfers",
-            "budgets": "Budgets, trackers, tags, and categories",
-            "portfolios": "Investments, portfolios, and holdings",
-            "settings": "User settings, AI keys, and onboarding state",
-            "baseCurrency": "Base currency and exchange rates"
+            "accounts": "Comptes et soldes",
+            "transactions": "Opérations, remboursements et virements",
+            "budgets": "Budgets, suivis, étiquettes et catégories",
+            "portfolios": "Investissements, portefeuilles et avoirs",
+            "settings": "Paramètres utilisateur, clés d'IA et état d'intégration",
+            "baseCurrency": "Devise principale et taux de change"
           },
-          "kept": "Your login and profile remain. You'll restart from the onboarding flow.",
-          "typeConfirm": "To confirm, type {phrase} below:",
-          "confirmLabel": "Wipe data",
-          "confirmLoading": "Wiping…"
+          "kept": "Vos identifiants et votre profil sont conservés. Vous reprendrez au début de l'accueil.",
+          "typeConfirm": "Pour confirmer, saisissez {phrase} ci-dessous :",
+          "confirmLabel": "Effacer les données",
+          "confirmLoading": "Suppression en cours…"
         },
         "sharingDialog": {
-          "title": "You're sharing data with other users",
-          "warning": "Others will lose access immediately",
-          "description": "Wiping your data revokes access to the following shared resources:",
-          "householdsCount": "And {count} household member will lose access. | And {count} household members will lose access.",
-          "confirmLabel": "Wipe anyway"
+          "title": "Vous partagez des données avec d'autres utilisateurs",
+          "warning": "Les autres utilisateurs perdront immédiatement l'accès",
+          "description": "Effacer vos données révoque l'accès aux ressources partagées suivantes :",
+          "householdsCount": "Et {count} membre du foyer perdra l'accès. | Et {count} membres du foyer perdront l'accès.",
+          "confirmLabel": "Effacer quand même"
         },
         "notifications": {
-          "success": "All data wiped. Starting fresh.",
-          "failed": "Couldn't wipe data. Please try again."
+          "success": "Toutes les données ont été effacées. Nouveau départ.",
+          "failed": "Impossible d'effacer les données. Veuillez réessayer."
         }
       },
       "deleteAccount": {
-        "title": "Delete your account",
-        "warningFull": "Once you delete your account, there is no going back. {strong} Please be certain.",
-        "warningStrong": "All your data will be permanently erased.",
-        "button": "Delete my account",
+        "title": "Supprimer votre compte",
+        "warningFull": "Une fois votre compte supprimé, aucun retour en arrière n'est possible. {strong} Veuillez vous en assurer.",
+        "warningStrong": "Toutes vos données seront définitivement effacées.",
+        "button": "Supprimer mon compte",
         "dialog": {
-          "title": "Are you absolutely sure?",
-          "description": "This action cannot be undone. This will permanently delete your account and remove all your data including:",
+          "title": "Êtes-vous absolument sûr ?",
+          "description": "Cette action est irréversible. Cela supprimera définitivement votre compte ainsi que toutes vos données, notamment :",
           "dataList": {
-            "accounts": "All accounts and transactions",
-            "categories": "All categories, budgets, and trackers",
-            "portfolios": "All investment portfolios",
-            "settings": "All settings and preferences"
+            "accounts": "Tous les comptes et opérations",
+            "categories": "Toutes les catégories, budgets et suivis",
+            "portfolios": "Tous les portefeuilles d'investissement",
+            "settings": "Tous les paramètres et préférences"
           },
-          "confirmFull": "Please type {email} to confirm",
-          "placeholder": "Enter your email",
-          "acceptButton": "Delete my account",
-          "acceptButtonLoading": "Deleting..."
+          "confirmFull": "Veuillez saisir {email} pour confirmer",
+          "placeholder": "Saisissez votre e-mail",
+          "acceptButton": "Supprimer mon compte",
+          "acceptButtonLoading": "Suppression en cours..."
         },
         "notifications": {
-          "success": "Your account has been deleted successfully",
-          "failed": "An error occurred while trying to delete your account"
+          "success": "Votre compte a été supprimé avec succès",
+          "failed": "Une erreur est survenue lors de la suppression de votre compte"
         }
       },
       "backup": {
         "download": {
-          "title": "Download backup",
-          "description": "Save a complete, restorable copy of all your data as a zip file.",
-          "button": "Download",
-          "loading": "Preparing...",
-          "success": "Backup downloaded",
-          "failed": "Could not create backup. Please try again.",
-          "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
+          "title": "Télécharger une sauvegarde",
+          "description": "Enregistrez une copie complète et restaurable de toutes vos données au format zip.",
+          "button": "Télécharger",
+          "loading": "Préparation...",
+          "success": "Sauvegarde téléchargée",
+          "failed": "Impossible de créer la sauvegarde. Veuillez réessayer.",
+          "downloadBlocked": "La sauvegarde a été créée mais votre navigateur a bloqué le téléchargement. Vérifiez les paramètres de téléchargement et réessayez.",
           "limitations": {
-            "trigger": "Has limitations",
-            "title": "What a backup leaves out",
-            "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
+            "trigger": "Comporte des limites",
+            "title": "Éléments non inclus dans la sauvegarde",
+            "intro": "Votre sauvegarde inclut l'ensemble de vos données. Par sécurité, certains éléments chiffrés ne peuvent pas être transférés et devront être reconfigurés après la restauration :",
             "items": {
               "bankConnectionsTerm": "Connexions bancaires",
-              "bankConnections": "{term} — access tokens are encrypted and tied to this server, so you'll reconnect each bank after restoring.",
-              "aiKeysTerm": "AI API keys",
-              "aiKeys": "{term} — stored encrypted, so you'll re-enter them after restoring."
+              "bankConnections": "{term} — les jetons d'accès sont chiffrés et associés à ce serveur ; vous devrez reconnecter chaque banque après la restauration.",
+              "aiKeysTerm": "Clés d'API d'IA",
+              "aiKeys": "{term} — stockées de manière chiffrée, vous devrez les renseigner à nouveau après la restauration."
             },
-            "included": "Everything else — accounts, transactions, categories, budgets, trackers, investments, loans, tags, payees and subscriptions — is included."
+            "included": "Tout le reste — comptes, opérations, catégories, budgets, suivis, investissements, emprunts, étiquettes, tiers et abonnements — est inclus."
           }
         },
         "restore": {
-          "title": "Restore from backup",
-          "description": "Replace all current data with the contents of a backup zip.",
-          "button": "Select backup file",
-          "reading": "Reading file...",
-          "failedGeneric": "Backup restore failed",
-          "invalidFileType": "Please choose a .zip backup file.",
-          "fileTooLarge": "That backup is too large to restore (max {max}).",
-          "readFailed": "Could not read that file. Please try again.",
+          "title": "Restaurer depuis une sauvegarde",
+          "description": "Remplacer toutes les données actuelles par le contenu d'un fichier zip de sauvegarde.",
+          "button": "Sélectionner un fichier de sauvegarde",
+          "reading": "Lecture du fichier...",
+          "failedGeneric": "Échec de la restauration de la sauvegarde",
+          "invalidFileType": "Veuillez sélectionner un fichier de sauvegarde .zip.",
+          "fileTooLarge": "Cette sauvegarde est trop volumineuse pour être restaurée ({max} max.).",
+          "readFailed": "Impossible de lire ce fichier. Veuillez réessayer.",
           "confirm": {
-            "title": "Restore from backup?",
-            "warning": "This replaces ALL your current data",
-            "description": "Everything currently in your account will be permanently deleted and replaced with the contents of this backup. This cannot be undone.",
-            "selectedFile": "Selected file: {name}",
-            "confirmLabel": "Restore",
-            "reconnectTitle": "After restoring, set these up again",
-            "reconnectBankConnections": "Reconnect your bank connections",
-            "reconnectAiKeys": "Re-enter your AI API keys (if you use any)"
+            "title": "Restaurer à partir de la sauvegarde ?",
+            "warning": "Cette action remplace TOUTES vos données actuelles",
+            "description": "Tous les éléments actuellement présents sur votre compte seront définitivement supprimés et remplacés par le contenu de cette sauvegarde. Cette action est irréversible.",
+            "selectedFile": "Fichier sélectionné : {name}",
+            "confirmLabel": "Restaurer",
+            "reconnectTitle": "À reconfigurer après la restauration",
+            "reconnectBankConnections": "Reconnecter vos synchronisations bancaires",
+            "reconnectAiKeys": "Renseigner à nouveau vos clés API d'IA (si vous en utilisez)"
           },
           "acknowledge": {
-            "title": "Shared resources will lose access",
-            "description": "You own resources that other people currently have access to. Restoring will remove that access.",
-            "householdsCount": "{count} shared household | {count} shared households",
-            "checkbox": "I understand these shared resources will lose access.",
-            "confirmLabel": "Restore anyway"
+            "title": "Les accès partagés seront perdus",
+            "description": "Vous possédez des ressources actuellement accessibles par d'autres personnes. La restauration supprimera ces accès.",
+            "householdsCount": "{count} foyer partagé | {count} foyers partagés",
+            "checkbox": "Je comprends que ces ressources partagées perdront leurs accès.",
+            "confirmLabel": "Restaurer quand même"
           },
           "progress": {
-            "title": "Restoring your data",
-            "description": "This can take a little while. Please keep this window open.",
-            "inserted": "{count} records restored",
+            "title": "Restauration de vos données",
+            "description": "Cela peut prendre un moment. Veuillez garder cette fenêtre ouverte.",
+            "inserted": "{count} enregistrements restaurés",
             "phases": {
-              "validating": "Validating backup...",
-              "preparingSecurities": "Preparing securities...",
-              "wiping": "Clearing current data...",
-              "restoring": "Restoring records...",
-              "finalizing": "Finalizing..."
+              "validating": "Validation de la sauvegarde...",
+              "preparingSecurities": "Préparation des titres...",
+              "wiping": "Suppression des données actuelles...",
+              "restoring": "Restauration des enregistrements...",
+              "finalizing": "Finalisation..."
             }
           },
           "summary": {
-            "title": "Restore complete",
-            "description": "Your data has been restored from the backup.",
-            "recordsHeading": "Restored records",
-            "warningsHeading": "Warnings",
-            "noRecords": "No records were restored.",
-            "doneButton": "Done"
+            "title": "Restauration terminée",
+            "description": "Vos données ont été restaurées à partir de la sauvegarde.",
+            "recordsHeading": "Enregistrements restaurés",
+            "warningsHeading": "Avertissements",
+            "noRecords": "Aucun enregistrement n'a été restauré.",
+            "doneButton": "Terminé"
           },
           "warnings": {
-            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
-            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
-            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
-            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
-            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
-            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
-            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
-            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
-            "noSettings": "The backup had no saved settings; defaults were applied.",
-            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
-            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
-            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
-            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+            "sharesSkipped": "{count} ligne « {table} » ignorée : des ressources partagées font référence à des utilisateurs inexistants sur cette instance. | {count} lignes « {table} » ignorées : des ressources partagées font référence à des utilisateurs inexistants sur cette instance.",
+            "mccCodeMissing": "{count} règle MCC ignorée dont le code de catégorie de commerçant n'existe pas sur cette instance. | {count} règles MCC ignorées dont le code de catégorie de commerçant n'existe pas sur cette instance.",
+            "currencyMissing": "{count} devise non disponible sur cette instance a été ignorée. | {count} devises non disponibles sur cette instance ont été ignorées.",
+            "unknownTableIgnored": "La sauvegarde contient une table inconnue « {table} » ; elle a été ignorée.",
+            "unknownColumnDropped": "Une colonne inconnue a été supprimée de « {table} » : {columns}. | Des colonnes inconnues ont été supprimées de « {table} » : {columns}.",
+            "tableMissingTreatedEmpty": "La sauvegarde ne contient aucun fichier pour « {table} » ; elle a été considérée comme vide.",
+            "settingsReset": "Les paramètres enregistrés ne correspondaient pas au format actuel et ont été réinitialisés par défaut.",
+            "fireSettingsReset": "Les paramètres FIRE enregistrés ne correspondaient pas au format actuel et ont été réinitialisés par défaut.",
+            "noSettings": "La sauvegarde ne contenait aucun paramètre ; les réglages par défaut ont été appliqués.",
+            "foreignReferenceDropped": "{count} ligne de « {table} » dont la colonne « {column} » référençait des données externes à cette sauvegarde a été supprimée. | {count} lignes de « {table} » dont la colonne « {column} » référençait des données externes à cette sauvegarde ont été supprimées.",
+            "invalidRowDropped": "{count} ligne non valide de « {table} » a été supprimée. | {count} lignes non valides de « {table} » ont été supprimées.",
+            "foreignReferenceNulled": "La colonne « {column} » de {count} ligne de « {table} » référençant des données externes à cette sauvegarde a été effacée. | La colonne « {column} » de {count} lignes de « {table} » référençant des données externes à cette sauvegarde a été effacée.",
+            "unknown": "Certaines données de la sauvegarde ont été ignorées ou ajustées pendant la restauration."
           },
           "failed": {
-            "title": "Restore failed",
-            "genericError": "Something went wrong while restoring your backup.",
-            "unconfirmed": "Couldn't confirm the restore status. Reload the page and check your data.",
-            "closeButton": "Close",
-            "technicalDetails": "Technical details"
+            "title": "Échec de la restauration",
+            "genericError": "Une erreur est survenue lors de la restauration de votre sauvegarde.",
+            "unconfirmed": "Impossible de confirmer l'état de la restauration. Rechargez la page et vérifiez vos données.",
+            "closeButton": "Fermer",
+            "technicalDetails": "Détails techniques"
           },
           "overlay": {
-            "title": "Restoring your data",
-            "description": "Please keep this tab open. We're replacing your data with your backup — this can take a moment.",
-            "preparing": "Preparing…",
-            "finishing": "Finishing up",
-            "takingLong": "This is taking longer than usual. Your data is still being restored — please keep this tab open.",
-            "unreachableTitle": "Can't reach the server",
-            "unreachableDescription": "We lost contact while the restore was running. It may still be finishing. You can dismiss this and reload the page to check.",
-            "failedTitle": "Restore failed",
-            "dismiss": "Dismiss"
+            "title": "Restauration de vos données",
+            "description": "Veuillez garder cet onglet ouvert. Vos données actuelles sont en cours de remplacement par votre sauvegarde — cela peut prendre un moment.",
+            "preparing": "Préparation…",
+            "finishing": "Finalisation",
+            "takingLong": "L'opération prend plus de temps que prévu. La restauration est toujours en cours — veuillez garder cet onglet ouvert.",
+            "unreachableTitle": "Serveur inaccessible",
+            "unreachableDescription": "La connexion a été perdue pendant la restauration. L'opération est peut-être encore en cours. Vous pouvez fermer ce message et recharger la page pour vérifier.",
+            "failedTitle": "Échec de la restauration",
+            "dismiss": "Ignorer"
           }
         },
-        "attachmentsNotIncluded": "Transaction attachments (receipts, invoices and other files) are not included in backups and are not restored."
+        "attachmentsNotIncluded": "Les pièces jointes des opérations (reçus, factures et autres fichiers) ne sont pas incluses dans les sauvegardes et ne sont pas restaurées."
       }
     }
   }

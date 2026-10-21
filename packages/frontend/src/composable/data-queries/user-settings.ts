@@ -5,6 +5,12 @@ import { useIsMutating, useMutation, useQuery, useQueryClient } from '@tanstack/
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+export const userSettingsQueryOptions = {
+  queryKey: VUE_QUERY_CACHE_KEYS.userSettings,
+  queryFn: getUserSettings,
+  staleTime: Infinity,
+};
+
 export const useUserSettings = (
   queryOptions: Partial<Parameters<typeof useQuery<UserSettingsSchema, Error>>[0]> = {},
 ) => {
@@ -13,9 +19,8 @@ export const useUserSettings = (
   const { t } = useI18n();
   const { addErrorNotification } = useNotificationCenter();
   const query = useQuery({
-    queryFn: getUserSettings,
+    ...userSettingsQueryOptions,
     queryKey: queryArray,
-    staleTime: Infinity,
     ...queryOptions,
   });
 

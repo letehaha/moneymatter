@@ -294,4 +294,26 @@ describe('buildNotificationRoute', () => {
       });
     });
   });
+
+  describe('goal_reached', () => {
+    it('returns SPA route to the goal details', () => {
+      const route = buildNotificationRoute(
+        baseNotification({
+          type: NOTIFICATION_TYPES.goalReached,
+          payload: { goalId: 'goal-1', goalName: 'Vacation', achievedAmount: 1200, currencyCode: 'USD' },
+        }),
+      );
+
+      expect(route).toEqual({
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.goalDetails, params: { goalId: 'goal-1' } },
+      });
+    });
+
+    it('returns null when goalId missing', () => {
+      const route = buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.goalReached, payload: {} }));
+
+      expect(route).toBeNull();
+    });
+  });
 });

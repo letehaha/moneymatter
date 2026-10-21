@@ -19,6 +19,11 @@ export type SpendingStructureByType = { name: string; color: string; income: num
 export type GetSpendingsByCategoriesByTypeReturnType = {
   [categoryId: RecordId]: SpendingStructureByType;
 };
+/** One entry per calendar month of the requested range, oldest first. `month` is `yyyy-MM`. */
+export type MonthlySpendingsByCategoriesByType = {
+  month: string;
+  categories: GetSpendingsByCategoriesByTypeReturnType;
+}[];
 
 // Cash Flow Analytics
 export const CASH_FLOW_GRANULARITIES = ['monthly', 'biweekly', 'weekly', 'daily'] as const;

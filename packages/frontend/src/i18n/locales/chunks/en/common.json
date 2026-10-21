@@ -339,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Open the sharing panel to resend."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
     }
   },
   "currencyNames": {

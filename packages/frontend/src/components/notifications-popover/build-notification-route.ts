@@ -1,6 +1,7 @@
 import type { NotificationStruct } from '@/api/notifications';
 import { ROUTES_NAMES } from '@/routes/constants';
 import {
+  type GoalReachedNotificationPayload,
   NOTIFICATION_TYPES,
   RESOURCE_TYPES,
   type ShareInvitationNotificationPayload,
@@ -128,6 +129,15 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
       return {
         kind: 'spa',
         to: { name: ROUTES_NAMES.plannedSubscriptionDetails, params: { id: payload.subscriptionId } },
+      };
+    }
+
+    case NOTIFICATION_TYPES.goalReached: {
+      const payload = notification.payload as GoalReachedNotificationPayload | undefined;
+      if (!payload?.goalId) return null;
+      return {
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.goalDetails, params: { goalId: payload.goalId } },
       };
     }
 

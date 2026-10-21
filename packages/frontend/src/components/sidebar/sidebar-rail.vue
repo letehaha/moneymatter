@@ -31,12 +31,7 @@ import { useSidebarSectionTotals } from './accounts-view/helpers/use-sidebar-sec
 import LoansList from './accounts-view/loans-list.vue';
 import PortfoliosList from './accounts-view/portfolios-list.vue';
 import VenturesList from './accounts-view/ventures-list.vue';
-import {
-  SIDEBAR_BUDGET_NAV_ITEM,
-  SIDEBAR_NAV_CHILDREN,
-  type SidebarNavChild,
-  useAccountsNavChildren,
-} from './nav-items';
+import { SIDEBAR_NAV_CHILDREN, type SidebarNavChild, useAccountsNavChildren } from './nav-items';
 import RailIconTrigger from './rail-icon-trigger.vue';
 import { useSidebarNavRoutes } from './use-nav-routes';
 import { useSidebarCollapsed } from './use-sidebar-collapsed';
@@ -45,7 +40,7 @@ import UserMenu from './user-menu.vue';
 const { t } = useI18n();
 const route = useRoute();
 const { isCollapsed } = useSidebarCollapsed();
-const { isAccountsRoute, isTransactionsRoute, isBudgetRoute, isPlannedRoute } = useSidebarNavRoutes();
+const { isAccountsRoute, isTransactionsRoute, isPlannedRoute, isChildActive } = useSidebarNavRoutes();
 const accountsNavChildren = useAccountsNavChildren();
 
 const {
@@ -111,13 +106,7 @@ const navItems = computed<RailNavItem[]>(() => [
     children: SIDEBAR_NAV_CHILDREN.transactions,
   },
   {
-    routeName: SIDEBAR_BUDGET_NAV_ITEM.routeName,
-    icon: SIDEBAR_BUDGET_NAV_ITEM.icon,
-    label: t(SIDEBAR_BUDGET_NAV_ITEM.labelKey),
-    active: isBudgetRoute.value,
-  },
-  {
-    routeName: ROUTES_NAMES.planned,
+    routeName: ROUTES_NAMES.budget,
     icon: CalendarClockIcon,
     label: t('navigation.planned.planned'),
     active: isPlannedRoute.value,
@@ -231,9 +220,15 @@ const sectionItems = computed<RailSectionItem[]>(() => {
                     variant="ghost"
                     as="span"
                     size="sm"
-                    :class="['w-full justify-start gap-2 px-3', isActive && 'bg-primary/10 text-foreground']"
+                    :class="[
+                      'w-full justify-start gap-2 px-3',
+                      isChildActive({ child, isActive }) && 'bg-primary/10 text-foreground',
+                    ]"
                   >
-                    <component :is="child.icon" :class="['size-4 shrink-0', isActive && 'text-primary-text']" />
+                    <component
+                      :is="child.icon"
+                      :class="['size-4 shrink-0', isChildActive({ child, isActive }) && 'text-primary-text']"
+                    />
                     <span>{{ $t(child.labelKey) }}</span>
                   </ui-button>
                 </router-link>

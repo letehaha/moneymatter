@@ -1,17 +1,15 @@
 import { type FormattedCategory } from '@/common/types';
-import { CATEGORY_TYPES, CategoryModel } from '@bt/shared/types';
+import { CATEGORY_ORDER_ROOT_KEY, CATEGORY_TYPES, type CategoryModel, type CategoryOrder } from '@bt/shared/types';
 
-/**
- * Sorts categories so that internal categories come last
- */
-const sortCategoriesWithInternalLast = (categories: FormattedCategory[]): FormattedCategory[] => {
-  return categories.sort((a, b) => {
-    const aIsInternal = a.type === CATEGORY_TYPES.internal;
-    const bIsInternal = b.type === CATEGORY_TYPES.internal;
+/** Listed ids first in list order, unlisted ones after them alphabetically, internal categories last. */
+const sortSiblings = ({ nodes, orderedIds = [] }: { nodes: FormattedCategory[]; orderedIds?: string[] }) => {
+  const rank = new Map(orderedIds.map((id, index) => [id, index]));
+  const isInternal = (category: FormattedCategory) => Number(category.type === CATEGORY_TYPES.internal);
 
-    if (aIsInternal && !bIsInternal) return 1;
-    if (!aIsInternal && bIsInternal) return -1;
-    return 0;
+  return nodes.sort((a, b) => {
+    const rankA = rank.get(a.id) ?? Infinity;
+    const rankB = rank.get(b.id) ?? Infinity;
+    return isInternal(a) - isInternal(b) || (rankA === rankB ? a.name.localeCompare(b.name) : rankA - rankB);
   });
 };
 
@@ -30,7 +28,13 @@ export const findFormattedCategoryById = (categories: FormattedCategory[], id: s
   return null;
 };
 
-export const buildCategoriesObjectGraph = (items: CategoryModel[]): FormattedCategory[] => {
+export const buildCategoriesObjectGraph = ({
+  items,
+  order = {},
+}: {
+  items: CategoryModel[];
+  order?: CategoryOrder;
+}): FormattedCategory[] => {
   const itemsById: Record<string, FormattedCategory> = {};
   const roots: FormattedCategory[] = [];
   const tempItems: FormattedCategory[] = items.map((item) => {
@@ -51,6 +55,6 @@ export const buildCategoriesObjectGraph = (items: CategoryModel[]): FormattedCat
     nodes.push(item);
   });
 
-  // Sort so internal categories appear at the bottom
-  return sortCategoriesWithInternalLast(roots);
+  tempItems.forEach((item) => sortSiblings({ nodes: item.subCategories, orderedIds: order[item.id] }));
+  return sortSiblings({ nodes: roots, orderedIds: order[CATEGORY_ORDER_ROOT_KEY] });
 };

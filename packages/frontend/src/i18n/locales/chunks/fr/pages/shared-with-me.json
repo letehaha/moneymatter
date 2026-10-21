@@ -1,34 +1,34 @@
 {
   "pages": {
     "sharedWithMe": {
-      "title": "Shared with me",
-      "loadError": "Failed to load shared resources.",
+      "title": "Partagés avec moi",
+      "loadError": "Impossible de charger les éléments partagés.",
       "empty": {
-        "title": "Nothing shared with you yet",
-        "description": "When someone shares an account with you, it'll show up here."
+        "title": "Rien de partagé avec vous pour l'instant",
+        "description": "Lorsqu'un compte sera partagé avec vous, il apparaîtra ici."
       },
       "sections": {
         "account": "Comptes",
-        "household": "Households",
-        "budget": "Trackers shared with you"
+        "household": "Foyers",
+        "budget": "Suivis partagés avec vous"
       },
-      "sharedBy": "Shared by {handle}",
-      "viaHousehold": "Via {handle} household",
-      "unnamedResource": "Untitled",
+      "sharedBy": "Partagé par {handle}",
+      "viaHousehold": "Via le foyer {handle}",
+      "unnamedResource": "Sans titre",
       "permissions": {
-        "read": "Read",
-        "write": "Write",
-        "manage": "Manage"
+        "read": "Lecture",
+        "write": "Écriture",
+        "manage": "Gérer"
       },
-      "leave": "Leave",
-      "leaveTitle": "Leave share?",
-      "leaveDescription": "You'll lose access to {resource} owned by {owner}. The owner won't be notified.",
-      "leaveConfirm": "Leave",
-      "leaveSuccess": "You've left the share.",
-      "leaveError": "Could not leave the share.",
+      "leave": "Quitter",
+      "leaveTitle": "Quitter le partage ?",
+      "leaveDescription": "Vous perdrez l'accès à {resource} appartenant à {owner}. Le propriétaire ne sera pas averti.",
+      "leaveConfirm": "Quitter",
+      "leaveSuccess": "Vous avez quitté le partage.",
+      "leaveError": "Impossible de quitter le partage.",
       "pending": {
-        "heading": "Pending invitations",
-        "review": "Review"
+        "heading": "Invitations en attente",
+        "review": "Examiner"
       }
     }
   }

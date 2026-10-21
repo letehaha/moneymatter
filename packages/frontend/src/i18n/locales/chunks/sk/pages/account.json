@@ -215,7 +215,7 @@
         "syncStarted": "Synchronizácia začala...",
         "accessForbidden": "Prístup zamietnutý",
         "failed": "Synchronizácia transakcií zlyhala",
-        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
+        "syncQueued": "Synchronizácia transakcií v poradí: {batches} dávka, približne {minutes} min | Synchronizácia transakcií v poradí: {batches} dávky, približne {minutes} min | Synchronizácia transakcií v poradí: {batches} dávok, približne {minutes} min"
       },
       "reconcileDuplicates": {
         "title": "Zlúčiť duplicitné transakcie",

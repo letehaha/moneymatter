@@ -2,6 +2,7 @@ import { api } from '@/api/_api';
 import type { SupportedLocale } from '@bt/shared/i18n/locales';
 import type {
   CategoryMappingPreset,
+  CategoryOrder,
   FireSettings,
   PAYMENT_TYPES,
   TransactionOptionalField,
@@ -155,6 +156,8 @@ export interface UserSettingsSchema {
    * Subcategories inherit from their parent. Empty or unset lists every category for both.
    */
   incomeCategoryIds?: string[];
+  /** Custom category order: parent id (or `CATEGORY_ORDER_ROOT_KEY`) → child ids in display order. */
+  categoryOrder?: CategoryOrder;
   currencyDisplay?: CurrencyDisplayPreference;
   fire?: FireSettings;
   notifications?: {

@@ -29,6 +29,7 @@
     "@ai-sdk/google": "^3.0.1",
     "@ai-sdk/openai": "^3.0.1",
     "@aws-sdk/client-s3": "^3.1135.0",
+    "@better-auth/expo": "^1.6.30",
     "@better-auth/oauth-provider": "^1.6.30",
     "@better-auth/passkey": "^1.6.30",
     "@coingecko/coingecko-typescript": "^5.1.1",

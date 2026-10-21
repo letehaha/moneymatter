@@ -15,6 +15,7 @@ import { registerAssignTagsToTransaction } from './tools/assign-tags-to-transact
 import { registerBulkUpdateTransactions } from './tools/bulk-update-transactions';
 import { registerCreateAttachmentUploadUrl } from './tools/create-attachment-upload-url';
 import { registerCreateCategory } from './tools/create-category';
+import { registerCreateGoal } from './tools/create-goal';
 import { registerCreateInvestmentTransaction } from './tools/create-investment-transaction';
 import { registerCreatePayee } from './tools/create-payee';
 import { registerCreatePortfolio } from './tools/create-portfolio';
@@ -27,6 +28,7 @@ import { registerCreateTransaction } from './tools/create-transaction';
 import { registerCreateTransactionAutomation } from './tools/create-transaction-automation';
 import { registerCreateTransactionGroup } from './tools/create-transaction-group';
 import { registerDeleteCategory } from './tools/delete-category';
+import { registerDeleteGoal } from './tools/delete-goal';
 import { registerDeleteInvestmentTransaction } from './tools/delete-investment-transaction';
 import { registerDeletePayee } from './tools/delete-payee';
 import { registerDeletePortfolio } from './tools/delete-portfolio';
@@ -45,6 +47,7 @@ import { registerGetBalanceHistory } from './tools/get-balance-history';
 import { registerGetCashFlow } from './tools/get-cash-flow';
 import { registerGetCategories } from './tools/get-categories';
 import { registerGetExpensesForPeriod } from './tools/get-expenses-for-period';
+import { registerGetGoals } from './tools/get-goals';
 import { registerGetInvestmentTransactions } from './tools/get-investment-transactions';
 import { registerGetPayee } from './tools/get-payee';
 import { registerGetPayees } from './tools/get-payees';
@@ -88,6 +91,7 @@ import { registerUnlinkTransactionFromPortfolio } from './tools/unlink-transacti
 import { registerUnlinkTransactionsFromSubscription } from './tools/unlink-transactions-from-subscription';
 import { registerUnlinkTransfer } from './tools/unlink-transfer';
 import { registerUpdateCategory } from './tools/update-category';
+import { registerUpdateGoal } from './tools/update-goal';
 import { registerUpdateInvestmentTransaction } from './tools/update-investment-transaction';
 import { registerUpdatePayee } from './tools/update-payee';
 import { registerUpdatePortfolio } from './tools/update-portfolio';
@@ -206,6 +210,12 @@ export function createMcpServer(): McpServer {
   registerListTrackerSuggestions(server);
   registerAcceptTrackerSuggestions(server);
   registerRejectTrackerSuggestions(server);
+
+  // Savings goals
+  registerGetGoals(server);
+  registerCreateGoal(server);
+  registerUpdateGoal(server);
+  registerDeleteGoal(server);
 
   // Analytics
   registerGetSpendingByCategories(server);

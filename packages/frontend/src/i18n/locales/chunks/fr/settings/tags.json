@@ -1,94 +1,94 @@
 {
   "settings": {
     "tags": {
-      "title": "Tags",
-      "addButton": "Add tag",
-      "empty": "No tags yet. Create your first tag to organize your transactions.",
+      "title": "Étiquettes",
+      "addButton": "Ajouter une étiquette",
+      "empty": "Aucune étiquette pour l'instant. Créez votre première étiquette pour organiser vos opérations.",
       "tabs": {
-        "details": "Details",
-        "reminders": "Reminders"
+        "details": "Détails",
+        "reminders": "Rappels"
       },
       "form": {
-        "createTitle": "Create tag",
-        "editTitle": "Edit tag",
-        "name": "Name",
-        "namePlaceholder": "Tag name",
-        "color": "Color",
-        "icon": "Icon",
-        "iconPlaceholder": "Select icon",
+        "createTitle": "Créer une étiquette",
+        "editTitle": "Modifier l'étiquette",
+        "name": "Nom",
+        "namePlaceholder": "Nom de l'étiquette",
+        "color": "Couleur",
+        "icon": "Icône",
+        "iconPlaceholder": "Sélectionner une icône",
         "description": "Description",
-        "descriptionPlaceholder": "Optional description",
-        "saveButton": "Save",
-        "previewPlaceholder": "Tag name"
+        "descriptionPlaceholder": "Description facultative",
+        "saveButton": "Enregistrer",
+        "previewPlaceholder": "Nom de l'étiquette"
       },
       "delete": {
-        "title": "Delete tag?",
-        "description": "This will permanently delete \"{name}\" and remove it from all transactions. This action cannot be undone.",
-        "deleteButton": "Delete",
-        "cancelButton": "Cancel"
+        "title": "Supprimer l'étiquette ?",
+        "description": "Cette action supprimera définitivement « {name} » et la retirera de toutes les opérations. Cette action est irréversible.",
+        "deleteButton": "Supprimer",
+        "cancelButton": "Annuler"
       },
       "notifications": {
-        "createSuccess": "Tag created",
-        "createFailed": "Failed to create tag",
-        "updateSuccess": "Tag updated",
-        "updateFailed": "Failed to update tag",
-        "deleteSuccess": "Tag deleted",
-        "deleteFailed": "Failed to delete tag"
+        "createSuccess": "Étiquette créée",
+        "createFailed": "Échec de la création de l'étiquette",
+        "updateSuccess": "Étiquette mise à jour",
+        "updateFailed": "Échec de la mise à jour de l'étiquette",
+        "deleteSuccess": "Étiquette supprimée",
+        "deleteFailed": "Échec de la suppression de l'étiquette"
       },
       "reminders": {
-        "addButton": "Add reminder",
-        "empty": "No reminders yet. Create a reminder to get notified about this tag's activity.",
-        "enabled": "Enabled",
-        "disabled": "Disabled",
+        "addButton": "Ajouter un rappel",
+        "empty": "Aucun rappel pour l'instant. Créez un rappel pour recevoir des alertes sur l'activité de cette étiquette.",
+        "enabled": "Activé",
+        "disabled": "Désactivé",
         "form": {
-          "createTitle": "Create reminder",
-          "editTitle": "Edit reminder",
-          "type": "Reminder type",
-          "typePlaceholder": "Select type",
-          "amountThreshold": "Amount threshold",
-          "amountThresholdPlaceholder": "Enter threshold amount",
-          "amountThresholdHint": "Get notified when spending on this tag exceeds this amount",
-          "frequency": "Frequency",
-          "frequencyPlaceholder": "Select frequency",
-          "dayOfMonth": "Day of month",
-          "dayOfMonthPlaceholder": "Select day",
-          "dayOfMonthHint": "For months with fewer days, the last day will be used",
-          "isEnabled": "Enabled",
-          "saveButton": "Save"
+          "createTitle": "Créer un rappel",
+          "editTitle": "Modifier le rappel",
+          "type": "Type de rappel",
+          "typePlaceholder": "Sélectionner un type",
+          "amountThreshold": "Seuil de montant",
+          "amountThresholdPlaceholder": "Saisir le montant seuil",
+          "amountThresholdHint": "Recevoir une notification lorsque les dépenses avec cette étiquette dépassent ce montant",
+          "frequency": "Fréquence",
+          "frequencyPlaceholder": "Sélectionner la fréquence",
+          "dayOfMonth": "Jour du mois",
+          "dayOfMonthPlaceholder": "Sélectionner le jour",
+          "dayOfMonthHint": "Pour les mois comptant moins de jours, le dernier jour sera utilisé",
+          "isEnabled": "Activé",
+          "saveButton": "Enregistrer"
         },
         "types": {
-          "amountThreshold": "Amount threshold",
-          "amountThresholdDescription": "Notify when spending exceeds a certain amount",
-          "existenceCheck": "Activity check",
-          "existenceCheckDescription": "Notify when there are transactions with this tag"
+          "amountThreshold": "Seuil de montant",
+          "amountThresholdDescription": "Alerter lorsque les dépenses dépassent un certain montant",
+          "existenceCheck": "Contrôle d'activité",
+          "existenceCheckDescription": "Alerter lorsque des opérations portent cette étiquette"
         },
         "frequencies": {
-          "immediate": "Immediate",
-          "immediateDescription": "Triggers when transactions are tagged (24h cooldown)",
-          "daily": "Daily",
-          "dailyDescription": "Check every day",
-          "weekly": "Weekly",
-          "weeklyDescription": "Check every Monday",
-          "monthly": "Monthly",
-          "monthlyDescription": "Check on a specific day each month",
-          "quarterly": "Quarterly",
-          "quarterlyDescription": "Check every 3 months (Jan, Apr, Jul, Oct)",
-          "yearly": "Yearly",
-          "yearlyDescription": "Check once per year in January"
+          "immediate": "Immédiate",
+          "immediateDescription": "Se déclenche dès qu'une opération est étiquetée (délai d'attente de 24 h)",
+          "daily": "Quotidienne",
+          "dailyDescription": "Vérifier chaque jour",
+          "weekly": "Hebdomadaire",
+          "weeklyDescription": "Vérifier chaque lundi",
+          "monthly": "Mensuelle",
+          "monthlyDescription": "Vérifier un jour précis chaque mois",
+          "quarterly": "Trimestrielle",
+          "quarterlyDescription": "Vérifier tous les 3 mois (janv., avr., juil., oct.)",
+          "yearly": "Annuelle",
+          "yearlyDescription": "Vérifier une fois par an en janvier"
         },
         "delete": {
-          "title": "Delete reminder?",
-          "description": "This will permanently delete this reminder. This action cannot be undone.",
-          "deleteButton": "Delete",
-          "cancelButton": "Cancel"
+          "title": "Supprimer le rappel ?",
+          "description": "Cette action supprimera définitivement ce rappel et ne peut pas être annulée.",
+          "deleteButton": "Supprimer",
+          "cancelButton": "Annuler"
         },
         "notifications": {
-          "createSuccess": "Reminder created",
-          "createFailed": "Failed to create reminder",
-          "updateSuccess": "Reminder updated",
-          "updateFailed": "Failed to update reminder",
-          "deleteSuccess": "Reminder deleted",
-          "deleteFailed": "Failed to delete reminder"
+          "createSuccess": "Rappel créé",
+          "createFailed": "Échec de la création du rappel",
+          "updateSuccess": "Rappel mis à jour",
+          "updateFailed": "Échec de la mise à jour du rappel",
+          "deleteSuccess": "Rappel supprimé",
+          "deleteFailed": "Échec de la suppression du rappel"
         }
       }
     }

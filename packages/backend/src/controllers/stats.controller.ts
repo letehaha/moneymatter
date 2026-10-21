@@ -183,6 +183,34 @@ export const getSpendingsByCategories = createController(spendingsByCategoriesSc
   return { data: serializeSpendingsByCategories(result) };
 });
 
+const monthlySpendingsByCategoriesSchema = z.object({
+  query: withDateOrder(
+    z.object({
+      ...dateRange({ required: true }),
+      categoryIds: optionalCommaSeparatedIds(),
+      excludePlanned: booleanQuery().optional(),
+    }),
+  ),
+});
+
+export const getMonthlySpendingsByCategories = createController(
+  monthlySpendingsByCategoriesSchema,
+  async ({ user, query }) => {
+    const { from, to, categoryIds, excludePlanned } = query;
+
+    const months = await statsService.getMonthlySpendingsByCategoriesByType(
+      removeUndefinedKeys({ userId: user.id, from, to, categoryIds, excludePlanned }),
+    );
+
+    return {
+      data: months.map(({ month, categories }) => ({
+        month,
+        categories: serializeSpendingsByCategoriesByType(categories),
+      })),
+    };
+  },
+);
+
 const expensesAmountSchema = z.object({
   query: withDateOrder(
     z.object({

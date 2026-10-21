@@ -2,6 +2,7 @@ import { transformAccounts } from './transformers/accounts-transformer';
 import { transformBalancesHistory } from './transformers/balances-history-transformer';
 import { transformBudgetLines, transformBudgetPeriods } from './transformers/budget-plans-transformer';
 import { transformCategories } from './transformers/categories-transformer';
+import { transformGoals } from './transformers/goals-transformer';
 import { transformHoldings } from './transformers/holdings-transformer';
 import { transformInvestmentTransactions } from './transformers/investment-transactions-transformer';
 import { transformPayees } from './transformers/payees-transformer';
@@ -214,6 +215,22 @@ export const EXPORT_DOMAINS: { readonly [N in ExportFileName]: ExportDomain<N> }
       { header: 'Spent', field: 'spent', kind: 'money' },
       { header: 'Available', field: 'available', kind: 'money' },
       { header: 'Currency', field: 'currency', kind: 'text' },
+    ],
+  },
+  goals: {
+    name: 'goals',
+    group: 'budgets',
+    build: ({ userId }) => transformGoals({ userId }),
+    columns: [
+      { header: 'Name', field: 'name', kind: 'text' },
+      { header: 'Status', field: 'status', kind: 'text' },
+      { header: 'TargetAmount', field: 'targetAmount', kind: 'money' },
+      { header: 'Currency', field: 'currency', kind: 'text' },
+      { header: 'TargetDate', field: 'targetDate', kind: 'date' },
+      { header: 'PlannedMonthly', field: 'plannedMonthly', kind: 'money' },
+      { header: 'Accounts', field: 'accounts', kind: 'array' },
+      { header: 'AchievedAt', field: 'achievedAt', kind: 'date' },
+      { header: 'AchievedAmount', field: 'achievedAmount', kind: 'money' },
     ],
   },
   subscriptions: {

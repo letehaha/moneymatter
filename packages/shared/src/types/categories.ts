@@ -48,3 +48,9 @@ export type EditCategoryResponse = CategoryModel[];
 
 /** Maximum category tree depth, enforced on every write that assigns a parent. */
 export const MAX_CATEGORIES_NESTING = 3;
+
+/** `categoryOrder` settings key for the top-level list; every other key is a parent category id. */
+export const CATEGORY_ORDER_ROOT_KEY = 'root';
+
+/** Parent key (`CATEGORY_ORDER_ROOT_KEY` or a parent id) → child ids in display order. */
+export type CategoryOrder = Record<string, string[]>;

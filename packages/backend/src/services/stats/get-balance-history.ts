@@ -42,19 +42,29 @@ interface BalanceHistoryRow {
  */
 export type AccountScope = 'accessible' | 'owned';
 
+interface AccountSelection {
+  /** Narrows the `owned` scope to these accounts. */
+  accountIds?: string[];
+  /** Keeps accounts flagged `excludeFromStats`, for reads about specific accounts rather than totals. */
+  ignoreExcludeFromStats?: boolean;
+}
+
 async function buildAccountWhere({
   userId,
   accountScope,
   categoryFilter,
+  accountIds,
+  ignoreExcludeFromStats = false,
 }: {
   userId: number;
   accountScope: AccountScope;
   categoryFilter?: AccountCategoryFilter;
-}): Promise<WhereOptions> {
+} & AccountSelection): Promise<WhereOptions> {
   const where: Record<string, unknown> =
     accountScope === 'accessible'
-      ? { id: { [Op.in]: await getAccessibleAccountIdsForUser({ userId }) }, excludeFromStats: false }
-      : { userId, excludeFromStats: false };
+      ? { id: { [Op.in]: await getAccessibleAccountIdsForUser({ userId }) } }
+      : { userId, ...(accountIds && { id: { [Op.in]: accountIds } }) };
+  if (!ignoreExcludeFromStats) where.excludeFromStats = false;
   if (categoryFilter?.only?.length) {
     where.accountCategory = { [Op.in]: categoryFilter.only };
   } else if (categoryFilter?.exclude?.length) {
@@ -63,7 +73,11 @@ async function buildAccountWhere({
   return where;
 }
 
-function formatDate(date: string | Date): string {
+/**
+ * Day key of every balance series here. A 'yyyy-MM-dd' string parses as UTC midnight, so under a
+ * negative-offset server timezone the key is the previous calendar day; look days up through it.
+ */
+export function toBalanceDateKey(date: string | Date): string {
   return format(new Date(date), 'yyyy-MM-dd');
 }
 
@@ -80,15 +94,23 @@ const getBalanceHistoryRows = async ({
   from,
   to,
   categoryFilter,
+  accountIds,
+  ignoreExcludeFromStats,
 }: {
   userId: number;
   accountScope: AccountScope;
   from?: string;
   to?: string;
   categoryFilter?: AccountCategoryFilter;
-}): Promise<BalanceHistoryRow[]> => {
+} & AccountSelection): Promise<BalanceHistoryRow[]> => {
   const dataAttributes = ['date', 'amount', 'accountId'];
-  const accountWhere = await buildAccountWhere({ userId, accountScope, categoryFilter });
+  const accountWhere = await buildAccountWhere({
+    userId,
+    accountScope,
+    categoryFilter,
+    accountIds,
+    ignoreExcludeFromStats,
+  });
 
   const [allUserAccounts, balancesInRange] = await Promise.all([
     Accounts.default.findAll({
@@ -126,7 +148,7 @@ const getBalanceHistoryRows = async ({
 
   // Balances rows are sparse, so an account without a row on `from` is seeded there with its
   // latest pre-range balance; unseeded, its first in-range value would back-fill earlier days.
-  // `formatDate(from)` is the day the range query's lower bound resolves to.
+  // `toBalanceDateKey(from)` is the day the range query's lower bound resolves to.
   if ((from && allAccountIds.length) || (accountIdsWithNoRecords.length && to)) {
     const [latestBalancesBeforeFrom, balancesAfterTo] = await Promise.all([
       from && allAccountIds.length
@@ -142,7 +164,7 @@ const getBalanceHistoryRows = async ({
                )
              ORDER BY b."accountId", b."date" DESC
             `,
-            { type: QueryTypes.SELECT, replacements: { accountIds: allAccountIds, from: formatDate(from) } },
+            { type: QueryTypes.SELECT, replacements: { accountIds: allAccountIds, from: toBalanceDateKey(from) } },
           ) as Promise<Pick<BalanceHistoryRow, 'accountId' | 'amount'>[]>)
         : Promise.resolve<Pick<BalanceHistoryRow, 'accountId' | 'amount'>[]>([]),
       to && accountIdsWithNoRecords.length
@@ -276,7 +298,7 @@ function buildBalanceFillIndex({
 }): BalanceFillIndex {
   // Extract unique account IDs and dates from the data.
   const accountIds = new Set(data.map((item) => item.accountId));
-  const datesList = new Set(data.map((item) => formatDate(item.date)));
+  const datesList = new Set(data.map((item) => toBalanceDateKey(item.date)));
 
   // Determine the earliest and latest dates in the dataset.
   const sortedDates = Array.from(datesList).toSorted();
@@ -289,13 +311,13 @@ function buildBalanceFillIndex({
   const allDates: string[] = [];
   // oxlint-disable-next-line no-unmodified-loop-condition -- dt is mutated via setDate()
   for (let dt = new Date(firstDate); dt <= lastDate; dt.setDate(dt.getDate() + 1)) {
-    allDates.push(formatDate(dt));
+    allDates.push(toBalanceDateKey(dt));
   }
 
   const centsByAccountAndDate = new Map<string, number>();
   const earliestRowByAccount = new Map<string, { dateStr: string; cents: number }>();
   for (const item of data) {
-    const dateStr = formatDate(item.date);
+    const dateStr = toBalanceDateKey(item.date);
     centsByAccountAndDate.set(`${item.accountId}_${dateStr}`, item.amount);
 
     const earliest = earliestRowByAccount.get(item.accountId);
@@ -504,6 +526,8 @@ export const getPerAccountBalanceHistory = async ({
   to,
   categoryFilter,
   openingCentsByAccount,
+  accountIds,
+  ignoreExcludeFromStats,
 }: {
   userId: number;
   accountScope: AccountScope;
@@ -511,8 +535,16 @@ export const getPerAccountBalanceHistory = async ({
   to: string;
   categoryFilter?: AccountCategoryFilter;
   openingCentsByAccount?: Map<string, number>;
-}): Promise<Record<string, Record<string, number>>> => {
-  const rawBalanceHistory = await getBalanceHistoryRows({ userId, accountScope, from, to, categoryFilter });
+} & AccountSelection): Promise<Record<string, Record<string, number>>> => {
+  const rawBalanceHistory = await getBalanceHistoryRows({
+    userId,
+    accountScope,
+    from,
+    to,
+    categoryFilter,
+    accountIds,
+    ignoreExcludeFromStats,
+  });
 
   return fillPerAccountBalanceSeries({ data: rawBalanceHistory, from, to, openingCentsByAccount });
 };

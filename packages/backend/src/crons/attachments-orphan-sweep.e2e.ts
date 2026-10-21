@@ -54,6 +54,16 @@ describe('Attachments orphan sweep', () => {
     expect(await storedIds()).toEqual([tracker.logoImageId]);
   });
 
+  it("keeps a goal's custom logo", async () => {
+    const goal = await helpers.createGoal({ payload: { logoImage: PNG_1X1_DATA_URL }, raw: true });
+    expect(goal.logoImageId).not.toBeNull();
+
+    const result = await attachmentsOrphanSweepCron.triggerManualSync({ minAgeMs: 0 });
+
+    expect(result).toEqual({ deleted: 0, scanned: 1 });
+    expect(await storedIds()).toEqual([goal.logoImageId]);
+  });
+
   it('leaves a fresh orphan alone under the default minimum age', async () => {
     const account = await helpers.createAccount({ raw: true });
     const orphaned = await attachTo({ accountId: account.id });

@@ -22,7 +22,7 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { buildUsdRateLookup } from '@services/stats/build-usd-rate-lookup';
-import { getAggregatedBalanceHistory } from '@services/stats/get-balance-history';
+import { getAggregatedBalanceHistory, toBalanceDateKey } from '@services/stats/get-balance-history';
 import { fetchSavingsTransactions, generatePeriodBuckets, getScopedEnabledPortfolios } from '@services/stats/utils';
 import { endOfDay, format, parseISO, startOfDay, subDays } from 'date-fns';
 import { Op } from 'sequelize';
@@ -500,13 +500,6 @@ const calculateInvestmentSlice = async ({
   };
 };
 
-// `getAggregatedBalanceHistory` keys each day by `format(new Date(dateStr), 'yyyy-MM-dd')`
-// — a `yyyy-MM-dd` string parsed as UTC midnight, then re-formatted in server-local time.
-// Boundary calendar strings must pass through the identical transform to line up under a
-// negative-offset server timezone; without it the lookup shifts a calendar day and the
-// account-cash component silently reads as zero.
-const toAccountsDateKey = (dayStr: string): string => format(new Date(dayStr), 'yyyy-MM-dd');
-
 /**
  * Per-period breakdown of what grew the user's net worth: money they saved
  * (income minus expenses, transfers excluded) versus what the market returned on
@@ -581,14 +574,14 @@ export const getNetWorthDrivers = async ({
   // `?? 0` silently drop the whole account-cash component of this bucket's net worth. An empty
   // history (user with no account balances at all) is a real zero.
   const resolveAccountsCents = (periodEndKey: string): Cents => {
-    const cents = accountsCentsByDate.get(toAccountsDateKey(periodEndKey));
+    const cents = accountsCentsByDate.get(toBalanceDateKey(periodEndKey));
     if (cents !== undefined) return cents;
     if (accountsBalanceHistory.length === 0) return asCents(0);
 
     logger.error('Net-worth drivers: account balance history missing a boundary day', {
       userId,
       periodEndKey,
-      accountsDateKey: toAccountsDateKey(periodEndKey),
+      accountsDateKey: toBalanceDateKey(periodEndKey),
     });
     throw new UnexpectedError({
       message: 'Net-worth drivers: account balance history is missing a period-end day.',

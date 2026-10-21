@@ -121,6 +121,7 @@
         "title": "Sledované kategórie",
         "addCategory": "Pridať kategóriu",
         "selectCategories": "Vybrať kategórie",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Zoradiť podľa",
           "custom": "Vlastné poradie",
@@ -149,6 +150,7 @@
         "start": "Začiatok",
         "end": "Koniec",
         "growth": "Nárast",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Trend predchádzajúcich období",
         "excludedTooltip": "Vylúčené z čistej hodnoty majetku: {components}",
         "viewHistory": "Zobraziť históriu",
@@ -298,7 +300,10 @@
         "daysLeft": "zostáva {count} deň | zostávajú {count} dni | zostáva {count} dní",
         "lastDay": "Posledný deň obdobia",
         "empty": "Zatiaľ žiadny rozpočet",
-        "create": "Nastavte si rozpočet"
+        "create": "Nastavte si rozpočet",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} z {limit}",

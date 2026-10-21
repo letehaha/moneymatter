@@ -10,13 +10,17 @@
                 'bg-accent': isActiveCategory(cat),
                 'opacity-50': draggedCategoryId === cat.id,
                 'opacity-40': isDimmedTarget(cat),
-                'bg-accent ring-primary ring-2 ring-inset': isDropTarget(cat),
+                'bg-accent ring-primary ring-2 ring-inset': isDropTarget({ category: cat, position: 'inside' }),
+                'before:bg-primary relative before:absolute before:inset-x-0 before:-top-0.5 before:h-0.5 before:rounded-full':
+                  isDropTarget({ category: cat, position: 'before' }),
+                'after:bg-primary relative after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full':
+                  isDropTarget({ category: cat, position: 'after' }),
               },
             ])
           "
           @dragover.stop="handleDragOver(cat, $event)"
           @dragleave.stop="handleDragLeave(cat, $event)"
-          @drop.stop.prevent="handleDrop(cat)"
+          @drop.stop.prevent="handleDrop({ category: cat, event: $event })"
         >
           <span
             v-if="draggable"
@@ -151,7 +155,7 @@
             @drag-start="(c) => emits('drag-start', c)"
             @drag-end="() => emits('drag-end')"
             @drag-over-error="(msg) => emits('drag-over-error', msg)"
-            @drop="(c) => emits('drop', c)"
+            @drop="(payload) => emits('drop', payload)"
           />
         </div>
       </div>
@@ -160,7 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedCategory } from '@/common/types';
+import { type CategoryDropPosition, FormattedCategory } from '@/common/types';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import ResponsiveMenu from '@/components/common/responsive-menu.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -184,6 +188,10 @@ const { t } = useI18n();
 
 const isInternalCategory = (category: FormattedCategory) => category.type === CATEGORY_TYPES.internal;
 
+const DROP_POSITIONS: CategoryDropPosition[] = ['before', 'inside', 'after'];
+/** Share of the row height at its top and bottom edges that reorders instead of nesting. */
+const EDGE_ZONE = 1 / 3;
+
 const props = withDefaults(
   defineProps<{
     categories: FormattedCategory[];
@@ -199,7 +207,7 @@ const props = withDefaults(
      * when non-empty (`''` forbids without a message). No validator means all drops are
      * allowed and emitted.
      */
-    dropError?: (params: { target: FormattedCategory; depth: number }) => string | null;
+    dropError?: (params: { target: FormattedCategory; depth: number; position: CategoryDropPosition }) => string | null;
   }>(),
   {
     showActions: false,
@@ -220,11 +228,12 @@ const emits = defineEmits<{
   'drag-start': [category: FormattedCategory];
   'drag-end': [];
   'drag-over-error': [message: string | null];
-  drop: [target: FormattedCategory];
+  drop: [payload: { target: FormattedCategory; position: CategoryDropPosition }];
 }>();
 
 const menuOpenState = reactive<Record<string, boolean>>({});
 const dragOverId = ref<string | null>(null);
+const dropPosition = ref<CategoryDropPosition>('inside');
 const reportedErrorId = ref<string | null>(null);
 
 const canAddSubcategory = computed(() => props.currentLevel < props.maxLevel);
@@ -275,15 +284,32 @@ const handleViewAnalytics = (category: FormattedCategory, close: () => void) => 
 
 const isDraggableCategory = (category: FormattedCategory) => props.draggable && !isInternalCategory(category);
 
-const isDropTarget = (category: FormattedCategory) => !!props.draggedCategoryId && dragOverId.value === category.id;
+const isDropTarget = ({ category, position }: { category: FormattedCategory; position: CategoryDropPosition }) =>
+  !!props.draggedCategoryId && dragOverId.value === category.id && dropPosition.value === position;
 
-const resolveDropError = (category: FormattedCategory): string | null => {
+const positionFromEvent = (event: DragEvent): CategoryDropPosition => {
+  const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  const offset = event.clientY - rect.top;
+  if (offset < rect.height * EDGE_ZONE) return 'before';
+  if (offset > rect.height * (1 - EDGE_ZONE)) return 'after';
+  return 'inside';
+};
+
+const resolveDropError = ({
+  category,
+  position,
+}: {
+  category: FormattedCategory;
+  position: CategoryDropPosition;
+}): string | null => {
   if (!props.draggable) return '';
-  return props.dropError ? props.dropError({ target: category, depth: props.currentLevel }) : null;
+  return props.dropError ? props.dropError({ target: category, depth: props.currentLevel, position }) : null;
 };
 
 const isDimmedTarget = (category: FormattedCategory) =>
-  !!props.draggedCategoryId && props.draggedCategoryId !== category.id && resolveDropError(category) !== null;
+  !!props.draggedCategoryId &&
+  props.draggedCategoryId !== category.id &&
+  DROP_POSITIONS.every((position) => resolveDropError({ category, position }) !== null);
 
 const clearReportedError = () => {
   if (reportedErrorId.value === null) return;
@@ -315,20 +341,23 @@ const handleDragEnd = () => {
 };
 
 const handleDragOver = (category: FormattedCategory, event: DragEvent) => {
-  const error = resolveDropError(category);
+  const position = positionFromEvent(event);
+  const error = resolveDropError({ category, position });
 
   if (error === null) {
     event.preventDefault();
     if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
     dragOverId.value = category.id;
+    dropPosition.value = position;
     clearReportedError();
     return;
   }
 
   dragOverId.value = null;
   // Guarded because dragover fires continuously while hovering one row.
-  if (reportedErrorId.value !== category.id) {
-    reportedErrorId.value = category.id;
+  const errorKey = `${category.id}:${position}`;
+  if (reportedErrorId.value !== errorKey) {
+    reportedErrorId.value = errorKey;
     emits('drag-over-error', error || null);
   }
 };
@@ -338,14 +367,15 @@ const handleDragLeave = (category: FormattedCategory, event: DragEvent) => {
   if (nextTarget && (event.currentTarget as HTMLElement).contains(nextTarget)) return;
 
   if (dragOverId.value === category.id) dragOverId.value = null;
-  if (reportedErrorId.value === category.id) clearReportedError();
+  if (reportedErrorId.value?.startsWith(`${category.id}:`)) clearReportedError();
 };
 
-const handleDrop = (category: FormattedCategory) => {
+const handleDrop = ({ category, event }: { category: FormattedCategory; event: DragEvent }) => {
+  const position = positionFromEvent(event);
   dragOverId.value = null;
   clearReportedError();
-  if (resolveDropError(category) !== null) return;
+  if (resolveDropError({ category, position }) !== null) return;
 
-  emits('drop', category);
+  emits('drop', { target: category, position });
 };
 </script>

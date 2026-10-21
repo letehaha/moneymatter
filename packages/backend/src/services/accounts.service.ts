@@ -25,6 +25,7 @@ import { isRevaluedAccount, scheduleBalanceRevalue } from '@services/balances/re
 import { applyManualLogoPatch } from '@services/brand-logos';
 import { attachEligibleAccounts } from '@services/budget-plans/auto-attach-account';
 import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { releaseIneligibleGoalShares } from '@services/goals/release-ineligible-goal-shares';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import {
   cleanupAccountSharesInTx,
@@ -356,6 +357,13 @@ export const updateAccount = withTransaction(
         : BUDGET_PLAN_ATTACHABLE_ACCOUNT_CATEGORIES.includes(payload.accountCategory);
     if (wasAttachable && !isAttachable) {
       await BudgetPlanAccounts.destroy({ where: { accountId: accountData.id } });
+    }
+    if (payload.accountCategory !== undefined && payload.accountCategory !== accountData.accountCategory) {
+      await releaseIneligibleGoalShares({
+        accountId: accountData.id,
+        userId: accountData.userId,
+        accountCategory: payload.accountCategory,
+      });
     }
 
     const currentBalanceIsChanging =

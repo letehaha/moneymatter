@@ -15,7 +15,7 @@ import UsersCurrencies from '@models/users-currencies.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { calculateVehiclesBalanceHistory } from '@services/stats/calculate-vehicles-balance-history';
 import { calculateVentureBalanceHistory } from '@services/stats/calculate-venture-balance-history';
-import { getPerAccountBalanceHistory } from '@services/stats/get-balance-history';
+import { getPerAccountBalanceHistory, toBalanceDateKey } from '@services/stats/get-balance-history';
 import { getCreditLimitCentsByAccount } from '@services/stats/get-credit-limit-adjustment';
 import { generatePeriodBuckets } from '@services/stats/utils';
 import { format } from 'date-fns';
@@ -27,13 +27,6 @@ import { calculatePortfolioValueByDate } from './portfolio-value';
 import type { NetWorthHistoryResultCents } from './types';
 
 export type { NetWorthHistoryResultCents } from './types';
-
-// `getPerAccountBalanceHistory` keys each day by `format(new Date(dateStr), 'yyyy-MM-dd')`
-// — a `yyyy-MM-dd` string parsed as UTC midnight, then re-formatted in server-local time.
-// Snapshot calendar strings must pass through the identical transform to line up under a
-// negative-offset server timezone; without it the lookup shifts a calendar day and every
-// account partition silently reads as zero.
-const toAccountsDateKey = (dayStr: string): string => format(new Date(dayStr), 'yyyy-MM-dd');
 
 /**
  * Balance at each snapshot date for one account partition. A missing snapshot key
@@ -54,7 +47,7 @@ const buildPartitionResolver = ({
   const centsByDate = new Map(history.map((item) => [item.date, asCents(item.amount)]));
 
   return (snapshotDate: string): Cents => {
-    const cents = centsByDate.get(toAccountsDateKey(snapshotDate));
+    const cents = centsByDate.get(toBalanceDateKey(snapshotDate));
     if (cents !== undefined) return cents;
     if (history.length === 0) return asCents(0);
 
@@ -62,7 +55,7 @@ const buildPartitionResolver = ({
       userId,
       partition,
       snapshotDate,
-      accountsDateKey: toAccountsDateKey(snapshotDate),
+      accountsDateKey: toBalanceDateKey(snapshotDate),
     });
     throw new UnexpectedError({
       message: `Net-worth history: ${partition} balance history is missing a snapshot day.`,
@@ -93,7 +86,7 @@ const splitSeriesBySign = ({
   userId: number;
   creditLimitCentsByAccount: Map<string, Cents>;
 }): { owedCents: Cents; surplusCents: Cents } => {
-  const dateKey = toAccountsDateKey(snapshotDate);
+  const dateKey = toBalanceDateKey(snapshotDate);
   let owed = 0;
   let surplus = 0;
 

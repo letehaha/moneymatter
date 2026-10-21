@@ -243,6 +243,24 @@ export const WIDGET_REGISTRY: Record<string, WidgetDefinition> = {
     component: () => import('@/components/widgets/trackers-widget/index.vue'),
     needsPeriod: false,
   },
+  goals: {
+    id: 'goals',
+    name: 'dashboard.widgets.registry.goals.name',
+    description: 'dashboard.widgets.registry.goals.description',
+    defaultColSpan: 1,
+    defaultRowSpan: 1,
+    allowedSizes: [
+      { colSpan: 1, rowSpan: 1, label: '1×1' },
+      { colSpan: 1, rowSpan: 2, label: '1×2' },
+      { colSpan: 2, rowSpan: 1, label: '2×1' },
+    ],
+    // Status and timing copy comes from the goals page chunk.
+    component: () =>
+      Promise.all([import('@/components/widgets/goals-widget/index.vue'), ensureChunkLoaded('pages/goals')]).then(
+        ([component]) => component,
+      ),
+    needsPeriod: false,
+  },
   [FIRE_WIDGET_ID]: {
     id: FIRE_WIDGET_ID,
     name: 'dashboard.widgets.registry.fireProgress.name',

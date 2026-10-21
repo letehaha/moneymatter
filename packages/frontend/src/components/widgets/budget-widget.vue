@@ -1,9 +1,13 @@
 <script lang="ts" setup>
 import { loadBudgetPlanPeriodView, loadBudgetPlanPeriods, loadBudgetPlans } from '@/api/budget-plans';
+import type { DashboardWidgetConfig } from '@/api/user-settings';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
-import { buttonVariants } from '@/components/lib/ui/button';
+import SlidingPanels from '@/components/common/sliding-panels.vue';
+import { Button, buttonVariants } from '@/components/lib/ui/button';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
@@ -11,25 +15,28 @@ import BudgetLineBars from '@/pages/budget/components/budget-line-bars.vue';
 import BudgetLineSpentText from '@/pages/budget/components/budget-line-spent-text.vue';
 import { useGridDisplayOptions } from '@/pages/budget/composables/use-grid-display-options';
 import {
-  amountToneClass,
   availablePillClass,
   formatPeriodShortLabel,
   goalStatusDisplay,
   groupLines,
   periodProgress,
   periodSpend,
-  sumLineTotals,
 } from '@/pages/budget/helpers';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useRootStore } from '@/stores';
 import type { BudgetPlanPeriodViewLine } from '@bt/shared/types';
-import { ArrowUpRightIcon, WalletIcon } from '@lucide/vue';
+import { ArrowLeftIcon, ArrowUpRightIcon, CheckIcon, ChevronRightIcon, SettingsIcon, WalletIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { createReusableTemplate, useElementVisibility, useScroll } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
-import { computed, useTemplateRef, watch } from 'vue';
+import { type Ref, computed, inject, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import {
+  CATEGORY_SORT_LABELS,
+  CATEGORY_SORT_OPTIONS,
+  sortCategoryRows,
+} from './category-spending-tracker/sort-category-rows';
 import ErrorState from './components/error-state.vue';
 import WidgetWrapper from './components/widget-wrapper.vue';
 
@@ -38,6 +45,13 @@ const { isAppInitialized } = storeToRefs(useRootStore());
 const { formatBaseCurrency, formatShortBaseCurrency } = useFormatCurrency();
 const { locale } = useDateLocale();
 const { rowBars } = useGridDisplayOptions();
+const { addErrorNotification } = useNotificationCenter();
+
+const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
+const saveWidgetConfig =
+  inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
+    'dashboard-save-widget-config',
+  );
 
 const [DefineRing, Ring] = createReusableTemplate<{ strokeWidth: number }>();
 const [DefineLine, Line] = createReusableTemplate<{ line: BudgetPlanPeriodViewLine }>();
@@ -101,16 +115,46 @@ const periodLabel = computed(() =>
 );
 const daysLeft = computed(() => (view.value ? periodProgress(view.value.period).daysLeft : 0));
 
-const sections = computed(() => {
+const SORT_OPTIONS = [...CATEGORY_SORT_OPTIONS, 'overspent'] as const;
+type BudgetSort = (typeof SORT_OPTIONS)[number];
+const SORT_LABELS: Record<BudgetSort, string> = {
+  ...CATEGORY_SORT_LABELS,
+  overspent: 'dashboard.widgets.budget.sort.overspent',
+};
+
+const sortBy = computed<BudgetSort>(
+  () => SORT_OPTIONS.find((option) => option === widgetConfigRef?.value?.config?.sortBy) ?? 'custom',
+);
+
+const lines = computed(() => {
   const { ungrouped, groups } = groupLines({
     lines: view.value?.lines ?? [],
     groups: view.value?.groups ?? [],
   });
-  return {
-    ungrouped,
-    groups: groups.map((section) => ({ ...section, totals: sumLineTotals({ lines: section.lines }) })),
-  };
+  const rows = [...ungrouped, ...groups.flatMap((section) => section.lines)];
+  if (sortBy.value === 'overspent') return rows.sort((a, b) => a.available - b.available);
+  return sortCategoryRows({ rows, sortBy: sortBy.value, getAmount: (line) => line.activity });
 });
+
+const isSettingsOpen = ref(false);
+const settingsView = ref<'main' | 'sort'>('main');
+
+watch(isSettingsOpen, (open) => {
+  if (open) settingsView.value = 'main';
+});
+
+const setSortBy = async ({ value }: { value: BudgetSort }) => {
+  settingsView.value = 'main';
+  if (!saveWidgetConfig || !widgetConfigRef?.value) return;
+
+  try {
+    await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config: { sortBy: value } });
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(error);
+    addErrorNotification(t('errors.api.unexpectedError'));
+  }
+};
 
 const goalDisplays = computed(
   () =>
@@ -194,6 +238,70 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
         <span class="size-4 shrink-0"><Ring :stroke-width="HEADER_RING_STROKE" /></span>
         {{ headerHeadline }}
       </span>
+
+      <Popover v-if="widgetConfigRef && view" v-model:open="isSettingsOpen">
+        <PopoverTrigger as-child>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            :aria-label="$t('common.actions.settings')"
+            data-testid="budget-widget-settings-btn"
+          >
+            <SettingsIcon class="text-muted-foreground size-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent class="w-72 overflow-hidden p-0" align="end">
+          <SlidingPanels v-model="settingsView" :panels="['main', 'sort']">
+            <template #main>
+              <header class="border-b px-3 py-2 text-sm font-medium">{{ $t('common.actions.settings') }}</header>
+              <div class="flex flex-col p-2">
+                <button
+                  type="button"
+                  data-testid="budget-widget-settings-sort"
+                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="settingsView = 'sort'"
+                >
+                  <span class="flex flex-col">
+                    <span class="text-sm font-medium">{{ $t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+                    <span class="text-muted-foreground text-xs">{{ $t(SORT_LABELS[sortBy]) }}</span>
+                  </span>
+                  <ChevronRightIcon class="text-muted-foreground size-4" />
+                </button>
+              </div>
+            </template>
+
+            <template #sort>
+              <header class="flex items-center gap-2 border-b px-2 py-2">
+                <DesktopOnlyTooltip :content="$t('common.actions.back')">
+                  <Button
+                    size="icon-sm"
+                    variant="ghost"
+                    type="button"
+                    :aria-label="$t('common.actions.back')"
+                    @click="settingsView = 'main'"
+                  >
+                    <ArrowLeftIcon class="size-4" />
+                  </Button>
+                </DesktopOnlyTooltip>
+                <span class="text-sm font-medium">{{ $t('dashboard.widgets.categoryTracker.sort.title') }}</span>
+              </header>
+              <div class="flex flex-col p-2">
+                <button
+                  v-for="option in SORT_OPTIONS"
+                  :key="option"
+                  type="button"
+                  :data-testid="`budget-widget-sort-${option}`"
+                  class="hover:bg-accent flex items-center justify-between gap-2 rounded-md px-2 py-2 text-left transition-colors"
+                  @click="setSortBy({ value: option })"
+                >
+                  <span class="text-sm">{{ $t(SORT_LABELS[option]) }}</span>
+                  <CheckIcon v-if="sortBy === option" class="text-primary-text size-4" />
+                </button>
+              </div>
+            </template>
+          </SlidingPanels>
+        </PopoverContent>
+      </Popover>
 
       <DesktopOnlyTooltip :content="$t('common.actions.viewAll')">
         <span class="inline-flex">
@@ -287,22 +395,8 @@ const showHeaderHeadline = computed(() => !!headlineRef.value && !isHeadlineVisi
       </div>
 
       <div class="divide-border/60 divide-y">
-        <Line v-for="line in sections.ungrouped" :key="line.lineId" :line="line" />
+        <Line v-for="line in lines" :key="line.lineId" :line="line" />
       </div>
-
-      <template v-for="section in sections.groups" :key="section.group.id">
-        <div
-          class="bg-card border-border/60 sticky top-0 z-1 flex items-center justify-between gap-3 border-b py-1.5 text-xs font-semibold"
-        >
-          <span class="text-muted-foreground min-w-0 truncate tracking-wide uppercase">{{ section.group.name }}</span>
-          <span :class="cn('shrink-0 tabular-nums', amountToneClass({ amount: section.totals.available }))">
-            {{ formatShortBaseCurrency({ amount: section.totals.available }) }}
-          </span>
-        </div>
-        <div class="divide-border/60 divide-y">
-          <Line v-for="line in section.lines" :key="line.lineId" :line="line" />
-        </div>
-      </template>
     </ScrollArea>
   </WidgetWrapper>
 </template>

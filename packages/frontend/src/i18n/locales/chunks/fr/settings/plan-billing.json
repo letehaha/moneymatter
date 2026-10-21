@@ -1,84 +1,84 @@
 {
   "settings": {
     "planBilling": {
-      "title": "Plan & billing",
-      "description": "Choose a plan and manage your billing.",
-      "checkoutSuccess": "Your plan is now active.",
-      "checkoutFailed": "Could not open checkout. Please try again.",
-      "currentPlanEyebrow": "Current plan",
-      "updatePaymentMethod": "Update payment method",
-      "manageBilling": "Manage billing",
-      "currentPlan": "Current plan",
-      "recommended": "Recommended",
-      "previousPlan": "Previous plan",
-      "yourPlan": "Your plan",
-      "planned": "Planned",
-      "voteOnRoadmap": "Vote on the roadmap",
-      "roadmapNote": "No charge. Upvote it and we'll let you know when it ships.",
-      "saveUpTo": "Save up to {percent}%",
-      "portalFailed": "Could not open the billing portal. Please try again.",
-      "pastDueNote": "Your last payment failed. Stripe will retry your card automatically over the next few days. Update your payment method via Manage billing to keep access after {date}.",
-      "priceNote": "Prices are in USD, excluding tax. Your local currency and any applicable tax are shown at checkout.",
+      "title": "Abonnement et facturation",
+      "description": "Choisissez une formule et gérez votre facturation.",
+      "checkoutSuccess": "Votre abonnement est désormais actif.",
+      "checkoutFailed": "Impossible d'ouvrir le paiement. Veuillez réessayer.",
+      "currentPlanEyebrow": "Abonnement actuel",
+      "updatePaymentMethod": "Modifier le moyen de paiement",
+      "manageBilling": "Gérer la facturation",
+      "currentPlan": "Abonnement actuel",
+      "recommended": "Recommandé",
+      "previousPlan": "Abonnement précédent",
+      "yourPlan": "Votre abonnement",
+      "planned": "Prévu",
+      "voteOnRoadmap": "Voter sur la feuille de route",
+      "roadmapNote": "Gratuit. Votez et nous vous préviendrons dès sa sortie.",
+      "saveUpTo": "Jusqu'à {percent} % d'économie",
+      "portalFailed": "Impossible d'ouvrir le portail de facturation. Veuillez réessayer.",
+      "pastDueNote": "Votre dernier paiement a échoué. Stripe réessaiera de débiter votre carte automatiquement dans les prochains jours. Mettez à jour votre moyen de paiement via Gérer la facturation pour conserver votre accès après le {date}.",
+      "priceNote": "Les prix sont en USD, hors taxes. Votre devise locale et les taxes applicables sont indiquées lors du paiement.",
       "cycleHint": {
-        "year": "Yearly is 6 months of monthly. Billed once a year.",
-        "month": "Cancel any month. Yearly costs half."
+        "year": "L'annuel équivaut à 6 mois d'abonnement mensuel. Facturé une fois par an.",
+        "month": "Résiliez chaque mois. L'annuel coûte deux fois moins cher."
       },
       "price": {
-        "yearFootnote": "{amount} / mo · {struck} · {save}",
-        "monthFootnote": "or {amount} / year · {save}",
-        "save": "save {amount}"
+        "yearFootnote": "{amount} / mois · {struck} · {save}",
+        "monthFootnote": "ou {amount} / an · {save}",
+        "save": "économisez {amount}"
       },
       "current": {
-        "lifetime": "{plan} · lifetime",
-        "lifetimeMeta": "Everything in Plus. No renewal, no card on file.",
-        "earlyAdopterNote": "Thank you for being here early. Everything in Plus as it exists today is yours for life. Features we add from here on, and anything that costs us per user to run, belong to the paid plans. Want them? 50% off any plan, forever, applied automatically at checkout.",
-        "seats": "1 household seat | {count} household seats",
+        "lifetime": "{plan} · à vie",
+        "lifetimeMeta": "Tous les avantages de Plus. Sans renouvellement, sans carte enregistrée.",
+        "earlyAdopterNote": "Merci d'avoir été parmi les premiers. Toutes les fonctionnalités actuelles de Plus vous sont acquises à vie. Les fonctionnalités futures et celles impliquant des coûts récurrents par utilisateur seront réservées aux formules payantes. Envie d'en profiter ? Bénéficiez de 50 % de réduction à vie sur toutes les formules, appliquée automatiquement au paiement.",
+        "seats": "1 accès foyer | {count} accès foyer",
         "subscription": "{tier} · {cycle}",
-        "trial": "{count} day left in your trial | {count} days left in your trial",
-        "trialProgress": "Day {used} of {total}",
-        "trialEnded": "Trial ended",
-        "trialEndedMeta": "Your {days}-day trial is over. Pick a plan to keep adding to it.",
-        "trialEndsOn": "Ends {date}",
-        "trialExcluded": "Backup restore isn't available during the trial",
-        "subscriptionEnded": "Subscription ended",
-        "endedMeta": "Your data is safe. Pick a plan to keep adding to it.",
-        "renewsOn": "Renews on {date}",
-        "activating": "Activating your plan",
-        "activatingNote": "Payment received. Stripe usually confirms within a few seconds.",
-        "activationTimedOut": "Your payment went through but the plan is still being set up. Refresh in a minute; if nothing changes, contact support.",
-        "activationUnreachable": "We could not reach the server to confirm your payment. Reload the page; if the plan is still missing, contact support.",
-        "accessContinuesUntil": "Access continues until {date}",
-        "accessUntil": "Access until {date}, then read-only",
-        "resumesOn": "Resumes automatically on {date}",
-        "pausedNote": "While paused the account is read-only.",
-        "noFurtherCharges": "No further charges",
-        "cancelNote": "Changed your mind? Renew in the billing portal and your renewal date stays the same.",
-        "monthlyHint": "Switch to yearly and save {amount} a year.",
-        "noCard": "No card on file",
-        "readOnlyHelp": "What does read-only mean?"
+        "trial": "{count} jour d'essai restant | {count} jours d'essai restants",
+        "trialProgress": "Jour {used} sur {total}",
+        "trialEnded": "Période d'essai terminée",
+        "trialEndedMeta": "Votre essai de {days} jours est terminé. Choisissez une formule pour continuer vos ajouts.",
+        "trialEndsOn": "Prend fin le {date}",
+        "trialExcluded": "La restauration de sauvegarde n'est pas disponible pendant l'essai",
+        "subscriptionEnded": "Abonnement terminé",
+        "endedMeta": "Vos données sont en sécurité. Choisissez une formule pour continuer vos ajouts.",
+        "renewsOn": "Renouvellement le {date}",
+        "activating": "Activation de votre formule en cours",
+        "activatingNote": "Paiement reçu. Stripe confirme généralement en quelques secondes.",
+        "activationTimedOut": "Votre paiement a été accepté, mais la configuration de votre forfait est toujours en cours. Actualisez dans une minute ; si rien ne change, contactez l'assistance.",
+        "activationUnreachable": "Impossible de joindre le serveur pour confirmer votre paiement. Rechargez la page ; si le forfait n'apparaît toujours pas, contactez l'assistance.",
+        "accessContinuesUntil": "Accès maintenu jusqu'au {date}",
+        "accessUntil": "Accès jusqu'au {date}, puis lecture seule",
+        "resumesOn": "Reprise automatique le {date}",
+        "pausedNote": "Pendant la suspension, le compte est en lecture seule.",
+        "noFurtherCharges": "Aucun autre prélèvement",
+        "cancelNote": "Vous avez changé d'avis ? Réabonnez-vous sur le portail de facturation et conservez votre date de renouvellement.",
+        "monthlyHint": "Passez à la facturation annuelle et économisez {amount} par an.",
+        "noCard": "Aucune carte enregistrée",
+        "readOnlyHelp": "Qu'est-ce que la lecture seule ?"
       },
       "status": {
-        "pastDue": "Payment failed",
-        "active": "Active",
-        "paused": "Paused",
-        "readOnly": "Read-only",
-        "trial": "Plus features",
-        "processing": "Processing",
+        "pastDue": "Échec du paiement",
+        "active": "Actif",
+        "paused": "Suspendu",
+        "readOnly": "Lecture seule",
+        "trial": "Fonctionnalités Plus",
+        "processing": "Traitement en cours",
         "earlyAdopter": "Early adopter",
-        "endsOn": "Ends {date}"
+        "endsOn": "Prend fin le {date}"
       },
       "cta": {
-        "activating": "Activating…",
-        "switchTo": "Switch to {tier}",
-        "switchToCycle": "Switch to {cycle} billing",
-        "subscribeAgain": "Subscribe again",
-        "getTier": "Get {tier}"
+        "activating": "Activation…",
+        "switchTo": "Passer à {tier}",
+        "switchToCycle": "Passer à la facturation {cycle}",
+        "subscribeAgain": "Se réabonner",
+        "getTier": "Choisir {tier}"
       },
       "ctaNote": {
-        "keepIt": "Update your payment method to keep it.",
-        "viaPortal": "Changed in the billing portal.",
-        "billedToday": "Billed today. Cancel anytime.",
-        "earlyAdopter": "50% off for life, applied at checkout"
+        "keepIt": "Mettez à jour votre moyen de paiement pour le conserver.",
+        "viaPortal": "Modifiable sur le portail de facturation.",
+        "billedToday": "Facturé aujourd'hui. Résiliable à tout moment.",
+        "earlyAdopter": "-50 % à vie, appliqués lors du paiement"
       },
       "plans": {
         "essential": "Essential",
@@ -87,48 +87,48 @@
         "early_adopter": "Early Adopter"
       },
       "cycle": {
-        "month": "Monthly",
-        "year": "Yearly"
+        "month": "mensuelle",
+        "year": "annuelle"
       },
       "perCycle": {
-        "month": "/month",
-        "year": "/year"
+        "month": "/mois",
+        "year": "/an"
       },
       "tiers": {
         "essential": {
           "name": "Essential",
-          "tagline": "Manual entry and everything that's local math.",
+          "tagline": "Saisie manuelle et tous vos calculs en local.",
           "features": {
-            "imports": "CSV, OFX, YNAB, Wallet, MS Money imports",
-            "investments": "Investments, loans, vehicles",
-            "ownAiKey": "AI features on your own API key",
-            "backup": "Backup export and restore",
-            "mcp": "MCP server access",
-            "seats": "2 household seats"
+            "imports": "Imports CSV, OFX, YNAB, Wallet, MS Money",
+            "investments": "Investissements, emprunts, véhicules",
+            "ownAiKey": "Fonctionnalités IA avec votre propre clé API",
+            "backup": "Export et restauration de sauvegarde",
+            "mcp": "Accès au serveur MCP",
+            "seats": "2 accès pour le foyer"
           }
         },
         "plus": {
           "name": "Plus",
-          "tagline": "Everything around bring-your-own bank connections.",
+          "tagline": "Tout pour connecter vos propres accès bancaires.",
           "features": {
-            "everythingInEssential": "Everything in Essential",
-            "bankProviders": "Bank connections (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
-            "ourAiKey": "AI features on our key, fair-use capped",
-            "firePlanner": "FIRE planner",
-            "seats": "5 household seats"
+            "everythingInEssential": "Tout ce qui est inclus dans Essential",
+            "bankProviders": "Connexions bancaires (Monobank, Enable Banking, SimpleFIN, LunchFlow, Walutomat)",
+            "ourAiKey": "Fonctionnalités IA avec notre clé, selon une politique d'utilisation raisonnable",
+            "firePlanner": "Simulateur FIRE",
+            "seats": "5 accès pour le foyer"
           }
         },
         "premium": {
           "name": "Premium",
-          "tagline": "Bank sync we run for you. Planned – help us prioritise it.",
-          "priceTba": "Price to be announced",
-          "priceNote": "Priced once bank-sync costs are known.",
+          "tagline": "La synchronisation bancaire gérée pour vous. Prévisionnel – aidez-nous à le prioriser.",
+          "priceTba": "Tarif communiqué prochainement",
+          "priceNote": "Prix fixé dès que les coûts de synchronisation bancaire seront connus.",
           "features": {
-            "everythingInPlus": "Everything in Plus",
-            "builtInBankSync": "Bank sync built into the app – no third-party account to set up",
-            "realtimePrices": "Realtime security prices",
-            "higherAiCap": "AI features on our key, higher cap",
-            "seats": "10 household seats"
+            "everythingInPlus": "Tout ce qui est inclus dans Plus",
+            "builtInBankSync": "Synchronisation bancaire intégrée à l'application – aucun compte tiers à configurer",
+            "realtimePrices": "Cours des titres en temps réel",
+            "higherAiCap": "Fonctionnalités IA avec notre clé, plafond plus élevé",
+            "seats": "10 accès pour le foyer"
           }
         }
       }

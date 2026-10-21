@@ -23,6 +23,7 @@ import modelsCurrenciesRoutes from './routes/currencies.route';
 import demoRoutes from './routes/demo.route';
 import exchangeRatesRoutes from './routes/exchange-rates';
 import githubRoutes from './routes/github.route';
+import goalsRoutes from './routes/goals.route';
 import aiMappingRoutes from './routes/import-export/ai-mapping.route';
 import batchesRoutes from './routes/import-export/batches.route';
 import budgetBakersWalletImportRoutes from './routes/import-export/budget-bakers-wallet.route';
@@ -192,6 +193,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/currencies/rates`, exchangeRatesRoutes);
   app.use(`${API_PREFIX}/trackers`, trackersRoutes);
   app.use(`${API_PREFIX}/budget-plans`, budgetPlansRoutes);
+  app.use(`${API_PREFIX}/goals`, goalsRoutes);
   app.use(`${API_PREFIX}/subscriptions`, subscriptionsRoutes);
   app.use(`${API_PREFIX}/tags`, tagsRoutes);
   app.use(`${API_PREFIX}/tag-reminders`, tagRemindersRoutes);

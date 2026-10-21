@@ -19,6 +19,7 @@ export * from './user';
 export * from './user-settings';
 export * from './trackers';
 export * from './budget-plans';
+export * from './goals';
 export * from './import-export';
 export * from './resource-leases';
 export * from './client-logs';

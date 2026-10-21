@@ -47,3 +47,22 @@ export const categoryDropError = (
 
   return null;
 };
+
+/** Same as `categoryDropError`, but for placing `dragged` next to `target` as its sibling. */
+export const categorySiblingDropError = ({
+  dragged,
+  target,
+  targetDepth,
+  maxNesting,
+}: {
+  dragged: DraggedCategory;
+  target: FormattedCategory;
+  targetDepth: number;
+  maxNesting: number;
+}): CategoryDropError | null => {
+  if (target.type === CATEGORY_TYPES.internal) return 'internal-target';
+  if (target.id === dragged.id) return 'self';
+  if (containsCategory({ parent: dragged, categoryId: target.id })) return 'inside-itself';
+  if (targetDepth - 1 + subtreeHeight({ category: dragged }) > maxNesting) return 'children-too-deep';
+  return null;
+};

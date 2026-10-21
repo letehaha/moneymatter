@@ -105,9 +105,9 @@
           "errorsTitle": "{count} Transaktion konnte nicht importiert werden | {count} Transaktionen konnten nicht importiert werden",
           "errorsOverflow": "…und {count} weitere",
           "errors": {
-            "rowImportFailed": "This row could not be imported.",
-            "accountBalanceDesync": "An account balance could not be updated after the import.",
-            "rowsSuppressed": "{count} more row failed to import from this row onward. Only the first {listed} errors are listed. | {count} more rows failed to import from this row onward. Only the first {listed} errors are listed."
+            "rowImportFailed": "Diese Zeile konnte nicht importiert werden.",
+            "accountBalanceDesync": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden.",
+            "rowsSuppressed": "Ab dieser Zeile konnte {count} weitere Zeile nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt. | Ab dieser Zeile konnten {count} weitere Zeilen nicht importiert werden. Nur die ersten {listed} Fehler werden angezeigt."
           },
           "rowPrefix": "Zeile {rowIndex}:",
           "viewTransactions": "Transaktionen anzeigen",

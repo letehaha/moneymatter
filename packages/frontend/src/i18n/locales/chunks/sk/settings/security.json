@@ -58,7 +58,7 @@
         "unknownLocation": "Neznáma poloha",
         "lastActive": "Naposledy aktívna: {date}",
         "noSessions": "Nenašli sa žiadne aktívne relácie",
-        "loadError": "We couldn't load your active sessions.",
+        "loadError": "Vaše aktívne relácie sa nepodarilo načítať.",
         "revokeAllButton": "Odhlásiť zo všetkých ostatných relácií",
         "deviceTypes": {
           "unknownDevice": "Neznáme zariadenie",
@@ -122,8 +122,8 @@
           "updateFailed": "Heslo sa nepodarilo aktualizovať"
         },
         "errors": {
-          "incorrectCurrentPassword": "Current password is incorrect.",
-          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
+          "incorrectCurrentPassword": "Súčasné heslo je nesprávne.",
+          "passwordAlreadySet": "Váš účet už má nastavené heslo. Na jeho zmenu použite formulár."
         }
       },
       "dangerZone": "Nebezpečná zóna",
@@ -253,26 +253,26 @@
             "doneButton": "Hotovo"
           },
           "warnings": {
-            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
-            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
-            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
-            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
-            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
-            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
-            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
-            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
-            "noSettings": "The backup had no saved settings; defaults were applied.",
-            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
-            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
-            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
-            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+            "sharesSkipped": "Vynechaný {count} riadok z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú. | Vynechané {count} riadky z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú. | Vynechaných {count} riadkov z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú.",
+            "mccCodeMissing": "Zahodené {count} pravidlo MCC, ktorého kód kategórie obchodníka na tejto inštancii neexistuje. | Zahodené {count} pravidlá MCC, ktorých kódy kategórie obchodníka na tejto inštancii neexistujú. | Zahodených {count} pravidiel MCC, ktorých kódy kategórie obchodníka na tejto inštancii neexistujú.",
+            "currencyMissing": "Vynechaná {count} mena, ktorá na tejto inštancii nie je k dispozícii. | Vynechané {count} meny, ktoré na tejto inštancii nie sú k dispozícii. | Vynechaných {count} mien, ktoré na tejto inštancii nie sú k dispozícii.",
+            "unknownTableIgnored": "Záloha obsahuje neznámu tabuľku „{table}“; bola ignorovaná.",
+            "unknownColumnDropped": "Zahodený neznámy stĺpec v „{table}“: {columns}. | Zahodené neznáme stĺpce v „{table}“: {columns}.",
+            "tableMissingTreatedEmpty": "Záloha neobsahuje súbor pre „{table}“; považuje sa za prázdnu.",
+            "settingsReset": "Uložené nastavenia nezodpovedali aktuálnemu formátu a boli obnovené na predvolené hodnoty.",
+            "fireSettingsReset": "Uložené nastavenia FIRE nezodpovedali aktuálnemu formátu a boli obnovené na predvolené hodnoty.",
+            "noSettings": "Záloha neobsahovala žiadne uložené nastavenia; boli použité predvolené hodnoty.",
+            "foreignReferenceDropped": "Zahodený {count} riadok z „{table}“, ktorého „{column}“ odkazoval na dáta mimo tejto zálohy. | Zahodené {count} riadky z „{table}“, ktorých „{column}“ odkazoval na dáta mimo tejto zálohy. | Zahodených {count} riadkov z „{table}“, ktorých „{column}“ odkazoval na dáta mimo tejto zálohy.",
+            "invalidRowDropped": "Zahodený {count} riadok z „{table}“, ktorý neprešiel validáciou. | Zahodené {count} riadky z „{table}“, ktoré neprešli validáciou. | Zahodených {count} riadkov z „{table}“, ktoré neprešli validáciou.",
+            "foreignReferenceNulled": "Vymazané „{column}“ v {count} riadku v „{table}“, ktorý odkazoval na dáta mimo tejto zálohy. | Vymazané „{column}“ v {count} riadkoch v „{table}“, ktoré odkazovali na dáta mimo tejto zálohy. | Vymazané „{column}“ v {count} riadkoch v „{table}“, ktoré odkazovali na dáta mimo tejto zálohy.",
+            "unknown": "Niektoré dáta v zálohe boli počas obnovy vynechané alebo upravené."
           },
           "failed": {
             "title": "Obnova zlyhala",
             "genericError": "Pri obnove vašej zálohy sa niečo pokazilo.",
             "unconfirmed": "Stav obnovy sa nepodarilo overiť. Načítajte stránku znova a skontrolujte svoje údaje.",
             "closeButton": "Zavrieť",
-            "technicalDetails": "Technical details"
+            "technicalDetails": "Technické podrobnosti"
           },
           "overlay": {
             "title": "Obnovujú sa vaše údaje",

@@ -1,38 +1,38 @@
 {
   "auth": {
     "login": {
-      "title": "Log in to account",
-      "divider": "Or continue with email",
-      "submitButton": "Log in",
-      "noAccount": "Don't have an account?",
-      "signupsDisabledTooltip": "New signups are disabled by the administrator of this instance",
-      "forgotPassword": "Forgot password?",
+      "title": "Se connecter au compte",
+      "divider": "Ou continuer par e-mail",
+      "submitButton": "Se connecter",
+      "noAccount": "Pas encore de compte ?",
+      "signupsDisabledTooltip": "Les nouvelles inscriptions sont désactivées par l'administrateur de cette instance",
+      "forgotPassword": "Mot de passe oublié ?",
       "errors": {
-        "incorrectEmailOrPassword": "Incorrect email or password.",
-        "incorrectPassword": "Incorrect password.",
-        "userNotFound": "User not found.",
-        "emailNotVerified": "Please verify your email before signing in.",
-        "sessionExpired": "Your session has expired. Please sign in again.",
-        "noPasswordSet": "No password set for this account. Try signing in with Google.",
-        "passwordInvalid": "Password is invalid.",
-        "genericError": "An error occurred.",
-        "genericErrorRetry": "An error occurred. Please try again.",
-        "oauthFailed": "Failed to sign in with {provider}. Please try again.",
-        "oauthNotConfigured": "{provider} sign-in is not configured on this server.",
-        "passkeyFailed": "Failed to sign in with passkey. Please try again."
+        "incorrectEmailOrPassword": "E-mail ou mot de passe incorrect.",
+        "incorrectPassword": "Mot de passe incorrect.",
+        "userNotFound": "Utilisateur introuvable.",
+        "emailNotVerified": "Veuillez vérifier votre adresse e-mail avant de vous connecter.",
+        "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+        "noPasswordSet": "Aucun mot de passe défini pour ce compte. Essayez de vous connecter avec Google.",
+        "passwordInvalid": "Le mot de passe est invalide.",
+        "genericError": "Une erreur est survenue.",
+        "genericErrorRetry": "Une erreur est survenue. Veuillez réessayer.",
+        "oauthFailed": "Échec de la connexion avec {provider}. Veuillez réessayer.",
+        "oauthNotConfigured": "La connexion avec {provider} n'est pas configurée sur ce serveur.",
+        "passkeyFailed": "Échec de la connexion avec une clé d'accès. Veuillez réessayer."
       }
     },
     "shared": {
-      "divider": "Or continue with",
+      "divider": "Ou continuer avec",
       "passkeyButton": {
-        "signIn": "Sign in with passkey",
-        "register": "Add passkey"
+        "signIn": "Se connecter avec une clé d'accès",
+        "register": "Ajouter une clé d'accès"
       },
       "oauthButton": {
-        "signIn": "Sign in with {provider}",
-        "signUp": "Sign up with {provider}"
+        "signIn": "Se connecter avec {provider}",
+        "signUp": "S'inscrire avec {provider}"
       },
-      "lastUsed": "Last used"
+      "lastUsed": "Dernière utilisation"
     }
   }
 }

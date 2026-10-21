@@ -116,6 +116,8 @@
             "fillForm": "Fülle das Formular mit den folgenden Werten aus:",
             "appName": "Application name:",
             "redirectUrls": "Allowed redirect URLs:",
+            "httpsRequired": "Enable Banking akzeptiert nur HTTPS-Weiterleitungs-URLs. Stelle diese Instanz über HTTPS bereit, setze {envVar} auf ihre öffentliche Callback-URL (z. B. {example}), erstelle den Backend-Container neu und gib dieselbe URL in dieses Feld ein. {link}",
+            "httpsRequiredLink": "Setup-Anleitung",
             "appDescription": "Application description:",
             "emailProtection": "Email for data protection matters:",
             "privacyUrl": "Privacy URL:",

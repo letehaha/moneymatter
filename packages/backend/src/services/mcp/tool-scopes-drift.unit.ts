@@ -49,4 +49,17 @@ describe('MCP tool scopes', () => {
 
     expect(wrongScope).toEqual([]);
   });
+
+  it('every goal write tool requires the goals feature', () => {
+    const goalWrites = readToolSources().filter((t) => /_goals?$/.test(t.name) && !READ_TOOL_NAME.test(t.name));
+    expect(goalWrites.map((t) => t.name)).toEqual(
+      expect.arrayContaining(['create_goal', 'update_goal', 'delete_goal']),
+    );
+
+    const ungated = goalWrites
+      .filter((t) => !t.content.includes('requireFeature({ userId, feature: FEATURES.goals })'))
+      .map((t) => t.name);
+
+    expect(ungated).toEqual([]);
+  });
 });

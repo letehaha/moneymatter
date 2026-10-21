@@ -121,6 +121,7 @@
         "previousYear": "Predchádzajúci rok"
       },
       "includeOutOfWallet": "Zahrnúť prevody mimo peňaženky",
+      "outOfWalletSwitch": "Prevody mimo peňaženky",
       "skip": {
         "action": "Preskočiť",
         "title": "Preskočiť tento návrh?",
@@ -134,6 +135,44 @@
         "linkError": "Transakcie sa nepodarilo prepojiť",
         "skipSuccess": "Návrh zamietnutý",
         "skipError": "Návrh sa nepodarilo preskočiť"
+      },
+      "aiReview": {
+        "label": "AI review",
+        "about": "About AI review",
+        "plusBadge": "Plus",
+        "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
+        "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
+        "aiSettingsLink": "Nastavenia AI",
+        "openAiSettings": "Open AI settings",
+        "blocked": {
+          "plan": {
+            "title": "AI review is part of Plus",
+            "body": "Or connect your own AI provider in AI settings to use it on any plan."
+          },
+          "allowance": {
+            "pill": "Until {date}",
+            "title": "Monthly AI allowance used",
+            "body": "It resets on {date}. Connect your own AI provider to keep using it now."
+          },
+          "setup": {
+            "pill": "Nastaviť",
+            "title": "No AI model is answering",
+            "body": "Check your AI provider or pick a model for transfer matching."
+          }
+        },
+        "connectOwnModel": "Pripojiť vlastný model",
+        "reviewing": "AI is checking matches…",
+        "verdict": {
+          "likely": "Pravdepodobné",
+          "possible": "Možné"
+        },
+        "nudge": "Cut false matches with AI review",
+        "rescanHint": "Review with AI",
+        "rescanHintTooltip": "Many pairs scored below 70%. Scan again with AI review to hide the ones that aren't transfers. Uses your AI allowance.",
+        "rescanBanner": {
+          "title": "Many pairs scored below 70%",
+          "body": "AI review can hide the ones that aren't transfers. Uses your AI allowance."
+        }
       }
     },
     "reconciliation": {

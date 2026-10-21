@@ -4,6 +4,7 @@ import type {
   GetBalanceHistoryPayload,
   GetSpendingsByCategoriesReturnType,
   GetSpendingsByCategoriesByTypeReturnType,
+  MonthlySpendingsByCategoriesByType,
   CashFlowGranularity,
   GetCashFlowResponse,
   NetWorthDriversGranularity,
@@ -146,6 +147,27 @@ export const getSpendingsByCategoriesByType = async ({
   if (excludePlanned) params.excludePlanned = true;
 
   return api.get('/stats/spendings-by-categories', params);
+};
+
+export const getMonthlySpendingsByCategoriesByType = async ({
+  from,
+  to,
+  categoryIds,
+  excludePlanned,
+}: {
+  from: Date;
+  to: Date;
+  categoryIds: string[];
+  excludePlanned?: boolean;
+}): Promise<MonthlySpendingsByCategoriesByType> => {
+  const params: Record<string, string | boolean> = {
+    from: formatDate(from),
+    to: formatDate(to),
+    categoryIds: categoryIds.join(','),
+  };
+  if (excludePlanned) params.excludePlanned = true;
+
+  return api.get('/stats/spendings-by-categories/monthly', params);
 };
 
 export interface CombinedBalanceHistoryEntity {

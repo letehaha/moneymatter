@@ -215,7 +215,7 @@
         "syncStarted": "Sincronización iniciada...",
         "accessForbidden": "Acceso denegado",
         "failed": "Error al sincronizar las transacciones",
-        "syncQueued": "Transaction sync queued: {batches} batch, about {minutes} min | Transaction sync queued: {batches} batches, about {minutes} min"
+        "syncQueued": "Sincronización de transacciones en cola: Lote {batches} , aproximadamente {minutes} min. | Sincronización de transacciones en cola: {batches} lotes, alrededor de {minutes} min."
       },
       "reconcileDuplicates": {
         "title": "Fusionar transacciones duplicadas",

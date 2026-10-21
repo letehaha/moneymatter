@@ -1,16 +1,9 @@
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { i18n } from '@/i18n';
-import { extractApiErrorMessage, isApiErrorWithCode } from '@/js/errors';
-import { API_ERROR_CODES } from '@bt/shared/types';
+import { extractApiErrorMessage, isApiErrorWithCode, isHandledByApiClient } from '@/js/errors';
+import type { API_ERROR_CODES } from '@bt/shared/types';
 import { type QueryKey, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useI18n } from 'vue-i18n';
-
-/**
- * The API client already logs out on 401 and toasts a 402 with a "See plans" action,
- * so a second toast would blame the operation for it.
- */
-const isHandledByApiClient = ({ error }: { error: unknown }) =>
-  isApiErrorWithCode(error, API_ERROR_CODES.unauthorized) || isApiErrorWithCode(error, API_ERROR_CODES.planRequired);
 
 export const notifyMutationError = ({ error, fallbackKey }: { error: unknown; fallbackKey: string }) => {
   if (isHandledByApiClient({ error })) return;

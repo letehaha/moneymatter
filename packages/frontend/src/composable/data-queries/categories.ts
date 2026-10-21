@@ -39,7 +39,7 @@ export const useAccountCategories = ({
 
   const list = computed<CategoryModel[]>(() => query.data.value ?? []);
 
-  const formatted = computed<FormattedCategory[]>(() => buildCategoriesObjectGraph(list.value));
+  const formatted = computed<FormattedCategory[]>(() => buildCategoriesObjectGraph({ items: list.value }));
 
   const map = computed<Record<string, CategoryModel>>(() =>
     list.value.reduce(

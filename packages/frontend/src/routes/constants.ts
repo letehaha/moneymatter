@@ -17,6 +17,8 @@ export const ROUTES_NAMES = Object.freeze({
   plannedSubscriptionDetails: `${ROUTER_LAYOUTS.dashboard}.planned.subscription-details`,
   plannedTrackers: `${ROUTER_LAYOUTS.dashboard}.planned.trackers`,
   plannedTrackerDetails: `${ROUTER_LAYOUTS.dashboard}.planned.tracker-details`,
+  goals: `${ROUTER_LAYOUTS.dashboard}.goals`,
+  goalDetails: `${ROUTER_LAYOUTS.dashboard}.goal-details`,
   budget: `${ROUTER_LAYOUTS.dashboard}.budget`,
   budgetPlan: `${ROUTER_LAYOUTS.dashboard}.budget-plan`,
   subscriptions: `${ROUTER_LAYOUTS.dashboard}.subscriptions`,

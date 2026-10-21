@@ -1,3 +1,4 @@
+import { median } from '@bt/shared/goals/goal-math';
 import type { CashFlowPeriodData, GetVentureContributionsResponse } from '@bt/shared/types';
 import { endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
 import { sum } from 'lodash-es';
@@ -10,12 +11,6 @@ export const getFireSeedWindow = ({ now }: { now: Date }) => ({
   from: startOfMonth(subMonths(now, 12)),
   to: endOfMonth(subMonths(now, 1)),
 });
-
-const median = ({ values }: { values: number[] }) => {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
-};
 
 type SeedPeriod = Pick<CashFlowPeriodData, 'periodStart' | 'income' | 'expenses' | 'netFlow'>;
 

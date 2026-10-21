@@ -121,6 +121,7 @@
         "title": "Отслеживаемые категории",
         "addCategory": "Добавить категорию",
         "selectCategories": "Выберите категории",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Сортировать по",
           "custom": "Custom order",
@@ -149,6 +150,7 @@
         "start": "Начало",
         "end": "Конец",
         "growth": "Рост",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Тренд предыдущих периодов",
         "excludedTooltip": "Не учитывается в чистом капитале: {components}",
         "viewHistory": "История",
@@ -298,7 +300,10 @@
         "daysLeft": "{count} day left | {count} days left",
         "lastDay": "Last day of the period",
         "empty": "No budget yet",
-        "create": "Set up a budget"
+        "create": "Set up a budget",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",

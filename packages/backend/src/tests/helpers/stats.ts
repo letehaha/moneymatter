@@ -10,6 +10,7 @@ import {
   type GetPivotReportResponse,
   type GetVentureContributionsResponse,
   type InvestmentContributionsGranularity,
+  type MonthlySpendingsByCategoriesByType,
   type NetWorthDriversGranularity,
   type NetWorthHistoryGranularity,
   type PivotGranularity,
@@ -116,6 +117,30 @@ export const getSpendingsByCategories = async ({
 
   return raw ? helpers.extractResponse(result) : result;
 };
+
+export async function getMonthlySpendingsByCategories<R extends boolean | undefined = undefined>({
+  from,
+  to,
+  categoryIds,
+  excludePlanned,
+  raw,
+}: {
+  from: string;
+  to: string;
+  categoryIds?: string[];
+  excludePlanned?: boolean;
+  raw?: R;
+}) {
+  const params = new URLSearchParams({ from, to });
+  if (categoryIds && categoryIds.length > 0) params.append('categoryIds', categoryIds.join(','));
+  if (excludePlanned !== undefined) params.append('excludePlanned', String(excludePlanned));
+
+  return helpers.makeRequest<MonthlySpendingsByCategoriesByType, R>({
+    method: 'get',
+    url: `/stats/spendings-by-categories/monthly?${params.toString()}`,
+    raw,
+  });
+}
 
 export async function getExpensesAmountForPeriod<R extends boolean | undefined = undefined>({
   from,

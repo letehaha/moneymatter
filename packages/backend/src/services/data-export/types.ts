@@ -154,6 +154,19 @@ export interface BudgetPeriodRow {
   currency: string;
 }
 
+export interface GoalRow {
+  name: string;
+  status: string;
+  targetAmount: number;
+  currency: string;
+  targetDate: string;
+  plannedMonthly: number | null;
+  /** One `"<account>: <share>%"` entry per backing account. */
+  accounts: string[];
+  achievedAt: string;
+  achievedAmount: number | null;
+}
+
 export interface SubscriptionRow {
   name: string;
   /**
@@ -254,6 +267,7 @@ export type ExportTable =
   | { name: 'trackers'; rows: TrackerRow[] }
   | { name: 'budget_lines'; rows: BudgetLineRow[] }
   | { name: 'budget_periods'; rows: BudgetPeriodRow[] }
+  | { name: 'goals'; rows: GoalRow[] }
   | { name: 'subscriptions'; rows: SubscriptionRow[] }
   | { name: 'transaction_templates'; rows: TransactionTemplateRow[] }
   | { name: 'portfolios'; rows: PortfolioRow[] }

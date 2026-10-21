@@ -121,9 +121,10 @@
         "previousYear": "Previous year"
       },
       "includeOutOfWallet": "Include out-of-wallet transfers",
+      "outOfWalletSwitch": "Out-of-wallet transfers",
       "skip": {
-        "action": "Skip",
-        "title": "Skip this suggestion?",
+        "action": "Reject",
+        "title": "Reject this suggestion?",
         "description": "This pair will be hidden from future scan results. The transactions themselves won't be changed.",
         "dontShowAgain": "Don't show this confirmation again"
       },
@@ -132,8 +133,46 @@
         "scanError": "Failed to scan for transfer suggestions",
         "linkSuccess": "Transactions linked as transfer",
         "linkError": "Failed to link transactions",
-        "skipSuccess": "Suggestion dismissed",
-        "skipError": "Failed to skip suggestion"
+        "skipSuccess": "Suggestion rejected",
+        "skipError": "Failed to reject suggestion"
+      },
+      "aiReview": {
+        "label": "AI review",
+        "about": "About AI review",
+        "plusBadge": "Plus",
+        "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
+        "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
+        "aiSettingsLink": "إعدادات الذكاء الاصطناعي",
+        "openAiSettings": "Open AI settings",
+        "blocked": {
+          "plan": {
+            "title": "AI review is part of Plus",
+            "body": "Or connect your own AI provider in AI settings to use it on any plan."
+          },
+          "allowance": {
+            "pill": "Until {date}",
+            "title": "Monthly AI allowance used",
+            "body": "It resets on {date}. Connect your own AI provider to keep using it now."
+          },
+          "setup": {
+            "pill": "Set up",
+            "title": "No AI model is answering",
+            "body": "Check your AI provider or pick a model for transfer matching."
+          }
+        },
+        "connectOwnModel": "Connect your own model",
+        "reviewing": "AI is checking matches…",
+        "verdict": {
+          "likely": "Likely",
+          "possible": "Possible"
+        },
+        "nudge": "Cut false matches with AI review",
+        "rescanHint": "Review with AI",
+        "rescanHintTooltip": "Many pairs scored below 70%. Scan again with AI review to hide the ones that aren't transfers. Uses your AI allowance.",
+        "rescanBanner": {
+          "title": "Many pairs scored below 70%",
+          "body": "AI review can hide the ones that aren't transfers. Uses your AI allowance."
+        }
       }
     },
     "reconciliation": {

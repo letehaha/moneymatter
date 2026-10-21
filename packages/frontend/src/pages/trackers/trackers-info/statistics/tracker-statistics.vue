@@ -35,7 +35,7 @@ const props = defineProps<{
 
 const { t } = useI18n();
 const { format } = useDateLocale();
-const { formatWholeBaseCurrency: formatWholeBase, formatCompactAmount } = useFormatCurrency();
+const { formatWholeOrCompactAmount, formatSignedWholeOrCompactAmount, formatCompactAmount } = useFormatCurrency();
 const { baseCurrency } = storeToRefs(useCurrenciesStore());
 
 const trackerId = computed(() => props.tracker.id);
@@ -58,9 +58,8 @@ const spent = computed(() =>
 );
 const baseCode = computed(() => baseCurrency.value?.currency?.code ?? '');
 const formatBaseCurrency = (amount: number) => formatCompactAmount(amount, baseCode.value);
-const COMPACT_AMOUNT_THRESHOLD = 10_000;
 const formatWholeBaseCurrency = (amount: number) =>
-  Math.abs(amount) >= COMPACT_AMOUNT_THRESHOLD ? formatCompactAmount(amount, baseCode.value) : formatWholeBase(amount);
+  formatWholeOrCompactAmount({ amount, currencyCode: baseCode.value });
 const limit = computed(() => props.tracker.limitAmount || null);
 const progress = computed(() =>
   getPeriodProgress({ startDate: props.tracker.startDate, endDate: props.tracker.endDate }),
@@ -76,8 +75,6 @@ const formatDate = ({ value, pattern }: { value: string | Date | null | undefine
 };
 const formatDay = (value: string | Date) => formatDate({ value, pattern: 'MMM d' });
 const formatFullDate = (value: string | null | undefined) => formatDate({ value, pattern: 'MMM d, yyyy' });
-const formatSigned = (value: number) =>
-  `${value > 0 ? '+' : value < 0 ? '−' : ''}${formatWholeBaseCurrency(Math.abs(value))}`;
 
 interface KpiCell {
   key: string;
@@ -145,7 +142,10 @@ const projectionCell = computed<KpiCell>(() => {
     key: 'projection',
     label: t('pages.budgetDetails.statistics.kpi.projectedTotal'),
     value: projectedTotal === null ? '—' : formatWholeBaseCurrency(projectedTotal),
-    suffix: projectedDelta === null ? undefined : formatSigned(projectedDelta),
+    suffix:
+      projectedDelta === null
+        ? undefined
+        : formatSignedWholeOrCompactAmount({ amount: projectedDelta, currencyCode: baseCode.value }),
     sub: t('pages.budgetDetails.statistics.kpi.projectedLimit', { amount: formatWholeBaseCurrency(limit.value) }),
     valueClass: projectedDelta === null ? '' : projectedDelta > 0 ? 'text-destructive-text' : 'text-success-text',
   };

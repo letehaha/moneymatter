@@ -1,0 +1,101 @@
+---
+title: Create and edit a goal
+description: Set a goal's target, currency, date and monthly plan, choose which accounts count toward it and how much of each, and pause, archive or delete it.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+You create and edit a goal in the same window. It's the only place a goal's target, date, accounts and monthly plan change.
+
+## Create a goal
+
+<Steps>
+
+1. Open **Planning** → **Goals** in the sidebar and click **New goal**.
+2. Optionally pick a logo: a brand, letters, an icon or your own image.
+3. Enter a **Name**, for example "Car" or "Emergency fund".
+4. Enter the **Target amount** and choose its **Currency**. It starts on your base currency.
+5. Optionally set a **Target date**. It must be after today.
+6. Under **Accounts**, click **Add accounts**, tick the accounts that hold the money and set each one's share. Click **Done**. See [Accounts and shares](#accounts-and-shares).
+7. Optionally turn on **Set a monthly amount** and enter how much you plan to save each month. See [Monthly amount](#monthly-amount).
+8. Check the sentence at the bottom, for example "Reach $8,000 by 1 Jun 2027. That needs about $450 a month from today."
+9. Click **Create goal**.
+
+</Steps>
+
+A goal needs a name, a target above 0 and at least one account.
+
+## Target currency
+
+The target can be in any currency. A goal for a trip abroad can be in euros even if your base currency is dollars. Balances in other currencies are converted at today's exchange rate, so progress is always exact in the goal's currency.
+
+The currency needs an exchange rate to your base currency today. If there isn't one, the goal can't be saved with that currency. If the rate goes missing later, the goal shows **No exchange rate** until it's back.
+
+## Target date
+
+The date is optional.
+
+- **With a date**, the goal shows how much you need each month to get there, and whether you're **Ahead**, **On track** or **Behind**.
+- **Without a date**, the goal shows the month you'll reach the target at your pace, and it's never behind.
+
+## Accounts and shares
+
+Each account you add counts toward the goal by a percentage of its balance, its **share**. At 100% the whole balance counts. At 25%, a quarter of it does. The target stays the same whatever shares you pick: the share only decides how much of each balance counts.
+
+<Steps>
+
+1. In the goal window, click **Add accounts**, or **Manage accounts** if the goal already has some.
+2. Tick each account that counts toward the goal. Its share starts at 100%, or at whatever is free if other goals already use part of it.
+3. Change the share if only part of the balance should count. The row shows how much that counts right now.
+4. Click **Done**.
+
+</Steps>
+
+The goal window then shows the accounts you picked and how much they count now.
+
+### Which accounts can back a goal
+
+Accounts you own in these categories: **General**, **Cash**, **Current account**, **Saving account**, **Investment** and **Crypto**.
+
+Credit cards, overdrafts, loans, vehicles, bonus and insurance accounts can't back a goal, and neither can accounts someone has shared with you. If you change an account to a category that can't back a goal, it's removed from every goal it was in.
+
+On **Investment** and **Crypto** accounts, market moves count as progress: a rising market moves the goal forward and a falling one sets it back. Projections assume no growth, only what you save.
+
+Archived accounts still count, because the money is still there. They're marked **Archived** in the list.
+
+### Share an account between goals
+
+One account can back several goals. Its shares across your active and paused goals can add up to 100% at most. For example, a savings account can count 60% toward "Holiday" and 40% toward "Emergency fund".
+
+In the accounts window, each row shows how much is still free, for example "35% free". An account that's fully used is greyed out and lists the goals using it. If you enter more than is free, the row shows the maximum and you can't save until you lower it.
+
+- **Pausing** a goal keeps its shares, so resuming it never fails.
+- **Archiving** a goal frees its shares for other goals.
+- **Unarchiving** a goal claims its shares again. If another goal has taken part of an account in the meantime, you'll see how much of that account is still free and need to lower the share first.
+
+## Monthly amount
+
+By default, a goal's pace is how much it actually grew in recent months (see [Pace](/goals/how-progress-is-calculated/#pace)). Turn on **Set a monthly amount** to use your own plan instead, for example when you've just set up a standing order or the accounts are too new to have history. Turn it off to go back to your actual pace.
+
+The monthly amount is in the goal's currency and is what you plan to count toward the goal each month. If an account only counts by part of its balance, you need to deposit more than that into it. The [What if](/goals/what-if-and-feasibility/#what-if) tab works out how much.
+
+## Edit, pause, archive or delete
+
+On the **Goals** page, click the three-dot button on a goal's row. On the goal's page, click **Edit**, or the three-dot button next to it.
+
+- **Edit** opens the goal window.
+- **Pause** keeps the goal and its shares but leaves it out of the [feasibility check](/goals/what-if-and-feasibility/#can-you-afford-your-goals). **Resume** brings it back.
+- **Archive** moves the goal to **Archived** and frees its account shares. **Unarchive** brings it back.
+- **Delete** removes the goal and its shares for good. Your accounts and transactions stay as they are.
+
+<Aside type="tip">
+To keep a goal's history but stop tracking it, archive it instead of deleting it.
+</Aside>
+
+## Related
+
+- [Goals](/goals/overview/)
+- [How progress is calculated](/goals/how-progress-is-calculated/)
+- [Create an account](/accounts/create-an-account/), for account categories

@@ -2,50 +2,111 @@
   "settings": {
     "accountGroups": {
       "page": {
-        "title": "Account groups",
-        "description": "Organize accounts into groups. Bank connections create and manage their own groups automatically.",
-        "addButton": "Add group"
+        "title": "Groupes de comptes",
+        "description": "Organisez vos comptes en groupes. Les synchronisations bancaires créent et gèrent automatiquement leurs propres groupes.",
+        "addButton": "Ajouter un groupe"
       },
       "empty": {
-        "title": "No account groups yet",
-        "description": "Group accounts by bank, currency or purpose to keep your accounts list tidy."
+        "title": "Aucun groupe de comptes pour le moment",
+        "description": "Regroupez vos comptes par banque, devise ou objectif pour garder votre liste de comptes ordonnée."
       },
       "loadError": {
-        "title": "Couldn't load your groups",
-        "description": "Something went wrong while fetching your account groups. Check your connection and try again.",
-        "retry": "Try again"
+        "title": "Impossible de charger vos groupes",
+        "description": "Une erreur s'est produite lors de la récupération de vos groupes de comptes. Vérifiez votre connexion et réessayez.",
+        "retry": "Réessayer"
       },
       "row": {
-        "bankBadge": "Created by bank connection",
-        "bankBadgeShort": "Connection",
-        "bankBadgeTooltip": "This group was created when you connected the bank, but it doesn't represent the connection itself — you're free to rename it, move accounts, or delete it. Accounts will stay synced regardless.",
+        "bankBadgeTooltip": "Ce groupe a été créé lors de la connexion à la banque, mais ne représente pas la connexion elle-même : vous pouvez le renommer, y déplacer des comptes ou le supprimer. Les comptes resteront synchronisés quoi qu'il arrive.",
         "accountsCount": "{count} compte | {count} comptes",
-        "noAccounts": "No accounts",
-        "accountsElsewhere": "{count} synced account in other groups | {count} synced accounts in other groups",
-        "inParent": "in {name}",
+        "noAccounts": "Aucun compte",
+        "accountsElsewhere": "{count} compte synchronisé dans d'autres groupes | {count} comptes synchronisés dans d'autres groupes",
         "manageConnection": "Gérer la connexion"
       },
       "update": {
-        "label": "Group name",
-        "placeholder": "Enter group name",
-        "saveButton": "Save",
-        "emptyNameError": "Group name can't be empty"
+        "label": "Nom du groupe",
+        "placeholder": "Saisir le nom du groupe",
+        "emptyNameError": "Le nom du groupe ne peut pas être vide"
       },
       "accounts": {
-        "heading": "Accounts in this group",
-        "empty": "No accounts in this group yet. Add accounts to a group from the account page.",
-        "emptyBankLinked": "This connection's accounts are organized into other groups — moving them doesn't affect syncing.",
-        "unlinkTooltip": "Remove from group",
-        "removeConfirmTitle": "Remove \"{name}\" from this group?",
-        "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
-        "removeConfirmAction": "Remove"
+        "unlinkTooltip": "Retirer du groupe",
+        "removeConfirmTitle": "Retirer « {name} » de ce groupe ?",
+        "removeConfirmDescription": "Le compte n'est pas supprimé : il est simplement retiré de ce groupe.",
+        "removeConfirmAction": "Retirer"
       },
       "delete": {
-        "button": "Delete group",
-        "confirmTitle": "Delete \"{name}\"?",
-        "accountsKept": "Accounts are kept — they simply become ungrouped.",
-        "syncContinues": "Bank syncing continues — the connection is separate from this group.",
-        "ungroupedHeading": "Becoming ungrouped"
+        "button": "Supprimer le groupe",
+        "confirmTitle": "Supprimer « {name} » ?",
+        "accountsKept": "Les comptes sont conservés : ils deviennent simplement non groupés.",
+        "syncContinues": "La synchronisation bancaire continue : la connexion est indépendante de ce groupe.",
+        "ungroupedHeading": "Passeront en non groupés"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Renommer le groupe",
+          "description": "Cliquez sur le logo pour choisir un logo de banque, des initiales ou une couleur.",
+          "submit": "Enregistrer les modifications"
+        },
+        "move": {
+          "title": "Déplacer « {name} »",
+          "description": "Ses sous-groupes et ses comptes seront déplacés avec lui.",
+          "parentLabel": "Groupe parent",
+          "parentPlaceholder": "Sélectionner un groupe parent",
+          "noParent": "Aucun groupe parent",
+          "hint": "Choisissez « Aucun groupe parent » pour placer ce groupe au premier niveau.",
+          "submit": "Déplacer"
+        },
+        "addAccounts": {
+          "title": "Ajouter des comptes à « {name} »",
+          "description": "Un compte n'appartient qu'à un seul groupe. Si vous sélectionnez un compte d'un autre groupe, il sera déplacé ici.",
+          "searchPlaceholder": "Rechercher des comptes",
+          "sections": {
+            "ungrouped": "Sans groupe",
+            "inOtherGroups": "Dans d'autres groupes",
+            "alreadyInGroup": "Déjà dans {name}"
+          },
+          "inGroupCaption": "Dans {path}",
+          "noResults": "Aucun compte ne correspond à votre recherche",
+          "noAccounts": "Aucun compte à ajouter",
+          "summary": {
+            "selected": "{selected} sélectionnés",
+            "movesFromGroup": "{selected} sélectionnés, {count} compte sera déplacé depuis {group} | {selected} sélectionnés, {count} comptes seront déplacés depuis {group}",
+            "movesFromOtherGroups": "{selected} sélectionnés, {count} compte sera déplacé depuis d'autres groupes | {selected} sélectionnés, {count} comptes seront déplacés depuis d'autres groupes"
+          },
+          "submit": "Ajouter {count} compte | Ajouter {count} comptes"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} groupe | {count} groupes",
+        "syncedBadge": "Synchronisé",
+        "expand": "Développer",
+        "collapse": "Réduire",
+        "renameTooltip": "Renommer",
+        "moreActions": "Plus d'actions",
+        "menu": {
+          "rename": "Renommer et modifier le logo",
+          "move": "Déplacer vers un autre groupe",
+          "newSubgroup": "Nouveau sous-groupe",
+          "addAccounts": "Ajouter des comptes",
+          "delete": "Supprimer le groupe"
+        }
+      },
+      "organize": {
+        "button": "Organiser",
+        "hint": "Faites glisser un groupe sur un autre pour l'imbriquer",
+        "save": "Enregistrer les modifications",
+        "topLevel": "Niveau supérieur",
+        "dropToTopLevel": "Déposez ici pour placer « {name} » au premier niveau",
+        "movesCount": "{count} déplacement | {count} déplacements",
+        "moveInside": "Déplacer à l'intérieur",
+        "moved": "Déplacé",
+        "saveSuccess": "Groupes réorganisés",
+        "saveFailed": "Impossible d'enregistrer {count} déplacement. Réessayez. | Impossible d'enregistrer {count} déplacements. Réessayez.",
+        "staleMovesRemoved": "{count} déplacement en attente devenu invalide a été supprimé | {count} déplacements en attente devenus invalides ont été supprimés",
+        "dropErrors": {
+          "currentParent": "Déjà dans ce groupe",
+          "insideItself": "Impossible de déplacer un groupe dans l'un de ses sous-groupes",
+          "alreadyTopLevel": "Déjà au premier niveau"
+        }
       }
     }
   }

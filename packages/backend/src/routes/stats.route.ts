@@ -10,6 +10,7 @@ router.get('/balance-history', statsController.getBalanceHistory);
 router.get('/total-balance', statsController.getTotalBalance);
 router.get('/expenses-amount-for-period', statsController.getExpensesAmountForPeriod);
 router.get('/spendings-by-categories', statsController.getSpendingsByCategories);
+router.get('/spendings-by-categories/monthly', statsController.getMonthlySpendingsByCategories);
 router.get('/combined-balance-history', statsController.getCombinedBalanceHistory);
 router.get('/cash-flow', statsController.getCashFlow);
 router.get('/net-worth-drivers', statsController.getNetWorthDrivers);

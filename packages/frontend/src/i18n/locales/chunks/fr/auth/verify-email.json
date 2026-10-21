@@ -1,17 +1,17 @@
 {
   "auth": {
     "verifyEmail": {
-      "title": "Check your email",
-      "description": "We've sent a verification link to",
-      "descriptionYourEmail": "your email address",
-      "descriptionContinued": ". Please click the link to verify your account.",
-      "didntReceive": "Didn't receive the email? Check your spam folder or",
-      "resend": "click here to resend",
-      "sending": "Sending...",
-      "resendIn": "Resend in {count}s",
-      "backToSignIn": "Back to sign in",
-      "resendSuccess": "Verification email sent! Please check your inbox.",
-      "resendError": "Failed to resend verification email. Please try again."
+      "title": "Vérifiez vos e-mails",
+      "description": "Nous avons envoyé un lien de confirmation à",
+      "descriptionYourEmail": "votre adresse e-mail",
+      "descriptionContinued": ". Veuillez cliquer sur le lien pour valider votre compte.",
+      "didntReceive": "Vous n'avez rien reçu ? Vérifiez vos spams ou",
+      "resend": "cliquez ici pour renvoyer",
+      "sending": "Envoi en cours...",
+      "resendIn": "Renvoyer dans {count} s",
+      "backToSignIn": "Retour à la connexion",
+      "resendSuccess": "E-mail de confirmation envoyé ! Veuillez vérifier votre boîte de réception.",
+      "resendError": "Échec du renvoi de l'e-mail de confirmation. Veuillez réessayer."
     }
   }
 }

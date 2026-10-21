@@ -16,25 +16,18 @@
         "retry": "Thử lại"
       },
       "row": {
-        "bankBadge": "Được tạo bởi kết nối ngân hàng",
-        "bankBadgeShort": "Kết nối",
         "bankBadgeTooltip": "Nhóm này được tạo khi bạn kết nối ngân hàng, nhưng nó không đại diện cho kết nối đó — bạn có thể đổi tên, chuyển tài khoản hoặc xóa nhóm thoải mái. Tài khoản vẫn được đồng bộ bình thường.",
         "accountsCount": "{count} tài khoản | {count} tài khoản",
         "noAccounts": "Không có tài khoản",
         "accountsElsewhere": "{count} tài khoản đã đồng bộ trong các nhóm khác | {count} tài khoản đã đồng bộ trong các nhóm khác",
-        "inParent": "trong {name}",
         "manageConnection": "Quản lý kết nối"
       },
       "update": {
         "label": "Tên nhóm",
         "placeholder": "Nhập tên nhóm",
-        "saveButton": "Lưu",
         "emptyNameError": "Tên nhóm không được để trống"
       },
       "accounts": {
-        "heading": "Tài khoản trong nhóm này",
-        "empty": "Chưa có tài khoản nào trong nhóm này. Hãy thêm tài khoản vào nhóm từ trang tài khoản.",
-        "emptyBankLinked": "Các tài khoản của kết nối này đã được sắp xếp vào các nhóm khác — việc di chuyển chúng không ảnh hưởng đến việc đồng bộ.",
         "unlinkTooltip": "Bỏ khỏi nhóm",
         "removeConfirmTitle": "Bỏ \"{name}\" khỏi nhóm này?",
         "removeConfirmDescription": "Tài khoản không bị xóa — chỉ rời khỏi nhóm này.",
@@ -46,6 +39,74 @@
         "accountsKept": "Tài khoản vẫn được giữ — chỉ là không còn thuộc nhóm nào.",
         "syncContinues": "Đồng bộ ngân hàng vẫn tiếp tục — kết nối không phụ thuộc vào nhóm này.",
         "ungroupedHeading": "Sẽ không còn thuộc nhóm nào"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Rename group",
+          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "submit": "Save changes"
+        },
+        "move": {
+          "title": "Di chuyển “{name}”",
+          "description": "Its subgroups and accounts move with it.",
+          "parentLabel": "Parent group",
+          "parentPlaceholder": "Select a parent group",
+          "noParent": "No parent",
+          "hint": "Pick “No parent” to make it a top-level group.",
+          "submit": "Di chuyển"
+        },
+        "addAccounts": {
+          "title": "Add accounts to “{name}”",
+          "description": "An account belongs to one group. Picking one from another group moves it here.",
+          "searchPlaceholder": "Search accounts",
+          "sections": {
+            "ungrouped": "Not in a group",
+            "inOtherGroups": "In other groups",
+            "alreadyInGroup": "Already in {name}"
+          },
+          "inGroupCaption": "In {path}",
+          "noResults": "No accounts match your search",
+          "noAccounts": "No accounts to add",
+          "summary": {
+            "selected": "{selected} selected",
+            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
+            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+          },
+          "submit": "Add {count} account | Add {count} accounts"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} group | {count} groups",
+        "syncedBadge": "Synced",
+        "expand": "Mở rộng",
+        "collapse": "Thu gọn",
+        "renameTooltip": "Rename",
+        "moreActions": "More actions",
+        "menu": {
+          "rename": "Rename and change logo",
+          "move": "Move to another group",
+          "newSubgroup": "New subgroup",
+          "addAccounts": "Add accounts",
+          "delete": "Xóa nhóm"
+        }
+      },
+      "organize": {
+        "button": "Organize",
+        "hint": "Drag a group onto another to nest it",
+        "save": "Save changes",
+        "topLevel": "Cấp cao nhất",
+        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
+        "movesCount": "{count} move | {count} moves",
+        "moveInside": "Move inside",
+        "moved": "Moved",
+        "saveSuccess": "Groups reorganized",
+        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
+        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropErrors": {
+          "currentParent": "Already in this group",
+          "insideItself": "Can't move a group inside its own subgroup",
+          "alreadyTopLevel": "Already a top-level group"
+        }
       }
     }
   }

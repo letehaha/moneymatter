@@ -2,11 +2,13 @@ import { loadSystemCategories } from '@/api';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { type FormattedCategory } from '@/common/types';
 import { useNotificationCenter } from '@/components/notification-center';
+import { userSettingsQueryOptions } from '@/composable/data-queries/user-settings';
 import { i18n } from '@/i18n';
 import * as errors from '@/js/errors';
 import { invalidatePersistedQuery, queryClient } from '@/lib/query-client';
 import { useUserStore } from '@/stores/user';
 import { CategoryModel } from '@bt/shared/types';
+import { useQuery } from '@tanstack/vue-query';
 import { defineStore, storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
@@ -56,7 +58,15 @@ export const useCategoriesStore = defineStore('categories', () => {
     return categories.value.filter((c) => c.userId === callerUserId);
   });
 
-  const formattedCategories = computed<FormattedCategory[]>(() => buildCategoriesObjectGraph(ownCategories.value));
+  const { data: userSettings } = useQuery(
+    { ...userSettingsQueryOptions, enabled: computed(() => !!currentUser.value) },
+    queryClient,
+  );
+  const categoryOrder = computed(() => userSettings.value?.categoryOrder ?? {});
+
+  const formattedCategories = computed<FormattedCategory[]>(() =>
+    buildCategoriesObjectGraph({ items: ownCategories.value, order: categoryOrder.value }),
+  );
   const categoriesMap = computed(() =>
     categories.value.reduce(
       (acc, curr) => {
@@ -70,6 +80,7 @@ export const useCategoriesStore = defineStore('categories', () => {
   return {
     categories,
     categoriesMap,
+    categoryOrder,
     isFetched,
     ownCategories,
     formattedCategories,

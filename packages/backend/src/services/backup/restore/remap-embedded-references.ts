@@ -2,6 +2,8 @@ import {
   type AutomationAction,
   type AutomationConditionField,
   type AutomationConditions,
+  CATEGORY_ORDER_ROOT_KEY,
+  type CategoryOrder,
   type FireSettings,
   getPortfolioIdFromIndicatorId,
   isPortfolioIndicatorId,
@@ -398,4 +400,22 @@ export function remapIncomeCategoryIds({
   if (!settings.incomeCategoryIds) return;
   const categories = insertedIds.get(String(Categories.getTableName()));
   settings.incomeCategoryIds = settings.incomeCategoryIds.flatMap((id) => categories?.get(id) ?? []);
+}
+
+/** Remap `settings.categoryOrder` keys (parent ids) and values in place, dropping ids the restore did not insert. */
+export function remapCategoryOrderIds({
+  settings,
+  insertedIds,
+}: {
+  settings: { categoryOrder?: CategoryOrder };
+  insertedIds: InsertedIds;
+}): void {
+  if (!settings.categoryOrder) return;
+  const categories = insertedIds.get(String(Categories.getTableName()));
+  settings.categoryOrder = Object.fromEntries(
+    Object.entries(settings.categoryOrder).flatMap(([parentKey, ids]) => {
+      const key = parentKey === CATEGORY_ORDER_ROOT_KEY ? parentKey : categories?.get(parentKey);
+      return key ? [[key, ids.flatMap((id) => categories?.get(id) ?? [])]] : [];
+    }),
+  );
 }

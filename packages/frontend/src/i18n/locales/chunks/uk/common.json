@@ -339,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Відкрийте панель спільного доступу, щоб надіслати повторно."
+    },
+    "goalReached": {
+      "title": "Ціль досягнуто: {name}",
+      "message": "Ви накопичили {amount}."
     }
   },
   "currencyNames": {

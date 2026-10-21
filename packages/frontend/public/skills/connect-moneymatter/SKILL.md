@@ -2,11 +2,11 @@
 
 MoneyMatter exposes a remote Model Context Protocol (MCP) server. Connecting an
 agent to this server gives the agent OAuth-secured access to the user's
-financial data (accounts, transactions, trackers, subscriptions, transaction
-automations, categories, tags, cash flow, balance history, investment
-portfolios, holdings, and investment transactions). The agent can read these
-records and — when the user grants the corresponding scopes — create, edit,
-and delete them.
+financial data (accounts, transactions, trackers, savings goals,
+subscriptions, transaction automations, categories, tags, cash flow, balance
+history, investment portfolios, holdings, and investment transactions). The
+agent can read these records and — when the user grants the corresponding
+scopes — create, edit, and delete them.
 
 Use this skill when the user asks to "connect Claude to my budget", "hook up
 ChatGPT to MoneyMatter", "let my AI see my finances", or similar.
@@ -70,6 +70,10 @@ page.
 | `list_tracker_suggestions`              | Smart-tracking suggestions (score, AI reason), AI-matched transactions, scan status of an owned tracker          |
 | `accept_tracker_suggestions`            | Accept pending suggestions, linking their transactions (`finance:write`)                                         |
 | `reject_tracker_suggestions`            | Reject suggestions; also unlinks AI-linked or accepted ones (`finance:write`)                                    |
+| `get_goals`                             | Savings goals with backing accounts, shares, progress, pace, ETA, needed per month (goal currency)               |
+| `create_goal`                           | Create a savings goal funded by % shares of accounts (`finance:write`, Goals feature)                            |
+| `update_goal`                           | Update target, date, monthly plan, accounts, or status of a goal (`finance:write`, Goals feature)                |
+| `delete_goal`                           | Permanently delete a goal and free its account shares (`finance:delete`, Goals feature)                          |
 | `get_spending_by_categories`            | Aggregate spending by category over a range                                                                      |
 | `get_cash_flow`                         | Income vs expenses over a range                                                                                  |
 | `get_balance_history`                   | Time-series of account balances                                                                                  |
@@ -173,6 +177,11 @@ multi-currency data.
   an `aiDescription` and a `startDate`. The AI links transactions it is sure of
   (score >= 0.85) and suggests weaker matches (>= 0.5) as pending in
   `list_tracker_suggestions`. Rejected transactions are not suggested again.
+- Savings goals count a percentage share of each backing account's balance
+  (minus its credit limit, never below 0) toward a target in the goal's own
+  currency. An account's shares across active and paused goals cannot pass
+  100%; archiving a goal frees them. Goal writes need the Goals feature on the
+  user's plan or an active trial.
 - Portfolio queries are gated by `portfolioId`. Call `get_portfolios` first
   to discover ids before calling `get_portfolio_summary`,
   `get_portfolio_holdings`, or `get_portfolio_balances`.

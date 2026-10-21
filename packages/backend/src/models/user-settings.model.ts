@@ -4,6 +4,7 @@ import {
   AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH,
   AI_FEATURE,
   AI_PROVIDER,
+  CATEGORY_ORDER_ROOT_KEY,
   CURRENCY_DISPLAY_PREFERENCES,
   type CategoryMappingPreset,
   type Equals,
@@ -314,6 +315,11 @@ const ZodSavedTransactionViewSchema = z.object({
   datePreset: z.enum(TRANSACTION_DATE_PRESETS).optional(),
 });
 
+// A parent category id, or `CATEGORY_ORDER_ROOT_KEY` for the top-level list.
+const ZodCategoryOrderKeySchema = z
+  .string()
+  .refine((key) => key === CATEGORY_ORDER_ROOT_KEY || z.uuid().safeParse(key).success);
+
 const fireRange = ({ key }: { key: keyof typeof FIRE_LIMITS }) =>
   z.number().min(FIRE_LIMITS[key].min).max(FIRE_LIMITS[key].max);
 
@@ -386,6 +392,9 @@ export const ZodSettingsSchema = z.object({
   // Categories offered for income transactions; every other category is offered for expenses.
   // Stored only: the frontend category picker applies it.
   incomeCategoryIds: z.array(z.uuid()).optional(),
+  // Custom category order: parent id (or `CATEGORY_ORDER_ROOT_KEY`) → child ids in display order.
+  // Stored only: the frontend sorts by it, falling back to alphabetical for unlisted categories.
+  categoryOrder: z.record(ZodCategoryOrderKeySchema, z.array(z.uuid())).optional(),
   currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
 });
@@ -495,6 +504,7 @@ export const ZodSettingsPatchSchema = z.object({
   savingsCategoryIds: z.array(z.uuid()).optional(),
   taxCategoryIds: z.array(z.uuid()).optional(),
   incomeCategoryIds: z.array(z.uuid()).optional(),
+  categoryOrder: z.record(ZodCategoryOrderKeySchema, z.array(z.uuid()).optional()).optional(),
   currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
 });

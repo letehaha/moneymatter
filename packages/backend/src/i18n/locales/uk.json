@@ -868,5 +868,16 @@
       "tagReminderExistence_other": "{{count}} транзакції",
       "shareSendFailedHint": "Відкрийте панель спільного доступу, щоб надіслати повторно."
     }
+  },
+  "goals": {
+    "goalNotFound": "Ціль не знайдено.",
+    "accountNotFound": "Один із вибраних рахунків не знайдено.",
+    "accountNotEligible": "Рахунок «{{accountName}}» не може враховуватися в цілі. Виберіть готівковий, поточний, накопичувальний, інвестиційний або криптовалютний рахунок.",
+    "shareCapacityExceeded": "На рахунку «{{accountName}}» вільно {{free}}%: ви запросили {{requested}}%, а інші цілі вже використовують {{usedByOtherGoals}}%.",
+    "currencyRateUnavailable": "Валюту {{currencyCode}} зараз не можна конвертувати у вашу базову валюту. Виберіть іншу валюту або спробуйте пізніше.",
+    "reachedNotification": {
+      "title": "Ціль досягнуто: {{name}}",
+      "message": "Ви заощадили {{amount}} {{currencyCode}}."
+    }
   }
 }

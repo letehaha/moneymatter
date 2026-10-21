@@ -1522,6 +1522,85 @@ describe('Data export (POST /user/data-export)', () => {
     });
   });
 
+  describe('Goals', () => {
+    it('exports goals with decimal amounts and named account shares', async () => {
+      const savings = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal savings' }),
+        raw: true,
+      });
+      const cash = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Goal cash' }),
+        raw: true,
+      });
+      await helpers.createGoal({
+        payload: {
+          name: 'Trip',
+          targetAmount: 2500.5,
+          targetDate: '2030-06-01',
+          plannedMonthly: 150,
+          accounts: [
+            { accountId: savings.id, sharePercent: 60 },
+            { accountId: cash.id, sharePercent: 33.33 },
+          ],
+        },
+        raw: true,
+      });
+      const car = await helpers.createGoal({
+        payload: { name: 'Car', targetAmount: 10000, accounts: [{ accountId: savings.id, sharePercent: 40 }] },
+        raw: true,
+      });
+      await helpers.updateGoal({ goalId: car.id, payload: { status: 'paused' }, raw: true });
+
+      const response = await helpers.exportData({ format: 'json', groups: ['budgets'] });
+      expect(response.statusCode).toBe(200);
+      const data = helpers.parseExportArchive({ buffer: response.body }).json as {
+        goals: Array<Record<string, unknown>>;
+      };
+      const currency = global.BASE_CURRENCY_CODE;
+
+      expect(data.goals).toEqual([
+        {
+          name: 'Trip',
+          status: 'active',
+          targetAmount: 2500.5,
+          currency,
+          targetDate: '2030-06-01',
+          plannedMonthly: 150,
+          accounts: ['Goal cash: 33.33%', 'Goal savings: 60%'],
+          achievedAt: '',
+          achievedAmount: null,
+        },
+        {
+          name: 'Car',
+          status: 'paused',
+          targetAmount: 10000,
+          currency,
+          targetDate: '',
+          plannedMonthly: null,
+          accounts: ['Goal savings: 40%'],
+          achievedAt: '',
+          achievedAmount: null,
+        },
+      ]);
+
+      const csv = await helpers.exportData({ format: 'csv', groups: ['budgets'] });
+      const rows = helpers.parseExportCsv({
+        buffer: helpers.parseExportArchive({ buffer: csv.body }).files.get('goals.csv')!,
+      });
+      expect(rows.find((row) => row.Name === 'Trip')).toMatchObject({
+        TargetAmount: '2500.5',
+        Accounts: 'Goal cash: 33.33%; Goal savings: 60%',
+      });
+    });
+
+    it('emits an empty goals file for a user without goals', async () => {
+      const response = await helpers.exportData({ format: 'json', groups: ['budgets'] });
+      expect(response.statusCode).toBe(200);
+      const data = helpers.parseExportArchive({ buffer: response.body }).json as { goals: unknown[] };
+      expect(data.goals).toEqual([]);
+    });
+  });
+
   describe('Size limit (ExportTooLargeError → 409)', () => {
     it('responds with 409 + payloadTooLarge when the row count would exceed MAX_EXPORT_ROWS', async () => {
       // The local data-export types module re-exports MAX_EXPORT_ROWS from

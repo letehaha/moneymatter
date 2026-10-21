@@ -98,7 +98,7 @@
               <Button
                 size="sm"
                 class="gap-1.5"
-                :disabled="!queuedMoves.length || isSavingMoves"
+                :disabled="!hasPendingChanges || isSavingMoves"
                 @click="savePendingMoves"
               >
                 <LoaderCircleIcon v-if="isSavingMoves" class="size-4 animate-spin" />
@@ -179,7 +179,7 @@
 
     <ReassignCategoryDialog
       v-model:open="reassignDialogState.isOpen"
-      :category="reassignDialogState.category!"
+      :category="reassignDialogState.category ?? null"
       :transaction-count="reassignDialogState.transactionCount"
       @deleted="handleReassignDeleted"
     />
@@ -188,7 +188,7 @@
 
 <script setup lang="ts">
 import { deleteCategory as apiDeleteCategory, editCategory, getCategoryTransactionCount } from '@/api';
-import { type FormattedCategory } from '@/common/types';
+import { type CategoryDropPosition, type FormattedCategory } from '@/common/types';
 import Accordion from '@/components/common/accordion/accordion.vue';
 import DocsLink from '@/components/common/docs-link.vue';
 import CategoryFormDialog from '@/components/dialogs/category-form-dialog.vue';
@@ -208,12 +208,19 @@ import { Card, CardContent, CardHeader } from '@/components/lib/ui/card';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/popover';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { ApiErrorResponseError } from '@/js/errors';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
 import { useCategoriesStore } from '@/stores';
-import { buildCategoriesObjectGraph } from '@/stores/categories/helpers';
-import { MAX_CATEGORIES_NESTING, API_ERROR_CODES, type RecordId } from '@bt/shared/types';
+import { buildCategoriesObjectGraph, findFormattedCategoryById } from '@/stores/categories/helpers';
+import {
+  CATEGORY_ORDER_ROOT_KEY,
+  MAX_CATEGORIES_NESTING,
+  API_ERROR_CODES,
+  type CategoryOrder,
+  type RecordId,
+} from '@bt/shared/types';
 import { ChevronDownIcon, LoaderCircleIcon, PlusIcon, XIcon } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
 import { storeToRefs } from 'pinia';
@@ -221,8 +228,14 @@ import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 
-import { type PendingCategoryMove, applyPendingMoves, netMoves, sanitizeMoves } from './apply-pending-moves';
-import { type CategoryDropError, categoryDropError } from './can-drop-category';
+import {
+  type PendingCategoryMove,
+  applyPendingMoves,
+  netMoves,
+  reorderSiblingIds,
+  sanitizeMoves,
+} from './apply-pending-moves';
+import { type CategoryDropError, categoryDropError, categorySiblingDropError } from './can-drop-category';
 import MoveCategoryDialog from './components/move-category-dialog.vue';
 
 defineOptions({
@@ -234,17 +247,20 @@ const router = useRouter();
 const categoriesStore = useCategoriesStore();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 
-const { ownCategories, categoriesMap, formattedCategories } = storeToRefs(categoriesStore);
+const { ownCategories, categoriesMap, categoryOrder } = storeToRefs(categoriesStore);
+const { patchAsync: patchSettings } = useUserSettings();
 
 const expandedCategories = ref<string[]>([]);
 const selectedCategoryId = ref<string | null>(null);
 
 const pendingMoves = ref<PendingCategoryMove[]>([]);
+const pendingOrder = ref<CategoryOrder>({});
 
 const localCategories = computed<FormattedCategory[]>(() =>
-  pendingMoves.value.length
-    ? buildCategoriesObjectGraph(applyPendingMoves({ categories: ownCategories.value, moves: pendingMoves.value }))
-    : formattedCategories.value,
+  buildCategoriesObjectGraph({
+    items: applyPendingMoves({ categories: ownCategories.value, moves: pendingMoves.value }),
+    order: { ...categoryOrder.value, ...pendingOrder.value },
+  }),
 );
 
 const dialogState = reactive<{
@@ -402,6 +418,8 @@ const isTouchPointer = useMediaQuery('(pointer: coarse)');
 const dragHoverError = ref<string | null>(null);
 const queuePopoverOpen = ref(false);
 
+const hasPendingChanges = computed(() => pendingMoves.value.length > 0 || Object.keys(pendingOrder.value).length > 0);
+
 const queuedMoves = computed(() =>
   netMoves({ moves: pendingMoves.value, categories: ownCategories.value }).map((move) => ({
     ...move,
@@ -437,6 +455,7 @@ watch(ownCategories, () => {
 
 const cancelOrganizing = () => {
   pendingMoves.value = [];
+  pendingOrder.value = {};
   queuePopoverOpen.value = false;
   isOrganizing.value = false;
 };
@@ -456,15 +475,19 @@ const DROP_ERROR_MESSAGE_KEYS: Partial<Record<CategoryDropError, string>> = {
   'children-too-deep': 'settings.categories.dropErrors.childrenTooDeep',
 };
 
-const categoryDropErrorMessage = ({ target, depth }: { target: FormattedCategory; depth: number }): string | null => {
+const categoryDropErrorMessage = ({
+  target,
+  depth,
+  position,
+}: {
+  target: FormattedCategory;
+  depth: number;
+  position: CategoryDropPosition;
+}): string | null => {
   if (!draggedCategory.value) return '';
 
-  const reason = categoryDropError({
-    dragged: draggedCategory.value,
-    target,
-    targetDepth: depth,
-    maxNesting: MAX_CATEGORIES_NESTING,
-  });
+  const params = { dragged: draggedCategory.value, target, targetDepth: depth, maxNesting: MAX_CATEGORIES_NESTING };
+  const reason = position === 'inside' ? categoryDropError(params) : categorySiblingDropError(params);
 
   if (reason === null) return null;
 
@@ -503,12 +526,31 @@ const queueMove = ({ parentId }: { parentId: RecordId | null }) => {
   }
 };
 
-const handleDropOnCategory = (target: FormattedCategory) => queueMove({ parentId: target.id });
+const handleDropOnCategory = ({ target, position }: { target: FormattedCategory; position: CategoryDropPosition }) => {
+  const dragged = draggedCategory.value;
+  if (!dragged || position === 'inside') return queueMove({ parentId: target.id });
+
+  if (dragged.parentId === target.parentId) handleDragEnd();
+  else queueMove({ parentId: target.parentId });
+
+  const siblings = target.parentId
+    ? findFormattedCategoryById(localCategories.value, target.parentId)?.subCategories
+    : localCategories.value;
+  const ids =
+    siblings &&
+    reorderSiblingIds({
+      siblingIds: siblings.map((category) => category.id),
+      draggedId: dragged.id,
+      targetId: target.id,
+      position,
+    });
+  if (ids) pendingOrder.value = { ...pendingOrder.value, [target.parentId ?? CATEGORY_ORDER_ROOT_KEY]: ids };
+};
 
 const handleDropOnTopLevel = () => queueMove({ parentId: null });
 
 const savePendingMoves = async () => {
-  if (!pendingMoves.value.length || isSavingMoves.value) return;
+  if (!hasPendingChanges.value || isSavingMoves.value) return;
 
   const moves = [...pendingMoves.value];
   isSavingMoves.value = true;
@@ -532,6 +574,17 @@ const savePendingMoves = async () => {
     // On failure the completed prefix is already persisted; the failed move is reported
     // and dropped, while moves that never ran stay queued for re-validation after reload.
     pendingMoves.value = failure ? moves.slice(completed + 1) : [];
+
+    // A failed patch is already reported by `useUserSettings`, and the order stays queued.
+    let isOrderSaved = true;
+    if (!failure && Object.keys(pendingOrder.value).length) {
+      isOrderSaved = await patchSettings({ categoryOrder: pendingOrder.value }).then(
+        () => true,
+        () => false,
+      );
+      if (isOrderSaved) pendingOrder.value = {};
+    }
+
     await categoriesStore.loadCategories({ force: true });
 
     if (failure) {
@@ -540,7 +593,7 @@ const savePendingMoves = async () => {
           ? failure.data.message
           : t('settings.categories.notifications.moveFailed'),
       );
-    } else {
+    } else if (isOrderSaved) {
       addSuccessNotification(t('settings.categories.notifications.saveSuccess'));
       queuePopoverOpen.value = false;
       isOrganizing.value = false;
