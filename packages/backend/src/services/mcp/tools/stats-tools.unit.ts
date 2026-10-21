@@ -9,9 +9,8 @@ import {
   PIVOT_MEASURES,
   PIVOT_ROW_DIMENSIONS,
   TRANSACTION_TYPES,
-  asMinorUnits,
+  asCents,
 } from '@bt/shared/types';
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { getBaseCurrency } from '@models/users-currencies.model';
@@ -34,7 +33,6 @@ import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-too
 import { z } from 'zod';
 
 // Block the real services: their import chains load models and open database pools.
-jest.mock('@common/lib/currency-precision', () => ({ getBaseCurrencyDecimals: jest.fn() }));
 jest.mock('@models/users-currencies.model', () => ({ getBaseCurrency: jest.fn() }));
 jest.mock('@services/user-settings/get-user-settings', () => ({ getUserSettings: jest.fn() }));
 jest.mock('@services/stats/get-balance-history', () => ({ getBalanceHistory: jest.fn() }));
@@ -69,9 +67,7 @@ import { registerGetTotalBalance } from './get-total-balance';
 import { registerGetVentureContributions } from './get-venture-contributions';
 
 const READ = makeExtra({ scopes: ['finance:read'] });
-const DECIMALS = 3;
 
-const decimalsOf = jest.mocked(getBaseCurrencyDecimals);
 const settingsOf = jest.mocked(getUserSettings);
 const baseCurrencyOf = jest.mocked(getBaseCurrency);
 const balanceHistory = jest.mocked(getBalanceHistory);
@@ -132,7 +128,6 @@ const setSettings = ({ includeCreditLimitInStats }: { includeCreditLimitInStats:
 
 beforeEach(() => {
   jest.resetAllMocks();
-  decimalsOf.mockResolvedValue(DECIMALS);
   baseCurrencyOf.mockResolvedValue({ currencyCode: 'EUR' } as Awaited<ReturnType<typeof getBaseCurrency>>);
   setSettings({ includeCreditLimitInStats: false });
 });
@@ -230,8 +225,6 @@ describe('enum and date input schemas', () => {
     await expect(call({ name, args: { from: '2026-03-31', to: '2026-01-01', ...extra } })).rejects.toThrow(
       /on or before/,
     );
-
-    expect(decimalsOf).not.toHaveBeenCalled();
   });
 });
 
@@ -247,7 +240,6 @@ describe('get_balance_history', () => {
       from: '2026-01-01',
       to: '2026-01-31',
       includeCreditLimit: true,
-      decimals: DECIMALS,
     });
   });
 
@@ -263,12 +255,12 @@ describe('get_balance_history', () => {
     combinedHistory.mockResolvedValue([
       {
         date: '2026-01-01',
-        accountsBalance: asMinorUnits(1_500),
-        portfoliosBalance: asMinorUnits(0),
-        venturesBalance: asMinorUnits(0),
-        vehiclesBalance: asMinorUnits(0),
-        loansBalance: asMinorUnits(-250),
-        totalBalance: asMinorUnits(1_250),
+        accountsBalance: asCents(150),
+        portfoliosBalance: asCents(0),
+        venturesBalance: asCents(0),
+        vehiclesBalance: asCents(0),
+        loansBalance: asCents(-25),
+        totalBalance: asCents(125),
       },
     ]);
 
@@ -312,7 +304,7 @@ describe('get_balance_history', () => {
 describe('get_total_balance', () => {
   it('returns the total as a decimal with the base currency and the date, and applies includeCreditLimitInStats', async () => {
     setSettings({ includeCreditLimitInStats: true });
-    totalBalance.mockResolvedValue(asMinorUnits(12_345));
+    totalBalance.mockResolvedValue(asCents(12_345));
 
     const { data } = await call({ name: 'get_total_balance', args: { date: '2026-02-01' } });
 
@@ -320,13 +312,12 @@ describe('get_total_balance', () => {
       userId: 42,
       date: '2026-02-01',
       includeCreditLimit: true,
-      decimals: DECIMALS,
     });
-    expect(data).toEqual({ amount: 12.345, currencyCode: 'EUR', date: '2026-02-01' });
+    expect(data).toEqual({ amount: 123.45, currencyCode: 'EUR', date: '2026-02-01' });
   });
 
   it('leaves the credit limit out while the setting is off', async () => {
-    totalBalance.mockResolvedValue(asMinorUnits(0));
+    totalBalance.mockResolvedValue(asCents(0));
 
     await call({ name: 'get_total_balance', args: { date: '2026-02-01' } });
 
@@ -347,11 +338,11 @@ describe('get_net_worth_history', () => {
       points: [
         {
           date: '2026-01-31',
-          assets: { cash: asMinorUnits(2_000), investments: 0, vehicles: 0, ventures: 0 },
-          assetsTotal: asMinorUnits(2_000),
-          liabilities: { loan: asMinorUnits(500) },
-          liabilitiesTotal: asMinorUnits(500),
-          netWorth: asMinorUnits(1_500),
+          assets: { cash: asCents(200), investments: 0, vehicles: 0, ventures: 0 },
+          assetsTotal: asCents(200),
+          liabilities: { loan: asCents(50) },
+          liabilitiesTotal: asCents(50),
+          netWorth: asCents(150),
         },
       ],
     } as never);
@@ -363,7 +354,6 @@ describe('get_net_worth_history', () => {
       ...RANGE,
       granularity: 'monthly',
       includeCreditLimit: true,
-      decimals: DECIMALS,
     });
     expect(data.points[0]).toMatchObject({ assetsTotal: 2, liabilitiesTotal: 0.5, netWorth: 1.5 });
     expect(data.points[0].assets.cash).toBe(2);
@@ -377,15 +367,15 @@ describe('get_net_worth_drivers and get_investment_contributions', () => {
         {
           periodStart: '2026-01-01',
           periodEnd: '2026-01-31',
-          savings: { income: asMinorUnits(3_000), expenses: asMinorUnits(1_000), net: asMinorUnits(2_000) },
+          savings: { income: asCents(300), expenses: asCents(100), net: asCents(200) },
           investments: {
-            growth: asMinorUnits(500),
-            priceEffect: asMinorUnits(400),
-            dividends: asMinorUnits(100),
-            feesAndTaxes: asMinorUnits(0),
-            byPortfolio: [{ portfolioId: ID_1, growth: asMinorUnits(500) }],
+            growth: asCents(50),
+            priceEffect: asCents(40),
+            dividends: asCents(10),
+            feesAndTaxes: asCents(0),
+            byPortfolio: [{ portfolioId: ID_1, growth: asCents(50) }],
           },
-          composition: { holdingsValue: asMinorUnits(9_000), cashValue: asMinorUnits(1_000) },
+          composition: { holdingsValue: asCents(900), cashValue: asCents(100) },
         },
       ],
       portfolios: [{ id: ID_1, name: 'Main' }],
@@ -401,7 +391,6 @@ describe('get_net_worth_drivers and get_investment_contributions', () => {
       ...RANGE,
       granularity: 'monthly',
       portfolioIds: [ID_1],
-      decimals: DECIMALS,
     });
     expect(data.buckets[0].savings).toEqual({ income: 3, expenses: 1, net: 2 });
     expect(data.buckets[0].investments.byPortfolio).toEqual([{ portfolioId: ID_1, growth: 0.5 }]);
@@ -421,9 +410,9 @@ describe('get_net_worth_drivers and get_investment_contributions', () => {
         {
           periodStart: '2026-01-01',
           periodEnd: '2026-01-31',
-          total: asMinorUnits(700),
-          byPortfolio: [{ portfolioId: ID_1, amount: asMinorUnits(700) }],
-          savingsNet: asMinorUnits(2_000),
+          total: asCents(70),
+          byPortfolio: [{ portfolioId: ID_1, amount: asCents(70) }],
+          savingsNet: asCents(200),
         },
       ],
       portfolios: [{ id: ID_1, name: 'Main' }],
@@ -439,7 +428,6 @@ describe('get_net_worth_drivers and get_investment_contributions', () => {
       ...RANGE,
       granularity: 'quarterly',
       portfolioIds: [ID_1, ID_2],
-      decimals: DECIMALS,
     });
     expect(data.buckets[0]).toMatchObject({ total: 0.7, savingsNet: 2 });
   });
@@ -447,11 +435,11 @@ describe('get_net_worth_drivers and get_investment_contributions', () => {
 
 describe('get_venture_contributions', () => {
   it('returns each deal contribution as a decimal', async () => {
-    ventures.mockResolvedValue([{ dealId: ID_1, name: 'Seed', amount: asMinorUnits(-4_200) }]);
+    ventures.mockResolvedValue([{ dealId: ID_1, name: 'Seed', amount: asCents(-420) }]);
 
     const { data } = await call({ name: 'get_venture_contributions', args: RANGE });
 
-    expect(ventures).toHaveBeenCalledWith({ userId: 42, ...RANGE, decimals: DECIMALS });
+    expect(ventures).toHaveBeenCalledWith({ userId: 42, ...RANGE });
     expect(data).toEqual([{ dealId: ID_1, name: 'Seed', amount: -4.2 }]);
   });
 });
@@ -467,12 +455,12 @@ describe('get_pivot_report', () => {
           color: '#fff',
           parentId: null,
           kind: 'category',
-          values: { '2026-01': asMinorUnits(1_250) },
-          total: asMinorUnits(1_250),
+          values: { '2026-01': asCents(125) },
+          total: asCents(125),
         },
       ],
-      columnTotals: { '2026-01': asMinorUnits(1_250) },
-      grandTotal: asMinorUnits(1_250),
+      columnTotals: { '2026-01': asCents(125) },
+      grandTotal: asCents(125),
       currencyCode: 'USD',
     } as never);
 
@@ -498,7 +486,6 @@ describe('get_pivot_report', () => {
       accountIds: [ID_1],
       categoryIds: [ID_2],
       payeeIds: [ID_3],
-      decimals: DECIMALS,
     });
     expect(data.grandTotal).toBe(1.25);
     expect(data.rows[0]).toMatchObject({ total: 1.25, values: { '2026-01': 1.25 } });
@@ -507,8 +494,8 @@ describe('get_pivot_report', () => {
 
 const cumulativePeriod = (year: number) => ({
   year,
-  data: [{ month: 0, monthLabel: 'Jan', value: asMinorUnits(2_000), periodValue: asMinorUnits(2_000) }],
-  total: asMinorUnits(2_000),
+  data: [{ month: 0, monthLabel: 'Jan', value: asCents(200), periodValue: asCents(200) }],
+  total: asCents(200),
 });
 
 describe('get_cumulative_stats', () => {
@@ -547,7 +534,6 @@ describe('get_cumulative_stats', () => {
       excludedTagIds: [ID_1],
       categoryIds: [ID_2],
       excludedCategoryIds: [ID_3],
-      decimals: DECIMALS,
     });
     expect(data.currentPeriod).toMatchObject({ total: 2, data: [{ value: 2, periodValue: 2 }] });
   });
@@ -565,21 +551,21 @@ describe('get_earliest_transaction_date', () => {
 });
 
 describe('existing stats tools through the report functions', () => {
-  it('get_cash_flow passes decimals and returns decimals', async () => {
+  it('get_cash_flow returns decimals', async () => {
     cashFlow.mockResolvedValue({
       periods: [
         {
           periodStart: '2026-01-01',
           periodEnd: '2026-01-31',
-          income: asMinorUnits(3_000),
-          expenses: asMinorUnits(1_200),
-          netFlow: asMinorUnits(1_800),
+          income: asCents(300),
+          expenses: asCents(120),
+          netFlow: asCents(180),
         },
       ],
       totals: {
-        income: asMinorUnits(3_000),
-        expenses: asMinorUnits(1_200),
-        netFlow: asMinorUnits(1_800),
+        income: asCents(300),
+        expenses: asCents(120),
+        netFlow: asCents(180),
         savingsRate: 60,
       },
     } as never);
@@ -596,12 +582,11 @@ describe('existing stats tools through the report functions', () => {
       granularity: 'monthly',
       accountId: ID_1,
       categoryIds: [ID_2],
-      decimals: DECIMALS,
     });
     expect(data.totals).toEqual({ income: 3, expenses: 1.2, netFlow: 1.8, savingsRate: 60 });
   });
 
-  it('get_expenses_for_period passes decimals and returns the total as a decimal', async () => {
+  it('get_expenses_for_period returns the total as a decimal', async () => {
     expenses.mockResolvedValue(4_567);
 
     const { data } = await call({
@@ -614,12 +599,11 @@ describe('existing stats tools through the report functions', () => {
       from: '2026-01-01',
       to: '2026-01-31',
       excludedCategoryIds: [ID_1],
-      decimals: DECIMALS,
     });
-    expect(data.totalExpenses).toBe(4.567);
+    expect(data.totalExpenses).toBe(45.67);
   });
 
-  it('get_spending_by_categories passes decimals and sums the decimal amounts with Money', async () => {
+  it('get_spending_by_categories sums the decimal amounts with Money', async () => {
     spendings.mockResolvedValue({
       [ID_1]: { name: 'Food', color: '#111', amount: 100 },
       [ID_2]: { name: 'Rent', color: '#222', amount: 200 },
@@ -641,12 +625,11 @@ describe('existing stats tools through the report functions', () => {
       to: '2026-01-31',
       transactionType: TRANSACTION_TYPES.expense,
       categoryIds: [ID_1, ID_2],
-      decimals: DECIMALS,
     });
     expect(data.categories).toEqual([
-      { id: ID_1, name: 'Food', color: '#111', amount: 0.1 },
-      { id: ID_2, name: 'Rent', color: '#222', amount: 0.2 },
+      { id: ID_1, name: 'Food', color: '#111', amount: 1 },
+      { id: ID_2, name: 'Rent', color: '#222', amount: 2 },
     ]);
-    expect(data.total).toBe(0.3);
+    expect(data.total).toBe(3);
   });
 });

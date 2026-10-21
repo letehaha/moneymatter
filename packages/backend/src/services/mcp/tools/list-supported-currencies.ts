@@ -9,7 +9,7 @@ export function registerListSupportedCurrencies(server: McpServer) {
     'list_supported_currencies',
     {
       description:
-        'List every ISO 4217 currency the app supports, with its code, name and decimals. These are the codes add_user_currencies and change_base_currency accept; a custom currency is not listed here (see list_custom_currencies).',
+        'List every ISO 4217 currency the app supports, with its code, name and decimals. These are the codes add_user_currencies and change_base_currency accept.',
     },
     async (extra) => {
       const userId = getUserId({ extra });

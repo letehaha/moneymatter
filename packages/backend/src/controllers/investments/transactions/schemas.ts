@@ -1,5 +1,5 @@
 import { INVESTMENT_TRANSACTION_CATEGORY } from '@bt/shared/types/investments';
-import { isoCurrencyCode, numericString, recordId } from '@common/lib/zod/custom-types';
+import { currencyCode, numericString, recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
 // Accept a date-only value ("2026-06-20") or a full ISO 8601 datetime ("2026-06-20T09:00:00.000Z").
@@ -35,7 +35,7 @@ export const createInvestmentTransactionBodyShape = {
   price: numericString({ allowZero: true }),
   fees: numericString({ allowZero: true }).optional().default('0'),
   name: z.string().optional(),
-  settlementCurrencyCode: isoCurrencyCode().optional(),
+  settlementCurrencyCode: currencyCode().optional(),
   settlementAmount: numericString({ allowZero: true }).optional(),
   settlementFees: numericString({ allowZero: true }).optional(),
   // Known security→settlement rate; the fee is derived as the residual. Omitting both this and
@@ -73,7 +73,7 @@ export const updateInvestmentTransactionBodyShape = {
   price: nonNegativeNumberString({ message: 'Price must be a non-negative number' }),
   fees: nonNegativeNumberString({ message: 'Fees must be a non-negative number' }),
   name: z.string().optional(),
-  settlementCurrencyCode: isoCurrencyCode().optional(),
+  settlementCurrencyCode: currencyCode().optional(),
   settlementAmount: numericString({ allowZero: true }).optional(),
   settlementFees: numericString({ allowZero: true }).optional(),
   settlementRate: numericString().optional(),

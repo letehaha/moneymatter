@@ -18,7 +18,6 @@ jest.mock('@services/accounts.service', () => ({
   unlinkAccountFromBankConnection: jest.fn(),
 }));
 jest.mock('@services/accounts/transaction-count', () => ({ getAccountTransactionCount: jest.fn() }));
-jest.mock('@services/currencies/effective-currency', () => ({ attachAccountCurrencyMeta: jest.fn() }));
 jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 jest.mock('@models/accounts.model', () => ({ __esModule: true, default: { findOne: jest.fn() } }));
 

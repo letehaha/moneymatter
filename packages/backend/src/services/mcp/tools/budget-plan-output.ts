@@ -1,5 +1,5 @@
 import type { BudgetPlanDetails, BudgetPlanModel } from '@bt/shared/types';
-import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
+import { Money, centsToApiDecimalOrNull } from '@common/types/money';
 
 type PlanSource = Omit<BudgetPlanModel, 'expectedIncome' | 'userId' | 'createdAt' | 'updatedAt' | 'deletedAt'> & {
   /** A model row holds `Money`; the plan details hold the API decimal. */
@@ -28,7 +28,7 @@ export function presentBudgetPlan({ plan }: { plan: PlanSource }) {
     poolFrom: plan.poolFrom,
     zeroSum: plan.zeroSum,
     expectedIncome:
-      plan.expectedIncome instanceof Money ? moneyToApiDecimalOrNull(plan.expectedIncome) : plan.expectedIncome,
+      plan.expectedIncome instanceof Money ? centsToApiDecimalOrNull(plan.expectedIncome) : plan.expectedIncome,
     deletedAt: plan.deletedAt instanceof Date ? plan.deletedAt.toISOString() : plan.deletedAt,
   };
 }

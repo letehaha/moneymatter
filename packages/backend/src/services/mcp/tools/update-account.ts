@@ -51,7 +51,7 @@ export function registerUpdateAccount(server: McpServer) {
         }),
       });
 
-      return jsonContent({ data: await presentAccount({ account }) });
+      return jsonContent({ data: presentAccount({ account }) });
     },
   );
 }

@@ -111,7 +111,7 @@ const makeReminder = (patch: Record<string, unknown> = {}) => ({
   type: TAG_REMINDER_TYPES.amountThreshold,
   frequency: TAG_REMINDER_FREQUENCIES.monthly,
   dayOfMonth: 15,
-  settings: { amountThreshold: 500 },
+  settings: { amountThreshold: 50000 },
   isEnabled: true,
   lastCheckedAt: null,
   lastTriggeredAt: null,
@@ -147,7 +147,7 @@ describe('get_tracker', () => {
   it('reads the tracker and its stats for the caller, as decimals, and works for a read-only user during the lock', async () => {
     lockCheck.mockResolvedValue(true);
     trackerById.mockResolvedValue(makeTracker() as never);
-    trackerStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
+    trackerStats.mockResolvedValue(makeStats() as never);
 
     const data = await call({ tool, args: { trackerId: TRACKER_ID }, extra: READ_ONLY });
 
@@ -184,17 +184,6 @@ describe('get_tracker', () => {
     });
   });
 
-  it('converts the minor-unit sums at the decimals the stats service reports', async () => {
-    trackerById.mockResolvedValue(makeTracker() as never);
-    trackerStats.mockResolvedValue({ stats: makeStats({ actualExpense: 1234 }), decimals: 3 } as never);
-
-    const data = (await call({ tool, args: { trackerId: TRACKER_ID } })) as {
-      stats: { summary: { actualExpense: number } };
-    };
-
-    expect(data.stats.summary.actualExpense).toBe(1.234);
-  });
-
   it('includes the share context for a tracker shared with the caller', async () => {
     const share = {
       isOwner: false,
@@ -204,7 +193,7 @@ describe('get_tracker', () => {
       accessSource: 'direct',
     };
     trackerById.mockResolvedValue(makeTracker({ _shareContext: share }) as never);
-    trackerStats.mockResolvedValue({ stats: makeStats(), decimals: 2 } as never);
+    trackerStats.mockResolvedValue(makeStats() as never);
 
     const data = (await call({ tool, args: { trackerId: TRACKER_ID } })) as { tracker: { share?: unknown } };
 
@@ -469,7 +458,7 @@ describe('create_tag_reminder', () => {
       type: TAG_REMINDER_TYPES.amountThreshold,
       frequency: TAG_REMINDER_FREQUENCIES.monthly,
       dayOfMonth: 15,
-      settings: { amountThreshold: 500 },
+      settings: { amountThreshold: 50000 },
       isEnabled: true,
     });
     expect(data).toMatchObject({
@@ -581,7 +570,7 @@ describe('update_tag_reminder', () => {
   });
 
   it('passes the ids and only the given fields, the threshold wrapped into settings', async () => {
-    updateRem.mockResolvedValue(makeReminder({ settings: { amountThreshold: 750 } }) as never);
+    updateRem.mockResolvedValue(makeReminder({ settings: { amountThreshold: 75000 } }) as never);
 
     const data = await call({ tool, args: { ...base, amountThreshold: 750, isEnabled: false }, extra: WRITE });
 
@@ -591,7 +580,7 @@ describe('update_tag_reminder', () => {
       id: REMINDER_ID,
       userId: 42,
       tagId: TAG_ID,
-      settings: { amountThreshold: 750 },
+      settings: { amountThreshold: 75000 },
       isEnabled: false,
     });
     expect(

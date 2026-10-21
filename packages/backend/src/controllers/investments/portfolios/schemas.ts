@@ -1,11 +1,11 @@
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, currencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
 /** Body of `POST /investments/portfolios/:id/transfer`; the MCP `transfer_between_portfolios` tool reads its shape. */
 export const portfolioTransferBodySchema = z.object({
   toPortfolioId: recordId(),
-  currencyCode: isoCurrencyCode(),
+  currencyCode: currencyCode(),
   amount: positiveAmountString(),
   date: dateString(),
   description: z.string().nullable().optional(),
@@ -13,8 +13,8 @@ export const portfolioTransferBodySchema = z.object({
 
 /** Body of `POST /investments/portfolios/:id/exchange-currency`; the MCP `exchange_portfolio_currency` tool reads its shape. */
 export const exchangeCurrencyBodySchema = z.object({
-  fromCurrencyCode: isoCurrencyCode(),
-  toCurrencyCode: isoCurrencyCode(),
+  fromCurrencyCode: currencyCode(),
+  toCurrencyCode: currencyCode(),
   fromAmount: positiveAmountString(),
   toAmount: positiveAmountString(),
   date: dateString(),
@@ -31,7 +31,7 @@ export const createPortfolioBodyShape = {
   name: z.string().min(1, 'Portfolio name is required').max(100, 'Portfolio name must be 100 characters or less'),
   portfolioType: z.nativeEnum(PORTFOLIO_TYPE).default(PORTFOLIO_TYPE.investment),
   description: z.string().max(500, 'Description must be 500 characters or less').optional(),
-  displayCurrencyCode: isoCurrencyCode().nullable().optional(),
+  displayCurrencyCode: currencyCode().nullable().optional(),
   isEnabled: z.boolean().default(true),
 };
 
@@ -40,7 +40,7 @@ export const updatePortfolioBodyShape = {
   name: z.string().min(1).max(255).optional(),
   portfolioType: z.nativeEnum(PORTFOLIO_TYPE).optional(),
   description: z.string().nullable().optional(),
-  displayCurrencyCode: isoCurrencyCode().nullable().optional(),
+  displayCurrencyCode: currencyCode().nullable().optional(),
   isEnabled: z.boolean().optional(),
 };
 
