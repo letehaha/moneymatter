@@ -1,10 +1,12 @@
 import { type Entitlements, FEATURES, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
-import { assertOriginalCurrencyArgs, requireFeature, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, assertOriginalCurrencyArgs, requireFeature, requireScope } from './helpers';
 
 jest.mock('@services/entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
+jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
 const mockFeatures = (features: string[]) =>
   jest.mocked(getEntitlementsByUserId).mockResolvedValueOnce({ features } as unknown as Entitlements);
@@ -110,5 +112,28 @@ describe('assertOriginalCurrencyArgs', () => {
     expect(() =>
       assertOriginalCurrencyArgs({ args: { ...pair, transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer } }),
     ).not.toThrow();
+  });
+});
+
+describe('assertBaseCurrencyUnlocked', () => {
+  const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
+
+  it('throws while a base-currency change holds the lock', async () => {
+    lockCheck.mockResolvedValueOnce(true);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/currencies.baseCurrencyChangeInProgress/);
+    expect(lockCheck).toHaveBeenCalledWith({ userId: 7 });
+  });
+
+  it('fails closed with the unavailable message when the lock check errors', async () => {
+    lockCheck.mockRejectedValueOnce(new Error('redis down'));
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/common.serviceTemporarilyUnavailable/);
+  });
+
+  it('passes while the user is unlocked', async () => {
+    lockCheck.mockResolvedValueOnce(false);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).resolves.toBeUndefined();
   });
 });
