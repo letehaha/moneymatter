@@ -12,7 +12,7 @@ export function registerAddUserCurrencies(server: McpServer) {
     'add_user_currencies',
     {
       description:
-        "Add currencies to the ones the user holds, so accounts and transactions can use them. Each entry is { currencyCode, exchangeRate? (> 0, the flat rate to the base currency), liveRateUpdate? (true follows the market, false keeps the manual rate) }. A code can be an ISO currency (see list_supported_currencies) or one of the user's own custom currencies. Codes the user already holds are skipped and listed in alreadyExistingCodes. Dated rates for a custom currency go through set_exchange_rates.",
+        'Add currencies to the ones the user holds, so accounts and transactions can use them. Each entry is { currencyCode, exchangeRate? (> 0, the flat rate to the base currency), liveRateUpdate? (true follows the market, false keeps the manual rate) }. A code must be an ISO currency (see list_supported_currencies). Codes the user already holds are skipped and listed in alreadyExistingCodes.',
       inputSchema,
     },
     async (args, extra) => {

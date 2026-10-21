@@ -15,7 +15,7 @@ export function registerGetBudgetPlanScheduled(server: McpServer) {
     'get_budget_plan_scheduled',
     {
       description:
-        'List what is still scheduled in a period of a budget plan, from today on: subscription payments and planned transactions dated in the period. Returns { items, outflows, inflows, nextDate }. Each item has source ("subscription" or "planned"), id, name, date, amount (signed, in the plan currency: outflows are negative), currencyCode and nativeAmount (in that currency), categoryId, lineId (the plan line that covers it, or null) and accountId. outflows and inflows hold the signed total and the count. A planned transaction with no base-currency amount yet (a custom currency without a rate) is left out. A past period returns no items.',
+        'List what is still scheduled in a period of a budget plan, from today on: subscription payments and planned transactions dated in the period. Returns { items, outflows, inflows, nextDate }. Each item has source ("subscription" or "planned"), id, name, date, amount (signed, in the plan currency: outflows are negative), currencyCode and nativeAmount (in that currency), categoryId, lineId (the plan line that covers it, or null) and accountId. outflows and inflows hold the signed total and the count. A past period returns no items.',
       inputSchema,
     },
     async (args, extra) => {

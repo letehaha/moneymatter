@@ -2,7 +2,6 @@ import { currencyCode, dateBound } from '@common/lib/zod/custom-types';
 import { ExchangeRateUnavailableError } from '@js/errors';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { getExchangeRatesForDate } from '@services/exchange-rates';
 import { getExchangeRate } from '@services/user-exchange-rate';
 
@@ -19,7 +18,7 @@ export function registerGetExchangeRate(server: McpServer) {
     'get_exchange_rate',
     {
       description:
-        'Read an exchange rate for a day. With "from" and "to" it returns the rate of that pair as the app values it (the user\'s own rate for a custom currency, the market rate otherwise): 1 "from" is worth "rate" "to". With neither it returns the global market rates stored for the date, each as baseCode, quoteCode and rate. Giving only one of the two codes is refused. Fails when no rate exists for the pair on or before the date.',
+        'Read an exchange rate for a day. With "from" and "to" it returns the rate of that pair as the app values it (the user\'s own rate when they set one, the market rate otherwise): 1 "from" is worth "rate" "to". With neither it returns the global market rates stored for the date, each as baseCode, quoteCode and rate. Giving only one of the two codes is refused. Fails when no rate exists for the pair on or before the date.',
       inputSchema,
     },
     async (args, extra) => {
@@ -45,7 +44,6 @@ export function registerGetExchangeRate(server: McpServer) {
         });
       }
 
-      await assertCurrencyCodesVisible({ userId, codes: [from, to] });
       try {
         const rate = await getExchangeRate({
           userId,

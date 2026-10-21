@@ -115,7 +115,7 @@ describe('MCP tool scopes', () => {
   });
 
   it('every goal write tool requires the goals feature', () => {
-    const goalWrites = readToolSources().filter((t) => /_goals?$/.test(t.name) && !READ_TOOL_NAME.test(t.name));
+    const goalWrites = readToolSources().filter((t) => /^(create|update|delete)_goal$/.test(t.name));
     expect(goalWrites.map((t) => t.name)).toEqual(
       expect.arrayContaining(['create_goal', 'update_goal', 'delete_goal']),
     );

@@ -6,7 +6,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateGoal } from '@services/goals/update-goal';
 import { z } from 'zod';
 
-import { getUserId, goalsForMcp, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  goalsForMcp,
+  jsonContent,
+  requireFeature,
+  requireScope,
+} from './helpers';
 
 const inputSchema = {
   goalId: recordId().describe('ID of the goal to update'),
@@ -45,6 +52,7 @@ export function registerUpdateGoal(server: McpServer) {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
       await requireFeature({ userId, feature: FEATURES.goals });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_goal', clientId: extra.authInfo?.clientId });
 
       const goal = await updateGoal({ userId, goalId, ...fields });

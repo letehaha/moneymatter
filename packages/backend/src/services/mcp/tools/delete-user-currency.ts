@@ -12,7 +12,7 @@ export function registerDeleteUserCurrency(server: McpServer) {
     'delete_user_currency',
     {
       description:
-        'Stop holding an ISO currency. Refused for the base currency, for a currency that accounts or holdings still use, and for a custom currency (delete those with delete_custom_currency). Requires finance:delete scope.',
+        'Stop holding a currency. Refused for the base currency and for a currency that accounts or holdings still use. Requires finance:delete scope.',
       inputSchema,
     },
     async (args, extra) => {

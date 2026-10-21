@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteGoal } from '@services/goals/delete-goal';
 
-import { getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   goalId: recordId().describe('ID of the goal to delete'),
@@ -22,6 +22,7 @@ export function registerDeleteGoal(server: McpServer) {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
       await requireFeature({ userId, feature: FEATURES.goals });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'delete_goal', clientId: extra.authInfo?.clientId });
 
       await deleteGoal({ userId, goalId: args.goalId });

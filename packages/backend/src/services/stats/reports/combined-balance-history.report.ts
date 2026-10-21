@@ -1,4 +1,3 @@
-import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
 import { serializeCombinedBalanceHistory } from '@root/serializers/stats.serializer';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
 
@@ -14,15 +13,14 @@ export const getCombinedBalanceHistoryReport = async ({
   from?: string;
   to?: string;
 }) => {
-  const [settings, decimals] = await Promise.all([getUserSettings({ userId }), getBaseCurrencyDecimals({ userId })]);
+  const settings = await getUserSettings({ userId });
 
   const items = await getCombinedBalanceHistory({
     userId,
     from,
     to,
     includeCreditLimit: settings.includeCreditLimitInStats,
-    decimals,
   });
 
-  return serializeCombinedBalanceHistory({ items, decimals });
+  return serializeCombinedBalanceHistory(items);
 };

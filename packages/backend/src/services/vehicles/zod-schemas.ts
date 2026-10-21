@@ -1,5 +1,5 @@
 import { DEPRECIATION_PRESET, VEHICLE_CLASS } from '@bt/shared/types';
-import { isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
+import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { z } from 'zod';
 
@@ -11,7 +11,7 @@ const datePattern = /^\d{4}-\d{2}-\d{2}$/;
  */
 export const createVehicleBodyFields = {
   name: z.string().min(1).max(200).trim(),
-  currencyCode: isoCurrencyCode(),
+  currencyCode: currencyCode(),
   make: z.string().min(1).max(100).trim(),
   model: z.string().min(1).max(100).trim(),
   trim: z.string().max(100).nullable().optional(),

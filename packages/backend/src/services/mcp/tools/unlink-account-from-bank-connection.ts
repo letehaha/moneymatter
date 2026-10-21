@@ -26,7 +26,7 @@ export function registerUnlinkAccountFromBankConnection(server: McpServer) {
 
       const account = await unlinkAccountFromBankConnection({ accountId: args.accountId, userId });
 
-      return jsonContent({ data: await presentAccount({ account }) });
+      return jsonContent({ data: presentAccount({ account }) });
     },
   );
 }

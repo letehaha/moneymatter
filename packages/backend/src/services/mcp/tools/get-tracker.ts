@@ -29,10 +29,10 @@ export function registerGetTracker(server: McpServer) {
         query: getTrackerById({ id: args.trackerId, userId }),
         message: t({ key: 'budgets.budgetNotFound' }),
       });
-      const { stats, decimals } = await getTrackerStats({ userId, trackerId: args.trackerId });
+      const stats = await getTrackerStats({ userId, trackerId: args.trackerId });
 
       return jsonContent({
-        data: { tracker: serializeTracker(tracker), stats: serializeTrackerStats({ stats, decimals }) },
+        data: { tracker: serializeTracker(tracker), stats: serializeTrackerStats(stats) },
       });
     },
   );
