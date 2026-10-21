@@ -134,7 +134,7 @@ describe('Enable Banking dedup improvements (E2E)', () => {
 
     return Transactions.create({
       amount: Money.fromDecimal(amount),
-      refAmount: reference.refAmount.multiply(amount).divide(reference.amount.toNumber()),
+      refAmount: reference.refAmount!.multiply(amount).divide(reference.amount.toNumber()),
       commissionRate: Money.zero(),
       refCommissionRate: Money.zero(),
       cashbackAmount: Money.zero(),

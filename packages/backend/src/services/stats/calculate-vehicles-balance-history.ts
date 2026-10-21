@@ -1,4 +1,5 @@
 import { TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -30,7 +31,7 @@ const vehicleValueAtDate = (vehicle: VehicleCompute, dateStr: string): number =>
   }
 
   const value = computeVehicleValue({
-    anchorValue: Money.fromCents(activeAnchor.valueCents),
+    anchorValue: Money.fromMinorUnits({ value: activeAnchor.valueMinor, decimals: vehicle.accountDecimals }),
     anchorDate: parseISO(activeAnchor.date),
     asOf: parseISO(dateStr),
     vehicleClass: vehicle.vehicleClass,
@@ -39,20 +40,22 @@ const vehicleValueAtDate = (vehicle: VehicleCompute, dateStr: string): number =>
     salvageFloorPct: vehicle.salvageFloorPct,
   });
 
-  return value.toCents();
+  return value.toMinorUnits({ decimals: vehicle.accountDecimals });
 };
 
 interface VehicleAnchor {
   /** yyyy-MM-dd. Either purchaseDate or an override tx date. */
   date: string;
-  /** Vehicle value at the anchor moment, in account currency cents. */
-  valueCents: number;
+  /** Vehicle value at the anchor moment, in minor units at the account currency's decimals. */
+  valueMinor: number;
 }
 
 interface VehicleCompute {
   id: string;
   accountId: string;
   accountCurrencyCode: string;
+  /** Decimals of the account currency: the scale of every anchor and per-day value of this vehicle. */
+  accountDecimals: number;
   purchaseDate: string;
   vehicleClass: Vehicles['vehicleClass'];
   preset: Vehicles['depreciationPreset'];
@@ -68,7 +71,7 @@ interface VehicleCompute {
 }
 
 /**
- * Day-by-day depreciated value of all vehicle accounts for a user, in base.
+ * Day-by-day depreciated value of all vehicle accounts for a user, in minor units of the base currency.
  *
  * Why we don't read `Balances` for vehicles: those rows are sparse — written
  * only on vehicle create, on manual override, and on the 7-day lazy refresh.
@@ -87,11 +90,14 @@ export const calculateVehiclesBalanceHistory = async ({
   maxDate,
   uniqueDates,
   userBaseCurrencyPromise,
+  decimals,
 }: {
   userId: number;
   maxDate: string;
   uniqueDates: string[];
   userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
+  /** Decimals of the base currency: the scale of the returned per-day values. */
+  decimals: number;
 }): Promise<Map<string, number> | null> => {
   const [userBaseCurrency, vehicles] = await Promise.all([
     userBaseCurrencyPromise,
@@ -140,17 +146,30 @@ export const calculateVehiclesBalanceHistory = async ({
     else txsByAccount.set(tx.accountId, [tx]);
   }
 
+  // A custom code's decimals are per user and the owner's definition governs every native amount.
+  const decimalsByCurrency = new Map(
+    await Promise.all(
+      [...new Set(activeVehicles.map((v) => v.account.currencyCode))].map(
+        async (code) => [code, await getCurrencyDecimals({ userId, code })] as const,
+      ),
+    ),
+  );
+
   const vehicleComputes: VehicleCompute[] = activeVehicles.map((vehicle) => {
+    const accountDecimals = decimalsByCurrency.get(vehicle.account.currencyCode)!;
     const compute: VehicleCompute = {
       id: vehicle.id,
       accountId: vehicle.accountId,
       accountCurrencyCode: vehicle.account.currencyCode,
+      accountDecimals,
       purchaseDate: vehicle.purchaseDate,
       vehicleClass: vehicle.vehicleClass,
       preset: vehicle.depreciationPreset,
       customAnnualRatePct: vehicle.customAnnualRatePct ? Number(vehicle.customAnnualRatePct) : null,
       salvageFloorPct: Number(vehicle.salvageFloorPct),
-      anchors: [{ date: vehicle.purchaseDate, valueCents: vehicle.purchasePrice.toCents() }],
+      anchors: [
+        { date: vehicle.purchaseDate, valueMinor: vehicle.purchasePrice.toMinorUnits({ decimals: accountDecimals }) },
+      ],
     };
 
     const txs = txsByAccount.get(vehicle.accountId) ?? [];
@@ -159,7 +178,7 @@ export const calculateVehiclesBalanceHistory = async ({
       const lastAnchor = compute.anchors[compute.anchors.length - 1]!;
 
       const preTxValue = computeVehicleValue({
-        anchorValue: Money.fromCents(lastAnchor.valueCents),
+        anchorValue: Money.fromMinorUnits({ value: lastAnchor.valueMinor, decimals: accountDecimals }),
         anchorDate: parseISO(lastAnchor.date),
         asOf: parseISO(txDateStr),
         vehicleClass: compute.vehicleClass,
@@ -168,11 +187,11 @@ export const calculateVehiclesBalanceHistory = async ({
         salvageFloorPct: compute.salvageFloorPct,
       });
 
-      const signedAmountCents =
-        tx.transactionType === TRANSACTION_TYPES.income ? tx.amount.toCents() : -tx.amount.toCents();
-      const newAnchorCents = preTxValue.toCents() + signedAmountCents;
+      const txMinor = tx.amount.toMinorUnits({ decimals: accountDecimals });
+      const signedTxMinor = tx.transactionType === TRANSACTION_TYPES.income ? txMinor : -txMinor;
+      const newAnchorMinor = preTxValue.toMinorUnits({ decimals: accountDecimals }) + signedTxMinor;
 
-      compute.anchors.push({ date: txDateStr, valueCents: newAnchorCents });
+      compute.anchors.push({ date: txDateStr, valueMinor: newAnchorMinor });
     }
 
     return compute;
@@ -238,14 +257,16 @@ export const calculateVehiclesBalanceHistory = async ({
 
   const vehicleValuesByDate = new Map<string, number>();
   for (const dateStr of uniqueDates) {
-    let totalInBaseCents = 0;
+    let totalInBaseMinor = 0;
     for (const vehicle of vehicleComputes) {
-      const valueInAccountCents = vehicleValueAtDate(vehicle, dateStr);
-      if (valueInAccountCents === 0) continue;
+      const valueInAccountMinor = vehicleValueAtDate(vehicle, dateStr);
+      if (valueInAccountMinor === 0) continue;
       const rate = getExchangeRate(vehicle.accountCurrencyCode, dateStr);
-      totalInBaseCents += Math.round(valueInAccountCents * rate);
+      // The rate converts whole units; the factor re-expresses the account's minor units in the base's.
+      const scale = 10 ** (decimals - vehicle.accountDecimals);
+      totalInBaseMinor += Math.round(valueInAccountMinor * rate * scale);
     }
-    vehicleValuesByDate.set(dateStr, totalInBaseCents);
+    vehicleValuesByDate.set(dateStr, totalInBaseMinor);
   }
 
   if (missingRateCurrencies.size > 0) {

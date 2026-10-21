@@ -69,7 +69,8 @@ export const absorbBalanceAdjustment = withTransaction(
       currentBalance: newCurrentBalance,
       // A missing rate must not abort an import/bank-sync absorb: omit the ref
       // column (the stored value stays) and let the daily remeasure self-heal it.
-      ...(refCurrentBalance ? { refCurrentBalance } : {}),
+      // A custom currency without a rate measures as `null`, which is stored.
+      ...(refCurrentBalance !== undefined ? { refCurrentBalance } : {}),
       ...(isSystem ? { initialBalance: account.initialBalance.add(amountDelta) } : {}),
     });
     if (!updated) {

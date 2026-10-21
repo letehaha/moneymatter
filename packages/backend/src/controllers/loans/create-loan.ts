@@ -11,7 +11,7 @@ const schema = z.object({
 
 export default createController(schema, async ({ user, body }) => {
   const loanDetails = await createLoan({ userId: user.id, ...body });
-  const projection = projectLoan({
+  const projection = await projectLoan({
     loanDetails,
     account: loanDetails.account,
     today: new Date(),

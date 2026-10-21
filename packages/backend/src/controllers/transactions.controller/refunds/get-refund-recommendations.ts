@@ -5,12 +5,12 @@ import { createController } from '@controllers/helpers/controller-factory';
 import Accounts from '@models/accounts.model';
 import { getTransactionById } from '@models/transactions.model';
 import { serializeTransactions } from '@root/serializers';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 // ±50 in base currency for refund recommendations
-const RECOMMENDATION_REF_AMOUNT_RANGE = 5000;
+const RECOMMENDATION_REF_AMOUNT_RANGE = Money.fromDecimal(50);
 const RECOMMENDATION_MONTHS_RANGE = 6;
 const RECOMMENDATION_LIMIT = 5;
 
@@ -42,7 +42,7 @@ export default createController(schema, async ({ user, query }) => {
   const { id: userId } = user;
 
   let searchTransactionType: TRANSACTION_TYPES;
-  let refAmountCenter: Money;
+  let refAmountCenter: Money | null;
 
   if (query.transactionId) {
     // Fetch the transaction and derive parameters
@@ -80,7 +80,7 @@ export default createController(schema, async ({ user, query }) => {
     }
 
     // Calculate refAmount from the form amount
-    refAmountCenter = await calculateRefAmount({
+    refAmountCenter = await calculateRefAmountOrNull({
       amount: Money.fromDecimal(originAmount!),
       userId,
       baseCode: account.currencyCode,
@@ -88,10 +88,13 @@ export default createController(schema, async ({ user, query }) => {
     });
   }
 
+  // Candidates are found by base-currency amount: with none (custom currency, no rate yet) there is nothing to match.
+  if (!refAmountCenter) return { data: [] };
+
   // Calculate refAmount range
-  const centerCents = refAmountCenter.toCents();
-  const refAmountGte = Money.fromCents(Math.max(0, centerCents - RECOMMENDATION_REF_AMOUNT_RANGE));
-  const refAmountLte = Money.fromCents(centerCents + RECOMMENDATION_REF_AMOUNT_RANGE);
+  const lowerBound = refAmountCenter.subtract(RECOMMENDATION_REF_AMOUNT_RANGE);
+  const refAmountGte = lowerBound.isNegative() ? Money.zero() : lowerBound;
+  const refAmountLte = refAmountCenter.add(RECOMMENDATION_REF_AMOUNT_RANGE);
 
   // Calculate date range (last 6 months)
   const endDate = new Date();

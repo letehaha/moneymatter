@@ -17,7 +17,7 @@ export default createController(schema, async ({ user, params, body }) => {
     accountId: params.id,
     appendNote: body.text,
   });
-  const projection = projectLoan({
+  const projection = await projectLoan({
     loanDetails,
     account: loanDetails.account,
     today: new Date(),

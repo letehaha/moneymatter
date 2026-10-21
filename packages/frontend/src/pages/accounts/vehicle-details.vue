@@ -327,7 +327,7 @@ const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code ?? ''
  */
 const fxRatio = computed<number | null>(() => {
   const account = vehicle.value?.account;
-  if (!account || account.currentBalance === 0) return null;
+  if (!account || account.currentBalance === 0 || account.refCurrentBalance === null) return null;
   return account.refCurrentBalance / account.currentBalance;
 });
 

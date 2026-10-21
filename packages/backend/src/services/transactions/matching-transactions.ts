@@ -6,7 +6,8 @@ import {
   dedupeTransferLegs,
   sumTransactionTotals,
 } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { getBaseCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
 
@@ -25,6 +26,10 @@ type ListFilters = Omit<
   | 'includeHasAttachments'
 >;
 
+/**
+ * `refAmount` is the exact DECIMAL string the raw read returns, `null` for a row with no
+ * base-currency value (custom currency, no rate yet).
+ */
 interface MatchingRow {
   id: string;
   userId: number;
@@ -32,36 +37,44 @@ interface MatchingRow {
   transactionType: TRANSACTION_TYPES;
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
-  /** Base-currency cents: the read is raw, so the `Money` getter never runs. */
-  refAmount: number;
+  refAmount: string | null;
 }
+
+type PricedMatchingRow = MatchingRow & { refAmount: string };
 
 /** Every transaction the list shows for these filters, with the list's visibility scope. */
 const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> => {
   // ponytail: loads every matching row and aggregates in JS. Move to a SQL aggregate
   // if summaries get slow on very large ledgers.
   // `getTransactions` reads raw exactly when no `include*` flag is passed, which is
-  // what makes `refAmount` a number here.
+  // what makes `refAmount` the raw DECIMAL string here.
   const rows = (await getTransactions({
     ...filters,
     limit: Infinity,
     attributes: ['id', 'userId', 'accountId', 'transactionType', 'transferNature', 'transferId', 'refAmount'],
   })) as unknown as MatchingRow[];
 
+  // Unpriced rows stay in: a bulk action must still reach them. Only the totals leave them out.
   // The tag filter joins TransactionTags, which repeats a row per matching tag.
   return [...new Map(rows.map((row) => [row.id, row])).values()];
 };
 
 export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
-  const rows = dedupeTransferLegs(await findMatchingRows(filters));
-  const totals = sumTransactionTotals(rows);
+  const decimals = await getBaseCurrencyDecimals({ userId: filters.userId });
+  // A row with no base-currency amount has no value to total, so it is left out of count and sums.
+  const priced = (await findMatchingRows(filters)).filter((row): row is PricedMatchingRow => row.refAmount !== null);
+  const rows = dedupeTransferLegs(priced);
+  // Summed in the base currency's minor units, so the totals are exact integers.
+  const totals = sumTransactionTotals(
+    rows.map((row) => ({ ...row, refAmount: Money.fromDecimal(row.refAmount).toMinorUnits({ decimals }) })),
+  );
 
   return {
     count: rows.length,
-    income: centsToApiDecimal(totals.income),
-    expense: centsToApiDecimal(totals.expense),
-    net: centsToApiDecimal(totals.net),
-    transfers: centsToApiDecimal(totals.transfers),
+    income: minorUnitsToApiDecimal({ value: totals.income, decimals }),
+    expense: minorUnitsToApiDecimal({ value: totals.expense, decimals }),
+    net: minorUnitsToApiDecimal({ value: totals.net, decimals }),
+    transfers: minorUnitsToApiDecimal({ value: totals.transfers, decimals }),
   };
 };
 

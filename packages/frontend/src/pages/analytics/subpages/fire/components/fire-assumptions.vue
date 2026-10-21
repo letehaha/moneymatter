@@ -471,9 +471,12 @@ const countRows = computed<{ key: string; label: string; amount: number; setting
 const archivedHeld = computed(() => {
   const held = (accounts.value ?? []).filter(
     (account) =>
-      account.status === ACCOUNT_STATUSES.archived && account.excludeFromStats && account.refCurrentBalance > 0,
+      account.status === ACCOUNT_STATUSES.archived &&
+      account.excludeFromStats &&
+      account.refCurrentBalance !== null &&
+      account.refCurrentBalance > 0,
   );
-  return { count: held.length, amount: held.reduce((total, account) => total + account.refCurrentBalance, 0) };
+  return { count: held.length, amount: held.reduce((total, account) => total + (account.refCurrentBalance ?? 0), 0) };
 });
 
 const onCountToggle = ({ setting, value }: { setting: FireToggleSource | null; value: boolean }) => {

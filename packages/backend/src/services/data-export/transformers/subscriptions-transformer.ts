@@ -1,5 +1,5 @@
 import { RecordId } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
 import SubscriptionTransactions from '@models/subscription-transactions.model';
@@ -40,7 +40,7 @@ export async function transformSubscriptions({ userId }: { userId: number }): Pr
   return subscriptions.map((sub): SubscriptionRow => {
     return {
       name: sub.name,
-      amount: centsToApiDecimalOrNull(sub.expectedAmount),
+      amount: moneyToApiDecimalOrNull(sub.expectedAmount),
       currency: sub.expectedCurrencyCode ?? '',
       frequency: sub.frequency,
       startDate: sub.startDate ?? '',

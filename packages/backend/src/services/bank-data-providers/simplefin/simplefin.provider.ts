@@ -8,6 +8,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import {
@@ -264,9 +265,10 @@ export class SimplefinProvider extends BaseBankDataProvider {
       const currency = account.currency?.toUpperCase() || NO_CURRENCY_CODE;
 
       // SimpleFIN currency may also be a URL (crypto / non-standard). The rest
-      // of the app keys accounts on ISO 4217 codes, so skip anything that isn't
-      // a recognizable 3-letter code rather than fail the whole connection.
-      if (!this.isIsoCurrency(currency)) {
+      // of the app keys accounts on currency codes, so skip anything that isn't
+      // shaped like one rather than fail the whole connection. Whether the code
+      // exists and is visible to the user is checked when the account is connected.
+      if (!isCurrencyCodeFormat(currency)) {
         logger.info(
           `[SimpleFIN] Skipping account ${account.id} (${account.name}): unsupported currency "${account.currency}"`,
         );
@@ -1027,10 +1029,6 @@ export class SimplefinProvider extends BaseBankDataProvider {
     } catch {
       return undefined;
     }
-  }
-
-  private isIsoCurrency(code: string): boolean {
-    return /^[A-Z]{3}$/.test(code);
   }
 
   private isValidConnectInput(credentials: unknown): credentials is SimplefinConnectInput {

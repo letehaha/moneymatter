@@ -138,6 +138,16 @@ page.
 | `create_tag`                            | Create a new transaction tag (`finance:write`)                                                                   |
 | `update_tag`                            | Rename, recolor, or update a tag (`finance:write`)                                                               |
 | `delete_tag`                            | Permanently delete a tag and unlink it from all transactions (`finance:delete`)                                  |
+| `list_custom_currencies`                | List the user's custom currencies (code, name, symbol, decimals, logo)                                           |
+| `create_custom_currency`                | Define a custom currency such as points or a token; needs a rate source for base values (`finance:write`)        |
+| `update_custom_currency`                | Change a custom currency's name, decimals, symbol, or logo; decimals locked while in use (`finance:write`)       |
+| `delete_custom_currency`                | Delete an unused custom currency and its exchange rates (`finance:delete`)                                       |
+| `search_coingecko_coins`                | Find the CoinGecko coinId for a rate source by name or symbol                                                    |
+| `get_currency_rate_history`             | A custom currency's stored rates, latest first, with the rate in force                                           |
+| `set_currency_rate_source`              | Set a currency's rate source (provider, manual, peg, CoinGecko, HTTP); re-values saved rows (`finance:write`)    |
+| `test_currency_rate_source`             | Preview an HTTP rate source for one day without saving it (`finance:write`)                                      |
+| `set_exchange_rates`                    | Set the user's own rates for pairs, each with its opposite; custom pairs take a date (`finance:write`)           |
+| `delete_exchange_rates`                 | Remove the user's own rates for pairs, each with its opposite (`finance:delete`)                                 |
 
 Call `get_user_profile` **first** — it reveals the user's base currency, which
 is required to interpret `ref*` fields (refAmount, refBalance) that normalize

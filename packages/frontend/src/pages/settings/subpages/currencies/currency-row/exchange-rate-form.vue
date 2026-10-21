@@ -17,6 +17,16 @@
         :disabled="isLiveRateEnabled"
         @focus="onQuoteFocus"
       />
+      <DateField
+        v-if="isCustomCurrency"
+        v-model="effectiveDate"
+        mode="date"
+        class="min-w-0 @[26rem]/currencies:flex-1"
+        :label="$t('settings.currencies.rateSource.manual.effectiveFromLabel')"
+        :disabled="isFormDisabled"
+        :calendar-options="effectiveDateOptions"
+        data-testid="manual-rate-effective-date"
+      />
       <Button
         v-if="shouldShowSaveButton"
         class="min-w-24 shrink-0"
@@ -28,7 +38,19 @@
       </Button>
     </div>
 
+    <template v-if="isCustomCurrency">
+      <p class="text-muted-foreground mt-4 flex items-start gap-1 text-xs leading-5">
+        <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
+        {{ $t('settings.currencies.custom.rateHint', { code: currency.quoteCode }) }}
+      </p>
+      <p class="text-muted-foreground mt-2 flex items-start gap-1 text-xs leading-5">
+        <InfoIcon class="text-primary-text mt-1 size-3.5 shrink-0" />
+        {{ $t('settings.currencies.rateSource.manual.datedHint') }}
+      </p>
+    </template>
+
     <label
+      v-else
       class="mt-4 flex cursor-pointer items-start justify-between gap-4 aria-disabled:cursor-default"
       :aria-disabled="isFormDisabled"
     >
@@ -54,24 +76,21 @@
 
 <script setup lang="ts">
 import { deleteCustomRate, editUserCurrenciesExchangeRates } from '@/api/currencies';
+import DateField from '@/components/fields/date-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
 import { useNotificationCenter } from '@/components/notification-center';
 import { API_ERROR_CODES } from '@bt/shared/types';
+import { format, isToday } from 'date-fns';
 import { InfoIcon } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { CurrencyWithExchangeRate } from '../types';
+import { calculateRatio } from './calculate-ratio';
 
-const calculateRatio = (value: number) => {
-  const exp = 10 ** 6;
-  const num = 1 / value;
-  const result = Math.round(num * exp) / exp;
-
-  return Number.isFinite(result) ? result : 0;
-};
+const API_DATE_FORMAT = 'yyyy-MM-dd';
 
 const props = defineProps<{
   currency: CurrencyWithExchangeRate;
@@ -96,17 +115,33 @@ const notifyIfBalancesNotRefreshed = (failed: number) => {
   }
 };
 
-const form = reactive({
-  baseRate: props.currency.rate,
-  quoteRate: props.currency.quoteRate,
+const isCustomCurrency = computed(() => Boolean(props.currency.currency?.isCustom));
+
+// A custom currency starts without a rate; the fields stay empty until the user enters one.
+const toFieldValue = (value: number): number | string => (Number.isFinite(value) ? value : '');
+
+const form = reactive<{ baseRate: number | string; quoteRate: number | string }>({
+  baseRate: toFieldValue(props.currency.rate),
+  quoteRate: toFieldValue(props.currency.quoteRate),
 });
 const isBaseEditing = ref(false);
 const isQuoteEditing = ref(false);
-const isLiveRateEnabled = ref<boolean>(!props.currency.custom);
+// A custom currency has no market rate to follow, so only the user's own rate applies.
+const isLiveRateEnabled = ref<boolean>(!isCustomCurrency.value && !props.currency.custom);
+
+// A rate of a custom currency starts to apply on a day of its own; today unless the user picks another.
+const effectiveDate = ref(new Date());
+const effectiveDateOptions = { maxDate: new Date() };
+const isDateChanged = computed(() => !isToday(effectiveDate.value));
+// Rates between ISO currencies apply to every day and refuse a date.
+const datedFields = computed(() =>
+  isCustomCurrency.value ? { effectiveDate: format(effectiveDate.value, API_DATE_FORMAT) } : {},
+);
 
 const isRateChanged = computed(
   () => +props.currency.rate !== +form.baseRate || +props.currency.quoteRate !== +form.quoteRate,
 );
+const hasRateValue = computed(() => Number(form.baseRate) > 0 && Number(form.quoteRate) > 0);
 
 // Disabling live update reveals Save immediately (even before an edit) so the row shows
 // the intended next action. Re-enabling live update also needs Save to drop the custom rate.
@@ -114,8 +149,15 @@ const shouldShowSaveButton = computed(() => {
   return !isLiveRateEnabled.value || props.currency.custom;
 });
 
-// Live off: only actionable once the rate actually changed. Live on: Save drops the custom rate.
-const canSubmit = computed(() => (isLiveRateEnabled.value ? true : isRateChanged.value));
+// Live off: only actionable once the rate actually changed (a custom currency also needs a usable
+// rate). Live on: Save drops the custom rate.
+const canSubmit = computed(() =>
+  isLiveRateEnabled.value
+    ? true
+    : isCustomCurrency.value
+      ? hasRateValue.value && (isRateChanged.value || isDateChanged.value)
+      : isRateChanged.value,
+);
 
 const onBaseFocus = () => {
   isBaseEditing.value = true;
@@ -134,7 +176,7 @@ watch(
   () => form.baseRate,
   (value) => {
     if (isBaseEditing.value) {
-      form.quoteRate = calculateRatio(value);
+      form.quoteRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
     }
   },
 );
@@ -142,7 +184,7 @@ watch(
   () => form.quoteRate,
   (value) => {
     if (isQuoteEditing.value) {
-      form.baseRate = calculateRatio(value);
+      form.baseRate = calculateRatio({ value, isCustomCurrency: isCustomCurrency.value });
     }
   },
 );
@@ -182,11 +224,13 @@ const updateExchangeRates = async () => {
         baseCode: props.currency.currency!.code,
         quoteCode: props.currency.quoteCode,
         rate: Number(form.baseRate),
+        ...datedFields.value,
       },
       {
         baseCode: props.currency.quoteCode,
         quoteCode: props.currency.currency!.code,
         rate: Number(form.quoteRate),
+        ...datedFields.value,
       },
     ]);
 
@@ -207,7 +251,7 @@ const updateExchangeRates = async () => {
 
 const onSubmitHandler = async () => {
   emit('trigger-disabled', true);
-  if (!isLiveRateEnabled.value && isRateChanged.value) {
+  if (!isLiveRateEnabled.value && (isRateChanged.value || (isCustomCurrency.value && isDateChanged.value))) {
     await updateExchangeRates();
   } else if (isLiveRateEnabled.value) {
     await deleteExchangeRates();

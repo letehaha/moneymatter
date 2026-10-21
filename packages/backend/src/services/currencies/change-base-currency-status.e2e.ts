@@ -86,7 +86,7 @@ describe('Base-currency change status endpoint', () => {
     // making the inequality against the API's decimal trivially (vacuously) true.
     const updatedTx = await Transactions.findByPk(tx.id);
     expect(updatedTx!.refCurrencyCode).toEqual('USD');
-    expect(updatedTx!.refAmount.toNumber()).not.toEqual(originalRefAmount);
+    expect(updatedTx!.refAmount!.toNumber()).not.toEqual(originalRefAmount);
   });
 
   it('holds the job non-terminal while an account syncs, then completes once the sync clears', async () => {

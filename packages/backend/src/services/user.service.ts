@@ -12,6 +12,8 @@ import * as Users from '@models/users.model';
 
 import { withTransaction } from './common/with-transaction';
 import { addUserCurrencies } from './currencies/add-user-currency';
+import { withEffectiveCurrency } from './currencies/effective-currency';
+import { recomputeCustomRefAmounts } from './currencies/recompute-custom-ref-amounts.service';
 import { revalueAccountsInCurrencies } from './user-exchange-rate/revalue-accounts-in-currencies';
 
 export const getUser = async (id: number) => {
@@ -96,7 +98,8 @@ export const updateUser = withTransaction(
 export const getUserCurrencies = withTransaction(async ({ userId }: { userId: number }) => {
   const list = await UsersCurrencies.getCurrencies({ userId });
 
-  return list;
+  // A custom currency shows the user's own name, symbol and decimals, not the global row's.
+  return list.map((item) => withEffectiveCurrency({ item }));
 });
 
 export const getUserBaseCurrency = withTransaction(({ userId }: { userId: number }) => {
@@ -158,16 +161,32 @@ export const editUserCurrency = withTransaction(
       });
     }
 
+    // An ISO currency's rate source follows the flag; a custom currency has no market feed.
+    let rateSource: 'provider' | 'manual' | undefined;
+    if (liveRateUpdate !== undefined && !passedCurrency.currency.isCustom) {
+      rateSource = liveRateUpdate ? 'provider' : 'manual';
+    }
+
     const result = await UsersCurrencies.updateCurrency({
       userId,
       currencyCode,
       exchangeRate,
       liveRateUpdate,
+      rateSource,
     });
 
     // `liveRateUpdate` picks between a flat manual rate and per-day market rates for
     // every stored balance row in this currency, so the whole history must be rebuilt.
     if (liveRateUpdate !== undefined && liveRateUpdate !== passedCurrency.liveRateUpdate) {
+      // The flag also decides whether the custom currencies pegged to or quoted in an ISO currency
+      // are worth its manual rate or the market's, so what they were valued with is valued again.
+      if (!passedCurrency.currency.isCustom) {
+        await recomputeCustomRefAmounts({
+          userId,
+          changes: [{ currencyCode, from: null, to: null, mode: 'recompute' }],
+        });
+      }
+
       await revalueAccountsInCurrencies({ userId, pairs: [{ baseCode: currencyCode, quoteCode: currencyCode }] });
     }
 
@@ -185,6 +204,13 @@ export const setDefaultUserCurrency = withTransaction(
     if (!passedCurrency) {
       throw new ValidationError({
         message: t({ key: 'userCurrencies.currencyNotExist', variables: { currencyCode } }),
+      });
+    }
+
+    // A custom currency has no market rates to convert through, so it cannot be the reporting currency.
+    if (passedCurrency.currency.isCustom) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyCannotBeBase', variables: { code: currencyCode } }),
       });
     }
 
@@ -232,6 +258,14 @@ export const deleteUserCurrency = withTransaction(
     if (passedCurrency.isDefaultCurrency) {
       throw new ValidationError({
         message: t({ key: 'userCurrencies.cannotDeleteDefaultCurrency' }),
+      });
+    }
+
+    // A custom currency has its own endpoint, which also checks every kind of row that can use it
+    // and removes the global row once nobody holds it.
+    if (passedCurrency.currency.isCustom) {
+      throw new ValidationError({
+        message: t({ key: 'currencies.customCurrencyUseCustomEndpoint', variables: { code: currencyCode } }),
       });
     }
 

@@ -7,9 +7,9 @@ import { collectGroupAccounts } from './account-totals';
 /** The balance fields the zero check reads — kept minimal so any account-like shape satisfies it. */
 interface ZeroBalanceAccount {
   currentBalance: number;
-  refCurrentBalance: number;
+  refCurrentBalance: number | null;
   creditLimit: number;
-  refCreditLimit: number;
+  refCreditLimit: number | null;
 }
 
 /**

@@ -165,20 +165,26 @@ export const getScheduled = async ({
       }),
   ).then((results) => results.filter((item) => item !== null));
 
-  const plannedItems = planned.map(
-    (tx): BudgetPlanScheduledItem => ({
-      source: 'planned',
-      id: tx.id,
-      name: tx.payee?.name || tx.note || '',
-      date: plannedDateById.get(tx.id)!,
-      amount: signed({ amount: tx.refAmount, type: tx.transactionType }).toNumber(),
-      currencyCode: tx.currencyCode,
-      nativeAmount: signed({ amount: tx.amount, type: tx.transactionType }).toNumber(),
-      categoryId: tx.categoryId,
-      lineId: lineOfCategory({ categoryId: tx.categoryId }),
-      accountId: tx.accountId,
-    }),
-  );
+  // A planned row without a base-currency amount (custom currency, no rate) has no value in the plan's
+  // currency yet, so it is left out, like a subscription occurrence with no exchange rate.
+  const plannedItems = planned.flatMap((tx): BudgetPlanScheduledItem[] => {
+    if (tx.refAmount === null) return [];
+
+    return [
+      {
+        source: 'planned',
+        id: tx.id,
+        name: tx.payee?.name || tx.note || '',
+        date: plannedDateById.get(tx.id)!,
+        amount: signed({ amount: tx.refAmount, type: tx.transactionType }).toNumber(),
+        currencyCode: tx.currencyCode,
+        nativeAmount: signed({ amount: tx.amount, type: tx.transactionType }).toNumber(),
+        categoryId: tx.categoryId,
+        lineId: lineOfCategory({ categoryId: tx.categoryId }),
+        accountId: tx.accountId,
+      },
+    ];
+  });
 
   const items = [...subscriptionItems, ...plannedItems].toSorted(
     (a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id),

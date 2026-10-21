@@ -1,22 +1,23 @@
-import { type Cents, TRANSACTION_TYPES, asCents } from '@bt/shared/types';
+import { type MinorUnits, TRANSACTION_TYPES, asMinorUnits } from '@bt/shared/types';
 import type { Money } from '@common/types/money';
 import type { CategoryRefundPair } from '@services/stats/category-allocation';
 import { type PeriodBucket, findBucketIndex } from '@services/stats/utils';
 
 export interface SavingsTransactionRow {
   time: string | Date;
-  refAmount: Money;
+  /** `null` while a custom currency has no rate: the row is left out of the totals. */
+  refAmount: Money | null;
   transactionType: TRANSACTION_TYPES;
 }
 
-interface SavingsCents {
-  income: Cents;
-  expenses: Cents;
-  net: Cents;
+interface SavingsMinor {
+  income: MinorUnits;
+  expenses: MinorUnits;
+  net: MinorUnits;
 }
 
 /**
- * Per-bucket income/expense totals in base-currency cents, matching
+ * Per-bucket income/expense totals in base-currency minor units, matching
  * `get-cash-flow`'s semantics exactly: expenses accumulate as a positive number
  * and `net` is `income - expenses`.
  *
@@ -32,24 +33,33 @@ export const accumulateSavings = ({
   transactions,
   buckets,
   refundPairs = [],
+  decimals,
 }: {
   transactions: SavingsTransactionRow[];
   buckets: PeriodBucket[];
   refundPairs?: CategoryRefundPair[];
-}): SavingsCents[] => {
-  const savings: SavingsCents[] = buckets.map(() => ({ income: asCents(0), expenses: asCents(0), net: asCents(0) }));
+  /** Decimals of the base currency: the scale `refAmount` is converted to minor units at. */
+  decimals: number;
+}): SavingsMinor[] => {
+  const savings: SavingsMinor[] = buckets.map(() => ({
+    income: asMinorUnits(0),
+    expenses: asMinorUnits(0),
+    net: asMinorUnits(0),
+  }));
 
   for (const tx of transactions) {
+    if (tx.refAmount === null) continue;
+
     const bucketIndex = findBucketIndex({ transactionTime: new Date(tx.time), buckets });
     if (bucketIndex === -1) continue;
 
     const bucket = savings[bucketIndex]!;
-    const amount = tx.refAmount.toCents();
+    const amount = tx.refAmount.toMinorUnits({ decimals });
 
     if (tx.transactionType === TRANSACTION_TYPES.income) {
-      bucket.income = asCents(bucket.income + amount);
+      bucket.income = asMinorUnits(bucket.income + amount);
     } else if (tx.transactionType === TRANSACTION_TYPES.expense) {
-      bucket.expenses = asCents(bucket.expenses + amount);
+      bucket.expenses = asMinorUnits(bucket.expenses + amount);
     }
   }
 
@@ -62,12 +72,12 @@ export const accumulateSavings = ({
     if (bucketIndex === -1) continue;
 
     const bucket = savings[bucketIndex]!;
-    bucket.income = asCents(bucket.income - pair.cents);
-    bucket.expenses = asCents(bucket.expenses - pair.cents);
+    bucket.income = asMinorUnits(bucket.income - pair.minor);
+    bucket.expenses = asMinorUnits(bucket.expenses - pair.minor);
   }
 
   for (const bucket of savings) {
-    bucket.net = asCents(bucket.income - bucket.expenses);
+    bucket.net = asMinorUnits(bucket.income - bucket.expenses);
   }
 
   return savings;

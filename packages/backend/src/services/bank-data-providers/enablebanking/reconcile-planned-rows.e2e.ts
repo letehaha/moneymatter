@@ -74,7 +74,7 @@ describe('Enable Banking reconcile and planned transactions', () => {
 
     return Transactions.create({
       amount: Money.fromCents(reference.amount.toCents()),
-      refAmount: Money.fromCents(reference.refAmount.toCents()),
+      refAmount: Money.fromCents(reference.refAmount!.toCents()),
       commissionRate: Money.zero(),
       refCommissionRate: Money.zero(),
       cashbackAmount: Money.zero(),
@@ -145,7 +145,7 @@ describe('Enable Banking reconcile and planned transactions', () => {
     });
     const realOrphan = await Transactions.create({
       amount: Money.fromCents(canonical.amount.toCents()),
-      refAmount: Money.fromCents(canonical.refAmount.toCents()),
+      refAmount: Money.fromCents(canonical.refAmount!.toCents()),
       commissionRate: Money.zero(),
       refCommissionRate: Money.zero(),
       cashbackAmount: Money.zero(),

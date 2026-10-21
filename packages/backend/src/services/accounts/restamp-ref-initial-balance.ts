@@ -1,9 +1,10 @@
 import { ACCOUNT_CATEGORIES, ACCOUNT_TYPES } from '@bt/shared/types';
+import { moneyEqualsOrNull, type Money } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
 import { findOneTransaction } from '@models/transactions-query';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -67,9 +68,10 @@ async function restampRefInitialBalanceImpl({
 
   const boundaryDate = earliestTx?.time ?? new Date();
 
-  let refInitialBalance;
+  let refInitialBalance: Money | null;
   try {
-    refInitialBalance = await calculateRefAmount({
+    // `null` for a custom currency that has no rate at the boundary date.
+    refInitialBalance = await calculateRefAmountOrNull({
       userId: account.userId,
       amount: account.initialBalance,
       baseCode: account.currencyCode,
@@ -88,7 +90,7 @@ async function restampRefInitialBalanceImpl({
     return 'failed';
   }
 
-  if (refInitialBalance.equals(account.refInitialBalance)) return 'unchanged';
+  if (moneyEqualsOrNull(refInitialBalance, account.refInitialBalance)) return 'unchanged';
 
   await Accounts.update({ refInitialBalance }, { where: { id: accountId } });
 

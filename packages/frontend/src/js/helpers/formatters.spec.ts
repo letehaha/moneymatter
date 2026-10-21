@@ -1,3 +1,4 @@
+import { registerCurrencyDecimals, resetCurrencyDecimals } from './currency-decimals';
 import {
   currencyDisplayPreference,
   formatCompactFiat,
@@ -57,14 +58,99 @@ describe('js/helpers/formatters', () => {
       expect(formatUIAmount(value, { currency: 'USD' })).toBe(expected);
     });
 
-    test('three-decimal currency (BHD) is clamped to 2 (cents storage)', () => {
-      const out = formatUIAmount(1234.567, { currency: 'BHD' });
-      expect(out).toContain('1,234.57');
-      expect(out).not.toMatch(/\.\d{3}/);
+    test.each<[string, number, string]>([
+      ['BHD', 1234.567, '1,234.567'],
+      ['KWD', 1234.5, '1,234.500'],
+      ['KWD', 0.001, '0.001'],
+    ])('three-decimal currency %s keeps all three decimals: %d', (currency, value, expected) => {
+      expect(formatUIAmount(value, { currency })).toContain(expected);
+    });
+
+    test('large VND values (0 decimals) group without a fraction', () => {
+      const out = formatUIAmount(20_500_000_000, { currency: 'VND' });
+      expect(out).toContain('20,500,000,000');
+      expect(out).not.toContain('.');
     });
 
     test('malformed currency code degrades to a bare number + code instead of throwing', () => {
       expect(formatUIAmount(1234.5, { currency: 'USDT' })).toBe('1,234.50 USDT');
+    });
+
+    describe('registered decimals', () => {
+      afterEach(() => {
+        resetCurrencyDecimals();
+      });
+
+      test('a ticker renders with its registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'BTC', decimals: 8 }] });
+        expect(formatUIAmount(0.00040641, { currency: 'BTC' })).toContain('0.00040641');
+        expect(formatUIAmount(2, { currency: 'BTC' })).toContain('2.00000000');
+      });
+
+      test('a code Intl rejects renders its registered decimals with the code appended', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
+        expect(formatUIAmount(0.5, { currency: 'USDT' })).toBe('0.500000 USDT');
+      });
+
+      test('a registered value wins over the ISO one', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USD', decimals: 4 }] });
+        expect(formatUIAmount(1.23456, { currency: 'USD' })).toBe('$1.2346');
+      });
+
+      test('toLocalCurrencyNumber follows the registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6 }] });
+        expect(toLocalCurrencyNumber(1.5, { currency: 'USDT' })).toBe('1.500000');
+      });
+    });
+
+    describe('custom currencies', () => {
+      afterEach(() => {
+        resetCurrencyDecimals();
+      });
+
+      test('a code Intl rejects renders as a plain number plus the code', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true }] });
+        expect(formatUIAmount(12.345678, { currency: 'USDT' })).toBe('12.345678 USDT');
+      });
+
+      test('a three-letter code Intl would accept still renders as custom, never in currency style', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const out = formatUIAmount(1234.6, { currency: 'SAT' });
+
+        expect(out).toBe('1,235 SAT');
+        expect(out).not.toContain('\u00a0');
+      });
+
+      test('the symbol replaces the code when the currency has one', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'USDT', decimals: 6, isCustom: true, symbol: '₮' }] });
+        expect(formatUIAmount(-0.5, { currency: 'USDT' })).toBe('-0.500000 ₮');
+      });
+
+      test('an explicit meta decides the decimals and the kind of a code the viewer does not define', () => {
+        expect(
+          formatUIAmount(0.12345678, { currency: 'SAT', meta: { decimals: 8, symbol: null, isCustom: true } }),
+        ).toBe('0.12345678 SAT');
+      });
+
+      test("a collaborator whose SAT has 0 decimals sees the owner's 8 on the owner's account", () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        const ownerMeta = { decimals: 8, symbol: null, isCustom: true };
+
+        expect(formatUIAmount(1.5, { currency: 'SAT', meta: ownerMeta })).toBe('1.50000000 SAT');
+        expect(formatUIAmount(1.5, { currency: 'SAT' })).toBe('2 SAT');
+      });
+
+      test('toLocalCurrencyNumber follows an explicit meta', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+        expect(
+          toLocalCurrencyNumber(1.5, { currency: 'SAT', meta: { decimals: 3, symbol: null, isCustom: true } }),
+        ).toBe('1.500');
+      });
+
+      test('an ISO currency keeps currency style with its registered decimals', () => {
+        registerCurrencyDecimals({ entries: [{ code: 'KWD', decimals: 3, isCustom: false }] });
+        expect(formatUIAmount(1.5, { currency: 'KWD' })).toContain('1.500');
+      });
     });
 
     test('fractionDigits overrides the currency decimals', () => {
@@ -118,8 +204,12 @@ describe('js/helpers/formatters', () => {
       expect(toLocalCurrencyNumber(1500)).toBe('1,500.00');
     });
 
-    test('three-decimal currency (BHD) is clamped to 2 (cents storage)', () => {
-      expect(toLocalCurrencyNumber(1234.567, { currency: 'BHD' })).toBe('1,234.57');
+    test.each<[number, string, string]>([
+      [1234.567, 'BHD', '1,234.567'],
+      [1234.5, 'KWD', '1,234.500'],
+      [20_500_000_000, 'VND', '20,500,000,000'],
+    ])('%d in %s keeps the currency decimals → %s', (value, currency, expected) => {
+      expect(toLocalCurrencyNumber(value, { currency })).toBe(expected);
     });
 
     test('malformed currency code falls back to 2 digits without throwing', () => {

@@ -1,5 +1,6 @@
 import { getAllCurrencies, loadUserBaseCurrency, loadUserCurrencies } from '@/api/currencies';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
+import { registerCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import { invalidatePersistedQuery, queryClient } from '@/lib/query-client';
 import { CurrencyModel, UserCurrencyModel } from '@bt/shared/types';
 import { defineStore } from 'pinia';
@@ -11,11 +12,8 @@ export const useCurrenciesStore = defineStore('currencies', () => {
   const baseCurrency = ref<UserCurrencyModel | null>(null);
   const isBaseCurrencyExists = computed(() => Boolean(baseCurrency.value));
 
-  const systemCurrenciesVerbose = computed<{
-    linked: CurrencyModel[];
-    unlinked: CurrencyModel[];
-  }>(() =>
-    systemCurrencies.value.reduce(
+  const splitByLinked = ({ list }: { list: CurrencyModel[] }) =>
+    list.reduce(
       (acc, curr) => {
         if (currencies.value.find((item) => item.currencyCode === curr.code)) {
           acc.linked.push(curr);
@@ -25,8 +23,16 @@ export const useCurrenciesStore = defineStore('currencies', () => {
         return acc;
       },
       { linked: [] as CurrencyModel[], unlinked: [] as CurrencyModel[] },
-    ),
-  );
+    );
+
+  // `systemCurrencies` is what every picker lists: the ISO catalogue plus the user's own
+  // custom currencies (the public catalogue never carries those).
+  const systemCurrenciesVerbose = computed(() => splitByLinked({ list: systemCurrencies.value }));
+
+  // Contexts that accept ISO codes only (loans, vehicles, investments, bank integrations)
+  // must not offer a custom currency the backend would reject.
+  const isoCurrencies = computed(() => systemCurrencies.value.filter((item) => !item.isCustom));
+  const isoCurrenciesVerbose = computed(() => splitByLinked({ list: isoCurrencies.value }));
 
   const currenciesMap = computed(() =>
     currencies.value.reduce(
@@ -46,6 +52,15 @@ export const useCurrenciesStore = defineStore('currencies', () => {
       (a, b) => Number(linkedCodes.has(b.code)) - Number(linkedCodes.has(a.code)),
     );
   };
+
+  // Formatters and amount inputs outside the store resolve decimals by code, so every
+  // list the store receives is registered with the registry they read.
+  const registerDecimals = ({ items }: { items: Array<CurrencyModel | undefined> }) =>
+    registerCurrencyDecimals({
+      entries: items.flatMap((item) =>
+        item ? [{ code: item.code, decimals: item.digits, isCustom: item.isCustom, symbol: item.symbol }] : [],
+      ),
+    });
 
   // Both fetches run through the vue-query cache (staleTime Infinity) so they dedupe on
   // init and can be persisted/invalidated by key. `force` drops the cached entries first,
@@ -75,7 +90,11 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     ]);
 
     currencies.value = userCurrencies;
-    systemCurrencies.value = systemOnes;
+    systemCurrencies.value = [
+      ...systemOnes,
+      ...userCurrencies.flatMap((item) => (item.currency?.isCustom ? [item.currency] : [])),
+    ];
+    registerDecimals({ items: [...systemOnes, ...userCurrencies.map((item) => item.currency)] });
     orderLinkedFirst();
   };
 
@@ -95,6 +114,7 @@ export const useCurrenciesStore = defineStore('currencies', () => {
 
     if (result) {
       baseCurrency.value = result;
+      registerDecimals({ items: [result.currency] });
 
       if (!currencies.value.find((item) => item.id === result.id)) {
         currencies.value.push(result);
@@ -109,6 +129,8 @@ export const useCurrenciesStore = defineStore('currencies', () => {
     systemCurrencies,
     currenciesMap,
     systemCurrenciesVerbose,
+    isoCurrencies,
+    isoCurrenciesVerbose,
     isBaseCurrencyExists,
     loadCurrencies,
     loadBaseCurrency,

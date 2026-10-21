@@ -60,6 +60,8 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'DELETE /api/v1/user/settings/mcp/connected-apps/:clientId',
   'PATCH /api/v1/user/settings',
   'POST /api/v1/user/backup',
+  // A rate-source preview fetches one URL and saves nothing.
+  'POST /api/v1/user/currencies/:code/rate-source/test',
   'POST /api/v1/user/data-export',
   'POST /api/v1/user/feature-trials/:feature',
   'POST /api/v1/user/settings/ai/connections',
@@ -243,6 +245,23 @@ describe('Base-currency lock returns 423 on guarded routes', () => {
         );
         expectLocked(
           await helpers.makeRequest({ method: 'post', url: '/categories', payload: { name: 'Blocked category' } }),
+        );
+      },
+    });
+  });
+
+  it('blocks PUT /user/currencies/:code/rate-source', async () => {
+    const user = await helpers.getUserInfo({ raw: true });
+
+    await withUserLock({
+      userId: user.id,
+      fn: async () => {
+        expectLocked(
+          await helpers.makeRequest({
+            method: 'put',
+            url: '/user/currencies/USD/rate-source',
+            payload: { rateSource: 'manual' },
+          }),
         );
       },
     });

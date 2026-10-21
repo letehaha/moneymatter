@@ -1,6 +1,6 @@
 ---
 title: Base currency and currencies
-description: What your base currency is used for, how to add currencies, where exchange rates come from, how custom rates work, and what happens when you change your base currency.
+description: What your base currency is used for, how to add currencies, how many decimals each currency keeps, where exchange rates come from, how custom rates work, and what happens when you change your base currency.
 sidebar:
   order: 10
 ---
@@ -8,7 +8,7 @@ sidebar:
 import { Aside, Steps } from '@astrojs/starlight/components';
 import Screenshot from '~/components/screenshot.astro';
 
-You can keep accounts in as many currencies as you like. To add them all up, MoneyMatter converts everything into one currency, your **base currency**. This page explains what the base currency affects, where exchange rates come from, and what to think about before you change it.
+You can keep accounts in as many currencies as you like. To add them all up, MoneyMatter converts everything into one currency, your **base currency**. This page explains what the base currency affects, where exchange rates come from, and what to think about before you change it. For currencies that aren't ISO currencies, such as stablecoins or crypto, see [Custom currencies](/settings/custom-currencies/).
 
 ## What the base currency is used for
 
@@ -25,6 +25,12 @@ Some things always stay in their own currency:
 
 - **Account balances.** Each account in the sidebar shows its balance in the account's own currency.
 - **Transaction amounts.** A transaction always keeps the amount you entered, in its account's currency.
+
+### How many decimals a currency keeps
+
+Each currency keeps its own number of decimals, and amounts are rounded to it when you save them. Most currencies keep 2, JPY keeps 0 and KWD keeps 3, so a yen amount is never shown or stored with cents. A [custom currency](/settings/custom-currencies/#how-precise-amounts-are) keeps the number you choose, from 0 to 18.
+
+Converted amounts are rounded to the decimals of the currency they are converted into. When a value falls exactly halfway, a converted amount rounds to the nearest even digit (see [what gets recalculated](#what-gets-recalculated)), while an amount you type rounds half up.
 
 ### How a transaction gets its base-currency amount
 
@@ -49,8 +55,10 @@ On the transactions page, switch to [**Table view**](/transactions/search-and-fi
 
 Your base currency is always first in the list, with a **Base** badge. Every other currency shows today's exchange rate in both directions, plus two badges:
 
-- **Live** or **Custom**: whether the currency uses market rates or a rate you set yourself.
+- **Live** or **Custom**: whether the currency uses market rates or a rate you set yourself. A [custom currency](/settings/custom-currencies/) has a **Custom currency** badge here instead, because it never uses market rates.
 - The number of accounts that use it, or **Unused** if none do.
+
+A currency with no rate yet, such as a new custom currency, shows a dash (—) instead of a rate until you set one.
 
 Click **How it works?** at the top of the page for a short reminder of how this all fits together.
 
@@ -72,6 +80,8 @@ Click **How it works?** at the top of the page for a short reminder of how this 
 
 You can also add a currency while creating an account. The **Currency** field only lists your currencies, so scroll to the bottom of its list and click **Add new currency +**.
 
+To add a currency that isn't an ISO currency, click **Add custom currency** instead. See [Custom currencies](/settings/custom-currencies/).
+
 When a bank connection or an import creates an account in a currency you don't have yet, that currency is added to your list automatically.
 
 ## Where exchange rates come from
@@ -85,7 +95,7 @@ Each daily update also refreshes how much your foreign-currency accounts are wor
 
 ## Set a custom exchange rate
 
-If you'd rather use your own rate, for example the one your bank actually charged you, you can replace the market rate for any currency except your base currency.
+If you'd rather use your own rate, for example the one your bank actually charged you, you can replace the market rate for any ISO currency except your base currency. (A custom currency has no market rate. It uses one of its [rate sources](/settings/rate-sources/), and its manual rates are dated.)
 
 <Steps>
 
@@ -119,8 +129,10 @@ To go back to market rates, expand the row, check **Live update** again and clic
 
 That last row is on purpose: your past spending and income reports stay stable when you change a rate.
 
+This table is about ISO currencies. For a [custom currency](/settings/custom-currencies/#when-the-rate-changes), saved transactions are valued again when its rate source or rates change, and transactions without a rate yet are valued as soon as one exists.
+
 <Aside type="note" title="Good to know">
-- **A custom rate applies to every date.** It isn't tied to a day. Say you set 1 USD = 0.90 EUR: every new or edited USD transaction converts at 0.90, even one you back-date to last year.
+- **A custom rate applies to every date.** It isn't tied to a day. (Manual rates of a custom currency are different: each one starts on the date you choose.) Say you set 1 USD = 0.90 EUR: every new or edited USD transaction converts at 0.90, even one you back-date to last year.
 - **It's set against your current base currency.** A custom rate only applies when converting into the base currency you set it against. After you change your base currency, most custom rates stop applying and those currencies show **Live** again. They aren't deleted, so if you switch back to your old base currency, they apply again. One exception: if your new base is a currency you had set a custom rate for, your old base currency now uses the reverse of that rate and shows **Custom**. To use market rates for it instead, expand its row, check **Live update** and click **Save**. This also removes the custom rate you'd set for the new base currency, so it won't come back if you switch back later.
 - If some balances can't be refreshed with the new rate yet, a warning tells you how many. They update on their own once a rate is available.
 </Aside>
@@ -168,6 +180,8 @@ You can only switch to a currency that MoneyMatter has long-term exchange-rate h
 
 The original amounts of your transactions are never touched. Only the converted amounts change.
 
+[Custom currencies](/settings/custom-currencies/#base-currency-and-custom-currencies) come along: their rates keep working in the new base currency, and a custom currency without a rate stays without a base amount until you give it one.
+
 ### While it runs
 
 The change runs in the background and can take a few minutes. It may take longer for currencies that aren't widely used.
@@ -186,11 +200,14 @@ If you share accounts with other people or belong to a household, you can't chan
 
 ## Good to know
 
+- **Precision.** Amounts keep the decimals of their own currency, from 0 (JPY) to 18 (a custom currency).
 - **Balances and spending can use different rates for the same period.** Transactions keep the rate from their own date. Account balances are re-valued every day at the current rate. So a balance chart and a spending report for the same month can convert USD at different rates. Both are correct for what they measure.
 - **In read-only mode** you can't add or delete currencies, save rates or change your base currency. See [read-only mode](/settings/plans-and-billing/#read-only-mode).
 
 ## Related
 
+- [Custom currencies](/settings/custom-currencies/)
+- [Rate sources](/settings/rate-sources/)
 - [Create an account](/accounts/create-an-account/)
 - [How stats are calculated](/stats/how-stats-are-calculated/)
 - [General settings](/settings/general-settings/)

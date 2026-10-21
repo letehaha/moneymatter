@@ -1,5 +1,5 @@
 import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
-import { currencyCode, dateString, decimalString, percentageFraction, recordId } from '@common/lib/zod/custom-types';
+import { dateString, decimalString, isoCurrencyCode, percentageFraction, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeVentureDeal } from '@root/serializers';
 import { updateVentureDeal } from '@services/venture/deals/update.service';
@@ -14,7 +14,7 @@ export default createController(
         platformId: recordId().nullable().optional(),
         spvSubtype: z.nativeEnum(VENTURE_SPV_SUBTYPE).nullable().optional(),
         targetCompany: z.string().max(255).nullable().optional(),
-        currencyCode: currencyCode().optional(),
+        currencyCode: isoCurrencyCode().optional(),
         status: z.nativeEnum(VENTURE_DEAL_STATUS).optional(),
         principal: decimalString().optional(),
         entryFee: decimalString().optional(),

@@ -1,4 +1,9 @@
 import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { logger } from '@js/utils/logger';
+import { RateLimitService } from '@services/common/rate-limit.service';
+import type { UserRateLimit } from '@services/common/user-rate-limits';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
 /**
  * Extract the app user ID from MCP request auth info.
@@ -41,6 +46,41 @@ export function requireScope({
   const scopes = extra?.authInfo?.scopes ?? [];
   if (!scopes.includes(scope)) {
     throw new Error(`Missing required scope: ${scope}. Re-connect the app and grant it.`);
+  }
+}
+
+/**
+ * Refuses a write while a base-currency change is recalculating the user's amounts, as the
+ * `checkBaseCurrencyLock` middleware does on the REST routes. Fails closed when Redis is
+ * unreachable, since a write that slips past the lock would be rewritten by the recalculation.
+ */
+export async function assertBaseCurrencyUnlocked({ userId }: { userId: number }): Promise<void> {
+  let locked: boolean;
+  try {
+    locked = await isBaseCurrencyChangeLocked({ userId });
+  } catch (error) {
+    logger.error({
+      message: 'Base currency lock check failed',
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw new Error(t({ key: 'common.serviceTemporarilyUnavailable' }), { cause: error });
+  }
+
+  if (locked) {
+    throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
+  }
+}
+
+/**
+ * Draws one call from a per-user budget the REST middleware also enforces, and refuses the call
+ * when the budget is spent. Redis being down lets the call through, as the middleware does for
+ * these routes: `checkRateLimit` resolves `allowed: true` then.
+ */
+export async function enforceUserRateLimit({ userId, limit }: { userId: number; limit: UserRateLimit }): Promise<void> {
+  const result = await RateLimitService.checkRateLimit(limit.key({ userId }), limit.windowSeconds, limit.maxAttempts);
+
+  if (!result.allowed) {
+    throw new Error(t({ key: 'middleware.tooManyRequests' }));
   }
 }
 

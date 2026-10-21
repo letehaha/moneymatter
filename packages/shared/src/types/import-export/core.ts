@@ -1,5 +1,3 @@
-import type { Cents } from '../money';
-
 /**
  * Maximum data rows accepted from a single CSV upload. Same cap applied on the
  * client (pre-flight in the investments column-mapping step) and on the server
@@ -97,7 +95,8 @@ export interface ParsedTransactionRow {
    * `execute-import` reconstructs it with `new Date(row.date)`.
    */
   date: string;
-  amount: Cents;
+  /** Absolute API decimal at the digits the source wrote; the sign stays in `transactionType`. */
+  amount: number;
   description: string;
   /** Raw value from the user-mapped Payee column, if mapping included one. */
   payeeName?: string;
@@ -118,7 +117,8 @@ export interface DuplicateMatch {
   existingTransaction: {
     id: string;
     date: string;
-    amount: Cents;
+    /** API decimal at the account currency's decimals. */
+    amount: number;
     note: string;
     accountId: string;
   };

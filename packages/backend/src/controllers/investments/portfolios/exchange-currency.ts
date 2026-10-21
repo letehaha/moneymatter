@@ -1,4 +1,4 @@
-import { currencyCode, dateString, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { exchangeCurrency } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
@@ -10,8 +10,8 @@ const schema = z.object({
     id: recordId(),
   }),
   body: z.object({
-    fromCurrencyCode: currencyCode(),
-    toCurrencyCode: currencyCode(),
+    fromCurrencyCode: isoCurrencyCode(),
+    toCurrencyCode: isoCurrencyCode(),
     fromAmount: positiveAmountString(),
     toAmount: positiveAmountString(),
     date: dateString(),

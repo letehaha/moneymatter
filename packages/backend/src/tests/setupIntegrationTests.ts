@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RecordId } from '@bt/shared/types';
 import { until } from '@common/helpers';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { i18nextReady } from '@i18n/index';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, jest } from '@jest/globals';
@@ -363,6 +364,11 @@ beforeEach(async () => {
     // Schema comes from template database (created in setup-e2e-tests.sh).
     // We just need to truncate data between tests.
     await truncateAllTables();
+
+    // Currencies is a seed table, so custom currencies created by a test outlive the truncation above.
+    // Every table that could reference them is empty by now, so they can go.
+    await connection.sequelize.query(`DELETE FROM "Currencies" WHERE "isCustom" = true`);
+    invalidateCurrencyDecimalsCache();
 
     // ExchangeRates is preserved across tests (it's in SEED_DATA_TABLES) so the
     // historical seed survives, but that also means today-dated rows written by

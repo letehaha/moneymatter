@@ -47,7 +47,9 @@ export class CacheClient<T = unknown> {
   async delete(keyOrPattern: string, isPattern = false): Promise<void> {
     try {
       if (isPattern) {
-        const keys = await redisClient.keys(keyOrPattern);
+        // ioredis applies `keyPrefix` to key arguments but not to the KEYS pattern, so the pattern
+        // carries the prefix itself; otherwise a prefixed client matches nothing.
+        const keys = await redisClient.keys(`${REDIS_KEY_PREFIX ?? ''}${keyOrPattern}`);
         if (keys.length > 0) {
           // Strip keyPrefix from keys returned by keys() to avoid double-prefixing
           const strippedKeys = REDIS_KEY_PREFIX ? keys.map((k) => k.slice(REDIS_KEY_PREFIX!.length)) : keys;

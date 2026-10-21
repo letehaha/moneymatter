@@ -2,9 +2,10 @@ import type { CreateTransactionTemplateBody, TransactionTemplateModel } from '@b
 import { Money } from '@common/types/money';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
 import { assertTemplateConsistent } from './assert-template-consistent';
-import { serializeTemplate, writeOrConflict } from './helpers';
+import { roundTemplateAmount, serializeTemplate, writeOrConflict } from './helpers';
 
 type CreateTransactionTemplateParams = CreateTransactionTemplateBody & { userId: number };
 
@@ -22,9 +23,13 @@ export const createTransactionTemplate = withTransaction(
     originalCurrencyCode = null,
     tagIds = [],
   }: CreateTransactionTemplateParams): Promise<TransactionTemplateModel> => {
-    const storedAmount = amount === null ? null : Money.fromDecimal(amount);
+    await assertCurrencyCodesVisible({ userId, codes: [originalCurrencyCode] });
 
-    await assertTemplateConsistent({ userId, amount: storedAmount, accountId, categoryId, payeeId, tagIds });
+    const requestedAmount = amount === null ? null : Money.fromDecimal(amount);
+
+    await assertTemplateConsistent({ userId, amount: requestedAmount, accountId, categoryId, payeeId, tagIds });
+
+    const storedAmount = await roundTemplateAmount({ userId, accountId, amount: requestedAmount });
 
     const template = await writeOrConflict(() =>
       TransactionTemplates.create({

@@ -11,6 +11,7 @@ import {
 } from '@/api/subscriptions';
 import { loadTransactionById } from '@/api/transactions';
 import { VUE_QUERY_CACHE_KEYS, VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import CurrencyIcon from '@/components/common/currency-icon.vue';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
@@ -26,7 +27,6 @@ import { useInvalidateSubscriptionQueries } from '@/composable/data-queries/subs
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
 import { useFormatCurrency } from '@/composable/formatters';
 import { ApiErrorResponseError, isNotFoundError } from '@/js/errors';
-import { getCurrencyIcon } from '@/js/helpers/currencyImage';
 import { captureException } from '@/lib/sentry';
 import { ROUTES_NAMES } from '@/routes';
 import { useTagsStore } from '@/stores';
@@ -114,8 +114,6 @@ watch(
   },
   { immediate: true },
 );
-
-const currencyFlagFailed = ref(false);
 
 const isActionsOpen = ref(false);
 const isBasicsEditorOpen = ref(false);
@@ -613,14 +611,7 @@ async function openTransaction({ transactionId }: { transactionId: string }) {
               <dt class="text-muted-foreground">{{ $t('planned.subscriptions.form.currencyLabel') }}</dt>
               <dd class="flex items-center gap-1.5 text-right font-medium">
                 <template v-if="subscription.expectedCurrencyCode">
-                  <img
-                    v-if="!currencyFlagFailed"
-                    :src="getCurrencyIcon(subscription.expectedCurrencyCode)"
-                    :alt="subscription.expectedCurrencyCode"
-                    class="size-3.5 shrink-0 rounded-[2px]"
-                    loading="lazy"
-                    @error="currencyFlagFailed = true"
-                  />
+                  <CurrencyIcon :code="subscription.expectedCurrencyCode" size="size-3.5" />
                   {{ subscription.expectedCurrencyCode }}
                 </template>
                 <template v-else>–</template>

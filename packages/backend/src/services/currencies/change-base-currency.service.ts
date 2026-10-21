@@ -8,9 +8,11 @@ import {
   type RecalculateResult,
   RESOURCE_TYPES,
 } from '@bt/shared/types';
+import { getConversionDecimals } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { t } from '@i18n/index';
-import { ConflictError, ValidationError } from '@js/errors';
+import { ConflictError, ExchangeRateUnavailableError, ValidationError } from '@js/errors';
 import { CacheClient } from '@js/utils/cache';
 import { logger } from '@js/utils/logger';
 import { captureException } from '@js/utils/sentry';
@@ -30,7 +32,9 @@ import UserSettings from '@models/user-settings.model';
 import { getBaseCurrency, updateCurrencies } from '@models/users-currencies.model';
 import { isRevaluedAccount, revalueBalanceHistory } from '@services/balances/revalue-balance-history.service';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
+import { includesCustomCurrencyCode } from '@services/currencies/custom-currency-codes';
 import { buildDailyPairRateResolver, toDayKey } from '@services/exchange-rates/build-daily-pair-rate-resolver';
+import { buildRefAmountCachePattern } from '@services/ref-amount-cache';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import { Op, QueryTypes, Transaction as SequelizeTransaction } from 'sequelize';
 
@@ -134,7 +138,7 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
         acceptedAt: { [Op.not]: null },
       },
     }),
-    // Budgeted amounts are cents in the plan's stamped currency, so a silent
+    // Budgeted amounts are plain numbers in the plan's stamped currency, so a silent
     // switch would turn 300 UAH into 300 EUR. A soft-deleted plan (excluded by
     // the paranoid scope) doesn't lock: restore compares `currencyCode` instead.
     BudgetPlans.count({ where: { userId } }),
@@ -189,9 +193,9 @@ export async function validateBaseCurrencyChange({ userId, newCurrencyCode }: Ch
 /**
  * Rewrites every `ref*` amount the user owns into the new base currency inside one
  * atomic DB transaction, flips the `UsersCurrencies` default, and clears the
- * `ref_amount:{userId}:*` cache. Re-runs {@link validateBaseCurrencyChange} first
- * (in-job re-check), then sweeps the eight tables in order, invoking `onProgress`
- * before each so the running job reports its current step.
+ * `ref_amount:v2:{userId}:*` cache (`buildRefAmountCachePattern`). Re-runs
+ * {@link validateBaseCurrencyChange} first (in-job re-check), then sweeps the eight tables
+ * in order, invoking `onProgress` before each so the running job reports its current step.
  *
  * Foreign-currency accounts' balance history is rebuilt after that transaction
  * commits: a rebuild inside it would still read the old base currency.
@@ -347,8 +351,34 @@ const localCalculateRefAmount = async ({
     ...exchangeRateParams,
     date: new Date(exchangeRateParams.date),
   });
+  const decimals = await getConversionDecimals({
+    userId: exchangeRateParams.userId,
+    baseCode: exchangeRateParams.baseCode,
+    quoteCode: exchangeRateParams.quoteCode,
+  });
 
-  return calculateRefAmountFromParams({ amount, rate, useFloorAbs });
+  return calculateRefAmountFromParams({ amount, rate, useFloorAbs, ...decimals });
+};
+
+/**
+ * Like `localCalculateRefAmount`, but a conversion that involves a custom currency and has no
+ * rate answers `null` instead of throwing, so one unpriced holding never aborts the whole change:
+ * the row keeps a missing base-currency amount until its owner provides a rate. An ISO conversion
+ * with no rate keeps throwing, as it always has. A zero amount converts to zero without a rate.
+ *
+ * Custom legs resolve through `getExchangeRate`, the same path every other write uses: the user's
+ * rate in its stored quote currency, crossed into the new base with the ISO resolution of that
+ * quote on the row's own date. No rate row is read for rewriting or rewritten.
+ */
+const localCalculateRefAmountOrNull = async (params: Parameters<typeof localCalculateRefAmount>[0]) => {
+  try {
+    return await localCalculateRefAmount(params);
+  } catch (error) {
+    if (!(error instanceof ExchangeRateUnavailableError)) throw error;
+    if (!(await includesCustomCurrencyCode({ codes: [params.baseCode, params.quoteCode] }))) throw error;
+
+    return params.amount.isZero() ? Money.zero() : null;
+  }
 };
 
 /**
@@ -378,7 +408,7 @@ async function rebuildTransactions(params: {
 
   for (const tx of transactions) {
     // Calculate new refAmount using the transaction's original date
-    const newRefAmount = await localCalculateRefAmount({
+    const newRefAmount = await localCalculateRefAmountOrNull({
       amount: tx.amount,
       userId,
       baseCode: tx.currencyCode,
@@ -387,9 +417,9 @@ async function rebuildTransactions(params: {
     });
 
     // Calculate new refCommissionRate if commission exists
-    let newRefCommissionRate: Money = Money.zero();
+    let newRefCommissionRate: Money | null = Money.zero();
     if (!tx.commissionRate.isZero()) {
-      newRefCommissionRate = await localCalculateRefAmount({
+      newRefCommissionRate = await localCalculateRefAmountOrNull({
         amount: tx.commissionRate,
         userId,
         baseCode: tx.currencyCode,
@@ -404,6 +434,8 @@ async function rebuildTransactions(params: {
     tx.refAmount = newRefAmount;
     tx.refCommissionRate = newRefCommissionRate;
     tx.refCurrencyCode = newCurrencyCode;
+    // The save below skips hooks, which is where the flag normally follows `refAmount`.
+    tx.refAmountMissing = newRefAmount === null;
     await tx.save({ transaction, hooks: false });
   }
 
@@ -457,7 +489,7 @@ async function recalculateAccounts(params: {
       account.accountCategory !== ACCOUNT_CATEGORIES.vehicle;
     const initialBalanceDate = isBoundaryStamped ? (boundaryByAccountId.get(account.id) ?? today) : today;
 
-    const newRefInitialBalance = await localCalculateRefAmount({
+    const newRefInitialBalance = await localCalculateRefAmountOrNull({
       amount: account.initialBalance,
       userId,
       baseCode: account.currencyCode,
@@ -466,7 +498,7 @@ async function recalculateAccounts(params: {
     });
 
     // Recalculate credit limit (use today's rate)
-    const newRefCreditLimit = await localCalculateRefAmount({
+    const newRefCreditLimit = await localCalculateRefAmountOrNull({
       amount: account.creditLimit,
       userId,
       baseCode: account.currencyCode,
@@ -477,7 +509,7 @@ async function recalculateAccounts(params: {
     // `refCurrentBalance` is a spot measure for every account type: the native
     // balance at today's rate in the new base currency. Reconstructing it from
     // recalculated tx refAmounts would re-derive a blend of historical rates.
-    const newRefCurrentBalance = await localCalculateRefAmount({
+    const newRefCurrentBalance = await localCalculateRefAmountOrNull({
       amount: account.currentBalance,
       userId,
       baseCode: account.currencyCode,
@@ -563,7 +595,7 @@ async function writeBalanceAmounts({
   rows,
   transaction,
 }: {
-  rows: { id: string; amountCents: number }[];
+  rows: { id: string; amount: Money }[];
   transaction: SequelizeTransaction;
 }): Promise<void> {
   for (let offset = 0; offset < rows.length; offset += ROWS_PER_UPDATE) {
@@ -571,8 +603,8 @@ async function writeBalanceAmounts({
     const replacements: Record<string, unknown> = {};
     const values = chunk.map((row, index) => {
       replacements[`id${index}`] = row.id;
-      replacements[`amount${index}`] = row.amountCents;
-      return `(:id${index}::uuid, :amount${index}::bigint)`;
+      replacements[`amount${index}`] = toMoneyColumnValue({ money: row.amount });
+      return `(:id${index}::uuid, :amount${index}::numeric)`;
     });
 
     await Transactions.sequelize!.query(
@@ -643,7 +675,8 @@ async function rebuildBalances(params: {
     transaction,
   });
 
-  const updates: { id: string; amountCents: number }[] = [];
+  const updates: { id: string; amount: Money }[] = [];
+  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
 
   for (const balance of balances) {
     const rate = resolveRate?.(toDayKey(balance.date)) ?? null;
@@ -656,9 +689,9 @@ async function rebuildBalances(params: {
             quoteCode: newCurrencyCode,
             date: balance.date,
           })
-        : calculateRefAmountFromParams({ amount: balance.amount, rate });
+        : calculateRefAmountFromParams({ amount: balance.amount, rate, ...decimals });
 
-    updates.push({ id: balance.id, amountCents: newAmount.toCents() });
+    updates.push({ id: balance.id, amount: newAmount });
     totalBalancesRecalculated++;
   }
 
@@ -897,11 +930,12 @@ async function convertFireSettingsAmounts({
     quoteCode: newCurrencyCode,
     date: new Date(),
   });
+  const decimals = await getConversionDecimals({ userId, baseCode: oldCurrencyCode, quoteCode: newCurrencyCode });
   const converted = { ...fire };
   for (const key of FIRE_AMOUNT_KEYS) {
     const value = fire[key];
     if (value == null) continue;
-    converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate }).toNumber();
+    converted[key] = calculateRefAmountFromParams({ amount: Money.fromDecimal(value), rate, ...decimals }).toNumber();
   }
 
   userSettings.settings = { ...userSettings.settings, fire: converted };
@@ -913,7 +947,7 @@ async function convertFireSettingsAmounts({
  * After changing base currency, all cached ref_amount values are invalid
  * because they were calculated with the OLD base currency.
  *
- * Uses Redis SCAN to safely iterate and delete all ref_amount keys for this user.
+ * Deletes every ref_amount key of this user by KEYS pattern match.
  */
 async function clearUserCache(userId: number): Promise<void> {
   logger.info(`Clearing ref_amount cache for user ${userId}`);
@@ -921,10 +955,7 @@ async function clearUserCache(userId: number): Promise<void> {
   try {
     const cache = new CacheClient({ logPrefix: 'clearUserCache' });
 
-    // Delete all ref_amount cache keys for this user using pattern matching
-    // Pattern: ref_amount:${userId}:*
-    const pattern = `ref_amount:${userId}:*`;
-    await cache.delete(pattern, true); // isPattern=true triggers SCAN-based deletion
+    await cache.delete(buildRefAmountCachePattern({ userId }), true); // isPattern=true triggers key-pattern deletion
 
     logger.info(`Successfully cleared ref_amount cache for user ${userId}`);
   } catch (error) {

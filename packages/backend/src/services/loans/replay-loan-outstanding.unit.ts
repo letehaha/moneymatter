@@ -5,6 +5,7 @@ import { replayLoanOutstanding } from './replay-loan-outstanding';
 
 interface FakeLeg {
   time: string;
+  /** Minor units the leg contributes, at the scale of the replay. */
   cents: number;
 }
 
@@ -13,7 +14,8 @@ const replay = ({ legs, anchorDate, opening }: { legs: FakeLeg[]; anchorDate: st
     legs,
     anchorDate,
     openingBalance: Money.fromCents(opening),
-    pickCents: ({ leg }) => leg.cents,
+    decimals: 2,
+    pickMinor: ({ leg }) => leg.cents,
   }).map((point) => ({ date: point.date, cents: point.balance.toCents() }));
 
 describe('replayLoanOutstanding', () => {
@@ -65,6 +67,38 @@ describe('replayLoanOutstanding', () => {
     expect(replay({ legs, anchorDate: '2024-01-01', opening: -10000 })).toEqual([
       { date: '2024-01-01', cents: -10000 },
       { date: '2024-01-05', cents: 0 },
+    ]);
+  });
+});
+
+const replay3 = ({ legs, opening }: { legs: FakeLeg[]; opening: Money }) =>
+  replayLoanOutstanding({
+    legs,
+    anchorDate: '2024-01-01',
+    openingBalance: opening,
+    decimals: 3,
+    pickMinor: ({ leg }) => leg.cents,
+  }).map((point) => ({ date: point.date, balance: point.balance.toNumber() }));
+
+describe('replayLoanOutstanding at 3 decimals', () => {
+  it('adds the minor units of each leg at the currency decimals', () => {
+    const legs: FakeLeg[] = [
+      { time: '2024-01-10T09:00:00Z', cents: 10_125 },
+      { time: '2024-01-10T20:00:00Z', cents: 1 },
+    ];
+
+    expect(replay3({ legs, opening: Money.fromDecimal(-1000.125) })).toEqual([
+      { date: '2024-01-01', balance: -1000.125 },
+      { date: '2024-01-10', balance: -989.999 },
+    ]);
+  });
+
+  it('floors at zero when a 3-decimal payment overshoots', () => {
+    const legs: FakeLeg[] = [{ time: '2024-01-05T00:00:00Z', cents: 500_000 }];
+
+    expect(replay3({ legs, opening: Money.fromDecimal(-1.5) })).toEqual([
+      { date: '2024-01-01', balance: -1.5 },
+      { date: '2024-01-05', balance: 0 },
     ]);
   });
 });

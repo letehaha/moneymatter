@@ -1,4 +1,3 @@
-import { centsToApiDecimal } from '@common/types/money';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { listPayees } from '@services/payees';
@@ -28,7 +27,7 @@ export function registerGetPayees(server: McpServer) {
         name: payee.name,
         defaultCategoryId: payee.defaultCategoryId,
         transactionCount: stats?.transactionCount ?? 0,
-        netFlowRef: stats ? centsToApiDecimal(stats.netFlowRefCents) : 0,
+        netFlowRef: stats ? stats.netFlowRef.toNumber() : 0,
         firstSeenAt: stats?.firstSeenAt ?? null,
         lastSeenAt: stats?.lastSeenAt ?? null,
         topCategoryId: stats?.topCategoryId ?? null,

@@ -477,6 +477,46 @@
     {
       "name": "delete_venture_event",
       "description": "Delete a venture event; unlinks bank transactions first. Cannot delete initial_investment while other events exist. Requires finance:delete scope."
+    },
+    {
+      "name": "list_custom_currencies",
+      "description": "List the user's custom currencies (points, tokens, local units) with code, name, symbol, decimals, and logo."
+    },
+    {
+      "name": "create_custom_currency",
+      "description": "Define a custom currency for the user. The code must not be an ISO code; base-currency values need a rate source or manual rates. Requires finance:write scope."
+    },
+    {
+      "name": "update_custom_currency",
+      "description": "Change a custom currency's name, decimals, symbol, or logo. Decimals cannot change while the currency is in use. Requires finance:write scope."
+    },
+    {
+      "name": "delete_custom_currency",
+      "description": "Delete a custom currency and the user's exchange rates for it. Refused while any account, transaction, or other record uses it. Requires finance:delete scope."
+    },
+    {
+      "name": "search_coingecko_coins",
+      "description": "Search CoinGecko coins by name or symbol to find the coinId for a CoinGecko rate source. Needs the instance's CoinGecko key."
+    },
+    {
+      "name": "get_currency_rate_history",
+      "description": "List a custom currency's stored rates, latest first, with source, effective date, and which rate is in force. Paged, up to 100 per page."
+    },
+    {
+      "name": "set_currency_rate_source",
+      "description": "Set how a currency gets its rates: provider, manual, peg, coingecko, or http. A change re-values saved rows of a custom currency. Rate limited to 20 per minute. Requires finance:write scope."
+    },
+    {
+      "name": "test_currency_rate_source",
+      "description": "Preview an HTTP rate source: fetches one day's rate with the given URL template and JSON path and saves nothing. Rate limited to 20 per minute. Requires finance:write scope."
+    },
+    {
+      "name": "set_exchange_rates",
+      "description": "Set exchange rates for currency pairs, each pair with its opposite in the same call. A custom-currency pair can take an effective date. Requires finance:write scope."
+    },
+    {
+      "name": "delete_exchange_rates",
+      "description": "Remove the user's own exchange rates for pairs, each with its opposite; an effective date removes only that day's rate. Requires finance:delete scope."
     }
   ],
   "prompts": [

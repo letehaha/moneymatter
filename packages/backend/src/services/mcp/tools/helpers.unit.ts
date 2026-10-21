@@ -1,7 +1,10 @@
 import { TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
+import { RateLimitService } from '@services/common/rate-limit.service';
+import { RATE_SOURCE_SAVE_LIMIT } from '@services/common/user-rate-limits';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 
-import { assertOriginalCurrencyArgs, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, assertOriginalCurrencyArgs, enforceUserRateLimit, requireScope } from './helpers';
 
 const authInfoFor = ({ role, scopes, readOnly = false }: { role: string; scopes: string[]; readOnly?: boolean }) => ({
   authInfo: { scopes, extra: { role, readOnly } },
@@ -87,5 +90,58 @@ describe('assertOriginalCurrencyArgs', () => {
     expect(() =>
       assertOriginalCurrencyArgs({ args: { ...pair, transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer } }),
     ).not.toThrow();
+  });
+});
+
+jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
+
+describe('assertBaseCurrencyUnlocked', () => {
+  const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
+
+  it('throws while a base-currency change holds the lock', async () => {
+    lockCheck.mockResolvedValueOnce(true);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/currencies.baseCurrencyChangeInProgress/);
+    expect(lockCheck).toHaveBeenCalledWith({ userId: 7 });
+  });
+
+  it('fails closed with the unavailable message when the lock check errors', async () => {
+    lockCheck.mockRejectedValueOnce(new Error('redis down'));
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/common.serviceTemporarilyUnavailable/);
+  });
+
+  it('passes while the user is unlocked', async () => {
+    lockCheck.mockResolvedValueOnce(false);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).resolves.toBeUndefined();
+  });
+});
+
+jest.mock('@services/common/rate-limit.service', () => ({ RateLimitService: { checkRateLimit: jest.fn() } }));
+
+describe('enforceUserRateLimit', () => {
+  const checkRateLimit = jest.mocked(RateLimitService.checkRateLimit);
+
+  it('counts the call on the limit key of the user, with the budget of the limit', async () => {
+    checkRateLimit.mockResolvedValueOnce({ allowed: true });
+
+    await enforceUserRateLimit({ userId: 7, limit: RATE_SOURCE_SAVE_LIMIT });
+
+    expect(checkRateLimit).toHaveBeenCalledWith('rate-source-save:user:7', 60, 20);
+  });
+
+  it('throws the too-many-requests message when the limiter refuses', async () => {
+    checkRateLimit.mockResolvedValueOnce({ allowed: false, remainingSeconds: 30 });
+
+    await expect(enforceUserRateLimit({ userId: 7, limit: RATE_SOURCE_SAVE_LIMIT })).rejects.toThrow(
+      /middleware.tooManyRequests/,
+    );
+  });
+
+  it('lets the call through when Redis is down, as the REST middleware does', async () => {
+    checkRateLimit.mockResolvedValueOnce({ allowed: true, serviceUnavailable: true });
+
+    await expect(enforceUserRateLimit({ userId: 7, limit: RATE_SOURCE_SAVE_LIMIT })).resolves.toBeUndefined();
   });
 });

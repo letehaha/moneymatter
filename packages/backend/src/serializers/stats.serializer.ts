@@ -2,7 +2,8 @@
  * Stats Serializers
  *
  * Serializes stats data for API responses.
- * Uses Money.fromCents() for raw cents values from services/aggregates.
+ * Report amounts arrive as integer minor units at the base currency's decimals; the serializers
+ * that take `decimals` convert them with `minorUnitsToApiDecimal`.
  */
 import type {
   CumulativePeriodData,
@@ -17,14 +18,14 @@ import type {
   GetSpendingsByCategoriesReturnType,
   GetVentureContributionsResponse,
 } from '@bt/shared/types';
-import { centsToApiDecimal } from '@common/types/money';
+import { minorUnitsToApiDecimal, moneyToApiDecimal } from '@common/types/money';
 import type Balances from '@models/balances.model';
 import type { CombinedBalanceHistoryItem } from '@services/stats/get-combined-balance-history';
-import type { InvestmentContributionsResultCents } from '@services/stats/get-investment-contributions';
-import type { NetWorthDriversResultCents } from '@services/stats/get-net-worth-drivers';
-import type { NetWorthHistoryResultCents } from '@services/stats/get-net-worth-history';
-import type { PivotReportResultCents } from '@services/stats/get-pivot';
-import type { VentureContributionCents } from '@services/stats/get-venture-contributions';
+import type { InvestmentContributionsResultMinor } from '@services/stats/get-investment-contributions';
+import type { NetWorthDriversResultMinor } from '@services/stats/get-net-worth-drivers';
+import type { NetWorthHistoryResultMinor } from '@services/stats/get-net-worth-history';
+import type { PivotReportResultMinor } from '@services/stats/get-pivot';
+import type { VentureContributionMinor } from '@services/stats/get-venture-contributions';
 
 import { serializeLogoFields } from './logo-fields.serializer';
 
@@ -39,12 +40,13 @@ interface BalanceHistoryItemApiResponse {
 }
 
 /**
- * Serialize balance history items (from getBalanceHistory)
+ * Serialize balance history items (from getBalanceHistory). Each amount is a `Money`, so no scale
+ * is needed.
  */
 export function serializeBalanceHistory(balances: Balances[]): BalanceHistoryItemApiResponse[] {
   return balances.map((balance) => ({
     date: balance.date,
-    amount: centsToApiDecimal(balance.amount),
+    amount: moneyToApiDecimal(balance.amount),
     accountId: balance.accountId,
   }));
 }
@@ -56,8 +58,8 @@ export function serializeBalanceHistory(balances: Balances[]): BalanceHistoryIte
 /**
  * Serialize total balance (from getTotalBalance)
  */
-export function serializeTotalBalance(totalCents: number): number {
-  return centsToApiDecimal(totalCents);
+export function serializeTotalBalance({ totalMinor, decimals }: { totalMinor: number; decimals: number }): number {
+  return minorUnitsToApiDecimal({ value: totalMinor, decimals });
 }
 
 // ============================================================================
@@ -77,16 +79,20 @@ type GetSpendingsByCategoriesApiResponse = {
 /**
  * Serialize spendings by categories (from getSpendingsByCategories)
  */
-export function serializeSpendingsByCategories(
-  spendings: GetSpendingsByCategoriesReturnType,
-): GetSpendingsByCategoriesApiResponse {
+export function serializeSpendingsByCategories({
+  spendings,
+  decimals,
+}: {
+  spendings: GetSpendingsByCategoriesReturnType;
+  decimals: number;
+}): GetSpendingsByCategoriesApiResponse {
   const result: GetSpendingsByCategoriesApiResponse = {};
 
   for (const [categoryId, spending] of Object.entries(spendings)) {
     result[categoryId] = {
       name: spending.name,
       color: spending.color,
-      amount: centsToApiDecimal(spending.amount),
+      amount: minorUnitsToApiDecimal({ value: spending.amount, decimals }),
     };
   }
 
@@ -107,17 +113,21 @@ type GetSpendingsByCategoriesByTypeApiResponse = {
 /**
  * Serialize per-type spendings by categories (from getSpendingsByCategoriesByType)
  */
-export function serializeSpendingsByCategoriesByType(
-  spendings: GetSpendingsByCategoriesByTypeReturnType,
-): GetSpendingsByCategoriesByTypeApiResponse {
+export function serializeSpendingsByCategoriesByType({
+  spendings,
+  decimals,
+}: {
+  spendings: GetSpendingsByCategoriesByTypeReturnType;
+  decimals: number;
+}): GetSpendingsByCategoriesByTypeApiResponse {
   const result: GetSpendingsByCategoriesByTypeApiResponse = {};
 
   for (const [categoryId, spending] of Object.entries(spendings)) {
     result[categoryId] = {
       name: spending.name,
       color: spending.color,
-      income: centsToApiDecimal(spending.income),
-      expense: centsToApiDecimal(spending.expense),
+      income: minorUnitsToApiDecimal({ value: spending.income, decimals }),
+      expense: minorUnitsToApiDecimal({ value: spending.expense, decimals }),
     };
   }
 
@@ -158,26 +168,34 @@ interface GetCashFlowApiResponse {
 /**
  * Serialize cash flow response (from getCashFlow)
  */
-export function serializeCashFlow(cashFlow: GetCashFlowResponse): GetCashFlowApiResponse {
+export function serializeCashFlow({
+  cashFlow,
+  decimals,
+}: {
+  cashFlow: GetCashFlowResponse;
+  decimals: number;
+}): GetCashFlowApiResponse {
+  const toDecimal = (value: number) => minorUnitsToApiDecimal({ value, decimals });
+
   return {
     periods: cashFlow.periods.map((period) => ({
       periodStart: period.periodStart,
       periodEnd: period.periodEnd,
-      income: centsToApiDecimal(period.income),
-      expenses: centsToApiDecimal(period.expenses),
-      netFlow: centsToApiDecimal(period.netFlow),
+      income: toDecimal(period.income),
+      expenses: toDecimal(period.expenses),
+      netFlow: toDecimal(period.netFlow),
       categories: period.categories?.map((category) => ({
         categoryId: category.categoryId,
         name: category.name,
         color: category.color,
-        incomeAmount: centsToApiDecimal(category.incomeAmount),
-        expenseAmount: centsToApiDecimal(category.expenseAmount),
+        incomeAmount: toDecimal(category.incomeAmount),
+        expenseAmount: toDecimal(category.expenseAmount),
       })),
     })),
     totals: {
-      income: centsToApiDecimal(cashFlow.totals.income),
-      expenses: centsToApiDecimal(cashFlow.totals.expenses),
-      netFlow: centsToApiDecimal(cashFlow.totals.netFlow),
+      income: toDecimal(cashFlow.totals.income),
+      expenses: toDecimal(cashFlow.totals.expenses),
+      netFlow: toDecimal(cashFlow.totals.netFlow),
       savingsRate: cashFlow.totals.savingsRate,
     },
   };
@@ -187,22 +205,33 @@ export function serializeCashFlow(cashFlow: GetCashFlowResponse): GetCashFlowApi
 // Pivot Report Serializer
 // ============================================================================
 
-// Convert every cents amount in a keyed record to an API decimal, preserving the
-// key type — a plain `Record<string, number>` for the pivot columns, or a
-// closed-kind record (assets/liabilities) whose exact keys are kept intact.
-const decimalizeValues = <K extends string>(values: Record<K, number>): Record<K, number> => {
+// Convert every minor-units amount in a keyed record to an API decimal, preserving the key type
+// — a closed-kind record (assets/liabilities) whose exact keys are kept intact.
+const decimalizeMinorValues = <K extends string>({
+  values,
+  decimals,
+}: {
+  values: Record<K, number>;
+  decimals: number;
+}): Record<K, number> => {
   const result = {} as Record<K, number>;
   for (const key of Object.keys(values) as K[]) {
-    result[key] = centsToApiDecimal(values[key]);
+    result[key] = minorUnitsToApiDecimal({ value: values[key], decimals });
   }
   return result;
 };
 
 /**
- * Serialize pivot report (from getPivotReport). Converts every cents amount to an API decimal;
+ * Serialize pivot report (from getPivotReport). Converts every minor-units amount to an API decimal;
  * row/column identity, labels, colors and currency pass through unchanged.
  */
-export function serializePivotReport(result: PivotReportResultCents): GetPivotReportResponse {
+export function serializePivotReport({
+  result,
+  decimals,
+}: {
+  result: PivotReportResultMinor;
+  decimals: number;
+}): GetPivotReportResponse {
   return {
     columns: result.columns,
     rows: result.rows.map((row) => ({
@@ -213,11 +242,11 @@ export function serializePivotReport(result: PivotReportResultCents): GetPivotRe
       ...(row.logoDomain !== undefined ? serializeLogoFields({ entity: row as EntityLogoFields }) : {}),
       parentId: row.parentId,
       kind: row.kind,
-      values: decimalizeValues(row.values),
-      total: centsToApiDecimal(row.total),
+      values: decimalizeMinorValues({ values: row.values, decimals }),
+      total: minorUnitsToApiDecimal({ value: row.total, decimals }),
     })),
-    columnTotals: decimalizeValues(result.columnTotals),
-    grandTotal: centsToApiDecimal(result.grandTotal),
+    columnTotals: decimalizeMinorValues({ values: result.columnTotals, decimals }),
+    grandTotal: minorUnitsToApiDecimal({ value: result.grandTotal, decimals }),
     currencyCode: result.currencyCode,
   };
 }
@@ -248,26 +277,38 @@ interface GetCumulativeApiResponse {
 /**
  * Serialize cumulative period data
  */
-function serializeCumulativePeriod(period: CumulativePeriodData): CumulativePeriodDataApiResponse {
+function serializeCumulativePeriod({
+  period,
+  decimals,
+}: {
+  period: CumulativePeriodData;
+  decimals: number;
+}): CumulativePeriodDataApiResponse {
   return {
     year: period.year,
     data: period.data.map((monthData) => ({
       month: monthData.month,
       monthLabel: monthData.monthLabel,
-      value: centsToApiDecimal(monthData.value),
-      periodValue: centsToApiDecimal(monthData.periodValue),
+      value: minorUnitsToApiDecimal({ value: monthData.value, decimals }),
+      periodValue: minorUnitsToApiDecimal({ value: monthData.periodValue, decimals }),
     })),
-    total: centsToApiDecimal(period.total),
+    total: minorUnitsToApiDecimal({ value: period.total, decimals }),
   };
 }
 
 /**
  * Serialize cumulative response (from getCumulativeData)
  */
-export function serializeCumulativeData(cumulative: GetCumulativeResponse): GetCumulativeApiResponse {
+export function serializeCumulativeData({
+  cumulative,
+  decimals,
+}: {
+  cumulative: GetCumulativeResponse;
+  decimals: number;
+}): GetCumulativeApiResponse {
   return {
-    currentPeriod: serializeCumulativePeriod(cumulative.currentPeriod),
-    previousPeriod: serializeCumulativePeriod(cumulative.previousPeriod),
+    currentPeriod: serializeCumulativePeriod({ period: cumulative.currentPeriod, decimals }),
+    previousPeriod: serializeCumulativePeriod({ period: cumulative.previousPeriod, decimals }),
     percentChange: cumulative.percentChange,
   };
 }
@@ -289,17 +330,21 @@ interface CombinedBalanceHistoryItemApiResponse {
 /**
  * Serialize combined balance history (from getCombinedBalanceHistory)
  */
-export function serializeCombinedBalanceHistory(
-  items: CombinedBalanceHistoryItem[],
-): CombinedBalanceHistoryItemApiResponse[] {
+export function serializeCombinedBalanceHistory({
+  items,
+  decimals,
+}: {
+  items: CombinedBalanceHistoryItem[];
+  decimals: number;
+}): CombinedBalanceHistoryItemApiResponse[] {
   return items.map((item) => ({
     date: item.date,
-    accountsBalance: centsToApiDecimal(item.accountsBalance),
-    portfoliosBalance: centsToApiDecimal(item.portfoliosBalance),
-    venturesBalance: centsToApiDecimal(item.venturesBalance),
-    vehiclesBalance: centsToApiDecimal(item.vehiclesBalance),
-    loansBalance: centsToApiDecimal(item.loansBalance),
-    totalBalance: centsToApiDecimal(item.totalBalance),
+    accountsBalance: minorUnitsToApiDecimal({ value: item.accountsBalance, decimals }),
+    portfoliosBalance: minorUnitsToApiDecimal({ value: item.portfoliosBalance, decimals }),
+    venturesBalance: minorUnitsToApiDecimal({ value: item.venturesBalance, decimals }),
+    vehiclesBalance: minorUnitsToApiDecimal({ value: item.vehiclesBalance, decimals }),
+    loansBalance: minorUnitsToApiDecimal({ value: item.loansBalance, decimals }),
+    totalBalance: minorUnitsToApiDecimal({ value: item.totalBalance, decimals }),
   }));
 }
 
@@ -310,8 +355,14 @@ export function serializeCombinedBalanceHistory(
 /**
  * Serialize expenses amount for period (from getExpensesAmountForPeriod)
  */
-export function serializeExpensesAmountForPeriod(amountCents: number): number {
-  return centsToApiDecimal(amountCents);
+export function serializeExpensesAmountForPeriod({
+  amountMinor,
+  decimals,
+}: {
+  amountMinor: number;
+  decimals: number;
+}): number {
+  return minorUnitsToApiDecimal({ value: amountMinor, decimals });
 }
 
 // ============================================================================
@@ -324,29 +375,35 @@ export function serializeExpensesAmountForPeriod(amountCents: number): number {
  * pass through as dates, the `portfolios` legend (ids and names, no money) and
  * `degraded` (securities and currency codes, no money) forward untouched.
  */
-export function serializeNetWorthDrivers(result: NetWorthDriversResultCents): GetNetWorthDriversResponse {
+export function serializeNetWorthDrivers({
+  result,
+  decimals,
+}: {
+  result: NetWorthDriversResultMinor;
+  decimals: number;
+}): GetNetWorthDriversResponse {
   return {
     buckets: result.buckets.map((bucket) => ({
       periodStart: bucket.periodStart,
       periodEnd: bucket.periodEnd,
       savings: {
-        income: centsToApiDecimal(bucket.savings.income),
-        expenses: centsToApiDecimal(bucket.savings.expenses),
-        net: centsToApiDecimal(bucket.savings.net),
+        income: minorUnitsToApiDecimal({ value: bucket.savings.income, decimals }),
+        expenses: minorUnitsToApiDecimal({ value: bucket.savings.expenses, decimals }),
+        net: minorUnitsToApiDecimal({ value: bucket.savings.net, decimals }),
       },
       investments: {
-        growth: centsToApiDecimal(bucket.investments.growth),
-        priceEffect: centsToApiDecimal(bucket.investments.priceEffect),
-        dividends: centsToApiDecimal(bucket.investments.dividends),
-        feesAndTaxes: centsToApiDecimal(bucket.investments.feesAndTaxes),
+        growth: minorUnitsToApiDecimal({ value: bucket.investments.growth, decimals }),
+        priceEffect: minorUnitsToApiDecimal({ value: bucket.investments.priceEffect, decimals }),
+        dividends: minorUnitsToApiDecimal({ value: bucket.investments.dividends, decimals }),
+        feesAndTaxes: minorUnitsToApiDecimal({ value: bucket.investments.feesAndTaxes, decimals }),
         byPortfolio: bucket.investments.byPortfolio.map((slice) => ({
           portfolioId: slice.portfolioId,
-          growth: centsToApiDecimal(slice.growth),
+          growth: minorUnitsToApiDecimal({ value: slice.growth, decimals }),
         })),
       },
       composition: {
-        holdingsValue: centsToApiDecimal(bucket.composition.holdingsValue),
-        cashValue: centsToApiDecimal(bucket.composition.cashValue),
+        holdingsValue: minorUnitsToApiDecimal({ value: bucket.composition.holdingsValue, decimals }),
+        cashValue: minorUnitsToApiDecimal({ value: bucket.composition.cashValue, decimals }),
       },
     })),
     portfolios: result.portfolios,
@@ -366,15 +423,21 @@ export function serializeNetWorthDrivers(result: NetWorthDriversResultCents): Ge
  * every amount is decimalized; the snapshot dates pass through unchanged, and
  * `degraded` (securities and currency codes, no money) forwards untouched.
  */
-export function serializeNetWorthHistory(result: NetWorthHistoryResultCents): GetNetWorthHistoryResponse {
+export function serializeNetWorthHistory({
+  result,
+  decimals,
+}: {
+  result: NetWorthHistoryResultMinor;
+  decimals: number;
+}): GetNetWorthHistoryResponse {
   return {
     points: result.points.map((point) => ({
       date: point.date,
-      assets: decimalizeValues(point.assets),
-      assetsTotal: centsToApiDecimal(point.assetsTotal),
-      liabilities: decimalizeValues(point.liabilities),
-      liabilitiesTotal: centsToApiDecimal(point.liabilitiesTotal),
-      netWorth: centsToApiDecimal(point.netWorth),
+      assets: decimalizeMinorValues({ values: point.assets, decimals }),
+      assetsTotal: minorUnitsToApiDecimal({ value: point.assetsTotal, decimals }),
+      liabilities: decimalizeMinorValues({ values: point.liabilities, decimals }),
+      liabilitiesTotal: minorUnitsToApiDecimal({ value: point.liabilitiesTotal, decimals }),
+      netWorth: minorUnitsToApiDecimal({ value: point.netWorth, decimals }),
     })),
     // Kept off the response entirely when the service reports nothing degraded: the
     // contract lets a client decide on `degraded` alone whether to warn, and a
@@ -393,24 +456,38 @@ export function serializeNetWorthHistory(result: NetWorthHistoryResultCents): Ge
  * are decimalized; period bounds pass through as dates and the `portfolios` legend
  * (ids and names, no money) forwards untouched.
  */
-export function serializeInvestmentContributions(
-  result: InvestmentContributionsResultCents,
-): GetInvestmentContributionsResponse {
+export function serializeInvestmentContributions({
+  result,
+  decimals,
+}: {
+  result: InvestmentContributionsResultMinor;
+  decimals: number;
+}): GetInvestmentContributionsResponse {
   return {
     buckets: result.buckets.map((bucket) => ({
       periodStart: bucket.periodStart,
       periodEnd: bucket.periodEnd,
-      total: centsToApiDecimal(bucket.total),
+      total: minorUnitsToApiDecimal({ value: bucket.total, decimals }),
       byPortfolio: bucket.byPortfolio.map((slice) => ({
         portfolioId: slice.portfolioId,
-        amount: centsToApiDecimal(slice.amount),
+        amount: minorUnitsToApiDecimal({ value: slice.amount, decimals }),
       })),
-      savingsNet: centsToApiDecimal(bucket.savingsNet),
+      savingsNet: minorUnitsToApiDecimal({ value: bucket.savingsNet, decimals }),
     })),
     portfolios: result.portfolios,
   };
 }
 
-export function serializeVentureContributions(result: VentureContributionCents[]): GetVentureContributionsResponse {
-  return result.map((deal) => ({ dealId: deal.dealId, name: deal.name, amount: centsToApiDecimal(deal.amount) }));
+export function serializeVentureContributions({
+  result,
+  decimals,
+}: {
+  result: VentureContributionMinor[];
+  decimals: number;
+}): GetVentureContributionsResponse {
+  return result.map((deal) => ({
+    dealId: deal.dealId,
+    name: deal.name,
+    amount: minorUnitsToApiDecimal({ value: deal.amount, decimals }),
+  }));
 }

@@ -6,6 +6,9 @@ import UsersCurrenciesModel, * as UsersCurrencies from '@models/users-currencies
 import { withTransaction } from '@services/common/with-transaction';
 import { ensureUserCurrencyConnected } from '@services/sharing/auth/ensure-currency-connected.service';
 import { setDefaultUserCurrency } from '@services/user.service';
+import { Op } from 'sequelize';
+
+import { getOwnCustomCurrencyCodes } from './assert-currency-codes-visible';
 
 // Picks a currency to adopt as the user's base/default currency when none is
 // set yet. Accounts and UsersCurrencies rows carry time-ordered UUIDv7 ids, so
@@ -23,8 +26,12 @@ const resolveBaseCurrencyCode = async ({
   userId: number;
   fallbackCurrencyCode?: string;
 }): Promise<string | null> => {
+  // A custom currency cannot be the base: it has no market rates to convert through.
+  const customCodes = await getOwnCustomCurrencyCodes({ userId });
+  const notCustom = customCodes.length ? { currencyCode: { [Op.notIn]: customCodes } } : {};
+
   const oldestAccount = await Accounts.findOne({
-    where: { userId },
+    where: { userId, ...notCustom },
     order: [['id', 'ASC']],
     attributes: ['currencyCode'],
     raw: true,
@@ -32,7 +39,7 @@ const resolveBaseCurrencyCode = async ({
   if (oldestAccount?.currencyCode) return oldestAccount.currencyCode;
 
   const oldestConnectedCurrency = await UsersCurrencies.default.findOne({
-    where: { userId },
+    where: { userId, ...notCustom },
     order: [['id', 'ASC']],
     attributes: ['currencyCode'],
     raw: true,

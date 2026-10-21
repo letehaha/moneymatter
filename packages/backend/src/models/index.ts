@@ -80,11 +80,12 @@ import VentureEventLinksModel from './venture/venture-event-links.model';
 import VentureEventsModel from './venture/venture-events.model';
 import VenturePlatformsModel from './venture/venture-platforms.model';
 
-// node-postgres returns BIGINT as string to preserve precision. Our cents
-// columns are BIGINT, but cent values stay far below JS Number's safe 2^53
-// ceiling (~$90T). Parse to Number so model getters, hooks, raw queries, and
-// API serializers all see numbers uniformly. pg only invokes the parser for
-// non-null values, so we don't need a null branch.
+// node-postgres returns BIGINT as string to preserve precision. The BIGINT values
+// we read are counts (`COUNT(*)`), ids and sizes, which stay far below JS Number's
+// safe 2^53 ceiling. Parse to Number so model getters, hooks, raw queries, and
+// API serializers all see numbers uniformly. Money lives in DECIMAL columns, which
+// pg keeps as exact strings. pg only invokes the parser for non-null values, so we
+// don't need a null branch.
 pgTypes.setTypeParser(pgTypes.builtins.INT8, (val) => Number(val));
 
 const DBConfig: Record<string, unknown> = {

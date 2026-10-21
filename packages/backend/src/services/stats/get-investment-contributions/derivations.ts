@@ -1,21 +1,21 @@
-import { type Cents, asCents } from '@bt/shared/types';
+import { type MinorUnits, asMinorUnits } from '@bt/shared/types';
 import { type PeriodBucket, findBucketIndex } from '@services/stats/utils';
 
 import { type SavingsTransactionRow, accumulateSavings } from '../get-net-worth-drivers/savings';
 
-/** Portfolio-transfer fields the contribution fold reads, amount already in cents. */
+/** Portfolio-transfer fields the contribution fold reads, amount already in minor units. */
 interface ContributionTransferRow {
   fromPortfolioId: string | null;
   toPortfolioId: string | null;
-  /** Net cash the transfer moved, in base-currency cents, always positive. */
-  refAmountCents: Cents;
+  /** Net cash the transfer moved, in base-currency minor units, always positive. */
+  refAmountMinor: MinorUnits;
   /** DATEONLY `yyyy-MM-dd` — bucketed via `new Date(date)` to match the bucket edges. */
   date: string;
 }
 
 /**
- * Fold each portfolio transfer into its bucket as a signed net-cents delta: one
- * `portfolioId -> cents` map per bucket, positionally aligned with `buckets`.
+ * Fold each portfolio transfer into its bucket as a signed net minor-unit delta: one
+ * `portfolioId -> minor units` map per bucket, positionally aligned with `buckets`.
  *
  * A transfer counts only when it crosses a portfolio's outer boundary:
  *  - inbound (+) when a scoped portfolio is the destination and there is no source
@@ -42,8 +42,8 @@ export const accumulateContributions = ({
   transfers: ContributionTransferRow[];
   buckets: PeriodBucket[];
   scope: Set<string>;
-}): { byBucket: Map<string, Cents>[]; activePortfolioIds: Set<string> } => {
-  const byBucket: Map<string, Cents>[] = buckets.map(() => new Map<string, Cents>());
+}): { byBucket: Map<string, MinorUnits>[]; activePortfolioIds: Set<string> } => {
+  const byBucket: Map<string, MinorUnits>[] = buckets.map(() => new Map<string, MinorUnits>());
 
   for (const transfer of transfers) {
     const inbound =
@@ -55,10 +55,10 @@ export const accumulateContributions = ({
     let delta: number;
     if (inbound) {
       portfolioId = transfer.toPortfolioId!;
-      delta = transfer.refAmountCents;
+      delta = transfer.refAmountMinor;
     } else if (outbound) {
       portfolioId = transfer.fromPortfolioId!;
-      delta = -transfer.refAmountCents;
+      delta = -transfer.refAmountMinor;
     } else {
       // Both sides set, or the only scoped side is not the boundary-crossing one.
       continue;
@@ -70,7 +70,7 @@ export const accumulateContributions = ({
     if (bucketIndex === -1) continue;
 
     const bucketMap = byBucket[bucketIndex]!;
-    bucketMap.set(portfolioId, asCents((bucketMap.get(portfolioId) ?? 0) + delta));
+    bucketMap.set(portfolioId, asMinorUnits((bucketMap.get(portfolioId) ?? 0) + delta));
   }
 
   const activePortfolioIds = new Set<string>();
@@ -84,7 +84,7 @@ export const accumulateContributions = ({
 };
 
 /**
- * Net income-minus-expense in base-currency cents per bucket, positionally aligned
+ * Net income-minus-expense in base-currency minor units per bucket, positionally aligned
  * with `buckets`. A thin projection of the net-worth-drivers savings fold, keeping
  * only its `net` so both reports bucket the same transactions the same way.
  * Transfers never reach here — the caller filters them at the query level — so this
@@ -94,10 +94,13 @@ export const accumulateContributions = ({
 export const accumulateSavingsNet = ({
   transactions,
   buckets,
+  decimals,
 }: {
   transactions: SavingsTransactionRow[];
   buckets: PeriodBucket[];
-}): Cents[] => accumulateSavings({ transactions, buckets }).map((bucket) => bucket.net);
+  /** Decimals of the base currency: the scale `refAmount` is converted to minor units at. */
+  decimals: number;
+}): MinorUnits[] => accumulateSavings({ transactions, buckets, decimals }).map((bucket) => bucket.net);
 
 /**
  * Legend for the stacked chart: one entry per active portfolio, ordered by the
@@ -111,7 +114,7 @@ export const orderLegend = ({
   activePortfolioIds,
   nameById,
 }: {
-  byBucket: Map<string, Cents>[];
+  byBucket: Map<string, MinorUnits>[];
   activePortfolioIds: Set<string>;
   nameById: Map<string, string>;
 }): { portfolioId: string; name: string }[] => {

@@ -65,11 +65,24 @@ export function assertAccountNotBankLinked({ account }: { account: { type: ACCOU
   }
 }
 
+/**
+ * The currency of a portfolio cash movement. Portfolios are ISO-only, so a custom currency is
+ * rejected with 422: its transfer and cash balance would otherwise meet the investment base-change
+ * code, which has no missing-rate state.
+ */
 export async function findCurrencyOrThrow({ currencyCode }: { currencyCode: string }): Promise<Currencies> {
-  return findOrThrowNotFound({
+  const currency = await findOrThrowNotFound({
     query: Currencies.findByPk(currencyCode),
     message: t({ key: 'investments.currencyNotFound' }),
   });
+
+  if (currency.isCustom) {
+    throw new ValidationError({
+      message: t({ key: 'investments.customCurrencyNotSupported', variables: { code: currencyCode } }),
+    });
+  }
+
+  return currency;
 }
 
 export function negateAmount({ amount }: { amount: string }): string {

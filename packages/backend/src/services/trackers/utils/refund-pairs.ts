@@ -94,17 +94,24 @@ export const fetchTrackerRefundPairs = async ({
       : Promise.resolve([] as TransactionSplits[]),
   ]);
 
+  // A leg with no base-currency amount (custom currency, no rate yet) has nothing to net, so its pair drops out.
   const txById = new Map<string, RefundTxData>(
-    refundTxs.map((t) => [
-      t.id,
-      {
-        id: t.id,
-        refAmount: t.refAmount,
-        transactionType: t.transactionType,
-        time: t.time,
-        categoryId: t.categoryId,
-      },
-    ]),
+    refundTxs.flatMap((t) =>
+      t.refAmount === null
+        ? []
+        : [
+            [
+              t.id,
+              {
+                id: t.id,
+                refAmount: t.refAmount,
+                transactionType: t.transactionType,
+                time: t.time,
+                categoryId: t.categoryId,
+              },
+            ] as const,
+          ],
+    ),
   );
 
   const splitCategoryById = new Map<string, RecordId>(splits.map((s) => [s.id, s.categoryId]));

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "0191a000-0000-7000-8000-000000000070",
+    "accountId": "0191a000-0000-7000-8000-000000000012",
+    "userId": 1,
+    "loanType": "mortgage",
+    "originalPrincipal": 20000050,
+    "refOriginalPrincipal": 20000050,
+    "interestRate": 6,
+    "termMonths": 360,
+    "startDate": "2020-06-15",
+    "balanceAnchorDate": "2020-06-15",
+    "minPayment": 120000,
+    "refMinPayment": 120000,
+    "plannedPayment": 125050,
+    "refPlannedPayment": 125050,
+    "paymentDayOfMonth": 15,
+    "lenderName": "Chase",
+    "accountNumber": "4521",
+    "events": [
+      {
+        "type": "planned_payment_change",
+        "at": "2024-01-01T00:00:00.000Z",
+        "fromCents": 120000,
+        "toCents": 125050
+      },
+      {
+        "type": "balance_correction",
+        "at": "2024-02-01T00:00:00.000Z",
+        "fromCents": 19900000,
+        "toCents": 19875025
+      },
+      {
+        "type": "rate_change",
+        "at": "2024-03-01T00:00:00.000Z",
+        "from": 5,
+        "to": 6
+      }
+    ],
+    "createdAt": "2025-03-01T10:00:00.000Z",
+    "updatedAt": "2025-03-01T10:00:00.000Z"
+  }
+]

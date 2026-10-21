@@ -1,4 +1,5 @@
 import { ACCOUNT_CATEGORIES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, isTwoLegTransfer } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import type { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -92,7 +93,7 @@ export const assertLoanEditAllowed = async ({
       // `updateTransferTransaction`'s currency lookup on a re-point.
       const destAccount = await Accounts.default.findOne({
         where: { id: destinationAccountId },
-        attributes: ['accountCategory', 'currencyCode'],
+        attributes: ['userId', 'accountCategory', 'currencyCode'],
       });
       if (!destAccount) {
         throw new NotFoundError({ message: t({ key: 'accounts.accountNotFoundForTransaction' }) });
@@ -134,10 +135,22 @@ export const assertLoanEditAllowed = async ({
           });
         }
 
+        // The stored leg is rounded half-up to the loan currency (see `updateTransferTransaction`),
+        // so the projection must see that rounded amount: 100.004 on a 2-decimal loan settles at 100.
+        const editedLegAmount = newData.destinationAmount ?? impliedDestinationAmount;
+        const newLegAmount = editedLegAmount
+          ? await roundToCurrency({
+              money: editedLegAmount,
+              userId: destAccount.userId,
+              currencyCode: destAccount.currencyCode,
+              mode: 'half-up',
+            })
+          : oppositeLeg.amount;
+
         await assertLoanPaymentAllowed({
           ownerUserId: accountOwnerUserId,
           loanAccountId: destinationAccountId,
-          newLegAmount: newData.destinationAmount ?? impliedDestinationAmount ?? oppositeLeg.amount,
+          newLegAmount,
           // The old leg is part of this loan's balance only when the
           // destination stays put; on a re-point the new loan never saw it.
           currentLegAmount: isSameDestination ? oppositeLeg.amount : null,

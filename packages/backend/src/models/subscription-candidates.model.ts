@@ -1,5 +1,8 @@
 import { SUBSCRIPTION_CANDIDATE_STATUS, SUBSCRIPTION_FREQUENCIES, RecordId } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
+import { Money } from '@common/types/money';
+import { MoneyField } from '@common/types/money-column';
 import { Table, Column, Model, ForeignKey, BelongsTo, DataType } from 'sequelize-typescript';
 
 import Accounts from './accounts.model';
@@ -34,15 +37,11 @@ export default class SubscriptionCandidates extends Model {
   })
   detectedFrequency!: SUBSCRIPTION_FREQUENCIES;
 
-  @Column({
-    type: DataType.BIGINT,
-    allowNull: false,
-    comment: 'Average amount in cents',
-  })
-  averageAmount!: number;
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18 })
+  declare averageAmount: Money;
 
   @Column({
-    type: DataType.STRING(3),
+    type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH),
     allowNull: false,
   })
   currencyCode!: string;

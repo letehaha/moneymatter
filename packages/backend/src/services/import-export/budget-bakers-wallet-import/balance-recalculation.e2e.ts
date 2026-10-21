@@ -584,8 +584,8 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       boundaryTime: '2025-06-01T12:00:00Z',
     });
 
-    // The middle row's amount overflows the BIGINT cents column (1e17 currency
-    // units → 1e19 cents, past the BIGINT max of 9,223,372,036,854,775,807), so
+    // The middle row's amount overflows the DECIMAL(36,18) money column (1e18
+    // currency units need 19 integer digits, the column holds 18), so
     // its insert fails at the database layer and rolls back only itself — the
     // surrounding rows on the same account still commit. All three rows are
     // newer than the boundary, so the two survivors move the balance.
@@ -602,7 +602,7 @@ describe('Budget Bakers Wallet import balance recalculation', () => {
       walletRow({
         account: 'Mono UAH',
         currency: 'UAH',
-        amount: '100000000000000000',
+        amount: '1000000000000000000',
         type: 'Income',
         date: '2025-06-16T10:00:00.000Z',
         note: 'Overflow row',

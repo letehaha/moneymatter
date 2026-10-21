@@ -1,4 +1,5 @@
 import { TRANSACTION_TYPES } from '@bt/shared/types';
+import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
 import { Money } from '@common/types/money';
 import { createHash } from 'node:crypto';
 
@@ -218,7 +219,7 @@ export function mapOfxDocument({
   for (const statement of statements) {
     const identity = accountIdentity({ fi, statement });
     const currency = stringValue({ node: statement.node, key: 'CURDEF' })?.toUpperCase();
-    if (!currency || !/^[A-Z]{3}$/.test(currency)) {
+    if (!currency || !isCurrencyCodeFormat(currency)) {
       throw new OfxParseError({ code: 'invalid-currency', key: 'ofxImport.errors.invalidCurrency' });
     }
     const transactionList = objectValue({ value: statement.node.BANKTRANLIST });

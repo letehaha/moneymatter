@@ -5,6 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
 } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { t } from '@i18n/index';
 import { NotFoundError, ValidationError } from '@js/errors';
@@ -71,7 +72,7 @@ export const adjustAccountBalance = withTransaction(
   async ({
     userId,
     accountId,
-    targetBalance,
+    targetBalance: requestedTargetBalance,
     note,
     time,
   }: AdjustAccountBalanceParams): Promise<AdjustAccountBalanceResult> => {
@@ -82,6 +83,14 @@ export const adjustAccountBalance = withTransaction(
         message: t({ key: 'balanceAdjustment.accountNotFound', variables: { accountId } }),
       });
     }
+
+    // The target is what the account will hold, so it carries the account currency's decimals.
+    const targetBalance = await roundToCurrency({
+      money: requestedTargetBalance,
+      userId,
+      currencyCode: account.currencyCode,
+      mode: 'half-up',
+    });
 
     if (account.type !== ACCOUNT_TYPES.system) {
       throw new ValidationError({ message: t({ key: 'transactions.manualOnConnectedAccount' }) });

@@ -1,4 +1,4 @@
-import { Money, centsToApiDecimalOrNull } from '@common/types/money';
+import { Money, moneyToApiDecimalOrNull } from '@common/types/money';
 import { logger } from '@js/utils';
 import Categories from '@models/categories.model';
 import TrackerCategories from '@models/tracker-categories.model';
@@ -87,13 +87,14 @@ export async function transformTrackers({ userId }: { userId: number }): Promise
 
   return trackers.map((tracker): TrackerRow => {
     const linked = txByTrackerId.get(tracker.id) ?? [];
-    const spentAmount = Money.sum(linked.map((t) => t.refAmount.abs()));
+    // Rows with no base-currency amount (custom currency, no rate yet) are left out of the total.
+    const spentAmount = Money.sum(linked.flatMap((t) => (t.refAmount ? [t.refAmount.abs()] : [])));
     return {
       name: tracker.name,
       status: tracker.status,
       periodStart: tracker.startDate ? toDateOnly({ value: tracker.startDate }) : '',
       periodEnd: tracker.endDate ? toDateOnly({ value: tracker.endDate }) : '',
-      limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+      limitAmount: moneyToApiDecimalOrNull(tracker.limitAmount),
       currency: baseCurrencyCode,
       categories: (categoriesByTrackerId.get(tracker.id) ?? []).toSorted(),
       spentAmount: spentAmount.toNumber(),

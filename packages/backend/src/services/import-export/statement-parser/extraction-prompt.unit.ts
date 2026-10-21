@@ -1,6 +1,10 @@
 import { describe, expect, it } from '@jest/globals';
 
-import { parseAIResponse } from './extraction-prompt';
+import {
+  STATEMENT_EXTRACTION_SYSTEM_PROMPT,
+  buildStatementExtractionSystemPrompt,
+  parseAIResponse,
+} from './extraction-prompt';
 
 const METADATA_LINE = 'ITAU,1234,2026-06-01,2026-06-16,UYU';
 
@@ -396,5 +400,52 @@ describe('parseAIResponse', () => {
 
   it('returns null when the response carries no CSV at all', () => {
     expect(parseAIResponse({ response: '   ' })).toBeNull();
+  });
+});
+
+describe('custom currencies', () => {
+  const ROW = '2026-06-16,Swap,Exchange,150,E,,90,0.0025,BTC,';
+
+  it("drops an original currency that is neither ISO 4217 nor one of the user's custom codes", () => {
+    const result = parse({ rows: [ROW] });
+
+    expect(result?.transactions[0]).not.toHaveProperty('originalAmount');
+    expect(result?.transactions[0]).not.toHaveProperty('originalCurrencyCode');
+  });
+
+  it("keeps an original currency that names one of the user's custom codes", () => {
+    const result = parseAIResponse({
+      response: [METADATA_LINE, ROW].join('\n'),
+      customCurrencyCodes: ['BTC', 'USDT'],
+    });
+
+    expect(result?.transactions[0]).toMatchObject({ originalAmount: 0.0025, originalCurrencyCode: 'BTC' });
+  });
+
+  it('matches a custom code regardless of the case the model wrote', () => {
+    const result = parseAIResponse({
+      response: [METADATA_LINE, '2026-06-16,Swap,Exchange,150,E,,90,12.5,usdt,'].join('\n'),
+      customCurrencyCodes: ['USDT'],
+    });
+
+    expect(result?.transactions[0]).toMatchObject({ originalAmount: 12.5, originalCurrencyCode: 'USDT' });
+  });
+
+  it('still reads an ISO original currency when the user has custom codes', () => {
+    const result = parseAIResponse({
+      response: [METADATA_LINE, '2026-06-16,Coffee,Cafe,5,E,,90,1.2,USD,'].join('\n'),
+      customCurrencyCodes: ['BTC'],
+    });
+
+    expect(result?.transactions[0]).toMatchObject({ originalAmount: 1.2, originalCurrencyCode: 'USD' });
+  });
+
+  it("adds the user's custom codes to the system prompt, and only then", () => {
+    expect(buildStatementExtractionSystemPrompt()).toBe(STATEMENT_EXTRACTION_SYSTEM_PROMPT);
+    expect(buildStatementExtractionSystemPrompt({ customCurrencyCodes: [] })).toBe(STATEMENT_EXTRACTION_SYSTEM_PROMPT);
+
+    const prompt = buildStatementExtractionSystemPrompt({ customCurrencyCodes: ['BTC', 'USDT'] });
+    expect(prompt.startsWith(STATEMENT_EXTRACTION_SYSTEM_PROMPT)).toBe(true);
+    expect(prompt).toContain('BTC, USDT');
   });
 });

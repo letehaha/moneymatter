@@ -1,6 +1,7 @@
 import type { RecordId } from '@bt/shared/types';
 import {
   type BudgetSuggestionAnswers,
+  CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH,
   BUDGET_PLAN_NAME_MAX_LENGTH,
   BUDGET_SUGGESTION_DETAILS,
   BUDGET_SUGGESTION_EATS_OUT,
@@ -10,6 +11,8 @@ import {
   BUDGET_SUGGESTION_SUBSCRIPTIONS,
   BUDGET_SUGGESTION_TRANSPORT,
 } from '@bt/shared/types';
+import { isCurrencyCodeFormat } from '@common/lib/currency-code-format';
+import { MONEY_COLUMN_SCALE } from '@common/lib/money-columns';
 import { Money } from '@common/types/money';
 import cc from 'currency-codes';
 import { z } from 'zod';
@@ -59,11 +62,20 @@ export const uniqueRecordIds = ({ min, max }: { min?: number; max?: number } = {
  */
 export const decimalMoney = () => z.number().transform((val) => Money.fromDecimal(val));
 
-/** A plain decimal (no Money transform) of at most 2 places, capped at 1e13; `positive` excludes 0. */
+// The most decimals the money columns can store is their scale.
+const DECIMAL_AMOUNT_PATTERN = new RegExp(`^\\d+(\\.\\d{1,${MONEY_COLUMN_SCALE}})?$`);
+
+/**
+ * A plain decimal (no Money transform), capped at 1e13; `positive` excludes 0.
+ *
+ * The schema only enforces what the storage can hold. How many decimals the amount may carry
+ * depends on the currency it is denominated in, which the request does not name, so the service
+ * that knows the currency checks it with `assertMoneyFitsCurrency`.
+ */
 export const boundedDecimalAmount = ({ positive = false }: { positive?: boolean } = {}) =>
   (positive ? z.number().positive() : z.number().min(0))
     .max(1e13)
-    .refine((value) => /^\d+(\.\d{1,2})?$/.test(String(value)), 'At most 2 decimal places');
+    .refine((value) => DECIMAL_AMOUNT_PATTERN.test(String(value)), `At most ${MONEY_COLUMN_SCALE} decimal places`);
 
 /** Name of a budget plan, line or line group. */
 export const budgetPlanName = () => z.string().trim().min(1).max(BUDGET_PLAN_NAME_MAX_LENGTH);
@@ -80,24 +92,53 @@ export const budgetSuggestionAnswers = () =>
   }) satisfies z.ZodType<BudgetSuggestionAnswers>;
 
 /**
- * Canonical currency-code validator for API input.
+ * Currency-code validator for API input that may carry a user-defined code.
  *
- * Normalizes to uppercase, then enforces membership in ISO 4217 via the
- * `currency-codes` dataset — the same source that seeds the Currencies
- * table — so an unknown code is rejected at the request boundary instead
- * of failing deeper against a foreign key or exchange-rate lookup.
- *
- * Precious-metal and test codes (XAU, XXX, …) are valid ISO 4217 and pass
- * here; contexts that need spendable-only currencies filter them out
- * separately via NON_CURRENCY_CODES.
+ * Normalizes to uppercase and enforces the shape of a code (`CURRENCY_CODE_PATTERN`: 2 to 16
+ * letters or digits). It cannot tell whether the code exists or belongs to the caller, because a
+ * schema has no user: the service that receives the code checks that with
+ * `assertCurrencyCodesVisible`. Contexts that accept ISO 4217 codes only use `isoCurrencyCode`.
  *
  * @example
  * body: z.object({
- *   currencyCode: currencyCode(),                       // "usd" => "USD"
+ *   currencyCode: currencyCode(),                       // "usdt" => "USDT"
  *   displayCurrencyCode: currencyCode().nullable().optional(),
  * })
  */
 export const currencyCode = () =>
+  z.string().trim().toUpperCase().refine(isCurrencyCodeFormat, {
+    message: 'Invalid currency code. Use 2 to 16 letters or digits, e.g. "USD".',
+  });
+
+/**
+ * Logo of a custom currency: an absolute `https:` URL of at most `CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH`
+ * characters, or `null` to clear it. Any other scheme (`http:`, `javascript:`, `data:`) is refused, so
+ * a stored logo is always safe to hand to an `<img src>`.
+ *
+ * @example
+ * body: z.object({ logoUrl: currencyLogoUrl().optional() })  // absent keeps, null clears
+ */
+export const currencyLogoUrl = () =>
+  z
+    .url({ protocol: /^https$/ })
+    .max(CUSTOM_CURRENCY_LOGO_URL_MAX_LENGTH)
+    .nullable();
+
+/**
+ * Currency-code validator for contexts that only accept ISO 4217 codes (base currency,
+ * portfolios, investments, ventures, vehicles, loans).
+ *
+ * Normalizes to uppercase, then enforces membership in ISO 4217 via the `currency-codes` dataset,
+ * the same source that seeds the Currencies table, so an unknown or user-defined code is rejected
+ * at the request boundary instead of failing deeper against a foreign key or exchange-rate lookup.
+ *
+ * Precious-metal and test codes (XAU, XXX, ...) are valid ISO 4217 and pass here; contexts that
+ * need spendable-only currencies filter them out separately via NON_CURRENCY_CODES.
+ *
+ * @example
+ * body: z.object({ currencyCode: isoCurrencyCode() })  // "usd" => "USD"
+ */
+export const isoCurrencyCode = () =>
   z
     .string()
     .trim()

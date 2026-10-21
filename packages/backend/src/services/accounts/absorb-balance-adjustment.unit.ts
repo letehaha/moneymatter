@@ -19,7 +19,7 @@ jest.mock('@models/accounts.model', () => ({
 // making ref assertions read as plain native numbers.
 jest.mock('@services/calculate-ref-amount.service', () => ({
   __esModule: true,
-  calculateRefAmount: jest.fn(),
+  calculateRefAmountOrNull: jest.fn(),
 }));
 // Opening-balance restamps (boundary-rate `refInitialBalance` + Balances
 // cascade) are the restamp service's job – here only the delegation is asserted.
@@ -66,7 +66,7 @@ jest.mock('@models/connection', () => ({
 /* eslint-disable import/first */
 import Accounts, * as AccountsModel from '@models/accounts.model';
 import Balances from '@models/balances.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 
 import { absorbBalanceAdjustment } from './absorb-balance-adjustment';
 import { restampRefInitialBalance } from './restamp-ref-initial-balance';
@@ -74,7 +74,7 @@ import { restampRefInitialBalance } from './restamp-ref-initial-balance';
 
 const findOneMock = jest.mocked(Accounts.findOne);
 const updateAccountByIdMock = jest.mocked(AccountsModel.updateAccountById);
-const calculateRefAmountMock = jest.mocked(calculateRefAmount);
+const calculateRefAmountMock = jest.mocked(calculateRefAmountOrNull);
 const restampMock = jest.mocked(restampRefInitialBalance);
 const setTodayRowToSpotMock = jest.mocked(Balances.setTodayRowToSpot);
 

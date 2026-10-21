@@ -5,7 +5,7 @@ import { createController } from '@controllers/helpers/controller-factory';
 import Accounts from '@models/accounts.model';
 import Transactions, { getTransactionById } from '@models/transactions.model';
 import { serializeTransactions } from '@root/serializers';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import * as transactionsService from '@services/transactions';
 import { addDays, endOfDay, startOfDay, subDays } from 'date-fns';
 import { z } from 'zod';
@@ -42,7 +42,7 @@ export default createController(schema, async ({ user, query }) => {
   const { id: userId } = user;
 
   let searchTransactionType: TRANSACTION_TYPES;
-  let refAmountCenter: Money;
+  let refAmountCenter: Money | null;
   let sourceAccountId: string;
   let sourceCurrencyCode: string;
   let sourceTime: Date;
@@ -91,7 +91,7 @@ export default createController(schema, async ({ user, query }) => {
     sourceCurrencyCode = account.currencyCode;
 
     // Calculate refAmount from the form amount
-    refAmountCenter = await calculateRefAmount({
+    refAmountCenter = await calculateRefAmountOrNull({
       amount: Money.fromDecimal(originAmount!),
       userId,
       baseCode: account.currencyCode,
@@ -99,10 +99,14 @@ export default createController(schema, async ({ user, query }) => {
     });
   }
 
+  // Matching compares base-currency amounts: an amount with no base-currency value (custom currency,
+  // no rate yet) has nothing to match against.
+  if (!refAmountCenter) return { data: [] };
+
   // Calculate refAmount range (±10%)
-  const centerCents = refAmountCenter.toCents();
-  const refAmountGte = Money.fromCents(Math.max(0, Math.floor(centerCents * (1 - RECOMMENDATION_PERCENT_RANGE))));
-  const refAmountLte = Money.fromCents(Math.ceil(centerCents * (1 + RECOMMENDATION_PERCENT_RANGE)));
+  const lowerBound = refAmountCenter.multiply(1 - RECOMMENDATION_PERCENT_RANGE);
+  const refAmountGte = lowerBound.isNegative() ? Money.zero() : lowerBound;
+  const refAmountLte = refAmountCenter.multiply(1 + RECOMMENDATION_PERCENT_RANGE);
 
   // ±N days from the transaction date (symmetric window).
   // For form data (new transaction), sourceTime is already set to `new Date()` above
@@ -146,8 +150,8 @@ export default createController(schema, async ({ user, query }) => {
       if (aSameCurrency !== bSameCurrency) return aSameCurrency - bSameCurrency;
 
       // 2. Amount proximity (closer to center = better)
-      const aAmountDiff = a.refAmount.subtract(refAmountCenter).abs().toNumber();
-      const bAmountDiff = b.refAmount.subtract(refAmountCenter).abs().toNumber();
+      const aAmountDiff = a.refAmount ? a.refAmount.subtract(refAmountCenter).abs().toNumber() : Infinity;
+      const bAmountDiff = b.refAmount ? b.refAmount.subtract(refAmountCenter).abs().toNumber() : Infinity;
       if (aAmountDiff !== bAmountDiff) return aAmountDiff - bAmountDiff;
 
       // 3. Date proximity (closer = better)

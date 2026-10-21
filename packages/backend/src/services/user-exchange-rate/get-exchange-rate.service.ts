@@ -7,9 +7,12 @@ import { CacheClient } from '@js/utils/cache';
 import * as Currencies from '@models/currencies.model';
 import * as UserExchangeRates from '@models/user-exchange-rates.model';
 import UsersCurrencies, { getBaseCurrency } from '@models/users-currencies.model';
+import { findCustomCurrencyCodes } from '@services/currencies/custom-currency-codes';
 import { formatRate } from '@services/exchange-rates/build-daily-pair-rate-resolver';
 import { API_LAYER_BASE_CURRENCY_CODE } from '@services/exchange-rates/constants';
 import { type RateLookup, resolveUsdRates } from '@services/exchange-rates/resolve-usd-rates';
+
+import { resolveCustomPairRate } from './resolve-custom-pair-rate';
 
 /**
  * Global cache for computed cross-rates.
@@ -59,6 +62,21 @@ export async function getExchangeRate({
   // check or the user's own manual rate. An unconnected base under
   // `requireUserConnection: false` has neither; market cross-rates aren't user-scoped.
   const userConnection = await resolveUserConnection({ userId, code: pair.baseCode, required: requireUserConnection });
+
+  // A pair with a custom side never reaches the global cross-rate cache or the 5-decimal market
+  // formatting: it resolves from the user's own rates, with the ISO leg left to this function.
+  const customCodes = await findCustomCurrencyCodes({ codes: [pair.baseCode, pair.quoteCode] });
+  if (customCodes.size) {
+    return resolveCustomPairRate({
+      userId,
+      pair,
+      date,
+      isCustom: async ({ code }) =>
+        customCodes.has(code) || (await findCustomCurrencyCodes({ codes: [code] })).size > 0,
+      resolveIsoRate: (isoPair) =>
+        getExchangeRate({ userId, date, ...isoPair, bypassCache, requireUserConnection: false }),
+    });
+  }
 
   if (userConnection) {
     const customRate = await resolveCustomRate({ userId, pair, liveRateUpdate: userConnection.liveRateUpdate });
@@ -124,10 +142,11 @@ async function resolveUserConnection({
 }
 
 /**
- * The user's manual rate, if any. It only applies when they turned live rates
- * off AND are converting into their own base currency; otherwise there is no
- * custom rate and the caller falls through to the market cross-rate. Never
- * cached globally – it belongs to one user.
+ * The user's manual rate between two ISO currencies, if any. It only applies when they turned
+ * live rates off AND are converting into their own base currency; otherwise there is no custom
+ * rate and the caller falls through to the market cross-rate. It applies to every date: the latest
+ * stored row wins whatever day is being converted. A pair with a custom currency never gets here, it
+ * is read by day in `resolveCustomPairRate`. Never cached globally – it belongs to one user.
  */
 export async function resolveCustomRate({
   userId,

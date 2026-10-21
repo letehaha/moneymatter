@@ -1,4 +1,5 @@
 import { RecordId } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, Index, PrimaryKey } from 'sequelize-typescript';
@@ -20,7 +21,7 @@ export default class PortfolioBalances extends Model {
   @PrimaryKey
   @ForeignKey(() => Currencies)
   @Index
-  @Column({ type: DataType.STRING(3), allowNull: false })
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: false })
   currencyCode!: string;
 
   @MoneyField({ storage: 'decimal', precision: 20, scale: 10 })

@@ -52,7 +52,7 @@ export const absorbLinkResidual = withTransaction(
       },
     );
 
-    const signedSumCents = Number(row?.signedSum ?? 0);
+    const signedSumCents = Money.fromDecimal(row?.signedSum ?? 0).toCents();
     const initialBalanceBefore = account.initialBalance;
     const identityGapCents = account.currentBalance.toCents() - (initialBalanceBefore.toCents() + signedSumCents);
     if (identityGapCents === 0) return {};

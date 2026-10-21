@@ -136,6 +136,37 @@ describe('parseYnabRegister', () => {
       expect(result.accounts[0]!.detectedCurrency).toBeNull();
     });
 
+    describe('custom currencies in the account name', () => {
+      const fileFor = (accountName: string) =>
+        [
+          YNAB_HEADERS,
+          `"${accountName}","","06/01/2026","Starting Balance","Inflow: Ready to Assign","Inflow","Ready to Assign","",$0.00,$100.00,"Cleared"`,
+          `"${accountName}","","06/02/2026","Cafe","Wants: Dining","Wants","Dining","Coffee",$3.50,$0.00,"Cleared"`,
+          '',
+        ].join('\n');
+
+      it("detects a custom code only when it is one of the user's own", () => {
+        const fileContent = fileFor('Exchange (USDT)');
+
+        expect(parseYnabRegister({ fileContent }).accounts[0]!.detectedCurrency).toBeNull();
+        expect(parseYnabRegister({ fileContent, customCurrencyCodes: ['USDT'] }).accounts[0]!.detectedCurrency).toBe(
+          'USDT',
+        );
+      });
+
+      it('does not read an unrelated tag such as (401K) as a currency', () => {
+        const fileContent = fileFor('Retirement (401K)');
+
+        expect(
+          parseYnabRegister({ fileContent, customCurrencyCodes: ['USDT'] }).accounts[0]!.detectedCurrency,
+        ).toBeNull();
+      });
+
+      it('reads a three-letter code whatever it spells, as before', () => {
+        expect(parseYnabRegister({ fileContent: fileFor('Wallet (SAT)') }).accounts[0]!.detectedCurrency).toBe('SAT');
+      });
+    });
+
     it('emits unparseable-amount and skips the row when Outflow is garbage', () => {
       const fileContent = [
         YNAB_HEADERS,

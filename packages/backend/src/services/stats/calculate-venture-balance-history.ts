@@ -60,12 +60,15 @@ export const calculateVentureBalanceHistory = async ({
   maxDate,
   uniqueDates,
   userBaseCurrencyPromise,
+  decimals,
 }: {
   userId: number;
   minDate: string;
   maxDate: string;
   uniqueDates: string[];
   userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
+  /** Decimals of the base currency: the minor-unit scale the per-day totals are rounded to. */
+  decimals: number;
 }): Promise<Map<string, number> | null> => {
   const [userBaseCurrency, deals] = await Promise.all([
     userBaseCurrencyPromise,
@@ -197,7 +200,7 @@ export const calculateVentureBalanceHistory = async ({
       const rate = getExchangeRate(deal.currencyCode, dateStr);
       totalInBase = totalInBase.plus(valueInDealCurrency.times(rate));
     }
-    ventureValuesByDate.set(dateStr, Money.fromDecimal(Number(totalInBase.toFixed(10))).toCents());
+    ventureValuesByDate.set(dateStr, Money.fromDecimal(Number(totalInBase.toFixed(10))).toMinorUnits({ decimals }));
   }
 
   if (missingRateCurrencies.size > 0) {

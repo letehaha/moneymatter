@@ -1,5 +1,5 @@
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import { currencyCode, recordId } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { updatePortfolio } from '@services/investments/portfolios/update.service';
 import { z } from 'zod';
@@ -14,7 +14,7 @@ export default createController(
         name: z.string().min(1).max(255).optional(),
         portfolioType: z.nativeEnum(PORTFOLIO_TYPE).optional(),
         description: z.string().nullable().optional(),
-        displayCurrencyCode: currencyCode().nullable().optional(),
+        displayCurrencyCode: isoCurrencyCode().nullable().optional(),
         isEnabled: z.boolean().optional(),
       })
       .strict()

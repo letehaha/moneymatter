@@ -22,6 +22,36 @@ describe('Subscriptions', () => {
       expect(sub.isActive).toBe(true);
     });
 
+    it('stores the expected amount at the decimals of its currency', async () => {
+      const common = { frequency: SUBSCRIPTION_FREQUENCIES.monthly, startDate: '2025-01-01', raw: true } as const;
+
+      const usd = await helpers.createSubscription({
+        ...common,
+        name: 'USD plan',
+        expectedAmount: 9.995,
+        expectedCurrencyCode: 'USD',
+      });
+      const jpy = await helpers.createSubscription({
+        ...common,
+        name: 'JPY plan',
+        expectedAmount: 1500.6,
+        expectedCurrencyCode: 'JPY',
+      });
+      const kwd = await helpers.createSubscription({
+        ...common,
+        name: 'KWD plan',
+        expectedAmount: 1.2345,
+        expectedCurrencyCode: 'KWD',
+      });
+
+      expect(usd.expectedAmount).toBe(10);
+      expect(jpy.expectedAmount).toBe(1501);
+      expect(kwd.expectedAmount).toBe(1.235);
+
+      const updated = await helpers.updateSubscription({ id: kwd.id, expectedAmount: 2.3456, raw: true });
+      expect(updated.expectedAmount).toBe(2.346);
+    });
+
     it('creates a subscription with all optional fields', async () => {
       const account = await helpers.createAccount({ raw: true });
       const categories = await helpers.getCategoriesList();

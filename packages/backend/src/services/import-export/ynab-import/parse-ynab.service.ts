@@ -17,7 +17,7 @@ import {
 } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
-import { roundCurrency } from '@services/import-export/core/round-currency';
+import { removeFloatDrift } from '@services/import-export/core/remove-float-drift';
 import { parse } from 'csv-parse/sync';
 
 import { detectYnabDecimalSeparator, parseYnabAmount } from './parse-amount';
@@ -66,7 +66,14 @@ interface ClassifiedRow {
  * Pure function: no DB writes, no side effects. Safe to call twice (the
  * execute worker re-parses to avoid persisting an intermediate session).
  */
-export function parseYnabRegister({ fileContent }: { fileContent: string }): YnabParseResult {
+export function parseYnabRegister({
+  fileContent,
+  customCurrencyCodes = [],
+}: {
+  fileContent: string;
+  /** Codes of the user's own custom currencies, which an account name may carry as `(USDT)`. */
+  customCurrencyCodes?: readonly string[];
+}): YnabParseResult {
   if (typeof fileContent !== 'string' || fileContent.trim() === '') {
     throw new ValidationError({ message: t({ key: 'importExport.ynab.parse.fileEmpty' }) });
   }
@@ -172,7 +179,7 @@ export function parseYnabRegister({ fileContent }: { fileContent: string }): Yna
     // would import a wrong-amount transaction the user has no way to spot.
     if (outflowUnparseable || inflowUnparseable) return;
 
-    const signedAmount = roundCurrency({ n: (inflowParsed ?? 0) - (outflowParsed ?? 0) });
+    const signedAmount = removeFloatDrift({ n: (inflowParsed ?? 0) - (outflowParsed ?? 0) });
 
     const payeeName = (record['Payee'] ?? '').trim();
     const categoryGroupRaw = (record['Category Group'] ?? '').trim();
@@ -250,7 +257,7 @@ export function parseYnabRegister({ fileContent }: { fileContent: string }): Yna
       };
     });
 
-  const accounts = collectAccounts({ rows: classifiedRows, warnings });
+  const accounts = collectAccounts({ rows: classifiedRows, warnings, customCurrencyCodes });
   const categories = collectCategories({ transactions });
   const payees = collectPayees({ transactions });
   const tagsUsed = collectTagsUsed({ transactions, transfers });
@@ -291,7 +298,7 @@ function pairTransfers({ rows, warnings }: { rows: ClassifiedRow[]; warnings: Yn
         other.date === leg.date &&
         other.accountName === leg.transferCounterpart &&
         leg.accountName === other.transferCounterpart &&
-        roundCurrency({ n: other.signedAmount + leg.signedAmount }) === 0,
+        removeFloatDrift({ n: other.signedAmount + leg.signedAmount }) === 0,
     );
 
     if (!match) {
@@ -381,16 +388,18 @@ function countSplitGroups({
 function collectAccounts({
   rows,
   warnings,
+  customCurrencyCodes,
 }: {
   rows: ClassifiedRow[];
   warnings: YnabParseWarning[];
+  customCurrencyCodes: readonly string[];
 }): YnabParseAccount[] {
   const byName = new Map<string, { startingBalance: number; transactionCount: number }>();
 
   for (const row of rows) {
     const existing = byName.get(row.accountName) ?? { startingBalance: 0, transactionCount: 0 };
     if (row.isStartingBalance) {
-      existing.startingBalance = roundCurrency({ n: existing.startingBalance + row.signedAmount });
+      existing.startingBalance = removeFloatDrift({ n: existing.startingBalance + row.signedAmount });
     } else {
       existing.transactionCount += 1;
     }
@@ -398,7 +407,7 @@ function collectAccounts({
   }
 
   return Array.from(byName.entries()).map(([originalName, agg]) => {
-    const detectedCurrency = detectCurrencyFromAccountName(originalName);
+    const detectedCurrency = detectCurrencyFromAccountName({ name: originalName, customCurrencyCodes });
     if (!detectedCurrency) {
       warnings.push({
         code: 'currency-undetected',
@@ -414,11 +423,25 @@ function collectAccounts({
   });
 }
 
-const CURRENCY_RE = /\(([A-Z]{3})\)/;
+const CURRENCY_RE = /\(([A-Z0-9]{2,16})\)/;
+const ISO_SHAPED_CODE_RE = /^[A-Z]{3}$/;
 
-function detectCurrencyFromAccountName(name: string): string | null {
-  const match = name.match(CURRENCY_RE);
-  return match ? match[1]! : null;
+/**
+ * Reads the `(CODE)` YNAB budgets append to an account name. Three capital letters read as a code
+ * whatever they spell; a longer or digit-bearing tag such as `(401K)` or `(JOINT)` counts only when
+ * it names one of the user's own custom currencies.
+ */
+function detectCurrencyFromAccountName({
+  name,
+  customCurrencyCodes,
+}: {
+  name: string;
+  customCurrencyCodes: readonly string[];
+}): string | null {
+  const code = name.match(CURRENCY_RE)?.[1];
+  if (!code) return null;
+
+  return ISO_SHAPED_CODE_RE.test(code) || customCurrencyCodes.includes(code) ? code : null;
 }
 
 export function collectCategories({ transactions }: { transactions: YnabParseTransaction[] }): YnabParseCategory[] {

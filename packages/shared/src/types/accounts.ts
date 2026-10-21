@@ -1,3 +1,4 @@
+import type { CurrencyMeta } from './currencies';
 import type { EntityLogoFields, EntityLogoPayload } from './entity-logo';
 import type { RecordId } from './record-id';
 import type { ResourceShareInfo } from './sharing';
@@ -121,11 +122,11 @@ export interface AccountModel extends EntityLogoFields {
   id: RecordId;
   name: string;
   initialBalance: number;
-  refInitialBalance: number;
+  refInitialBalance: number | null;
   currentBalance: number;
-  refCurrentBalance: number;
+  refCurrentBalance: number | null;
   creditLimit: number;
-  refCreditLimit: number;
+  refCreditLimit: number | null;
   accountCategory: ACCOUNT_CATEGORIES;
   currencyCode: string;
   userId: number;
@@ -141,6 +142,8 @@ export interface AccountModel extends EntityLogoFields {
   bankProviderType?: BANK_PROVIDER_TYPE | null;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**
@@ -154,11 +157,11 @@ export interface AccountApiResponse extends EntityLogoFields {
   id: string;
   name: string;
   initialBalance: number;
-  refInitialBalance: number;
+  refInitialBalance: number | null;
   currentBalance: number;
-  refCurrentBalance: number;
+  refCurrentBalance: number | null;
   creditLimit: number;
-  refCreditLimit: number;
+  refCreditLimit: number | null;
   type: string;
   accountCategory: string;
   currencyCode: string;
@@ -174,6 +177,8 @@ export interface AccountApiResponse extends EntityLogoFields {
   needsRelink?: boolean;
   /** Present on user-facing list/detail responses; absent on internal serializations. */
   share?: ResourceShareInfo;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
 }
 
 /**

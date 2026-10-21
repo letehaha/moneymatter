@@ -230,6 +230,42 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
     });
 
+    it('should reject linking a transaction in a custom currency, since portfolios are ISO-only', async () => {
+      await helpers.createCustomCurrency({ payload: { code: 'USDT', name: 'Tether', decimals: 6 } });
+      await helpers.editCurrencyExchangeRate({
+        pairs: [
+          { baseCode: 'USDT', quoteCode: global.BASE_CURRENCY_CODE, rate: 4 },
+          { baseCode: global.BASE_CURRENCY_CODE, quoteCode: 'USDT', rate: 0.25 },
+        ],
+        raw: true,
+      });
+      const customAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ name: 'Stable', currencyCode: 'USDT', initialBalance: 0 }),
+        raw: true,
+      });
+      const [tx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: customAccount.id,
+          amount: 25,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+
+      const response = await helpers.linkTransactionToPortfolio({
+        transactionId: tx!.id,
+        payload: { portfolioId: portfolio.id },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect((response.body as unknown as { response: { message: string } }).response.message).toContain('USDT');
+
+      // Nothing was written: no transfer, no cash on the portfolio, the transaction is untouched.
+      expect(await helpers.getPortfolioBalance({ portfolioId: portfolio.id, raw: true })).toEqual([]);
+      const stored = await helpers.getTransactionById({ id: tx!.id, raw: true });
+      expect(stored!.transferNature).toBe(TRANSACTION_TRANSFER_NATURE.not_transfer);
+    });
+
     it('should link a transfer_out_wallet transaction and restore that nature when it is unlinked', async () => {
       const [tx] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({

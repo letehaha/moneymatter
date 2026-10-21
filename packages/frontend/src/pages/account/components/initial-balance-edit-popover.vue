@@ -7,11 +7,12 @@ import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useFormValidation } from '@/composable';
 import { ApiErrorResponseError } from '@/js/errors';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import * as validators from '@/js/helpers/validators';
 import { useAccountsStore } from '@/stores';
 import { AccountModel } from '@bt/shared/types';
 import { PencilIcon } from '@lucide/vue';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
@@ -30,20 +31,24 @@ const form = ref({
   initialBalance: props.account.initialBalance as number | null,
 });
 
-const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
-  { form },
-  {
-    form: {
-      initialBalance: {
-        required: validators.required,
-        currencyDecimal: validators.currencyDecimal,
-      },
+const decimals = computed(() => getCurrencyDecimals({ code: props.currencyCode, meta: props.account.currencyMeta }));
+
+const rules = computed(() => ({
+  form: {
+    initialBalance: {
+      required: validators.required,
+      currencyDecimal: validators.maxDecimalPoints(decimals.value),
     },
   },
+}));
+
+const { isFormValid, getFieldErrorMessage, touchField, resetValidation } = useFormValidation(
+  { form },
+  rules,
   undefined,
   {
     customValidationMessages: {
-      currencyDecimal: t('forms.validators.invalidCurrencyDecimal'),
+      currencyDecimal: computed(() => t('forms.validators.invalidCurrencyDecimal', { decimals: decimals.value })),
     },
   },
 );
@@ -92,6 +97,7 @@ watch([isOpen, () => props.account.id], () => {
           <InputField
             v-model="form.initialBalance"
             type="number"
+            :decimals="decimals"
             :label="$t('pages.account.details.initialBalance')"
             :placeholder="$t('pages.account.details.initialBalancePlaceholder')"
             :error-message="getFieldErrorMessage('form.initialBalance')"

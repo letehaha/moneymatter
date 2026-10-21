@@ -1,6 +1,7 @@
 import { currencyCode, dateBound } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { ExchangeRateUnavailableError, NotFoundError } from '@js/errors';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import { z } from 'zod';
 
@@ -14,6 +15,8 @@ const schema = z.object({
 
 export default createController(schema, async ({ user, query }) => {
   const { from, to, date } = query;
+
+  await assertCurrencyCodesVisible({ userId: user.id, codes: [from, to] });
 
   try {
     const data = await userExchangeRateService.getExchangeRate({

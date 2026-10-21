@@ -653,6 +653,7 @@ describe('[Stats] Combined balance history', () => {
         quoteCode: 'AED',
         rate: 10,
         date: pickedDay,
+        effectiveDate: dayKey,
       });
 
       const data = (await helpers.getCombinedBalanceHistory({

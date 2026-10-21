@@ -17,6 +17,8 @@ import { Op, type Transaction } from 'sequelize';
 import { removePendingJobsForUser } from '../bank-data-providers/monobank/transaction-sync-queue';
 import { REDIS_KEYS as SYNC_REDIS_KEYS, clearAccountSyncStatus } from '../bank-data-providers/sync/sync-status-tracker';
 import { withTransaction } from '../common/with-transaction';
+import { pruneUnusedCustomCurrencies } from '../currencies/prune-custom-currencies';
+import { buildRefAmountCachePattern } from '../ref-amount-cache';
 import { fanOutNotifications } from '../sharing/fan-out-notifications';
 import { convertCrossUserTransfersForAccountIds } from '../sharing/household/convert-cross-user-transfers.service';
 import {
@@ -136,7 +138,7 @@ export const runUserDestroyLifecycle = async ({
     // 2. Redis caches keyed by userId / accountId. Pre-tx so a Redis brownout doesn't roll
     //    back the destroy; cache rebuilds on next read regardless.
     const cache = new CacheClient({ logPrefix: cacheLogPrefix });
-    await cache.delete(`ref_amount:${userId}:*`, true);
+    await cache.delete(buildRefAmountCachePattern({ userId }), true);
     await cache.delete(SYNC_REDIS_KEYS.userLastAutoSync(userId));
 
     const accounts = await Accounts.default.findAll({
@@ -243,6 +245,10 @@ const runDestroyInTx = withTransaction(
     // the hook so callers that write more rows use the same transaction directly.
     const transaction = namespace.get('transaction') as Transaction;
     await destroyInTx({ user, transaction });
+
+    // The destroy removed this user's currency holdings. A custom currency nobody holds any more
+    // goes with them, and one another user still holds stops naming this user as its creator.
+    await pruneUnusedCustomCurrencies();
 
     return {
       notificationTargets,

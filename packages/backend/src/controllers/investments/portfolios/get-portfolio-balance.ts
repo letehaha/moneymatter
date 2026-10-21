@@ -1,4 +1,4 @@
-import { currencyCode, recordId } from '@common/lib/zod/custom-types';
+import { isoCurrencyCode, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { getPortfolioBalances } from '@services/investments/portfolios/balances';
 import { z } from 'zod';
@@ -10,7 +10,7 @@ export default createController(
     }),
     query: z
       .object({
-        currencyCode: currencyCode().optional(),
+        currencyCode: isoCurrencyCode().optional(),
       })
       .optional(),
   }),
