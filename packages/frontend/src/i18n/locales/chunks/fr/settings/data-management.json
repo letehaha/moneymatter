@@ -1,65 +1,65 @@
 {
   "settings": {
     "dataManagement": {
-      "title": "Import data",
-      "description": "Import your financial data from various sources",
+      "title": "Importer des données",
+      "description": "Importez vos données financières depuis différentes sources",
       "tabs": {
-        "import": "Import",
-        "export": "Export"
+        "import": "Importer",
+        "export": "Exporter"
       },
       "textSource": {
-        "title": "Import from any text source",
-        "aiBadge": "AI-powered",
-        "listDescription": "Bank statements, receipts, screenshots, or any text"
+        "title": "Importer depuis du texte libre",
+        "aiBadge": "Optimisé par IA",
+        "listDescription": "Relevés de compte, reçus, captures d'écran ou tout texte"
       },
       "csv": {
-        "title": "Import CSV",
-        "description": "Import transactions from a CSV file. You can map columns, handle duplicates, and create new accounts or categories as needed.",
-        "button": "Import CSV file",
-        "cta": "Import CSV file",
-        "listDescription": "Map columns and handle duplicates"
+        "title": "Importer un fichier CSV",
+        "description": "Importez des opérations depuis un fichier CSV. Vous pouvez mapper les colonnes, gérer les doublons et créer de nouveaux comptes ou catégories si nécessaire.",
+        "button": "Importer un fichier CSV",
+        "cta": "Importer un fichier CSV",
+        "listDescription": "Mapper les colonnes et gérer les doublons"
       },
       "ofx": {
-        "title": "OFX or QFX statement",
-        "listDescription": "Import bank and credit card transactions"
+        "title": "Relevé OFX ou QFX",
+        "listDescription": "Importer les opérations bancaires et de carte de crédit"
       },
       "ynab": {
-        "title": "Import from YNAB",
-        "listDescription": "Accounts, transactions, categories, and payees"
+        "title": "Importer depuis YNAB",
+        "listDescription": "Comptes, opérations, catégories et tiers"
       },
       "budget-bakers-wallet": {
         "title": "Wallet (BudgetBakers)",
-        "listDescription": "Multi-currency with automatic transfer pairing"
+        "listDescription": "Multidevise avec rapprochement automatique des virements"
       },
       "ms-money": {
         "title": "Microsoft Money",
-        "listDescription": "Import a .mny file from Microsoft Money"
+        "listDescription": "Importer un fichier .mny depuis Microsoft Money"
       },
       "importHistory": {
-        "title": "Import history",
-        "listDescription": "View past imports and what they created"
+        "title": "Historique des imports",
+        "listDescription": "Consulter les imports précédents et les éléments créés"
       },
       "import": {
-        "back": "Back to import",
-        "whichImporterHint": "Not sure which one to use?",
+        "back": "Retour aux imports",
+        "whichImporterHint": "Vous ne savez pas lequel choisir ?",
         "groups": {
-          "filesAndText": "Files & text",
-          "fromOtherApps": "From other apps",
-          "history": "History"
+          "filesAndText": "Fichiers et texte",
+          "fromOtherApps": "Depuis d'autres applications",
+          "history": "Historique"
         },
         "requestMore": {
-          "title": "Want more options? Request here"
+          "title": "Besoin d'autres options ? Faites une demande ici"
         }
       },
       "export": {
-        "cardTitle": "Export your data",
-        "backupOrExportHint": "Not sure whether you need Export or Backup?",
+        "cardTitle": "Exporter vos données",
+        "backupOrExportHint": "Vous hésitez entre Exportation et Sauvegarde ?",
         "form": {
-          "title": "Export your data",
-          "description": "Pick a format and the parts of your data you want. The download starts as soon as you confirm.",
-          "confirmLabel": "Download",
-          "confirmLoading": "Preparing…",
-          "back": "Back to export"
+          "title": "Exporter vos données",
+          "description": "Choisissez un format et les données à inclure. Le téléchargement démarrera dès votre confirmation.",
+          "confirmLabel": "Télécharger",
+          "confirmLoading": "Préparation…",
+          "back": "Retour aux exports"
         },
         "format": {
           "label": "Format",
@@ -68,37 +68,37 @@
           "xlsx": "Excel"
         },
         "groups": {
-          "label": "What to include",
-          "selectAll": "Select all",
-          "deselectAll": "Deselect all",
-          "transactions": "Transactions & accounts",
-          "transactionsDescription": "Transactions, accounts, balances history, categories, tags, vehicles",
-          "budgets": "Trackers",
-          "budgetsDescription": "Custom trackers with linked categories and spending totals",
-          "subscriptions": "Subscriptions & reminders",
-          "subscriptionsDescription": "Recurring subscriptions and bill reminders",
-          "investments": "Investments",
-          "investmentsDescription": "Portfolios, holdings, investment transactions, transfers"
+          "label": "Éléments à inclure",
+          "selectAll": "Tout sélectionner",
+          "deselectAll": "Tout désélectionner",
+          "transactions": "Opérations et comptes",
+          "transactionsDescription": "Opérations, comptes, historique des soldes, catégories, étiquettes, véhicules",
+          "budgets": "Suivis",
+          "budgetsDescription": "Suivis personnalisés avec catégories associées et totaux des dépenses",
+          "subscriptions": "Abonnements et rappels",
+          "subscriptionsDescription": "Abonnements récurrents et rappels de factures",
+          "investments": "Investissements",
+          "investmentsDescription": "Portefeuilles, avoirs, opérations d'investissement, virements"
         },
         "notifications": {
-          "success": "Export ready – your download should start in a moment.",
-          "successWithCount": "Export ready – {count} rows exported.",
-          "failed": "Could not export your data. Please try again.",
-          "downloadBlocked": "Export ready, but your browser blocked the download. Check the address bar for a download prompt.",
-          "tooLarge": "Your data is too large for a single export. Please contact support."
+          "success": "Export prêt – le téléchargement va commencer dans un instant.",
+          "successWithCount": "Export prêt – {count} lignes exportées.",
+          "failed": "Impossible d'exporter vos données. Veuillez réessayer.",
+          "downloadBlocked": "Export prêt, mais votre navigateur a bloqué le téléchargement. Vérifiez la barre d'adresse pour autoriser le téléchargement.",
+          "tooLarge": "Vos données sont trop volumineuses pour un seul export. Veuillez contacter le support."
         },
         "dateRange": {
-          "label": "Date range (optional)",
-          "helper": "Only event tables (transactions, balance history, investment activity) get filtered. Accounts, categories, and other reference tables stay complete.",
-          "placeholder": "All time",
-          "clear": "Clear date range"
+          "label": "Période (facultatif)",
+          "helper": "Seules les tables d'événements (opérations, historique des soldes, activité d'investissement) sont filtrées. Les comptes, catégories et autres tables de référence restent complets.",
+          "placeholder": "Toutes les dates",
+          "clear": "Effacer la période"
         },
         "accounts": {
           "label": "Comptes",
-          "helper": "Export only the selected accounts with their transactions and balance history. Leave empty to export all accounts.",
-          "placeholder": "All accounts"
+          "helper": "Exporter uniquement les comptes sélectionnés avec leurs opérations et leur historique de solde. Laissez vide pour exporter tous les comptes.",
+          "placeholder": "Tous les comptes"
         },
-        "listDescription": "Download a zip for spreadsheets, taxes, or migrating"
+        "listDescription": "Télécharger un fichier ZIP pour tableurs, impôts ou migration"
       }
     }
   }

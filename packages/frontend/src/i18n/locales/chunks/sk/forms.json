@@ -371,7 +371,7 @@
       "searchPlaceholder": "Hľadať sledovače",
       "noResults": "Nenašli sa žiadne sledovače",
       "unknownBudget": "Neznámy sledovač",
-      "blankOption": "Not in any tracker",
+      "blankOption": "V žiadnom sledovači",
       "loadError": "Sledovače sa nepodarilo načítať. Skúste to znova, prosím."
     },
     "payeeSelect": {

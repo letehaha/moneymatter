@@ -16,25 +16,18 @@
         "retry": "Попробовать снова"
       },
       "row": {
-        "bankBadge": "Создано банковским подключением",
-        "bankBadgeShort": "Подключение",
         "bankBadgeTooltip": "Эта группа была создана при подключении банка, но не является самим банковским подключением — её можно переименовать, перемещать счета или удалить. Синхронизация счетов продолжится независимо от группы.",
         "accountsCount": "{count} счёт | {count} счёта | {count} счетов",
         "noAccounts": "Нет счетов",
         "accountsElsewhere": "{count} синхронизируемый счёт в других группах | {count} синхронизируемых счёта в других группах | {count} синхронизируемых счетов в других группах",
-        "inParent": "в {name}",
         "manageConnection": "Управление подключением"
       },
       "update": {
         "label": "Название группы",
         "placeholder": "Введите название группы",
-        "saveButton": "Сохранить",
         "emptyNameError": "Название группы не может быть пустым"
       },
       "accounts": {
-        "heading": "Счета в этой группе",
-        "empty": "В этой группе пока нет счетов. Добавьте счёт в группу со страницы счёта.",
-        "emptyBankLinked": "Счета этого подключения находятся в других группах — их перемещение не влияет на синхронизацию.",
         "unlinkTooltip": "Удалить из группы",
         "removeConfirmTitle": "Удалить «{name}» из этой группы?",
         "removeConfirmDescription": "Счёт не будет удалён — он только покинет эту группу.",
@@ -46,6 +39,74 @@
         "accountsKept": "Счета сохранятся — они просто останутся без группы.",
         "syncContinues": "Банковская синхронизация продолжится — подключение существует отдельно от этой группы.",
         "ungroupedHeading": "Станут без группы"
+      },
+      "dialogs": {
+        "rename": {
+          "title": "Rename group",
+          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "submit": "Сохранить изменения"
+        },
+        "move": {
+          "title": "Переместить «{name}»",
+          "description": "Its subgroups and accounts move with it.",
+          "parentLabel": "Parent group",
+          "parentPlaceholder": "Select a parent group",
+          "noParent": "No parent",
+          "hint": "Pick “No parent” to make it a top-level group.",
+          "submit": "Переместить"
+        },
+        "addAccounts": {
+          "title": "Add accounts to “{name}”",
+          "description": "An account belongs to one group. Picking one from another group moves it here.",
+          "searchPlaceholder": "Search accounts",
+          "sections": {
+            "ungrouped": "Not in a group",
+            "inOtherGroups": "In other groups",
+            "alreadyInGroup": "Already in {name}"
+          },
+          "inGroupCaption": "In {path}",
+          "noResults": "No accounts match your search",
+          "noAccounts": "No accounts to add",
+          "summary": {
+            "selected": "{selected} selected",
+            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
+            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+          },
+          "submit": "Add {count} account | Add {count} accounts"
+        }
+      },
+      "tree": {
+        "groupsCount": "{count} group | {count} groups",
+        "syncedBadge": "Синхронизировано",
+        "expand": "Развернуть",
+        "collapse": "Свернуть",
+        "renameTooltip": "Переименовать",
+        "moreActions": "Дополнительные действия",
+        "menu": {
+          "rename": "Rename and change logo",
+          "move": "Move to another group",
+          "newSubgroup": "New subgroup",
+          "addAccounts": "Add accounts",
+          "delete": "Удалить группу"
+        }
+      },
+      "organize": {
+        "button": "Организация",
+        "hint": "Drag a group onto another to nest it",
+        "save": "Сохранить изменения",
+        "topLevel": "Верхний уровень",
+        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
+        "movesCount": "{count} move | {count} moves",
+        "moveInside": "Move inside",
+        "moved": "Moved",
+        "saveSuccess": "Groups reorganized",
+        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
+        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropErrors": {
+          "currentParent": "Already in this group",
+          "insideItself": "Can't move a group inside its own subgroup",
+          "alreadyTopLevel": "Already a top-level group"
+        }
       }
     }
   }

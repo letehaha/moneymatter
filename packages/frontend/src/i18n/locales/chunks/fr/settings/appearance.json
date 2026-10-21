@@ -1,30 +1,30 @@
 {
   "settings": {
     "appearance": {
-      "title": "Appearance",
-      "description": "Customize how the app looks and which sections appear in the sidebar.",
+      "title": "Apparence",
+      "description": "Personnalisez l'affichage de l'application et les sections de la barre latérale.",
       "theme": {
-        "title": "Theme",
-        "description": "Choose how the app looks. System matches your device setting."
+        "title": "Thème",
+        "description": "Choisissez l'apparence de l'application. L'option Système s'adapte aux réglages de votre appareil."
       },
       "sidebar": {
-        "title": "Sidebar sections",
-        "description": "Pick which sections appear in the sidebar.",
-        "alwaysVisibleTooltip": "This section is always visible."
+        "title": "Sections de la barre latérale",
+        "description": "Sélectionnez les sections à afficher dans la barre latérale.",
+        "alwaysVisibleTooltip": "Cette section est toujours visible."
       },
       "sidebarNav": {
-        "title": "Sidebar navigation",
-        "description": "Pick which pages appear under Accounts in the sidebar navigation."
+        "title": "Navigation latérale",
+        "description": "Sélectionnez les pages à afficher sous Comptes dans la barre latérale."
       },
       "header": {
-        "title": "Header",
-        "description": "Choose which header actions are visible.",
-        "supportButton": "Support button"
+        "title": "En-tête",
+        "description": "Choisissez les actions visibles dans l'en-tête.",
+        "supportButton": "Bouton d'assistance"
       },
       "currency": {
-        "title": "Currency symbols",
-        "description": "How amounts show their currency. Short symbols look like Rp, ₴ or zł instead of IDR, UAH or PLN, but currencies that share a symbol (USD, CAD, AUD, SGD) all become $.",
-        "narrowSymbol": "Use short currency symbols"
+        "title": "Symboles monétaires",
+        "description": "Format d'affichage des devises pour les montants. Les symboles courts affichent Rp, ₴ ou zł au lieu de IDR, UAH ou PLN, mais les devises partageant un même symbole (USD, CAD, AUD, SGD) afficheront toutes $.",
+        "narrowSymbol": "Utiliser les symboles monétaires courts"
       }
     }
   }

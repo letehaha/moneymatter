@@ -29,6 +29,7 @@
     "groupNotFound": "Группа не найдена",
     "groupUpdateFailed": "Не удалось обновить группу",
     "parentGroupNotExist": "Родитель с таким id не существует.",
+    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
     "parentGroupDoesNotExist": "Родительская группа не существует.",
     "accountNotFound": "Счёт с таким id не найден.",
     "accountGroupNotFound": "Группа счетов с таким id не найдена."

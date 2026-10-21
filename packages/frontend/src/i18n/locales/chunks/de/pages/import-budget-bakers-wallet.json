@@ -74,9 +74,9 @@
           "errorsTitle": "{count} Zeilen fehlgeschlagen | {count} Zeile fehlgeschlagen | {count} Zeilen fehlgeschlagen",
           "errorsOverflow": "+{count} weitere",
           "errors": {
-            "rowImportFailed": "This row could not be imported.",
-            "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-            "accountBalanceDesync": "An account balance could not be updated after the import and may be incorrect."
+            "rowImportFailed": "Diese Zeile konnte nicht importiert werden.",
+            "payeeDefaultTagsFailed": "Die Transaktion wurde importiert, aber die Standard-Tags des Zahlungsempfängers konnten nicht angewendet werden.",
+            "accountBalanceDesync": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden und ist möglicherweise fehlerhaft."
           },
           "balanceWarningTitle": "Einige Kontosalden könnten fehlerhaft sein",
           "balanceWarningBody": "Wir konnten den Saldo eines oder mehrerer bestehender Konten nach dem Import nicht zurücksetzen. Überprüfe die betroffenen Konten.",
@@ -134,7 +134,7 @@
           "importing": "Importieren…"
         },
         "errors": {
-          "fileMissing": "No file loaded. Please upload your Wallet export again."
+          "fileMissing": "Keine Datei geladen. Bitte lade deinen Wallet-Export erneut hoch."
         }
       }
     }

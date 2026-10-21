@@ -6,18 +6,21 @@
         "lostContact": "Verbindung zum Importauftrag verloren."
       },
       "balanceDesync": {
-        "createdAccount": "{account}: the entered balance could not be applied after import, so this account balance may be incorrect.",
-        "linkedAccount": "{account}: the balance could not be updated after import, so this account balance may be incorrect.",
-        "unnamedAccount": "An account balance could not be updated after import and may be incorrect."
+        "createdAccount": "{account}: Der eingegebene Saldo konnte nach dem Import nicht angewendet werden, daher ist dieser Kontostand möglicherweise fehlerhaft.",
+        "linkedAccount": "{account}: Der Saldo konnte nach dem Import nicht aktualisiert werden, daher ist dieser Kontostand möglicherweise fehlerhaft.",
+        "unnamedAccount": "Ein Kontostand konnte nach dem Import nicht aktualisiert werden und ist möglicherweise fehlerhaft."
       },
       "jobFailure": {
-        "interrupted": "The import was interrupted by a server restart. Some rows may already have been imported; undo this import from the import history before retrying.",
-        "baseCurrencyChangeInProgress": "A base currency change is in progress. Wait for it to finish, then retry the import.",
-        "accountCurrencyMismatch": "Currencies must match to link an existing account: {mismatches}. Link an account with the same currency or create a new one.",
-        "categoryNameTooLong": "Category name \"{name}\" is too long ({length} characters); the maximum is {max}.",
-        "payeeNameTooLong": "Payee name \"{name}\" is too long ({length} characters); the maximum is {max}.",
-        "accountMappingMissing": "These accounts from the file have no mapping: {accounts}. Go back and map each of them.",
-        "linkedAccountNotFound": "The account linked to \"{account}\" no longer exists. Go back and choose another account or create a new one."
+        "interrupted": "Der Import wurde durch einen Serverneustart unterbrochen. Einige Zeilen wurden möglicherweise bereits importiert; mache diesen Import aus dem Import-Verlauf rückgängig, bevor du es erneut versuchst.",
+        "baseCurrencyChangeInProgress": "Eine Änderung der Basiswährung ist im Gange. Warte, bis sie abgeschlossen ist, und versuche dann erneut zu importieren.",
+        "accountCurrencyMismatch": "Währungen müssen übereinstimmen, um ein bestehendes Konto zu verknüpfen: {mismatches}. Verknüpfe ein Konto mit derselben Währung oder erstelle ein neues.",
+        "categoryNameTooLong": "Der Kategoriename \"{name}\" ist zu lang ({length} Zeichen); das Maximum beträgt {max}.",
+        "payeeNameTooLong": "Der Name des Zahlungsempfängers \"{name}\" ist zu lang ({length} Zeichen); das Maximum beträgt {max}.",
+        "accountMappingMissing": "Diese Konten aus der Datei haben keine Zuordnung: {accounts}. Gehe zurück und ordne jedes davon zu.",
+        "linkedAccountNotFound": "Das mit \"{account}\" verknüpfte Konto existiert nicht mehr. Gehe zurück und wähle ein anderes Konto oder erstelle ein neues."
+      },
+      "importResults": {
+        "findTransfers": "Umbuchungen finden"
       }
     }
   },

@@ -121,6 +121,7 @@
         "title": "Lista de seguimiento de categorías",
         "addCategory": "Añadir categoría",
         "selectCategories": "Seleccionar categorías",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Ordenar por",
           "custom": "Orden personalizado",
@@ -149,6 +150,7 @@
         "start": "Inicio",
         "end": "Fin",
         "growth": "Crecimiento",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Tendencia de períodos anteriores",
         "excludedTooltip": "Excluido del patrimonio neto: {components}",
         "viewHistory": "Ver historial",
@@ -298,7 +300,10 @@
         "daysLeft": "hace {count} día | hace {count} días",
         "lastDay": "Último día del período",
         "empty": "Aún no hay presupuestos",
-        "create": "Configurar un presupuesto"
+        "create": "Configurar un presupuesto",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} de {limit}",

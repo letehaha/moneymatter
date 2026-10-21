@@ -121,6 +121,7 @@
         "title": "Categories watchlist",
         "addCategory": "Add category",
         "selectCategories": "Select categories",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Sort by",
           "custom": "Custom order",
@@ -149,6 +150,7 @@
         "start": "Start",
         "end": "End",
         "growth": "Growth",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Previous periods trend",
         "excludedTooltip": "Excluded from net worth: {components}",
         "viewHistory": "View history",
@@ -298,7 +300,10 @@
         "daysLeft": "{count} day left | {count} days left",
         "lastDay": "Last day of the period",
         "empty": "No budget yet",
-        "create": "Set up a budget"
+        "create": "Set up a budget",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",

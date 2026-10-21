@@ -121,6 +121,7 @@
         "title": "Pantauan Kategori",
         "addCategory": "Tambah kategori",
         "selectCategories": "Pilih Kategori",
+        "showTrend": "Show 6-month trend",
         "sort": {
           "title": "Urutkan berdasarkan",
           "custom": "Custom order",
@@ -149,6 +150,7 @@
         "start": "Awal",
         "end": "Akhir",
         "growth": "Pertumbuhan",
+        "changeInPeriod": "Change in {period}",
         "previousPeriodsTrend": "Tren periode sebelumnya",
         "excludedTooltip": "Dikecualikan dari kekayaan bersih: {components}",
         "viewHistory": "Lihat riwayat",
@@ -298,7 +300,10 @@
         "daysLeft": "{count} day left | {count} days left",
         "lastDay": "Last day of the period",
         "empty": "No budget yet",
-        "create": "Set up a budget"
+        "create": "Set up a budget",
+        "sort": {
+          "overspent": "Most overspent first"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} of {limit}",

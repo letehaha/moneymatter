@@ -78,7 +78,7 @@
       },
       "transactionFields": {
         "label": "Campi della transazione opzionali",
-        "description": "Extra fields shown in the transaction form. A field that already has a value is always shown.",
+        "description": "Offer a quick-add button for these fields in the transaction form. A field that already has a value is always shown.",
         "successNotification": "Campi della transazione aggiornati",
         "errorNotification": "Errore imprevisto. Le impostazioni non sono state salvate",
         "fields": {

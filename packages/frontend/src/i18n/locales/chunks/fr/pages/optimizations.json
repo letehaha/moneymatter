@@ -1,256 +1,295 @@
 {
   "optimizations": {
-    "title": "Optimizations",
-    "landingDescription": "Tools to help you organize and clean up your financial data.",
-    "backToOptimizations": "Back to optimizations",
+    "title": "Optimisations",
+    "landingDescription": "Des outils pour vous aider à organiser et nettoyer vos données financières.",
+    "backToOptimizations": "Retour aux optimisations",
     "cards": {
       "transfers": {
-        "title": "Transfer matching",
-        "description": "Find expense-income pairs that might be transfers between your accounts and link them automatically."
+        "title": "Rapprochement des virements",
+        "description": "Détectez les paires dépense-revenu pouvant correspondre à des virements entre vos comptes et associez-les automatiquement."
       },
       "aiCategorization": {
-        "title": "AI categorization",
-        "description": "Let AI sort uncategorized transactions and review past runs."
+        "title": "Catégorisation par IA",
+        "description": "Laissez l'IA classer vos opérations non catégorisées et consultez l'historique des exécutions."
       },
       "applyRules": {
-        "title": "Apply a rule to past transactions",
-        "description": "Pick one of your automations and run it over transactions you already have."
+        "title": "Appliquer une règle aux opérations passées",
+        "description": "Choisissez l'une de vos automatisations et appliquez-la à vos opérations existantes."
       },
       "reconciliation": {
-        "title": "Reconciliation",
-        "description": "Merge duplicate bank transactions, remove wrong ones, and resolve pending transactions the bank never booked."
+        "title": "Rapprochement bancaire",
+        "description": "Fusionnez les opérations en double, supprimez les erreurs et traitez les opérations en attente non comptabilisées par la banque."
       }
     },
     "aiCategorization": {
-      "title": "AI categorization",
-      "description": "Run AI over transactions that are still in your default category and let it pick a better one. You can always change a category afterwards.",
+      "title": "Catégorisation par IA",
+      "description": "Analysez par IA les opérations classées dans la catégorie par défaut pour trouver une catégorie plus adaptée. Vous pourrez toujours la modifier par la suite.",
       "tabs": {
-        "categorize": "Categorize",
-        "history": "History"
+        "categorize": "Catégoriser",
+        "history": "Historique"
       },
       "count": {
-        "capNote": "One run covers the {limit} most recent. Run it again to work through the rest.",
-        "allDoneTitle": "Everything is categorized",
-        "allDoneDescription": "No transactions are sitting in your default category right now."
+        "capNote": "Chaque analyse traite les {limit} plus récentes. Relancez-la pour traiter le reste.",
+        "allDoneTitle": "Tout est catégorisé",
+        "allDoneDescription": "Aucune opération ne se trouve actuellement dans la catégorie par défaut."
       },
       "bar": {
-        "uncategorizedCount": "{count} uncategorized",
-        "capChip": "{limit} per run"
+        "uncategorizedCount": "{count} non catégorisée(s)",
+        "capChip": "{limit} par analyse"
       },
       "table": {
-        "selectionHint": "Select rows to categorize only those.",
-        "loadError": "Couldn't load the transactions waiting for categorization."
+        "selectionHint": "Sélectionnez des lignes pour ne catégoriser que celles-ci.",
+        "loadError": "Impossible de charger les opérations en attente de catégorisation."
       },
       "history": {
-        "emptyTitle": "No AI categorization runs yet",
-        "emptyDescription": "Once you run AI categorization, every run shows up here so you can review what it changed.",
-        "loadError": "Couldn't load the run history.",
-        "runLoadError": "Couldn't load this run's transactions.",
-        "backToRuns": "Back to all runs",
-        "runEmptyTitle": "Nothing left from this run",
-        "runEmptyDescription": "Every transaction this run categorized has since been re-categorized or deleted.",
-        "transactionCount": "{count} transaction | {count} transactions",
+        "emptyTitle": "Aucune analyse par IA pour le moment",
+        "emptyDescription": "Une fois la catégorisation par IA lancée, chaque analyse apparaîtra ici afin de vérifier les modifications apportées.",
+        "loadError": "Impossible de charger l'historique des analyses.",
+        "runLoadError": "Impossible de charger les opérations de cette analyse.",
+        "backToRuns": "Retour à toutes les analyses",
+        "runEmptyTitle": "Plus rien à afficher pour cette analyse",
+        "runEmptyDescription": "Toutes les opérations catégorisées lors de cette analyse ont depuis été recatégorisées ou supprimées.",
+        "transactionCount": "{count} opération | {count} opérations",
         "trigger": {
-          "manual": "Manual",
-          "import": "Data import",
-          "sync": "Bank sync",
-          "unknown": "Unknown"
+          "manual": "Manuelle",
+          "import": "Importation de données",
+          "sync": "Synchronisation bancaire",
+          "unknown": "Inconnu"
         },
         "triggerTooltip": {
-          "manual": "You started this run manually",
-          "import": "Started automatically after a data import",
-          "sync": "Started automatically after a bank sync",
-          "unknown": "This run's origin wasn't recorded"
+          "manual": "Vous avez lancé cette exécution manuellement",
+          "import": "Lancée automatiquement après un import de données",
+          "sync": "Lancée automatiquement après une synchronisation bancaire",
+          "unknown": "L'origine de cette exécution n'a pas été enregistrée"
         }
       },
       "setup": {
-        "title": "Run setup",
-        "model": "Model",
-        "notConfigured": "Not configured",
-        "connection": "AI model",
-        "limits": "Limits",
-        "limitsSharedKey": "3 runs per hour",
-        "limitsOwnCredentials": "Unlimited — runs on your own key",
-        "changeModel": "Change in AI settings",
-        "errorChip": "AI setup problem",
-        "loadError": "Couldn't load your AI setup."
+        "title": "Configuration de l'exécution",
+        "model": "Modèle",
+        "notConfigured": "Non configuré",
+        "connection": "Modèle d'IA",
+        "limits": "Plafonds",
+        "limitsSharedKey": "3 exécutions par heure",
+        "limitsOwnCredentials": "Illimité — fonctionne avec votre propre clé",
+        "changeModel": "Modifier dans les paramètres d'IA",
+        "errorChip": "Problème de configuration IA",
+        "loadError": "Impossible de charger votre configuration IA."
       },
       "run": {
-        "button": "Categorize with AI (all)",
-        "categorizeSelected": "Categorize {count} selected",
-        "inProgress": "Categorizing…",
-        "progressLabel": "AI categorization progress",
-        "processed": "{processed} of {total} transactions processed"
+        "button": "Catégoriser avec l'IA (tout)",
+        "categorizeSelected": "Catégoriser la sélection ({count})",
+        "inProgress": "Catégorisation en cours…",
+        "progressLabel": "Progression de la catégorisation par IA",
+        "processed": "{processed} sur {total} opérations traitées"
       },
       "confirm": {
-        "title": "Categorize all uncategorized transactions?",
-        "description": "AI will look at {count} transaction that is still in your default category and pick a category for it. You can change it afterwards. | AI will look at {count} transactions that are still in your default category and pick a category for each one. You can change any of them afterwards.",
-        "action": "Categorize all"
+        "title": "Catégoriser toutes les opérations non catégorisées ?",
+        "description": "L'IA analysera {count} opération encore dans votre catégorie par défaut et lui attribuera une catégorie. Vous pourrez la modifier par la suite. | L'IA analysera les {count} opérations encore dans votre catégorie par défaut et attribuera une catégorie à chacune. Vous pourrez les modifier par la suite.",
+        "action": "Tout catégoriser"
       },
       "notifications": {
-        "started": "Categorizing {count} transaction with AI | Categorizing {count} transactions with AI",
-        "nothingToCategorize": "Everything is already categorized — nothing left for AI to do",
-        "alreadyRunning": "AI categorization is already running",
-        "rateLimited": "You've reached the manual categorization limit. Try again in {time}.",
-        "failed": "Could not start AI categorization"
+        "started": "Catégorisation de {count} opération avec l'IA… | Catégorisation de {count} opérations avec l'IA…",
+        "nothingToCategorize": "Tout est déjà catégorisé — aucune action requise pour l'IA",
+        "alreadyRunning": "La catégorisation par IA est déjà en cours",
+        "rateLimited": "Vous avez atteint la limite de catégorisation manuelle. Réessayez dans {time}.",
+        "failed": "Impossible de lancer la catégorisation par IA"
       }
     },
     "transferSuggestions": {
-      "description": "Find transactions that should be linked as transfers between your accounts",
-      "suggestionsFor": "Suggestions for",
-      "selectExpense": "Select a transaction to see suggestions",
-      "potentialTransfersFound": "potential transfers found",
+      "description": "Détecter les opérations à associer comme virements entre vos comptes",
+      "suggestionsFor": "Suggestions pour",
+      "selectExpense": "Sélectionnez une opération pour afficher les suggestions",
+      "potentialTransfersFound": "virements potentiels trouvés",
       "empty": {
-        "title": "No transfer suggestions found",
-        "description": "Try adjusting the date range"
+        "title": "Aucune suggestion de virement trouvée",
+        "description": "Essayez d'ajuster la période de dates"
       },
       "initial": {
-        "title": "Find transfer suggestions",
-        "description": "Scan your transactions to find income and expense pairs that should be linked as transfers between accounts"
+        "title": "Rechercher des suggestions de virement",
+        "description": "Analysez vos opérations pour identifier les paires de revenus et dépenses à associer comme virements entre comptes"
       },
-      "scanning": "Scanning transactions...",
+      "scanning": "Analyse des opérations en cours...",
       "confirmLink": {
-        "title": "Link as transfer?",
-        "description": "Both transactions will be linked as a transfer between accounts. This will correct your statistics and analytics by excluding them from income and expense totals."
+        "title": "Associer comme virement ?",
+        "description": "Les deux opérations seront associées comme un virement entre comptes. Cela ajustera vos statistiques et analyses en les excluant des totaux de revenus et dépenses."
       },
       "presets": {
-        "last3Months": "Last 3 months",
-        "last6Months": "Last 6 months",
-        "lastYear": "Last year",
-        "thisYear": "This year",
-        "previousYear": "Previous year"
+        "last3Months": "3 derniers mois",
+        "last6Months": "6 derniers mois",
+        "lastYear": "L'année dernière",
+        "thisYear": "Cette année",
+        "previousYear": "Année précédente"
       },
-      "includeOutOfWallet": "Include out-of-wallet transfers",
+      "includeOutOfWallet": "Inclure les virements hors portefeuille",
+      "outOfWalletSwitch": "Virements hors portefeuille",
       "skip": {
-        "action": "Skip",
-        "title": "Skip this suggestion?",
-        "description": "This pair will be hidden from future scan results. The transactions themselves won't be changed.",
-        "dontShowAgain": "Don't show this confirmation again"
+        "action": "Ignorer",
+        "title": "Ignorer cette suggestion ?",
+        "description": "Cette paire sera masquée des prochaines analyses. Les opérations elles-mêmes ne seront pas modifiées.",
+        "dontShowAgain": "Ne plus afficher cette confirmation"
       },
       "notifications": {
-        "loadError": "Failed to load more suggestions",
-        "scanError": "Failed to scan for transfer suggestions",
-        "linkSuccess": "Transactions linked as transfer",
-        "linkError": "Failed to link transactions",
-        "skipSuccess": "Suggestion dismissed",
-        "skipError": "Failed to skip suggestion"
+        "loadError": "Impossible de charger plus de suggestions",
+        "scanError": "Échec de l'analyse des suggestions de virement",
+        "linkSuccess": "Opérations associées comme virement",
+        "linkError": "Impossible d'associer les opérations",
+        "skipSuccess": "Suggestion ignorée",
+        "skipError": "Impossible d'ignorer la suggestion"
+      },
+      "aiReview": {
+        "label": "Vérification par IA",
+        "about": "À propos de la vérification par IA",
+        "plusBadge": "Plus",
+        "description": "L'IA vérifie chaque correspondance et n'affiche que celles qui semblent être de véritables transferts entre vos comptes.",
+        "cost": "Chaque analyse utilise votre quota mensuel d'IA. Si vous utilisez votre propre fournisseur d'IA, celui-ci vous facture directement. Choisissez le modèle dans {link}.",
+        "aiSettingsLink": "Paramètres de l'IA",
+        "openAiSettings": "Ouvrir les paramètres d'IA",
+        "blocked": {
+          "plan": {
+            "title": "La vérification par IA fait partie de l'offre Plus",
+            "body": "Vous pouvez aussi connecter votre propre fournisseur d'IA dans les paramètres d'IA pour utiliser cette fonction avec n'importe quelle formule."
+          },
+          "allowance": {
+            "pill": "Jusqu'au {date}",
+            "title": "Quota mensuel d'IA épuisé",
+            "body": "Il sera renouvelé le {date}. Connectez votre propre fournisseur d'IA pour continuer à utiliser cette fonction dès maintenant."
+          },
+          "setup": {
+            "pill": "Configurer",
+            "title": "Aucun modèle d'IA ne répond",
+            "body": "Vérifiez votre fournisseur d'IA ou choisissez un modèle pour rapprocher les transferts."
+          }
+        },
+        "connectOwnModel": "Connecter votre propre modèle",
+        "reviewing": "L'IA vérifie les correspondances…",
+        "verdict": {
+          "likely": "Probable",
+          "possible": "Possible"
+        },
+        "nudge": "Réduisez les faux rapprochements grâce à l'IA",
+        "rescanHint": "Vérifier avec l'IA",
+        "rescanHintTooltip": "De nombreuses paires ont obtenu un score inférieur à 70 %. Relancez l'analyse avec l'IA pour masquer celles qui ne sont pas des transferts. Cette opération utilise votre quota d'IA.",
+        "rescanBanner": {
+          "title": "De nombreuses paires ont un score inférieur à 70 %",
+          "body": "La vérification par IA peut masquer celles qui ne sont pas des transferts. Cette opération utilise votre quota d'IA."
+        }
       }
     },
     "reconciliation": {
-      "title": "Transactions reconciliation",
+      "title": "Rapprochement bancaire",
       "tabs": {
-        "transactions": "Transactions",
-        "stuckPending": "Stuck pending",
-        "history": "History"
+        "transactions": "Opérations",
+        "stuckPending": "En attente bloquées",
+        "history": "Historique"
       },
       "table": {
-        "hint": "Select bank transactions to merge duplicates or remove extras"
+        "hint": "Sélectionnez des opérations bancaires pour fusionner les doublons ou supprimer les superflues"
       },
       "actions": {
-        "merge": "Merge",
-        "remove": "Remove"
+        "merge": "Fusionner",
+        "remove": "Supprimer"
       },
       "blockReasons": {
         "header": {
-          "merge": "Can't merge for {count} reasons:",
-          "remove": "Can't remove for {count} reasons:"
+          "merge": "Impossible de fusionner pour {count} raisons :",
+          "remove": "Impossible de supprimer pour {count} raisons :"
         },
-        "notBankConnected": "Only bank-connected transactions can be reconciled.",
-        "planned": "Planned transactions can't be reconciled.",
-        "linkedTransfer": "Linked transfers can't be reconciled. Unlink the transfer first.",
-        "refundLinked": "Refund-linked transactions can't be reconciled. Unlink the refund first.",
-        "tooFew": "Select at least 2 transactions to merge.",
-        "tooMany": "Too many transactions selected (merge: up to {mergeMax}, remove: up to {removeMax}).",
-        "differentAccounts": "All transactions must belong to the same account."
+        "notBankConnected": "Seules les opérations synchronisées avec une banque peuvent faire l'objet d'un rapprochement bancaire.",
+        "planned": "Les opérations prévisionnelles ne peuvent pas faire l'objet d'un rapprochement bancaire.",
+        "linkedTransfer": "Les virements associés ne peuvent pas faire l'objet d'un rapprochement bancaire. Dissociez d'abord le virement.",
+        "refundLinked": "Les opérations associées à un remboursement ne peuvent pas faire l'objet d'un rapprochement bancaire. Dissociez d'abord le remboursement.",
+        "tooFew": "Sélectionnez au moins 2 opérations à fusionner.",
+        "tooMany": "Trop d'opérations sélectionnées (fusion : jusqu'à {mergeMax}, suppression : jusqu'à {removeMax}).",
+        "differentAccounts": "Toutes les opérations doivent appartenir au même compte."
       },
       "merge": {
-        "title": "Merge transactions",
-        "description": "Pick the transaction to keep. The others are removed and can be restored from History.",
+        "title": "Fusionner les opérations",
+        "description": "Choisissez l'opération à conserver. Les autres seront supprimées et pourront être restaurées depuis l'Historique.",
         "fields": {
-          "payee": "Payee",
-          "status": "Status",
-          "time": "Time"
+          "payee": "Tiers",
+          "status": "Statut",
+          "time": "Heure"
         },
         "status": {
-          "pending": "Pending",
-          "booked": "Booked"
+          "pending": "En attente",
+          "booked": "Comptabilisée"
         },
-        "keep": "Keep",
-        "remove": "Remove",
-        "sameInAll": "Same in all:",
-        "confirm": "Merge and remove {count} | Merge and remove {count}"
+        "keep": "Conserver",
+        "remove": "Supprimer",
+        "sameInAll": "Identique pour toutes :",
+        "confirm": "Fusionner et supprimer {count} | Fusionner et supprimer {count}"
       },
       "remove": {
-        "title": "Remove {count} transaction? | Remove {count} transactions?",
-        "description": "Removed transactions stop counting toward balances and stats. Tracker, group and subscription links are detached. You can restore them from History, but the links won't come back.",
-        "confirm": "Remove"
+        "title": "Supprimer {count} opération ? | Supprimer {count} opérations ?",
+        "description": "Les opérations supprimées ne sont plus prises en compte dans les soldes et les statistiques. Les liaisons avec les suivis, groupes et abonnements sont dissociées. Vous pouvez les restaurer depuis l'Historique, mais ces liaisons ne seront pas rétablies.",
+        "confirm": "Supprimer"
       },
       "restoreDialog": {
-        "title": "Restore {count} transaction? | Restore {count} transactions?",
-        "description": "Restored transactions count toward balances and stats again. If they were merged, the kept transaction stays, so you may see duplicates again. Tracker, group and subscription links detached on removal don't come back.",
-        "confirm": "Restore"
+        "title": "Restaurer {count} opération ? | Restaurer {count} opérations ?",
+        "description": "Les opérations restaurées sont à nouveau comptabilisées dans les soldes et les statistiques. En cas de fusion préalable, l'opération conservée reste présente, ce qui peut recréer des doublons. Les liaisons avec les suivis, groupes et abonnements supprimées ne sont pas rétablies.",
+        "confirm": "Restaurer"
       },
       "notifications": {
-        "removed": "Removed {count} transaction | Removed {count} transactions",
-        "merged": "Merged, removed {count} duplicate | Merged, removed {count} duplicates",
-        "restored": "Restored {count} transaction | Restored {count} transactions",
-        "keptAsBooked": "Marked as booked",
-        "checkedWithBank": "Checked with bank",
-        "unexpectedError": "Something went wrong. Please try again.",
+        "removed": "{count} opération supprimée | {count} opérations supprimées",
+        "merged": "Fusionné, {count} doublon supprimé | Fusionné, {count} doublons supprimés",
+        "restored": "{count} opération restaurée | {count} opérations restaurées",
+        "keptAsBooked": "Marquée comme comptabilisée",
+        "checkedWithBank": "Vérifié auprès de la banque",
+        "unexpectedError": "Une erreur s'est produite. Veuillez réessayer.",
         "bankCheck": {
-          "allBooked": "Your bank booked the transaction | Your bank booked all {count} transactions",
-          "someBooked": "Your bank booked {count} transaction | Your bank booked {count} transactions",
-          "noneBooked": "Your bank hasn't booked any of them yet",
-          "stillPending": "{count} is still pending. | {count} are still pending.",
-          "someFailed": "Couldn't reach the bank for {count} account. | Couldn't reach the bank for {count} accounts."
+          "allBooked": "Votre banque a comptabilisé l'opération | Votre banque a comptabilisé les {count} opérations",
+          "someBooked": "Votre banque a comptabilisé {count} opération | Votre banque a comptabilisé {count} opérations",
+          "noneBooked": "Votre banque n'en a encore comptabilisé aucune",
+          "stillPending": "{count} est toujours en attente. | {count} sont toujours en attente.",
+          "someFailed": "Impossible de joindre la banque pour {count} compte. | Impossible de joindre la banque pour {count} comptes."
         }
       },
       "stuckPending": {
-        "loadError": "Couldn't load stuck pending transactions.",
-        "emptyTitle": "No stuck pending transactions",
-        "emptyDescription": "Pending transactions older than 7 days show up here so you can resolve them.",
-        "checkWithBank": "Check with bank",
-        "summaryTooOld": "{count} row is still pending after a week. It's too old to check with your bank. | {count} rows are still pending after a week. They're too old to check with your bank.",
-        "checking": "Checking with bank…",
-        "checkAgain": "Check again",
-        "keepAsBooked": "Keep as booked",
+        "loadError": "Impossible de charger les opérations en attente bloquées.",
+        "emptyTitle": "Aucune opération en attente bloquée",
+        "emptyDescription": "Les opérations en attente de plus de 7 jours s'affichent ici afin que vous puissiez les traiter.",
+        "checkWithBank": "Vérifier auprès de la banque",
+        "summaryTooOld": "{count} ligne est toujours en attente après une semaine. Elle est trop ancienne pour être vérifiée auprès de votre banque. | {count} lignes sont toujours en attente après une semaine. Elles sont trop anciennes pour être vérifiées auprès de votre banque.",
+        "checking": "Vérification auprès de la banque…",
+        "checkAgain": "Vérifier à nouveau",
+        "keepAsBooked": "Conserver comme comptabilisée",
         "header": {
-          "title": "{count} transaction stuck in pending | {count} transactions stuck in pending",
-          "description": "Pending for more than a week in {count} account. | Pending for more than a week in {count} accounts.",
-          "titleChecked": "{count} transaction still pending | {count} transactions still pending",
-          "descriptionChecked": "Checked with your bank. Decide what to do with each one."
+          "title": "{count} opération bloquée en attente | {count} opérations bloquées en attente",
+          "description": "En attente depuis plus d'une semaine sur {count} compte. | En attente depuis plus d'une semaine sur {count} comptes.",
+          "titleChecked": "{count} opération toujours en attente | {count} opérations toujours en attente",
+          "descriptionChecked": "Vérification effectuée auprès de votre banque. Choisissez l'action à mener pour chacune."
         },
-        "checkFirstHint": "Check with your bank first. Transactions it has booked since then disappear from this list.",
+        "checkFirstHint": "Vérifiez d'abord auprès de votre banque. Les opérations comptabilisées depuis disparaîtront de cette liste.",
         "columns": {
-          "account": "Account",
+          "account": "Compte",
           "date": "Date",
-          "category": "Category",
-          "pendingFor": "Pending for",
-          "amount": "Amount",
-          "status": "Status",
+          "category": "Catégorie",
+          "pendingFor": "En attente depuis",
+          "amount": "Montant",
+          "status": "Statut",
           "actions": "Actions"
         },
-        "pendingDaysShort": "{count}d",
+        "pendingDaysShort": "{count} j",
         "status": {
-          "tooOld": "Too old to check",
-          "tooOldHint": "Your bank only shares about 90 days of history, so this transaction can't be checked. Keep it if the charge happened, remove it if it didn't.",
-          "duplicate": "Possible duplicate",
-          "duplicateHint": "A booked transaction from the same payee on {date} looks like the same payment. Merge them to keep one.",
-          "notFound": "Not found at bank",
-          "notFoundHint": "Your bank has no booked copy of this transaction, so it may be a released hold. Keep it if the charge happened, remove it if it didn't."
+          "tooOld": "Trop ancienne pour vérification",
+          "tooOldHint": "Votre banque ne fournit qu'environ 90 jours d'historique, cette opération ne peut donc pas être vérifiée. Conservez-la si le débit a eu lieu, supprimez-la dans le cas contraire.",
+          "duplicate": "Doublon potentiel",
+          "duplicateHint": "Une opération comptabilisée du même tiers le {date} semble correspondre au même paiement. Fusionnez-les pour n'en conserver qu'une.",
+          "notFound": "Introuvable à la banque",
+          "notFoundHint": "Votre banque n'a aucune trace comptabilisée de cette opération ; il peut s'agir d'une pré-autorisation libérée. Conservez-la si le débit a eu lieu, supprimez-la sinon."
         }
       },
       "history": {
-        "loadError": "Couldn't load reconciliation history.",
-        "emptyTitle": "No reconciliation history yet",
-        "emptyDescription": "Merged and removed transactions appear here so you can restore them.",
+        "loadError": "Impossible de charger l'historique de rapprochement bancaire.",
+        "emptyTitle": "Aucun historique de rapprochement bancaire pour le moment",
+        "emptyDescription": "Les opérations fusionnées et supprimées apparaissent ici pour que vous puissiez les restaurer.",
         "type": {
-          "merge": "Merged",
-          "remove": "Removed"
+          "merge": "Fusionnée",
+          "remove": "Supprimée"
         },
-        "restore": "Restore",
-        "kept": "Kept",
-        "removedRows": "{count} removed transaction | {count} removed transactions"
+        "restore": "Restaurer",
+        "kept": "Conservée",
+        "removedRows": "{count} opération supprimée | {count} opérations supprimées"
       }
     }
   }

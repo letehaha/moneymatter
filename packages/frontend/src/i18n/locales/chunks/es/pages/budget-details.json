@@ -2,7 +2,7 @@
   "pages": {
     "budgets": {
       "transactionsList": {
-        "loadError": "Couldn't load transactions.",
+        "loadError": "No se han podido cargar las transacciones",
         "selectionModeWarning": "Modo de selección — elija transacciones para desvincular",
         "selectAll": "Seleccionar todo",
         "selected": "{count} seleccionada(s)",
@@ -17,8 +17,8 @@
         "addTransactions": "Añadir transacciones",
         "add": "Añadir",
         "loadingMore": "Cargando más...",
-        "unlinkError": "Failed to unlink transactions",
-        "addError": "Failed to add transactions"
+        "unlinkError": "Error al desvincular las transacciones",
+        "addError": "Error al agregar las transacciones"
       }
     },
     "budgetDetails": {
@@ -62,39 +62,39 @@
         "incomeLabel": "Ingresos:",
         "expensesLabel": "Gastos:",
         "kpi": {
-          "dailyPace": "Daily pace",
-          "perDay": "/ day",
-          "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
-          "daysElapsed": "{elapsed} of {total} days",
-          "projectedTotal": "Projected total",
-          "projectedLimit": "at this pace · limit {amount}",
-          "averagePerDay": "Average per day",
-          "firstTransaction": "First transaction",
-          "lastTransaction": "Last transaction",
+          "dailyPace": "Ritmo diario",
+          "perDay": "/ día",
+          "allowedPerDay": "permitido {amount} / día · {elapsed} de {total} días",
+          "daysElapsed": "{elapsed} de {total} días",
+          "projectedTotal": "Total previsto",
+          "projectedLimit": "a este ritmo · límite {amount}",
+          "averagePerDay": "Promedio por día",
+          "firstTransaction": "Primera transacción",
+          "lastTransaction": "Última transacción",
           "transactions": "Transacciones",
           "avgAmount": "Máx.: {amount}",
-          "biggestDay": "Biggest day",
-          "shareOfTotal": "{percent}% of total"
+          "biggestDay": "Mejor día",
+          "shareOfTotal": "{percent}% del total"
         },
-        "byCategory": "By category",
-        "categoriesCount": "{count} category | {count} categories",
-        "byCurrency": "By currency",
-        "asPaid": "as paid",
+        "byCategory": "Por categoría",
+        "categoriesCount": "{count} categoría | {count} categorías",
+        "byCurrency": "Por moneda",
+        "asPaid": "como pagada",
         "timeline": "Cronología",
-        "todayMarker": "today {date}",
-        "timelineAria": "Cumulative spending over time with per-period bars",
-        "limitLabel": "{amount} limit",
-        "cumulativeLabel": "Cumulative",
+        "todayMarker": "hoy {date}",
+        "timelineAria": "Gasto acumulativo en el tiempo con barras por período",
+        "limitLabel": "{amount} restantes",
+        "cumulativeLabel": "Acumulativo",
         "legend": {
-          "cumulative": "Spent, cumulative",
-          "evenPace": "Even pace to the limit",
+          "cumulative": "Gasto, acumulativo",
+          "evenPace": "Ritmo constante hasta el límite",
           "projection": "Proyección",
-          "daily": "Per day",
-          "weekly": "Per week",
-          "monthly": "Per month"
+          "daily": "Por día",
+          "weekly": "Por semana",
+          "monthly": "Por mes"
         },
-        "topPayees": "Top payees",
-        "bySpend": "by spend",
+        "topPayees": "Principales beneficiarios",
+        "bySpend": "por gasto",
         "noPayee": "Sin beneficiario",
         "txCount": "{count} más"
       },

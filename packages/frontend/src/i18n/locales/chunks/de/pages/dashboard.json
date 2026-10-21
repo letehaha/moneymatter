@@ -121,6 +121,7 @@
         "title": "Kategorien-Beobachtungsliste",
         "addCategory": "Kategorie hinzufügen",
         "selectCategories": "Kategorien auswählen",
+        "showTrend": "6-Monats-Trend anzeigen",
         "sort": {
           "title": "Sortieren nach",
           "custom": "Benutzerdefinierte Reihenfolge",
@@ -149,6 +150,7 @@
         "start": "Beginn",
         "end": "Ende",
         "growth": "Wachstum",
+        "changeInPeriod": "Änderung in {period}",
         "previousPeriodsTrend": "Trend vorheriger Zeiträume",
         "excludedTooltip": "Vom Nettovermögen ausgeschlossen: {components}",
         "viewHistory": "Verlauf anzeigen",
@@ -298,7 +300,10 @@
         "daysLeft": "Noch {count} Tag | Noch {count} Tage",
         "lastDay": "Letzter Tag des Zeitraums",
         "empty": "Noch kein Budget",
-        "create": "Budget einrichten"
+        "create": "Budget einrichten",
+        "sort": {
+          "overspent": "Größte Überziehung zuerst"
+        }
       },
       "trackers": {
         "spentOfLimit": "{spent} von {limit}",

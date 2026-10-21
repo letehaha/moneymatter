@@ -107,6 +107,7 @@
         "paymentTypeLabel": "付款方式",
         "noteLabel": "备注",
         "notePlaceholder": "备注",
+        "addFieldsLabel": "添加",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -427,8 +428,6 @@
         "announceApplied": "已应用 {name} — {count} 个字段已填写。金额为空。| 已应用 {name} — {count} 个字段已填写。金额为空。",
         "announceAppliedWithAmount": "已应用 {name} — {count} 个字段已填写。金额已设定为 {amount}。 | 已应用 {name} — {count} 个字段已填写。金额已设定为 {amount}。",
         "categoryDeletedHint": "此模板的分类已删除——请选择新的分类。",
-        "alsoSet": "模板也填写了：{fields}",
-        "tagsCount": "{count} 标签 | {count} 标签",
         "applyConfirmTitle": "应用模板？",
         "applyConfirmDescription": "应用将替换您的拆分和退款链接。",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "创建分组",
         "nameLabel": "分组名",
         "namePlaceholder": "投资",
-        "createButton": "创建"
+        "createButton": "创建",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

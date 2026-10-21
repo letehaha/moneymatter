@@ -1,116 +1,116 @@
 {
   "settings": {
     "admin": {
-      "title": "Admin panel",
-      "description": "Administrative tools and system management",
+      "title": "Panneau d'administration",
+      "description": "Outils d'administration et gestion du système",
       "priceSync": {
-        "title": "Securities price sync",
-        "description": "Manually trigger price synchronization for all securities with holdings",
-        "button": "Trigger price sync",
-        "buttonLoading": "Syncing...",
+        "title": "Synchronisation du cours des titres",
+        "description": "Déclencher manuellement la synchronisation des cours pour tous les titres détenus",
+        "button": "Synchroniser les cours",
+        "buttonLoading": "Synchronisation...",
         "notifications": {
-          "success": "Securities prices sync completed successfully",
-          "failed": "Failed to trigger price sync",
-          "rateLimited": "Not allowed. Try again in {time}.",
-          "adminRequired": "Admin privileges required for this action"
+          "success": "Synchronisation du cours des titres réussie",
+          "failed": "Échec du déclenchement de la synchronisation des cours",
+          "rateLimited": "Non autorisé. Réessayez dans {time}.",
+          "adminRequired": "Droits d'administrateur requis pour cette action"
         }
       },
       "priceUpload": {
-        "title": "Manual security price upload",
-        "description": "Upload historical price data for securities via CSV or JSON files",
-        "button": "Upload security prices",
-        "dialogTitle": "Upload security prices",
+        "title": "Import manuel du cours des titres",
+        "description": "Importer l'historique des cours de titres via des fichiers CSV ou JSON",
+        "button": "Importer le cours des titres",
+        "dialogTitle": "Importer le cours des titres",
         "selectSecurity": {
-          "searchLabel": "Search symbol or name",
+          "searchLabel": "Rechercher par symbole ou nom",
           "searchPlaceholder": "AAPL",
-          "searching": "Searching…",
-          "failed": "Failed to search securities.",
-          "noResults": "No results.",
-          "changeButton": "Change"
+          "searching": "Recherche…",
+          "failed": "Échec de la recherche de titres.",
+          "noResults": "Aucun résultat.",
+          "changeButton": "Modifier"
         },
         "dateRangeInfo": {
-          "loading": "Loading date range information...",
-          "title": "Available exchange rates date range ({currency}):",
-          "tooltipText": "You can upload security prices only for dates for which we have exchange rates available. Otherwise it won't be possible to convert security price to other currencies. If you need older data, upload exchange rates first. Otherwise depending on which option you will chose on the next steps records will be auto-filtered (omitted) or uploading request will fail."
+          "loading": "Chargement de la période couverte...",
+          "title": "Période disponible pour les taux de change ({currency}) :",
+          "tooltipText": "Vous ne pouvez importer le cours des titres que pour les dates où les taux de change sont disponibles. Sinon, la conversion du cours vers d'autres devises sera impossible. Si vous avez besoin de données plus anciennes, importez d'abord les taux de change. Selon l'option choisie aux étapes suivantes, les entrées seront automatiquement filtrées (ignorées) ou l'import échouera."
         },
         "fileUpload": {
-          "title": "Upload file",
-          "supportedFormats": "CSV or JSON files supported",
+          "title": "Importer un fichier",
+          "supportedFormats": "Fichiers CSV ou JSON pris en charge",
           "errors": {
-            "unsupportedFormat": "Unsupported file format. Please upload CSV or JSON file.",
-            "parseFailed": "Failed to parse {fileType} file: {error}"
+            "unsupportedFormat": "Format de fichier non pris en charge. Veuillez importer un fichier CSV ou JSON.",
+            "parseFailed": "Échec de l'analyse du fichier {fileType} : {error}"
           }
         },
         "fieldMapper": {
-          "title": "Map fields",
-          "description": "Match your file's fields to the required fields below.",
-          "selectField": "Select field...",
-          "dateFormatLabel": "Date format",
-          "dateFormatDescription": "Select the date format used in your file",
+          "title": "Faire correspondre les champs",
+          "description": "Associez les colonnes de votre fichier aux champs requis ci-dessous.",
+          "selectField": "Sélectionner un champ...",
+          "dateFormatLabel": "Format de date",
+          "dateFormatDescription": "Sélectionnez le format de date utilisé dans votre fichier",
           "dateFormats": {
-            "ddMMyyyySlash": "DD/MM/YYYY (e.g., 31/12/2024)",
-            "MMddyyyySlash": "MM/DD/YYYY (e.g., 12/31/2024)",
-            "yyyyMMddDash": "YYYY-MM-DD (e.g., 2024-12-31)",
-            "ddMMyyyyDash": "DD-MM-YYYY (e.g., 31-12-2024)",
-            "MMddyyyyDash": "MM-DD-YYYY (e.g., 12-31-2024)"
+            "ddMMyyyySlash": "JJ/MM/AAAA (ex. 31/12/2024)",
+            "MMddyyyySlash": "MM/JJ/AAAA (ex. 12/31/2024)",
+            "yyyyMMddDash": "AAAA-MM-JJ (ex. 2024-12-31)",
+            "ddMMyyyyDash": "JJ-MM-AAAA (ex. 31-12-2024)",
+            "MMddyyyyDash": "MM-JJ-AAAA (ex. 12-31-2024)"
           },
-          "mappingComplete": "All required fields mapped",
-          "mappingIncomplete": "Please map all required fields to continue",
-          "fileInfo": "File:",
-          "records": "{count} records",
-          "changeFileButton": "Change file",
-          "continueButton": "Continue to preview"
+          "mappingComplete": "Tous les champs obligatoires sont associés",
+          "mappingIncomplete": "Veuillez associer tous les champs obligatoires pour continuer",
+          "fileInfo": "Fichier :",
+          "records": "{count} entrées",
+          "changeFileButton": "Changer de fichier",
+          "continueButton": "Passer à l'aperçu"
         },
         "preview": {
-          "title": "Data preview",
-          "recordsCount": "{count} record will be uploaded | {count} records will be uploaded",
-          "recordsPeriod": "for period between {oldest} and {newest}",
-          "loadingExisting": "Loading existing prices for comparison...",
+          "title": "Aperçu des données",
+          "recordsCount": "{count} entrée sera importée | {count} entrées seront importées",
+          "recordsPeriod": "pour la période comprise entre le {oldest} et le {newest}",
+          "loadingExisting": "Chargement des cours existants pour comparaison...",
           "warnings": {
-            "significantDifferences": "Significant price differences detected",
-            "differencesDetails": "{count} record has a price difference greater than 4% compared to existing data. Please review carefully. | {count} records have a price difference greater than 4% compared to existing data. Please review carefully."
+            "significantDifferences": "Écarts de cours importants détectés",
+            "differencesDetails": "{count} entrée présente un écart de prix supérieur à 4 % par rapport aux données existantes. Veuillez vérifier attentivement. | {count} entrées présentent un écart de prix supérieur à 4 % par rapport aux données existantes. Veuillez vérifier attentivement."
           },
-          "filterCheckbox": "Show only records with significant differences (>4%)",
+          "filterCheckbox": "Afficher uniquement les entrées avec un écart important (> 4 %)",
           "tableHeaders": {
             "date": "Date",
-            "newPrice": "New price",
-            "existingPrice": "Existing price",
-            "difference": "Difference (%)"
+            "newPrice": "Nouveau cours",
+            "existingPrice": "Cours existant",
+            "difference": "Écart (%)"
           },
-          "noExistingPrice": "N/A",
-          "scrollForMore": "Scroll for more...",
-          "noDifferences": "No records with significant differences found.",
-          "backButton": "Back to mapping",
-          "continueButton": "Continue to options"
+          "noExistingPrice": "N/D",
+          "scrollForMore": "Faites défiler pour en voir plus...",
+          "noDifferences": "Aucune entrée avec un écart important n'a été trouvée.",
+          "backButton": "Retour à la correspondance",
+          "continueButton": "Continuer vers les options"
         },
         "options": {
-          "title": "Upload options",
+          "title": "Options d'importation",
           "autoFilter": {
-            "title": "Auto-filter dates outside available range",
-            "description": "Automatically remove dates that are outside the available exchange rate range"
+            "title": "Filtrer automatiquement les dates hors période",
+            "description": "Supprimer automatiquement les dates situées hors de la plage des taux de change disponibles"
           },
           "override": {
-            "title": "Override existing records",
-            "description": "Update existing price records instead of skipping duplicates"
+            "title": "Écraser les entrées existantes",
+            "description": "Mettre à jour les cours existants au lieu d'ignorer les doublons"
           },
-          "backButton": "Back",
-          "uploadButton": "Upload prices",
-          "uploadingButton": "Uploading..."
+          "backButton": "Retour",
+          "uploadButton": "Importer les cours",
+          "uploadingButton": "Importation en cours..."
         },
         "result": {
-          "title": "Upload complete!",
-          "inserted": "✓ {count} new record inserted | ✓ {count} new records inserted",
-          "duplicates": "• {count} duplicate {action}",
-          "duplicatesUpdated": "updated",
-          "duplicatesSkipped": "skipped",
-          "filtered": "• {count} date filtered (outside range) | • {count} dates filtered (outside range)",
-          "closeButton": "Close",
-          "uploadMoreButton": "Upload more"
+          "title": "Importation terminée !",
+          "inserted": "✓ {count} nouvelle entrée importée | ✓ {count} nouvelles entrées importées",
+          "duplicates": "• {count} doublon {action}",
+          "duplicatesUpdated": "mis à jour",
+          "duplicatesSkipped": "ignorés",
+          "filtered": "• {count} date filtrée (hors période) | • {count} dates filtrées (hors période)",
+          "closeButton": "Fermer",
+          "uploadMoreButton": "Importer d'autres fichiers"
         },
         "notifications": {
-          "dateInfoLoadFailed": "Failed to load date info: {error}",
-          "uploadSuccess": "Successfully uploaded {count} price record | Successfully uploaded {count} price records",
-          "uploadFailed": "Upload failed: {error}"
+          "dateInfoLoadFailed": "Échec du chargement des informations de date : {error}",
+          "uploadSuccess": "{count} cours importé avec succès | {count} cours importés avec succès",
+          "uploadFailed": "Échec de l'import : {error}"
         }
       }
     }

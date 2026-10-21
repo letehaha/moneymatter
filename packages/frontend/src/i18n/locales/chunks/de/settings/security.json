@@ -58,7 +58,7 @@
         "unknownLocation": "Unbekannter Standort",
         "lastActive": "Zuletzt aktiv: {date}",
         "noSessions": "Keine aktiven Sitzungen gefunden",
-        "loadError": "We couldn't load your active sessions.",
+        "loadError": "Deine aktiven Sitzungen konnten nicht geladen werden.",
         "revokeAllButton": "Aus allen anderen Sitzungen abmelden",
         "deviceTypes": {
           "unknownDevice": "Unbekanntes Gerät",
@@ -122,8 +122,8 @@
           "updateFailed": "Passwort konnte nicht aktualisiert werden"
         },
         "errors": {
-          "incorrectCurrentPassword": "Current password is incorrect.",
-          "passwordAlreadySet": "Your account already has a password. Use the form to change it."
+          "incorrectCurrentPassword": "Das aktuelle Passwort ist falsch.",
+          "passwordAlreadySet": "Dein Konto hat bereits ein Passwort. Verwende das Formular, um es zu ändern."
         }
       },
       "dangerZone": "Gefahrenzone",
@@ -253,26 +253,26 @@
             "doneButton": "Fertig"
           },
           "warnings": {
-            "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
-            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
-            "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
-            "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
-            "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",
-            "tableMissingTreatedEmpty": "The backup has no file for \"{table}\"; it was treated as empty.",
-            "settingsReset": "Saved settings did not match the current format and were reset to defaults.",
-            "fireSettingsReset": "Saved FIRE settings did not match the current format and were reset to defaults.",
-            "noSettings": "The backup had no saved settings; defaults were applied.",
-            "foreignReferenceDropped": "Dropped {count} row from \"{table}\" whose \"{column}\" referenced data outside this backup. | Dropped {count} rows from \"{table}\" whose \"{column}\" referenced data outside this backup.",
-            "invalidRowDropped": "Dropped {count} \"{table}\" row that failed validation. | Dropped {count} \"{table}\" rows that failed validation.",
-            "foreignReferenceNulled": "Cleared \"{column}\" on {count} row in \"{table}\" that referenced data outside this backup. | Cleared \"{column}\" on {count} rows in \"{table}\" that referenced data outside this backup.",
-            "unknown": "Some data in the backup was skipped or adjusted during the restore."
+            "sharesSkipped": "{count} \"{table}\"-Zeile übersprungen: Freigegebene Ressourcen verweisen auf Benutzer, die auf dieser Instanz nicht existieren. | {count} \"{table}\"-Zeilen übersprungen: Freigegebene Ressourcen verweisen auf Benutzer, die auf dieser Instanz nicht existieren.",
+            "mccCodeMissing": "{count} MCC-Regel verworfen, deren Händlerkategorie-Code auf dieser Instanz nicht existiert. | {count} MCC-Regeln verworfen, deren Händlerkategorie-Codes auf dieser Instanz nicht existieren.",
+            "currencyMissing": "{count} Währung übersprungen, die auf dieser Instanz nicht verfügbar ist. | {count} Währungen übersprungen, die auf dieser Instanz nicht verfügbar sind.",
+            "unknownTableIgnored": "Das Backup enthält eine unbekannte Tabelle \"{table}\"; sie wurde ignoriert.",
+            "unknownColumnDropped": "Eine unbekannte Spalte in \"{table}\" wurde verworfen: {columns}. | Unbekannte Spalten in \"{table}\" wurden verworfen: {columns}.",
+            "tableMissingTreatedEmpty": "Das Backup enthält keine Datei für \"{table}\"; sie wurde als leer behandelt.",
+            "settingsReset": "Die gespeicherten Einstellungen entsprachen nicht dem aktuellen Format und wurden auf die Standardwerte zurückgesetzt.",
+            "fireSettingsReset": "Die gespeicherten FIRE-Einstellungen entsprachen nicht dem aktuellen Format und wurden auf die Standardwerte zurückgesetzt.",
+            "noSettings": "Das Backup enthielt keine gespeicherten Einstellungen; Standardwerte wurden angewendet.",
+            "foreignReferenceDropped": "{count} Zeile aus \"{table}\" verworfen, deren \"{column}\" auf Daten außerhalb dieses Backups verwies. | {count} Zeilen aus \"{table}\" verworfen, deren \"{column}\" auf Daten außerhalb dieses Backups verwiesen.",
+            "invalidRowDropped": "{count} \"{table}\"-Zeile verworfen, die die Validierung nicht bestanden hat. | {count} \"{table}\"-Zeilen verworfen, die die Validierung nicht bestanden haben.",
+            "foreignReferenceNulled": "\"{column}\" bei {count} Zeile in \"{table}\" geleert, die auf Daten außerhalb dieses Backups verwies. | \"{column}\" bei {count} Zeilen in \"{table}\" geleert, die auf Daten außerhalb dieses Backups verwiesen.",
+            "unknown": "Einige Daten im Backup wurden während der Wiederherstellung übersprungen oder angepasst."
           },
           "failed": {
             "title": "Wiederherstellung fehlgeschlagen",
             "genericError": "Beim Wiederherstellen deiner Sicherung ist etwas schiefgelaufen.",
             "unconfirmed": "Der Wiederherstellungsstatus konnte nicht bestätigt werden. Lade die Seite neu und überprüfe deine Daten.",
             "closeButton": "Schließen",
-            "technicalDetails": "Technical details"
+            "technicalDetails": "Technische Details"
           },
           "overlay": {
             "title": "Deine Daten werden wiederhergestellt",

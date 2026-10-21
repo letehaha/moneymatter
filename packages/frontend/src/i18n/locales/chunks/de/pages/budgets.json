@@ -27,7 +27,7 @@
       "submitButton": "Tracker hinzufügen"
     },
     "list": {
-      "loadError": "Couldn't load trackers.",
+      "loadError": "Tracker konnten nicht geladen werden.",
       "tabCategory": "Kategorie-Tracker",
       "tabManual": "Manuelle Tracker",
       "edit": "Bearbeiten",
@@ -78,46 +78,46 @@
         "archived": "Archiviert"
       },
       "groups": {
-        "active": "Active now",
+        "active": "Jetzt aktiv",
         "upcoming": "Bevorstehend",
-        "noDates": "No dates",
+        "noDates": "Ohne Datum",
         "ended": "Beendet",
         "archived": "Archiviert",
-        "show": "show",
-        "hide": "hide"
+        "show": "anzeigen",
+        "hide": "ausblenden"
       },
-      "showMoreEnded": "Show {count} more ended",
+      "showMoreEnded": "Weitere {count} beendete anzeigen",
       "row": {
         "auto": "auto",
         "transactions": "{count} Transaktion | {count} Transaktionen",
         "moreCategories": "+{count} weitere",
-        "noLimit": "no limit",
-        "archiveSuggestion": "Archive?"
+        "noLimit": "kein Limit",
+        "archiveSuggestion": "Archivieren?"
       },
       "menu": {
         "moreActions": "Weitere Aktionen",
-        "open": "Open",
+        "open": "Öffnen",
         "duplicate": "Duplikat"
       },
-      "duplicateSuccess": "Tracker duplicated",
-      "duplicateError": "Failed to duplicate tracker",
-      "archiveSuccess": "Tracker archived",
-      "unarchiveSuccess": "Tracker unarchived",
+      "duplicateSuccess": "Tracker dupliziert",
+      "duplicateError": "Duplizieren des Trackers fehlgeschlagen",
+      "archiveSuccess": "Tracker archiviert",
+      "unarchiveSuccess": "Tracker reaktiviert",
       "noMatch": {
-        "title": "Nothing matches \"{query}\"",
-        "titleNoQuery": "No trackers match these filters",
-        "description": "Try another name, or include archived trackers.",
-        "includeArchived": "Include archived"
+        "title": "Keine Treffer für \"{query}\"",
+        "titleNoQuery": "Keine Tracker entsprechen diesen Filtern",
+        "description": "Versuche einen anderen Namen oder schließe archivierte Tracker ein.",
+        "includeArchived": "Archivierte einschließen"
       },
       "archivePrompt": {
         "title": "\"{name}\" archivieren?",
         "endedDaysAgo": "Vor {count} Tag | Vor {count} Tagen",
         "endedMonthsAgo": "Vor {count} Monat | Vor {count} Monaten",
-        "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
-        "dontAsk": "Don't ask for this tracker",
+        "description": "Er wurde {ago} beendet. Archivierte Tracker werden in die Gruppe \"Archiviert\" verschoben und behalten ihre Transaktionen und Statistiken. Du kannst sie jederzeit reaktivieren.",
+        "dontAsk": "Für diesen Tracker nicht mehr fragen",
         "notNow": "Nicht jetzt",
         "dismissError": "Tracker konnte nicht aktualisiert werden",
-        "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
+        "dismissSuccess": "Alles klar. Wir werden die Archivierung dieses Trackers nicht mehr vorschlagen."
       }
     },
     "settings": {
@@ -160,72 +160,72 @@
       "sharedByBadge": "Geteilt von {handle}"
     },
     "details": {
-      "statsLoadError": "Couldn't load this tracker's totals.",
+      "statsLoadError": "Gesamtsummen dieses Trackers konnten nicht geladen werden.",
       "transactionsCount": "{count} Transaktion | {count} Transaktionen",
       "strip": {
         "limit": "Limit",
         "spent": "Ausgegeben",
-        "left": "Left",
-        "overBy": "Over by",
+        "left": "Verbleibend",
+        "overBy": "Überzogen um",
         "income": "Einnahmen",
         "expenses": "Ausgaben",
         "net": "Netto",
         "transactions": "Transaktionen",
-        "perDay": "{amount} / day"
+        "perDay": "{amount} / Tag"
       },
       "tabs": {
         "limits": "Limits"
       },
-      "tracks": "Tracks",
-      "membersLabel": "Members: {count}",
+      "tracks": "Erfasst",
+      "membersLabel": "Mitglieder: {count}",
       "actions": {
-        "share": "Share",
-        "setLimits": "Set limits",
-        "removeLimits": "Remove limits",
+        "share": "Teilen",
+        "setLimits": "Limits festlegen",
+        "removeLimits": "Limits entfernen",
         "duplicate": "Duplikat",
-        "openInTransactions": "Open in Transactions",
+        "openInTransactions": "In Transaktionen öffnen",
         "more": "Weitere Aktionen"
       },
       "shareDialog": {
-        "title": "Share \"{name}\""
+        "title": "\"{name}\" teilen"
       },
       "removeLimitsDialog": {
-        "title": "Remove all limits?",
-        "description": "The line and its limit will be removed. Linked transactions stay in the tracker. | All {count} lines and their limits will be removed. Linked transactions stay in the tracker."
+        "title": "Alle Limits entfernen?",
+        "description": "Die Zeile und ihr Limit werden entfernt. Verknüpfte Transaktionen verbleiben im Tracker. | Alle {count} Zeilen und ihre Limits werden entfernt. Verknüpfte Transaktionen verbleiben im Tracker."
       },
       "edit": {
-        "limitHint": "Clear it to track without a limit.",
-        "datesHint": "Changing the dates does not add or remove transactions already linked.",
-        "categoriesHint": "Removing a category also removes it from any line."
+        "limitHint": "Leeren, um ohne Limit zu erfassen.",
+        "datesHint": "Das Ändern der Daten fügt keine bereits verknüpften Transaktionen hinzu und entfernt diese auch nicht.",
+        "categoriesHint": "Das Entfernen einer Kategorie entfernt diese auch aus allen Zeilen."
       }
     },
     "lines": {
       "addLine": "Zeile hinzufügen",
       "empty": {
-        "title": "Split spending into lines",
-        "titleWithLimit": "Split the {amount} into lines",
-        "description": "A line is a set of categories with its own limit. Spending that fits no line shows as \"Other\"."
+        "title": "Ausgaben auf Zeilen aufteilen",
+        "titleWithLimit": "Die {amount} auf Zeilen aufteilen",
+        "description": "Eine Zeile ist eine Gruppe von Kategorien mit einem eigenen Limit. Ausgaben, die in keine Zeile passen, werden als \"Sonstiges\" angezeigt."
       },
       "columns": {
-        "line": "Line",
+        "line": "Zeile",
         "limit": "Limit",
         "spent": "Ausgegeben",
-        "left": "Left"
+        "left": "Verbleibend"
       },
-      "usage": "{percent}% · {spent} of {limit}",
-      "overUsage": "Over by {amount} · {spent} of {limit}",
-      "spentOnly": "{amount} spent",
-      "categoriesCount": "{count} category | {count} categories",
-      "ofLimit": "of {limit}",
-      "editLimitAria": "Edit limit for {name}",
+      "usage": "{percent}% · {spent} von {limit}",
+      "overUsage": "Überzogen um {amount} · {spent} von {limit}",
+      "spentOnly": "{amount} ausgegeben",
+      "categoriesCount": "{count} Kategorie | {count} Kategorien",
+      "ofLimit": "von {limit}",
+      "editLimitAria": "Limit für {name} bearbeiten",
       "noLimitPlaceholder": "Kein Limit",
       "other": {
-        "title": "Other spending",
-        "hint": "not in any line"
+        "title": "Sonstige Ausgaben",
+        "hint": "in keiner Zeile"
       },
       "total": {
         "title": "Gesamt · {count} Zeile | Gesamt · {count} Zeilen",
-        "limitOfOverall": "{sum} of {limit}"
+        "limitOfOverall": "{sum} von {limit}"
       },
       "menu": {
         "ariaLabel": "Zeilenaktionen",
@@ -233,117 +233,117 @@
         "delete": "Zeile löschen"
       },
       "delete": {
-        "title": "Delete line?",
-        "description": "\"{name}\" will be removed and its spending will show under Other. Transactions are not affected."
+        "title": "Zeile löschen?",
+        "description": "\"{name}\" wird entfernt und die zugehörigen Ausgaben werden unter Sonstiges angezeigt. Transaktionen sind nicht betroffen."
       },
       "dialog": {
         "addTitle": "Zeile hinzufügen",
         "editTitle": "Zeile bearbeiten",
         "nameLabel": "Name",
-        "namePlaceholder": "e.g. Hotels",
-        "nameRequired": "Enter a name",
+        "namePlaceholder": "z.B. Hotels",
+        "nameRequired": "Gib einen Namen ein",
         "categoriesLabel": "Kategorien",
-        "categoriesPlaceholder": "Pick categories",
-        "categoriesRequired": "Pick at least one category",
-        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
+        "categoriesPlaceholder": "Kategorien auswählen",
+        "categoriesRequired": "Wähle mindestens eine Kategorie aus",
+        "categoryTrackerHint": "Dieser Tracker berücksichtigt nur seine eigenen Kategorien, wähle also aus diesen aus.",
         "limitLabel": "Limit (optional)",
         "limitPlaceholder": "Kein Limit",
-        "limitHint": "Leave empty to group spending without a limit."
+        "limitHint": "Leer lassen, um Ausgaben ohne Limit zu gruppieren."
       },
       "notifications": {
-        "limitsRemoved": "Limits removed",
+        "limitsRemoved": "Limits entfernt",
         "created": "Zeile hinzugefügt",
         "updated": "Zeile aktualisiert",
         "deleted": "Zeile gelöscht",
-        "createError": "Couldn't add the line",
-        "updateError": "Couldn't update the line",
-        "deleteError": "Couldn't delete the line"
+        "createError": "Die Zeile konnte nicht hinzugefügt werden",
+        "updateError": "Die Zeile konnte nicht aktualisiert werden",
+        "deleteError": "Die Zeile konnte nicht gelöscht werden"
       }
     },
     "smartTracking": {
       "fields": {
-        "heading": "Smart tracking",
-        "switchLabel": "Find matching transactions for me",
-        "switchHint": "Checks new and edited transactions every night. Sure matches are added for you, the rest wait for your review.",
-        "needsStartDate": "Set a start date first, AI looks from there.",
-        "noAi": "Set up an AI model in {link} to use this.",
-        "noAiLink": "Settings → AI",
-        "allowanceUsed": "AI allowance used up. {link} to keep it running.",
-        "running": "Matching is running. You can change these once it finishes.",
-        "descriptionLabel": "What belongs in this tracker?",
-        "descriptionPlaceholder": "e.g. Two weeks in Greece: flights, ferries, rental car, island hotels",
-        "descriptionRequired": "Describe what belongs here so AI knows what to look for.",
-        "preWindowLabel": "Also look before the start date",
-        "preWindowPlaceholder": "Choose how far back to look",
-        "preWindowHint": "Catches flights and hotels booked in advance.",
+        "heading": "Intelligente Erfassung",
+        "switchLabel": "Passende Transaktionen für mich finden",
+        "switchHint": "Überprüft jede Nacht neue und bearbeitete Transaktionen. Sichere Treffer werden für dich hinzugefügt, der Rest wartet auf deine Überprüfung.",
+        "needsStartDate": "Lege zuerst ein Startdatum fest, die KI sucht ab dort.",
+        "noAi": "Richte ein KI-Modell unter {link} ein, um dies zu nutzen.",
+        "noAiLink": "Einstellungen → KI",
+        "allowanceUsed": "KI-Guthaben aufgebraucht. {link}, um es weiter auszuführen.",
+        "running": "Zuordnung läuft. Du kannst dies ändern, sobald sie abgeschlossen ist.",
+        "descriptionLabel": "Was gehört in diesen Tracker?",
+        "descriptionPlaceholder": "z.B. Zwei Wochen in Griechenland: Flüge, Fähren, Mietwagen, Hotels auf den Inseln",
+        "descriptionRequired": "Beschreibe, was hierher gehört, damit die KI weiß, wonach sie suchen soll.",
+        "preWindowLabel": "Auch vor dem Startdatum suchen",
+        "preWindowPlaceholder": "Wähle, wie weit zurück gesucht werden soll",
+        "preWindowHint": "Erfasst im Voraus gebuchte Flüge und Hotels.",
         "preWindowOptions": {
-          "none": "Don't look earlier",
-          "twoWeeks": "2 weeks",
-          "oneMonth": "1 month",
-          "twoMonths": "2 months",
-          "threeMonths": "3 months",
-          "sixMonths": "6 months"
+          "none": "Nicht früher suchen",
+          "twoWeeks": "2 Wochen",
+          "oneMonth": "1 Monat",
+          "twoMonths": "2 Monate",
+          "threeMonths": "3 Monate",
+          "sixMonths": "6 Monate"
         },
-        "usesIncluded": "Uses the included AI. Counts toward your monthly AI allowance.",
-        "usesOwnModel": "Uses your own model · {model}"
+        "usesIncluded": "Verwendet die enthaltene KI. Zählt zu deinem monatlichen KI-Guthaben.",
+        "usesOwnModel": "Verwendet dein eigenes Modell · {model}"
       },
-      "pausedUntil": "Paused until {date}",
+      "pausedUntil": "Pausiert bis {date}",
       "connectOwnModel": "Eigenes Modell verbinden",
       "plan": {
-        "locked": "Smart tracking is part of Plus. Upgrade, or connect your own AI key to keep using it.",
-        "connectOwnKey": "Connect your own key",
+        "locked": "Intelligente Erfassung ist Teil von Plus. Führe ein Upgrade durch oder verbinde deinen eigenen KI-Schlüssel, um sie weiterhin zu nutzen.",
+        "connectOwnKey": "Eigenen Schlüssel verbinden",
         "upgrade": "Upgrade",
-        "startTrial": "Start free trial",
-        "trialDaysLeft": "Free trial: {n} day left | Free trial: {n} days left",
-        "trialHint": "Includes a {days}-day free trial. It starts when you turn smart tracking on."
+        "startTrial": "Kostenlose Testphase starten",
+        "trialDaysLeft": "Kostenlose Testphase: {n} Tag verbleibend | Kostenlose Testphase: {n} Tage verbleibend",
+        "trialHint": "Enthält eine kostenlose Testphase von {days} Tagen. Sie beginnt, wenn du die intelligente Erfassung aktivierst."
       },
-      "turnedOn": "Smart tracking is on. First results in a minute or two.",
-      "undo": "Undo",
-      "unlinked": "Unlinked. AI won't add it again. | Unlinked {count} transactions. AI won't add them again.",
-      "relinkError": "Couldn't add the transactions back. Try again.",
+      "turnedOn": "Intelligente Erfassung ist aktiv. Erste Ergebnisse in ein bis zwei Minuten.",
+      "undo": "Rückgängig",
+      "unlinked": "Verknüpfung aufgehoben. KI wird sie nicht erneut hinzufügen. | Verknüpfung von {count} Transaktionen aufgehoben. KI wird sie nicht erneut hinzufügen.",
+      "relinkError": "Die Transaktionen konnten nicht wieder hinzugefügt werden. Versuche es erneut.",
       "strip": {
-        "tip": "Let AI find transactions for this tracker",
+        "tip": "KI passende Transaktionen für diesen Tracker finden lassen",
         "turnOn": "Aktivieren",
         "hide": "Ausblenden",
-        "scanning": "Looking for matching transactions…",
-        "startedAt": "Started {time}",
-        "toReview": "{count} to review",
-        "checkedAt": "checked {when}",
+        "scanning": "Suche nach passenden Transaktionen...",
+        "startedAt": "Gestartet {time}",
+        "toReview": "{count} zu überprüfen",
+        "checkedAt": "überprüft {when}",
         "review": "Überprüfen",
-        "idle": "Smart tracking is on · nothing new to review",
+        "idle": "Intelligente Erfassung ist aktiv · nichts Neues zu überprüfen",
         "settings": "Einstellungen",
         "paused": "Pausiert",
-        "allowanceUsed": "AI allowance used up",
-        "unavailable": "AI connection stopped working",
-        "fixInSettings": "Fix in Settings",
-        "ended": "Smart tracking stopped · the tracker ended more than 14 days ago",
-        "noStartDate": "Set a start date to use smart tracking"
+        "allowanceUsed": "KI-Guthaben aufgebraucht",
+        "unavailable": "KI-Verbindung funktioniert nicht mehr",
+        "fixInSettings": "In den Einstellungen beheben",
+        "ended": "Intelligente Erfassung gestoppt · der Tracker endete vor mehr als 14 Tagen",
+        "noStartDate": "Lege ein Startdatum fest, um die intelligente Erfassung zu nutzen"
       },
       "hideTip": {
-        "title": "Hide this tip?",
-        "description": "You can still turn on smart tracking in the tracker's settings.",
-        "neverShow": "Never show again",
-        "neverShowHint": "Hides it on every tracker, not just this one.",
+        "title": "Diesen Tipp ausblenden?",
+        "description": "Du kannst die intelligente Erfassung weiterhin in den Einstellungen des Trackers aktivieren.",
+        "neverShow": "Nie wieder anzeigen",
+        "neverShowHint": "Blendet ihn bei jedem Tracker aus, nicht nur bei diesem.",
         "confirm": "Ausblenden"
       },
       "review": {
-        "sectionTitle": "To review ({count})",
+        "sectionTitle": "Zu überprüfen ({count})",
         "confidence": {
-          "likely": "Likely",
-          "possible": "Possible"
+          "likely": "Wahrscheinlich",
+          "possible": "Möglich"
         },
         "add": "Hinzufügen",
         "skip": "Überspringen",
-        "addAria": "Add {name} to {tracker}",
-        "skipAria": "Skip {name}",
-        "addAll": "Add all {count}",
-        "addAllShort": "Add all",
+        "addAria": "{name} zu {tracker} hinzufügen",
+        "skipAria": "{name} überspringen",
+        "addAll": "Alle {count} hinzufügen",
+        "addAllShort": "Alle hinzufügen",
         "skipAll": "Alle überspringen",
-        "added": "Added {count} transaction to {name} | Added {count} transactions to {name}",
-        "skipped": "Skipped. AI won't suggest it again. | Skipped {count} transactions. AI won't suggest them again.",
-        "acceptError": "Couldn't add the suggested transactions. Try again.",
-        "rejectError": "Couldn't skip the suggested transactions. Try again.",
-        "restoreError": "Couldn't undo the skip. Try again."
+        "added": "{count} Transaktion zu {name} hinzugefügt | {count} Transaktionen zu {name} hinzugefügt",
+        "skipped": "Übersprungen. KI wird es nicht erneut vorschlagen. | {count} Transaktionen übersprungen. KI wird sie nicht erneut vorschlagen.",
+        "acceptError": "Vorgeschlagene Transaktionen konnten nicht hinzugefügt werden. Versuche es erneut.",
+        "rejectError": "Vorgeschlagene Transaktionen konnten nicht übersprungen werden. Versuche es erneut.",
+        "restoreError": "Das Überspringen konnte nicht rückgängig gemacht werden. Versuche es erneut."
       }
     }
   }

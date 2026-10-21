@@ -371,7 +371,7 @@
       "searchPlaceholder": "Buscar presupuestos",
       "noResults": "No se encontraron presupuestos",
       "unknownBudget": "Presupuesto desconocido",
-      "blankOption": "Not in any tracker",
+      "blankOption": "No en ningún rastreador",
       "loadError": "No se pudieron cargar los presupuestos. Inténtelo de nuevo."
     },
     "payeeSelect": {

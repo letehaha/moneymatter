@@ -40,7 +40,7 @@
       "ariaLabel": "Trier les comptes"
     },
     "status": {
-      "active": "Active",
+      "active": "Actif",
       "expiringSoon": "Expire bientôt",
       "expired": "Expirée"
     }

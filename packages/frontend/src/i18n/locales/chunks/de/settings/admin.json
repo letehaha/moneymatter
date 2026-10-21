@@ -30,7 +30,7 @@
         },
         "dateRangeInfo": {
           "loading": "Datumsbereichsinformationen werden geladen...",
-          "title": "Verfügbarer Datumsbereich für Wechselkurse ({currency}):",
+          "title": "Verfügbarer Zeitraum für Wechselkurse ({currency}):",
           "tooltipText": "Du kannst Wertpapierpreise nur für Daten hochladen, für die uns Wechselkurse vorliegen. Andernfalls ist es nicht möglich, den Wertpapierpreis in andere Währungen umzurechnen. Wenn du ältere Daten benötigst, lade zuerst Wechselkurse hoch. Andernfalls werden Datensätze je nach der in den nächsten Schritten gewählten Option automatisch gefiltert (ausgelassen) oder die Upload-Anfrage schlägt fehl."
         },
         "fileUpload": {

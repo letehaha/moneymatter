@@ -1,181 +1,181 @@
 {
   "navigation": {
-    "dashboard": "Dashboard",
+    "dashboard": "Tableau de bord",
     "accounts": "Comptes",
-    "accountsList": "All accounts",
-    "investments": "Investments",
-    "loans": "Loans",
-    "allTransactions": "All transactions",
-    "transactions": "Transactions",
-    "transactionGroups": "Groups",
-    "analytics": "Analytics",
-    "optimizations": "Optimizations",
-    "automations": "Automations",
-    "accountDetails": "Account details",
-    "helpAndDocs": "Help & docs",
-    "logout": "Logout",
-    "appVersion": "App version {version}",
-    "settings": "Settings",
+    "accountsList": "Tous les comptes",
+    "investments": "Investissements",
+    "loans": "Emprunts",
+    "allTransactions": "Toutes les opérations",
+    "transactions": "Opérations",
+    "transactionGroups": "Groupes",
+    "analytics": "Analyses",
+    "optimizations": "Optimisations",
+    "automations": "Automatisations",
+    "accountDetails": "Détails du compte",
+    "helpAndDocs": "Aide et documentation",
+    "logout": "Se déconnecter",
+    "appVersion": "Version de l'application {version}",
+    "settings": "Paramètres",
     "planned": {
-      "planned": "Planned",
-      "subscriptions": "Recurring payments",
-      "budgets": "Trackers"
+      "planned": "Prévisionnel",
+      "subscriptions": "Paiements récurrents",
+      "budgets": "Suivis"
     },
-    "venture": "Venture",
+    "venture": "Projets",
     "budget": "Budget"
   },
   "sidebar": {
-    "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar",
+    "collapse": "Réduire la barre latérale",
+    "expand": "Développer la barre latérale",
     "settings": {
-      "title": "Settings",
+      "title": "Paramètres",
       "sections": {
-        "label": "Sidebar sections",
-        "description": "Pick which sections appear in the sidebar.",
-        "alwaysVisibleTooltip": "This section is always visible."
+        "label": "Rubriques de la barre latérale",
+        "description": "Choisissez les rubriques à afficher dans la barre latérale.",
+        "alwaysVisibleTooltip": "Cette rubrique est toujours visible."
       },
       "hideZeroBalances": {
-        "label": "Hide zero balances",
-        "description": "Hide accounts and groups with a zero balance"
+        "label": "Masquer les soldes nuls",
+        "description": "Masquer les comptes et groupes ayant un solde nul"
       }
     },
     "accountsView": {
       "title": "Comptes",
-      "bankAccounts": "Bank accounts",
-      "newAccount": "New account",
-      "newAccountsGroup": "New accounts group",
-      "portfolios": "Portfolios",
-      "newPortfolio": "New portfolio",
-      "noPortfolios": "No portfolios yet",
-      "ventures": "Ventures",
+      "bankAccounts": "Comptes bancaires",
+      "newAccount": "Nouveau compte",
+      "newAccountsGroup": "Nouveau groupe de comptes",
+      "portfolios": "Portefeuilles",
+      "newPortfolio": "Nouveau portefeuille",
+      "noPortfolios": "Aucun portefeuille pour le moment",
+      "ventures": "Projets",
       "cars": "Véhicules",
-      "loans": "Loans",
-      "collapseNavigation": "Collapse navigation",
+      "loans": "Emprunts",
+      "collapseNavigation": "Réduire le menu",
       "viaHousehold": "Partagé via le foyer de {handle}",
-      "sharedBy": "Shared by {handle}",
-      "needsReauthTooltip": "Connection expired. Reconnect to resume syncing."
+      "sharedBy": "Partagé par {handle}",
+      "needsReauthTooltip": "Connexion expirée. Reconnectez-vous pour reprendre la synchronisation."
     }
   },
   "header": {
-    "add": "Add",
-    "importData": "Import data",
-    "moreActions": "More ways to add data",
-    "importDataHint": "CSV file or bank statement",
-    "attachInvoice": "Attach invoice",
-    "attachInvoiceHint": "We find the transaction it belongs to",
-    "language": "Language",
-    "newTransaction": "Add transaction",
-    "settings": "Settings",
-    "feedback": "Send feedback",
-    "support": "Support",
+    "add": "Ajouter",
+    "importData": "Importer des données",
+    "moreActions": "Autres options d'ajout",
+    "importDataHint": "Fichier CSV ou relevé bancaire",
+    "attachInvoice": "Joindre une facture",
+    "attachInvoiceHint": "L'opération correspondante sera détectée automatiquement",
+    "language": "Langue",
+    "newTransaction": "Ajouter une opération",
+    "settings": "Paramètres",
+    "feedback": "Donner votre avis",
+    "support": "Assistance",
     "sync": {
-      "syncing": "Syncing",
-      "synchronizing": "Synchronizing...",
-      "syncedTime": "Synced {time}",
-      "connectBank": "Connect bank",
-      "syncingAccounts": "Syncing {count} accounts",
-      "stuck": "Sync stuck",
-      "failed": "Sync failed, some accounts need attention"
+      "syncing": "Synchronisation en cours",
+      "synchronizing": "Synchronisation en cours...",
+      "syncedTime": "Synchronisé {time}",
+      "connectBank": "Connecter une banque",
+      "syncingAccounts": "Synchronisation de {count} comptes",
+      "stuck": "Synchronisation bloquée",
+      "failed": "Échec de la synchronisation, certains comptes requièrent votre attention"
     },
     "categorization": {
-      "title": "AI categorization",
-      "categorizing": "Categorizing...",
-      "completed": "AI categorized {count} transaction | AI categorized {count} transactions",
-      "completedShort": "Categorization complete",
-      "completedWithSkipped": "Categorized {count} transaction ({skipped} skipped) | Categorized {count} transactions ({skipped} skipped)",
-      "failed": "Categorization failed",
-      "failedShort": "Failed",
-      "allSkipped": "AI couldn't confidently categorize the transaction | AI couldn't confidently categorize any of the {count} transactions",
-      "queued": "Waiting to start...",
-      "transactions": "transactions"
+      "title": "Catégorisation par IA",
+      "categorizing": "Catégorisation en cours...",
+      "completed": "{count} opération catégorisée par l'IA | {count} opérations catégorisées par l'IA",
+      "completedShort": "Catégorisation terminée",
+      "completedWithSkipped": "{count} opération catégorisée ({skipped} ignorée) | {count} opérations catégorisées ({skipped} ignorées)",
+      "failed": "Échec de la catégorisation",
+      "failedShort": "Échec",
+      "allSkipped": "L'IA n'a pas pu catégoriser l'opération avec certitude | L'IA n'a pu catégoriser avec certitude aucune des {count} opérations",
+      "queued": "En attente...",
+      "transactions": "opérations"
     }
   },
   "themeSelector": {
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
   },
   "feedback": {
     "dialog": {
-      "title": "Leave feedback",
-      "description": "Tell us what is working and what is not.",
+      "title": "Donner votre avis",
+      "description": "Dites-nous ce qui fonctionne et ce qui ne va pas.",
       "typeLabel": "Type",
-      "typePlaceholder": "Choose a type",
+      "typePlaceholder": "Choisir un type",
       "types": {
-        "bug": "Something is broken",
-        "featureRequest": "I want a feature",
-        "other": "Something else"
+        "bug": "Un problème est survenu",
+        "featureRequest": "Je suggère une fonctionnalité",
+        "other": "Autre chose"
       },
-      "docsHint": "Not sure how something works? Check the {link} first.",
-      "docsHintLink": "docs",
-      "messageLabel": "Your feedback",
-      "messagePlaceholder": "What happened, or what would you like to see?",
-      "messageRequired": "Please write a message before sending.",
-      "submit": "Send",
-      "thanks": "Thanks, we read every message.",
-      "unavailable": "Sending is unavailable right now. Use the board below instead.",
-      "or": "or",
+      "docsHint": "Une question sur le fonctionnement ? Consultez d'abord la {link}.",
+      "docsHintLink": "documentation",
+      "messageLabel": "Votre message",
+      "messagePlaceholder": "Que s'est-il passé ou que souhaiteriez-vous voir ?",
+      "messageRequired": "Veuillez saisir un message avant d'envoyer.",
+      "submit": "Envoyer",
+      "thanks": "Merci, nous lisons chaque message.",
+      "unavailable": "L'envoi est indisponible pour le moment. Utilisez plutôt le tableau ci-dessous.",
+      "or": "ou",
       "board": {
-        "title": "Post it on the public board",
-        "description": "Vote on other people's ideas, see what is already planned, and get a reply on yours."
+        "title": "Publier sur le tableau public",
+        "description": "Votez pour les idées des autres membres, découvrez ce qui est déjà prévu et recevez une réponse pour la vôtre."
       }
     }
   },
   "syncStatusTooltip": {
-    "title": "Banks connections sync status",
-    "syncedSuccessfully": "Synced successfully",
-    "syncCompletedWithErrors": "Some accounts failed to sync",
-    "syncStuckTitle": "Sync seems stuck",
-    "syncStuckDescription": "Some bank connections didn't respond in time. Try again, or reconnect them from the integrations page.",
-    "progress": "{current} of {total} synced",
-    "progressPercentage": "{percentage}%",
+    "title": "État de la synchronisation bancaire",
+    "syncedSuccessfully": "Synchronisation réussie",
+    "syncCompletedWithErrors": "Échec de synchronisation pour certains comptes",
+    "syncStuckTitle": "La synchronisation semble bloquée",
+    "syncStuckDescription": "Certaines connexions bancaires n'ont pas répondu à temps. Réessayez ou reconnectez-les depuis la page des intégrations.",
+    "progress": "{current} sur {total} synchronisés",
+    "progressPercentage": "{percentage} %",
     "statuses": {
-      "syncing": "Syncing",
-      "queued": "Queued",
-      "synced": "Synced",
-      "failed": "Failed",
-      "idle": "Idle"
+      "syncing": "Synchronisation en cours",
+      "queued": "En attente",
+      "synced": "Synchronisé",
+      "failed": "Échec",
+      "idle": "Inactif"
     },
-    "lastSynced": "Last synced:",
-    "neverSynced": "Never synced",
-    "syncNowButton": "Sync now",
-    "noBankAccounts": "No bank accounts connected",
-    "connectButton": "Connect",
-    "retrySyncButton": "Retry sync",
-    "manageConnectionsButton": "Manage connections",
-    "needsReauthTitle": "Connections need reconnecting",
-    "needsReauthDescription": "These bank sessions expired. Reconnect to resume syncing.",
-    "reconnectButton": "Reconnect",
-    "affectedAccounts": "1 account | {count} accounts",
+    "lastSynced": "Dernière synchronisation :",
+    "neverSynced": "Jamais synchronisé",
+    "syncNowButton": "Synchroniser maintenant",
+    "noBankAccounts": "Aucun compte bancaire connecté",
+    "connectButton": "Connecter",
+    "retrySyncButton": "Réessayer la synchronisation",
+    "manageConnectionsButton": "Gérer les connexions",
+    "needsReauthTitle": "Connexions à reconnecter",
+    "needsReauthDescription": "Ces sessions bancaires ont expiré. Reconnectez-les pour reprendre la synchronisation.",
+    "reconnectButton": "Reconnecter",
+    "affectedAccounts": "1 compte | {count} comptes",
     "timeAgo": {
-      "justNow": "Just now",
-      "secondsAgo": "{count} second ago | {count} seconds ago",
-      "minutesAgo": "{count} minute ago | {count} minutes ago",
-      "hoursAgo": "{count} hour ago | {count} hours ago",
-      "daysAgo": "{count} day ago | {count} days ago",
-      "weeksAgo": "{count} week ago | {count} weeks ago",
-      "monthsAgo": "{count} month ago | {count} months ago",
-      "yearsAgo": "{count} year ago | {count} years ago"
+      "justNow": "À l'instant",
+      "secondsAgo": "Il y a {count} seconde | Il y a {count} secondes",
+      "minutesAgo": "Il y a {count} minute | Il y a {count} minutes",
+      "hoursAgo": "Il y a {count} heure | Il y a {count} heures",
+      "daysAgo": "Il y a {count} jour | Il y a {count} jours",
+      "weeksAgo": "Il y a {count} semaine | Il y a {count} semaines",
+      "monthsAgo": "Il y a {count} mois | Il y a {count} mois",
+      "yearsAgo": "Il y a {count} an | Il y a {count} ans"
     }
   },
   "banners": {
     "recoveryMethod": {
-      "title": "Add a backup login method",
-      "description": "Protect your account by adding Google sign-in or a passkey. This ensures you can always access your account.",
-      "actionButton": "Go to security settings"
+      "title": "Ajouter un moyen de connexion de secours",
+      "description": "Protégez votre compte en ajoutant la connexion Google ou une clé d'accès (passkey). Vous aurez ainsi l'assurance de toujours pouvoir accéder à votre compte.",
+      "actionButton": "Paramètres de sécurité"
     }
   },
   "relinkWarning": {
-    "buttonLabel": "{count} account needs attention | {count} accounts need attention",
-    "title": "Enable Banking: Action required",
-    "description": "These Enable Banking accounts need to be updated due to a data schema change. This is a one-time action to improve synchronization reliability.",
-    "step1Full": "To save your time, firstly try reconnecting the whole bank connection. You can find a {reconnect} button under the {connectionValidity} section on each connection page:",
-    "reconnectButton": "Reconnect",
-    "connectionValiditySection": "Connection validity",
-    "connectionLabel": "Connection #{id}",
-    "step2Full": "If any accounts remain listed below after reconnection, go to each account and manually {unlink} then {link} again.",
-    "unlinkAction": "Unlink",
-    "linkAction": "Link"
+    "buttonLabel": "{count} compte nécessite votre attention | {count} comptes nécessitent votre attention",
+    "title": "Enable Banking : action requise",
+    "description": "Ces comptes Enable Banking doivent être mis à jour suite à une modification du schéma de données. Il s'agit d'une action unique destinée à améliorer la fiabilité de la synchronisation.",
+    "step1Full": "Pour gagner du temps, essayez d'abord de reconnecter l'ensemble de la connexion bancaire. Vous trouverez un bouton {reconnect} dans la section {connectionValidity} de chaque page de connexion :",
+    "reconnectButton": "Reconnecter",
+    "connectionValiditySection": "Validité de la connexion",
+    "connectionLabel": "Connexion n° {id}",
+    "step2Full": "Si certains comptes apparaissent encore ci-dessous après la reconnexion, accédez à chaque compte pour manuellement le {unlink} puis le {link} à nouveau.",
+    "unlinkAction": "Dissocier",
+    "linkAction": "Associer"
   },
   "pages": {
     "integrations": {
@@ -194,142 +194,142 @@
   },
   "dashboard": {
     "onboarding": {
-      "title": "Welcome to MoneyMatter",
-      "subtitle": "Get started by setting up your first account",
+      "title": "Bienvenue sur MoneyMatter",
+      "subtitle": "Commencez par configurer votre premier compte",
       "createManualAccount": {
         "title": "Créer un compte manuel",
-        "description": "Track cash, savings, or any account manually"
+        "description": "Suivez manuellement vos espèces, votre épargne ou tout autre compte"
       },
       "connectBank": {
-        "title": "Connect your bank",
-        "description": "Automatically sync transactions from your bank"
+        "title": "Connecter votre banque",
+        "description": "Synchronisez automatiquement les opérations depuis votre banque"
       },
-      "divider": "or import existing data",
+      "divider": "ou importer des données existantes",
       "importFile": {
-        "title": "Import from file",
-        "description": "Import transactions from bank statements (PDF) or CSV files"
+        "title": "Importer depuis un fichier",
+        "description": "Importez des opérations depuis des relevés de compte (PDF) ou fichiers CSV"
       },
       "quickStart": {
         "categories": {
           "getting-started": {
-            "title": "Getting started"
+            "title": "Pour commencer"
           },
           "advanced-transactions": {
-            "title": "Advanced transactions"
+            "title": "Opérations avancées"
           },
           "organization": {
-            "title": "Organize your finances"
+            "title": "Organiser vos finances"
           },
           "bank-import": {
-            "title": "Connect & import"
+            "title": "Connexion et import"
           },
           "analytics": {
-            "title": "Explore analytics"
+            "title": "Explorer les analyses"
           },
           "ai-settings": {
-            "title": "AI features"
+            "title": "Fonctionnalités IA"
           },
           "sharing": {
-            "title": "Sharing & household"
+            "title": "Partage et foyer"
           }
         },
         "tasks": {
           "create-account": {
-            "title": "Create your first account",
-            "description": "Add a bank account or wallet to track"
+            "title": "Créer votre premier compte",
+            "description": "Ajoutez un compte bancaire ou un portefeuille à suivre"
           },
           "add-transaction": {
-            "title": "Add your first transaction",
-            "description": "Record an income or expense"
+            "title": "Ajouter votre première opération",
+            "description": "Enregistrez un revenu ou une dépense"
           },
           "create-transfer": {
-            "title": "Create a transfer",
-            "description": "Move money between your accounts"
+            "title": "Créer un virement",
+            "description": "Transférez de l'argent entre vos comptes"
           },
           "link-refund": {
-            "title": "Link a refund",
-            "description": "Connect refunds to original purchases"
+            "title": "Associer un remboursement",
+            "description": "Associer les remboursements aux achats d'origine"
           },
           "link-transactions": {
-            "title": "Link existing transactions",
-            "description": "Connect related transactions together"
+            "title": "Lier des opérations existantes",
+            "description": "Associer des opérations liées entre elles"
           },
           "split-transaction": {
-            "title": "Split a transaction",
-            "description": "Divide expenses across categories"
+            "title": "Ventiler une opération",
+            "description": "Répartir les dépenses entre plusieurs catégories"
           },
           "mark-transfer-out": {
-            "title": "Mark transfer out of wallet",
-            "description": "Track money leaving your accounts"
+            "title": "Marquer un virement sortant du portefeuille",
+            "description": "Suivre l'argent qui sort de vos comptes"
           },
           "create-category": {
-            "title": "Create a custom category",
-            "description": "Organize your transactions by type"
+            "title": "Créer une catégorie personnalisée",
+            "description": "Organiser vos opérations par type"
           },
           "create-tag": {
-            "title": "Create a tag",
-            "description": "Add tags to group related transactions"
+            "title": "Créer une étiquette",
+            "description": "Ajouter des étiquettes pour regrouper les opérations associées"
           },
           "create-budget": {
-            "title": "Set up a tracker",
-            "description": "Create spending limits for categories"
+            "title": "Configurer un suivi",
+            "description": "Définir des plafonds de dépenses par catégorie"
           },
           "create-subscription": {
-            "title": "Create a subscription",
-            "description": "Set up recurring payments to track your subscriptions"
+            "title": "Créer un abonnement",
+            "description": "Configurer des paiements récurrents pour suivre vos abonnements"
           },
           "create-account-group": {
-            "title": "Create an account group",
-            "description": "Organize accounts by type or purpose"
+            "title": "Créer un groupe de comptes",
+            "description": "Organiser les comptes par type ou par usage"
           },
           "setup-tag-reminder": {
-            "title": "Set up a tag reminder",
-            "description": "Get notified about recurring expenses"
+            "title": "Configurer un rappel d'étiquette",
+            "description": "Recevoir des notifications pour vos dépenses récurrentes"
           },
           "connect-bank": {
-            "title": "Connect a bank account",
-            "description": "Sync transactions automatically"
+            "title": "Connecter un compte bancaire",
+            "description": "Synchroniser automatiquement vos opérations"
           },
           "import-csv": {
-            "title": "Import from any text source",
-            "description": "Import from CSV, PDF, or bank statements"
+            "title": "Importer depuis une source texte",
+            "description": "Importer depuis des fichiers CSV, PDF ou relevés bancaires"
           },
           "view-annual-overview": {
-            "title": "Check annual overview",
-            "description": "See yearly trends and patterns"
+            "title": "Consulter la vue annuelle",
+            "description": "Visualiser les tendances et variations annuelles"
           },
           "view-cash-flow": {
-            "title": "View cash flow analytics",
-            "description": "Understand your income vs expenses"
+            "title": "Consulter l'analyse des flux de trésorerie",
+            "description": "Comparer vos revenus et vos dépenses"
           },
           "review-ai-features": {
-            "title": "Review AI features",
-            "description": "Explore available AI capabilities"
+            "title": "Découvrir les fonctionnalités IA",
+            "description": "Explorer les fonctionnalités IA disponibles"
           },
           "configure-ai": {
-            "title": "Add your own AI model",
-            "description": "Connect OpenAI, Claude, Gemini or a local model."
+            "title": "Ajouter votre propre modèle IA",
+            "description": "Connecter OpenAI, Claude, Gemini ou un modèle local."
           },
           "invite-household-member": {
-            "title": "Invite a household member",
-            "description": "Share your whole financial life with someone — they get access to every account you have now and add later."
+            "title": "Inviter un membre du foyer",
+            "description": "Partagez toute votre vie financière avec un proche : il aura accès à tous vos comptes actuels et futurs."
           },
           "share-account": {
-            "title": "Share an account",
-            "description": "Open any account and use the Share action to grant a single user read or write access."
+            "title": "Partager un compte",
+            "description": "Ouvrez un compte et utilisez l'action Partager pour accorder un accès en lecture ou en écriture à un utilisateur."
           }
         },
         "ui": {
-          "title": "Quick start",
-          "subtitle": "Use our quick start guide to learn about everything MoneyMatter can do for you.",
-          "dismissButton": "Dismiss permanently",
-          "dismissConfirmTitle": "Dismiss quick start?",
-          "dismissConfirmDescription": "You can always reopen the quick start guide from settings if you change your mind.",
-          "dismissConfirmButton": "Dismiss",
-          "triggerTooltip": "Quick start - {count} tasks remaining",
-          "srDescription": "Complete these tasks to get started with the app",
-          "progressText": "{completed} of {total} complete",
-          "categoryProgress": "{completed} of {total} complete"
+          "title": "Démarrage rapide",
+          "subtitle": "Suivez notre guide de démarrage rapide pour découvrir tout ce que MoneyMatter peut faire pour vous.",
+          "dismissButton": "Masquer définitivement",
+          "dismissConfirmTitle": "Masquer le démarrage rapide ?",
+          "dismissConfirmDescription": "Vous pourrez toujours rouvrir le guide de démarrage rapide depuis les paramètres si vous changez d'avis.",
+          "dismissConfirmButton": "Masquer",
+          "triggerTooltip": "Démarrage rapide - {count} tâches restantes",
+          "srDescription": "Effectuez ces tâches pour bien démarrer avec l'application",
+          "progressText": "{completed} sur {total} terminées",
+          "categoryProgress": "{completed} sur {total} terminées"
         }
       }
     }

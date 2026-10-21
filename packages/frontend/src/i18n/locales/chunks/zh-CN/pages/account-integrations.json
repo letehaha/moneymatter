@@ -116,6 +116,8 @@
             "fillForm": "Fill out form with the next values:",
             "appName": "Application name:",
             "redirectUrls": "Allowed redirect URLs:",
+            "httpsRequired": "Enable Banking only accepts https redirect URLs. Serve this instance over HTTPS, set {envVar} to its public callback URL (e.g. {example}), recreate the backend container, and enter the same URL in this field. {link}",
+            "httpsRequiredLink": "How to set it up",
             "appDescription": "Application description:",
             "emailProtection": "Email for data protection matters:",
             "privacyUrl": "Privacy URL:",

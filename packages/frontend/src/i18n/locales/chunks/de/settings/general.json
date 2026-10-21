@@ -78,7 +78,7 @@
       },
       "transactionFields": {
         "label": "Optionale Transaktionsfelder",
-        "description": "Zusätzliche Felder, die im Transaktionsformular angezeigt werden. Ein Feld, das bereits einen Wert hat, wird immer angezeigt.",
+        "description": "Bietet eine Schaltfläche zum Schnellhinzufügen für diese Felder im Transaktionsformular an. Ein Feld, das bereits einen Wert enthält, wird immer angezeigt.",
         "successNotification": "Transaktionsfelder aktualisiert",
         "errorNotification": "Ein unerwarteter Fehler ist aufgetreten. Einstellung nicht gespeichert",
         "fields": {

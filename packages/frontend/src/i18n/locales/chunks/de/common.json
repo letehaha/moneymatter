@@ -139,8 +139,12 @@
         "description": "Liest eine hochgeladene Rechnung oder einen Beleg und findet die dazugehörige Transaktion."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Tracker-Erkennung",
+        "description": "Scannt neue Transaktionen und schlägt diejenigen vor, die zu einem Smart-Tracker gehören."
+      },
+      "transferMatching": {
+        "name": "Umbuchungserkennung",
+        "description": "Überprüft Ergebnisse des Umbuchungs-Scans und behält die Paare bei, die wie echte Umbuchungen aussehen"
       }
     },
     "transactions": {
@@ -225,7 +229,7 @@
         "brand": "Marke",
         "letters": "Buchstaben",
         "icon": "Symbol",
-        "custom": "Image"
+        "custom": "Bild"
       },
       "searchPlaceholder": "Markenname oder Domain",
       "searchHint": "Gib einen Markennamen oder eine Domain wie amazon.com ein",
@@ -246,12 +250,12 @@
       "colorSwatchAriaLabel": "Farbe {color} verwenden",
       "customColorAriaLabel": "Benutzerdefinierte Farbe wählen",
       "lettersSelectedLabel": "Buchstaben \"{letters}\"",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1–2 Buchstaben oder ein Emoji",
+      "chooseImage": "Bild auswählen",
+      "replaceImage": "Bild ersetzen",
+      "imageHint": "Wird auf deinem Gerät quadratisch zugeschnitten und auf 200×200 skaliert.",
+      "imageTooLarge": "Das Bild ist nach der Skalierung immer noch über 50 KB groß. Versuche es mit einem einfacheren Bild.",
+      "imageUnreadable": "Diese Datei konnte nicht als Bild gelesen werden."
     },
     "iconPicker": {
       "searchPlaceholder": "Symbol suchen...",
@@ -297,6 +301,10 @@
       "success": "Konto wurde zur Gruppe hinzugefügt",
       "error": "Konto konnte nicht zur Gruppe hinzugefügt werden"
     },
+    "linkMany": {
+      "success": "Konten zur Gruppe hinzugefügt",
+      "error": "Konten konnten nicht zur Gruppe hinzugefügt werden"
+    },
     "unlink": {
       "success": "Konto wurde aus der Gruppe entfernt",
       "error": "Konto konnte nicht aus der Gruppe entfernt werden"
@@ -319,9 +327,9 @@
     "newRelease": "Neues Release",
     "trackerAiMatches": {
       "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "added": "{count} Transaktion hinzugefügt | {count} Transaktionen hinzugefügt",
+      "toReview": "{count} Transaktion zu überprüfen | {count} Transaktionen zu überprüfen",
+      "toReviewShort": "{count} zu überprüfen",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -424,7 +432,7 @@
   },
   "billing": {
     "seePlans": "Tarife ansehen",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "Kostenloser Testzeitraum konnte nicht gestartet werden. Versuche es erneut.",
     "updatePaymentMethod": "Zahlungsmethode aktualisieren",
     "planRequired": {
       "essential": "Enthalten im Essential-Tarif",

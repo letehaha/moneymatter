@@ -107,6 +107,7 @@
         "paymentTypeLabel": "Zahlungsart",
         "noteLabel": "Notiz",
         "notePlaceholder": "Notiz",
+        "addFieldsLabel": "Hinzufügen",
         "externalUrlLabel": "Externe URL",
         "externalUrlPlaceholder": "Link zur Bestellung, Buchung oder Belegseite",
         "externalReferenceLabel": "Externe Referenz",
@@ -427,8 +428,6 @@
         "announceApplied": "{name} angewendet — {count} Feld ausgefüllt. Betrag ist leer. | {name} angewendet — {count} Felder ausgefüllt. Betrag ist leer.",
         "announceAppliedWithAmount": "{name} angewendet — {count} Feld ausgefüllt. Betrag auf {amount} gesetzt. | {name} angewendet — {count} Felder ausgefüllt. Betrag auf {amount} gesetzt.",
         "categoryDeletedHint": "Die Kategorie dieser Vorlage wurde gelöscht — wähle eine aus.",
-        "alsoSet": "Ebenfalls aus der Vorlage übernommen: {fields}",
-        "tagsCount": "{count} Tag | {count} Tags",
         "applyConfirmTitle": "Vorlage anwenden?",
         "applyConfirmDescription": "Das Anwenden ersetzt deine Aufteilungen und die Verknüpfung zur Rückerstattung.",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "Gruppe erstellen",
         "nameLabel": "Gruppenname",
         "namePlaceholder": "Investments",
-        "createButton": "Erstellen"
+        "createButton": "Erstellen",
+        "subgroupTitle": "Neue Untergruppe",
+        "insideLabel": "In",
+        "subgroupNamePlaceholder": "z.B. Ersparnisse",
+        "createSubgroupButton": "Untergruppe erstellen"
       }
     },
     "directCashTransaction": {

@@ -1,349 +1,349 @@
 {
   "budgets": {
-    "title": "Trackers",
-    "description": "Track spending and monitor financial events",
-    "notFound": "Tracker not found",
-    "notFoundDescription": "We couldn't find this tracker. It may have been deleted or you might not have access to it.",
-    "backToList": "Back to trackers",
-    "newBudget": "New tracker",
-    "createBudget": "Create tracker",
+    "title": "Suivis",
+    "description": "Suivez vos dépenses et surveillez vos événements financiers",
+    "notFound": "Suivi introuvable",
+    "notFoundDescription": "Impossible de trouver ce suivi. Il a peut-être été supprimé ou vous n'y avez pas accès.",
+    "backToList": "Retour aux suivis",
+    "newBudget": "Nouveau suivi",
+    "createBudget": "Créer un suivi",
     "creation": {
-      "success": "Tracker created",
-      "error": "Unexpected error!",
-      "nameLabel": "Tracker name",
-      "namePlaceholder": "Enter the name",
-      "typeLabel": "Tracker type",
-      "typeManual": "Manual",
-      "typeManualDescription": "Manually add transactions to this tracker",
-      "typeCategory": "Category-based",
-      "typeCategoryDescription": "Auto-track spending by categories",
-      "categoriesLabel": "Categories to track",
-      "categoriesRequired": "Select at least one category",
-      "fromDateLabel": "From date",
-      "toDateLabel": "To date",
-      "autoIncludeLabel": "Auto include transactions",
-      "limitLabel": "Tracker limit",
-      "limitPlaceholder": "Enter the limit",
-      "submitButton": "Add tracker"
+      "success": "Suivi créé",
+      "error": "Erreur inattendue !",
+      "nameLabel": "Nom du suivi",
+      "namePlaceholder": "Saisir le nom",
+      "typeLabel": "Type de suivi",
+      "typeManual": "Manuel",
+      "typeManualDescription": "Ajoutez manuellement des opérations à ce suivi",
+      "typeCategory": "Par catégorie",
+      "typeCategoryDescription": "Suivi automatique des dépenses par catégorie",
+      "categoriesLabel": "Catégories à suivre",
+      "categoriesRequired": "Sélectionnez au moins une catégorie",
+      "fromDateLabel": "Date de début",
+      "toDateLabel": "Date de fin",
+      "autoIncludeLabel": "Inclure automatiquement les opérations",
+      "limitLabel": "Plafond du suivi",
+      "limitPlaceholder": "Saisir le plafond",
+      "submitButton": "Ajouter le suivi"
     },
     "list": {
-      "loadError": "Couldn't load trackers.",
-      "tabCategory": "Category trackers",
-      "tabManual": "Manual trackers",
-      "edit": "Edit",
-      "delete": "Delete",
-      "deleteSuccess": "Tracker deleted successfully!",
-      "deleteError": "Unexpected error!",
-      "updateSuccess": "Tracker updated successfully!",
-      "updateError": "Failed to update tracker",
-      "unlinkTransactionsSuccess": "Transactions unlinked successfully!",
+      "loadError": "Impossible de charger les suivis.",
+      "tabCategory": "Suivis par catégorie",
+      "tabManual": "Suivis manuels",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "deleteSuccess": "Suivi supprimé avec succès !",
+      "deleteError": "Erreur inattendue !",
+      "updateSuccess": "Suivi mis à jour avec succès !",
+      "updateError": "Échec de la mise à jour du suivi",
+      "unlinkTransactionsSuccess": "Opérations dissociées avec succès !",
       "deleteDialog": {
-        "title": "Do you want to delete this tracker?",
-        "description": "By clicking \"Accept\", all associated transactions will be unlinked from the tracker but will remain in the system."
+        "title": "Voulez-vous supprimer ce suivi ?",
+        "description": "En cliquant sur « Accepter », toutes les opérations associées seront dissociées du suivi mais resteront enregistrées."
       },
-      "limitLabel": "Limit: {amount}",
-      "transactionsCount": "{count} transactions",
-      "categoriesCount": "{count} categories",
-      "noTransactions": "No transactions yet",
-      "noTimePeriod": "No time period",
-      "autoTracked": "Auto-tracked",
+      "limitLabel": "Plafond : {amount}",
+      "transactionsCount": "{count} opérations",
+      "categoriesCount": "{count} catégories",
+      "noTransactions": "Aucune opération pour l'instant",
+      "noTimePeriod": "Aucune période définie",
+      "autoTracked": "Suivi automatique",
       "status": {
-        "ended": "Ended",
-        "lastDay": "Last day",
-        "oneDayLeft": "1 day left",
-        "daysLeft": "{count} days left",
-        "startsToday": "Starts today",
-        "startsTomorrow": "Starts tomorrow",
-        "startsInDays": "Starts in {count} days"
+        "ended": "Terminé",
+        "lastDay": "Dernier jour",
+        "oneDayLeft": "1 jour restant",
+        "daysLeft": "{count} jours restants",
+        "startsToday": "Commence aujourd'hui",
+        "startsTomorrow": "Commence demain",
+        "startsInDays": "Commence dans {count} jours"
       },
-      "income": "Income",
-      "expenses": "Expenses",
+      "income": "Revenus",
+      "expenses": "Dépenses",
       "net": "Net",
-      "used": "Used",
-      "archive": "Archive",
-      "unarchive": "Unarchive",
+      "used": "Consommé",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
       "archivedLabel": "Archivés",
-      "archiveError": "Failed to update archive status",
-      "showArchived": "Show archived",
-      "hideArchived": "Hide archived",
+      "archiveError": "Échec de la modification du statut d'archivage",
+      "showArchived": "Afficher les archives",
+      "hideArchived": "Masquer les archives",
       "emptyState": {
-        "title": "No trackers yet",
-        "description": "Create a tracker to start tracking your spending or monitoring specific events."
+        "title": "Aucun suivi pour l'instant",
+        "description": "Créez un suivi pour surveiller vos dépenses ou des événements spécifiques."
       },
-      "searchPlaceholder": "Search trackers",
+      "searchPlaceholder": "Rechercher des suivis",
       "filters": {
-        "all": "All",
-        "manual": "Manual",
-        "category": "Category",
+        "all": "Tous",
+        "manual": "Manuel",
+        "category": "Catégorie",
         "archived": "Archivés"
       },
       "groups": {
-        "active": "Active now",
-        "upcoming": "Upcoming",
-        "noDates": "No dates",
-        "ended": "Ended",
+        "active": "En cours",
+        "upcoming": "À venir",
+        "noDates": "Sans dates",
+        "ended": "Terminé",
         "archived": "Archivés",
-        "show": "show",
-        "hide": "hide"
+        "show": "afficher",
+        "hide": "masquer"
       },
-      "showMoreEnded": "Show {count} more ended",
+      "showMoreEnded": "Afficher {count} terminés de plus",
       "row": {
         "auto": "auto",
-        "transactions": "{count} transaction | {count} transactions",
-        "moreCategories": "+{count} more",
-        "noLimit": "no limit",
-        "archiveSuggestion": "Archive?"
+        "transactions": "{count} opération | {count} opérations",
+        "moreCategories": "+{count} autres",
+        "noLimit": "sans plafond",
+        "archiveSuggestion": "Archiver ?"
       },
       "menu": {
-        "moreActions": "More actions",
-        "open": "Open",
-        "duplicate": "Duplicate"
+        "moreActions": "Plus d'actions",
+        "open": "Ouvrir",
+        "duplicate": "Dupliquer"
       },
-      "duplicateSuccess": "Tracker duplicated",
-      "duplicateError": "Failed to duplicate tracker",
-      "archiveSuccess": "Tracker archived",
-      "unarchiveSuccess": "Tracker unarchived",
+      "duplicateSuccess": "Suivi dupliqué",
+      "duplicateError": "Échec de la duplication du suivi",
+      "archiveSuccess": "Suivi archivé",
+      "unarchiveSuccess": "Suivi désarchivé",
       "noMatch": {
-        "title": "Nothing matches \"{query}\"",
-        "titleNoQuery": "No trackers match these filters",
-        "description": "Try another name, or include archived trackers.",
-        "includeArchived": "Include archived"
+        "title": "Aucun résultat pour « {query} »",
+        "titleNoQuery": "Aucun suivi ne correspond à ces filtres",
+        "description": "Essayez un autre nom ou incluez les suivis archivés.",
+        "includeArchived": "Inclure les archives"
       },
       "archivePrompt": {
-        "title": "Archive \"{name}\"?",
-        "endedDaysAgo": "{count} day ago | {count} days ago",
-        "endedMonthsAgo": "{count} month ago | {count} months ago",
-        "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
-        "dontAsk": "Don't ask for this tracker",
-        "notNow": "Not now",
-        "dismissError": "Failed to update tracker",
-        "dismissSuccess": "Got it. We won't suggest archiving this tracker again."
+        "title": "Archiver « {name} » ?",
+        "endedDaysAgo": "il y a {count} jour | il y a {count} jours",
+        "endedMonthsAgo": "il y a {count} mois | il y a {count} mois",
+        "description": "Il s'est terminé {ago}. Les suivis archivés sont déplacés vers le groupe Archivés et conservent leurs opérations et statistiques. Vous pouvez les désarchiver à tout moment.",
+        "dontAsk": "Ne plus demander pour ce suivi",
+        "notNow": "Pas maintenant",
+        "dismissError": "Échec de la mise à jour du suivi",
+        "dismissSuccess": "C'est noté. Nous ne vous proposerons plus d'archiver ce suivi."
       }
     },
     "settings": {
-      "nameLabel": "Tracker name",
-      "namePlaceholder": "Enter tracker name",
-      "limitLabel": "Tracker limit",
-      "limitPlaceholder": "Enter limit amount (optional)",
-      "startDateLabel": "Start date",
-      "endDateLabel": "End date",
-      "notSet": "Not set"
+      "nameLabel": "Nom du suivi",
+      "namePlaceholder": "Saisir le nom du suivi",
+      "limitLabel": "Plafond du suivi",
+      "limitPlaceholder": "Saisir le montant du plafond (facultatif)",
+      "startDateLabel": "Date de début",
+      "endDateLabel": "Date de fin",
+      "notSet": "Non défini"
     },
     "addTransactionsDialog": {
-      "title": "Add transactions to tracker",
-      "addSelected": "Add selected",
-      "clearSelection": "Clear selection"
+      "title": "Ajouter des opérations au suivi",
+      "addSelected": "Ajouter la sélection",
+      "clearSelection": "Effacer la sélection"
     },
     "categoryBudget": {
-      "trackedCategories": "Tracked categories",
-      "categoriesCount": "{count} categories tracked",
-      "autoTrackedInfo": "Transactions are automatically tracked based on categories",
-      "transactionsTitle": "Transactions",
-      "transactionsCount": "{count} transactions",
-      "noTransactions": "No transactions yet",
-      "noTransactionsDescription": "Transactions matching your tracked categories will appear here automatically.",
-      "transactionsLoadError": "Failed to load transactions",
-      "categoryBreakdown": "Category breakdown",
-      "edit": "Edit",
-      "editTitle": "Edit tracker",
-      "showMore": "Show more",
-      "showLess": "Show less",
+      "trackedCategories": "Catégories suivies",
+      "categoriesCount": "{count} catégories suivies",
+      "autoTrackedInfo": "Les opérations sont automatiquement suivies selon leurs catégories",
+      "transactionsTitle": "Opérations",
+      "transactionsCount": "{count} opérations",
+      "noTransactions": "Aucune opération pour le moment",
+      "noTransactionsDescription": "Les opérations correspondant aux catégories suivies apparaîtront automatiquement ici.",
+      "transactionsLoadError": "Échec du chargement des opérations",
+      "categoryBreakdown": "Répartition par catégorie",
+      "edit": "Modifier",
+      "editTitle": "Modifier le suivi",
+      "showMore": "Afficher plus",
+      "showLess": "Afficher moins",
       "settings": {
-        "categoriesLabel": "Tracked categories"
+        "categoriesLabel": "Catégories suivies"
       }
     },
     "manualBudget": {
-      "edit": "Edit",
-      "editTitle": "Edit tracker"
+      "edit": "Modifier",
+      "editTitle": "Modifier le suivi"
     },
     "share": {
-      "sharedByBadge": "Shared by {handle}"
+      "sharedByBadge": "Partagé par {handle}"
     },
     "details": {
-      "statsLoadError": "Couldn't load this tracker's totals.",
-      "transactionsCount": "{count} transaction | {count} transactions",
+      "statsLoadError": "Impossible de charger les totaux de ce suivi.",
+      "transactionsCount": "{count} opération | {count} opérations",
       "strip": {
-        "limit": "Limit",
-        "spent": "Spent",
-        "left": "Left",
-        "overBy": "Over by",
-        "income": "Income",
-        "expenses": "Expenses",
+        "limit": "Plafond",
+        "spent": "Dépensé",
+        "left": "Restant",
+        "overBy": "Dépassement de",
+        "income": "Revenus",
+        "expenses": "Dépenses",
         "net": "Net",
-        "transactions": "Transactions",
-        "perDay": "{amount} / day"
+        "transactions": "Opérations",
+        "perDay": "{amount} / jour"
       },
       "tabs": {
-        "limits": "Limits"
+        "limits": "Plafonds"
       },
-      "tracks": "Tracks",
-      "membersLabel": "Members: {count}",
+      "tracks": "Suit",
+      "membersLabel": "Membres : {count}",
       "actions": {
-        "share": "Share",
-        "setLimits": "Set limits",
-        "removeLimits": "Remove limits",
-        "duplicate": "Duplicate",
-        "openInTransactions": "Open in Transactions",
-        "more": "More actions"
+        "share": "Partager",
+        "setLimits": "Définir des plafonds",
+        "removeLimits": "Supprimer les plafonds",
+        "duplicate": "Dupliquer",
+        "openInTransactions": "Ouvrir dans Opérations",
+        "more": "Plus d'actions"
       },
       "shareDialog": {
-        "title": "Share \"{name}\""
+        "title": "Partager « {name} »"
       },
       "removeLimitsDialog": {
-        "title": "Remove all limits?",
-        "description": "The line and its limit will be removed. Linked transactions stay in the tracker. | All {count} lines and their limits will be removed. Linked transactions stay in the tracker."
+        "title": "Supprimer tous les plafonds ?",
+        "description": "La ligne et son plafond seront supprimés. Les opérations associées restent dans le suivi. | L'ensemble des {count} lignes et leurs plafonds seront supprimés. Les opérations associées restent dans le suivi."
       },
       "edit": {
-        "limitHint": "Clear it to track without a limit.",
-        "datesHint": "Changing the dates does not add or remove transactions already linked.",
-        "categoriesHint": "Removing a category also removes it from any line."
+        "limitHint": "Laissez vide pour suivre sans plafond.",
+        "datesHint": "Modifier les dates n'ajoute ni ne retire les opérations déjà associées.",
+        "categoriesHint": "Supprimer une catégorie la retire également de chaque ligne."
       }
     },
     "lines": {
-      "addLine": "Add line",
+      "addLine": "Ajouter une ligne",
       "empty": {
-        "title": "Split spending into lines",
-        "titleWithLimit": "Split the {amount} into lines",
-        "description": "A line is a set of categories with its own limit. Spending that fits no line shows as \"Other\"."
+        "title": "Répartir les dépenses en lignes",
+        "titleWithLimit": "Répartir les {amount} en lignes",
+        "description": "Une ligne regroupe plusieurs catégories avec son propre plafond. Les dépenses hors ligne apparaissent dans « Autre »."
       },
       "columns": {
-        "line": "Line",
-        "limit": "Limit",
-        "spent": "Spent",
-        "left": "Left"
+        "line": "Ligne",
+        "limit": "Plafond",
+        "spent": "Dépensé",
+        "left": "Restant"
       },
-      "usage": "{percent}% · {spent} of {limit}",
-      "overUsage": "Over by {amount} · {spent} of {limit}",
-      "spentOnly": "{amount} spent",
-      "categoriesCount": "{count} category | {count} categories",
-      "ofLimit": "of {limit}",
-      "editLimitAria": "Edit limit for {name}",
-      "noLimitPlaceholder": "No limit",
+      "usage": "{percent} % · {spent} sur {limit}",
+      "overUsage": "Dépassement de {amount} · {spent} sur {limit}",
+      "spentOnly": "{amount} dépensés",
+      "categoriesCount": "{count} catégorie | {count} catégories",
+      "ofLimit": "sur {limit}",
+      "editLimitAria": "Modifier le plafond pour {name}",
+      "noLimitPlaceholder": "Aucun plafond",
       "other": {
-        "title": "Other spending",
-        "hint": "not in any line"
+        "title": "Autres dépenses",
+        "hint": "sur aucune ligne"
       },
       "total": {
-        "title": "Total · {count} line | Total · {count} lines",
-        "limitOfOverall": "{sum} of {limit}"
+        "title": "Total · {count} ligne | Total · {count} lignes",
+        "limitOfOverall": "{sum} sur {limit}"
       },
       "menu": {
-        "ariaLabel": "Line actions",
-        "edit": "Edit line",
-        "delete": "Delete line"
+        "ariaLabel": "Actions de la ligne",
+        "edit": "Modifier la ligne",
+        "delete": "Supprimer la ligne"
       },
       "delete": {
-        "title": "Delete line?",
-        "description": "\"{name}\" will be removed and its spending will show under Other. Transactions are not affected."
+        "title": "Supprimer la ligne ?",
+        "description": "« {name} » sera supprimée et ses dépenses apparaîtront dans Autre. Les opérations ne sont pas affectées."
       },
       "dialog": {
-        "addTitle": "Add line",
-        "editTitle": "Edit line",
-        "nameLabel": "Name",
-        "namePlaceholder": "e.g. Hotels",
-        "nameRequired": "Enter a name",
-        "categoriesLabel": "Categories",
-        "categoriesPlaceholder": "Pick categories",
-        "categoriesRequired": "Pick at least one category",
-        "categoryTrackerHint": "This tracker only counts its own categories, so pick from those.",
-        "limitLabel": "Limit (optional)",
-        "limitPlaceholder": "No limit",
-        "limitHint": "Leave empty to group spending without a limit."
+        "addTitle": "Ajouter une ligne",
+        "editTitle": "Modifier la ligne",
+        "nameLabel": "Nom",
+        "namePlaceholder": "ex. Hôtels",
+        "nameRequired": "Saisissez un nom",
+        "categoriesLabel": "Catégories",
+        "categoriesPlaceholder": "Choisir des catégories",
+        "categoriesRequired": "Choisissez au moins une catégorie",
+        "categoryTrackerHint": "Ce suivi ne prend en compte que ses propres catégories, choisissez parmi celles-ci.",
+        "limitLabel": "Plafond (optionnel)",
+        "limitPlaceholder": "Aucun plafond",
+        "limitHint": "Laissez vide pour regrouper les dépenses sans fixer de plafond."
       },
       "notifications": {
-        "limitsRemoved": "Limits removed",
-        "created": "Line added",
-        "updated": "Line updated",
-        "deleted": "Line deleted",
-        "createError": "Couldn't add the line",
-        "updateError": "Couldn't update the line",
-        "deleteError": "Couldn't delete the line"
+        "limitsRemoved": "Plafonds supprimés",
+        "created": "Ligne ajoutée",
+        "updated": "Ligne mise à jour",
+        "deleted": "Ligne supprimée",
+        "createError": "Impossible d'ajouter la ligne",
+        "updateError": "Impossible de mettre à jour la ligne",
+        "deleteError": "Impossible de supprimer la ligne"
       }
     },
     "smartTracking": {
       "fields": {
-        "heading": "Smart tracking",
-        "switchLabel": "Find matching transactions for me",
-        "switchHint": "Checks new and edited transactions every night. Sure matches are added for you, the rest wait for your review.",
-        "needsStartDate": "Set a start date first, AI looks from there.",
-        "noAi": "Set up an AI model in {link} to use this.",
-        "noAiLink": "Settings → AI",
-        "allowanceUsed": "AI allowance used up. {link} to keep it running.",
-        "running": "Matching is running. You can change these once it finishes.",
-        "descriptionLabel": "What belongs in this tracker?",
-        "descriptionPlaceholder": "e.g. Two weeks in Greece: flights, ferries, rental car, island hotels",
-        "descriptionRequired": "Describe what belongs here so AI knows what to look for.",
-        "preWindowLabel": "Also look before the start date",
-        "preWindowPlaceholder": "Choose how far back to look",
-        "preWindowHint": "Catches flights and hotels booked in advance.",
+        "heading": "Suivi intelligent",
+        "switchLabel": "Trouver automatiquement les opérations correspondantes",
+        "switchHint": "Analyse les opérations nouvelles et modifiées chaque nuit. Les correspondances certaines sont ajoutées automatiquement, les autres restent à valider.",
+        "needsStartDate": "Définissez d'abord une date de début, l'IA commencera ses recherches à partir de celle-ci.",
+        "noAi": "Configurez un modèle d'IA dans {link} pour utiliser cette fonctionnalité.",
+        "noAiLink": "Paramètres → IA",
+        "allowanceUsed": "Quota d'IA épuisé. {link} pour continuer.",
+        "running": "Analyse des correspondances en cours. Vous pourrez modifier ces paramètres une fois terminée.",
+        "descriptionLabel": "Que comprend ce suivi ?",
+        "descriptionPlaceholder": "ex. : Deux semaines en Grèce : vols, ferries, location de voiture, hôtels sur les îles",
+        "descriptionRequired": "Décrivez les éléments à inclure pour que l'IA sache quoi rechercher.",
+        "preWindowLabel": "Chercher aussi avant la date de début",
+        "preWindowPlaceholder": "Choisir la période antérieure",
+        "preWindowHint": "Permet d'inclure les billets d'avion et hôtels réservés à l'avance.",
         "preWindowOptions": {
-          "none": "Don't look earlier",
-          "twoWeeks": "2 weeks",
-          "oneMonth": "1 month",
-          "twoMonths": "2 months",
-          "threeMonths": "3 months",
-          "sixMonths": "6 months"
+          "none": "Ne pas chercher avant",
+          "twoWeeks": "2 semaines",
+          "oneMonth": "1 mois",
+          "twoMonths": "2 mois",
+          "threeMonths": "3 mois",
+          "sixMonths": "6 mois"
         },
-        "usesIncluded": "Uses the included AI. Counts toward your monthly AI allowance.",
-        "usesOwnModel": "Uses your own model · {model}"
+        "usesIncluded": "Utilise l'IA incluse. Décompté de votre quota mensuel d'IA.",
+        "usesOwnModel": "Utilise votre propre modèle · {model}"
       },
-      "pausedUntil": "Paused until {date}",
-      "connectOwnModel": "Connect your own model",
+      "pausedUntil": "Suspendu jusqu'au {date}",
+      "connectOwnModel": "Connecter votre propre modèle",
       "plan": {
-        "locked": "Smart tracking is part of Plus. Upgrade, or connect your own AI key to keep using it.",
-        "connectOwnKey": "Connect your own key",
-        "upgrade": "Upgrade",
-        "startTrial": "Start free trial",
-        "trialDaysLeft": "Free trial: {n} day left | Free trial: {n} days left",
-        "trialHint": "Includes a {days}-day free trial. It starts when you turn smart tracking on."
+        "locked": "Le suivi intelligent est inclus dans l'offre Plus. Passez à la vitesse supérieure ou connectez votre propre clé d'IA pour continuer à l'utiliser.",
+        "connectOwnKey": "Connecter votre clé",
+        "upgrade": "Changer d'offre",
+        "startTrial": "Démarrer l'essai gratuit",
+        "trialDaysLeft": "Essai gratuit : {n} jour restant | Essai gratuit : {n} jours restants",
+        "trialHint": "Comprend un essai gratuit de {days} jours. Il commence dès l'activation du suivi intelligent."
       },
-      "turnedOn": "Smart tracking is on. First results in a minute or two.",
-      "undo": "Undo",
-      "unlinked": "Unlinked. AI won't add it again. | Unlinked {count} transactions. AI won't add them again.",
-      "relinkError": "Couldn't add the transactions back. Try again.",
+      "turnedOn": "Suivi intelligent activé. Premiers résultats d'ici une ou deux minutes.",
+      "undo": "Annuler",
+      "unlinked": "Dissociée. L'IA ne l'ajoutera plus. | {count} opérations dissociées. L'IA ne les ajoutera plus.",
+      "relinkError": "Impossible de rajouter les opérations. Réessayez.",
       "strip": {
-        "tip": "Let AI find transactions for this tracker",
-        "turnOn": "Turn on",
-        "hide": "Hide",
-        "scanning": "Looking for matching transactions…",
-        "startedAt": "Started {time}",
-        "toReview": "{count} to review",
-        "checkedAt": "checked {when}",
-        "review": "Review",
-        "idle": "Smart tracking is on · nothing new to review",
-        "settings": "Settings",
-        "paused": "Paused",
-        "allowanceUsed": "AI allowance used up",
-        "unavailable": "AI connection stopped working",
-        "fixInSettings": "Fix in Settings",
-        "ended": "Smart tracking stopped · the tracker ended more than 14 days ago",
-        "noStartDate": "Set a start date to use smart tracking"
+        "tip": "Laisser l'IA trouver les opérations pour ce suivi",
+        "turnOn": "Activer",
+        "hide": "Masquer",
+        "scanning": "Recherche d'opérations correspondantes…",
+        "startedAt": "Démarré à {time}",
+        "toReview": "{count} à vérifier",
+        "checkedAt": "vérifié {when}",
+        "review": "Vérifier",
+        "idle": "Suivi intelligent actif · rien de nouveau à vérifier",
+        "settings": "Paramètres",
+        "paused": "En pause",
+        "allowanceUsed": "Quota d'IA épuisé",
+        "unavailable": "Connexion à l'IA interrompue",
+        "fixInSettings": "Régler dans les paramètres",
+        "ended": "Suivi intelligent arrêté · le suivi s'est terminé il y a plus de 14 jours",
+        "noStartDate": "Définissez une date de début pour utiliser le suivi intelligent"
       },
       "hideTip": {
-        "title": "Hide this tip?",
-        "description": "You can still turn on smart tracking in the tracker's settings.",
-        "neverShow": "Never show again",
-        "neverShowHint": "Hides it on every tracker, not just this one.",
-        "confirm": "Hide"
+        "title": "Masquer ce conseil ?",
+        "description": "Vous pouvez toujours activer le suivi intelligent dans les paramètres du suivi.",
+        "neverShow": "Ne plus afficher",
+        "neverShowHint": "Masque le conseil sur tous les suivis, pas seulement celui-ci.",
+        "confirm": "Masquer"
       },
       "review": {
-        "sectionTitle": "To review ({count})",
+        "sectionTitle": "À vérifier ({count})",
         "confidence": {
-          "likely": "Likely",
+          "likely": "Probable",
           "possible": "Possible"
         },
-        "add": "Add",
-        "skip": "Skip",
-        "addAria": "Add {name} to {tracker}",
-        "skipAria": "Skip {name}",
-        "addAll": "Add all {count}",
-        "addAllShort": "Add all",
-        "skipAll": "Skip all",
-        "added": "Added {count} transaction to {name} | Added {count} transactions to {name}",
-        "skipped": "Skipped. AI won't suggest it again. | Skipped {count} transactions. AI won't suggest them again.",
-        "acceptError": "Couldn't add the suggested transactions. Try again.",
-        "rejectError": "Couldn't skip the suggested transactions. Try again.",
-        "restoreError": "Couldn't undo the skip. Try again."
+        "add": "Ajouter",
+        "skip": "Ignorer",
+        "addAria": "Ajouter {name} à {tracker}",
+        "skipAria": "Ignorer {name}",
+        "addAll": "Tout ajouter ({count})",
+        "addAllShort": "Tout ajouter",
+        "skipAll": "Tout ignorer",
+        "added": "{count} opération ajoutée à {name} | {count} opérations ajoutées à {name}",
+        "skipped": "Ignorée. L'IA ne la suggérera plus. | {count} opérations ignorées. L'IA ne les suggérera plus.",
+        "acceptError": "Impossible d'ajouter les opérations suggérées. Réessayez.",
+        "rejectError": "Impossible d'ignorer les opérations suggérées. Réessayez.",
+        "restoreError": "Impossible d'annuler l'action d'ignorer. Réessayez."
       }
     }
   }

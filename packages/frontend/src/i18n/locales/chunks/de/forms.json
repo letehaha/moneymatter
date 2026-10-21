@@ -371,7 +371,7 @@
       "searchPlaceholder": "Tracker suchen",
       "noResults": "Keine Tracker gefunden",
       "unknownBudget": "Unbekannter Tracker",
-      "blankOption": "Not in any tracker",
+      "blankOption": "In keinem Tracker",
       "loadError": "Tracker konnten nicht geladen werden. Bitte versuche es erneut."
     },
     "payeeSelect": {

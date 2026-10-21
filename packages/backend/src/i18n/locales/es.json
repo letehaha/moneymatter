@@ -29,6 +29,7 @@
     "groupNotFound": "Grupo no encontrado",
     "groupUpdateFailed": "No se pudo actualizar el grupo",
     "parentGroupNotExist": "El grupo padre con ese id no existe.",
+    "parentGroupCycle": "Un grupo no puede ser colocado dentro de sí mismo o uno de sus propios subgrupos.",
     "parentGroupDoesNotExist": "El grupo padre no existe.",
     "accountNotFound": "Cuenta con ese id no encontrada.",
     "accountGroupNotFound": "Grupo de cuentas con ese id no encontrado."
@@ -129,8 +130,8 @@
   },
   "budgets": {
     "budgetNotFound": "Presupuesto no encontrado",
-    "lineNotFound": "Tracker line not found",
-    "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
+    "lineNotFound": "Línea presupuestaria no encontrada",
+    "onlyOwnerCanDuplicate": "Sólo el propietario puede duplicar este control de gastos",
     "someTransactionIdsInvalid": "Algunos IDs de transacciones no son válidos",
     "transactionsAddedSuccessfully": "Transacciones añadidas correctamente",
     "cannotManuallyLinkToCategoryBudget": "No se pueden vincular transacciones manualmente a presupuestos basados en categorías. Las transacciones se registran automáticamente por categoría.",
@@ -807,7 +808,7 @@
       "passwordAlreadySet": "Your account already has a password.",
       "passwordTooShort": "La contraseña es demasiado corta.",
       "passwordTooLong": "La contraseña es demasiado larga.",
-      "reauthenticationRequired": "For your security, sign in again to make this change.",
+      "reauthenticationRequired": "Por su seguridad, inicie sesión de nuevo para hacer este cambio.",
       "signupsDisabled": "Signups are disabled by the administrator."
     }
   },

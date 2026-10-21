@@ -55,7 +55,8 @@
         "modelLabel": "Model",
         "modelInfo": {
           "estimatedCost": "Odh. cena:",
-          "per100Transactions": "na 100 transakcií"
+          "per100Transactions": "na 100 transakcií",
+          "per100Pairs": "per 100 pairs"
         },
         "notifications": {
           "updateSuccess": "Model bol úspešne aktualizovaný",
@@ -94,14 +95,16 @@
           "statementParsing": "Prečíta celý výpis a vráti každý riadok, preto potrebuje model, ktorý si udrží presnosť aj pri dlhom texte.",
           "investmentTransactionsParsing": "Prevádza exporty od brokera na riadky nákupov a predajov. Dlhé exporty vyžadujú model schopný písať dlhé odpovede.",
           "receiptParsing": "Model si prezerá priamo súbor faktúry, preto musí vedieť čítať obrázky a PDF.",
-          "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down."
+          "trackerMatching": "Krátka, opakujúca sa úloha, ktorá sa spúšťa každý deň. Zvládne ju dobre aj malý model a udrží tak nízke náklady.",
+          "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",
           "statementParsing": "Gemini Flash · Claude Sonnet · GPT Terra",
           "investmentTransactionsParsing": "Gemini Flash · Claude Sonnet",
           "receiptParsing": "Gemini Flash · Claude Sonnet",
-          "trackerMatching": "Gemini Flash Lite · Claude Haiku"
+          "trackerMatching": "Gemini Flash Lite · Claude Haiku",
+          "transferMatching": "Gemini Flash Lite · Claude Haiku"
         },
         "verdict": {
           "fit": "Dobre vyhovuje",

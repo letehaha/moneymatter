@@ -1,40 +1,40 @@
 {
   "investments": {
-    "title": "Investments",
-    "createButton": "Create portfolio",
-    "loadError": "Failed to load portfolios",
-    "tryAgain": "Try again",
+    "title": "Investissements",
+    "createButton": "Créer un portefeuille",
+    "loadError": "Impossible de charger les portefeuilles",
+    "tryAgain": "Réessayer",
     "menu": {
-      "view": "View",
-      "delete": "Delete"
+      "view": "Afficher",
+      "delete": "Supprimer"
     },
     "card": {
-      "hidden": "Hidden",
-      "portfolioType": "{type} Portfolio",
-      "costBasis": "Cost basis"
+      "hidden": "Masqué",
+      "portfolioType": "Portefeuille {type}",
+      "costBasis": "Prix de revient"
     },
     "empty": {
-      "title": "No portfolios yet",
-      "description": "Create your first investment portfolio to start tracking your holdings, transactions, and performance.",
-      "createFirstButton": "Create your first portfolio"
+      "title": "Aucun portefeuille pour le moment",
+      "description": "Créez votre premier portefeuille d'investissement pour commencer à suivre vos avoirs, vos opérations et vos performances.",
+      "createFirstButton": "Créer votre premier portefeuille"
     },
     "trash": {
-      "title": "Trash",
-      "retentionHint": "Items here are permanently deleted after {days} days",
-      "loadError": "Couldn't load trashed portfolios.",
-      "deletedAgo": "Deleted {time}",
-      "restoreButton": "Restore",
-      "restoringButton": "Restoring…",
-      "purgeButton": "Delete now",
-      "purgingButton": "Deleting…",
-      "confirmPurgeTitle": "Delete portfolio permanently?",
-      "confirmPurge": "Permanently delete \"{name}\"? This cannot be undone.",
-      "tryAgain": "Try again",
+      "title": "Corbeille",
+      "retentionHint": "Les éléments ici sont définitivement supprimés après {days} jours",
+      "loadError": "Impossible de charger les portefeuilles supprimés.",
+      "deletedAgo": "Supprimé il y a {time}",
+      "restoreButton": "Restaurer",
+      "restoringButton": "Restauration…",
+      "purgeButton": "Supprimer maintenant",
+      "purgingButton": "Suppression…",
+      "confirmPurgeTitle": "Supprimer définitivement le portefeuille ?",
+      "confirmPurge": "Supprimer définitivement « {name} » ? Cette action est irréversible.",
+      "tryAgain": "Réessayer",
       "notifications": {
-        "restored": "Portfolio restored",
-        "restoreError": "Failed to restore portfolio",
-        "purged": "Portfolio permanently deleted",
-        "purgeError": "Failed to delete portfolio"
+        "restored": "Portefeuille restauré",
+        "restoreError": "Impossible de restaurer le portefeuille",
+        "purged": "Portefeuille définitivement supprimé",
+        "purgeError": "Impossible de supprimer le portefeuille"
       }
     }
   }

@@ -78,7 +78,7 @@
       },
       "transactionFields": {
         "label": "Voliteľné polia transakcie",
-        "description": "Ďalšie polia zobrazené vo formulári transakcie. Pole, ktoré už má hodnotu, sa zobrazuje vždy.",
+        "description": "Pre tieto polia ponúknite vo formulári transakcie tlačidlo na rýchle pridanie. Pole, ktoré už má hodnotu, sa zobrazuje vždy.",
         "successNotification": "Polia transakcie aktualizované",
         "errorNotification": "Vyskytla sa neočakávaná chyba. Nastavenie sa neuložilo",
         "fields": {

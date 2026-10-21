@@ -116,6 +116,8 @@
             "fillForm": "Isi formulir dengan nilai berikut:",
             "appName": "Nama aplikasi:",
             "redirectUrls": "URL redirect yang diizinkan:",
+            "httpsRequired": "Enable Banking only accepts https redirect URLs. Serve this instance over HTTPS, set {envVar} to its public callback URL (e.g. {example}), recreate the backend container, and enter the same URL in this field. {link}",
+            "httpsRequiredLink": "How to set it up",
             "appDescription": "Deskripsi aplikasi:",
             "emailProtection": "Email untuk masalah perlindungan data:",
             "privacyUrl": "URL Privasi:",

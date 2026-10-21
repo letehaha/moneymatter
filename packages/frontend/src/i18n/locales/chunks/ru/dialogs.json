@@ -107,6 +107,7 @@
         "paymentTypeLabel": "Тип платежа",
         "noteLabel": "Примечание",
         "notePlaceholder": "Примечание",
+        "addFieldsLabel": "Добавить",
         "externalUrlLabel": "Внешний URL",
         "externalUrlPlaceholder": "Ссылка на страницу заказа, бронирования или чека",
         "externalReferenceLabel": "Внешний идентификатор",
@@ -427,8 +428,6 @@
         "announceApplied": "Применён {name} — заполнено {count} поле. Сумма пуста. | Применён {name} — заполнено {count} поля. Сумма пуста. | Применён {name} — заполнено {count} полей. Сумма пуста.",
         "announceAppliedWithAmount": "Применён {name} — заполнено {count} поле. Сумма: {amount}. | Применён {name} — заполнено {count} поля. Сумма: {amount}. | Применён {name} — заполнено {count} полей. Сумма: {amount}.",
         "categoryDeletedHint": "Категория этого шаблона удалена — выберите другую.",
-        "alsoSet": "Шаблон также заполнил: {fields}",
-        "tagsCount": "{count} тег | {count} тега | {count} тегов",
         "applyConfirmTitle": "Применить шаблон?",
         "applyConfirmDescription": "Применение заменит текущие разбиения и связь возврата.",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "Создать группу",
         "nameLabel": "Название группы",
         "namePlaceholder": "Инвестиции",
-        "createButton": "Создать"
+        "createButton": "Создать",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

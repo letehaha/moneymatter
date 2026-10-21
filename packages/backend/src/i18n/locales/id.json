@@ -29,6 +29,7 @@
     "groupNotFound": "Grup tidak ditemukan",
     "groupUpdateFailed": "Pembaruan grup tidak berhasil",
     "parentGroupNotExist": "Induk dengan id tersebut tidak ada.",
+    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
     "parentGroupDoesNotExist": "Grup induk tidak ada.",
     "accountNotFound": "Akun dengan id tersebut tidak ditemukan.",
     "accountGroupNotFound": "Grup akun dengan id tersebut tidak ditemukan."

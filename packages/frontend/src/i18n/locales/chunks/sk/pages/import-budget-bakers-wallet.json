@@ -74,9 +74,9 @@
           "errorsTitle": "Zlyhal {count} riadok | Zlyhali {count} riadky | Zlyhalo {count} riadkov",
           "errorsOverflow": "+{count} ďalších",
           "errors": {
-            "rowImportFailed": "This row could not be imported.",
-            "payeeDefaultTagsFailed": "The transaction was imported, but the payee's default tags could not be applied.",
-            "accountBalanceDesync": "An account balance could not be updated after the import and may be incorrect."
+            "rowImportFailed": "Tento riadok sa nepodarilo importovať.",
+            "payeeDefaultTagsFailed": "Transakcia bola importovaná, ale predvolené značky príjemcu sa nepodarilo použiť.",
+            "accountBalanceDesync": "Zostatok jedného z účtov sa po importe nepodarilo aktualizovať a nemusí byť správny."
           },
           "balanceWarningTitle": "Niektoré zostatky účtov môžu byť nesprávne",
           "balanceWarningBody": "Po importe sa nepodarilo obnoviť zostatok na jednom alebo viacerých existujúcich účtoch. Skontrolujte dotknuté účty.",
@@ -134,7 +134,7 @@
           "importing": "Importovanie..."
         },
         "errors": {
-          "fileMissing": "No file loaded. Please upload your Wallet export again."
+          "fileMissing": "Nie je načítaný žiadny súbor. Nahrajte svoj export z Wallet znova, prosím."
         }
       }
     }

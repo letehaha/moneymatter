@@ -29,6 +29,7 @@
     "groupNotFound": "Group not found",
     "groupUpdateFailed": "Group update was not successful",
     "parentGroupNotExist": "Parent with such id does not exist.",
+    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
     "parentGroupDoesNotExist": "Parent group does not exists.",
     "accountNotFound": "Account with such id is not found.",
     "accountGroupNotFound": "Account group with such id is not found."

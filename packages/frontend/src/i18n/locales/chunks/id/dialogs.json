@@ -107,6 +107,7 @@
         "paymentTypeLabel": "Jenis Pembayaran",
         "noteLabel": "Catatan (opsional)",
         "notePlaceholder": "Catatan",
+        "addFieldsLabel": "Tambah",
         "externalUrlLabel": "External URL",
         "externalUrlPlaceholder": "Link to the order, booking or receipt page",
         "externalReferenceLabel": "External reference",
@@ -427,8 +428,6 @@
         "announceApplied": "{name} diterapkan — {count} kolom terisi. Jumlah masih kosong. | {name} diterapkan — {count} kolom terisi. Jumlah masih kosong.",
         "announceAppliedWithAmount": "{name} diterapkan — {count} kolom terisi. Jumlah diatur ke {amount}. | {name} diterapkan — {count} kolom terisi. Jumlah diatur ke {amount}.",
         "categoryDeletedHint": "Kategori templat ini telah dihapus — pilih kategori lain.",
-        "alsoSet": "Templat juga mengatur: {fields}",
-        "tagsCount": "{count} tag | {count} tag",
         "applyConfirmTitle": "Terapkan templat?",
         "applyConfirmDescription": "Menerapkan templat akan mengganti pembagian dan tautan pengembalian dana Anda.",
         "toasts": {
@@ -556,7 +555,11 @@
         "title": "Buat grup",
         "nameLabel": "Nama grup",
         "namePlaceholder": "Investasi",
-        "createButton": "Buat"
+        "createButton": "Buat",
+        "subgroupTitle": "New subgroup",
+        "insideLabel": "Inside",
+        "subgroupNamePlaceholder": "e.g. Savings",
+        "createSubgroupButton": "Create subgroup"
       }
     },
     "directCashTransaction": {

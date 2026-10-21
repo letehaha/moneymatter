@@ -141,6 +141,10 @@
       "trackerMatching": {
         "name": "Tracker matching",
         "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+      },
+      "transferMatching": {
+        "name": "Transfer matching",
+        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
       }
     },
     "transactions": {
@@ -296,6 +300,10 @@
     "link": {
       "success": "Account has been added to the group",
       "error": "Failed to add the account to the group"
+    },
+    "linkMany": {
+      "success": "Accounts added to the group",
+      "error": "Failed to add accounts to the group"
     },
     "unlink": {
       "success": "Account has been removed from the group",

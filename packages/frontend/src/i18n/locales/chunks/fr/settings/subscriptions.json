@@ -1,12 +1,12 @@
 {
   "settings": {
     "subscriptions": {
-      "title": "Scheduled payments",
+      "title": "Paiements récurrents",
       "defaultAutoRecord": {
-        "label": "Default auto-record on new scheduled payments",
-        "help": "When enabled, the create-subscription form's auto-record toggle starts ON by default. You can always override it per subscription.",
-        "successNotification": "Setting saved",
-        "errorNotification": "Failed to save setting"
+        "label": "Enregistrement automatique par défaut des nouveaux paiements récurrents",
+        "help": "Lorsque cette option est activée, l'enregistrement automatique est activé par défaut lors de la création d'un abonnement. Vous pouvez toujours modifier ce choix pour chaque abonnement.",
+        "successNotification": "Paramètre enregistré",
+        "errorNotification": "Échec de l'enregistrement du paramètre"
       }
     }
   }
