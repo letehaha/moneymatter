@@ -6,7 +6,7 @@ import { archiveLine } from '@services/budget-plans/archive-line';
 import { restoreLine } from '@services/budget-plans/restore-line';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -29,7 +29,7 @@ export function registerArchiveBudgetPlanLine(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'archive_budget_plan_line', clientId: extra.authInfo?.clientId });
 

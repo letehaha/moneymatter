@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deleteAttachment } from '@services/attachments/attachments.service';
 
-import { getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   attachmentId: recordId().describe('ID of the attachment to delete (from list_transaction_attachments)'),
@@ -22,7 +22,7 @@ export function registerDeleteAttachment(server: McpServer) {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:delete' });
       // DELETE /attachments/:id has no base-currency lock: attachments touch no amounts.
-      requireFeatureAccess({ extra, feature: FEATURES.attachments });
+      await requireFeature({ userId, feature: FEATURES.attachments });
       trackMcpToolUsed({ userId, tool: 'delete_attachment', clientId: extra.authInfo?.clientId });
 
       await deleteAttachment({ userId, id: args.attachmentId });

@@ -85,24 +85,6 @@ export const goalsForMcp = async ({ userId, goals }: { userId: number; goals: Go
 };
 
 /**
- * Refuses a call when the user's plan lacks the feature, as the REST `requireFeature` gate does
- * (402 with the same message). The features come from the entitlements `verifyAccessToken` already
- * resolves; a payload without them counts as having none, so a gate never opens on missing data.
- */
-export function requireFeatureAccess({
-  extra,
-  feature,
-}: {
-  extra: { authInfo?: { extra?: { features?: readonly Feature[] } } };
-  feature: Feature;
-}): void {
-  const features = extra?.authInfo?.extra?.features ?? [];
-  if (!features.includes(feature)) {
-    throw new Error('This feature is not included in your current plan.');
-  }
-}
-
-/**
  * Refuses a write while a base-currency change is recalculating the user's amounts, as the
  * `checkBaseCurrencyLock` middleware does on the REST routes. Fails closed when Redis is
  * unreachable, since a write that slips past the lock would be rewritten by the recalculation.

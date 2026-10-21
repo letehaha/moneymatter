@@ -1,4 +1,4 @@
-import { FEATURES, USER_ROLES } from '@bt/shared/types';
+import { USER_ROLES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 // Blocks the real modules, whose import chains open the auth pool and Redis connections.
@@ -33,11 +33,8 @@ describe('verifyMcpToken', () => {
     } as never);
   });
 
-  it('carries readOnly and the plan features beside the user in the auth info', async () => {
-    entitlements.mockResolvedValueOnce({
-      readOnly: false,
-      features: [FEATURES.budget_plan, FEATURES.attachments],
-    } as never);
+  it('carries readOnly beside the user in the auth info', async () => {
+    entitlements.mockResolvedValueOnce({ readOnly: false } as never);
 
     const info = await verifyMcpToken({ authorizationHeader: 'Bearer abc' });
 
@@ -49,16 +46,6 @@ describe('verifyMcpToken', () => {
       username: 'jane',
       role: USER_ROLES.common,
       readOnly: false,
-      features: [FEATURES.budget_plan, FEATURES.attachments],
     });
-  });
-
-  it('carries no features for a plan without any', async () => {
-    entitlements.mockResolvedValueOnce({ readOnly: true, features: [] } as never);
-
-    const info = await verifyMcpToken({ authorizationHeader: 'Bearer abc' });
-
-    expect(info.extra.readOnly).toBe(true);
-    expect(info.extra.features).toEqual([]);
   });
 });

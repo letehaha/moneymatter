@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { addSuggestedLines } from '@services/budget-plans/suggested-lines';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -26,7 +26,7 @@ export function registerAddSuggestedBudgetPlanLines(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'add_suggested_budget_plan_lines', clientId: extra.authInfo?.clientId });
 

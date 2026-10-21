@@ -5,7 +5,7 @@ import { ZodSettingsPatchSchema } from '@models/user-settings.model';
 import { patchUserSettings } from '@services/user-settings/patch-settings';
 import omit from 'lodash/omit';
 
-import { getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 // The REST patch schema without `ai`: the AI configuration stays in the app. The shape is taken
 // from the schema, so a settings key added there is accepted here without a change to this file.
@@ -33,7 +33,7 @@ export function registerUpdateUserSettings(server: McpServer) {
       }
       // The REST route gate: a `fire` key needs the FIRE planner.
       if (input.fire !== undefined) {
-        requireFeatureAccess({ extra, feature: FEATURES.fire_planner });
+        await requireFeature({ userId, feature: FEATURES.fire_planner });
       }
 
       const patch = patchSchema.parse(input);

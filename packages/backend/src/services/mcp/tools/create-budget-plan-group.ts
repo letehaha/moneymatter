@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createGroup } from '@services/budget-plans/line-groups';
 import { createGroupBodyFields, createGroupBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -23,7 +23,7 @@ export function registerCreateBudgetPlanGroup(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_budget_plan_group', clientId: extra.authInfo?.clientId });
 
