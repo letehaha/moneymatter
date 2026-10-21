@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { lineGoalSchema } from '@services/budget-plans/line-goal-schema';
 import { setLineGoal } from '@services/budget-plans/line-goals';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeatureAccess, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
 
 const goalFields = lineGoalSchema.shape;
 
@@ -53,7 +53,7 @@ export function registerSetBudgetPlanLineGoal(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan });
+      await requireFeature({ userId, feature: FEATURES.budget_plan });
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'set_budget_plan_line_goal', clientId: extra.authInfo?.clientId });
 
