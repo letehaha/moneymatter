@@ -1,32 +1,11 @@
-import { currencyCode } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as userExchangeRates from '@services/user-exchange-rate';
+import { editExchangeRatePairSchema } from '@services/user-exchange-rate/exchange-rate-pair-rules';
 import { z } from 'zod';
 
-const UpdateExchangeRatePairSchema = z
-  .object({
-    baseCode: currencyCode(),
-    quoteCode: currencyCode(),
-    rate: z.number().positive(),
-  })
-  .strict();
-
+// The pair rules (no pair against itself, every pair with its opposite) are enforced by the service.
 const schema = z.object({
-  body: z
-    .object({
-      pairs: z
-        .array(UpdateExchangeRatePairSchema)
-        .nonempty()
-        .refine(
-          (pairs) => pairs.every((pair) => pair.baseCode !== pair.quoteCode),
-          'You cannot edit pair with the same base and quote currency code.',
-        )
-        .refine(
-          (pairs) => pairs.every((pair) => pairs.some((item) => item.baseCode === pair.quoteCode)),
-          "When changing base-quote pair rate, you need to also change opposite pair's rate.",
-        ),
-    })
-    .strict(),
+  body: z.object({ pairs: z.array(editExchangeRatePairSchema).nonempty() }).strict(),
 });
 
 export default createController(schema, async ({ user, body }) => {

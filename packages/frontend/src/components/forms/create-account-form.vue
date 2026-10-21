@@ -13,6 +13,7 @@ import * as Select from '@/components/lib/ui/select';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useCurrencyName } from '@/composable';
 import { useFormValidation } from '@/composable/form-validator';
+import { getCurrencyDecimals } from '@/js/helpers/currency-decimals';
 import * as validators from '@/js/helpers/validators';
 import { trackAnalyticsEvent } from '@/lib/posthog';
 import { useCurrenciesStore } from '@/stores';
@@ -62,6 +63,8 @@ const form = reactive<{
   creditLimit: 0,
   logo: null,
 });
+
+const amountDecimals = computed(() => getCurrencyDecimals({ code: form.currencyCode }));
 
 const { isFormValid, touchField, getFieldErrorMessage } = useFormValidation(
   { form },
@@ -182,6 +185,7 @@ const submit = async () => {
     <input-field
       v-model="form.initialBalance"
       type="number"
+      :decimals="amountDecimals"
       :label="$t('forms.createAccount.initialBalanceLabel')"
       :placeholder="$t('forms.createAccount.initialBalancePlaceholder')"
     >
@@ -210,6 +214,7 @@ const submit = async () => {
     <input-field
       v-model="form.creditLimit"
       type="number"
+      :decimals="amountDecimals"
       :label="$t('forms.createAccount.creditLimitLabel')"
       :placeholder="$t('forms.createAccount.creditLimitPlaceholder')"
     />

@@ -8,9 +8,9 @@ import { AccountModel } from '@bt/shared/types';
  */
 export interface BalanceAccount {
   currentBalance: number;
-  refCurrentBalance: number;
+  refCurrentBalance: number | null;
   creditLimit: number;
-  refCreditLimit: number;
+  refCreditLimit: number | null;
   currencyCode: string;
 }
 

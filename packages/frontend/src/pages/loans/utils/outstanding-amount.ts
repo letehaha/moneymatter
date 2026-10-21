@@ -3,6 +3,7 @@
  * liability convention (negative while debt is owed), so only a negative value
  * represents debt: `-200 → 200`. A zero or positive balance carries no debt and
  * contributes `0` — unlike `Math.abs`, which would misread a positive (credit)
- * balance as outstanding debt.
+ * balance as outstanding debt. A missing balance (`null`) carries no known debt.
  */
-export const outstandingAmount = ({ balance }: { balance: number }): number => Math.max(0, -balance);
+export const outstandingAmount = ({ balance }: { balance: number | null }): number =>
+  balance === null ? 0 : Math.max(0, -balance);

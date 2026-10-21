@@ -11,7 +11,7 @@ import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-
  * both `createOppositeTransaction` and `updateTransaction` delegate here.
  * SELECT ... FOR UPDATE on the loan account row: concurrent payment writes
  * would otherwise each read the same pre-payment balance and jointly overpay.
- * Loan balances are negative cents (liability); income legs add toward zero,
+ * Loan balances are negative (liability); income legs add toward zero,
  * so a positive projected balance means overpay and the write is rejected.
  */
 export const assertLoanPaymentAllowed = async ({
@@ -77,7 +77,7 @@ export const assertLoanPaymentAllowed = async ({
     rawProjectedBalance = rawProjectedBalance.subtract(currentLegAmount);
   }
   const { overpaysBy } = projectLoanOverpay({ projectedBalance: rawProjectedBalance });
-  if (overpaysBy.toCents() > 0) {
+  if (overpaysBy.isPositive()) {
     throw new ValidationError({
       message: t({ key: 'transactions.loanPaymentOverpay' }),
     });

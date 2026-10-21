@@ -5,6 +5,7 @@ import {
   CurrencyOptionValue,
   TRANSACTION_TYPES,
   TagOptionValue,
+  type RecordId,
   TransactionTypeOptionValue,
   asDecimal,
 } from '@bt/shared/types';
@@ -58,16 +59,16 @@ describe('Detect Duplicates endpoint', () => {
       const firstRow = result.validRows[0];
       expect(firstRow?.date).toBe('2024-01-15T12:00:00.000Z');
       expect(firstRow?.date.split('T')[0]).toBe('2024-01-15');
-      expect(firstRow?.amount).toBe(10050); // 100.50 * 100 = 10050 cents
+      expect(firstRow?.amount).toBe(100.5);
       expect(firstRow?.description).toBe('Grocery shopping');
       expect(firstRow?.categoryName).toBe('Food');
       expect(firstRow?.accountName).toBe('Main Account');
       expect(firstRow?.currencyCode).toBe('USD');
       expect(firstRow?.transactionType).toBe('expense');
 
-      // Amounts are stored as absolute cents, sign carried by transactionType.
-      expect(result.validRows.find((r) => r.description === 'Coffee shop')?.amount).toBe(5000);
-      expect(result.validRows.find((r) => r.description === 'Salary')?.amount).toBe(250000);
+      // Amounts are absolute decimals, sign carried by transactionType.
+      expect(result.validRows.find((r) => r.description === 'Coffee shop')?.amount).toBe(50);
+      expect(result.validRows.find((r) => r.description === 'Salary')?.amount).toBe(2500);
     });
 
     it('should identify invalid rows with errors', async () => {
@@ -389,8 +390,76 @@ describe('Detect Duplicates endpoint', () => {
       expect(duplicate).toHaveProperty('existingTransaction');
       expect(duplicate).toHaveProperty('matchType');
       expect(duplicate).toHaveProperty('confidence');
-      expect(duplicate?.existingTransaction.amount).toBe(10050);
+      expect(duplicate?.existingTransaction.amount).toBe(100.5);
       expect(duplicate?.importedTransaction.date.split('T')[0]).toBe('2024-01-15');
+    });
+  });
+
+  describe('amounts at the account currency decimals', () => {
+    const HEADERS = 'Date,Amount,Description,Category,Account,Currency,Type';
+
+    const detectRowAgainst = async ({
+      account,
+      amount,
+    }: {
+      account: { id: string; currencyCode: string };
+      amount: string;
+    }) =>
+      helpers.detectDuplicates({
+        payload: {
+          fileContent: `${HEADERS}\n2024-01-15,${amount},Row,,Acc,${account.currencyCode},expense`,
+          delimiter: ',',
+          columnMapping: buildColumnMapping(),
+          accountMapping: { Acc: { action: 'link-existing', accountId: account.id } },
+          categoryMapping: {},
+        },
+        raw: true,
+      });
+
+    const createExpense = ({ accountId, amount }: { accountId: RecordId; amount: number }) =>
+      helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId,
+          amount,
+          transactionType: TRANSACTION_TYPES.expense,
+          time: new Date('2024-01-15').toISOString(),
+        }),
+        raw: true,
+      });
+
+    const createKwdAccount = async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['KWD'], raw: true });
+      return helpers.createAccount({ payload: helpers.buildAccountPayload({ currencyCode: 'KWD' }), raw: true });
+    };
+
+    it('returns every parsed digit and does not flag a KWD 1.234 against an existing 1.231', async () => {
+      const account = await createKwdAccount();
+      await createExpense({ accountId: account.id, amount: 1.231 });
+
+      const result = await detectRowAgainst({ account, amount: '1.234' });
+
+      expect(result.validRows[0]?.amount).toBe(1.234);
+      expect(result.duplicates).toHaveLength(0);
+    });
+
+    it('flags a KWD 1.234 against an existing 1.234 and reports the existing amount in decimals', async () => {
+      const account = await createKwdAccount();
+      await createExpense({ accountId: account.id, amount: 1.234 });
+
+      const result = await detectRowAgainst({ account, amount: '1.234' });
+
+      expect(result.duplicates).toHaveLength(1);
+      expect(result.duplicates[0]?.existingTransaction.amount).toBe(1.234);
+    });
+
+    it('rounds the row to the account decimals before keying it', async () => {
+      const kwdAccount = await createKwdAccount();
+      const baseAccount = await helpers.createAccount({ raw: true });
+      await createExpense({ accountId: kwdAccount.id, amount: 1.235 });
+      await createExpense({ accountId: baseAccount.id, amount: 12.35 });
+
+      expect((await detectRowAgainst({ account: kwdAccount, amount: '1.2345' })).duplicates).toHaveLength(1);
+      expect((await detectRowAgainst({ account: baseAccount, amount: '12.345' })).duplicates).toHaveLength(1);
     });
   });
 

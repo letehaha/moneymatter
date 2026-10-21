@@ -33,7 +33,7 @@ type SubscriptionCategory = Pick<Categories, 'id' | 'name' | 'color' | 'icon'>;
 
 /**
  * Subscription scalar columns plus its trimmed account/category associations.
- * `expectedAmount` is a cents-backed Money on the model but is surfaced here as a
+ * `expectedAmount` is a Money on the model but is surfaced here as a
  * decimal number, so it is re-typed rather than picked from the model.
  */
 interface SubscriptionBase extends Pick<
@@ -120,9 +120,9 @@ interface SubscriptionLinkedTransaction extends Omit<
   'amount' | 'refAmount' | 'commissionRate' | 'refCommissionRate' | 'cashbackAmount'
 > {
   amount: number;
-  refAmount: number;
+  refAmount: number | null;
   commissionRate: number;
-  refCommissionRate: number;
+  refCommissionRate: number | null;
   cashbackAmount: number;
   SubscriptionTransactions: Pick<SubscriptionTransactions, 'matchSource' | 'matchedAt' | 'status'>;
 }
@@ -342,9 +342,9 @@ export const getSubscriptionById = async ({
   const transactions: SubscriptionLinkedTransaction[] = (raw.transactions ?? []).map((tx) => ({
     ...tx,
     amount: tx.amount.toNumber(),
-    refAmount: tx.refAmount.toNumber(),
+    refAmount: tx.refAmount?.toNumber() ?? null,
     commissionRate: tx.commissionRate.toNumber(),
-    refCommissionRate: tx.refCommissionRate.toNumber(),
+    refCommissionRate: tx.refCommissionRate?.toNumber() ?? null,
     cashbackAmount: tx.cashbackAmount.toNumber(),
   }));
 

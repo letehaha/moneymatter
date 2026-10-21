@@ -1,39 +1,12 @@
-import { TRACKER_STATUSES, TRACKER_TYPES } from '@bt/shared/types';
-import { dateBound, decimalMoney, recordArrayIds, withDateOrder } from '@common/lib/zod/custom-types';
-import { logoFieldsShape, logoImageSchema, refineLogoFieldsOnCreate } from '@controllers/common/logo-fields.schema';
+import { TRACKER_STATUSES } from '@bt/shared/types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { serializeTracker } from '@root/serializers';
 import * as trackersService from '@root/services/trackers/create-tracker';
 import { z } from 'zod';
 
-import { smartTrackingFieldsShape } from './smart-tracking-fields.schema';
+import { createTrackerBodySchema } from './shared-schemas';
 
-const schema = z.object({
-  body: withDateOrder(
-    z
-      .object({
-        name: z.string().min(1, 'Name is required').max(200, 'The name must not exceed 200 characters').trim(),
-        type: z.nativeEnum(TRACKER_TYPES).optional().default(TRACKER_TYPES.manual),
-        categoryIds: recordArrayIds().optional(),
-        startDate: dateBound({ precision: 'datetime' }).nullable().optional(),
-        endDate: dateBound({ precision: 'datetime' }).nullable().optional(),
-        autoInclude: z.boolean().optional().default(false),
-        limitAmount: decimalMoney()
-          .refine((m) => m.isPositive(), { message: 'Limit amount must be positive' })
-          .nullable()
-          .optional(),
-        ...logoFieldsShape,
-        logoImage: logoImageSchema,
-        ...smartTrackingFieldsShape,
-      })
-      .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx }))
-      .refine((data) => data.type !== TRACKER_TYPES.category || (data.categoryIds && data.categoryIds.length > 0), {
-        message: 'Category trackers require at least one category',
-        path: ['categoryIds'],
-      }),
-    ['startDate', 'endDate'],
-  ),
-});
+const schema = z.object({ body: createTrackerBodySchema });
 
 export default createController(schema, async ({ user, body }) => {
   const { id: userId } = user;

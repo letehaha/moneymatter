@@ -520,6 +520,26 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
     }, 30000);
   });
 
+  describe('Chat history', () => {
+    it('leaves chat threads out of the archive and deletes them on restore', async () => {
+      const thread = await helpers.createChatThread({ title: 'Not backed up', raw: true });
+      await helpers.updateChatThread({ threadId: thread.id, payload: { pinned: true } });
+      const unpinned = await helpers.createChatThread({ title: 'Also gone', raw: true });
+      const exported = await exportArchive();
+      const archive = helpers.parseBackupArchive({ buffer: exported.buffer });
+      expect([...archive.files.keys()].filter((path) => path.toLowerCase().includes('chat'))).toEqual([]);
+
+      const restore = await helpers.restoreBackup({ fileContent: exported.base64 });
+      expect(restore.statusCode).toBe(200);
+      const status = await helpers.waitForRestore({ jobId: restore.jobId! });
+      expect(status.status).toBe('completed');
+
+      expect((await helpers.listChatThreads({ raw: true })).threads).toEqual([]);
+      expect((await helpers.getChatThread({ threadId: thread.id })).statusCode).toBe(404);
+      expect((await helpers.getChatThread({ threadId: unpinned.id })).statusCode).toBe(404);
+    }, 60_000);
+  });
+
   describe('Cross-user restore', () => {
     it('re-owns every restored row under the target user, leaving nothing under the source', async () => {
       const { accountA, accountB, tx } = await seedBasicData();

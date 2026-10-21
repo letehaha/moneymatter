@@ -20,6 +20,8 @@ import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { Drawer, DrawerContent, DrawerTitle } from '@/components/lib/ui/drawer';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable';
+import { budgetPeriodToChatPeriod } from '@/composable/chat/budget-period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { isResourceMissingError } from '@/js/errors';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes/constants';
@@ -149,6 +151,9 @@ const selectedPeriodId = computed(() => {
 });
 
 const selectedPeriod = computed(() => periods.value?.find((period) => period.id === selectedPeriodId.value));
+
+// The plan is the route's entity; the chat also sees the period on screen.
+provideChatPageContext(() => (selectedPeriod.value ? { period: budgetPeriodToChatPeriod(selectedPeriod.value) } : {}));
 
 const previousPeriod = computed(() => {
   const list = periods.value ?? [];

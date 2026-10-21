@@ -14,8 +14,10 @@ import Transactions from '@models/transactions.model';
 import { redisClient } from '@root/redis-client';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
 import { buildLockKey } from '@services/currencies/base-currency-lock';
+import { exchangeRateProviderRegistry } from '@services/exchange-rates/providers';
 import * as userExchangeRateService from '@services/user-exchange-rate';
 import * as helpers from '@tests/helpers';
+import cc from 'currency-codes';
 
 describe('Change Base Currency', () => {
   beforeEach(async () => {
@@ -40,6 +42,24 @@ describe('Change Base Currency', () => {
       // may be left behind — otherwise the user would be blocked by a phantom change.
       const lock = await redisClient.get(buildLockKey(userId));
       expect(lock).toBeNull();
+    });
+
+    it('rejects an ISO code without historical rate coverage with the supported list, and takes no lock', async () => {
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+      const unsupportedCode = cc
+        .codes()
+        .find((code) => !exchangeRateProviderRegistry.isCurrencySupportedForHistoricalData(code));
+      expect(unsupportedCode).toBeDefined();
+      const supportedCurrencies = exchangeRateProviderRegistry.getSupportedCurrenciesForHistoricalData();
+      expect(supportedCurrencies.length).toBeGreaterThan(0);
+
+      const res = await helpers.changeBaseCurrency({ newCurrencyCode: unsupportedCode! });
+
+      expect(res.statusCode).toEqual(ERROR_CODES.ValidationError);
+      const { message } = (res as unknown as { body: { response: { message: string } } }).body.response;
+      expect(message).toContain(unsupportedCode);
+      expect(message).toContain(supportedCurrencies.join(', '));
+      expect(await redisClient.get(buildLockKey(userId))).toBeNull();
     });
 
     it('recalculates transactions, accounts and balance history while preserving nominal values', async () => {
@@ -423,6 +443,8 @@ describe('Change Base Currency', () => {
 
       // Validate UAH transaction calculation using the actual service function
       const expectedUahRefAmount = calculateRefAmountFromParams({
+        baseDecimals: 2,
+        quoteDecimals: 2,
         amount: Money.fromCents(Number(sampleUahTx.amount)),
         rate: uahExchangeRate.rate,
       });
@@ -430,6 +452,8 @@ describe('Change Base Currency', () => {
 
       // Validate EUR transaction calculation using the actual service function
       const expectedEurRefAmount = calculateRefAmountFromParams({
+        baseDecimals: 2,
+        quoteDecimals: 2,
         amount: Money.fromCents(Number(sampleEurTx.amount)),
         rate: eurExchangeRate.rate,
       });

@@ -1,3 +1,4 @@
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { NotFoundError } from '@js/errors';
 import { logger } from '@js/utils';
@@ -22,7 +23,7 @@ interface RefreshSingleParams {
 
 interface RefreshSingleResult {
   value: Money;
-  refValue: Money;
+  refValue: Money | null;
   refreshed: boolean;
 }
 
@@ -80,14 +81,19 @@ const refreshVehicleValueIfStaleImpl = async ({
   const anchorDateString = hasAnchor ? vehicle.valueAnchorDate! : vehicle.purchaseDate;
   const anchorDate = parseISO(anchorDateString);
 
-  const newValue = computeVehicleValue({
-    anchorValue,
-    anchorDate,
-    asOf: now,
-    vehicleClass: vehicle.vehicleClass,
-    preset: vehicle.depreciationPreset,
-    customAnnualRatePct: vehicle.customAnnualRatePct ? Number(vehicle.customAnnualRatePct) : null,
-    salvageFloorPct: Number(vehicle.salvageFloorPct),
+  const newValue = await roundToCurrency({
+    money: computeVehicleValue({
+      anchorValue,
+      anchorDate,
+      asOf: now,
+      vehicleClass: vehicle.vehicleClass,
+      preset: vehicle.depreciationPreset,
+      customAnnualRatePct: vehicle.customAnnualRatePct ? Number(vehicle.customAnnualRatePct) : null,
+      salvageFloorPct: Number(vehicle.salvageFloorPct),
+    }),
+    userId: vehicle.userId,
+    currencyCode: account.currencyCode,
+    mode: 'half-up',
   });
 
   const newRefValue = await calculateRefAmount({

@@ -20,6 +20,10 @@ import BudgetPlanAccountsModel from './budget-plan-accounts.model';
 import BudgetPlansModel from './budget-plans.model';
 import CategoriesModel from './categories.model';
 import CategoryTagsModel from './category-tags.model';
+import ChatAttachmentsModel from './chat-attachments.model';
+import ChatMessagesModel from './chat-messages.model';
+import ChatProposalsModel from './chat-proposals.model';
+import ChatThreadsModel from './chat-threads.model';
 import { connection } from './connection';
 import CurrenciesModel from './currencies.model';
 import ExchangeRatesModel from './exchange-rates.model';
@@ -80,11 +84,12 @@ import VentureEventLinksModel from './venture/venture-event-links.model';
 import VentureEventsModel from './venture/venture-events.model';
 import VenturePlatformsModel from './venture/venture-platforms.model';
 
-// node-postgres returns BIGINT as string to preserve precision. Our cents
-// columns are BIGINT, but cent values stay far below JS Number's safe 2^53
-// ceiling (~$90T). Parse to Number so model getters, hooks, raw queries, and
-// API serializers all see numbers uniformly. pg only invokes the parser for
-// non-null values, so we don't need a null branch.
+// node-postgres returns BIGINT as string to preserve precision. The BIGINT values
+// we read are counts (`COUNT(*)`), ids and sizes, which stay far below JS Number's
+// safe 2^53 ceiling. Parse to Number so model getters, hooks, raw queries, and
+// API serializers all see numbers uniformly. Money lives in DECIMAL columns, which
+// pg keeps as exact strings. pg only invokes the parser for non-null values, so we
+// don't need a null branch.
 pgTypes.setTypeParser(pgTypes.builtins.INT8, (val) => Number(val));
 
 const DBConfig: Record<string, unknown> = {
@@ -173,6 +178,10 @@ const models = [
   BudgetPeriodsModel,
   BudgetAssignmentsModel,
   BudgetPlanAccountsModel,
+  ChatThreadsModel,
+  ChatMessagesModel,
+  ChatProposalsModel,
+  ChatAttachmentsModel,
 ];
 
 const sequelize = new Sequelize({

@@ -68,6 +68,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { randomId } from '@/common/utils/random-id';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { useNotificationCenter } from '@/components/notification-center';
@@ -127,6 +129,7 @@ const getDefaultPeriod = (): Period => ({
 // only ever applied when the user explicitly picks it from the Views menu.
 const persisted = ref<PivotPersistedConfig>(createDefaultConfig());
 const period = ref<Period>(getDefaultPeriod());
+provideChatPageContext(() => buildPeriodChatContext({ period: period.value }));
 
 const liveConfig = computed(() => ({
   rowDimension: persisted.value.rowDimension,

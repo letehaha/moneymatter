@@ -3,6 +3,7 @@
  * Uses CSV format to minimize output tokens
  * Supports PDF, CSV, and TXT input files
  */
+import { normalizeCurrencyCode } from '@common/lib/currency-code-format';
 import { logger } from '@js/utils';
 import { parseDecimalAmount } from '@services/import-export/core/parse/parse-decimal-amount';
 import cc from 'currency-codes';
@@ -77,6 +78,27 @@ becomes one line that keeps the amount and drops what does not map:
   2025-03-04 12:49:08,Groceries,Fresh Market,1115.00,E,,90,,,
 Never emit a line that carries the source's separator or loses the amount, like:
   2025-03-04 12:49:08,Groceries|Card|Fresh Market,E,,90,,,`;
+
+/**
+ * The system prompt for one user. A user who defines custom currencies (USDT, BTC, ...) gets them
+ * named, so the model writes those codes as the statement shows them instead of rewording them
+ * into an ISO code.
+ */
+export function buildStatementExtractionSystemPrompt({
+  customCurrencyCodes = [],
+}: {
+  customCurrencyCodes?: readonly string[];
+} = {}): string {
+  if (customCurrencyCodes.length === 0) return STATEMENT_EXTRACTION_SYSTEM_PROMPT;
+
+  return `${STATEMENT_EXTRACTION_SYSTEM_PROMPT}
+
+CUSTOM CURRENCIES:
+Besides ISO 4217 codes, this user also tracks these currencies: ${customCurrencyCodes.join(', ')}.
+When the statement shows an amount in one of them, write that exact code in currencyCode and
+originalCurrency. Never replace it with a similar ISO code, and never invent a code that is neither
+an ISO 4217 code nor on this list.`;
+}
 
 /**
  * User prompt template for text-based extraction
@@ -216,14 +238,26 @@ function readTransactionFields({ fields }: { fields: string[] }): TransactionFie
   };
 }
 
-function readOriginalAmount({ amountStr, currencyStr }: { amountStr: string; currencyStr: string }): {
+function readOriginalAmount({
+  amountStr,
+  currencyStr,
+  customCurrencyCodes,
+}: {
+  amountStr: string;
+  currencyStr: string;
+  customCurrencyCodes: ReadonlySet<string>;
+}): {
   originalAmount?: number;
   originalCurrencyCode?: string;
 } {
   const originalAmount = parseDecimalAmount({ raw: amountStr });
-  const originalCurrencyCode = currencyStr.toUpperCase();
+  const originalCurrencyCode = normalizeCurrencyCode(currencyStr);
 
-  if (originalAmount === null || originalAmount <= 0 || cc.code(originalCurrencyCode) === undefined) return {};
+  // The model must name an ISO 4217 code or one of the user's own custom codes; anything else is
+  // a guess, and the pair is dropped.
+  const isKnownCode = cc.code(originalCurrencyCode) !== undefined || customCurrencyCodes.has(originalCurrencyCode);
+
+  if (originalAmount === null || originalAmount <= 0 || !isKnownCode) return {};
 
   return { originalAmount, originalCurrencyCode };
 }
@@ -284,7 +318,14 @@ function parseCSVLine({ line }: { line: string }): string[] {
 /**
  * Parse CSV response from AI into structured output
  */
-export function parseAIResponse({ response }: { response: string }): AIExtractionOutput | null {
+export function parseAIResponse({
+  response,
+  customCurrencyCodes = [],
+}: {
+  response: string;
+  /** Codes of the user's own custom currencies, accepted alongside ISO 4217 as an original currency. */
+  customCurrencyCodes?: readonly string[];
+}): AIExtractionOutput | null {
   try {
     // Clean up response - remove any markdown code blocks
     let csvContent = response.trim();
@@ -325,6 +366,7 @@ export function parseAIResponse({ response }: { response: string }): AIExtractio
 
     // Parse transactions (remaining lines)
     const transactions: AIExtractionOutput['transactions'] = [];
+    const customCodeSet = new Set(customCurrencyCodes.map(normalizeCurrencyCode));
     // Counted per reason rather than logged per row, because a big statement from a bad
     // model drops hundreds of rows and a line each would flood the log.
     const droppedByReason = { tooFewColumns: 0, unreadableDate: 0, unusableAmount: 0 };
@@ -375,7 +417,11 @@ export function parseAIResponse({ response }: { response: string }): AIExtractio
         type,
         balance: balance ?? undefined,
         confidence,
-        ...readOriginalAmount({ amountStr: originalAmountStr, currencyStr: originalCurrencyStr }),
+        ...readOriginalAmount({
+          amountStr: originalAmountStr,
+          currencyStr: originalCurrencyStr,
+          customCurrencyCodes: customCodeSet,
+        }),
         externalReference: referenceStr.slice(0, EXTERNAL_REFERENCE_MAX_LENGTH) || undefined,
       });
     }

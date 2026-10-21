@@ -4,7 +4,7 @@ import {
   RemindBeforePreset,
   SUBSCRIPTION_PERIOD_STATUSES,
 } from '@bt/shared/types';
-import { centsToApiDecimalOrNull } from '@common/types/money';
+import { moneyToApiDecimalOrNull } from '@common/types/money';
 import { logger } from '@js/utils/logger';
 import SubscriptionPeriodNotifications from '@models/subscription-period-notifications.model';
 import SubscriptionPeriods from '@models/subscription-periods.model';
@@ -134,7 +134,7 @@ async function sendRemindBeforeNotifications({ today }: { today: string }): Prom
           if (existing && (existing.emailSent || !subscription.notifyEmail)) continue;
 
           // expectedAmount on the model is raw cents (BIGINT).
-          const expectedDecimal = centsToApiDecimalOrNull(subscription.expectedAmount);
+          const expectedDecimal = moneyToApiDecimalOrNull(subscription.expectedAmount);
 
           // Claim the slot BEFORE firing the in-app notification or queuing the
           // email. Writing the row first guarantees a later failure can't make the

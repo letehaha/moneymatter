@@ -46,9 +46,13 @@ import CurrencyListRow from './currency-list-row.vue';
 import { buildCurrencyUsageMap } from './currency-usage';
 import { CurrencyWithExchangeRate } from './types';
 
+const RATE_DIGITS = 4;
+const CUSTOM_RATE_DIGITS = 12;
+
 const currenciesStore = useCurrenciesStore();
 const accountsStore = useAccountsStore();
-const { currencies } = storeToRefs(currenciesStore);
+const { currencies, baseCurrency } = storeToRefs(currenciesStore);
+const baseCurrencyCode = computed(() => baseCurrency.value?.currency?.code ?? '');
 const { accounts } = storeToRefs(accountsStore);
 
 const { data: rates } = useQuery({
@@ -66,13 +70,18 @@ const currenciesList = computed<CurrencyWithExchangeRate[]>(() =>
   currencies.value
     .map((item) => {
       const rate = (rates.value ?? []).find((i) => i.baseCode === item.currency?.code);
-      const quoteRate = Number(Number(1 / Number(rate?.rate)).toFixed(4));
+      const isCustomCurrency = Boolean(item.currency?.isCustom);
+      // A custom currency has no market rate, so the rate the user sets is the only one there is.
+      // High precision keeps small rates (a coin worth cents) from rounding to nothing.
+      const digits = isCustomCurrency ? CUSTOM_RATE_DIGITS : RATE_DIGITS;
+      const quoteRate = Number(Number(1 / Number(rate?.rate)).toFixed(digits));
 
       return {
         ...item,
-        rate: Number(rate?.rate?.toFixed(4)),
+        rate: Number(rate?.rate?.toFixed(digits)),
         custom: rate?.custom ?? false,
-        quoteCode: rate?.quoteCode ?? '',
+        // Without a rate yet, the form quotes the custom currency against the base currency.
+        quoteCode: rate?.quoteCode ?? (isCustomCurrency ? baseCurrencyCode.value : ''),
         quoteRate,
       };
     })

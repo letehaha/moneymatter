@@ -13,6 +13,7 @@ import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import TransactionAttachments from '@models/transaction-attachments.model';
 import { redisClient } from '@root/redis-client';
+import { runAfterCommit } from '@services/common/with-transaction';
 import { getTransactionById } from '@services/transactions/get-by-id';
 import { createHash, randomBytes } from 'node:crypto';
 import type { Readable } from 'node:stream';
@@ -37,7 +38,7 @@ export const detectMimeType = ({ bytes }: { bytes: Buffer }): AttachmentMimeType
   return null;
 };
 
-const sanitizeFilename = ({ filename }: { filename: string }): string => {
+export const sanitizeFilename = ({ filename }: { filename: string }): string => {
   const cleaned = filename
     .replace(/[/\\]/g, '_')
     // eslint-disable-next-line no-control-regex
@@ -205,7 +206,11 @@ export const deleteAttachment = async ({ userId, id }: { userId: number; id: str
   const key = storageKey({ userId: attachment.userId, id: attachment.id });
 
   await attachment.destroy();
-  await deleteObject({ key }).catch((error) => {
-    logger.error(error as Error, { context: 'failed to remove attachment blob after deleting its row' });
+  // Inside a transaction (a chat approval) the row comes back on a rollback, so its file must outlive it.
+  await runAfterCommit({
+    fn: () =>
+      deleteObject({ key }).catch((error) => {
+        logger.error(error as Error, { context: 'failed to remove attachment blob after deleting its row' });
+      }),
   });
 };

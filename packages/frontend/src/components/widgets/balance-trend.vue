@@ -648,7 +648,10 @@ const projection = computed<BalanceProjection | null>(() => {
   const lastChartPoint = chartData.value[chartData.value.length - 1];
   if (!lastChartPoint) return null;
 
-  const scopedPlans = pendingPlans.value.filter((tx) => projectionAccountIds.value.has(tx.accountId));
+  // A plan with no base-currency amount (custom currency, no rate yet) cannot move the base-currency line.
+  const scopedPlans = pendingPlans.value.flatMap((tx) =>
+    projectionAccountIds.value.has(tx.accountId) && tx.refAmount !== null ? [{ ...tx, refAmount: tx.refAmount }] : [],
+  );
   if (scopedPlans.length === 0) return null;
 
   return buildBalanceProjection({
@@ -713,7 +716,7 @@ const { data: spikeTransactions, isLoading: isSpikeTransactionsLoading } = useQu
       to: dateEnd.toISOString(),
     });
     // Sort by highest refAmount (base currency) so the biggest transactions show first
-    return transactions.sort((a, b) => Math.abs(b.refAmount) - Math.abs(a.refAmount));
+    return transactions.sort((a, b) => Math.abs(b.refAmount ?? 0) - Math.abs(a.refAmount ?? 0));
   },
   enabled: computed(() => selectedSpikeDate.value !== null),
   staleTime: Infinity,

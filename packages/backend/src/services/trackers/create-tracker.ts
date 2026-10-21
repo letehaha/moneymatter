@@ -16,6 +16,7 @@ import { runAfterCommit } from '@services/common/run-after-commit';
 import { withTransaction } from '@services/common/with-transaction';
 import { startFeatureTrial } from '@services/entitlements/start-feature-trial.service';
 import { includeCategories } from '@services/trackers/get-trackers';
+import { roundToBaseCurrency } from '@services/currencies/round-to-base-currency';
 import { Op } from 'sequelize';
 
 import { assertSmartTrackingConfig } from './smart-tracking/assert-smart-tracking-config';
@@ -71,6 +72,9 @@ export const createTracker = withTransaction(async (payload: CreateTrackerPayloa
     },
   });
 
+  // A tracker is denominated in the owner's base currency.
+  const [limitAmount] = await roundToBaseCurrency({ userId: payload.userId, values: [payload.limitAmount] });
+
   const tracker = await Trackers.create({
     name: payload.name,
     userId: payload.userId,
@@ -79,7 +83,7 @@ export const createTracker = withTransaction(async (payload: CreateTrackerPayloa
     startDate: payload.startDate || null,
     endDate: payload.endDate || null,
     autoInclude: payload.autoInclude ?? false,
-    limitAmount: payload.limitAmount ?? null,
+    limitAmount: limitAmount ?? null,
     aiEnabled,
     aiDescription: payload.aiDescription ?? null,
     ...(payload.aiPreWindowDays !== undefined && { aiPreWindowDays: payload.aiPreWindowDays }),

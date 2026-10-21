@@ -296,6 +296,20 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/pages/automations/editor.vue'),
         meta: { navSection: 'transactions', i18nChunks: ['pages/automations'] },
       },
+      // One page for both records: the conversation is read from the `threadId` param, so moving between
+      // threads (or to a new chat) keeps the page and its thread list mounted.
+      {
+        path: '/chat',
+        name: ROUTES_NAMES.chat,
+        component: () => import('@/pages/chat/index.vue'),
+        meta: { navSection: 'chat', i18nChunks: ['pages/chat'] },
+      },
+      {
+        path: '/chat/:threadId',
+        name: ROUTES_NAMES.chatThread,
+        component: () => import('@/pages/chat/index.vue'),
+        meta: { navSection: 'chat', i18nChunks: ['pages/chat'] },
+      },
       {
         path: '/settings',
         name: ROUTES_NAMES.settings,
@@ -481,7 +495,7 @@ const routes: RouteRecordRaw[] = [
             component: () => import('@/pages/settings/subpages/ai/index.vue'),
             redirect: { name: ROUTES_NAMES.settingsAiFeatures },
             // Chunk names match the Crowdin files, so the merged page keeps both.
-            meta: { i18nChunks: ['settings/ai', 'settings/ai-integrations'] },
+            meta: { i18nChunks: ['settings/ai', 'settings/ai-integrations', 'pages/chat'] },
             children: [
               {
                 path: 'features',
@@ -497,6 +511,11 @@ const routes: RouteRecordRaw[] = [
                 path: 'connected-apps',
                 name: ROUTES_NAMES.settingsAiConnectedApps,
                 component: () => import('@/pages/settings/subpages/ai/pages/connected-apps.vue'),
+              },
+              {
+                path: 'chat-applied',
+                name: ROUTES_NAMES.settingsAiChatApplied,
+                component: () => import('@/pages/settings/subpages/ai/pages/chat-applied-changes.vue'),
               },
               { path: 'keys', redirect: { name: ROUTES_NAMES.settingsAiModels } },
               { path: 'endpoints', redirect: { name: ROUTES_NAMES.settingsAiModels } },

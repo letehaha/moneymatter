@@ -4,6 +4,7 @@
  * These types are used by both backend and frontend for real-time event communication.
  */
 import type { BackupRestoreSseProgress } from './backup';
+import type { ChatThreadUpdatedPayload } from './chat';
 import type { BaseCurrencyChangeStatus } from './currencies';
 import type {
   BudgetBakersWalletImportProgress,
@@ -31,6 +32,7 @@ export const SSE_EVENT_TYPES = {
   BACKUP_RESTORE_PROGRESS: 'backup_restore_progress',
   IMPORT_BATCH_DELETE_PROGRESS: 'import_batch_delete_progress',
   STATEMENT_IMPORT_PROGRESS: 'statement_import_progress',
+  CHAT_THREAD_UPDATED: 'chat_thread_updated',
   TRACKER_SCAN_STATUS: 'tracker_scan_status',
 } as const;
 
@@ -137,6 +139,7 @@ export type SSEEventPayload =
   | BackupRestoreSseProgress
   | ImportBatchDeleteProgress
   | StatementImportProgress
+  | ChatThreadUpdatedPayload
   | TrackerScanStatusPayload;
 
 /**
@@ -158,5 +161,6 @@ export interface SSEEventPayloadMap {
   [SSE_EVENT_TYPES.BACKUP_RESTORE_PROGRESS]: BackupRestoreSseProgress;
   [SSE_EVENT_TYPES.IMPORT_BATCH_DELETE_PROGRESS]: ImportBatchDeleteProgress;
   [SSE_EVENT_TYPES.STATEMENT_IMPORT_PROGRESS]: StatementImportProgress;
+  [SSE_EVENT_TYPES.CHAT_THREAD_UPDATED]: ChatThreadUpdatedPayload;
   [SSE_EVENT_TYPES.TRACKER_SCAN_STATUS]: TrackerScanStatusPayload;
 }

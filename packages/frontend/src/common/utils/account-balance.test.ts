@@ -89,4 +89,18 @@ describe('computeAccountDisplayBalances', () => {
       computeAccountDisplayBalances({ ...account, currentBalance: 0, refCurrentBalance: 0, includeCreditLimit: true }),
     ).toEqual({ hasCreditLimitAdjustment: true, displayBalance: -500, displayRefBalance: -1000 });
   });
+  it('counts a base-currency balance that has no rate yet as nothing, in both modes', () => {
+    const unvalued = { ...account, refCurrentBalance: null, refCreditLimit: null };
+
+    expect(computeAccountDisplayBalances({ ...unvalued, includeCreditLimit: false })).toEqual({
+      hasCreditLimitAdjustment: false,
+      displayBalance: 200,
+      displayRefBalance: 0,
+    });
+    expect(computeAccountDisplayBalances({ ...unvalued, includeCreditLimit: true })).toEqual({
+      hasCreditLimitAdjustment: true,
+      displayBalance: -300,
+      displayRefBalance: 0,
+    });
+  });
 });

@@ -46,6 +46,7 @@ const I18N_CHUNKS = [
   'pages/shared-with-me',
   'pages/household',
   'pages/payees',
+  'pages/chat',
   // Settings subpages
   'settings/index',
   'settings/categories',

@@ -2,11 +2,13 @@ import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES, isTwoLeg
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { deserializeCreateTransaction, serializeTransactionTuple } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 import {
   nonNegativeAmountSchema,
+  payeeIdSchema,
   positiveAmountSchema,
   splitSchema,
   transactionDetailFieldsSchema,
@@ -33,7 +35,7 @@ const schema = z.object({
       refundForSplitId: recordId().optional(),
       splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').optional(),
       tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').optional(),
-      payeeId: recordId().nullable().optional(),
+      payeeId: payeeIdSchema(),
       payeeLocked: z.boolean().optional(),
       isPlanned: z.boolean().optional().default(false),
       applyAutomations: z.boolean().optional().default(false),
@@ -162,6 +164,7 @@ export default createController(schema, async ({ user, body }) => {
   // 1. Amount and destinationAmount with same currency should be equal
 
   const transactions = await transactionsService.createTransaction(params);
+  await attachTransactionCurrencyMeta({ transactions });
 
   // Serialize: convert cents to decimal for API response
   // createTransaction returns [baseTx, oppositeTx?] tuple

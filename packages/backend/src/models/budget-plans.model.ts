@@ -5,6 +5,7 @@ import {
   BudgetPlanTypeKey,
   RecordId,
 } from '@bt/shared/types';
+import { CURRENCY_CODE_MAX_LENGTH } from '@common/lib/currency-code-columns';
 import { IdColumn } from '@common/types/id-column';
 import { Money } from '@common/types/money';
 import { MoneyField } from '@common/types/money-column';
@@ -40,8 +41,8 @@ export default class BudgetPlans
   @Column({ type: DataType.STRING(50), allowNull: false })
   type!: BudgetPlanTypeKey;
 
-  /** Base currency at creation; assigned amounts are cents in it. */
-  @Column({ type: DataType.STRING(3), allowNull: false })
+  /** Base currency at creation; assigned amounts are in it. */
+  @Column({ type: DataType.STRING(CURRENCY_CODE_MAX_LENGTH), allowNull: false })
   currencyCode!: string;
 
   @Column({ type: DataType.STRING(20), allowNull: false })
@@ -74,7 +75,7 @@ export default class BudgetPlans
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   zeroSum!: boolean;
 
-  @MoneyField({ storage: 'cents', allowNull: true })
+  @MoneyField({ storage: 'decimal', precision: 36, scale: 18, allowNull: true })
   declare expectedIncome: Money | null;
 
   declare createdAt: Date;

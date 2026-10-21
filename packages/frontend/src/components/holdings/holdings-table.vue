@@ -7,6 +7,7 @@ import { Button } from '@/components/lib/ui/button';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { useDeleteHolding } from '@/composable/data-queries/holdings';
 import { useFormatCurrency } from '@/composable/formatters';
 import { getGainColorClass } from '@/composable/gain-color';
@@ -72,6 +73,13 @@ const { addSuccessNotification, addErrorNotification } = useNotificationCenter()
 
 const isTransactionModalOpen = ref(false);
 const selectedHolding = ref<HoldingModel | null>(null);
+
+// While a holding's dialog is open, "this" in the chat means that holding (its id is the security's).
+provideChatPageContext(() =>
+  isTransactionModalOpen.value && selectedHolding.value
+    ? { focus: { kind: 'holding', id: selectedHolding.value.securityId } }
+    : {},
+);
 
 const openTransactionModal = (holding: HoldingModel | null = null) => {
   selectedHolding.value = holding;

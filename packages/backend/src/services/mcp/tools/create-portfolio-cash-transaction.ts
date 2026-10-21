@@ -1,17 +1,17 @@
-import { currencyCode, dateString, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
+import { dateString, isoCurrencyCode, positiveAmountString, recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { directCashTransaction } from '@services/investments/portfolios/transfers';
 import { z } from 'zod';
 
 import { slimPortfolioTransferForMcp } from '../serializers';
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   portfolioId: recordId().describe('Portfolio ID (from get_portfolios)'),
   type: z.enum(['deposit', 'withdrawal']).describe('deposit adds cash to the portfolio, withdrawal removes it'),
   amount: positiveAmountString().describe('Amount as a positive decimal string (e.g. "500.00")'),
-  currencyCode: currencyCode().describe('Currency of the cash (ISO 4217, e.g. "USD")'),
+  currencyCode: isoCurrencyCode().describe('Currency of the cash (ISO 4217, e.g. "USD")'),
   date: dateString().describe('Date in YYYY-MM-DD format'),
   description: z.string().optional().describe('Optional note'),
   isAdjustment: z
@@ -33,6 +33,7 @@ export function registerCreatePortfolioCashTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_portfolio_cash_transaction', clientId: extra.authInfo?.clientId });
 
       const transfer = await directCashTransaction({

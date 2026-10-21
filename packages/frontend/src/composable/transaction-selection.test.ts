@@ -331,9 +331,29 @@ describe('sumSelectedTotals', () => {
   }: {
     id: string;
     transactionType: TRANSACTION_TYPES;
-    refAmount: number;
+    refAmount: number | null;
     transferNature?: TRANSACTION_TRANSFER_NATURE;
   }) => buildTx({ id: id as RecordId, transactionType, refAmount, transferNature });
+
+  it('leaves a row with no base-currency amount out of every figure', () => {
+    const transactions = [
+      buildAmountTx({ id: '1', transactionType: TRANSACTION_TYPES.income, refAmount: 500 }),
+      buildAmountTx({ id: '2', transactionType: TRANSACTION_TYPES.expense, refAmount: null }),
+      buildAmountTx({
+        id: '3',
+        transactionType: TRANSACTION_TYPES.expense,
+        refAmount: null,
+        transferNature: TRANSACTION_TRANSFER_NATURE.common_transfer,
+      }),
+    ];
+
+    expect(sumSelectedTotals({ transactions, selectedIds: new Set(['1', '2', '3']) })).toEqual({
+      income: 500,
+      expense: 0,
+      net: 500,
+      transfers: 0,
+    });
+  });
 
   it('partitions on transactionType and ignores unselected rows', () => {
     const transactions = [

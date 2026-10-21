@@ -6,6 +6,7 @@ import PortfolioBalances from '@models/investments/portfolio-balances.model';
 import Portfolios from '@models/investments/portfolios.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { calculateRefAmountFromParams } from '@services/calculate-ref-amount.service';
+import { INVESTMENT_CONVERSION_DECIMALS } from '@services/calculate-ref-amount.utils';
 import { withTransaction } from '@services/common/with-transaction';
 import { getHoldingValues } from '@services/investments/holdings/get-holding-values.service';
 import * as userExchangeRateService from '@services/user-exchange-rate';
@@ -114,7 +115,9 @@ const getPortfolioSummaryImpl = async ({
   const conversionDate = date || new Date();
   const display = await resolveDisplayCurrency({ userId, portfolio, baseCurrencyCode, date: conversionDate });
   const toDisplay = (amount: Money): string =>
-    calculateRefAmountFromParams({ amount, rate: display.rate }).toNumber().toFixed(2);
+    calculateRefAmountFromParams({ amount, rate: display.rate, ...INVESTMENT_CONVERSION_DECIMALS })
+      .toNumber()
+      .toFixed(2);
 
   // Fetch portfolio cash balances across all currencies
   const balances = await PortfolioBalances.findAll({
@@ -174,7 +177,7 @@ const getPortfolioSummaryImpl = async ({
       }));
       baseRates.set(currencyCode, rate);
     }
-    return calculateRefAmountFromParams({ amount, rate });
+    return calculateRefAmountFromParams({ amount, rate, ...INVESTMENT_CONVERSION_DECIMALS });
   };
 
   for (const holding of holdings) {

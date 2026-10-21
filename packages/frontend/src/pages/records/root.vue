@@ -372,6 +372,8 @@ import { Card } from '@/components/lib/ui/card';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { SCROLL_AREA_IDS } from '@/components/lib/ui/scroll-area/types';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { buildTransactionsChatContext } from '@/composable/chat/transaction-filters-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { isAnyGroupDissolvingFilterActive } from '@/components/records-filters/filter-registry';
 import FiltersDialog from '@/components/records-filters/filters-dialog.vue';
 import FiltersPanel from '@/components/records-filters/index.vue';
@@ -542,6 +544,8 @@ const onSortingChange = (value: TableSorting) => {
 
 const route = useRoute();
 const router = useRouter();
+// The chat sees the list as it is filtered right now.
+provideChatPageContext(() => buildTransactionsChatContext({ filters: appliedFilters.value }));
 const { parseFiltersFromQuery } = useFiltersFromQuery();
 
 const STORED_FILTERS_KEY = 'records:filters';

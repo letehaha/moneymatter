@@ -17,6 +17,7 @@ import { useOnboardingStore } from '@/stores/onboarding';
 import { TRACKER_TYPES } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useI18n } from 'vue-i18n';
 
 import {
@@ -56,6 +57,7 @@ const TRACKER_DEFAULT_VALUES: {
 
 const emits = defineEmits(['create-tracker']);
 const { t } = useI18n();
+const { baseCurrencyDecimals } = useFormatCurrency();
 const { addSuccessNotification } = useNotificationCenter();
 
 const queryClient = useQueryClient();
@@ -224,6 +226,7 @@ const onTrackerTypeChange = (type: TRACKER_TYPES) => {
     <div>
       <InputField
         v-model.number="form.limitAmount"
+        :decimals="baseCurrencyDecimals"
         :label="$t('budgets.creation.limitLabel')"
         :placeholder="$t('budgets.creation.limitPlaceholder')"
       />

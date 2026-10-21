@@ -1,0 +1,87 @@
+---
+title: Custom currencies
+description: Track stablecoins, crypto or any other unit that isn't an ISO currency, choose how many decimals it keeps, and see what happens to amounts that have no exchange rate yet.
+sidebar:
+  order: 11
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A **custom currency** is a currency you define yourself: a stablecoin such as USDT, a crypto asset such as BTC or ETH, loyalty points, or any other unit. Custom currencies work like any other currency in your accounts and transactions. The differences are that you choose how precise they are, and that you tell MoneyMatter where their exchange rate comes from.
+
+Custom currencies are private to your account. Other people never see them, and two people can define the same code differently, for example USDT with 2 decimals for one and 6 for the other.
+
+## How precise amounts are
+
+Every currency keeps its own number of decimals. Amounts are saved exactly as you type them, rounded to that number:
+
+- USD, EUR and most currencies keep 2 decimals.
+- JPY keeps 0, and KWD keeps 3.
+- A custom currency keeps whatever you choose, from 0 to 18. For example, `0.00040641` BTC needs 8 decimals.
+
+An amount with more digits than the currency allows is rounded when you save it. Converted amounts, such as the base amount of a transaction, are rounded to the decimals of the currency they are shown in.
+
+## Add a custom currency
+
+<Steps>
+
+1. Open **Settings**, then **Currencies** under **Workspace**.
+2. Click **Add custom currency**.
+3. Fill in the form:
+   - **Code:** 2 to 16 capital letters or digits, such as `USDT`. A code that is already an ISO currency code (EUR, USD and so on) isn't allowed: add those from **Add a currency** instead. You can't use the same code twice.
+   - **Name:** how the currency is called in the app, such as Tether.
+   - **Symbol (optional):** up to 8 characters, such as ₮.
+   - **Decimals:** a whole number from 0 to 18. The **Example** line shows how an amount will look.
+4. Click **Add currency**.
+
+</Steps>
+
+The currency appears in your list with a **Custom currency** badge, and you can pick it when you create an account or enter an original amount. A new custom currency has no exchange rate yet, so the next thing to do is [choose its rate source](/settings/rate-sources/).
+
+## Edit a custom currency
+
+Expand the currency's row and click **Edit**. You can change the name and the symbol at any time.
+
+The number of **Decimals** can change only while the currency is unused. As soon as an account, a transaction, a template, a subscription or a budget plan of yours uses it, the field is locked, because the saved amounts were rounded to the old number of decimals. Soft-deleted transactions still count, since restoring one brings its amount back. To change the decimals of a currency in use, delete everything that uses it first.
+
+## Delete a custom currency
+
+Expand the row and click **Delete currency**. Like any currency, it can only be deleted when nothing of yours uses it. Deleting a custom currency also removes your rates for it.
+
+## When a currency has no rate
+
+A custom currency has no market rate, so MoneyMatter can't convert it to your base currency until you give it a [rate source](/settings/rate-sources/). That doesn't stop you from using it:
+
+- **The transaction is saved** with the amount you entered, in the custom currency.
+- **The base amount is left empty.** The transaction shows a **No rate** badge, and so does an account balance that can't be converted.
+- **Stats leave the transaction out.** Reports and the dashboard count only transactions that have a base amount, so a row without a rate adds nothing to your totals until it is valued.
+
+As soon as a rate exists for the transaction's date, MoneyMatter values the waiting transactions on its own and the badge goes away. You don't have to edit them. If a rate only starts later than a transaction's date, set a rate with an earlier **Effective from** date to cover it.
+
+<Aside type="note" title="ISO currencies are different">
+An ISO currency always has a market rate, so its transactions are never saved without a base amount. If the rate can't be found, saving fails with an error instead.
+</Aside>
+
+## When the rate changes
+
+Transactions in a custom currency follow their rate source, unlike transactions in ISO currencies:
+
+- **Saving or changing the rate source** values your saved transactions in that currency again, with the rate in force on each transaction's date.
+- **Correcting a manual rate,** removing one, or adding a rate for a past date re-values the transactions on the days it covers.
+- **Adding a rate that starts on a later day** doesn't touch transactions that already have a base amount. It only fills in the ones that were waiting for a rate.
+
+Transactions in ISO currencies keep the base amounts they were saved with, as described in [Base currency and currencies](/settings/base-currency-and-currencies/#what-a-custom-rate-changes).
+
+## Base currency and custom currencies
+
+You can [change your base currency](/settings/base-currency-and-currencies/#change-your-base-currency) while you hold custom currencies. Their rates keep working: MoneyMatter converts from the price the rate is stored in to your new base, the same way it does for any other currency. A custom currency that has no rate stays without base amounts until you add one.
+
+## Backups
+
+A [backup](/settings/security-and-account/#backup-and-restore) includes your custom currency definitions (code, name, symbol and decimals), their rate sources and their rates. The values of the request headers of an [HTTP source](/settings/rate-sources/#http) are never included, because they are secrets. After a restore, open the currency and enter the headers again.
+
+## Related
+
+- [Rate sources](/settings/rate-sources/)
+- [Base currency and currencies](/settings/base-currency-and-currencies/)
+- [How stats are calculated](/stats/how-stats-are-calculated/)

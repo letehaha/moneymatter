@@ -6,8 +6,8 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CategorizationMeta, RecordId, TransactionLocation } from '@bt/shared/types';
-import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
+import type { CategorizationMeta, CurrencyMeta, RecordId, TransactionLocation } from '@bt/shared/types';
+import { Money, moneyToApiDecimal, moneyToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
 import type TransactionSplits from '@models/transaction-splits.model';
@@ -25,7 +25,8 @@ interface TransactionSplitApiResponse {
   id: string;
   categoryId: string;
   amount: number;
-  refAmount: number;
+  /** `null` while a custom currency has no rate on the transaction's date. */
+  refAmount: number | null;
   note: string | null;
   category?: {
     id: string;
@@ -38,9 +39,10 @@ interface TransactionSplitApiResponse {
 export interface TransactionApiResponse {
   id: string;
   amount: number;
-  refAmount: number;
+  /** `null` while a custom currency has no rate on the transaction's date; see `refAmountMissing`. */
+  refAmount: number | null;
   commissionRate: number;
-  refCommissionRate: number;
+  refCommissionRate: number | null;
   cashbackAmount: number;
   originalAmount: number | null;
   originalCurrencyCode: string | null;
@@ -61,8 +63,12 @@ export interface TransactionApiResponse {
   transferId: string | null;
   originalId: string | null;
   refundLinked: boolean;
+  /** `true` while the base-currency amounts could not be computed for a custom currency. */
+  refAmountMissing: boolean;
   /** Present on list reads only. */
   hasAttachments?: boolean;
+  /** Decimals, symbol and kind of the account currency as the account owner defines them. */
+  currencyMeta?: CurrencyMeta;
   isPlanned: boolean;
   /** Set when a bank transaction merged into this row while it was planned. */
   plannedMerge: { mergedAt: string } | null;
@@ -189,8 +195,8 @@ function serializeTransactionSplit(
   return {
     id: split.id,
     categoryId: split.categoryId,
-    amount: centsToApiDecimal(split.amount),
-    refAmount: centsToApiDecimal(split.refAmount),
+    amount: moneyToApiDecimal(split.amount),
+    refAmount: moneyToApiDecimalOrNull(split.refAmount),
     note: split.note,
     ...(split.category && {
       category: {
@@ -218,6 +224,7 @@ export function serializeTransaction(
     transactionGroups?: TransactionGroups[];
     addedBy?: { id: number; username: string; avatar: string | null } | null;
     canEdit?: boolean;
+    currencyMeta?: CurrencyMeta;
   },
 ): TransactionApiResponse {
   // Aliased literal: a plain property on raw rows, dataValues-only on model instances.
@@ -226,12 +233,12 @@ export function serializeTransaction(
 
   return {
     id: tx.id,
-    amount: centsToApiDecimal(tx.amount),
-    refAmount: centsToApiDecimal(tx.refAmount),
-    commissionRate: centsToApiDecimal(tx.commissionRate),
-    refCommissionRate: centsToApiDecimal(tx.refCommissionRate),
-    cashbackAmount: centsToApiDecimal(tx.cashbackAmount),
-    originalAmount: centsToApiDecimalOrNull(tx.originalAmount),
+    amount: moneyToApiDecimal(tx.amount),
+    refAmount: moneyToApiDecimalOrNull(tx.refAmount),
+    commissionRate: moneyToApiDecimal(tx.commissionRate),
+    refCommissionRate: moneyToApiDecimalOrNull(tx.refCommissionRate),
+    cashbackAmount: moneyToApiDecimal(tx.cashbackAmount),
+    originalAmount: moneyToApiDecimalOrNull(tx.originalAmount),
     originalCurrencyCode: tx.originalCurrencyCode ?? null,
     note: tx.note,
     externalUrl: tx.externalUrl ?? null,
@@ -250,6 +257,7 @@ export function serializeTransaction(
     transferId: tx.transferId,
     originalId: tx.originalId,
     refundLinked: tx.refundLinked,
+    refAmountMissing: tx.refAmountMissing ?? false,
     isPlanned: tx.isPlanned ?? false,
     plannedMerge: extractPlannedMerge({ externalData: tx.externalData }),
     isPending: isPreBookingStatus({ status: getRawTransactionStatus({ externalData: tx.externalData }) }),
@@ -295,6 +303,7 @@ export function serializeTransaction(
     // fetches). Property-existence check so an explicit `false` survives serialization.
     ...('canEdit' in tx ? { canEdit: tx.canEdit ?? false } : {}),
     ...(hasAttachments !== undefined && { hasAttachments }),
+    ...(tx.currencyMeta && { currencyMeta: tx.currencyMeta }),
   };
 }
 
@@ -331,7 +340,7 @@ export function serializeTransactionTuple(
 // ============================================================================
 
 /**
- * Deserialize a create transaction request from API decimal format to internal cents format
+ * Deserialize a create transaction request from API decimal format to internal `Money` values
  */
 export function deserializeCreateTransaction(req: CreateTransactionRequest, userId: number): CreateTransactionInternal {
   return {

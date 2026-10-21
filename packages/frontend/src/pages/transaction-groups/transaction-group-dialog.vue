@@ -124,6 +124,8 @@ const summary = computed(() => {
   let income = 0;
   let expense = 0;
   for (const tx of transactions.value) {
+    // A transaction with no base-currency amount (custom currency, no rate yet) adds nothing to the summary.
+    if (tx.refAmount === null) continue;
     if (tx.transactionType === TRANSACTION_TYPES.income) {
       income += tx.refAmount;
     } else {

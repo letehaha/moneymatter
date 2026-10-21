@@ -4,7 +4,8 @@ import type {
   BudgetLineGoalRepeatUnit,
   RecordId,
 } from '@bt/shared/types';
-import { Money, centsToApiDecimal } from '@common/types/money';
+import { getCurrencyDecimals } from '@common/lib/currency-precision';
+import { Money, minorUnitsToApiDecimal } from '@common/types/money';
 import { toUtcDateString } from '@common/utils/date';
 import BudgetLineCategories from '@models/budget-line-categories.model';
 import BudgetLineGoals from '@models/budget-line-goals.model';
@@ -44,10 +45,10 @@ const GOAL_FREQUENCIES: Record<BudgetLineGoalFrequency, (goal: GoalSpec) => stri
   open_ended: () => '',
 };
 
-const goalText = ({ goal }: { goal: GoalSpec }): string =>
+const goalText = ({ goal, decimals }: { goal: GoalSpec; decimals: number }): string =>
   [
     GOAL_BEHAVIORS[goal.behavior],
-    Money.fromCents(goal.amount).toDecimalString(2),
+    Money.fromMinorUnits({ value: goal.amount, decimals }).toDecimalString(decimals),
     GOAL_FREQUENCIES[goal.frequency](goal),
   ]
     .filter(Boolean)
@@ -96,9 +97,25 @@ export async function transformBudgetLines({ userId }: { userId: number }): Prom
   ]);
 
   const categoryNameById = new Map(categories.map((category) => [category.id, category.name]));
-  const goalByLineId = new Map(goals.map((row) => [row.lineId, toGoalSpec({ row })]));
-  const lineCategoriesByLine = Map.groupBy(lineCategories, (row) => row.lineId);
   const linesByPlan = Map.groupBy(lines, (line) => line.planId);
+  const planIdByLineId = new Map(lines.map((line) => [line.id, line.planId]));
+  const decimalsByPlanId = new Map(
+    await Promise.all(
+      plans.map(
+        async (plan): Promise<[RecordId, number]> => [
+          plan.id,
+          await getCurrencyDecimals({ userId, code: plan.currencyCode }),
+        ],
+      ),
+    ),
+  );
+  const goalByLineId = new Map(
+    goals.map((row) => [
+      row.lineId,
+      toGoalSpec({ row, decimals: decimalsByPlanId.get(planIdByLineId.get(row.lineId)!)! }),
+    ]),
+  );
+  const lineCategoriesByLine = Map.groupBy(lineCategories, (row) => row.lineId);
   const today = toUtcDateString(new Date());
 
   return plans.flatMap((plan) => {
@@ -130,7 +147,7 @@ export async function transformBudgetLines({ userId }: { userId: number }): Prom
             .map((id) => resolveRelationName({ id, nameById: categoryNameById, relation: 'category', context }))
             .toSorted(),
           archived,
-          goal: goal ? goalText({ goal }) : '',
+          goal: goal ? goalText({ goal, decimals: decimalsByPlanId.get(plan.id)! }) : '',
           currency: plan.currencyCode,
         };
       });
@@ -158,6 +175,7 @@ export async function transformBudgetPeriods({
   const rowsByPlan = await Promise.all(
     plans.map(async (plan) => {
       const input = await loadFoldInput({ plan, today });
+      const { decimals } = input;
       const assignedPeriodIds = new Set<string>(input.assignments.map((row) => row.periodId));
       const groupIdOf = new Map<string, string | null>(input.lines.map((line) => [line.id, line.groupId]));
       const rankOf = groupRanker({ groups: groupsByPlan.get(plan.id) ?? [] });
@@ -181,9 +199,9 @@ export async function transformBudgetPeriods({
               periodStart: period.startDate,
               periodEndInclusive,
               line: line.name,
-              assigned: centsToApiDecimal(line.assigned),
-              spent: centsToApiDecimal(-line.activity),
-              available: centsToApiDecimal(line.available),
+              assigned: minorUnitsToApiDecimal({ value: line.assigned, decimals }),
+              spent: minorUnitsToApiDecimal({ value: -line.activity, decimals }),
+              available: minorUnitsToApiDecimal({ value: line.available, decimals }),
               currency: plan.currencyCode,
             }),
           );

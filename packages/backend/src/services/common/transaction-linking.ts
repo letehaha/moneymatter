@@ -25,16 +25,17 @@ import { calculateRefAmount } from '@services/calculate-ref-amount.service';
  * Exact set of fields captured on link and restored on unlink. Stored on
  * the link row's `metaData.originalTransactionState`.
  *
- * `amount` and `refAmount` are kept in cents (BIGINT) so the snapshot is
- * deterministic across Money getter changes. They are not modified at link
- * time — they're only here so a future drift check can detect amount edits.
+ * `amount` and `refAmount` are kept as decimals (the unit the money columns
+ * store). Unlinking a venture event restores `refAmount`; the portfolio path
+ * only records them.
  */
 export interface OriginalTransactionStateSnapshot {
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
   categoryId: string | null;
   amount: number;
-  refAmount: number;
+  /** `null` when the transaction had no base-currency amount (a custom currency without a rate). */
+  refAmount: number | null;
   accountId: string;
   transactionType: string;
   paymentType: string;
@@ -49,8 +50,8 @@ export function snapshotOriginalTransactionState(tx: Transactions): OriginalTran
     transferNature: tx.transferNature,
     transferId: tx.transferId,
     categoryId: tx.categoryId,
-    amount: tx.amount.toCents(),
-    refAmount: tx.refAmount.toCents(),
+    amount: tx.amount.toNumber(),
+    refAmount: tx.refAmount?.toNumber() ?? null,
     accountId: tx.accountId,
     transactionType: tx.transactionType,
     paymentType: tx.paymentType,

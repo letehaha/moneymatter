@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { deleteUserCurrency } from '@/api/currencies';
+import { deleteCustomCurrency, deleteUserCurrency } from '@/api/currencies';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
@@ -67,7 +67,9 @@ const isConfirmOpen = ref(false);
 const { mutate: deleteCurrency } = useMutation({
   mutationFn: () => {
     emit('trigger-disabled', true);
-    return deleteUserCurrency(props.currency.currencyCode);
+    return props.currency.currency?.isCustom
+      ? deleteCustomCurrency({ code: props.currency.currencyCode })
+      : deleteUserCurrency(props.currency.currencyCode);
   },
   onSuccess: () => {
     addSuccessNotification(t('settings.currencies.delete.successfullyDeleted'));
@@ -77,7 +79,8 @@ const { mutate: deleteCurrency } = useMutation({
   onError: (e) => {
     if (e instanceof ApiErrorResponseError) {
       if (e.data.code === API_ERROR_CODES.unauthorized) return;
-      if (e.data.code === API_ERROR_CODES.validationError) {
+      // A validation error or a conflict (a custom currency still used by a row) explains itself.
+      if (e.data.code === API_ERROR_CODES.validationError || e.data.code === API_ERROR_CODES.conflict) {
         addErrorNotification(e.data.message ?? '');
         return;
       }

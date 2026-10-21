@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { RecordId } from '@bt/shared/types';
 import { until } from '@common/helpers';
+import { invalidateCurrencyDecimalsCache } from '@common/lib/currency-decimals-cache';
 import { roundHalfToEven } from '@common/utils/round-half-to-even';
 import { i18nextReady } from '@i18n/index';
 import { afterAll, afterEach, beforeAll, beforeEach, expect, jest } from '@jest/globals';
@@ -16,6 +17,7 @@ import { backupRestoreQueue, backupRestoreWorker } from '@services/backup/restor
 import { closeAllMonobankQueueBundles } from '@services/bank-data-providers/monobank/transaction-sync-queue';
 import { accountSyncQueue, accountSyncWorker } from '@services/bank-data-providers/sync/account-sync-queue';
 import { logoResolutionQueue, logoResolutionWorker } from '@services/brand-logos';
+import { chatTailHub } from '@services/chat/runs/tail-hub';
 import { baseCurrencyChangeQueue, baseCurrencyChangeWorker } from '@services/currencies/base-currency-change-queue';
 import {
   budgetBakersWalletImportQueue,
@@ -364,6 +366,11 @@ beforeEach(async () => {
     // We just need to truncate data between tests.
     await truncateAllTables();
 
+    // Currencies is a seed table, so custom currencies created by a test outlive the truncation above.
+    // Every table that could reference them is empty by now, so they can go.
+    await connection.sequelize.query(`DELETE FROM "Currencies" WHERE "isCustom" = true`);
+    invalidateCurrencyDecimalsCache();
+
     // ExchangeRates is preserved across tests (it's in SEED_DATA_TABLES) so the
     // historical seed survives, but that also means today-dated rows written by
     // an earlier test's on-demand provider fetch linger in the shared worker DB.
@@ -512,6 +519,9 @@ async function closeAllE2eResources() {
     await baseCurrencyChangeQueue.close();
     await trackerScanWorker.close();
     await trackerScanQueue.close();
+
+    // The chat tail holds a connection of its own to Redis.
+    await chatTailHub.close();
 
     // Now safe to close Redis client
     await redisClient.quit();

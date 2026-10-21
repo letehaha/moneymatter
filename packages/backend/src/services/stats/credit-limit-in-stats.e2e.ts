@@ -1,5 +1,6 @@
 import { ACCOUNT_CATEGORIES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import * as helpers from '@tests/helpers';
 import { format, subDays } from 'date-fns';
 
@@ -45,6 +46,12 @@ describe('[Stats] Credit limit in statistics', () => {
 
       expect(await helpers.getTotalBalance({ date: today, raw: true })).toBe(5100);
     }, 60_000);
+
+    it('rejects a date that is not a real calendar date', async () => {
+      const malformed = await helpers.getTotalBalance({ date: 'not-a-date' });
+
+      expect(malformed.statusCode).toEqual(ERROR_CODES.ValidationError);
+    });
 
     it('only subtracts credit limit for accounts with creditLimit > 0', async () => {
       await helpers.updateUserSettings({

@@ -12,8 +12,14 @@
 /**
  * On-disk backup shape version. Restore hard-fails a manifest whose
  * `formatVersion` is greater than this (app too old for the backup).
+ *
+ * - 1: money columns are integer cents (BIGINT storage); trackers carry the older "budget" names.
+ * - 2: trackers use their current names; money is still integer cents.
+ * - 3: money columns are exact decimal strings (DECIMAL storage) and the money
+ *   fields inside JSON columns are decimals. A version 1 or 2 archive is
+ *   converted to this shape on restore.
  */
-export const BACKUP_FORMAT_VERSION = 2;
+export const BACKUP_FORMAT_VERSION = 3;
 
 /**
  * Global-catalog subset embedded under `reference/`. Only the security
@@ -23,8 +29,12 @@ export const BACKUP_FORMAT_VERSION = 2;
  * derived market data the instance refetches from its provider, and letting an
  * uploaded archive write the global SecurityPricing table would let a crafted
  * backup poison prices for securities other users hold.
+ *
+ * `custom-currencies` carries the definition (code, name, decimals, symbol) of every custom
+ * currency the user holds. Restore reuses a global row that already has the code and creates it
+ * otherwise; the user's own overrides travel in `users-currencies`.
  */
-export const BACKUP_REFERENCE_FILE_NAMES = ['securities'] as const;
+export const BACKUP_REFERENCE_FILE_NAMES = ['securities', 'custom-currencies'] as const;
 export type BackupReferenceFileName = (typeof BACKUP_REFERENCE_FILE_NAMES)[number];
 
 /** Per-file entry in the manifest's `files` map. Key is the zip path. */

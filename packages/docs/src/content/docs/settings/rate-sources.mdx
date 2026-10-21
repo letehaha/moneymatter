@@ -1,0 +1,118 @@
+---
+title: Rate sources
+description: Choose where the exchange rate of a custom currency comes from - dated manual rates, a peg to another currency, CoinGecko prices or your own HTTP and JSON endpoint.
+sidebar:
+  order: 12
+---
+
+import { Aside, Steps } from '@astrojs/starlight/components';
+
+A [custom currency](/settings/custom-currencies/) has no market rate, so you decide where its rate comes from. This is the **rate source**. Every custom currency has exactly one, and you can change it at any time.
+
+## Choose a source
+
+<Steps>
+
+1. Open **Settings**, then **Currencies** under **Workspace**.
+2. Click the custom currency's row to expand it.
+3. In the **Rate source** section, pick **Manual**, **Peg**, **CoinGecko** or **HTTP**.
+4. Fill in the fields and click **Save source**.
+
+</Steps>
+
+A currency you have just added starts on **Manual**.
+
+Every rate is a price against another currency, and MoneyMatter converts it to your base currency when it needs to. So a rate of 1 BTC = 60,000 USD keeps working when your base currency is EUR or when you change it later.
+
+| Source | Use it for | Rates come from |
+|---|---|---|
+| **Manual** | Anything you want to price yourself | Rates you type, each with a start date |
+| **Peg** | A stablecoin or any unit worth a fixed multiple of another currency | The pegged currency's own rate, times a factor |
+| **CoinGecko** | Coins listed on CoinGecko | Daily prices, with a year of history |
+| **HTTP** | Anything else that a web service can price | Daily prices from a URL you provide |
+
+## Manual
+
+Type the rate in either field: **1 BTC =** (how many of your base currency one BTC is worth) or **1 EUR =** (the inverse). The other field fills in on its own. Then choose **Effective from**, the first day the rate applies, and click **Save**. The date defaults to today and can't be in the future.
+
+A rate applies from its date until the next one. A transaction uses the rate in effect on its own date, so you can enter a rate for each time the price moved and old transactions keep their own value. A transaction dated before your first rate has no rate and shows a [**No rate** badge](/settings/custom-currencies/#when-a-currency-has-no-rate).
+
+To undo a rate, click **Remove a rate**, choose the date in **Rate starting on** and confirm with **Remove rate**. The days it covered fall back to the earlier rate, or to no rate when there is none earlier.
+
+<Aside type="note" title="No list of past rates yet">
+The page shows only the current rate. It doesn't list the rates you entered before, so keep the dates you used if you plan to correct or remove one. Saving a rate on a date that already has one replaces it.
+</Aside>
+
+## Peg
+
+Use a peg when a currency is worth a fixed multiple of another one, such as a stablecoin that tracks the dollar.
+
+1. Choose **Pegged to**, one of your other currencies.
+2. Enter the **Factor**, a number above zero. 1 means "worth the same". For a coin worth 1.1 of the pegged currency, enter 1.1.
+3. Click **Save source**.
+
+A peg stores no rates. The rate is worked out whenever it is needed, as the factor times the rate of the pegged currency on that day. So if USDT is pegged to USD and your base currency is EUR, USDT follows the USD to EUR rate every day, including a custom USD rate if you set one. A currency can't be pegged to itself.
+
+## CoinGecko
+
+CoinGecko gives you daily prices for crypto coins.
+
+1. Type a name or symbol, such as Bitcoin, in **Find a coin** and pick the coin from the results.
+2. Choose the **Price currency** the prices are stored in. It defaults to USD and can be any ISO currency.
+3. Click **Save source**.
+
+Saving fetches the last 364 days of daily prices, so your older transactions get a rate. After that, MoneyMatter adds the new day's price every day at 00:30 UTC.
+
+<Aside type="caution" title="Needs an API key on the instance">
+CoinGecko works only on an instance that has a CoinGecko API key. On the MoneyMatter cloud this is already set up. If you [self-host](/getting-started/self-hosting/), set `COINGECKO_API_KEY` in your environment. Without it, saving shows "CoinGecko is not available on this instance".
+</Aside>
+
+## HTTP
+
+An HTTP source reads the price from a web service you choose. Use it for a price feed that CoinGecko doesn't cover.
+
+1. In **URL**, enter the address of the service. You can use three placeholders, which MoneyMatter fills in for each request: `{date}` is the day as `yyyy-mm-dd`, `{code}` is your currency code and `{quote}` is the price currency. For example: `https://api.example.com/price?id={code}&vs={quote}&on={date}`.
+2. In **JSON path**, enter where the price sits in the response, such as `data.rates[0].price` or `$.bitcoin.usd`. It must lead to a number greater than zero.
+3. Choose the **Price currency** the service quotes in. It defaults to USD and can be any ISO currency.
+4. If the service needs a key, open **Request headers** and click **Add header**. Enter a **Header name**, such as `X-Api-Key`, and its **Value**. You can add up to 10.
+5. Click **Test**. MoneyMatter calls the URL once and shows the result, for example "On 2026-10-17, 1 BTC = 66000 USD", or the reason it failed.
+6. Click **Save source**.
+
+### Headers are write-only
+
+The values of your headers are stored encrypted and are never shown again. After saving, the page lists only the header names. To change a header, click **Replace headers** and enter all of them again. **Remove headers** deletes them, and **Keep saved headers** cancels the change.
+
+### What MoneyMatter checks
+
+To keep your data and your network safe, every request follows these rules:
+
+- It answers within **5 seconds**, or the request is abandoned.
+- The response may be at most **256 KB**.
+- **Redirects are never followed**, so your headers can't be passed on to another address.
+- On the MoneyMatter cloud the address must start with **https** and must be public. Private and internal addresses are blocked.
+- Error messages never include the URL or your headers.
+
+Test failures use plain messages, such as "The endpoint took too long to answer", "The response is not JSON" or "The JSON path points at nothing in the response".
+
+To protect the service, **Test** and **Save source** are each limited to 20 requests a minute.
+
+### No history, one price a day
+
+An HTTP source can only ask for the price of today, so it **doesn't fetch past days**. Saving the source fetches today's rate once, then the daily sync adds a new one at 00:45 UTC. Transactions dated before that have no rate yet. Use a [manual rate](#manual) with an earlier **Effective from** date for those days: it stays, and the source never replaces it.
+
+If you [self-host](/getting-started/self-hosting/), your instance can also call `http` addresses and addresses on your own network. See the [environment reference](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/environment-reference.md#set-for-you) for what `IS_SELF_HOST` changes.
+
+## What happens when a source changes
+
+- **Saved transactions are valued again.** When you save a different source or change its settings, the base amounts of your saved transactions in that currency are recalculated with the new rates.
+- **A manual rate is never overwritten.** CoinGecko and HTTP syncs only add days that have no rate, or update days that an earlier synced rate filled. A rate you typed for a day stays as it is.
+- **Switching away keeps history.** Rates a source already stored stay while another source runs, and apply to their days.
+- **Changing the coin or the URL starts over.** CoinGecko replaces the stored prices when you pick another coin. An HTTP source does the same when the new settings would return different prices (changing only a header doesn't).
+
+Transactions in ISO currencies are not affected by any of this. They keep the base amounts they were saved with.
+
+## Related
+
+- [Custom currencies](/settings/custom-currencies/)
+- [Base currency and currencies](/settings/base-currency-and-currencies/)
+- [Self-host MoneyMatter with Docker](/getting-started/self-hosting/)

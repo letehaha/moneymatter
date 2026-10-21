@@ -103,6 +103,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getCashFlow } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import UiButton from '@/components/lib/ui/button/Button.vue';
@@ -163,6 +165,8 @@ const selectedGranularity = useLocalStorage<PageGranularity>('cash-flow-granular
 const selectedPeriod = useSessionStorage<Period>('cash-flow-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
+
+provideChatPageContext(() => buildPeriodChatContext({ period: selectedPeriod.value }));
 const showMovingAverage = useSessionStorage('cash-flow-show-moving-avg', true);
 
 const getDefaultCompositionPeriod = (): Period => ({

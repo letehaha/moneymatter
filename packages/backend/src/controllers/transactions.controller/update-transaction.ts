@@ -4,11 +4,13 @@ import { Money } from '@common/types/money';
 import { createController } from '@controllers/helpers/controller-factory';
 import { removeUndefinedKeys } from '@js/helpers';
 import { serializeTransactionTuple } from '@root/serializers';
+import { attachTransactionCurrencyMeta } from '@services/currencies/effective-currency';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 import {
   nonNegativeAmountSchema,
+  payeeIdSchema,
   positiveAmountSchema,
   splitSchema,
   transactionDetailFieldsSchema,
@@ -34,7 +36,7 @@ const bodyZodSchema = z
     refundsSplitId: recordId().nullish(),
     splits: z.array(splitSchema).max(10, 'Maximum 10 splits allowed').nullish(),
     tagIds: z.array(recordId()).max(20, 'Maximum 20 tags allowed').nullish(),
-    payeeId: recordId().nullable().optional(),
+    payeeId: payeeIdSchema(),
     payeeLocked: z.boolean().optional(),
     isPlanned: z.boolean().optional(),
     originalAmount: nonNegativeAmountSchema().nullable().optional(),
@@ -204,6 +206,8 @@ export default createController(schema, async ({ user, params, body }) => {
     // tagIds can be null to clear all tags, so don't use removeUndefinedKeys
     ...(tagIds !== undefined ? { tagIds } : {}),
   });
+
+  await attachTransactionCurrencyMeta({ transactions });
 
   // Serialize: convert cents to decimal for API response
   // updateTransaction returns [baseTx, oppositeTx?] tuple

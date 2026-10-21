@@ -71,7 +71,7 @@ describe('GET /transactions/planned-summary', () => {
     const usdRow = byAccountId.get(usdAccount.id)!;
     expect(usdRow.currencyCode).toBe('USD');
     expect(usdRow.plannedDelta).toBe(-50);
-    expect(usdRow.refPlannedDelta).toBe(-usdExpenseApi!.refAmount);
+    expect(usdRow.refPlannedDelta).toBe(-usdExpenseApi!.refAmount!);
     expect(usdRow.refPlannedDelta).not.toBe(usdRow.plannedDelta);
     expect(usdRow.count).toBe(1);
     expect(usdRow.latestTime).toBe(usdTime.toISOString());

@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, TRANSACTION_TRANSFER_NATURE, isTwoLegTransfer } from '@bt/shared/types';
+import { roundToCurrency } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -14,8 +15,9 @@ import { deleteSplitsForTransaction } from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
 import { getUserDefaultCategory } from '@models/users.model';
-import { calculateRefAmount } from '@services/calculate-ref-amount.service';
+import { calculateRefAmountOrNull } from '@services/calculate-ref-amount.service';
 import { DOMAIN_EVENTS, eventBus } from '@services/common/event-bus';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 import { assertLoanEditAllowed } from '@services/loans/assert-loan-edit-allowed';
 import { deriveImpliedDestinationAmount } from '@services/loans/implied-destination-amount';
 import {
@@ -183,15 +185,14 @@ const makeBasicBaseTxUpdation = async (
   // Never update "transactionType" of non-system transactions. Just an additional guard
   const transactionType = isSystemAccount ? newData.transactionType : prevData.transactionType;
 
+  // `amount` and `refAmount` stay out of the payload until the edit changes them (below): the
+  // model rounds whatever money it is handed, which would rewrite a stored amount that
+  // carries more decimals than its currency now allows on a note-only edit.
   const baseTransactionUpdateParams: Transactions.UpdateTransactionByIdParams & {
-    amount: Money;
-    refAmount: Money;
     currencyCode: string;
     time: Date;
   } = {
     id: newData.id,
-    amount: newData.amount !== undefined ? newData.amount : prevData.amount,
-    refAmount: newData.amount !== undefined ? newData.amount : prevData.refAmount,
     note: newData.note,
     externalUrl: newData.externalUrl,
     externalReference: newData.externalReference,
@@ -201,6 +202,7 @@ const makeBasicBaseTxUpdation = async (
     // (the row's actual `userId`), not the caller. They differ when a recipient
     // edits an owner-created transaction with `transactionsWriteScope: 'all'`.
     userId: ctx.txCreatorUserId,
+    accountOwnerUserId: ctx.accountOwnerUserId,
     transactionType,
     paymentType: newData.paymentType,
     accountId: newData.accountId,
@@ -276,10 +278,28 @@ const makeBasicBaseTxUpdation = async (
     baseTransactionUpdateParams.externalData = clearOriginalSourceProvider({ externalData: prevData.externalData });
   }
 
+  // The amount the row holds after this edit; only a changed amount or currency is written back.
+  let effectiveAmount = prevData.amount;
+
+  if (newData.amount !== undefined || isBaseTxAccountChanged) {
+    // Rounded to the decimals of the currency the row ends up in, before it doubles as the
+    // reference amount of a row already in the base currency.
+    effectiveAmount = await roundToCurrency({
+      money: newData.amount ?? prevData.amount,
+      userId: ctx.accountOwnerUserId,
+      currencyCode: baseTransactionUpdateParams.currencyCode,
+      mode: 'half-up',
+    });
+    baseTransactionUpdateParams.amount = effectiveAmount;
+    baseTransactionUpdateParams.refAmount = effectiveAmount;
+  }
+
   if (defaultUserCurrency.code !== baseTransactionUpdateParams.currencyCode) {
-    baseTransactionUpdateParams.refAmount = await calculateRefAmount({
+    // `null` flags the row as missing its base-currency amount (custom currency, no rate yet).
+    baseTransactionUpdateParams.refAmount = await calculateRefAmountOrNull({
       userId: newData.userId,
-      amount: baseTransactionUpdateParams.amount,
+      amountOwnerUserId: ctx.accountOwnerUserId,
+      amount: effectiveAmount,
       baseCode: baseTransactionUpdateParams.currencyCode,
       quoteCode: defaultUserCurrency.code,
       date: baseTransactionUpdateParams.time,
@@ -493,6 +513,15 @@ const updateTransferTransaction = async (params: HelperFunctionsArgs) => {
     updateOppositeTxParams.amount = impliedDestinationAmount;
   }
 
+  if (updateOppositeTxParams.amount !== undefined) {
+    updateOppositeTxParams.amount = await roundToCurrency({
+      money: updateOppositeTxParams.amount,
+      userId: oppositeTx.userId,
+      currencyCode: updateOppositeTxParams.currencyCode,
+      mode: 'half-up',
+    });
+  }
+
   // Effective post-update amount of the destination leg. Falls back to the
   // stored opposite amount so the refAmount recompute always receives a real
   // value even when the edit doesn't touch amounts (e.g. a note-only edit).
@@ -593,6 +622,8 @@ export const updateTransaction = withTransaction(
     payload: UpdateTransactionParams,
   ): Promise<[baseTx: Transactions.default, oppositeTx?: Transactions.default]> => {
     try {
+      await assertCurrencyCodesVisible({ userId: payload.userId, codes: [payload.originalCurrencyCode] });
+
       // Single fetch + write-authorization gate. `getWritableTransactionById` throws 404
       // when the caller has no claim, 401 when scope: 'own' is violated. Returns a
       // pre-resolved `authCtx` so this service doesn't reassemble auth primitives.
@@ -654,6 +685,7 @@ export const updateTransaction = withTransaction(
           await ensureUserCurrencyConnected({
             userId: ctx.callerUserId,
             currencyCode: prevData.currencyCode,
+            definitionOwnerUserId: authCtx.accountOwnerUserId,
           });
         }
       }

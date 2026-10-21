@@ -23,6 +23,7 @@ export * from './import-export';
 export * from './resource-leases';
 export * from './client-logs';
 export * from './notifications';
+export * from './chat';
 export * from './webhooks';
 export * from './tags';
 export * from './transaction-groups';

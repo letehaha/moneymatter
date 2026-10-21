@@ -138,9 +138,9 @@ export class FawazCurrencyApiProvider extends BaseExchangeRateProvider {
       return null;
     }
 
-    // Keep only currencies we track; upcase keys to our canonical form and drop
-    // the base's own self-rate.
-    const validCodes = new Set((await Currencies.findAll()).map((c) => c.code));
+    // Keep only the ISO currencies we track (fawaz also quotes crypto tickers, which must not match a
+    // user-defined code); upcase keys to our canonical form and drop the base's own self-rate.
+    const validCodes = new Set((await Currencies.findAll({ where: { isCustom: false } })).map((c) => c.code));
     const baseUpper = base.toUpperCase();
     const filteredRates: Record<string, number> = {};
     for (const [code, rate] of Object.entries(rateMap)) {

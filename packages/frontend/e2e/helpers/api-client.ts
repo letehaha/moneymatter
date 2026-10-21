@@ -670,3 +670,14 @@ export async function createInvestmentTransaction({
     data: { portfolioId, securityId, category, date, quantity, price, ...(fees !== undefined && { fees }) },
   });
 }
+
+/** POST /trackers: a tracker needs only a name; the spending limit and categories are optional. */
+export async function createTracker({
+  request,
+  payload,
+}: {
+  request: APIRequestContext;
+  payload: { name: string; limitAmount?: number | null; categoryIds?: string[] };
+}) {
+  return apiPost({ request, path: '/api/v1/trackers', data: payload });
+}

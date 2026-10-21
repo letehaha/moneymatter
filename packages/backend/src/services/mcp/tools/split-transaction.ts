@@ -8,7 +8,7 @@ import { getTransactionById } from '@services/transactions/get-by-id';
 import { manageSplits } from '@services/transactions/splits/manage-splits';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   transactionId: recordId().describe('ID of the transaction to split'),
@@ -35,6 +35,7 @@ export function registerSplitTransaction(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'split_transaction', clientId: extra.authInfo?.clientId });
 
       const fetched = await getTransactionById({
@@ -68,7 +69,7 @@ export function registerSplitTransaction(server: McpServer) {
           transactionId: split.transactionId,
           categoryId: split.categoryId,
           amount: split.amount.toNumber(),
-          refAmount: split.refAmount.toNumber(),
+          refAmount: split.refAmount?.toNumber() ?? null,
           note: split.note,
         })),
       });

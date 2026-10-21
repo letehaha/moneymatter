@@ -113,7 +113,7 @@ const SORT_COLUMN_BY_KEY: Record<PayeeSortBy, string> = {
   // expect when they pick "Name" from the sort menu.
   name: 'LOWER(p."name")',
   transactionCount: 's."transactionCount"',
-  netFlow: 's."netFlowRefCents"',
+  netFlow: 's."netFlowRef"',
   lastSeen: 's."lastSeenAt"',
   // Scalar subquery rather than a join so it cannot multiply the rows the
   // LIMIT/OFFSET pagination counts.
@@ -206,7 +206,7 @@ export const listPayees = withTransaction(
                         THEN -t."refAmount"
                         ELSE t."refAmount"
                    END
-                 ) AS "netFlowRefCents",
+                 ) AS "netFlowRef",
                  MAX(t."time") AS "lastSeenAt"
             FROM real_transactions t
             JOIN "Accounts" a ON a.id = t."accountId"

@@ -20,6 +20,7 @@ import {
   remapSavedPivotViewIds,
   remapSavedTransactionViewIds,
 } from './remap-embedded-references';
+import { restoreCustomCurrencies } from './resolve-custom-currencies';
 import { resolveSecurities } from './resolve-securities';
 import { insertRestoreTables } from './restore-tables';
 
@@ -170,11 +171,20 @@ export async function restoreUserBackup({
     destroyInTx: async ({ user, transaction }) => {
       await destroyUserOwnedData({ user });
 
+      // Inside the transaction, so a failed restore leaves no global currency row behind.
+      const customCurrencies = await restoreCustomCurrencies({
+        archive,
+        targetUserId: user.id,
+        transaction,
+        warnings,
+      });
+
       const tableResult = await insertRestoreTables({
         archive,
         analysis,
         targetUserId: user.id,
         securitiesRemap: securities.remap,
+        customCurrencies,
         transaction,
         onProgress: ({ tier, table, insertedRows }) => onProgress?.({ phase: 'restoring', tier, table, insertedRows }),
       });

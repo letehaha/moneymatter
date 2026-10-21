@@ -1,4 +1,5 @@
 import { ACCOUNT_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { toMoneyColumnValue } from '@common/types/money-column';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils';
 import Accounts from '@models/accounts.model';
@@ -195,8 +196,7 @@ export async function linkCrossProviderTransfers({ userId }: { userId: number })
         transactionType: expectedOppositeType,
         refundLinked: false,
         currencyCode: tx.currencyCode,
-        // amount is stored as cents in DB, tx.amount is a Money object
-        amount: tx.amount.toCents(),
+        amount: toMoneyColumnValue({ money: tx.amount }),
         time: { [Op.between]: [dateFrom, dateTo] },
       },
     });

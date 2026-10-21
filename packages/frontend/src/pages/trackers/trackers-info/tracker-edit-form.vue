@@ -11,6 +11,7 @@ import { useTrackerAccess } from '@/composable/use-tracker-access';
 import { TRACKER_TYPES, type TrackerModel } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
 import { computed, ref, toRef } from 'vue';
+import { useFormatCurrency } from '@/composable/formatters';
 import { useI18n } from 'vue-i18n';
 
 import SmartTrackingFields from '../components/smart-tracking-fields.vue';
@@ -34,6 +35,7 @@ const props = defineProps<{ tracker: TrackerModel }>();
 const emit = defineEmits<{ saved: []; cancel: [] }>();
 
 const { t } = useI18n();
+const { baseCurrencyDecimals } = useFormatCurrency();
 const invalidateTracker = useInvalidateTracker();
 const refreshSmartTrackingAccess = useRefreshSmartTrackingAccess();
 const { addSuccessNotification } = useNotificationCenter();
@@ -168,6 +170,7 @@ const handleSubmit = () => {
         :label="$t('budgets.settings.limitLabel')"
         :placeholder="$t('budgets.settings.limitPlaceholder')"
         type="number"
+        :decimals="baseCurrencyDecimals"
         only-positive
         :disabled="isPending"
       />

@@ -1,4 +1,5 @@
 import type { LoanEvent } from '@bt/shared/types';
+import { roundMoneyValues } from '@common/lib/currency-precision';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
@@ -25,7 +26,15 @@ interface UpdateLoanParams extends UpdateLoanBody {
 }
 
 const updateLoanImpl = async (params: UpdateLoanParams) => {
-  const { userId, accountId, name, currentBalance, currentBalanceAsOf, appendNote, ...detailFields } = params;
+  const {
+    userId,
+    accountId,
+    name,
+    currentBalance: requestedCurrentBalance,
+    currentBalanceAsOf,
+    appendNote,
+    ...detailFields
+  } = params;
 
   const loan = await findOrThrowNotFound({
     query: LoanDetails.findOne({
@@ -33,6 +42,18 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
       include: [{ model: Accounts, as: 'account' }],
     }),
     message: t({ key: 'loans.loanNotFound' }),
+  });
+
+  // Every amount of the loan is held at the decimals of the loan account's currency.
+  const { plannedPayment, minPayment, currentBalance } = await roundMoneyValues({
+    values: {
+      plannedPayment: detailFields.plannedPayment,
+      minPayment: detailFields.minPayment,
+      currentBalance: requestedCurrentBalance,
+    },
+    userId,
+    currencyCode: loan.account.currencyCode,
+    mode: 'half-up',
   });
 
   const now = new Date();
@@ -61,39 +82,40 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
     detailUpdates.termMonths = detailFields.termMonths;
   }
 
-  if (detailFields.plannedPayment !== undefined) {
-    const currentCents = loan.plannedPayment === null ? null : loan.plannedPayment.toCents();
-    const nextCents = detailFields.plannedPayment === null ? null : detailFields.plannedPayment.toCents();
-    if (currentCents !== nextCents) {
+  if (plannedPayment !== undefined) {
+    const current = loan.plannedPayment;
+    const next = plannedPayment;
+    const changed = current === null || next === null ? current !== next : !current.equals(next);
+    if (changed) {
       // `null` means "no planned payment set" — recorded as-is so the
       // timeline can distinguish "cleared" from "set to zero".
       newEvents.push({
         type: 'planned_payment_change',
         at: now.toISOString(),
-        fromCents: currentCents,
-        toCents: nextCents,
+        fromCents: current === null ? null : current.toNumber(),
+        toCents: next === null ? null : next.toNumber(),
       });
-      detailUpdates.plannedPayment = detailFields.plannedPayment;
+      detailUpdates.plannedPayment = plannedPayment;
       detailUpdates.refPlannedPayment =
-        detailFields.plannedPayment === null
+        plannedPayment === null
           ? null
           : await calculateRefAmount({
               userId,
-              amount: detailFields.plannedPayment,
+              amount: plannedPayment,
               baseCode: loan.account.currencyCode,
               date: now,
             });
     }
   }
 
-  if (detailFields.minPayment !== undefined) {
-    detailUpdates.minPayment = detailFields.minPayment;
+  if (minPayment !== undefined) {
+    detailUpdates.minPayment = minPayment;
     detailUpdates.refMinPayment =
-      detailFields.minPayment === null
+      minPayment === null
         ? null
         : await calculateRefAmount({
             userId,
-            amount: detailFields.minPayment,
+            amount: minPayment,
             baseCode: loan.account.currencyCode,
             date: now,
           });
@@ -154,7 +176,7 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
     const { projectedBalance, overpaysBy } = projectLoanOverpay({
       projectedBalance: anchorInitialBalance.add(postAnchorPaymentsTotal),
     });
-    if (overpaysBy.toCents() > 0) {
+    if (overpaysBy.isPositive()) {
       throw new ValidationError({
         message: t({
           key: 'loans.correctionOverpay',
@@ -179,8 +201,8 @@ const updateLoanImpl = async (params: UpdateLoanParams) => {
     newEvents.push({
       type: 'balance_correction',
       at: now.toISOString(),
-      fromCents: loan.account.currentBalance.abs().toCents(),
-      toCents: currentBalance.toCents(),
+      fromCents: loan.account.currentBalance.abs().toNumber(),
+      toCents: currentBalance.toNumber(),
     });
   }
 

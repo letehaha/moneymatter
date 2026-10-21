@@ -1,8 +1,7 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeCashFlow } from '@root/serializers/stats.serializer';
-import { getCashFlow } from '@services/stats/get-cash-flow';
+import { getCashFlowReport } from '@services/stats/reports/cash-flow.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -27,7 +26,7 @@ export function registerGetCashFlow(server: McpServer) {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'get_cash_flow', clientId: extra.authInfo?.clientId });
 
-      const cashFlow = await getCashFlow({
+      const cashFlow = await getCashFlowReport({
         userId,
         from: args.startDate,
         to: args.endDate,
@@ -36,7 +35,7 @@ export function registerGetCashFlow(server: McpServer) {
         categoryIds: args.categoryIds,
       });
 
-      return jsonContent({ data: serializeCashFlow(cashFlow) });
+      return jsonContent({ data: cashFlow });
     },
   );
 }

@@ -68,7 +68,7 @@ export interface BackupTableDef<Name extends string = BackupFileName> {
   /** Self-referential parent column needing the two-pass restore. */
   selfRefColumn?: string;
   /** Encrypted blob to blank before writing (undecryptable on another instance). */
-  stripSecret?: 'bankCredentials' | 'aiKeys';
+  stripSecret?: 'bankCredentials' | 'aiKeys' | 'rateSourceHeaders';
   /** Attach the MCC's natural `code` so restore can remap the integer `mccId`. */
   enrichMccCode?: boolean;
   /** Drop a row on restore whose `currencyCode` isn't seeded on the target instance. */
@@ -110,6 +110,7 @@ const TABLE_DEFS = [
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
     requireSeededCurrency: true,
+    stripSecret: 'rateSourceHeaders',
   },
   {
     fileName: 'categories',
@@ -574,9 +575,14 @@ interface BackupReferenceDef {
  * Global catalog subset embedded under `reference/`. Not owner-scoped: dumped
  * as the exact Securities rows the user's holdings and investment transactions
  * reference (identity only), then resolve-or-create on restore. Prices are NOT
- * dumped — see SecurityPricing in BACKUP_EXCLUDED.
+ * dumped — see SecurityPricing in BACKUP_EXCLUDED. The Currencies model is here
+ * for the user-defined rows the user holds (the ISO seed is referenced by natural
+ * code and is stable across instances).
  */
-export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [{ fileName: 'securities', model: models.Securities }];
+export const REFERENCE_TABLES: readonly BackupReferenceDef[] = [
+  { fileName: 'securities', model: models.Securities },
+  { fileName: 'custom-currencies', model: models.Currencies },
+];
 
 interface BackupExcludedDef {
   model: AnyModel;
@@ -589,7 +595,6 @@ interface BackupExcludedDef {
  * a new model added without one fails that test.
  */
 export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
-  { model: models.Currencies, reason: 'Global ISO seed, referenced by natural code — stable across instances.' },
   {
     model: models.ExchangeRates,
     reason: 'Global; self-heals via startup backfill (1999→today) plus the daily rate cron.',
@@ -623,6 +628,26 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
     model: models.TransactionAttachments,
     reason:
       'Rows point at files in attachment storage, which the backup archive does not carry — restoring rows alone would list attachments that cannot be opened. Attachments are not part of backup/restore.',
+  },
+  {
+    model: models.ChatThreads,
+    reason:
+      'Short-lived, self-expiring conversation log that holds untrusted copies of documents. Wipe and restore delete it explicitly (destroyUserOwnedData), because it is not walked through this registry.',
+  },
+  {
+    model: models.ChatMessages,
+    reason:
+      'Belongs to a chat thread: private conversation history, expires with the thread and is deleted by wipe and restore.',
+  },
+  {
+    model: models.ChatProposals,
+    reason:
+      'Cards carry the ids of the data that existed when they were proposed; restored into other data they could be approved against the wrong rows. Applied cards live and die with their thread.',
+  },
+  {
+    model: models.ChatAttachments,
+    reason:
+      'Context files a user attached to a chat message, kept as prepared content that expires with the thread; never part of the finance data.',
   },
 ];
 

@@ -13,7 +13,8 @@ export interface AutomationContext {
   payeeId: RecordId | null;
   amountCents: number;
   currencyCode: string;
-  refAmountCents: number;
+  /** `null` while a custom currency has no rate: a base-currency amount condition never matches. */
+  refAmountCents: number | null;
   transactionType: TRANSACTION_TYPES;
   accountId: RecordId;
   time: Date;
@@ -29,7 +30,7 @@ export interface AutomationResolvers {
 
 export interface AutomationTransactionInput {
   amount: Money;
-  refAmount: Money;
+  refAmount: Money | null;
   note: string | null;
   externalData: Record<string, unknown> | null;
   payeeId: RecordId | null;
@@ -99,7 +100,7 @@ export const buildAutomationContext = ({
     payeeId: transaction.payeeId,
     amountCents,
     currencyCode,
-    refAmountCents: transaction.refAmount.abs().toCents(),
+    refAmountCents: transaction.refAmount?.abs().toCents() ?? null,
     transactionType: transaction.transactionType,
     accountId,
     time,

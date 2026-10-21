@@ -4,14 +4,17 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import TransactionTemplates from '@models/transaction-templates.model';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertCurrencyCodesVisible } from '@services/currencies/assert-currency-codes-visible';
 
 import { assertTemplateConsistent } from './assert-template-consistent';
-import { loadTemplateTagIds, serializeTemplate, writeOrConflict } from './helpers';
+import { loadTemplateTagIds, roundTemplateAmount, serializeTemplate, writeOrConflict } from './helpers';
 
 type UpdateTransactionTemplateParams = UpdateTransactionTemplateBody & { id: RecordId; userId: number };
 
 export const updateTransactionTemplate = withTransaction(
   async ({ id, userId, tagIds, ...fields }: UpdateTransactionTemplateParams): Promise<TransactionTemplateModel> => {
+    await assertCurrencyCodesVisible({ userId, codes: [fields.originalCurrencyCode] });
+
     const template = await findOrThrowNotFound({
       query: TransactionTemplates.findOne({ where: { id, userId } }),
       message: t({ key: 'transactionTemplates.notFound' }),
@@ -52,7 +55,9 @@ export const updateTransactionTemplate = withTransaction(
       tagIds: mergedTagIds,
     });
 
-    await writeOrConflict(() => template.update(merged));
+    const amount = await roundTemplateAmount({ userId, accountId: merged.accountId, amount: merged.amount });
+
+    await writeOrConflict(() => template.update({ ...merged, amount }));
 
     if (tagIds !== undefined) {
       await template.$set('tags', tagIds);

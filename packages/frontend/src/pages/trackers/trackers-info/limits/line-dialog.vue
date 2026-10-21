@@ -4,6 +4,7 @@ import CategoryMultiSelectField from '@/components/fields/category-multi-select-
 import FormattedAmountField from '@/components/fields/formatted-amount-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
+import { useFormatCurrency } from '@/composable/formatters';
 import type { TrackerLineModel } from '@bt/shared/types';
 import { computed, ref, watch } from 'vue';
 
@@ -21,6 +22,7 @@ const props = defineProps<{
 const open = defineModel<boolean>('open', { required: true });
 
 const { createLine, updateLine } = useTrackerLineMutations({ trackerId: () => props.trackerId });
+const { baseCurrencyDecimals } = useFormatCurrency();
 
 const form = ref({ name: '', categoryIds: [] as string[], limitAmount: null as number | null });
 const isSubmitted = ref(false);
@@ -95,6 +97,7 @@ const handleSubmit = async () => {
       <div class="grid gap-1">
         <FormattedAmountField
           v-model="form.limitAmount"
+          :decimals="baseCurrencyDecimals"
           :label="$t('budgets.lines.dialog.limitLabel')"
           :placeholder="$t('budgets.lines.dialog.limitPlaceholder')"
           :disabled="isPending"

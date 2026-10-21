@@ -5,7 +5,7 @@ import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { toggleTrackerArchive } from '@services/trackers/toggle-archive';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to archive or unarchive'),
@@ -23,6 +23,7 @@ export function registerArchiveTracker(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'archive_tracker', clientId: extra.authInfo?.clientId });
 
       const tracker = await toggleTrackerArchive({ id: args.trackerId, userId, isArchived: args.isArchived });

@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getExchangeRatePair } from '@/api/currencies';
 import { loadTransactionById } from '@/api/transactions';
 import { OUT_OF_WALLET_ACCOUNT_MOCK, VERBOSE_PAYMENT_TYPES, VUE_QUERY_CACHE_KEYS } from '@/common/const';
@@ -31,7 +32,7 @@ import { useExchangeRates } from '@/composable/data-queries/currencies';
 import { useFormValidation } from '@/composable/form-validator';
 import { useCurrencyName, useFormatCurrency } from '@/composable/formatters';
 import { CUSTOM_BREAKPOINTS, useWindowBreakpoints } from '@/composable/window-breakpoints';
-import { formatUIAmount } from '@/js/helpers';
+import { formatUIAmount, getCurrencyDecimals } from '@/js/helpers';
 import { flattenCategories } from '@/pages/import-export/utils/flatten-categories';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore, useCategoriesStore, useCurrenciesStore, useTagsStore, useUserStore } from '@/stores';
@@ -153,6 +154,9 @@ const props = withDefaults(defineProps<CreateRecordModalProps>(), {
 // (which side is "from"/"to") is handled in prepopulateForm based on transactionType,
 // so we no longer swap the props.
 const transaction = computed(() => props.transaction);
+
+// While an existing transaction is open here, "this" in the chat means it, whatever page it opened from.
+provideChatPageContext(() => (transaction.value ? { focus: { kind: 'transaction', id: transaction.value.id } } : {}));
 const oppositeTransaction = computed(() => props.oppositeTransaction);
 
 const emit = defineEmits<{
@@ -667,10 +671,20 @@ const isCurrenciesDifferent = computed(() => {
 const currencyCode = computed(() => {
   const accountCurrencyCode = form.value.account?.currencyCode;
   if (accountCurrencyCode) {
-    return currenciesMap.value[accountCurrencyCode]?.currency?.code;
+    return currenciesMap.value[accountCurrencyCode]?.currency?.code ?? accountCurrencyCode;
   }
   return undefined;
 });
+
+// Amount inputs keep only the decimals their currency stores.
+// An account's amounts follow the account owner's definition of its currency (`currencyMeta`),
+// which differs from the viewer's own list when a shared account's code is defined twice.
+const amountDecimals = computed(() =>
+  getCurrencyDecimals({ code: currencyCode.value, meta: form.value.account?.currencyMeta }),
+);
+const targetAmountDecimals = computed(() =>
+  getCurrencyDecimals({ code: targetCurrency.value?.currency?.code, meta: form.value.toAccount?.currencyMeta }),
+);
 
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 const { convert: convertCurrency, data: exchangeRates } = useExchangeRates();
@@ -1694,6 +1708,7 @@ onUnmounted(() => {
                   v-model="form.amount"
                   :label="$t('dialogs.manageTransaction.form.amountLabel')"
                   type="number"
+                  :decimals="amountDecimals"
                   :disabled="isFormFieldsDisabled || isAmountFieldDisabled"
                   only-positive
                   :placeholder="$t('dialogs.manageTransaction.form.amountPlaceholder')"
@@ -1784,6 +1799,7 @@ onUnmounted(() => {
                       :label="$t('dialogs.manageTransaction.form.targetAmountLabel')"
                       :placeholder="$t('dialogs.manageTransaction.form.targetAmountPlaceholder')"
                       type="number"
+                      :decimals="targetAmountDecimals"
                       :error-message="targetAmountErrorMessage"
                       @blur="touchField('form.targetAmount')"
                     >
@@ -1885,7 +1901,7 @@ onUnmounted(() => {
                     </span>
                   </span>
                   <span class="text-muted-foreground flex items-center gap-1.5 tabular-nums">
-                    {{ formatUIAmount(splitsTotal, { currency: currencyCode }) }}
+                    {{ formatUIAmount(splitsTotal, { currency: currencyCode, meta: form.account?.currencyMeta }) }}
                     <span aria-hidden="true">·</span>
                     {{ $t('dialogs.manageTransaction.form.editSplit') }}
                   </span>
@@ -1898,6 +1914,7 @@ onUnmounted(() => {
                 v-model="form.splits"
                 :total-amount="form.amount ? Number(form.amount) : null"
                 :currency-code="currencyCode"
+                :currency-meta="form.account?.currencyMeta"
                 :main-category="form.category"
                 :categories="effectiveFormattedCategories"
               />

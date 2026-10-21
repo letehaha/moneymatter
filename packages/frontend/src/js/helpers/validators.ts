@@ -23,8 +23,6 @@ export const maxDecimalPoints =
     return parts[1]!.length <= Number(points);
   };
 
-/** Validates that a monetary value has at most 2 decimal places (standard currency precision). */
-export const currencyDecimal = maxDecimalPoints(2);
 export const requiredToBeTrue = (value: unknown): boolean => value === true;
 
 export * from '@vuelidate/validators';

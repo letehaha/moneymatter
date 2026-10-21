@@ -144,6 +144,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getCumulativeData, getSpendingsByCategories } from '@/api';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useFormatCurrency } from '@/composable';
@@ -200,6 +202,8 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('trends-comparison-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
+
+provideChatPageContext(() => buildPeriodChatContext({ period: selectedPeriod.value }));
 const selectedMetric = useSessionStorage<MetricType>('trends-comparison-metric', 'expenses');
 const filters = useSessionStorage<TrendsFilters>('trends-comparison-filters', emptyTrendsFilters(), {
   serializer: { read: (raw) => parseTrendsFilters({ raw }), write: (value) => JSON.stringify(value) },

@@ -41,12 +41,15 @@ const calculatePortfolioBalanceHistory = async ({
   maxDate,
   uniqueDates,
   userBaseCurrencyPromise,
+  decimals,
 }: {
   userId: number;
   minDate: string;
   maxDate: string;
   uniqueDates: string[];
   userBaseCurrencyPromise: Promise<Pick<UsersCurrencies, 'currencyCode'> | null>;
+  /** Decimals of the base currency: the scale the per-day values are rounded to. */
+  decimals: number;
 }): Promise<Map<string, number> | null> => {
   const [userBaseCurrency, portfolios] = await Promise.all([
     userBaseCurrencyPromise,
@@ -294,7 +297,7 @@ const calculatePortfolioBalanceHistory = async ({
   for (const dateStr of uniqueDates) {
     const holdingsForDate = holdingsValueByDate.get(dateStr) ?? 0;
     const cashForDate = cashInBaseByDate.get(dateStr) ?? 0;
-    portfolioValuesByDate.set(dateStr, Money.fromDecimal(holdingsForDate + cashForDate).toCents());
+    portfolioValuesByDate.set(dateStr, Money.fromDecimal(holdingsForDate + cashForDate).toMinorUnits({ decimals }));
   }
 
   // Error (not warn) so the fallback reaches Sentry: silent 1:1 conversion is
@@ -348,11 +351,14 @@ export const getCombinedBalanceHistory = async ({
   from,
   to,
   includeCreditLimit = false,
+  decimals,
 }: {
   userId: number;
   from?: string;
   to?: string;
   includeCreditLimit?: boolean;
+  /** Decimals of the base currency: the minor-unit scale every series is summed at. */
+  decimals: number;
 }): Promise<CombinedBalanceHistoryItem[]> => {
   try {
     const maxDate = to || format(new Date(), 'yyyy-MM-dd');
@@ -395,6 +401,7 @@ export const getCombinedBalanceHistory = async ({
           from: minDate,
           to: maxDate,
           categoryFilter: { exclude: [ACCOUNT_CATEGORIES.vehicle, ACCOUNT_CATEGORIES.loan] },
+          decimals,
         }),
         (async () => {
           // Back-fill each loan's pre-anchor days from its opening balance
@@ -407,7 +414,9 @@ export const getCombinedBalanceHistory = async ({
             where: { userId, accountCategory: ACCOUNT_CATEGORIES.loan, excludeFromStats: false },
             attributes: ['id', 'refInitialBalance'],
           });
-          const openingCentsByAccount = new Map(loanAccounts.map((a) => [a.id, a.refInitialBalance.toCents()]));
+          const openingMinorByAccount = new Map(
+            loanAccounts.map((a) => [a.id, a.refInitialBalance?.toMinorUnits({ decimals }) ?? 0]),
+          );
 
           return getAggregatedBalanceHistory({
             userId,
@@ -415,13 +424,14 @@ export const getCombinedBalanceHistory = async ({
             from: minDate,
             to: maxDate,
             categoryFilter: { only: [ACCOUNT_CATEGORIES.loan] },
-            openingCentsByAccount,
+            openingMinorByAccount,
+            decimals,
           });
         })(),
-        calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise }),
-        calculatePortfolioBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
-        calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise }),
-        includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'owned' }) : Promise.resolve(0),
+        calculateVehiclesBalanceHistory({ userId, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
+        calculatePortfolioBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
+        calculateVentureBalanceHistory({ userId, minDate, maxDate, uniqueDates, userBaseCurrencyPromise, decimals }),
+        includeCreditLimit ? getCreditLimitAdjustment({ userId, accountScope: 'owned', decimals }) : Promise.resolve(0),
       ]);
     })();
 

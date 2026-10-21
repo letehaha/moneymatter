@@ -3,8 +3,7 @@ import { recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeSpendingsByCategories } from '@root/serializers/stats.serializer';
-import { getSpendingsByCategories } from '@services/stats/get-spendings-by-categories';
+import { getSpendingsByCategoriesReport } from '@services/stats/reports/spendings-by-categories.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -36,7 +35,7 @@ export function registerGetSpendingByCategories(server: McpServer) {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      const spendings = await getSpendingsByCategories({
+      const serialized = await getSpendingsByCategoriesReport({
         userId,
         from: args.startDate ?? startOfMonth.toISOString(),
         to: args.endDate ?? now.toISOString(),
@@ -45,8 +44,6 @@ export function registerGetSpendingByCategories(server: McpServer) {
         categoryIds: args.categoryIds,
         excludedCategoryIds: args.excludedCategoryIds,
       });
-
-      const serialized = serializeSpendingsByCategories(spendings);
 
       // Convert from object keyed by ID to an array for easier AI consumption
       const categories = Object.entries(serialized).map(([id, data]) => ({

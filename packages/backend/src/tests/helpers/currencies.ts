@@ -1,6 +1,18 @@
-import type { BaseCurrencyChangeStatus } from '@bt/shared/types';
+import type {
+  BaseCurrencyChangeStatus,
+  CoingeckoCoinSearchResult,
+  CreateCustomCurrencyBody,
+  CurrencyRateHistoryResponse,
+  CurrencyRateSourceResponse,
+  CustomCurrencyModel,
+  TestCurrencyRateSourceResponse,
+  UpdateCurrencyRateSourceBody,
+  UpdateCustomCurrencyBody,
+} from '@bt/shared/types';
+import { CURRENCY_CODE_COLUMNS } from '@common/lib/currency-code-columns';
 import Currencies from '@models/currencies.model';
 import ExchangeRates from '@models/exchange-rates.model';
+import { connection } from '@models/index';
 import { UpdateExchangeRatePair } from '@models/user-exchange-rates.model';
 import UsersCurrencies from '@models/users-currencies.model';
 import { addUserCurrencies as apiAddUserCurrencies } from '@root/services/currencies/add-user-currency';
@@ -233,4 +245,175 @@ export function expectBaseCurrencyChangeFailed(
   if (status.state !== 'failed') {
     throw new Error(`Expected failed base-currency change, got state="${status.state}".`);
   }
+}
+
+/**
+ * Insert a user-defined currency straight into the shared `Currencies` table, the way the custom-currency
+ * endpoint will. The table survives the between-test truncation, so every test that calls this must pair it
+ * with {@link removeCustomCurrencyRow}.
+ */
+export async function seedCustomCurrencyRow({
+  code,
+  name = code,
+  digits = 8,
+  createdByUserId = null,
+}: {
+  code: string;
+  name?: string;
+  digits?: number;
+  createdByUserId?: number | null;
+}) {
+  return Currencies.create({
+    code,
+    currency: name,
+    digits,
+    number: null,
+    isCustom: true,
+    createdByUserId,
+  });
+}
+
+/**
+ * Remove a row created by {@link seedCustomCurrencyRow} together with the rows that reference it: every
+ * currency-code column is cleared, transactions first and accounts last, so a test that went on to create
+ * accounts or transactions in the custom currency can still clean up.
+ */
+export async function removeCustomCurrencyRow({ code }: { code: string }) {
+  const rank = (table: string) => (table === 'Transactions' ? 0 : table === 'Accounts' ? 2 : 1);
+  const ordered = CURRENCY_CODE_COLUMNS.filter(({ table }) => table !== 'Currencies').toSorted(
+    (a, b) => rank(a.table) - rank(b.table),
+  );
+
+  for (const { table, column } of ordered) {
+    await connection.sequelize.query(`DELETE FROM "${table}" WHERE "${column}" = :code`, { replacements: { code } });
+  }
+
+  await Currencies.destroy({ where: { code, isCustom: true } });
+}
+
+export function listCustomCurrencies<R extends boolean | undefined = undefined>({ raw }: { raw?: R } = {}) {
+  return makeRequest<CustomCurrencyModel[], R>({
+    method: 'get',
+    url: '/user/currencies/custom',
+    raw,
+  });
+}
+
+export function createCustomCurrency<R extends boolean | undefined = undefined>({
+  payload,
+  raw,
+}: {
+  payload: CreateCustomCurrencyBody;
+  raw?: R;
+}) {
+  return makeRequest<CustomCurrencyModel, R>({
+    method: 'post',
+    url: '/user/currencies/custom',
+    payload,
+    raw,
+  });
+}
+
+export function updateCustomCurrency<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  payload: UpdateCustomCurrencyBody;
+  raw?: R;
+}) {
+  return makeRequest<CustomCurrencyModel, R>({
+    method: 'put',
+    url: `/user/currencies/custom/${code}`,
+    payload,
+    raw,
+  });
+}
+
+export function deleteCustomCurrency<R extends boolean | undefined = undefined>({
+  code,
+  raw,
+}: {
+  code: string;
+  raw?: R;
+}) {
+  return makeRequest<void, R>({
+    method: 'delete',
+    url: `/user/currencies/custom/${code}`,
+    raw,
+  });
+}
+
+export function setCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: UpdateCurrencyRateSourceBody | Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<CurrencyRateSourceResponse, R>({
+    method: 'put',
+    url: `/user/currencies/${code}/rate-source`,
+    payload,
+    raw,
+  });
+}
+
+export function testCurrencyRateSource<R extends boolean | undefined = undefined>({
+  code,
+  payload,
+  raw,
+}: {
+  code: string;
+  /** Typed loosely so a test can send a body the API must reject. */
+  payload: Record<string, unknown>;
+  raw?: R;
+}) {
+  return makeRequest<TestCurrencyRateSourceResponse, R>({
+    method: 'post',
+    url: `/user/currencies/${code}/rate-source/test`,
+    payload,
+    raw,
+  });
+}
+
+export function searchCoingeckoCoins<R extends boolean | undefined = undefined>({
+  query,
+  raw,
+}: {
+  query: string;
+  raw?: R;
+}) {
+  return makeRequest<CoingeckoCoinSearchResult[], R>({
+    method: 'get',
+    url: `/user/currencies/coingecko/search?query=${encodeURIComponent(query)}`,
+    raw,
+  });
+}
+
+export function getCurrencyRateHistory<R extends boolean | undefined = undefined>({
+  code,
+  limit,
+  offset,
+  raw,
+}: {
+  code: string;
+  limit?: number;
+  offset?: number;
+  raw?: R;
+}) {
+  const query = new URLSearchParams();
+  if (limit !== undefined) query.set('limit', String(limit));
+  if (offset !== undefined) query.set('offset', String(offset));
+  const suffix = query.size ? `?${query.toString()}` : '';
+
+  return makeRequest<CurrencyRateHistoryResponse, R>({
+    method: 'get',
+    url: `/user/currencies/${code}/rate-history${suffix}`,
+    raw,
+  });
 }

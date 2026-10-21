@@ -1,4 +1,5 @@
 import { VUE_QUERY_GLOBAL_PREFIXES } from '@/common/const';
+import { formatUIAmount, registerCurrencyDecimals, resetCurrencyDecimals } from '@/js/helpers';
 import {
   ACCOUNT_CATEGORIES,
   ACCOUNT_STATUSES,
@@ -88,6 +89,39 @@ describe('useAccountsStore – accountsRecord mirrors the live accounts list', (
     expect(store.accountsRecord['acc-drop']).toBeUndefined();
     expect(store.accountsRecord['acc-keep']).toBeDefined();
     expect(Object.keys(store.accountsRecord)).toEqual(['acc-keep']);
+  });
+
+  describe('shared accounts in a custom currency', () => {
+    beforeEach(() => {
+      resetCurrencyDecimals();
+    });
+
+    it('registers the owner definition so a code the viewer never defined renders as custom', async () => {
+      mockLoadAccounts.mockResolvedValue([
+        buildAccount('acc-shared', {
+          currencyCode: 'SAT',
+          currencyMeta: { decimals: 8, symbol: null, isCustom: true },
+        }),
+      ]);
+      mountStore();
+      await flushPromises();
+
+      expect(formatUIAmount(0.12345678, { currency: 'SAT' })).toBe('0.12345678 SAT');
+    });
+
+    it('does not override a code the viewer defines themselves', async () => {
+      registerCurrencyDecimals({ entries: [{ code: 'SAT', decimals: 0, isCustom: true }] });
+      mockLoadAccounts.mockResolvedValue([
+        buildAccount('acc-shared', {
+          currencyCode: 'SAT',
+          currencyMeta: { decimals: 8, symbol: null, isCustom: true },
+        }),
+      ]);
+      mountStore();
+      await flushPromises();
+
+      expect(formatUIAmount(1.5, { currency: 'SAT' })).toBe('2 SAT');
+    });
   });
 
   describe('txTargetableSourceAccountsActiveFirst', () => {

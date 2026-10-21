@@ -9,6 +9,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 784,
     code: 'AED',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Afghani',
@@ -16,6 +18,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 971,
     code: 'AFN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lek',
@@ -23,6 +27,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 8,
     code: 'ALL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Armenian Dram',
@@ -30,6 +36,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 51,
     code: 'AMD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Netherlands Antillean Guilder',
@@ -37,6 +45,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 532,
     code: 'ANG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kwanza',
@@ -44,6 +54,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 973,
     code: 'AOA',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Argentine Peso',
@@ -51,6 +63,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 32,
     code: 'ARS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Australian Dollar',
@@ -58,6 +72,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 36,
     code: 'AUD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Aruban Florin',
@@ -65,6 +81,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 533,
     code: 'AWG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Azerbaijan Manat',
@@ -72,6 +90,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 944,
     code: 'AZN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Convertible Mark',
@@ -79,6 +99,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 977,
     code: 'BAM',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Barbados Dollar',
@@ -86,6 +108,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 52,
     code: 'BBD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Taka',
@@ -93,6 +117,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 50,
     code: 'BDT',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Bulgarian Lev',
@@ -100,6 +126,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 975,
     code: 'BGN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Bahraini Dinar',
@@ -107,6 +135,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 48,
     code: 'BHD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Burundi Franc',
@@ -114,6 +144,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 108,
     code: 'BIF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Bermudian Dollar',
@@ -121,6 +153,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 60,
     code: 'BMD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Brunei Dollar',
@@ -128,6 +162,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 96,
     code: 'BND',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Boliviano',
@@ -135,6 +171,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 68,
     code: 'BOB',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Brazilian Real',
@@ -142,6 +180,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 986,
     code: 'BRL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Bahamian Dollar',
@@ -149,6 +189,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 44,
     code: 'BSD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Ngultrum',
@@ -156,6 +198,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 64,
     code: 'BTN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Pula',
@@ -163,6 +207,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 72,
     code: 'BWP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Belarusian Ruble',
@@ -170,6 +216,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 933,
     code: 'BYN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Belize Dollar',
@@ -177,6 +225,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 84,
     code: 'BZD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Canadian Dollar',
@@ -184,6 +234,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 124,
     code: 'CAD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Congolese Franc',
@@ -191,6 +243,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 976,
     code: 'CDF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Swiss Franc',
@@ -198,6 +252,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 756,
     code: 'CHF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Unidad de Fomento',
@@ -205,6 +261,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 990,
     code: 'CLF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Chilean Peso',
@@ -212,6 +270,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 152,
     code: 'CLP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Yuan Renminbi',
@@ -219,6 +279,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 156,
     code: 'CNY',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Colombian Peso',
@@ -226,6 +288,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 170,
     code: 'COP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Costa Rican Colon',
@@ -233,6 +297,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 188,
     code: 'CRC',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Peso Convertible',
@@ -240,6 +306,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 931,
     code: 'CUC',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Cuban Peso',
@@ -247,6 +315,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 192,
     code: 'CUP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Cabo Verde Escudo',
@@ -254,6 +324,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 132,
     code: 'CVE',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Czech Koruna',
@@ -261,6 +333,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 203,
     code: 'CZK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Djibouti Franc',
@@ -268,6 +342,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 262,
     code: 'DJF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Danish Krone',
@@ -275,6 +351,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 208,
     code: 'DKK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Dominican Peso',
@@ -282,6 +360,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 214,
     code: 'DOP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Algerian Dinar',
@@ -289,6 +369,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 12,
     code: 'DZD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Egyptian Pound',
@@ -296,6 +378,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 818,
     code: 'EGP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Nakfa',
@@ -303,6 +387,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 232,
     code: 'ERN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Ethiopian Birr',
@@ -310,6 +396,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 230,
     code: 'ETB',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Euro',
@@ -317,6 +405,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 978,
     code: 'EUR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Fiji Dollar',
@@ -324,6 +414,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 242,
     code: 'FJD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Falkland Islands Pound',
@@ -331,6 +423,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 238,
     code: 'FKP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Pound Sterling',
@@ -338,6 +432,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 826,
     code: 'GBP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lari',
@@ -345,6 +441,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 981,
     code: 'GEL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Ghana Cedi',
@@ -352,6 +450,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 936,
     code: 'GHS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Gibraltar Pound',
@@ -359,6 +459,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 292,
     code: 'GIP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Dalasi',
@@ -366,6 +468,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 270,
     code: 'GMD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Guinean Franc',
@@ -373,6 +477,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 324,
     code: 'GNF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Quetzal',
@@ -380,6 +486,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 320,
     code: 'GTQ',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Guyana Dollar',
@@ -387,6 +495,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 328,
     code: 'GYD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Hong Kong Dollar',
@@ -394,6 +504,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 344,
     code: 'HKD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lempira',
@@ -401,6 +513,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 340,
     code: 'HNL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kuna',
@@ -408,6 +522,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 191,
     code: 'HRK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Gourde',
@@ -415,6 +531,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 332,
     code: 'HTG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Forint',
@@ -422,6 +540,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 348,
     code: 'HUF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Rupiah',
@@ -429,6 +549,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 360,
     code: 'IDR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'New Israeli Sheqel',
@@ -436,6 +558,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 376,
     code: 'ILS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Indian Rupee',
@@ -443,6 +567,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 356,
     code: 'INR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Iraqi Dinar',
@@ -450,6 +576,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 368,
     code: 'IQD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Iranian Rial',
@@ -457,6 +585,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 364,
     code: 'IRR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Iceland Krona',
@@ -464,6 +594,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 352,
     code: 'ISK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Jamaican Dollar',
@@ -471,6 +603,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 388,
     code: 'JMD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Jordanian Dinar',
@@ -478,6 +612,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 400,
     code: 'JOD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Yen',
@@ -485,6 +621,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 392,
     code: 'JPY',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kenyan Shilling',
@@ -492,6 +630,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 404,
     code: 'KES',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Som',
@@ -499,6 +639,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 417,
     code: 'KGS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Riel',
@@ -506,6 +648,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 116,
     code: 'KHR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Comorian Franc ',
@@ -513,6 +657,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 174,
     code: 'KMF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'North Korean Won',
@@ -520,6 +666,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 408,
     code: 'KPW',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Won',
@@ -527,6 +675,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 410,
     code: 'KRW',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kuwaiti Dinar',
@@ -534,6 +684,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 414,
     code: 'KWD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Cayman Islands Dollar',
@@ -541,6 +693,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 136,
     code: 'KYD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Tenge',
@@ -548,6 +702,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 398,
     code: 'KZT',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lao Kip',
@@ -555,6 +711,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 418,
     code: 'LAK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lebanese Pound',
@@ -562,6 +720,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 422,
     code: 'LBP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Sri Lanka Rupee',
@@ -569,6 +729,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 144,
     code: 'LKR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Liberian Dollar',
@@ -576,6 +738,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 430,
     code: 'LRD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Loti',
@@ -583,6 +747,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 426,
     code: 'LSL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Libyan Dinar',
@@ -590,6 +756,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 434,
     code: 'LYD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Moroccan Dirham',
@@ -597,6 +765,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 504,
     code: 'MAD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Moldovan Leu',
@@ -604,6 +774,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 498,
     code: 'MDL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Malagasy Ariary',
@@ -611,6 +783,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 969,
     code: 'MGA',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Denar',
@@ -618,6 +792,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 807,
     code: 'MKD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kyat',
@@ -625,6 +801,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 104,
     code: 'MMK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Tugrik',
@@ -632,6 +810,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 496,
     code: 'MNT',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Pataca',
@@ -639,6 +819,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 446,
     code: 'MOP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Mauritius Rupee',
@@ -646,6 +828,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 480,
     code: 'MUR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Rufiyaa',
@@ -653,6 +837,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 462,
     code: 'MVR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Malawi Kwacha',
@@ -660,6 +846,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 454,
     code: 'MWK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Mexican Peso',
@@ -667,6 +855,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 484,
     code: 'MXN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Malaysian Ringgit',
@@ -674,6 +864,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 458,
     code: 'MYR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Mozambique Metical',
@@ -681,6 +873,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 943,
     code: 'MZN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Namibia Dollar',
@@ -688,6 +882,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 516,
     code: 'NAD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Naira',
@@ -695,6 +891,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 566,
     code: 'NGN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Cordoba Oro',
@@ -702,6 +900,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 558,
     code: 'NIO',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Norwegian Krone',
@@ -709,6 +909,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 578,
     code: 'NOK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Nepalese Rupee',
@@ -716,6 +918,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 524,
     code: 'NPR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'New Zealand Dollar',
@@ -723,6 +927,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 554,
     code: 'NZD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Rial Omani',
@@ -730,6 +936,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 512,
     code: 'OMR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Balboa',
@@ -737,6 +945,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 590,
     code: 'PAB',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Sol',
@@ -744,6 +954,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 604,
     code: 'PEN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Kina',
@@ -751,6 +963,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 598,
     code: 'PGK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Philippine Peso',
@@ -758,6 +972,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 608,
     code: 'PHP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Pakistan Rupee',
@@ -765,6 +981,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 586,
     code: 'PKR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Zloty',
@@ -772,6 +990,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 985,
     code: 'PLN',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Guarani',
@@ -779,6 +999,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 600,
     code: 'PYG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Qatari Rial',
@@ -786,6 +1008,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 634,
     code: 'QAR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Romanian Leu',
@@ -793,6 +1017,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 946,
     code: 'RON',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Serbian Dinar',
@@ -800,6 +1026,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 941,
     code: 'RSD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Russian Ruble',
@@ -807,6 +1035,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 643,
     code: 'RUB',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Rwanda Franc',
@@ -814,6 +1044,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 646,
     code: 'RWF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Saudi Riyal',
@@ -821,6 +1053,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 682,
     code: 'SAR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Solomon Islands Dollar',
@@ -828,6 +1062,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 90,
     code: 'SBD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Seychelles Rupee',
@@ -835,6 +1071,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 690,
     code: 'SCR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Sudanese Pound',
@@ -842,6 +1080,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 938,
     code: 'SDG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Swedish Krona',
@@ -849,6 +1089,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 752,
     code: 'SEK',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Singapore Dollar',
@@ -856,6 +1098,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 702,
     code: 'SGD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Saint Helena Pound',
@@ -863,6 +1107,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 654,
     code: 'SHP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Leone',
@@ -870,6 +1116,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 694,
     code: 'SLL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Somali Shilling',
@@ -877,6 +1125,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 706,
     code: 'SOS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Surinam Dollar',
@@ -884,6 +1134,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 968,
     code: 'SRD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'El Salvador Colon',
@@ -891,6 +1143,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 222,
     code: 'SVC',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Syrian Pound',
@@ -898,6 +1152,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 760,
     code: 'SYP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Lilangeni',
@@ -905,6 +1161,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 748,
     code: 'SZL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Baht',
@@ -912,6 +1170,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 764,
     code: 'THB',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Somoni',
@@ -919,6 +1179,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 972,
     code: 'TJS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Turkmenistan New Manat',
@@ -926,6 +1188,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 934,
     code: 'TMT',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Tunisian Dinar',
@@ -933,6 +1197,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 788,
     code: 'TND',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Pa’anga',
@@ -940,6 +1206,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 776,
     code: 'TOP',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Turkish Lira',
@@ -947,6 +1215,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 949,
     code: 'TRY',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Trinidad and Tobago Dollar',
@@ -954,6 +1224,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 780,
     code: 'TTD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'New Taiwan Dollar',
@@ -961,6 +1233,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 901,
     code: 'TWD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Tanzanian Shilling',
@@ -968,6 +1242,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 834,
     code: 'TZS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Hryvnia',
@@ -975,6 +1251,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 980,
     code: 'UAH',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Uganda Shilling',
@@ -982,6 +1260,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 800,
     code: 'UGX',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'US Dollar',
@@ -989,6 +1269,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 840,
     code: 'USD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Peso Uruguayo',
@@ -996,6 +1278,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 858,
     code: 'UYU',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Uzbekistan Sum',
@@ -1003,6 +1287,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 860,
     code: 'UZS',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Dong',
@@ -1010,6 +1296,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 704,
     code: 'VND',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Vatu',
@@ -1017,6 +1305,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 548,
     code: 'VUV',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Tala',
@@ -1024,6 +1314,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 882,
     code: 'WST',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'CFA Franc BEAC',
@@ -1031,6 +1323,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 950,
     code: 'XAF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Silver',
@@ -1038,6 +1332,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 961,
     code: 'XAG',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Gold',
@@ -1045,6 +1341,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 959,
     code: 'XAU',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'East Caribbean Dollar',
@@ -1052,6 +1350,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 951,
     code: 'XCD',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'SDR (Special Drawing Right)',
@@ -1059,6 +1359,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 960,
     code: 'XDR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'CFA Franc BCEAO',
@@ -1066,6 +1368,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 952,
     code: 'XOF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'CFP Franc',
@@ -1073,6 +1377,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 953,
     code: 'XPF',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Yemeni Rial',
@@ -1080,6 +1386,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 886,
     code: 'YER',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Rand',
@@ -1087,6 +1395,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 710,
     code: 'ZAR',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Zambian Kwacha',
@@ -1094,6 +1404,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 967,
     code: 'ZMW',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
   {
     currency: 'Zimbabwe Dollar',
@@ -1101,6 +1413,8 @@ export const SYSTEM_CURRENCIES: CurrencyModel[] = [
     number: 932,
     code: 'ZWL',
     isDisabled: false,
+    isCustom: false,
+    symbol: null,
   },
 ];
 export const USER_BASE_CURRENCY_CODE = 'UAH';
@@ -1111,6 +1425,12 @@ export const USER_BASE_CURRENCY: UserCurrencyModel = {
   exchangeRate: 1,
   liveRateUpdate: false,
   isDefaultCurrency: true,
+  nameOverride: null,
+  symbolOverride: null,
+  decimalsOverride: null,
+  logoUrl: null,
+  rateSource: 'provider',
+  rateSourceConfig: null,
   currency: SYSTEM_CURRENCIES.find((item) => item.code === USER_BASE_CURRENCY_CODE),
 };
 
@@ -1123,6 +1443,12 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     exchangeRate: 40,
     liveRateUpdate: false,
     isDefaultCurrency: false,
+    nameOverride: null,
+    symbolOverride: null,
+    decimalsOverride: null,
+    logoUrl: null,
+    rateSource: 'provider',
+    rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'EUR'),
   },
   {
@@ -1132,6 +1458,12 @@ export const USER_CURRENCIES: UserCurrencyModel[] = [
     exchangeRate: 37,
     liveRateUpdate: false,
     isDefaultCurrency: false,
+    nameOverride: null,
+    symbolOverride: null,
+    decimalsOverride: null,
+    logoUrl: null,
+    rateSource: 'provider',
+    rateSourceConfig: null,
     currency: SYSTEM_CURRENCIES.find((item) => item.code === 'USD'),
   },
 ];

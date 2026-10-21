@@ -11,8 +11,8 @@ export default createController(
     }),
   }),
   async ({ user, params }) => {
-    const stats = await getTrackerStats({ userId: user.id, trackerId: params.id });
+    const { stats, decimals } = await getTrackerStats({ userId: user.id, trackerId: params.id });
 
-    return { data: serializeTrackerStats(stats) };
+    return { data: serializeTrackerStats({ stats, decimals }) };
   },
 );

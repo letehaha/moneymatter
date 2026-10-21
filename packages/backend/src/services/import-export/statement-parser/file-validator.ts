@@ -21,6 +21,14 @@ const PKCS7_MAGIC_BYTE_START = 0x30;
 /** PDF readers accept the %PDF header anywhere within this many leading bytes */
 const PDF_HEADER_SEARCH_BYTES = 1024;
 
+/** ISO-BMFF `ftyp` brands an iPhone writes for HEIC/HEIF photos. */
+const HEIF_BRANDS = new Set(['heic', 'heix', 'hevc', 'hevx', 'heim', 'heis', 'mif1', 'msf1']);
+
+const isHeif = ({ buffer }: { buffer: Buffer }): boolean =>
+  buffer.length >= 12 &&
+  buffer.subarray(4, 8).toString('latin1') === 'ftyp' &&
+  HEIF_BRANDS.has(buffer.subarray(8, 12).toString('latin1'));
+
 /** `fileBuffer` may be the PDF extracted from a PKCS#7 container rather than the upload itself. */
 type FileValidationResult =
   | { valid: true; fileType: Exclude<StatementFileType, 'image'>; fileBuffer: Buffer }
@@ -242,6 +250,13 @@ export function validateFileBuffer({
   }
 
   logger.info('Import file validation failed', { code: 'UNSUPPORTED_TYPE', sizeBytes: buffer.length });
+
+  if (allowImages && isHeif({ buffer })) {
+    return {
+      valid: false,
+      error: { code: 'UNSUPPORTED_TYPE', message: t({ key: 'statementParser.heicNotSupported' }) },
+    };
+  }
 
   return {
     valid: false,

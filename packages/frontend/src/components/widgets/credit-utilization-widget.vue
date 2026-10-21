@@ -57,13 +57,17 @@ const creditAccounts = computed(() => {
         used,
         limit,
         utilization: Math.min(utilization, 100),
-        refUsed: computeCreditUsed({
-          balance: a.refCurrentBalance,
-          creditLimit: a.refCreditLimit,
-          balanceIncludesCreditLimit,
-          zeroBalanceMeansFullyDrawn,
-        }),
-        refLimit: a.refCreditLimit,
+        // An account with no base-currency value yet (custom currency, no rate) adds nothing to the totals.
+        refUsed:
+          a.refCurrentBalance === null || a.refCreditLimit === null
+            ? 0
+            : computeCreditUsed({
+                balance: a.refCurrentBalance,
+                creditLimit: a.refCreditLimit,
+                balanceIncludesCreditLimit,
+                zeroBalanceMeansFullyDrawn,
+              }),
+        refLimit: a.refCreditLimit ?? 0,
       };
     })
     .sort((a, b) => b.utilization - a.utilization);

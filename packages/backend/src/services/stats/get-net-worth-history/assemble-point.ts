@@ -1,21 +1,21 @@
 import {
   ACCOUNT_CATEGORIES,
-  type Cents,
+  type MinorUnits,
   NET_WORTH_ASSET_KINDS,
   NET_WORTH_LIABILITY_KINDS,
   type NetWorthAssetKind,
   type NetWorthLiabilityKind,
-  asCents,
+  asMinorUnits,
 } from '@bt/shared/types';
 
-import type { NetWorthHistoryPointCents } from './types';
+import type { NetWorthHistoryPointMinor } from './types';
 
 /** One account partition's balances at a snapshot, split by sign upstream. */
 export interface AccountSignSplit {
   /** Sum of the accounts currently owing (negative balances), so ≤ 0. */
-  owedCents: Cents;
+  owedMinor: MinorUnits;
   /** Sum of the accounts holding the user's own funds (positive balances), so ≥ 0. */
-  surplusCents: Cents;
+  surplusMinor: MinorUnits;
 }
 
 /**
@@ -36,39 +36,39 @@ export const assembleNetWorthPoint = ({
   assetAccounts,
   creditCard,
   overdraft,
-  loanCents,
-  portfolioCents,
-  vehicleCents,
-  ventureCents,
+  loanMinor,
+  portfolioMinor,
+  vehicleMinor,
+  ventureMinor,
 }: {
   date: string;
   assetAccounts: AccountSignSplit;
   creditCard: AccountSignSplit;
   overdraft: AccountSignSplit;
-  loanCents: Cents;
-  portfolioCents: Cents;
-  vehicleCents: Cents;
-  ventureCents: Cents;
-}): NetWorthHistoryPointCents => {
-  const overdraftOwedCents = asCents(overdraft.owedCents + assetAccounts.owedCents);
+  loanMinor: MinorUnits;
+  portfolioMinor: MinorUnits;
+  vehicleMinor: MinorUnits;
+  ventureMinor: MinorUnits;
+}): NetWorthHistoryPointMinor => {
+  const overdraftOwedMinor = asMinorUnits(overdraft.owedMinor + assetAccounts.owedMinor);
 
-  const assets: Record<NetWorthAssetKind, Cents> = {
-    cash: asCents(assetAccounts.surplusCents + creditCard.surplusCents + overdraft.surplusCents),
-    investments: portfolioCents,
-    vehicles: vehicleCents,
-    ventures: ventureCents,
+  const assets: Record<NetWorthAssetKind, MinorUnits> = {
+    cash: asMinorUnits(assetAccounts.surplusMinor + creditCard.surplusMinor + overdraft.surplusMinor),
+    investments: portfolioMinor,
+    vehicles: vehicleMinor,
+    ventures: ventureMinor,
   };
-  const assetsTotal = asCents(NET_WORTH_ASSET_KINDS.reduce((sum, kind) => sum + assets[kind], 0));
+  const assetsTotal = asMinorUnits(NET_WORTH_ASSET_KINDS.reduce((sum, kind) => sum + assets[kind], 0));
 
-  // Each kind's owed cents come from a different upstream computation (loan is a
+  // Each kind's owed minor units come from a different upstream computation (loan is a
   // plain resolver, credit-card/overdraft are sign-split), so this literal is the
   // one place that pairs a kind with its value; the type forces every kind present.
-  const liabilities: Record<NetWorthLiabilityKind, Cents> = {
-    [ACCOUNT_CATEGORIES.creditCard]: creditCard.owedCents,
-    [ACCOUNT_CATEGORIES.loan]: loanCents,
-    [ACCOUNT_CATEGORIES.overdraft]: overdraftOwedCents,
+  const liabilities: Record<NetWorthLiabilityKind, MinorUnits> = {
+    [ACCOUNT_CATEGORIES.creditCard]: creditCard.owedMinor,
+    [ACCOUNT_CATEGORIES.loan]: loanMinor,
+    [ACCOUNT_CATEGORIES.overdraft]: overdraftOwedMinor,
   };
-  const liabilitiesTotal = asCents(NET_WORTH_LIABILITY_KINDS.reduce((sum, kind) => sum + liabilities[kind], 0));
+  const liabilitiesTotal = asMinorUnits(NET_WORTH_LIABILITY_KINDS.reduce((sum, kind) => sum + liabilities[kind], 0));
 
   return {
     date,
@@ -76,6 +76,6 @@ export const assembleNetWorthPoint = ({
     assetsTotal,
     liabilities,
     liabilitiesTotal,
-    netWorth: asCents(assetsTotal + liabilitiesTotal),
+    netWorth: asMinorUnits(assetsTotal + liabilitiesTotal),
   };
 };

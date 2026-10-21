@@ -123,6 +123,8 @@
 </template>
 
 <script setup lang="ts">
+import { buildPeriodChatContext } from '@/composable/chat/period-context';
+import { provideChatPageContext } from '@/composable/chat/use-chat-page-context';
 import { getNetWorthHistory } from '@/api';
 import { ACCOUNT_CATEGORIES_TRANSLATION_KEYS } from '@/common/const/account-categories-verbose';
 import { QUERY_CACHE_STALE_TIME, VUE_QUERY_CACHE_KEYS } from '@/common/const';
@@ -176,6 +178,8 @@ const periodSerializer = createPeriodSerializer({ getDefaultPeriod });
 const selectedPeriod = useSessionStorage<Period>('net-worth-history-period', getDefaultPeriod(), {
   serializer: periodSerializer,
 });
+
+provideChatPageContext(() => buildPeriodChatContext({ period: selectedPeriod.value }));
 
 // 'auto' derives the granularity from the period length; a concrete value is a
 // sticky user override. There is no UI back to 'auto' — the auto value simply

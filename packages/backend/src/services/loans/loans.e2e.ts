@@ -128,12 +128,15 @@ const payLoan = async ({
   sourceAccountId,
   amount,
   time,
+  categoryId,
 }: {
   loanId: string;
   sourceAccountId: RecordId;
   amount: number;
   /** ISO timestamp for backdated payments; defaults to now. */
   time?: string;
+  /** Category of the payment; defaults to the primary user's, so other users pass their own. */
+  categoryId?: RecordId;
 }) => {
   const [base] = await helpers.createTransaction({
     payload: {
@@ -141,6 +144,7 @@ const payLoan = async ({
         accountId: sourceAccountId,
         amount,
         ...(time && { time }),
+        ...(categoryId && { categoryId }),
       }),
       transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan,
       destinationAmount: amount,
@@ -358,7 +362,98 @@ describe('Loans read API', () => {
     });
   });
 
+  describe('loan balance at the loan currency decimals', () => {
+    /** Creates a loan owing `owed` in `currencyCode`, pays `payment` into it from a same-currency account. */
+    const owedAndPaid = async ({
+      currencyCode,
+      owed,
+      payment,
+    }: {
+      currencyCode: string;
+      owed: number;
+      payment: number;
+    }) => {
+      await helpers.addUserCurrencies({ currencyCodes: [currencyCode], raw: true });
+      const category = await helpers.addCustomCategory({ name: 'Loan payment', color: '#123456', raw: true });
+      const sourceAccount = await helpers.createAccount({
+        payload: helpers.buildAccountPayload({ currencyCode }),
+        raw: true,
+      });
+      const loan = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode,
+          initialBalance: owed,
+          originalPrincipal: owed,
+        }),
+        raw: true,
+      });
+      await payLoan({
+        loanId: loan.id,
+        sourceAccountId: sourceAccount.id as RecordId,
+        amount: payment,
+        categoryId: category.id,
+      });
+
+      return helpers.getLoanById({ id: loan.id, raw: true });
+    };
+
+    it('stores a KWD loan balance exactly after a 3-decimal payment, in the primary user book', async () => {
+      const loan = await owedAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.125);
+    });
+
+    it('stores a KWD loan balance exactly in a KWD-base book', async () => {
+      const user = await helpers.provisionSecondUserWithBaseCurrency({ currencyCode: 'KWD' });
+      const loan = await helpers.asUser({
+        cookies: user.cookies,
+        fn: () => owedAndPaid({ currencyCode: 'KWD', owed: 1000.125, payment: 10.125 }),
+      });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.125);
+    });
+
+    it('keeps the 2-decimal balance and paid-to-date of a primary-currency loan', async () => {
+      const loan = await owedAndPaid({ currencyCode: global.BASE_CURRENCY_CODE, owed: 1000.12, payment: 10.12 });
+
+      expect(loan.currentBalance).toBe(-990);
+      expect(loan.projection.paidToDate).toBe(10.12);
+    });
+  });
+
   describe('POST /loans', () => {
+    it('stores every loan amount at the decimals of the loan currency', async () => {
+      await helpers.addUserCurrencies({ currencyCodes: ['JPY', 'KWD'], raw: true });
+
+      const jpy = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'JPY',
+          initialBalance: 900_000.6,
+          originalPrincipal: 1_000_000.5,
+          plannedPayment: 20_000.4,
+          minPayment: 15_000.5,
+        }),
+        raw: true,
+      });
+      expect(jpy.currentBalance).toBe(-900_001);
+      expect(jpy.loanDetails.originalPrincipal).toBe(1_000_001);
+      expect(jpy.loanDetails.plannedPayment).toBe(20_000);
+      expect(jpy.loanDetails.minPayment).toBe(15_001);
+
+      const kwd = await helpers.createLoan({
+        payload: helpers.buildCreateLoanPayload({
+          currencyCode: 'KWD',
+          initialBalance: 900.4567,
+          originalPrincipal: 1000.0005,
+        }),
+        raw: true,
+      });
+      expect(kwd.currentBalance).toBe(-900.457);
+      expect(kwd.loanDetails.originalPrincipal).toBe(1000.001);
+    });
+
     it('creates an Account + LoanDetails atomically and serializes the same shape on create, detail and list', async () => {
       const result = await helpers.createLoan({
         payload: helpers.buildCreateLoanPayload(),
@@ -457,6 +552,9 @@ describe('Loans read API', () => {
         ['negative interestRate', { interestRate: -1 }],
         ['interestRate >= 100', { interestRate: 100 }],
         ['non-positive originalPrincipal', { originalPrincipal: 0 }],
+        ['negative initialBalance', { initialBalance: -1 }],
+        ['negative minPayment', { minPayment: -1 }],
+        ['negative plannedPayment', { plannedPayment: -1 }],
         ['paymentDayOfMonth outside 1-31', { paymentDayOfMonth: 32 }],
         ['calendar-invalid startDate 2024-02-30', { startDate: '2024-02-30' }],
         ['calendar-invalid startDate 2024-13-45', { startDate: '2024-13-45' }],
@@ -667,6 +765,8 @@ describe('Loans read API', () => {
       // rejection rather than a 200 that silently drops the payload.
       const badPayloads: [label: string, payload: Record<string, unknown>][] = [
         ['negative currentBalance', { currentBalance: -50 }],
+        ['negative minPayment', { minPayment: -1 }],
+        ['negative plannedPayment', { plannedPayment: -1 }],
         ['empty patch body', {}],
         ['calendar-invalid startDate', { startDate: '2024-02-30' }],
         ['future startDate', { startDate: format(addDays(new Date(), 2), 'yyyy-MM-dd') }],

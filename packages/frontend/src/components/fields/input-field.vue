@@ -94,6 +94,11 @@ const props = defineProps<{
   errorPlacement?: 'inline' | 'absolute';
   inputFieldStyles?: HTMLAttributes['style'];
   onlyPositive?: boolean;
+  /**
+   * Caps the decimals a `number` input keeps (the amount's currency decimals): digits typed or
+   * pasted past the cap are dropped, and 0 drops the decimal point as well. Unset keeps any precision.
+   */
+  decimals?: number;
   autofocus?: boolean;
   trailingIconCssClass?: string;
   leadingIconCssClass?: string;
@@ -166,6 +171,12 @@ watch(
   },
 );
 
+const limitDecimals = (raw: string): string => {
+  const dot = raw.indexOf('.');
+  if (props.decimals === undefined || dot === -1) return raw;
+  return props.decimals === 0 ? raw.slice(0, dot) : raw.slice(0, dot + 1 + props.decimals);
+};
+
 const onInput = (event: Event) => {
   const target = event.target as HTMLInputElement;
 
@@ -173,8 +184,10 @@ const onInput = (event: Event) => {
 
   // For number inputs, preserve raw value to handle intermediate decimal states
   if (props.type === 'number') {
-    rawNumberInput.value = target.value;
-    const numValue = target.value === '' ? null : Number(target.value);
+    const limited = limitDecimals(target.value);
+    if (limited !== target.value) target.value = limited;
+    rawNumberInput.value = limited;
+    const numValue = limited === '' ? null : Number(limited);
     if (props.modelValue === numValue) return;
     emits(MODEL_EVENTS.input, numValue);
   } else {
@@ -190,6 +203,10 @@ const onKeypress = (event: KeyboardEvent) => {
   if (props.type === 'number') {
     // Prevent scientific notation (e.g., 1e5)
     if (event.key === 'e' || event.key === 'E') {
+      event.preventDefault();
+    }
+    // A whole-number currency has no decimal point to type.
+    if (props.decimals === 0 && (event.key === '.' || event.key === ',')) {
       event.preventDefault();
     }
   }

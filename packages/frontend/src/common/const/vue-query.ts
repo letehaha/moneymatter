@@ -46,6 +46,10 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   exchangeRatesForDate: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'rates-for-date'] as const,
   // append from, to, and the yyyy-MM-dd date when using
   exchangeRatePair: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'rate-pair'] as const,
+  // append the search term when using
+  coingeckoCoinSearch: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'coingecko-search'] as const,
+  // append the custom currency code when using
+  currencyRateHistory: [VUE_QUERY_GLOBAL_PREFIXES.currencies, 'rate-history'] as const,
 
   // widget balance trend
   widgetBalanceTrend: [transactionChange, securityPriceChange, ventureChange, 'widget-balance-trend'] as const,
@@ -247,6 +251,12 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
 
   // user settings
   userSettings: ['user-settings'] as const,
+
+  // chat: append the threadId (and the `before` message id of an older page) when using
+  chatThreads: ['chat', 'threads'] as const,
+  chatThread: ['chat', 'thread'] as const,
+  chatAppliedCards: ['chat', 'applied'] as const,
+  chatDefaultConnection: ['chat', 'default-connection'] as const,
 
   // MCP connected apps
   mcpConnectedApps: ['mcp-connected-apps'] as const,

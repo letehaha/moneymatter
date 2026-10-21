@@ -7,7 +7,7 @@
   "scripts": {
     "start": "npm run dev",
     "dev": "cross-env NODE_ENV=development nodemon --exec 'ts-node -r tsconfig-paths/register' src/app.ts",
-    "build": "vite build",
+    "build": "vite build && vite build --config vite.sandbox-worker.config.mjs",
     "prod": "cross-env NODE_ENV=production node dist/app.js",
     "migrate:dev": "cross-env NODE_ENV=development npx sequelize-cli db:migrate",
     "migrate:dev:undo": "cross-env NODE_ENV=development npx sequelize-cli db:migrate:undo",
@@ -22,7 +22,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "knip": "npx knip",
     "backfill:payee-logos": "cross-env NODE_ENV=production ts-node -r tsconfig-paths/register src/scripts/backfill-payee-logos.ts",
-    "fixtures:ms-money": "ts-node -T scripts/fetch-ms-money-fixtures.ts"
+    "fixtures:ms-money": "ts-node -T scripts/fetch-ms-money-fixtures.ts",
+    "check:money-migration": "ts-node -T scripts/check-money-migration.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",
@@ -32,6 +33,7 @@
     "@better-auth/oauth-provider": "^1.6.30",
     "@better-auth/passkey": "^1.6.30",
     "@coingecko/coingecko-typescript": "^5.1.1",
+    "@jitl/quickjs-wasmfile-release-sync": "0.32.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@napi-rs/canvas": "^0.1.100",
     "@polygon.io/client-js": "^7.4.0",
@@ -68,6 +70,7 @@
     "ofx-js": "1.1.1",
     "pg": "8.11.5",
     "posthog-node": "^5.20.0",
+    "quickjs-emscripten": "0.32.0",
     "resend": "^6.6.0",
     "sequelize": "6.37.8",
     "sequelize-cli": "6.6.2",

@@ -1,14 +1,18 @@
 import type { RecordId } from '@bt/shared/types';
 import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
+import Currencies from '@models/currencies.model';
 import Holdings from '@models/investments/holdings.model';
 import InvestmentTransaction from '@models/investments/investment-transaction.model';
 import Securities from '@models/investments/securities.model';
 import MerchantCategoryCodes from '@models/merchant-category-codes.model';
+import UsersCurrencies from '@models/users-currencies.model';
+import { applyCurrencyOverrides } from '@services/currencies/effective-currency';
 import isPlainObject from 'lodash/isPlainObject';
 import omit from 'lodash/omit';
 import { Op } from 'sequelize';
 
+import { withoutHeaderNames } from './rate-source-headers';
 import { BACKUP_TABLES, type BackupDumpScope, type BackupTableDef } from './registry';
 import { createScopeResolver, type ScopeResolver } from './scope-resolver';
 
@@ -129,13 +133,26 @@ async function dumpTable({
   }
 
   // raw:true is the sanctioned exception to the "no raw on Money" rule: a
-  // backup must carry exact DB storage values (cents integers, decimal
-  // strings, JSONB, arrays) and bypassing the @MoneyField getters is the point.
-  const rows = (await def.model.findAll({ where, raw: true, paranoid: false })) as unknown as Row[];
+  // backup must carry exact DB storage values (decimal strings for money,
+  // JSONB, arrays) and bypassing the @MoneyField getters is the point.
+  // The rate-source table is read unscoped: its default scope also leaves out the HTTP history
+  // fingerprint, which has to travel (a restored currency that was switched away from HTTP needs it
+  // to keep its stored rates). The encrypted request headers are excluded by name instead.
+  const rows = (await (def.stripSecret === 'rateSourceHeaders'
+    ? def.model.unscoped().findAll({
+        where,
+        attributes: { exclude: ['rateSourceHeadersEncrypted'] },
+        raw: true,
+        paranoid: false,
+      })
+    : def.model.findAll({ where, raw: true, paranoid: false }))) as unknown as Row[];
 
   if (def.stripSecret === 'aiKeys') stripAiKeys({ rows });
   if (def.stripSecret === 'bankCredentials') {
     for (const row of rows) row.credentials = null;
+  }
+  if (def.stripSecret === 'rateSourceHeaders') {
+    for (const row of rows) row.rateSourceConfig = withoutHeaderNames({ config: row.rateSourceConfig });
   }
   if (def.enrichMccCode) await attachMccCodes({ rows });
 
@@ -148,7 +165,13 @@ async function dumpTable({
  * resolves-or-creates by natural key. Prices are not dumped: derived market data
  * the instance refetches, never trusted from an uploaded backup.
  */
-async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Promise<BackupFile[]> {
+async function dumpReferenceFiles({
+  resolver,
+  userId,
+}: {
+  resolver: ScopeResolver;
+  userId: number;
+}): Promise<BackupFile[]> {
   const portfolioIds = await resolver.getScope({ scope: 'portfolios' });
 
   let securityIds: RecordId[] = [];
@@ -177,7 +200,38 @@ async function dumpReferenceFiles({ resolver }: { resolver: ScopeResolver }): Pr
     ? await Securities.findAll({ where: { id: { [Op.in]: securityIds } }, raw: true })
     : [];
 
-  return [{ path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) }];
+  const customCurrencies = await dumpCustomCurrencies({ userId });
+
+  return [
+    { path: 'reference/securities.json', rows: securities.length, buffer: toBuffer({ value: securities }) },
+    {
+      path: 'reference/custom-currencies.json',
+      rows: customCurrencies.length,
+      buffer: toBuffer({ value: customCurrencies }),
+    },
+  ];
+}
+
+/**
+ * The definitions (code, name, decimals, symbol) of the custom currencies the user holds, as THIS
+ * user defined them: their own overrides on top of the global row. The global row carries whoever
+ * created the code first, so exporting it would hand one user another user's name, symbol and
+ * decimals. A restore on a fresh instance creates the global row from this definition, and on an
+ * instance that already has the code the user's own overrides travel in `users-currencies`.
+ * Nothing that names a creator travels.
+ */
+async function dumpCustomCurrencies({ userId }: { userId: number }): Promise<Row[]> {
+  const held = (await UsersCurrencies.findAll({
+    where: { userId },
+    include: [{ model: Currencies, as: 'currency', where: { isCustom: true }, required: true }],
+    order: [['currencyCode', 'ASC']],
+  })) as (UsersCurrencies & { currency: Currencies })[];
+
+  return held.map((row) => {
+    const { code, name, decimals, symbol } = applyCurrencyOverrides({ currency: row.currency, overrides: row });
+
+    return { code, currency: name, digits: decimals, symbol, isCustom: true };
+  });
 }
 
 /** Dump every backup file (data + reference) for one user. */
@@ -191,6 +245,6 @@ export async function dumpBackupFiles({ userId }: { userId: number }): Promise<B
     dataFiles.push(await dumpTable({ def, userId, resolver }));
   }
 
-  const referenceFiles = await dumpReferenceFiles({ resolver });
+  const referenceFiles = await dumpReferenceFiles({ resolver, userId });
   return [...dataFiles, ...referenceFiles];
 }

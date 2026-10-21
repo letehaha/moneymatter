@@ -304,7 +304,8 @@ watch(spikeError, (value) => {
 
 const spikeBreakdown = computed(() => {
   const day = hoverIndex.value;
-  const items = spikeTransactions.value;
+  // A row with no base-currency amount (its rate is unknown) cannot be placed on the base-currency spike.
+  const items = spikeTransactions.value?.filter((tx): tx is typeof tx & { refAmount: number } => tx.refAmount !== null);
   if (!spikeDate.value || day === null || spikeError.value || items?.length === 0) return null;
   const title = t('dashboard.widgets.spendingPace.tooltip.spikeFrom', {
     date: formatLocal(addDays(startOfMonth(subMonths(now, 1)), day), 'MMM d'),
