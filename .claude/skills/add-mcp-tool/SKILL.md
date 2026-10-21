@@ -56,7 +56,7 @@ import {
   enforceUserRateLimit,
   getUserId,
   jsonContent,
-  requireFeatureAccess,
+  requireFeature,
   requireScope,
 } from './helpers';
 
@@ -75,7 +75,7 @@ export function registerMyNewTool(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' }); // write and delete tools only
-      requireFeatureAccess({ extra, feature: FEATURES.budget_plan }); // only when the REST route has requireFeature
+      await requireFeature({ userId, feature: FEATURES.budget_plan }); // only when the REST route has requireFeature
       await assertBaseCurrencyUnlocked({ userId }); // unless the REST route has no checkBaseCurrencyLock
       await enforceUserRateLimit({ userId, limit: SOME_RATE_LIMIT }); // only when the REST route is rate-limited
       trackMcpToolUsed({ userId, tool: 'my_new_tool', clientId: extra.authInfo?.clientId });
@@ -94,7 +94,7 @@ Rules:
 - `inputSchema` is a **plain object of Zod schemas** (no outer `z.object(...)`), declared as a **module-scope `const`**, never inline inside `registerTool()`. Every MCP session builds its own `McpServer`, so an inline shape is rebuilt per session (zod v4 schemas are ~30 KB each).
 - For tools with no inputs: omit `inputSchema` and drop the `args` parameter — handler becomes `async (extra) => {...}`.
 - Always call `getUserId({ extra })` first — it enforces auth and returns `userId`.
-- Write guard order: `getUserId` → `requireScope` → `requireFeatureAccess` (when gated) → `assertBaseCurrencyUnlocked` (unless exempt) → `enforceUserRateLimit` (when rate-limited) → `trackMcpToolUsed` → service.
+- Write guard order: `getUserId` → `requireScope` → `requireFeature` (when gated) → `assertBaseCurrencyUnlocked` (unless exempt) → `enforceUserRateLimit` (when rate-limited) → `trackMcpToolUsed` → service.
 - Always call `trackMcpToolUsed({ userId, tool, clientId: extra.authInfo?.clientId })` after the guards, before the service call.
 - Wrap the final response in `jsonContent({ data })`. Money instances auto-serialize to decimals via `toJSON()` in `JSON.stringify`.
 - Use `z.enum([...])` for enum args — match the style in `search-transactions.ts`.
@@ -105,10 +105,10 @@ Rules:
 - **Names:** read tools start with `get_`, `list_`, `search_` or `preview_`, and nothing else does. Read tools call no scope helper (the `/mcp` route already requires `finance:read`).
 - **Scopes:** every other tool calls `requireScope`. `finance:write` is the default. `delete_*` tools, and tools that permanently remove data without `delete_` in the name (`merge_payees`, `bulk_delete_*`), use `finance:delete` and are listed in `DESTRUCTIVE_TOOLS` in `tool-scopes-drift.unit.ts` when the name lacks the prefix. A soft delete that a restore tool undoes is a `finance:write` tool. A tool whose delete path is optional (for example `ignore_payee_name` with `force`) uses `finance:write` normally and `finance:delete` on the delete path; list it in `CONDITIONAL_DELETE_TOOLS` in `tool-scopes-drift.unit.ts` (beside `DESTRUCTIVE_TOOLS`) instead.
 - **Read-only and demo users:** `requireScope` rejects both. The only exception is a tool on a route in `READ_ONLY_ROUTES` (`middlewares/entitlements.ts`), which REST lets a read-only user call: it passes `allowReadOnly: true`, and is listed in `READ_ONLY_ROUTE_TOOLS` (with the route in a comment) in `tool-scopes-drift.unit.ts`, so the exemption cannot spread.
-- **Base-currency lock:** `assertBaseCurrencyUnlocked({ userId })` after `requireScope` and, when the tool is gated, after `requireFeatureAccess` mirrors `checkBaseCurrencyLock`. The lock follows the REST route, not the tool's name or scope:
+- **Base-currency lock:** `assertBaseCurrencyUnlocked({ userId })` after `requireScope` and, when the tool is gated, after `requireFeature` mirrors `checkBaseCurrencyLock`. The lock follows the REST route, not the tool's name or scope:
   - a write tool whose route has no lock goes into `LOCK_EXEMPT_TOOLS` (with the route in a comment);
   - a read-named tool whose route carries the lock (`preview_transaction_automation`) calls `getUserId` → `assertBaseCurrencyUnlocked` → `trackMcpToolUsed`, and goes into `LOCK_GUARDED_READ_TOOLS`.
-- **Feature gates:** `requireFeatureAccess({ extra, feature })` where the route has `requireFeature`. It reads the features that `services/mcp/auth.ts` puts in the auth info and throws the same message as REST's 402.
+- **Feature gates:** `await requireFeature({ userId, feature })` where the route has `requireFeature`. It reads the user's entitlements, active trials included, and throws the same message as REST's 402.
 - **Rate limits:** where the REST route is rate-limited, put the budget in `services/common/user-rate-limits.ts`, read it from both `middlewares/rate-limit.ts` and the tool, and call `enforceUserRateLimit({ userId, limit })`, so the two paths share one counter per user.
 
 ### Mirror the REST route
@@ -251,7 +251,7 @@ Helpers available from `./helpers`:
 - `getUserId({ extra })` — throws if unauthenticated
 - `requireScope({ extra, scope, allowReadOnly? })` — scope check; rejects demo and read-only users unless `allowReadOnly` (only the `READ_ONLY_ROUTES` tools)
 - `assertBaseCurrencyUnlocked({ userId })` — refuses while a base-currency change runs; fails closed if Redis is down
-- `requireFeatureAccess({ extra, feature })` — refuses when the plan lacks the feature
+- `requireFeature({ userId, feature })` — refuses when the plan lacks the feature
 - `enforceUserRateLimit({ userId, limit })` — draws from a per-user budget shared with the REST middleware
 - `jsonContent({ data })` — wraps in MCP content envelope
 - `assertOriginalCurrencyArgs({ args })` — the original-currency pair rule of the transaction tools
