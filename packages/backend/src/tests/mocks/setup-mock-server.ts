@@ -12,6 +12,7 @@ import { openAiCompatibleHandlers } from './openai-compatible/mock-api';
 import { openAiHandlers } from './openai/mock-api';
 import { simplefinHandlers } from './simplefin/mock-api';
 import { walutomatHandlers } from './walutomat/mock-api';
+import { webPushHandlers } from './web-push/mock-api';
 
 export const setupMswServer = () =>
   setupServer(
@@ -27,4 +28,5 @@ export const setupMswServer = () =>
     ...logoDevHandlers,
     ...openAiCompatibleHandlers,
     ...modelsDevHandlers,
+    ...webPushHandlers,
   );

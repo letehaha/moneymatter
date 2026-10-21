@@ -849,6 +849,26 @@
   "dataExport": {
     "tooManyRows": "Експорт міститиме рядків: {{rowCount, number}}, що перевищує ліміт ({{limit, number}})."
   },
+  "webPush": {
+    "notConfigured": "Сповіщення в браузері не налаштовано на цьому сервері",
+    "endpointNotAllowed": "Ця адреса push-сповіщень не дозволена",
+    "invalidKeys": "Ключі push-підписки недійсні",
+    "subscriptionNotFound": "Push-підписку не знайдено",
+    "endpointInUse": "Ця адреса push-сповіщень уже належить іншому акаунту",
+    "newVersion": "Нова версія {{version}}",
+    "testTitle": "MoneyMatter",
+    "testBody": "Сповіщення в браузері працюють на цьому пристрої.",
+    "fallbackTitle": "MoneyMatter",
+    "fallbackBody": "У вас нове сповіщення",
+    "body": {
+      "tagReminderThreshold": "витрачено {{amount}} (поріг: {{threshold}})",
+      "tagReminderExistence_one": "{{count}} транзакція",
+      "tagReminderExistence_few": "{{count}} транзакції",
+      "tagReminderExistence_many": "{{count}} транзакцій",
+      "tagReminderExistence_other": "{{count}} транзакції",
+      "shareSendFailedHint": "Відкрийте панель спільного доступу, щоб надіслати повторно."
+    }
+  },
   "goals": {
     "goalNotFound": "Ціль не знайдено.",
     "accountNotFound": "Один із вибраних рахунків не знайдено.",

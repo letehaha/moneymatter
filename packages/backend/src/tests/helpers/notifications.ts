@@ -1,4 +1,4 @@
-import { NotificationModel } from '@bt/shared/types';
+import { NotificationModel, NotificationType } from '@bt/shared/types';
 import * as helpers from '@tests/helpers';
 import { Response } from 'express';
 
@@ -117,4 +117,26 @@ export async function dismissNotification({
   });
 
   return result;
+}
+
+export async function createNotification<R extends boolean | undefined = undefined>({
+  payload,
+  raw,
+}: {
+  payload: {
+    type: NotificationType;
+    title: string;
+    message?: string;
+    payload?: Record<string, unknown>;
+    priority?: string;
+    expiresAt?: string;
+  };
+  raw?: R;
+}) {
+  return helpers.makeRequest<Omit<NotificationModel, 'userId'>, R>({
+    method: 'post',
+    url: '/notifications',
+    payload,
+    raw,
+  });
 }

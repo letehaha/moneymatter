@@ -62,3 +62,68 @@ describe('ZodSettingsPatchSchema – locale field', () => {
     if (result.success) expect(result.data.locale).toBeUndefined();
   });
 });
+
+describe('ZodSettingsSchema – notifications push groups', () => {
+  it('accepts a partial push-group save without enabled and types', () => {
+    const result = ZodSettingsSchema.safeParse({ notifications: { push: { groups: { reminders: false } } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.notifications).toStrictEqual({ push: { groups: { reminders: false } } });
+    }
+  });
+
+  it('accepts a stored notifications object without enabled and types', () => {
+    expect(ZodSettingsSchema.safeParse({ notifications: {} }).success).toBe(true);
+    expect(ZodSettingsSchema.safeParse({ notifications: { push: {} } }).success).toBe(true);
+  });
+
+  it('still accepts the legacy enabled and types keys next to push groups', () => {
+    const result = ZodSettingsSchema.safeParse({
+      notifications: {
+        enabled: true,
+        types: { tracker_alert: false },
+        push: { groups: { releases: true } },
+      },
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.notifications?.enabled).toBe(true);
+      expect(result.data.notifications?.types?.tracker_alert).toBe(false);
+      expect(result.data.notifications?.push?.groups?.releases).toBe(true);
+    }
+  });
+
+  it('does not inject defaults for groups the user never set', () => {
+    const result = ZodSettingsSchema.safeParse({ notifications: { push: { groups: {} } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.notifications?.push?.groups).toStrictEqual({});
+  });
+
+  it('rejects an unknown-typed group value', () => {
+    expect(ZodSettingsSchema.safeParse({ notifications: { push: { groups: { reminders: 'yes' } } } }).success).toBe(
+      false,
+    );
+  });
+});
+
+describe('ZodSettingsPatchSchema – notifications push groups', () => {
+  it('accepts a single group and adds no defaults', () => {
+    const result = ZodSettingsPatchSchema.safeParse({ notifications: { push: { groups: { releases: true } } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).toStrictEqual({ notifications: { push: { groups: { releases: true } } } });
+    }
+  });
+
+  it('accepts every group', () => {
+    const groups = { reminders: true, bankSync: false, sharing: true, system: false, releases: true };
+    const result = ZodSettingsPatchSchema.safeParse({ notifications: { push: { groups } } });
+
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.notifications?.push?.groups).toStrictEqual(groups);
+  });
+});

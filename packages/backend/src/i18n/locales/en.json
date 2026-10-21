@@ -843,6 +843,24 @@
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
   },
+  "webPush": {
+    "notConfigured": "Browser notifications are not configured on this server",
+    "endpointNotAllowed": "This push endpoint is not allowed",
+    "invalidKeys": "The push subscription keys are invalid",
+    "subscriptionNotFound": "Push subscription not found",
+    "endpointInUse": "This push endpoint already belongs to another account",
+    "newVersion": "New version {{version}}",
+    "testTitle": "MoneyMatter",
+    "testBody": "Browser notifications are working on this device.",
+    "fallbackTitle": "MoneyMatter",
+    "fallbackBody": "You have a new notification",
+    "body": {
+      "tagReminderThreshold": "spent {{amount}} (threshold: {{threshold}})",
+      "tagReminderExistence_one": "{{count}} transaction",
+      "tagReminderExistence_other": "{{count}} transactions",
+      "shareSendFailedHint": "Open the sharing panel to resend."
+    }
+  },
   "goals": {
     "goalNotFound": "Goal not found.",
     "accountNotFound": "One of the selected accounts was not found.",

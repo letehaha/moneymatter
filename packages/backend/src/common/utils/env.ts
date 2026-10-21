@@ -12,6 +12,10 @@ export enum EnvVar {
   COINGECKO_API_KEY = 'COINGECKO_API_KEY',
   LOGO_DEV_SECRET_KEY = 'LOGO_DEV_SECRET_KEY',
   TYPESAFE_API_KEY = 'TYPESAFE_API_KEY',
+  VAPID_PUBLIC_KEY = 'VAPID_PUBLIC_KEY',
+  VAPID_PRIVATE_KEY = 'VAPID_PRIVATE_KEY',
+  VAPID_SUBJECT = 'VAPID_SUBJECT',
+  WEB_PUSH_ALLOWED_HOSTS = 'WEB_PUSH_ALLOWED_HOSTS',
 }
 
 // Catches values still set to the .env.template default (e.g. `your-resend-api-key`,
@@ -31,6 +35,9 @@ const RULES: Partial<Record<EnvVar, EnvRule>> = {
   [EnvVar.BETTER_AUTH_SECRET]: { minLength: 32 },
 };
 
+// Variables whose value never reaches a log line: `warnOnce` prints `<redacted>` for them.
+const REDACTED_VARS: ReadonlySet<EnvVar> = new Set([EnvVar.VAPID_PUBLIC_KEY, EnvVar.VAPID_PRIVATE_KEY]);
+
 // Warn once per (name, value) pair. A flag checked from many places (e.g. the
 // Resend client constructed at module load AND a route guard) would otherwise
 // log the same message repeatedly.
@@ -39,7 +46,8 @@ const warnOnce = (name: EnvVar, value: string, reason: string): void => {
   const key = `${name}:${value}`;
   if (warnedKeys.has(key)) return;
   warnedKeys.add(key);
-  logger.warn(`[env] ${name}="${value}" – ${reason}. Treating as unset.`);
+  const shown = REDACTED_VARS.has(name) ? '<redacted>' : value;
+  logger.warn(`[env] ${name}="${shown}" – ${reason}. Treating as unset.`);
 };
 
 /**

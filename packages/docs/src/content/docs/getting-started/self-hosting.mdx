@@ -29,6 +29,7 @@ Some features need a key or an account of your own. They stay off until you set 
 | Email (invitations, verification, password reset) | A Resend API key. Without it, you share invitation links by hand and the **Forgot password?** link is hidden. |
 | Google or GitHub sign-in       | Your own OAuth app with that provider.                                              |
 | Payee logos                    | A logo.dev key.                                                                     |
+| Browser notifications          | A VAPID key pair and a contact address. See [Browser notifications](#browser-notifications). |
 
 The [environment reference](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/environment-reference.md) lists every setting.
 
@@ -92,6 +93,41 @@ If `BETTER_AUTH_URL` and `AUTH_ORIGIN` don't match the address in the browser, s
 </Aside>
 
 The [reverse proxy guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/reverse-proxies.md) has recipes for Nginx Proxy Manager, Caddy, Traefik and plain nginx, and explains how to close the port. If you don't run a proxy, the [Traefik overlay](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/traefik-overlay.md) adds one with free Let's Encrypt certificates.
+
+## Browser notifications
+
+[Browser notifications](/settings/notifications/) send the bell's notifications to your devices, also when MoneyMatter is closed. They stay off until you give the server a VAPID key pair. VAPID keys are the credentials the server uses to prove to the browsers' push services (Apple, Google, Mozilla, Microsoft) that a push comes from your instance.
+
+<Steps>
+
+1. Generate a key pair. This runs on any machine with Node.js and installs nothing:
+
+   ```bash
+   npx web-push@3.6.7 generate-vapid-keys
+   ```
+
+2. In `.env`, set the three values. The public and private keys are the two values the command printed. `VAPID_SUBJECT` is a contact for the push services, written as `mailto:` plus your email address or as an `https://` address you control:
+
+   ```bash
+   VAPID_PUBLIC_KEY=<the public key>
+   VAPID_PRIVATE_KEY=<the private key>
+   VAPID_SUBJECT=mailto:you@example.com
+   ```
+
+3. Run `docker compose up -d` again.
+
+</Steps>
+
+Then **Notifications** appears in Settings for every user. The private key is a secret: keep it only in `.env`, as with your other secrets.
+
+If a key is missing or invalid, or `VAPID_SUBJECT` points at `localhost` or a `.local` address, the feature stays off and the backend logs why. Apple's push service rejects those addresses.
+
+Keep these in mind:
+
+- **Changing the keys removes every device.** Browsers tie each subscription to the key it was made with, so after a change everyone has to turn notifications on again on each device.
+- **Notifications go from your server to the push services over HTTPS.** The backend needs outbound access on port 443 to `*.push.apple.com`, `fcm.googleapis.com`, `*.push.services.mozilla.com` and `*.notify.windows.com`. Nothing needs to reach your server from them.
+- **Use HTTPS.** Browsers only allow notifications on a secure address, so the app has to be reached through your [reverse proxy](#put-it-on-the-internet) with a certificate. `http://localhost` also works for a trial.
+- **Behind a sign-in proxy** such as Cloudflare Access, delivery bypasses the proxy: the server sends to the push services directly. Your browser fetches the service worker (`/sw.js`) and the app manifest with the proxy's cookie, so signing in to the proxy is enough and no exception rule is needed. The [reverse proxy guide](https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/reverse-proxies.md#auth-proxies-cloudflare-access-and-similar) has the details.
 
 ## Update
 

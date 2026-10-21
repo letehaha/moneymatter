@@ -31,7 +31,7 @@ const handleDeleteAccount = async () => {
   try {
     await deleteUserAccount();
     addSuccessNotification(t('settings.security.deleteAccount.notifications.success'));
-    authStore.logout();
+    authStore.logout({ disablePush: true });
     router.push({ name: ROUTES_NAMES.signIn });
   } catch {
     addErrorNotification(t('settings.security.deleteAccount.notifications.failed'));

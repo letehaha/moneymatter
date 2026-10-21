@@ -1,6 +1,8 @@
 export function useSafariDetection() {
   const userAgent = navigator.userAgent.toLowerCase();
   const isAppleDevice = /iphone|ipad|ipod/.test(userAgent);
+  // iPadOS 13+ reports a Macintosh user agent; touch points tell it apart from a Mac.
+  const isIOS = isAppleDevice || (userAgent.includes('macintosh') && navigator.maxTouchPoints > 1);
   const isSafariBrowser =
     userAgent.includes('safari') && !userAgent.includes('chrome') && !userAgent.includes('android');
 
@@ -21,6 +23,7 @@ export function useSafariDetection() {
     isSafari,
     isSafariMobile,
     isIOSChrome,
+    isIOS,
     isPWA,
   };
 }

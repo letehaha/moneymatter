@@ -532,3 +532,78 @@ describe('Patch user settings', () => {
     });
   });
 });
+
+describe('Patch user settings – notification push groups', () => {
+  it('saves a group for a fresh user without storing the dormant enabled and types keys', async () => {
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { reminders: false } } } },
+    });
+
+    expect(patched.notifications?.push?.groups).toStrictEqual({ reminders: false });
+    expect(patched.notifications).not.toHaveProperty('types');
+
+    const fetched = await helpers.getUserSettings({ raw: true });
+    expect(fetched.notifications?.push?.groups?.reminders).toBe(false);
+    expect(fetched.notifications).not.toHaveProperty('types');
+  });
+
+  it('merges a second group into the first instead of replacing it', async () => {
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { reminders: false } } } },
+    });
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { releases: true } } } },
+    });
+
+    expect(patched.notifications?.push?.groups).toStrictEqual({ reminders: false, releases: true });
+  });
+
+  it('keeps legacy notifications.enabled and types and adds the groups next to them', async () => {
+    await helpers.updateUserSettings({
+      raw: true,
+      settings: {
+        locale: 'en',
+        notifications: { enabled: false, types: { tracker_alert: false, system: true, changelog: false } },
+      },
+    });
+
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { sharing: false } } } },
+    });
+
+    expect(patched.notifications).toStrictEqual({
+      enabled: false,
+      types: { tracker_alert: false, system: true, changelog: false },
+      push: { groups: { sharing: false } },
+    });
+  });
+
+  it('saves a group for a user without a settings row', async () => {
+    const { id: userId } = await helpers.getUserInfo({ raw: true });
+    await UserSettings.destroy({ where: { userId } });
+
+    const patched = await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { bankSync: false } } } },
+    });
+
+    expect(patched.notifications?.push?.groups).toStrictEqual({ bankSync: false });
+    expect((await helpers.getUserSettings({ raw: true })).notifications?.push?.groups?.bankSync).toBe(false);
+  });
+
+  it('rejects a non-boolean group value and keeps the stored groups', async () => {
+    await helpers.patchUserSettings({
+      raw: true,
+      patch: { notifications: { push: { groups: { system: false } } } },
+    });
+
+    const res = await helpers.patchUserSettings({ patch: { notifications: { push: { groups: { system: 'no' } } } } });
+
+    expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect((await helpers.getUserSettings({ raw: true })).notifications?.push?.groups?.system).toBe(false);
+  });
+});

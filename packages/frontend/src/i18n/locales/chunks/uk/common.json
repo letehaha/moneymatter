@@ -320,6 +320,7 @@
     "title": "Сповіщення",
     "markAllAsRead": "Позначити всі як прочитані",
     "empty": "Сповіщень ще немає",
+    "notFound": "Це сповіщення більше недоступне",
     "containerAriaLabel": "Сповіщення",
     "closeToast": "Закрити сповіщення",
     "viewOnGitHub": "Переглянути на GitHub",

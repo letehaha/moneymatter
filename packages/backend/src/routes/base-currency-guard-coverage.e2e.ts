@@ -40,6 +40,14 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'POST /api/v1/notifications/read-all',
   'POST /api/v1/notifications/:id/read',
 
+  // Push device registration: no monetary data, and notifications must be switchable during a base-currency change.
+  'DELETE /api/v1/push/subscriptions/:id',
+  'POST /api/v1/push/subscriptions',
+  'POST /api/v1/push/subscriptions/sync',
+  'POST /api/v1/push/subscriptions/unsubscribe',
+  // Push test send: no monetary data.
+  'POST /api/v1/push/test',
+
   // Billing and admin plan grants: Stripe sessions and plan flags, no monetary data.
   'PATCH /api/v1/admin/users/:id/plan',
   'POST /api/v1/billing/checkout',
