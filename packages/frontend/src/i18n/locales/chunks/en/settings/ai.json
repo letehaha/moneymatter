@@ -43,6 +43,7 @@
         "placeholder": "Pick a model",
         "automaticOption": "Automatic",
         "automaticOptionWithTarget": "Automatic · {target}",
+        "automaticOptionWithConnection": "Automatic · {name} · {model}",
         "serverOption": "MoneyMatter AI · included",
         "connectionOption": "{name} · {model}",
         "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",

@@ -206,8 +206,12 @@ const formatOptionLabel = (option: FeatureModelOption) => {
       : t('settings.ai.modelSelector.connectionOption', params);
   }
   if (!option.target) return t('settings.ai.modelSelector.automaticOption');
-  return t('settings.ai.modelSelector.automaticOptionWithTarget', {
-    target: option.target.kind === 'server' ? serverLabel.value : option.target.name,
+  if (option.target.kind === 'server') {
+    return t('settings.ai.modelSelector.automaticOptionWithTarget', { target: serverLabel.value });
+  }
+  return t('settings.ai.modelSelector.automaticOptionWithConnection', {
+    name: option.target.name,
+    model: option.target.model,
   });
 };
 

@@ -99,7 +99,25 @@ describe('buildFeatureModelOptions', () => {
     expect(automatic).toEqual({
       value: AUTOMATIC_OPTION,
       kind: 'automatic',
-      target: { kind: 'connection', name: 'Claude fast' },
+      target: { kind: 'connection', name: 'Claude fast', model: 'gemini-flash' },
+    });
+  });
+
+  it('names the model that answers an unconfigured feature, as the connection labels it', () => {
+    const [automatic] = buildFeatureModelOptions({
+      status: buildStatus({
+        servedBy: 'connection',
+        connectionId: CONNECTION_B,
+        connectionName: 'My Claude Account',
+        modelId: 'claude-code/haiku',
+      }),
+      connections: [
+        { ...buildConnection({ id: CONNECTION_B, name: 'My Claude Account' }), provider: AI_PROVIDER.claudeCode },
+      ],
+    });
+
+    expect(automatic).toMatchObject({
+      target: { kind: 'connection', name: 'My Claude Account', model: 'haiku (latest)' },
     });
   });
 

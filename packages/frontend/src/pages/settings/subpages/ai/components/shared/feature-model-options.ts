@@ -1,10 +1,11 @@
+import { formatConnectionModelName } from '@/components/common/ai-connection-model/connection-model-options';
 import { AIConnectionInfo, AIFeatureStatus, getModelNameFromModelId } from '@bt/shared/types';
 
 // Connection ids are UUIDs, so these never collide with one.
 export const AUTOMATIC_OPTION = 'automatic';
 export const SERVER_OPTION = 'server';
 
-export type AutomaticTarget = { kind: 'server' } | { kind: 'connection'; name: string } | null;
+export type AutomaticTarget = { kind: 'server' } | { kind: 'connection'; name: string; model: string } | null;
 
 export type FeatureModelOption =
   | { value: typeof AUTOMATIC_OPTION; kind: 'automatic'; target: AutomaticTarget }
@@ -17,12 +18,26 @@ export const readFeatureSelectValue = ({ status }: { status: AIFeatureStatus }):
 };
 
 /** What "Automatic" resolves to. Only an unconfigured status says: a configured one describes the pick. */
-const describeAutomaticTarget = ({ status }: { status: AIFeatureStatus }): AutomaticTarget => {
+const describeAutomaticTarget = ({
+  status,
+  connections,
+}: {
+  status: AIFeatureStatus;
+  connections: AIConnectionInfo[];
+}): AutomaticTarget => {
   if (status.isConfigured) return null;
   if (status.servedBy === 'server') return { kind: 'server' };
-  return status.servedBy === 'connection' && status.connectionName
-    ? { kind: 'connection', name: status.connectionName }
-    : null;
+  if (status.servedBy !== 'connection' || !status.connectionName) return null;
+
+  // The status carries the model that answers, whether the connection's own or an override.
+  const model = getModelNameFromModelId({ modelId: status.modelId });
+  const connection = connections.find(({ id }) => id === status.connectionId);
+
+  return {
+    kind: 'connection',
+    name: status.connectionName,
+    model: connection ? formatConnectionModelName({ provider: connection.provider, model }) : model,
+  };
 };
 
 export const buildFeatureModelOptions = ({
@@ -33,7 +48,7 @@ export const buildFeatureModelOptions = ({
   connections: AIConnectionInfo[];
 }): FeatureModelOption[] => {
   const options: FeatureModelOption[] = [
-    { value: AUTOMATIC_OPTION, kind: 'automatic', target: describeAutomaticTarget({ status }) },
+    { value: AUTOMATIC_OPTION, kind: 'automatic', target: describeAutomaticTarget({ status, connections }) },
   ];
 
   if (status.serverModelName) options.push({ value: SERVER_OPTION, kind: 'server' });
@@ -43,7 +58,7 @@ export const buildFeatureModelOptions = ({
       value: connection.id,
       kind: 'connection',
       name: connection.name,
-      model: connection.model,
+      model: formatConnectionModelName({ provider: connection.provider, model: connection.model }),
       needsAttention: connection.status === 'invalid',
     });
   }
