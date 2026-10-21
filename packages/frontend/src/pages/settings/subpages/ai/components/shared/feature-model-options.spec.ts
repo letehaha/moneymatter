@@ -118,7 +118,7 @@ describe('buildFeatureModelOptions', () => {
     });
 
     expect(automatic).toMatchObject({
-      target: { kind: 'connection', name: 'My Claude Account', model: 'haiku (latest)' },
+      target: { kind: 'connection', name: 'My Claude Account', model: 'Claude Haiku 5.5' },
     });
   });
 
@@ -153,7 +153,7 @@ describe('formatAnsweringModel', () => {
   const status = buildStatus({ servedBy: 'connection', connectionId: CONNECTION_B, modelId: 'claude-code/haiku' });
 
   it('labels a subscription model as the connection does', () => {
-    expect(formatAnsweringModel({ status, connections: [claude] })).toBe('haiku (latest)');
+    expect(formatAnsweringModel({ status, connections: [claude] })).toBe('Claude Haiku 5.5');
   });
 
   it('falls back to the bare model name while the connection list is missing', () => {
