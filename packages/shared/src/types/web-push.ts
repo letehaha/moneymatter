@@ -1,7 +1,7 @@
 import { NOTIFICATION_TYPES, type NotificationType } from './notifications';
 
 /**
- * Preference groups for Web Push. 27 notification types are too many switches, so a user
+ * Preference groups for Web Push. Many notification types are too many switches, so a user
  * toggles a group and every type maps into exactly one of them.
  */
 export const PUSH_GROUPS = {
@@ -22,6 +22,7 @@ export const NOTIFICATION_PUSH_GROUP: Record<NotificationType, PushGroup> = {
   [NOTIFICATION_TYPES.tagReminder]: PUSH_GROUPS.reminders,
   [NOTIFICATION_TYPES.trackerAlert]: PUSH_GROUPS.reminders,
   [NOTIFICATION_TYPES.trackerAiMatches]: PUSH_GROUPS.reminders,
+  [NOTIFICATION_TYPES.goalReached]: PUSH_GROUPS.reminders,
 
   [NOTIFICATION_TYPES.plannedConfirmed]: PUSH_GROUPS.bankSync,
   [NOTIFICATION_TYPES.stuckPending]: PUSH_GROUPS.bankSync,
