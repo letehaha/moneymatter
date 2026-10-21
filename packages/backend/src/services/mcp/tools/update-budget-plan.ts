@@ -6,7 +6,14 @@ import { updatePlan } from '@services/budget-plans/update-plan';
 import { updatePlanBodyFields, updatePlanBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeature,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -28,6 +35,11 @@ const inputSchema = {
   ),
 };
 
+export function validateUpdateBudgetPlanArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, ...patch } = args;
+  return { planId, ...updatePlanBodySchema.parse(patch) };
+}
+
 export function registerUpdateBudgetPlan(server: McpServer) {
   server.registerTool(
     'update_budget_plan',
@@ -43,8 +55,7 @@ export function registerUpdateBudgetPlan(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_budget_plan', clientId: extra.authInfo?.clientId });
 
-      const { planId, ...patch } = args;
-      const details = await updatePlan({ userId, planId, ...updatePlanBodySchema.parse(patch) });
+      const details = await updatePlan({ userId, ...validateUpdateBudgetPlanArgs({ args }) });
 
       return jsonContent({ data: presentBudgetPlanDetails({ details }) });
     },

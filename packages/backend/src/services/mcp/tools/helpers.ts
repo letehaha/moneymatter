@@ -5,8 +5,12 @@ import Accounts from '@models/accounts.model';
 import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
+import type { z } from 'zod';
 
 import { slimGoalsForMcp } from '../serializers';
+
+/** The arguments a tool handler receives, typed from the plain shape it registers as `inputSchema`. */
+export type ToolArgs<Shape extends z.ZodRawShape> = z.infer<z.ZodObject<Shape>>;
 
 /**
  * Extract the app user ID from MCP request auth info.

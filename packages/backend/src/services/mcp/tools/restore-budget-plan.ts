@@ -6,7 +6,14 @@ import { restorePlan } from '@services/budget-plans/restore-plan';
 import { restorePlanBodyFields, restorePlanBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeature,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('ID of a plan in the trash (from list_budget_plans with includeDeleted)'),
@@ -14,6 +21,11 @@ const inputSchema = {
     'true: if another plan is active, move it to the trash and restore this one in its place. Default false: restoring fails while another plan is active',
   ),
 };
+
+export function validateRestoreBudgetPlanArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const body = restorePlanBodySchema.parse({ replace: args.replace });
+  return { planId: args.planId, replace: body?.replace };
+}
 
 export function registerRestoreBudgetPlan(server: McpServer) {
   server.registerTool(
@@ -30,8 +42,8 @@ export function registerRestoreBudgetPlan(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'restore_budget_plan', clientId: extra.authInfo?.clientId });
 
-      const body = restorePlanBodySchema.parse({ replace: args.replace });
-      const details = await restorePlan({ userId, planId: args.planId, replace: body?.replace });
+      const { planId, replace } = validateRestoreBudgetPlanArgs({ args });
+      const details = await restorePlan({ userId, planId, replace });
 
       return jsonContent({ data: presentBudgetPlanDetails({ details }) });
     },

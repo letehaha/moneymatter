@@ -261,40 +261,14 @@ import {
 } from './tools/venture-tools';
 
 /**
- * Creates a new MCP server instance with all tools and prompts registered.
- * Each MCP session gets its own server instance.
+ * Registers every MCP tool on `server`, in groups. The MCP server and the chat's tool catalog
+ * (`tool-catalog.ts`) both call it, so a new tool reaches both through its one registration line here.
  *
- * When adding, removing, or renaming tools / prompts, also update:
+ * When adding, removing, or renaming tools, also update:
  *   packages/frontend/public/.well-known/mcp/server-card.json
  * The drift test at ./server-card-drift.unit.ts will fail otherwise.
  */
-export function createMcpServer(): McpServer {
-  const server = new McpServer(
-    {
-      name: 'MoneyMatter Finance Tracker',
-      version: '2.0.0',
-    },
-    {
-      capabilities: {
-        logging: {},
-      },
-    },
-  );
-  slimToolListing({ server });
-
-  // Register the financial data guide prompt
-  server.prompt(FINANCIAL_DATA_GUIDE_NAME, FINANCIAL_DATA_GUIDE_DESCRIPTION, () => ({
-    messages: [
-      {
-        role: 'user',
-        content: {
-          type: 'text',
-          text: FINANCIAL_DATA_GUIDE_CONTENT,
-        },
-      },
-    ],
-  }));
-
+export function registerAllTools(server: McpServer): void {
   // Profile & accounts
   registerGetUserProfile(server);
   registerGetAccounts(server);
@@ -589,6 +563,42 @@ export function createMcpServer(): McpServer {
   registerListImportBatches(server);
   registerDeleteImportBatch(server);
   registerGetImportBatchDeleteStatus(server);
+}
+
+/**
+ * Creates a new MCP server instance with all tools and prompts registered.
+ * Each MCP session gets its own server instance.
+ *
+ * Tools come from `registerAllTools` above; the prompt is registered here.
+ */
+export function createMcpServer(): McpServer {
+  const server = new McpServer(
+    {
+      name: 'MoneyMatter Finance Tracker',
+      version: '2.0.0',
+    },
+    {
+      capabilities: {
+        logging: {},
+      },
+    },
+  );
+  slimToolListing({ server });
+
+  // Register the financial data guide prompt
+  server.prompt(FINANCIAL_DATA_GUIDE_NAME, FINANCIAL_DATA_GUIDE_DESCRIPTION, () => ({
+    messages: [
+      {
+        role: 'user',
+        content: {
+          type: 'text',
+          text: FINANCIAL_DATA_GUIDE_CONTENT,
+        },
+      },
+    ],
+  }));
+
+  registerAllTools(server);
 
   return server;
 }

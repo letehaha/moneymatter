@@ -12,7 +12,7 @@ import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { createTracker } from '@services/trackers/create-tracker';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   name: createTrackerBodyShape.name.describe('Tracker name, 1-200 characters'),
@@ -62,6 +62,12 @@ const inputSchema = {
   ),
 };
 
+/** The date-order and logo either-or rules span fields, so they run on the REST body schema. */
+export function validateCreateTrackerArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { status, ...fields } = args;
+  return { status, ...createTrackerBodySchema.parse(fields) };
+}
+
 export function registerCreateTracker(server: McpServer) {
   server.registerTool(
     'create_tracker',
@@ -76,9 +82,7 @@ export function registerCreateTracker(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_tracker', clientId: extra.authInfo?.clientId });
 
-      // The date-order and logo either-or rules span fields, so they run on the REST body schema.
-      const { status, ...fields } = args;
-      const body = createTrackerBodySchema.parse(fields);
+      const { status, ...body } = validateCreateTrackerArgs({ args });
 
       const tracker = await createTracker({
         userId,

@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updatePayee } from '@services/payees';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { presentPayee } from './payee-output';
 
 const inputSchema = {
@@ -32,6 +32,12 @@ const inputSchema = {
   ),
 };
 
+/** The logo either-or rule spans fields, so it runs on the REST body schema, not on the shape. */
+export function validateUpdatePayeeArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { id, ...rest } = args;
+  return { id, ...updatePayeeBodySchema.parse(rest) };
+}
+
 export function registerUpdatePayee(server: McpServer) {
   server.registerTool(
     'update_payee',
@@ -46,9 +52,7 @@ export function registerUpdatePayee(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_payee', clientId: extra.authInfo?.clientId });
 
-      // The logo either-or rule spans fields, so it runs on the REST body schema, not on the shape.
-      const { id, ...rest } = args;
-      const body = updatePayeeBodySchema.parse(rest);
+      const { id, ...body } = validateUpdatePayeeArgs({ args });
 
       const payee = await updatePayee({
         userId,

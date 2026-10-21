@@ -6,7 +6,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createInvestmentTransaction } from '@services/investments/transactions/create.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const shape = createInvestmentTransactionBodyShape;
 
@@ -35,6 +35,11 @@ const inputSchema = {
   ),
 };
 
+/** The settlement either-or rules span fields, so they run on the REST body schema, not on the shape. */
+export function validateCreateInvestmentTransactionArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createInvestmentTransactionBodySchema.parse(args);
+}
+
 export function registerCreateInvestmentTransaction(server: McpServer) {
   server.registerTool(
     'create_investment_transaction',
@@ -49,8 +54,7 @@ export function registerCreateInvestmentTransaction(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_investment_transaction', clientId: extra.authInfo?.clientId });
 
-      // The settlement either-or rules span fields, so they run on the REST body schema.
-      const body = createInvestmentTransactionBodySchema.parse(args);
+      const body = validateCreateInvestmentTransactionArgs({ args });
       const transaction = await createInvestmentTransaction({ userId, ...body });
 
       return jsonContent({ data: transaction });

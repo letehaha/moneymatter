@@ -6,7 +6,14 @@ import { setPlanAccounts } from '@services/budget-plans/set-plan-accounts';
 import { setPlanAccountsBodyFields, setPlanAccountsBodySchema } from '@services/budget-plans/zod-schemas';
 
 import { presentBudgetPlanDetails } from './budget-plan-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeature,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -14,6 +21,11 @@ const inputSchema = {
     'The full list of accounts the plan counts activity from (from get_accounts): unique ids, your own accounts of categories a plan can attach. An empty list detaches every account',
   ),
 };
+
+export function validateSetBudgetPlanAccountsArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { accountIds } = setPlanAccountsBodySchema.parse({ accountIds: args.accountIds });
+  return { planId: args.planId, accountIds };
+}
 
 export function registerSetBudgetPlanAccounts(server: McpServer) {
   server.registerTool(
@@ -30,8 +42,8 @@ export function registerSetBudgetPlanAccounts(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'set_budget_plan_accounts', clientId: extra.authInfo?.clientId });
 
-      const { accountIds } = setPlanAccountsBodySchema.parse({ accountIds: args.accountIds });
-      const details = await setPlanAccounts({ userId, planId: args.planId, accountIds });
+      const { planId, accountIds } = validateSetBudgetPlanAccountsArgs({ args });
+      const details = await setPlanAccounts({ userId, planId, accountIds });
 
       return jsonContent({ data: presentBudgetPlanDetails({ details }) });
     },

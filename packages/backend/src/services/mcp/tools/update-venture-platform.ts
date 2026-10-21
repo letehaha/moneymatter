@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateVenturePlatform } from '@services/venture/platforms/update.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   platformId: recordId().describe('Venture platform ID (from list_venture_platforms)'),
@@ -25,6 +25,12 @@ const inputSchema = {
   ),
 };
 
+/** The at-least-one-field rule spans fields, so it runs on the REST body schema. */
+export function validateUpdateVenturePlatformArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { platformId, ...fields } = args;
+  return { platformId, ...updateVenturePlatformBodySchema.parse(fields) };
+}
+
 export function registerUpdateVenturePlatform(server: McpServer) {
   server.registerTool(
     'update_venture_platform',
@@ -39,9 +45,7 @@ export function registerUpdateVenturePlatform(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_venture_platform', clientId: extra.authInfo?.clientId });
 
-      // The at-least-one-field rule spans fields, so it runs on the REST body schema.
-      const { platformId, ...fields } = args;
-      const body = updateVenturePlatformBodySchema.parse(fields);
+      const { platformId, ...body } = validateUpdateVenturePlatformArgs({ args });
       const platform = await updateVenturePlatform({ userId, platformId, ...body });
 
       return jsonContent({ data: platform });

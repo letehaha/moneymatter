@@ -4,7 +4,7 @@ import { createLoan } from '@services/loans/create-loan.service';
 import { toLoanView } from '@services/loans/get-loan-views.service';
 import { createLoanBodyFields, createLoanBodySchema } from '@services/loans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { presentLoan } from './loan-output';
 
 const inputSchema = {
@@ -25,6 +25,10 @@ const inputSchema = {
   ),
 };
 
+export function validateCreateLoanArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createLoanBodySchema.parse(args);
+}
+
 export function registerCreateLoan(server: McpServer) {
   server.registerTool(
     'create_loan',
@@ -39,7 +43,7 @@ export function registerCreateLoan(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_loan', clientId: extra.authInfo?.clientId });
 
-      const loanDetails = await createLoan({ userId, ...createLoanBodySchema.parse(args) });
+      const loanDetails = await createLoan({ userId, ...validateCreateLoanArgs({ args }) });
 
       // A just-created loan can't have payments yet.
       const loan = await toLoanView({ userId, loanDetails, paymentsCount: 0 });

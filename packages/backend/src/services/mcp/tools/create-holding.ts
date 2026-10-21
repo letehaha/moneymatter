@@ -4,7 +4,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createHoldingFromInput } from '@services/investments/holdings/create-holding-from-input.service';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { presentHolding } from './holding-output';
 
 const inputSchema = {
@@ -16,6 +16,10 @@ const inputSchema = {
     'One result of search_securities, passed as it came back. Set this or securityId',
   ),
 };
+
+export function validateCreateHoldingArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createHoldingBodySchema.parse(args);
+}
 
 export function registerCreateHolding(server: McpServer) {
   server.registerTool(
@@ -32,7 +36,7 @@ export function registerCreateHolding(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'create_holding', clientId: extra.authInfo?.clientId });
 
       // The REST body rule: a portfolio plus exactly one of a security id and a search result.
-      const { portfolioId, securityId, searchResult } = createHoldingBodySchema.parse(args);
+      const { portfolioId, securityId, searchResult } = validateCreateHoldingArgs({ args });
 
       const holding = await createHoldingFromInput({ userId, portfolioId, securityId, searchResult });
 

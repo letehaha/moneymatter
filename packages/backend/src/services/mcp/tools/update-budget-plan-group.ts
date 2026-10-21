@@ -5,13 +5,25 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateGroup } from '@services/budget-plans/line-groups';
 import { updateGroupBodyFields, updateGroupBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeature,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
   groupId: recordId().describe('ID of the group to rename (from get_budget_plan_period, in its groups)'),
   name: updateGroupBodyFields.name.describe('New name, 1 to 200 characters'),
 };
+
+export function validateUpdateBudgetPlanGroupArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { name } = updateGroupBodySchema.parse({ name: args.name });
+  return { planId: args.planId, groupId: args.groupId, name };
+}
 
 export function registerUpdateBudgetPlanGroup(server: McpServer) {
   server.registerTool(
@@ -28,8 +40,7 @@ export function registerUpdateBudgetPlanGroup(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_budget_plan_group', clientId: extra.authInfo?.clientId });
 
-      const { name } = updateGroupBodySchema.parse({ name: args.name });
-      const group = await updateGroup({ userId, planId: args.planId, groupId: args.groupId, name });
+      const group = await updateGroup({ userId, ...validateUpdateBudgetPlanGroupArgs({ args }) });
 
       return jsonContent({ data: group });
     },

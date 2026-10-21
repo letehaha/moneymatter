@@ -5,7 +5,14 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { setLayout } from '@services/budget-plans/line-groups';
 import { setLayoutBodyFields, setLayoutBodySchema } from '@services/budget-plans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  getUserId,
+  jsonContent,
+  requireFeature,
+  requireScope,
+  type ToolArgs,
+} from './helpers';
 
 const inputSchema = {
   planId: recordId().describe('Budget plan ID (from list_budget_plans)'),
@@ -14,6 +21,11 @@ const inputSchema = {
   ),
   ungroupedLineIds: setLayoutBodyFields.ungroupedLineIds.describe('Lines that sit in no group, in display order'),
 };
+
+export function validateSetBudgetPlanLayoutArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { planId, ...layout } = args;
+  return { planId, ...setLayoutBodySchema.parse(layout) };
+}
 
 export function registerSetBudgetPlanLayout(server: McpServer) {
   server.registerTool(
@@ -30,8 +42,8 @@ export function registerSetBudgetPlanLayout(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'set_budget_plan_layout', clientId: extra.authInfo?.clientId });
 
-      const { planId, ...layout } = args;
-      await setLayout({ userId, planId, ...setLayoutBodySchema.parse(layout) });
+      const { planId, ...layout } = validateSetBudgetPlanLayoutArgs({ args });
+      await setLayout({ userId, planId, ...layout });
 
       return jsonContent({ data: { updated: true, planId } });
     },

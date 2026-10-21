@@ -5,7 +5,7 @@ import { toLoanView } from '@services/loans/get-loan-views.service';
 import { updateLoan } from '@services/loans/update-loan.service';
 import { updateLoanBodyFields, updateLoanBodySchema } from '@services/loans/zod-schemas';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 import { presentLoan } from './loan-output';
 
 const inputSchema = {
@@ -27,6 +27,11 @@ const inputSchema = {
   ),
 };
 
+export function validateUpdateLoanArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { loanId, ...body } = args;
+  return { loanId, ...updateLoanBodySchema.parse(body) };
+}
+
 export function registerUpdateLoan(server: McpServer) {
   server.registerTool(
     'update_loan',
@@ -41,8 +46,8 @@ export function registerUpdateLoan(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_loan', clientId: extra.authInfo?.clientId });
 
-      const { loanId, ...body } = args;
-      const loanDetails = await updateLoan({ userId, accountId: loanId, ...updateLoanBodySchema.parse(body) });
+      const { loanId, ...body } = validateUpdateLoanArgs({ args });
+      const loanDetails = await updateLoan({ userId, accountId: loanId, ...body });
 
       const loan = await toLoanView({ userId, loanDetails });
       return jsonContent({ data: presentLoan({ loan }) });

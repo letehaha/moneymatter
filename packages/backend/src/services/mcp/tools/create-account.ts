@@ -6,9 +6,13 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createAccount } from '@services/accounts.service';
 
 import { presentAccount } from './account-output';
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = createAccountBodyFields;
+
+export function validateCreateAccountArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  return createAccountBodySchema.parse(args);
+}
 
 export function registerCreateAccount(server: McpServer) {
   server.registerTool(
@@ -24,7 +28,7 @@ export function registerCreateAccount(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'create_account', clientId: extra.authInfo?.clientId });
 
       const { accountCategory, defaultPaymentType, currencyCode, name, type, initialBalance, creditLimit, ...logo } =
-        createAccountBodySchema.parse(args);
+        validateCreateAccountArgs({ args });
 
       const account = await createAccount({
         userId,

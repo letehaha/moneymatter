@@ -5,12 +5,22 @@ import { ZodSettingsPatchSchema } from '@models/user-settings.model';
 import { patchUserSettings } from '@services/user-settings/patch-settings';
 import omit from 'lodash/omit';
 
-import { getUserId, jsonContent, requireFeature, requireScope } from './helpers';
+import { getUserId, jsonContent, requireFeature, requireScope, type ToolArgs } from './helpers';
 
 // The REST patch schema without `ai`: the AI configuration stays in the app. The shape is taken
 // from the schema, so a settings key added there is accepted here without a change to this file.
 const patchSchema = ZodSettingsPatchSchema.omit({ ai: true });
 const inputSchema = patchSchema.shape;
+
+/** Refuses the AI slice, which only the app changes, then parses the patch with the schema `PATCH /user/settings` uses. */
+export function validateUpdateUserSettingsArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const input = args as Record<string, unknown>;
+  if ('ai' in input) {
+    throw new Error('AI settings cannot be changed through this tool. Change them in the app.');
+  }
+
+  return patchSchema.parse(input);
+}
 
 export function registerUpdateUserSettings(server: McpServer) {
   server.registerTool(
@@ -28,15 +38,12 @@ export function registerUpdateUserSettings(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'update_user_settings', clientId: extra.authInfo?.clientId });
 
       const input = args as Record<string, unknown>;
-      if ('ai' in input) {
-        throw new Error('AI settings cannot be changed through this tool. Change them in the app.');
-      }
       // The REST route gate: a `fire` key needs the FIRE planner.
       if (input.fire !== undefined) {
         await requireFeature({ userId, feature: FEATURES.fire_planner });
       }
 
-      const patch = patchSchema.parse(input);
+      const patch = validateUpdateUserSettingsArgs({ args });
       const settings = await patchUserSettings({ userId, patch });
 
       return jsonContent({ data: omit(settings, 'ai') });

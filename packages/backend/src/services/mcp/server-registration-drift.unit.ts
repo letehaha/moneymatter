@@ -23,9 +23,14 @@ function exportedRegisterFunctions(): string[] {
   return [...names].toSorted();
 }
 
-/** Every `registerX(server)` call in `createMcpServer`, one entry per call. */
+/** The one register function that is not a tool: `createMcpServer` and the chat catalog call it. */
+const REGISTER_ALL_TOOLS = 'registerAllTools';
+
+/** Every `registerX(server)` call in `registerAllTools`, one entry per call. */
 const calledRegisterFunctions = () =>
-  [...SERVER_SOURCE.matchAll(/\b(register[A-Z]\w*)\(server\)/g)].map((match) => match[1]!);
+  [...SERVER_SOURCE.matchAll(/\b(register[A-Z]\w*)\(server\)/g)]
+    .map((match) => match[1]!)
+    .filter((name) => name !== REGISTER_ALL_TOOLS);
 
 /** Every name `server.ts` imports from the tool files. */
 function importedRegisterFunctions(): string[] {
@@ -42,6 +47,11 @@ function importedRegisterFunctions(): string[] {
 }
 
 describe('MCP server registration', () => {
+  it('feeds the registered tools to the MCP server through registerAllTools', () => {
+    expect(SERVER_SOURCE).toMatch(/export function registerAllTools\(server: McpServer\)/);
+    expect(SERVER_SOURCE.match(/\bregisterAllTools\(server\)/g)).toHaveLength(1);
+  });
+
   it('finds the tool registrations it checks', () => {
     expect(exportedRegisterFunctions().length).toBeGreaterThan(100);
   });

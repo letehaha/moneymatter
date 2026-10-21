@@ -8,7 +8,7 @@ import { serializeTracker } from '@root/serializers/trackers.serializer';
 import { editTracker } from '@services/trackers/edit-tracker';
 import { z } from 'zod';
 
-import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope, type ToolArgs } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of the tracker to update'),
@@ -62,6 +62,12 @@ const inputSchema = {
   ),
 };
 
+/** The date-order and logo either-or rules span fields, so they run on the REST body schema. */
+export function validateUpdateTrackerArgs({ args }: { args: ToolArgs<typeof inputSchema> }) {
+  const { trackerId, ...fields } = args;
+  return { trackerId, ...editTrackerBodySchema.parse(fields) };
+}
+
 export function registerUpdateTracker(server: McpServer) {
   server.registerTool(
     'update_tracker',
@@ -76,9 +82,7 @@ export function registerUpdateTracker(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_tracker', clientId: extra.authInfo?.clientId });
 
-      // The date-order and logo either-or rules span fields, so they run on the REST body schema.
-      const { trackerId, ...fields } = args;
-      const body = editTrackerBodySchema.parse(fields);
+      const { trackerId, ...body } = validateUpdateTrackerArgs({ args });
 
       const tracker = await editTracker({ id: trackerId, userId, ...body });
 
