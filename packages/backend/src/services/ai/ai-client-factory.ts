@@ -25,6 +25,8 @@ export interface AIClientResult {
   usingUserKey: boolean;
   /** Set when one of the user's connections answers */
   connectionId?: string;
+  /** Set when the run uses a model picked for this feature or thread instead of the connection's own model */
+  modelOverridden?: boolean;
 }
 
 /** `baseUrl` is required on the custom arm so a custom connection can never dial a provider's public API. */
@@ -77,13 +79,25 @@ export async function createAIClient({
   userId,
   feature,
   allowOperatorKey,
+  pinnedConnectionId,
+  pinnedModelId,
 }: {
   userId: number;
   feature: AI_FEATURE;
   /** Grants the server key for this one call, for a feature the caller gates itself. */
   allowOperatorKey?: boolean;
+  /** Runs on this connection (null: the included server model) instead of the feature's stored config. */
+  pinnedConnectionId?: string | null;
+  /** With a pinned connection: the model of that connection to run instead of its own. */
+  pinnedModelId?: string | null;
 }): Promise<AIClientResult | null> {
-  const resolution = await resolveAIConfiguration({ userId, feature, allowOperatorKey });
+  const resolution = await resolveAIConfiguration({
+    userId,
+    feature,
+    allowOperatorKey,
+    pinnedConnectionId,
+    pinnedModelId,
+  });
 
   if (!resolution) {
     return null;
@@ -95,5 +109,6 @@ export async function createAIClient({
     modelId: resolution.modelId,
     usingUserKey: resolution.usingUserKey,
     connectionId: resolution.kind === 'connection' ? resolution.connectionId : undefined,
+    modelOverridden: resolution.kind === 'connection' && resolution.modelOverridden ? true : undefined,
   };
 }

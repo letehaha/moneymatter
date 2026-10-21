@@ -17,7 +17,7 @@ const transactionParams = z.object({ params: z.object({ transactionId: recordId(
 const attachmentParams = z.object({ params: z.object({ id: recordId() }) });
 
 /** Header value is percent-encoded by the client; a malformed one falls back to the raw string. */
-const readFilename = ({ value }: { value: string | undefined }): string => {
+export const readFilename = ({ value }: { value: string | undefined }): string => {
   if (!value) return 'attachment';
   try {
     return decodeURIComponent(value);

@@ -18,6 +18,7 @@ import billingRoutes from './routes/billing.route';
 import brandLogosRoutes from './routes/brand-logos.route';
 import budgetPlansRoutes from './routes/budget-plans.route';
 import categoriesRoutes from './routes/categories.route';
+import chatRoutes from './routes/chat.route';
 import clientLogsRoutes from './routes/client-logs.route';
 import modelsCurrenciesRoutes from './routes/currencies.route';
 import demoRoutes from './routes/demo.route';
@@ -196,6 +197,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/automations`, transactionAutomationsRoutes);
   app.use(`${API_PREFIX}/transaction-templates`, transactionTemplatesRoutes);
   app.use(`${API_PREFIX}/notifications`, notificationsRoutes);
+  app.use(`${API_PREFIX}/chat`, chatRoutes);
   app.use(`${API_PREFIX}/payees`, payeesRoutes);
   app.use(`${API_PREFIX}/brand-logos`, brandLogosRoutes);
   app.use(`${API_PREFIX}/vehicles`, vehiclesRoutes);

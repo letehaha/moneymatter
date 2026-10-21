@@ -44,7 +44,7 @@ function invalidKeyResponse() {
 }
 
 /** Most callers of this mock exercise categorization; others pass `expectedModel`. */
-const DEFAULT_EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization].model;
+const DEFAULT_EXPECTED_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.categorization]!.model;
 
 /**
  * Pulls the `<model>` segment out of `.../v1beta/models/<model>:generateContent`.

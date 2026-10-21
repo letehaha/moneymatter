@@ -76,7 +76,7 @@ const csvRow = ({
 }) => `${symbol},${name},${date},${side},${quantity},${price},${fees},${currency},${assetClassHint},${confidence}`;
 
 /** The model the investment-import CSV extraction is actually configured to call. */
-const EXPECTED_GEMINI_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.investmentTransactionsParsing].model;
+const EXPECTED_GEMINI_MODEL = FALLBACK_SERVER_MODELS[AI_FEATURE.investmentTransactionsParsing]!.model;
 
 /**
  * MSW handler that returns a fixed CSV from Gemini's generateContent endpoint.

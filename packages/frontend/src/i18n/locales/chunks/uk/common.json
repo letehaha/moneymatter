@@ -498,6 +498,11 @@
     "estimatedCost": {
       "yourApiKey": "(ваш API-ключ)",
       "setByEndpoint": "Вартість визначає ваш провайдер"
+    },
+    "connectionModel": {
+      "label": "Модель із цього підключення",
+      "placeholder": "Виберіть модель",
+      "defaultTag": "За замовчуванням"
     }
   },
   "aiUsage": {
