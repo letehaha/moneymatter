@@ -12,6 +12,6 @@ describe('formatConnectionModelName', () => {
     const label = formatConnectionModelName({ provider: AI_PROVIDER.claudeCode, model: 'haiku' });
 
     expect(label).not.toBe('');
-    expect(label).toContain('haiku');
+    expect(label).toMatch(/Haiku/);
   });
 });
