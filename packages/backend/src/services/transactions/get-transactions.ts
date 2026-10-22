@@ -1,5 +1,8 @@
 import { BLANK_FILTER_VALUE } from '@bt/shared/types';
-import TrackerTransactions, { type TrackerTransactionMetadata } from '@models/tracker-transactions.model';
+import TrackerTransactions, {
+  type TrackerTransactionMetadata,
+  isRuleLinkMetadata,
+} from '@models/tracker-transactions.model';
 import Trackers from '@models/trackers.model';
 import * as Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
@@ -152,7 +155,7 @@ const attachAddedByMetadata = async <T extends { id: string }>({
 }: {
   transactions: T[];
   trackerIds: string[];
-}): Promise<(T & { addedBy?: TransactionAddedBy | null })[]> => {
+}): Promise<(T & { addedBy?: TransactionAddedBy | null; addedByRule?: boolean })[]> => {
   const txIds = transactions.map((tx) => tx.id);
 
   // Pull the junction rows for every (tracker, tx) pair in scope so we can derive both
@@ -187,8 +190,10 @@ const attachAddedByMetadata = async <T extends { id: string }>({
   // junction lookup; in that case the first row wins, which is fine — the chip is
   // about "who put this in this tracker context".
   const attacherUserIdByTx = new Map<string, number>();
+  const ruleAddedTxIds = new Set<string>();
   for (const row of junctionRows) {
     if (attacherUserIdByTx.has(row.transactionId)) continue;
+    if (isRuleLinkMetadata({ metadata: row.metadata })) ruleAddedTxIds.add(row.transactionId);
     const recipientId = row.metadata?.addedByUserId;
     if (typeof recipientId === 'number') {
       attacherUserIdByTx.set(row.transactionId, recipientId);
@@ -199,7 +204,7 @@ const attachAddedByMetadata = async <T extends { id: string }>({
   }
 
   if (!attacherUserIdByTx.size) {
-    return transactions.map((tx) => Object.assign(tx, { addedBy: null }));
+    return transactions.map((tx) => Object.assign(tx, { addedBy: null, addedByRule: ruleAddedTxIds.has(tx.id) }));
   }
 
   const uniqueUserIds = Array.from(new Set(attacherUserIdByTx.values()));
@@ -212,10 +217,12 @@ const attachAddedByMetadata = async <T extends { id: string }>({
 
   return transactions.map((tx) => {
     const uid = attacherUserIdByTx.get(tx.id);
-    if (uid === undefined) return Object.assign(tx, { addedBy: null });
+    const addedByRule = ruleAddedTxIds.has(tx.id);
+    if (uid === undefined) return Object.assign(tx, { addedBy: null, addedByRule });
     const user = userById.get(uid);
     return Object.assign(tx, {
       addedBy: user ? { id: user.id, username: user.username, avatar: user.avatar } : null,
+      addedByRule,
     });
   });
 };

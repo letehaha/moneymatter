@@ -6,7 +6,6 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import {
-  TRACKER_TYPES,
   type TrackerSpendingByCategoryItem,
   type TrackerSpendingStatsResponse,
   type TrackerStatsResponse,
@@ -15,6 +14,7 @@ import {
 } from '@bt/shared/types';
 import { centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
 import type Categories from '@models/categories.model';
+import type Tags from '@models/tags.model';
 import type TrackerLines from '@models/tracker-lines.model';
 import type Trackers from '@models/trackers.model';
 import type { TrackerShareContext } from '@services/sharing/get-shared-trackers.service';
@@ -39,17 +39,19 @@ interface TrackerApiResponse extends EntityLogoFields {
   userId: number;
   name: string;
   status: string;
-  type: TRACKER_TYPES;
   startDate: Date | null;
   endDate: Date | null;
-  autoInclude: boolean;
   limitAmount: number | null;
+  rulesEnabled: boolean;
+  rulesCleanup: boolean;
+  rulesSyncedAt: Date | null;
   archivePromptDismissed: boolean;
   aiEnabled: boolean;
   aiDescription: string | null;
   aiPreWindowDays: number;
   aiLastScannedAt: Date | null;
   categories: TrackerCategoryResponse[];
+  tags: Pick<Tags, 'id' | 'name' | 'color' | 'icon'>[];
   lines: TrackerLineResponse[];
   /** Present on user-facing list/detail responses when share context is attached. */
   share?: ResourceShareInfo;
@@ -100,11 +102,12 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     userId: tracker.userId,
     name: tracker.name,
     status: tracker.status,
-    type: tracker.type,
     startDate: tracker.startDate,
     endDate: tracker.endDate,
-    autoInclude: tracker.autoInclude,
     limitAmount: centsToApiDecimalOrNull(tracker.limitAmount),
+    rulesEnabled: tracker.rulesEnabled,
+    rulesCleanup: tracker.rulesCleanup,
+    rulesSyncedAt: tracker.rulesSyncedAt,
     archivePromptDismissed: tracker.archivePromptDismissed,
     aiEnabled: isRecipient ? false : tracker.aiEnabled,
     aiDescription: isRecipient ? null : tracker.aiDescription,
@@ -112,6 +115,7 @@ export function serializeTracker(tracker: Trackers & { _shareContext?: TrackerSh
     aiLastScannedAt: isRecipient ? null : tracker.aiLastScannedAt,
     ...serializeLogoFields({ entity: tracker }),
     categories,
+    tags: (tracker.tags || []).map(({ id, name, color, icon }) => ({ id, name, color, icon })),
     lines: (tracker.lines || []).map(serializeTrackerLine),
   };
 

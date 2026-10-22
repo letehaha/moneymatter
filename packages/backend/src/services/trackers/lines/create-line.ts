@@ -39,7 +39,7 @@ export const createTrackerLine = withTransaction(
       position: position ?? (maxPosition ?? -1) + 1,
     });
 
-    await replaceLineCategories({ trackerId, lineId: line.id, ownerUserId, categoryIds });
+    await replaceLineCategories({ lineId: line.id, ownerUserId, categoryIds });
 
     return findLineOrThrow({ trackerId, lineId: line.id });
   },

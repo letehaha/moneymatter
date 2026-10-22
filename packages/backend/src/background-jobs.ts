@@ -21,6 +21,7 @@ import { subscriptionAutoRecordCron } from './crons/subscription-auto-record';
 import { subscriptionCandidateDetectionCron } from './crons/subscription-candidate-detection';
 import { subscriptionRemindersCron } from './crons/subscription-reminders-check';
 import { tagRemindersCron } from './crons/tag-reminders-check';
+import { trackerRulesSyncCron } from './crons/tracker-rules-sync';
 import { trackerSmartScanCron } from './crons/tracker-smart-scan';
 import { initializeHistoricalRates } from './services/exchange-rates/initialize-historical-rates.service';
 
@@ -43,6 +44,7 @@ const prodOnlyCrons = [
   attachmentsOrphanSweepCron,
   bankAccountsSyncCron,
   trackerSmartScanCron,
+  trackerRulesSyncCron,
   aiUsageMonthEndCron,
 ];
 

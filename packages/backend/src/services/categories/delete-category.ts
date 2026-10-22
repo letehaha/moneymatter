@@ -9,6 +9,7 @@ import TransactionTemplates from '@models/transaction-templates.model';
 import { updateTransactions } from '@models/transactions-query';
 import { mergeLinesOnCategoryDelete } from '@services/budget-plans/merge-lines-on-category-delete';
 import { withTransaction } from '@services/common/with-transaction';
+import { disableEmptyTrackerRules } from '@services/trackers/rules/disable-empty-tracker-rules';
 import { pauseAutomationsReferencing, rewriteAutomationRef } from '@services/transaction-automations/references';
 import { repointSplits } from '@services/transactions/splits/repoint-splits';
 import { Op } from 'sequelize';
@@ -162,4 +163,5 @@ export const deleteCategory = withTransaction(async (payload: DeleteCategoryPayl
   }
 
   await Categories.deleteCategory(payload);
+  await disableEmptyTrackerRules({ userId: payload.userId });
 });

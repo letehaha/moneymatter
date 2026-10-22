@@ -2,7 +2,6 @@ import {
   ACCOUNT_CATEGORIES,
   API_ERROR_CODES,
   API_RESPONSE_STATUS,
-  TRACKER_TYPES,
   LOAN_TYPE,
   PAYMENT_TYPES,
   SUBSCRIPTION_PERIOD_STATUSES,
@@ -652,14 +651,13 @@ describe('Demo Mode', () => {
 
       for (const tracker of trackers as {
         id: string;
-        type: string;
+        rulesEnabled: boolean;
         startDate: string | null;
         endDate: string | null;
         categories: unknown[];
       }[]) {
-        // `category` is what writes the TrackerCategories rows the stats read; a
-        // `manual` tracker with no linked transactions would report zero spend.
-        expect(tracker.type).toBe(TRACKER_TYPES.category);
+        // Without rules no transactions get linked and the stats below report zero spend.
+        expect(tracker.rulesEnabled).toBe(true);
         expect(tracker.startDate).not.toBeNull();
         expect(tracker.endDate).not.toBeNull();
         expect(tracker.categories.length).toBeGreaterThan(0);

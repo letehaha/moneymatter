@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 
@@ -70,13 +70,13 @@ describe('Tracker lines on category delete', () => {
     }
   });
 
-  it("moves a category tracker's own category to the replacement along with its line", async () => {
+  it("moves a tracker's rule category to the replacement along with its line", async () => {
     const [food, rent, groceries] = await Promise.all(
       ['Food', 'Rent', 'Groceries'].map((name) => helpers.addCustomCategory({ name, color: '#AABBCC', raw: true })),
     );
     const tracker = await helpers.createTracker({
       name: 'category-tracker-replace',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds: [food!.id, rent!.id],
       raw: true,
     });

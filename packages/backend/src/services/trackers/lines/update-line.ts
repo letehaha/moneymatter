@@ -33,7 +33,7 @@ export const updateTrackerLine = withTransaction(
     await line.update(removeUndefinedKeys(fields));
 
     if (categoryIds !== undefined) {
-      await replaceLineCategories({ trackerId, lineId, ownerUserId, categoryIds });
+      await replaceLineCategories({ lineId, ownerUserId, categoryIds });
     }
 
     return findLineOrThrow({ trackerId, lineId });

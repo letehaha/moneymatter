@@ -47,6 +47,7 @@ const EXPECTED_GUARDED_COLUMNS: Record<string, string[]> = {
   'tracker-line-categories': ['categoryId', 'lineId'],
   'tracker-lines': ['trackerId'],
   'tracker-suggestions': ['trackerId', 'transactionId'],
+  'tracker-tags': ['tagId', 'trackerId'],
   'tracker-transactions': ['trackerId', 'transactionId'],
   'transaction-group-items': ['groupId', 'transactionId'],
   'transaction-splits': ['categoryId', 'transactionId'],

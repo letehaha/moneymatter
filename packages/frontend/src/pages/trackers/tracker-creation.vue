@@ -3,18 +3,12 @@ import { createTracker } from '@/api/trackers';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { ALL_LOGO_TABS, type LogoSelection, toOptionalLogoPayload } from '@/components/common/logo-selection';
 import LogoSquareField from '@/components/common/logo-square-field.vue';
-import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
 import DateField from '@/components/fields/date-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
-import Checkbox from '@/components/lib/ui/checkbox/Checkbox.vue';
-import { Label } from '@/components/lib/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
 import { useNotificationCenter } from '@/components/notification-center';
 import { trackAnalyticsEvent } from '@/lib/posthog';
-import { cn } from '@/lib/utils';
 import { useOnboardingStore } from '@/stores/onboarding';
-import { TRACKER_TYPES } from '@bt/shared/types';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -22,35 +16,29 @@ import { useI18n } from 'vue-i18n';
 import {
   SMART_TRACKING_DEFAULTS,
   type SmartTrackingValues,
+  TRACKER_RULES_DEFAULTS,
+  type TrackerRulesValues,
   buildTrackerPayload,
   buildSmartTrackingPatch,
   isSmartTrackingIncomplete,
+  isTrackerRulesIncomplete,
 } from './build-tracker-payload';
 import SmartTrackingFields from './components/smart-tracking-fields.vue';
+import TrackerRulesFields from './components/tracker-rules-fields.vue';
 import TrackerLogo from './components/tracker-logo.vue';
 import { reportTrackerError, useRefreshSmartTrackingAccess } from './components/use-tracker-actions';
 
 const TRACKER_DEFAULT_VALUES: {
-  id: string | null;
   name: string | null;
-  status: string | null;
-  type: TRACKER_TYPES;
-  categoryIds: string[];
   startDate?: Date | null;
   endDate?: Date | null;
   limitAmount?: number | null;
-  autoInclude?: boolean;
   logo: LogoSelection | null;
 } = {
-  id: null,
   name: null,
-  status: null,
-  type: TRACKER_TYPES.manual,
-  categoryIds: [],
   startDate: null,
   endDate: null,
   limitAmount: null,
-  autoInclude: false,
   logo: null,
 } as const;
 
@@ -61,9 +49,9 @@ const { addSuccessNotification } = useNotificationCenter();
 const queryClient = useQueryClient();
 const refreshSmartTrackingAccess = useRefreshSmartTrackingAccess();
 const form = ref({ ...TRACKER_DEFAULT_VALUES });
-const categoriesFieldTouched = ref(false);
-const smartTracking = ref<SmartTrackingValues>({ ...SMART_TRACKING_DEFAULTS });
-const showSmartTrackingErrors = ref(false);
+const rules = ref<TrackerRulesValues>(structuredClone(TRACKER_RULES_DEFAULTS));
+const smartTracking = ref<SmartTrackingValues>(structuredClone(SMART_TRACKING_DEFAULTS));
+const showErrors = ref(false);
 
 const { isPending: isMutating, mutate: createTrackerItem } = useMutation({
   mutationFn: createTracker,
@@ -84,43 +72,20 @@ const { isPending: isMutating, mutate: createTrackerItem } = useMutation({
   },
 });
 
-const isDateExist = computed(() => !!form.value.startDate && !!form.value.endDate);
-const isCategoryTracker = computed(() => form.value.type === TRACKER_TYPES.category);
-const isCategoryValid = computed(() => !isCategoryTracker.value || form.value.categoryIds.length > 0);
-const categoryErrorMessage = computed(() => {
-  if (!isCategoryTracker.value) return undefined;
-  if (!categoriesFieldTouched.value) return undefined;
-  if (form.value.categoryIds.length > 0) return undefined;
-  return t('budgets.creation.categoriesRequired');
-});
-const isSubmitDisabled = computed(() => isMutating.value || !form.value.name || !isCategoryValid.value);
+const isSubmitDisabled = computed(() => isMutating.value || !form.value.name);
 
 const submit = () => {
-  const { name, type, categoryIds, startDate, endDate, limitAmount, autoInclude, logo } = form.value;
+  const { name, startDate, endDate, limitAmount, logo } = form.value;
   if (!name) return;
-  const withSmartTracking = type === TRACKER_TYPES.manual && smartTracking.value.aiEnabled;
-  showSmartTrackingErrors.value = true;
-  if (withSmartTracking && isSmartTrackingIncomplete({ values: smartTracking.value })) return;
+  showErrors.value = true;
+  if (isTrackerRulesIncomplete({ values: rules.value })) return;
+  if (isSmartTrackingIncomplete({ values: smartTracking.value })) return;
   createTrackerItem({
-    ...buildTrackerPayload({ name, limitAmount, startDate, endDate, categoryIds }),
-    type,
-    autoInclude,
+    ...buildTrackerPayload({ name, limitAmount, startDate, endDate }),
+    ...rules.value,
     ...toOptionalLogoPayload({ selection: logo }),
-    ...(withSmartTracking ? buildSmartTrackingPatch({ values: smartTracking.value }) : {}),
+    ...buildSmartTrackingPatch({ values: smartTracking.value }),
   });
-};
-
-const onCategoriesUpdate = (value: string[]) => {
-  form.value.categoryIds = value;
-  categoriesFieldTouched.value = true;
-};
-
-const onTrackerTypeChange = (type: TRACKER_TYPES) => {
-  form.value.type = type;
-  // Reset touched state when switching types so user gets a fresh start
-  if (type === TRACKER_TYPES.category) {
-    categoriesFieldTouched.value = false;
-  }
 };
 </script>
 
@@ -147,52 +112,6 @@ const onTrackerTypeChange = (type: TRACKER_TYPES) => {
       </div>
     </div>
 
-    <div>
-      <Label class="mb-2 block text-sm font-medium">{{ $t('budgets.creation.typeLabel') }}</Label>
-      <RadioGroup
-        :model-value="form.type"
-        class="grid grid-cols-2 gap-3"
-        @update:model-value="(v) => onTrackerTypeChange(v as TRACKER_TYPES)"
-      >
-        <Label
-          :class="
-            cn(
-              'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              form.type === TRACKER_TYPES.manual && 'border-primary bg-primary/5',
-            )
-          "
-        >
-          <div class="flex items-center gap-2">
-            <RadioGroupItem :value="TRACKER_TYPES.manual" />
-            <span class="font-medium">{{ $t('budgets.creation.typeManual') }}</span>
-          </div>
-          <span class="text-muted-foreground pl-6 text-xs">{{ $t('budgets.creation.typeManualDescription') }}</span>
-        </Label>
-        <Label
-          :class="
-            cn(
-              'border-input hover:bg-accent hover:text-accent-foreground flex cursor-pointer flex-col gap-1 rounded-md border p-3 transition-colors',
-              form.type === TRACKER_TYPES.category && 'border-primary bg-primary/5',
-            )
-          "
-        >
-          <div class="flex items-center gap-2">
-            <RadioGroupItem :value="TRACKER_TYPES.category" />
-            <span class="font-medium">{{ $t('budgets.creation.typeCategory') }}</span>
-          </div>
-          <span class="text-muted-foreground pl-6 text-xs">{{ $t('budgets.creation.typeCategoryDescription') }}</span>
-        </Label>
-      </RadioGroup>
-    </div>
-
-    <CategoryMultiSelectField
-      v-if="isCategoryTracker"
-      :model-value="form.categoryIds"
-      :label="$t('budgets.creation.categoriesLabel')"
-      :error-message="categoryErrorMessage"
-      @update:model-value="onCategoriesUpdate"
-    />
-
     <div class="flex justify-between gap-4">
       <DateField
         :model-value="form.startDate ?? undefined"
@@ -214,13 +133,6 @@ const onTrackerTypeChange = (type: TRACKER_TYPES) => {
       />
     </div>
 
-    <div v-if="!isCategoryTracker" class="flex gap-2">
-      <label class="flex cursor-pointer items-center gap-2">
-        <Checkbox v-model="form.autoInclude" :disabled="!isDateExist" />
-        {{ $t('budgets.creation.autoIncludeLabel') }}
-      </label>
-    </div>
-
     <div>
       <InputField
         v-model.number="form.limitAmount"
@@ -229,12 +141,9 @@ const onTrackerTypeChange = (type: TRACKER_TYPES) => {
       />
     </div>
 
-    <SmartTrackingFields
-      v-if="!isCategoryTracker"
-      v-model="smartTracking"
-      :has-start-date="!!form.startDate"
-      :show-errors="showSmartTrackingErrors"
-    />
+    <TrackerRulesFields v-model="rules" :show-errors="showErrors" />
+
+    <SmartTrackingFields v-model="smartTracking" :has-start-date="!!form.startDate" :show-errors="showErrors" />
 
     <div class="mt-4">
       <Button :disabled="isSubmitDisabled" type="submit">{{ $t('budgets.creation.submitButton') }}</Button>

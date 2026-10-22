@@ -145,6 +145,19 @@
               />
             </ResponsiveTooltip>
             <ResponsiveTooltip
+              v-if="transaction.addedByRule"
+              :content="$t('common.transactions.record.addedByRule')"
+              content-class-name="max-w-56"
+              :delay-duration="100"
+            >
+              <ZapIcon
+                class="text-primary-text size-3.5 shrink-0 cursor-help"
+                role="img"
+                :aria-label="$t('common.transactions.record.addedByRule')"
+                @click="isTouch && $event.stopPropagation()"
+              />
+            </ResponsiveTooltip>
+            <ResponsiveTooltip
               v-if="addedByTooltip"
               :content="addedByTooltip"
               content-class-name="max-w-56"
@@ -273,6 +286,7 @@ import {
   RocketIcon,
   SparklesIcon,
   UsersIcon,
+  ZapIcon,
 } from '@lucide/vue';
 import { useMediaQuery } from '@vueuse/core';
 import { storeToRefs } from 'pinia';

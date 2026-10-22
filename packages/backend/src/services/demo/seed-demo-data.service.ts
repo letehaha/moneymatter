@@ -2,7 +2,6 @@ import type { RecordId } from '@bt/shared/types';
 import {
   ACCOUNT_TYPES,
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   DEPRECIATION_PRESET,
   LOAN_TYPE,
   SUPPORTED_LOAN_TYPES,
@@ -226,11 +225,10 @@ function roundToNearestTenDollars({ cents }: { cents: number }): number {
 }
 
 /**
- * Seeds category trackers over a trailing window. Skipping `type: category` or
- * `startDate`/`endDate` breaks the read path: `createTracker` then writes no
- * `TrackerCategories` rows (every card reads zero), or `buildDateFilter` drops
- * the filter and totals all history against a one-month limit. Limits derive
- * from actual spend in the window so the cards keep their under/near/over states.
+ * Seeds rule-based trackers over a trailing window. Skipping `rulesEnabled` links
+ * nothing (every card reads zero); skipping `startDate`/`endDate` totals all history
+ * against a one-month limit. Limits derive from actual spend in the window so the
+ * cards keep their under/near/over states.
  */
 export async function createTrackers({
   userId,
@@ -269,7 +267,7 @@ export async function createTrackers({
       userId,
       name: trackerConfig.name,
       status: TRACKER_STATUSES.active,
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds,
       limitAmount: Money.fromCents(roundToNearestTenDollars({ cents: spent / trackerConfig.targetUtilization })),
       startDate: windowStart,

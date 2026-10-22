@@ -198,6 +198,8 @@ const linkClass = 'text-primary-text underline-offset-2 hover:underline';
         </p>
       </div>
 
+      <p class="text-muted-foreground text-xs">{{ $t('budgets.smartTracking.fields.costNote') }}</p>
+
       <p
         v-if="featureStatus?.servedBy"
         class="text-muted-foreground flex items-start gap-1.5 border-t border-dashed pt-3 text-xs"

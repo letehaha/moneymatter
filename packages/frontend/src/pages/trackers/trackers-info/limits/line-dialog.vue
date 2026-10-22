@@ -14,8 +14,6 @@ const FORM_ID = 'tracker-line-form';
 const props = defineProps<{
   trackerId: string;
   line?: TrackerLineModel;
-  /** Category trackers only count their own categories, so a hint nudges the user to pick from those. */
-  isCategoryTracker?: boolean;
 }>();
 
 const open = defineModel<boolean>('open', { required: true });
@@ -87,9 +85,6 @@ const handleSubmit = async () => {
           :error-message="categoriesError ? $t('budgets.lines.dialog.categoriesRequired') : undefined"
           :disabled="isPending"
         />
-        <p v-if="isCategoryTracker" class="text-muted-foreground text-xs">
-          {{ $t('budgets.lines.dialog.categoryTrackerHint') }}
-        </p>
       </div>
 
       <div class="grid gap-1">

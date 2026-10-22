@@ -59,6 +59,7 @@ import TrackerCategoriesModel from './tracker-categories.model';
 import TrackerLineCategoriesModel from './tracker-line-categories.model';
 import TrackerLinesModel from './tracker-lines.model';
 import TrackerSuggestionsModel from './tracker-suggestions.model';
+import TrackerTagsModel from './tracker-tags.model';
 import TrackerTransactionsModel from './tracker-transactions.model';
 import TrackersModel from './trackers.model';
 import TransactionAttachmentsModel from './transaction-attachments.model';
@@ -121,6 +122,7 @@ const models = [
   AccountGroupsModel,
   TrackersModel,
   TrackerCategoriesModel,
+  TrackerTagsModel,
   TrackerTransactionsModel,
   TrackerLinesModel,
   TrackerSuggestionsModel,

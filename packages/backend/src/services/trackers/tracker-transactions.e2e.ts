@@ -12,7 +12,6 @@ const seedTrackerWithAttachedTransaction = async () => {
     name: 'Tracker For Removal Test',
     startDate: '2025-03-01T00:00:00Z',
     endDate: '2025-03-04T23:59:59Z',
-    autoInclude: true,
     limitAmount: 500,
     raw: true,
   });
@@ -52,7 +51,6 @@ const seedTrackerWithPlannedTransaction = async () => {
     name: 'Planned Attach Tracker',
     startDate: '2025-03-01T00:00:00Z',
     endDate: '2025-03-31T23:59:59Z',
-    autoInclude: false,
     limitAmount: 500,
     raw: true,
   });
@@ -80,7 +78,6 @@ describe('Tracker Transactions', () => {
         name: 'Duplicate Test Tracker',
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });
@@ -131,7 +128,6 @@ describe('Tracker Transactions', () => {
         name: 'Balance Adjustment Tracker',
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-31T23:59:59Z',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });
@@ -253,7 +249,6 @@ describe('Tracker Transactions', () => {
         name: 'Tracker For Non-Existent Transaction Test',
         startDate: '2025-03-01T00:00:00Z',
         endDate: '2025-03-04T23:59:59Z',
-        autoInclude: false,
         limitAmount: 500,
         raw: true,
       });

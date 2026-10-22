@@ -1,5 +1,4 @@
 import {
-  TRACKER_TYPES,
   TrackerModel,
   type EntityLogoWritePayload,
   RESOURCE_TYPES,
@@ -9,6 +8,7 @@ import {
   type TrackerLineModel,
   type TrackerLinePayload,
   type TrackerSuggestionsResponse,
+  type TrackerSyncResponse,
 } from '@bt/shared/types';
 import addTransactionsToTrackerController from '@controllers/trackers/add-transactions-to-tracker';
 import removeTransactionsFromTrackerController from '@controllers/trackers/remove-transactions-from-tracker';
@@ -26,11 +26,12 @@ interface TestCreateTrackerPayload extends EntityLogoWritePayload {
   id?: string;
   name: string;
   status?: string;
-  type?: TRACKER_TYPES;
   categoryIds?: string[];
+  tagIds?: string[];
+  rulesEnabled?: boolean;
+  rulesCleanup?: boolean;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
-  autoInclude?: boolean;
   limitAmount?: number | null;
   aiEnabled?: boolean;
   aiDescription?: string | null;
@@ -40,10 +41,12 @@ interface TestCreateTrackerPayload extends EntityLogoWritePayload {
 interface EditTrackerPayload extends EntityLogoWritePayload {
   name?: string;
   categoryIds?: string[];
+  tagIds?: string[];
+  rulesEnabled?: boolean;
+  rulesCleanup?: boolean;
   startDate?: string | null;
   endDate?: string | null;
   limitAmount?: number | null;
-  autoInclude?: boolean;
   archivePromptDismissed?: boolean;
   aiEnabled?: boolean;
   aiDescription?: string | null;
@@ -259,45 +262,16 @@ export async function getTrackerStats<R extends boolean | undefined = undefined>
   });
 }
 
-interface CategoryTrackerTransactionsResponse {
-  transactions: Array<{
-    id: string;
-    time: Date;
-    transactionType: string;
-    refAmount: number;
-    amount: number;
-    note: string | null;
-    categoryId: string | null;
-    accountId: string;
-    effectiveCategory?: {
-      id: string;
-      name: string;
-      color: string;
-    };
-    effectiveRefAmount?: number;
-  }>;
-  total: number;
-}
-
-export async function getCategoryTrackerTransactions<R extends boolean | undefined = undefined>({
+export async function syncTrackerRules<R extends boolean | undefined = undefined>({
   id,
-  from,
-  limit,
   raw,
 }: {
   id: string;
-  from?: number;
-  limit?: number;
   raw?: R;
 }) {
-  const queryParams = new URLSearchParams();
-  if (from !== undefined) queryParams.set('from', String(from));
-  if (limit !== undefined) queryParams.set('limit', String(limit));
-  const queryString = queryParams.toString();
-
-  return makeRequest<CategoryTrackerTransactionsResponse, R>({
-    method: 'get',
-    url: `/trackers/${id}/category-transactions${queryString ? `?${queryString}` : ''}`,
+  return makeRequest<TrackerSyncResponse, R>({
+    method: 'post',
+    url: `/trackers/${id}/sync`,
     raw,
   });
 }

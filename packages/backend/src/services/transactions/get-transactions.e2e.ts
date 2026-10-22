@@ -181,7 +181,8 @@ describe('Retrieve transactions with filters', () => {
       name: 'Test Tracker',
       startDate: '2025-03-01T00:00:00Z',
       endDate: '2025-03-04T23:59:59Z',
-      autoInclude: true,
+      rulesEnabled: true,
+      categoryIds: [firstCategoryId],
       limitAmount: 500,
       raw: true,
     });

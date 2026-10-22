@@ -3,7 +3,6 @@ import {
   type EntityLogoWritePayload,
   type ResolveTrackerSuggestionsBody,
   type ResolveTrackerSuggestionsResponse,
-  type TRACKER_TYPES,
   type TrackerAiPreWindowDays,
   type TrackerLineModel,
   type TrackerLinePayload,
@@ -11,6 +10,7 @@ import {
   type TrackerSpendingStatsResponse,
   type TrackerStatsResponse,
   type TrackerSuggestionsResponse,
+  type TrackerSyncResponse,
 } from '@bt/shared/types';
 
 interface SmartTrackingPayload {
@@ -19,10 +19,16 @@ interface SmartTrackingPayload {
   aiPreWindowDays?: TrackerAiPreWindowDays;
 }
 
-interface EditTrackerPayload extends EntityLogoWritePayload, SmartTrackingPayload {
+interface RulesPayload {
+  rulesEnabled?: boolean;
+  rulesCleanup?: boolean;
+  categoryIds?: string[];
+  tagIds?: string[];
+}
+
+interface EditTrackerPayload extends EntityLogoWritePayload, SmartTrackingPayload, RulesPayload {
   name?: string;
   limitAmount?: number | null;
-  categoryIds?: string[];
   startDate?: Date | string | null;
   endDate?: Date | string | null;
   archivePromptDismissed?: boolean;
@@ -36,14 +42,11 @@ export const loadTrackerById = async ({ trackerId }: { trackerId: string }): Pro
   return api.get(`/trackers/${trackerId}`);
 };
 
-interface CreateTrackerPayload extends EntityLogoWritePayload, SmartTrackingPayload {
+interface CreateTrackerPayload extends EntityLogoWritePayload, SmartTrackingPayload, RulesPayload {
   name: string;
-  type?: TRACKER_TYPES;
-  categoryIds?: string[];
   startDate?: string | null;
   endDate?: string | null;
   limitAmount?: number | null;
-  autoInclude?: boolean;
 }
 
 export const createTracker = async (payload: CreateTrackerPayload): Promise<TrackerModel> =>
@@ -102,39 +105,8 @@ export const loadTrackerStats = async ({ trackerId }: { trackerId: string }): Pr
   return api.get(`/trackers/${trackerId}/stats`);
 };
 
-interface CategoryTrackerTransaction {
-  id: string;
-  time: string;
-  transactionType: 'income' | 'expense';
-  refAmount: number;
-  amount: number;
-  note: string | null;
-  categoryId: string | null;
-  accountId: string;
-  effectiveCategory?: {
-    id: string;
-    name: string;
-    color: string;
-  };
-  effectiveRefAmount?: number;
-}
-
-interface CategoryTrackerTransactionsResponse {
-  transactions: CategoryTrackerTransaction[];
-  total: number;
-}
-
-export const loadCategoryTrackerTransactions = async ({
-  trackerId,
-  from = 0,
-  limit = 50,
-}: {
-  trackerId: string;
-  from?: number;
-  limit?: number;
-}): Promise<CategoryTrackerTransactionsResponse> => {
-  return api.get(`/trackers/${trackerId}/category-transactions`, { from, limit });
-};
+export const syncTrackerRules = async ({ trackerId }: { trackerId: string }): Promise<TrackerSyncResponse> =>
+  api.post(`/trackers/${trackerId}/sync`, undefined, { silent: true });
 
 export const loadTrackerSpendingStats = async ({
   trackerId,

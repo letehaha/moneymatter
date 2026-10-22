@@ -15,7 +15,7 @@ const inputSchema = {
     .array(recordId())
     .min(1)
     .describe(
-      "Category IDs the line covers; parents expand to their children. On a category tracker they must be categories the tracker tracks. Categories resolve against the tracker owner's tree.",
+      "Category IDs the line covers; parents expand to their children. Categories resolve against the tracker owner's tree.",
     ),
   limitAmount: z
     .number()

@@ -18,7 +18,7 @@ import { useFormatCurrency } from '@/composable';
 import { useTrackerAccess } from '@/composable/use-tracker-access';
 import { cn } from '@/lib/utils';
 import TrackerSharingPanel from '@/pages/trackers/components/tracker-sharing-panel.vue';
-import { TRACKER_STATUSES, TRACKER_TYPES, type TrackerModel, RESOURCE_TYPES } from '@bt/shared/types';
+import { TRACKER_STATUSES, type TrackerModel, RESOURCE_TYPES } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import {
   ArchiveIcon,
@@ -30,6 +30,9 @@ import {
   PencilIcon,
   Trash2Icon,
   UsersIcon,
+  ShapesIcon,
+  TagIcon,
+  ZapIcon,
 } from '@lucide/vue';
 import { computed, ref, toRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -47,6 +50,7 @@ import {
 import { utilizationClasses } from '../utilization-classes';
 import TrackerLinesTable from './limits/tracker-lines-table.vue';
 import { useTrackerLineMutations } from './limits/use-tracker-line-mutations';
+import RuleChips from './rule-chips.vue';
 import { useTrackerScanEvents } from './smart-tracking/use-tracker-suggestions';
 import TrackerStatistics from './statistics/tracker-statistics.vue';
 import { getTrackerLimitSummary } from './tracker-summary';
@@ -90,7 +94,9 @@ const members = computed(() => membersData.value?.members ?? []);
 const visibleMembers = computed(() => members.value.slice(0, MAX_VISIBLE_MEMBERS));
 const hiddenMembersCount = computed(() => Math.max(0, members.value.length - MAX_VISIBLE_MEMBERS));
 
-const isCategoryTracker = computed(() => props.tracker.type === TRACKER_TYPES.category);
+const showRules = computed(
+  () => props.tracker.rulesEnabled && !!(props.tracker.categories?.length || props.tracker.tags?.length),
+);
 const isArchived = computed(() => props.tracker.status === TRACKER_STATUSES.archived);
 const timeStatus = computed(() =>
   getTrackerTimeStatus({ startDate: props.tracker.startDate, endDate: props.tracker.endDate }),
@@ -307,9 +313,6 @@ const chipClass = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-
             {{ $t('budgets.share.sharedByBadge', { handle: `@${ownerHandle}` }) }}
           </span>
           <span v-if="statusChip" :class="cn(chipClass, statusChip.class)">{{ statusChip.text }}</span>
-          <span v-if="isCategoryTracker" :class="cn(chipClass, 'bg-primary/10 text-primary-text')">
-            {{ $t('budgets.list.autoTracked') }}
-          </span>
           <span v-if="isArchived" :class="cn(chipClass, 'bg-muted text-muted-foreground')">
             <ArchiveIcon class="size-3" />
             {{ $t('budgets.list.archivedLabel') }}
@@ -357,14 +360,26 @@ const chipClass = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-
             <ArchiveRestoreIcon class="size-4" />
             {{ $t('budgets.list.unarchive') }}
           </Button>
-          <Button v-else-if="!showLimitsTab" variant="outline" size="sm" @click="handleSetLimits">
+          <Button
+            v-else-if="!showLimitsTab"
+            variant="outline"
+            size="sm"
+            class="hidden @md/tracker:inline-flex"
+            @click="handleSetLimits"
+          >
             <LayoutListIcon class="size-4" />
             {{ $t('budgets.details.actions.setLimits') }}
           </Button>
 
-          <Button variant="outline" size="sm" @click="isShareOpen = true">
+          <Button
+            variant="outline"
+            size="sm"
+            class="px-2 @md/tracker:px-3"
+            :aria-label="$t('budgets.details.actions.share')"
+            @click="isShareOpen = true"
+          >
             <UsersIcon class="size-4" />
-            {{ $t('budgets.details.actions.share') }}
+            <span class="hidden @md/tracker:inline">{{ $t('budgets.details.actions.share') }}</span>
           </Button>
 
           <DropdownMenu>
@@ -413,24 +428,23 @@ const chipClass = 'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-
         </div>
       </div>
 
-      <div
-        v-if="isCategoryTracker && tracker.categories?.length"
-        class="flex flex-wrap items-center gap-1.5 px-3 py-2 @md/tracker:px-4"
-      >
-        <span class="text-muted-foreground mr-1 text-[11px] font-semibold tracking-wider uppercase">
-          {{ $t('budgets.details.tracks') }}
-        </span>
+      <div v-if="showRules" class="flex flex-wrap items-center gap-1.5 px-3 py-2 @md/tracker:px-4">
         <span
-          v-for="category in tracker.categories"
-          :key="category.id"
-          class="bg-muted inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+          class="text-muted-foreground mr-1 inline-flex items-center gap-1 text-xs font-semibold tracking-wider uppercase"
         >
-          <span class="size-2 rounded-full" :style="{ backgroundColor: category.color }" />
-          {{ category.name }}
+          <ZapIcon class="size-3" />
+          {{ $t('budgets.details.autoAdds') }}
         </span>
-        <span class="text-muted-foreground ml-auto text-[11px]">{{
-          $t('budgets.categoryBudget.autoTrackedInfo')
-        }}</span>
+        <RuleChips
+          :items="tracker.categories ?? []"
+          :count-label="$t('budgets.lines.categoriesCount', tracker.categories?.length ?? 0)"
+          :count-icon="ShapesIcon"
+        />
+        <RuleChips
+          :items="tracker.tags ?? []"
+          :count-label="$t('budgets.details.tagsCount', tracker.tags?.length ?? 0)"
+          :count-icon="TagIcon"
+        />
       </div>
 
       <div class="overflow-hidden">

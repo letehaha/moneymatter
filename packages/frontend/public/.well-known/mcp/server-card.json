@@ -64,15 +64,15 @@
     },
     {
       "name": "get_trackers",
-      "description": "Retrieve active and historical trackers with their limits, categories, and lines."
+      "description": "Retrieve active and historical trackers with their limits, category and tag rules, and lines."
     },
     {
       "name": "create_tracker",
-      "description": "Create a new tracker with an optional spending limit, date range, linked categories, and smart tracking."
+      "description": "Create a new tracker with an optional spending limit, date range, category and tag rules, and smart tracking."
     },
     {
       "name": "update_tracker",
-      "description": "Update an existing tracker's name, date range, spending limit, linked categories, or smart tracking settings."
+      "description": "Update an existing tracker's name, date range, spending limit, category and tag rules, or smart tracking settings."
     },
     {
       "name": "delete_tracker",
@@ -84,7 +84,7 @@
     },
     {
       "name": "add_transactions_to_tracker",
-      "description": "Manually link transactions to a manual-type tracker."
+      "description": "Manually link transactions to a tracker."
     },
     {
       "name": "remove_transactions_from_tracker",

@@ -1,4 +1,4 @@
-import { TRACKER_STATUSES, TRACKER_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRACKER_STATUSES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -6,19 +6,21 @@ import { PNG_1X1_BYTES, PNG_1X1_DATA_URL } from '@tests/fixtures/logo-images';
 import * as helpers from '@tests/helpers';
 
 describe('POST /trackers/:id/duplicate', () => {
-  it('copies type, limit, categories and lines but resets dates and flags', async () => {
-    const [food, fun] = await Promise.all([
+  it('copies rules, limit, categories, tags and lines but resets dates and flags', async () => {
+    const [food, fun, tag] = await Promise.all([
       helpers.addCustomCategory({ name: 'Food', color: '#FF0000', raw: true }),
       helpers.addCustomCategory({ name: 'Fun', color: '#00FF00', raw: true }),
+      helpers.createTag({ payload: { name: 'Trip', color: '#0000FF' }, raw: true }),
     ]);
     const source = await helpers.createTracker({
       name: 'Monthly',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
+      rulesCleanup: false,
       categoryIds: [food.id, fun.id],
+      tagIds: [tag.id],
       limitAmount: 1000,
       startDate: '2025-03-01T00:00:00Z',
       endDate: '2025-03-31T23:59:59Z',
-      autoInclude: true,
       raw: true,
     });
     const foodLine = await helpers.createTrackerLine({
@@ -33,7 +35,7 @@ describe('POST /trackers/:id/duplicate', () => {
     });
     await helpers.editTracker({ id: source.id, params: { archivePromptDismissed: true }, raw: true });
     const archivedSource = await helpers.archiveTracker({ id: source.id, isArchived: true, raw: true });
-    expect(archivedSource).toMatchObject({ status: TRACKER_STATUSES.archived, autoInclude: true });
+    expect(archivedSource).toMatchObject({ status: TRACKER_STATUSES.archived });
 
     const copyResponse = await helpers.duplicateTracker({ id: source.id, raw: false });
     expect(copyResponse.statusCode).toBe(201);
@@ -42,15 +44,16 @@ describe('POST /trackers/:id/duplicate', () => {
     expect(copy.id).not.toBe(source.id);
     expect(copy).toMatchObject({
       name: 'Monthly copy',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
+      rulesCleanup: false,
       status: TRACKER_STATUSES.active,
       limitAmount: 1000,
       startDate: null,
       endDate: null,
-      autoInclude: false,
       archivePromptDismissed: false,
     });
     expect(copy.categories!.map((c) => c.id).toSorted()).toEqual([food.id, fun.id].toSorted());
+    expect(copy.tags!.map((t) => t.id)).toEqual([tag.id]);
 
     const fetched = await helpers.getTrackerById({ id: copy.id, raw: true });
     const copiedLines = fetched!.lines!;
@@ -106,7 +109,7 @@ describe('POST /trackers/:id/duplicate', () => {
     expect((await helpers.getLogoImage({ id: copy.logoImageId! })).statusCode).toBe(200);
   });
 
-  it('does not copy linked transactions of a manual tracker', async () => {
+  it('does not copy hand-linked transactions', async () => {
     const account = await helpers.createAccount({ raw: true });
     const [tx] = await helpers.createTransaction({
       payload: helpers.buildTransactionPayload({
@@ -121,7 +124,6 @@ describe('POST /trackers/:id/duplicate', () => {
 
     const copy = await helpers.duplicateTracker({ id: source.id, raw: true });
 
-    expect(copy.type).toBe(TRACKER_TYPES.manual);
     expect(copy.lines).toEqual([]);
     const [sourceStats, copyStats] = await Promise.all([
       helpers.getTrackerStats({ id: source.id, raw: true }),

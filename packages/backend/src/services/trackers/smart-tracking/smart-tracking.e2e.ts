@@ -1,5 +1,4 @@
 import {
-  TRACKER_TYPES,
   NOTIFICATION_TYPES,
   SHARE_PERMISSIONS,
   TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS,
@@ -194,23 +193,19 @@ describe('Smart tracking', () => {
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
     });
 
-    it('is not available on category trackers', async () => {
+    it('can be enabled on a tracker with rules', async () => {
+      await createFirstConnection();
+      mockTrackerAi();
       const category = await helpers.addCustomCategory({ name: 'Travel', color: '#FF0000', raw: true });
       const tracker = await helpers.createTracker({
         name: 'By category',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         startDate: daysAgo({ days: 10 }),
         raw: true,
       });
 
-      const response = await helpers.editTracker({
-        id: tracker.id,
-        params: { aiEnabled: true, aiDescription: 'Trip' },
-        raw: false,
-      });
-
-      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+      await enableSmartTracking({ id: tracker.id });
     });
 
     it('forbids a manage recipient from changing smart tracking fields', async () => {

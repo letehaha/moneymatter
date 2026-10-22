@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -20,7 +20,7 @@ describe('Get tracker spending stats', () => {
     });
     const categoryTracker = await helpers.createTracker({
       name: 'empty-category-tracker',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds: [category.id],
       startDate: '2025-04-01T00:00:00Z',
       endDate: '2025-04-30T23:59:59Z',
@@ -345,7 +345,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'food-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category1.id, category2.id],
         startDate: '2025-04-01T00:00:00Z',
         endDate: '2025-04-30T23:59:59Z',
@@ -414,7 +414,7 @@ describe('Get tracker spending stats', () => {
       // Tracker tracks the parent category (descendants auto-included)
       const tracker = await helpers.createTracker({
         name: 'food-subcategory-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [parentCategory.id],
         startDate: '2025-04-01T00:00:00Z',
         endDate: '2025-04-30T23:59:59Z',
@@ -438,7 +438,7 @@ describe('Get tracker spending stats', () => {
       expect(children![1]!.amount).toBe(350);
     });
 
-    it('handles split transactions correctly for category tracker', async () => {
+    it('counts a split transaction in full when one split matches', async () => {
       const account = await helpers.createAccount({ raw: true });
 
       const category1 = await helpers.addCustomCategory({
@@ -471,7 +471,7 @@ describe('Get tracker spending stats', () => {
       // Tracker only tracks category1
       const tracker = await helpers.createTracker({
         name: 'split-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category1.id],
         startDate: '2025-05-01T00:00:00Z',
         endDate: '2025-05-31T23:59:59Z',
@@ -480,10 +480,10 @@ describe('Get tracker spending stats', () => {
 
       const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
 
-      // Should only count the split amount for category1 (600)
+      // A matching split links the whole transaction, counted under its primary category.
       expect(result.spendingsByCategory).toHaveLength(1);
       expect(result.spendingsByCategory[0]!.name).toBe('SplitCat1');
-      expect(result.spendingsByCategory[0]!.amount).toBe(600);
+      expect(result.spendingsByCategory[0]!.amount).toBe(1000);
     });
   });
 
@@ -572,7 +572,7 @@ describe('Get tracker spending stats', () => {
       expect(result.biggestDay).toEqual({ date: '2025-04-10', expense: 300 });
     }, 60_000);
 
-    it('attaches a split-targeted refund to the split’s category, not the original primary category', async () => {
+    it('nets a split-targeted refund against the primary category the split transaction is counted under', async () => {
       const account = await helpers.createAccount({ raw: true });
       const primaryCategory = await helpers.addCustomCategory({
         name: 'Primary',
@@ -618,10 +618,9 @@ describe('Get tracker spending stats', () => {
         true,
       );
 
-      // Category tracker tracking only splitCategory — only the $3 split is counted.
       const tracker = await helpers.createTracker({
         name: 'split-refund-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [splitCategory.id],
         startDate: '2025-07-01T00:00:00Z',
         endDate: '2025-07-31T23:59:59Z',
@@ -630,10 +629,9 @@ describe('Get tracker spending stats', () => {
 
       const result = await helpers.getTrackerSpendingStats({ id: tracker.id, raw: true });
 
-      // The refund must net out the split's category to zero. If splitId is ignored, the
-      // adjustment would target the original tx's primary category (which isn't even tracked
-      // by this tracker), and SplitCat would remain at $3.
-      expect(result.spendingsByCategory).toHaveLength(0);
+      expect(result.spendingsByCategory).toEqual([
+        expect.objectContaining({ categoryId: primaryCategory.id, amount: 700 }),
+      ]);
     });
 
     it('nets out refunds for a category tracker', async () => {
@@ -669,7 +667,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'category-refund-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         startDate: '2025-06-01T00:00:00Z',
         endDate: '2025-06-30T23:59:59Z',
@@ -875,7 +873,7 @@ describe('Get tracker spending stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'split-payee-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [first!.id, second!.id],
         startDate: '2025-11-01T00:00:00Z',
         endDate: '2025-11-30T23:59:59Z',

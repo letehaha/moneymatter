@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Цю транзакцію додав до трекера {handle}",
+        "addedByRule": "Додано за правилами трекера",
         "matchedByAi": "Зіставлено AI",
         "externalLinkTooltip": "Відкрити зовнішнє посилання",
         "locationTooltip": "Відкрити місце на карті",

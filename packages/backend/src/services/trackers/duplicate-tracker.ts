@@ -3,17 +3,17 @@ import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ForbiddenError } from '@js/errors';
 import Categories from '@models/categories.model';
-import TrackerCategories from '@models/tracker-categories.model';
 import TrackerLineCategories from '@models/tracker-line-categories.model';
 import TrackerLines from '@models/tracker-lines.model';
 import Trackers from '@models/trackers.model';
 import { LOGO_FIELD_KEYS } from '@services/brand-logos/apply-manual-logo-patch';
 import { withTransaction } from '@services/common/with-transaction';
 import { copyLogoImageIfPresent } from '@services/logo-images/logo-images.service';
-import { getTrackerById } from '@services/trackers/get-trackers';
+import { getTrackerById, includeTags } from '@services/trackers/get-trackers';
 import pick from 'lodash/pick';
 
 import { authorizeTrackerAccess } from './authorize-tracker-access';
+import { saveTrackerRules } from './rules/save-tracker-rules';
 
 // Sequelize mutates include objects while resolving them, so each nesting level needs its own instance.
 const includeCategoryIds = () => ({
@@ -39,7 +39,11 @@ export const duplicateTracker = withTransaction(async ({ userId, id }: { userId:
   const source = await findOrThrowNotFound({
     query: Trackers.findOne({
       where: { id, userId },
-      include: [includeCategoryIds(), { model: TrackerLines, as: 'lines', include: [includeCategoryIds()] }],
+      include: [
+        includeCategoryIds(),
+        includeTags,
+        { model: TrackerLines, as: 'lines', include: [includeCategoryIds()] },
+      ],
     }),
     message: t({ key: 'budgets.budgetNotFound' }),
   });
@@ -48,11 +52,11 @@ export const duplicateTracker = withTransaction(async ({ userId, id }: { userId:
     name: `${source.name.slice(0, MAX_NAME_LENGTH - COPY_SUFFIX.length)}${COPY_SUFFIX}`,
     userId,
     status: TRACKER_STATUSES.active,
-    type: source.type,
     limitAmount: source.limitAmount,
     startDate: null,
     endDate: null,
-    autoInclude: false,
+    rulesEnabled: source.rulesEnabled,
+    rulesCleanup: source.rulesCleanup,
     archivePromptDismissed: false,
     aiEnabled: false,
     aiDescription: source.aiDescription,
@@ -61,9 +65,13 @@ export const duplicateTracker = withTransaction(async ({ userId, id }: { userId:
     logoImageId: await copyLogoImageIfPresent({ id: source.logoImageId }),
   });
 
-  await TrackerCategories.bulkCreate(
-    source.categories.map((category) => ({ trackerId: copy.id, categoryId: category.id })),
-  );
+  await saveTrackerRules({
+    trackerId: copy.id,
+    ownerUserId: userId,
+    rulesEnabled: copy.rulesEnabled,
+    categoryIds: source.categories.map((category) => category.id),
+    tagIds: source.tags.map((tag) => tag.id),
+  });
 
   const sourceLines = source.lines ?? [];
   const copiedLines = await TrackerLines.bulkCreate(

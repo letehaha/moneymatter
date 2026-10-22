@@ -2,7 +2,6 @@ import { LOCALE_NAMES, type SupportedLocale } from '@bt/shared/i18n/locales';
 import {
   AI_FEATURE,
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   NOTIFICATION_TYPES,
   TRACKER_AI_AUTO_LINK_SCORE,
   TRACKER_AI_SUGGEST_SCORE,
@@ -35,6 +34,8 @@ import { subDays } from 'date-fns';
 import { type Includeable, Op, literal } from 'sequelize';
 import { z } from 'zod';
 
+import { syncTrackerRules } from '../rules/sync-tracker-rules';
+
 const BATCH_SIZE = 200;
 const MAX_LINKED_EXAMPLES = 20;
 const MAX_REJECTED_EXAMPLES = 10;
@@ -42,7 +43,7 @@ const MAX_REASON_LENGTH = 240;
 /** A tracker keeps getting scanned this long after it ends, for late-posting bank rows. */
 export const TRACKER_SCAN_ENDED_GRACE_DAYS = 14;
 
-type TrackerSchedule = Pick<Trackers, 'aiEnabled' | 'type' | 'status' | 'startDate' | 'endDate'>;
+type TrackerSchedule = Pick<Trackers, 'aiEnabled' | 'status' | 'startDate' | 'endDate'>;
 
 /** The one scan-eligibility rule; the cron's SQL filter mirrors it. */
 export const getTrackerScanBlocker = ({
@@ -59,7 +60,7 @@ export const getTrackerScanBlocker = ({
 };
 
 const isTrackerScannable = ({ tracker, now }: { tracker: TrackerSchedule; now: Date }): boolean =>
-  tracker.aiEnabled && tracker.type === TRACKER_TYPES.manual && getTrackerScanBlocker({ tracker, now }) === null;
+  tracker.aiEnabled && getTrackerScanBlocker({ tracker, now }) === null;
 
 type PromptTransaction = Transactions & {
   account?: { name: string };
@@ -347,6 +348,16 @@ export const runTrackerScan = async ({
   if (!aiClient) {
     logger.info('[Tracker Scan] No AI model available, skipping', { trackerId, userId: tracker.userId });
     return null;
+  }
+
+  // Rule matches get linked first, so the AI never pays to score them. A failed sync must not block the scan.
+  try {
+    await syncTrackerRules({ trackerId });
+  } catch (error) {
+    logger.error(
+      { message: '[Tracker Scan] Rules sync before scan failed', error: error as Error },
+      { code: 'TRACKER_SCAN_RULES_SYNC_FAILED', trackerId },
+    );
   }
 
   // Taken before the read, so a row edited mid-scan is newer than the cursor and gets rescanned.

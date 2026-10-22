@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, type RecordId, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { type RecordId, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -256,7 +256,7 @@ describe('Get tracker stats', () => {
 
       const tracker = await helpers.createTracker({
         name: 'refund-category-tracker-stats',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         startDate: '2025-06-01T00:00:00Z',
         endDate: '2025-06-30T23:59:59Z',
@@ -276,7 +276,7 @@ describe('Get tracker stats', () => {
   });
 
   describe('Tracker lines', () => {
-    it('splits category tracker expenses across lines by position', async () => {
+    it('splits rule-linked expenses across lines by position', async () => {
       const account = await helpers.createAccount({ raw: true });
       const [food, coffee, travel, misc] = await Promise.all(
         ['Food', 'Coffee', 'Travel', 'Misc'].map((name) =>
@@ -285,7 +285,7 @@ describe('Get tracker stats', () => {
       );
       const tracker = await helpers.createTracker({
         name: 'lines-category-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [food!.id, coffee!.id, travel!.id, misc!.id],
         raw: true,
       });
@@ -307,6 +307,7 @@ describe('Get tracker stats', () => {
       await createTx({ amount: 50, categoryId: coffee!.id });
       await createTx({ amount: 30, categoryId: misc!.id });
       await createTx({ amount: 20, categoryId: food!.id, transactionType: TRANSACTION_TYPES.income });
+      await helpers.editTracker({ id: tracker.id, params: { rulesEnabled: true } });
 
       const eatingOut = await helpers.createTrackerLine({
         trackerId: tracker.id,
@@ -377,7 +378,7 @@ describe('Get tracker stats', () => {
       expect(stats.otherSpent).toBe(40);
     });
 
-    it('credits each split of a category tracker transaction to its own line', async () => {
+    it('credits a split transaction whole to the line of its primary category', async () => {
       const account = await helpers.createAccount({ raw: true });
       const food = await helpers.addCustomCategory({ name: 'Food', color: '#AABBCC', raw: true });
       const travel = await helpers.addCustomCategory({ name: 'Travel', color: '#AABBCC', raw: true });
@@ -396,7 +397,7 @@ describe('Get tracker stats', () => {
       });
       const tracker = await helpers.createTracker({
         name: 'lines-split-tracker',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [food.id, travel.id],
         raw: true,
       });
@@ -414,8 +415,8 @@ describe('Get tracker stats', () => {
       const stats = (await helpers.getTrackerStats({ id: tracker.id, raw: true }))!;
 
       expect(stats.lines).toEqual([
-        { lineId: foodLine.id, spent: 60 },
-        { lineId: travelLine.id, spent: 40 },
+        { lineId: foodLine.id, spent: 100 },
+        { lineId: travelLine.id, spent: 0 },
       ]);
       const linesTotal = stats.lines.reduce((sum, line) => sum + line.spent, 0);
       expect(linesTotal + stats.otherSpent).toBe(stats.summary.actualExpense);

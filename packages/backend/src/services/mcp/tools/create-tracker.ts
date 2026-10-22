@@ -1,6 +1,5 @@
 import {
   TRACKER_STATUSES,
-  TRACKER_TYPES,
   TRACKER_AI_DEFAULT_PRE_WINDOW_DAYS,
   TRACKER_AI_DESCRIPTION_MAX_LENGTH,
   TRACKER_AI_PRE_WINDOW_DAYS,
@@ -22,25 +21,26 @@ const inputSchema = {
     .enum([TRACKER_STATUSES.active, TRACKER_STATUSES.archived, TRACKER_STATUSES.closed])
     .optional()
     .describe('Tracker status (default: active)'),
-  type: z
-    .enum([TRACKER_TYPES.manual, TRACKER_TYPES.category])
-    .optional()
-    .describe(
-      'Tracker type: manual (transactions linked explicitly) or category (auto-tracks by category). Default: manual',
-    ),
-  categoryIds: z.array(recordId()).optional().describe('Category IDs to link (only used when type is "category")'),
-  startDate: z.string().optional().describe('Tracker start date (ISO 8601)'),
-  endDate: z.string().optional().describe('Tracker end date (ISO 8601)'),
-  autoInclude: z
+  rulesEnabled: z
     .boolean()
     .optional()
-    .describe('Auto-include transactions in the date range when creating (manual trackers only)'),
+    .describe(
+      "Auto-add the user's transactions in the date range matching any of categoryIds or tagIds. Needs at least one of them. Default: false",
+    ),
+  categoryIds: z.array(recordId()).optional().describe('Rule categories; parent IDs include their children'),
+  tagIds: z.array(recordId()).optional().describe('Rule tags'),
+  rulesCleanup: z
+    .boolean()
+    .optional()
+    .describe('Remove rule-added transactions that stop matching the rules. Default: true'),
+  startDate: z.string().optional().describe('Tracker start date (ISO 8601)'),
+  endDate: z.string().optional().describe('Tracker end date (ISO 8601)'),
   limitAmount: z
     .number()
     .optional()
     .describe("Spending limit as a decimal amount in the user's base currency (e.g. 500.00)"),
   aiEnabled: smartTrackingFieldsShape.aiEnabled.describe(
-    'Turn on smart tracking: an AI scans the date range and links or suggests matching transactions. Manual trackers only; requires aiDescription and startDate',
+    'Turn on smart tracking: an AI scans the date range and links or suggests matching transactions. Requires aiDescription and startDate',
   ),
   aiDescription: smartTrackingFieldsShape.aiDescription.describe(
     `Plain-language description of what belongs in the tracker (max ${TRACKER_AI_DESCRIPTION_MAX_LENGTH} chars), e.g. "Trip to Lisbon: flights, hotels, food"`,
@@ -55,7 +55,7 @@ export function registerCreateTracker(server: McpServer) {
     'create_tracker',
     {
       description:
-        'Create a tracker with an optional spending limit, date range, and linked categories. It does not create or change the period-based Budget plan. Set aiEnabled with aiDescription and startDate to turn on smart tracking (manual trackers only); review its suggestions with list_tracker_suggestions. Returns the created tracker with its ID, status, type, and associated categories.',
+        'Create a tracker with an optional spending limit and date range. It does not create or change the period-based Budget plan. Set rulesEnabled with categoryIds and/or tagIds to auto-add matching transactions; link others with add_transactions_to_tracker. Set aiEnabled with aiDescription and startDate to turn on smart tracking; review its suggestions with list_tracker_suggestions. Returns the created tracker with its ID, status, rule categories and tags.',
       inputSchema,
     },
     async (args, extra) => {
@@ -67,11 +67,12 @@ export function registerCreateTracker(server: McpServer) {
         userId,
         name: args.name,
         status: args.status ?? TRACKER_STATUSES.active,
-        type: args.type,
+        rulesEnabled: args.rulesEnabled,
+        rulesCleanup: args.rulesCleanup,
         categoryIds: args.categoryIds,
+        tagIds: args.tagIds,
         startDate: args.startDate ? new Date(args.startDate) : undefined,
         endDate: args.endDate ? new Date(args.endDate) : undefined,
-        autoInclude: args.autoInclude,
         limitAmount: args.limitAmount !== undefined ? Money.fromDecimal(args.limitAmount) : undefined,
         aiEnabled: args.aiEnabled,
         aiDescription: args.aiDescription,

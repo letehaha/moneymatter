@@ -163,10 +163,12 @@ export interface TransactionModel {
    *  transactionCount is the group's full membership size, independent of how many of the
    *  group's members are in the current fetch window. */
   transactionGroups?: Array<{ id: RecordId; name: string; transactionCount: number }>;
-  /** Recipient who attached this tx to a shared tracker. Present (possibly `null`) on
-   *  tracker-scoped tx fetches; absent elsewhere. `null` ⇒ owner-attached, no chip in
-   *  the UI. Non-null ⇒ the tracker recipient who clicked Attach for this row. */
+  /** Who attached this tx to the tracker: the recipient who attached it, else the tracker owner
+   *  (also for rule and AI links). Present on tracker-scoped tx fetches; absent elsewhere.
+   *  With several trackers in scope, one link row decides both this and `addedByRule`. */
   addedBy?: { id: number; username: string; avatar: string | null } | null;
+  /** Tracker-scoped fetches only: the tracker's rules linked this row (`addedBy` is then the owner). */
+  addedByRule?: boolean;
   /** Whether the caller has write access to this row. Set by list endpoints so the UI
    *  can render an inert details dialog (vs an edit form) when the row is visible –
    *  typically via a tracker share – but not editable. Absent on write-result payloads

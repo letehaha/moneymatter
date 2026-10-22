@@ -21,7 +21,7 @@ export function registerListTrackerSuggestions(server: McpServer) {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'list_tracker_suggestions', clientId: extra.authInfo?.clientId });
 
-      const result = await getTrackerSuggestions({ userId, trackerId: args.trackerId });
+      const { rejected: _rejected, ...result } = await getTrackerSuggestions({ userId, trackerId: args.trackerId });
       const transactions = slimTransactionsForMcp(serializeTransactions(result.pending.map((s) => s.transaction)));
 
       return jsonContent({

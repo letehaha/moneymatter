@@ -1,4 +1,4 @@
-import { TRACKER_TYPES, SHARE_PERMISSIONS } from '@bt/shared/types';
+import { SHARE_PERMISSIONS } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -291,125 +291,30 @@ describe('Tracker lines', () => {
     ]);
   });
 
-  it("restricts a category tracker's lines to the tracker's categories", async () => {
+  it("lets lines use categories outside the tracker's rules and keeps them when the rules change", async () => {
     const [food, fun, travel] = await Promise.all([
       addCategory({ name: 'Food' }),
       addCategory({ name: 'Fun' }),
       addCategory({ name: 'Travel' }),
     ]);
     const tracker = await helpers.createTracker({
-      name: 'Category tracker',
-      type: TRACKER_TYPES.category,
+      name: 'Rules tracker',
+      rulesEnabled: true,
       categoryIds: [food.id, fun.id],
       raw: true,
     });
 
-    const outsideRes = await helpers.createTrackerLine({
-      trackerId: tracker.id,
-      payload: { name: 'Travel', categoryIds: [travel.id] },
-      raw: false,
-    });
-    expect(outsideRes.statusCode).toBe(ERROR_CODES.ValidationError);
-
     const line = await helpers.createTrackerLine({
       trackerId: tracker.id,
-      payload: { name: 'Food', categoryIds: [food.id] },
+      payload: { name: 'Fun & travel', categoryIds: [fun.id, travel.id] },
       raw: true,
     });
-    expect(line.categories.map((c) => c.id)).toEqual([food.id]);
+    expect(line.categories.map((c) => c.id).toSorted()).toEqual([fun.id, travel.id].toSorted());
 
-    const outsideUpdateRes = await helpers.updateTrackerLine({
-      trackerId: tracker.id,
-      lineId: line.id,
-      payload: { categoryIds: [food.id, travel.id] },
-      raw: false,
-    });
-    expect(outsideUpdateRes.statusCode).toBe(ERROR_CODES.ValidationError);
+    const edited = await helpers.editTracker({ id: tracker.id, params: { categoryIds: [food.id] }, raw: true });
 
-    const fetched = await helpers.getTrackerById({ id: tracker.id, raw: true });
-    expect(fetched!.lines!.map((l) => l.id)).toEqual([line.id]);
-    expect(fetched!.lines![0]!.categories.map((c) => c.id)).toEqual([food.id]);
-  });
-
-  it("keeps a picked parent's untracked new child out of a category tracker's line", async () => {
-    const parent = await addCategory({ name: 'Entertainment' });
-    const movies = await addCategory({ name: 'Movies', parentId: parent.id });
-    const tracker = await helpers.createTracker({
-      name: 'Category tracker',
-      type: TRACKER_TYPES.category,
-      categoryIds: [parent.id],
-      raw: true,
-    });
-    const games = await addCategory({ name: 'Games', parentId: parent.id });
-
-    const line = await helpers.createTrackerLine({
-      trackerId: tracker.id,
-      payload: { name: 'Fun', categoryIds: [parent.id] },
-      raw: true,
-    });
-
-    const lineCategoryIds = line.categories.map((c) => c.id).toSorted();
-    expect(lineCategoryIds).toEqual([parent.id, movies.id].toSorted());
-    expect(lineCategoryIds).not.toContain(games.id);
-  });
-
-  it('expands a picked parent to only the children a category tracker tracks', async () => {
-    const parent = await addCategory({ name: 'Entertainment' });
-    const [movies] = await Promise.all([
-      addCategory({ name: 'Movies', parentId: parent.id }),
-      addCategory({ name: 'Games', parentId: parent.id }),
-    ]);
-    const tracker = await helpers.createTracker({
-      name: 'Category tracker',
-      type: TRACKER_TYPES.category,
-      categoryIds: [movies!.id],
-      raw: true,
-    });
-
-    const res = await helpers.createTrackerLine({
-      trackerId: tracker.id,
-      payload: { name: 'Fun', categoryIds: [parent.id] },
-      raw: false,
-    });
-
-    expect(res.statusCode).toBe(200);
-    expect(helpers.extractResponse(res).categories.map((c) => c.id)).toEqual([movies!.id]);
-  });
-
-  it('drops removed tracker categories from its lines and deletes lines left empty', async () => {
-    const [food, fun, travel] = await Promise.all([
-      addCategory({ name: 'Food' }),
-      addCategory({ name: 'Fun' }),
-      addCategory({ name: 'Travel' }),
-    ]);
-    const tracker = await helpers.createTracker({
-      name: 'Category tracker',
-      type: TRACKER_TYPES.category,
-      categoryIds: [food.id, fun.id, travel.id],
-      raw: true,
-    });
-    const mixedLine = await helpers.createTrackerLine({
-      trackerId: tracker.id,
-      payload: { name: 'Food & fun', categoryIds: [food.id, fun.id] },
-      raw: true,
-    });
-    const funLine = await helpers.createTrackerLine({
-      trackerId: tracker.id,
-      payload: { name: 'Fun', categoryIds: [fun.id] },
-      raw: true,
-    });
-
-    const edited = await helpers.editTracker({
-      id: tracker.id,
-      params: { categoryIds: [food.id, travel.id] },
-      raw: true,
-    });
-    expect(edited.lines!.map((l) => l.id)).toEqual([mixedLine.id]);
-
-    const fetched = await helpers.getTrackerById({ id: tracker.id, raw: true });
-    expect(fetched!.lines!.map((l) => l.id)).toEqual([mixedLine.id]);
-    expect(fetched!.lines![0]!.categories.map((c) => c.id)).toEqual([food.id]);
-    expect(fetched!.lines!.map((l) => l.id)).not.toContain(funLine.id);
+    expect(edited.lines!.map((l) => l.id)).toEqual([line.id]);
+    expect(edited.lines![0]!.categories.map((c) => c.id).toSorted()).toEqual([fun.id, travel.id].toSorted());
   });
 
   it('deletes lines together with their tracker', async () => {

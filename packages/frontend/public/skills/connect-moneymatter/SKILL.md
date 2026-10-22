@@ -56,12 +56,12 @@ page.
 | `search_transactions`                   | Filter transactions by date, category, tag, amount, etc.                                                         |
 | `get_categories`                        | List spending/income categories                                                                                  |
 | `get_tags`                              | List transaction tags                                                                                            |
-| `get_trackers`                          | Trackers with limits, categories and lines                                                                       |
-| `create_tracker`                        | Create a new tracker with limit, date range, categories, smart tracking (`finance:write`)                        |
-| `update_tracker`                        | Update name, dates, limit (null clears), categories, or smart tracking of a tracker (`finance:write`)            |
+| `get_trackers`                          | Trackers with limits, category/tag rules and lines                                                               |
+| `create_tracker`                        | Create a new tracker with limit, date range, category/tag rules, smart tracking (`finance:write`)                |
+| `update_tracker`                        | Update name, dates, limit (null clears), category/tag rules, or smart tracking of a tracker (`finance:write`)    |
 | `delete_tracker`                        | Permanently delete a tracker and its transaction links (`finance:delete`)                                        |
 | `archive_tracker`                       | Archive or restore a tracker — active ↔ archived (`finance:write`)                                               |
-| `add_transactions_to_tracker`           | Link transactions to a manual tracker (`finance:write`)                                                          |
+| `add_transactions_to_tracker`           | Link transactions to a tracker (`finance:write`)                                                                 |
 | `remove_transactions_from_tracker`      | Unlink transactions from a tracker (`finance:write`)                                                             |
 | `get_tracker_spending_stats`            | Category breakdown, time-series, per-line spent and "other" spending for a tracker                               |
 | `create_tracker_line`                   | Add a line (category set + optional limit) to a tracker (`finance:write`)                                        |
@@ -173,8 +173,8 @@ multi-currency data.
   an optional limit. A transaction lands in at most one line: the first by
   `position` whose categories (expanded to children) contain it. Spending that
   matches no line is reported as `otherSpent` by `get_tracker_spending_stats`.
-- Smart tracking (`aiEnabled`) is owner-only and works on manual trackers with
-  an `aiDescription` and a `startDate`. The AI links transactions it is sure of
+- Smart tracking (`aiEnabled`) is owner-only and works on trackers with an
+  `aiDescription` and a `startDate`. The AI links transactions it is sure of
   (score >= 0.85) and suggests weaker matches (>= 0.5) as pending in
   `list_tracker_suggestions`. Rejected transactions are not suggested again.
 - Savings goals count a percentage share of each backing account's balance

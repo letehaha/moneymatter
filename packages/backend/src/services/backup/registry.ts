@@ -459,6 +459,13 @@ const TABLE_DEFS = [
     restoreMode: 'insert',
   },
   {
+    fileName: 'tracker-tags',
+    model: models.TrackerTags,
+    tier: 5,
+    scope: { strategy: 'viaParent', fk: 'trackerId', parent: 'trackers' },
+    restoreMode: 'insert',
+  },
+  {
     fileName: 'refund-transactions',
     model: models.RefundTransactions,
     tier: 5,

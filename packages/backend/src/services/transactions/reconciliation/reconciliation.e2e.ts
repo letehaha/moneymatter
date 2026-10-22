@@ -131,7 +131,7 @@ const subscriptionTxIds = async ({ subscriptionId }: { subscriptionId: RecordId 
   (await helpers.getSubscriptionById({ id: subscriptionId, raw: true })).transactions.map((tx) => tx.id);
 
 const createTracker = async ({ name, transactionIds }: { name: string; transactionIds: RecordId[] }) => {
-  const tracker = await helpers.createTracker({ name, autoInclude: false, raw: true });
+  const tracker = await helpers.createTracker({ name, raw: true });
   await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds } });
   return tracker.id as RecordId;
 };

@@ -5,7 +5,7 @@
  * stats parity between owner and recipient, and the share block shape.
  */
 
-import { ACCESS_SOURCES, TRACKER_TYPES, RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { ACCESS_SOURCES, RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { NONEXISTENT_ID } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -102,7 +102,7 @@ describe('Shared tracker visibility', () => {
   });
 
   describe('no tracker access', () => {
-    it('hides owner trackers from a stranger across list, detail, spending-stats and category-transactions', async () => {
+    it('hides owner trackers from a stranger across list, detail, spending-stats and rules sync', async () => {
       const manualTracker = await helpers.createTracker({
         name: 'Private tracker',
         raw: true,
@@ -125,7 +125,7 @@ describe('Shared tracker visibility', () => {
       });
       const categoryTracker = await helpers.createTracker({
         name: 'Category tracker stranger',
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         categoryIds: [category.id],
         limitAmount: 500,
         raw: true,
@@ -153,15 +153,11 @@ describe('Shared tracker visibility', () => {
       })) as CustomResponse<unknown>;
       expect(spendingRes.statusCode).toBe(ERROR_CODES.NotFoundError);
 
-      const categoryTxRes = (await helpers.asUser({
+      const syncRes = await helpers.asUser({
         cookies: stranger.cookies,
-        fn: () =>
-          helpers.getCategoryTrackerTransactions({
-            id: categoryTracker.id,
-            raw: false,
-          }),
-      })) as CustomResponse<unknown>;
-      expect(categoryTxRes.statusCode).toBe(ERROR_CODES.NotFoundError);
+        fn: () => helpers.syncTrackerRules({ id: categoryTracker.id, raw: false }),
+      });
+      expect(syncRes.statusCode).toBe(ERROR_CODES.NotFoundError);
 
       const unknownIdRes = (await helpers.getTrackerSpendingStats({
         id: NONEXISTENT_ID,
@@ -270,7 +266,6 @@ describe('Shared tracker visibility', () => {
 
       const tracker = await helpers.createTracker({
         name: 'Stats parity tracker',
-        autoInclude: true,
         limitAmount: 1000,
         raw: true,
       });
@@ -306,93 +301,6 @@ describe('Shared tracker visibility', () => {
 
       expect(JSON.stringify(ownerSpending)).toBe(JSON.stringify(recipientSpending));
     }, 30000);
-  });
-
-  describe('GET /trackers/:id/category-transactions — recipient access', () => {
-    it("keeps the owner's planned transaction out of the recipient's list and stats while the owner still counts it", async () => {
-      const category = await helpers.addCustomCategory({
-        name: 'Cat-planned',
-        color: '#0f0f0f',
-        raw: true,
-      });
-      const ownerAccount = await helpers.createAccount({ raw: true });
-
-      const [realTx] = await helpers.createTransaction({
-        payload: helpers.buildTransactionPayload({
-          accountId: ownerAccount.id,
-          amount: 60,
-          transactionType: TRANSACTION_TYPES.expense,
-          categoryId: category.id,
-        }),
-        raw: true,
-      });
-      const [plannedTx] = await helpers.createPlannedTransaction({
-        payload: {
-          accountId: ownerAccount.id,
-          amount: 40,
-          transactionType: TRANSACTION_TYPES.expense,
-          categoryId: category.id,
-          time: addDays(new Date(), 5).toISOString(),
-        },
-        raw: true,
-      });
-
-      const tracker = await helpers.createTracker({
-        name: 'Category tracker with a plan',
-        type: TRACKER_TYPES.category,
-        categoryIds: [category.id],
-        limitAmount: 500,
-        raw: true,
-      });
-
-      const recipient = await helpers.provisionSecondUserWithBaseCurrency();
-      await shareTracker({
-        trackerId: tracker.id,
-        recipient,
-        permission: SHARE_PERMISSIONS.read,
-      });
-
-      const ownerView = await helpers.getCategoryTrackerTransactions({
-        id: tracker.id,
-        raw: true,
-      });
-      expect(ownerView.total).toBe(2);
-      expect(ownerView.transactions.map((tx) => tx.id).toSorted()).toEqual([realTx!.id, plannedTx!.id].toSorted());
-
-      const recipientView = await helpers.asUser({
-        cookies: recipient.cookies,
-        fn: () => helpers.getCategoryTrackerTransactions({ id: tracker.id, raw: true }),
-      });
-
-      expect(recipientView.total).toBe(1);
-      expect(recipientView.transactions.map((tx) => tx.id)).toEqual([realTx!.id]);
-
-      const ownerStats = (await helpers.getTrackerStats({
-        id: tracker.id,
-        raw: true,
-      }))!;
-      expect(ownerStats.summary.actualExpense).toBe(100);
-      expect(ownerStats.summary.transactionsCount).toBe(2);
-
-      const recipientStats = (await helpers.asUser({
-        cookies: recipient.cookies,
-        fn: () => helpers.getTrackerStats({ id: tracker.id, raw: true }),
-      }))!;
-      expect(recipientStats.summary.actualExpense).toBe(60);
-      expect(recipientStats.summary.transactionsCount).toBe(1);
-
-      const ownerSpending = await helpers.getTrackerSpendingStats({
-        id: tracker.id,
-        raw: true,
-      });
-      expect(ownerSpending.spendingsByCategory.find((c) => c.categoryId === category.id)?.amount).toBe(100);
-
-      const recipientSpending = await helpers.asUser({
-        cookies: recipient.cookies,
-        fn: () => helpers.getTrackerSpendingStats({ id: tracker.id, raw: true }),
-      });
-      expect(recipientSpending.spendingsByCategory.find((c) => c.categoryId === category.id)?.amount).toBe(60);
-    });
   });
 
   describe("Owner's planned rows on a shared manual tracker", () => {
@@ -535,7 +443,6 @@ describe('Shared tracker visibility', () => {
 
       const tracker = await helpers.createTracker({
         name: 'Shared category-scope tracker',
-        autoInclude: false,
         limitAmount: 1000,
         raw: true,
       });

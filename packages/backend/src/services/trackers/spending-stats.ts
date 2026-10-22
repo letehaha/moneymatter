@@ -1,16 +1,13 @@
 import type { TrackerSpendingGranularity, EntityLogoFields, RecordId } from '@bt/shared/types';
-import { TRACKER_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
-import Accounts from '@models/accounts.model';
 import Categories from '@models/categories.model';
 import Payees from '@models/payees.model';
 import Trackers from '@models/trackers.model';
-import TransactionSplits from '@models/transaction-splits.model';
-import { PlannedPolicy, transactionsInclude } from '@models/transactions-query';
-import * as Transactions from '@models/transactions.model';
+import { findTransactions } from '@models/transactions-query';
 import { EMPTY_LOGO_FIELDS, serializeLogoFields } from '@root/serializers/logo-fields.serializer';
-import { statsTransactions } from '@services/stats/stats-transactions';
+import { moneyMovementWhere } from '@services/stats/stats-transactions';
 import {
   addDays,
   addMonths,
@@ -30,7 +27,6 @@ import {
 import { Op } from 'sequelize';
 
 import { authorizeTrackerRead } from './authorize-tracker-access';
-import { buildDateFilter } from './utils/build-date-filter';
 import { type TrackerRefundPair, fetchTrackerRefundPairs } from './utils/refund-pairs';
 import { OTHER_CATEGORY_ID, buildSharedTrackerMergeMap } from './utils/shared-category-merge-map';
 
@@ -160,35 +156,6 @@ const getRootCategoryId = ({
   }
 
   return current.id;
-};
-
-/**
- * Walks up the category tree and returns the HIGHEST ancestor that is in
- * targetCategoryIds. Used for subcategory breakdown: when a tracker contains
- * both a parent and its children, transactions under children aggregate to
- * the parent.
- */
-const getTopLevelTargetCategoryId = ({
-  categoryId,
-  categoryMap,
-  targetCategoryIds,
-}: {
-  categoryId: RecordId;
-  categoryMap: Map<string, CategoryInfo>;
-  targetCategoryIds: Set<RecordId>;
-}): RecordId => {
-  let topLevel = categoryId;
-  let current = categoryMap.get(categoryId);
-
-  while (current) {
-    if (targetCategoryIds.has(current.id)) {
-      topLevel = current.id;
-    }
-    if (current.parentId === null) break;
-    current = categoryMap.get(current.parentId);
-  }
-
-  return topLevel;
 };
 
 // 184 is the longest six calendar months (e.g. Jul–Dec), so every half-year tracker stays weekly.
@@ -472,38 +439,31 @@ const buildRefundAdjustments = ({
   for (const pair of pairs) {
     const adjustmentAmount = pair.refundTx.refAmount.toCents();
 
-    const pushSide = ({
-      tx,
-      overrideCategoryId,
-    }: {
-      tx: TrackerRefundPair['originalTx'];
-      overrideCategoryId: RecordId | null;
-    }) => {
+    // A split transaction is counted whole under its primary category, so a split-targeted refund nets there too.
+    const pushSide = ({ tx }: { tx: TrackerRefundPair['originalTx'] }) => {
       const isExpense = tx.transactionType === TRANSACTION_TYPES.expense;
-      const targetCategoryId = overrideCategoryId ?? tx.categoryId;
-      const resolved = isExpense ? resolveCategoryBucket(targetCategoryId) : null;
+      const resolved = isExpense ? resolveCategoryBucket(tx.categoryId) : null;
       adjustments.push({
         transactionId: tx.id,
         time: tx.time,
         amount: adjustmentAmount,
         isExpense,
         categoryId: resolved,
-        originalCategoryId: isExpense ? targetCategoryId : null,
+        originalCategoryId: isExpense ? tx.categoryId : null,
         negative: true,
       });
     };
 
-    // splitId only applies to the original side — splits belong to the original tx.
-    if (pair.originalInScope) pushSide({ tx: pair.originalTx, overrideCategoryId: pair.splitCategoryId });
-    if (pair.refundInScope) pushSide({ tx: pair.refundTx, overrideCategoryId: null });
+    if (pair.originalInScope) pushSide({ tx: pair.originalTx });
+    if (pair.refundInScope) pushSide({ tx: pair.refundTx });
   }
 
   return adjustments;
 };
 
 /**
- * Manual tracker: fetch transactions via the TrackerTransactions junction (no userId
- * filter, so recipient contributions count) and group by root category.
+ * Fetches transactions via the TrackerTransactions junction (no userId filter, so
+ * recipient contributions count) and groups them by root category.
  *
  * Shared-tracker category breakdown merges by `Categories.key`: a recipient's seeded
  * category folds into the owner's matching one (display shows owner's name/color); a
@@ -511,7 +471,7 @@ const buildRefundAdjustments = ({
  * `buildSharedTrackerMergeMap` for the full strategy. For non-shared trackers, the merge
  * map is identity-only and behaviour matches the pre-share implementation.
  */
-const getManualTrackerSpendingStats = async ({
+const getLinkedTransactionsSpendingStats = async ({
   userId: ownerUserId,
   trackerId,
   callerUserId,
@@ -525,12 +485,11 @@ const getManualTrackerSpendingStats = async ({
     message: t({ key: 'budgets.budgetNotFound' }),
   });
 
-  const transactions = await Transactions.findWithFilters({
-    excludeTransfer: true,
-    trackerIds: [trackerId],
+  const transactions = await findTransactions({
+    where: moneyMovementWhere,
+    access: { trackerScoped: [trackerId as RecordId] },
     completeness: 'all',
     planned: { visibleTo: callerUserId },
-    access: 'pre-scoped',
     balanceAdjustments: 'include',
     attributes: [
       'id',
@@ -622,162 +581,6 @@ const getManualTrackerSpendingStats = async ({
   });
 };
 
-/**
- * Category tracker: fetch transactions by category IDs, handle splits
- */
-const getCategoryTrackerSpendingStats = async ({
-  userId,
-  trackerId,
-  isOwner,
-}: {
-  userId: number;
-  trackerId: string;
-  isOwner: boolean;
-}): Promise<SpendingStatsResponse> => {
-  const trackerDetails = await findOrThrowNotFound({
-    query: Trackers.findOne({
-      where: { id: trackerId, userId },
-      include: [{ model: Categories, as: 'categories', attributes: ['id'] }],
-    }),
-    message: t({ key: 'budgets.budgetNotFound' }),
-  });
-
-  const trackerCategoryIds = trackerDetails.categories?.map((c) => c.id) || [];
-
-  if (!trackerCategoryIds.length) return getEmptyResponse();
-
-  const dateFilter = buildDateFilter({
-    startDate: trackerDetails.startDate,
-    endDate: trackerDetails.endDate,
-  });
-
-  // Fetch all user categories for hierarchy
-  const allCategoriesRaw = (await Categories.findAll({
-    where: { userId },
-    attributes: ['id', 'name', 'color', 'parentId'],
-    raw: true,
-  })) as unknown as { id: RecordId; name: string; color: string; parentId: RecordId | null }[];
-  const categoryMap = buildCategoryMap({ categories: allCategoriesRaw });
-  const targetCategoryIds = new Set<RecordId>(trackerCategoryIds);
-
-  // Expand target categories to include all descendants
-  const expandedCategoryIds = new Set<RecordId>(trackerCategoryIds);
-  allCategoriesRaw.forEach((cat) => {
-    let current: CategoryInfo | undefined = categoryMap.get(cat.id);
-    while (current) {
-      if (targetCategoryIds.has(current.id)) {
-        expandedCategoryIds.add(cat.id);
-        break;
-      }
-      if (current.parentId === null) break;
-      current = categoryMap.get(current.parentId);
-    }
-  });
-
-  // Planned rows are owner-only: they count as spent for the owner, but a share
-  // recipient must never see them.
-  const planned: PlannedPolicy = isOwner ? 'include' : 'exclude';
-
-  // Primary category transactions (without splits)
-  const { rows: primaryCategoryTransactions } = await statsTransactions({
-    access: { creator: userId },
-    planned,
-    refunds: 'ignore',
-    window: { from: trackerDetails.startDate ?? undefined, to: trackerDetails.endDate ?? undefined },
-    where: { categoryId: { [Op.in]: Array.from(expandedCategoryIds) } },
-    include: [{ model: TransactionSplits, as: 'splits', required: false }],
-  });
-
-  // Matching splits
-  const matchingSplits = await TransactionSplits.findAll({
-    where: {
-      userId,
-      categoryId: { [Op.in]: Array.from(expandedCategoryIds) },
-    },
-    include: [
-      transactionsInclude({
-        planned,
-        required: true,
-        as: 'transaction',
-        where: {
-          transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-          ...dateFilter,
-        },
-        attributes: ['id', 'time', 'transactionType', 'refundLinked', 'currencyCode', 'payeeId'],
-        include: [{ model: Accounts, where: { excludeFromStats: false }, attributes: [] }],
-      }),
-    ],
-  });
-
-  const txDataList: NormalizedTxData[] = [];
-  const countedTransactions: { id: string; refundLinked: boolean }[] = [];
-
-  // Process primary category transactions (only those WITHOUT splits)
-  for (const tx of primaryCategoryTransactions) {
-    const splits = tx.get('splits') as TransactionSplits[] | undefined;
-    if (splits && splits.length > 0) continue;
-
-    const topLevelCatId = getTopLevelTargetCategoryId({
-      categoryId: tx.categoryId!,
-      categoryMap,
-      targetCategoryIds,
-    });
-
-    txDataList.push({
-      transactionId: tx.id,
-      time: tx.time,
-      amount: tx.refAmount.toCents(),
-      nativeAmount: tx.amount.toCents(),
-      currencyCode: tx.currencyCode,
-      payeeId: tx.payeeId,
-      isExpense: tx.transactionType === TRANSACTION_TYPES.expense,
-      categoryId: topLevelCatId,
-      originalCategoryId: tx.categoryId!,
-    });
-    countedTransactions.push({ id: tx.id, refundLinked: tx.refundLinked });
-  }
-
-  // Process splits
-  for (const split of matchingSplits) {
-    const transaction = split.get('transaction') as Transactions.default;
-    if (!transaction) continue;
-
-    const topLevelCatId = getTopLevelTargetCategoryId({
-      categoryId: split.categoryId,
-      categoryMap,
-      targetCategoryIds,
-    });
-
-    txDataList.push({
-      transactionId: transaction.id,
-      time: transaction.time,
-      amount: split.refAmount.toCents(),
-      nativeAmount: split.amount.toCents(),
-      currencyCode: transaction.currencyCode,
-      payeeId: transaction.payeeId,
-      isExpense: transaction.transactionType === TRANSACTION_TYPES.expense,
-      categoryId: topLevelCatId,
-      originalCategoryId: split.categoryId,
-    });
-    countedTransactions.push({ id: transaction.id, refundLinked: transaction.refundLinked });
-  }
-
-  if (txDataList.length === 0) return getEmptyResponse();
-
-  const refundPairs = await fetchTrackerRefundPairs({ countedTransactions });
-  const refundAdjustments = buildRefundAdjustments({
-    pairs: refundPairs,
-    resolveCategoryBucket: (categoryId) => getTopLevelTargetCategoryId({ categoryId, categoryMap, targetCategoryIds }),
-  });
-
-  return aggregateTransactionData({
-    txDataList: [...txDataList, ...refundAdjustments],
-    trackerStartDate: trackerDetails.startDate,
-    trackerEndDate: trackerDetails.endDate,
-    categoryMap,
-  });
-};
-
 export const getTrackerSpendingStats = async ({
   userId,
   trackerId,
@@ -788,16 +591,7 @@ export const getTrackerSpendingStats = async ({
   // Share-aware auth: recipient sees the same numbers the owner would (per PRD
   // visibility decision). Downstream queries scope against the owner's userId so
   // a recipient's unrelated transactions don't filter the result.
-  const { ownerUserId, isOwner } = await authorizeTrackerRead({ userId, trackerId });
+  const { ownerUserId } = await authorizeTrackerRead({ userId, trackerId });
 
-  const trackerDetails = await findOrThrowNotFound({
-    query: Trackers.findOne({ where: { id: trackerId, userId: ownerUserId }, attributes: ['type'] }),
-    message: t({ key: 'budgets.budgetNotFound' }),
-  });
-
-  if (trackerDetails.type === TRACKER_TYPES.category) {
-    return getCategoryTrackerSpendingStats({ userId: ownerUserId, trackerId, isOwner });
-  }
-
-  return getManualTrackerSpendingStats({ userId: ownerUserId, trackerId, callerUserId: userId });
+  return getLinkedTransactionsSpendingStats({ userId: ownerUserId, trackerId, callerUserId: userId });
 };

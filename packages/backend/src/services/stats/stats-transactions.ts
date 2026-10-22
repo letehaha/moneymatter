@@ -55,7 +55,7 @@ export interface StatsTransactionsResult {
   refundPairs: CategoryRefundPair[];
 }
 
-const moneyMovementWhere: WhereOptions = {
+export const moneyMovementWhere: WhereOptions = {
   [Op.or]: [
     { transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer },
     { transferNature: TRANSACTION_TRANSFER_NATURE.transfer_to_loan, transactionType: TRANSACTION_TYPES.expense },

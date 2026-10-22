@@ -5,7 +5,7 @@
  * Sequelize query patterns: normal queries, raw: true, aggregates,
  * literal updates, and direct model operations.
  */
-import { TRACKER_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import Accounts from '@models/accounts.model';
 import Balances from '@models/balances.model';
@@ -235,13 +235,8 @@ describe('MoneyField integration', () => {
   });
 
   describe('Bug regressions', () => {
-    it('tracker stats: category tracker stats returns correct decimal amounts', async () => {
-      // Bug: getCategoryTrackerStats() accumulated tx.refAmount.toNumber() (decimals)
-      // but serializeTrackerStats.toApiDecimal() treated plain numbers as cents.
-      // Result: 150 cents → .toNumber() = 1.5 → fromCents(1.5) = 0.015 (100x too small)
-      //
-      // Fix: getCategoryTrackerStats() should use .toCents() to keep raw cents,
-      // consistent with getManualTrackerStats() which uses raw: true.
+    it('tracker stats: rule tracker stats returns correct decimal amounts', async () => {
+      // Decimals treated as cents by the stats serializer would turn 1.5 into 0.015.
       const account = await helpers.createAccount({
         payload: helpers.buildAccountPayload({ initialBalance: 500 }),
         raw: true,
@@ -252,7 +247,7 @@ describe('MoneyField integration', () => {
         name: 'test-tracker',
         categoryIds: [testCategory.id],
         limitAmount: 1000,
-        type: TRACKER_TYPES.category,
+        rulesEnabled: true,
         raw: true,
       });
 
@@ -265,6 +260,7 @@ describe('MoneyField integration', () => {
         }),
         raw: true,
       });
+      await helpers.editTracker({ id: tracker.id, params: { rulesEnabled: true } });
 
       const stats = await helpers.getTrackerStats({ id: tracker.id, raw: true });
 

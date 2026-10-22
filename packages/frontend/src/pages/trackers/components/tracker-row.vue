@@ -4,7 +4,7 @@ import { useFormatCurrency } from '@/composable';
 import { useTrackerAccess } from '@/composable/use-tracker-access';
 import { cn } from '@/lib/utils';
 import { ROUTES_NAMES } from '@/routes';
-import { TRACKER_STATUSES, TRACKER_TYPES, type TrackerModel, type TrackerStatsResponse } from '@bt/shared/types';
+import { TRACKER_STATUSES, type TrackerModel, type TrackerStatsResponse } from '@bt/shared/types';
 import { compact } from 'lodash-es';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -35,7 +35,6 @@ const { t } = useI18n();
 const { formatShortBaseCurrency } = useFormatCurrency();
 const { canManage } = useTrackerAccess(() => props.tracker);
 
-const isCategory = computed(() => props.tracker.type === TRACKER_TYPES.category);
 const isArchived = computed(() => props.tracker.status === TRACKER_STATUSES.archived);
 
 const dateRange = computed(() => formatDateRange({ from: props.tracker.startDate, to: props.tracker.endDate }));
@@ -63,22 +62,22 @@ const statusText = computed(() => {
   return label ? t(label.key, label.params ?? {}) : null;
 });
 
-type CaptionPiece = { key: string; text?: string; class?: string; isCategories?: boolean };
+type CaptionPiece = { key: string; text?: string; class?: string; isRules?: boolean };
 
-const categoriesPiece = computed<CaptionPiece | null>(() =>
-  isCategory.value && props.tracker.categories?.length ? { key: 'categories', isCategories: true } : null,
+const ruleChips = computed(() => [...(props.tracker.categories ?? []), ...(props.tracker.tags ?? [])]);
+const rulesPiece = computed<CaptionPiece | null>(() =>
+  props.tracker.rulesEnabled && ruleChips.value.length ? { key: 'rules', isRules: true } : null,
 );
 
 const desktopCaption = computed(() =>
   compact<CaptionPiece>([
     dateRange.value && { key: 'dates', text: dateRange.value },
-    categoriesPiece.value,
+    rulesPiece.value,
     transactionsLabel.value && { key: 'transactions', text: transactionsLabel.value },
   ]),
 );
 
 const phoneCaption = computed(() => {
-  if (isCategory.value) return compact<CaptionPiece>([categoriesPiece.value]);
   const rate = utilizationRate.value;
   const tail = statusText.value ?? transactionsLabel.value;
   return compact<CaptionPiece>([
@@ -117,7 +116,7 @@ const showArchiveSuggestion = computed(() => canManage.value && shouldSuggestArc
           {{ tracker.name }}
         </RouterLink>
         <span
-          v-if="isCategory"
+          v-if="tracker.rulesEnabled"
           class="bg-primary/15 text-primary-text shrink-0 rounded-full px-2 py-0.5 text-xs font-medium"
         >
           {{ $t('budgets.list.row.auto') }}
@@ -131,7 +130,7 @@ const showArchiveSuggestion = computed(() => canManage.value && shouldSuggestArc
       >
         <template v-for="(piece, index) in caption.pieces" :key="piece.key">
           <template v-if="index > 0"> · </template>
-          <CategoryChips v-if="piece.isCategories" :categories="tracker.categories ?? []" />
+          <CategoryChips v-if="piece.isRules" :items="ruleChips" />
           <span v-else :class="piece.class">{{ piece.text }}</span>
         </template>
       </div>

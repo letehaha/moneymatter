@@ -23,13 +23,18 @@ const inputSchema = {
     .describe(
       "New spending limit as a decimal amount in the user's base currency (e.g. 500.00). Pass null to remove the limit",
     ),
-  autoInclude: z.boolean().optional().describe('Whether to auto-include transactions in the date range'),
+  rulesEnabled: z
+    .boolean()
+    .optional()
+    .describe("Auto-add the user's transactions in the date range matching the rule categories or tags"),
+  rulesCleanup: z.boolean().optional().describe('Remove rule-added transactions that stop matching the rules'),
   categoryIds: z
     .array(recordId())
     .optional()
-    .describe('Replace the linked category IDs (only applies to category-type trackers)'),
+    .describe('Replace the rule categories; parent IDs include their children'),
+  tagIds: z.array(recordId()).optional().describe('Replace the rule tags'),
   aiEnabled: smartTrackingFieldsShape.aiEnabled.describe(
-    'Turn smart tracking on or off. Owner only; manual trackers only; enabling needs a description and a start date (already saved or passed here)',
+    'Turn smart tracking on or off. Owner only; enabling needs a description and a start date (already saved or passed here)',
   ),
   aiDescription: smartTrackingFieldsShape.aiDescription.describe(
     `Plain-language description of what belongs in the tracker (max ${TRACKER_AI_DESCRIPTION_MAX_LENGTH} chars). Owner only; null clears it`,
@@ -44,7 +49,7 @@ export function registerUpdateTracker(server: McpServer) {
     'update_tracker',
     {
       description:
-        'Update the name, date range, spending limit, or linked categories of an existing tracker. Only passed fields change; limitAmount null removes the limit. Lines are managed with create_tracker_line, update_tracker_line and delete_tracker_line. Changing smart-tracking fields or dates rescans the tracker and fails while a scan is already queued or running. Returns the updated tracker record.',
+        'Update the name, date range, spending limit, or rules (categories, tags, auto-add) of an existing tracker. Only passed fields change; limitAmount null removes the limit. With rules on, every update re-checks all transactions against them. Lines are managed with create_tracker_line, update_tracker_line and delete_tracker_line. Changing smart-tracking fields or dates rescans the tracker and fails while a scan is already queued or running. Returns the updated tracker record.',
       inputSchema,
     },
     async (args, extra) => {
@@ -59,8 +64,10 @@ export function registerUpdateTracker(server: McpServer) {
         startDate: args.startDate,
         endDate: args.endDate,
         limitAmount: args.limitAmount == null ? args.limitAmount : Money.fromDecimal(args.limitAmount),
-        autoInclude: args.autoInclude,
+        rulesEnabled: args.rulesEnabled,
+        rulesCleanup: args.rulesCleanup,
         categoryIds: args.categoryIds,
+        tagIds: args.tagIds,
         aiEnabled: args.aiEnabled,
         aiDescription: args.aiDescription,
         aiPreWindowDays: args.aiPreWindowDays,

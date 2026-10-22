@@ -12,7 +12,6 @@ import {
   type RecordId,
   SHARE_PERMISSIONS,
   SUBSCRIPTION_FREQUENCIES,
-  TRACKER_TYPES,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   VEHICLE_CLASS,
@@ -519,6 +518,60 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       expect(await summarizeHistory()).toEqual(before);
     }, 30000);
+
+    it('keeps a rules tracker with its rule tags, rule settings and rule links', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const category = await helpers.addCustomCategory({ name: 'Rule cat', color: '#123456', raw: true });
+      const tag = await helpers.createTag({ payload: { name: 'Rule tag', color: '#123456' }, raw: true });
+      const [categoryTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 700,
+          transactionType: TRANSACTION_TYPES.expense,
+          categoryId: category.id,
+        }),
+        raw: true,
+      });
+      const [taggedTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 300,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [taggedTx!.id], raw: true });
+      const tracker = await helpers.createTracker({
+        name: 'Rules tracker',
+        rulesEnabled: true,
+        rulesCleanup: false,
+        categoryIds: [category.id],
+        tagIds: [tag.id],
+        raw: true,
+      });
+
+      const { base64 } = await exportArchive();
+      const restore = await helpers.restoreBackup({ fileContent: base64 });
+      expect(restore.statusCode).toBe(200);
+      expect((await helpers.waitForRestore({ jobId: restore.jobId! })).status).toBe('completed');
+
+      expect(await helpers.getTrackerById({ id: tracker.id, raw: true })).toMatchObject({
+        rulesEnabled: true,
+        rulesCleanup: false,
+        categories: [expect.objectContaining({ id: category.id })],
+        tags: [expect.objectContaining({ id: tag.id })],
+      });
+      const linked = (await helpers.getTransactions({ trackerIds: [tracker.id], raw: true })) as {
+        id: string;
+        addedByRule?: boolean;
+      }[];
+      expect(linked.map((tx) => [tx.id, tx.addedByRule]).toSorted()).toEqual(
+        [
+          [categoryTx!.id, true],
+          [taggedTx!.id, true],
+        ].toSorted(),
+      );
+    });
   });
 
   describe('Cross-user restore', () => {
@@ -1683,16 +1736,40 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
       ['tracker-categories', 'budget-categories'],
     ];
 
-    /** Rewrite a current archive into the v1 shape: budget-named tracker files, `budgetId` keys, old stored values. */
+    /**
+     * Rewrite a current archive into the v1 shape: budget-named tracker files, `budgetId` keys, old stored values,
+     * and `type: 'category'` trackers with no rule columns, tracker tags or rule links.
+     */
     function toLegacyArchive({
       files,
       trackerId,
+      categoryTrackerIds,
       userId,
     }: {
       files: Map<string, Buffer>;
       trackerId: string;
+      categoryTrackerIds: string[];
       userId: number;
     }) {
+      const trackerRows = readArchiveJson({ files, path: 'data/trackers.json' }) as Row[];
+      const legacyTrackerRows = trackerRows.map((row) => {
+        const legacy: Row = {
+          ...row,
+          type: categoryTrackerIds.includes(row.id as string) ? 'category' : 'manual',
+          autoInclude: false,
+        };
+        for (const key of ['rulesEnabled', 'rulesCleanup', 'rulesSyncedAt']) delete legacy[key];
+        return legacy;
+      });
+      writeArchiveJson({ files, path: 'data/trackers.json', value: legacyTrackerRows });
+      const linkRows = readArchiveJson({ files, path: 'data/tracker-transactions.json' }) as Row[];
+      writeArchiveJson({
+        files,
+        path: 'data/tracker-transactions.json',
+        value: linkRows.filter((row) => (row.metadata as Row | null)?.source !== 'rule'),
+      });
+      files.delete('data/tracker-tags.json');
+
       for (const [name, legacyName] of LEGACY_TRACKER_FILES) {
         files.set(`data/${legacyName}.json`, files.get(`data/${name}.json`)!);
         files.delete(`data/${name}.json`);
@@ -1752,6 +1829,16 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
     it('restores budget-named tracker files, budgetId keys and old stored values into tracker shapes', async () => {
       const account = await helpers.createAccount({ raw: true });
       const category = await helpers.addCustomCategory({ name: 'Legacy cat', color: '#123456', raw: true });
+      const ruleCategory = await helpers.addCustomCategory({ name: 'Legacy rule cat', color: '#123456', raw: true });
+      const [ruleTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 700,
+          transactionType: TRANSACTION_TYPES.expense,
+          categoryId: ruleCategory.id,
+        }),
+        raw: true,
+      });
       const [tx] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: account.id,
@@ -1762,12 +1849,13 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         raw: true,
       });
       const tracker = await helpers.createTracker({ name: 'Legacy tracker', raw: true });
-      await helpers.createTracker({
+      const categoryTracker = await helpers.createTracker({
         name: 'Legacy category tracker',
-        type: TRACKER_TYPES.category,
-        categoryIds: [category.id],
+        rulesEnabled: true,
+        categoryIds: [ruleCategory.id],
         raw: true,
       });
+      const emptyCategoryTracker = await helpers.createTracker({ name: 'Legacy empty category tracker', raw: true });
       await helpers.addTransactionsToTracker({ id: tracker.id, payload: { transactionIds: [tx!.id] }, raw: true });
       await helpers.createTrackerLine({
         trackerId: tracker.id,
@@ -1777,7 +1865,12 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const { buffer } = await exportArchive();
       const { files } = helpers.parseBackupArchive({ buffer });
-      toLegacyArchive({ files, trackerId: tracker.id, userId: await getCurrentUserId() });
+      toLegacyArchive({
+        files,
+        trackerId: tracker.id,
+        categoryTrackerIds: [categoryTracker.id, emptyCategoryTracker.id],
+        userId: await getCurrentUserId(),
+      });
       const base64 = await helpers.repackBackup({ files });
 
       const restore = await helpers.restoreBackup({ fileContent: base64 });
@@ -1788,7 +1881,14 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
 
       const restored = helpers.parseBackupArchive({ buffer: (await exportArchive()).buffer });
       const restoredTrackers = restored.readData({ name: 'trackers' }) as Row[];
-      expect(restoredTrackers).toHaveLength(2);
+      expect(restoredTrackers).toHaveLength(3);
+      expect(
+        Object.fromEntries(restoredTrackers.map((row) => [row.name, [row.rulesEnabled, row.rulesSyncedAt]])),
+      ).toEqual({
+        'Legacy tracker': [false, null],
+        'Legacy category tracker': [true, null],
+        'Legacy empty category tracker': [false, null],
+      });
       const restoredIdOf = ({ trackerName }: { trackerName: string }) =>
         restoredTrackers.find((row) => row.name === trackerName)?.id;
       const restoredTrackerId = restoredIdOf({ trackerName: 'Legacy tracker' });
@@ -1830,6 +1930,14 @@ describe('Data backup restore (POST /user/backup/restore)', () => {
         resourceId: tracker.id,
       });
       expect(notifications.some((n) => String(n.type).includes('budget'))).toBe(false);
+
+      const restoredCategoryTrackerId = restoredIdOf({ trackerName: 'Legacy category tracker' })!;
+      expect(await helpers.syncTrackerRules({ id: restoredCategoryTrackerId as string, raw: true })).toEqual({
+        added: 1,
+        removed: 0,
+      });
+      const linked = await helpers.getTransactions({ trackerIds: [restoredCategoryTrackerId as string], raw: true });
+      expect(linked.map((row) => row.amount)).toEqual([ruleTx!.amount]);
     });
   });
 

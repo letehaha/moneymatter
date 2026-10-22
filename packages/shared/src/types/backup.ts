@@ -13,7 +13,7 @@
  * On-disk backup shape version. Restore hard-fails a manifest whose
  * `formatVersion` is greater than this (app too old for the backup).
  */
-export const BACKUP_FORMAT_VERSION = 2;
+export const BACKUP_FORMAT_VERSION = 3;
 
 /**
  * Global-catalog subset embedded under `reference/`. Only the security

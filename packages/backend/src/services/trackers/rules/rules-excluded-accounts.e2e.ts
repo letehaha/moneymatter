@@ -1,14 +1,9 @@
-import { TRACKER_TYPES, TRANSACTION_TYPES } from '@bt/shared/types';
+import { TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
 
-/**
- * Category trackers must skip accounts flagged `excludeFromStats`, the same way the
- * global stats surfaces do (`getTrackerStats`, `getTrackerSpendingStats`,
- * `getCategoryTrackerTransactions`). Manual trackers are explicit user selections, so
- * the flag does NOT apply to them — attached rows count regardless of account.
- */
-describe('Category tracker excludes accounts marked excludeFromStats', () => {
+/** Rules skip `excludeFromStats` accounts; hand-linked rows count regardless of account. */
+describe('Tracker rules skip accounts marked excludeFromStats', () => {
   const INCLUDED_TX_TIME = '2025-03-10T10:00:00Z';
 
   it('excludes excludeFromStats accounts from stats, spending breakdown and transaction list', async () => {
@@ -42,7 +37,7 @@ describe('Category tracker excludes accounts marked excludeFromStats', () => {
 
     const tracker = await helpers.createTracker({
       name: 'Groceries Tracker',
-      type: TRACKER_TYPES.category,
+      rulesEnabled: true,
       categoryIds: [category.id],
       startDate: '2025-03-01T00:00:00Z',
       endDate: '2025-03-31T23:59:59Z',
@@ -69,23 +64,15 @@ describe('Category tracker excludes accounts marked excludeFromStats', () => {
     expect(spending.spendingsByCategory[0]!.amount).toBe(100);
     expect(spending.spendingOverTime.periods.reduce((sum, period) => sum + period.expense, 0)).toBe(100);
 
-    const transactions = await helpers.getCategoryTrackerTransactions({
-      id: tracker.id,
-      raw: true,
-    });
-
-    expect(transactions.total).toBe(1);
-    expect(transactions.transactions).toHaveLength(1);
-    expect(transactions.transactions[0]!.accountId).toBe(includedAccount.id);
-    expect(transactions.transactions[0]!.refAmount).toBe(100);
-    expect(transactions.transactions.map((tx) => tx.accountId)).not.toContain(excludedAccount.id);
+    const linked = await helpers.getTransactions({ trackerIds: [tracker.id], raw: true });
+    expect(linked.map((tx) => tx.accountId)).toEqual([includedAccount.id]);
   }, 60_000);
 });
 
-describe('Manual tracker includes accounts marked excludeFromStats', () => {
+describe('Hand-linked rows from accounts marked excludeFromStats', () => {
   const EXCLUDED_TX_TIME = '2025-03-11T10:00:00Z';
 
-  it('counts excludeFromStats accounts in manual tracker stats and spending breakdown', async () => {
+  it('count in tracker stats and spending breakdown', async () => {
     const category = await helpers.addCustomCategory({ name: 'Groceries', color: '#FF0000', raw: true });
 
     const includedAccount = await helpers.createAccount({ raw: true });
@@ -116,7 +103,6 @@ describe('Manual tracker includes accounts marked excludeFromStats', () => {
 
     const tracker = await helpers.createTracker({
       name: 'Manual Groceries Tracker',
-      type: TRACKER_TYPES.manual,
       startDate: '2025-03-01T00:00:00Z',
       endDate: '2025-03-31T23:59:59Z',
       limitAmount: 500,

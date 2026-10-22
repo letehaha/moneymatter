@@ -2,19 +2,21 @@
 import { editTracker } from '@/api/trackers';
 import { ALL_LOGO_TABS, type LogoSelection, toLogoPatch, toLogoSelection } from '@/components/common/logo-selection';
 import LogoSquareField from '@/components/common/logo-square-field.vue';
-import CategoryMultiSelectField from '@/components/fields/category-multi-select-field.vue';
+import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import DateField from '@/components/fields/date-field.vue';
 import InputField from '@/components/fields/input-field.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { useNotificationCenter } from '@/components/notification-center';
+import { useDateLocale } from '@/composable/use-date-locale';
 import { useTrackerAccess } from '@/composable/use-tracker-access';
-import { TRACKER_TYPES, type TrackerModel } from '@bt/shared/types';
+import type { TrackerModel } from '@bt/shared/types';
 import { useMutation } from '@tanstack/vue-query';
 import { computed, ref, toRef } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SmartTrackingFields from '../components/smart-tracking-fields.vue';
 import TrackerLogo from '../components/tracker-logo.vue';
+import TrackerRulesFields from '../components/tracker-rules-fields.vue';
 import {
   reportTrackerError,
   useInvalidateTracker,
@@ -23,10 +25,15 @@ import {
 import { parseTrackerDate } from '../tracker-time-status';
 import {
   type SmartTrackingValues,
+  type TrackerRulesValues,
   buildTrackerPayload,
   buildSmartTrackingPatch,
+  buildTrackerDates,
+  changesRuleMatches,
   isSmartTrackingIncomplete,
+  isTrackerRulesIncomplete,
 } from '../build-tracker-payload';
+import RejectedTransactionsDialog from './rejected-transactions-dialog.vue';
 import { isScanActive } from './smart-tracking/smart-tracking-state';
 import { useTrackerSuggestions } from './smart-tracking/use-tracker-suggestions';
 
@@ -38,17 +45,27 @@ const invalidateTracker = useInvalidateTracker();
 const refreshSmartTrackingAccess = useRefreshSmartTrackingAccess();
 const { addSuccessNotification } = useNotificationCenter();
 
-const isCategoryTracker = props.tracker.type === TRACKER_TYPES.category;
+const { formatRelative } = useDateLocale();
 const { isOwner } = useTrackerAccess(toRef(() => props.tracker));
-const showSmartTracking = computed(() => !isCategoryTracker && isOwner.value);
 
 const form = ref({
   name: props.tracker.name,
   limitAmount: props.tracker.limitAmount as string | number | null,
   startDate: parseTrackerDate(props.tracker.startDate),
   endDate: parseTrackerDate(props.tracker.endDate),
-  categoryIds: (props.tracker.categories?.map((c) => c.id) ?? []) as string[],
 });
+const storedRules: TrackerRulesValues = {
+  rulesEnabled: props.tracker.rulesEnabled,
+  rulesCleanup: props.tracker.rulesCleanup,
+  categoryIds: props.tracker.categories?.map((c) => c.id) ?? [],
+  tagIds: props.tracker.tags?.map((tag) => tag.id) ?? [],
+};
+const rules = ref<TrackerRulesValues>(structuredClone(storedRules));
+const rulesCheckedLabel = computed(() =>
+  props.tracker.rulesEnabled && props.tracker.rulesSyncedAt
+    ? t('budgets.rules.checkedAt', { when: formatRelative(new Date(props.tracker.rulesSyncedAt), new Date()) })
+    : null,
+);
 const storedLogo = toLogoSelection(props.tracker);
 const logo = ref<LogoSelection | null>(storedLogo);
 
@@ -58,15 +75,18 @@ const storedSmartTracking: SmartTrackingValues = {
   aiPreWindowDays: props.tracker.aiPreWindowDays,
 };
 const smartTracking = ref<SmartTrackingValues>({ ...storedSmartTracking });
-const showSmartTrackingErrors = ref(false);
-const { data: suggestions } = useTrackerSuggestions({ trackerId: () => props.tracker.id, enabled: showSmartTracking });
+const showErrors = ref(false);
+const { data: suggestions } = useTrackerSuggestions({ trackerId: () => props.tracker.id, enabled: isOwner });
+const rejected = computed(() => suggestions.value?.rejected ?? []);
+const isRejectedOpen = ref(false);
+const isConfirmOpen = ref(false);
 const isScanning = computed(() => isScanActive({ status: suggestions.value?.scan.status }));
 
 const { mutate, isPending } = useMutation({
   mutationFn: editTracker,
   onSuccess: (_data, { payload }) => {
     addSuccessNotification(payload.aiEnabled ? t('budgets.smartTracking.turnedOn') : t('budgets.list.updateSuccess'));
-    refreshSmartTrackingAccess({ aiEnabled: showSmartTracking.value && smartTracking.value.aiEnabled });
+    refreshSmartTrackingAccess({ aiEnabled: isOwner.value && smartTracking.value.aiEnabled });
     emit('saved');
     return invalidateTracker({ trackerId: props.tracker.id });
   },
@@ -77,16 +97,6 @@ const { mutate, isPending } = useMutation({
       context: { source: 'trackerEdit', trackerId: props.tracker.id },
     }),
 });
-
-const categoriesTouched = ref(false);
-const isCategoryMissing = computed(() => isCategoryTracker && form.value.categoryIds.length === 0);
-const categoryErrorMessage = computed(() =>
-  categoriesTouched.value && isCategoryMissing.value ? t('budgets.creation.categoriesRequired') : undefined,
-);
-const onCategoriesUpdate = (value: string[]) => {
-  form.value.categoryIds = value;
-  categoriesTouched.value = true;
-};
 
 const dateFields = computed(() => [
   {
@@ -101,27 +111,40 @@ const dateFields = computed(() => [
   },
 ]);
 
-const handleSubmit = () => {
-  categoriesTouched.value = true;
-  showSmartTrackingErrors.value = true;
-  if (isCategoryMissing.value) return;
-  if (showSmartTracking.value && isSmartTrackingIncomplete({ values: smartTracking.value })) return;
+const basePayload = computed(() =>
+  buildTrackerPayload({
+    name: form.value.name,
+    limitAmount: form.value.limitAmount,
+    startDate: form.value.startDate,
+    endDate: form.value.endDate,
+  }),
+);
+
+const save = () =>
   mutate({
     trackerId: props.tracker.id,
     payload: {
-      ...buildTrackerPayload({
-        name: form.value.name,
-        limitAmount: form.value.limitAmount,
-        startDate: form.value.startDate,
-        endDate: form.value.endDate,
-        categoryIds: isCategoryTracker ? form.value.categoryIds : undefined,
-      }),
+      ...basePayload.value,
+      ...(isOwner.value ? rules.value : {}),
       ...toLogoPatch({ selection: logo.value, stored: storedLogo }),
-      ...(showSmartTracking.value
-        ? buildSmartTrackingPatch({ values: smartTracking.value, stored: storedSmartTracking })
-        : {}),
+      ...(isOwner.value ? buildSmartTrackingPatch({ values: smartTracking.value, stored: storedSmartTracking }) : {}),
     },
   });
+
+const handleSubmit = () => {
+  showErrors.value = true;
+  if (isOwner.value && isTrackerRulesIncomplete({ values: rules.value })) return;
+  if (isOwner.value && isSmartTrackingIncomplete({ values: smartTracking.value })) return;
+
+  const storedDates = buildTrackerDates({
+    startDate: parseTrackerDate(props.tracker.startDate),
+    endDate: parseTrackerDate(props.tracker.endDate),
+  });
+  if (changesRuleMatches({ values: rules.value, stored: storedRules, dates: basePayload.value, storedDates })) {
+    isConfirmOpen.value = true;
+    return;
+  }
+  save();
 };
 </script>
 
@@ -148,18 +171,6 @@ const handleSubmit = () => {
           :disabled="isPending"
         />
       </div>
-    </div>
-
-    <div v-if="isCategoryTracker" class="grid gap-1.5">
-      <CategoryMultiSelectField
-        :model-value="form.categoryIds"
-        :label="$t('budgets.creation.categoriesLabel')"
-        :placeholder="$t('budgets.lines.dialog.categoriesPlaceholder')"
-        :disabled="isPending"
-        :error-message="categoryErrorMessage"
-        @update:model-value="onCategoriesUpdate"
-      />
-      <p class="text-muted-foreground text-xs">{{ $t('budgets.details.edit.categoriesHint') }}</p>
     </div>
 
     <div class="grid gap-1.5">
@@ -189,27 +200,63 @@ const handleSubmit = () => {
           @clear="form[field.key] = null"
         />
       </div>
-      <p v-if="!isCategoryTracker" class="text-muted-foreground text-xs">
+      <p class="text-muted-foreground text-xs">
         {{ $t('budgets.details.edit.datesHint') }}
       </p>
     </div>
 
+    <TrackerRulesFields
+      v-if="isOwner"
+      v-model="rules"
+      :is-stored-on="tracker.rulesEnabled"
+      :show-errors="showErrors"
+      :disabled="isPending"
+    >
+      <p v-if="rulesCheckedLabel" class="text-muted-foreground text-xs">{{ rulesCheckedLabel }}</p>
+      <div v-if="rejected.length" class="flex items-center justify-between gap-3 border-t border-dashed pt-3">
+        <span class="text-muted-foreground text-xs">
+          {{ $t('budgets.rules.rejected.summary', { count: rejected.length }, rejected.length) }}
+        </span>
+        <Button type="button" size="sm" variant="ghost-primary" @click="isRejectedOpen = true">
+          {{ $t('budgets.rules.rejected.review') }}
+        </Button>
+      </div>
+    </TrackerRulesFields>
+
     <SmartTrackingFields
-      v-if="showSmartTracking"
+      v-if="isOwner"
       v-model="smartTracking"
       :has-start-date="!!form.startDate"
       :is-stored-on="tracker.aiEnabled"
       :is-scanning="isScanning"
-      :show-errors="showSmartTrackingErrors"
+      :show-errors="showErrors"
     />
 
     <div class="flex justify-end gap-2">
       <Button type="button" variant="outline" :disabled="isPending" @click="emit('cancel')">
         {{ $t('common.actions.cancel') }}
       </Button>
-      <Button type="submit" :disabled="isPending || !form.name || isCategoryMissing">
+      <Button type="submit" :disabled="isPending || !form.name">
         {{ isPending ? $t('common.actions.saving') : $t('common.actions.saveChanges') }}
       </Button>
     </div>
+
+    <ResponsiveAlertDialog
+      v-model:open="isConfirmOpen"
+      :confirm-label="$t('budgets.rules.confirm.saveAndCheck')"
+      :confirm-variant="rules.rulesCleanup ? 'destructive' : 'default'"
+      @confirm="save"
+    >
+      <template #title>{{ $t('budgets.rules.confirm.title') }}</template>
+      <template #description>
+        {{
+          rules.rulesCleanup
+            ? $t('budgets.rules.confirm.descriptionWithCleanup')
+            : $t('budgets.rules.confirm.description')
+        }}
+      </template>
+    </ResponsiveAlertDialog>
+
+    <RejectedTransactionsDialog v-model:open="isRejectedOpen" :tracker-id="tracker.id" :rejected="rejected" />
   </form>
 </template>

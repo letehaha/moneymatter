@@ -16,7 +16,7 @@ export function registerAddTransactionsToTracker(server: McpServer) {
     'add_transactions_to_tracker',
     {
       description:
-        'Manually link one or more transactions to a manual-type tracker. Category-type trackers do not support manual linking. Returns a success message on completion.',
+        'Manually link one or more transactions to a tracker, alongside any links its category and tag rules add. Returns a success message on completion.',
       inputSchema,
     },
     async (args, extra) => {

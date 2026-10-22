@@ -20,7 +20,7 @@ export const trackSuggestionsResolved = ({
   }
 };
 
-/** A transaction the owner took out of a smart tracker is a "no" the AI must not ask about again. */
+/** A transaction the owner took out of a tracker is a "no" that neither AI nor rules may re-add. */
 export const rejectUnlinkedTransactions = async ({
   userId,
   trackerId,

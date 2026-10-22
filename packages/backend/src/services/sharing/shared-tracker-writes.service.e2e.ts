@@ -8,7 +8,7 @@
  * - owner: can detach any row including recipient-attached ones
  */
 
-import { TRACKER_TYPES, RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
+import { RESOURCE_TYPES, SHARE_PERMISSIONS, TRANSACTION_TYPES } from '@bt/shared/types';
 import { generateRandomRecordId } from '@common/lib/record-id-helpers';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
@@ -229,8 +229,7 @@ describe('Shared tracker writes', () => {
         where: { trackerId: tracker.id, transactionId: recipientTx.id },
       });
       expect(btRow).not.toBeNull();
-      expect(btRow!.metadata).not.toBeNull();
-      expect(btRow!.metadata!.addedByUserId).toBe(recipientApp.id);
+      expect(btRow!.metadata).toEqual({ addedByUserId: recipientApp.id });
 
       const detachRes = await helpers.asUser({
         cookies: recipient.cookies,
@@ -383,16 +382,16 @@ describe('Shared tracker writes', () => {
     });
   });
 
-  describe('write recipient on a category-type tracker', () => {
-    it('POST /trackers/:id/transactions → 400 cannotManuallyLinkToCategoryBudget', async () => {
+  describe('write recipient on a tracker with rules', () => {
+    it('POST /trackers/:id/transactions links the recipient tx → 200', async () => {
       const category = await helpers.addCustomCategory({
         name: 'Cat tracker cat',
         color: '#123456',
         raw: true,
       });
       const tracker = await helpers.createTracker({
-        name: 'Category tracker',
-        type: TRACKER_TYPES.category,
+        name: 'Rules tracker',
+        rulesEnabled: true,
         categoryIds: [category.id],
         raw: true,
       });
@@ -417,7 +416,7 @@ describe('Shared tracker writes', () => {
           }),
       });
 
-      expect(res.statusCode).toBe(ERROR_CODES.ValidationError);
+      expect(res.statusCode).toBe(200);
     });
   });
 

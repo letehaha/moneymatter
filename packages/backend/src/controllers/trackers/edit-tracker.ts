@@ -15,10 +15,12 @@ const schema = z.object({
     z
       .object({
         name: z.string().min(1, 'Name is required').max(200, 'Name must not exceed 200 characters').trim().optional(),
-        categoryIds: recordArrayIds().min(1).optional(),
+        categoryIds: recordArrayIds().optional(),
+        tagIds: recordArrayIds().optional(),
+        rulesEnabled: z.boolean().optional(),
+        rulesCleanup: z.boolean().optional(),
         startDate: dateBound({ precision: 'datetime' }).nullable().optional(),
         endDate: dateBound({ precision: 'datetime' }).nullable().optional(),
-        autoInclude: z.boolean().optional(),
         archivePromptDismissed: z.boolean().optional(),
         limitAmount: decimalMoney()
           .refine((m) => m.isPositive(), { message: 'Limit amount must be positive' })
@@ -37,10 +39,12 @@ export default createController(schema, async ({ user, params, body }) => {
   const {
     name,
     categoryIds,
+    tagIds,
+    rulesEnabled,
+    rulesCleanup,
     startDate,
     endDate,
     limitAmount,
-    autoInclude,
     archivePromptDismissed,
     logoDomain,
     logoInitials,
@@ -57,10 +61,12 @@ export default createController(schema, async ({ user, params, body }) => {
     userId: user.id,
     name,
     categoryIds,
+    tagIds,
+    rulesEnabled,
+    rulesCleanup,
     startDate,
     endDate,
     limitAmount,
-    autoInclude,
     archivePromptDismissed,
     logoDomain,
     logoInitials,

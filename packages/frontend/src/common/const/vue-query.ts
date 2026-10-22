@@ -175,7 +175,6 @@ export const VUE_QUERY_CACHE_KEYS = Object.freeze({
   trackerAddingTransactionList: [transactionChange, 'tracker-adding-transaction-list'] as const,
   trackerStats: [transactionChange, 'tracker-stats'] as const,
   trackerSpendingStats: [transactionChange, 'tracker-spending-stats'] as const,
-  trackerCategoryTransactions: [transactionChange, 'tracker-category-transactions'] as const,
   // append the trackerId when using
   trackerSuggestions: [transactionChange, 'tracker-suggestions'] as const,
 
