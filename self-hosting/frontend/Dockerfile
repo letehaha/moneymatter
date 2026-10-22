@@ -3,7 +3,7 @@
 # Astro landing), nothing arch-specific — so multi-arch builds run the heavy
 # JS build once natively instead of emulating it under QEMU per target arch.
 # The production nginx stage stays flag-less so it builds per target arch.
-FROM --platform=$BUILDPLATFORM node:24.21.0 AS build-stage
+FROM --platform=$BUILDPLATFORM node:24.22.1 AS build-stage
 
 WORKDIR /app
 

@@ -26,7 +26,7 @@ Static Files (built application)
 
 **Dockerfile location:** `self-hosting/frontend/Dockerfile`
 
-1. **Base image:** `node:24.21.0`
+1. **Base image:** `node:24.22.1`
 2. **Install dependencies:** `npm ci` (clean install from package-lock.json)
 3. **Copy source code:** All frontend source files and shared packages
 4. **Build application:** `npm run build` in `packages/frontend`

@@ -1,5 +1,5 @@
 # 🏗️ Stage 1️⃣: Build
-FROM node:24.21.0-alpine AS build-stage
+FROM node:24.22.1-alpine AS build-stage
 
 WORKDIR /app
 
@@ -28,7 +28,7 @@ WORKDIR /app/packages/backend
 RUN npm run build
 
 # 🚀 Stage 2️⃣: Production
-FROM node:24.21.0-alpine AS production
+FROM node:24.22.1-alpine AS production
 
 WORKDIR /app
 
