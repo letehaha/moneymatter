@@ -23,7 +23,14 @@ describe('verifyMcpToken', () => {
   beforeEach(() => {
     jest.resetAllMocks();
     query.mockResolvedValue({
-      rows: [{ userId: 'auth-1', clientId: 'client-1', scopes: '["finance:read"]', expiresAt: null }],
+      rows: [
+        {
+          userId: 'auth-1',
+          clientId: 'client-1',
+          scopes: '["finance:read"]',
+          expiresAt: new Date(Date.now() + 3_600_000).toISOString(),
+        },
+      ],
     } as never);
     findUser.mockResolvedValue({
       id: 7,
