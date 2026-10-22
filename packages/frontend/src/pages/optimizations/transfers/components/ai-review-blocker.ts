@@ -1,4 +1,4 @@
-export type AiReviewBlocker = 'plan' | 'allowance' | 'setup';
+type AiReviewBlocker = 'plan' | 'allowance' | 'setup';
 
 /** Null while the feature status is still loading, so a remembered "on" isn't reset by a pending query. */
 export const getAiReviewBlocker = ({

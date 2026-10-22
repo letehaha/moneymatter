@@ -17,7 +17,7 @@ const FIELD_CHIPS = {
 
 const MOUNTABLE_FIELDS = Object.keys(FIELD_CHIPS) as MountableField[];
 
-export type AddFieldChip = { key: MountableField | 'refund'; icon: Component; labelKey: string; onClick: () => void };
+type AddFieldChip = { key: MountableField | 'refund'; icon: Component; labelKey: string; onClick: () => void };
 
 export const useFieldReveal = ({
   form,

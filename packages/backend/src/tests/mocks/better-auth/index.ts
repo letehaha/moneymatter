@@ -323,7 +323,7 @@ export function betterAuth(config: BetterAuthConfig): AuthInstance {
 
         const body = (await request.json()) as Record<string, unknown>;
         return new Response(JSON.stringify({ ...body, client_id: `test-registered-client-${crypto.randomUUID()}` }), {
-          status: 200,
+          status: 201,
           headers: { 'Content-Type': 'application/json' },
         });
       }

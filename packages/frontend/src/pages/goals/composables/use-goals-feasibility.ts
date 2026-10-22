@@ -10,20 +10,20 @@ import { getGoalSection } from '../helpers';
 type FeasibilityGoal = GoalModel & { insights: GoalInsights };
 
 /** `monthly` is a base-currency decimal. */
-export interface GoalFeasibilityItem {
+interface GoalFeasibilityItem {
   goal: GoalModel;
   monthly: number;
   fits: boolean;
 }
 
 /** Due within a month or overdue (`daysLeft` < 0): the whole remainder is due, so it stays out of the monthly sum. */
-export interface GoalFeasibilityDueItem {
+interface GoalFeasibilityDueItem {
   goal: GoalModel;
   daysLeft: number;
 }
 
 /** Amounts are base-currency decimals. */
-export type GoalsFeasibility =
+type GoalsFeasibility =
   | { state: 'insufficient_history'; minMonths: number }
   | {
       state: 'ready';
@@ -35,7 +35,7 @@ export type GoalsFeasibility =
       due: GoalFeasibilityDueItem[];
     };
 
-export const getFeasibilityGoals = ({ goals }: { goals: GoalModel[] }) =>
+const getFeasibilityGoals = ({ goals }: { goals: GoalModel[] }) =>
   goals.filter(
     (goal): goal is FeasibilityGoal =>
       goal.status === 'active' &&

@@ -53,10 +53,20 @@ pool.on('error', (error) => logger.error({ message: 'better-auth pg pool idle cl
 // In dev mode, trust the common localhost variants of the frontend port so a
 // self-host setup with a misconfigured ALLOWED_ORIGINS still completes auth.
 // Mirrors the localhost allow-list in setup-middleware.ts's CORS check.
-// Longest better-auth rate-limit window (core + plugins) is 60s; the limiter
-// resets from `lastRequest` itself, so a longer TTL only affects storage.
-const AUTH_RATE_LIMIT_TTL_SECONDS = 120;
+// Fixed window: the first hit sets the key TTL, later hits only increment, so INCR and
+// EXPIRE must be one atomic step or two hits racing on a fresh key leave it with no TTL.
+const RATE_LIMIT_CONSUME_SCRIPT = `
+local count = redis.call('INCR', KEYS[1])
+if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+if count > tonumber(ARGV[2]) then return { 0, redis.call('TTL', KEYS[1]) } end
+return { 1, 0 }
+`;
 const SESSION_COOKIE_CACHE_MAX_AGE = 5 * 60;
+
+const OAUTH_BASE_URL = process.env.BETTER_AUTH_URL || 'https://localhost:8081';
+const OAUTH_MCP_URL = process.env.MCP_BASE_URL || OAUTH_BASE_URL;
+// MCP clients send the resource URL (e.g. https://mcp.moneymatter.app/mcp) as the token audience.
+export const OAUTH_RESOURCE_IDENTIFIERS = [...new Set([OAUTH_BASE_URL, OAUTH_MCP_URL, `${OAUTH_MCP_URL}/mcp`])];
 const DEFAULT_SESSION_CACHE_VERSION = '1';
 const sessionCacheVersionKey = ({ userId }: { userId: string }) => `auth:session-cache-version:${userId}`;
 
@@ -273,17 +283,18 @@ export const auth = betterAuth({
       grantTypes: ['authorization_code', 'refresh_token'],
       // Use opaque tokens stored in DB (not JWTs) – our MCP auth verifies via DB lookup
       disableJwtPlugin: true,
-      // MCP clients send the resource URL (e.g. https://mcp.moneymatter.app/mcp) as the token audience
-      validAudiences: [
-        process.env.BETTER_AUTH_URL || 'https://localhost:8081',
-        process.env.MCP_BASE_URL || process.env.BETTER_AUTH_URL || 'https://localhost:8081',
-        `${process.env.MCP_BASE_URL || process.env.BETTER_AUTH_URL || 'https://localhost:8081'}/mcp`,
-      ],
+      resources: OAUTH_RESOURCE_IDENTIFIERS,
+      // Clients self-register (Claude.ai etc.) and get no ba_oauth_client_resource links,
+      // so per-client linkage would reject every token request with invalid_target.
+      enforcePerClientResources: false,
       schema: {
         oauthClient: { modelName: 'ba_oauth_client' },
         oauthAccessToken: { modelName: 'ba_oauth_access_token' },
         oauthRefreshToken: { modelName: 'ba_oauth_refresh_token' },
         oauthConsent: { modelName: 'ba_oauth_consent' },
+        oauthResource: { modelName: 'ba_oauth_resource' },
+        oauthClientResource: { modelName: 'ba_oauth_client_resource' },
+        oauthClientAssertion: { modelName: 'ba_oauth_client_assertion' },
       },
     }),
     passkey({
@@ -308,12 +319,15 @@ export const auth = betterAuth({
     // The default in-memory store only evicts a key when that same key is read
     // again after expiry, so entries for IPs that never return are kept forever.
     customStorage: {
-      get: async (key) => {
-        const raw = await redisClient.get(`auth-rate-limit:${key}`);
-        return raw ? JSON.parse(raw) : null;
-      },
-      set: async (key, value) => {
-        await redisClient.set(`auth-rate-limit:${key}`, JSON.stringify(value), 'EX', AUTH_RATE_LIMIT_TTL_SECONDS);
+      consume: async (key, rule) => {
+        const [allowed, ttl] = (await redisClient.eval(
+          RATE_LIMIT_CONSUME_SCRIPT,
+          1,
+          `auth-rate-limit:${key}`,
+          rule.window,
+          rule.max,
+        )) as [number, number];
+        return { allowed: allowed === 1, retryAfter: allowed === 1 ? null : Math.max(ttl, 1) };
       },
     },
   },

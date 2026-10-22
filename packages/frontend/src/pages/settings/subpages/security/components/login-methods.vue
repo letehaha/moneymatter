@@ -344,10 +344,7 @@ const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER })
 
   try {
     isDisconnecting.value = true;
-    const { error } = await authClient.unlinkAccount({
-      providerId: provider,
-      accountId: account.accountId,
-    });
+    const { error } = await authClient.unlinkAccount({ accountId: account.id });
     if (error) throw new UnexpectedError(error.message, error);
     addSuccessNotification(
       t('settings.security.loginMethods.notifications.oauthDisconnectSuccess', { provider: providerName }),

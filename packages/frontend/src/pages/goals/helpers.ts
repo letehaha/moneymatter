@@ -111,7 +111,7 @@ export const GOAL_DISPLAY_TONES: Record<GoalDisplayStatus, GoalTone> = {
 };
 
 /** An i18n key; `count` doubles as the plural choice, `date` ('yyyy-MM-dd') is formatted by the caller. */
-export interface GoalStatusLabel {
+interface GoalStatusLabel {
   key: string;
   count?: number;
   date?: string;

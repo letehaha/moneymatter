@@ -9,7 +9,7 @@ import { toGoalCurrency } from '../helpers';
 export const MAX_PROJECTION_MONTHS = 60;
 
 /** Amounts are in the goal currency; null when the goal has no insights or the account no history. */
-export interface GoalAccountBreakdown {
+interface GoalAccountBreakdown {
   accountId: RecordId;
   sharePercent: number | null;
   /** In the account's currency, as linked. */

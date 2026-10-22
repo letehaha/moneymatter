@@ -1,14 +1,14 @@
 import type { AccountGroupPathEntry } from '@/components/sidebar/accounts-view/helpers/list-account-group-paths';
 import { ACCOUNT_STATUSES, type AccountModel } from '@bt/shared/types';
 
-export interface AccountInOtherGroup {
+interface AccountInOtherGroup {
   account: AccountModel;
   groupId: string;
   groupName: string;
   path: string;
 }
 
-export interface AddAccountsSections {
+interface AddAccountsSections {
   ungrouped: AccountModel[];
   inOtherGroups: AccountInOtherGroup[];
   alreadyInGroup: AccountModel[];

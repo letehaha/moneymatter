@@ -16,7 +16,7 @@ describe('POST /auth/oauth2/register behind Cloudflare Access', () => {
       headers: { Cookie: 'CF_Authorization=dummy; CF_AppSession=dummy' },
     });
 
-    expect(res.statusCode).toBe(200);
+    expect(res.statusCode).toBe(201);
     expect(res.body.client_id).toEqual(expect.any(String));
   });
 

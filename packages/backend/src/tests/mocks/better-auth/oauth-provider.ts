@@ -11,7 +11,10 @@ interface OAuthProviderConfig {
   allowDynamicClientRegistration?: boolean;
   allowUnauthenticatedClientRegistration?: boolean;
   grantTypes?: string[];
-  schema?: Record<string, unknown>;
+  disableJwtPlugin?: boolean;
+  resources?: Array<string | { identifier: string; name?: string }>;
+  enforcePerClientResources?: boolean;
+  schema?: Record<string, { modelName: string }>;
 }
 
 /**
