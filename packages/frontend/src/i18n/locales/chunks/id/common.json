@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Transaksi ini dilampirkan ke anggaran oleh {handle}",
+        "addedByRule": "Added by the tracker's rules",
         "matchedByAi": "Dicocokkan oleh AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Buka panel berbagi untuk mengirim ulang."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
     }
   },
   "currencyNames": {

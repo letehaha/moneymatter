@@ -12,16 +12,8 @@
       "error": "Erreur inattendue !",
       "nameLabel": "Nom du suivi",
       "namePlaceholder": "Saisir le nom",
-      "typeLabel": "Type de suivi",
-      "typeManual": "Manuel",
-      "typeManualDescription": "Ajoutez manuellement des opérations à ce suivi",
-      "typeCategory": "Par catégorie",
-      "typeCategoryDescription": "Suivi automatique des dépenses par catégorie",
-      "categoriesLabel": "Catégories à suivre",
-      "categoriesRequired": "Sélectionnez au moins une catégorie",
       "fromDateLabel": "Date de début",
       "toDateLabel": "Date de fin",
-      "autoIncludeLabel": "Inclure automatiquement les opérations",
       "limitLabel": "Plafond du suivi",
       "limitPlaceholder": "Saisir le plafond",
       "submitButton": "Ajouter le suivi"
@@ -46,7 +38,6 @@
       "categoriesCount": "{count} catégories",
       "noTransactions": "Aucune opération pour l'instant",
       "noTimePeriod": "Aucune période définie",
-      "autoTracked": "Suivi automatique",
       "status": {
         "ended": "Terminé",
         "lastDay": "Dernier jour",
@@ -73,8 +64,8 @@
       "searchPlaceholder": "Rechercher des suivis",
       "filters": {
         "all": "Tous",
-        "manual": "Manuel",
-        "category": "Catégorie",
+        "autoAdd": "Auto-add on",
+        "handPicked": "Hand-picked",
         "archived": "Archivés"
       },
       "groups": {
@@ -134,24 +125,6 @@
       "addSelected": "Ajouter la sélection",
       "clearSelection": "Effacer la sélection"
     },
-    "categoryBudget": {
-      "trackedCategories": "Catégories suivies",
-      "categoriesCount": "{count} catégories suivies",
-      "autoTrackedInfo": "Les opérations sont automatiquement suivies selon leurs catégories",
-      "transactionsTitle": "Opérations",
-      "transactionsCount": "{count} opérations",
-      "noTransactions": "Aucune opération pour le moment",
-      "noTransactionsDescription": "Les opérations correspondant aux catégories suivies apparaîtront automatiquement ici.",
-      "transactionsLoadError": "Échec du chargement des opérations",
-      "categoryBreakdown": "Répartition par catégorie",
-      "edit": "Modifier",
-      "editTitle": "Modifier le suivi",
-      "showMore": "Afficher plus",
-      "showLess": "Afficher moins",
-      "settings": {
-        "categoriesLabel": "Catégories suivies"
-      }
-    },
     "manualBudget": {
       "edit": "Modifier",
       "editTitle": "Modifier le suivi"
@@ -162,6 +135,7 @@
     "details": {
       "statsLoadError": "Impossible de charger les totaux de ce suivi.",
       "transactionsCount": "{count} opération | {count} opérations",
+      "tagsCount": "{count} tag | {count} tags",
       "strip": {
         "limit": "Plafond",
         "spent": "Dépensé",
@@ -176,7 +150,7 @@
       "tabs": {
         "limits": "Plafonds"
       },
-      "tracks": "Suit",
+      "autoAdds": "Auto-adds",
       "membersLabel": "Membres : {count}",
       "actions": {
         "share": "Partager",
@@ -195,8 +169,7 @@
       },
       "edit": {
         "limitHint": "Laissez vide pour suivre sans plafond.",
-        "datesHint": "Modifier les dates n'ajoute ni ne retire les opérations déjà associées.",
-        "categoriesHint": "Supprimer une catégorie la retire également de chaque ligne."
+        "datesHint": "Modifier les dates n'ajoute ni ne retire les opérations déjà associées."
       }
     },
     "lines": {
@@ -245,7 +218,6 @@
         "categoriesLabel": "Catégories",
         "categoriesPlaceholder": "Choisir des catégories",
         "categoriesRequired": "Choisissez au moins une catégorie",
-        "categoryTrackerHint": "Ce suivi ne prend en compte que ses propres catégories, choisissez parmi celles-ci.",
         "limitLabel": "Plafond (optionnel)",
         "limitPlaceholder": "Aucun plafond",
         "limitHint": "Laissez vide pour regrouper les dépenses sans fixer de plafond."
@@ -258,6 +230,38 @@
         "createError": "Impossible d'ajouter la ligne",
         "updateError": "Impossible de mettre à jour la ligne",
         "deleteError": "Impossible de supprimer la ligne"
+      }
+    },
+    "rules": {
+      "heading": "Auto-add",
+      "switchLabel": "Add matching transactions automatically",
+      "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
+      "switchHintOff": "Only transactions you add by hand count.",
+      "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
+      "categoriesLabel": "Catégories",
+      "categoriesPlaceholder": "Sélectionner des catégories",
+      "tagsLabel": "Étiquettes",
+      "tagsPlaceholder": "Sélectionner des étiquettes",
+      "needsCategoryOrTag": "Pick at least one category or tag",
+      "cleanupLabel": "Remove transactions that stop matching",
+      "cleanupHint": "Checked every 6 hours. Transactions you added by hand are never removed.",
+      "checkedAt": "Checked {when}",
+      "unlinked": "Removed {count} transaction. It won't be added again automatically. | Removed {count} transactions. They won't be added again automatically.",
+      "confirm": {
+        "title": "Save new matching rules?",
+        "description": "Once saved, all your transactions are checked against the new rules and matching ones are added.",
+        "descriptionWithCleanup": "Once saved, all your transactions are checked against the new rules. Matching ones are added, and ones the rules added that no longer match are removed. Transactions you added by hand stay.",
+        "saveAndCheck": "Save and check"
+      },
+      "rejected": {
+        "title": "Not added again",
+        "description": "You removed these or rejected them as AI suggestions, so they're skipped. Allow one and it's added back if it still matches.",
+        "summary": "{count} transaction won't be added again | {count} transactions won't be added again",
+        "review": "Examiner",
+        "aiBadge": "AI suggestion",
+        "allowAgain": "Allow again",
+        "allowed": "Allowed again",
+        "allowError": "Couldn't allow the transaction again"
       }
     },
     "smartTracking": {
@@ -284,6 +288,7 @@
           "threeMonths": "3 mois",
           "sixMonths": "6 mois"
         },
+        "costNote": "The first scan checks every transaction from the look-back window to the end date. Large ranges can use up your monthly AI allowance, or cost you directly if you use your own key.",
         "usesIncluded": "Utilise l'IA incluse. Décompté de votre quota mensuel d'IA.",
         "usesOwnModel": "Utilise votre propre modèle · {model}"
       },

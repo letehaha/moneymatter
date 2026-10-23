@@ -15,11 +15,14 @@
     "helpAndDocs": "Pomoc a dokumentácia",
     "logout": "Odhlásiť sa",
     "appVersion": "Verzia aplikácie {version}",
+    "updateAvailable": "K dispozícii je aktualizácia",
+    "updateToVersion": "Update · {version}",
     "settings": "Nastavenia",
     "planned": {
-      "planned": "Plánované",
+      "planned": "Plánovanie",
       "subscriptions": "Opakujúce sa platby",
-      "budgets": "Sledovače"
+      "budgets": "Sledovače",
+      "goals": "Ciele"
     },
     "venture": "Rizikový kapitál",
     "budget": "Rozpočet"

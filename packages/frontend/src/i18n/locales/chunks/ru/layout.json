@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "Выйти",
     "appVersion": "App version {version}",
+    "updateAvailable": "Доступно обновление",
+    "updateToVersion": "Update · {version}",
     "settings": "Настройки",
     "planned": {
       "planned": "Запланированные",
       "subscriptions": "Регулярные платежи",
-      "budgets": "Бюджеты"
+      "budgets": "Бюджеты",
+      "goals": "Goals"
     },
     "venture": "Венчурные инвестиции",
     "budget": "Budget"

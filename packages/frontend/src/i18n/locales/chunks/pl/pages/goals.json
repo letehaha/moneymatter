@@ -1,0 +1,347 @@
+{
+  "goals": {
+    "title": "Goals",
+    "description": "Save toward targets from the accounts you already have",
+    "newGoal": "New goal",
+    "list": {
+      "searchPlaceholder": "Search goals",
+      "filters": {
+        "all": "All",
+        "behind": "Behind schedule",
+        "archived": "Archived"
+      },
+      "sections": {
+        "active": "Active",
+        "ended": "Ended",
+        "archived": "Archived",
+        "show": "show",
+        "hide": "hide"
+      },
+      "loadError": "Couldn't load your goals.",
+      "emptyState": {
+        "title": "No goals yet",
+        "description": "Point a goal at the accounts that hold the money. Progress updates as balances change."
+      },
+      "noMatch": {
+        "title": "Nothing matches \"{query}\"",
+        "titleNoQuery": "No goals match these filters",
+        "description": "Try another name, or include archived goals.",
+        "includeArchived": "Include archived"
+      },
+      "row": {
+        "saved": "Saved",
+        "ofTarget": "of {amount}",
+        "accountShare": "{name} {share}%",
+        "accountFixed": "{name} {amount}",
+        "reachedOn": "reached {date}",
+        "byDate": "by {date}",
+        "noDate": "no date",
+        "neededMonthly": "needs {amount}/mo"
+      },
+      "menu": {
+        "moreActions": "More actions for {name}"
+      }
+    },
+    "status": {
+      "reached": "Reached",
+      "ahead": "Ahead",
+      "onTrack": "On track",
+      "behind": "Behind",
+      "behindBy": "Behind · {count} mo | Behind · {count} mo",
+      "overdue": "Overdue",
+      "noDate": "No date",
+      "around": "around {date}",
+      "insufficientHistory": "Not enough history",
+      "noAccounts": "No accounts",
+      "paused": "Paused",
+      "archived": "Archived",
+      "noRate": "No exchange rate"
+    },
+    "actions": {
+      "edit": "Edit",
+      "pause": "Pause",
+      "resume": "Resume",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete"
+    },
+    "deleteDialog": {
+      "title": "Delete this goal?",
+      "description": "The goal and its account shares are removed. Your accounts and transactions stay as they are."
+    },
+    "toasts": {
+      "created": "Goal created",
+      "saved": "Goal saved",
+      "paused": "Goal paused",
+      "archived": "Goal archived",
+      "deleted": "Goal deleted",
+      "saveError": "Couldn't save the goal",
+      "deleteError": "Couldn't delete the goal"
+    },
+    "access": {
+      "trialDaysLeft": "Goals trial · {n} day left | Goals trial · {n} days left",
+      "trialTitle": "Try goals free for 14 days",
+      "trialDescription": "Creating and editing goals is part of Essential. Start a trial to set up your first goal.",
+      "startTrial": "Start free trial",
+      "trialEnded": "Your goals trial has ended. Your goals stay visible; upgrade to edit them."
+    },
+    "details": {
+      "backToList": "Back to goals",
+      "notFound": {
+        "title": "Goal not found",
+        "description": "It may have been deleted."
+      },
+      "loadError": "Couldn't load this goal",
+      "perMonth": "/mo",
+      "actions": {
+        "raiseTarget": "Raise target",
+        "more": "More goal actions"
+      },
+      "tabs": {
+        "progress": "Progress",
+        "accounts": "Accounts",
+        "whatIf": "What if"
+      },
+      "strip": {
+        "target": "Target",
+        "saved": "Saved",
+        "left": "Left",
+        "needs": "Needs",
+        "pace": "Pace",
+        "reached": "Reached",
+        "aboveTarget": "{amount} above target",
+        "notEnoughHistory": "not enough history",
+        "around": "around {date}",
+        "dueInDays": "due in {count} day | due in {count} days",
+        "overdue": "overdue"
+      },
+      "accounts": {
+        "label": "Accounts",
+        "count": "{count} account | {count} accounts",
+        "showAll": "Show all {count} accounts",
+        "countedToward": "Counted toward {name}",
+        "shareOf": "{share}% of {amount}",
+        "fixed": "{amount} fixed",
+        "fixedShort": "{counted} of {amount} fixed. The account holds less than its fixed amounts.",
+        "shareOfLeft": "{share}% of {amount} left after fixed amounts",
+        "sharePlain": "{share}%",
+        "totalCounted": "Total counted",
+        "readOnlyHint": "Reads balances, never moves money",
+        "wholeAccount": "Whole account",
+        "shareHere": "{share}% here",
+        "shareHereFree": "{share}% here · {free}% free",
+        "fixedHere": "Fixed {amount} from this account",
+        "emptyDescription": "Link accounts in Edit goal to track progress.",
+        "columns": {
+          "account": "Account",
+          "share": "Share",
+          "balance": "Balance",
+          "counted": "Counted"
+        },
+        "archived": "Archived",
+        "percentOfSaved": "{percent}% of saved",
+        "total": "Total · {count} account | Total · {count} accounts",
+        "ofBalance": "of {amount}",
+        "unavailableAccount": "Unavailable account",
+        "balanceUnavailable": "Balance unavailable"
+      },
+      "noRate": {
+        "title": "Exchange rate unavailable",
+        "description": "Progress shows once today's {currency} rate is available."
+      },
+      "progress": {
+        "kpi": {
+          "monthlyPace": "Monthly pace",
+          "needs": "needs {amount}/mo",
+          "projectedFinish": "Projected finish",
+          "onTime": "on time",
+          "early": "{count} mo early",
+          "late": "{count} mo late",
+          "targetDate": "Target {date}",
+          "savedIn": "Saved in {count} mo",
+          "bestMonth": "Best month",
+          "shareOfGrowth": "{percent}% of the period's growth",
+          "leftDueInDays": "{amount} left, due in {count} day | {amount} left, due in {count} days",
+          "leftOverdue": "{amount} left, overdue"
+        },
+        "timeline": "Timeline",
+        "noHistory": "No history yet",
+        "insufficient": {
+          "title": "Not enough history for a pace yet",
+          "description": "A pace needs {min} full months of history; these accounts have {count}. Set a monthly plan in Edit goal to see an ETA now."
+        },
+        "notes": {
+          "plannedPace": "Pace uses your planned {amount} a month.",
+          "historyPace": "Pace is the median monthly change over the last {count} month. | Pace is the median monthly change over the last {count} months.",
+          "fxDrift": "Past months of foreign-currency accounts include exchange rate moves.",
+          "marketMoves": "Market moves on investment accounts count as progress. Projections assume no growth.",
+          "staysReached": "Stays reached even if the balance dips later."
+        },
+        "chartAria": "Goal savings over time",
+        "legend": {
+          "saved": "Saved",
+          "projection": "Projection",
+          "target": "Target"
+        },
+        "monthlyChange": "Monthly change"
+      },
+      "staleData": "Couldn't refresh this goal. Showing the last loaded data."
+    },
+    "form": {
+      "createTitle": "New goal",
+      "editTitle": "Edit goal",
+      "description": "Progress reads your account balances. No money moves.",
+      "nameLabel": "Name",
+      "namePlaceholder": "e.g. Car or Emergency fund",
+      "targetAmountLabel": "Target amount",
+      "targetAmountPlaceholder": "Enter an amount",
+      "currencyLabel": "Currency",
+      "currencyPlaceholder": "Select a currency",
+      "targetDateLabel": "Target date",
+      "targetDateHint": "Optional. Set a date to see if you're on pace. Without one, we'll estimate when you'll reach it.",
+      "accountsLabel": "Accounts",
+      "noAccounts": "No accounts yet",
+      "countsNow": "Counts {amount} now",
+      "manageAccounts": "Manage accounts",
+      "addAccounts": "Add accounts",
+      "accountsHint": "Balances of these accounts count toward the goal.",
+      "plannedMonthlyLabel": "Set a monthly amount",
+      "plannedMonthlyHint": "Off uses the median monthly change of the last 6 months.",
+      "plannedMonthlyPlaceholder": "Enter a monthly amount",
+      "holdDaysLabel": "Keep “Reached” after a dip",
+      "holdDaysPlaceholder": "30",
+      "holdDaysUnit": "days",
+      "holdDaysHint": "For this many days after the goal reaches its target, a drop below it doesn't undo Reached. Set 0 to follow the balance live.",
+      "summary": {
+        "dated": "Reach {target} by {date}.",
+        "undated": "Reach {target}, no deadline.",
+        "needed": "That needs about {amount} a month from today.",
+        "covered": "Your accounts already cover it.",
+        "planned": "You plan to save {amount} a month."
+      },
+      "thisGoal": "this goal",
+      "createSubmit": "Create goal",
+      "errors": {
+        "nameRequired": "Enter a name",
+        "amountRequired": "Enter an amount above 0",
+        "dateNotFuture": "Pick a date after today",
+        "accountsRequired": "Add at least one account",
+        "shareCapacity": "{account} has only {free}% free. Lower its share in Manage accounts.",
+        "shareCapacityGeneric": "An account doesn't have enough free share. Lower its share in Manage accounts.",
+        "fixedBelowTarget": "Fixed amounts add up to less than the target. Raise an amount or count an account by percent.",
+        "holdDaysRange": "Enter whole days from 0 to 365"
+      },
+      "unavailableAccount": "Unavailable account",
+      "accountsMissing": "{count} account is unavailable and isn't counted | {count} accounts are unavailable and aren't counted"
+    },
+    "accountsDialog": {
+      "title": "Accounts for {name}",
+      "description": "Tick the accounts that count toward {name} and how much of each.",
+      "fixedFirst": "Fixed amounts come out of an account's balance first. Percents split what's left.",
+      "mode": {
+        "percent": "Percent",
+        "amount": "Amount"
+      },
+      "searchPlaceholder": "Search accounts",
+      "holder": "{share}% in {name}",
+      "archived": "Archived",
+      "fixedOnly": "Fully used: {holders} · fixed amount only",
+      "free": "{free}% free",
+      "wholeAccount": "Whole account · counts {amount}",
+      "maxShare": "Max {max}% · counts {amount}",
+      "counts": "Counts {amount}",
+      "shareAriaLabel": "Share of {name}",
+      "amountAriaLabel": "Fixed amount from {name}",
+      "errors": {
+        "invalid": "Enter a share above 0%",
+        "invalidAmount": "Enter an amount above 0",
+        "overMax": "Max {max}%",
+        "overMaxUsedBy": "Max {max}% ({holders})",
+        "noShareLeft": "No share left: {holders}. Use a fixed amount instead."
+      },
+      "noMatch": "No accounts match “{query}”",
+      "marketNote": "Market moves in investment and crypto accounts count as progress. Projections assume no growth.",
+      "total": "No accounts selected | {count} account · counts {amount} | {count} accounts · counts {amount}",
+      "fixToSave": "Fix {name} to save",
+      "done": "Done",
+      "emptyState": {
+        "title": "No accounts to link",
+        "description": "Goals count cash, current, savings, investment and crypto accounts you own."
+      },
+      "unavailableCaption": "Unavailable · kept until you untick it",
+      "sharePlaceholder": "100",
+      "amountPlaceholder": "Amount",
+      "order": {
+        "hint": "If the balance runs short, fixed amounts are filled top to bottom. Drag to change.",
+        "dragLabel": "Drag to change the order",
+        "thisGoal": "{name} · this goal",
+        "moveUp": "Move up",
+        "moveDown": "Move down"
+      },
+      "fixedCurrencyNote": "Fixed amounts are in the account's currency."
+    },
+    "feasibility": {
+      "summary": "Your goals need {needed}/mo, you save a median {saving}/mo",
+      "short": "That's {amount} a month short.",
+      "showGoals": "Show goals",
+      "hideGoals": "Hide goals",
+      "perMonth": "{amount}/mo",
+      "goalFits": "Fits",
+      "goalDoesNotFit": "Doesn't fit",
+      "footnote": "\"Typically save\" is the median monthly net flow over the last 12 complete months. Transfers between your own accounts are left out. Goals are checked nearest date first.",
+      "dueIn": "Due in {count} day | Due in {count} days",
+      "dueNote": "Goals due within a month or overdue aren't in the monthly total."
+    },
+    "whatIf": {
+      "monthly": {
+        "label": "Monthly toward this goal",
+        "placeholder": "Auto",
+        "auto": "Auto {amount}",
+        "autoHint": "Auto {amount} is the median monthly change of the last {count} months",
+        "noAuto": "Not enough history for Auto yet. Enter an amount.",
+        "useAuto": "Use Auto"
+      },
+      "targetDate": {
+        "label": "Target date",
+        "hint": "Optional. Without it you get a projected month, never “behind”."
+      },
+      "shares": {
+        "label": "Account shares",
+        "counted": "Counts {amount} · {percent}%",
+        "whole": "Whole account · counts {amount}",
+        "fixed": "Fixed amount · counts {amount}",
+        "free": "{free}% free · counts {amount}",
+        "inputLabel": "Share of {name}",
+        "placeholder": "0",
+        "capacityPending": "Shares can't be changed until your other goals load."
+      },
+      "compare": {
+        "title": "Now vs what if",
+        "from": "from {date}",
+        "now": "Now",
+        "whatIf": "What if",
+        "monthly": "Monthly toward goal",
+        "reached": "Reached around",
+        "against": "Against target",
+        "needed": "Needs per month",
+        "reachedAlready": "Reached",
+        "offset": {
+          "early": "{count} mo early",
+          "onTime": "On time",
+          "late": "{count} mo late"
+        }
+      },
+      "autoTag": "Auto",
+      "deposit": {
+        "sentence": "To count {amount} a month toward this goal, deposit {deposits}.",
+        "item": "{amount} into {account}"
+      },
+      "sandboxHint": "A sandbox. Nothing changes until you apply it in Edit goal.",
+      "reset": "Reset",
+      "apply": "Apply in Edit goal"
+    },
+    "docs": {
+      "howItWorks": "How goals work"
+    }
+  }
+}

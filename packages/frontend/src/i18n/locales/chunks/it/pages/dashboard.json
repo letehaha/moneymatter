@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Trackers",
           "description": "Each active tracker with how much of its limit is used and its net"
+        },
+        "goals": {
+          "name": "Goals",
+          "description": "Progress toward your savings goals",
+          "savedOfTarget": "{saved} of {target}",
+          "empty": {
+            "title": "No active goals",
+            "description": "Set a goal and see how close you are.",
+            "action": "Create a goal"
+          },
+          "locked": {
+            "title": "Goals are locked",
+            "description": "Save toward what matters and see if you're on pace. Available on paid plans.",
+            "action": "Learn more"
+          },
+          "settings": {
+            "showReached": "Show reached goals"
+          },
+          "reachedSection": "Reached"
         }
       }
     },

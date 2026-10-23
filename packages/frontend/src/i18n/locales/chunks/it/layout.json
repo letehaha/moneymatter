@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "Disconnessione",
     "appVersion": "Versione app {version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "Impostazioni",
     "planned": {
       "planned": "Transazioni PianIficate",
       "subscriptions": "Pagamenti ricorrenti",
-      "budgets": "Bilancio"
+      "budgets": "Bilancio",
+      "goals": "Goals"
     },
     "venture": "Investimenti",
     "budget": "Budget"
@@ -48,7 +51,7 @@
       "newPortfolio": "Nuovo portafoglio",
       "noPortfolios": "Ancora nessun portafoglio",
       "ventures": "Investimenti",
-      "cars": "Auto",
+      "cars": "Veicoli",
       "loans": "Prestiti & Finanziamenti",
       "collapseNavigation": "Nascondi barra di navigazione",
       "viaHousehold": "Condiviso tramite la famiglia di {handle}",

@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Sólo el propietario puede duplicar este control de gastos",
     "someTransactionIdsInvalid": "Algunos IDs de transacciones no son válidos",
     "transactionsAddedSuccessfully": "Transacciones añadidas correctamente",
-    "cannotManuallyLinkToCategoryBudget": "No se pueden vincular transacciones manualmente a presupuestos basados en categorías. Las transacciones se registran automáticamente por categoría.",
     "someCategoryIdsInvalid": "Algunos IDs de categorías no son válidos o no existen",
-    "notCategoryBudget": "Este endpoint solo está disponible para presupuestos basados en categorías",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
     "startDateAfterEndDate": "Start date must be on or before the end date",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -842,5 +839,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "No se encontró una de las cuentas seleccionadas.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
   }
 }

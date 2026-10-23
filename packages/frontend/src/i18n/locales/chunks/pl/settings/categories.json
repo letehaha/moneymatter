@@ -7,7 +7,7 @@
       "organizeButton": "Organize",
       "empty": "No categories yet. Create your first category to get started.",
       "categoriesCount": "{n} category | {n} categories",
-      "organizeHint": "Drag onto a new parent, or drop here for top-level.",
+      "organizeHint": "Drop onto a category to nest it, or between categories to reorder",
       "dropToTopLevel": "Drop here to make “{name}” a top-level category",
       "movesQueued": "{n} move queued | {n} moves queued",
       "unqueueMove": "Remove this move",

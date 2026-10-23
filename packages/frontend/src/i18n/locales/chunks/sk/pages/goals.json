@@ -1,0 +1,347 @@
+{
+  "goals": {
+    "title": "Ciele",
+    "description": "Šetrite na ciele z účtov, ktoré už máte",
+    "newGoal": "Nový cieľ",
+    "list": {
+      "searchPlaceholder": "Hľadať ciele",
+      "filters": {
+        "all": "Všetky",
+        "behind": "Zaostávajúce",
+        "archived": "Archivované"
+      },
+      "sections": {
+        "active": "Aktívne",
+        "ended": "Ukončené",
+        "archived": "Archivované",
+        "show": "zobraziť",
+        "hide": "skryť"
+      },
+      "loadError": "Vaše ciele sa nepodarilo načítať.",
+      "emptyState": {
+        "title": "Zatiaľ žiadne ciele",
+        "description": "Nasmerujte cieľ na účty, na ktorých sú peniaze. Postup sa aktualizuje so zmenou zostatkov."
+      },
+      "noMatch": {
+        "title": "Nič nezodpovedá výrazu „{query}“",
+        "titleNoQuery": "Žiadne ciele nezodpovedajú týmto filtrom",
+        "description": "Skúste iný názov, alebo zahrňte archivované ciele.",
+        "includeArchived": "Zahrnúť archivované"
+      },
+      "row": {
+        "saved": "Ušetrené",
+        "ofTarget": "z {amount}",
+        "accountShare": "{name} {share} %",
+        "accountFixed": "{name} {amount}",
+        "reachedOn": "dosiahnuté {date}",
+        "byDate": "do {date}",
+        "noDate": "bez dátumu",
+        "neededMonthly": "potrebné {amount}/mes."
+      },
+      "menu": {
+        "moreActions": "Ďalšie možnosti pre {name}"
+      }
+    },
+    "status": {
+      "reached": "Dosiahnuté",
+      "ahead": "V predstihu",
+      "onTrack": "Na dobrej ceste",
+      "behind": "Zaostáva",
+      "behindBy": "Zaostáva · {count} mes. | Zaostáva · {count} mes.",
+      "overdue": "Po termíne",
+      "noDate": "Bez dátumu",
+      "around": "okolo {date}",
+      "insufficientHistory": "Nedostatočná história",
+      "noAccounts": "Žiadne účty",
+      "paused": "Pozastavené",
+      "archived": "Archivované",
+      "noRate": "Žiadny výmenný kurz"
+    },
+    "actions": {
+      "edit": "Upraviť",
+      "pause": "Pozastaviť",
+      "resume": "Obnoviť",
+      "archive": "Archivovať",
+      "unarchive": "Odarchivovať",
+      "delete": "Zmazať"
+    },
+    "deleteDialog": {
+      "title": "Zmazať tento cieľ?",
+      "description": "Cieľ a jeho podiely účtov budú zmazané. Vaše účty a transakcie zostanú nezmenené."
+    },
+    "toasts": {
+      "created": "Cieľ vytvorený",
+      "saved": "Cieľ uložený",
+      "paused": "Cieľ pozastavený",
+      "archived": "Cieľ archivovaný",
+      "deleted": "Cieľ zmazaný",
+      "saveError": "Cieľ sa nepodarilo uložiť",
+      "deleteError": "Cieľ sa nepodarilo zmazať"
+    },
+    "access": {
+      "trialDaysLeft": "Skúška cieľov · zostáva {n} deň | Skúška cieľov · zostávajú {n} dni | Skúška cieľov · zostáva {n} dní",
+      "trialTitle": "Vyskúšajte ciele bezplatne na 14 dní",
+      "trialDescription": "Vytváranie a úprava cieľov je súčasťou Essential. Spustite skúšku a nastavte si svoj prvý cieľ.",
+      "startTrial": "Spustiť skúšobnú verziu zdarma",
+      "trialEnded": "Vaša skúška cieľov sa skončila. Vaše ciele zostávajú viditeľné; na ich úpravu prejdite na vyšší plán."
+    },
+    "details": {
+      "backToList": "Späť na ciele",
+      "notFound": {
+        "title": "Cieľ nenájdený",
+        "description": "Mohol byť zmazaný."
+      },
+      "loadError": "Tento cieľ sa nepodarilo načítať",
+      "perMonth": "/mes.",
+      "actions": {
+        "raiseTarget": "Zvýšiť cieľovú sumu",
+        "more": "Ďalšie možnosti cieľa"
+      },
+      "tabs": {
+        "progress": "Postup",
+        "accounts": "Účty",
+        "whatIf": "Čo ak"
+      },
+      "strip": {
+        "target": "Cieľ",
+        "saved": "Usporené",
+        "left": "Zostáva",
+        "needs": "Potrebné",
+        "pace": "Tempo",
+        "reached": "Dosiahnutý",
+        "aboveTarget": "{amount} nad cieľom",
+        "notEnoughHistory": "nedostatočná história",
+        "around": "okolo {date}",
+        "dueInDays": "termín za {count} deň | termín za {count} dni | termín za {count} dní",
+        "overdue": "po termíne"
+      },
+      "accounts": {
+        "label": "Účty",
+        "count": "{count} účet | {count} účty | {count} účtov",
+        "showAll": "Zobraziť všetkých {count} účtov",
+        "countedToward": "Započítané do {name}",
+        "shareOf": "{share}% z {amount}",
+        "fixed": "{amount} pevne",
+        "fixedShort": "{counted} z {amount} pevne. Účet má nižší zostatok než súčet jeho pevných súm.",
+        "shareOfLeft": "{share} % z {amount}, ktoré zostali po pevných sumách",
+        "sharePlain": "{share} %",
+        "totalCounted": "Započítané spolu",
+        "readOnlyHint": "Len číta zostatky, nikdy nepresúva peniaze",
+        "wholeAccount": "Celý účet",
+        "shareHere": "{share} % tu",
+        "shareHereFree": "{share} % tu · {free} % voľných",
+        "fixedHere": "Pevne {amount} z tohto účtu",
+        "emptyDescription": "Prepojte účty v úprave cieľa a sledujte postup.",
+        "columns": {
+          "account": "Účet",
+          "share": "Podiel",
+          "balance": "Zostatok",
+          "counted": "Započítané"
+        },
+        "archived": "Archivovaný",
+        "percentOfSaved": "{percent} % z usporeného",
+        "total": "Celkovo · {count} účet | Celkovo · {count} účty | Celkovo · {count} účtov",
+        "ofBalance": "z {amount}",
+        "unavailableAccount": "Nedostupný účet",
+        "balanceUnavailable": "Zostatok nedostupný"
+      },
+      "noRate": {
+        "title": "Výmenný kurz nedostupný",
+        "description": "Postup sa zobrazí, keď bude k dispozícii dnešný kurz {currency}."
+      },
+      "progress": {
+        "kpi": {
+          "monthlyPace": "Mesačné tempo",
+          "needs": "potrebné {amount}/mes.",
+          "projectedFinish": "Predpokladané dokončenie",
+          "onTime": "včas",
+          "early": "o {count} mes. skôr",
+          "late": "o {count} mes. neskôr",
+          "targetDate": "Cieľ {date}",
+          "savedIn": "Usporené za {count} mes.",
+          "bestMonth": "Najlepší mesiac",
+          "shareOfGrowth": "{percent} % z rastu za toto obdobie",
+          "leftDueInDays": "zostáva {amount}, termín za {count} deň | zostáva {amount}, termín za {count} dni | zostáva {amount}, termín za {count} dní",
+          "leftOverdue": "zostáva {amount}, po termíne"
+        },
+        "timeline": "Časová os",
+        "noHistory": "Zatiaľ žiadna história",
+        "insufficient": {
+          "title": "Na tempo zatiaľ nie je dostatočná história",
+          "description": "Tempo vyžaduje {min} celých mesiacov histórie; tieto účty majú {count}. Nastavte mesačný plán v úprave cieľa a zobrazte si odhad už teraz."
+        },
+        "notes": {
+          "plannedPace": "Tempo vychádza z vašej plánovanej sumy {amount} za mesiac.",
+          "historyPace": "Tempo je medián mesačnej zmeny za posledný {count} mesiac. | Tempo je medián mesačnej zmeny za posledné {count} mesiace. | Tempo je medián mesačnej zmeny za posledných {count} mesiacov.",
+          "fxDrift": "Minulé mesiace pri účtoch v cudzej mene zahŕňajú aj pohyby výmenného kurzu.",
+          "marketMoves": "Pohyby trhu na investičných účtoch sa započítavajú do postupu. Predpovede predpokladajú nulový rast.",
+          "staysReached": "Zostáva dosiahnutý, aj keď zostatok neskôr klesne."
+        },
+        "chartAria": "Úspory na cieľ v čase",
+        "legend": {
+          "saved": "Usporené",
+          "projection": "Predpoveď",
+          "target": "Cieľ"
+        },
+        "monthlyChange": "Mesačná zmena"
+      },
+      "staleData": "Tento cieľ sa nepodarilo obnoviť. Zobrazujú sa posledné načítané údaje."
+    },
+    "form": {
+      "createTitle": "Nový cieľ",
+      "editTitle": "Upraviť cieľ",
+      "description": "Postup vychádza zo zostatkov vašich účtov. Peniaze sa nikam nepresúvajú.",
+      "nameLabel": "Názov",
+      "namePlaceholder": "napr. Auto alebo Rezerva na nečakané výdavky",
+      "targetAmountLabel": "Cieľová suma",
+      "targetAmountPlaceholder": "Zadajte sumu",
+      "currencyLabel": "Mena",
+      "currencyPlaceholder": "Vyberte menu",
+      "targetDateLabel": "Cieľový dátum",
+      "targetDateHint": "Nepovinné. Nastavte dátum a zistite, či ste na dobrej ceste. Bez neho odhadneme, kedy cieľ dosiahnete.",
+      "accountsLabel": "Účty",
+      "noAccounts": "Zatiaľ žiadne účty",
+      "countsNow": "Momentálne sa započítava {amount}",
+      "manageAccounts": "Spravovať účty",
+      "addAccounts": "Pridať účty",
+      "accountsHint": "Zostatky týchto účtov sa započítavajú do cieľa.",
+      "plannedMonthlyLabel": "Nastavte mesačnú sumu",
+      "plannedMonthlyHint": "Ak je vypnuté, použije sa medián mesačnej zmeny za posledných 6 mesiacov.",
+      "plannedMonthlyPlaceholder": "Zadajte mesačnú sumu",
+      "holdDaysLabel": "Zachovať stav „Dosiahnutý“ po poklese",
+      "holdDaysPlaceholder": "30",
+      "holdDaysUnit": "dní",
+      "holdDaysHint": "Počas takéhoto počtu dní po dosiahnutí cieľovej sumy pokles pod ňu nezruší stav Dosiahnutý. Nastavením 0 sa stav sleduje podľa zostatku v reálnom čase.",
+      "summary": {
+        "dated": "Dosiahnuť {target} do {date}.",
+        "undated": "Dosiahnuť {target}, bez termínu.",
+        "needed": "To si od dnešného dňa vyžaduje približne {amount} za mesiac.",
+        "covered": "Vaše účty to už pokrývajú.",
+        "planned": "Plánujete usporiť {amount} za mesiac."
+      },
+      "thisGoal": "tento cieľ",
+      "createSubmit": "Vytvoriť cieľ",
+      "errors": {
+        "nameRequired": "Zadajte názov",
+        "amountRequired": "Zadajte sumu väčšiu než 0",
+        "dateNotFuture": "Vyberte dátum po dnešnom dni",
+        "accountsRequired": "Pridajte aspoň jeden účet",
+        "shareCapacity": "{account} má voľných len {free} %. Znížte jeho podiel v správe účtov.",
+        "shareCapacityGeneric": "Jeden z účtov nemá dostatok voľného podielu. Znížte jeho podiel v správe účtov.",
+        "fixedBelowTarget": "Pevné sumy dávajú spolu menej než cieľová suma. Zvýšte niektorú sumu alebo započítajte účet podľa percenta.",
+        "holdDaysRange": "Zadajte celé dni od 0 do 365"
+      },
+      "unavailableAccount": "Nedostupný účet",
+      "accountsMissing": "{count} účet je nedostupný a nezapočítava sa | {count} účty sú nedostupné a nezapočítavajú sa | {count} účtov je nedostupných a nezapočítava sa"
+    },
+    "accountsDialog": {
+      "title": "Účty pre {name}",
+      "description": "Zaškrtnite účty, ktoré sa započítavajú do {name}, a určite, akou mierou.",
+      "fixedFirst": "Pevné sumy sa zo zostatku účtu odpočítajú ako prvé. Percentá rozdelia zostávajúcu časť.",
+      "mode": {
+        "percent": "Percento",
+        "amount": "Suma"
+      },
+      "searchPlaceholder": "Hľadať účty",
+      "holder": "{share} % v {name}",
+      "archived": "Archivovaný",
+      "fixedOnly": "Plne využité: {holders} · len pevná suma",
+      "free": "{free} % voľných",
+      "wholeAccount": "Celý účet · započítava sa {amount}",
+      "maxShare": "Max {max} % · započítava sa {amount}",
+      "counts": "Započítava sa {amount}",
+      "shareAriaLabel": "Podiel {name}",
+      "amountAriaLabel": "Pevná suma z {name}",
+      "errors": {
+        "invalid": "Zadajte podiel väčší než 0 %",
+        "invalidAmount": "Zadajte sumu väčšiu než 0",
+        "overMax": "Max {max} %",
+        "overMaxUsedBy": "Max {max} % ({holders})",
+        "noShareLeft": "Žiadny voľný podiel: {holders}. Použite pevnú sumu."
+      },
+      "noMatch": "Žiadne účty nezodpovedajú výrazu „{query}“",
+      "marketNote": "Pohyby trhu na investičných a krypto účtoch sa započítavajú do postupu. Predpovede predpokladajú nulový rast.",
+      "total": "Žiadne vybrané účty | {count} účet · započítava sa {amount} | {count} účtov · započítava sa {amount}",
+      "fixToSave": "Opravte {name}, aby ste mohli uložiť",
+      "done": "Hotovo",
+      "emptyState": {
+        "title": "Žiadne účty na prepojenie",
+        "description": "Ciele započítavajú hotovostné, bežné, sporiace, investičné a krypto účty, ktoré vlastníte."
+      },
+      "unavailableCaption": "Nedostupný · zostane, kým ho neodškrtnete",
+      "sharePlaceholder": "100",
+      "amountPlaceholder": "Suma",
+      "order": {
+        "hint": "Ak zostatok nestačí, pevné sumy sa plnia zhora nadol. Poradie zmeníte potiahnutím.",
+        "dragLabel": "Potiahnutím zmeníte poradie",
+        "thisGoal": "{name} · tento cieľ",
+        "moveUp": "Posunúť vyššie",
+        "moveDown": "Posunúť nižšie"
+      },
+      "fixedCurrencyNote": "Pevné sumy sú v mene účtu."
+    },
+    "feasibility": {
+      "summary": "Vaše ciele si vyžadujú {needed}/mes., vy ušetríte v priemere {saving}/mes.",
+      "short": "To je o {amount} za mesiac menej, než treba.",
+      "showGoals": "Zobraziť ciele",
+      "hideGoals": "Skryť ciele",
+      "perMonth": "{amount}/mes.",
+      "goalFits": "Vychádza",
+      "goalDoesNotFit": "Nevychádza",
+      "footnote": "„Obvykle ušetríte“ je medián mesačného čistého toku za posledných 12 celých mesiacov. Prevody medzi vašimi vlastnými účtami sa do toho nezapočítavajú. Ciele sa kontrolujú podľa najbližšieho dátumu.",
+      "dueIn": "Termín za {count} deň | Termín za {count} dni | Termín za {count} dní",
+      "dueNote": "Ciele s termínom do mesiaca alebo po termíne nie sú zahrnuté v mesačnom súčte."
+    },
+    "whatIf": {
+      "monthly": {
+        "label": "Mesačne na tento cieľ",
+        "placeholder": "Automaticky",
+        "auto": "Automaticky {amount}",
+        "autoHint": "Automaticky {amount} je medián mesačnej zmeny za posledných {count} mesiacov",
+        "noAuto": "Na automatický výpočet zatiaľ nie je dostatočná história. Zadajte sumu.",
+        "useAuto": "Použiť automaticky"
+      },
+      "targetDate": {
+        "label": "Cieľový dátum",
+        "hint": "Nepovinné. Bez neho získate predpokladaný mesiac, nikdy stav „zaostáva“."
+      },
+      "shares": {
+        "label": "Podiely účtov",
+        "counted": "Započítava sa {amount} · {percent} %",
+        "whole": "Celý účet · započítava sa {amount}",
+        "fixed": "Pevná suma · započítava sa {amount}",
+        "free": "{free} % voľných · započítava sa {amount}",
+        "inputLabel": "Podiel {name}",
+        "placeholder": "0",
+        "capacityPending": "Podiely nemožno zmeniť, kým sa nenačítajú vaše ostatné ciele."
+      },
+      "compare": {
+        "title": "Teraz vs. čo ak",
+        "from": "od {date}",
+        "now": "Teraz",
+        "whatIf": "Čo ak",
+        "monthly": "Mesačne na cieľ",
+        "reached": "Dosiahnutý okolo",
+        "against": "Voči cieľu",
+        "needed": "Potrebné za mesiac",
+        "reachedAlready": "Dosiahnutý",
+        "offset": {
+          "early": "o {count} mes. skôr",
+          "onTime": "Včas",
+          "late": "o {count} mes. neskôr"
+        }
+      },
+      "autoTag": "Automaticky",
+      "deposit": {
+        "sentence": "Aby sa do tohto cieľa počítalo {amount} za mesiac, vložte {deposits}.",
+        "item": "{amount} na {account}"
+      },
+      "sandboxHint": "Testovacie prostredie. Nič sa nezmení, kým to neuplatníte v úprave cieľa.",
+      "reset": "Vynulovať",
+      "apply": "Uplatniť v úprave cieľa"
+    },
+    "docs": {
+      "howItWorks": "Ako fungujú ciele"
+    }
+  }
+}

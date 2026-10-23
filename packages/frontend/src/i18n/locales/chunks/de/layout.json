@@ -15,11 +15,14 @@
     "helpAndDocs": "Hilfe & Dokumentation",
     "logout": "Abmelden",
     "appVersion": "App-Version {version}",
+    "updateAvailable": "Update verfügbar",
+    "updateToVersion": "Update · {version}",
     "settings": "Einstellungen",
     "planned": {
       "planned": "Geplant",
       "subscriptions": "Wiederkehrende Zahlungen",
-      "budgets": "Tracker"
+      "budgets": "Tracker",
+      "goals": "Ziele"
     },
     "venture": "Beteiligungen",
     "budget": "Budget"

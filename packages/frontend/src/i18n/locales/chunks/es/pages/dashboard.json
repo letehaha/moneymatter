@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Presupuestos",
           "description": "Cada rastreador activo con cuánto de su límite está usado y su neto"
+        },
+        "goals": {
+          "name": "Objetivos",
+          "description": "Progress toward your savings goals",
+          "savedOfTarget": "{saved} of {target}",
+          "empty": {
+            "title": "No active goals",
+            "description": "Set a goal and see how close you are.",
+            "action": "Create a goal"
+          },
+          "locked": {
+            "title": "Goals are locked",
+            "description": "Save toward what matters and see if you're on pace. Available on paid plans.",
+            "action": "Saber más"
+          },
+          "settings": {
+            "showReached": "Show reached goals"
+          },
+          "reachedSection": "Alcanzado"
         }
       }
     },

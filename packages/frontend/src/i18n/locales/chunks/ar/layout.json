@@ -15,11 +15,14 @@
     "helpAndDocs": "المساعدة و الوثائق",
     "logout": "تسجيل خروج",
     "appVersion": "إصدار التطبيق ‏{version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "الإعدادات",
     "planned": {
       "planned": "مخطط له",
       "subscriptions": "المدفوعات المتكررة",
-      "budgets": "الميزانيات"
+      "budgets": "الميزانيات",
+      "goals": "Goals"
     },
     "venture": "مشروع",
     "budget": "Budget"

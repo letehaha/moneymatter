@@ -56,7 +56,7 @@
         "modelInfo": {
           "estimatedCost": "Odh. cena:",
           "per100Transactions": "na 100 transakcií",
-          "per100Pairs": "per 100 pairs"
+          "per100Pairs": "za 100 dvojíc"
         },
         "notifications": {
           "updateSuccess": "Model bol úspešne aktualizovaný",
@@ -96,7 +96,7 @@
           "investmentTransactionsParsing": "Prevádza exporty od brokera na riadky nákupov a predajov. Dlhé exporty vyžadujú model schopný písať dlhé odpovede.",
           "receiptParsing": "Model si prezerá priamo súbor faktúry, preto musí vedieť čítať obrázky a PDF.",
           "trackerMatching": "Krátka, opakujúca sa úloha, ktorá sa spúšťa každý deň. Zvládne ju dobre aj malý model a udrží tak nízke náklady.",
-          "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
+          "transferMatching": "Číta krátke dvojice transakcií a odpovedá jednoslovným verdiktom, takže postačí ľahký, lacný model."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",

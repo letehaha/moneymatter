@@ -111,7 +111,7 @@
       "rolloverLabel": "Übertrag",
       "rolloverPlaceholder": "Übertragsregel auswählen",
       "submit": "Budget erstellen",
-      "creating": "Wird erstellt...",
+      "creating": "Erstellen",
       "success": "Budget erstellt",
       "suggestedLinesFailed": "Vorschläge konnten nicht hinzugefügt werden. Du kannst sie manuell hinzufügen.",
       "error": "Budget konnte nicht erstellt werden",

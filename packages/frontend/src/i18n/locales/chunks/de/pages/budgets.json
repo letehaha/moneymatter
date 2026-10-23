@@ -12,16 +12,8 @@
       "error": "Unerwarteter Fehler!",
       "nameLabel": "Tracker-Name",
       "namePlaceholder": "Name eingeben",
-      "typeLabel": "Tracker-Typ",
-      "typeManual": "Manuell",
-      "typeManualDescription": "Transaktionen manuell zu diesem Tracker hinzufügen",
-      "typeCategory": "Kategoriebasiert",
-      "typeCategoryDescription": "Ausgaben automatisch nach Kategorien verfolgen",
-      "categoriesLabel": "Zu verfolgende Kategorien",
-      "categoriesRequired": "Wähle mindestens eine Kategorie aus",
       "fromDateLabel": "Startdatum",
       "toDateLabel": "Enddatum",
-      "autoIncludeLabel": "Transaktionen automatisch einschließen",
       "limitLabel": "Tracker-Limit",
       "limitPlaceholder": "Limit eingeben",
       "submitButton": "Tracker hinzufügen"
@@ -46,7 +38,6 @@
       "categoriesCount": "{count} Kategorien",
       "noTransactions": "Noch keine Transaktionen",
       "noTimePeriod": "Kein Zeitraum",
-      "autoTracked": "Automatisch verfolgt",
       "status": {
         "ended": "Beendet",
         "lastDay": "Letzter Tag",
@@ -73,8 +64,8 @@
       "searchPlaceholder": "Tracker suchen",
       "filters": {
         "all": "Alle",
-        "manual": "Manuell",
-        "category": "Kategorie",
+        "autoAdd": "Auto-add on",
+        "handPicked": "Hand-picked",
         "archived": "Archiviert"
       },
       "groups": {
@@ -134,24 +125,6 @@
       "addSelected": "Ausgewählte hinzufügen",
       "clearSelection": "Auswahl aufheben"
     },
-    "categoryBudget": {
-      "trackedCategories": "Verfolgte Kategorien",
-      "categoriesCount": "{count} Kategorien verfolgt",
-      "autoTrackedInfo": "Transaktionen werden automatisch basierend auf Kategorien verfolgt",
-      "transactionsTitle": "Transaktionen",
-      "transactionsCount": "{count} Transaktionen",
-      "noTransactions": "Noch keine Transaktionen",
-      "noTransactionsDescription": "Transaktionen, die zu deinen verfolgten Kategorien passen, werden hier automatisch angezeigt.",
-      "transactionsLoadError": "Transaktionen konnten nicht geladen werden",
-      "categoryBreakdown": "Kategorie-Aufschlüsselung",
-      "edit": "Bearbeiten",
-      "editTitle": "Tracker bearbeiten",
-      "showMore": "Mehr anzeigen",
-      "showLess": "Weniger anzeigen",
-      "settings": {
-        "categoriesLabel": "Verfolgte Kategorien"
-      }
-    },
     "manualBudget": {
       "edit": "Bearbeiten",
       "editTitle": "Tracker bearbeiten"
@@ -162,6 +135,7 @@
     "details": {
       "statsLoadError": "Gesamtsummen dieses Trackers konnten nicht geladen werden.",
       "transactionsCount": "{count} Transaktion | {count} Transaktionen",
+      "tagsCount": "{count} tag | {count} tags",
       "strip": {
         "limit": "Limit",
         "spent": "Ausgegeben",
@@ -176,7 +150,7 @@
       "tabs": {
         "limits": "Limits"
       },
-      "tracks": "Erfasst",
+      "autoAdds": "Auto-adds",
       "membersLabel": "Mitglieder: {count}",
       "actions": {
         "share": "Teilen",
@@ -195,8 +169,7 @@
       },
       "edit": {
         "limitHint": "Leeren, um ohne Limit zu erfassen.",
-        "datesHint": "Das Ändern der Daten fügt keine bereits verknüpften Transaktionen hinzu und entfernt diese auch nicht.",
-        "categoriesHint": "Das Entfernen einer Kategorie entfernt diese auch aus allen Zeilen."
+        "datesHint": "Das Ändern der Daten fügt keine bereits verknüpften Transaktionen hinzu und entfernt diese auch nicht."
       }
     },
     "lines": {
@@ -245,7 +218,6 @@
         "categoriesLabel": "Kategorien",
         "categoriesPlaceholder": "Kategorien auswählen",
         "categoriesRequired": "Wähle mindestens eine Kategorie aus",
-        "categoryTrackerHint": "Dieser Tracker berücksichtigt nur seine eigenen Kategorien, wähle also aus diesen aus.",
         "limitLabel": "Limit (optional)",
         "limitPlaceholder": "Kein Limit",
         "limitHint": "Leer lassen, um Ausgaben ohne Limit zu gruppieren."
@@ -258,6 +230,38 @@
         "createError": "Die Zeile konnte nicht hinzugefügt werden",
         "updateError": "Die Zeile konnte nicht aktualisiert werden",
         "deleteError": "Die Zeile konnte nicht gelöscht werden"
+      }
+    },
+    "rules": {
+      "heading": "Auto-add",
+      "switchLabel": "Add matching transactions automatically",
+      "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
+      "switchHintOff": "Only transactions you add by hand count.",
+      "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
+      "categoriesLabel": "Kategorien",
+      "categoriesPlaceholder": "Kategorien auswählen",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Tags auswählen",
+      "needsCategoryOrTag": "Pick at least one category or tag",
+      "cleanupLabel": "Remove transactions that stop matching",
+      "cleanupHint": "Checked every 6 hours. Transactions you added by hand are never removed.",
+      "checkedAt": "Checked {when}",
+      "unlinked": "Removed {count} transaction. It won't be added again automatically. | Removed {count} transactions. They won't be added again automatically.",
+      "confirm": {
+        "title": "Save new matching rules?",
+        "description": "Once saved, all your transactions are checked against the new rules and matching ones are added.",
+        "descriptionWithCleanup": "Once saved, all your transactions are checked against the new rules. Matching ones are added, and ones the rules added that no longer match are removed. Transactions you added by hand stay.",
+        "saveAndCheck": "Save and check"
+      },
+      "rejected": {
+        "title": "Not added again",
+        "description": "You removed these or rejected them as AI suggestions, so they're skipped. Allow one and it's added back if it still matches.",
+        "summary": "{count} transaction won't be added again | {count} transactions won't be added again",
+        "review": "Überprüfen",
+        "aiBadge": "AI suggestion",
+        "allowAgain": "Allow again",
+        "allowed": "Allowed again",
+        "allowError": "Couldn't allow the transaction again"
       }
     },
     "smartTracking": {
@@ -284,6 +288,7 @@
           "threeMonths": "3 Monate",
           "sixMonths": "6 Monate"
         },
+        "costNote": "The first scan checks every transaction from the look-back window to the end date. Large ranges can use up your monthly AI allowance, or cost you directly if you use your own key.",
         "usesIncluded": "Verwendet die enthaltene KI. Zählt zu deinem monatlichen KI-Guthaben.",
         "usesOwnModel": "Verwendet dein eigenes Modell · {model}"
       },

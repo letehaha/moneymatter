@@ -15,11 +15,14 @@
     "helpAndDocs": "Ayuda & Documentación",
     "logout": "Cerrar sesión",
     "appVersion": "App version {version}",
+    "updateAvailable": "Actualización disponible",
+    "updateToVersion": "Update · {version}",
     "settings": "Ajustes",
     "planned": {
       "planned": "Planificado",
       "subscriptions": "Cargos recurrentes",
-      "budgets": "Presupuestos"
+      "budgets": "Presupuestos",
+      "goals": "Objetivos"
     },
     "venture": "Venture",
     "budget": "Presupuestos"
