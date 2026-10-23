@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "Đăng xuất",
     "appVersion": "App version {version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "Settings",
     "planned": {
-      "planned": "Planned",
+      "planned": "Planning",
       "subscriptions": "Recurring payments",
-      "budgets": "Ngân sách"
+      "budgets": "Ngân sách",
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Budget"

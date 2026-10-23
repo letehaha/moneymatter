@@ -556,10 +556,10 @@
         "nameLabel": "Názov skupiny",
         "namePlaceholder": "Investície",
         "createButton": "Vytvoriť",
-        "subgroupTitle": "New subgroup",
-        "insideLabel": "Inside",
-        "subgroupNamePlaceholder": "e.g. Savings",
-        "createSubgroupButton": "Create subgroup"
+        "subgroupTitle": "Nová podskupina",
+        "insideLabel": "Vnútri",
+        "subgroupNamePlaceholder": "napr. Úspory",
+        "createSubgroupButton": "Vytvoriť podskupinu"
       }
     },
     "directCashTransaction": {

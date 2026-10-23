@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "Logout",
     "appVersion": "App version {version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "Settings",
     "planned": {
-      "planned": "Planned",
+      "planned": "Planning",
       "subscriptions": "Recurring payments",
-      "budgets": "Trackers"
+      "budgets": "Trackers",
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Budget"

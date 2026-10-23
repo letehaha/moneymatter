@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "This transaction was attached to the tracker by {handle}",
+        "addedByRule": "Added by the tracker's rules",
         "matchedByAi": "Matched by AI",
         "externalLinkTooltip": "Open external link",
         "locationTooltip": "Open location on the map",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Open the sharing panel to resend."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
     }
   },
   "currencyNames": {

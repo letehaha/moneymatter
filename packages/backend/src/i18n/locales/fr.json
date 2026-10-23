@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Seul le propriétaire peut dupliquer ce suivi",
     "someTransactionIdsInvalid": "Certains identifiants d'opérations sont non valides",
     "transactionsAddedSuccessfully": "Opérations ajoutées avec succès",
-    "cannotManuallyLinkToCategoryBudget": "Impossible de lier manuellement des opérations aux suivis par catégorie. Les opérations sont suivies automatiquement par catégorie.",
     "someCategoryIdsInvalid": "Certains identifiants de catégories sont non valides ou n'existent pas",
-    "notCategoryBudget": "Ce point de terminaison est disponible uniquement pour les suivis par catégorie",
-    "lineCategoryOutsideTracker": "Une ligne de suivi ne peut utiliser que les catégories suivies par son propre suivi",
     "startDateAfterEndDate": "La date de début doit être antérieure ou égale à la date de fin",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Seul le propriétaire du suivi peut modifier le suivi intelligent.",
-      "manualOnly": "Le suivi intelligent fonctionne uniquement pour les suivis manuels.",
       "descriptionRequired": "Décrivez la finalité de ce suivi pour activer le suivi intelligent.",
       "startDateRequired": "Définissez une date de début pour activer le suivi intelligent.",
       "scanRunning": "Le rapprochement est en cours pour ce suivi. Réessayez une fois terminé.",
@@ -842,5 +839,17 @@
   },
   "dataExport": {
     "tooManyRows": "L'exportation contiendrait {{rowCount, number}} lignes, ce qui dépasse la limite de {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "L'un des comptes sélectionnés est introuvable.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
   }
 }

@@ -137,41 +137,41 @@
         "skipError": "Návrh sa nepodarilo preskočiť"
       },
       "aiReview": {
-        "label": "AI review",
-        "about": "About AI review",
+        "label": "Kontrola pomocou AI",
+        "about": "O kontrole pomocou AI",
         "plusBadge": "Plus",
-        "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
-        "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
+        "description": "AI skontroluje každú zhodu a zobrazí len tie, ktoré vyzerajú ako skutočné prevody medzi vašimi účtami.",
+        "cost": "Každé vyhľadávanie využíva váš mesačný limit AI. Pri vlastnom poskytovateľovi AI ho spoplatňuje tento poskytovateľ. Model vyberte v {link}.",
         "aiSettingsLink": "Nastavenia AI",
-        "openAiSettings": "Open AI settings",
+        "openAiSettings": "Otvoriť nastavenia AI",
         "blocked": {
           "plan": {
-            "title": "AI review is part of Plus",
-            "body": "Or connect your own AI provider in AI settings to use it on any plan."
+            "title": "Kontrola pomocou AI je súčasťou Plus",
+            "body": "Alebo si v nastaveniach AI pripojte vlastného poskytovateľa AI a používajte to na akomkoľvek pláne."
           },
           "allowance": {
-            "pill": "Until {date}",
-            "title": "Monthly AI allowance used",
-            "body": "It resets on {date}. Connect your own AI provider to keep using it now."
+            "pill": "Do {date}",
+            "title": "Mesačný limit AI bol vyčerpaný",
+            "body": "Obnoví sa {date}. Ak to chcete používať už teraz, pripojte si vlastného poskytovateľa AI."
           },
           "setup": {
             "pill": "Nastaviť",
-            "title": "No AI model is answering",
-            "body": "Check your AI provider or pick a model for transfer matching."
+            "title": "Žiadny model AI neodpovedá",
+            "body": "Skontrolujte svojho poskytovateľa AI alebo vyberte model na priraďovanie prevodov."
           }
         },
         "connectOwnModel": "Pripojiť vlastný model",
-        "reviewing": "AI is checking matches…",
+        "reviewing": "AI kontroluje zhody…",
         "verdict": {
           "likely": "Pravdepodobné",
           "possible": "Možné"
         },
-        "nudge": "Cut false matches with AI review",
-        "rescanHint": "Review with AI",
-        "rescanHintTooltip": "Many pairs scored below 70%. Scan again with AI review to hide the ones that aren't transfers. Uses your AI allowance.",
+        "nudge": "Odstráňte falošné zhody kontrolou pomocou AI",
+        "rescanHint": "Skontrolovať pomocou AI",
+        "rescanHintTooltip": "Veľa dvojíc dosiahlo menej než 70 %. Vyhľadajte znova s kontrolou pomocou AI a skryte tie, ktoré nie sú prevody. Využíva váš limit AI.",
         "rescanBanner": {
-          "title": "Many pairs scored below 70%",
-          "body": "AI review can hide the ones that aren't transfers. Uses your AI allowance."
+          "title": "Veľa dvojíc dosiahlo menej než 70 %",
+          "body": "Kontrola pomocou AI môže skryť tie, ktoré nie sú prevody. Využíva váš limit AI."
         }
       }
     },

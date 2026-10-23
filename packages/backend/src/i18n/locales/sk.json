@@ -29,7 +29,7 @@
     "groupNotFound": "Skupina sa nenašla",
     "groupUpdateFailed": "Aktualizácia skupiny nebola úspešná",
     "parentGroupNotExist": "Nadradená skupina s týmto ID neexistuje.",
-    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
+    "parentGroupCycle": "Skupinu nemožno umiestniť do nej samej ani do niektorej z jej vlastných podskupín.",
     "parentGroupDoesNotExist": "Nadradená skupina neexistuje.",
     "accountNotFound": "Účet s týmto ID sa nenašiel.",
     "accountGroupNotFound": "Skupina účtov s týmto ID sa nenašla."
@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Tento sledovač môže duplikovať len jeho vlastník",
     "someTransactionIdsInvalid": "Niektoré ID transakcií sú neplatné",
     "transactionsAddedSuccessfully": "Transakcie boli úspešne pridané",
-    "cannotManuallyLinkToCategoryBudget": "Transakcie nemožno ručne prepojiť so sledovačmi podľa kategórií. Transakcie sa sledujú automaticky podľa kategórie.",
     "someCategoryIdsInvalid": "Niektoré ID kategórií sú neplatné, alebo neexistujú",
-    "notCategoryBudget": "Toto rozhranie je dostupné len pre sledovače podľa kategórií",
-    "lineCategoryOutsideTracker": "Riadok sledovača môže používať len kategórie, ktoré sleduje jeho sledovač",
     "startDateAfterEndDate": "Dátum začiatku musí byť pred dátumom konca alebo sa s ním zhodovať",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Inteligentné sledovanie môže zmeniť len vlastník sledovača.",
-      "manualOnly": "Inteligentné sledovanie funguje len pri manuálnych sledovačoch.",
       "descriptionRequired": "Ak chcete zapnúť inteligentné sledovanie, opíšte, na čo tento sledovač slúži.",
       "startDateRequired": "Ak chcete zapnúť inteligentné sledovanie, nastavte dátum začiatku.",
       "scanRunning": "Pre tento sledovač prebieha priraďovanie. Skúste to znova, keď sa dokončí.",
@@ -842,5 +839,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export by obsahoval {{rowCount, number}} riadkov, čo presahuje limit {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Cieľ nenájdený.",
+    "accountNotFound": "Jeden z vybraných účtov sa nenašiel.",
+    "accountNotEligible": "{{accountName}} sa nemôže započítavať do cieľa. Vyberte hotovostný, bežný, sporiaci, investičný alebo krypto účet.",
+    "shareCapacityExceeded": "{{accountName}} má voľných {{free}} %: požadovali ste {{requested}} %, a ostatné ciele už využívajú {{usedByOtherGoals}} %.",
+    "fixedAmountsBelowTarget": "Pevné sumy dávajú spolu {{total}} {{currencyCode}}, čo je menej než cieľ {{target}} {{currencyCode}}. Zvýšte niektorú sumu alebo započítajte účet podľa percenta.",
+    "currencyRateUnavailable": "{{currencyCode}} sa momentálne nedá prepočítať na vašu základnú menu. Vyberte inú menu alebo skúste znova neskôr.",
+    "reachedNotification": {
+      "title": "Cieľ dosiahnutý: {{name}}",
+      "message": "Usporili ste {{amount}} {{currencyCode}}."
+    }
   }
 }

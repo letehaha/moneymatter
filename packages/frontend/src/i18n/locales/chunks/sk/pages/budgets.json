@@ -12,16 +12,8 @@
       "error": "Neočakávaná chyba!",
       "nameLabel": "Názov sledovača",
       "namePlaceholder": "Zadajte názov",
-      "typeLabel": "Typ sledovača",
-      "typeManual": "Manuálny",
-      "typeManualDescription": "Pridávajte transakcie do tohto sledovača ručne",
-      "typeCategory": "Podľa kategórií",
-      "typeCategoryDescription": "Automatické sledovanie výdavkov podľa kategórií",
-      "categoriesLabel": "Sledované kategórie",
-      "categoriesRequired": "Vyberte aspoň jednu kategóriu",
       "fromDateLabel": "Od dátumu",
       "toDateLabel": "Do dátumu",
-      "autoIncludeLabel": "Automaticky zahrnúť transakcie",
       "limitLabel": "Limit sledovača",
       "limitPlaceholder": "Zadajte limit",
       "submitButton": "Pridať sledovač"
@@ -46,7 +38,6 @@
       "categoriesCount": "Kategórie: {count}",
       "noTransactions": "Zatiaľ žiadne transakcie",
       "noTimePeriod": "Bez časového obdobia",
-      "autoTracked": "Automaticky sledované",
       "status": {
         "ended": "Ukončené",
         "lastDay": "Posledný deň",
@@ -73,8 +64,8 @@
       "searchPlaceholder": "Hľadať sledovače",
       "filters": {
         "all": "Všetko",
-        "manual": "Ručne",
-        "category": "Kategória",
+        "autoAdd": "Auto-add on",
+        "handPicked": "Hand-picked",
         "archived": "Archivované"
       },
       "groups": {
@@ -134,24 +125,6 @@
       "addSelected": "Pridať vybrané",
       "clearSelection": "Zrušiť výber"
     },
-    "categoryBudget": {
-      "trackedCategories": "Sledované kategórie",
-      "categoriesCount": "Sledované kategórie: {count}",
-      "autoTrackedInfo": "Transakcie sa sledujú automaticky na základe kategórií",
-      "transactionsTitle": "Transakcie",
-      "transactionsCount": "Transakcie: {count}",
-      "noTransactions": "Zatiaľ žiadne transakcie",
-      "noTransactionsDescription": "Transakcie zodpovedajúce sledovaným kategóriám sa tu zobrazia automaticky.",
-      "transactionsLoadError": "Transakcie sa nepodarilo načítať",
-      "categoryBreakdown": "Rozdelenie podľa kategórií",
-      "edit": "Upraviť",
-      "editTitle": "Upraviť sledovač",
-      "showMore": "Zobraziť viac",
-      "showLess": "Zobraziť menej",
-      "settings": {
-        "categoriesLabel": "Sledované kategórie"
-      }
-    },
     "manualBudget": {
       "edit": "Upraviť",
       "editTitle": "Upraviť sledovač"
@@ -162,6 +135,7 @@
     "details": {
       "statsLoadError": "Súhrny tohto sledovača sa nepodarilo načítať.",
       "transactionsCount": "{count} transakcia | {count} transakcie | {count} transakcií",
+      "tagsCount": "{count} tag | {count} tags",
       "strip": {
         "limit": "Limit",
         "spent": "Minuté",
@@ -176,7 +150,7 @@
       "tabs": {
         "limits": "Limity"
       },
-      "tracks": "Záznamy",
+      "autoAdds": "Auto-adds",
       "membersLabel": "Členovia: {count}",
       "actions": {
         "share": "Zdielať",
@@ -195,8 +169,7 @@
       },
       "edit": {
         "limitHint": "Vymažte ho, ak chcete sledovať bez limitu.",
-        "datesHint": "Zmena dátumov nepridá ani neodstráni už prepojené transakcie.",
-        "categoriesHint": "Odstránenie kategórie ju odstráni aj z každého riadku, v ktorom sa nachádza."
+        "datesHint": "Zmena dátumov nepridá ani neodstráni už prepojené transakcie."
       }
     },
     "lines": {
@@ -245,7 +218,6 @@
         "categoriesLabel": "Kategórie",
         "categoriesPlaceholder": "Vyberte kategórie",
         "categoriesRequired": "Vyberte aspoň jednu kategóriu",
-        "categoryTrackerHint": "Tento sledovač počíta iba svoje vlastné kategórie, vyberte teda z nich.",
         "limitLabel": "Limit (nepovinné)",
         "limitPlaceholder": "Bez limitu",
         "limitHint": "Nechajte prázdne, ak chcete zoskupiť výdavky bez limitu."
@@ -258,6 +230,38 @@
         "createError": "Riadok sa nepodarilo pridať",
         "updateError": "Riadok sa nepodarilo aktualizovať",
         "deleteError": "Riadok sa nepodarilo odstrániť"
+      }
+    },
+    "rules": {
+      "heading": "Auto-add",
+      "switchLabel": "Add matching transactions automatically",
+      "switchHintOn": "Your transactions in the date range with any of these categories or tags get added.",
+      "switchHintOff": "Only transactions you add by hand count.",
+      "switchHintTurnedOff": "Turning this off keeps every transaction already added.",
+      "categoriesLabel": "Kategórie",
+      "categoriesPlaceholder": "Vybrať kategórie",
+      "tagsLabel": "Štítky",
+      "tagsPlaceholder": "Vyberte štítky",
+      "needsCategoryOrTag": "Pick at least one category or tag",
+      "cleanupLabel": "Remove transactions that stop matching",
+      "cleanupHint": "Checked every 6 hours. Transactions you added by hand are never removed.",
+      "checkedAt": "Checked {when}",
+      "unlinked": "Removed {count} transaction. It won't be added again automatically. | Removed {count} transactions. They won't be added again automatically.",
+      "confirm": {
+        "title": "Save new matching rules?",
+        "description": "Once saved, all your transactions are checked against the new rules and matching ones are added.",
+        "descriptionWithCleanup": "Once saved, all your transactions are checked against the new rules. Matching ones are added, and ones the rules added that no longer match are removed. Transactions you added by hand stay.",
+        "saveAndCheck": "Save and check"
+      },
+      "rejected": {
+        "title": "Not added again",
+        "description": "You removed these or rejected them as AI suggestions, so they're skipped. Allow one and it's added back if it still matches.",
+        "summary": "{count} transaction won't be added again | {count} transactions won't be added again",
+        "review": "Kontrola",
+        "aiBadge": "AI suggestion",
+        "allowAgain": "Allow again",
+        "allowed": "Allowed again",
+        "allowError": "Couldn't allow the transaction again"
       }
     },
     "smartTracking": {
@@ -284,6 +288,7 @@
           "threeMonths": "3 mesiace",
           "sixMonths": "6 mesiacov"
         },
+        "costNote": "The first scan checks every transaction from the look-back window to the end date. Large ranges can use up your monthly AI allowance, or cost you directly if you use your own key.",
         "usesIncluded": "Používa zahrnutú AI. Započítava sa do vášho mesačného limitu AI.",
         "usesOwnModel": "Používa váš vlastný model · {model}"
       },

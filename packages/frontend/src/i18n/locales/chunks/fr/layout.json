@@ -15,11 +15,14 @@
     "helpAndDocs": "Aide et documentation",
     "logout": "Se déconnecter",
     "appVersion": "Version de l'application {version}",
+    "updateAvailable": "Mise à jour disponible",
+    "updateToVersion": "Update · {version}",
     "settings": "Paramètres",
     "planned": {
       "planned": "Prévisionnel",
       "subscriptions": "Paiements récurrents",
-      "budgets": "Suivis"
+      "budgets": "Suivis",
+      "goals": "Objectifs"
     },
     "venture": "Projets",
     "budget": "Budget"

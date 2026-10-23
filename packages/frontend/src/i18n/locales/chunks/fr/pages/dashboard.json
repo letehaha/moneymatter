@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Suivis",
           "description": "Chaque suivi actif avec la part consommée du plafond et son solde net"
+        },
+        "goals": {
+          "name": "Objectifs",
+          "description": "Progress toward your savings goals",
+          "savedOfTarget": "{saved} of {target}",
+          "empty": {
+            "title": "No active goals",
+            "description": "Set a goal and see how close you are.",
+            "action": "Create a goal"
+          },
+          "locked": {
+            "title": "Goals are locked",
+            "description": "Save toward what matters and see if you're on pace. Available on paid plans.",
+            "action": "En savoir plus"
+          },
+          "settings": {
+            "showReached": "Show reached goals"
+          },
+          "reachedSection": "Atteint"
         }
       }
     },
