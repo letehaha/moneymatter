@@ -1,5 +1,7 @@
 import { logger } from '@js/utils/logger';
 import { shutdownPostHog } from '@js/utils/posthog';
+import { abortAllCliRuns } from '@services/ai/cli/cli-run-limiter';
+import { resetCliAuthSessions } from '@services/ai/cli/login/cli-auth-sessions';
 import { accountSyncWorker } from '@services/bank-data-providers/sync/account-sync-queue';
 
 import { aiUsageMonthEndCron } from './crons/ai-usage-month-end';
@@ -72,6 +74,11 @@ export function initializeBackgroundJobs() {
 export async function shutdownBackgroundJobs() {
   for (const cron of [...allEnvCrons, ...prodOnlyCrons]) cron.stopCron();
   loadCurrencyRatesJob.stop();
+  // Kills live CLI sign-in PTYs so they don't outlive the server with credentials in temp dirs
+  resetCliAuthSessions();
+  // Aborts in-flight CLI runs (killing their process groups) and lets the Codex home write-back and
+  // temp dir removal finish, so no child or auth.json outlives the server. Bounded at ~3 s.
+  await abortAllCliRuns();
   await accountSyncWorker.close();
   // Flush remaining PostHog events before exit
   await shutdownPostHog();

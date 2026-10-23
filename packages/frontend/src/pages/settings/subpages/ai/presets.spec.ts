@@ -1,7 +1,16 @@
-import { AI_PROVIDER } from '@bt/shared/types';
+import { AI_PROVIDER, type CliAiAvailability } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
 
-import { findPresetForConnection, matchPresetByBaseUrl } from './presets';
+import {
+  AI_CONNECTION_PRESETS,
+  findPresetForConnection,
+  getCliModelOptions,
+  getDefaultCliModel,
+  getVisiblePresets,
+  isSubscriptionPreset,
+  matchPresetByBaseUrl,
+  resolveCliModelId,
+} from './presets';
 
 describe('matchPresetByBaseUrl', () => {
   it('matches a preset base URL exactly', () => {
@@ -36,6 +45,11 @@ describe('findPresetForConnection', () => {
     ).toBe('lmStudio');
   });
 
+  it('maps a subscription connection to its own preset', () => {
+    expect(findPresetForConnection({ connection: { provider: AI_PROVIDER.claudeCode } }).id).toBe('claudeCode');
+    expect(findPresetForConnection({ connection: { provider: AI_PROVIDER.codex } }).id).toBe('codex');
+  });
+
   it('falls back to the generic custom preset', () => {
     expect(
       findPresetForConnection({
@@ -43,5 +57,162 @@ describe('findPresetForConnection', () => {
       }).id,
     ).toBe('custom');
     expect(findPresetForConnection({ connection: { provider: AI_PROVIDER.custom } }).id).toBe('custom');
+  });
+});
+
+describe('subscription presets', () => {
+  it('sign in through the vendor page instead of taking a key', () => {
+    const subscriptionPresets = AI_CONNECTION_PRESETS.filter((preset) => isSubscriptionPreset({ preset }));
+
+    expect(subscriptionPresets.map((preset) => preset.id)).toEqual(['claudeCode', 'codex']);
+    for (const preset of subscriptionPresets) {
+      expect(preset.keyRequired).toBe(false);
+      expect(preset.baseUrl).toBeUndefined();
+      expect(preset.signInLabelKey).toBeTruthy();
+    }
+  });
+
+  it('are the only presets that do not take an API key', () => {
+    const apiKeyPresets = AI_CONNECTION_PRESETS.filter((preset) => !isSubscriptionPreset({ preset }));
+
+    expect(apiKeyPresets.every((preset) => preset.signInLabelKey === undefined)).toBe(true);
+  });
+});
+
+describe('getVisiblePresets', () => {
+  const API_KEY_PRESET_IDS = ['openai', 'anthropic', 'google', 'openrouter', 'ollama', 'lmStudio', 'custom'];
+
+  const idsOf = ({ availability }: { availability: CliAiAvailability | null }) =>
+    getVisiblePresets({ availability }).map((preset) => preset.id);
+
+  const claudeInstalled = { provider: AI_PROVIDER.claudeCode, installed: true, version: '2.1.292' } as const;
+  const codexInstalled = { provider: AI_PROVIDER.codex, installed: true, version: '0.160.1' } as const;
+  const codexMissing = { provider: AI_PROVIDER.codex, installed: false, version: null } as const;
+
+  it('hides the subscription presets on cloud, where no availability is requested', () => {
+    expect(idsOf({ availability: null })).toEqual(API_KEY_PRESET_IDS);
+  });
+
+  it.each(['not-self-host', 'not-admin', 'admin-not-configured'] as const)(
+    'hides the subscription presets when the backend answers %s',
+    (reason) => {
+      expect(idsOf({ availability: { available: false, reason, providers: [] } })).toEqual(API_KEY_PRESET_IDS);
+    },
+  );
+
+  it('lists both subscription presets, enabled, for an admin on self-host', () => {
+    const presets = getVisiblePresets({
+      availability: { available: true, providers: [claudeInstalled, codexInstalled] },
+    });
+
+    expect(presets.map((preset) => preset.id)).toEqual([
+      'openai',
+      'anthropic',
+      'google',
+      'openrouter',
+      'ollama',
+      'lmStudio',
+      'claudeCode',
+      'codex',
+      'custom',
+    ]);
+    expect(presets.every((preset) => !preset.disabled && preset.disabledReasonKey === undefined)).toBe(true);
+  });
+
+  it('keeps a preset listed but disabled, with a reason, when its CLI is missing from the image', () => {
+    const presets = getVisiblePresets({
+      availability: { available: true, providers: [claudeInstalled, codexMissing] },
+    });
+
+    expect(presets.find((preset) => preset.id === 'claudeCode')?.disabled).toBe(false);
+    const codex = presets.find((preset) => preset.id === 'codex');
+    expect(codex?.disabled).toBe(true);
+    expect(codex?.disabledReasonKey).toBeTruthy();
+  });
+
+  it('disables a preset whose CLI the backend did not report at all', () => {
+    const presets = getVisiblePresets({ availability: { available: true, providers: [claudeInstalled] } });
+
+    expect(presets.find((preset) => preset.id === 'codex')?.disabled).toBe(true);
+  });
+
+  it('never disables the API key presets', () => {
+    const presets = getVisiblePresets({ availability: { available: true, providers: [] } });
+
+    expect(presets.filter((preset) => !isSubscriptionPreset({ preset })).every((preset) => !preset.disabled)).toBe(
+      true,
+    );
+  });
+});
+
+describe('getDefaultCliModel', () => {
+  const findPreset = ({ id }: { id: string }) => AI_CONNECTION_PRESETS.find((preset) => preset.id === id)!;
+
+  it('picks the curated default of each subscription provider', () => {
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'claudeCode' }) })).toBe('sonnet');
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'codex' }) })).toBe('gpt-6-astra');
+  });
+
+  it('has no default for a preset without a curated list', () => {
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'anthropic' }) })).toBe('');
+    expect(getDefaultCliModel({ preset: findPreset({ id: 'custom' }) })).toBe('');
+  });
+});
+
+describe('getCliModelOptions', () => {
+  const findPreset = ({ id }: { id: string }) => AI_CONNECTION_PRESETS.find((preset) => preset.id === id)!;
+
+  it('lists one labelled option per Claude model, aliases only', () => {
+    expect(getCliModelOptions({ preset: findPreset({ id: 'claudeCode' }) })).toEqual([
+      { id: 'sonnet', label: 'Claude Sonnet 5.5' },
+      { id: 'opus', label: 'Claude Opus 5.5' },
+      { id: 'haiku', label: 'Claude Haiku 5.5' },
+      { id: 'fable', label: 'Claude Fable 5.1' },
+    ]);
+  });
+
+  it('lists the Codex models with their labels', () => {
+    const options = getCliModelOptions({ preset: findPreset({ id: 'codex' }) });
+
+    expect(options[0]).toEqual({ id: 'gpt-6-astra', label: 'GPT-6 Astra' });
+    expect(options.at(-1)).toEqual({ id: 'gpt-5.3-codex', label: 'GPT-5.3 Codex' });
+  });
+
+  it('does not repeat an id', () => {
+    for (const id of ['claudeCode', 'codex']) {
+      const ids = getCliModelOptions({ preset: findPreset({ id }) }).map((option) => option.id);
+
+      expect(new Set(ids).size).toBe(ids.length);
+    }
+  });
+
+  it('adds no extra option for a legacy pinned id, which shows as its alias', () => {
+    const preset = findPreset({ id: 'claudeCode' });
+
+    expect(getCliModelOptions({ preset, currentModel: 'claude-opus-5-5' })).toHaveLength(4);
+  });
+
+  it('keeps an unknown stored model as an option under its own name', () => {
+    const options = getCliModelOptions({ preset: findPreset({ id: 'claudeCode' }), currentModel: 'claude-future-9' });
+
+    expect(options.at(-1)).toEqual({ id: 'claude-future-9', label: 'claude-future-9' });
+  });
+
+  it('has no options for a preset without a curated list', () => {
+    expect(getCliModelOptions({ preset: findPreset({ id: 'anthropic' }) })).toEqual([]);
+  });
+});
+
+describe('resolveCliModelId', () => {
+  const claude = AI_CONNECTION_PRESETS.find((preset) => preset.id === 'claudeCode')!;
+
+  it('maps a legacy pinned id to its alias', () => {
+    expect(resolveCliModelId({ preset: claude, model: 'claude-sonnet-5-5' })).toBe('sonnet');
+    expect(resolveCliModelId({ preset: claude, model: 'claude-fable-5-1' })).toBe('fable');
+  });
+
+  it('keeps a current or unknown id as it is', () => {
+    expect(resolveCliModelId({ preset: claude, model: 'haiku' })).toBe('haiku');
+    expect(resolveCliModelId({ preset: claude, model: 'claude-future-9' })).toBe('claude-future-9');
   });
 });

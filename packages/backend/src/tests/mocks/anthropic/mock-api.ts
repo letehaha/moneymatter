@@ -16,6 +16,13 @@ function authErrorResponse() {
   );
 }
 
+/** The model's categorization answer: one "t<tx ordinal>:c<category ordinal>" line per transaction. */
+export function formatCategorizationLines({ categorizations }: { categorizations: Record<number, number> }): string {
+  return Object.entries(categorizations)
+    .map(([txOrdinal, catOrdinal]) => `t${txOrdinal}:c${catOrdinal}`)
+    .join('\n');
+}
+
 interface MockCategorizationOptions {
   /** Map of transaction ordinal to category ordinal (1-based, prompt order), emitted as "t1:c2" alias pairs */
   categorizations?: Record<number, number>;
@@ -59,11 +66,7 @@ export function createAnthropicMock(options: MockCategorizationOptions = {}) {
       );
     }
 
-    const responseText =
-      rawText ??
-      Object.entries(categorizations)
-        .map(([txOrdinal, catOrdinal]) => `t${txOrdinal}:c${catOrdinal}`)
-        .join('\n');
+    const responseText = rawText ?? formatCategorizationLines({ categorizations });
 
     return HttpResponse.json({
       id: 'msg_test_123',

@@ -14,6 +14,8 @@ const schema = z.object({
     baseUrl: baseUrlField.optional(),
     apiKey: apiKeyField.optional(),
     keyFromConnectionId: z.uuid().optional(),
+    // CLI providers: the finished sign-in session to take the credential from
+    cliAuthSessionId: z.uuid().optional(),
   }),
 });
 

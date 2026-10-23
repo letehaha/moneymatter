@@ -1,9 +1,9 @@
-import { AINativeProvider, AI_PROVIDER, TestAIConnectionResponse } from '@bt/shared/types';
+import { AICliProvider, AINativeProvider, AI_PROVIDER, TestAIConnectionResponse } from '@bt/shared/types';
 import { assertSafeOutboundUrl, createGuardedFetch } from '@common/utils/url-guard';
 import { t } from '@i18n/index';
-import { ValidationError } from '@js/errors';
+import { NotFoundError, ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
-import { generateText } from 'ai';
+import { APICallError, generateText } from 'ai';
 
 import { createProviderModel } from './ai-client-factory';
 import {
@@ -19,6 +19,9 @@ import {
   unwrapRetryError,
 } from './ai-error-classifiers';
 import { AI_MAX_OUTPUT_TOKENS } from './ai-output-limit';
+import { CliCredentialSource } from './cli/cli-credential-run';
+import { CLI_PROVIDER_LABEL, isCliNotInstalledError, redactCliSecrets } from './cli/cli-errors';
+import { CLI_PROBE_MAX_WAIT_MS, CLI_PROBE_RUN_TIMEOUT_MS, CliSlotBusyError } from './cli/cli-run-limiter';
 
 /** Kept to one word so the probe costs next to nothing. */
 const VALIDATION_PROMPT = "Reply with only the word 'ok'";
@@ -303,6 +306,136 @@ async function validateNativeConnection({
   }
 }
 
+/** Queue wait plus run, with slack: the probe's own limits (slot wait, run timeout) normally trip first. */
+const CLI_PROBE_CEILING_MS = CLI_PROBE_MAX_WAIT_MS + CLI_PROBE_RUN_TIMEOUT_MS + 10_000;
+
+/** The CLI's own words: the `error.message` of the synthetic JSON body, token patterns redacted. */
+function readCliFailureReason({ cause }: { cause: Error }): string {
+  if (cause instanceof APICallError && cause.responseBody) {
+    try {
+      const message = (JSON.parse(cause.responseBody) as { error?: { message?: unknown } }).error?.message;
+
+      if (typeof message === 'string' && message) return redactCliSecrets({ text: message });
+    } catch {
+      // Not JSON: the error's own message is the fallback.
+    }
+  }
+
+  return redactCliSecrets({ text: cause.message });
+}
+
+/**
+ * The verdict for a failed CLI probe. It differs from the native table because every CLI failure
+ * that has no better class arrives as a synthetic 502: treating `temporary` as valid, as native
+ * providers do, would store `valid` on a connection whose every run then fails as "temporarily
+ * unavailable" and is never flagged. Only the signals that prove the sign-in and model work count:
+ * the subscription limit (429) and an overloaded service (503).
+ */
+export function judgeCliProbeFailure({
+  provider,
+  model,
+  error,
+}: {
+  provider: AICliProvider;
+  model: string;
+  error: unknown;
+}): TestAIConnectionResponse {
+  const label = CLI_PROVIDER_LABEL[provider];
+
+  if (isCliNotInstalledError({ error })) {
+    return { isValid: false, error: t({ key: 'ai.cliNotInstalled', variables: { provider: label } }) };
+  }
+
+  const { kind, cause, httpStatus } = classifyAiCallFailure({ error });
+
+  switch (kind) {
+    case 'rate-limited':
+      return { isValid: true };
+    case 'temporary':
+      return httpStatus === 503
+        ? { isValid: true }
+        : {
+            isValid: false,
+            error: t({ key: 'ai.connectionValidationFailed', variables: { reason: readCliFailureReason({ cause }) } }),
+          };
+    case 'auth':
+      return { isValid: false, error: t({ key: 'ai.cliSignInRejected', variables: { provider: label } }) };
+    case 'model-not-found':
+      return { isValid: false, error: t({ key: 'ai.cliModelNotAvailable', variables: { provider: label, model } }) };
+    case 'endpoint-down':
+      return { isValid: false, error: t({ key: 'ai.connectionProviderUnreachable' }) };
+    default:
+      return {
+        isValid: false,
+        error: t({ key: 'ai.connectionValidationFailed', variables: { reason: readCliFailureReason({ cause }) } }),
+      };
+  }
+}
+
+/**
+ * Probes a subscription CLI through the model's own `doGenerate`, so the probe takes a run slot like
+ * any run and loads the credential from `credentialSource` inside it.
+ * `onValid` runs while the slot is still held and only for a passing probe. A Codex refresh is written
+ * back before `onValid` consumes a sign-in session (a concurrent probe of the same session shares the
+ * Codex home, so a refresh it makes after the consume is skipped, the session being gone).
+ * No slot within the wait limit (the instance-wide cap is in use) is not a verdict: it throws
+ * `ai.cliConnectionBusy`.
+ */
+export async function validateCliConnection({
+  provider,
+  model,
+  credentialSource,
+  onValid,
+}: {
+  provider: AICliProvider;
+  model: string;
+  credentialSource: CliCredentialSource;
+  onValid?: () => Promise<void> | void;
+}): Promise<TestAIConnectionResponse> {
+  try {
+    await generateText({
+      model: createProviderModel({
+        provider,
+        model,
+        credentialSource,
+        runOptions: {
+          timeoutMs: CLI_PROBE_RUN_TIMEOUT_MS,
+          maxWaitMs: CLI_PROBE_MAX_WAIT_MS,
+          beforeRelease: async ({ outcome }) => {
+            const verdict = outcome.ok
+              ? { isValid: true }
+              : judgeCliProbeFailure({ provider, model, error: outcome.error });
+
+            if (verdict.isValid) await onValid?.();
+          },
+        },
+      }),
+      prompt: VALIDATION_PROMPT,
+      maxOutputTokens: AI_MAX_OUTPUT_TOKENS,
+      maxRetries: 0,
+      abortSignal: AbortSignal.timeout(CLI_PROBE_CEILING_MS),
+    });
+
+    return { isValid: true };
+  } catch (error) {
+    const cause = unwrapRetryError({ error });
+
+    if (cause instanceof CliSlotBusyError) {
+      throw new ValidationError({ message: t({ key: 'ai.cliConnectionBusy' }) });
+    }
+
+    // From `onValid` or the credential source (an unusable session, an unreadable stored key):
+    // a problem with the request, not a verdict on the CLI.
+    if (cause instanceof ValidationError || cause instanceof NotFoundError) {
+      throw cause;
+    }
+
+    logger.info('CLI connection validation failed', { provider, model, error: cause });
+
+    return judgeCliProbeFailure({ provider, model, error: cause });
+  }
+}
+
 export function validateConnection({
   provider,
   model,
@@ -315,6 +448,10 @@ export function validateConnection({
   /** Required for `custom`, ignored otherwise */
   baseUrl?: string;
 }): Promise<TestAIConnectionResponse> {
+  if (provider === AI_PROVIDER.claudeCode || provider === AI_PROVIDER.codex) {
+    throw new Error('CLI providers are probed with validateCliConnection');
+  }
+
   if (provider !== AI_PROVIDER.custom) {
     return validateNativeConnection({ provider, model, apiKey });
   }

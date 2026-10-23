@@ -9,7 +9,10 @@
             <h4 class="font-medium">{{ $t(displayInfo.nameKey) }}</h4>
             <!-- Stops the tap from also toggling the card -->
             <span v-if="featureStatus.servedBy" class="inline-flex" @click.stop>
-              <ApiKeySourceBadge :using-user-key="featureStatus.usingUserKey" />
+              <ApiKeySourceBadge
+                :using-user-key="featureStatus.usingUserKey"
+                :is-subscription="featureStatus.billing === 'subscription'"
+              />
             </span>
             <span v-if="!open && fitWarningKey" :class="FIT_WARNING_BADGE_CLASS">
               <TriangleAlertIcon class="size-3" />
@@ -85,12 +88,14 @@
             </i18n-t>
           </Callout>
 
-          <p
-            v-if="formattedPrice && displayInfo.unitLabelKey && featureStatus.servedBy === 'connection'"
-            class="text-muted-foreground mt-3 text-xs"
-          >
+          <p v-if="costDisplay" class="text-muted-foreground mt-3 text-xs">
             <span class="font-medium">{{ $t('settings.ai.modelSelector.modelInfo.estimatedCost') }}</span>
-            {{ formattedPrice }} {{ $t(displayInfo.unitLabelKey) }}
+            <template v-if="costDisplay.kind === 'subscription'">
+              {{ $t('settings.ai.modelSelector.modelInfo.includedInSubscription') }}
+            </template>
+            <template v-else-if="displayInfo.unitLabelKey">
+              {{ costDisplay.price }} {{ $t(displayInfo.unitLabelKey) }}
+            </template>
           </p>
         </template>
 
@@ -120,12 +125,18 @@ import { useAiSettings } from '@/composable/data-queries/ai-settings';
 import { useAiConnectionsList } from '@/composable/data-queries/use-ai-connections';
 import { extractApiErrorMessage } from '@/js/errors';
 import { ROUTES_NAMES } from '@/routes';
-import { AIFeatureStatus, AIModelPricing, getModelNameFromModelId } from '@bt/shared/types';
+import { AIFeatureStatus, AIModelPricing } from '@bt/shared/types';
 import { BrainIcon, ChevronRightIcon, PlusIcon, TriangleAlertIcon } from '@lucide/vue';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { type FeatureModelOption, buildFeatureModelOptions, readFeatureSelectValue } from './feature-model-options';
+import {
+  type FeatureModelOption,
+  buildFeatureModelOptions,
+  formatAnsweringModel,
+  readFeatureSelectValue,
+  resolveCostDisplay,
+} from './feature-model-options';
 import { type ModelFitWarning, checkModelFit } from './model-fit';
 import ModelGuidePopover from './model-guide-popover.vue';
 
@@ -196,18 +207,22 @@ const formatOptionLabel = (option: FeatureModelOption) => {
       : t('settings.ai.modelSelector.connectionOption', params);
   }
   if (!option.target) return t('settings.ai.modelSelector.automaticOption');
-  return t('settings.ai.modelSelector.automaticOptionWithTarget', {
-    target: option.target.kind === 'server' ? serverLabel.value : option.target.name,
+  if (option.target.kind === 'server') {
+    return t('settings.ai.modelSelector.automaticOptionWithTarget', { target: serverLabel.value });
+  }
+  return t('settings.ai.modelSelector.automaticOptionWithConnection', {
+    name: option.target.name,
+    model: option.target.model,
   });
 };
 
 const collapsedModelLabel = computed(() => {
-  const { servedBy, connectionName, modelId } = props.featureStatus;
+  const { servedBy, connectionName } = props.featureStatus;
   if (servedBy === 'server') return serverLabel.value;
   if (servedBy === 'connection' && connectionName) {
     return t('settings.ai.modelSelector.connectionOption', {
       name: connectionName,
-      model: getModelNameFromModelId({ modelId }),
+      model: formatAnsweringModel({ status: props.featureStatus, connections: connections.value }),
     });
   }
   return '';
@@ -233,6 +248,14 @@ const formatPricePer100 = (pricing: AIModelPricing | null): string | null => {
 };
 
 const formattedPrice = computed(() => formatPricePer100(props.featureStatus.pricing));
+
+const costDisplay = computed(() =>
+  resolveCostDisplay({
+    status: props.featureStatus,
+    formattedPrice: formattedPrice.value,
+    hasUnitLabel: Boolean(displayInfo.value.unitLabelKey),
+  }),
+);
 
 const handleSelectChange = async (option: FeatureModelOption | null) => {
   if (!option || option.value === selectValue.value) return;

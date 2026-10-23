@@ -55,6 +55,7 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
 
   // User profile / settings / AI settings / data-export — authenticated but touch no
   // monetary data; blocking them for the duration of a migration is user-hostile.
+  'DELETE /api/v1/user/settings/ai/cli/auth-sessions/:id',
   'DELETE /api/v1/user/settings/ai/connections/:id',
   'DELETE /api/v1/user/settings/ai/features/:feature',
   'DELETE /api/v1/user/settings/mcp/connected-apps/:clientId',
@@ -62,6 +63,8 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'POST /api/v1/user/backup',
   'POST /api/v1/user/data-export',
   'POST /api/v1/user/feature-trials/:feature',
+  'POST /api/v1/user/settings/ai/cli/auth-sessions',
+  'POST /api/v1/user/settings/ai/cli/auth-sessions/:id/code',
   'POST /api/v1/user/settings/ai/connections',
   'POST /api/v1/user/settings/ai/connections/:id/default',
   'POST /api/v1/user/settings/ai/connections/models',

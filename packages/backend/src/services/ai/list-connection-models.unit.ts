@@ -1,4 +1,4 @@
-import { AI_PROVIDER } from '@bt/shared/types';
+import { AI_PROVIDER, CLI_AI_MODELS } from '@bt/shared/types';
 import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals';
 
 import { listConnectionModels, readGeminiModelIds } from './list-connection-models';
@@ -66,6 +66,34 @@ describe('listConnectionModels', () => {
     expect(requests[0]!.url).toBe('https://api.anthropic.com/v1/models?limit=1000');
     expect(requests[0]!.headers.get('x-api-key')).toBe('sk-ant');
     expect(requests[0]!.headers.get('anthropic-version')).toBe('2023-06-01');
+  });
+
+  it.each([AI_PROVIDER.claudeCode, AI_PROVIDER.codex] as const)(
+    'lists the curated %s models in curated order without a network call',
+    async (provider) => {
+      stubFetch({ body: { data: [{ id: 'never-requested' }] } });
+
+      const models = await listConnectionModels({ provider, apiKey: null });
+
+      expect(models).toEqual(CLI_AI_MODELS[provider].map((model) => model.id));
+      expect(models[0]).toBe(CLI_AI_MODELS[provider].find((model) => model.isDefault)!.id);
+      expect(requests).toEqual([]);
+    },
+  );
+
+  it('lists one id per Claude Code model, as CLI aliases', async () => {
+    expect(await listConnectionModels({ provider: AI_PROVIDER.claudeCode, apiKey: null })).toEqual([
+      'sonnet',
+      'opus',
+      'haiku',
+      'fable',
+    ]);
+  });
+
+  it.each([AI_PROVIDER.claudeCode, AI_PROVIDER.codex] as const)('lists no %s model twice', async (provider) => {
+    const models = await listConnectionModels({ provider, apiKey: null });
+
+    expect(new Set(models).size).toBe(models.length);
   });
 
   it('asks Gemini with the x-goog-api-key header', async () => {

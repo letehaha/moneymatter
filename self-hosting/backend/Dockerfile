@@ -32,8 +32,10 @@ FROM node:24.22.1-alpine AS production
 
 WORKDIR /app
 
-# Install build dependencies for native modules (node-gyp)
-RUN apk add --no-cache python3 make g++
+# Build dependencies for native modules (node-gyp, node-pty) are removed again
+# after `npm ci`. libgcc, libstdc++ and ripgrep are runtime requirements of the
+# Claude Code CLI on Alpine and stay.
+RUN apk add --no-cache python3 make g++ libgcc libstdc++ ripgrep
 
 # Create non-root user for security
 RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -s /bin/sh -D nodejs
@@ -51,6 +53,18 @@ RUN npm ci
 
 # Remove build dependencies to reduce image size
 RUN apk del python3 make g++
+
+# CLIs the backend drives for the Claude Code and Codex subscription providers.
+# Installed globally (not as backend dependencies). Pinned here and in docker/dev/backend/Dockerfile:
+# bump both together. CODEX_DISABLED_FEATURES (and its test fixture) is tied to the pinned Codex version.
+ARG CLAUDE_CODE_VERSION=2.1.292
+ARG CODEX_VERSION=0.160.1
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} \
+    && npm cache clean --force \
+    && claude --version \
+    && codex --version
+# Use the system ripgrep installed above instead of the vendored glibc build.
+ENV USE_BUILTIN_RIPGREP=0
 
 COPY --from=build-stage --chown=nodejs:nodejs /app/tsconfig.json ./
 
