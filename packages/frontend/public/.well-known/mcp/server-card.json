@@ -187,10 +187,6 @@
       "description": "Permanently delete a savings goal and free its account shares."
     },
     {
-      "name": "get_tracker_transactions",
-      "description": "List the transactions a category tracker counts, newest first, with one entry per matching split; manual trackers use search_transactions with trackerIds."
-    },
-    {
       "name": "get_spending_by_categories",
       "description": "Aggregate spending by category over a specified date range."
     },

@@ -18,7 +18,7 @@ export function registerGetTracker(server: McpServer) {
     'get_tracker',
     {
       description:
-        'Get one tracker with its progress: the tracker itself (name, status, type, date range, limit, linked categories, and the share details when it is shared with the user) and its stats (income, expense and balance over the tracker period, how much of the limit is used, how many transactions it covers, and the first and last transaction date). Amounts are decimals in the base currency of the tracker owner. For the spending split by category and the time-series use get_tracker_spending_stats; for the transactions of a category tracker use get_tracker_transactions.',
+        'Get one tracker with its progress: the tracker itself (name, status, type, date range, limit, linked categories, and the share details when it is shared with the user) and its stats (income, expense and balance over the tracker period, how much of the limit is used, how many transactions it covers, and the first and last transaction date). Amounts are decimals in the base currency of the tracker owner. For the spending split by category and the time-series use get_tracker_spending_stats; for the transactions of a tracker use search_transactions with trackerIds.',
       inputSchema,
     },
     async (args, extra) => {

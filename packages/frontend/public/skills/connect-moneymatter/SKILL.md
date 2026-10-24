@@ -117,7 +117,6 @@ page.
 | `get_tags`                              | List transaction tags                                                                                            |
 | `get_trackers`                          | Trackers with limits, category/tag rules and lines                                                               |
 | `get_tracker` | One tracker with its limit, categories and stats (income, expense, balance, limit used) |
-| `get_tracker_transactions` | Transactions a category tracker counts, newest first; manual trackers use `search_transactions` with `trackerIds` |
 | `create_tracker`                        | Create a new tracker with limit, date range, category/tag rules, smart tracking (`finance:write`)                |
 | `update_tracker`                        | Update name, dates, limit (null clears), category/tag rules, or smart tracking of a tracker (`finance:write`)    |
 | `delete_tracker`                        | Permanently delete a tracker and its transaction links (`finance:delete`)                                        |

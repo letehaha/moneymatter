@@ -159,10 +159,9 @@ describe('venture limits and empty updates', () => {
 });
 
 describe('tracker dates, limit, categories and logo', () => {
-  it('create_tracker refuses a category tracker without categories and a non-positive limit', async () => {
+  it('create_tracker refuses a non-positive limit, dates out of order and a logo with two sources', async () => {
     const { tool, schema } = toolOf(registerCreateTracker);
     expect(schema.safeParse({ name: 'Trip', limitAmount: 0 }).success).toBe(false);
-    await expect(tool.handler({ name: 'Trip', type: 'category' }, WRITE)).rejects.toThrow();
     await expect(
       tool.handler({ name: 'Trip', startDate: '2026-10-05T00:00:00Z', endDate: '2026-10-01T00:00:00Z' }, WRITE),
     ).rejects.toThrow();
@@ -181,9 +180,8 @@ describe('tracker dates, limit, categories and logo', () => {
     expect(call.limitAmount.toNumber()).toBe(500);
   });
 
-  it('update_tracker needs at least one category when it replaces them, and clears the dates with null', async () => {
-    const { tool, schema } = toolOf(registerUpdateTracker);
-    expect(schema.safeParse({ trackerId: ID_A, categoryIds: [] }).success).toBe(false);
+  it('update_tracker refuses a logo with two sources, and clears the dates with null', async () => {
+    const { tool } = toolOf(registerUpdateTracker);
     await expect(tool.handler({ trackerId: ID_A, logoDomain: 'a.com', logoIcon: 'x' }, WRITE)).rejects.toThrow();
 
     jest.mocked(editTracker).mockResolvedValue({ id: ID_A } as never);
