@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { removeTransactionsFromGroup } from '@services/transaction-groups';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   groupId: recordId().describe('ID of the transaction group'),
@@ -28,6 +28,7 @@ export function registerRemoveTransactionsFromGroup(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'remove_transactions_from_group', clientId: extra.authInfo?.clientId });
 
       const result = await removeTransactionsFromGroup({

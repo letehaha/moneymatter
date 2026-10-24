@@ -1,5 +1,9 @@
 import { API_ERROR_CODES, DAY_TRIALABLE_FEATURES, UserInfoResponse } from '@bt/shared/types';
 import { currencyCode } from '@common/lib/zod/custom-types';
+import {
+  deleteUserCurrencyBodySchema,
+  editUserCurrencyBodySchema,
+} from '@controllers/currencies/user-currency-body.schema';
 import { createController } from '@controllers/helpers/controller-factory';
 import { t } from '@i18n/index';
 import { ConflictError, NotFoundError, ValidationError } from '@js/errors';
@@ -159,11 +163,7 @@ export const setBaseUserCurrency = createController(
 
 export const editUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-      exchangeRate: z.number().optional(),
-      liveRateUpdate: z.boolean().optional(),
-    }),
+    body: editUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     const result = await userService.editUserCurrency({
@@ -178,9 +178,7 @@ export const editUserCurrency = createController(
 
 export const deleteUserCurrency = createController(
   z.object({
-    body: z.object({
-      currencyCode: currencyCode(),
-    }),
+    body: deleteUserCurrencyBodySchema,
   }),
   async ({ user, body }) => {
     await userService.deleteUserCurrency({

@@ -1,10 +1,18 @@
 import { type Entitlements, FEATURES, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
 import { describe, expect, it, jest } from '@jest/globals';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
-import { assertOriginalCurrencyArgs, requireFeature, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertNotDemoUser,
+  assertOriginalCurrencyArgs,
+  requireFeature,
+  requireScope,
+} from './helpers';
 
 jest.mock('@services/entitlements/resolve-entitlements.service', () => ({ getEntitlementsByUserId: jest.fn() }));
+jest.mock('@services/currencies/base-currency-lock', () => ({ isBaseCurrencyChangeLocked: jest.fn() }));
 
 const mockFeatures = (features: string[]) =>
   jest.mocked(getEntitlementsByUserId).mockResolvedValueOnce({ features } as unknown as Entitlements);
@@ -63,6 +71,59 @@ describe('requireScope', () => {
   });
 });
 
+describe('requireScope with allowReadOnly', () => {
+  it('lets a read-only user through when the scope is granted', () => {
+    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('lets a read-only user through when the entitlement info is missing', () => {
+    const extra = { authInfo: { scopes: ['finance:write'], extra: { role: USER_ROLES.common } } };
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('lets a demo user through, as the READ_ONLY_ROUTES have no demo block', () => {
+    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).not.toThrow();
+  });
+
+  it('still rejects a missing scope', () => {
+    const extra = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:read'], readOnly: true });
+
+    expect(() => requireScope({ extra, scope: 'finance:write', allowReadOnly: true })).toThrow(
+      /Missing required scope/,
+    );
+  });
+
+  it('keeps rejecting read-only and demo users when the option is false or absent', () => {
+    const readOnly = authInfoFor({ role: USER_ROLES.common, scopes: ['finance:write'], readOnly: true });
+    const demo = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:write'] });
+
+    expect(() => requireScope({ extra: readOnly, scope: 'finance:write', allowReadOnly: false })).toThrow(
+      /no longer includes editing/,
+    );
+    expect(() => requireScope({ extra: demo, scope: 'finance:write', allowReadOnly: false })).toThrow(/demo mode/);
+  });
+});
+
+describe('assertNotDemoUser', () => {
+  it('refuses a demo user whatever the scopes and plan', () => {
+    const extra = authInfoFor({ role: USER_ROLES.demo, scopes: ['finance:read'], readOnly: true });
+
+    expect(() => assertNotDemoUser({ extra })).toThrow(/demo mode/);
+  });
+
+  it('lets a common user through, read-only or not', () => {
+    expect(() => assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [] }) })).not.toThrow();
+    expect(() =>
+      assertNotDemoUser({ extra: authInfoFor({ role: USER_ROLES.common, scopes: [], readOnly: true }) }),
+    ).not.toThrow();
+  });
+});
+
 describe('assertOriginalCurrencyArgs', () => {
   it('accepts the pair set together, cleared together, or absent', () => {
     expect(() => assertOriginalCurrencyArgs({ args: {} })).not.toThrow();
@@ -110,5 +171,28 @@ describe('assertOriginalCurrencyArgs', () => {
     expect(() =>
       assertOriginalCurrencyArgs({ args: { ...pair, transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer } }),
     ).not.toThrow();
+  });
+});
+
+describe('assertBaseCurrencyUnlocked', () => {
+  const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
+
+  it('throws while a base-currency change holds the lock', async () => {
+    lockCheck.mockResolvedValueOnce(true);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/currencies.baseCurrencyChangeInProgress/);
+    expect(lockCheck).toHaveBeenCalledWith({ userId: 7 });
+  });
+
+  it('fails closed with the unavailable message when the lock check errors', async () => {
+    lockCheck.mockRejectedValueOnce(new Error('redis down'));
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).rejects.toThrow(/common.serviceTemporarilyUnavailable/);
+  });
+
+  it('passes while the user is unlocked', async () => {
+    lockCheck.mockResolvedValueOnce(false);
+
+    await expect(assertBaseCurrencyUnlocked({ userId: 7 })).resolves.toBeUndefined();
   });
 });

@@ -1,8 +1,13 @@
 import { NOTIFICATION_PRIORITIES, NOTIFICATION_STATUSES, NOTIFICATION_TYPES } from '@bt/shared/types';
 import { beforeEach, describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import Notifications from '@models/notifications.model';
 import Users from '@models/users.model';
 import * as helpers from '@tests/helpers';
+import { Op } from 'sequelize';
+
+const listStatusCode = async (params: Parameters<typeof helpers.getNotifications>[0]) =>
+  (await helpers.getNotifications({ ...params, raw: false })).statusCode;
 
 describe('Notifications API', () => {
   let testUserId: number;
@@ -420,6 +425,60 @@ describe('Notifications API', () => {
       expect(notification).toHaveProperty('expiresAt');
       // Should NOT have userId
       expect(notification).not.toHaveProperty('userId');
+    });
+  });
+
+  describe('list query validation', () => {
+    it('rejects an unknown status or type, a limit outside 1 to 100 and a negative offset', async () => {
+      expect(await listStatusCode({ status: 'archived' })).toBe(ERROR_CODES.ValidationError);
+      expect(await listStatusCode({ type: 'promo' })).toBe(ERROR_CODES.ValidationError);
+      expect(await listStatusCode({ limit: 0 })).toBe(ERROR_CODES.ValidationError);
+      expect(await listStatusCode({ limit: 101 })).toBe(ERROR_CODES.ValidationError);
+      expect(await listStatusCode({ offset: -1 })).toBe(ERROR_CODES.ValidationError);
+    });
+
+    it('accepts the bounds: limit 1 and 100, offset 0', async () => {
+      await Notifications.create({ userId: testUserId, type: NOTIFICATION_TYPES.system, title: 'Bounds' });
+
+      expect(await helpers.getNotifications({ limit: 1, offset: 0, raw: true })).toHaveLength(1);
+      expect(await helpers.getNotifications({ limit: 100, raw: true })).toHaveLength(1);
+    });
+  });
+
+  describe('cross-user isolation', () => {
+    it("lists none of another user's notifications and leaves them untouched on read, read-all and dismiss", async () => {
+      const mine = await Notifications.create({ userId: testUserId, type: NOTIFICATION_TYPES.system, title: 'Mine' });
+      const stranger = await helpers.signUpSecondUser();
+      const strangerRow = await Users.findOne({ where: { id: { [Op.ne]: testUserId } }, order: [['id', 'DESC']] });
+      const theirs = await Notifications.create({
+        userId: strangerRow!.id,
+        type: NOTIFICATION_TYPES.system,
+        title: 'Theirs',
+      });
+
+      // Seen from the first user.
+      expect((await helpers.getNotifications({ raw: true })).map((n) => n.title)).toEqual(['Mine']);
+      expect(await helpers.getNotificationById({ id: theirs.id, raw: true })).toBeNull();
+      expect((await helpers.markAsRead({ id: theirs.id, raw: true })).success).toBe(false);
+      expect((await helpers.dismissNotification({ id: theirs.id, raw: true })).success).toBe(false);
+      expect((await helpers.markAllAsRead({ raw: true })).updated).toBe(1);
+
+      await theirs.reload();
+      expect(theirs.status).toBe(NOTIFICATION_STATUSES.unread);
+
+      // Seen from the second user.
+      await helpers.asUser({
+        cookies: stranger.cookies,
+        fn: async () => {
+          expect((await helpers.getNotifications({ raw: true })).map((n) => n.title)).toEqual(['Theirs']);
+          expect(await helpers.getNotificationById({ id: mine.id, raw: true })).toBeNull();
+          expect((await helpers.dismissNotification({ id: mine.id, raw: true })).success).toBe(false);
+          expect((await helpers.getUnreadCount({ raw: true })).count).toBe(1);
+        },
+      });
+
+      await mine.reload();
+      expect(mine.status).toBe(NOTIFICATION_STATUSES.read);
     });
   });
 });

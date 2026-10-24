@@ -1,5 +1,6 @@
 import { SUBSCRIPTION_FREQUENCIES, SUBSCRIPTION_PERIOD_STATUSES, TRANSACTION_TYPES } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
+import { ERROR_CODES } from '@js/errors';
 import SubscriptionPeriods from '@models/subscription-periods.model';
 import * as helpers from '@tests/helpers';
 import { addMonths, format } from 'date-fns';
@@ -602,4 +603,52 @@ describe('GET /subscriptions/:id/periods', () => {
     const page1Ids = new Set(page1.periods.map((p) => p.id));
     page2.periods.forEach((p) => expect(page1Ids.has(p.id)).toBe(false));
   }, 60_000);
+});
+
+// ---------------------------------------------------------------------------
+// Request validation of the pay body and the periods query
+// ---------------------------------------------------------------------------
+
+describe('Subscription period request validation', () => {
+  it('rejects a pay that both links a transaction and creates one, and a non-positive amount override', async () => {
+    const { account, sub, period } = await createSubWithPeriod({ dueDate: futureDate({ monthsAhead: 1, day: 15 }) });
+    const [tx] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: account.id }),
+      raw: true,
+    });
+
+    const bothRes = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: period.id,
+      createTransaction: true,
+      transactionId: tx!.id,
+      raw: false,
+    });
+    expect(bothRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const zeroRes = await helpers.markSubscriptionPeriodPaid({
+      id: sub.id,
+      periodId: period.id,
+      createTransaction: true,
+      amount: 0,
+      raw: false,
+    });
+    expect(zeroRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const detail = await helpers.getSubscriptionById({ id: sub.id, raw: true });
+    expect(detail.periods.find((p) => p.id === period.id)!.status).toBe(SUBSCRIPTION_PERIOD_STATUSES.upcoming);
+  });
+
+  it('rejects a periods page larger than 50 and a negative offset', async () => {
+    const { sub } = await createSubWithPeriod({ dueDate: futureDate({ monthsAhead: 1, day: 15 }) });
+
+    const tooBigRes = await helpers.getSubscriptionPeriods({ id: sub.id, limit: 51, raw: false });
+    expect(tooBigRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const negativeRes = await helpers.getSubscriptionPeriods({ id: sub.id, offset: -1, raw: false });
+    expect(negativeRes.statusCode).toBe(ERROR_CODES.ValidationError);
+
+    const maxRes = await helpers.getSubscriptionPeriods({ id: sub.id, limit: 50, raw: false });
+    expect(maxRes.statusCode).toBe(200);
+  });
 });
