@@ -138,7 +138,6 @@ import { registerGetTags } from './tools/get-tags';
 import { registerGetTotalBalance } from './tools/get-total-balance';
 import { registerGetTracker } from './tools/get-tracker';
 import { registerGetTrackerSpendingStats } from './tools/get-tracker-spending-stats';
-import { registerGetTrackerTransactions } from './tools/get-tracker-transactions';
 import { registerGetTrackers } from './tools/get-trackers';
 import { registerGetTransactionAutomations } from './tools/get-transaction-automations';
 import { registerGetTransactionGroups } from './tools/get-transaction-groups';
@@ -407,7 +406,6 @@ export function createMcpServer(): McpServer {
   registerAcceptTrackerSuggestions(server);
   registerRejectTrackerSuggestions(server);
   registerGetTracker(server);
-  registerGetTrackerTransactions(server);
 
   // Savings goals
   registerGetGoals(server);
