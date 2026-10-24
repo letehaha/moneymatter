@@ -1,4 +1,4 @@
-import { TRACKER_STATUSES, TRACKER_TYPES, TAG_REMINDER_FREQUENCIES, TAG_REMINDER_TYPES } from '@bt/shared/types';
+import { TRACKER_STATUSES, TAG_REMINDER_FREQUENCIES, TAG_REMINDER_TYPES } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import { createReminderBodySchema, updateReminderBodySchema } from '@controllers/tag-reminders/shared-schemas';
 import { beforeEach, describe, expect, it, jest } from '@jest/globals';
@@ -11,7 +11,6 @@ import {
   getRemindersForTag,
   updateReminder,
 } from '@services/tag-reminders';
-import { getCategoryTrackerTransactions } from '@services/trackers/get-category-tracker-transactions';
 import { getTrackerById } from '@services/trackers/get-trackers';
 import { getTrackerStats } from '@services/trackers/stats';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
@@ -21,9 +20,6 @@ import { z } from 'zod';
 // Redis connections in a unit test. The serializers run for real on the fakes below.
 jest.mock('@services/trackers/get-trackers', () => ({ getTrackerById: jest.fn(), getTrackers: jest.fn() }));
 jest.mock('@services/trackers/stats', () => ({ getTrackerStats: jest.fn() }));
-jest.mock('@services/trackers/get-category-tracker-transactions', () => ({
-  getCategoryTrackerTransactions: jest.fn(),
-}));
 jest.mock('@services/tag-reminders', () => ({
   createReminder: jest.fn(),
   deleteReminder: jest.fn(),
@@ -40,7 +36,6 @@ import { registerCreateTagReminder } from './create-tag-reminder';
 import { registerDeleteTagReminder } from './delete-tag-reminder';
 import { registerGetTagReminders } from './get-tag-reminders';
 import { registerGetTracker } from './get-tracker';
-import { registerGetTrackerTransactions } from './get-tracker-transactions';
 import { registerUpdateTagReminder } from './update-tag-reminder';
 
 const READ_ONLY = makeExtra({ scopes: ['finance:read'], readOnly: true });
@@ -52,7 +47,6 @@ const LOCKED = /currencies.baseCurrencyChangeInProgress/;
 const lockCheck = jest.mocked(isBaseCurrencyChangeLocked);
 const trackerById = jest.mocked(getTrackerById);
 const trackerStats = jest.mocked(getTrackerStats);
-const categoryTransactions = jest.mocked(getCategoryTrackerTransactions);
 const createRem = jest.mocked(createReminder);
 const deleteRem = jest.mocked(deleteReminder);
 const allRem = jest.mocked(getAllReminders);
@@ -80,10 +74,11 @@ const makeTracker = (patch: Record<string, unknown> = {}) => ({
   userId: 42,
   name: 'Groceries',
   status: TRACKER_STATUSES.active,
-  type: TRACKER_TYPES.category,
   startDate: new Date('2026-10-01T00:00:00.000Z'),
   endDate: new Date('2026-10-31T23:59:59.000Z'),
-  autoInclude: false,
+  rulesEnabled: false,
+  rulesCleanup: true,
+  rulesSyncedAt: null,
   limitAmount: Money.fromDecimal(500),
   categories: [{ id: CATEGORY_ID, name: 'Food', color: '#112233', parentId: null }],
   ...patch,
@@ -160,13 +155,15 @@ describe('get_tracker', () => {
         userId: 42,
         name: 'Groceries',
         status: TRACKER_STATUSES.active,
-        type: TRACKER_TYPES.category,
         startDate: '2026-10-01T00:00:00.000Z',
         endDate: '2026-10-31T23:59:59.000Z',
-        autoInclude: false,
+        rulesEnabled: false,
+        rulesCleanup: true,
+        rulesSyncedAt: null,
         limitAmount: 500,
         lines: [],
         categories: [{ id: CATEGORY_ID, name: 'Food', color: '#112233', parentId: null }],
+        tags: [],
       },
       stats: {
         summary: {
@@ -211,80 +208,6 @@ describe('get_tracker', () => {
     trackerById.mockResolvedValue(makeTracker() as never);
     trackerStats.mockRejectedValue(new NotFoundError({ message: 'Tracker not found.' }));
 
-    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Tracker not found.');
-  });
-});
-
-describe('get_tracker_transactions', () => {
-  const tool = captureTools({ register: registerGetTrackerTransactions })[0]!;
-  const schema = z.object(tool.config.inputSchema ?? {}).strict();
-
-  it('registers under its name and points manual trackers to search_transactions', () => {
-    expect(tool.name).toBe('get_tracker_transactions');
-    expect(Object.keys(tool.config.inputSchema ?? {}).toSorted()).toEqual(['from', 'limit', 'trackerId']);
-    expect(tool.config.description).toMatch(/category/i);
-    expect(tool.config.description).toMatch(/search_transactions/);
-    expect(tool.config.description).toMatch(/trackerIds/);
-  });
-
-  it('applies the REST bounds: from 0 or more, limit 1 to 100, defaults 0 and 50', () => {
-    expect(schema.parse({ trackerId: TRACKER_ID })).toMatchObject({ from: 0, limit: 50 });
-    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 0, limit: 1 }).success).toBe(true);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 200, limit: 100 }).success).toBe(true);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, from: -1 }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, from: 1.5 }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 0 }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 101 }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, limit: 1.5 }).success).toBe(false);
-    expect(schema.safeParse({ from: 0 }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: 'nope' }).success).toBe(false);
-    expect(schema.safeParse({ trackerId: TRACKER_ID, userId: 7 }).success).toBe(false);
-  });
-
-  it('passes the caller and the window to the service and returns its result, for a read-only user', async () => {
-    lockCheck.mockResolvedValue(true);
-    categoryTransactions.mockResolvedValue({
-      transactions: [
-        {
-          id: 'tx-1',
-          time: new Date('2026-10-05T10:00:00.000Z'),
-          transactionType: 'expense',
-          refAmount: 12.5,
-          amount: 12.5,
-          note: null,
-          categoryId: CATEGORY_ID,
-          accountId: 'acc-1',
-        },
-      ],
-      total: 7,
-    } as never);
-
-    const data = await call({ tool, args: { trackerId: TRACKER_ID, from: 5, limit: 20 }, extra: READ_ONLY });
-
-    expect(categoryTransactions).toHaveBeenCalledWith({ userId: 42, trackerId: TRACKER_ID, from: 5, limit: 20 });
-    expect(lockCheck).not.toHaveBeenCalled();
-    expect(data).toEqual({
-      transactions: [
-        {
-          id: 'tx-1',
-          time: '2026-10-05T10:00:00.000Z',
-          transactionType: 'expense',
-          refAmount: 12.5,
-          amount: 12.5,
-          note: null,
-          categoryId: CATEGORY_ID,
-          accountId: 'acc-1',
-        },
-      ],
-      total: 7,
-    });
-  });
-
-  it('lets the service errors through: a manual tracker and a tracker the caller has no claim on', async () => {
-    categoryTransactions.mockRejectedValueOnce(new ValidationError({ message: 'Not a category tracker.' }));
-    await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Not a category tracker.');
-
-    categoryTransactions.mockRejectedValueOnce(new NotFoundError({ message: 'Tracker not found.' }));
     await expect(call({ tool, args: { trackerId: TRACKER_ID } })).rejects.toThrow('Tracker not found.');
   });
 });
