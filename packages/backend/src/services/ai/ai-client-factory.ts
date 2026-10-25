@@ -1,11 +1,15 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createOpenAI } from '@ai-sdk/openai';
-import { AINativeProvider, AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
+import { AICliProvider, AINativeProvider, AI_FEATURE, AI_PROVIDER } from '@bt/shared/types';
 import { createGuardedFetch } from '@common/utils/url-guard';
 import type { LanguageModel } from 'ai';
 
 import { resolveAIConfiguration } from './ai-model-resolver';
+import { createClaudeCodeLanguageModel } from './cli/claude-code-language-model';
+import { CliCredentialSource } from './cli/cli-credential-run';
+import type { CliModelRunOptions } from './cli/cli-model-options';
+import { createCodexLanguageModel } from './cli/codex-language-model';
 
 /**
  * Passed explicitly so the SDKs never fall back to `*_BASE_URL` env vars, which could point
@@ -27,9 +31,14 @@ export interface AIClientResult {
   connectionId?: string;
 }
 
-/** `baseUrl` is required on the custom arm so a custom connection can never dial a provider's public API. */
+/**
+ * `baseUrl` is required on the custom arm so a custom connection can never dial a provider's public API.
+ * The CLI arm carries a credential source, never a credential value: the model loads the credential
+ * on every call, so a model reused across batches always runs on the latest one.
+ */
 export type ProviderModelSpec =
   | { provider: AINativeProvider; model: string; apiKey: string }
+  | { provider: AICliProvider; model: string; credentialSource: CliCredentialSource; runOptions?: CliModelRunOptions }
   | { provider: AI_PROVIDER.custom; model: string; apiKey: string | null; baseUrl: string };
 
 export function createProviderModel(spec: ProviderModelSpec): LanguageModel {
@@ -44,6 +53,14 @@ export function createProviderModel(spec: ProviderModelSpec): LanguageModel {
     // .chat() targets /chat/completions. The default responses-API path is not
     // served by Ollama, vLLM or most OpenAI-compatible proxies.
     return custom.chat(spec.model);
+  }
+
+  if ('credentialSource' in spec) {
+    const params = { model: spec.model, credentialSource: spec.credentialSource, runOptions: spec.runOptions };
+
+    return spec.provider === AI_PROVIDER.claudeCode
+      ? createClaudeCodeLanguageModel(params)
+      : createCodexLanguageModel(params);
   }
 
   const { provider, model, apiKey } = spec;

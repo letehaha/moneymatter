@@ -1,4 +1,4 @@
-import { AI_PROVIDER } from '@bt/shared/types';
+import { AI_PROVIDER, CLI_AI_MODELS, asAiCliProvider } from '@bt/shared/types';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 
@@ -40,6 +40,9 @@ async function fetchModelIds({
     return outcome.kind === 'listed' ? outcome.modelIds : [];
   }
 
+  // Answered by `listConnectionModels` before it gets here.
+  if (provider === AI_PROVIDER.claudeCode || provider === AI_PROVIDER.codex) return [];
+
   if (!apiKey) return [];
   const root = NATIVE_PROVIDER_BASE_URLS[provider];
 
@@ -63,9 +66,10 @@ async function fetchModelIds({
 }
 
 /**
- * Suggestions for the model-name field, sorted and deduped. Anything that stops the provider
- * from listing (no key, unreachable, odd body) yields an empty list; only a blocked custom
- * URL is an error, because that one is the user's input.
+ * Suggestions for the model-name field, sorted and deduped. A subscription CLI has no list to
+ * fetch, so it gets its curated models without a network call and in curated order (default first).
+ * For the others, anything that stops the provider from listing (no key, unreachable, odd body)
+ * yields an empty list; only a blocked custom URL is an error, because that one is the user's input.
  */
 export async function listConnectionModels({
   provider,
@@ -76,6 +80,10 @@ export async function listConnectionModels({
   baseUrl?: string;
   apiKey: string | null;
 }): Promise<string[]> {
+  const cliProvider = asAiCliProvider({ provider });
+
+  if (cliProvider) return CLI_AI_MODELS[cliProvider].map((model) => model.id);
+
   try {
     const ids = await fetchModelIds({ provider, baseUrl, apiKey });
     return [...new Set(ids)].toSorted();

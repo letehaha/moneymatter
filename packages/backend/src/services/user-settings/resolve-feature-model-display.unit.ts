@@ -107,10 +107,32 @@ describe('resolveFeatureStatus', () => {
       pricing: mockSonnetProfile.pricing,
       capabilities: mockSonnetProfile.capabilities,
       usingUserKey: true,
+      billing: 'per-token',
       connectionId: CLAUDE.id,
       connectionName: CLAUDE.name,
       serverModelName: null,
     });
+  });
+
+  it.each<[AI_PROVIDER, string]>([
+    [AI_PROVIDER.claudeCode, 'sonnet'],
+    [AI_PROVIDER.codex, 'gpt-6-astra'],
+  ])('bills a %s connection to the subscription', async (provider, model) => {
+    const subscription: StoredConnection = { ...CLAUDE, id: 'conn-cli', provider, model, name: 'Subscription' };
+
+    expect(await status({ connections: [subscription] })).toMatchObject({
+      servedBy: 'connection',
+      modelId: `${provider}/${model}`,
+      billing: 'subscription',
+      connectionId: subscription.id,
+    });
+  });
+
+  it('bills a native connection and the server model per token', async () => {
+    process.env.GEMINI_API_KEY = 'server-key';
+
+    expect(await status({ connections: [CLAUDE] })).toMatchObject({ billing: 'per-token' });
+    expect(await status()).toMatchObject({ servedBy: 'server', billing: 'per-token' });
   });
 
   it('names the default connection for an unconfigured feature, with the free-text model name', async () => {
@@ -155,6 +177,7 @@ describe('resolveFeatureStatus', () => {
       pricing: null,
       capabilities: null,
       usingUserKey: false,
+      billing: 'per-token',
       serverModelName: SERVER_MODEL.model,
     });
   });
@@ -195,6 +218,7 @@ describe('resolveFeatureStatus', () => {
       pricing: null,
       capabilities: null,
       usingUserKey: false,
+      billing: 'per-token',
       serverModelName: null,
     });
   });

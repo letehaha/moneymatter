@@ -1,4 +1,5 @@
 import {
+  AICliProvider,
   AIConnectionInfo,
   AI_CONNECTION_NAME_MAX_LENGTH,
   AI_PROVIDER,
@@ -8,6 +9,7 @@ import {
   TestAIConnectionBody,
   TestAIConnectionResponse,
   UpdateAIConnectionBody,
+  asAiCliProvider,
 } from '@bt/shared/types';
 import { decryptToken, encryptToken } from '@common/utils/encryption';
 import { t } from '@i18n/index';
@@ -21,7 +23,13 @@ import UserSettings, {
 } from '@models/user-settings.model';
 import { randomUUID } from 'node:crypto';
 
-import { validateConnection } from '../ai/connection-validation';
+import { assertCliAiAllowed } from '../ai/cli/cli-access';
+import { CliCredentialSource } from '../ai/cli/cli-credential-run';
+import { abortCliRunsForConnection } from '../ai/cli/cli-run-limiter';
+import { retireCodexHome } from '../ai/cli/codex-home';
+import { logoutCodexConnection } from '../ai/cli/codex-logout';
+import { consumeCredential, peekCredential, sessionCredentialSource } from '../ai/cli/login/cli-auth-sessions';
+import { validateCliConnection, validateConnection } from '../ai/connection-validation';
 import { listConnectionModels } from '../ai/list-connection-models';
 import { withTransaction } from '../common/with-transaction';
 import { getOrCreateUserSettings } from './get-or-create-user-settings';
@@ -95,6 +103,116 @@ function readStoredKey({ connection, userId }: { connection: StoredConnection; u
   return apiKey;
 }
 
+/**
+ * A CLI connection's credential as a source the CLI runner loads inside a run. The row is read fresh
+ * and decrypted when a run (Claude Code) or the connection's shared Codex home (Codex) needs it, so no
+ * caller holds a decrypted CLI credential, and a Codex refresh a previous run persisted is what the
+ * next shared home starts from.
+ */
+export function connectionCredentialSource({
+  userId,
+  connectionId,
+}: {
+  userId: number;
+  connectionId: string;
+}): CliCredentialSource {
+  return {
+    connectionKey: connectionId,
+    load: async () => {
+      const connection = findConnectionOrThrow({
+        connections: await readStoredConnections({ userId }),
+        connectionId,
+      });
+      const credential = readStoredKey({ connection, userId });
+
+      if (!credential || !connection.keyEncrypted) {
+        throw new ValidationError({ message: t({ key: 'ai.connectionStoredKeyUnreadable' }) });
+      }
+
+      return { credential, revision: connection.keyEncrypted };
+    },
+    save: async ({ credential, loadedRevision }) => {
+      const keyEncrypted = encryptToken(credential);
+      const swapped = await replaceConnectionCredential({
+        userId,
+        connectionId,
+        expectedKeyEncrypted: loadedRevision,
+        keyEncrypted,
+      });
+
+      return swapped ? { revision: keyEncrypted } : null;
+    },
+  };
+}
+
+/**
+ * Swaps the stored credential only while it still is the ciphertext the caller started from;
+ * anything else means a newer credential (a re-authentication) was written in between and wins.
+ */
+export function swapConnectionCredential({
+  connections,
+  connectionId,
+  expectedKeyEncrypted,
+  keyEncrypted,
+}: {
+  connections: StoredConnection[];
+  connectionId: string;
+  expectedKeyEncrypted: string;
+  keyEncrypted: string;
+}): { connections: StoredConnection[]; swapped: boolean } {
+  const current = connections.find((candidate) => candidate.id === connectionId);
+
+  if (!current || current.keyEncrypted !== expectedKeyEncrypted) return { connections, swapped: false };
+
+  return {
+    connections: connections.map((candidate) =>
+      candidate.id === connectionId ? { ...candidate, keyEncrypted } : candidate,
+    ),
+    swapped: true,
+  };
+}
+
+/**
+ * Persists a credential the CLI refreshed during a run as a compare-and-swap on `keyEncrypted`.
+ * A connection deleted mid-run is not resurrected, and a credential replaced mid-run is kept.
+ * Returns whether the new ciphertext was stored.
+ */
+export async function replaceConnectionCredential({
+  userId,
+  connectionId,
+  expectedKeyEncrypted,
+  keyEncrypted,
+}: {
+  userId: number;
+  connectionId: string;
+  expectedKeyEncrypted: string;
+  keyEncrypted: string;
+}): Promise<boolean> {
+  let stored = false;
+
+  await mutateConnections({
+    userId,
+    connectionId,
+    onMissing: 'skip',
+    mutate: ({ connections }) => {
+      const result = swapConnectionCredential({ connections, connectionId, expectedKeyEncrypted, keyEncrypted });
+
+      stored = result.swapped;
+
+      if (!result.swapped) {
+        logger.warn('Skipped saving a refreshed CLI credential: the stored credential changed during the run', {
+          userId,
+          connectionId,
+        });
+      }
+
+      return { connections: result.connections };
+    },
+  });
+
+  return stored;
+}
+
 function toConnectionInfo({ connection }: { connection: StoredConnection }): AIConnectionInfo {
   return {
     id: connection.id,
@@ -108,6 +226,7 @@ function toConnectionInfo({ connection }: { connection: StoredConnection }): AIC
     lastValidatedAt: connection.lastValidatedAt,
     lastError: connection.lastError,
     invalidatedAt: connection.invalidatedAt,
+    credentialExpiresAt: connection.credentialExpiresAt,
   };
 }
 
@@ -228,6 +347,65 @@ function borrowStoredKey({
   return { apiKey, keyEncrypted: source.keyEncrypted };
 }
 
+/** A CLI connection's credential comes only from a sign-in session; a typed key has nowhere to go. */
+function assertNoApiKeyForCli({
+  apiKey,
+  keyFromConnectionId,
+}: {
+  apiKey?: string | null;
+  keyFromConnectionId?: string;
+}): void {
+  if (apiKey !== undefined || keyFromConnectionId !== undefined) {
+    throw new ValidationError({ message: t({ key: 'ai.cliConnectionNoApiKey' }) });
+  }
+}
+
+function assertCliSessionOnlyForCli({ cliAuthSessionId }: { cliAuthSessionId: string | undefined }): void {
+  if (cliAuthSessionId !== undefined) {
+    throw new ValidationError({ message: t({ key: 'ai.cliAuthSessionOnlyForCli' }) });
+  }
+}
+
+/**
+ * Probes with the session's credential. With `consume`, the session is spent while the probe still
+ * holds its slot, and only when the probe passed, so a failed probe (wrong model) leaves the
+ * session usable for a retry. Returns the credential taken from the session, if consumed.
+ */
+async function probeWithSession({
+  userId,
+  provider,
+  model,
+  cliAuthSessionId,
+  consume,
+}: {
+  userId: number;
+  provider: AICliProvider;
+  model: string;
+  cliAuthSessionId: string;
+  consume: boolean;
+}): Promise<{
+  validation: TestAIConnectionResponse;
+  credential?: { keyEncrypted: string; credentialExpiresAt?: string };
+}> {
+  // Fails fast on a session that is missing, foreign, unfinished, consumed or for another provider.
+  peekCredential({ userId, sessionId: cliAuthSessionId, provider });
+
+  let credential: { keyEncrypted: string; credentialExpiresAt?: string } | undefined;
+
+  const validation = await validateCliConnection({
+    provider,
+    model,
+    credentialSource: sessionCredentialSource({ userId, sessionId: cliAuthSessionId, provider }),
+    onValid: consume
+      ? () => {
+          credential = consumeCredential({ userId, sessionId: cliAuthSessionId, provider });
+        }
+      : undefined,
+  });
+
+  return { validation, credential };
+}
+
 /** Never carries key material. List order is priority. */
 export const getConnectionInfos = async ({ userId }: { userId: number }): Promise<AIConnectionInfo[]> => {
   const connections = await readStoredConnections({ userId });
@@ -257,6 +435,61 @@ const storeNewConnection = withTransaction(
 );
 
 /**
+ * A CLI connection stores the credential of a finished sign-in session, taken out of the session
+ * once the probe has passed.
+ */
+async function createCliConnection({
+  userId,
+  provider,
+  name,
+  model,
+  cliAuthSessionId,
+}: {
+  userId: number;
+  provider: AICliProvider;
+  name: string;
+  model: string;
+  cliAuthSessionId: string | undefined;
+}): Promise<AIConnectionInfo> {
+  if (!cliAuthSessionId) {
+    throw new ValidationError({ message: t({ key: 'ai.cliAuthSessionNotUsable' }) });
+  }
+
+  const { validation, credential } = await probeWithSession({
+    userId,
+    provider,
+    model,
+    cliAuthSessionId,
+    consume: true,
+  });
+
+  if (!validation.isValid) {
+    throw new ValidationError({ message: validation.error });
+  }
+
+  if (!credential) {
+    throw new ValidationError({ message: t({ key: 'ai.cliAuthSessionNotUsable' }) });
+  }
+
+  const now = new Date().toISOString();
+
+  return storeNewConnection({
+    userId,
+    connection: {
+      id: randomUUID(),
+      provider,
+      name,
+      keyEncrypted: credential.keyEncrypted,
+      credentialExpiresAt: credential.credentialExpiresAt,
+      model,
+      createdAt: now,
+      status: 'valid',
+      lastValidatedAt: now,
+    },
+  });
+}
+
+/**
  * Stores the connection only after a live call proves the provider, model and key work. The
  * probe runs before the transaction opens so it does not pin a database connection.
  */
@@ -268,7 +501,17 @@ export const createConnection = async ({
   baseUrl,
   apiKey,
   keyFromConnectionId,
+  cliAuthSessionId,
 }: { userId: number } & CreateAIConnectionBody): Promise<AIConnectionInfo> => {
+  const cliProvider = asAiCliProvider({ provider });
+
+  if (cliProvider) {
+    await assertCliAiAllowed({ userId });
+    assertNoApiKeyForCli({ apiKey, keyFromConnectionId });
+  } else {
+    assertCliSessionOnlyForCli({ cliAuthSessionId });
+  }
+
   const normalizedName = normalizeName({ name });
   const normalizedModel = normalizeModel({ model });
   const normalizedBaseUrl = normalizeBaseUrl({ provider, baseUrl });
@@ -277,6 +520,16 @@ export const createConnection = async ({
   const storedConnections = await readStoredConnections({ userId });
   assertWithinConnectionCap({ connections: storedConnections });
   assertNameAvailable({ connections: storedConnections, name: normalizedName });
+
+  if (cliProvider) {
+    return createCliConnection({
+      userId,
+      provider: cliProvider,
+      name: normalizedName,
+      model: normalizedModel,
+      cliAuthSessionId,
+    });
+  }
 
   const key =
     apiKey === undefined && keyFromConnectionId
@@ -371,10 +624,19 @@ export const updateConnection = async ({
   model,
   baseUrl,
   apiKey,
+  cliAuthSessionId,
 }: { userId: number; connectionId: string } & UpdateAIConnectionBody): Promise<AIConnectionInfo> => {
   const storedConnections = await readStoredConnections({ userId });
   const existing = findConnectionOrThrow({ connections: storedConnections, connectionId });
   const { provider } = existing;
+  const cliProvider = asAiCliProvider({ provider });
+
+  if (cliProvider) {
+    await assertCliAiAllowed({ userId });
+    assertNoApiKeyForCli({ apiKey });
+  } else {
+    assertCliSessionOnlyForCli({ cliAuthSessionId });
+  }
 
   const normalizedName = name === undefined ? existing.name : normalizeName({ name });
   const normalizedModel = model === undefined ? existing.model : normalizeModel({ model });
@@ -386,20 +648,45 @@ export const updateConnection = async ({
     throw new ValidationError({ message: t({ key: 'ai.connectionApiKeyRequired' }) });
   }
 
-  const keyEncrypted = apiKey === undefined ? existing.keyEncrypted : apiKey ? encryptToken(apiKey) : undefined;
-
   const connectionChanged =
-    normalizedBaseUrl !== existing.baseUrl || normalizedModel !== existing.model || apiKey !== undefined;
+    normalizedBaseUrl !== existing.baseUrl ||
+    normalizedModel !== existing.model ||
+    apiKey !== undefined ||
+    cliAuthSessionId !== undefined;
 
   let verdict: Pick<StoredConnection, 'status' | 'lastValidatedAt' | 'lastError' | 'invalidatedAt'> = existing;
+  let reauthCredential: { keyEncrypted: string; credentialExpiresAt?: string } | undefined;
 
   if (connectionChanged) {
-    const validation = await validateConnection({
-      provider,
-      model: normalizedModel,
-      apiKey: apiKey === undefined ? readStoredKey({ connection: existing, userId }) : apiKey,
-      baseUrl: normalizedBaseUrl,
-    });
+    let validation: TestAIConnectionResponse;
+
+    if (cliProvider && cliAuthSessionId !== undefined) {
+      // Re-authentication: the new sign-in is probed, then spent while the probe holds its slot.
+      const probe = await probeWithSession({
+        userId,
+        provider: cliProvider,
+        model: normalizedModel,
+        cliAuthSessionId,
+        consume: true,
+      });
+
+      validation = probe.validation;
+      reauthCredential = probe.credential;
+    } else if (cliProvider) {
+      validation = await validateCliConnection({
+        provider: cliProvider,
+        model: normalizedModel,
+        credentialSource: connectionCredentialSource({ userId, connectionId }),
+      });
+    } else {
+      validation = await validateConnection({
+        provider,
+        model: normalizedModel,
+        apiKey: apiKey === undefined ? readStoredKey({ connection: existing, userId }) : apiKey,
+        baseUrl: normalizedBaseUrl,
+      });
+    }
+
     const now = new Date().toISOString();
 
     if (validation.isValid) {
@@ -416,10 +703,23 @@ export const updateConnection = async ({
     }
   }
 
+  if (cliAuthSessionId !== undefined && !reauthCredential) {
+    throw new ValidationError({ message: t({ key: 'ai.cliAuthSessionNotUsable' }) });
+  }
+
+  // The key goes into the patch only when this request supplied one. Otherwise the locked row's
+  // key stays as it is, so a refresh that a probe or a concurrent run persisted since the read
+  // above is never overwritten with the stale value.
+  const credentialPatch: Partial<StoredConnection> = reauthCredential
+    ? { keyEncrypted: reauthCredential.keyEncrypted, credentialExpiresAt: reauthCredential.credentialExpiresAt }
+    : apiKey === undefined
+      ? {}
+      : { keyEncrypted: apiKey ? encryptToken(apiKey) : undefined };
+
   const patch: Partial<StoredConnection> = {
     name: normalizedName,
     baseUrl: normalizedBaseUrl,
-    keyEncrypted,
+    ...credentialPatch,
     model: normalizedModel,
     status: verdict.status,
     lastValidatedAt: verdict.lastValidatedAt,
@@ -445,8 +745,32 @@ export const updateConnection = async ({
   return toConnectionInfo({ connection: findConnectionOrThrow({ connections, connectionId }) });
 };
 
-/** Features pinned to the deleted connection become automatic again. */
+/**
+ * Features pinned to the deleted connection become automatic again. A CLI connection's active runs
+ * are cancelled first (and waited for, briefly), so nothing keeps using the credential, or the
+ * connection's shared Codex home, while it is signed out: cancelling is the safe choice, since
+ * waiting out a feature run could take minutes for a connection that is going away. A Codex
+ * connection is then signed out, best effort, so the tokens it held stop working; Claude Code has no
+ * CLI revoke. A run that starts in the instant between the cancel and the delete is not stopped:
+ * it fails at the sign-out or completes against the deleted row, which is harmless.
+ */
 export const deleteConnection = async ({ userId, connectionId }: { userId: number; connectionId: string }) => {
+  const stored = (await readStoredConnections({ userId })).find((connection) => connection.id === connectionId);
+
+  if (stored && asAiCliProvider({ provider: stored.provider })) {
+    await abortCliRunsForConnection({ connectionKey: connectionId });
+    // A run that outlived the cancel (past its 3 s wait) keeps its home but is not written back, and the
+    // sign-out below starts from a fresh home.
+    await retireCodexHome({ connectionKey: connectionId });
+  }
+
+  if (stored?.provider === AI_PROVIDER.codex && stored.keyEncrypted) {
+    const { connectionKey, load } = connectionCredentialSource({ userId, connectionId });
+
+    // No `save`: logging out invalidates the stored credential, so there is nothing to write back.
+    await logoutCodexConnection({ source: { connectionKey, load } });
+  }
+
   await mutateConnections({
     userId,
     connectionId,
@@ -488,9 +812,28 @@ export const testConnection = async ({
   ...body
 }: { userId: number } & TestAIConnectionBody): Promise<TestAIConnectionResponse> => {
   if (!('connectionId' in body)) {
-    const { provider, apiKey, keyFromConnectionId } = body;
+    const { provider, apiKey, keyFromConnectionId, cliAuthSessionId } = body;
+    const cliProvider = asAiCliProvider({ provider });
+
+    if (cliProvider) {
+      await assertCliAiAllowed({ userId });
+      assertNoApiKeyForCli({ apiKey, keyFromConnectionId });
+    } else {
+      assertCliSessionOnlyForCli({ cliAuthSessionId });
+    }
+
     const model = normalizeModel({ model: body.model });
     const baseUrl = normalizeBaseUrl({ provider, baseUrl: body.baseUrl });
+
+    if (cliProvider) {
+      if (!cliAuthSessionId) {
+        throw new ValidationError({ message: t({ key: 'ai.cliAuthSessionNotUsable' }) });
+      }
+
+      // Never consumes: the same sign-in is still there for the save that follows a passing test.
+      return (await probeWithSession({ userId, provider: cliProvider, model, cliAuthSessionId, consume: false }))
+        .validation;
+    }
     const borrowedKey =
       apiKey === undefined && keyFromConnectionId
         ? borrowStoredKey({
@@ -504,17 +847,51 @@ export const testConnection = async ({
     return validateConnection({ provider, model, baseUrl, apiKey: apiKey ?? borrowedKey });
   }
 
-  const { connectionId, model, baseUrl, apiKey } = body;
+  const { connectionId, model, baseUrl, apiKey, cliAuthSessionId } = body;
   const saved = findConnectionOrThrow({ connections: await readStoredConnections({ userId }), connectionId });
+  const savedCliProvider = asAiCliProvider({ provider: saved.provider });
 
-  const result = await validateConnection({
-    provider: saved.provider,
-    model: normalizeModel({ model: model ?? saved.model }),
-    baseUrl: baseUrl === undefined ? saved.baseUrl : normalizeBaseUrl({ provider: saved.provider, baseUrl }),
-    apiKey: apiKey ?? readStoredKey({ connection: saved, userId }),
-  });
+  if (savedCliProvider) {
+    await assertCliAiAllowed({ userId });
+    assertNoApiKeyForCli({ apiKey });
+  } else {
+    assertCliSessionOnlyForCli({ cliAuthSessionId });
+  }
 
-  if (model === undefined && baseUrl === undefined && apiKey === undefined) {
+  const probeModel = normalizeModel({ model: model ?? saved.model });
+  const probeBaseUrl = baseUrl === undefined ? saved.baseUrl : normalizeBaseUrl({ provider: saved.provider, baseUrl });
+
+  let result: TestAIConnectionResponse;
+
+  if (savedCliProvider) {
+    // The stored credential is probed through its own slot, so the probe queues behind a running job
+    // and a Codex refresh it triggers is persisted. A fresh sign-in is tried without being spent.
+    result =
+      cliAuthSessionId === undefined
+        ? await validateCliConnection({
+            provider: savedCliProvider,
+            model: probeModel,
+            credentialSource: connectionCredentialSource({ userId, connectionId }),
+          })
+        : (
+            await probeWithSession({
+              userId,
+              provider: savedCliProvider,
+              model: probeModel,
+              cliAuthSessionId,
+              consume: false,
+            })
+          ).validation;
+  } else {
+    result = await validateConnection({
+      provider: saved.provider,
+      model: probeModel,
+      baseUrl: probeBaseUrl,
+      apiKey: apiKey ?? readStoredKey({ connection: saved, userId }),
+    });
+  }
+
+  if (model === undefined && baseUrl === undefined && apiKey === undefined && cliAuthSessionId === undefined) {
     if (result.isValid) {
       await markConnectionValid({ userId, connectionId });
     } else {
@@ -538,6 +915,9 @@ export const listAvailableModels = async ({
     : undefined;
 
   if (saved) assertSameProvider({ connection: saved, provider });
+
+  // A CLI provider lists its curated models; its stored credential is never decrypted for that.
+  if (asAiCliProvider({ provider })) return listConnectionModels({ provider, apiKey: null });
 
   const effectiveBaseUrl = baseUrl === undefined && saved ? saved.baseUrl : normalizeBaseUrl({ provider, baseUrl });
   const effectiveApiKey = apiKey ?? (saved ? decryptConnectionKey({ connection: saved, userId }) : null);

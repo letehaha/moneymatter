@@ -4,9 +4,10 @@
 
     <form class="@container/connection-dialog flex flex-col gap-4" @submit.prevent="handleSave">
       <SelectField
-        :model-value="selectedPreset"
-        :values="AI_CONNECTION_PRESETS"
-        :label-key="(preset: AiConnectionPreset) => t(preset.labelKey)"
+        :model-value="selectedPresetOption"
+        :values="presetOptions"
+        :label-key="formatPresetLabel"
+        :option-disabled="(preset: AiConnectionPresetOption) => preset.disabled"
         value-key="id"
         :label="$t('settings.ai.connections.form.providerLabel')"
         :placeholder="$t('settings.ai.connections.form.providerPlaceholder')"
@@ -22,6 +23,22 @@
         :placeholder="$t(selectedPreset.namePlaceholderKey)"
         @update:model-value="resetFeedback"
       />
+
+      <template v-if="cliProvider">
+        <Callout variant="info" class="text-xs">
+          <p>{{ $t(CLI_PERSONAL_USE_KEYS[cliProvider]) }}</p>
+        </Callout>
+
+        <CliSignInPanel
+          :key="selectedPreset.id"
+          v-model:session-id="cliSessionId"
+          v-model:in-progress="isCliSignInInProgress"
+          :provider="cliProvider"
+          :sign-in-label="signInLabel"
+          :is-reauth="isEditing"
+          :disabled="isBusy"
+        />
+      </template>
 
       <div v-if="isCustomProvider" class="flex flex-col gap-2">
         <InputField
@@ -58,7 +75,7 @@
         </template>
       </div>
 
-      <div>
+      <div v-if="!isSubscription">
         <InputField
           v-model="form.apiKey"
           :disabled="isBusy"
@@ -107,7 +124,19 @@
         </p>
       </div>
 
+      <SelectField
+        v-if="isSubscription"
+        :model-value="selectedCliModelOption"
+        :values="cliModelOptions"
+        label-key="label"
+        value-key="id"
+        :disabled="isBusy"
+        :label="$t('settings.ai.connections.form.modelLabel')"
+        :placeholder="$t('settings.ai.connections.form.modelSelectPlaceholder')"
+        @update:model-value="handleCliModelChange"
+      />
       <AutocompleteField
+        v-else
         v-model="form.model"
         :disabled="isBusy"
         :suggestions="liveModels"
@@ -173,19 +202,39 @@ import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useAiConnectionModels } from '@/composable/data-queries/use-ai-connection-models';
 import { useAiConnections } from '@/composable/data-queries/use-ai-connections';
+import { useCliAiAvailability } from '@/composable/data-queries/use-cli-ai-availability';
 import { extractApiErrorMessage } from '@/js/errors';
 import {
   AIConnectionInfo,
   AI_CONNECTION_NAME_MAX_LENGTH,
   AI_MODEL_NAME_MAX_LENGTH,
+  AICliProvider,
   AI_PROVIDER,
   TestAIConnectionBody,
+  asAiCliProvider,
 } from '@bt/shared/types';
 import { AlertCircleIcon, CheckCircleIcon, Loader2Icon, PlugZapIcon } from '@lucide/vue';
 import { computed, reactive, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { AI_CONNECTION_PRESETS, type AiConnectionPreset, findPresetForConnection } from '../presets';
+import {
+  AI_CONNECTION_PRESETS,
+  type AiConnectionPreset,
+  type AiConnectionPresetOption,
+  type CliModelOption,
+  findPresetForConnection,
+  getCliModelOptions,
+  getDefaultCliModel,
+  getVisiblePresets,
+  isSubscriptionPreset,
+  resolveCliModelId,
+} from '../presets';
+import CliSignInPanel from './cli-sign-in-panel.vue';
+
+const CLI_PERSONAL_USE_KEYS: Record<AICliProvider, string> = {
+  [AI_PROVIDER.claudeCode]: 'settings.ai.connections.cli.personalUse.claudeCode',
+  [AI_PROVIDER.codex]: 'settings.ai.connections.cli.personalUse.codex',
+};
 
 const props = defineProps<{
   /** Set when editing */
@@ -208,13 +257,39 @@ const {
   isTestingConnection,
 } = useAiConnections();
 
+const { availability: cliAvailability } = useCliAiAvailability();
 const selectedPreset = ref<AiConnectionPreset>(AI_CONNECTION_PRESETS[0]!);
+
+// Subscription presets only show for an admin on a self-hosted backend, and stay unpickable when the
+// image lacks their CLI. A connection being edited or duplicated keeps its own preset in the list even
+// if the picker would hide it now, so the select never shows an empty value.
+const presetOptions = computed<AiConnectionPresetOption[]>(() => {
+  const options = getVisiblePresets({ availability: cliAvailability.value });
+  const selected = selectedPreset.value;
+  return options.some((option) => option.id === selected.id) ? options : [...options, { ...selected, disabled: false }];
+});
+
+const selectedPresetOption = computed(
+  () => presetOptions.value.find((option) => option.id === selectedPreset.value.id) ?? null,
+);
+
+const formatPresetLabel = (preset: AiConnectionPresetOption) =>
+  preset.disabled && preset.disabledReasonKey
+    ? t('settings.ai.connections.presets.disabledOption', {
+        label: t(preset.labelKey),
+        reason: t(preset.disabledReasonKey),
+      })
+    : t(preset.labelKey);
 const form = reactive({
   name: '',
   baseUrl: '',
   model: '',
   apiKey: '',
 });
+
+/** Finished sign-in waiting to be saved (CLI presets only). */
+const cliSessionId = ref<string | null>(null);
+const isCliSignInInProgress = ref(false);
 
 const formError = ref('');
 const testResult = ref<{ isValid: boolean; message: string } | null>(null);
@@ -224,6 +299,9 @@ const resetFeedback = () => {
   formError.value = '';
   testResult.value = null;
 };
+
+// A finished or dropped sign-in makes an earlier test result stale.
+watch(cliSessionId, resetFeedback);
 
 // Seeded on open only, so a refetch from inside the dialog never overwrites what the user is typing.
 watch(
@@ -241,8 +319,12 @@ watch(
           )
         : '');
     form.baseUrl = base?.baseUrl ?? '';
-    form.model = base?.model ?? '';
+    form.model = base?.model
+      ? resolveCliModelId({ preset: selectedPreset.value, model: base.model })
+      : getDefaultCliModel({ preset: selectedPreset.value });
     form.apiKey = '';
+    cliSessionId.value = null;
+    isCliSignInInProgress.value = false;
     isRemoveKeyDialogOpen.value = false;
     resetFeedback();
   },
@@ -251,6 +333,11 @@ watch(
 
 const isEditing = computed(() => Boolean(props.connection));
 const isCustomProvider = computed(() => selectedPreset.value.provider === AI_PROVIDER.custom);
+const isSubscription = computed(() => isSubscriptionPreset({ preset: selectedPreset.value }));
+const cliProvider = computed(() =>
+  isSubscription.value ? asAiCliProvider({ provider: selectedPreset.value.provider }) : undefined,
+);
+const signInLabel = computed(() => (selectedPreset.value.signInLabelKey ? t(selectedPreset.value.signInLabelKey) : ''));
 const hasSavedApiKey = computed(() => props.connection?.hasApiKey ?? false);
 
 const title = computed(() => {
@@ -263,21 +350,27 @@ const typedKey = computed(() => form.apiKey.trim());
 const trimmedBaseUrl = computed(() => form.baseUrl.trim());
 const trimmedModel = computed(() => form.model.trim());
 const requestBaseUrl = computed(() => (isCustomProvider.value ? trimmedBaseUrl.value : undefined));
-const requestApiKey = computed(() => typedKey.value || undefined);
+const requestApiKey = computed(() => (isSubscription.value ? undefined : typedKey.value || undefined));
 
-/** A duplicate reuses the source's stored key until the user types one. */
+/** A duplicate reuses the source's stored key until the user types one. A sign-in is never lent. */
 const borrowedKeySource = computed(() => {
   const source = props.source;
-  if (props.connection || !source || typedKey.value) return null;
+  if (props.connection || !source || typedKey.value || isSubscription.value) return null;
   return source.hasApiKey && source.provider === selectedPreset.value.provider ? source : null;
 });
 
 const keyKnown = computed(() => Boolean(typedKey.value) || hasSavedApiKey.value || Boolean(borrowedKeySource.value));
+/**
+ * A new subscription connection needs a finished sign-in. An existing one already holds its own, so it
+ * only has to wait for a re-sign-in that is running.
+ */
+const hasCredential = computed(() => {
+  if (!isSubscription.value) return !selectedPreset.value.keyRequired || keyKnown.value;
+  return isEditing.value ? !isCliSignInInProgress.value : cliSessionId.value !== null;
+});
 const hasRequiredFields = computed(
   () =>
-    Boolean(trimmedModel.value) &&
-    (!isCustomProvider.value || Boolean(trimmedBaseUrl.value)) &&
-    (!selectedPreset.value.keyRequired || keyKnown.value),
+    Boolean(trimmedModel.value) && (!isCustomProvider.value || Boolean(trimmedBaseUrl.value)) && hasCredential.value,
 );
 
 const isSaving = computed(() => isCreatingConnection.value || isUpdatingConnection.value);
@@ -288,6 +381,7 @@ const canTest = computed(() => hasRequiredFields.value && !isBusy.value);
 
 const keyUrlHost = computed(() => (selectedPreset.value.keyUrl ? new URL(selectedPreset.value.keyUrl).host : ''));
 
+// A subscription provider has no live model list; the curated one is what the CLI accepts.
 const { liveModels, isLoadingLiveModels } = useAiConnectionModels({
   params: () => ({
     provider: selectedPreset.value.provider,
@@ -295,15 +389,26 @@ const { liveModels, isLoadingLiveModels } = useAiConnectionModels({
     apiKey: requestApiKey.value,
     connectionId: props.connection?.id ?? borrowedKeySource.value?.id,
   }),
-  enabled: isOpen,
+  enabled: computed(() => isOpen.value && !isSubscription.value),
 });
 
-const handlePresetChange = (preset: AiConnectionPreset | null) => {
-  if (!preset || preset.id === selectedPreset.value.id) return;
+const cliModelOptions = computed(() => getCliModelOptions({ preset: selectedPreset.value, currentModel: form.model }));
+const selectedCliModelOption = computed(() => cliModelOptions.value.find((option) => option.id === form.model) ?? null);
+
+const handleCliModelChange = (option: CliModelOption | null) => {
+  if (!option) return;
+  form.model = option.id;
+  resetFeedback();
+};
+
+const handlePresetChange = (preset: AiConnectionPresetOption | null) => {
+  if (!preset || preset.disabled || preset.id === selectedPreset.value.id) return;
   selectedPreset.value = preset;
   form.baseUrl = preset.baseUrl ?? '';
-  form.model = '';
+  form.model = getDefaultCliModel({ preset });
   form.apiKey = '';
+  cliSessionId.value = null;
+  isCliSignInInProgress.value = false;
   resetFeedback();
 };
 
@@ -321,6 +426,7 @@ const handleSave = async () => {
         baseUrl: requestBaseUrl.value,
         // A blank field keeps whatever key is already stored
         apiKey: requestApiKey.value,
+        cliAuthSessionId: cliSessionId.value ?? undefined,
       });
     } else {
       await createConnection({
@@ -330,6 +436,7 @@ const handleSave = async () => {
         baseUrl: requestBaseUrl.value,
         apiKey: requestApiKey.value,
         keyFromConnectionId: borrowedKeySource.value?.id,
+        cliAuthSessionId: cliSessionId.value ?? undefined,
       });
     }
     addSuccessNotification(t('settings.ai.connections.notifications.saveSuccess'));
@@ -346,14 +453,16 @@ const handleTest = async () => {
 
   const baseUrl = requestBaseUrl.value;
   const apiKey = requestApiKey.value;
+  const cliAuthSessionId = cliSessionId.value ?? undefined;
   const body: TestAIConnectionBody = props.connection
-    ? { connectionId: props.connection.id, model: trimmedModel.value, baseUrl, apiKey }
+    ? { connectionId: props.connection.id, model: trimmedModel.value, baseUrl, apiKey, cliAuthSessionId }
     : {
         provider: selectedPreset.value.provider,
         model: trimmedModel.value,
         baseUrl,
         apiKey,
         keyFromConnectionId: borrowedKeySource.value?.id,
+        cliAuthSessionId,
       };
 
   try {

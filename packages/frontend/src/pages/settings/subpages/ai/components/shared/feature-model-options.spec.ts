@@ -5,7 +5,9 @@ import {
   AUTOMATIC_OPTION,
   SERVER_OPTION,
   buildFeatureModelOptions,
+  formatAnsweringModel,
   readFeatureSelectValue,
+  resolveCostDisplay,
 } from './feature-model-options';
 
 const CONNECTION_A = '3f1c9a2e-8b47-4d63-9d51-6c0f2a7e5b90';
@@ -20,6 +22,7 @@ const buildStatus = (overrides: Partial<AIFeatureStatus> = {}): AIFeatureStatus 
   pricing: null,
   capabilities: null,
   usingUserKey: false,
+  billing: 'per-token',
   serverModelName: 'Gemini Flash',
   ...overrides,
 });
@@ -97,7 +100,25 @@ describe('buildFeatureModelOptions', () => {
     expect(automatic).toEqual({
       value: AUTOMATIC_OPTION,
       kind: 'automatic',
-      target: { kind: 'connection', name: 'Claude fast' },
+      target: { kind: 'connection', name: 'Claude fast', model: 'gemini-flash' },
+    });
+  });
+
+  it('names the model that answers an unconfigured feature, as the connection labels it', () => {
+    const [automatic] = buildFeatureModelOptions({
+      status: buildStatus({
+        servedBy: 'connection',
+        connectionId: CONNECTION_B,
+        connectionName: 'My Claude Account',
+        modelId: 'claude-code/haiku',
+      }),
+      connections: [
+        { ...buildConnection({ id: CONNECTION_B, name: 'My Claude Account' }), provider: AI_PROVIDER.claudeCode },
+      ],
+    });
+
+    expect(automatic).toMatchObject({
+      target: { kind: 'connection', name: 'My Claude Account', model: 'Claude Haiku 5.5' },
     });
   });
 
@@ -121,5 +142,87 @@ describe('buildFeatureModelOptions', () => {
       model: 'claude-sonnet-5',
       needsAttention: false,
     });
+  });
+});
+
+describe('formatAnsweringModel', () => {
+  const claude = {
+    ...buildConnection({ id: CONNECTION_B, name: 'My Claude Account' }),
+    provider: AI_PROVIDER.claudeCode,
+  };
+  const status = buildStatus({ servedBy: 'connection', connectionId: CONNECTION_B, modelId: 'claude-code/haiku' });
+
+  it('labels a subscription model as the connection does', () => {
+    expect(formatAnsweringModel({ status, connections: [claude] })).toBe('Claude Haiku 5.5');
+  });
+
+  it('falls back to the bare model name while the connection list is missing', () => {
+    expect(formatAnsweringModel({ status, connections: [] })).toBe('haiku');
+  });
+});
+
+describe('resolveCostDisplay', () => {
+  it('says a subscription connection is included in the plan, whatever the catalog prices it at', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'subscription' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toEqual({ kind: 'subscription' });
+  });
+
+  it('says it even when the feature has no unit to price in', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'subscription' },
+        formattedPrice: null,
+        hasUnitLabel: false,
+      }),
+    ).toEqual({ kind: 'subscription' });
+  });
+
+  it('shows the price of a per-token connection', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toEqual({ kind: 'price', price: '~$0.120' });
+  });
+
+  it('shows nothing for a per-token connection without a known price or unit', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: null,
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'connection', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: false,
+      }),
+    ).toBeNull();
+  });
+
+  it('shows nothing when the server model or nothing answers', () => {
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: 'server', billing: 'per-token' },
+        formattedPrice: '~$0.120',
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
+    expect(
+      resolveCostDisplay({
+        status: { servedBy: null, billing: 'per-token' },
+        formattedPrice: null,
+        hasUnitLabel: true,
+      }),
+    ).toBeNull();
   });
 });

@@ -5,6 +5,16 @@ ARG OFFLINE_MODE=false
 
 WORKDIR /app
 
+# CLIs the backend drives for the Claude Code and Codex subscription providers.
+# Pinned in this Dockerfile and in self-hosting/backend/Dockerfile: bump both together.
+# CODEX_DISABLED_FEATURES (and its test fixture) is tied to the pinned Codex version.
+ARG CLAUDE_CODE_VERSION=2.1.292
+ARG CODEX_VERSION=0.160.1
+RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION} @openai/codex@${CODEX_VERSION} \
+    && npm cache clean --force \
+    && claude --version \
+    && codex --version
+
 # Copy package files first for better caching
 COPY package*.json ./
 COPY post-install.sh ./

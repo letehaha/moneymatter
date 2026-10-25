@@ -13,6 +13,8 @@ const schema = z.object({
     model: modelField.optional(),
     baseUrl: baseUrlField.optional(),
     apiKey: apiKeyField.optional().nullable(),
+    // CLI providers: re-authenticates with a finished sign-in session
+    cliAuthSessionId: z.uuid().optional(),
   }),
 });
 

@@ -1,6 +1,5 @@
 import {
   AI_FEATURE,
-  AI_PROVIDER,
   CATEGORIZATION_SKIP_REASON,
   CATEGORIZATION_SOURCE,
   type CATEGORIZATION_TRIGGER,
@@ -20,9 +19,11 @@ import {
   classifyAiCallFailure,
   createAIClient,
   describeMissingAiConfiguration,
+  describeRateLimited,
   hitOutputCeiling,
+  isUserFixableEndpointDown,
   markConnectionRejected,
-  markCustomEndpointUnreachable,
+  markEndpointUnreachable,
   markModelNotServed,
 } from '@services/ai';
 import { trackAiUsage } from '@services/ai/track-ai-usage';
@@ -50,8 +51,6 @@ import { parseCategorizationResponse } from './utils/parse-response';
 const CUSTOM_ENDPOINT_ADDRESS_BLOCKED_ERROR_MESSAGE =
   'Your custom AI endpoint address was rejected. Please point it at a publicly reachable address in AI settings.';
 
-const RATE_LIMITED_ERROR_MESSAGE = 'AI provider rate limit reached. Please try again in a few minutes.';
-
 const TEMPORARY_ERROR_MESSAGE = 'AI provider temporarily unavailable. Please try again later.';
 
 // Batch size of 500 provides ~9k tokens per batch (average case, with short
@@ -62,6 +61,8 @@ const BATCH_SIZE = 500;
 interface CategorizeBatchResult extends CategorizationBatchResult {
   /** How the AI call failed, when it did. Anything but `unknown` repeats on the next batch. */
   failureKind?: AiCallFailureKind;
+  /** The unwrapped error behind `failureKind`, for copy that quotes it (a subscription's reset time). */
+  failureCause?: Error;
   tokenUsage?: {
     inputTokens: number;
     outputTokens: number;
@@ -71,12 +72,14 @@ interface CategorizeBatchResult extends CategorizationBatchResult {
 async function resolveStopReason({
   failureKind,
   reason,
+  cause,
   userId,
   aiClient,
 }: {
   failureKind: Exclude<AiCallFailureKind, 'unknown'>;
   /** The provider's own error message */
   reason: string;
+  cause: Error;
   userId: number;
   aiClient: AIClientResult;
 }): Promise<string> {
@@ -88,11 +91,11 @@ async function resolveStopReason({
     case 'model-not-found':
       return markModelNotServed({ userId, aiClient });
     case 'endpoint-down':
-      return markCustomEndpointUnreachable({ userId, aiClient });
+      return markEndpointUnreachable({ userId, aiClient });
     case 'blocked-address':
       return CUSTOM_ENDPOINT_ADDRESS_BLOCKED_ERROR_MESSAGE;
     case 'rate-limited':
-      return RATE_LIMITED_ERROR_MESSAGE;
+      return describeRateLimited({ aiClient, cause });
     case 'temporary':
       return TEMPORARY_ERROR_MESSAGE;
   }
@@ -219,10 +222,13 @@ async function categorizeBatch({
   } catch (error) {
     const { kind, cause } = classifyAiCallFailure({ error });
 
-    // Only a custom endpoint can be down in a way the user can fix, so a native
-    // provider that answers with nothing is downgraded to a temporary failure.
+    // A custom endpoint that stopped answering and a CLI binary that is missing are the only "down"
+    // outcomes the user or operator can fix. Anything else that answers with nothing (a native provider
+    // outage, a CLI abort or run timeout) is transient and must not flag a healthy connection.
     const failureKind =
-      kind === 'endpoint-down' && aiClient.provider !== AI_PROVIDER.custom ? ('temporary' as const) : kind;
+      kind === 'endpoint-down' && !isUserFixableEndpointDown({ provider: aiClient.provider, error: cause })
+        ? ('temporary' as const)
+        : kind;
 
     if (failureKind === 'unknown') {
       logger.error({ message: 'AI categorization batch failed', error: cause });
@@ -237,6 +243,7 @@ async function categorizeBatch({
       failed: transactions.map((t) => t.id),
       errors: [failureKind === 'blocked-address' ? CUSTOM_ENDPOINT_ADDRESS_BLOCKED_ERROR_MESSAGE : cause.message],
       failureKind,
+      failureCause: cause,
     };
   }
 }
@@ -537,6 +544,7 @@ export async function categorizeTransactions({
       const stopReason = await resolveStopReason({
         failureKind: batchResult.failureKind,
         reason: batchResult.errors?.[0] ?? '',
+        cause: batchResult.failureCause ?? new Error(batchResult.errors?.[0] ?? ''),
         userId,
         aiClient,
       });

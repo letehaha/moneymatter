@@ -1,11 +1,18 @@
-import { AINativeProvider, AI_FEATURE, AI_PROVIDER, hasServerAiEntitlement } from '@bt/shared/types';
+import { AINativeProvider, AI_FEATURE, AI_PROVIDER, asAiCliProvider, hasServerAiEntitlement } from '@bt/shared/types';
+import { t } from '@i18n/index';
 import { logger } from '@js/utils/logger';
 import type { StoredConnection } from '@models/user-settings.model';
 
 import { getEntitlementsByUserId } from '../entitlements/resolve-entitlements.service';
-import { decryptConnectionKey, getStoredAiSettings, markConnectionInvalid } from '../user-settings/ai-connections';
+import {
+  connectionCredentialSource,
+  decryptConnectionKey,
+  getStoredAiSettings,
+  markConnectionInvalid,
+} from '../user-settings/ai-connections';
 import { isWithinAiAllowance } from './ai-allowance';
 import type { ProviderModelSpec } from './ai-client-factory';
+import { getCliAiAccess } from './cli/cli-access';
 import { CONNECTION_KEY_UNREADABLE_ERROR_MESSAGE } from './connection-failure';
 import { buildConnectionModelId, getServerApiKey, pickResolutionStep } from './resolution-ladder';
 
@@ -16,14 +23,27 @@ type AIConfigResolution =
 /**
  * Null when the connection can't be dialled as stored: a key that no longer decrypts would go
  * out keyless and blame a key the user never touched, and a native provider has no keyless mode.
+ * A CLI connection is dialled through a credential source and is never decrypted here.
  */
 function toProviderModelSpec({
   connection,
   apiKey,
+  userId,
 }: {
   connection: StoredConnection;
   apiKey: string | null;
+  userId: number;
 }): ProviderModelSpec | null {
+  if (connection.provider === AI_PROVIDER.claudeCode || connection.provider === AI_PROVIDER.codex) {
+    return connection.keyEncrypted
+      ? {
+          provider: connection.provider,
+          model: connection.model,
+          credentialSource: connectionCredentialSource({ userId, connectionId: connection.id }),
+        }
+      : null;
+  }
+
   if (connection.keyEncrypted && apiKey === null) return null;
 
   if (connection.provider !== AI_PROVIDER.custom) {
@@ -85,7 +105,27 @@ export async function resolveAIConfiguration({
       case 'configured':
       case 'default-connection': {
         const { connection } = step;
-        const spec = toProviderModelSpec({ connection, apiKey: decryptConnectionKey({ connection, userId }) });
+
+        // Admin-only: a user who lost admin rights keeps the connection but can no longer run on it.
+        if (asAiCliProvider({ provider: connection.provider }) && !(await getCliAiAccess({ userId })).allowed) {
+          if (connection.status !== 'invalid') {
+            await markConnectionInvalid({
+              userId,
+              connectionId: connection.id,
+              errorMessage: t({ key: 'ai.cliProvidersNotAllowed' }),
+            });
+          }
+          excludedConnectionIds.add(connection.id);
+          continue;
+        }
+
+        const spec = toProviderModelSpec({
+          connection,
+          apiKey: asAiCliProvider({ provider: connection.provider })
+            ? null
+            : decryptConnectionKey({ connection, userId }),
+          userId,
+        });
 
         if (!spec) {
           // An already-flagged connection keeps its message, which may be more specific than this one.

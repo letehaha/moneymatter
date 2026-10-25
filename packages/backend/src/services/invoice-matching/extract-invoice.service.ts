@@ -1,10 +1,16 @@
-import { AI_FEATURE, AI_PROVIDER, type ExtractedInvoice, TRANSACTION_TYPES } from '@bt/shared/types';
+import { AI_FEATURE, type ExtractedInvoice, TRANSACTION_TYPES } from '@bt/shared/types';
 import type { Expect, MutuallyAssignable } from '@bt/shared/types/type-testing';
 import { currencyCode } from '@common/lib/zod/custom-types';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import { logger } from '@js/utils/logger';
-import { AI_MAX_OUTPUT_TOKENS, aiCallGuards, createAIClient, describeMissingAiConfiguration } from '@services/ai';
+import {
+  AI_MAX_OUTPUT_TOKENS,
+  aiCallGuards,
+  createAIClient,
+  describeMissingAiConfiguration,
+  providerTakesPdfFileParts,
+} from '@services/ai';
 import { trackAiUsage } from '@services/ai/track-ai-usage';
 import { detectMimeType } from '@services/attachments/attachments.service';
 import { resolveAiExtractionFailure } from '@services/import-export/core/ai-extraction-failure';
@@ -119,9 +125,9 @@ export async function extractInvoice({
   }
 
   let documentParts: Array<TextPart | FilePart> = [{ type: 'file', data: bytes, mediaType: mimeType }];
-  // Custom OpenAI-compatible endpoints accept images but reject the `file` part a PDF becomes,
-  // so a PDF goes as its text, or as page images when it has no text layer.
-  if (aiClient.provider === AI_PROVIDER.custom && mimeType === 'application/pdf') {
+  // Custom OpenAI-compatible endpoints and the CLI providers accept images but not the `file` part a PDF
+  // becomes, so a PDF goes as its text, or as page images when it has no text layer.
+  if (!providerTakesPdfFileParts({ provider: aiClient.provider }) && mimeType === 'application/pdf') {
     const extraction = await extractTextFromFile({ buffer: bytes, fileType: 'pdf' });
     if (extraction.success && extraction.text) {
       documentParts = [{ type: 'text', text: extraction.text }];
