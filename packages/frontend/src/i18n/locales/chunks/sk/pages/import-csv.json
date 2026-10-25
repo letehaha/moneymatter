@@ -118,7 +118,7 @@
           "accountsCreated": "Vytvorené účty",
           "accountsSkipped": "Preskočené účty",
           "categoriesCreated": "Vytvorené kategórie",
-          "tagsCreated": "Vytvorené štítky",
+          "tagsCreated": "Vytvorené značky",
           "payeesCreated": "Vytvorené protistrany",
           "importErrors": "Chyby importu",
           "rowNumber": "Riadok č.",
@@ -220,7 +220,7 @@
         }
       },
       "tagMappingTable": {
-        "csvTagName": "Hodnota štítku z CSV"
+        "csvTagName": "Hodnota značky z CSV"
       },
       "resolveValues": {
         "selectAction": "Vyberte akciu",
@@ -237,9 +237,9 @@
           "tooltips": {
             "mapExactMatchesAccounts": "Prepojí každý účet z CSV s existujúcim účtom rovnakého názvu a meny. Účty bez presnej zhody zostanú nezmenené.",
             "mapExactMatchesCategories": "Prepojí každú kategóriu z CSV s existujúcou kategóriou rovnakého názvu. Kategórie bez presnej zhody zostanú nezmenené.",
-            "mapExactMatchesTags": "Prepojí každý štítok z CSV s existujúcim štítkom rovnakého názvu. Štítky bez presnej zhody zostanú nezmenené.",
+            "mapExactMatchesTags": "Prepojí každú značku z CSV s existujúcou značkou rovnakého názvu. Značky bez presnej zhody zostanú nezmenené.",
             "createNewForUnmatched": "Pri každom riadku, ktorý nie je prepojený s existujúcim záznamom, nastaví „Vytvoriť nový\". Už prepojené riadky zostanú nezmenené.",
-            "skipAll": "Preskočí každý štítok — žiadny sa neimportuje ani nevytvorí.",
+            "skipAll": "Preskočí každá značka — žiadny sa neimportuje ani nevytvorí.",
             "reset": "Vymaže všetky voľby a znova spustí automatické priraďovanie."
           }
         },
@@ -264,17 +264,17 @@
           "csvName": "Kategória z CSV"
         },
         "tags": {
-          "sectionTitle": "Priradenie štítkov",
+          "sectionTitle": "Priradenie značiek",
           "resolvedCount": "Priradených {resolved} z {total}",
-          "csvName": "Štítok z CSV",
+          "csvName": "Značka z CSV",
           "action": "Akcia",
-          "target": "Cieľový štítok",
-          "selectTarget": "Vyberte štítok",
+          "target": "Cieľová značka",
+          "selectTarget": "Vyberte značku",
           "willCreate": "Vytvorí sa „{name}\"",
           "willSkip": "Preskočí sa",
-          "noExistingTags": "Nie sú dostupné žiadne existujúce štítky na prepojenie",
-          "loadFailed": "Štítky sa nepodarilo načítať",
-          "empty": "V CSV sa nenašli žiadne štítky"
+          "noExistingTags": "Nie sú dostupné žiadne existujúce značky na prepojenie",
+          "loadFailed": "Značky sa nepodarilo načítať",
+          "empty": "V CSV sa nenašli žiadne značky"
         },
         "detectError": "Nepodarilo sa pokračovať. Skúste to znova, prosím.",
         "extractFailed": "Hodnoty na priradenie sa nepodarilo načítať. Vráťte sa späť a skúste to znova, prosím.",

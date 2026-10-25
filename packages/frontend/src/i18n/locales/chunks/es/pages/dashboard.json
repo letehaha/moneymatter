@@ -121,7 +121,7 @@
         "title": "Lista de seguimiento de categorías",
         "addCategory": "Añadir categoría",
         "selectCategories": "Seleccionar categorías",
-        "showTrend": "Show 6-month trend",
+        "showTrend": "Mostrar tendencia de 6 meses",
         "sort": {
           "title": "Ordenar por",
           "custom": "Orden personalizado",
@@ -150,7 +150,7 @@
         "start": "Inicio",
         "end": "Fin",
         "growth": "Crecimiento",
-        "changeInPeriod": "Change in {period}",
+        "changeInPeriod": "Cambiar en {period}",
         "previousPeriodsTrend": "Tendencia de períodos anteriores",
         "excludedTooltip": "Excluido del patrimonio neto: {components}",
         "viewHistory": "Ver historial",
@@ -302,7 +302,7 @@
         "empty": "Aún no hay presupuestos",
         "create": "Configurar un presupuesto",
         "sort": {
-          "overspent": "Most overspent first"
+          "overspent": "Más excesivo primero"
         }
       },
       "trackers": {
@@ -310,7 +310,7 @@
         "inOut": "{ingresos} entran, {gastos} salen",
         "net": "Neto",
         "noLimit": "Sin límite",
-        "empty": "Aún no hay presupuestos",
+        "empty": "Aún no hay rastreadores",
         "ended": "Finalizado",
         "create": "Crear un seguimiento"
       },
@@ -377,8 +377,27 @@
           "description": "Lo que queda en el actual período presupuestario, línea por línea"
         },
         "trackers": {
-          "name": "Presupuestos",
+          "name": "Rastreadores",
           "description": "Cada rastreador activo con cuánto de su límite está usado y su neto"
+        },
+        "goals": {
+          "name": "Objetivos",
+          "description": "Avance hacia sus objetivos de ahorro",
+          "savedOfTarget": "{saved} de {target}",
+          "empty": {
+            "title": "No hay objetivos activos",
+            "description": "Establecer un objetivo y ver lo cerca que estás.",
+            "action": "Crear objetivo"
+          },
+          "locked": {
+            "title": "Los objetivos están bloqueados",
+            "description": "Ahorre en lo que importa y vea si está en el ritmo. Disponible en planes de pago.",
+            "action": "Saber más"
+          },
+          "settings": {
+            "showReached": "Mostrar objetivos alcanzados"
+          },
+          "reachedSection": "Alcanzado"
         }
       }
     },
@@ -406,7 +425,7 @@
         "goingOut": "{amount} saliendo",
         "today": "Hoy"
       },
-      "loadFailed": "No se pudo cargar los pagos recurrientes"
+      "loadFailed": "No se pudo cargar los pagos recurrentes"
     },
     "latestRecords": {
       "config": {

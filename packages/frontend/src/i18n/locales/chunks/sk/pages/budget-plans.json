@@ -235,7 +235,11 @@
       "activity": "Pohyb",
       "available": "K dispozícii",
       "overrideBadge": "prepísané",
-      "carriesDeficit": "prenáša nedostatok",
+      "carryBadge": {
+        "floor": "prenáša prebytok",
+        "signed": "prenáša prebytok aj deficit",
+        "none": "začína odznova"
+      },
       "lineActions": "Akcie riadku",
       "editLine": "Upraviť riadok",
       "archiveLine": "Archivovať riadok",

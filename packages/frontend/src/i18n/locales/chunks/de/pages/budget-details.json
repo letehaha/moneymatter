@@ -65,6 +65,7 @@
           "dailyPace": "Tägliches Tempo",
           "perDay": "/ Tag",
           "allowedPerDay": "erlaubt {amount} / Tag · {elapsed} von {total} Tagen",
+          "neededPerDay": "benötigt {amount} / Tag · {elapsed} von {total} Tagen",
           "daysElapsed": "{elapsed} von {total} Tagen",
           "projectedTotal": "Voraussichtliche Gesamtsumme",
           "projectedLimit": "bei diesem Tempo · Limit {amount}",
@@ -87,6 +88,7 @@
         "cumulativeLabel": "Kumuliert",
         "legend": {
           "cumulative": "Ausgegeben, kumuliert",
+          "earnedCumulative": "Eingenommen, kumuliert",
           "evenPace": "Gleichmäßiges Tempo bis zum Limit",
           "projection": "Hochrechnung",
           "daily": "Pro Tag",

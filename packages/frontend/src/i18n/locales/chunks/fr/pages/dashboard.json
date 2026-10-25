@@ -185,7 +185,7 @@
         "loadFailed": "Impossible de charger vos comptes",
         "runwayHint": {
           "description": "Il est généralement recommandé de disposer d'une épargne de précaution couvrant 3 à 6 mois de dépenses.",
-          "critical": "Moins d'un mois : réserve très faible",
+          "critical": "Moins d'1 mois : réserve très faible",
           "low": "1 à 3 mois : inférieur aux recommandations",
           "good": "3 mois ou plus : niveau recommandé"
         }
@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Suivis",
           "description": "Chaque suivi actif avec la part consommée du plafond et son solde net"
+        },
+        "goals": {
+          "name": "Objectifs",
+          "description": "Progression vers vos objectifs d'épargne",
+          "savedOfTarget": "{saved} sur {target}",
+          "empty": {
+            "title": "Aucun objectif actif",
+            "description": "Définissez un objectif pour suivre votre progression.",
+            "action": "Créer un objectif"
+          },
+          "locked": {
+            "title": "Les objectifs sont verrouillés",
+            "description": "Épargnez pour ce qui compte et vérifiez si vous êtes dans les temps. Disponible avec les offres payantes.",
+            "action": "En savoir plus"
+          },
+          "settings": {
+            "showReached": "Afficher les objectifs atteints"
+          },
+          "reachedSection": "Atteint"
         }
       }
     },

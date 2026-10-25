@@ -58,7 +58,7 @@
     },
     "refType": {
       "category": "kategória",
-      "tag": "štítok",
+      "tag": "značka",
       "account": "účet",
       "accountGroup": "skupina účtov",
       "bankConnection": "bankové pripojenie",
@@ -66,12 +66,12 @@
     },
     "emptyState": {
       "title": "Zatiaľ žiadne automatizácie",
-      "description": "Automatizácie zaraďujú transakcie do kategórií, priraďujú im štítky a poznámky hneď, ako prídu z bankovej synchronizácie alebo importu súboru.",
+      "description": "Automatizácie zaraďujú transakcie do kategórií, priraďujú im značky a poznámky hneď, ako prídu z bankovej synchronizácie alebo importu súboru.",
       "cta": "Vytvorte prvú automatizáciu"
     },
     "delete": {
       "title": "Zmazať automatizáciu?",
-      "description": "„{name}\" sa prestane spúšťať na nové transakcie. Transakcie, ktoré už zaradila, si ponechajú svoju kategóriu, štítky aj poznámku.",
+      "description": "„{name}\" sa prestane spúšťať na nové transakcie. Transakcie, ktoré už zaradila, si ponechajú svoju kategóriu, značky aj poznámku.",
       "confirm": "Vymazať"
     },
     "notifications": {
@@ -110,7 +110,7 @@
     "actions": {
       "set_category": "Nastaviť kategóriu",
       "set_payee": "Nastaviť protistranu",
-      "add_tags": "Pridať štítky",
+      "add_tags": "Pridať značky",
       "set_note": "Nastaviť poznámku",
       "noteMode": {
         "replace": "Nahradiť",
@@ -155,7 +155,7 @@
       "removeAction": "Odstrániť akciu",
       "categoryPlaceholder": "Vyberte kategóriu",
       "payeePlaceholder": "Vyberte protistranu",
-      "tagsPlaceholder": "Vyberte štítky",
+      "tagsPlaceholder": "Vyberte značky",
       "notePlaceholder": "Zadajte text poznámky",
       "saveSuccess": "Automatizácia uložená.",
       "notFound": {
@@ -194,7 +194,7 @@
         "dayRange": "Zadajte rozsah dní od 1 do 31, pričom prvý deň musí byť pred posledným (alebo rovnaký).",
         "categoryRequired": "Vyberte kategóriu.",
         "payeeRequired": "Vyberte protistranu.",
-        "tagsRequired": "Vyberte aspoň jeden štítok.",
+        "tagsRequired": "Vyberte aspoň jednu značku.",
         "noteRequired": "Zadajte text poznámky.",
         "noteTooLong": "Poznámka môže mať najviac {max} znakov.",
         "saveFailed": "Automatizáciu sa nepodarilo uložiť. Skúste to znova, prosím.",

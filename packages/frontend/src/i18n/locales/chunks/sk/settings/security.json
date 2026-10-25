@@ -138,7 +138,7 @@
           "list": {
             "accounts": "Účty a zostatky",
             "transactions": "Transakcie, vrátenia platby a prevody",
-            "budgets": "Rozpočty, sledovače, štítky a kategórie",
+            "budgets": "Rozpočty, sledovače, značky a kategórie",
             "portfolios": "Investície, portfóliá a pozície",
             "settings": "Používateľských nastavení, kľúčov AI a stavu úvodného nastavenia",
             "baseCurrency": "Základnej meny a výmenných kurzov"
@@ -203,7 +203,7 @@
               "aiKeysTerm": "API kľúče AI",
               "aiKeys": "{term} — uložené šifrovane, preto ich po obnove zadáte znova."
             },
-            "included": "Všetko ostatné — účty, transakcie, kategórie, rozpočty, sledovače, investície, pôžičky, štítky, protistrany a predplatné — je zahrnuté."
+            "included": "Všetko ostatné — účty, transakcie, kategórie, rozpočty, sledovače, investície, pôžičky, značky, protistrany a predplatné — je zahrnuté."
           }
         },
         "restore": {

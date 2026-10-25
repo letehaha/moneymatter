@@ -139,12 +139,12 @@
         "description": "Lee una factura o recibo subido y encuentra la transacción a la que pertenece."
       },
       "trackerMatching": {
-        "name": "Tracker matching",
-        "description": "Scans new transactions and suggests the ones that belong to a smart tracker."
+        "name": "Coincidencia de rastreador",
+        "description": "Escanea nuevas transacciones y sugiere las que pertenecen a un rastreador inteligente."
       },
       "transferMatching": {
         "name": "Asociación de transferencias",
-        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
+        "description": "Comprueba la transferencia de resultados del escaneo y mantiene los pares que parecen transferencias reales"
       }
     },
     "transactions": {
@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "{handle} adjuntó esta transacción al presupuesto",
+        "addedByRule": "Agregado por las reglas del rastreador",
         "matchedByAi": "Coincidencia por IA",
         "externalLinkTooltip": "Abrir enlace externo",
         "locationTooltip": "Abrir ubicación en el mapa",
@@ -229,7 +230,7 @@
         "brand": "Marca",
         "letters": "Letras",
         "icon": "Icono",
-        "custom": "Image"
+        "custom": "Imagen"
       },
       "searchPlaceholder": "Nombre de marca o dominio",
       "searchHint": "Escriba un nombre de marca o un dominio como amazon.com",
@@ -250,12 +251,12 @@
       "colorSwatchAriaLabel": "Usar color {color}",
       "customColorAriaLabel": "Elegir un color personalizado",
       "lettersSelectedLabel": "Letras “{letters}”",
-      "lettersHint": "1–2 letters or an emoji",
-      "chooseImage": "Choose image",
-      "replaceImage": "Replace image",
-      "imageHint": "Cropped to a square and resized to 200×200 on your device.",
-      "imageTooLarge": "The image is still over 50 KB after resizing. Try a simpler picture.",
-      "imageUnreadable": "That file couldn't be read as an image."
+      "lettersHint": "1–2 letras o un emoji",
+      "chooseImage": "Elige una imagen",
+      "replaceImage": "Reemplazar imagen",
+      "imageHint": "Recortado a un cuadrado y redimensionado a 200×200 en tu dispositivo.",
+      "imageTooLarge": "La imagen tiene aún más de 50 KB después de cambiar el tamaño. Prueba con una imagen más sencilla.",
+      "imageUnreadable": "No se ha podido leer {name} como una imagen."
     },
     "iconPicker": {
       "searchPlaceholder": "Buscar iconos...",
@@ -302,8 +303,8 @@
       "error": "Error al añadir la cuenta al grupo"
     },
     "linkMany": {
-      "success": "Accounts added to the group",
-      "error": "Failed to add accounts to the group"
+      "success": "La cuenta ha sido añadida al grupo",
+      "error": "Error al añadir la cuenta al grupo"
     },
     "unlink": {
       "success": "La cuenta ha sido quitada del grupo",
@@ -326,10 +327,10 @@
     "newVersion": "Nueva versión {version}",
     "newRelease": "Nueva versión publicada",
     "trackerAiMatches": {
-      "title": "{name}: {summary}",
-      "added": "{count} transaction added | {count} transactions added",
-      "toReview": "{count} transaction to review | {count} transactions to review",
-      "toReviewShort": "{count} to review",
+      "title": "{name} · {summary}",
+      "added": "Transacción {count} añadida | {count} transacciones añadidas",
+      "toReview": "Transacción {count} a revisar | {count} transacciones a revisar",
+      "toReviewShort": "{count} a revisar",
       "both": "{added}, {toReview}"
     },
     "tagReminder": {
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Abra el panel de compartir para reenviar."
+    },
+    "goalReached": {
+      "title": "Objetivo alcanzado: {name}",
+      "message": "Has guardado {amount}."
     }
   },
   "currencyNames": {
@@ -432,7 +437,7 @@
   },
   "billing": {
     "seePlans": "Ver planes",
-    "trialStartFailed": "Couldn't start the free trial. Try again.",
+    "trialStartFailed": "No se pudo iniciar la prueba gratuita. Inténtalo de nuevo.",
     "updatePaymentMethod": "Actualice su método de pago",
     "planRequired": {
       "essential": "Incluido en el Plan Esencial",

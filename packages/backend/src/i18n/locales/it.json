@@ -2,7 +2,7 @@
   "common": {
     "processAlreadyLocked": "Il processo di sincronizzazione per \"{{lockKey}}\" è già bloccato.",
     "serviceTemporarilyUnavailable": "Servizio temporaneamente non disponibile. Riprova.",
-    "jobInterruptedByServerUpdate": "A server update interrupted this before it finished, so nothing was changed."
+    "jobInterruptedByServerUpdate": "Un aggiornamento lato Server ha interrotto l'attività prima che finisse, nessuna modifica applicata."
   },
   "accounts": {
     "groupNotFound": "Gruppo o conto non trovato",
@@ -16,11 +16,11 @@
     "loanBalanceUseUpdateLoan": "Cambia il saldo di un prestito dalla sua pagina di prestito, non dalle impostazioni del conto.",
     "loanCategoryImmutable": "La categoria di un conto di prestito non può essere modificata.",
     "dedicatedFlowCategoryNotAllowed": "I conti dei prestiti e dei veicoli devono essere creati attraverso le pagine dedicate, non attraverso la pagina dei conti generici.",
-    "initialBalanceOnlySystem": "Initial balance can only be changed for manual accounts",
-    "initialAndCurrentBalanceTogether": "Initial balance and current balance can't be changed in the same request"
+    "initialBalanceOnlySystem": "Il saldo iniziale può essere modificato solo per i conti a gestione manuale",
+    "initialAndCurrentBalanceTogether": "Saldo iniziale e saldo corrente non possono essere modificati nella stessa richiesta"
   },
   "balanceAdjustment": {
-    "defaultNote": "Aggiustamento del saldo",
+    "defaultNote": "Correzione del saldo",
     "accountNotFound": "Conto con id \"{{accountId}}\" non trovato.",
     "vehicleUseOverride": "Il valore di un veicolo può essere modificato solo dalla sua pagina veicolo.",
     "vehicleNegativeValue": "Il valore di un veicolo non può essere negativo."
@@ -28,14 +28,14 @@
   "accountGroups": {
     "groupNotFound": "Gruppo non trovato",
     "groupUpdateFailed": "Aggiornamento del conto non riuscito",
-    "parentGroupNotExist": "Non esiste un padre con tale ID.",
-    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
-    "parentGroupDoesNotExist": "Non esiste un gruppo padre.",
+    "parentGroupNotExist": "Non esiste un elemento genitore con tale Id.",
+    "parentGroupCycle": "Un gruppo non può essere collocato all'interno di se stesso o di uno dei suoi sottogruppi.",
+    "parentGroupDoesNotExist": "Non esiste un gruppo genitore.",
     "accountNotFound": "Non è stato trovato un conto con tale ID.",
-    "accountGroupNotFound": "Non è stato trovato un gruppo di conti con tale ID."
+    "accountGroupNotFound": "Non è stato trovato un gruppo di conti con tale Id."
   },
   "categories": {
-    "notFound": "La categoria con id fornito non esiste.",
+    "notFound": "La categoria con l'id fornito non esiste.",
     "systemCannotBeMoved": "Le categorie di sistema non possono essere spostate.",
     "parentNotFound": "La categoria con tale ID padre non esiste.",
     "systemParentForbidden": "Le categorie di sistema non possono essere usate come padre.",
@@ -56,18 +56,18 @@
     "idCannotBeChanged": "id non può essere cambiato",
     "editReadonlyFields": "Tentativo di modificare i campi in sola lettura dell'conto esterno",
     "changeTypeNotAllowed": "Non è consentito cambiare \"transactionType\" dei conti non di sistema",
-    "bothRefundFieldsNotAllowed": "Non è possibile utilizzare contemporaneamente i campi \"rimborsatiByTxIds\" e \"rimborsiTxId\". Si prega di scegliere l'uno o l'altro.",
-    "oppositeTransactionNotFound": "Impossibile trovare la transazione opposta per effettuare un aggiornamento",
-    "transactionIdNotExist": "La transazione con `id` fornito non esiste!",
+    "bothRefundFieldsNotAllowed": "Non è possibile utilizzare contemporaneamente i campi \"refundedByTxIds\" e \"refundsTxId\". Si prega di scegliere l'uno o l'altro.",
+    "oppositeTransactionNotFound": "Impossibile trovare la transazione complementare per effettuare un aggiornamento",
+    "transactionIdNotExist": "La transazione con l'id fornito non esiste!",
     "notAuthorizedToEdit": "Non sei autorizzato a modificare questa transazione.",
     "cannotDeleteExternal": "Non è consentito eliminare manualmente le transazioni esterne",
-    "bulkDeleteLimitExceeded": "You can delete up to 500 transactions at once. Narrow the selection and try again.",
+    "bulkDeleteLimitExceeded": "Puoi eliminare fino a 500 transazioni contemporaneamente. Restringere la selezione e riprovare.",
     "unexpectedDeleteIssue": "Problema inatteso durante l'eliminazione della transazione",
     "linkSelfNotAllowed": "Si sta tentando di collegare la transazione a se stessa.",
     "linkSameTypeNotAllowed": "Si sta tentando di collegare la transazione con un'altra con lo stesso \"transactionType\".",
-    "linkSameAccountNotAllowed": "Trying to link with the transaction within the same account. It's allowed to link only between different accounts",
-    "linkAlreadyTransferNotAllowed": "Trying to link transaction that is already a transfer.",
-    "linkUnexpectedError": "Unexpected error. Cannot link asked transactions.",
+    "linkSameAccountNotAllowed": "Si sta tentando di collegare la transazione a un'altra all'interno dello stesso conto. È consentito il collegamento solo tra conti diversi",
+    "linkAlreadyTransferNotAllowed": "Si sta tentando di collegare la transazione a un trasferimento",
+    "linkUnexpectedError": "Errore imprevisto. Impossibile collegare le transazioni richieste.",
     "linkCannotFind": "Cannot find base or opposite transactions",
     "linkPlannedNotAllowed": "A planned transaction can't be linked as a transfer.",
     "linkSplitTransactionNotAllowed": "A transaction with splits can't be linked as a transfer.",
@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
     "someTransactionIdsInvalid": "Some transactions IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added successfully",
-    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based trackers. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
-    "notCategoryBudget": "This endpoint is only available for category-based trackers",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
     "startDateAfterEndDate": "Start date must be on or before the end date",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -176,13 +173,13 @@
     "openEndedGoalCannotSnooze": "An open-ended goal can't be snoozed.",
     "zeroSumNeedsPool": "Keeping Ready to Assign at 0 needs a plan funded from a pool.",
     "suggestedGroups": {
-      "bills": "Bills",
+      "bills": "Bollette",
       "everyday": "Everyday",
       "life": "Life"
     }
   },
   "tags": {
-    "tagNotFound": "Tag not found",
+    "tagNotFound": "Etichetta non trovata",
     "tagNameAlreadyExists": "A tag with this name already exists",
     "someTransactionIdsInvalid": "Some transaction IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added to tag successfully",
@@ -206,15 +203,15 @@
   },
   "defaultTags": {
     "want": {
-      "name": "Want",
+      "name": "Desideri",
       "description": "Nice-to-have purchases and discretionary spending"
     },
     "need": {
-      "name": "Need",
+      "name": "Necessità",
       "description": "Important but not urgent expenses"
     },
     "must": {
-      "name": "Must",
+      "name": "Obblighi",
       "description": "Essential expenses that cannot be avoided"
     }
   },
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "It is not allowed to delete default currency. Unmake it default first.",
     "cannotDeleteCurrencyWithAccounts": "It is not allowed to delete currency associated with any accounts. Delete accounts first. Accounts names: \"{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "It is not allowed to delete currency \"{{currencyCode}}\" while it is used by investment holdings. Delete those holdings first.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
     "defaultCurrencyNotPresent": "Cannot delete currency. Default currency is not present in the system"
   },
   "ai": {
@@ -613,15 +611,15 @@
     "main": {
       "food": "Food & Drinks",
       "shopping": "Shopping",
-      "housing": "Housing",
+      "housing": "Abitazione",
       "transportation": "Transportation",
       "vehicle": "Veicolo",
       "life": "Life & Entertainment",
       "communication": "Communication, PC",
       "financial-expenses": "Financial expenses",
-      "investments": "Investments",
-      "income": "Income",
-      "other": "Other"
+      "investments": "Investimenti",
+      "income": "Entrate",
+      "other": "Altro"
     },
     "subcategories": {
       "food": {
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
   }
 }

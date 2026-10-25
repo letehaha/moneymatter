@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Cette opération a été associée au suivi par {handle}",
+        "addedByRule": "Ajoutée par les règles de suivi",
         "matchedByAi": "Associé par l'IA",
         "externalLinkTooltip": "Ouvrir le lien externe",
         "locationTooltip": "Afficher le lieu sur la carte",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Ouvrez le panneau de partage pour renvoyer."
+    },
+    "goalReached": {
+      "title": "Objectif atteint : {name}",
+      "message": "Vous avez épargné {amount}."
     }
   },
   "currencyNames": {

@@ -12,19 +12,37 @@
       "error": "Unerwarteter Fehler!",
       "nameLabel": "Tracker-Name",
       "namePlaceholder": "Name eingeben",
-      "typeLabel": "Tracker-Typ",
-      "typeManual": "Manuell",
-      "typeManualDescription": "Transaktionen manuell zu diesem Tracker hinzufügen",
-      "typeCategory": "Kategoriebasiert",
-      "typeCategoryDescription": "Ausgaben automatisch nach Kategorien verfolgen",
-      "categoriesLabel": "Zu verfolgende Kategorien",
-      "categoriesRequired": "Wähle mindestens eine Kategorie aus",
       "fromDateLabel": "Startdatum",
       "toDateLabel": "Enddatum",
-      "autoIncludeLabel": "Transaktionen automatisch einschließen",
-      "limitLabel": "Tracker-Limit",
       "limitPlaceholder": "Limit eingeben",
       "submitButton": "Tracker hinzufügen"
+    },
+    "limitKind": {
+      "label": "Limittyp",
+      "whatToChoose": "Was auswählen?",
+      "guideTitle": "Welches Limit passt?",
+      "goalNote": "Du sparst auf etwas hin? Nimm stattdessen {goalLink}: Ziele verfolgen, was du gespart hast, Tracker verfolgen, was ein- oder ausgeht.",
+      "goalLink": "Ziel erstellen",
+      "kinds": {
+        "spending": {
+          "label": "Ausgaben",
+          "hint": "Gib höchstens so viel aus. Warnt, wenn die Ausgaben dem Verstreichen der Zeit vorauslaufen.",
+          "guide": "Für eine Sache oder ein Ereignis: eine Reise, eine Renovierung, ein Jahr Lebensmittel. Warnt, wenn du schneller Geld ausgibst, als Zeit vergeht.",
+          "amountLabel": "Limit"
+        },
+        "income_target": {
+          "label": "Einnahmenziel",
+          "hint": "Nimm mindestens so viel ein. Grün, solange du im Zeitplan bist, und eine Überschreitung ist ein Erfolg.",
+          "guide": "Für Geld, das du einnehmen möchtest: Jahresgehalt, Freiberufler-Umsatz, Mieteinnahmen. Grün, solange du im Zeitplan bist; eine Überschreitung ist ein Erfolg.",
+          "amountLabel": "Zielbetrag"
+        },
+        "income_cap": {
+          "label": "Einnahmenobergrenze",
+          "hint": "Bleibe unter diesem Einkommen, z.B. einer Steuer- oder Leistungsgrenze. Warnt, wenn du dich näherst.",
+          "guide": "Für Einkommen, unter dem du bleiben musst: eine Kleinunternehmer-Steuerfreigrenze, eine Einkommensgrenze für Leistungen oder Studienbeihilfe. Warnt, wenn du dich näherst.",
+          "amountLabel": "Obergrenze"
+        }
+      }
     },
     "list": {
       "loadError": "Tracker konnten nicht geladen werden.",
@@ -46,7 +64,6 @@
       "categoriesCount": "{count} Kategorien",
       "noTransactions": "Noch keine Transaktionen",
       "noTimePeriod": "Kein Zeitraum",
-      "autoTracked": "Automatisch verfolgt",
       "status": {
         "ended": "Beendet",
         "lastDay": "Letzter Tag",
@@ -60,6 +77,7 @@
       "expenses": "Ausgaben",
       "net": "Netto",
       "used": "Genutzt",
+      "earned": "Eingenommen",
       "archive": "Archivieren",
       "unarchive": "Wiederherstellen",
       "archivedLabel": "Archiviert",
@@ -73,8 +91,8 @@
       "searchPlaceholder": "Tracker suchen",
       "filters": {
         "all": "Alle",
-        "manual": "Manuell",
-        "category": "Kategorie",
+        "autoAdd": "Automatisches Hinzufügen an",
+        "handPicked": "Manuell ausgewählt",
         "archived": "Archiviert"
       },
       "groups": {
@@ -123,7 +141,6 @@
     "settings": {
       "nameLabel": "Tracker-Name",
       "namePlaceholder": "Tracker-Name eingeben",
-      "limitLabel": "Tracker-Limit",
       "limitPlaceholder": "Limitbetrag eingeben (optional)",
       "startDateLabel": "Startdatum",
       "endDateLabel": "Enddatum",
@@ -133,24 +150,6 @@
       "title": "Transaktionen zum Tracker hinzufügen",
       "addSelected": "Ausgewählte hinzufügen",
       "clearSelection": "Auswahl aufheben"
-    },
-    "categoryBudget": {
-      "trackedCategories": "Verfolgte Kategorien",
-      "categoriesCount": "{count} Kategorien verfolgt",
-      "autoTrackedInfo": "Transaktionen werden automatisch basierend auf Kategorien verfolgt",
-      "transactionsTitle": "Transaktionen",
-      "transactionsCount": "{count} Transaktionen",
-      "noTransactions": "Noch keine Transaktionen",
-      "noTransactionsDescription": "Transaktionen, die zu deinen verfolgten Kategorien passen, werden hier automatisch angezeigt.",
-      "transactionsLoadError": "Transaktionen konnten nicht geladen werden",
-      "categoryBreakdown": "Kategorie-Aufschlüsselung",
-      "edit": "Bearbeiten",
-      "editTitle": "Tracker bearbeiten",
-      "showMore": "Mehr anzeigen",
-      "showLess": "Weniger anzeigen",
-      "settings": {
-        "categoriesLabel": "Verfolgte Kategorien"
-      }
     },
     "manualBudget": {
       "edit": "Bearbeiten",
@@ -162,11 +161,16 @@
     "details": {
       "statsLoadError": "Gesamtsummen dieses Trackers konnten nicht geladen werden.",
       "transactionsCount": "{count} Transaktion | {count} Transaktionen",
+      "tagsCount": "{count} Tag | {count} Tags",
       "strip": {
         "limit": "Limit",
         "spent": "Ausgegeben",
         "left": "Verbleibend",
         "overBy": "Überzogen um",
+        "earned": "Eingenommen",
+        "toGo": "Verbleibend",
+        "headroom": "Spielraum",
+        "aboveTargetBy": "Über dem Ziel um",
         "income": "Einnahmen",
         "expenses": "Ausgaben",
         "net": "Netto",
@@ -176,7 +180,7 @@
       "tabs": {
         "limits": "Limits"
       },
-      "tracks": "Erfasst",
+      "autoAdds": "Automatische Hinzufügungen",
       "membersLabel": "Mitglieder: {count}",
       "actions": {
         "share": "Teilen",
@@ -195,8 +199,7 @@
       },
       "edit": {
         "limitHint": "Leeren, um ohne Limit zu erfassen.",
-        "datesHint": "Das Ändern der Daten fügt keine bereits verknüpften Transaktionen hinzu und entfernt diese auch nicht.",
-        "categoriesHint": "Das Entfernen einer Kategorie entfernt diese auch aus allen Zeilen."
+        "datesHint": "Das Ändern der Daten fügt keine bereits verknüpften Transaktionen hinzu und entfernt diese auch nicht."
       }
     },
     "lines": {
@@ -245,7 +248,6 @@
         "categoriesLabel": "Kategorien",
         "categoriesPlaceholder": "Kategorien auswählen",
         "categoriesRequired": "Wähle mindestens eine Kategorie aus",
-        "categoryTrackerHint": "Dieser Tracker berücksichtigt nur seine eigenen Kategorien, wähle also aus diesen aus.",
         "limitLabel": "Limit (optional)",
         "limitPlaceholder": "Kein Limit",
         "limitHint": "Leer lassen, um Ausgaben ohne Limit zu gruppieren."
@@ -258,6 +260,38 @@
         "createError": "Die Zeile konnte nicht hinzugefügt werden",
         "updateError": "Die Zeile konnte nicht aktualisiert werden",
         "deleteError": "Die Zeile konnte nicht gelöscht werden"
+      }
+    },
+    "rules": {
+      "heading": "Automatisch hinzufügen",
+      "switchLabel": "Passende Transaktionen automatisch hinzufügen",
+      "switchHintOn": "Deine Transaktionen im Zeitraum mit einer dieser Kategorien oder Tags werden hinzugefügt.",
+      "switchHintOff": "Nur Transaktionen, die du von Hand hinzufügst, zählen.",
+      "switchHintTurnedOff": "Das Deaktivieren behält jede bereits hinzugefügte Transaktion bei.",
+      "categoriesLabel": "Kategorien",
+      "categoriesPlaceholder": "Kategorien auswählen",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Tags auswählen",
+      "needsCategoryOrTag": "Wähle mindestens eine Kategorie oder ein Tag aus",
+      "cleanupLabel": "Transaktionen entfernen, die nicht mehr passen",
+      "cleanupHint": "Alle 6 Stunden geprüft. Manuell hinzugefügte Transaktionen werden nie entfernt.",
+      "checkedAt": "Geprüft {when}",
+      "unlinked": "{count} Transaktion entfernt. Sie wird nicht erneut automatisch hinzugefügt. | {count} Transaktionen entfernt. Sie werden nicht erneut automatisch hinzugefügt.",
+      "confirm": {
+        "title": "Neue Zuordnungsregeln speichern?",
+        "description": "Nach dem Speichern werden alle deine Transaktionen anhand der neuen Regeln geprüft und passende hinzugefügt.",
+        "descriptionWithCleanup": "Nach dem Speichern werden alle deine Transaktionen anhand der neuen Regeln geprüft. Passende werden hinzugefügt und solche, die durch Regeln hinzugefügt wurden und nicht mehr passen, werden entfernt. Manuell hinzugefügte Transaktionen bleiben erhalten.",
+        "saveAndCheck": "Speichern und prüfen"
+      },
+      "rejected": {
+        "title": "Nicht erneut hinzugefügt",
+        "description": "Du hast diese entfernt oder als KI-Vorschläge abgelehnt, daher werden sie übersprungen. Gib eine frei und sie wird wieder hinzugefügt, falls sie weiterhin passt.",
+        "summary": "{count} Transaktion wird nicht erneut hinzugefügt | {count} Transaktionen werden nicht erneut hinzugefügt",
+        "review": "Überprüfen",
+        "aiBadge": "KI-Vorschlag",
+        "allowAgain": "Erneut zulassen",
+        "allowed": "Erneut zugelassen",
+        "allowError": "Die Transaktion konnte nicht erneut zugelassen werden"
       }
     },
     "smartTracking": {
@@ -284,6 +318,7 @@
           "threeMonths": "3 Monate",
           "sixMonths": "6 Monate"
         },
+        "costNote": "Der erste Scan prüft jede Transaktion vom Rückschau-Zeitraum bis zum Enddatum. Große Zeiträume können dein monatliches KI-Guthaben aufbrauchen oder direkte Kosten verursachen, wenn du deinen eigenen Schlüssel nutzt.",
         "usesIncluded": "Verwendet die enthaltene KI. Zählt zu deinem monatlichen KI-Guthaben.",
         "usesOwnModel": "Verwendet dein eigenes Modell · {model}"
       },

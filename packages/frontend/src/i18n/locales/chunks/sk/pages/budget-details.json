@@ -65,6 +65,7 @@
           "dailyPace": "Denné tempo",
           "perDay": "/ deň",
           "allowedPerDay": "povolené {amount} / deň · {elapsed} z {total} dní",
+          "neededPerDay": "potrebné {amount} / deň · {elapsed} z {total} dní",
           "daysElapsed": "{elapsed} z {total} dní",
           "projectedTotal": "Predpokladané celkom",
           "projectedLimit": "pri tomto tempe · limit {amount}",
@@ -87,6 +88,7 @@
         "cumulativeLabel": "Kumulatívne",
         "legend": {
           "cumulative": "Vyčerpané, kumulatívne",
+          "earnedCumulative": "Zarobené, kumulatívne",
           "evenPace": "Rovnomerné tempo k limitu",
           "projection": "Projekcia",
           "daily": "Za deň",

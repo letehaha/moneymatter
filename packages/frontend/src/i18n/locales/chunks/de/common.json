@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Diese Transaktion wurde dem Tracker von {handle} hinzugefügt",
+        "addedByRule": "Durch die Regeln des Trackers hinzugefügt",
         "matchedByAi": "Durch KI zugeordnet",
         "externalLinkTooltip": "Externen Link öffnen",
         "locationTooltip": "Standort auf Karte öffnen",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Öffne das Freigabe-Panel, um erneut zu senden."
+    },
+    "goalReached": {
+      "title": "Ziel erreicht: {name}",
+      "message": "Du hast {amount} gespart."
     }
   },
   "currencyNames": {

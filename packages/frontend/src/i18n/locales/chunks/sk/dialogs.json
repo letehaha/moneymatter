@@ -138,7 +138,7 @@
             }
           }
         },
-        "tagsLabel": "Štítky",
+        "tagsLabel": "Značky",
         "originalAmountLabel": "Pôvodná suma",
         "originalAmountPlaceholder": "Suma v cudzej mene",
         "originalAmountTooltip": "Ak bola transakcia uskutočnená v inej mene, než je mena účtu, ide o skutočne zaplatenú sumu v tejto mene. Hlavná suma zostáva v mene účtu. Neovplyvňuje štatistiky.",
@@ -407,7 +407,7 @@
       "templates": {
         "trigger": "Šablóny",
         "filterPlaceholder": "Hľadať šablónu...",
-        "emptyState": "Šablóny vyplnia tento formulár údajmi, ktoré zadávate často — sumou, účtom, kategóriou, protistranou, štítkami, poznámkou. Samy od seba nič nepridávajú; na niečo, čo sa opakuje podľa harmonogramu, použite Opakované platby.",
+        "emptyState": "Šablóny vyplnia tento formulár údajmi, ktoré zadávate často — sumou, účtom, kategóriou, protistranou, značkami, poznámkou. Samy od seba nič nepridávajú; na niečo, čo sa opakuje podľa harmonogramu, použite Opakované platby.",
         "noMatches": "Žiadna šablóna nezodpovedá.",
         "loadError": "Vaše šablóny sa nepodarilo načítať.",
         "saveCurrent": "Uložiť aktuálne ako šablónu",
@@ -525,11 +525,11 @@
       "inheritParentColor": "Použiť farbu nadradenej kategórie",
       "iconLabel": "Ikona",
       "iconPlaceholder": "Vyberte ikonu",
-      "defaultTagsLabel": "Predvolené štítky",
-      "defaultTagsPlaceholder": "Vyberte štítky",
+      "defaultTagsLabel": "Predvolené značky",
+      "defaultTagsPlaceholder": "Vyberte značky",
       "defaultTagsHint": "Pridá sa k transakcii, keď vyberiete túto kategóriu.",
       "applyTagsOnAiLabel": "Použiť aj vtedy, keď AI zaraďuje transakciu",
-      "applyTagsOnAiHint": "Štítky zostanú pri transakcii aj po neskoršej zmene kategórie.",
+      "applyTagsOnAiHint": "Značky zostanú pri transakcii aj po neskoršej zmene kategórie.",
       "settingsDivider": "Nastavenia",
       "saveButton": "Uložiť",
       "createButton": "Vytvoriť",
@@ -556,10 +556,10 @@
         "nameLabel": "Názov skupiny",
         "namePlaceholder": "Investície",
         "createButton": "Vytvoriť",
-        "subgroupTitle": "New subgroup",
-        "insideLabel": "Inside",
-        "subgroupNamePlaceholder": "e.g. Savings",
-        "createSubgroupButton": "Create subgroup"
+        "subgroupTitle": "Nová podskupina",
+        "insideLabel": "Vnútri",
+        "subgroupNamePlaceholder": "napr. Úspory",
+        "createSubgroupButton": "Vytvoriť podskupinu"
       }
     },
     "directCashTransaction": {

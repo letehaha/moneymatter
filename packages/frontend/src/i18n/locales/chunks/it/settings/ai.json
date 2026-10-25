@@ -1,75 +1,75 @@
 {
   "settings": {
     "ai": {
-      "title": "AI settings",
-      "description": "Pick which AI model powers each feature, add your own models, and connect AI apps like Claude or ChatGPT to your data.",
+      "title": "Impostazione IA",
+      "description": "Scegli quale modello IA alimenta ciascuna funzionalità, aggiungi i tuoi modelli personalizzati e connetti applicazioni come Claude e ChatGPT.",
       "tabs": {
-        "features": "AI features",
-        "models": "AI models",
-        "connectedApps": "Connectors (MCP)",
-        "invalidConnectionsTooltip": "One of your AI models needs attention"
+        "features": "Funzionalità IA",
+        "models": "Modelli IA",
+        "connectedApps": "Connettori (MCP)",
+        "invalidConnectionsTooltip": "Uno dei vostri modelli IA ha bisogno di attenzione"
       },
       "credentialStatus": {
-        "validated": "Validated {timeAgo}",
-        "failed": "Failed {timeAgo}",
+        "validated": "Validato {timeAgo}",
+        "failed": "Respinto {timeAgo}",
         "invalidBadge": "Non valido"
       },
       "features": {
-        "title": "AI features",
-        "description": "Configure which model to use for each AI-powered feature",
-        "howItWorks": "How it works",
-        "loadError": "Couldn't load your AI features."
+        "title": "Funzionalità IA",
+        "description": "Configura quale modello usare per ogni funzionalità connessa con la IA",
+        "howItWorks": "Come funziona?",
+        "loadError": "Impossibile caricare le funzionalità IA."
       },
       "categorization": {
         "howItWorks": {
           "points": {
-            "autoSync": "When you sync transactions from your bank, uncategorized transactions are automatically sent to AI for categorization.",
-            "analysis": "The AI analyzes transaction descriptions and merchant names to suggest appropriate categories from your existing category list.",
-            "override": "You can always manually override AI-suggested categories."
+            "autoSync": "Quando le transazioni vengono sincronizzate dalla tua banca, le transazioni non categorizzate vengono automaticamente inviate all'IA per la categorizzazione.",
+            "analysis": "L'IA analizza la descrizione delle transazioni e i nomi degli esercenti per suggerire categorie appropriate da quelle esistenti.",
+            "override": "Puoi sempre sovrascrivere manualmente le categorie suggerite dall'IA."
           }
         }
       },
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Upload a bank statement (PDF, CSV or TXT), a receipt photo or a banking app screenshot and AI will extract all transactions automatically.",
-            "analysis": "The AI analyzes the document structure to identify dates, descriptions, amounts, and transaction types.",
-            "review": "You can review and correct any extracted data before importing into your account.",
-            "cost": "Cost is estimated before processing, yet it only reflects the approximate cost."
+            "upload": "Carica un estratto conto (PDF, CSV o TXT), una foto di ricevuta o uno screenshot di un'app bancaria e l'IA estrarrà automaticamente tutte le transazioni.",
+            "analysis": "L'IA analizza la struttura del documento per identificare date, descrizioni, importi e tipo di transazione.",
+            "review": "È possibile rivedere e correggere tutti i dati estratti prima di eseguire l'importazione nel proprio account.",
+            "cost": "Il costo della lavorazione è una stima approssimativa."
           }
         }
       },
       "modelSelector": {
-        "placeholder": "Pick a model",
-        "automaticOption": "Automatic",
-        "automaticOptionWithTarget": "Automatic · {target}",
-        "serverOption": "MoneyMatter AI · included",
+        "placeholder": "Scegliere un modello",
+        "automaticOption": "Automatico",
+        "automaticOptionWithTarget": "Automatico · {target}",
+        "serverOption": "MoneyMatter AI · incluso",
         "connectionOption": "{name} · {model}",
-        "connectionOptionNeedsAttention": "{name} · {model} (needs attention)",
+        "connectionOptionNeedsAttention": "{name} · {model} (richiede attenzione)",
         "badges": {
-          "yourKey": "Your key",
-          "yourKeyTooltip": "Runs on one of your own AI models. Your provider bills you directly, and MoneyMatter doesn't limit usage.",
+          "yourKey": "La tua chiave",
+          "yourKeyTooltip": "Funziona con uno dei tuoi modelli d'intelligenza artificiale, che si occupa anche della fatturazione. MoneyMatter non limita l'utilizzo.",
           "server": "Server",
-          "serverTooltip": "Runs on MoneyMatter AI, included in your plan. Usage limits apply."
+          "serverTooltip": "Funziona con MoneyMatter AI, incluso nel tuo piano. Si applicano limiti di utilizzo."
         },
-        "modelLabel": "Model",
+        "modelLabel": "Modello",
         "modelInfo": {
-          "estimatedCost": "Est. cost:",
-          "per100Transactions": "per 100 txns",
-          "per100Pairs": "per 100 pairs"
+          "estimatedCost": "Costo stimato:",
+          "per100Transactions": "Per 100 transazioni",
+          "per100Pairs": "Per 100 coppie"
         },
         "notifications": {
-          "updateSuccess": "Model updated successfully",
-          "updateFailed": "Failed to update model",
-          "resetSuccess": "Reset to default model",
-          "resetFailed": "Failed to reset model"
+          "updateSuccess": "Modello aggiornato con successo.",
+          "updateFailed": "Impossibile aggiornare il modello",
+          "resetSuccess": "Ripristina il modello predefinito",
+          "resetFailed": "Impossibile ripristinare il modello"
         },
         "empty": {
-          "title": "No AI model yet",
-          "description": "Add your own AI model to use this feature."
+          "title": "Ancora nessun modello IA",
+          "description": "Aggiungi il tuo modello IA per usare questa funzionalità."
         },
         "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
-        "allConnectionsDownLink": "AI models"
+        "allConnectionsDownLink": "Modelli IA"
       },
       "modelGuide": {
         "trigger": "Which model fits?",
@@ -148,7 +148,7 @@
         }
       },
       "connections": {
-        "title": "AI models",
+        "title": "Modelli IA",
         "description": "Connect OpenAI, Claude, Gemini, OpenRouter or a local model. Each entry is one model you can pick for any feature.",
         "tip": {
           "ariaLabel": "About AI models",
@@ -223,7 +223,7 @@
           "apiKeySavedHint": "Leave blank to keep the saved key.",
           "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
           "removeApiKeyButton": "Remove API key",
-          "modelLabel": "Model",
+          "modelLabel": "Modello",
           "modelPlaceholder": "Type or pick a model",
           "modelListEmpty": "No models to pick from. Type the model name your server uses.",
           "modelListNoMatch": "No listed model matches. You can still use the name you typed.",

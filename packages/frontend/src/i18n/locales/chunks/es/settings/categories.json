@@ -7,7 +7,7 @@
       "organizeButton": "Organizar",
       "empty": "Aún no hay categorías. Cree su primera categoría para comenzar.",
       "categoriesCount": "{n} categoría | {n} categorías",
-      "organizeHint": "Arrastre sobre una nueva categoría padre, o suéltela aquí para el nivel superior.",
+      "organizeHint": "Arrastre sobre una nueva categoría padre, o suéltela aquí para el nivel superior",
       "dropToTopLevel": "Suelte aquí para convertir «{name}» en una categoría de nivel superior",
       "movesQueued": "{n} movimiento en cola | {n} movimientos en cola",
       "unqueueMove": "Quitar este movimiento",

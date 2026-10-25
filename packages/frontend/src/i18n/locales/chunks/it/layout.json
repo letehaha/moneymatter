@@ -12,17 +12,20 @@
     "optimizations": "Ottimizzazioni",
     "automations": "Automazioni",
     "accountDetails": "Dettagli account",
-    "helpAndDocs": "Help & docs",
+    "helpAndDocs": "Guida & Documentazione",
     "logout": "Disconnessione",
     "appVersion": "Versione app {version}",
+    "updateAvailable": "Aggiornamento disponibile",
+    "updateToVersion": "Aggiornamento · {version}",
     "settings": "Impostazioni",
     "planned": {
       "planned": "Transazioni PianIficate",
       "subscriptions": "Pagamenti ricorrenti",
-      "budgets": "Bilancio"
+      "budgets": "Tracker",
+      "goals": "Obiettivi"
     },
     "venture": "Investimenti",
-    "budget": "Budget"
+    "budget": "Tracker"
   },
   "sidebar": {
     "collapse": "Nascondi barra laterale",
@@ -30,8 +33,8 @@
     "settings": {
       "title": "Impostazioni",
       "sections": {
-        "label": "Sezioni Sidebar",
-        "description": "Seleziona quali sezioni appaiono nella sidebar",
+        "label": "Sezioni della barra laterale",
+        "description": "Seleziona quali sezioni appaiono nella barra laterale.",
         "alwaysVisibleTooltip": "Questa sezione è sempre visibile."
       },
       "hideZeroBalances": {
@@ -48,7 +51,7 @@
       "newPortfolio": "Nuovo portafoglio",
       "noPortfolios": "Ancora nessun portafoglio",
       "ventures": "Investimenti",
-      "cars": "Auto",
+      "cars": "Veicoli",
       "loans": "Prestiti & Finanziamenti",
       "collapseNavigation": "Nascondi barra di navigazione",
       "viaHousehold": "Condiviso tramite la famiglia di {handle}",
@@ -59,10 +62,10 @@
   "header": {
     "add": "Aggiungere",
     "importData": "Importazione dati",
-    "moreActions": "More ways to add data",
-    "importDataHint": "CSV file or bank statement",
-    "attachInvoice": "Attach invoice",
-    "attachInvoiceHint": "We find the transaction it belongs to",
+    "moreActions": "Altri modi per aggiungere dati",
+    "importDataHint": "File CSV o estratto conto bancario",
+    "attachInvoice": "Allega ricevuta/fattura",
+    "attachInvoiceHint": "Transazione corrispondente trovata",
     "language": "Lingua",
     "newTransaction": "Aggiungere transazione",
     "settings": "Impostazioni",
@@ -85,7 +88,7 @@
       "completedWithSkipped": "Classificate {count} transazioni ({skipped} saltate) | Classificate {count} transazioni ({skipped} saltate)",
       "failed": "Classificazione non riuscita",
       "failedShort": "Non Riuscita",
-      "allSkipped": "L'AI non ha potuto categorizzare in modo sicuro la transazione <unk> L'AI non ha potuto categorizzare in modo sicuro nessuna delle transazioni {count}",
+      "allSkipped": "L'AI non ha potuto categorizzare in modo sicuro la transazione | L'AI non ha potuto categorizzare in modo sicuro nessuna delle transazioni {count}",
       "queued": "Attendi...",
       "transactions": "transazioni"
     }
@@ -104,16 +107,16 @@
       "types": {
         "bug": "Qualcosa è andato storto",
         "featureRequest": "Richiedo una funzionalità",
-        "other": "Altro..."
+        "other": "Altro"
       },
-      "docsHint": "Not sure how something works? Check the {link} first.",
-      "docsHintLink": "docs",
+      "docsHint": "Non sei sicuro di come funziona qualcosa? Controlla prima qui {link}.",
+      "docsHintLink": "documentazione",
       "messageLabel": "La tua opinione",
       "messagePlaceholder": "Cos'è successo o cosa vorresti vedere?",
-      "messageRequired": "Scrivi un messaggio...",
+      "messageRequired": "Scrivi un messaggio.",
       "submit": "Invia",
       "thanks": "Grazie, leggiamo ogni messaggio.",
-      "unavailable": "L'invio non è disponibile in questo momento. Usa il link qui sotto!",
+      "unavailable": "L'invio non è disponibile in questo momento. Usa il link qui sotto.",
       "or": "oppure",
       "board": {
         "title": "Posta sul Forum",
@@ -144,12 +147,12 @@
     "retrySyncButton": "Riprova la sincronizzazione",
     "manageConnectionsButton": "Gestisci le connessioni",
     "needsReauthTitle": "Riconnetti le tue connessioni",
-    "needsReauthDescription": "Alcune connessioni sono scadute. Riconnettersi per riprendere la sincornizzazione.",
+    "needsReauthDescription": "Connessioni bancarie sono scadute. Riconnettersi per riprendere la sincronizzazione.",
     "reconnectButton": "Riconnetti",
-    "affectedAccounts": "Un conto | {count} conti",
+    "affectedAccounts": "1 conto | {count} conti",
     "timeAgo": {
       "justNow": "Adesso",
-      "secondsAgo": "{count} secondi fa | {count} secondi fa",
+      "secondsAgo": "{count} secondo fa | {count} secondi fa",
       "minutesAgo": "{count} minuti fa | {count} minuti fa",
       "hoursAgo": "{count} ore fa | {count} ore fa",
       "daysAgo": "{count} giorni fa | {count} giorni fa",
@@ -166,7 +169,7 @@
     }
   },
   "relinkWarning": {
-    "buttonLabel": "{count} account ha bisogno di attenzione | {count} account ha bisogno di attenzione",
+    "buttonLabel": "{count} account ha bisogno di attenzione | {count} account hanno bisogno di attenzione",
     "title": "Enable Banking: azione richiesta",
     "description": "Questi conti Enable Banking devono essere aggiornati a causa di un cambio nello schema dei dati. Questa è una operazione una tantum per migliorare l'affidabilità della sincronizzazione.",
     "step1Full": "Per risparmiare tempo, prova a riconnettere tutte le connessioni bancarie. Puoi trovare il pulsante {reconnect} nella sezione {connectionValidity} di ogni pagina di connessione:",
@@ -187,7 +190,7 @@
           "name": "Enable Banking"
         },
         "lunchflow": {
-          "name": "Fai partire il flow"
+          "name": "Lunch Flow"
         }
       }
     }
@@ -308,7 +311,7 @@
           },
           "configure-ai": {
             "title": "Imposta la tua chiave API",
-            "description": "Usa la tua chiave API AI per l'accesso illimitato"
+            "description": "Collegare OpenAI, Claude, Gemini o un modello locale."
           },
           "invite-household-member": {
             "title": "Invita un membro della tua famiglia",
@@ -328,8 +331,8 @@
           "dismissConfirmButton": "Cancella",
           "triggerTooltip": "Guida rapida - {count} attività rimanenti",
           "srDescription": "Completa queste attività per iniziare con l'app",
-          "progressText": "{completed} of {total} completate",
-          "categoryProgress": "{completed} of {total} completate"
+          "progressText": "{completed} di {total} completate",
+          "categoryProgress": "{completed} di {total} completate"
         }
       }
     }

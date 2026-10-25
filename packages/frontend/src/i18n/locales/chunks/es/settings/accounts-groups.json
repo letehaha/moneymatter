@@ -42,70 +42,70 @@
       },
       "dialogs": {
         "rename": {
-          "title": "Rename group",
-          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "title": "Renombrar grupo",
+          "description": "Haga clic en el logotipo para elegir un logotipo de banco, iniciales o un color.",
           "submit": "Guardar cambios"
         },
         "move": {
           "title": "Mover «{name}»",
-          "description": "Its subgroups and accounts move with it.",
-          "parentLabel": "Parent group",
-          "parentPlaceholder": "Select a parent group",
-          "noParent": "No parent",
-          "hint": "Pick “No parent” to make it a top-level group.",
+          "description": "Sus subgrupos y cuentas se mueven con ella.",
+          "parentLabel": "Grupo padre",
+          "parentPlaceholder": "Seleccionar grupo padre",
+          "noParent": "Ningún padre",
+          "hint": "Elige \"Sin padre\" para convertirlo en un grupo de alto nivel.",
           "submit": "Mover"
         },
         "addAccounts": {
-          "title": "Add accounts to “{name}”",
-          "description": "An account belongs to one group. Picking one from another group moves it here.",
-          "searchPlaceholder": "Search accounts",
+          "title": "Añadir cuentas a “{name}”",
+          "description": "Una cuenta pertenece a un grupo. Seleccionando una de otro grupo la mueve aquí.",
+          "searchPlaceholder": "Buscar cuentas",
           "sections": {
-            "ungrouped": "Not in a group",
-            "inOtherGroups": "In other groups",
-            "alreadyInGroup": "Already in {name}"
+            "ungrouped": "No está en ningún grupo",
+            "inOtherGroups": "En otros grupos",
+            "alreadyInGroup": "Ya está en {name}"
           },
-          "inGroupCaption": "In {path}",
-          "noResults": "No accounts match your search",
-          "noAccounts": "No accounts to add",
+          "inGroupCaption": "En {path}",
+          "noResults": "Ningún grupo coincide con su búsqueda",
+          "noAccounts": "Sin cuentas para asignar",
           "summary": {
-            "selected": "{selected} selected",
-            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
-            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+            "selected": "{selected} seleccionadas",
+            "movesFromGroup": "{selected} seleccionado, {count} movimiento desde {group} | {selected} seleccionados, {count} movimientos desde {group}",
+            "movesFromOtherGroups": "{selected} seleccionado, {count} movido desde otros grupos | {selected} seleccionados, {count} movido desde otros grupos"
           },
-          "submit": "Add {count} account | Add {count} accounts"
+          "submit": "Añadir {count} cuenta | Añadir {count} cuentas"
         }
       },
       "tree": {
-        "groupsCount": "{count} group | {count} groups",
+        "groupsCount": "{count} grupo | {count} grupos",
         "syncedBadge": "Sincronizado",
         "expand": "Expandir",
         "collapse": "Contraer",
         "renameTooltip": "Renombrar",
         "moreActions": "Más acciones",
         "menu": {
-          "rename": "Rename and change logo",
-          "move": "Move to another group",
-          "newSubgroup": "New subgroup",
-          "addAccounts": "Add accounts",
+          "rename": "Cambiar el nombre y el logotipo",
+          "move": "Mover a otro grupo",
+          "newSubgroup": "Nuevo subgrupo",
+          "addAccounts": "Añadir cuentas",
           "delete": "Eliminar grupo"
         }
       },
       "organize": {
         "button": "Organización",
-        "hint": "Drag a group onto another to nest it",
+        "hint": "Arrastra un grupo a otro para anidarlo",
         "save": "Guardar cambios",
         "topLevel": "Nivel superior",
-        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
-        "movesCount": "{count} move | {count} moves",
-        "moveInside": "Move inside",
-        "moved": "Moved",
-        "saveSuccess": "Groups reorganized",
-        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
-        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropToTopLevel": "Suelte aquí para convertir «{name}» en una categoría de nivel superior",
+        "movesCount": "Mover {count} | Mover {count}",
+        "moveInside": "Mover dentro",
+        "moved": "Movido",
+        "saveSuccess": "Grupos reorganizados",
+        "saveFailed": "No se pudo guardar el movimiento {count} . Inténtalo de nuevo. | No se pudo guardar los movimientos de {count} . Inténtalo de nuevo.",
+        "staleMovesRemoved": "Se eliminó {count} movimiento en cola que ya no aplica | Se eliminaron {count} movimientos en cola que ya no aplican",
         "dropErrors": {
-          "currentParent": "Already in this group",
-          "insideItself": "Can't move a group inside its own subgroup",
-          "alreadyTopLevel": "Already a top-level group"
+          "currentParent": "Ya está en este grupo.",
+          "insideItself": "No se puede mover un grupo dentro de su propio subgrupo",
+          "alreadyTopLevel": "Ya es una categoría de nivel superior"
         }
       }
     }

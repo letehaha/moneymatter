@@ -55,7 +55,7 @@
         "modelLabel": "Modèle",
         "modelInfo": {
           "estimatedCost": "Coût estimé :",
-          "per100Transactions": "pour 100 opér.",
+          "per100Transactions": "pour 100 transactions",
           "per100Pairs": "pour 100 paires"
         },
         "notifications": {

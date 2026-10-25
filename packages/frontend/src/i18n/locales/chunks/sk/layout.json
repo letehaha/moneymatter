@@ -15,11 +15,14 @@
     "helpAndDocs": "Pomoc a dokumentácia",
     "logout": "Odhlásiť sa",
     "appVersion": "Verzia aplikácie {version}",
+    "updateAvailable": "K dispozícii je aktualizácia",
+    "updateToVersion": "Aktualizovať - {version}",
     "settings": "Nastavenia",
     "planned": {
-      "planned": "Plánované",
+      "planned": "Plánovanie",
       "subscriptions": "Opakujúce sa platby",
-      "budgets": "Sledovače"
+      "budgets": "Sledovače",
+      "goals": "Ciele"
     },
     "venture": "Rizikový kapitál",
     "budget": "Rozpočet"
@@ -267,8 +270,8 @@
             "description": "Zorganizujte si transakcie podľa typu"
           },
           "create-tag": {
-            "title": "Vytvorte štítok",
-            "description": "Pridajte štítky a zoskupte súvisiace transakcie"
+            "title": "Vytvorte značku",
+            "description": "Pridajte značky a zoskupte súvisiace transakcie"
           },
           "create-budget": {
             "title": "Nastavte si sledovač",
@@ -283,7 +286,7 @@
             "description": "Zorganizujte si účty podľa typu alebo účelu"
           },
           "setup-tag-reminder": {
-            "title": "Nastavte pripomienku štítku",
+            "title": "Nastavte pripomienku značky",
             "description": "Nechajte sa upozorniť na opakujúce sa výdavky"
           },
           "connect-bank": {

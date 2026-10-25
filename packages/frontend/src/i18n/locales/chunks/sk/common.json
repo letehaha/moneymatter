@@ -144,7 +144,7 @@
       },
       "transferMatching": {
         "name": "Priraďovanie prevodov",
-        "description": "Checks transfer scan results and keeps the pairs that look like real transfers"
+        "description": "Skontroluje výsledky vyhľadávania prevodov a zachová dvojice, ktoré vyzerajú ako skutočné prevody"
       }
     },
     "transactions": {
@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Túto transakciu priradil k sledovaču používateľ {handle}",
+        "addedByRule": "Pridané pravidlami sledovača",
         "matchedByAi": "Priradené pomocou AI",
         "externalLinkTooltip": "Otvoriť externý odkaz",
         "locationTooltip": "Otvoriť polohu na mape",
@@ -302,8 +303,8 @@
       "error": "Účet sa nepodarilo pridať do skupiny"
     },
     "linkMany": {
-      "success": "Accounts added to the group",
-      "error": "Failed to add accounts to the group"
+      "success": "Účty boli pridané do skupiny",
+      "error": "Účty sa nepodarilo pridať do skupiny"
     },
     "unlink": {
       "success": "Účet bol odstránený zo skupiny",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Ak chcete odoslať znova, otvorte panel zdieľania."
+    },
+    "goalReached": {
+      "title": "Cieľ dosiahnutý: {name}",
+      "message": "Usporili ste {amount}."
     }
   },
   "currencyNames": {

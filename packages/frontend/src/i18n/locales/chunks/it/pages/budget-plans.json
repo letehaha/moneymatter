@@ -1,8 +1,8 @@
 {
   "budgetPlans": {
-    "title": "Budget",
+    "title": "Tracker",
     "loadError": "Couldn't load your budget.",
-    "defaultName": "Budget",
+    "defaultName": "Tracker",
     "settings": {
       "title": "Budget settings",
       "description": "Changes save and apply immediately.",
@@ -235,7 +235,11 @@
       "activity": "Activity",
       "available": "Available",
       "overrideBadge": "override",
-      "carriesDeficit": "carries deficit",
+      "carryBadge": {
+        "floor": "carries surplus",
+        "signed": "carries surplus & deficit",
+        "none": "starts fresh"
+      },
       "lineActions": "Line actions",
       "editLine": "Edit line",
       "archiveLine": "Archive line",
@@ -473,7 +477,7 @@
         "by_date": "By date",
         "open_ended": "Open-ended"
       },
-      "behaviorLabel": "How it works",
+      "behaviorLabel": "Come funziona?",
       "behavior": {
         "budget_another": "Budget another",
         "refill_up_to": "Refill up to",

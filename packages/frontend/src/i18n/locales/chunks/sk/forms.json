@@ -300,7 +300,8 @@
         "interestRateRange": "Úroková sadzba musí byť medzi 0 a 99,9999.",
         "termRange": "Doba splácania musí byť medzi 1 a 1200 mesiacmi.",
         "paymentDayRange": "Deň v mesiaci musí byť medzi 1 a 31.",
-        "asOfInFuture": "Dátum nemôže byť v budúcnosti"
+        "asOfInFuture": "Dátum nemôže byť v budúcnosti",
+        "startDateInFuture": "Dátum začiatku nemôže byť v budúcnosti"
       },
       "balanceExceedsPrincipalWarning": "Nesplatený zostatok je vyšší než pôvodná istina — skontrolujte tieto sumy."
     }
@@ -347,8 +348,8 @@
       "ungrouped": "Bez skupiny"
     },
     "tagSelect": {
-      "placeholder": "Vyberte štítky...",
-      "noTagsAvailable": "Nie sú dostupné žiadne štítky"
+      "placeholder": "Vyberte značky...",
+      "noTagsAvailable": "Nie sú dostupné žiadne značky"
     },
     "categoryMultiSelect": {
       "placeholder": "Vyberte kategórie...",

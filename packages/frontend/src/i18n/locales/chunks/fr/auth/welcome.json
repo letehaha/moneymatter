@@ -13,7 +13,7 @@
         "loading": "Chargement..."
       },
       "errors": {
-        "unableToLoadCurrencies": "Impossible de charger la liste des devises. Réessayez plus tard.",
+        "unableToLoadCurrencies": "Impossible de charger la liste des devises. Réessayez plus tard",
         "unableToSetCurrency": "Erreur inattendue. Impossible de définir la devise principale. Veuillez réessayer plus tard ou contacter l'assistance."
       }
     },

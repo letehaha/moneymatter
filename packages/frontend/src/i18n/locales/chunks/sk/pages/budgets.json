@@ -12,19 +12,37 @@
       "error": "Neočakávaná chyba!",
       "nameLabel": "Názov sledovača",
       "namePlaceholder": "Zadajte názov",
-      "typeLabel": "Typ sledovača",
-      "typeManual": "Manuálny",
-      "typeManualDescription": "Pridávajte transakcie do tohto sledovača ručne",
-      "typeCategory": "Podľa kategórií",
-      "typeCategoryDescription": "Automatické sledovanie výdavkov podľa kategórií",
-      "categoriesLabel": "Sledované kategórie",
-      "categoriesRequired": "Vyberte aspoň jednu kategóriu",
       "fromDateLabel": "Od dátumu",
       "toDateLabel": "Do dátumu",
-      "autoIncludeLabel": "Automaticky zahrnúť transakcie",
-      "limitLabel": "Limit sledovača",
       "limitPlaceholder": "Zadajte limit",
       "submitButton": "Pridať sledovač"
+    },
+    "limitKind": {
+      "label": "Typ limitu",
+      "whatToChoose": "Čo vybrať?",
+      "guideTitle": "Ktorý limit sa hodí?",
+      "goalNote": "Šetríte na niečo? Použite skôr {goalLink}: ciele sledujú, čo ste usporili, sledovače sledujú, čo prichádza a odchádza.",
+      "goalLink": "Vytvoriť cieľ",
+      "kinds": {
+        "spending": {
+          "label": "Výdavky",
+          "hint": "Minúť najviac toľko. Upozorní, keď výdavky predbiehajú plynutie času.",
+          "guide": "Pre konkrétnu vec alebo udalosť: výlet, rekonštrukciu, rok nákupov potravín. Upozorní, keď míňate rýchlejšie, než plynie čas.",
+          "amountLabel": "Limit"
+        },
+        "income_target": {
+          "label": "Cieľový príjem",
+          "hint": "Zarobiť aspoň toľko. Zelené, kým ste na dobrej ceste, a prekročenie je výhra.",
+          "guide": "Pre peniaze, ktoré chcete získať: ročný plat, príjem z freelancingu, príjem z prenájmu. Zelené, kým ste na dobrej ceste; prekročenie je výhra.",
+          "amountLabel": "Cieľová suma"
+        },
+        "income_cap": {
+          "label": "Strop príjmu",
+          "hint": "Zostať pod týmto príjmom, napr. daňovou hranicou alebo hranicou pre dávky. Upozorní, keď sa k nej blížite.",
+          "guide": "Pre príjem, pod ktorým musíte zostať: daňová hranica pre malý podnik, hranica príjmu pre dávky alebo študentskú pomoc. Upozorní, keď sa k nej blížite.",
+          "amountLabel": "Strop"
+        }
+      }
     },
     "list": {
       "loadError": "Sledovače sa nepodarilo načítať.",
@@ -46,7 +64,6 @@
       "categoriesCount": "Kategórie: {count}",
       "noTransactions": "Zatiaľ žiadne transakcie",
       "noTimePeriod": "Bez časového obdobia",
-      "autoTracked": "Automaticky sledované",
       "status": {
         "ended": "Ukončené",
         "lastDay": "Posledný deň",
@@ -60,6 +77,7 @@
       "expenses": "Výdavky",
       "net": "Čistý zostatok",
       "used": "Vyčerpané",
+      "earned": "Zarobené",
       "archive": "Archivovať",
       "unarchive": "Obnoviť z archívu",
       "archivedLabel": "Archivované",
@@ -73,8 +91,8 @@
       "searchPlaceholder": "Hľadať sledovače",
       "filters": {
         "all": "Všetko",
-        "manual": "Ručne",
-        "category": "Kategória",
+        "autoAdd": "Automatické pridávanie zapnuté",
+        "handPicked": "Vybrané manuálne",
         "archived": "Archivované"
       },
       "groups": {
@@ -123,7 +141,6 @@
     "settings": {
       "nameLabel": "Názov sledovača",
       "namePlaceholder": "Zadajte názov sledovača",
-      "limitLabel": "Limit sledovača",
       "limitPlaceholder": "Zadajte sumu limitu (voliteľné)",
       "startDateLabel": "Dátum začiatku",
       "endDateLabel": "Dátum konca",
@@ -133,24 +150,6 @@
       "title": "Pridať transakcie do sledovača",
       "addSelected": "Pridať vybrané",
       "clearSelection": "Zrušiť výber"
-    },
-    "categoryBudget": {
-      "trackedCategories": "Sledované kategórie",
-      "categoriesCount": "Sledované kategórie: {count}",
-      "autoTrackedInfo": "Transakcie sa sledujú automaticky na základe kategórií",
-      "transactionsTitle": "Transakcie",
-      "transactionsCount": "Transakcie: {count}",
-      "noTransactions": "Zatiaľ žiadne transakcie",
-      "noTransactionsDescription": "Transakcie zodpovedajúce sledovaným kategóriám sa tu zobrazia automaticky.",
-      "transactionsLoadError": "Transakcie sa nepodarilo načítať",
-      "categoryBreakdown": "Rozdelenie podľa kategórií",
-      "edit": "Upraviť",
-      "editTitle": "Upraviť sledovač",
-      "showMore": "Zobraziť viac",
-      "showLess": "Zobraziť menej",
-      "settings": {
-        "categoriesLabel": "Sledované kategórie"
-      }
     },
     "manualBudget": {
       "edit": "Upraviť",
@@ -162,11 +161,16 @@
     "details": {
       "statsLoadError": "Súhrny tohto sledovača sa nepodarilo načítať.",
       "transactionsCount": "{count} transakcia | {count} transakcie | {count} transakcií",
+      "tagsCount": "{count} značka | {count} značky | {count} značiek",
       "strip": {
         "limit": "Limit",
         "spent": "Minuté",
         "left": "Zostáva",
         "overBy": "Prečerpané o",
+        "earned": "Zarobené",
+        "toGo": "Zostáva",
+        "headroom": "Rezerva",
+        "aboveTargetBy": "Nad cieľom o",
         "income": "Príjem",
         "expenses": "Výdavky",
         "net": "Čistý zostatok",
@@ -176,7 +180,7 @@
       "tabs": {
         "limits": "Limity"
       },
-      "tracks": "Záznamy",
+      "autoAdds": "Automatické pridávania",
       "membersLabel": "Členovia: {count}",
       "actions": {
         "share": "Zdielať",
@@ -195,8 +199,7 @@
       },
       "edit": {
         "limitHint": "Vymažte ho, ak chcete sledovať bez limitu.",
-        "datesHint": "Zmena dátumov nepridá ani neodstráni už prepojené transakcie.",
-        "categoriesHint": "Odstránenie kategórie ju odstráni aj z každého riadku, v ktorom sa nachádza."
+        "datesHint": "Zmena dátumov nepridá ani neodstráni už prepojené transakcie."
       }
     },
     "lines": {
@@ -245,7 +248,6 @@
         "categoriesLabel": "Kategórie",
         "categoriesPlaceholder": "Vyberte kategórie",
         "categoriesRequired": "Vyberte aspoň jednu kategóriu",
-        "categoryTrackerHint": "Tento sledovač počíta iba svoje vlastné kategórie, vyberte teda z nich.",
         "limitLabel": "Limit (nepovinné)",
         "limitPlaceholder": "Bez limitu",
         "limitHint": "Nechajte prázdne, ak chcete zoskupiť výdavky bez limitu."
@@ -258,6 +260,38 @@
         "createError": "Riadok sa nepodarilo pridať",
         "updateError": "Riadok sa nepodarilo aktualizovať",
         "deleteError": "Riadok sa nepodarilo odstrániť"
+      }
+    },
+    "rules": {
+      "heading": "Automatické pridávanie",
+      "switchLabel": "Automaticky pridávať zodpovedajúce transakcie",
+      "switchHintOn": "Pridajú sa vaše transakcie v danom rozsahu dátumov, ktoré majú niektorú z týchto kategórií alebo značiek.",
+      "switchHintOff": "Započítavajú sa len transakcie, ktoré pridáte manuálne.",
+      "switchHintTurnedOff": "Vypnutím tejto možnosti zostanú zachované všetky už pridané transakcie.",
+      "categoriesLabel": "Kategórie",
+      "categoriesPlaceholder": "Vybrať kategórie",
+      "tagsLabel": "Značky",
+      "tagsPlaceholder": "Vyberte značky",
+      "needsCategoryOrTag": "Vyberte aspoň jednu kategóriu alebo značku",
+      "cleanupLabel": "Odstrániť transakcie, ktoré prestanú zodpovedať",
+      "cleanupHint": "Kontrolované každých 6 hodín. Transakcie, ktoré ste pridali manuálne, sa nikdy neodstránia.",
+      "checkedAt": "Kontrolované {when}",
+      "unlinked": "Odstránená {count} transakcia. Už sa automaticky znova nepridá. | Odstránené {count} transakcie. Už sa automaticky znova nepridajú. | Odstránených {count} transakcií. Už sa automaticky znova nepridajú.",
+      "confirm": {
+        "title": "Uložiť nové pravidlá zhody?",
+        "description": "Po uložení sa všetky vaše transakcie skontrolujú podľa nových pravidiel a zodpovedajúce sa pridajú.",
+        "descriptionWithCleanup": "Po uložení sa všetky vaše transakcie skontrolujú podľa nových pravidiel. Zodpovedajúce sa pridajú a tie, ktoré pravidlá pridali a už nezodpovedajú, sa odstránia. Transakcie pridané manuálne zostanú zachované.",
+        "saveAndCheck": "Uložiť a skontrolovať"
+      },
+      "rejected": {
+        "title": "Už sa znova nepridá",
+        "description": "Tieto ste odstránili alebo zamietli ako návrhy AI, preto sa vynechávajú. Povolením niektorú vrátite späť, pokiaľ ešte zodpovedá.",
+        "summary": "{count} transakcia sa už znova nepridá | {count} transakcie sa už znova nepridajú | {count} transakcií sa už znova nepridá",
+        "review": "Kontrola",
+        "aiBadge": "Návrh AI",
+        "allowAgain": "Povoliť znova",
+        "allowed": "Znova povolené",
+        "allowError": "Transakciu sa nepodarilo znova povoliť"
       }
     },
     "smartTracking": {
@@ -284,6 +318,7 @@
           "threeMonths": "3 mesiace",
           "sixMonths": "6 mesiacov"
         },
+        "costNote": "Prvé vyhľadávanie skontroluje každú transakciu od začiatku spätného okna až po koncový dátum. Veľké rozsahy môžu vyčerpať váš mesačný limit AI, alebo vás priamo spoplatniť, ak používate vlastný kľúč.",
         "usesIncluded": "Používa zahrnutú AI. Započítava sa do vášho mesačného limitu AI.",
         "usesOwnModel": "Používa váš vlastný model · {model}"
       },

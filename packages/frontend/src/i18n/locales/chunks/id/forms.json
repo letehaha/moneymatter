@@ -300,7 +300,8 @@
         "interestRateRange": "Suku bunga harus antara 0 dan 99.9999.",
         "termRange": "Jangka waktu harus antara 1 dan 1200 bulan.",
         "paymentDayRange": "Hari dalam bulan harus antara 1 dan 31.",
-        "asOfInFuture": "Tanggal tidak boleh di masa depan"
+        "asOfInFuture": "Tanggal tidak boleh di masa depan",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Saldo terutang lebih tinggi dari pokok awal – periksa kembali jumlah ini."
     }

@@ -20,7 +20,7 @@
         "linkedAccountNotFound": "Účet prepojený s „{account}“ už neexistuje. Vráťte sa späť a vyberte iný účet alebo vytvorte nový."
       },
       "importResults": {
-        "findTransfers": "Find transfers"
+        "findTransfers": "Nájsť prevody"
       }
     }
   },

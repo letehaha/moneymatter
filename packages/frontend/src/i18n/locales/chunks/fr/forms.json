@@ -300,7 +300,8 @@
         "interestRateRange": "Le taux d'intérêt doit être compris entre 0 et 99,9999.",
         "termRange": "La durée doit être comprise entre 1 et 1200 mois.",
         "paymentDayRange": "Le jour du mois doit être compris entre 1 et 31.",
-        "asOfInFuture": "La date ne peut pas être dans le futur"
+        "asOfInFuture": "La date ne peut pas être dans le futur",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Le capital restant dû est supérieur au capital initial : veuillez vérifier ces montants."
     }

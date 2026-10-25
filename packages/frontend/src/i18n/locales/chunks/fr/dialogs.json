@@ -491,7 +491,7 @@
         "stocks": "Actions",
         "crypto": "Crypto"
       },
-      "marketCapRank": "n° {rank}",
+      "marketCapRank": "#{rank}",
       "notifications": {
         "success": "Actif ajouté.",
         "error": "Échec de l'ajout de l'actif."
@@ -648,7 +648,7 @@
         "openTransaction": "Impossible d'ouvrir l'opération. Retrouvez-la dans votre liste d'opérations."
       },
       "trial": {
-        "left": "Plus qu'un essai gratuit sur {limit} | Plus que {count} essais gratuits sur {limit}",
+        "left": "1 essai gratuit restant sur {limit} | {count} essais gratuits restants sur {limit}",
         "spent": "Vous avez utilisé tous vos essais gratuits. Passez à Plus pour continuer à joindre des factures avec l'IA."
       }
     },

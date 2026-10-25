@@ -65,6 +65,7 @@
           "dailyPace": "Daily pace",
           "perDay": "/ day",
           "allowedPerDay": "allowed {amount} / day · {elapsed} of {total} days",
+          "neededPerDay": "needed {amount} / day · {elapsed} of {total} days",
           "daysElapsed": "{elapsed} of {total} days",
           "projectedTotal": "Projected total",
           "projectedLimit": "at this pace · limit {amount}",
@@ -87,6 +88,7 @@
         "cumulativeLabel": "Cumulative",
         "legend": {
           "cumulative": "Spent, cumulative",
+          "earnedCumulative": "Earned, cumulative",
           "evenPace": "Even pace to the limit",
           "projection": "Proyeksi",
           "daily": "Per day",

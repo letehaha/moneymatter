@@ -13,7 +13,7 @@
       "passwordTooShort": "La contraseña es demasiado corta.",
       "passwordTooLong": "La contraseña es demasiado larga.",
       "providerNotConfigured": "Este proveedor de inicio de sesión no está configurado en este servidor.",
-      "accountAlreadyLinked": "Esta cuenta ya está vinculada a otro usuario",
+      "accountAlreadyLinked": "Esta cuenta ya está vinculada a otro usuario.",
       "cannotUnlinkLastAccount": "No puede eliminar su único método de inicio de sesión.",
       "passkeyAlreadyRegistered": "Esta clave de acceso ya está registrada."
     },

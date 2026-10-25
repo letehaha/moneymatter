@@ -67,7 +67,7 @@
       "menu": {
         "type": "Tipo",
         "tags": "Etiquetas",
-        "budgets": "Presupuestos",
+        "budgets": "Rastreadores",
         "amount": "Rango de importe",
         "note": "Notas"
       },

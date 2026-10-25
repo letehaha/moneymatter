@@ -85,7 +85,7 @@
         "linkButton": "Link the other side",
         "title": "Find the other side of this transfer",
         "description": "Pick the matching transaction from the other account. The two records become one transfer — nothing is deleted.",
-        "orDivider": "or",
+        "orDivider": "oppure",
         "linkHint": "Already recorded in another account? Join the two records instead.",
         "unlinkButton": "Unlink transactions",
         "cancelLinkingAriaLabel": "Cancel linking",
@@ -570,7 +570,7 @@
       "title": "Select transaction"
     },
     "attachInvoice": {
-      "title": "Attach invoice",
+      "title": "Allega ricevuta/fattura",
       "description": "Drop an invoice or receipt. We read the total, date and merchant, then find the transaction it belongs to.",
       "resultsTitle": "Pick the transaction",
       "resultsDescription": "No transactions match this invoice. | {count} transaction could belong to this invoice. | {count} transactions could belong to this invoice.",

@@ -42,70 +42,70 @@
       },
       "dialogs": {
         "rename": {
-          "title": "Rename group",
-          "description": "Click the logo to pick a bank logo, initials or a color.",
+          "title": "Premenovať skupinu",
+          "description": "Kliknutím na logo vyberiete logo banky, iniciály alebo farbu.",
           "submit": "Uložiť zmeny"
         },
         "move": {
           "title": "Presunúť „{name}\"",
-          "description": "Its subgroups and accounts move with it.",
-          "parentLabel": "Parent group",
-          "parentPlaceholder": "Select a parent group",
-          "noParent": "No parent",
-          "hint": "Pick “No parent” to make it a top-level group.",
+          "description": "Jej podskupiny a účty sa presunú s ňou.",
+          "parentLabel": "Nadradená skupina",
+          "parentPlaceholder": "Vyberte nadradenú skupinu",
+          "noParent": "Bez nadradenej skupiny",
+          "hint": "Výberom „Bez nadradenej skupiny“ z nej vytvoríte skupinu najvyššej úrovne.",
           "submit": "Presunúť"
         },
         "addAccounts": {
-          "title": "Add accounts to “{name}”",
-          "description": "An account belongs to one group. Picking one from another group moves it here.",
-          "searchPlaceholder": "Search accounts",
+          "title": "Pridať účty do „{name}“",
+          "description": "Účet patrí do jednej skupiny. Výberom účtu z inej skupiny ho sem presunete.",
+          "searchPlaceholder": "Hľadať účty",
           "sections": {
-            "ungrouped": "Not in a group",
-            "inOtherGroups": "In other groups",
-            "alreadyInGroup": "Already in {name}"
+            "ungrouped": "Nie je v skupine",
+            "inOtherGroups": "V iných skupinách",
+            "alreadyInGroup": "Už je v {name}"
           },
-          "inGroupCaption": "In {path}",
-          "noResults": "No accounts match your search",
-          "noAccounts": "No accounts to add",
+          "inGroupCaption": "V {path}",
+          "noResults": "Vášmu hľadaniu nezodpovedajú žiadne účty",
+          "noAccounts": "Žiadne účty na pridanie",
           "summary": {
-            "selected": "{selected} selected",
-            "movesFromGroup": "{selected} selected, {count} move from {group} | {selected} selected, {count} moves from {group}",
-            "movesFromOtherGroups": "{selected} selected, {count} move from other groups | {selected} selected, {count} moves from other groups"
+            "selected": "Vybraných: {selected}",
+            "movesFromGroup": "Vybraných: {selected}, {count} presun z {group} | Vybraných: {selected}, {count} presuny z {group} | Vybraných: {selected}, {count} presunov z {group}",
+            "movesFromOtherGroups": "Vybraných: {selected}, {count} presun z iných skupín | Vybraných: {selected}, {count} presuny z iných skupín | Vybraných: {selected}, {count} presunov z iných skupín"
           },
-          "submit": "Add {count} account | Add {count} accounts"
+          "submit": "Pridať {count} účet | Pridať {count} účty | Pridať {count} účtov"
         }
       },
       "tree": {
-        "groupsCount": "{count} group | {count} groups",
+        "groupsCount": "{count} skupina | {count} skupiny | {count} skupín",
         "syncedBadge": "Synchronizované",
         "expand": "Rozbaliť",
         "collapse": "Zbaliť",
         "renameTooltip": "Premenovať",
         "moreActions": "Ďalšie akcie",
         "menu": {
-          "rename": "Rename and change logo",
-          "move": "Move to another group",
-          "newSubgroup": "New subgroup",
-          "addAccounts": "Add accounts",
+          "rename": "Premenovať a zmeniť logo",
+          "move": "Presunúť do inej skupiny",
+          "newSubgroup": "Nová podskupina",
+          "addAccounts": "Pridať účty",
           "delete": "Zmazať skupinu"
         }
       },
       "organize": {
         "button": "Usporiadanie",
-        "hint": "Drag a group onto another to nest it",
+        "hint": "Potiahnutím jednej skupiny na druhú ju do nej vnoríte",
         "save": "Uložiť zmeny",
         "topLevel": "Najvyššia úroveň",
-        "dropToTopLevel": "Drop here to make “{name}” a top-level group",
-        "movesCount": "{count} move | {count} moves",
-        "moveInside": "Move inside",
-        "moved": "Moved",
-        "saveSuccess": "Groups reorganized",
-        "saveFailed": "Couldn't save {count} move. Try again. | Couldn't save {count} moves. Try again.",
-        "staleMovesRemoved": "Removed {count} queued move that no longer applies | Removed {count} queued moves that no longer apply",
+        "dropToTopLevel": "Pustite tu, ak chcete z „{name}“ vytvoriť skupinu najvyššej úrovne",
+        "movesCount": "{count} presun | {count} presuny | {count} presunov",
+        "moveInside": "Presunúť do vnútra",
+        "moved": "Presunuté",
+        "saveSuccess": "Skupiny boli reorganizované",
+        "saveFailed": "Nepodarilo sa uložiť {count} presun. Skúste to znova. | Nepodarilo sa uložiť {count} presuny. Skúste to znova. | Nepodarilo sa uložiť {count} presunov. Skúste to znova.",
+        "staleMovesRemoved": "Odstránený {count} naplánovaný presun, ktorý už nie je platný | Odstránené {count} naplánované presuny, ktoré už nie sú platné | Odstránených {count} naplánovaných presunov, ktoré už nie sú platné",
         "dropErrors": {
-          "currentParent": "Already in this group",
-          "insideItself": "Can't move a group inside its own subgroup",
-          "alreadyTopLevel": "Already a top-level group"
+          "currentParent": "Už je v tejto skupine",
+          "insideItself": "Skupinu nemožno presunúť do jej vlastnej podskupiny",
+          "alreadyTopLevel": "Už je skupinou najvyššej úrovne"
         }
       }
     }

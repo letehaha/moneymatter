@@ -235,7 +235,11 @@
       "activity": "Actividad",
       "available": "Disponible",
       "overrideBadge": "reemplazo",
-      "carriesDeficit": "tiene déficit",
+      "carryBadge": {
+        "floor": "carries surplus",
+        "signed": "carries surplus & deficit",
+        "none": "starts fresh"
+      },
       "lineActions": "Acciones de línea",
       "editLine": "Editar línea",
       "archiveLine": "Archivar línea",

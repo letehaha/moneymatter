@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Nur der Eigentümer kann diesen Tracker duplizieren",
     "someTransactionIdsInvalid": "Einige Transaktions-IDs sind ungültig",
     "transactionsAddedSuccessfully": "Transaktionen erfolgreich hinzugefügt",
-    "cannotManuallyLinkToCategoryBudget": "Transaktionen können nicht manuell mit kategoriebasierten Trackern verknüpft werden. Transaktionen werden automatisch nach Kategorie nachverfolgt.",
     "someCategoryIdsInvalid": "Einige Kategorie-IDs sind ungültig oder existieren nicht",
-    "notCategoryBudget": "Dieser Endpunkt ist nur für kategoriebasierte Tracker verfügbar",
-    "lineCategoryOutsideTracker": "Eine Tracker-Zeile kann nur Kategorien verwenden, die von ihrem Tracker erfasst werden",
     "startDateAfterEndDate": "Das Startdatum muss am oder vor dem Enddatum liegen",
+    "rulesNeedCategoryOrTag": "Wähle mindestens eine Kategorie oder ein Tag aus, um Transaktionen automatisch hinzuzufügen.",
     "smartTracking": {
       "ownerOnly": "Nur der Eigentümer des Trackers kann Smart-Tracking ändern.",
-      "manualOnly": "Smart-Tracking funktioniert nur für manuelle Tracker.",
       "descriptionRequired": "Beschreibe, wofür dieser Tracker gedacht ist, um Smart-Tracking zu aktivieren.",
       "startDateRequired": "Lege ein Startdatum fest, um Smart-Tracking zu aktivieren.",
       "scanRunning": "Der Abgleich läuft für diesen Tracker. Versuche es erneut, wenn er abgeschlossen ist.",
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "Standardwährung darf nicht gelöscht werden. Entferne zuerst den Standard-Status.",
     "cannotDeleteCurrencyWithAccounts": "Währungen, die mit Konten verknüpft sind, dürfen nicht gelöscht werden. Lösche zuerst die Konten. Kontonamen: \"{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "Währung \"{{currencyCode}}\" darf nicht gelöscht werden, solange sie von Investment-Positionen verwendet wird. Lösche zuerst diese Positionen.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "{{currencyCode}} kann nicht entfernt werden: Es ist die Anzeigewährung eines deiner Portfolios. Ändere zuerst die Anzeigewährung des Portfolios.",
     "defaultCurrencyNotPresent": "Währung kann nicht gelöscht werden. Standardwährung ist im System nicht vorhanden"
   },
   "ai": {
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "Der Export würde {{rowCount, number}} Zeilen enthalten, was das Limit von {{limit, number}} überschreitet."
+  },
+  "goals": {
+    "goalNotFound": "Ziel nicht gefunden.",
+    "accountNotFound": "Eines der ausgewählten Konten wurde nicht gefunden.",
+    "accountNotEligible": "{{accountName}} kann nicht für ein Ziel angerechnet werden. Wähle ein Bargeld-, Giro-, Spar-, Investment- oder Krypto-Konto aus.",
+    "shareCapacityExceeded": "{{accountName}} hat {{free}}% frei: Du hast {{requested}}% angefragt, und andere Ziele nutzen bereits {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Festbeträge ergeben in der Summe {{total}} {{currencyCode}}, weniger als das Ziel von {{target}} {{currencyCode}}. Erhöhe einen Betrag oder berücksichtige ein Konto prozentual.",
+    "currencyRateUnavailable": "{{currencyCode}} kann derzeit nicht in deine Basiswährung umgerechnet werden. Wähle eine andere Währung oder versuche es später erneut.",
+    "reachedNotification": {
+      "title": "Ziel erreicht: {{name}}",
+      "message": "Du hast {{amount}} {{currencyCode}} gespart."
+    }
   }
 }

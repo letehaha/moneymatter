@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "Keluar",
     "appVersion": "App version {version}",
+    "updateAvailable": "Pembaruan tersedia",
+    "updateToVersion": "Update · {version}",
     "settings": "Pengaturan",
     "planned": {
       "planned": "Terencana",
       "subscriptions": "Biaya Berulang",
-      "budgets": "Anggaran"
+      "budgets": "Anggaran",
+      "goals": "Goals"
     },
     "venture": "Venture",
     "budget": "Budget"

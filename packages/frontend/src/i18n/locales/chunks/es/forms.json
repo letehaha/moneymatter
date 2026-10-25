@@ -300,7 +300,8 @@
         "interestRateRange": "El tipo de interés debe estar entre 0 y 99,9999.",
         "termRange": "El plazo debe estar entre 1 y 1200 meses.",
         "paymentDayRange": "El día del mes debe estar entre 1 y 31.",
-        "asOfInFuture": "La fecha no puede ser futura"
+        "asOfInFuture": "La fecha no puede ser futura",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "El saldo pendiente es mayor que el principal original: compruebe estos importes."
     }

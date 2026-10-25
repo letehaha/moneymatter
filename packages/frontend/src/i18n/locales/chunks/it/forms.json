@@ -3,10 +3,10 @@
     "investmentTransaction": {
       "typeLabel": "Transaction type",
       "types": {
-        "buy": "Buy",
+        "buy": "Acquista",
         "sell": "Sell",
         "dividend": "Dividend",
-        "fee": "Fee",
+        "fee": "Costo",
         "tax": "Tax"
       },
       "securityLabel": "Security",
@@ -155,7 +155,7 @@
       "fromAccountLabel": "From account",
       "toAccountLabel": "To account",
       "accountPlaceholder": "Select account",
-      "orSeparator": "or",
+      "orSeparator": "oppure",
       "linkExistingTransaction": "Link existing transaction",
       "linkedTransactionLabel": "Linked transaction",
       "amountLabel": "Amount",
@@ -220,7 +220,7 @@
       "namePlaceholder": "e.g. My Camry",
       "currencyLabel": "Currency",
       "makeLabel": "Make",
-      "modelLabel": "Model",
+      "modelLabel": "Modello",
       "trimLabel": "Trim (optional)",
       "yearLabel": "Year",
       "vehicleClassLabel": "Vehicle class",
@@ -300,7 +300,8 @@
         "interestRateRange": "Interest rate must be between 0 and 99.9999.",
         "termRange": "Term must be between 1 and 1200 months.",
         "paymentDayRange": "Day of month must be between 1 and 31.",
-        "asOfInFuture": "Date can't be in the future"
+        "asOfInFuture": "Date can't be in the future",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Outstanding balance is higher than the original principal – double-check these amounts."
     }

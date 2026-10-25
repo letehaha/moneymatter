@@ -9,7 +9,7 @@
       "fileHintFormats": "CSV, TXT, or PDF",
       "pastePlaceholder": "Paste your transactions list here...",
       "estimatedCost": "Estimated cost",
-      "model": "Model",
+      "model": "Modello",
       "estimateButton": "Estimate cost",
       "extractButton": "Extract",
       "extracting": "Extracting…",

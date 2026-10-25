@@ -15,11 +15,14 @@
     "helpAndDocs": "Aide et documentation",
     "logout": "Se déconnecter",
     "appVersion": "Version de l'application {version}",
+    "updateAvailable": "Mise à jour disponible",
+    "updateToVersion": "Mettre à jour · {version}",
     "settings": "Paramètres",
     "planned": {
       "planned": "Prévisionnel",
       "subscriptions": "Paiements récurrents",
-      "budgets": "Suivis"
+      "budgets": "Suivis",
+      "goals": "Objectifs"
     },
     "venture": "Projets",
     "budget": "Budget"
@@ -172,7 +175,7 @@
     "step1Full": "Pour gagner du temps, essayez d'abord de reconnecter l'ensemble de la connexion bancaire. Vous trouverez un bouton {reconnect} dans la section {connectionValidity} de chaque page de connexion :",
     "reconnectButton": "Reconnecter",
     "connectionValiditySection": "Validité de la connexion",
-    "connectionLabel": "Connexion n° {id}",
+    "connectionLabel": "Connexion #{id}",
     "step2Full": "Si certains comptes apparaissent encore ci-dessous après la reconnexion, accédez à chaque compte pour manuellement le {unlink} puis le {link} à nouveau.",
     "unlinkAction": "Dissocier",
     "linkAction": "Associer"

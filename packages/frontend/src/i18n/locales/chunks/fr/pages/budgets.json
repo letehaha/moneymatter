@@ -12,19 +12,37 @@
       "error": "Erreur inattendue !",
       "nameLabel": "Nom du suivi",
       "namePlaceholder": "Saisir le nom",
-      "typeLabel": "Type de suivi",
-      "typeManual": "Manuel",
-      "typeManualDescription": "Ajoutez manuellement des opérations à ce suivi",
-      "typeCategory": "Par catégorie",
-      "typeCategoryDescription": "Suivi automatique des dépenses par catégorie",
-      "categoriesLabel": "Catégories à suivre",
-      "categoriesRequired": "Sélectionnez au moins une catégorie",
       "fromDateLabel": "Date de début",
       "toDateLabel": "Date de fin",
-      "autoIncludeLabel": "Inclure automatiquement les opérations",
-      "limitLabel": "Plafond du suivi",
       "limitPlaceholder": "Saisir le plafond",
       "submitButton": "Ajouter le suivi"
+    },
+    "limitKind": {
+      "label": "Limit type",
+      "whatToChoose": "What to choose?",
+      "guideTitle": "Which limit fits?",
+      "goalNote": "Saving up for something? {goalLink} instead: goals track what you've saved, trackers track what flows in or out.",
+      "goalLink": "Créer un objectif",
+      "kinds": {
+        "spending": {
+          "label": "Spending",
+          "hint": "Spend at most this much. Warns when spending runs ahead of time passing.",
+          "guide": "For a thing or an event: a trip, a renovation, a year of groceries. Warns when you spend faster than time passes.",
+          "amountLabel": "Plafond"
+        },
+        "income_target": {
+          "label": "Income target",
+          "hint": "Earn at least this much. Green while you're on pace, and going over is a win.",
+          "guide": "For money you want to bring in: yearly salary, freelance revenue, rental income. Green while on pace; going over is a win.",
+          "amountLabel": "Montant cible"
+        },
+        "income_cap": {
+          "label": "Income cap",
+          "hint": "Stay under this income, e.g. a tax or benefits threshold. Warns as you get close.",
+          "guide": "For income you must stay under: a small-business tax threshold, a benefits or student-aid income limit. Warns as you get close.",
+          "amountLabel": "Cap"
+        }
+      }
     },
     "list": {
       "loadError": "Impossible de charger les suivis.",
@@ -46,7 +64,6 @@
       "categoriesCount": "{count} catégories",
       "noTransactions": "Aucune opération pour l'instant",
       "noTimePeriod": "Aucune période définie",
-      "autoTracked": "Suivi automatique",
       "status": {
         "ended": "Terminé",
         "lastDay": "Dernier jour",
@@ -60,6 +77,7 @@
       "expenses": "Dépenses",
       "net": "Net",
       "used": "Consommé",
+      "earned": "Earned",
       "archive": "Archiver",
       "unarchive": "Désarchiver",
       "archivedLabel": "Archivés",
@@ -73,8 +91,8 @@
       "searchPlaceholder": "Rechercher des suivis",
       "filters": {
         "all": "Tous",
-        "manual": "Manuel",
-        "category": "Catégorie",
+        "autoAdd": "Ajout automatique activé",
+        "handPicked": "Sélection manuelle",
         "archived": "Archivés"
       },
       "groups": {
@@ -123,7 +141,6 @@
     "settings": {
       "nameLabel": "Nom du suivi",
       "namePlaceholder": "Saisir le nom du suivi",
-      "limitLabel": "Plafond du suivi",
       "limitPlaceholder": "Saisir le montant du plafond (facultatif)",
       "startDateLabel": "Date de début",
       "endDateLabel": "Date de fin",
@@ -133,24 +150,6 @@
       "title": "Ajouter des opérations au suivi",
       "addSelected": "Ajouter la sélection",
       "clearSelection": "Effacer la sélection"
-    },
-    "categoryBudget": {
-      "trackedCategories": "Catégories suivies",
-      "categoriesCount": "{count} catégories suivies",
-      "autoTrackedInfo": "Les opérations sont automatiquement suivies selon leurs catégories",
-      "transactionsTitle": "Opérations",
-      "transactionsCount": "{count} opérations",
-      "noTransactions": "Aucune opération pour le moment",
-      "noTransactionsDescription": "Les opérations correspondant aux catégories suivies apparaîtront automatiquement ici.",
-      "transactionsLoadError": "Échec du chargement des opérations",
-      "categoryBreakdown": "Répartition par catégorie",
-      "edit": "Modifier",
-      "editTitle": "Modifier le suivi",
-      "showMore": "Afficher plus",
-      "showLess": "Afficher moins",
-      "settings": {
-        "categoriesLabel": "Catégories suivies"
-      }
     },
     "manualBudget": {
       "edit": "Modifier",
@@ -162,11 +161,16 @@
     "details": {
       "statsLoadError": "Impossible de charger les totaux de ce suivi.",
       "transactionsCount": "{count} opération | {count} opérations",
+      "tagsCount": "{count} étiquette | {count} étiquettes",
       "strip": {
         "limit": "Plafond",
         "spent": "Dépensé",
         "left": "Restant",
         "overBy": "Dépassement de",
+        "earned": "Earned",
+        "toGo": "To go",
+        "headroom": "Headroom",
+        "aboveTargetBy": "Above target by",
         "income": "Revenus",
         "expenses": "Dépenses",
         "net": "Net",
@@ -176,7 +180,7 @@
       "tabs": {
         "limits": "Plafonds"
       },
-      "tracks": "Suit",
+      "autoAdds": "Ajouts automatiques",
       "membersLabel": "Membres : {count}",
       "actions": {
         "share": "Partager",
@@ -195,8 +199,7 @@
       },
       "edit": {
         "limitHint": "Laissez vide pour suivre sans plafond.",
-        "datesHint": "Modifier les dates n'ajoute ni ne retire les opérations déjà associées.",
-        "categoriesHint": "Supprimer une catégorie la retire également de chaque ligne."
+        "datesHint": "Modifier les dates n'ajoute ni ne retire les opérations déjà associées."
       }
     },
     "lines": {
@@ -245,7 +248,6 @@
         "categoriesLabel": "Catégories",
         "categoriesPlaceholder": "Choisir des catégories",
         "categoriesRequired": "Choisissez au moins une catégorie",
-        "categoryTrackerHint": "Ce suivi ne prend en compte que ses propres catégories, choisissez parmi celles-ci.",
         "limitLabel": "Plafond (optionnel)",
         "limitPlaceholder": "Aucun plafond",
         "limitHint": "Laissez vide pour regrouper les dépenses sans fixer de plafond."
@@ -258,6 +260,38 @@
         "createError": "Impossible d'ajouter la ligne",
         "updateError": "Impossible de mettre à jour la ligne",
         "deleteError": "Impossible de supprimer la ligne"
+      }
+    },
+    "rules": {
+      "heading": "Ajout automatique",
+      "switchLabel": "Ajouter automatiquement les transactions correspondantes",
+      "switchHintOn": "Les transactions de la période correspondant à au moins une de ces catégories ou étiquettes seront ajoutées.",
+      "switchHintOff": "Seules les transactions ajoutées manuellement sont prises en compte.",
+      "switchHintTurnedOff": "Désactiver cette option conserve toutes les transactions déjà ajoutées.",
+      "categoriesLabel": "Catégories",
+      "categoriesPlaceholder": "Sélectionner des catégories",
+      "tagsLabel": "Étiquettes",
+      "tagsPlaceholder": "Sélectionner des étiquettes",
+      "needsCategoryOrTag": "Choisissez au moins une catégorie ou une étiquette",
+      "cleanupLabel": "Supprimer les transactions qui ne correspondent plus",
+      "cleanupHint": "Vérification toutes les 6 heures. Les transactions ajoutées manuellement ne sont jamais supprimées.",
+      "checkedAt": "Vérifié le {when}",
+      "unlinked": "{count} transaction supprimée. Elle ne sera plus ajoutée automatiquement. | {count} transactions supprimées. Elles ne seront plus ajoutées automatiquement.",
+      "confirm": {
+        "title": "Enregistrer les nouvelles règles de correspondance ?",
+        "description": "Après l'enregistrement, toutes vos transactions seront vérifiées selon les nouvelles règles, et celles qui correspondent seront ajoutées.",
+        "descriptionWithCleanup": "Après l'enregistrement, toutes vos transactions seront vérifiées selon les nouvelles règles. Celles qui correspondent seront ajoutées et celles ajoutées par les règles qui ne correspondent plus seront supprimées. Les transactions ajoutées manuellement seront conservées.",
+        "saveAndCheck": "Enregistrer et vérifier"
+      },
+      "rejected": {
+        "title": "Ne plus ajouter automatiquement",
+        "description": "Vous avez supprimé ces transactions ou refusé leur suggestion par l'IA ; elles seront donc ignorées. Autorisez-en une pour qu'elle soit à nouveau ajoutée si elle correspond toujours.",
+        "summary": "{count} transaction ne sera plus ajoutée | {count} transactions ne seront plus ajoutées",
+        "review": "Examiner",
+        "aiBadge": "Suggestion de l'IA",
+        "allowAgain": "Autoriser à nouveau",
+        "allowed": "À nouveau autorisée",
+        "allowError": "Impossible d'autoriser à nouveau cette transaction"
       }
     },
     "smartTracking": {
@@ -284,6 +318,7 @@
           "threeMonths": "3 mois",
           "sixMonths": "6 mois"
         },
+        "costNote": "La première analyse examine toutes les transactions depuis le début de la période rétrospective jusqu'à la date de fin. Les périodes longues peuvent épuiser votre quota mensuel d'IA ou entraîner des frais directs si vous utilisez votre propre clé.",
         "usesIncluded": "Utilise l'IA incluse. Décompté de votre quota mensuel d'IA.",
         "usesOwnModel": "Utilise votre propre modèle · {model}"
       },

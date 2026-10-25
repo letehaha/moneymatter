@@ -34,9 +34,9 @@
         "currencyConflict": "Los extractos seleccionados indican monedas diferentes ({currencies}). Todos se importarán a una sola cuenta, usando la moneda de esa cuenta.",
         "unsupportedFileNamed": "{name} no es un archivo PDF, CSV o TXT",
         "unreadableImageNamed": "No se ha podido leer {name} como una imagen",
-        "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
-        "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
-        "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
+        "invalidPdfNamed": "{name} no parece ser un PDF válido. El archivo puede estar dañado o renombrado.",
+        "invalidImageNamed": "{name} no parece ser una imagen JPG, PNG o WebP válida. El archivo puede estar corrupto o renombrado.",
+        "invalidTextNamed": "{name} no parece ser un archivo {ext} válido. El archivo puede ser binario o renombrado.",
         "pasteImageButton": "Pegar imagen",
         "pasteShortcutHint": "o presiona {{shortcut}}",
         "clipboardNoImage": "No se ha encontrado ninguna imagen en el portapapeles.",
@@ -155,13 +155,13 @@
         "continueButton": "Continuar a la importación",
         "transactionCount": "({count} transacciones)",
         "duplicateCheckFailed": "No pudimos comparar este extracto con sus transacciones existentes, por lo que el recuento de duplicados que aparece abajo no está disponible. Revise la lista antes de importar.",
-        "noDescription": "No description"
+        "noDescription": "Sin descripción"
       },
       "droppedRowsWarning": "{count} línea de la respuesta de la IA no se pudo leer y fue omitida. El número de transacciones importadas que aparece abajo puede ser menor que el de su archivo. | {count} líneas de la respuesta de la IA no se pudieron leer y fueron omitidas. El número de transacciones importadas que aparece abajo puede ser menor que el de su archivo.",
       "errors": {
-        "estimateFailed": "Failed to analyze the file",
-        "extractFailed": "Failed to extract transactions",
-        "importFailed": "Failed to start the import"
+        "estimateFailed": "Error al analizar el archivo",
+        "extractFailed": "Error al extraer las transacciones",
+        "importFailed": "Error al iniciar la importación"
       },
       "importResults": {
         "readyTitle": "Listo para importar",
@@ -191,11 +191,11 @@
         "viewTransactionsButton": "Ver transacciones",
         "startNewImportButton": "Iniciar nueva importación",
         "rowErrors": {
-          "invalidDate": "Unrecognized date \"{date}\"",
-          "futureDate": "Date {date} is in the future",
-          "amountNotPositive": "Amount must be greater than zero (got {amount})",
-          "amountTooLarge": "Amount {amount} exceeds the maximum of {max}",
-          "rowFailed": "This transaction could not be imported"
+          "invalidDate": "Fecha no reconocida \"{date}\"",
+          "futureDate": "Fecha {date} está en el futuro",
+          "amountNotPositive": "La cantidad debe ser mayor que cero (obtenido {amount})",
+          "amountTooLarge": "La cantidad {amount} supera el máximo de {max}",
+          "rowFailed": "Algunas transacciones no pudieron importarse"
         }
       }
     }

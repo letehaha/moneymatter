@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
     "someTransactionIdsInvalid": "Beberapa ID transaksi tidak valid",
     "transactionsAddedSuccessfully": "Transaksi berhasil ditambahkan",
-    "cannotManuallyLinkToCategoryBudget": "Tidak dapat menautkan transaksi secara manual ke anggaran berbasis kategori. Transaksi dilacak secara otomatis berdasarkan kategori.",
     "someCategoryIdsInvalid": "Beberapa ID kategori tidak valid atau tidak ada",
-    "notCategoryBudget": "Endpoint ini hanya tersedia untuk anggaran berbasis kategori",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
     "startDateAfterEndDate": "Start date must be on or before the end date",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "Tidak diizinkan menghapus mata uang bawaan. Jadikan bukan bawaan terlebih dahulu.",
     "cannotDeleteCurrencyWithAccounts": "Tidak diizinkan menghapus mata uang yang terkait dengan akun mana pun. Hapus akun terlebih dahulu. Nama akun: \"{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "Tidak diizinkan menghapus mata uang \"{{currencyCode}}\" yang masih digunakan oleh holding investasi. Hapus holding tersebut terlebih dahulu.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
     "defaultCurrencyNotPresent": "Tidak dapat menghapus mata uang. Mata uang bawaan tidak ada dalam sistem"
   },
   "ai": {
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
   }
 }

@@ -1,43 +1,43 @@
 {
   "settings": {
     "tags": {
-      "title": "Štítky",
-      "addButton": "Pridať štítok",
-      "empty": "Zatiaľ žiadne štítky. Vytvorte prvý štítok a usporiadajte si transakcie.",
+      "title": "Značky",
+      "addButton": "Pridať značku",
+      "empty": "Zatiaľ žiadne značky. Vytvorte prvú značku a usporiadajte si transakcie.",
       "tabs": {
         "details": "Podrobnosti",
         "reminders": "Pripomienky"
       },
       "form": {
-        "createTitle": "Vytvoriť štítok",
-        "editTitle": "Upraviť štítok",
+        "createTitle": "Vytvoriť značku",
+        "editTitle": "Upraviť značku",
         "name": "Názov",
-        "namePlaceholder": "Názov štítku",
+        "namePlaceholder": "Názov značky",
         "color": "Farba",
         "icon": "Ikona",
         "iconPlaceholder": "Vyberte ikonu",
         "description": "Popis",
         "descriptionPlaceholder": "Voliteľný popis",
         "saveButton": "Uložiť",
-        "previewPlaceholder": "Názov štítku"
+        "previewPlaceholder": "Názov značky"
       },
       "delete": {
-        "title": "Zmazať štítok?",
+        "title": "Zmazať značku?",
         "description": "Toto natrvalo zmaže „{name}\" a odstráni ho zo všetkých transakcií. Túto akciu nie je možné vrátiť späť.",
         "deleteButton": "Zmazať",
         "cancelButton": "Zrušiť"
       },
       "notifications": {
-        "createSuccess": "Štítok vytvorený",
-        "createFailed": "Štítok sa nepodarilo vytvoriť",
-        "updateSuccess": "Štítok bol aktualizovaný",
-        "updateFailed": "Štítok sa nepodarilo aktualizovať",
-        "deleteSuccess": "Štítok bol zmazaný",
-        "deleteFailed": "Štítok sa nepodarilo zmazať"
+        "createSuccess": "Značka vytvorená",
+        "createFailed": "Značku sa nepodarilo vytvoriť",
+        "updateSuccess": "Značka bola aktualizovaná",
+        "updateFailed": "Značku sa nepodarilo aktualizovať",
+        "deleteSuccess": "Značka bola zmazaná",
+        "deleteFailed": "Značku sa nepodarilo zmazať"
       },
       "reminders": {
         "addButton": "Pridať pripomienku",
-        "empty": "Zatiaľ žiadne pripomienky. Vytvorte pripomienku a nechajte sa upozorniť na aktivitu tohto štítku.",
+        "empty": "Zatiaľ žiadne pripomienky. Vytvorte pripomienku a nechajte sa upozorniť na aktivitu tejto značky.",
         "enabled": "Zapnuté",
         "disabled": "Vypnuté",
         "form": {
@@ -47,7 +47,7 @@
           "typePlaceholder": "Vyberte typ",
           "amountThreshold": "Hraničná suma",
           "amountThresholdPlaceholder": "Zadajte hraničnú sumu",
-          "amountThresholdHint": "Upozorníme vás, keď výdavky s týmto štítkom prekročia túto sumu",
+          "amountThresholdHint": "Upozorníme vás, keď výdavky s touto značkou prekročia túto sumu",
           "frequency": "Frekvencia",
           "frequencyPlaceholder": "Vyberte frekvenciu",
           "dayOfMonth": "Deň v mesiaci",
@@ -60,11 +60,11 @@
           "amountThreshold": "Hraničná suma",
           "amountThresholdDescription": "Upozorniť, keď výdavky prekročia určitú sumu",
           "existenceCheck": "Kontrola aktivity",
-          "existenceCheckDescription": "Upozorniť, keď sa objavia transakcie s týmto štítkom"
+          "existenceCheckDescription": "Upozorniť, keď sa objavia transakcie s touto značkou"
         },
         "frequencies": {
           "immediate": "Okamžite",
-          "immediateDescription": "Spustí sa pri označení transakcií štítkom (interval 24 hodín)",
+          "immediateDescription": "Spustí sa pri označení transakcií značkou (interval 24 hodín)",
           "daily": "Denne",
           "dailyDescription": "Kontrola každý deň",
           "weekly": "Týždenne",

@@ -12,7 +12,7 @@
       "categoryHint": "Efektívna kategória tejto protistrany. Zobrazí predvolenú kategóriu, ak ste ju nastavili — inak kategóriu najčastejšie použitú v minulých transakciách. Automaticky sa vyplní pri vytváraní novej transakcie.",
       "topCategory": "Najčastejšia kategória",
       "defaultCategory": "Predvolená kategória",
-      "defaultTags": "Predvolené štítky"
+      "defaultTags": "Predvolené značky"
     },
     "sort": {
       "label": "Zoradiť podľa",
@@ -20,7 +20,7 @@
       "netFlow": "Čistý tok",
       "name": "Názov",
       "lastSeen": "Nedávna aktivita",
-      "defaultTags": "Predvolené štítky"
+      "defaultTags": "Predvolené značky"
     },
     "actions": {
       "menu": "Akcie",
@@ -85,9 +85,9 @@
       "confirmMerge": "Zlúčiť",
       "topCategoryHint": "Kategória najčastejšie použitá v transakciách prepojených s touto protistranou. Použije sa ako náhradná, ak nie je nastavená predvolená kategória.",
       "defaultCategoryPlaceholder": "Vyberte kategóriu",
-      "defaultTagsLabel": "Automaticky priraďovať štítky",
-      "defaultTagsPlaceholder": "Vyberte štítky na automatické priradenie",
-      "defaultTagsHint": "Tieto štítky sa automaticky priradia k novým transakciám prepojeným s touto protistranou (banková synchronizácia a importy).",
+      "defaultTagsLabel": "Automaticky priraďovať značky",
+      "defaultTagsPlaceholder": "Vyberte značky na automatické priradenie",
+      "defaultTagsHint": "Tieto značky sa automaticky priradia k novým transakciám prepojeným s touto protistranou (banková synchronizácia a importy).",
       "defaultLocationLabel": "Predvolená poloha",
       "defaultLocationEmpty": "Poloha nie je nastavená",
       "defaultLocationHint": "Transakcie prepojené s touto protistranou, ktoré nemajú vlastnú polohu, dostanú túto — pri vytvorení aj počas bankovej synchronizácie.",
@@ -122,7 +122,7 @@
       "aliasDeleted": "Alias odstránený",
       "aliasAdded": "Alias pridaný",
       "deletedAndIgnored": "Protistrana zmazaná a pridaná na zoznam ignorovaných názvov",
-      "tagsAppliedToExisting": "Štítky priradené k {count} transakciám",
+      "tagsAppliedToExisting": "Značky priradené k {count} transakciám",
       "bulkDeleted": "Zmazaná {count} protistrana | Zmazané {count} protistrany | Zmazaných {count} protistrán",
       "bulkDeletedAndIgnored": "Zmazaná a ignorovaná {count} protistrana | Zmazané a ignorované {count} protistrany | Zmazaných a ignorovaných {count} protistrán"
     },

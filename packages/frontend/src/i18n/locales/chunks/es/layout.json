@@ -14,12 +14,15 @@
     "accountDetails": "Detalles de la cuenta",
     "helpAndDocs": "Ayuda & Documentación",
     "logout": "Cerrar sesión",
-    "appVersion": "App version {version}",
+    "appVersion": "Versión de app {version}",
+    "updateAvailable": "Actualización disponible",
+    "updateToVersion": "Actualizar «{version}»",
     "settings": "Ajustes",
     "planned": {
       "planned": "Planificado",
       "subscriptions": "Cargos recurrentes",
-      "budgets": "Presupuestos"
+      "budgets": "Rastreadores",
+      "goals": "Objetivos"
     },
     "venture": "Venture",
     "budget": "Presupuestos"

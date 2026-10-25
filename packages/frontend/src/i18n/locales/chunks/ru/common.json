@@ -160,6 +160,7 @@
       },
       "record": {
         "addedByTooltip": "Эта транзакция была прикреплена к бюджету пользователем {handle}",
+        "addedByRule": "Added by the tracker's rules",
         "matchedByAi": "Сопоставлено AI",
         "externalLinkTooltip": "Открыть внешнюю ссылку",
         "locationTooltip": "Открыть местоположение на карте",
@@ -338,6 +339,10 @@
     },
     "share": {
       "sendFailedHint": "Откройте панель общего доступа, чтобы отправить повторно."
+    },
+    "goalReached": {
+      "title": "Goal reached: {name}",
+      "message": "You've saved {amount}."
     }
   },
   "currencyNames": {

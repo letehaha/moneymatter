@@ -300,7 +300,8 @@
         "interestRateRange": "Процентная ставка должна быть от 0 до 99.9999.",
         "termRange": "Срок должен составлять от 1 до 1200 месяцев.",
         "paymentDayRange": "День месяца должен быть от 1 до 31.",
-        "asOfInFuture": "Дата не может быть в будущем"
+        "asOfInFuture": "Дата не может быть в будущем",
+        "startDateInFuture": "Start date can't be in the future"
       },
       "balanceExceedsPrincipalWarning": "Остаток задолженности выше первоначальной суммы кредита — перепроверьте значения."
     }

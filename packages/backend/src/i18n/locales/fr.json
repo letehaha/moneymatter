@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Seul le propriétaire peut dupliquer ce suivi",
     "someTransactionIdsInvalid": "Certains identifiants d'opérations sont non valides",
     "transactionsAddedSuccessfully": "Opérations ajoutées avec succès",
-    "cannotManuallyLinkToCategoryBudget": "Impossible de lier manuellement des opérations aux suivis par catégorie. Les opérations sont suivies automatiquement par catégorie.",
     "someCategoryIdsInvalid": "Certains identifiants de catégories sont non valides ou n'existent pas",
-    "notCategoryBudget": "Ce point de terminaison est disponible uniquement pour les suivis par catégorie",
-    "lineCategoryOutsideTracker": "Une ligne de suivi ne peut utiliser que les catégories suivies par son propre suivi",
     "startDateAfterEndDate": "La date de début doit être antérieure ou égale à la date de fin",
+    "rulesNeedCategoryOrTag": "Choisissez au moins une catégorie ou une étiquette pour ajouter automatiquement des transactions.",
     "smartTracking": {
       "ownerOnly": "Seul le propriétaire du suivi peut modifier le suivi intelligent.",
-      "manualOnly": "Le suivi intelligent fonctionne uniquement pour les suivis manuels.",
       "descriptionRequired": "Décrivez la finalité de ce suivi pour activer le suivi intelligent.",
       "startDateRequired": "Définissez une date de début pour activer le suivi intelligent.",
       "scanRunning": "Le rapprochement est en cours pour ce suivi. Réessayez une fois terminé.",
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "Impossible de supprimer la devise par défaut. Définissez d'abord une autre devise par défaut.",
     "cannotDeleteCurrencyWithAccounts": "Impossible de supprimer une devise associée à des comptes. Supprimez d'abord ces comptes. Noms des comptes : « {{accountNames}} ».",
     "cannotDeleteCurrencyWithInvestments": "Impossible de supprimer la devise « {{currencyCode}} » car elle est utilisée par des actifs d'investissement. Supprimez d'abord ces actifs.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
     "defaultCurrencyNotPresent": "Impossible de supprimer la devise. Aucune devise par défaut n'est présente dans le système"
   },
   "ai": {
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "L'exportation contiendrait {{rowCount, number}} lignes, ce qui dépasse la limite de {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Objectif introuvable.",
+    "accountNotFound": "L'un des comptes sélectionnés est introuvable.",
+    "accountNotEligible": "{{accountName}} ne peut pas contribuer à un objectif. Choisissez un compte courant, d'épargne, d'investissement, de cryptomonnaies ou un compte de liquidités.",
+    "shareCapacityExceeded": "Il reste {{free}} % disponibles sur {{accountName}} : vous demandez {{requested}} %, et les autres objectifs utilisent déjà {{usedByOtherGoals}} %.",
+    "fixedAmountsBelowTarget": "Les montants fixes totalisent {{total}} {{currencyCode}}, soit moins que la cible de {{target}} {{currencyCode}}. Augmentez un montant ou attribuez un pourcentage d'un compte.",
+    "currencyRateUnavailable": "Impossible de convertir {{currencyCode}} dans votre devise de référence actuellement. Choisissez une autre devise ou réessayez plus tard.",
+    "reachedNotification": {
+      "title": "Objectif atteint : {{name}}",
+      "message": "Vous avez épargné {{amount}} {{currencyCode}}."
+    }
   }
 }

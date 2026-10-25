@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Only the owner can duplicate this tracker",
     "someTransactionIdsInvalid": "Some transactions IDs are invalid",
     "transactionsAddedSuccessfully": "Transactions added successfully",
-    "cannotManuallyLinkToCategoryBudget": "Cannot manually link transactions to category-based trackers. Transactions are tracked automatically by category.",
     "someCategoryIdsInvalid": "Some category IDs are invalid or do not exist",
-    "notCategoryBudget": "This endpoint is only available for category-based trackers",
-    "lineCategoryOutsideTracker": "A tracker line can only use categories tracked by its tracker",
     "startDateAfterEndDate": "Start date must be on or before the end date",
+    "rulesNeedCategoryOrTag": "Pick at least one category or tag to add transactions automatically.",
     "smartTracking": {
       "ownerOnly": "Only the tracker owner can change smart tracking.",
-      "manualOnly": "Smart tracking works only for manual trackers.",
       "descriptionRequired": "Describe what this tracker is for to turn on smart tracking.",
       "startDateRequired": "Set a start date to turn on smart tracking.",
       "scanRunning": "Matching is running for this tracker. Try again when it finishes.",
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "It is not allowed to delete default currency. Unmake it default first.",
     "cannotDeleteCurrencyWithAccounts": "It is not allowed to delete currency associated with any accounts. Delete accounts first. Accounts names: \"{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "It is not allowed to delete currency \"{{currencyCode}}\" while it is used by investment holdings. Delete those holdings first.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
     "defaultCurrencyNotPresent": "Cannot delete currency. Default currency is not present in the system"
   },
   "ai": {
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export would contain {{rowCount, number}} rows, which exceeds the limit of {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Goal not found.",
+    "accountNotFound": "One of the selected accounts was not found.",
+    "accountNotEligible": "{{accountName}} can't count toward a goal. Pick a cash, current, savings, investment or crypto account.",
+    "shareCapacityExceeded": "{{accountName}} has {{free}}% free: you asked for {{requested}}%, and other goals already use {{usedByOtherGoals}}%.",
+    "fixedAmountsBelowTarget": "Fixed amounts add up to {{total}} {{currencyCode}}, below the {{target}} {{currencyCode}} target. Raise an amount or count an account by percent.",
+    "currencyRateUnavailable": "{{currencyCode}} can't be converted to your base currency right now. Pick another currency or try again later.",
+    "reachedNotification": {
+      "title": "Goal reached: {{name}}",
+      "message": "You've saved {{amount}} {{currencyCode}}."
+    }
   }
 }

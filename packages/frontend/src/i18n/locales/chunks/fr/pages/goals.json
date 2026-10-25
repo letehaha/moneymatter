@@ -1,0 +1,347 @@
+{
+  "goals": {
+    "title": "Objectifs",
+    "description": "Épargnez pour atteindre vos objectifs à partir de vos comptes existants",
+    "newGoal": "Nouvel objectif",
+    "list": {
+      "searchPlaceholder": "Rechercher des objectifs",
+      "filters": {
+        "all": "Tout",
+        "behind": "En retard",
+        "archived": "Archivés"
+      },
+      "sections": {
+        "active": "Actif",
+        "ended": "Terminé",
+        "archived": "Archivés",
+        "show": "afficher",
+        "hide": "masquer"
+      },
+      "loadError": "Impossible de charger vos objectifs.",
+      "emptyState": {
+        "title": "Aucun objectif pour le moment",
+        "description": "Associez un objectif aux comptes qui contiennent votre argent. Sa progression évolue avec leurs soldes."
+      },
+      "noMatch": {
+        "title": "Aucun résultat pour « {query} »",
+        "titleNoQuery": "Aucun objectif ne correspond à ces filtres",
+        "description": "Essayez un autre nom ou incluez les objectifs archivés.",
+        "includeArchived": "Inclure les archives"
+      },
+      "row": {
+        "saved": "Épargné",
+        "ofTarget": "sur {amount}",
+        "accountShare": "{name} {share} %",
+        "accountFixed": "{name} {amount}",
+        "reachedOn": "atteint le {date}",
+        "byDate": "d'ici le {date}",
+        "noDate": "aucune date",
+        "neededMonthly": "nécessite {amount}/mois"
+      },
+      "menu": {
+        "moreActions": "Autres actions pour {name}"
+      }
+    },
+    "status": {
+      "reached": "Atteint",
+      "ahead": "En avance",
+      "onTrack": "Dans les temps",
+      "behind": "En retard",
+      "behindBy": "Retard de {count} mois | Retard de {count} mois",
+      "overdue": "En retard",
+      "noDate": "Aucune date",
+      "around": "vers le {date}",
+      "insufficientHistory": "Historique insuffisant",
+      "noAccounts": "Aucun compte",
+      "paused": "En pause",
+      "archived": "Archivés",
+      "noRate": "Taux de change indisponible"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "pause": "Mettre en pause",
+      "resume": "Reprendre",
+      "archive": "Archiver",
+      "unarchive": "Désarchiver",
+      "delete": "Supprimer"
+    },
+    "deleteDialog": {
+      "title": "Supprimer cet objectif ?",
+      "description": "L'objectif et les parts de comptes qui lui sont attribuées seront supprimés. Vos comptes et transactions resteront inchangés."
+    },
+    "toasts": {
+      "created": "Objectif créé",
+      "saved": "Objectif enregistré",
+      "paused": "Objectif mis en pause",
+      "archived": "Objectif archivé",
+      "deleted": "Objectif supprimé",
+      "saveError": "Impossible d'enregistrer l'objectif",
+      "deleteError": "Impossible de supprimer l'objectif"
+    },
+    "access": {
+      "trialDaysLeft": "Essai des objectifs · encore {n} jour | Essai des objectifs · encore {n} jours",
+      "trialTitle": "Essayez gratuitement les objectifs pendant 14 jours",
+      "trialDescription": "La création et la modification d'objectifs font partie de l'offre Essential. Lancez un essai pour configurer votre premier objectif.",
+      "startTrial": "Démarrer l'essai gratuit",
+      "trialEnded": "Votre essai des objectifs est terminé. Vos objectifs restent visibles ; passez à une offre supérieure pour les modifier."
+    },
+    "details": {
+      "backToList": "Retour aux objectifs",
+      "notFound": {
+        "title": "Objectif introuvable",
+        "description": "Il a peut-être été supprimé."
+      },
+      "loadError": "Impossible de charger cet objectif",
+      "perMonth": "/mois",
+      "actions": {
+        "raiseTarget": "Augmenter le montant cible",
+        "more": "Autres actions sur l'objectif"
+      },
+      "tabs": {
+        "progress": "Progression",
+        "accounts": "Comptes",
+        "whatIf": "Et si…"
+      },
+      "strip": {
+        "target": "Cible",
+        "saved": "Épargné",
+        "left": "Restant",
+        "needs": "Besoins",
+        "pace": "Rythme",
+        "reached": "Atteint",
+        "aboveTarget": "{amount} au-dessus de l'objectif",
+        "notEnoughHistory": "historique insuffisant",
+        "around": "vers le {date}",
+        "dueInDays": "échéance dans {count} jour | échéance dans {count} jours",
+        "overdue": "en retard"
+      },
+      "accounts": {
+        "label": "Comptes",
+        "count": "{count} compte | {count} comptes",
+        "showAll": "Afficher les {count} comptes",
+        "countedToward": "Pris en compte pour {name}",
+        "shareOf": "{share} % de {amount}",
+        "fixed": "{amount} fixes",
+        "fixedShort": "{counted} sur {amount} fixes. Le solde du compte est inférieur aux montants fixes qui lui sont attribués.",
+        "shareOfLeft": "{share} % des {amount} restants après les montants fixes",
+        "sharePlain": "{share} %",
+        "totalCounted": "Total pris en compte",
+        "readOnlyHint": "Consulte les soldes sans jamais déplacer d'argent",
+        "wholeAccount": "Compte entier",
+        "shareHere": "{share} % ici",
+        "shareHereFree": "{share} % ici · {free} % disponibles",
+        "fixedHere": "{amount} fixes prélevés sur ce compte",
+        "emptyDescription": "Associez des comptes dans « Modifier l'objectif » pour suivre la progression.",
+        "columns": {
+          "account": "Compte",
+          "share": "Partager",
+          "balance": "Solde",
+          "counted": "Pris en compte"
+        },
+        "archived": "Archivés",
+        "percentOfSaved": "{percent} % de l'épargne",
+        "total": "Total · {count} compte | Total · {count} comptes",
+        "ofBalance": "sur {amount}",
+        "unavailableAccount": "Compte indisponible",
+        "balanceUnavailable": "Solde indisponible"
+      },
+      "noRate": {
+        "title": "Taux de change indisponible",
+        "description": "La progression s'affichera dès que le taux du jour pour {currency} sera disponible."
+      },
+      "progress": {
+        "kpi": {
+          "monthlyPace": "Rythme mensuel",
+          "needs": "nécessite {amount}/mois",
+          "projectedFinish": "Date d'atteinte estimée",
+          "onTime": "dans les temps",
+          "early": "{count} mois d'avance",
+          "late": "{count} mois de retard",
+          "targetDate": "Objectif : {date}",
+          "savedIn": "Atteint dans {count} mois",
+          "bestMonth": "Meilleur mois",
+          "shareOfGrowth": "{percent} % de la hausse sur la période",
+          "leftDueInDays": "Encore {amount}, échéance dans {count} jour | Encore {amount}, échéance dans {count} jours",
+          "leftOverdue": "Encore {amount}, échéance dépassée"
+        },
+        "timeline": "Chronologie",
+        "noHistory": "Pas encore d'historique",
+        "insufficient": {
+          "title": "Historique insuffisant pour estimer le rythme",
+          "description": "L'estimation nécessite {min} mois complets d'historique ; ces comptes en ont {count}. Définissez un montant mensuel dans « Modifier l'objectif » pour obtenir une estimation dès maintenant."
+        },
+        "notes": {
+          "plannedPace": "Le rythme se base sur le montant mensuel prévu de {amount}.",
+          "historyPace": "Le rythme correspond à la variation mensuelle médiane sur le dernier {count} mois. | Le rythme correspond à la variation mensuelle médiane sur les {count} derniers mois.",
+          "fxDrift": "Les mois précédents des comptes en devises incluent les variations des taux de change.",
+          "marketMoves": "Les variations de marché des comptes d'investissement comptent dans la progression. Les projections supposent une croissance nulle.",
+          "staysReached": "L'objectif reste considéré comme atteint même si le solde baisse ensuite."
+        },
+        "chartAria": "Évolution de l'épargne affectée à l'objectif",
+        "legend": {
+          "saved": "Épargné",
+          "projection": "Projection",
+          "target": "Cible"
+        },
+        "monthlyChange": "Variation mensuelle"
+      },
+      "staleData": "Impossible d'actualiser cet objectif. Les dernières données chargées sont affichées."
+    },
+    "form": {
+      "createTitle": "Nouvel objectif",
+      "editTitle": "Modifier l'objectif",
+      "description": "La progression utilise les soldes de vos comptes. Aucun argent n'est déplacé.",
+      "nameLabel": "Nom",
+      "namePlaceholder": "Ex. : voiture ou épargne de précaution",
+      "targetAmountLabel": "Montant cible",
+      "targetAmountPlaceholder": "Saisir un montant",
+      "currencyLabel": "Devise",
+      "currencyPlaceholder": "Sélectionner une devise",
+      "targetDateLabel": "Date cible",
+      "targetDateHint": "Facultatif. Choisissez une date pour savoir si vous êtes dans les temps. Sans date, une estimation de l'atteinte sera calculée.",
+      "accountsLabel": "Comptes",
+      "noAccounts": "Aucun compte pour l'instant",
+      "countsNow": "{amount} pris en compte actuellement",
+      "manageAccounts": "Gérer les comptes",
+      "addAccounts": "Ajouter des comptes",
+      "accountsHint": "Les soldes de ces comptes contribuent à l'objectif.",
+      "plannedMonthlyLabel": "Définir un montant mensuel",
+      "plannedMonthlyHint": "Si cette option est désactivée, la variation mensuelle médiane des 6 derniers mois sera utilisée.",
+      "plannedMonthlyPlaceholder": "Saisissez un montant mensuel",
+      "holdDaysLabel": "Conserver le statut « Atteint » après une baisse",
+      "holdDaysPlaceholder": "30",
+      "holdDaysUnit": "jours",
+      "holdDaysHint": "Pendant ce nombre de jours après avoir atteint la cible, une baisse du solde ne fait pas perdre le statut « Atteint ». Indiquez 0 pour suivre le solde en temps réel.",
+      "summary": {
+        "dated": "Atteindre {target} d'ici le {date}.",
+        "undated": "Atteindre {target}, sans date limite.",
+        "needed": "Cela nécessite environ {amount} par mois à partir d'aujourd'hui.",
+        "covered": "Vos comptes couvrent déjà ce montant.",
+        "planned": "Vous prévoyez d'épargner {amount} par mois."
+      },
+      "thisGoal": "cet objectif",
+      "createSubmit": "Créer un objectif",
+      "errors": {
+        "nameRequired": "Saisissez un nom",
+        "amountRequired": "Saisissez un montant supérieur à 0",
+        "dateNotFuture": "Choisissez une date ultérieure à aujourd'hui",
+        "accountsRequired": "Ajoutez au moins un compte",
+        "shareCapacity": "Il ne reste que {free} % disponibles sur {account}. Réduisez sa part dans « Gérer les comptes ».",
+        "shareCapacityGeneric": "La part disponible d'un compte est insuffisante. Réduisez sa part dans « Gérer les comptes ».",
+        "fixedBelowTarget": "La somme des montants fixes est inférieure à la cible. Augmentez un montant ou attribuez une part en pourcentage d'un compte.",
+        "holdDaysRange": "Saisissez un nombre entier de jours compris entre 0 et 365"
+      },
+      "unavailableAccount": "Compte indisponible",
+      "accountsMissing": "{count} compte est indisponible et n'est pas pris en compte | {count} comptes sont indisponibles et ne sont pas pris en compte"
+    },
+    "accountsDialog": {
+      "title": "Comptes de {name}",
+      "description": "Cochez les comptes contribuant à {name} et indiquez la part de chacun.",
+      "fixedFirst": "Les montants fixes sont d'abord déduits du solde du compte. Les pourcentages répartissent ensuite le reste.",
+      "mode": {
+        "percent": "Pourcentage",
+        "amount": "Montant"
+      },
+      "searchPlaceholder": "Rechercher des comptes",
+      "holder": "{share} % dans {name}",
+      "archived": "Archivés",
+      "fixedOnly": "Entièrement utilisé : {holders} · montant fixe uniquement",
+      "free": "{free} % disponibles",
+      "wholeAccount": "Compte entier · {amount} pris en compte",
+      "maxShare": "Maximum {max} % · {amount} pris en compte",
+      "counts": "{amount} pris en compte",
+      "shareAriaLabel": "Part de {name}",
+      "amountAriaLabel": "Montant fixe prélevé sur {name}",
+      "errors": {
+        "invalid": "Saisissez une part supérieure à 0 %",
+        "invalidAmount": "Saisissez un montant supérieur à 0",
+        "overMax": "Maximum {max} %",
+        "overMaxUsedBy": "Maximum {max} % ({holders})",
+        "noShareLeft": "Aucune part disponible : {holders}. Utilisez plutôt un montant fixe."
+      },
+      "noMatch": "Aucun compte ne correspond à « {query} »",
+      "marketNote": "Les fluctuations des marchés sur les comptes d'investissement et de cryptomonnaies comptent dans la progression. Les projections supposent une croissance nulle.",
+      "total": "Aucun compte sélectionné | {count} compte · {amount} pris en compte | {count} comptes · {amount} pris en compte",
+      "fixToSave": "Corrigez {name} pour enregistrer",
+      "done": "Terminé",
+      "emptyState": {
+        "title": "Aucun compte à associer",
+        "description": "Les objectifs peuvent prendre en compte vos comptes courants, d'épargne, d'investissement, de cryptomonnaies et vos liquidités."
+      },
+      "unavailableCaption": "Indisponible · conservé jusqu'à ce que vous le décochiez",
+      "sharePlaceholder": "100",
+      "amountPlaceholder": "Montant",
+      "order": {
+        "hint": "Si le solde est insuffisant, les montants fixes sont attribués de haut en bas. Faites glisser pour modifier l'ordre.",
+        "dragLabel": "Faire glisser pour modifier l'ordre",
+        "thisGoal": "{name} · cet objectif",
+        "moveUp": "Déplacer vers le haut",
+        "moveDown": "Déplacer vers le bas"
+      },
+      "fixedCurrencyNote": "Les montants fixes sont exprimés dans la devise du compte."
+    },
+    "feasibility": {
+      "summary": "Vos objectifs nécessitent {needed}/mois ; vous épargnez une médiane de {saving}/mois",
+      "short": "Il manque {amount} par mois.",
+      "showGoals": "Afficher les objectifs",
+      "hideGoals": "Masquer les objectifs",
+      "perMonth": "{amount}/mois",
+      "goalFits": "Réalisable",
+      "goalDoesNotFit": "Non réalisable",
+      "footnote": "« Épargne habituelle » correspond au flux net mensuel médian des 12 derniers mois complets. Les virements entre vos propres comptes sont exclus. Les objectifs sont vérifiés par date d'échéance, de la plus proche à la plus lointaine.",
+      "dueIn": "Échéance dans {count} jour | Échéance dans {count} jours",
+      "dueNote": "Les objectifs en retard ou arrivant à échéance dans moins d'un mois ne sont pas inclus dans le total mensuel."
+    },
+    "whatIf": {
+      "monthly": {
+        "label": "Montant mensuel consacré à cet objectif",
+        "placeholder": "Automatique",
+        "auto": "Auto : {amount}",
+        "autoHint": "Auto : {amount} correspond à la variation mensuelle médiane des {count} derniers mois",
+        "noAuto": "Historique insuffisant pour le mode automatique. Saisissez un montant.",
+        "useAuto": "Utiliser le mode Auto"
+      },
+      "targetDate": {
+        "label": "Date cible",
+        "hint": "Facultatif. Sans date, vous obtenez une estimation du mois d'atteinte, sans indication de retard."
+      },
+      "shares": {
+        "label": "Parts des comptes",
+        "counted": "{amount} pris en compte · {percent} %",
+        "whole": "Compte entier · {amount} pris en compte",
+        "fixed": "Montant fixe · {amount} pris en compte",
+        "free": "{free} % disponibles · {amount} pris en compte",
+        "inputLabel": "Part de {name}",
+        "placeholder": "0",
+        "capacityPending": "Les parts ne peuvent pas être modifiées tant que vos autres objectifs ne sont pas chargés."
+      },
+      "compare": {
+        "title": "Situation actuelle ou simulation",
+        "from": "à partir du {date}",
+        "now": "Actuellement",
+        "whatIf": "Simulation",
+        "monthly": "Montant mensuel consacré à l'objectif",
+        "reached": "Atteint vers le",
+        "against": "Par rapport à la date cible",
+        "needed": "Montant mensuel nécessaire",
+        "reachedAlready": "Atteint",
+        "offset": {
+          "early": "{count} mois d'avance",
+          "onTime": "Dans les temps",
+          "late": "{count} mois de retard"
+        }
+      },
+      "autoTag": "Automatique",
+      "deposit": {
+        "sentence": "Pour attribuer {amount} par mois à cet objectif, versez {deposits}.",
+        "item": "{amount} sur {account}"
+      },
+      "sandboxHint": "Ceci est une simulation. Rien ne change tant que vous ne l'appliquez pas dans « Modifier l'objectif ».",
+      "reset": "Réinitialiser",
+      "apply": "Appliquer dans « Modifier l'objectif »"
+    },
+    "docs": {
+      "howItWorks": "Fonctionnement des objectifs"
+    }
+  }
+}

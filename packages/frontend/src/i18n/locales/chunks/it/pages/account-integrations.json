@@ -144,7 +144,7 @@
             "finishAuth": "Once you finish auth flow, you will be redirected back to EnableBanking",
             "waitAccounts": "Wait until selected accounts are displayed in the Application's card under \"Linked accounts\" field"
           },
-          "warningNotLinked": "It might be the case that some selected accounts are not linked. This is the problem on your bank's side which you cannot resolve by yourself. You can only wait a few hours/days until issue is resolved. If issue is not resolved, the only way is to report to EnableBanking.",
+          "warningNotLinked": "Potrebbe essere il caso che alcuni account selezionati non siano collegati. Questo è il problema della tua banca, che non puoi risolvere da solo. Si può aspettare solo poche ore / giorni fino a quando il problema non viene risolto. Se il problema non viene risolto, l'unico modo è quello di riferire a EnableBanking.",
           "infoAddMore": "In case in the future you would like to connect more accounts, you will need to repeat the flow of linking accounts again. {strong} that when adding NEW accounts you still need to select OLD accounts – basically you need to select ALL accounts you want to be connected.",
           "infoAddMoreStrong": "Keep in mind"
         },

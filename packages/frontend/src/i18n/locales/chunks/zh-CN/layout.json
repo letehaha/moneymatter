@@ -15,11 +15,14 @@
     "helpAndDocs": "Help & docs",
     "logout": "登出",
     "appVersion": "App version {version}",
+    "updateAvailable": "Update available",
+    "updateToVersion": "Update · {version}",
     "settings": "设置",
     "planned": {
       "planned": "已规划",
       "subscriptions": "定期付款",
-      "budgets": "预算"
+      "budgets": "预算",
+      "goals": "Goals"
     },
     "venture": "风险投资",
     "budget": "Budget"

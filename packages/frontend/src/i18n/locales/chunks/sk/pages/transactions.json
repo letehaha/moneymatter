@@ -52,7 +52,7 @@
       },
       "tags": {
         "allTags": "Všetky značky",
-        "tagSingular": "štítok",
+        "tagSingular": "značka",
         "tagPlural": "značky",
         "selected": "vybrané",
         "searchPlaceholder": "Hľadať značky...",
@@ -66,7 +66,7 @@
       "removeFilter": "Odstrániť filter",
       "menu": {
         "type": "Typ",
-        "tags": "Štítky",
+        "tags": "Značky",
         "budgets": "Sledovače",
         "amount": "Rozsah sumy",
         "note": "Poznámky"
@@ -100,8 +100,8 @@
       "categoryPlaceholder": "Vyberte kategóriu...",
       "payeeLabel": "Protistrana",
       "payeePlaceholder": "Vyberte protistranu...",
-      "tagsLabel": "Štítky",
-      "tagsPlaceholder": "Vyberte štítky...",
+      "tagsLabel": "Značky",
+      "tagsPlaceholder": "Vyberte značky...",
       "noteLabel": "Poznámka",
       "notePlaceholder": "Zadajte poznámku...",
       "applyButton": "Použiť zmeny",
@@ -110,16 +110,16 @@
       "confirmDescription": "Chystáte sa aktualizovať {count} transakcií:",
       "confirmCategoryLabel": "Kategória",
       "confirmPayeeLabel": "Protistrana",
-      "confirmTagsLabel": "Štítky",
+      "confirmTagsLabel": "Značky",
       "confirmNoteLabel": "Poznámka",
       "cancelButton": "Zrušiť",
       "confirmApplyButton": "Použiť",
       "successMessage": "Úspešne aktualizovaných {count} transakcií",
       "unexpectedError": "Vyskytla sa neočakávaná chyba",
-      "tagModeLabel": "Akcia so štítkami",
-      "tagModeAdd": "Pridať k existujúcim štítkom",
-      "tagModeReplace": "Nahradiť všetky štítky",
-      "tagModeRemove": "Odstrániť tieto štítky",
+      "tagModeLabel": "Akcia so značkami",
+      "tagModeAdd": "Pridať k existujúcim značkám",
+      "tagModeReplace": "Nahradiť všetky značky",
+      "tagModeRemove": "Odstrániť tieto značky",
       "totals": {
         "income": "Príjmy",
         "expense": "Výdavky",
@@ -191,7 +191,7 @@
         "refAmount": "Suma v základnej mene",
         "originalAmount": "Pôvodná suma",
         "note": "Poznámka",
-        "tags": "Štítky",
+        "tags": "Značky",
         "categorizationSource": "Zaradil",
         "group": "Skupina",
         "refund": "Vrátenie platby",
@@ -246,7 +246,7 @@
       "managedDescription": "Táto transakcia patrí k portfóliu, investícii, vozidlu alebo pôžičke. Upravte ju na jej vlastnej stránke, aby zostali zostatky správne.",
       "gotIt": "Rozumiem",
       "openDetails": "Otvoriť podrobnosti",
-      "tooManyTags": "Najviac {max} štítkov na transakciu"
+      "tooManyTags": "Najviac {max} značiek na transakciu"
     },
     "savedViews": {
       "trigger": "Pohľady",

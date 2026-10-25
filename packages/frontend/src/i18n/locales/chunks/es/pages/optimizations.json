@@ -137,41 +137,41 @@
         "skipError": "Error al omitir la sugerencia"
       },
       "aiReview": {
-        "label": "AI review",
-        "about": "About AI review",
+        "label": "Revisión con IA",
+        "about": "Acerca de la revisión de IA",
         "plusBadge": "Plus",
-        "description": "AI checks each match and shows only the ones that look like real transfers between your accounts.",
-        "cost": "Each scan uses your monthly AI allowance. With your own AI provider, the provider bills it. Choose the model in {link}.",
+        "description": "IA comprueba cada coincidencia y muestra sólo los que parecen transferencias reales entre tus cuentas.",
+        "cost": "Cada escaneo utiliza tu permiso de IA mensual. Con tu propio proveedor de IA, el proveedor la factura. Elige el modelo en {link}.",
         "aiSettingsLink": "Ajustes de IA",
-        "openAiSettings": "Open AI settings",
+        "openAiSettings": "Open AI configuración",
         "blocked": {
           "plan": {
-            "title": "AI review is part of Plus",
-            "body": "Or connect your own AI provider in AI settings to use it on any plan."
+            "title": "Revisión de IA es parte de Plus",
+            "body": "O conecta tu propio proveedor de IA en los ajustes de IA para usarlo en cualquier plan."
           },
           "allowance": {
-            "pill": "Until {date}",
-            "title": "Monthly AI allowance used",
-            "body": "It resets on {date}. Connect your own AI provider to keep using it now."
+            "pill": "Hasta el {date}",
+            "title": "Permiso de IA mensual usado",
+            "body": "Se reinicia el {date}. Conecta a tu propio proveedor de IA para seguir usándolo ahora."
           },
           "setup": {
             "pill": "Configurar",
-            "title": "No AI model is answering",
-            "body": "Check your AI provider or pick a model for transfer matching."
+            "title": "Ningún modelo de IA está respondiendo",
+            "body": "Compruebe su proveedor de IA o elija un modelo para que coincida con la transferencia."
           }
         },
         "connectOwnModel": "Conecte su propio modelo",
-        "reviewing": "AI is checking matches…",
+        "reviewing": "La IA está comprobando coincidencias…",
         "verdict": {
-          "likely": "Likely",
-          "possible": "Possible"
+          "likely": "Probable",
+          "possible": "Posible"
         },
-        "nudge": "Cut false matches with AI review",
-        "rescanHint": "Review with AI",
-        "rescanHintTooltip": "Many pairs scored below 70%. Scan again with AI review to hide the ones that aren't transfers. Uses your AI allowance.",
+        "nudge": "Cortar coincidencias falsas con la revisión de IA",
+        "rescanHint": "Revisión con IA",
+        "rescanHintTooltip": "Muchos pares anotados por debajo del 70%. Escanea de nuevo con la revisión de IA para ocultar los que no son transferidos. Usa tu permiso de IA.",
         "rescanBanner": {
-          "title": "Many pairs scored below 70%",
-          "body": "AI review can hide the ones that aren't transfers. Uses your AI allowance."
+          "title": "Muchos pares anotados por debajo del 70%",
+          "body": "La revisión de IA puede ocultar las que no son transferidas. Utiliza tu permiso de IA."
         }
       }
     },

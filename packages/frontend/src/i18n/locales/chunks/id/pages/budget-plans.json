@@ -235,7 +235,11 @@
       "activity": "Activity",
       "available": "Tersedia",
       "overrideBadge": "override",
-      "carriesDeficit": "carries deficit",
+      "carryBadge": {
+        "floor": "carries surplus",
+        "signed": "carries surplus & deficit",
+        "none": "starts fresh"
+      },
       "lineActions": "Line actions",
       "editLine": "Edit line",
       "archiveLine": "Archive line",

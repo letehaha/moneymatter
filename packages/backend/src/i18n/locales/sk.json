@@ -29,7 +29,7 @@
     "groupNotFound": "Skupina sa nenašla",
     "groupUpdateFailed": "Aktualizácia skupiny nebola úspešná",
     "parentGroupNotExist": "Nadradená skupina s týmto ID neexistuje.",
-    "parentGroupCycle": "A group can't be placed inside itself or one of its own subgroups.",
+    "parentGroupCycle": "Skupinu nemožno umiestniť do nej samej ani do niektorej z jej vlastných podskupín.",
     "parentGroupDoesNotExist": "Nadradená skupina neexistuje.",
     "accountNotFound": "Účet s týmto ID sa nenašiel.",
     "accountGroupNotFound": "Skupina účtov s týmto ID sa nenašla."
@@ -71,7 +71,7 @@
     "linkCannotFind": "Základnú alebo opačnú transakciu sa nepodarilo nájsť",
     "linkPlannedNotAllowed": "Plánovanú transakciu nemožno prepojiť ako prevod.",
     "linkSplitTransactionNotAllowed": "Transakciu s rozdelením nemožno prepojiť ako prevod.",
-    "invalidTagIds": "Jedno alebo viac ID štítkov je neplatných, alebo nepatrí tomuto používateľovi",
+    "invalidTagIds": "Jedno alebo viac ID značiek je neplatných, alebo nepatrí tomuto používateľovi",
     "cannotEditPortfolioLinkedTransaction": "Transakciu prepojenú s portfóliom nemožno upraviť. Najprv ju odpojte.",
     "refFieldsRequiredForTransferToPortfolio": "Pri prevodoch do portfólia musia byť nastavené referenčná mena a referenčná suma.",
     "vehicleAccountReadonly": "Tento účet sleduje vozidlo. Jeho hodnotu možno zmeniť len na stránke vozidla.",
@@ -134,14 +134,11 @@
     "onlyOwnerCanDuplicate": "Tento sledovač môže duplikovať len jeho vlastník",
     "someTransactionIdsInvalid": "Niektoré ID transakcií sú neplatné",
     "transactionsAddedSuccessfully": "Transakcie boli úspešne pridané",
-    "cannotManuallyLinkToCategoryBudget": "Transakcie nemožno ručne prepojiť so sledovačmi podľa kategórií. Transakcie sa sledujú automaticky podľa kategórie.",
     "someCategoryIdsInvalid": "Niektoré ID kategórií sú neplatné, alebo neexistujú",
-    "notCategoryBudget": "Toto rozhranie je dostupné len pre sledovače podľa kategórií",
-    "lineCategoryOutsideTracker": "Riadok sledovača môže používať len kategórie, ktoré sleduje jeho sledovač",
     "startDateAfterEndDate": "Dátum začiatku musí byť pred dátumom konca alebo sa s ním zhodovať",
+    "rulesNeedCategoryOrTag": "Vyberte aspoň jednu kategóriu alebo značku, aby sa transakcie pridávali automaticky.",
     "smartTracking": {
       "ownerOnly": "Inteligentné sledovanie môže zmeniť len vlastník sledovača.",
-      "manualOnly": "Inteligentné sledovanie funguje len pri manuálnych sledovačoch.",
       "descriptionRequired": "Ak chcete zapnúť inteligentné sledovanie, opíšte, na čo tento sledovač slúži.",
       "startDateRequired": "Ak chcete zapnúť inteligentné sledovanie, nastavte dátum začiatku.",
       "scanRunning": "Pre tento sledovač prebieha priraďovanie. Skúste to znova, keď sa dokončí.",
@@ -182,25 +179,25 @@
     }
   },
   "tags": {
-    "tagNotFound": "Štítok sa nenašiel",
-    "tagNameAlreadyExists": "Štítok s týmto názvom už existuje",
+    "tagNotFound": "Značka sa nenašla",
+    "tagNameAlreadyExists": "Značka s týmto názvom už existuje",
     "someTransactionIdsInvalid": "Niektoré ID transakcií sú neplatné",
-    "transactionsAddedSuccessfully": "Transakcie boli úspešne pridané k štítku",
-    "transactionsRemovedSuccessfully": "Transakcie boli úspešne odstránené zo štítku"
+    "transactionsAddedSuccessfully": "Transakcie boli úspešne pridané k značke",
+    "transactionsRemovedSuccessfully": "Transakcie boli úspešne odstránené zo značky"
   },
   "tagReminders": {
-    "reminderNotFound": "Pripomienka štítku sa nenašla",
-    "reminderAlreadyExists": "Pre tento štítok už existuje rovnaká pripomienka",
+    "reminderNotFound": "Pripomienka značky sa nenašla",
+    "reminderAlreadyExists": "Pre túto značku už existuje rovnaká pripomienka",
     "amountThresholdRequired": "Pri pripomienkach hraničnej sumy je hraničná suma povinná",
     "maxRemindersReached": "Dosiahnutý maximálny počet pripomienok (50)",
     "notifications": {
       "thresholdExceeded": {
-        "title": "Upozornenie na výdavky pri štítku",
+        "title": "Upozornenie na výdavky pri značke",
         "message": "Vaše výdavky pri „{{tagName}}\" ({{actualAmount}}) prekročili hranicu {{thresholdAmount}}"
       },
       "existenceCheck": {
-        "title": "Súhrn aktivity pri štítku",
-        "message": "Máte {{count}} transakcií so štítkom „{{tagName}}\""
+        "title": "Súhrn aktivity pri značke",
+        "message": "Máte {{count}} transakcií so značkou „{{tagName}}\""
       }
     }
   },
@@ -392,7 +389,7 @@
     "currencyNotSupported": "Mena „{{currency}}” nie je systémom podporovaná.",
     "accountColumnNotFound": "Stĺpec účtu „{{columnName}}” sa v CSV nenašiel",
     "categoryColumnNotFound": "Stĺpec kategórie „{{columnName}}” sa v CSV nenašiel",
-    "tagColumnNotFound": "Stĺpec štítku „{{columnName}}” sa v CSV nenašiel",
+    "tagColumnNotFound": "Stĺpec značky „{{columnName}}” sa v CSV nenašiel",
     "transactionTypeColumnNotFound": "Stĺpec typu transakcie „{{columnName}}” sa v CSV nenašiel",
     "accountMultipleCurrencies": "Účet „{{accountName}}” má transakcie vo viacerých menách: {{currencies}}. Systémové účty môžu mať len jednu menu.",
     "transactionTypeValuesNotCovered": "Stĺpec typu transakcie obsahuje hodnoty, ktoré nepokrývajú zoznamy príjmov/výdavkov: {{uncovered}}. Nájdené hodnoty: {{found}}",
@@ -450,7 +447,7 @@
     "categoryNameTooLong": "Názov kategórie „{{name}}” je príliš dlhý ({{length}} znakov); maximum je {{max}}.",
     "payeeNameTooLong": "Názov protistrany „{{name}}” je príliš dlhý ({{length}} znakov); maximum je {{max}}.",
     "categoryIdNotFound": "Kategória s ID {{id}} sa nenašla",
-    "tagIdNotFound": "Štítok s ID {{id}} sa nenašiel",
+    "tagIdNotFound": "Značka s ID {{id}} sa nenašla",
     "accountIdNotFound": "Účet s ID {{id}} sa nenašiel",
     "newAccountCurrencyUnknown": "Menu pre nový účet „{{accountName}}” sa nepodarilo určiť",
     "accountCreateFailed": "Účet „{{accountName}}” sa nepodarilo vytvoriť.",
@@ -575,6 +572,7 @@
     "cannotDeleteDefaultCurrency": "Predvolenú menu nemožno zmazať. Najprv jej zrušte štatút predvolenej.",
     "cannotDeleteCurrencyWithAccounts": "Menu priradenú k akýmkoľvek účtom nemožno zmazať. Najprv zmažte účty. Názvy účtov: „{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "Menu „{{currencyCode}}\" nemožno zmazať, kým ju používajú investičné pozície. Najprv zmažte tieto pozície.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "{{currencyCode}} nemožno odstrániť: je zobrazovacou menou jedného z vašich portfólií. Najprv zmeňte zobrazovaciu menu tohto portfólia.",
     "defaultCurrencyNotPresent": "Menu nemožno zmazať. Predvolená mena v systéme neexistuje"
   },
   "ai": {
@@ -721,7 +719,7 @@
     "summaryCurrencyNotConnected": "Súhrn predplatných sa nedá vypočítať: mena {{currencyCodes}} nie je pripojená k vášmu účtu. Pripojte ju v Nastavenia → Meny.",
     "summaryBaseCurrencyNotSet": "Základná mena nie je nastavená. Ak chcete zobraziť súhrn predplatných, nastavte si predvolenú menu.",
     "payeeNotFoundOrNotBelongToUser": "Protistrana sa nenašla, alebo nepatrí používateľovi.",
-    "tagsNotFoundOrNotBelongToUser": "Jeden alebo viac štítkov sa nenašli, alebo nepatria používateľovi.",
+    "tagsNotFoundOrNotBelongToUser": "Jedna alebo viac značiek sa nenašli, alebo nepatria používateľovi.",
     "validation": {
       "autoRecord": {
         "requiresAccount": "Automatické zaznamenávanie vyžaduje účet, na ktorý sa zaúčtovaná transakcia zapíše.",
@@ -742,7 +740,7 @@
     "accountArchived": "Archivované účty nemožno v šablóne použiť.",
     "categoryNotFound": "Kategória sa nenašla, alebo nepatrí používateľovi.",
     "payeeNotFound": "Protistrana sa nenašla, alebo nepatrí používateľovi.",
-    "tagsNotFound": "Jeden alebo viac štítkov sa nenašli, alebo nepatria používateľovi."
+    "tagsNotFound": "Jedna alebo viac značiek sa nenašli, alebo nepatria používateľovi."
   },
   "payees": {
     "aliasNameRequired": "Názov aliasu je povinný",
@@ -751,7 +749,7 @@
     "nameUsedByAliasOfOtherPayee": "Tento názov sa už používa ako alias pre „{{name}}\"",
     "cannotDeleteCanonicalAlias": "Alias zhodujúci sa s hlavným názvom protistrany nemožno zmazať. Ak chcete zmeniť jej hlavný názov, premenujte protistranu.",
     "defaultCategoryNotOwned": "Vybraná predvolená kategória nepatrí vášmu účtu",
-    "defaultTagsNotOwned": "Jeden alebo viac štítkov nepatria používateľovi",
+    "defaultTagsNotOwned": "Jedna alebo viac značiek nepatria používateľovi",
     "duplicateAlias": "Tento alias je už priradený k tejto protistrane",
     "duplicateName": "Protistrana s týmto názvom už existuje",
     "ignoredNameCollidesWithPayee": "Tomuto názvu zodpovedá existujúca protistrana. Najprv ju zmažte, alebo pridajte force: true a zmažte ju ako súčasť tejto operácie.",
@@ -842,5 +840,17 @@
   },
   "dataExport": {
     "tooManyRows": "Export by obsahoval {{rowCount, number}} riadkov, čo presahuje limit {{limit, number}}."
+  },
+  "goals": {
+    "goalNotFound": "Cieľ nenájdený.",
+    "accountNotFound": "Jeden z vybraných účtov sa nenašiel.",
+    "accountNotEligible": "{{accountName}} sa nemôže započítavať do cieľa. Vyberte hotovostný, bežný, sporiaci, investičný alebo krypto účet.",
+    "shareCapacityExceeded": "{{accountName}} má voľných {{free}} %: požadovali ste {{requested}} %, a ostatné ciele už využívajú {{usedByOtherGoals}} %.",
+    "fixedAmountsBelowTarget": "Pevné sumy dávajú spolu {{total}} {{currencyCode}}, čo je menej než cieľ {{target}} {{currencyCode}}. Zvýšte niektorú sumu alebo započítajte účet podľa percenta.",
+    "currencyRateUnavailable": "{{currencyCode}} sa momentálne nedá prepočítať na vašu základnú menu. Vyberte inú menu alebo skúste znova neskôr.",
+    "reachedNotification": {
+      "title": "Cieľ dosiahnutý: {{name}}",
+      "message": "Usporili ste {{amount}} {{currencyCode}}."
+    }
   }
 }

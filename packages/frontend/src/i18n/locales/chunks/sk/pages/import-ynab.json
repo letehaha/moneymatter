@@ -3,7 +3,7 @@
     "importExport": {
       "ynabImport": {
         "pageTitle": "Import z YNAB",
-        "pageDescription": "Nahrajte export Register.csv z YNAB a prenesite účty, transakcie, kategórie, protistrany a štítky do MoneyMatter.",
+        "pageDescription": "Nahrajte export Register.csv z YNAB a prenesite účty, transakcie, kategórie, protistrany a značky do MoneyMatter.",
         "stepper": {
           "steps": {
             "upload": "Nahratie",
@@ -26,7 +26,7 @@
           "accounts": "Účty",
           "categories": "Kategórie",
           "payees": "Príjemcovia",
-          "tags": "Štítky",
+          "tags": "Značky",
           "transactions": "Transakcie",
           "transfers": "Prevody",
           "dateRange": "Rozsah: {from} → {to}",
@@ -62,7 +62,7 @@
           "accountsSkipped": "Preskočené účty",
           "categoriesCreated": "Vytvorené kategórie",
           "payeesCreated": "Vytvorené protistrany",
-          "tagsCreated": "Vytvorené štítky",
+          "tagsCreated": "Vytvorené značky",
           "transactionsImported": "Importované transakcie",
           "transfersImported": "Importované prevody",
           "splitsDetected": "Rozpoznané rozdelené skupiny",

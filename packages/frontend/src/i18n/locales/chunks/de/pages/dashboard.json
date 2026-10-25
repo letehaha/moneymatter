@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Tracker",
           "description": "Jeder aktive Tracker mit genutztem Limit und Netto-Saldo"
+        },
+        "goals": {
+          "name": "Ziele",
+          "description": "Fortschritt deiner Sparziele",
+          "savedOfTarget": "{saved} von {target}",
+          "empty": {
+            "title": "Keine aktiven Ziele",
+            "description": "Setze ein Ziel und sieh, wie nah du dran bist.",
+            "action": "Ziel erstellen"
+          },
+          "locked": {
+            "title": "Ziele sind gesperrt",
+            "description": "Spare für das, was zählt, und sieh, ob du im Zeitplan bist. Verfügbar in kostenpflichtigen Abos.",
+            "action": "Mehr erfahren"
+          },
+          "settings": {
+            "showReached": "Erreichte Ziele anzeigen"
+          },
+          "reachedSection": "Erreicht"
         }
       }
     },

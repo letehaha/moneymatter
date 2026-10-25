@@ -54,7 +54,7 @@
         "currencyPlaceholder": "Vyberte menu",
         "nextPaymentLabel": "Ďalšia platba",
         "nextPaymentHint": "Voliteľné. Nastavte dátum a sledujte splatné platby a dostávajte pripomienky.",
-        "refineHint": "Účet, kategóriu, štítky, pripomienky a automatizáciu môžete pridať hneď po vytvorení."
+        "refineHint": "Účet, kategóriu, značky, pripomienky a automatizáciu môžete pridať hneď po vytvorení."
       },
       "frequency": {
         "weekly": "Týždenne",
@@ -95,9 +95,9 @@
         "payeeLabel": "Protistrana",
         "payeePlaceholder": "Vyberte protistranu",
         "payeeHint": "Priradí sa k zodpovedajúcim transakciám, ktoré ešte nemajú protistranu.",
-        "tagsLabel": "Štítky",
-        "tagsPlaceholder": "Vyberte štítky",
-        "tagsHint": "Pridá sa ku každej transakcii prepojenej s týmto predplatným. Existujúce štítky zostanú zachované.",
+        "tagsLabel": "Značky",
+        "tagsPlaceholder": "Vyberte značky",
+        "tagsHint": "Pridá sa ku každej transakcii prepojenej s týmto predplatným. Existujúce značky zostanú zachované.",
         "matchingRulesLabel": "Pravidlá priraďovania",
         "matchingRulesDescription": "Definujte pravidlá na automatické priraďovanie transakcií k tomuto predplatnému",
         "notesLabel": "Poznámky",
@@ -345,7 +345,7 @@
         },
         "organize": {
           "title": "Usporiadanie",
-          "description": "Kategória, protistrana, štítky a poznámky.",
+          "description": "Kategória, protistrana, značky a poznámky.",
           "edit": "Upraviť usporiadanie",
           "notesAdded": "Pridané",
           "notesEmpty": "Žiadne",

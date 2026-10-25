@@ -7,14 +7,14 @@
       "organizeButton": "Organizza",
       "empty": "Ancora nessuna categoria. Crea la tua prima categoria per iniziare.",
       "categoriesCount": "{n} categoria | {n} categorie",
-      "organizeHint": "Trascina qui la categoria per renderla principale, oppure trascinala sotto un'altra per renderla sotto categoria.",
+      "organizeHint": "Trascina qui la categoria per renderla principale, oppure trascinala sotto un'altra per renderla sotto categoria",
       "dropToTopLevel": "Trascina qui per rendere «{name}» una categoria principale",
       "movesQueued": "{n} spostamento in coda | {n} spostamenti in coda",
       "unqueueMove": "Rimuovi questo spostamento",
       "topLevel": "Categoria principale",
       "saveChanges": "Salva",
       "parentField": {
-        "label": "Sottocategoria",
+        "label": "Categoria",
         "placeholder": "Seleziona una categoria principale",
         "hiddenHint": "Le categorie che non possono essere usate come principali sono nascoste dalla lista."
       },

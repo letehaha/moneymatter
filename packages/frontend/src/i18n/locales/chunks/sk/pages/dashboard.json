@@ -121,7 +121,7 @@
         "title": "Sledované kategórie",
         "addCategory": "Pridať kategóriu",
         "selectCategories": "Vybrať kategórie",
-        "showTrend": "Show 6-month trend",
+        "showTrend": "Zobraziť 6-mesačný trend",
         "sort": {
           "title": "Zoradiť podľa",
           "custom": "Vlastné poradie",
@@ -150,7 +150,7 @@
         "start": "Začiatok",
         "end": "Koniec",
         "growth": "Nárast",
-        "changeInPeriod": "Change in {period}",
+        "changeInPeriod": "Zmena za {period}",
         "previousPeriodsTrend": "Trend predchádzajúcich období",
         "excludedTooltip": "Vylúčené z čistej hodnoty majetku: {components}",
         "viewHistory": "Zobraziť históriu",
@@ -302,7 +302,7 @@
         "empty": "Zatiaľ žiadny rozpočet",
         "create": "Nastavte si rozpočet",
         "sort": {
-          "overspent": "Most overspent first"
+          "overspent": "Najviac prečerpané ako prvé"
         }
       },
       "trackers": {
@@ -379,6 +379,25 @@
         "trackers": {
           "name": "Sledovače",
           "description": "Každý aktívny sledovač s tým, koľko z jeho limitu je vyčerpané, a jeho bilancia"
+        },
+        "goals": {
+          "name": "Ciele",
+          "description": "Postup k vašim sporiacim cieľom",
+          "savedOfTarget": "{saved} z {target}",
+          "empty": {
+            "title": "Žiadne aktívne ciele",
+            "description": "Nastavte si cieľ a sledujte, ako blízko k nemu ste.",
+            "action": "Vytvoriť cieľ"
+          },
+          "locked": {
+            "title": "Ciele sú uzamknuté",
+            "description": "Šetrite na to, na čom záleží, a sledujte, či ste na dobrej ceste. Dostupné v platených plánoch.",
+            "action": "Zistiť viac"
+          },
+          "settings": {
+            "showReached": "Zobraziť dosiahnuté ciele"
+          },
+          "reachedSection": "Dosiahnuté"
         }
       }
     },
@@ -425,10 +444,10 @@
         "plannedTitle": "Plánované transakcie",
         "excludePlannedDescription": "Skryť čakajúce plánované transakcie zo zoznamu",
         "nothingExcluded": "Nič nie je vylúčené",
-        "tagsStyleTitle": "Štítky",
+        "tagsStyleTitle": "Značky",
         "tagsStyleNames": "Názvy",
         "tagsStyleBars": "Pruhy",
-        "tagsStyleSaveError": "Štýl štítkov sa nepodarilo uložiť. Skúste to znova, prosím.",
+        "tagsStyleSaveError": "Štýl značiek sa nepodarilo uložiť. Skúste to znova, prosím.",
         "showAccountTitle": "Účet",
         "showAccountDescription": "Zobraziť logo účtu pri každej transakcii",
         "showAccountSaveError": "Nastavenie účtu sa nepodarilo uložiť. Skúste to znova, prosím."

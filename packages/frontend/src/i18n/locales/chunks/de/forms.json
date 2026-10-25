@@ -300,7 +300,8 @@
         "interestRateRange": "Zinssatz muss zwischen 0 und 99,9999 liegen.",
         "termRange": "Laufzeit muss zwischen 1 und 1200 Monaten liegen.",
         "paymentDayRange": "Tag des Monats muss zwischen 1 und 31 liegen.",
-        "asOfInFuture": "Datum darf nicht in der Zukunft liegen"
+        "asOfInFuture": "Datum darf nicht in der Zukunft liegen",
+        "startDateInFuture": "Das Startdatum kann nicht in der Zukunft liegen"
       },
       "balanceExceedsPrincipalWarning": "Der offene Saldo ist höher als der ursprüngliche Kreditbetrag – bitte überprüfe diese Beträge."
     }

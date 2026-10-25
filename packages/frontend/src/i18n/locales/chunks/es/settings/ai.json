@@ -56,7 +56,7 @@
         "modelInfo": {
           "estimatedCost": "Coste est.:",
           "per100Transactions": "por 100 transacciones",
-          "per100Pairs": "per 100 pairs"
+          "per100Pairs": "por cada 100 pares"
         },
         "notifications": {
           "updateSuccess": "Modelo actualizado correctamente",
@@ -96,7 +96,7 @@
           "investmentTransactionsParsing": "Convierte las exportaciones de los corredores en la compra y venta de filas. Las exportaciones de largo plazo necesitan un modelo que pueda escribir respuestas largas.",
           "receiptParsing": "El modelo mira el archivo de factura en sí, así que tiene que leer imágenes y PDFs.",
           "trackerMatching": "Un trabajo corto y repetitivo que funciona todos los días. Un pequeño modelo lo maneja bien y mantiene el coste bajo.",
-          "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
+          "transferMatching": "Lee pares cortos de transacciones y respuestas con un veredicto de una palabra, así que un modelo ligero y barato es suficiente."
         },
         "picks": {
           "categorization": "Gemini Flash Lite · Claude Haiku",

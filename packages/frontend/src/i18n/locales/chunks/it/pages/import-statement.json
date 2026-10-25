@@ -53,7 +53,7 @@
         },
         "analyzeButton": "Analyze file | Analyze {count} files",
         "tryAgain": "Try again",
-        "modelLabel": "Model",
+        "modelLabel": "Modello",
         "estimatedCostLabel": "Estimated cost",
         "estimatedTokensLabel": "Estimated tokens",
         "extractButton": "Extract transactions",

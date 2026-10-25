@@ -65,6 +65,7 @@
           "dailyPace": "Rythme quotidien",
           "perDay": "/ jour",
           "allowedPerDay": "autorisé {amount} / jour · {elapsed} sur {total} jours",
+          "neededPerDay": "needed {amount} / day · {elapsed} of {total} days",
           "daysElapsed": "{elapsed} sur {total} jours",
           "projectedTotal": "Total prévisionnel",
           "projectedLimit": "à ce rythme · plafond {amount}",
@@ -87,6 +88,7 @@
         "cumulativeLabel": "Cumulé",
         "legend": {
           "cumulative": "Dépenses cumulées",
+          "earnedCumulative": "Earned, cumulative",
           "evenPace": "Rythme régulier vers le plafond",
           "projection": "Projection",
           "daily": "Par jour",
