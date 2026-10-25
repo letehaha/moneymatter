@@ -38,8 +38,23 @@
             </div>
           </div>
 
-          <div v-if="hasSubscriptions" class="flex flex-wrap items-center gap-2">
+          <div
+            v-if="view.hasAppStoreSubscription || view.hasStripeSubscription"
+            class="flex flex-wrap items-center gap-2"
+          >
             <Button
+              v-if="view.hasAppStoreSubscription"
+              size="sm"
+              variant="outline"
+              as="a"
+              :href="EXTERNAL_URLS.appStoreSubscriptions"
+              target="_blank"
+              rel="noopener"
+            >
+              {{ $t('settings.planBilling.manageInAppStore') }}
+            </Button>
+            <Button
+              v-if="view.hasStripeSubscription"
               size="sm"
               :variant="view.status.tone === 'destructive' ? 'default' : 'outline'"
               :disabled="opening !== null"
@@ -268,7 +283,7 @@ const route = useRoute();
 const router = useRouter();
 const { addErrorNotification, addSuccessNotification } = useNotificationCenter();
 const userStore = useUserStore();
-const { entitlements, trialDaysLeft, hasSubscriptions } = storeToRefs(userStore);
+const { entitlements, trialDaysLeft } = storeToRefs(userStore);
 
 const opening = ref<BillingTier | 'portal' | null>(null);
 const checkoutSucceeded = ref(route.query.checkout === 'success');
@@ -381,6 +396,10 @@ const handleCta = (card: (typeof cards.value)[number]) => {
   const action = card.view?.cta.action;
   if (!action) return;
 
+  if (action.kind === 'appStore') {
+    window.open(EXTERNAL_URLS.appStoreSubscriptions, '_blank', 'noopener');
+    return;
+  }
   if (action.kind === 'checkout') {
     void handleSubscribe(action);
     return;

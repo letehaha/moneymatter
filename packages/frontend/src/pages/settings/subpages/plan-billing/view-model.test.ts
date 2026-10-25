@@ -23,6 +23,7 @@ const buildEntitlements = (overrides: Partial<Entitlements> = {}): Entitlements 
 });
 
 const buildSubscription = (overrides: Partial<BillingSubscriptionSummary> = {}): BillingSubscriptionSummary => ({
+  provider: 'stripe',
   externalSubscriptionId: 'sub_1',
   tier: 'essential',
   status: SUBSCRIPTION_STATUSES.active as SubscriptionStatus,
@@ -209,6 +210,69 @@ describe('buildPlanBillingView', () => {
     expect(buildView({ activationOutcome: 'unreachable' }).status?.note).toBe(
       'settings.planBilling.current.activationUnreachable',
     );
+  });
+
+  describe('App Store subscription', () => {
+    const appStore = (overrides: Partial<BillingSubscriptionSummary> = {}) =>
+      buildEntitlements({
+        subscriptions: [
+          buildSubscription({ provider: 'apple', externalSubscriptionId: '2000000000000001', ...overrides }),
+        ],
+      });
+
+    it('shows where it is billed instead of the web price', () => {
+      const view = buildView({ entitlements: appStore(), selectedCycle: 'month' });
+
+      expect(view.managedByAppStore).toBe(true);
+      expect(view.status?.meta).toContain('settings.planBilling.current.billedByAppStore');
+      expect(view.status?.meta.some((item) => item.includes('$'))).toBe(false);
+      expect(view.status?.note).toBe('');
+    });
+
+    it('sends every other tier to the App Store, never to checkout or the portal', () => {
+      const view = buildView({ entitlements: appStore(), selectedCycle: 'month' });
+
+      expect(view.tiers.essential.isCurrent).toBe(true);
+      expect(view.tiers.essential.cta.action).toBeNull();
+      expect(view.tiers.plus.cta).toMatchObject({
+        label: 'settings.planBilling.manageInAppStore',
+        action: { kind: 'appStore' },
+      });
+    });
+
+    it('falls back to web checkout once the App Store subscription has ended', () => {
+      const view = buildView({ entitlements: appStore({ status: SUBSCRIPTION_STATUSES.canceled }) });
+
+      expect(view.managedByAppStore).toBe(false);
+      expect(view.tiers.plus.cta.action).toMatchObject({ kind: 'checkout' });
+    });
+
+    it('links a lapsed App Store subscription to the App Store, never the portal', () => {
+      const view = buildView({
+        entitlements: appStore({
+          status: SUBSCRIPTION_STATUSES.past_due,
+          currentPeriodEndsAt: addDays(new Date(), -1).toISOString(),
+        }),
+      });
+
+      expect(view.managedByAppStore).toBe(false);
+      expect(view.hasAppStoreSubscription).toBe(true);
+      expect(view.hasStripeSubscription).toBe(false);
+    });
+
+    it('offers both management links when App Store and Stripe subscriptions coexist', () => {
+      const view = buildView({
+        entitlements: buildEntitlements({
+          subscriptions: [
+            buildSubscription({ provider: 'apple', externalSubscriptionId: '2000000000000001' }),
+            buildSubscription({ tier: 'plus' }),
+          ],
+        }),
+      });
+
+      expect(view.hasAppStoreSubscription).toBe(true);
+      expect(view.hasStripeSubscription).toBe(true);
+    });
   });
 });
 

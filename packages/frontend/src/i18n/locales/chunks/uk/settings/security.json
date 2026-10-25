@@ -177,7 +177,9 @@
           "confirmFull": "Будь ласка, введіть {email} для підтвердження",
           "placeholder": "Введіть свою електронну пошту",
           "acceptButton": "Видалити мій обліковий запис",
-          "acceptButtonLoading": "Видалення..."
+          "acceptButtonLoading": "Видалення...",
+          "appStoreWarning": "Видалення облікового запису не скасовує вашу підписку App Store, і Apple продовжить стягувати з вас оплату. Спочатку скасуйте її в розділі {link}.",
+          "appStoreWarningLink": "Підписки App Store"
         },
         "notifications": {
           "success": "Ваш обліковий запис успішно видалено",

@@ -165,6 +165,17 @@ Stripe-hosted checkout and the billing portal return the buyer to.
 | `STRIPE_WEBHOOK_SECRET` | Signing secret Stripe webhooks are verified against                   |
 | `AUTH_ORIGIN`           | Frontend origin Stripe returns to after checkout or the portal        |
 
+App Store subscriptions bought in the iOS app are verified and re-read from Apple
+with these, also backend only:
+
+| Variable                | Purpose                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `APPLE_BUNDLE_ID`       | iOS bundle id signed App Store payloads must carry (`app.moneymatter.mobile`) |
+| `APPLE_APP_ID`          | Numeric App Store app id, required to verify Production payloads              |
+| `APPLE_IAP_ISSUER_ID`   | App Store Connect API issuer id                                               |
+| `APPLE_IAP_KEY_ID`      | Id of the In-App Purchase key                                                 |
+| `APPLE_IAP_PRIVATE_KEY` | The In-App Purchase `.p8` key; literal `\n` line breaks are accepted          |
+
 ---
 
 Setup guide: [setup-guide.md](setup-guide.md) · Troubleshooting:

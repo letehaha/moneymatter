@@ -44,6 +44,7 @@ const GUARD_EXEMPT_ROUTES = new Set<string>([
   'PATCH /api/v1/admin/users/:id/plan',
   'POST /api/v1/billing/checkout',
   'POST /api/v1/billing/portal',
+  'POST /api/v1/billing/apple/transactions',
 
   // Lease extension writes no financial data, and refusing it mid-wizard would
   // drop the user's upload for nothing.

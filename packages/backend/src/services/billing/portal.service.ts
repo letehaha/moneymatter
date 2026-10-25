@@ -1,8 +1,9 @@
-import { isEntitledSubscription } from '@bt/shared/types';
+import { BILLING_PROVIDERS, isEntitledSubscription } from '@bt/shared/types';
 import { NotFoundError } from '@js/errors';
 import BillingSubscriptions from '@models/billing-subscriptions.model';
 import { PLAN_BILLING_URL } from '@root/config';
 
+import { MANAGED_BY_APP_STORE } from './checkout.service';
 import { getStripeClient } from './stripe/client';
 
 /**
@@ -17,7 +18,7 @@ export async function getPortalUrl({
   flow?: 'subscription_update';
 }): Promise<{ url: string }> {
   const subscriptions = await BillingSubscriptions.findAll({
-    where: { userId },
+    where: { userId, provider: BILLING_PROVIDERS.stripe },
     attributes: ['externalCustomerId', 'externalSubscriptionId', 'status', 'currentPeriodEndsAt'],
     order: [['createdAt', 'DESC']],
   });
@@ -27,6 +28,10 @@ export async function getPortalUrl({
       ? subscriptions.find(({ status, currentPeriodEndsAt }) => isEntitledSubscription({ status, currentPeriodEndsAt }))
       : subscriptions[0];
   if (!subscription) {
+    const appleRows = await BillingSubscriptions.count({ where: { userId, provider: BILLING_PROVIDERS.apple } });
+    if (appleRows > 0) {
+      throw new NotFoundError({ message: MANAGED_BY_APP_STORE });
+    }
     throw new NotFoundError({
       message: 'No billing account yet. Subscribe first to manage billing.',
     });

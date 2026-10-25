@@ -1,4 +1,15 @@
 import {
+  AutoRenewStatus,
+  Environment,
+  type JWSRenewalInfoDecodedPayload,
+  type JWSTransactionDecodedPayload,
+  NotificationTypeV2,
+  type ResponseBodyV2DecodedPayload,
+  Status,
+  Type,
+} from '@apple/app-store-server-library';
+import {
+  APPLE_PRODUCT_IDS,
   type DayTrialableFeature,
   type Entitlements,
   FEATURE_TRIAL_DAYS,
@@ -6,6 +17,7 @@ import {
   STRIPE_PRICE_IDS,
   SUBSCRIPTION_STATUSES,
 } from '@bt/shared/types';
+import { jest } from '@jest/globals';
 import { APP_USER_CACHE_KEY_PREFIX } from '@middlewares/better-auth';
 import FeatureUsages from '@models/feature-usages.model';
 import Users from '@models/users.model';
@@ -13,6 +25,8 @@ import { app } from '@root/app';
 import { API_PREFIX } from '@root/config';
 import { redisClient } from '@root/redis-client';
 import type { updateUserPlan } from '@services/admin/user-plan.service';
+import * as appleClient from '@services/billing/apple/client';
+import type { syncAppleTransaction as syncAppleTransactionService } from '@services/billing/apple/sync-transaction.service';
 import crypto from 'crypto';
 import Stripe from 'stripe';
 import request from 'supertest';
@@ -266,4 +280,118 @@ export function buildStripeDisputeClosedEvent({
       },
     },
   };
+}
+
+export const APPLE_TEST_ORIGINAL_TRANSACTION_ID = '2000000000000001';
+
+export function buildAppleTransaction(
+  overrides: Partial<JWSTransactionDecodedPayload> = {},
+): JWSTransactionDecodedPayload {
+  const now = Date.now();
+  return {
+    originalTransactionId: APPLE_TEST_ORIGINAL_TRANSACTION_ID,
+    transactionId: APPLE_TEST_ORIGINAL_TRANSACTION_ID,
+    bundleId: 'app.moneymatter.mobile',
+    productId: APPLE_PRODUCT_IDS.plus.month,
+    type: Type.AUTO_RENEWABLE_SUBSCRIPTION,
+    purchaseDate: now,
+    expiresDate: now + 30 * 24 * 60 * 60 * 1000,
+    signedDate: now,
+    environment: Environment.PRODUCTION,
+    ...overrides,
+  };
+}
+
+export interface AppleStoreState {
+  status: Status;
+  transaction: JWSTransactionDecodedPayload;
+  renewalInfo: JWSRenewalInfoDecodedPayload | null;
+}
+
+/**
+ * Stands in for Apple: every signed transaction decodes to `state.transaction`, a signed
+ * notification is its JSON, and the status lookup answers with the current state. Mutate
+ * the returned state to move the subscription along.
+ */
+export function mockAppleStore({
+  transaction = buildAppleTransaction(),
+  status = Status.ACTIVE,
+  renewalInfo = { autoRenewStatus: AutoRenewStatus.ON },
+}: Partial<AppleStoreState> = {}) {
+  const state: AppleStoreState = { status, transaction, renewalInfo };
+  const verifyTransaction = jest
+    .spyOn(appleClient, 'verifyAppleTransaction')
+    .mockImplementation(async () => state.transaction);
+  const getState = jest
+    .spyOn(appleClient, 'getAppleSubscriptionState')
+    // A real lookup is signed when it is made, so each one is newer than the last.
+    .mockImplementation(async () => ({
+      ...state,
+      transaction: { ...state.transaction, signedDate: Math.max(state.transaction.signedDate ?? 0, Date.now()) },
+    }));
+  const verifyNotification = jest
+    .spyOn(appleClient, 'verifyAppleNotification')
+    .mockImplementation(async ({ signedPayload }) => JSON.parse(signedPayload) as ResponseBodyV2DecodedPayload);
+  const restore = () => [verifyTransaction, getState, verifyNotification].forEach((spy) => spy.mockRestore());
+  return { state, verifyTransaction, getState, restore };
+}
+
+/** Mirror an Apple subscription for the current user through the purchase sync, then stop standing in for Apple. */
+export async function arrangeAppleSubscription(state: Partial<AppleStoreState> = {}) {
+  const store = mockAppleStore(state);
+  await syncAppleTransaction({ raw: true });
+  store.restore();
+}
+
+export function syncAppleTransaction<R extends boolean | undefined = false>({
+  signedTransaction = 'signed-transaction',
+  raw,
+}: {
+  signedTransaction?: string;
+  raw?: R;
+} = {}) {
+  return makeRequest<Awaited<ReturnType<typeof syncAppleTransactionService>>, R>({
+    method: 'post',
+    url: '/billing/apple/transactions',
+    payload: { signedTransaction },
+    raw,
+  });
+}
+
+export function buildAppleNotification({
+  notificationType = NotificationTypeV2.DID_RENEW,
+  notificationUUID = crypto.randomUUID(),
+  environment = Environment.PRODUCTION,
+  signedTransactionInfo = 'signed-transaction',
+}: {
+  notificationType?: NotificationTypeV2;
+  notificationUUID?: string;
+  environment?: Environment;
+  signedTransactionInfo?: string | null;
+} = {}): ResponseBodyV2DecodedPayload {
+  return {
+    notificationType,
+    notificationUUID,
+    version: '2.0',
+    signedDate: Date.now(),
+    data: {
+      environment,
+      bundleId: 'app.moneymatter.mobile',
+      ...(signedTransactionInfo && { signedTransactionInfo }),
+    },
+  };
+}
+
+/** POST /webhooks/apple. Under `mockAppleStore` the signed payload is the notification's JSON. */
+export function sendAppleNotification({
+  notification,
+  body,
+}: {
+  notification?: ResponseBodyV2DecodedPayload;
+  body?: object;
+}): Promise<request.Response> {
+  return request(app)
+    .post(`${API_PREFIX}/webhooks/apple`)
+    .set('Content-Type', 'application/json')
+    .send(body ?? { signedPayload: JSON.stringify(notification) });
 }

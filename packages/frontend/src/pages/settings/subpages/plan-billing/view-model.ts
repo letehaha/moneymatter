@@ -1,6 +1,7 @@
 import { DISPLAY_PRICES, RECOMMENDED_TIER, liveSubscription, yearlySavings } from '@/common/const/billing';
 import type { Variant as StatusBadgeVariant } from '@/components/lib/ui/status-badge';
 import {
+  BILLING_PROVIDERS,
   BILLING_TIERS,
   PLANS,
   SUBSCRIPTION_STATUSES,
@@ -38,7 +39,8 @@ interface StatusView {
 /** Everything the request needs, so the page never derives a tier or cycle of its own. */
 type TierAction =
   | { kind: 'checkout'; tier: BillingTier; cycle: BillingCycle }
-  | { kind: 'portal'; flow?: 'subscription_update'; tier: BillingTier };
+  | { kind: 'portal'; flow?: 'subscription_update'; tier: BillingTier }
+  | { kind: 'appStore' };
 
 interface TierCta {
   label: string;
@@ -77,6 +79,10 @@ interface PlanBillingView {
   trialProgress: TrialProgress | null;
   activeTier: BillingTier | null;
   lastTier: BillingTier | null;
+  /** Plan changes, cancelation and payment happen in the App Store, never through checkout or the portal. */
+  managedByAppStore: boolean;
+  hasAppStoreSubscription: boolean;
+  hasStripeSubscription: boolean;
   tiers: Record<BillingTier, TierView>;
 }
 
@@ -101,6 +107,9 @@ export const buildPlanBillingView = ({
       ? subscription.tier
       : null;
   const isActivating = checkoutSucceeded && !activeTier;
+  const managedByAppStore = subscription?.provider === BILLING_PROVIDERS.apple;
+  const hasProvider = (provider: BillingSubscriptionSummary['provider']) =>
+    Boolean(entitlements?.subscriptions.some((sub) => sub.provider === provider));
   const plan = entitlements?.plan ?? null;
   const isEarlyAdopter = plan === PLANS.early_adopter;
 
@@ -109,8 +118,11 @@ export const buildPlanBillingView = ({
     plan === tier || (activeTier === tier && subscription?.billingCycle === selectedCycle);
   const isRecommended = (tier: BillingTier) => !activeTier && !plan && tier === (lastTier ?? RECOMMENDED_TIER);
 
+  // App Store prices are set per storefront in App Store Connect, so the web price would be wrong.
   const subscriptionAmount = (sub: BillingSubscriptionSummary) =>
-    `${formatUsd(DISPLAY_PRICES[sub.tier][sub.billingCycle])} ${tr(`perCycle.${sub.billingCycle}`)}`;
+    sub.provider === BILLING_PROVIDERS.apple
+      ? tr('current.billedByAppStore')
+      : `${formatUsd(DISPLAY_PRICES[sub.tier][sub.billingCycle])} ${tr(`perCycle.${sub.billingCycle}`)}`;
 
   const buildStatus = (): StatusView | null => {
     if (!entitlements) return null;
@@ -183,7 +195,7 @@ export const buildPlanBillingView = ({
           Boolean,
         ) as string[],
         note:
-          subscription.billingCycle === 'month'
+          subscription.billingCycle === 'month' && !managedByAppStore
             ? tr('current.monthlyHint', { amount: formatUsd(yearlySavings({ tier: subscription.tier })) })
             : '',
       };
@@ -252,6 +264,15 @@ export const buildPlanBillingView = ({
         action: null,
       };
     }
+    if (managedByAppStore) {
+      return {
+        label: tr('manageInAppStore'),
+        variant: 'outline',
+        disabled: false,
+        note: tr('ctaNote.viaAppStore'),
+        action: { kind: 'appStore' },
+      };
+    }
     if (activeTier) {
       return {
         label:
@@ -295,6 +316,9 @@ export const buildPlanBillingView = ({
     trialProgress: buildTrialProgress(),
     activeTier,
     lastTier,
+    managedByAppStore,
+    hasAppStoreSubscription: hasProvider(BILLING_PROVIDERS.apple),
+    hasStripeSubscription: hasProvider(BILLING_PROVIDERS.stripe),
     tiers,
   };
 };

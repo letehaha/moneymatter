@@ -40,6 +40,9 @@ export enum API_ERROR_CODES {
   baseCurrencyLockedByHousehold = 'BASE_CURRENCY_LOCKED_BY_HOUSEHOLD',
   baseCurrencyLockedByBudgetPlan = 'BASE_CURRENCY_LOCKED_BY_BUDGET_PLAN',
 
+  // billing
+  subscriptionOwnedByAnotherAccount = 'SUBSCRIPTION_OWNED_BY_ANOTHER_ACCOUNT',
+
   // wipe-data
   wipeDataSharingAcknowledgementRequired = 'WIPE_DATA_SHARING_ACK_REQUIRED',
 

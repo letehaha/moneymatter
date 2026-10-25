@@ -1,5 +1,7 @@
 import {
+  BILLING_PROVIDERS,
   BillingCycle,
+  BillingProvider,
   BillingTier,
   SUBSCRIPTION_STATUSES,
   ScheduledChange,
@@ -29,8 +31,11 @@ export const isIncompleteSubscriptionEvent = (event: StripeSubscriptionEvent): b
   (event.data.object as Stripe.Subscription).status === 'incomplete';
 
 export interface ParsedSubscriptionEvent {
-  eventId: string;
-  eventType: SubscriptionEventType;
+  provider: BillingProvider;
+  /** Dedupe key in BillingWebhookEvents. Null for a client-pushed Apple sync, which replays safely. */
+  eventId: string | null;
+  /** Stripe only: Apple events are re-read state, not typed deliveries. */
+  eventType?: SubscriptionEventType;
   externalSubscriptionId: string;
   externalCustomerId: string;
   userId: number | null;
@@ -115,6 +120,7 @@ export function parseStripeWebhook({ event }: { event: StripeSubscriptionEvent }
   const currentPeriodEndsAt = resolvePeriodEnd({ subscription });
 
   return {
+    provider: BILLING_PROVIDERS.stripe,
     eventId: event.id,
     eventType: event.type,
     externalSubscriptionId: subscription.id,

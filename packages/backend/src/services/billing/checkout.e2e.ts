@@ -1,10 +1,13 @@
+import { Status } from '@apple/app-store-server-library';
 import { PLANS, STRIPE_PRICE_IDS } from '@bt/shared/types';
 import { afterEach, describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
+import type { ErrorResponse } from '@tests/helpers/common';
 import { HttpResponse, http } from 'msw';
 
 const CHECKOUT_URL = 'https://checkout.stripe.com/c/pay/cs_test_01';
 const RETURN_PATH = '/settings/plan-billing';
+const DAY = 24 * 60 * 60 * 1000;
 
 const payload = { tier: 'plus', cycle: 'year' };
 
@@ -168,6 +171,39 @@ describe('Billing checkout (POST /billing/checkout)', () => {
     const res = await helpers.createBillingCheckout({ payload, raw: true });
     expect(res.url).toBe(CHECKOUT_URL);
     expect(calls.count).toBe(1);
+  });
+
+  describe('with an App Store subscription', () => {
+    it('rejects checkout while it is entitled, without calling Stripe', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+      await helpers.arrangeAppleSubscription();
+      const calls = mockCheckoutSession();
+
+      const res = await helpers.createBillingCheckout({ payload });
+      expect(res.statusCode).toBe(422);
+      expect((res.body.response as unknown as ErrorResponse).message).toContain('App Store');
+      expect(calls.count).toBe(0);
+    });
+
+    it('allows checkout once billing retry has ended access, and opens a new Stripe customer', async () => {
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+      await helpers.arrangeAppleSubscription({
+        status: Status.BILLING_RETRY,
+        transaction: helpers.buildAppleTransaction({ expiresDate: Date.now() - DAY }),
+      });
+
+      let body = '';
+      global.mswMockServer.use(
+        http.post('https://api.stripe.com/v1/checkout/sessions', async ({ request }) => {
+          body = await request.text();
+          return HttpResponse.json({ id: 'cs_test_04', object: 'checkout.session', url: CHECKOUT_URL });
+        }),
+      );
+
+      const res = await helpers.createBillingCheckout({ payload, raw: true });
+      expect(res.url).toBe(CHECKOUT_URL);
+      expect(new URLSearchParams(body).get('customer')).toBeNull();
+    });
   });
 
   it('rejects a tier that is not for sale', async () => {

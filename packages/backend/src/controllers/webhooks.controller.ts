@@ -1,5 +1,7 @@
+import { BadRequestError } from '@js/errors';
 import { logger } from '@js/utils/logger';
 import { captureException } from '@js/utils/sentry';
+import { handleAppleNotification } from '@services/billing/apple/handle-notification.service';
 import { handleBillingRefund, isRefundEvent } from '@services/billing/handle-refund.service';
 import { handleBillingWebhook as handleBillingWebhookService } from '@services/billing/handle-webhook.service';
 import {
@@ -141,6 +143,32 @@ export async function handleBillingWebhook(req: Request, res: Response): Promise
       error,
       context: { stage: 'handleBillingWebhook', eventId: req.stripeEvent?.id },
     });
+    res.status(500).json({ outcome: 'failed' });
+  }
+}
+
+/**
+ * App Store Server Notifications V2. Apple retries anything but a 2xx, so a mapping or
+ * configuration failure answers 500 and lands once fixed. A forged body answers 400.
+ */
+export async function handleAppleWebhook(req: Request, res: Response): Promise<void> {
+  const signedPayload = (req.body as { signedPayload?: unknown } | undefined)?.signedPayload;
+  if (typeof signedPayload !== 'string' || !signedPayload) {
+    res.status(400).json({ error: 'Missing signedPayload' });
+    return;
+  }
+
+  try {
+    const outcome = await handleAppleNotification({ signedPayload });
+    logger.info(`App Store notification: ${outcome}`);
+    res.status(200).json({ outcome });
+  } catch (error) {
+    if (error instanceof BadRequestError) {
+      logger.warn(`App Store notification rejected: ${error.message}`);
+      res.status(400).json({ error: error.message });
+      return;
+    }
+    logger.error({ message: 'App Store notification failed', error: error as Error });
     res.status(500).json({ outcome: 'failed' });
   }
 }

@@ -14,6 +14,9 @@ export const BILLING_TIERS = [PLANS.essential, PLANS.plus] as const satisfies re
 export const BILLING_CYCLES = { month: 'month', year: 'year' } as const;
 export type BillingCycle = (typeof BILLING_CYCLES)[keyof typeof BILLING_CYCLES];
 
+export const BILLING_PROVIDERS = { stripe: 'stripe', apple: 'apple' } as const;
+export type BillingProvider = (typeof BILLING_PROVIDERS)[keyof typeof BILLING_PROVIDERS];
+
 export const SUBSCRIPTION_STATUSES = {
   active: 'active',
   trialing: 'trialing',
@@ -30,7 +33,7 @@ const ENTITLED_SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [
   SUBSCRIPTION_STATUSES.past_due,
 ];
 
-/** A mirrored subscription never leaves `canceled`: it will never charge again and Stripe rejects mutating it. */
+/** A mirrored Stripe subscription never leaves `canceled`. An Apple one can: a resubscribe or reversed refund reactivates it. */
 export const TERMINAL_SUBSCRIPTION_STATUSES: readonly SubscriptionStatus[] = [SUBSCRIPTION_STATUSES.canceled];
 
 export const isTerminalSubscription = ({ status }: { status: SubscriptionStatus }): boolean =>
@@ -152,6 +155,7 @@ export interface ScheduledChange {
 }
 
 export interface BillingSubscriptionSummary {
+  provider: BillingProvider;
   externalSubscriptionId: string;
   tier: BillingTier;
   status: SubscriptionStatus;
@@ -198,12 +202,14 @@ export const hasPaidPlus = ({
 
 export type StripeEnvironment = 'test' | 'live';
 
+type TierIds = Record<BillingTier, Record<BillingCycle, string>>;
+
 /**
  * Stripe price ids are per-mode: a `price_` minted in test mode does not resolve
  * in live mode. Checkout is opened with them, and the subscription webhook
  * reverse-maps them to a tier.
  */
-export const STRIPE_PRICE_IDS: Record<StripeEnvironment, Record<BillingTier, Record<BillingCycle, string>>> = {
+export const STRIPE_PRICE_IDS: Record<StripeEnvironment, TierIds> = {
   test: {
     essential: {
       month: 'price_1UFEyOCr9EksbtoDs07fbGbC',
@@ -226,18 +232,39 @@ export const STRIPE_PRICE_IDS: Record<StripeEnvironment, Record<BillingTier, Rec
   },
 };
 
+const findTierById = ({ ids, id }: { ids: TierIds; id: string | undefined }) => {
+  if (!id) return null;
+  for (const tier of BILLING_TIERS) {
+    for (const billingCycle of Object.values(BILLING_CYCLES)) {
+      if (ids[tier][billingCycle] === id) return { tier, billingCycle };
+    }
+  }
+  return null;
+};
+
 export const resolveTierByPriceId = ({
   env,
   priceId,
 }: {
   env: StripeEnvironment;
   priceId: string;
-}): { tier: BillingTier; billingCycle: BillingCycle } | null => {
-  if (!priceId) return null;
-  for (const tier of BILLING_TIERS) {
-    for (const billingCycle of Object.values(BILLING_CYCLES)) {
-      if (STRIPE_PRICE_IDS[env][tier][billingCycle] === priceId) return { tier, billingCycle };
-    }
-  }
-  return null;
+}): { tier: BillingTier; billingCycle: BillingCycle } | null =>
+  findTierById({ ids: STRIPE_PRICE_IDS[env], id: priceId });
+
+/** One App Store subscription group, Plus ranked above Essential. Same ids in Sandbox and Production. */
+export const APPLE_PRODUCT_IDS: TierIds = {
+  essential: {
+    month: 'app.moneymatter.mobile.essential.month',
+    year: 'app.moneymatter.mobile.essential.year',
+  },
+  plus: {
+    month: 'app.moneymatter.mobile.plus.month',
+    year: 'app.moneymatter.mobile.plus.year',
+  },
 };
+
+export const resolveTierByAppleProductId = ({
+  productId,
+}: {
+  productId: string | undefined;
+}): { tier: BillingTier; billingCycle: BillingCycle } | null => findTierById({ ids: APPLE_PRODUCT_IDS, id: productId });

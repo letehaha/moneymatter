@@ -177,7 +177,9 @@
           "confirmFull": "Please type {email} to confirm",
           "placeholder": "Enter your email",
           "acceptButton": "Delete my account",
-          "acceptButtonLoading": "Deleting..."
+          "acceptButtonLoading": "Deleting...",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Your account has been deleted successfully",

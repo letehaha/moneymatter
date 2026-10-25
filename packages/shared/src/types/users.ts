@@ -40,6 +40,8 @@ export interface UserModel {
   role: UserRole;
   /** @deprecated Use role === 'admin' instead */
   isAdmin?: boolean;
+  /** iOS passes it as `appAccountToken` on every App Store purchase, so Apple notifications map back to this user. */
+  appStoreAccountToken: string;
   /** Feeds the demo-account expiry countdown. */
   createdAt: Date;
   /** Present on `GET /user` only. */

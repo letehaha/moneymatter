@@ -81,6 +81,9 @@ export default class Users extends Model {
   @Column({ allowNull: true, type: DataType.DATE })
   trialEndsAt!: Date | null;
 
+  @Column({ allowNull: false, unique: true, type: DataType.UUID, defaultValue: DataType.UUIDV4 })
+  appStoreAccountToken!: string;
+
   /** Early adopter budget trial anchor. Written once, never reset. */
   @Column({ allowNull: true, type: DataType.DATE })
   firstBudgetPlanAt!: Date | null;

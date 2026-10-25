@@ -65,6 +65,7 @@ const demoUser: UserInfoResponse = {
   totalBalance: 0,
   defaultCategoryId: '00000000-0000-0000-0000-000000000001' as RecordId,
   role: 'demo',
+  appStoreAccountToken: '00000000-0000-4000-8000-000000000001',
   createdAt: new Date(),
 };
 
@@ -85,6 +86,7 @@ const regularUser: UserInfoResponse = {
   totalBalance: 0,
   defaultCategoryId: '00000000-0000-0000-0000-000000000001' as RecordId,
   role: 'common',
+  appStoreAccountToken: '00000000-0000-4000-8000-000000000001',
   createdAt: new Date(),
 };
 

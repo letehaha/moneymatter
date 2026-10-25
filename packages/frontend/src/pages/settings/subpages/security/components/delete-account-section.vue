@@ -4,9 +4,12 @@ import ClickToCopy from '@/components/common/click-to-copy.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
+import { Callout } from '@/components/lib/ui/callout';
 import { useNotificationCenter } from '@/components/notification-center';
 import { ROUTES_NAMES } from '@/routes';
 import { useAuthStore, useUserStore } from '@/stores';
+import { EXTERNAL_URLS } from '@bt/shared/const/external-urls';
+import { BILLING_PROVIDERS, isEntitledSubscription } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -14,13 +17,21 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 const authStore = useAuthStore();
-const { user } = storeToRefs(useUserStore());
+const { user, entitlements } = storeToRefs(useUserStore());
 const { addSuccessNotification, addErrorNotification } = useNotificationCenter();
 const { t } = useI18n();
 
 const isDialogOpen = ref(false);
 const confirmEmail = ref('');
 const isDeleting = ref(false);
+
+const hasEntitledAppStoreSubscription = computed(() =>
+  Boolean(
+    entitlements.value?.subscriptions.some(
+      (sub) => sub.provider === BILLING_PROVIDERS.apple && isEntitledSubscription(sub),
+    ),
+  ),
+);
 
 const isDeleteDisabled = computed(() => confirmEmail.value !== user.value?.email || isDeleting.value);
 
@@ -85,6 +96,21 @@ const handleOpenChange = (open: boolean) => {
           </ul>
         </div>
       </template>
+
+      <Callout v-if="hasEntitledAppStoreSubscription" class="mt-4 text-left">
+        <i18n-t keypath="settings.security.deleteAccount.dialog.appStoreWarning" tag="p">
+          <template #link>
+            <a
+              :href="EXTERNAL_URLS.appStoreSubscriptions"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium underline underline-offset-2 hover:no-underline"
+            >
+              {{ $t('settings.security.deleteAccount.dialog.appStoreWarningLink') }}
+            </a>
+          </template>
+        </i18n-t>
+      </Callout>
 
       <i18n-t
         keypath="settings.security.deleteAccount.dialog.confirmFull"

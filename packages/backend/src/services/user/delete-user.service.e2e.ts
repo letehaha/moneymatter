@@ -625,6 +625,25 @@ describe('User deletion: family-sharing cleanup', () => {
       expect(await Users.findByPk(userId)).toBeNull();
     });
 
+    it('deletes without calling Stripe when the live subscription is billed by the App Store', async () => {
+      await helpers.arrangeAppleSubscription();
+      const { id: userId } = await helpers.getUserInfo({ raw: true });
+      process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+
+      let stripeCalls = 0;
+      global.mswMockServer.use(
+        http.all('https://api.stripe.com/*', () => {
+          stripeCalls += 1;
+          return HttpResponse.json({});
+        }),
+      );
+
+      const res = await helpers.deleteUserAccount();
+      expect(res.statusCode).toBe(200);
+      expect(stripeCalls).toBe(0);
+      expect(await Users.findByPk(userId)).toBeNull();
+    });
+
     it('deletes when Stripe no longer knows the subscription', async () => {
       const userId = await arrangeActiveSubscription();
       global.mswMockServer.use(

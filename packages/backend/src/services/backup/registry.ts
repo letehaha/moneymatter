@@ -630,11 +630,11 @@ export const BACKUP_EXCLUDED: readonly BackupExcludedDef[] = [
   {
     model: models.BillingSubscriptions,
     reason:
-      'Mirror of Stripe, keyed to a Stripe customer — Stripe re-sends it by webhook, restoring it would bind another account.',
+      'Mirror of Stripe and the App Store, keyed to a provider customer — the provider re-sends it, restoring it would bind another account.',
   },
   {
     model: models.BillingWebhookEvents,
-    reason: 'Webhook dedupe markers for a Stripe account, meaningless outside it.',
+    reason: 'Webhook dedupe markers for the Stripe and App Store accounts, meaningless outside them.',
   },
   { model: models.SignupLedger, reason: 'Global signup/trial ledger keyed by email hash, not per-user data.' },
   {

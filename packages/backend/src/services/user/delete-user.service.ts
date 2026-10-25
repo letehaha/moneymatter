@@ -1,4 +1,4 @@
-import { TERMINAL_SUBSCRIPTION_STATUSES, isTerminalStripeStatus } from '@bt/shared/types';
+import { BILLING_PROVIDERS, TERMINAL_SUBSCRIPTION_STATUSES, isTerminalStripeStatus } from '@bt/shared/types';
 import { authPool } from '@config/auth';
 import { ConflictError } from '@js/errors';
 import { logger } from '@js/utils/logger';
@@ -14,9 +14,9 @@ import { runUserDestroyLifecycle } from './user-destroy-lifecycle';
 export const deleteUser = async ({ userId }: { userId: number }) => {
   // Cancelling first, and letting a failure abort: a customer whose card is still
   // chargeable must not end up with no account to cancel from. Paused counts too — it
-  // can be resumed from Stripe's side.
+  // can be resumed from Stripe's side. App Store subscriptions cannot be canceled server-side.
   const liveSubscriptions = await BillingSubscriptions.findAll({
-    where: { userId, status: { [Op.notIn]: TERMINAL_SUBSCRIPTION_STATUSES } },
+    where: { userId, provider: BILLING_PROVIDERS.stripe, status: { [Op.notIn]: TERMINAL_SUBSCRIPTION_STATUSES } },
     attributes: ['externalSubscriptionId'],
   });
   for (const { externalSubscriptionId } of liveSubscriptions) {

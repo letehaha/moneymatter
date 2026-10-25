@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from '@jest/globals';
 import * as helpers from '@tests/helpers';
+import type { ErrorResponse } from '@tests/helpers/common';
 import { HttpResponse, http } from 'msw';
 
 const PORTAL_URL = 'https://billing.stripe.com/p/session/test_01';
@@ -31,6 +32,26 @@ describe('Billing portal (POST /billing/portal)', () => {
   it('returns 404 when the user has no billing account yet', async () => {
     const res = await helpers.createBillingPortalSession();
     expect(res.statusCode).toBe(404);
+  });
+
+  it('returns 404 pointing to the App Store when the only subscription is billed there', async () => {
+    await helpers.arrangeAppleSubscription();
+    process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+
+    const res = await helpers.createBillingPortalSession();
+    expect(res.statusCode).toBe(404);
+    expect((res.body.response as unknown as ErrorResponse).message).toContain('App Store');
+  });
+
+  it('opens the portal for the Stripe customer when an App Store subscription came later', async () => {
+    await arrangeSubscription();
+    await helpers.arrangeAppleSubscription();
+    process.env.STRIPE_SECRET_KEY = 'sk_test_key';
+    const params = mockPortalSession();
+
+    await helpers.createBillingPortalSession({ payload: { flow: 'subscription_update' }, raw: true });
+    expect(params().get('customer')).toBe('cus_01test');
+    expect(params().get('flow_data[subscription_update][subscription]')).toBe('sub_01test');
   });
 
   it('is not exposed on a self-hosted instance', async () => {

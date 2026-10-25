@@ -41,6 +41,7 @@ describe('analyticsPlan', () => {
   };
   const inDays = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
   const sub = (status: 'active' | 'canceled', endsAt: string) => ({
+    provider: 'stripe' as const,
     externalSubscriptionId: 'sub_1',
     tier: 'plus' as const,
     status,
