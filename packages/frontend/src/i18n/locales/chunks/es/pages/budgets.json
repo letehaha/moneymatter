@@ -18,29 +18,29 @@
       "submitButton": "Añadir rastreador"
     },
     "limitKind": {
-      "label": "Limit type",
-      "whatToChoose": "What to choose?",
-      "guideTitle": "Which limit fits?",
-      "goalNote": "Saving up for something? {goalLink} instead: goals track what you've saved, trackers track what flows in or out.",
+      "label": "Tipo de límite",
+      "whatToChoose": "¿Qué escoger?",
+      "guideTitle": "¿Qué límite se aplica?",
+      "goalNote": "¿Ahorrar para algo? {goalLink} en su lugar: los objetivos siguen lo que has guardado, los rastreadores rastrean lo que fluye dentro o fuera.",
       "goalLink": "Crear objetivo",
       "kinds": {
         "spending": {
-          "label": "Spending",
-          "hint": "Spend at most this much. Warns when spending runs ahead of time passing.",
-          "guide": "For a thing or an event: a trip, a renovation, a year of groceries. Warns when you spend faster than time passes.",
+          "label": "Gasto",
+          "hint": "Gasta como máximo esta cantidad. Avisa cuando el gasto avanza más rápido que el paso del tiempo.",
+          "guide": "Para una cosa o un evento: un viaje, una renovación, un año de comestibles, advierte cuando pasa más rápido que el tiempo.",
           "amountLabel": "Límite"
         },
         "income_target": {
-          "label": "Income target",
-          "hint": "Earn at least this much. Green while you're on pace, and going over is a win.",
-          "guide": "For money you want to bring in: yearly salary, freelance revenue, rental income. Green while on pace; going over is a win.",
+          "label": "Objetivo de ingreso",
+          "hint": "Gana al menos esta cantidad. Verde indica que vas por buen camino, y vas hacia la meta con éxito.",
+          "guide": "Para los ingresos que esperas obtener: salario anual, ingresos por trabajo independiente, rentas. En verde si vas según lo previsto; superar la meta es un éxito.",
           "amountLabel": "Importe objetivo"
         },
         "income_cap": {
-          "label": "Income cap",
-          "hint": "Stay under this income, e.g. a tax or benefits threshold. Warns as you get close.",
-          "guide": "For income you must stay under: a small-business tax threshold, a benefits or student-aid income limit. Warns as you get close.",
-          "amountLabel": "Cap"
+          "label": "Límite de ingresos",
+          "hint": "Manténgase bajo estos ingresos, por ejemplo, un impuesto o beneficios de beneficios. Advierte a medida que se acerca.",
+          "guide": "Para obtener ingresos hay que permanecer por debajo de: un umbral impositivo para las pequeñas empresas, un límite de beneficios o ingresos de ayuda estudiantil. Advierte a medida que se acerca.",
+          "amountLabel": "Tapa"
         }
       }
     },
@@ -77,7 +77,7 @@
       "expenses": "Gastos",
       "net": "Neto",
       "used": "Usado",
-      "earned": "Earned",
+      "earned": "Ganado",
       "archive": "Archivar",
       "unarchive": "Desarchivar",
       "archivedLabel": "Archivado",
@@ -91,16 +91,16 @@
       "searchPlaceholder": "Buscar rastreadores",
       "filters": {
         "all": "Todas",
-        "autoAdd": "Autoañadir en",
-        "handPicked": "Seleccionado a mano",
-        "archived": "Archivadas"
+        "autoAdd": "Autoañadidos",
+        "handPicked": "Seleccionados a mano",
+        "archived": "Archivados"
       },
       "groups": {
         "active": "Activo ahora",
         "upcoming": "Próximo",
         "noDates": "Sin fechas",
         "ended": "Finalizado",
-        "archived": "Archivadas",
+        "archived": "Archivados",
         "show": "mostrar",
         "hide": "ocultar"
       },
@@ -110,7 +110,7 @@
         "transactions": "{count} transacción | {count} transacciones",
         "moreCategories": "+{count} más",
         "noLimit": "sin límite",
-        "archiveSuggestion": "Archivar?"
+        "archiveSuggestion": "¿Archivar?"
       },
       "menu": {
         "moreActions": "Más acciones",
@@ -167,10 +167,10 @@
         "spent": "Gastado",
         "left": "Quedan",
         "overBy": "Excedido en",
-        "earned": "Earned",
-        "toGo": "To go",
-        "headroom": "Headroom",
-        "aboveTargetBy": "Above target by",
+        "earned": "Ganado",
+        "toGo": "Para ir",
+        "headroom": "Espacio libre",
+        "aboveTargetBy": "Por encima del objetivo por",
         "income": "Ingreso",
         "expenses": "Gastos",
         "net": "Neto",

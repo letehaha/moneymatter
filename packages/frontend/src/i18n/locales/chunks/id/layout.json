@@ -13,6 +13,7 @@
     "automations": "Otomatisasi",
     "accountDetails": "Detail akun",
     "helpAndDocs": "Help & docs",
+    "community": "Community",
     "logout": "Keluar",
     "appVersion": "App version {version}",
     "updateAvailable": "Pembaruan tersedia",
@@ -118,6 +119,10 @@
       "thanks": "Terima kasih, kami membaca setiap pesan.",
       "unavailable": "Pengiriman sedang tidak tersedia. Gunakan papan di bawah ini sebagai gantinya.",
       "or": "atau",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Posting di papan publik",
         "description": "Beri suara pada ide orang lain, lihat apa yang sudah direncanakan, dan dapatkan balasan untuk ide Anda."

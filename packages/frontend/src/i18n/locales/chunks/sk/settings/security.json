@@ -177,7 +177,9 @@
           "confirmFull": "Na potvrdenie zadajte {email}, prosím",
           "placeholder": "Zadajte svoj email",
           "acceptButton": "Zmazať môj účet",
-          "acceptButtonLoading": "Mazanie…..."
+          "acceptButtonLoading": "Mazanie…...",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Váš účet bol úspešne zmazaný",
@@ -254,7 +256,6 @@
           },
           "warnings": {
             "sharesSkipped": "Vynechaný {count} riadok z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú. | Vynechané {count} riadky z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú. | Vynechaných {count} riadkov z „{table}“: zdieľané zdroje odkazujú na používateľov, ktorí na tejto inštancii neexistujú.",
-            "mccCodeMissing": "Zahodené {count} pravidlo MCC, ktorého kód kategórie obchodníka na tejto inštancii neexistuje. | Zahodené {count} pravidlá MCC, ktorých kódy kategórie obchodníka na tejto inštancii neexistujú. | Zahodených {count} pravidiel MCC, ktorých kódy kategórie obchodníka na tejto inštancii neexistujú.",
             "currencyMissing": "Vynechaná {count} mena, ktorá na tejto inštancii nie je k dispozícii. | Vynechané {count} meny, ktoré na tejto inštancii nie sú k dispozícii. | Vynechaných {count} mien, ktoré na tejto inštancii nie sú k dispozícii.",
             "unknownTableIgnored": "Záloha obsahuje neznámu tabuľku „{table}“; bola ignorovaná.",
             "unknownColumnDropped": "Zahodený neznámy stĺpec v „{table}“: {columns}. | Zahodené neznáme stĺpce v „{table}“: {columns}.",

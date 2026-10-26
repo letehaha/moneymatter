@@ -13,6 +13,7 @@
     "automations": "自动化",
     "accountDetails": "账户详情",
     "helpAndDocs": "Help & docs",
+    "community": "Community",
     "logout": "登出",
     "appVersion": "App version {version}",
     "updateAvailable": "Update available",
@@ -118,6 +119,10 @@
       "thanks": "谢谢，我们阅读了每一个信息。",
       "unavailable": "发送现在不可用。请使用下面的反馈板来代替。",
       "or": "或",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "将其发布在公共反馈板",
         "description": "为其他人的想法投票，查看未来计划，并获取对您所提想法的回复。"

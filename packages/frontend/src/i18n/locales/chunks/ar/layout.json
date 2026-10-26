@@ -13,6 +13,7 @@
     "automations": "الأتمتة",
     "accountDetails": "تفاصيل الحساب",
     "helpAndDocs": "المساعدة و الوثائق",
+    "community": "Community",
     "logout": "تسجيل خروج",
     "appVersion": "إصدار التطبيق ‏{version}",
     "updateAvailable": "Update available",
@@ -118,6 +119,10 @@
       "thanks": "شكرًا، نحن نقرأ كل رسالة.",
       "unavailable": "الإرسال غير متوفر الآن. استخدم اللوحة أدناه بدلاً من ذلك.",
       "or": "أو",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "شاركه على اللوحة العامة",
         "description": "صوّت على أفكار الآخرين، واطلع على ما تم التخطيط له بالفعل، وستنال رد على أفكارك."

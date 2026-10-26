@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Gói hiện tại",
       "updatePaymentMethod": "Cập nhật phương thức thanh toán",
       "manageBilling": "Quản lý thanh toán",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Gói hiện tại",
       "recommended": "Được đề xuất",
       "previousPlan": "Gói trước đây",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Thanh toán đã thành công nhưng gói vẫn đang được thiết lập. Hãy làm mới trang sau một phút; nếu trạng thái không thay đổi, vui lòng liên hệ bộ phận hỗ trợ.",
         "activationUnreachable": "Chúng tôi không thể kết nối với máy chủ để xác nhận thanh toán. Hãy tải lại trang; nếu gói vẫn chưa hiển thị, vui lòng liên hệ bộ phận hỗ trợ.",
         "accessContinuesUntil": "Bạn có thể tiếp tục sử dụng đến {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Bạn có thể sử dụng đến {date}, sau đó tài khoản sẽ chỉ có quyền xem",
         "resumesOn": "Tự động tiếp tục vào {date}",
         "pausedNote": "Trong thời gian tạm dừng, tài khoản chỉ có quyền xem.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Hãy cập nhật phương thức thanh toán để tiếp tục sử dụng gói.",
         "viaPortal": "Đã thay đổi trong cổng thanh toán.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Thanh toán ngay hôm nay. Có thể hủy bất cứ lúc nào.",
         "earlyAdopter": "Giảm 50% trọn đời, tự động áp dụng khi thanh toán"
       },

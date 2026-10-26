@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Plan actual",
       "updatePaymentMethod": "Actualizar método de pago",
       "manageBilling": "Administrar la facturación",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Plan actual",
       "recommended": "Recomendado",
       "previousPlan": "Plan anterior",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Tu pago se ha realizado pero el plan todavía está siendo configurado. Actualiza en un minuto; si nada cambia, contacta con soporte técnico.",
         "activationUnreachable": "No pudimos acceder al servidor para confirmar tu pago. Recarga la página; si el plan aún no está disponible, ponte en contacto con soporte técnico.",
         "accessContinuesUntil": "El acceso continuará hasta {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Acceso hasta {date}, luego será solo de lectura",
         "resumesOn": "Reanuda automáticamente en {date}",
         "pausedNote": "Mientras la cuenta está en pausa es de solo lectura.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Actualiza tu método de pago para mantenerlo.",
         "viaPortal": "Modificado en el portal de facturación.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Facturado hoy. Cancela en cualquier momento.",
         "earlyAdopter": "50% de descuento para la vida, aplicado al momento de la compra"
       },

@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Aktuálne predplatné",
       "updatePaymentMethod": "Aktualizovať spôsob platby",
       "manageBilling": "Spravovať fakturáciu",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Aktuálne predplatné",
       "recommended": "Odporúčané",
       "previousPlan": "Predchádzajúce predplatné",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Vaša platba prebehla, plán sa však ešte nastavuje. Obnovte stránku o minútu; ak sa nič nezmení, kontaktujte podporu.",
         "activationUnreachable": "Server na potvrdenie vašej platby sa nepodarilo osloviť. Načítajte stránku znova; ak plán stále chýba, kontaktujte podporu.",
         "accessContinuesUntil": "Prístup trvá do {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Prístup do {date}, potom len na čítanie",
         "resumesOn": "Automaticky sa obnoví {date}",
         "pausedNote": "Kým je pozastavený, účet je len na čítanie.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Ak si to chcete zachovať, aktualizujte spôsob platby.",
         "viaPortal": "Zmenené vo fakturačnom portáli.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Účtované dnes. Kedykoľvek môžete zrušiť.",
         "earlyAdopter": "50 % zľava navždy, uplatnená pri platbe"
       },

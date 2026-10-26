@@ -215,7 +215,6 @@
       "categorizationSourceValues": {
         "manual": "Manual",
         "ai": "AI",
-        "mcc_rule": "Aturan MCC",
         "user_rule": "Aturan pengguna",
         "subscription_rule": "Aturan langganan",
         "payee_rule": "Aturan penerima"

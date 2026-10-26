@@ -13,6 +13,7 @@
     "automations": "Automazioni",
     "accountDetails": "Dettagli account",
     "helpAndDocs": "Guida & Documentazione",
+    "community": "Community",
     "logout": "Disconnessione",
     "appVersion": "Versione app {version}",
     "updateAvailable": "Aggiornamento disponibile",
@@ -118,6 +119,10 @@
       "thanks": "Grazie, leggiamo ogni messaggio.",
       "unavailable": "L'invio non è disponibile in questo momento. Usa il link qui sotto.",
       "or": "oppure",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Posta sul Forum",
         "description": "Vota le idee degli altri, vedi quelle già pianificate e ricevi una risposta alle tue."

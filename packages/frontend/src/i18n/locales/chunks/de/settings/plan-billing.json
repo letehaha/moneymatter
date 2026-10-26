@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Aktueller Tarif",
       "updatePaymentMethod": "Zahlungsmethode aktualisieren",
       "manageBilling": "Abrechnung verwalten",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Aktueller Tarif",
       "recommended": "Empfohlen",
       "previousPlan": "Vorheriger Tarif",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Deine Zahlung war erfolgreich, aber der Tarif wird noch eingerichtet. Lade die Seite in einer Minute neu; falls sich nichts ändert, kontaktiere den Support.",
         "activationUnreachable": "Der Server konnte nicht erreicht werden, um deine Zahlung zu bestätigen. Lade die Seite neu; falls der Tarif weiterhin fehlt, kontaktiere den Support.",
         "accessContinuesUntil": "Zugriff bleibt bis zum {date} bestehen",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Zugriff bis zum {date}, danach schreibgeschützt",
         "resumesOn": "Wird am {date} automatisch fortgesetzt",
         "pausedNote": "Während der Pause ist das Konto schreibgeschützt.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Aktualisiere deine Zahlungsmethode, um den Tarif zu behalten.",
         "viaPortal": "Im Abrechnungsportal geändert.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Heute abgerechnet. Jederzeit kündbar.",
         "earlyAdopter": "50% Rabatt für immer, wird beim Checkout angewendet"
       },

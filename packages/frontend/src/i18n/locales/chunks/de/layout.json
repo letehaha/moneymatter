@@ -13,6 +13,7 @@
     "automations": "Automatisierungen",
     "accountDetails": "Kontodetails",
     "helpAndDocs": "Hilfe & Dokumentation",
+    "community": "Community",
     "logout": "Abmelden",
     "appVersion": "App-Version {version}",
     "updateAvailable": "Update verfügbar",
@@ -118,6 +119,10 @@
       "thanks": "Danke, wir lesen jede Nachricht.",
       "unavailable": "Das Senden ist derzeit nicht verfügbar. Nutze stattdessen das Board unten.",
       "or": "oder",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Auf dem öffentlichen Board posten",
         "description": "Stimme über die Ideen anderer ab, sieh, was bereits geplant ist, und erhalte Antworten auf deine Ideen."

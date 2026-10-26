@@ -215,7 +215,6 @@
       "categorizationSourceValues": {
         "manual": "Ručne",
         "ai": "AI",
-        "mcc_rule": "Pravidlo MCC",
         "user_rule": "Používateľské pravidlo",
         "subscription_rule": "Pravidlo predplatného",
         "payee_rule": "Pravidlo protistrany"

@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Abonnement actuel",
       "updatePaymentMethod": "Modifier le moyen de paiement",
       "manageBilling": "Gérer la facturation",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Abonnement actuel",
       "recommended": "Recommandé",
       "previousPlan": "Abonnement précédent",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Votre paiement a été accepté, mais la configuration de votre forfait est toujours en cours. Actualisez dans une minute ; si rien ne change, contactez l'assistance.",
         "activationUnreachable": "Impossible de joindre le serveur pour confirmer votre paiement. Rechargez la page ; si le forfait n'apparaît toujours pas, contactez l'assistance.",
         "accessContinuesUntil": "Accès maintenu jusqu'au {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Accès jusqu'au {date}, puis lecture seule",
         "resumesOn": "Reprise automatique le {date}",
         "pausedNote": "Pendant la suspension, le compte est en lecture seule.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Mettez à jour votre moyen de paiement pour le conserver.",
         "viaPortal": "Modifiable sur le portail de facturation.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Facturé aujourd'hui. Résiliable à tout moment.",
         "earlyAdopter": "-50 % à vie, appliqués lors du paiement"
       },

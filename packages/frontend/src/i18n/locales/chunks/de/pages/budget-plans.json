@@ -236,9 +236,9 @@
       "available": "Verfügbar",
       "overrideBadge": "Manuell",
       "carryBadge": {
-        "floor": "Überschuss übernehmen",
-        "signed": "Überschuss und Defizit übernehmen",
-        "none": "neu beginnen"
+        "floor": "Übernimmt Überschuss",
+        "signed": "Übernimmt Überschuss und Defizit",
+        "none": "Beginnt neu"
       },
       "lineActions": "Zeilenaktionen",
       "editLine": "Zeile bearbeiten",

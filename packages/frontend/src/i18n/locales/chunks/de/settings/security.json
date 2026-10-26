@@ -177,7 +177,9 @@
           "confirmFull": "Bitte gib {email} ein, um zu bestätigen",
           "placeholder": "Gib deine E-Mail-Adresse ein",
           "acceptButton": "Mein Konto löschen",
-          "acceptButtonLoading": "Wird gelöscht..."
+          "acceptButtonLoading": "Wird gelöscht...",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Dein Konto wurde erfolgreich gelöscht",
@@ -254,7 +256,6 @@
           },
           "warnings": {
             "sharesSkipped": "{count} \"{table}\"-Zeile übersprungen: Freigegebene Ressourcen verweisen auf Benutzer, die auf dieser Instanz nicht existieren. | {count} \"{table}\"-Zeilen übersprungen: Freigegebene Ressourcen verweisen auf Benutzer, die auf dieser Instanz nicht existieren.",
-            "mccCodeMissing": "{count} MCC-Regel verworfen, deren Händlerkategorie-Code auf dieser Instanz nicht existiert. | {count} MCC-Regeln verworfen, deren Händlerkategorie-Codes auf dieser Instanz nicht existieren.",
             "currencyMissing": "{count} Währung übersprungen, die auf dieser Instanz nicht verfügbar ist. | {count} Währungen übersprungen, die auf dieser Instanz nicht verfügbar sind.",
             "unknownTableIgnored": "Das Backup enthält eine unbekannte Tabelle \"{table}\"; sie wurde ignoriert.",
             "unknownColumnDropped": "Eine unbekannte Spalte in \"{table}\" wurde verworfen: {columns}. | Unbekannte Spalten in \"{table}\" wurden verworfen: {columns}.",

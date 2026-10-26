@@ -215,7 +215,6 @@
       "categorizationSourceValues": {
         "manual": "Manual",
         "ai": "IA",
-        "mcc_rule": "Regla MCC",
         "user_rule": "Regla de usuario",
         "subscription_rule": "Regla de suscripción",
         "payee_rule": "Regla de beneficiario"

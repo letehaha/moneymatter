@@ -65,7 +65,7 @@
           "dailyPace": "Ritmo diario",
           "perDay": "/ día",
           "allowedPerDay": "permitido {amount} / día · {elapsed} de {total} días",
-          "neededPerDay": "needed {amount} / day · {elapsed} of {total} days",
+          "neededPerDay": "necesario {amount} / día · {elapsed} de {total} días",
           "daysElapsed": "{elapsed} de {total} días",
           "projectedTotal": "Total previsto",
           "projectedLimit": "a este ritmo · límite {amount}",
@@ -88,7 +88,7 @@
         "cumulativeLabel": "Acumulativo",
         "legend": {
           "cumulative": "Gasto, acumulativo",
-          "earnedCumulative": "Earned, cumulative",
+          "earnedCumulative": "Ganado, acumulativo",
           "evenPace": "Ritmo constante hasta el límite",
           "projection": "Proyección",
           "daily": "Por día",

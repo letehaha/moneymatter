@@ -215,7 +215,6 @@
       "categorizationSourceValues": {
         "manual": "Manuell",
         "ai": "KI",
-        "mcc_rule": "MCC-Regel",
         "user_rule": "Benutzerregel",
         "subscription_rule": "Abo-Regel",
         "payee_rule": "Zahlungsempfänger-Regel"

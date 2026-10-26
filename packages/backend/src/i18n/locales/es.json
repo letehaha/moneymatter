@@ -572,7 +572,7 @@
     "cannotDeleteDefaultCurrency": "No está permitido eliminar la moneda predeterminada. Primero quítela como predeterminada.",
     "cannotDeleteCurrencyWithAccounts": "No está permitido eliminar una moneda asociada a cuentas existentes. Elimine primero las cuentas. Nombres de cuentas: \"{{accountNames}}\".",
     "cannotDeleteCurrencyWithInvestments": "No está permitido eliminar la moneda \"{{currencyCode}}\" mientras sea utilizada por posiciones de inversión. Elimine primero esas posiciones.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
+    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "No se puede eliminar {{currencyCode}}: es la moneda de visualización de uno de tus portafolios. Cambia primero la moneda de visualización de la cartera.",
     "defaultCurrencyNotPresent": "No se puede eliminar la moneda. La moneda predeterminada no está presente en el sistema"
   },
   "ai": {

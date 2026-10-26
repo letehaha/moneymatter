@@ -13,6 +13,7 @@
     "automations": "Automatizácie",
     "accountDetails": "Nastavenia účtu",
     "helpAndDocs": "Pomoc a dokumentácia",
+    "community": "Community",
     "logout": "Odhlásiť sa",
     "appVersion": "Verzia aplikácie {version}",
     "updateAvailable": "K dispozícii je aktualizácia",
@@ -118,6 +119,10 @@
       "thanks": "Ďakujeme, čítame každú správu.",
       "unavailable": "Odosielanie je momentálne nedostupné. Použite namiesto toho nástenku nižšie.",
       "or": "alebo",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Uverejnite to na verejnej nástenke",
         "description": "Hlasujte za nápady iných, pozrite si, čo je už naplánované, a dostanete odpoveď aj na svoj vlastný."

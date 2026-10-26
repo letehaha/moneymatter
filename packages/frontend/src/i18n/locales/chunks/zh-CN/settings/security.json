@@ -177,7 +177,9 @@
           "confirmFull": "Please type {email} to confirm",
           "placeholder": "Enter your email",
           "acceptButton": "Delete my account",
-          "acceptButtonLoading": "正在删除……"
+          "acceptButtonLoading": "正在删除……",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Your account has been deleted successfully",
@@ -254,7 +256,6 @@
           },
           "warnings": {
             "sharesSkipped": "Skipped {count} \"{table}\" row: shared resources reference users that don't exist on this instance. | Skipped {count} \"{table}\" rows: shared resources reference users that don't exist on this instance.",
-            "mccCodeMissing": "Dropped {count} MCC rule whose merchant category code doesn't exist on this instance. | Dropped {count} MCC rules whose merchant category codes don't exist on this instance.",
             "currencyMissing": "Skipped {count} currency that isn't available on this instance. | Skipped {count} currencies that aren't available on this instance.",
             "unknownTableIgnored": "The backup contains an unknown table \"{table}\"; it was ignored.",
             "unknownColumnDropped": "Dropped an unknown column on \"{table}\": {columns}. | Dropped unknown columns on \"{table}\": {columns}.",

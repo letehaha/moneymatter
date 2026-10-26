@@ -8,6 +8,7 @@
       "currentPlanEyebrow": "Current plan",
       "updatePaymentMethod": "Update payment method",
       "manageBilling": "Manage billing",
+      "manageInAppStore": "Manage in the App Store",
       "currentPlan": "Current plan",
       "recommended": "Recommended",
       "previousPlan": "Previous plan",
@@ -48,6 +49,7 @@
         "activationTimedOut": "Your payment went through but the plan is still being set up. Refresh in a minute; if nothing changes, contact support.",
         "activationUnreachable": "We could not reach the server to confirm your payment. Reload the page; if the plan is still missing, contact support.",
         "accessContinuesUntil": "Access continues until {date}",
+        "billedByAppStore": "Billed through the App Store",
         "accessUntil": "Access until {date}, then read-only",
         "resumesOn": "Resumes automatically on {date}",
         "pausedNote": "While paused the account is read-only.",
@@ -77,6 +79,7 @@
       "ctaNote": {
         "keepIt": "Update your payment method to keep it.",
         "viaPortal": "Changed in the billing portal.",
+        "viaAppStore": "Plan changes happen in the App Store",
         "billedToday": "Billed today. Cancel anytime.",
         "earlyAdopter": "50% off for life, applied at checkout"
       },

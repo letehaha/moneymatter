@@ -177,7 +177,9 @@
           "confirmFull": "Escriba {email} para confirmar",
           "placeholder": "Introduzca su correo electrónico",
           "acceptButton": "Eliminar mi cuenta",
-          "acceptButtonLoading": "Eliminando..."
+          "acceptButtonLoading": "Eliminando...",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Su cuenta ha sido eliminada correctamente",
@@ -254,7 +256,6 @@
           },
           "warnings": {
             "sharesSkipped": "Se omitió la fila {count} \"{table}: los usuarios de referencia de recursos compartidos que no existen en esta instancia. | Filas omitidas {count} \"{table}: usuarios de referencia de recursos compartidos que no existen en esta instancia.",
-            "mccCodeMissing": "Se ha eliminado la regla MCC {count} cuyo código de categoría de comerciante no existe en esta instancia. | Se eliminaron las reglas MCC {count} cuyos códigos de categoría de comerciante no existen en esta instancia.",
             "currencyMissing": "Moneda omitida {count} que no está disponible en esta instancia. | Monedas omitidas {count} que no están disponibles en esta instancia.",
             "unknownTableIgnored": "La copia de seguridad contiene una tabla desconocida \"{table}\"; fue ignorada.",
             "unknownColumnDropped": "Se eliminó una columna desconocida en \"{table}\": {columns}. | Se eliminaron columnas desconocidas en \"{table}\": {columns}.",

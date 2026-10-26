@@ -177,7 +177,9 @@
           "confirmFull": "Veuillez saisir {email} pour confirmer",
           "placeholder": "Saisissez votre e-mail",
           "acceptButton": "Supprimer mon compte",
-          "acceptButtonLoading": "Suppression en cours..."
+          "acceptButtonLoading": "Suppression en cours...",
+          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
+          "appStoreWarningLink": "App Store subscriptions"
         },
         "notifications": {
           "success": "Votre compte a été supprimé avec succès",
@@ -254,7 +256,6 @@
           },
           "warnings": {
             "sharesSkipped": "{count} ligne « {table} » ignorée : des ressources partagées font référence à des utilisateurs inexistants sur cette instance. | {count} lignes « {table} » ignorées : des ressources partagées font référence à des utilisateurs inexistants sur cette instance.",
-            "mccCodeMissing": "{count} règle MCC ignorée dont le code de catégorie de commerçant n'existe pas sur cette instance. | {count} règles MCC ignorées dont le code de catégorie de commerçant n'existe pas sur cette instance.",
             "currencyMissing": "{count} devise non disponible sur cette instance a été ignorée. | {count} devises non disponibles sur cette instance ont été ignorées.",
             "unknownTableIgnored": "La sauvegarde contient une table inconnue « {table} » ; elle a été ignorée.",
             "unknownColumnDropped": "Une colonne inconnue a été supprimée de « {table} » : {columns}. | Des colonnes inconnues ont été supprimées de « {table} » : {columns}.",

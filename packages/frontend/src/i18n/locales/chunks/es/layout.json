@@ -13,6 +13,7 @@
     "automations": "Automatizaciones",
     "accountDetails": "Detalles de la cuenta",
     "helpAndDocs": "Ayuda & Documentación",
+    "community": "Community",
     "logout": "Cerrar sesión",
     "appVersion": "Versión de app {version}",
     "updateAvailable": "Actualización disponible",
@@ -118,6 +119,10 @@
       "thanks": "Gracias, leemos todos los mensajes.",
       "unavailable": "El envío no está disponible en este momento. Use el tablero de abajo en su lugar.",
       "or": "o",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Publíquelo en el tablero público",
         "description": "Vote las ideas de otras personas, vea qué está ya planificado y reciba una respuesta a la suya."

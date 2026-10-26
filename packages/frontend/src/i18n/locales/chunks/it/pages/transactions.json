@@ -215,7 +215,6 @@
       "categorizationSourceValues": {
         "manual": "Manual",
         "ai": "IA",
-        "mcc_rule": "MCC rule",
         "user_rule": "User rule",
         "subscription_rule": "Subscription rule",
         "payee_rule": "Payee rule"

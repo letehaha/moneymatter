@@ -13,6 +13,7 @@
     "automations": "Automations",
     "accountDetails": "Account details",
     "helpAndDocs": "Help & docs",
+    "community": "Community",
     "logout": "Đăng xuất",
     "appVersion": "App version {version}",
     "updateAvailable": "Update available",
@@ -118,6 +119,10 @@
       "thanks": "Thanks, we read every message.",
       "unavailable": "Sending is unavailable right now. Use the board below instead.",
       "or": "or",
+      "reddit": {
+        "title": "Ask the community on Reddit",
+        "description": "Get help from other users, share how you set things up, and follow updates."
+      },
       "board": {
         "title": "Post it on the public board",
         "description": "Vote on other people's ideas, see what is already planned, and get a reply on yours."

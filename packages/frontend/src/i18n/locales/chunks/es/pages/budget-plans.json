@@ -236,9 +236,9 @@
       "available": "Disponible",
       "overrideBadge": "reemplazo",
       "carryBadge": {
-        "floor": "carries surplus",
-        "signed": "carries surplus & deficit",
-        "none": "starts fresh"
+        "floor": "superávit",
+        "signed": "superávit y déficit",
+        "none": "comienza de cero"
       },
       "lineActions": "Acciones de línea",
       "editLine": "Editar línea",
