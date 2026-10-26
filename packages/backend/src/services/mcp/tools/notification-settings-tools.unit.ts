@@ -434,7 +434,7 @@ describe('update_user_settings', () => {
   });
 
   it('refuses a patch the REST schema refuses, before the service', async () => {
-    await expect(call({ tool, args: { locale: 'fr' }, extra: WRITE })).rejects.toThrow();
+    await expect(call({ tool, args: { locale: 'xx' }, extra: WRITE })).rejects.toThrow();
     expect(patchSettings).not.toHaveBeenCalled();
   });
 

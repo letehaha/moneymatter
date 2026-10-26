@@ -25,11 +25,22 @@ const inputSchema = {
     .describe(
       "New spending limit as a decimal amount in the user's base currency (e.g. 500.00). Pass null to remove the limit",
     ),
-  rulesEnabled: editTrackerBodyShape.rulesEnabled.describe("Auto-add the user's transactions in the date range matching the rule categories or tags"),
-  rulesCleanup: editTrackerBodyShape.rulesCleanup.describe('Remove rule-added transactions that stop matching the rules'),
-  archivePromptDismissed: editTrackerBodyShape.archivePromptDismissed.describe('true hides the "archive this finished tracker" prompt in the app; false shows it again'),
-  categoryIds: editTrackerBodyShape.categoryIds.describe('Replace the rule categories; parent IDs include their children'),
+  rulesEnabled: editTrackerBodyShape.rulesEnabled.describe(
+    "Auto-add the user's transactions in the date range matching the rule categories or tags",
+  ),
+  rulesCleanup: editTrackerBodyShape.rulesCleanup.describe(
+    'Remove rule-added transactions that stop matching the rules',
+  ),
+  archivePromptDismissed: editTrackerBodyShape.archivePromptDismissed.describe(
+    'true hides the "archive this finished tracker" prompt in the app; false shows it again',
+  ),
+  categoryIds: editTrackerBodyShape.categoryIds.describe(
+    'Replace the rule categories; parent IDs include their children',
+  ),
   tagIds: editTrackerBodyShape.tagIds.describe('Replace the rule tags'),
+  limitKind: editTrackerBodyShape.limitKind.describe(
+    'What limitAmount means: spending (a ceiling, default), income_target (income to reach) or income_cap (income to stay under)',
+  ),
   logoDomain: editTrackerBodyShape.logoDomain.describe(
     'Brand domain to take the logo from (e.g. "airbnb.com"), or null to clear. Not together with logoInitials or logoIcon',
   ),
