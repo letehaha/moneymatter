@@ -36,6 +36,9 @@ const inputSchema = {
     .nullable()
     .optional()
     .describe("Spending limit as a decimal amount in the user's base currency (e.g. 500.00)"),
+  limitKind: createTrackerBodyShape.limitKind.describe(
+    'What limitAmount means: spending (a ceiling, default), income_target (income to reach) or income_cap (income to stay under)',
+  ),
   logoDomain: createTrackerBodyShape.logoDomain.describe(
     'Brand domain to take the logo from (e.g. "airbnb.com"), no protocol or slashes. Not together with logoInitials or logoIcon',
   ),
@@ -88,6 +91,7 @@ export function registerCreateTracker(server: McpServer) {
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
         limitAmount: body.limitAmount,
+        limitKind: body.limitKind,
         logoDomain: body.logoDomain,
         logoInitials: body.logoInitials,
         logoColor: body.logoColor,
