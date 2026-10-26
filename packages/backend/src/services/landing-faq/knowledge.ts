@@ -332,6 +332,7 @@ developer, in the open. Source: https://github.com/letehaha/moneymatter
 - Support: support@moneymatter.app
 - Bugs: https://github.com/letehaha/moneymatter/issues
 - Feature requests, voting and roadmap: https://moneymatter.featurebase.app/dashboard/roadmap
+- Community, questions and discussion: https://www.reddit.com/r/moneymatterapp/ (subreddit r/moneymatterapp)
 - There is no Discord, Telegram or Slack community.
 - Tech stack: TypeScript, Node.js with Express, PostgreSQL, Redis, Vue 3. Contributions are
   welcome on GitHub; a CLA is signed on the first pull request.

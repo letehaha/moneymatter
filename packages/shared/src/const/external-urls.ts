@@ -6,6 +6,7 @@ export const EXTERNAL_URLS = {
   // Feedback board: where users submit and upvote requests
   featurebaseBoard: 'https://moneymatter.featurebase.app/',
   docs: 'https://docs.moneymatter.app',
+  redditCommunity: 'https://www.reddit.com/r/moneymatterapp/',
   appStoreSubscriptions: 'https://apps.apple.com/account/subscriptions',
   enableBankingHttpsSetup:
     'https://github.com/letehaha/moneymatter/blob/main/self-hosting/docs/troubleshooting.md#enable-banking-url-uses-unsupported-scheme',

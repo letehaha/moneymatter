@@ -43,29 +43,37 @@
       <span class="border-border flex-1 border-t" />
     </div>
 
-    <a
-      :href="EXTERNAL_URLS.featurebaseBoard"
-      target="_blank"
-      rel="noopener noreferrer"
-      class="border-border hover:border-primary/40 hover:bg-accent group flex items-start gap-3 rounded-lg border p-4 transition-colors"
-    >
-      <UsersIcon class="text-muted-foreground group-hover:text-primary-text mt-0.5 size-5 shrink-0 transition-colors" />
+    <div class="grid gap-3">
+      <a
+        v-for="link in externalLinks"
+        :key="link.href"
+        :href="link.href"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="border-border hover:border-primary/40 hover:bg-accent group flex items-start gap-3 rounded-lg border p-4 transition-colors"
+      >
+        <component
+          :is="link.icon"
+          class="text-muted-foreground group-hover:text-primary-text mt-0.5 size-5 shrink-0 transition-colors"
+        />
 
-      <span class="min-w-0 flex-1">
-        <span class="flex items-center gap-1.5 text-sm font-medium">
-          {{ $t('feedback.dialog.board.title') }}
-          <ExternalLinkIcon class="size-3.5 opacity-50 transition-opacity group-hover:opacity-100" />
+        <span class="min-w-0 flex-1">
+          <span class="flex items-center gap-1.5 text-sm font-medium">
+            {{ link.title }}
+            <ExternalLinkIcon class="size-3.5 opacity-50 transition-opacity group-hover:opacity-100" />
+          </span>
+          <span class="text-muted-foreground mt-1 block text-sm leading-relaxed">
+            {{ link.description }}
+          </span>
         </span>
-        <span class="text-muted-foreground mt-1 block text-sm leading-relaxed">
-          {{ $t('feedback.dialog.board.description') }}
-        </span>
-      </span>
-    </a>
+      </a>
+    </div>
   </ResponsiveDialog>
 </template>
 
 <script lang="ts" setup>
 import DocsLink from '@/components/common/docs-link.vue';
+import RedditIcon from '@/components/common/icons/reddit-icon.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import SelectField from '@/components/fields/select-field.vue';
 import TextareaField from '@/components/fields/textarea-field.vue';
@@ -90,6 +98,21 @@ const feedbackTypeOptions = computed<{ value: FeedbackType; label: string }[]>((
   { value: 'bug', label: t('feedback.dialog.types.bug') },
   { value: 'feature_request', label: t('feedback.dialog.types.featureRequest') },
   { value: 'other', label: t('feedback.dialog.types.other') },
+]);
+
+const externalLinks = computed(() => [
+  {
+    href: EXTERNAL_URLS.redditCommunity,
+    icon: RedditIcon,
+    title: t('feedback.dialog.reddit.title'),
+    description: t('feedback.dialog.reddit.description'),
+  },
+  {
+    href: EXTERNAL_URLS.featurebaseBoard,
+    icon: UsersIcon,
+    title: t('feedback.dialog.board.title'),
+    description: t('feedback.dialog.board.description'),
+  },
 ]);
 
 const feedbackType = ref<{ value: FeedbackType; label: string } | null>(feedbackTypeOptions.value[0]!);

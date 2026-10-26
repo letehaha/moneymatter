@@ -19,6 +19,7 @@ export default defineConfig({
       customCss: ['./src/styles/custom.css'],
       social: [
         { icon: 'github', label: 'GitHub', href: 'https://github.com/letehaha/moneymatter' },
+        { icon: 'reddit', label: 'Reddit', href: 'https://www.reddit.com/r/moneymatterapp/' },
         { icon: 'external', label: 'Open MoneyMatter', href: 'https://moneymatter.app' },
       ],
       editLink: { baseUrl: 'https://github.com/letehaha/moneymatter/edit/main/packages/docs/' },

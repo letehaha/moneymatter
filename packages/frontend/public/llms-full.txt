@@ -150,6 +150,7 @@ Setup guide and Docker configuration: https://github.com/letehaha/moneymatter
 
 - [Homepage](https://moneymatter.app/): Landing page with feature overview and sign-up
 - [GitHub Repository](https://github.com/letehaha/moneymatter): Source code, Docker setup guide, and issue tracker
+- [Reddit Community](https://www.reddit.com/r/moneymatterapp/): Questions, help from other users, and project updates
 - [Privacy Policy](https://moneymatter.app/privacy-policy): Data handling and privacy practices
 - [Terms of Use](https://moneymatter.app/terms-of-use): Terms of service
 - [Try Demo](https://moneymatter.app): Create a free account or try the demo
