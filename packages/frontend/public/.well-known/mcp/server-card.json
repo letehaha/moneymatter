@@ -308,7 +308,7 @@
     },
     {
       "name": "create_transaction",
-      "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, payee, and original (foreign-currency) amount."
+      "description": "Create a new income, expense, or transfer transaction with optional splits, tags, category, payee, original (foreign-currency) amount, and parts paid from other accounts."
     },
     {
       "name": "create_attachment_upload_url",
@@ -316,7 +316,7 @@
     },
     {
       "name": "update_transaction",
-      "description": "Update an existing transaction's amount, date, category, payee, tags, note, splits, or original (foreign-currency) amount. Requires finance:write scope."
+      "description": "Update an existing transaction's amount, date, category, payee, tags, note, splits, original (foreign-currency) amount, or the other accounts it is paid from. Requires finance:write scope."
     },
     {
       "name": "delete_transaction",

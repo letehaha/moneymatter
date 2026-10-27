@@ -123,8 +123,8 @@ page.
 | `update_transaction_automation`         | Change a rule name, conditions, actions, or enabled state (`finance:write`)                                      |
 | `delete_transaction_automation`         | Permanently delete an automation rule (`finance:delete`)                                                         |
 | `reorder_transaction_automations`       | Set the top-to-bottom evaluation order of the automation rules (`finance:write`)                                 |
-| `create_transaction`                    | Create income, expense, or transfer with optional splits/tags/payee/original-currency amount (`finance:write`)   |
-| `update_transaction`                    | Update amount, date, category, payee, tags, note, splits, or original-currency amount (`finance:write`)          |
+| `create_transaction`                    | Create income, expense, or transfer; optional splits/tags/payee/original amount/other accounts (`finance:write`) |
+| `update_transaction`                    | Update amount, date, category, payee, tags, note, splits, original amount, other accounts (`finance:write`)      |
 | `delete_transaction`                    | Permanently delete a transaction; transfer pairs are deleted together (`finance:delete`)                         |
 | `create_attachment_upload_url`          | Get a short-lived URL to upload receipt files (JPEG/PNG/WebP/PDF) to a transaction over HTTP (`finance:write`)   |
 | `bulk_update_transactions`              | Update category, payee, note, or tags on multiple transactions at once (`finance:write`)                         |
@@ -162,6 +162,12 @@ multi-currency data.
   `search_transactions` returns regular (spending) transactions; investment
   activity (buy/sell/dividend/fee) lives in `get_investment_transactions` and
   does not appear in `search_transactions`.
+- A multi-account payment is one income or expense paid from up to 5 accounts.
+  `search_transactions` returns it as one row on its main account, with
+  `paymentParts` (every account's part, main first) and `paymentTotal` (the sum
+  in the main currency). Filtering by `accountIds` returns each account's own
+  part instead. Use `paymentTotal`, not `amount`, for the payment's full cost.
+  Set the parts with `paymentLegs` on `create_transaction` / `update_transaction`.
 - Transaction automations are rules evaluated top to bottom by `position` on
   new transactions on bank-connected accounts or imported rows — never on
   transfers, planned ones, or transactions on manual (non-bank) accounts. Existing

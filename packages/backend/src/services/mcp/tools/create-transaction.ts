@@ -1,6 +1,10 @@
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
-import { nonNegativeAmountSchema, positiveAmountSchema } from '@controllers/transactions.controller/schemas';
+import {
+  nonNegativeAmountSchema,
+  paymentLegsSchema,
+  positiveAmountSchema,
+} from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { deserializeCreateTransaction, serializeTransactionTuple } from '@root/serializers';
@@ -73,6 +77,11 @@ const inputSchema = {
     .describe(
       'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
     ),
+  paymentLegs: paymentLegsSchema
+    .optional()
+    .describe(
+      "Pay this income/expense from up to 4 more accounts. Each item is either { accountId, amount } to create a part on another account, or { transactionId } to link an existing transaction as a part (its amount stays). amount is in that account's currency; when it differs from this transaction's currency also pass paymentAmount, the part's value in this transaction's currency. Not allowed for transfers, refunds, planned or category-split transactions",
+    ),
 };
 
 export function registerCreateTransaction(server: McpServer) {
@@ -80,7 +89,7 @@ export function registerCreateTransaction(server: McpServer) {
     'create_transaction',
     {
       description:
-        'Create a new transaction (income, expense, or transfer). Requires accountId, amount (decimal), transactionType, paymentType, and transferNature. For transfers, also provide destinationAccountId and destinationAmount. Use splits to categorize portions of the amount. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency.',
+        'Create a new transaction (income, expense, or transfer). Requires accountId, amount (decimal), transactionType, paymentType, and transferNature. For transfers, also provide destinationAccountId and destinationAmount. Use splits to categorize portions of the amount. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to pay one purchase from several accounts.',
       inputSchema,
     },
     async (args, extra) => {
@@ -109,6 +118,7 @@ export function registerCreateTransaction(server: McpServer) {
           isPlanned: args.isPlanned,
           originalAmount: args.originalAmount,
           originalCurrencyCode: args.originalCurrencyCode,
+          paymentLegs: args.paymentLegs,
         },
         userId,
       );

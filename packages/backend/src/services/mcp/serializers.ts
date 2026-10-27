@@ -81,6 +81,8 @@ export function slimTransactionsForMcp(txs: TransactionApiResponse[]) {
       splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
     }),
     ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
+    ...(tx.paymentParts && { paymentParts: tx.paymentParts }),
+    ...(tx.paymentTotal !== undefined && { paymentTotal: tx.paymentTotal }),
   }));
 }
 

@@ -1,10 +1,14 @@
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
 import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
-import { nonNegativeAmountSchema, positiveAmountSchema } from '@controllers/transactions.controller/schemas';
+import {
+  nonNegativeAmountSchema,
+  paymentLegsSchema,
+  positiveAmountSchema,
+} from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeTransactionTuple } from '@root/serializers/transactions.serializer';
+import { deserializePaymentLegs, serializeTransactionTuple } from '@root/serializers/transactions.serializer';
 import { updateTransaction } from '@services/transactions/update-transaction';
 import { z } from 'zod';
 
@@ -84,6 +88,12 @@ const inputSchema = {
     .describe(
       'ISO 4217 code of originalAmount (e.g. "PLN"). Requires originalAmount. Cannot be combined with transfer fields',
     ),
+  paymentLegs: paymentLegsSchema
+    .nullable()
+    .optional()
+    .describe(
+      "Replace the payment's other accounts (same item shape as create_transaction). Keep a current part by passing its transactionId (see paymentParts in search_transactions), optionally with a new amount unless it is a linked part; an omitted created part is deleted, an omitted linked part becomes a standalone transaction again. Pass null or [] to make it a single-account transaction. Omit to leave the parts unchanged",
+    ),
 };
 
 export function registerUpdateTransaction(server: McpServer) {
@@ -91,7 +101,7 @@ export function registerUpdateTransaction(server: McpServer) {
     'update_transaction',
     {
       description:
-        'Update an existing transaction by ID. All fields except id are optional — only provide what you want to change. Pass tagIds: null to clear all tags, or tagIds: [] to do the same. Pass splits: null to clear all splits. Pass payeeId: null to clear the payee. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency.',
+        'Update an existing transaction by ID. All fields except id are optional — only provide what you want to change. Pass tagIds: null to clear all tags, or tagIds: [] to do the same. Pass splits: null to clear all splits. Pass payeeId: null to clear the payee. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to change which accounts a multi-account payment is paid from.',
       inputSchema,
     },
     async (args, extra) => {
@@ -127,6 +137,7 @@ export function registerUpdateTransaction(server: McpServer) {
         tagIds: args.tagIds,
         originalAmount: args.originalAmount != null ? Money.fromDecimal(args.originalAmount) : args.originalAmount,
         originalCurrencyCode: args.originalCurrencyCode,
+        paymentLegs: args.paymentLegs && deserializePaymentLegs({ legs: args.paymentLegs }),
       });
 
       return jsonContent({ data: serializeTransactionTuple(result) });
