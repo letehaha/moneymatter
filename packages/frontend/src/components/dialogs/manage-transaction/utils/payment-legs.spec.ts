@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 import type { FormPaymentLeg } from '../types';
 import {
   formLegsToPaymentLegs,
+  getPaymentRowAmounts,
   hasPaymentParts,
   isPaymentLegIncomplete,
   paymentPartsToFormLegs,
@@ -76,6 +77,19 @@ const convert = ({ amount, from, to }: { amount: number; from: string; to: strin
   from === 'USD' && to === 'EUR' ? Math.round((amount / 1.0875) * 100) / 100 : null;
 
 describe('payment legs helpers', () => {
+  it('shows a collapsed payment row as its total, converted at the main row rate', () => {
+    expect(
+      getPaymentRowAmounts({ transaction: { amount: 10, refAmount: 20, paymentTotal: 40 } as TransactionModel }),
+    ).toEqual({ amount: 40, refAmount: 80 });
+  });
+
+  it('keeps the row own amounts when it carries no payment total', () => {
+    expect(getPaymentRowAmounts({ transaction: { amount: 10, refAmount: 20 } as TransactionModel })).toEqual({
+      amount: 10,
+      refAmount: 20,
+    });
+  });
+
   it('builds form legs from every part except the main one', () => {
     expect(
       paymentPartsToFormLegs({

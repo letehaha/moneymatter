@@ -410,19 +410,59 @@ describe('Multi-account payments v2', () => {
     expect(leg!.currencyCode).toBe('EUR');
   });
 
-  it('allows two created legs on the same account', async () => {
+  it('rejects two created legs on the same account', async () => {
     const [card, voucher] = await createManualAccounts({ count: 2 });
-    await createPayment({
-      mainAccountId: card!.id,
-      legs: [
-        { accountId: voucher!.id, amount: 10 },
-        { accountId: voucher!.id, amount: 20 },
-      ],
+    const response = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({
+        accountId: card!.id,
+        amount: 70,
+        paymentLegs: [
+          { accountId: voucher!.id, amount: 10 },
+          { accountId: voucher!.id, amount: 20 },
+        ],
+      }),
+      raw: false,
     });
 
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    expect(await balanceOf({ id: card!.id })).toBe(1000);
+    expect(await balanceOf({ id: voucher!.id })).toBe(1000);
+  });
+
+  it('rejects a new leg on the account of a kept created leg', async () => {
+    const [card, voucher] = await createManualAccounts({ count: 2 });
+    const main = await createPayment({ mainAccountId: card!.id, legs: [{ accountId: voucher!.id, amount: 30 }] });
+    const [kept] = await legsOf({ accountId: voucher!.id });
+
+    const response = await helpers.updateTransaction({
+      id: main.id,
+      payload: {
+        paymentLegs: [
+          { transactionId: kept!.id, amount: 30 },
+          { accountId: voucher!.id, amount: 20 },
+        ],
+      },
+      raw: false,
+    });
+
+    expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
     expect(await balanceOf({ id: voucher!.id })).toBe(970);
+    expect(await legsOf({ accountId: voucher!.id })).toHaveLength(1);
+  });
+
+  it('allows a created leg on the account of a linked one', async () => {
+    const [card, voucher] = await createManualAccounts({ count: 2 });
+    const [standalone] = await helpers.createTransaction({
+      payload: helpers.buildTransactionPayload({ accountId: voucher!.id, amount: 15 }),
+      raw: true,
+    });
+    await createPayment({
+      mainAccountId: card!.id,
+      legs: [{ transactionId: standalone.id }, { accountId: voucher!.id, amount: 20 }],
+    });
+
     expect(await legsOf({ accountId: voucher!.id })).toHaveLength(2);
-    expect((await helpers.getTransactions({ raw: true }))![0]!.paymentTotal).toBe(100);
+    expect(await balanceOf({ id: voucher!.id })).toBe(965);
   });
 
   it('links an existing transaction, copying only the shared details to it', async () => {

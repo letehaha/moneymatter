@@ -90,6 +90,8 @@ export const getInlineCellMode = ({
     if (isExternal({ account }) && !tx.isPlanned) return 'bank';
     // The server re-checks split sums and recalculates split ref amounts only when splits are sent along.
     if (tx.splits?.length) return 'details';
+    // A payment row shows the whole payment, but an inline edit would change only this row's part.
+    if (tx.paymentParts?.length) return 'details';
     return 'edit';
   }
 

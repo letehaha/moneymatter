@@ -292,6 +292,14 @@ export const syncPaymentLegs = withTransaction(
     if (desired.length > MAX_PAYMENT_LEGS || new Set(keptIds).size !== keptIds.length) {
       throw invalid({ key: 'transactions.paymentLinkNotAllowed' });
     }
+    const createdAccountIds = desired.flatMap((leg) => {
+      if (leg.accountId) return [leg.accountId];
+      const row = current.find((item) => item.id === leg.transactionId);
+      return row && !isLinkedLeg(row) ? [row.accountId] : [];
+    });
+    if (new Set(createdAccountIds).size !== createdAccountIds.length) {
+      throw invalid({ key: 'transactions.paymentLegDuplicateAccount' });
+    }
 
     for (const leg of current) {
       if (keptIds.includes(leg.id)) continue;

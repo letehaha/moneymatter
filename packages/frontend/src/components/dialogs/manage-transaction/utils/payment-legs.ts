@@ -21,6 +21,18 @@ export const hasPaymentParts = ({ transaction }: { transaction: TransactionModel
 export const isAccountScopedPaymentRow = ({ transaction }: { transaction: TransactionModel }): boolean =>
   transaction.paymentTotal === undefined;
 
+/** A collapsed payment row stands for the whole payment. Parts are shared in the main's
+ *  currency, so the main's own rate brings the total to the base currency. */
+export const getPaymentRowAmounts = ({
+  transaction,
+}: {
+  transaction: TransactionModel;
+}): { amount: number; refAmount: number } => {
+  const { amount, refAmount, paymentTotal } = transaction;
+  if (paymentTotal === undefined || !amount) return { amount, refAmount };
+  return { amount: paymentTotal, refAmount: (refAmount * paymentTotal) / amount };
+};
+
 export const getPaymentMainCurrencyCode = ({ transaction }: { transaction: TransactionModel }): string =>
   transaction.paymentParts?.find((part) => part.transactionId === (transaction.paymentParentId ?? transaction.id))
     ?.currencyCode ?? transaction.currencyCode;

@@ -272,6 +272,7 @@ import { useTransactionPortfolioLink } from '@/composable/data-queries/portfolio
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
 import {
   getPaymentMainCurrencyCode,
+  getPaymentRowAmounts,
   isAccountScopedPaymentRow,
 } from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import { formatUIAmount } from '@/js/helpers';
@@ -494,7 +495,7 @@ const checkedModel = computed({
 });
 
 const formattedAmount = computed(() => {
-  let amount = transaction.value.paymentTotal ?? transaction.value.amount;
+  let { amount } = getPaymentRowAmounts({ transaction: transaction.value });
 
   if (transaction.value.transactionType === TRANSACTION_TYPES.expense) {
     amount *= -1;

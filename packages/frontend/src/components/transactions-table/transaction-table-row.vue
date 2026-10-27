@@ -64,6 +64,7 @@
         <div class="flex items-center gap-1.5">
           <AccountLogo v-if="accountFrom" :account="accountFrom" class="size-5 shrink-0" />
           <span class="max-w-36 truncate">{{ accountFrom?.name }}</span>
+          <PaymentIndicator :transaction="tx" />
           <template v-if="isTwoLegTransferRow">
             <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
             <AccountLogo
@@ -238,7 +239,9 @@ import { Button } from '@/components/lib/ui/button';
 import { Checkbox } from '@/components/lib/ui/checkbox';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
+import { getPaymentRowAmounts } from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import AttachmentIndicator from '@/components/transactions-list/indicators/attachment-indicator.vue';
+import PaymentIndicator from '@/components/transactions-list/indicators/payment-indicator.vue';
 import PlannedIndicator from '@/components/transactions-list/indicators/planned-indicator.vue';
 import RefundIndicator from '@/components/transactions-list/indicators/refund-indicator.vue';
 import SplitIndicator from '@/components/transactions-list/indicators/split-indicator.vue';
@@ -386,10 +389,11 @@ const amountColorClass = computed(() => {
 
 const signedAmount = (amount: number) => (props.tx.transactionType === TRANSACTION_TYPES.expense ? -amount : amount);
 
+const rowAmounts = computed(() => getPaymentRowAmounts({ transaction: props.tx }));
 const formattedAmount = computed(() =>
-  formatUIAmount(signedAmount(props.tx.amount), { currency: props.tx.currencyCode }),
+  formatUIAmount(signedAmount(rowAmounts.value.amount), { currency: props.tx.currencyCode }),
 );
-const formattedRefAmount = computed(() => formatBaseCurrency(signedAmount(props.tx.refAmount)));
+const formattedRefAmount = computed(() => formatBaseCurrency(signedAmount(rowAmounts.value.refAmount)));
 
 const formattedOriginalAmount = computed(() => {
   const { originalAmount, originalCurrencyCode } = props.tx;

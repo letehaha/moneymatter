@@ -5,6 +5,7 @@ import {
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   type TransactionModel,
+  type TransactionPaymentPart,
   type TransactionSplitModel,
 } from '@bt/shared/types';
 import { describe, expect, it } from 'vitest';
@@ -92,6 +93,11 @@ describe('getInlineCellMode', () => {
       'e e n n e e e',
     ],
     ['split parent', { tx: buildTx({ splits: [{} as TransactionSplitModel] }), account: manual }, 'd d e e d e e'],
+    [
+      'multi-account payment',
+      { tx: buildTx({ paymentParts: [{} as TransactionPaymentPart, {} as TransactionPaymentPart] }), account: manual },
+      'd d e e d e e',
+    ],
     [
       'split parent on a bank account',
       { tx: buildTx({ splits: [{} as TransactionSplitModel] }), account: bank },

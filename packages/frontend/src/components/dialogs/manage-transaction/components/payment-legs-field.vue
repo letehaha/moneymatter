@@ -57,16 +57,20 @@ const { convert, ratesMap } = useExchangeRates();
 
 const mainCurrencyCode = computed(() => account.value?.currencyCode);
 
+const legAccountIds = computed(() => new Set(legs.value.map((leg) => getPaymentLegAccountId({ leg }))));
 const createdLegAccountIds = computed(
   () => new Set(legs.value.filter((leg) => !leg.isLinked).map((leg) => getPaymentLegAccountId({ leg }))),
 );
 
 const mainOptions = computed(() =>
-  props.mainAccounts.filter((item) => item.id === account.value?.id || !createdLegAccountIds.value.has(item.id)),
+  props.mainAccounts.filter((item) => item.id === account.value?.id || !legAccountIds.value.has(item.id)),
 );
 
 const legOptions = ({ leg }: { leg: FormPaymentLeg }) =>
-  props.legAccounts.filter((item) => item.id === leg.account?.id || item.id !== account.value?.id);
+  props.legAccounts.filter(
+    (item) =>
+      item.id === leg.account?.id || (item.id !== account.value?.id && !createdLegAccountIds.value.has(item.id)),
+  );
 
 const refreshAll = ({ resetEdited = false }: { resetEdited?: boolean } = {}) => {
   const next = legs.value.map((leg) =>

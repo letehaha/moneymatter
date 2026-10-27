@@ -1,4 +1,4 @@
-import { type APIRequestContext, type Page, expect, test } from '@playwright/test';
+import { type APIRequestContext, type Locator, type Page, expect, test } from '@playwright/test';
 
 import {
   API_BASE_URL,
@@ -73,6 +73,14 @@ const openNewMultiAccountDialog = async ({ page }: { page: Page }) => {
 
 const option = ({ page, name }: { page: Page; name: string }) =>
   page.getByRole('option', { name: new RegExp(`^${name}`) });
+
+const linkCandidate = ({ picker, note }: { picker: Locator; note: string }) =>
+  picker
+    .locator('label, li, [role="option"], div')
+    .filter({ hasText: note })
+    .filter({ has: picker.page().getByRole('checkbox') })
+    .last()
+    .getByRole('checkbox');
 
 const countTransactions = async ({ api }: { api: APIRequestContext }) => {
   const res = await api.get(`${API_BASE_URL}/api/v1/transactions?limit=100`);
@@ -188,7 +196,6 @@ test.describe('Multi-account payments', () => {
   });
 
   test('global list (table view) shows the payment as one row with the total and an indicator', async ({ page }) => {
-    test.fail(true, 'Table view shows only the main part (-$10.10) with no multi-account indicator');
     await openGlobalList({ page, view: 'Table view' });
     const paymentRow = page.getByRole('row').filter({ hasText: MAIN });
 
@@ -293,15 +300,8 @@ test.describe('Multi-account payments', () => {
     expect(at('All transactions')).toBeLessThan(at(FAR_NOTE));
     expect(pickerText).not.toContain(INCOME_NOTE);
 
-    const candidate = (note: string) =>
-      picker
-        .locator('label, li, [role="option"], div')
-        .filter({ hasText: note })
-        .filter({ has: page.getByRole('checkbox') })
-        .last()
-        .getByRole('checkbox');
-    await candidate(NEAR_NOTE).click();
-    await candidate(SECOND_NEAR_NOTE).click();
+    await linkCandidate({ picker, note: NEAR_NOTE }).click();
+    await linkCandidate({ picker, note: SECOND_NEAR_NOTE }).click();
     await picker.getByRole('button', { name: 'Link 2 transactions' }).click();
     await expect(picker).toBeHidden();
     await expect(ui.accounts.nth(1)).toContainText('Select account');
@@ -389,7 +389,6 @@ test.describe('Multi-account payments', () => {
   });
 
   test('guard rail: an account already used by a part cannot be used again', async ({ page }) => {
-    test.fail(true, 'A second part on the same account is offered and saved');
     const ui = await openNewMultiAccountDialog({ page });
     await ui.amounts.nth(0).fill('2');
     await pickPartAccount({ page, nth: 1, name: SECOND });
@@ -405,7 +404,6 @@ test.describe('Multi-account payments', () => {
   });
 
   test('guard rail: no more than 4 parts can be added next to the main account', async ({ page }) => {
-    test.fail(true, '"Add account" stays enabled once the main plus 4 parts are filled');
     const ui = await openNewMultiAccountDialog({ page });
     const parts = [SECOND, THIRD, FOURTH, FIFTH];
 
@@ -420,22 +418,25 @@ test.describe('Multi-account payments', () => {
     await expect(ui.accounts).toHaveCount(rowsAtLimit);
   });
 
-  test('guard rail: a payment with more than 5 accounts cannot be saved', async ({ page }) => {
+  test('guard rail: linking existing transactions cannot go past 5 accounts', async ({ page }) => {
     const ui = await openNewMultiAccountDialog({ page });
-    const parts = [SECOND, THIRD, FOURTH, FIFTH, SIXTH];
-    for (let i = 1; i < parts.length; i++) await ui.addAccount.click();
-
-    const before = await countTransactions({ api });
-    await ui.amounts.nth(0).fill('1');
+    const parts = [SECOND, FOURTH, SIXTH];
     for (const [index, name] of parts.entries()) {
-      await ui.accounts.nth(index + 1).click();
-      if ((await option({ page, name }).count()) === 0) {
-        await page.keyboard.press('Escape');
-        continue;
-      }
-      await option({ page, name }).click();
-      await ui.amounts.nth(index + 1).fill('1');
+      if (index > 0) await ui.addAccount.click();
+      await pickPartAccount({ page, nth: index + 1, name });
     }
-    await expectSaveBlocked({ page, api, before });
+
+    await ui.linkExisting.click();
+    const picker = page.getByRole('dialog', { name: 'Link existing transactions' });
+    await expect(picker.getByText(NEAR_NOTE)).toBeVisible();
+    await linkCandidate({ picker, note: NEAR_NOTE }).click();
+    await picker.getByText(SECOND_NEAR_NOTE).first().click();
+    await expect(picker.getByRole('button', { name: 'Link 2 transactions' })).toHaveCount(0);
+    await picker.getByRole('button', { name: 'Link 1 transaction' }).click();
+    await expect(picker).toBeHidden();
+
+    await expect(ui.accounts.nth(parts.length + 1)).toContainText(THIRD);
+    await expect(ui.addAccount).toHaveCount(0);
+    await expect(ui.linkExisting).toHaveCount(0);
   });
 });
