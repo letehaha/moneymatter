@@ -10,6 +10,7 @@ import {
   snapshotOriginalTransactionState,
 } from '@services/common/transaction-linking';
 import { withTransaction } from '@services/common/with-transaction';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import Big from 'big.js';
 
 import { findVentureEventOrThrow } from '../helpers';
@@ -61,6 +62,7 @@ const linkTxsToEventImpl = async ({ userId, eventId, transactionIds }: LinkTxsTo
   for (const tx of txs) {
     await assertNotAlreadyLinked({ tx });
   }
+  await assertNotInPayment({ transactionIds });
 
   // Validate sum-of-amounts matches expected lpNetAmount (using absolute values
   // because tx amount sign depends on transactionType; the link records the

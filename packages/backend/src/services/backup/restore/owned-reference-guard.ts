@@ -58,7 +58,7 @@ function getOwnedTargetTableNames(): Set<string> {
 
 /**
  * The guarded FK columns for one `insert`-mode table: every attribute whose
- * `references` targets a user-owned table, PLUS the registry `selfRefColumn`
+ * `references` targets a user-owned table, PLUS the registry `selfRefColumns`
  * (Categories.parentId carries no `@ForeignKey`, so it only surfaces here).
  * `ownedTargets` is passed in so the map is built once per restore.
  */
@@ -88,11 +88,12 @@ function getGuardedFksForFileName({
   // Self-ref parent (Categories.parentId, AccountGroups.parentGroupId): the target
   // is the table itself. AccountGroups.parentGroupId also carries `references`, so
   // dedupe; Categories.parentId is metadata-invisible and only added here.
-  if (def.selfRefColumn && !seen.has(def.selfRefColumn)) {
-    const selfAttr = attrs[def.selfRefColumn] as { field?: string; allowNull?: boolean } | undefined;
+  for (const selfRefColumn of def.selfRefColumns ?? []) {
+    if (seen.has(selfRefColumn)) continue;
+    const selfAttr = attrs[selfRefColumn] as { field?: string; allowNull?: boolean } | undefined;
     guarded.push({
-      attrName: def.selfRefColumn,
-      field: selfAttr?.field ?? def.selfRefColumn,
+      attrName: selfRefColumn,
+      field: selfAttr?.field ?? selfRefColumn,
       targetTable: String(def.model.getTableName()),
       allowNull: selfAttr ? selfAttr.allowNull !== false : true,
     });

@@ -35,6 +35,7 @@ import {
   ProviderTransaction,
 } from '@services/bank-data-providers';
 import { createTransaction } from '@services/transactions';
+import { findIdsInPayments, syncLegsOfMains } from '@services/transactions/payment-legs';
 import { accountHasPlannedRows } from '@services/transactions/planned-matching';
 import { getExchangeRate } from '@services/user-exchange-rate/get-exchange-rate.service';
 import { getUserSettings } from '@services/user-settings/get-user-settings';
@@ -1074,6 +1075,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
 
               if (Object.keys(updates).length > 0) {
                 await existingTx.update(updates);
+                await syncLegsOfMains({ mainIds: [existingTx.id] });
                 updatedCount++;
               }
               if (pendingBecameBooked) {
@@ -1231,7 +1233,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
     // Ascending, so concurrent syncs of one account take the same `Balances` rows
     // in the same order. Map iteration would follow whatever order Postgres
     // returned, and these row locks are held until the sync transaction commits.
-    for (const bookingDate of [...rowsByBookingDate.keys()].sort()) {
+    for (const bookingDate of [...rowsByBookingDate.keys()].toSorted()) {
       const dayRows = rowsByBookingDate.get(bookingDate)!;
       const ladder: ClosingBalanceRow[] = [];
       const rowsById = new Map<string, Transactions>();
@@ -1981,7 +1983,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
         access: 'unscoped-internal',
         balanceAdjustments: 'include',
       });
-    // Each check is seven COUNT queries and the same pending row is offered to every
+    // Each check is eight queries and the same pending row is offered to every
     // booked row in its bucket; nothing inside this run can change the answer.
     const dependentRowsByTxId = new Map<RecordId, boolean>();
     const hasDependentRowsMemoized = async ({ tx }: { tx: Transactions }): Promise<boolean> => {
@@ -2181,6 +2183,7 @@ export class EnableBankingProvider extends BaseBankDataProvider {
   private async hasDependentRows({ tx }: { tx: Transactions }): Promise<boolean> {
     if (tx.transferId) return true;
     if (tx.refundLinked) return true;
+    if ((await findIdsInPayments({ transactionIds: [tx.id] })).length) return true;
 
     // Loaded lazily to avoid a circular import wave at module load.
     const TransactionTags = (await import('@models/transaction-tags.model')).default;

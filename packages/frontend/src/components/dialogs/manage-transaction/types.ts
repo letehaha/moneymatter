@@ -1,6 +1,6 @@
 import type { VerbosePaymentType } from '@/common/const';
 import type { FormattedCategory } from '@/common/types';
-import { AccountModel, CurrencyModel, PortfolioModel, TransactionModel } from '@bt/shared/types';
+import { AccountModel, CurrencyModel, PortfolioModel, RecordId, TransactionModel } from '@bt/shared/types';
 
 export enum FORM_TYPES {
   income = 'income',
@@ -31,6 +31,23 @@ export interface FormSplit {
   category: FormattedCategory | null;
   amount: number | null;
   note?: string | null;
+}
+
+/** A non-main account of a multi-account payment; the main share lives in `account` + `amount`. */
+export interface FormPaymentLeg {
+  /** Set for a saved part or a linked transaction; absent for a row the payment will create. */
+  transactionId?: RecordId;
+  account: AccountModel | null;
+  /** Saved leg's account id, kept so a leg whose account isn't loaded still counts as filled. */
+  accountId?: RecordId;
+  /** In the leg's own `currencyCode`. */
+  amount: number | null;
+  currencyCode?: string;
+  /** The leg's share in the main account's currency; used only when the currencies differ. */
+  paymentAmount?: number | null;
+  /** An existing transaction linked in: its account and amount can't change here. */
+  isLinked?: boolean;
+  isPaymentAmountEdited?: boolean;
 }
 
 export interface UI_FORM_STRUCT {
@@ -67,6 +84,8 @@ export interface UI_FORM_STRUCT {
   originalAmount?: number | null;
   /** Any ISO currency, not only the user's linked ones. Sent to the API as its `code`. */
   originalCurrency?: CurrencyModel | null;
+  /** Set while the form is in multi-account mode; `undefined` = single account. */
+  paymentLegs?: FormPaymentLeg[];
 }
 
 /** Creation-mode starting values. */
@@ -89,5 +108,6 @@ export type TransactionPrefill = Pick<UI_FORM_STRUCT, 'type' | 'account' | 'amou
       | 'externalUrl'
       | 'originalAmount'
       | 'originalCurrency'
+      | 'paymentLegs'
     >
   >;

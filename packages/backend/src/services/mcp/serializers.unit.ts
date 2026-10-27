@@ -77,6 +77,7 @@ const fullTransaction: TransactionApiResponse = {
   payeeId: null,
   payeeLocked: false,
   categorizationMeta: null,
+  paymentParentId: null,
   createdAt: new Date('2026-01-01T10:00:00.000Z'),
   updatedAt: new Date('2026-01-02T10:00:00.000Z'),
   tags: [{ id: 'tag-1', name: 'food', color: '#fff', icon: 'cup' }],

@@ -9,7 +9,7 @@
             'dark:bg-foreground dark:text-background text-foreground bg-white shadow-sm',
         )
       "
-      :disabled="disabled || isExpenseDisabled"
+      :disabled="disabled || isExpenseDisabled || isLockedOut({ type: FORM_TYPES.expense })"
       :aria-label="t('dialogs.manageTransaction.typeSelector.selectExpense')"
       :aria-pressed="selectedTransactionType === FORM_TYPES.expense"
       @click="selectTransactionType(FORM_TYPES.expense)"
@@ -25,7 +25,7 @@
             'dark:bg-foreground dark:text-background text-foreground bg-white shadow-sm',
         )
       "
-      :disabled="disabled || isIncomeDisabled"
+      :disabled="disabled || isIncomeDisabled || isLockedOut({ type: FORM_TYPES.income })"
       :aria-label="t('dialogs.manageTransaction.typeSelector.selectIncome')"
       :aria-pressed="selectedTransactionType === FORM_TYPES.income"
       @click="selectTransactionType(FORM_TYPES.income)"
@@ -41,7 +41,7 @@
             'dark:bg-foreground dark:text-background text-foreground bg-white shadow-sm',
         )
       "
-      :disabled="disabled || isTransferDisabled"
+      :disabled="disabled || isTransferDisabled || isLockedOut({ type: FORM_TYPES.transfer })"
       :aria-label="t('dialogs.manageTransaction.typeSelector.selectTransfer')"
       :aria-pressed="selectedTransactionType === FORM_TYPES.transfer"
       @click="selectTransactionType(FORM_TYPES.transfer)"
@@ -68,7 +68,12 @@ const props = defineProps<{
   disabled?: boolean;
   /** Planned rows must stay standalone, so transfer is off the table while the mode is on. */
   isTransferDisabled?: boolean;
+  /** Only the selected type stays enabled. */
+  isTypeLocked?: boolean;
 }>();
+
+const isLockedOut = ({ type }: { type: FORM_TYPES }) =>
+  Boolean(props.isTypeLocked) && props.selectedTransactionType !== type;
 
 const emit = defineEmits<{
   'change-tx-type': [value: FORM_TYPES];

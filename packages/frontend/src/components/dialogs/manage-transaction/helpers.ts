@@ -14,6 +14,7 @@ import {
 
 import type { TransferDestinationType } from './composables/transfer-form';
 import { FORM_TYPES, type FormSplit, UI_FORM_STRUCT } from './types';
+import { hasPaymentParts, paymentPartsToFormLegs } from './utils/payment-legs';
 
 export const getDestinationAccount = ({
   isRecordExternal,
@@ -242,6 +243,14 @@ export const prepopulateForm = ({
           note: split.note,
         }),
       );
+    }
+
+    if (hasPaymentParts({ transaction })) {
+      initialFormValues.paymentLegs = paymentPartsToFormLegs({
+        parts: transaction.paymentParts!,
+        mainTransactionId: transaction.id,
+        accounts,
+      });
     }
 
     if (transaction.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet) {

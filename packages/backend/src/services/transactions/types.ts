@@ -3,6 +3,7 @@ import type { TransactionLocation } from '@bt/shared/types';
 import { Money } from '@common/types/money';
 import * as Transactions from '@models/transactions.model';
 
+import type { PaymentLegParam } from './payment-legs';
 import { SplitInput } from './splits/types';
 
 export type CreateTransactionParams = Omit<
@@ -51,6 +52,8 @@ export type CreateTransactionParams = Omit<
    * entry is never overridden; API integrations posting bank data opt in per request.
    */
   applyAutomations?: boolean;
+  /** The other accounts of a multi-account payment; the main row keeps `accountId` and `amount`. */
+  paymentLegs?: PaymentLegParam[];
 };
 
 interface UpdateParams {
@@ -78,6 +81,8 @@ interface UpdateParams {
   /** `null` clears the stored metadata; both fields move together. */
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
+  /** Full replacement of the payment's other accounts; `null` drops them, absent keeps them. */
+  paymentLegs?: PaymentLegParam[] | null;
 }
 
 interface UpdateTransferParams {

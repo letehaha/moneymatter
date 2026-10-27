@@ -156,9 +156,19 @@ export interface TransactionsAttributes {
   categorizationMeta: CategorizationMeta | null;
   payeeId: string | null;
   payeeLocked: boolean;
+  paymentParentId: string | null;
+  paymentAmount: Money | null;
+  paymentLinkSnapshot: PaymentLinkSnapshot | null;
   createdAt: Date;
   updatedAt: Date;
 }
+
+/** The fields an existing row takes from the main row when linked into a payment (plus its tags). */
+export const PAYMENT_LINK_FIELDS = ['categoryId', 'payeeId', 'payeeLocked', 'note', 'categorizationMeta'] as const;
+
+export type PaymentLinkFields = Pick<TransactionsAttributes, (typeof PAYMENT_LINK_FIELDS)[number]>;
+
+export type PaymentLinkSnapshot = PaymentLinkFields & { tagIds: string[] };
 
 @Table({
   timestamps: true,
@@ -362,6 +372,19 @@ export default class Transactions extends Model {
 
   @Column({ allowNull: true, type: DataType.UUID })
   mergedIntoId!: RecordId | null;
+
+  // Set on the extra rows of a multi-account payment. No `@ForeignKey`, same as
+  // `mergedIntoId`: backup restore relinks it through the registry's self-ref pass.
+  @Column({ allowNull: true, type: DataType.UUID })
+  paymentParentId!: RecordId | null;
+
+  // The row's share in the main row's currency; null when both currencies match.
+  @MoneyField({ storage: 'cents', allowNull: true })
+  declare paymentAmount: Money | null;
+
+  // A linked row's own values from before the link, restored on unlink. Null on rows the payment created.
+  @Column({ allowNull: true, type: DataType.JSONB })
+  paymentLinkSnapshot!: PaymentLinkSnapshot | null;
 
   // Managed by Sequelize (timestamps: true)
   declare createdAt: Date;
@@ -801,8 +824,15 @@ function buildRefundCondition(filter: FILTER_OPERATION | undefined): Record<stri
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// A required include can't express "in none", so the blank case is a correlated subquery.
 // Ids are interpolated into raw SQL, so the UUID check is what keeps it injection-safe.
+function toSqlIdList({ ids, paramName }: { ids: string[]; paramName: string }) {
+  if (ids.some((id) => !UUID_PATTERN.test(id))) {
+    throw new ValidationError({ message: `"${paramName}" must contain valid record ids` });
+  }
+  return ids.map((id) => `'${id}'`).join(', ');
+}
+
+// A required include can't express "in none", so the blank case is a correlated subquery.
 function buildNoneOrAnyJunctionCondition({
   ids,
   paramName,
@@ -816,13 +846,11 @@ function buildNoneOrAnyJunctionCondition({
   alias: string;
   column: string;
 }) {
-  if (ids.some((id) => !UUID_PATTERN.test(id))) {
-    throw new ValidationError({ message: `"${paramName}" must contain valid record ids` });
-  }
+  const idList = toSqlIdList({ ids, paramName });
   const junction = `SELECT 1 FROM "${junctionTable}" ${alias} WHERE ${alias}."transactionId" = "Transactions"."id"`;
   const inNone = `NOT EXISTS (${junction})`;
   if (!ids.length) return literal(inNone);
-  const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${ids.map((id) => `'${id}'`).join(', ')}))`;
+  const inAny = `EXISTS (${junction} AND ${alias}."${column}" IN (${idList}))`;
   return literal(`(${inNone} OR ${inAny})`);
 }
 
@@ -836,6 +864,13 @@ function buildExcludeRefundTxsCondition({ keepRefundsForTxId }: { keepRefundsFor
   const keepClause = keepRefundsForTxId ? ` AND rt."originalTxId" IS DISTINCT FROM '${keepRefundsForTxId}'` : '';
   return literal(
     `NOT EXISTS (SELECT 1 FROM "RefundTransactions" rt WHERE rt."refundTxId" = "Transactions"."id"${keepClause})`,
+  );
+}
+
+function buildExcludePaymentLegsCondition({ mainAccountIds }: { mainAccountIds: string[] }) {
+  const ids = toSqlIdList({ ids: mainAccountIds, paramName: 'accountIds' });
+  return literal(
+    `("Transactions"."paymentParentId" IS NULL OR NOT EXISTS (SELECT 1 FROM "Transactions" pm WHERE pm."id" = "Transactions"."paymentParentId" AND pm."deletedAt" IS NULL AND pm."accountId" IN (${ids})))`,
   );
 }
 
@@ -868,6 +903,7 @@ export const findWithFilters = async ({
   keepRefundsForTxId,
   hasAttachment,
   includeHasAttachments,
+  excludePaymentLegsWithMainIn,
   transferFilter,
   refundFilter,
   startDate,
@@ -929,6 +965,9 @@ export const findWithFilters = async ({
   /** Adds a `hasAttachments` boolean to every row. Costs an EXISTS subquery per row, so
    *  only the user-facing list asks for it. */
   includeHasAttachments?: boolean;
+  /** Account ids: drops a multi-account payment's legs whose main row sits on one of
+   *  them, leaving the main row to stand for the whole payment. */
+  excludePaymentLegsWithMainIn?: string[];
   transferFilter?: FILTER_OPERATION;
   refundFilter?: FILTER_OPERATION;
   startDate?: string;
@@ -1004,6 +1043,10 @@ export const findWithFilters = async ({
 
   if (excludeRefundTxs) {
     pushAndCondition(buildExcludeRefundTxsCondition({ keepRefundsForTxId }));
+  }
+
+  if (excludePaymentLegsWithMainIn?.length) {
+    pushAndCondition(buildExcludePaymentLegsCondition({ mainAccountIds: excludePaymentLegsWithMainIn }));
   }
 
   if (hasAttachment !== undefined) {
@@ -1398,6 +1441,8 @@ type CreateTxOptionalParams = Partial<
     | 'isPlanned'
     | 'originalAmount'
     | 'originalCurrencyCode'
+    | 'paymentParentId'
+    | 'paymentAmount'
   >
 >;
 
@@ -1440,6 +1485,9 @@ export interface UpdateTransactionByIdParams {
   originalAmount?: Money | null;
   originalCurrencyCode?: string | null;
   externalData?: TransactionsAttributes['externalData'];
+  paymentParentId?: string | null;
+  paymentAmount?: Money | null;
+  paymentLinkSnapshot?: PaymentLinkSnapshot | null;
 }
 
 export const updateTransactionById = async (

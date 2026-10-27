@@ -66,8 +66,10 @@ export interface BackupTableDef<Name extends string = BackupFileName> {
   fields?: readonly string[];
   /** Soft-delete model — dumped with `paranoid: false` so trash travels too. */
   paranoid?: boolean;
-  /** Self-referential parent column needing the two-pass restore. */
-  selfRefColumn?: string;
+  /** Self-referential parent columns needing the two-pass restore. */
+  selfRefColumns?: readonly string[];
+  /** Per self-ref column: values written to a row whose parent did not restore. */
+  selfRefOrphanValues?: Record<string, Record<string, unknown>>;
   /** Encrypted blob to blank before writing (undecryptable on another instance). */
   stripSecret?: 'bankCredentials' | 'aiKeys';
   /** Drop a row on restore whose `currencyCode` isn't seeded on the target instance. */
@@ -116,7 +118,7 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    selfRefColumn: 'parentId',
+    selfRefColumns: ['parentId'],
   },
   {
     fileName: 'tags',
@@ -175,7 +177,7 @@ const TABLE_DEFS = [
     tier: 2,
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
-    selfRefColumn: 'parentGroupId',
+    selfRefColumns: ['parentGroupId'],
   },
   {
     fileName: 'transaction-automations',
@@ -318,7 +320,8 @@ const TABLE_DEFS = [
     scope: { strategy: 'userColumn', column: 'userId' },
     restoreMode: 'insert',
     paranoid: true,
-    selfRefColumn: 'mergedIntoId',
+    selfRefColumns: ['mergedIntoId', 'paymentParentId'],
+    selfRefOrphanValues: { paymentParentId: { paymentAmount: null, paymentLinkSnapshot: null } },
   },
   {
     fileName: 'balances',

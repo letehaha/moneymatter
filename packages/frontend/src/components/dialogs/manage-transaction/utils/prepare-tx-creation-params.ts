@@ -15,6 +15,7 @@ import {
   resolveOriginalCurrencyPair,
 } from '../helpers';
 import { type FormSplit, UI_FORM_STRUCT } from '../types';
+import { formLegsToPaymentLegs } from './payment-legs';
 import { resolveFormLocation } from './resolve-form-location';
 
 /**
@@ -117,6 +118,12 @@ export const prepareTxCreationParams = ({
       creationParams.originalAmount = originalPair.originalAmount;
       creationParams.originalCurrencyCode = originalPair.originalCurrencyCode;
     }
+
+    const paymentLegs = formLegsToPaymentLegs({
+      legs: form.paymentLegs ?? [],
+      mainCurrencyCode: form.account?.currencyCode,
+    });
+    if (paymentLegs.length) creationParams.paymentLegs = paymentLegs;
   }
 
   // Handle transfer_out_wallet

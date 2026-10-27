@@ -7,6 +7,7 @@ import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 import { deleteTransaction } from './delete-transaction';
+import { isLinkedLeg } from './payment-legs';
 
 /** Each row is deleted one by one inside a single DB transaction, so a request stays bounded. */
 const MAX_BULK_DELETE = 500;
@@ -36,7 +37,8 @@ interface BulkDeleteResult {
  * Each row goes through `deleteTransaction`, which handles per-row write
  * authorization, transfer-pair cleanup, refund unlinking, and portfolio
  * transfer reversal. When a common-transfer leg is deleted its twin goes with
- * it, so a twin that was also selected is skipped instead of failing with 404.
+ * it, so a twin that was also selected is skipped instead of failing with 404. The same
+ * goes for a payment's created rows whose main row was selected.
  */
 const bulkDeleteImpl = async ({
   userId,
@@ -51,13 +53,15 @@ const bulkDeleteImpl = async ({
 
   const rows = (await Transactions.default.findAll({
     where: { id: { [Op.in]: uniqueIds }, userId },
-    attributes: ['id', 'accountId', 'transferId', 'isPlanned'],
+    attributes: ['id', 'accountId', 'transferId', 'isPlanned', 'paymentParentId', 'paymentLinkSnapshot'],
     raw: true,
   })) as unknown as Array<{
     id: string;
     accountId: string;
     transferId: string | null;
     isPlanned: boolean;
+    paymentParentId: string | null;
+    paymentLinkSnapshot: Transactions.PaymentLinkSnapshot | null;
   }>;
 
   if (rows.length === 0) {
@@ -83,8 +87,14 @@ const bulkDeleteImpl = async ({
   const deletedIds: string[] = [];
   const deletedTransferIds = new Set<string>();
 
+  const selectedIds = new Set(rows.map((row) => row.id));
+
   for (const row of rows) {
     if (row.transferId && deletedTransferIds.has(row.transferId)) continue;
+    if (row.paymentParentId && !isLinkedLeg(row) && selectedIds.has(row.paymentParentId)) {
+      deletedIds.push(row.id);
+      continue;
+    }
 
     await deleteTransaction({ id: row.id, userId });
     deletedIds.push(row.id);

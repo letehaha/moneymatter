@@ -115,8 +115,14 @@
           :model-value="account"
           @update:model-value="updateFormAccount"
         >
-          <template v-if="$slots['account-label-right'] && !$slots['account-field-right']" #label-right>
-            <slot name="account-label-right" />
+          <template
+            v-if="$slots['account-label-pill'] || ($slots['account-label-right'] && !$slots['account-field-right'])"
+            #label-right
+          >
+            <div class="flex items-center gap-2">
+              <slot name="account-label-pill" />
+              <slot v-if="!$slots['account-field-right']" name="account-label-right" />
+            </div>
           </template>
           <template v-if="$slots['account-field-right']" #field-right>
             <slot name="account-field-right" />

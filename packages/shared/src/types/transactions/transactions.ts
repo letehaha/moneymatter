@@ -174,6 +174,12 @@ export interface TransactionModel {
    *  typically via a tracker share – but not editable. Absent on write-result payloads
    *  and internal fetches; absent ⇒ "unknown / fall back to opportunistic UI". */
   canEdit?: boolean;
+  /** Set on the legs of a multi-account payment (every row but the main); points at its main row. */
+  paymentParentId?: RecordId | null;
+  /** List and detail reads: every row of the multi-account payment this row is part of, main first. */
+  paymentParts?: TransactionPaymentPart[];
+  /** Lists that hide the legs: the main row stands for the whole payment, and this is its sum. */
+  paymentTotal?: number;
   /** Timestamp when the record was created (defaults to transaction time for existing records) */
   createdAt: Date;
   /** Timestamp when the record was last updated */
@@ -224,6 +230,32 @@ export interface SplitInput {
   note?: string | null;
 }
 
+/**
+ * One row of a multi-account payment. `amount` is in the row's own `currencyCode`;
+ * `paymentAmount` is its share in the main row's currency. `isLinked` marks an existing
+ * transaction that was linked in, as opposed to a row the payment created.
+ */
+export interface TransactionPaymentPart {
+  transactionId: RecordId;
+  accountId: RecordId;
+  amount: number;
+  currencyCode: string;
+  paymentAmount: number;
+  isLinked: boolean;
+}
+
+/**
+ * The other rows of a multi-account payment; the main row keeps `accountId` and `amount`.
+ * With `transactionId` it names an existing row: a current part, or a transaction to link
+ * (whose `amount` can't change). Without it a new row is created on `accountId`.
+ * `paymentAmount` (main row's currency) is required when the row's currency differs from the main's.
+ */
+export type PaymentLegInput =
+  | { transactionId: RecordId; accountId?: never; amount?: number; paymentAmount?: number }
+  | { transactionId?: never; accountId: RecordId; amount: number; paymentAmount?: number };
+
+export const MAX_PAYMENT_LEGS = 4;
+
 export interface CreateTransactionBody {
   amount: TransactionModel['amount'];
   note?: TransactionModel['note'];
@@ -258,6 +290,7 @@ export interface CreateTransactionBody {
   originalAmount?: number;
   /** Any ISO 4217 code; it does not have to be connected to the user. */
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegInput[];
 }
 
 export interface UpdateTransactionBody {
@@ -294,6 +327,8 @@ export interface UpdateTransactionBody {
   /** Send both fields as `null` to clear the pair. */
   originalAmount?: number | null;
   originalCurrencyCode?: string | null;
+  /** Replaces the payment's other accounts; `null` or `[]` turns it back into a single-account row. */
+  paymentLegs?: PaymentLegInput[] | null;
 }
 
 export const BULK_UPDATE_TAG_MODES = ['add', 'replace', 'remove'] as const;

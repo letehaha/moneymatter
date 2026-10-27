@@ -6,7 +6,13 @@
  * Deserializers convert API decimal inputs to Money.
  */
 import { PAYMENT_TYPES, TRANSACTION_TRANSFER_NATURE, TRANSACTION_TYPES } from '@bt/shared/types';
-import type { CategorizationMeta, RecordId, TransactionLocation } from '@bt/shared/types';
+import type {
+  CategorizationMeta,
+  PaymentLegInput,
+  RecordId,
+  TransactionLocation,
+  TransactionPaymentPart,
+} from '@bt/shared/types';
 import { Money, centsToApiDecimal, centsToApiDecimalOrNull } from '@common/types/money';
 import type Tags from '@models/tags.model';
 import type TransactionGroups from '@models/transaction-groups.model';
@@ -16,6 +22,7 @@ import {
   getRawTransactionStatus,
   isPreBookingStatus,
 } from '@services/bank-data-providers/enablebanking/utils/transaction-metadata';
+import type { PaymentLegParam, PaymentPart } from '@services/transactions/payment-legs';
 
 // ============================================================================
 // Response Types
@@ -102,6 +109,11 @@ export interface TransactionApiResponse {
    *  on the parent account. Absent on paths that don't compute it (single-tx writes,
    *  internal fetches). */
   canEdit?: boolean;
+  paymentParentId: string | null;
+  /** List and detail reads: every row of the multi-account payment, main first. */
+  paymentParts?: TransactionPaymentPart[];
+  /** Lists that hide the legs: the whole payment's sum, on its main row. */
+  paymentTotal?: number;
 }
 
 // ============================================================================
@@ -138,6 +150,7 @@ interface CreateTransactionRequest {
   applyAutomations?: boolean;
   originalAmount?: number; // decimal from API
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegInput[];
 }
 
 // ============================================================================
@@ -176,6 +189,7 @@ interface CreateTransactionInternal {
   applyAutomations?: boolean;
   originalAmount?: Money;
   originalCurrencyCode?: string;
+  paymentLegs?: PaymentLegParam[];
 }
 
 // ============================================================================
@@ -221,6 +235,8 @@ export function serializeTransaction(
     addedBy?: { id: number; username: string; avatar: string | null } | null;
     addedByRule?: boolean;
     canEdit?: boolean;
+    paymentParts?: PaymentPart[];
+    paymentTotal?: Money;
   },
 ): TransactionApiResponse {
   // Aliased literal: a plain property on raw rows, dataValues-only on model instances.
@@ -259,6 +275,7 @@ export function serializeTransaction(
     payeeId: tx.payeeId ?? null,
     payeeLocked: tx.payeeLocked ?? false,
     categorizationMeta: tx.categorizationMeta ?? null,
+    paymentParentId: tx.paymentParentId ?? null,
     createdAt: tx.createdAt,
     updatedAt: tx.updatedAt,
     ...(tx.splits && {
@@ -299,6 +316,14 @@ export function serializeTransaction(
     // fetches). Property-existence check so an explicit `false` survives serialization.
     ...('canEdit' in tx ? { canEdit: tx.canEdit ?? false } : {}),
     ...(hasAttachments !== undefined && { hasAttachments }),
+    ...(tx.paymentParts && {
+      paymentParts: tx.paymentParts.map((part) => ({
+        ...part,
+        amount: centsToApiDecimal(part.amount),
+        paymentAmount: centsToApiDecimal(part.paymentAmount),
+      })),
+    }),
+    ...(tx.paymentTotal && { paymentTotal: centsToApiDecimal(tx.paymentTotal) }),
   };
 }
 
@@ -314,6 +339,8 @@ export function serializeTransactions(
       addedBy?: { id: number; username: string; avatar: string | null } | null;
       addedByRule?: boolean;
       canEdit?: boolean;
+      paymentParts?: PaymentPart[];
+      paymentTotal?: Money;
     }
   >,
 ): TransactionApiResponse[] {
@@ -370,5 +397,18 @@ export function deserializeCreateTransaction(req: CreateTransactionRequest, user
     applyAutomations: req.applyAutomations,
     originalAmount: req.originalAmount !== undefined ? Money.fromDecimal(req.originalAmount) : undefined,
     originalCurrencyCode: req.originalCurrencyCode,
+    paymentLegs: req.paymentLegs && deserializePaymentLegs({ legs: req.paymentLegs }),
   };
 }
+
+export const deserializePaymentLegs = ({ legs }: { legs: PaymentLegInput[] }): PaymentLegParam[] =>
+  legs.map((leg) => {
+    const paymentAmount = leg.paymentAmount !== undefined ? Money.fromDecimal(leg.paymentAmount) : undefined;
+    return leg.accountId === undefined
+      ? {
+          transactionId: leg.transactionId,
+          amount: leg.amount !== undefined ? Money.fromDecimal(leg.amount) : undefined,
+          paymentAmount,
+        }
+      : { accountId: leg.accountId, amount: Money.fromDecimal(leg.amount), paymentAmount };
+  });

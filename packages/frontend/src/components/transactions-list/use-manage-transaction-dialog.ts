@@ -1,3 +1,7 @@
+import { loadTransactionById } from '@/api/transactions';
+import { useNotificationCenter } from '@/components/notification-center';
+import { i18n } from '@/i18n';
+import { captureException } from '@/lib/sentry';
 import { useAccountsStore } from '@/stores';
 import {
   isTwoLegTransfer,
@@ -31,6 +35,7 @@ interface LoanDialogProps {
  */
 export function useManageTransactionDialog() {
   const { accountsRecord } = storeToRefs(useAccountsStore());
+  const { addErrorNotification } = useNotificationCenter();
 
   const isDialogVisible = ref(false);
   const dialogProps = ref<DialogProps>({
@@ -88,10 +93,32 @@ export function useManageTransactionDialog() {
     return true;
   };
 
+  let isOpeningPaymentMain = false;
+  // A multi-account payment is only editable through its main row.
+  const openPaymentMain = async ({ mainId }: { mainId: string }) => {
+    if (isOpeningPaymentMain) return;
+    isOpeningPaymentMain = true;
+    const notifyLoadError = () => addErrorNotification(i18n.global.t('common.transactions.record.payment.loadError'));
+    try {
+      const main = await loadTransactionById({ id: mainId });
+      if (main) handleRecordClick([main, undefined]);
+      else notifyLoadError();
+    } catch (error) {
+      notifyLoadError();
+      captureException({ error, context: { source: 'openPaymentMain', transactionId: mainId } });
+    } finally {
+      isOpeningPaymentMain = false;
+    }
+  };
+
   const handleRecordClick = ([baseTx, oppositeTx]: [
     baseTx: TransactionModel,
     oppositeTx: TransactionModel | undefined,
   ]) => {
+    if (baseTx.paymentParentId) {
+      void openPaymentMain({ mainId: baseTx.paymentParentId });
+      return;
+    }
     if (tryRouteToLoanDialog(baseTx, oppositeTx)) return;
 
     const isBaseExternal = isAccountExternal(baseTx);

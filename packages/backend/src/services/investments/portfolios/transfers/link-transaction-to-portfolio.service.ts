@@ -8,6 +8,7 @@ import Portfolios from '@models/investments/portfolios.model';
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@services/common/with-transaction';
 import { updatePortfolioBalance } from '@services/investments/portfolios/balances';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { format } from 'date-fns';
 
 import { computeRestampForExistingTransaction, findPortfolioOrThrow, negateAmount } from './transfer-validations';
@@ -52,6 +53,7 @@ const linkTransactionToPortfolioImpl = async ({
     });
   }
 
+  await assertNotInPayment({ transactionIds: [transactionId] });
   await findPortfolioOrThrow({ portfolioId, userId, role: 'generic' });
 
   const amount = tx.amount.toDecimalString(10);

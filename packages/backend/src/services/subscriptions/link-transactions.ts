@@ -35,6 +35,11 @@ export const linkTransactionsToSubscription = withTransaction(
       throw new NotFoundError({ message: t({ key: 'subscriptions.transactionsNotFoundOrNotBelongToUser' }) });
     }
 
+    // A leg copies its main row, so the main is the one to link.
+    if (txs.some((tx) => tx.paymentParentId)) {
+      throw new ValidationError({ message: t({ key: 'transactions.inPaymentNotAllowed' }) });
+    }
+
     const typeMismatches = txs.filter((tx) => tx.transactionType !== subscription.transactionType);
     if (typeMismatches.length > 0) {
       throw new ValidationError({

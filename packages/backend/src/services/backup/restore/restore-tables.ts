@@ -101,7 +101,7 @@ async function insertTable({
 }): Promise<number> {
   if (rows.length === 0) return 0;
 
-  const selfRefColumn = def.selfRefColumn;
+  const selfRefColumns = def.selfRefColumns ?? [];
   const targetTable = String(def.model.getTableName());
   let ownMap = ctx.insertedIds.get(targetTable);
   if (!ownMap) {
@@ -141,10 +141,10 @@ async function insertTable({
     }
   }
 
-  // The self-ref column is validated in the second pass, not here — exclude it.
-  const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => fk.attrName !== selfRefColumn);
+  // Self-ref columns are validated in the second pass, not here — exclude them.
+  const guardedFks = (ctx.guardedFkMap.get(def.fileName) ?? []).filter((fk) => !selfRefColumns.includes(fk.attrName));
 
-  const secondPass: Array<{ finalId: string; oldParent: unknown }> = [];
+  const secondPass: Array<{ column: string; finalId: string; oldParent: unknown }> = [];
   const records: Row[] = [];
 
   // Tally dropped rows so each reason becomes one aggregated warning (with a total
@@ -196,9 +196,10 @@ async function insertTable({
       overrides.id = finalId;
     }
 
-    if (selfRefColumn && row[selfRefColumn] != null && finalId != null) {
-      secondPass.push({ finalId, oldParent: row[selfRefColumn] });
-      overrides[selfRefColumn] = null;
+    for (const column of selfRefColumns) {
+      if (row[column] == null || finalId == null) continue;
+      secondPass.push({ column, finalId, oldParent: row[column] });
+      overrides[column] = null;
     }
 
     records.push(buildInsertRecord({ row, plan, overrides }));
@@ -227,15 +228,16 @@ async function insertTable({
 
   const inserted = await runBulkInsert({ model: def.model, records, transaction: ctx.transaction });
 
-  if (selfRefColumn && secondPass.length) {
+  for (const selfRefColumn of selfRefColumns) {
     // Repoint each child at its parent's final id; a parent outside this table's
     // own remapped ids (forged, or dropped upstream) stays null.
     const byParent = new Map<string, string[]>();
-    let selfRefNulled = 0;
-    for (const { finalId, oldParent } of secondPass) {
+    const orphanIds: string[] = [];
+    for (const { column, finalId, oldParent } of secondPass) {
+      if (column !== selfRefColumn) continue;
       const mappedParent = ownMap.get(String(oldParent));
       if (mappedParent === undefined) {
-        selfRefNulled += 1;
+        orphanIds.push(finalId);
         continue;
       }
       const bucket = byParent.get(mappedParent);
@@ -248,12 +250,20 @@ async function insertTable({
         { where: { id: ids }, transaction: ctx.transaction, paranoid: false },
       );
     }
-    if (selfRefNulled > 0) {
+    if (orphanIds.length) {
+      const orphanValues = def.selfRefOrphanValues?.[selfRefColumn];
+      if (orphanValues) {
+        await def.model.update(orphanValues, {
+          where: { id: orphanIds },
+          transaction: ctx.transaction,
+          paranoid: false,
+        });
+      }
       ctx.warnings.push({
         code: 'foreign_reference_nulled',
         table: def.fileName,
         column: selfRefColumn,
-        count: selfRefNulled,
+        count: orphanIds.length,
       });
     }
   }

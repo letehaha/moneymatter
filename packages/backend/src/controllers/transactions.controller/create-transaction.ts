@@ -7,6 +7,7 @@ import { z } from 'zod';
 
 import {
   nonNegativeAmountSchema,
+  paymentLegsSchema,
   positiveAmountSchema,
   splitSchema,
   transactionDetailFieldsSchema,
@@ -39,6 +40,7 @@ const schema = z.object({
       applyAutomations: z.boolean().optional().default(false),
       originalAmount: nonNegativeAmountSchema().optional(),
       originalCurrencyCode: currencyCode().optional(),
+      paymentLegs: paymentLegsSchema.optional(),
     })
     .refine(
       (data) =>

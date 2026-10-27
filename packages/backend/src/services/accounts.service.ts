@@ -40,6 +40,7 @@ import {
 } from '@services/sharing/get-shared-accounts.service';
 import { convertCrossUserTransfersForAccountIds } from '@services/sharing/household/convert-cross-user-transfers.service';
 import { pauseAutomationsReferencing } from '@services/transaction-automations/references';
+import { unlinkPaymentLegsOfAccounts } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 import { absorbBalanceAdjustment } from './accounts/absorb-balance-adjustment';
@@ -550,6 +551,8 @@ const deleteAccountByIdInTx = withTransaction(
     if (removePortfolioTransfers) {
       await removePortfolioTransfersForAccounts({ userId, accountIds: [id] });
     }
+
+    await unlinkPaymentLegsOfAccounts({ userId, accountIds: [id] });
 
     const affectedRows = await Accounts.deleteAccountById({ id, userId });
     if (affectedRows === 0) {

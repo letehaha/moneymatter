@@ -1,3 +1,4 @@
+import { MAX_PAYMENT_LEGS } from '@bt/shared/types';
 import { recordId } from '@common/lib/zod/custom-types';
 import { z } from 'zod';
 
@@ -28,6 +29,25 @@ export const splitSchema = z.object({
   amount: positiveAmountSchema(),
   note: z.string().max(100, 'Split note must not exceed 100 characters').nullish(),
 });
+
+const paymentLegSchema = z.union([
+  z
+    .object({
+      transactionId: recordId(),
+      amount: positiveAmountSchema().optional(),
+      paymentAmount: positiveAmountSchema().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      accountId: recordId(),
+      amount: positiveAmountSchema(),
+      paymentAmount: positiveAmountSchema().optional(),
+    })
+    .strict(),
+]);
+
+export const paymentLegsSchema = z.array(paymentLegSchema).max(MAX_PAYMENT_LEGS);
 
 export const locationSchema = z.object({
   latitude: z.number().min(-90).max(90),

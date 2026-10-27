@@ -14,6 +14,7 @@ import {
   notifyAccountDeleteRecipients,
 } from '@services/sharing/cleanup/cleanup-account-shares.service';
 import { pauseAutomationsReferencing } from '@services/transaction-automations/references';
+import { unlinkPaymentLegsOfAccounts } from '@services/transactions/payment-legs';
 
 import { bankProviderRegistry } from '../registry';
 
@@ -79,6 +80,7 @@ const disconnectProviderInTx = withTransaction(
       }
 
       await removePortfolioTransfersForAccounts({ userId, accountIds: linkedAccounts.map((account) => account.id) });
+      await unlinkPaymentLegsOfAccounts({ userId, accountIds: linkedAccounts.map((account) => account.id) });
 
       await Accounts.destroy({
         where: {

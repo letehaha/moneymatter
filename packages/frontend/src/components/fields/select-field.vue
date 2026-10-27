@@ -39,6 +39,7 @@ const props = withDefaults(
     required?: boolean;
     /** Lists the matching options first under their own label; a search shows one flat list. */
     pinnedGroup?: SelectPinnedGroup<T>;
+    triggerClass?: string;
   }>(),
   {
     placeholder: undefined,
@@ -53,6 +54,7 @@ const props = withDefaults(
     clearable: false,
     required: false,
     pinnedGroup: undefined,
+    triggerClass: undefined,
   },
 );
 
@@ -173,7 +175,7 @@ watch(
     <div :class="cn($slots['field-right'] && 'flex items-stretch')">
       <Select.Select v-model="selectedKey" :open="isOpen" :disabled="disabled" @update:open="onOpenChange">
         <Select.SelectTrigger
-          :class="cn('w-full', $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0')"
+          :class="cn('w-full', $slots['field-right'] && 'min-w-0 flex-1 rounded-r-none border-r-0', triggerClass)"
           :aria-required="required || undefined"
         >
           <Select.SelectValue class="min-w-0 flex-1" :placeholder="placeholder ?? t('fields.select.selectOption')">

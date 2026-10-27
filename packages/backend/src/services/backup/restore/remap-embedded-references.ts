@@ -26,7 +26,7 @@ import Trackers from '@models/trackers.model';
 import TransactionAutomations from '@models/transaction-automations.model';
 import Transactions from '@models/transactions.model';
 import VentureEventLinks from '@models/venture/venture-event-links.model';
-import { Model, type ModelStatic, type Transaction } from 'sequelize';
+import { Model, type ModelStatic, Op, type Transaction, type WhereOptions } from 'sequelize';
 
 import type { BackupFileName } from '../registry';
 import type { ParsedArchive } from './load-archive';
@@ -86,6 +86,7 @@ async function rewriteColumn({
   insertedIds,
   transaction,
   mutate,
+  where,
 }: {
   model: AnyModel;
   fileName: BackupFileName;
@@ -94,6 +95,8 @@ async function rewriteColumn({
   insertedIds: InsertedIds;
   transaction: Transaction;
   mutate: (params: { draft: unknown }) => void;
+  /** Narrows which restored rows may be written, for columns an earlier pass cleared on purpose. */
+  where?: WhereOptions;
 }): Promise<void> {
   const rows = archive.data.get(fileName);
   if (!rows || rows.length === 0) return;
@@ -112,7 +115,7 @@ async function rewriteColumn({
     mutate({ draft });
     if (JSON.stringify(draft) === originalJson) continue;
 
-    await model.update({ [column]: draft }, { where: { id: finalId }, transaction });
+    await model.update({ [column]: draft }, { where: { ...where, id: finalId }, transaction });
   }
 }
 
@@ -170,6 +173,16 @@ export async function remapEmbeddedReferences({
   });
 
   // 2. Transactions.categorizationMeta → subscriptionId (Subscriptions), payeeId (Payees).
+  const mutateCategorizationMeta = ({ draft }: { draft: unknown }): void => {
+    if (typeof draft !== 'object' || draft === null) return;
+    const meta = draft as Record<string, unknown>;
+    if (typeof meta.subscriptionId === 'string')
+      meta.subscriptionId = remapId({ insertedIds, targetTable: tables.subscriptions, oldId: meta.subscriptionId });
+    if (typeof meta.payeeId === 'string')
+      meta.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: meta.payeeId });
+    if (typeof meta.ruleId === 'string')
+      meta.ruleId = remapId({ insertedIds, targetTable: tables.transactionAutomations, oldId: meta.ruleId });
+  };
   await rewriteColumn({
     model: Transactions,
     fileName: 'transactions',
@@ -177,15 +190,28 @@ export async function remapEmbeddedReferences({
     archive,
     insertedIds,
     transaction,
+    mutate: mutateCategorizationMeta,
+  });
+
+  // 2b. Transactions.paymentLinkSnapshot → categoryId, payeeId, tagIds[], categorizationMeta.
+  //     Rows whose payment was not restored had the snapshot cleared, so they are skipped.
+  await rewriteColumn({
+    model: Transactions,
+    fileName: 'transactions',
+    column: 'paymentLinkSnapshot',
+    archive,
+    insertedIds,
+    transaction,
+    where: { paymentParentId: { [Op.ne]: null } },
     mutate: ({ draft }) => {
       if (typeof draft !== 'object' || draft === null) return;
-      const meta = draft as Record<string, unknown>;
-      if (typeof meta.subscriptionId === 'string')
-        meta.subscriptionId = remapId({ insertedIds, targetTable: tables.subscriptions, oldId: meta.subscriptionId });
-      if (typeof meta.payeeId === 'string')
-        meta.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: meta.payeeId });
-      if (typeof meta.ruleId === 'string')
-        meta.ruleId = remapId({ insertedIds, targetTable: tables.transactionAutomations, oldId: meta.ruleId });
+      const snapshot = draft as Record<string, unknown>;
+      if (typeof snapshot.categoryId === 'string')
+        snapshot.categoryId = remapId({ insertedIds, targetTable: tables.categories, oldId: snapshot.categoryId });
+      if (typeof snapshot.payeeId === 'string')
+        snapshot.payeeId = remapId({ insertedIds, targetTable: tables.payees, oldId: snapshot.payeeId });
+      remapIdArrayInPlace({ arr: snapshot.tagIds, targetTable: tables.tags, insertedIds });
+      mutateCategorizationMeta({ draft: snapshot.categorizationMeta });
     },
   });
 

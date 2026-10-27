@@ -115,6 +115,7 @@ export async function runDetection({ userId }: { userId: number }): Promise<Subs
     where: {
       transactionType: TRANSACTION_TYPES.expense,
       refundLinked: false,
+      paymentParentId: null,
       time: { [Op.gte]: sinceDate },
       note: { [Op.and]: [{ [Op.ne]: null }, { [Op.ne]: '' }] },
     },

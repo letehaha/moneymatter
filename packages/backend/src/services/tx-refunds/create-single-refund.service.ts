@@ -7,6 +7,7 @@ import { logger } from '@js/utils/logger';
 import * as RefundTransactions from '@models/refund-transactions.model';
 import * as TransactionSplits from '@models/transaction-splits.model';
 import * as Transactions from '@models/transactions.model';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -69,6 +70,8 @@ export const createSingleRefund = withTransaction(
           message: t({ key: 'transactions.plannedCannotBeRefundLinked' }),
         });
       }
+
+      await assertNotInPayment({ transactionIds: originalTxId ? [originalTxId, refundTxId] : [refundTxId] });
 
       // Validate splitId if provided
       let targetSplit: TransactionSplits.default | null = null;

@@ -19,6 +19,7 @@ import { CATEGORIZATION_SCOPE, type CategorizationScope } from './categorization
 export type CandidateWhere = {
   categorizationMeta: null;
   transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer;
+  paymentParentId: null;
   categoryId?: string;
 };
 
@@ -64,6 +65,8 @@ export async function buildCandidateWhere({
   const base = {
     categorizationMeta: null,
     transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
+    // A payment's other rows take their category from the main row.
+    paymentParentId: null,
   } as const;
 
   if (scope === CATEGORIZATION_SCOPE.anyCategory) return base;

@@ -3,12 +3,13 @@ import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import { createController } from '@controllers/helpers/controller-factory';
 import { removeUndefinedKeys } from '@js/helpers';
-import { serializeTransactionTuple } from '@root/serializers';
+import { deserializePaymentLegs, serializeTransactionTuple } from '@root/serializers';
 import * as transactionsService from '@services/transactions';
 import { z } from 'zod';
 
 import {
   nonNegativeAmountSchema,
+  paymentLegsSchema,
   positiveAmountSchema,
   splitSchema,
   transactionDetailFieldsSchema,
@@ -39,6 +40,7 @@ const bodyZodSchema = z
     isPlanned: z.boolean().optional(),
     originalAmount: nonNegativeAmountSchema().nullable().optional(),
     originalCurrencyCode: currencyCode().nullable().optional(),
+    paymentLegs: paymentLegsSchema.nullish(),
   })
   .refine((data) => !(data.refundsSplitId && !data.refundsTxId), {
     message: '"refundsSplitId" can only be provided when "refundsTxId" is specified',
@@ -156,6 +158,7 @@ export default createController(schema, async ({ user, params, body }) => {
     isPlanned,
     originalAmount,
     originalCurrencyCode,
+    paymentLegs,
   } = body;
   const { id: userId } = user;
 
@@ -203,6 +206,7 @@ export default createController(schema, async ({ user, params, body }) => {
     ...(splits !== undefined ? { splits: splits === null ? null : splitsAsMoney } : {}),
     // tagIds can be null to clear all tags, so don't use removeUndefinedKeys
     ...(tagIds !== undefined ? { tagIds } : {}),
+    ...(paymentLegs !== undefined ? { paymentLegs: paymentLegs && deserializePaymentLegs({ legs: paymentLegs }) } : {}),
   });
 
   // Serialize: convert cents to decimal for API response

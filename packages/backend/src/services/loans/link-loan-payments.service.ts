@@ -14,6 +14,7 @@ import { calculateRefAmount } from '@services/calculate-ref-amount.service';
 import { withTransaction } from '@services/common/with-transaction';
 import { isOnOrAfterAnchorDay } from '@services/loans/anchor-day';
 import { lockLoanAccountRow, projectLoanOverpay } from '@services/loans/project-loan-overpay';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { updateTransaction } from '@services/transactions/update-transaction';
 
 interface LinkLoanPaymentsParams {
@@ -71,6 +72,7 @@ const linkLoanPaymentsImpl = async ({
     // Stale or tampered selection — fail the whole batch rather than silently link a subset.
     throw new ValidationError({ message: t({ key: 'loans.linkPaymentsInvalidSelection' }) });
   }
+  await assertNotInPayment({ transactionIds });
 
   // Validate eligibility and pre-compute each loan-side amount before any write,
   // so an ineligible row aborts the batch atomically.

@@ -8,6 +8,7 @@ import * as Transactions from '@models/transactions.model';
 import Users from '@models/users.model';
 import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { getAccessibleTrackerIdsForUser } from '@services/sharing/auth/get-accessible-tracker-ids.service';
+import { attachPaymentParts } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 type FindWithFiltersParams = Parameters<typeof Transactions.findWithFilters>[0];
@@ -90,34 +91,29 @@ export const getTransactions = async (params: GetTransactionsParams) => {
   // membership is the source of truth for what's in the tracker). If the caller passed
   // `accountIds` we still intersect with their accessible-account set so an explicit
   // account filter is honoured.
+  const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
   let scopedAccountIds: string[] | undefined;
-  if (trackerGrantsVisibility) {
-    if (accountIds && accountIds.length > 0) {
-      const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
-      const accessibleSet = new Set(accessibleAccounts);
-      scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
-      if (scopedAccountIds.length === 0) return [];
-    }
-    // else: leave undefined → no account filter, full tracker visibility.
-  } else {
-    const accessibleAccounts = await getAccessibleAccountIdsForUser({ userId });
-    if (accountIds && accountIds.length > 0) {
-      const accessibleSet = new Set(accessibleAccounts);
-      scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
-      if (scopedAccountIds.length === 0) return [];
-    } else {
-      if (!accessibleAccounts.length) return [];
-      scopedAccountIds = accessibleAccounts;
-    }
+  if (accountIds && accountIds.length > 0) {
+    const accessibleSet = new Set(accessibleAccounts);
+    scopedAccountIds = accountIds.filter((id) => accessibleSet.has(id));
+    if (scopedAccountIds.length === 0) return [];
+  } else if (!trackerGrantsVisibility) {
+    // With tracker visibility it stays undefined: no account filter, full tracker visibility.
+    if (!accessibleAccounts.length) return [];
+    scopedAccountIds = accessibleAccounts;
   }
 
   // When includeSplits, includeTags, or includeGroups is true, we need nested data (not raw) to preserve array structure
   // Raw mode flattens nested includes into dot-notation keys which breaks access
   const isRaw = !rest.includeSplits && !rest.includeTags && !rest.includeGroups;
 
+  // Without an account filter the list shows one row per payment; an account view needs
+  // each account's own row of a multi-account payment.
+  const collapsePayments = !accountIds?.length;
+
   // `isPlanned: true` means "only the plans I authored": creator scope is what reproduces
   // that, on top of the account/tracker ids resolved above.
-  const transactions = await Transactions.findWithFilters({
+  const rows = await Transactions.findWithFilters({
     ...rest,
     accountIds: scopedAccountIds,
     trackerIds: scopedTrackerIds,
@@ -131,7 +127,13 @@ export const getTransactions = async (params: GetTransactionsParams) => {
     // The raw ledger view: this list shows balance-adjustment rows unless the client asks
     // to hide them, so it opts out of the boundary's exclude-by-default.
     balanceAdjustments: excludeBalanceAdjustments ? 'exclude' : 'include',
+    excludePaymentLegsWithMainIn: collapsePayments ? accessibleAccounts : undefined,
     isRaw,
+  });
+  const transactions = await attachPaymentParts({
+    transactions: rows,
+    collapsed: collapsePayments,
+    accessibleAccountIds: accessibleAccounts,
   });
 
   if (!transactions.length || !trackerGrantsVisibility) return transactions;

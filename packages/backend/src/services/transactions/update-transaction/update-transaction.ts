@@ -30,6 +30,7 @@ import { withTransaction } from '../../common/with-transaction';
 import { calcTransferTransactionRefAmount, createOppositeTransaction } from '../create-transaction';
 import { getWritableTransactionById } from '../get-by-id';
 import { buildManualCategorizationMeta } from '../manual-categorization-meta';
+import { syncPaymentLegs } from '../payment-legs';
 import {
   assertAccountCanHoldPlans,
   assertPlannedFlipAllowed,
@@ -610,6 +611,11 @@ export const updateTransaction = withTransaction(
 
       assertPlannedWriteAllowed({ transaction: prevData, callerUserId: payload.userId });
 
+      // A leg copies its main row, so an edit made here would be overwritten.
+      if (prevData.paymentParentId) {
+        throw new ValidationError({ message: t({ key: 'transactions.paymentLegEditThroughMain' }) });
+      }
+
       if (payload.isPlanned === true && !prevData.isPlanned) {
         await assertPlannedFlipAllowed({ transaction: prevData, callerUserId: payload.userId });
       }
@@ -790,6 +796,13 @@ export const updateTransaction = withTransaction(
       if (prevData.isPlanned && !baseTransaction.isPlanned) {
         await settlePeriodOnConfirm({ transaction: baseTransaction, userId: ctx.accountOwnerUserId });
       }
+
+      await syncPaymentLegs({
+        userId: payload.userId,
+        mainTxId: baseTransaction.id,
+        legs: payload.paymentLegs,
+        mainCurrencyChanged: baseTransaction.currencyCode !== prevData.currencyCode,
+      });
 
       return updatedTransactions;
     } catch (e) {

@@ -12,6 +12,7 @@ import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
 import { buildManualCategorizationMeta } from './manual-categorization-meta';
+import { syncLegsOfMains } from './payment-legs';
 
 interface BulkUpdateParams {
   userId: number;
@@ -87,10 +88,18 @@ export const bulkUpdate = withTransaction(
       }
     }
 
+    // A payment's legs copy its main row, so the edit lands on the main and syncs down.
+    const selectedLegs = await Transactions.default.findAll({
+      where: { id: { [Op.in]: transactionIds }, userId, paymentParentId: { [Op.ne]: null } },
+      attributes: ['id', 'paymentParentId'],
+    });
+    const mainIdByLegId = new Map<string, string>(selectedLegs.map((leg) => [leg.id, leg.paymentParentId!]));
+    const targetIds = [...new Set(transactionIds.map((id) => mainIdByLegId.get(id) ?? id))];
+
     // Fetch transactions to validate ownership and filter out invalid ones
     const transactions = await Transactions.default.findAll({
       where: {
-        id: { [Op.in]: transactionIds },
+        id: { [Op.in]: targetIds },
         userId,
       },
       attributes: ['id', 'transferNature', 'accountId', 'categoryId'],
@@ -242,6 +251,8 @@ export const bulkUpdate = withTransaction(
         eventBus.emit(DOMAIN_EVENTS.TRANSACTIONS_TAGGED, { tagIds, userId });
       }
     }
+
+    await syncLegsOfMains({ mainIds: allTransactionIds });
 
     // Return the appropriate count based on what was updated. Category remains
     // the primary signal when present; otherwise prefer the Payee-restricted

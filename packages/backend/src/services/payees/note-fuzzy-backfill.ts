@@ -3,6 +3,7 @@ import Accounts from '@models/accounts.model';
 import PayeeAliases from '@models/payee-aliases.model';
 import Payees from '@models/payees.model';
 import { findTransactions, updateTransactions } from '@models/transactions-query';
+import { syncLegsOfMains } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 
 import { withTransaction } from '../common/with-transaction';
@@ -81,6 +82,7 @@ export const runNoteFuzzyBackfill = withTransaction(
         id: { [Op.in]: transactionIds },
         payeeId: null,
         payeeLocked: false,
+        paymentParentId: null,
         note: { [Op.ne]: null },
       },
       include: [
@@ -171,6 +173,8 @@ export const runNoteFuzzyBackfill = withTransaction(
             error: error as Error,
           });
         }
+
+        await syncLegsOfMains({ mainIds: [tx.id] });
 
         linked += 1;
         logger.info(`${LOG_PREFIX} fuzzy link via note`, {

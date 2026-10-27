@@ -13,6 +13,7 @@ import { findTransactions, updateTransactions } from '@models/transactions-query
 import * as Transactions from '@models/transactions.model';
 import { withTransaction } from '@root/services/common/with-transaction';
 import { assertTxWriteAccess } from '@services/sharing/auth/authorize-account-write.service';
+import { assertNotInPayment } from '@services/transactions/payment-legs';
 import { Op } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -124,6 +125,8 @@ export const linkTransactions = withTransaction(
             message: t({ key: 'transactions.linkSplitTransactionNotAllowed' }),
           });
         }
+
+        await assertNotInPayment({ transactionIds: [baseTxId, oppositeTxId] });
 
         // `validateTransactionLinking` already rejects `transfer_to_loan` legs as
         // already-linked, so a link can never legitimately land on a loan account.

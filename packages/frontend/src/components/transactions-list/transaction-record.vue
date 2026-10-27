@@ -15,9 +15,9 @@
     <label v-if="showCheckbox" class="-my-1 -ml-2 flex items-center justify-center self-stretch px-3" @click.stop>
       <Checkbox v-if="isSelectable" v-model="checkedModel" :aria-label="$t('common.transactions.record.selectRow')" />
       <ResponsiveTooltip
-        v-else-if="unselectableReason"
+        v-else-if="unselectableHint || unselectableReason"
         :delay-duration="100"
-        :content="$t(`common.transactions.record.unselectableReasons.${unselectableReason}`)"
+        :content="unselectableHint || $t(`common.transactions.record.unselectableReasons.${unselectableReason}`)"
         content-class-name="max-w-56"
       >
         <InfoIcon class="text-muted-foreground size-3.5 cursor-help" />
@@ -167,6 +167,7 @@
             </ResponsiveTooltip>
             <PlannedIndicator v-if="!(hidePlannedMarker && transaction.isPlanned)" :transaction="transaction" />
             <SplitIndicator :transaction="transaction" />
+            <PaymentIndicator :transaction="transaction" />
             <RefundIndicator v-if="!hideRefundMarker" :transaction="transaction" />
             <TagsIndicator :tags="transaction.tags ?? []" :variant="tagsVariant" />
             <AttachmentIndicator :transaction="transaction" />
@@ -247,6 +248,9 @@
       >
         {{ formattedAmount }}
       </div>
+      <div v-if="formattedPaymentShare" class="text-muted-foreground text-amount text-right text-xs">
+        ≈ {{ formattedPaymentShare }}
+      </div>
       <div class="text-muted-foreground text-right text-xs">
         {{ formateDate(transaction.time) }}
       </div>
@@ -266,6 +270,10 @@ import { useOppositeTxRecord } from '@/composable/data-queries/opposite-tx-recor
 import type { BulkUnselectableReason } from '@/composable/transaction-selection';
 import { useTransactionPortfolioLink } from '@/composable/data-queries/portfolio-transfers';
 import { useTransactionVentureLink } from '@/composable/data-queries/venture/events';
+import {
+  getPaymentMainCurrencyCode,
+  isAccountScopedPaymentRow,
+} from '@/components/dialogs/manage-transaction/utils/payment-legs';
 import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useCategoriesStore, useUserStore } from '@/stores';
 import {
@@ -295,6 +303,7 @@ import { useI18n } from 'vue-i18n';
 
 import PlannedIndicator from './indicators/planned-indicator.vue';
 import AttachmentIndicator from './indicators/attachment-indicator.vue';
+import PaymentIndicator from './indicators/payment-indicator.vue';
 import RefundIndicator from './indicators/refund-indicator.vue';
 import SplitIndicator from './indicators/split-indicator.vue';
 import TagsIndicator, { type TagsIndicatorVariant } from '@/components/common/tags-indicator.vue';
@@ -313,6 +322,8 @@ const props = withDefaults(
     isSelectable?: boolean;
     /** Shown as an explainer tooltip in place of the checkbox when not selectable. */
     unselectableReason?: BulkUnselectableReason | null;
+    /** Free-form text for the same tooltip; takes precedence over `unselectableReason`. */
+    unselectableHint?: string;
     index?: number;
     /** Single-line row: the note renders inline, amount and date share one line. */
     compact?: boolean;
@@ -483,7 +494,7 @@ const checkedModel = computed({
 });
 
 const formattedAmount = computed(() => {
-  let amount = transaction.value.amount;
+  let amount = transaction.value.paymentTotal ?? transaction.value.amount;
 
   if (transaction.value.transactionType === TRANSACTION_TYPES.expense) {
     amount *= -1;
@@ -492,6 +503,15 @@ const formattedAmount = computed(() => {
   return formatUIAmount(amount, {
     currency: props.tx.currencyCode,
   });
+});
+
+// A part shown on its own account, in a currency other than the payment's.
+const formattedPaymentShare = computed(() => {
+  const own = transaction.value.paymentParts?.find((part) => part.transactionId === transaction.value.id);
+  const mainCurrencyCode = getPaymentMainCurrencyCode({ transaction: transaction.value });
+  if (!own || !isAccountScopedPaymentRow({ transaction: transaction.value }) || own.currencyCode === mainCurrencyCode)
+    return '';
+  return formatUIAmount(own.paymentAmount, { currency: mainCurrencyCode });
 });
 
 const formattedExpenseAmount = computed(() => {

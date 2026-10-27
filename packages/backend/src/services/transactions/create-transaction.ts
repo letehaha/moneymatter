@@ -41,6 +41,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { withTransaction } from '../common/with-transaction';
 import { createSingleRefund } from '../tx-refunds/create-single-refund.service';
+import { syncPaymentLegs } from './payment-legs';
 import { tryMergeIntoPlanned } from './planned-matching';
 import { assertPlannedCreateAllowed } from './planned-matching/assert-planned-invariants';
 import { manageSplits } from './splits';
@@ -363,9 +364,13 @@ export const createTransaction = withTransaction(
     categoryIdIsExplicit = false,
     matchPlanned = false,
     applyAutomations = false,
+    paymentLegs,
     ...payload
   }: CreateTransactionParams): Promise<CreateTxResult> => {
     if (applyAutomations) payload.externalData = { ...payload.externalData, applyAutomations: true };
+    if (matchPlanned && paymentLegs?.length) {
+      throw new ValidationError({ message: t({ key: 'transactions.paymentLegsNotAllowed' }) });
+    }
 
     try {
       // Captured before the coercion below, which would hide a non-positive amount from
@@ -760,6 +765,11 @@ export const createTransaction = withTransaction(
           });
           if (appliedLocation) transactions[0]!.location = appliedLocation;
         }
+      }
+
+      // Last, so the linked rows copy the category and payee the steps above settled on.
+      if (paymentLegs?.length) {
+        await syncPaymentLegs({ userId, mainTxId: baseTransaction!.id, legs: paymentLegs });
       }
 
       return transactions;

@@ -91,7 +91,41 @@ describe('formToDuplicatePrefill', () => {
       originalCurrency: form.originalCurrency,
       isPlanned: true,
       splits: undefined,
+      paymentLegs: undefined,
     });
+  });
+
+  it('carries the created payment legs as new rows', () => {
+    const voucher = createAccount({ id: 'a-voucher' as RecordId });
+    const form = createForm({
+      paymentLegs: [
+        { transactionId: 'tx-leg' as RecordId, account: voucher, accountId: voucher.id, amount: 30 },
+        { account: voucher, amount: 5, currencyCode: 'EUR', paymentAmount: 6, isPaymentAmountEdited: true },
+      ],
+    });
+    const prefill = formToDuplicatePrefill({ form, now: NOW });
+
+    expect(prefill.paymentLegs).toEqual([
+      { account: voucher, accountId: voucher.id, amount: 30 },
+      { account: voucher, amount: 5, currencyCode: 'EUR', paymentAmount: 6, isPaymentAmountEdited: true },
+    ]);
+    expect(prefill.paymentLegs![0]!.transactionId).toBeUndefined();
+    expect(prefill.paymentLegs![0]).not.toBe(form.paymentLegs![0]);
+  });
+
+  it('leaves out linked payment legs', () => {
+    const voucher = createAccount({ id: 'a-voucher' as RecordId });
+    const linked = { transactionId: 'tx-linked' as RecordId, account: voucher, amount: 30, isLinked: true };
+
+    expect(formToDuplicatePrefill({ form: createForm({ paymentLegs: [linked] }), now: NOW }).paymentLegs).toBe(
+      undefined,
+    );
+    expect(
+      formToDuplicatePrefill({
+        form: createForm({ paymentLegs: [linked, { account: voucher, amount: 5 }] }),
+        now: NOW,
+      }).paymentLegs,
+    ).toEqual([{ account: voucher, amount: 5 }]);
   });
 
   it('leaves out refund links and transfer fields', () => {

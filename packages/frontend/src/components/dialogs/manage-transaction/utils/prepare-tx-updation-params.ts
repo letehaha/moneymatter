@@ -20,6 +20,7 @@ import {
   resolveOriginalCurrencyPair,
 } from '../helpers';
 import { type FormSplit, UI_FORM_STRUCT } from '../types';
+import { resolvePaymentLegsUpdate } from './payment-legs';
 import { resolveFormLocation } from './resolve-form-location';
 
 /**
@@ -263,6 +264,9 @@ export const prepareTxUpdationParams = ({
       editionParams.originalAmount = null;
       editionParams.originalCurrencyCode = null;
     }
+
+    const paymentLegs = resolvePaymentLegsUpdate({ form, transaction });
+    if (paymentLegs !== undefined) editionParams.paymentLegs = paymentLegs;
   }
 
   // Handle tag IDs - compare original tags with form tags to detect changes

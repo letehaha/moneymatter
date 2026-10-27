@@ -16,6 +16,7 @@ import type { UI_FORM_STRUCT } from '../types';
 import {
   applyOptimisticTransactionUpdate,
   buildOptimisticTransaction,
+  hasPaymentParts,
   prepareTxCreationParams,
   prepareTxUpdationParams,
   rollbackOptimisticUpdate,
@@ -139,6 +140,8 @@ export function useSubmitTransaction({
       if (isFormCreation || linkedTransaction || !transaction || (isTransferTx && form.toPortfolio)) {
         return undefined;
       }
+      // The optimistic row can't rebuild paymentParts/paymentTotal, so these wait for the refetch.
+      if (hasPaymentParts({ transaction }) || form.paymentLegs?.length) return undefined;
 
       // Cancel any outgoing refetches to prevent overwriting optimistic update
       await queryClient.cancelQueries({ queryKey: [VUE_QUERY_GLOBAL_PREFIXES.transactionChange] });
