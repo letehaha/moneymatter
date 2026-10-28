@@ -169,6 +169,13 @@
         "selectRow": "Выберите транзакцию",
         "unselectableReasons": {
           "sharedAccount": "Нельзя выбрать: эта транзакция находится на счёте, доступ к которому вам предоставлен, и редактировать её может только владелец счёта."
+        },
+        "payment": {
+          "paidFrom": "Paid from {count} accounts",
+          "receivedInto": "Received into {count} accounts",
+          "partOf": "Part of a {total} payment",
+          "thisAccount": "(this account)",
+          "loadError": "Couldn't open this transaction. Try again."
         }
       }
     },

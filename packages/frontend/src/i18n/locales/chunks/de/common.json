@@ -169,6 +169,13 @@
         "selectRow": "Transaktion auswählen",
         "unselectableReasons": {
           "sharedAccount": "Kann nicht ausgewählt werden: Diese Transaktion befindet sich auf einem mit dir geteilten Konto, und nur dessen Eigentümer kann sie bearbeiten."
+        },
+        "payment": {
+          "paidFrom": "Paid from {count} accounts",
+          "receivedInto": "Received into {count} accounts",
+          "partOf": "Part of a {total} payment",
+          "thisAccount": "(this account)",
+          "loadError": "Couldn't open this transaction. Try again."
         }
       }
     },

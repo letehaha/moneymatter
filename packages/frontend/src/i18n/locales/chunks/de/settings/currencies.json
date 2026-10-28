@@ -50,6 +50,24 @@
         "buttonShort": "Löschen",
         "disabledTooltip": "Du kannst diese Währung nicht löschen, da sie noch mit Konten verbunden ist.",
         "successfullyDeleted": "Erfolgreich gelöscht.",
+        "foreignAmountsWarning": "In dieser Währung erfasste Fremdbeträge werden aus deinen Transaktionen entfernt. Beträge in der Kontowährung bleiben unverändert.",
+        "inUse": {
+          "title": "Diese Währung wird noch verwendet. Bitte zuerst entfernen oder ändern:",
+          "trashed": "(im Papierkorb)",
+          "types": {
+            "account": "Konten",
+            "portfolio": "Portfolio-Anzeigewährung",
+            "holding": "Positionen",
+            "portfolioCash": "Cash-Bestände",
+            "portfolioTransfer": "Portfolio-Umbuchungen",
+            "investmentTransaction": "Investitionstransaktionen",
+            "subscription": "Wiederkehrende Zahlungen",
+            "transactionTemplate": "Transaktionsvorlagen",
+            "budget": "Budgets",
+            "goal": "Ziele",
+            "ventureDeal": "Beteiligungen"
+          }
+        },
         "errors": {
           "deleteFailed": "Unerwarteter Fehler. Währung wurde nicht gelöscht."
         }

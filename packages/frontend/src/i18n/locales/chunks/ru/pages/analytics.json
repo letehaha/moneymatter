@@ -49,7 +49,8 @@
         "last12Months": "Последние 12 месяцев",
         "thisYear": "Этот год",
         "previousYear": "Предыдущий год",
-        "allTime": "За всё время"
+        "allTime": "За всё время",
+        "currentPayPeriod": "Current pay period"
       },
       "composition": {
         "detail": "Детализация",

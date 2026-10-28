@@ -9,6 +9,12 @@
         "successNotification": "Nastavenie bolo úspešne aktualizované",
         "errorNotification": "Nastavenie sa nepodarilo aktualizovať"
       },
+      "payday": {
+        "label": "Výplatné obdobie začína",
+        "description": "Deň v mesiaci, ktorým začína vaše výplatné obdobie. Predvolené obdobie na nástenke trvá od tohto dňa do dňa pred ním v nasledujúcom mesiaci.",
+        "placeholder": "Vyberte deň",
+        "successNotification": "Začiatok výplatného obdobia aktualizovaný"
+      },
       "manualTransferMatching": {
         "label": "Priraďovať prevody k manuálnym účtom",
         "description": "Umožnite automaticky rozpoznaným prevodom prepojiť synchronizovanú bankovú transakciu s transakciou, ktorú ste vytvorili ručne.",

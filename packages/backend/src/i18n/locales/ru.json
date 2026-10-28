@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Эта запланированная транзакция находится на счёте, подключённом к банку, поэтому банк подтвердит её автоматически. Удалите её, если она больше не ожидается.",
     "plannedCannotConfirmPayment": "Запланированная транзакция не может подтвердить платёж. Дождитесь её подтверждения, затем свяжите её.",
     "plannedCannotBeRefundLinked": "Запланированная транзакция не может участвовать в связи возврата.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
     "splits": {
       "splitsOnTransfer": "Нельзя добавлять разбиения к транзакциям-переводам",
       "splitLimitExceeded": "Для одной транзакции разрешено не более {{max}} разбиений",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "Валюта с указанным кодом не существует.",
     "currencyNotExist": "Валюта с кодом \"{{currencyCode}}\" не существует.",
     "cannotDeleteDefaultCurrency": "Нельзя удалить валюту по умолчанию. Сначала снимите с неё статус валюты по умолчанию.",
-    "cannotDeleteCurrencyWithAccounts": "Нельзя удалить валюту, связанную со счетами. Сначала удалите счета. Названия счетов: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "Нельзя удалить валюту \"{{currencyCode}}\", пока она используется инвестиционными позициями. Сначала удалите эти позиции.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
-    "defaultCurrencyNotPresent": "Нельзя удалить валюту. Валюта по умолчанию отсутствует в системе"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "AI model not found.",

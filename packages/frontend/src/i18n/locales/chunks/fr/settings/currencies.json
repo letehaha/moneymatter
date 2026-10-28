@@ -50,6 +50,24 @@
         "buttonShort": "Supprimer",
         "disabledTooltip": "Impossible de supprimer cette devise car elle est toujours associée à un ou plusieurs comptes.",
         "successfullyDeleted": "Supprimée avec succès.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Comptes",
+            "portfolio": "Portfolio display currency",
+            "holding": "Lignes de portefeuille",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Paiements récurrents",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Objectifs",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Erreur inattendue. La devise n'a pas été supprimée."
         }

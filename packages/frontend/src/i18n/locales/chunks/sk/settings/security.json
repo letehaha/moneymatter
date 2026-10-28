@@ -178,8 +178,8 @@
           "placeholder": "Zadajte svoj email",
           "acceptButton": "Zmazať môj účet",
           "acceptButtonLoading": "Mazanie…...",
-          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
-          "appStoreWarningLink": "App Store subscriptions"
+          "appStoreWarning": "Odstránenie účtu nezruší vaše predplatné v App Store a Apple vás bude ďalej účtovať. Najprv ho zrušte v {link}.",
+          "appStoreWarningLink": "Predplatné v App Store"
         },
         "notifications": {
           "success": "Váš účet bol úspešne zmazaný",

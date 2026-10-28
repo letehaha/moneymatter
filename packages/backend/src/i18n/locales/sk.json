@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Tento plán je na účte prepojenom s bankou, preto ho vaša banka potvrdí automaticky. Ak ho už neočakávate, zmažte ho.",
     "plannedCannotConfirmPayment": "Plánovaná transakcia nemôže potvrdiť platbu. Počkajte, kým bude potvrdená, a potom ju prepojte.",
     "plannedCannotBeRefundLinked": "Plánovaná transakcia nemôže byť súčasťou prepojenia na vrátenie platby.",
+    "paymentLegsNotAllowed": "Medzi viacero účtov možno rozdeliť len bežný príjem alebo výdavok na vlastnom účte. Prevody, vrátenia platieb, plánované transakcie a transakcie rozdelené podľa kategórie nemožno.",
+    "inPaymentNotAllowed": "Táto transakcia je súčasťou platby z viacerých účtov. Najprv ju z platby odstráňte.",
+    "paymentLegInvalidAccount": "Každá nová časť musí byť na niektorom z vašich ostatných manuálnych účtov.",
+    "paymentLegDuplicateAccount": "Každá nová časť musí byť na inom účte.",
+    "paymentLegEditThroughMain": "Toto je súčasť platby z viacerých účtov. Upravte hlavnú transakciu, prosím.",
+    "paymentAmountRequired": "Pre každú časť v inej mene zadajte sumu v mene hlavnej transakcie.",
+    "paymentLinkNotAllowed": "Táto transakcia sa nedá prepojiť s platbou. Prepojiť možno len vlastný príjem alebo výdavok rovnakého typu – nie prevod, vrátenie platby, rozdelenú transakciu, nezaúčtovanú transakciu ani súčasť inej platby.",
+    "paymentLinkedAmountFixed": "Sumu prepojenej transakcie nemožno zmeniť.",
+    "paymentLinkedTypeMismatch": "Prepojené transakcie musia mať rovnaký typ ako platba. Najprv ich odpojte.",
     "splits": {
       "splitsOnTransfer": "K prevodovým transakciám nemožno pridať rozdelenie",
       "splitLimitExceeded": "Povolený je najviac {{max}} rozdelení na transakciu",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "Mena so zadaným kódom neexistuje.",
     "currencyNotExist": "Mena s kódom „{{currencyCode}}\" neexistuje.",
     "cannotDeleteDefaultCurrency": "Predvolenú menu nemožno zmazať. Najprv jej zrušte štatút predvolenej.",
-    "cannotDeleteCurrencyWithAccounts": "Menu priradenú k akýmkoľvek účtom nemožno zmazať. Najprv zmažte účty. Názvy účtov: „{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "Menu „{{currencyCode}}\" nemožno zmazať, kým ju používajú investičné pozície. Najprv zmažte tieto pozície.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "{{currencyCode}} nemožno odstrániť: je zobrazovacou menou jedného z vašich portfólií. Najprv zmeňte zobrazovaciu menu tohto portfólia.",
-    "defaultCurrencyNotPresent": "Menu nemožno zmazať. Predvolená mena v systéme neexistuje"
+    "currencyInUse": "{{currencyCode}} sa nedá odstrániť, pretože sa stále používa."
   },
   "ai": {
     "connectionNotFound": "Model AI sa nenašiel.",

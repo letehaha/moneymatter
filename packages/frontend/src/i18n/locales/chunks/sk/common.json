@@ -169,6 +169,13 @@
         "selectRow": "Vybrať transakciu",
         "unselectableReasons": {
           "sharedAccount": "Nedá sa vybrať: táto transakcia je na účte zdieľanom s vami a upravovať ju môže len jeho vlastník."
+        },
+        "payment": {
+          "paidFrom": "Zaplatené z {count} účtov",
+          "receivedInto": "Prijaté na {count} účtov",
+          "partOf": "Súčasť platby {total}",
+          "thisAccount": "(tento účet)",
+          "loadError": "Túto transakciu sa nepodarilo otvoriť. Skúste to znova."
         }
       }
     },

@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Dieser Plan befindet sich auf einem mit der Bank verbundenen Konto und wird daher automatisch von deiner Bank bestätigt. Lösche ihn, wenn er nicht mehr erwartet wird.",
     "plannedCannotConfirmPayment": "Eine geplante Transaktion kann eine Zahlung nicht bestätigen. Warte, bis sie bestätigt wird, und verknüpfe sie dann.",
     "plannedCannotBeRefundLinked": "Eine geplante Transaktion kann nicht Teil einer Rückerstattungsverknüpfung sein.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
     "splits": {
       "splitsOnTransfer": "Umbuchungstransaktionen können keine Aufteilungen hinzugefügt werden",
       "splitLimitExceeded": "Maximal {{max}} Aufteilungen pro Transaktion erlaubt",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "Währung mit dem übergebenen Code existiert nicht.",
     "currencyNotExist": "Währung mit dem Code \"{{currencyCode}}\" existiert nicht.",
     "cannotDeleteDefaultCurrency": "Standardwährung darf nicht gelöscht werden. Entferne zuerst den Standard-Status.",
-    "cannotDeleteCurrencyWithAccounts": "Währungen, die mit Konten verknüpft sind, dürfen nicht gelöscht werden. Lösche zuerst die Konten. Kontonamen: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "Währung \"{{currencyCode}}\" darf nicht gelöscht werden, solange sie von Investment-Positionen verwendet wird. Lösche zuerst diese Positionen.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "{{currencyCode}} kann nicht entfernt werden: Es ist die Anzeigewährung eines deiner Portfolios. Ändere zuerst die Anzeigewährung des Portfolios.",
-    "defaultCurrencyNotPresent": "Währung kann nicht gelöscht werden. Standardwährung ist im System nicht vorhanden"
+    "currencyInUse": "{{currencyCode}} kann nicht gelöscht werden, da sie noch verwendet wird."
   },
   "ai": {
     "connectionNotFound": "KI-Modell nicht gefunden.",

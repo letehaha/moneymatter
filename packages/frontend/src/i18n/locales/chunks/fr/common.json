@@ -169,6 +169,13 @@
         "selectRow": "Sélectionner l'opération",
         "unselectableReasons": {
           "sharedAccount": "Sélection impossible : cette opération figure sur un compte partagé avec vous, seul son propriétaire peut la modifier."
+        },
+        "payment": {
+          "paidFrom": "Paid from {count} accounts",
+          "receivedInto": "Received into {count} accounts",
+          "partOf": "Part of a {total} payment",
+          "thisAccount": "(this account)",
+          "loadError": "Couldn't open this transaction. Try again."
         }
       }
     },

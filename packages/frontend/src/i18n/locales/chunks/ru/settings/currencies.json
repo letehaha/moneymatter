@@ -50,6 +50,24 @@
         "buttonShort": "Удалить",
         "disabledTooltip": "Эту валюту нельзя удалить, поскольку она всё ещё связана со счетами.",
         "successfullyDeleted": "Успешно удалено.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Счета",
+            "portfolio": "Portfolio display currency",
+            "holding": "Позиции",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Регулярные платежи",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Непредвиденная ошибка. Валюта не удалена."
         }

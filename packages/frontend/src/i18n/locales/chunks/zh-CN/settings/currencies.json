@@ -50,6 +50,24 @@
         "buttonShort": "删除",
         "disabledTooltip": "您不能删除此货币，因为它仍然连接到账户。",
         "successfullyDeleted": "删除成功。",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Accounts",
+            "portfolio": "Portfolio display currency",
+            "holding": "Holdings",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Recurring payments",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "未知错误。未删除货币。"
         }

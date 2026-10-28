@@ -9,6 +9,12 @@
         "successNotification": "Настройка успешно обновлена",
         "errorNotification": "Не удалось обновить настройку"
       },
+      "payday": {
+        "label": "Pay cycle starts on",
+        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "placeholder": "Выберите день",
+        "successNotification": "Pay cycle start updated"
+      },
       "manualTransferMatching": {
         "label": "Сопоставлять переводы со счетами с ручным управлением",
         "description": "Разрешить автоматически обнаруженным переводам связывать синхронизированную банковскую транзакцию с созданной вручную.",

@@ -9,6 +9,12 @@
         "successNotification": "Đã cập nhật cài đặt thành công",
         "errorNotification": "Không cập nhật được cài đặt"
       },
+      "payday": {
+        "label": "Pay cycle starts on",
+        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "placeholder": "Chọn ngày",
+        "successNotification": "Pay cycle start updated"
+      },
       "manualTransferMatching": {
         "label": "Tự động đối chiếu giao dịch chuyển khoản với tài khoản thủ công",
         "description": "Cho phép các giao dịch chuyển khoản được phát hiện tự động liên kết các giao dịch ngân hàng đã đồng bộ với các giao dịch bạn tạo thủ công.",

@@ -50,6 +50,24 @@
         "buttonShort": "Hapus",
         "disabledTooltip": "Anda tidak dapat menghapus mata uang ini karena masih terhubung dengan akun.",
         "successfullyDeleted": "Berhasil dihapus.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Akun",
+            "portfolio": "Portfolio display currency",
+            "holding": "Kepemilikan",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Biaya Berulang",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Kesalahan tak terduga. Mata uang tidak dihapus."
         }

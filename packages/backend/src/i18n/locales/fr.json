@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Cette prévision se trouve sur un compte synchronisé : votre banque la confirme donc automatiquement. Supprimez-la si elle n'est plus attendue.",
     "plannedCannotConfirmPayment": "Une opération prévisionnelle ne peut pas confirmer un paiement. Attendez sa confirmation, puis associez-la.",
     "plannedCannotBeRefundLinked": "Une opération prévisionnelle ne peut pas être associée à un remboursement.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
     "splits": {
       "splitsOnTransfer": "Impossible de ventiler un virement",
       "splitLimitExceeded": "Maximum de {{max}} ventilations autorisé par opération",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "Aucune devise ne correspond au code renseigné.",
     "currencyNotExist": "La devise avec le code « {{currencyCode}} » n'existe pas.",
     "cannotDeleteDefaultCurrency": "Impossible de supprimer la devise par défaut. Définissez d'abord une autre devise par défaut.",
-    "cannotDeleteCurrencyWithAccounts": "Impossible de supprimer une devise associée à des comptes. Supprimez d'abord ces comptes. Noms des comptes : « {{accountNames}} ».",
-    "cannotDeleteCurrencyWithInvestments": "Impossible de supprimer la devise « {{currencyCode}} » car elle est utilisée par des actifs d'investissement. Supprimez d'abord ces actifs.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
-    "defaultCurrencyNotPresent": "Impossible de supprimer la devise. Aucune devise par défaut n'est présente dans le système"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "Modèle d'IA introuvable.",

@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Rencana ini berada di akun yang terhubung ke bank, sehingga bank Anda mengonfirmasinya secara otomatis. Hapus jika transaksi tersebut sudah tidak diharapkan lagi.",
     "plannedCannotConfirmPayment": "Transaksi terencana tidak dapat mengonfirmasi pembayaran. Tunggu hingga dikonfirmasi, lalu tautkan.",
     "plannedCannotBeRefundLinked": "Transaksi terencana tidak dapat menjadi bagian dari pautan refund.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
     "splits": {
       "splitsOnTransfer": "Tidak dapat menambahkan split ke transaksi transfer",
       "splitLimitExceeded": "Maksimal {{max}} split per transaksi",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "Mata uang dengan kode yang diberikan tidak ada.",
     "currencyNotExist": "Mata uang dengan kode \"{{currencyCode}}\" tidak ada.",
     "cannotDeleteDefaultCurrency": "Tidak diizinkan menghapus mata uang bawaan. Jadikan bukan bawaan terlebih dahulu.",
-    "cannotDeleteCurrencyWithAccounts": "Tidak diizinkan menghapus mata uang yang terkait dengan akun mana pun. Hapus akun terlebih dahulu. Nama akun: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "Tidak diizinkan menghapus mata uang \"{{currencyCode}}\" yang masih digunakan oleh holding investasi. Hapus holding tersebut terlebih dahulu.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "Can't remove {{currencyCode}}: it's the display currency of one of your portfolios. Change the portfolio's display currency first.",
-    "defaultCurrencyNotPresent": "Tidak dapat menghapus mata uang. Mata uang bawaan tidak ada dalam sistem"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "AI model not found.",

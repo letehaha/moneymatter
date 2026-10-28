@@ -178,8 +178,8 @@
           "placeholder": "Gib deine E-Mail-Adresse ein",
           "acceptButton": "Mein Konto löschen",
           "acceptButtonLoading": "Wird gelöscht...",
-          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
-          "appStoreWarningLink": "App Store subscriptions"
+          "appStoreWarning": "Das Löschen deines Kontos kündigt dein App-Store-Abo nicht und Apple wird dir weiterhin Kosten berechnen. Kündige es zuerst in deinen {link}.",
+          "appStoreWarningLink": "App-Store-Abonnements"
         },
         "notifications": {
           "success": "Dein Konto wurde erfolgreich gelöscht",

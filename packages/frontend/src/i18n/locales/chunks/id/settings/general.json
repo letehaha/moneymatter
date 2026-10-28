@@ -9,6 +9,12 @@
         "successNotification": "Pengaturan berhasil diperbarui",
         "errorNotification": "Gagal memperbarui pengaturan"
       },
+      "payday": {
+        "label": "Pay cycle starts on",
+        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "placeholder": "Pilih hari",
+        "successNotification": "Pay cycle start updated"
+      },
       "manualTransferMatching": {
         "label": "Cocokkan transfer dengan akun manual",
         "description": "Izinkan transfer yang terdeteksi otomatis untuk menghubungkan transaksi bank yang tersinkronisasi dengan transaksi yang Anda buat secara manual.",

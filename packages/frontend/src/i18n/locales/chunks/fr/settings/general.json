@@ -9,6 +9,12 @@
         "successNotification": "Paramètre mis à jour",
         "errorNotification": "Échec de la mise à jour du paramètre"
       },
+      "payday": {
+        "label": "Pay cycle starts on",
+        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "placeholder": "Sélectionner le jour",
+        "successNotification": "Pay cycle start updated"
+      },
       "manualTransferMatching": {
         "label": "Associer les virements aux comptes manuels",
         "description": "Permettre aux virements détectés automatiquement de relier une opération bancaire synchronisée à une opération créée manuellement.",

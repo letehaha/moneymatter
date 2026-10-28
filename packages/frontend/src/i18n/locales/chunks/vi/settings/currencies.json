@@ -50,6 +50,24 @@
         "buttonShort": "Xóa",
         "disabledTooltip": "Không thể xóa tiền tệ này vì vẫn còn tài khoản liên kết.",
         "successfullyDeleted": "Đã xóa thành công.",
+        "foreignAmountsWarning": "Foreign amounts recorded in this currency will be removed from your transactions. Amounts in the account currency stay unchanged.",
+        "inUse": {
+          "title": "This currency is still in use. Remove or change these first:",
+          "trashed": "(in trash)",
+          "types": {
+            "account": "Tài khoản",
+            "portfolio": "Portfolio display currency",
+            "holding": "Vị thế",
+            "portfolioCash": "Portfolio cash",
+            "portfolioTransfer": "Portfolio transfers",
+            "investmentTransaction": "Investment transactions",
+            "subscription": "Recurring payments",
+            "transactionTemplate": "Transaction templates",
+            "budget": "Budgets",
+            "goal": "Goals",
+            "ventureDeal": "Venture deals"
+          }
+        },
         "errors": {
           "deleteFailed": "Đã xảy ra lỗi ngoài dự kiến. Không thể xóa tiền tệ."
         }

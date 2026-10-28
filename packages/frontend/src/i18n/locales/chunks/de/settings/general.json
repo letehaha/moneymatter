@@ -9,6 +9,12 @@
         "successNotification": "Einstellung erfolgreich aktualisiert",
         "errorNotification": "Einstellung konnte nicht aktualisiert werden"
       },
+      "payday": {
+        "label": "Abrechnungszyklus beginnt am",
+        "description": "Der Tag des Monats, an dem dein Abrechnungszyklus beginnt. Der Standardzeitraum des Dashboards läuft von diesem Tag bis zum Tag vor diesem im nächsten Monat.",
+        "placeholder": "Tag auswählen",
+        "successNotification": "Beginn des Abrechnungszyklus aktualisiert"
+      },
       "manualTransferMatching": {
         "label": "Umbuchungen mit manuellen Konten abgleichen",
         "description": "Ermögliche es automatisch erkannten Umbuchungen, eine synchronisierte Banktransaktion mit einer manuell erstellten Transaktion zu verknüpfen.",

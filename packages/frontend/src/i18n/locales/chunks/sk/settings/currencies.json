@@ -50,6 +50,24 @@
         "buttonShort": "Zmazať",
         "disabledTooltip": "Túto menu nemožno zmazať, pretože je stále prepojená s jedným alebo viacerými účtami.",
         "successfullyDeleted": "Úspešne vymazané.",
+        "foreignAmountsWarning": "Sumy v cudzej mene zaznamenané v tejto mene sa odstránia z vašich transakcií. Sumy v mene účtu zostanú nezmenené.",
+        "inUse": {
+          "title": "Táto mena sa stále používa. Najprv odstráňte alebo zmeňte nasledujúce:",
+          "trashed": "(v koši)",
+          "types": {
+            "account": "Účty",
+            "portfolio": "Zobrazovacia mena portfólia",
+            "holding": "Pozície",
+            "portfolioCash": "Hotovosť v portfóliu",
+            "portfolioTransfer": "Prevody v portfóliu",
+            "investmentTransaction": "Investičné transakcie",
+            "subscription": "Pravidelné platby",
+            "transactionTemplate": "Šablóny transakcií",
+            "budget": "Rozpočty",
+            "goal": "Ciele",
+            "ventureDeal": "Obchody vo venture"
+          }
+        },
         "errors": {
           "deleteFailed": "Neočakávaná chyba. Menu sa nepodarilo zmazať."
         }

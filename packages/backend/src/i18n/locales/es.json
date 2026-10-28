@@ -91,6 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Esta planificación está en una cuenta conectada al banco, por lo que su banco la confirma automáticamente. Elimínela si ya no la espera.",
     "plannedCannotConfirmPayment": "Una transacción planificada no puede confirmar un pago. Espere a que se confirme y luego vincúlela.",
     "plannedCannotBeRefundLinked": "Una transacción planificada no puede formar parte de una vinculación de reembolso.",
+    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
+    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
+    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
+    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
+    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
+    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
+    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
+    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
+    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
     "splits": {
       "splitsOnTransfer": "No se pueden agregar divisiones a transacciones de transferencia",
       "splitLimitExceeded": "Se permiten como máximo {{max}} divisiones por transacción",
@@ -570,10 +579,7 @@
     "currencyCodeNotExist": "La moneda con el código proporcionado no existe.",
     "currencyNotExist": "La moneda con código \"{{currencyCode}}\" no existe.",
     "cannotDeleteDefaultCurrency": "No está permitido eliminar la moneda predeterminada. Primero quítela como predeterminada.",
-    "cannotDeleteCurrencyWithAccounts": "No está permitido eliminar una moneda asociada a cuentas existentes. Elimine primero las cuentas. Nombres de cuentas: \"{{accountNames}}\".",
-    "cannotDeleteCurrencyWithInvestments": "No está permitido eliminar la moneda \"{{currencyCode}}\" mientras sea utilizada por posiciones de inversión. Elimine primero esas posiciones.",
-    "cannotDeleteCurrencyUsedAsPortfolioDisplay": "No se puede eliminar {{currencyCode}}: es la moneda de visualización de uno de tus portafolios. Cambia primero la moneda de visualización de la cartera.",
-    "defaultCurrencyNotPresent": "No se puede eliminar la moneda. La moneda predeterminada no está presente en el sistema"
+    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
   },
   "ai": {
     "connectionNotFound": "Modelo de IA no encontrado.",
