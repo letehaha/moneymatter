@@ -551,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
       "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Remove & delete group",
+      "removeFromGroup": "Remove from group",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Manage",
+      "showMoreNote": "Show more",
+      "showLessNote": "Show less",
       "summary": {
         "transactions": "Transactions",
         "net": "Net",

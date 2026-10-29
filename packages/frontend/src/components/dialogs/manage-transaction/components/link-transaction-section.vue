@@ -3,7 +3,7 @@ import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
 import FieldLabel from '@/components/fields/components/field-label.vue';
 import { Button } from '@/components/lib/ui/button';
 import { TRANSACTION_TYPES, type TransactionModel } from '@bt/shared/types';
-import { Link2Icon } from '@lucide/vue';
+import { Link2Icon, Link2OffIcon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 
 import LinkedTransactionRow from './linked-transaction-row.vue';
@@ -102,9 +102,10 @@ const handleSelectTransaction = (transaction: TransactionModel) => {
 
   <template v-if="showUnlinkButton">
     <FormRow>
-      <Button class="w-full" :disabled="disabled" size="sm" @click="$emit('unlink')">{{
-        $t('dialogs.manageTransaction.linkSection.unlinkButton')
-      }}</Button>
+      <Button class="w-full" :disabled="disabled" size="sm" @click="$emit('unlink')">
+        <Link2OffIcon class="size-4" />
+        {{ $t('dialogs.manageTransaction.linkSection.unlinkButton') }}
+      </Button>
     </FormRow>
   </template>
 

@@ -1,3 +1,5 @@
+import { TRANSACTION_TYPES } from '@bt/shared/types';
+import { Money } from '@common/types/money';
 import TransactionGroups from '@models/transaction-groups.model';
 import type Transactions from '@models/transactions.model';
 import { literal } from 'sequelize';
@@ -23,6 +25,7 @@ export interface TransactionGroupWithAggregates {
   transactionCount: number;
   dateFrom: string | null;
   dateTo: string | null;
+  netRefAmount: Money;
 }
 
 export type TransactionGroupResult = TransactionGroupWithTransactions[] | TransactionGroupWithAggregates[];
@@ -47,6 +50,18 @@ const AGGREGATE_DATE_TO = literal(`(
   WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
 )`);
 
+const AGGREGATE_NET_REF_AMOUNT = literal(`(
+  SELECT COALESCE(SUM(
+    CASE WHEN "Transactions"."transactionType" = '${TRANSACTION_TYPES.income}'
+      THEN "Transactions"."refAmount"
+      ELSE -"Transactions"."refAmount"
+    END
+  ), 0)
+  FROM "TransactionGroupItems"
+  INNER JOIN "Transactions" ON "Transactions"."id" = "TransactionGroupItems"."transactionId"
+  WHERE "TransactionGroupItems"."groupId" = "TransactionGroups"."id"
+)`);
+
 export const getTransactionGroups = async ({
   userId,
   includeTransactions,
@@ -59,7 +74,7 @@ export const getTransactionGroups = async ({
     }) as Promise<TransactionGroupWithTransactions[]>;
   }
 
-  // Return groups with computed aggregates. Uses 3 correlated subqueries (COUNT, MIN, MAX)
+  // Return groups with computed aggregates. Uses correlated subqueries (COUNT, MIN, MAX, SUM)
   // which are efficient because TransactionGroupItems has a PK on (groupId, transactionId).
   // ORDER BY reuses the dateTo alias instead of repeating the MAX subquery.
   const groups = (await TransactionGroups.findAll({
@@ -69,11 +84,17 @@ export const getTransactionGroups = async ({
         [AGGREGATE_COUNT, 'transactionCount'],
         [AGGREGATE_DATE_FROM, 'dateFrom'],
         [AGGREGATE_DATE_TO, 'dateTo'],
+        [AGGREGATE_NET_REF_AMOUNT, 'netRefAmount'],
       ],
     },
     order: [[AGGREGATE_DATE_TO, 'DESC']],
     raw: true,
-  })) as unknown as (TransactionGroups & { transactionCount: string; dateFrom: string; dateTo: string })[];
+  })) as unknown as (TransactionGroups & {
+    transactionCount: string;
+    dateFrom: string;
+    dateTo: string;
+    netRefAmount: string;
+  })[];
 
   return groups.map((group) => ({
     id: group.id,
@@ -85,5 +106,6 @@ export const getTransactionGroups = async ({
     transactionCount: Number(group.transactionCount),
     dateFrom: group.dateFrom,
     dateTo: group.dateTo,
+    netRefAmount: Money.fromCents(Number(group.netRefAmount)),
   }));
 };
