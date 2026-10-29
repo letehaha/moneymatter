@@ -106,6 +106,7 @@
       "goToAccounts": "Ir a cuentas",
       "cadenceLabel": "Restablecer",
       "startsOnLabel": "Comienza en",
+      "startsOnOutOfRange": "Elige una fecha desde {from} hasta hoy.",
       "accountsLabel": "Cuentas",
       "accountsPlaceholder": "Seleccionar cuentas",
       "rolloverLabel": "Rollover",

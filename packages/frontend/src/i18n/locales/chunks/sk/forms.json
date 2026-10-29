@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Vyberte kategóriu účtu",
       "creditLimitLabel": "Úverový limit",
       "creditLimitPlaceholder": "Úverový limit",
+      "defaultPaymentTypeLabel": "Predvolený spôsob platby",
       "submitButton": "Vytvoriť",
       "submitButtonLoading": "Vytváranie...",
       "notifications": {

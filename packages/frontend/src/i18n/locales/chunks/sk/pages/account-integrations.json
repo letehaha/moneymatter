@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Poľská zmenárenská platforma s 23 menami"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Bezplatne synchronizujte transakcie z novozélandských bánk pomocou osobnej aplikácie Akahu"
         }
       },
       "monobank": {
@@ -293,6 +297,35 @@
           "closeButton": "Rozumiem"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Zadajte svoj Akahu User Access Token",
+        "userTokenHint": "Zobrazený na stránke vašej osobnej aplikácie na my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Zadajte svoj Akahu App ID Token",
+        "appTokenHint": "Zobrazený na tej istej stránke",
+        "help": {
+          "trigger": "Kde nájdem svoje Akahu tokeny?",
+          "title": "Získajte tokeny svojej osobnej aplikácie Akahu",
+          "step1": "Otvorte svoje {link} počas prihlásenia do Akahu.",
+          "step2": "Vytvorte osobnú aplikáciu (alebo otvorte existujúcu) — najprv v Akahu pripojte svoje bankové účty.",
+          "step3": "Skopírujte User Access Token a App ID Token a oba vložte do polí vyššie."
+        },
+        "backButton": "Späť",
+        "connectingButton": "Pripájanie...",
+        "connectButton": "Pripojiť",
+        "loadingAccounts": "Načítavanie účtov...",
+        "accountsPreviewHint": "Nájdené účty (počet: {count}). Importujú sa všetky.",
+        "importingButton": "Importovanie...",
+        "importButton": "Importovať účty (počet: {count})",
+        "importSuccess": "Pripojené účty (počet: {count}). Transakcie sa synchronizujú na pozadí.",
+        "skipButton": "Preskočiť",
+        "skipTooltip": "Preskočte import, ak chcete neskôr pripojiť len konkrétne účty, alebo znova prepojiť existujúce účty v ich nastaveniach.",
+        "errors": {
+          "connectFailed": "Pripojenie k Akahu zlyhalo",
+          "importFailed": "Účty sa nepodarilo importovať"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integrácia bola úspešne odpojená",
         "disconnectFailed": "Integráciu sa nepodarilo odpojiť",
@@ -449,7 +482,8 @@
         "enableBanking": "Keďže plynulá integrácia by si vyžadovala platbu niekoľko tisíc dolárov mesačne, jediný spôsob pripojenia je vytvoriť si vlastný vývojársky účet Enable Banking, nastaviť „testovaciu\" aplikáciu s reálnym pripojením na vlastné banky, uložiť certifikáty a kľúče a nahrať ich sem. Vyžaduje sa stredne pokročilá technická znalosť",
         "lunchflow": "Stačí pripojiť svoje banky na strane LunchFlow, potom vytvoriť a vložiť svoj API kľúč pre LunchFlow",
         "simplefin": "SimpleFIN Bridge je platená služba. Vytvoríte si bridge účet, pripojíte banku a vložíte setup token — bez potreby vývojárskeho nastavenia.",
-        "walutomat": "Vyžaduje vygenerovanie páru kľúčov RSA a nahratie verejného kľúča na panel Walutomatu"
+        "walutomat": "Vyžaduje vygenerovanie páru kľúčov RSA a nahratie verejného kľúča na panel Walutomatu",
+        "akahu": "Bezplatné pre vaše vlastné účty: vytvorte si osobnú aplikáciu Akahu na my.akahu.nz, pripojte tam svoje novozélandské banky a potom vložte oba tokeny"
       }
     },
     "connectionName": {

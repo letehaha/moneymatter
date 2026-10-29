@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Pilih kategori akun",
       "creditLimitLabel": "Batas kredit",
       "creditLimitPlaceholder": "Batas kredit",
+      "defaultPaymentTypeLabel": "Default payment type",
       "submitButton": "Buat",
       "submitButtonLoading": "Membuat...",
       "notifications": {

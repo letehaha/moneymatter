@@ -103,7 +103,8 @@
       "debitCard": "Carte de débit",
       "mobilePayment": "Paiement mobile",
       "voucher": "Bon d'achat",
-      "webPayment": "Paiement en ligne"
+      "webPayment": "Paiement en ligne",
+      "none": "Aucune"
     },
     "vehicleClasses": {
       "sedan": "Berline",
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Voulez-vous vraiment retirer cette opération du groupe ?",
       "removeButtonText": "Retirer",
       "removeAndDeleteButtonText": "Retirer et supprimer le groupe",
+      "removeFromGroup": "Retirer du groupe",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Gérer",
+      "showMoreNote": "Show more",
+      "showLessNote": "Voir moins",
       "summary": {
         "transactions": "Opérations",
         "net": "Net",

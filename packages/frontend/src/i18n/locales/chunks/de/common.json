@@ -103,7 +103,8 @@
       "debitCard": "Debitkarte",
       "mobilePayment": "Mobiles Bezahlen",
       "voucher": "Gutschein",
-      "webPayment": "Web-Zahlung"
+      "webPayment": "Web-Zahlung",
+      "none": "Keine"
     },
     "vehicleClasses": {
       "sedan": "Limousine",
@@ -171,11 +172,11 @@
           "sharedAccount": "Kann nicht ausgewählt werden: Diese Transaktion befindet sich auf einem mit dir geteilten Konto, und nur dessen Eigentümer kann sie bearbeiten."
         },
         "payment": {
-          "paidFrom": "Paid from {count} accounts",
-          "receivedInto": "Received into {count} accounts",
-          "partOf": "Part of a {total} payment",
-          "thisAccount": "(this account)",
-          "loadError": "Couldn't open this transaction. Try again."
+          "paidFrom": "Von {count} Konten bezahlt",
+          "receivedInto": "Auf {count} Konten eingegangen",
+          "partOf": "Teil einer {total}-Zahlung",
+          "thisAccount": "(dieses Konto)",
+          "loadError": "Diese Transaktion konnte nicht geöffnet werden. Versuche es noch einmal."
         }
       }
     },
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} voraus",
+        "behind": "{duration} im Rückstand",
+        "onPace": "Im Tempo",
+        "backInReach": "Wieder in Reichweite",
+        "offTrack": "Vom Kurs abgekommen"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Bist du sicher, dass du diese Transaktion aus der Gruppe entfernen möchtest?",
       "removeButtonText": "Entfernen",
       "removeAndDeleteButtonText": "Entfernen & Gruppe löschen",
+      "removeFromGroup": "Aus Gruppe entfernen",
+      "saveError": "Gruppe konnte nicht gespeichert werden",
+      "removeError": "Transaktion konnte nicht aus der Gruppe entfernt werden",
+      "manageTransactions": "Verwalten",
+      "showMoreNote": "Mehr anzeigen",
+      "showLessNote": "Weniger anzeigen",
       "summary": {
         "transactions": "Transaktionen",
         "net": "Netto",

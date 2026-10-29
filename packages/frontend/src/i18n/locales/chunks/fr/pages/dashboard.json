@@ -428,13 +428,6 @@
       "loadFailed": "Impossible de charger les paiements récurrents"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Inclure les paiements planifiés",
-          "on": "Activé",
-          "off": "Désactivé"
-        }
-      },
       "settings": {
         "excludeTitle": "Exclure des opérations",
         "excludeTransfersDescription": "Masquer les virements entre vos comptes",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Masquer les opérations d'ajustement de solde",
         "plannedTitle": "Opérations prévisionnelles",
         "excludePlannedDescription": "Masquer les opérations prévisionnelles en attente de la liste",
+        "scheduledTitle": "Paiements récurrents",
+        "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
+        "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Aucune exclusion",
         "tagsStyleTitle": "Étiquettes",
         "tagsStyleNames": "Noms",
@@ -504,7 +500,8 @@
         "title": "Planifiez votre trajectoire FIRE",
         "description": "Fonctionnalité Plus",
         "action": "Débloquer"
-      }
+      },
+      "paceVs": "vs {month}"
     }
   }
 }

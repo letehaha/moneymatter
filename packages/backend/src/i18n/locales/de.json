@@ -1,6 +1,6 @@
 {
   "common": {
-    "processAlreadyLocked": "Der Sync-Prozess für „{{lockKey}}“ ist bereits gesperrt.",
+    "processAlreadyLocked": "Der Sync-Prozess für \"{{lockKey}}\" ist bereits gesperrt.",
     "serviceTemporarilyUnavailable": "Der Dienst ist vorübergehend nicht verfügbar. Bitte versuche es später erneut.",
     "jobInterruptedByServerUpdate": "Ein Server-Update hat dies unterbrochen, bevor es abgeschlossen werden konnte. Es wurde nichts geändert."
   },
@@ -91,15 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Dieser Plan befindet sich auf einem mit der Bank verbundenen Konto und wird daher automatisch von deiner Bank bestätigt. Lösche ihn, wenn er nicht mehr erwartet wird.",
     "plannedCannotConfirmPayment": "Eine geplante Transaktion kann eine Zahlung nicht bestätigen. Warte, bis sie bestätigt wird, und verknüpfe sie dann.",
     "plannedCannotBeRefundLinked": "Eine geplante Transaktion kann nicht Teil einer Rückerstattungsverknüpfung sein.",
-    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
-    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
-    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
-    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
-    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
-    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
-    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
-    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
-    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "paymentLegsNotAllowed": "Nur reguläre Einnahmen oder Ausgaben auf deinem eigenen Konto können auf mehrere Konten aufgeteilt werden. Umbuchungen, Rückerstattungen, geplante sowie kategorienübergreifende Transaktionen sind nicht möglich.",
+    "inPaymentNotAllowed": "Diese Transaktion ist Teil einer Zahlung von mehreren Konten. Entferne sie zuerst aus der Zahlung.",
+    "paymentLegInvalidAccount": "Jeder neue Teil muss sich auf einem deiner anderen manuellen Konten befinden.",
+    "paymentLegDuplicateAccount": "Jeder neue Teil muss sich auf einem anderen Konto befinden.",
+    "paymentLegEditThroughMain": "Dies ist Teil einer Zahlung von mehreren Konten. Bearbeite stattdessen die Haupttransaktion.",
+    "paymentAmountRequired": "Gib den Betrag in der Währung der Haupttransaktion für jeden Teil in einer anderen Währung ein.",
+    "paymentLinkNotAllowed": "Diese Transaktion kann nicht mit der Zahlung verknüpft werden. Es können nur eigene Einnahmen oder Ausgaben desselben Typs verknüpft werden – keine Umbuchung, Rückerstattung, Aufteilung, ausstehende Transaktion oder Teil einer anderen Zahlung.",
+    "paymentLinkedAmountFixed": "Der Betrag einer verknüpften Transaktion kann nicht geändert werden.",
+    "paymentLinkedTypeMismatch": "Verknüpfte Transaktionen müssen denselben Typ haben wie die Zahlung. Hebe die Verknüpfung zuerst auf.",
     "splits": {
       "splitsOnTransfer": "Umbuchungstransaktionen können keine Aufteilungen hinzugefügt werden",
       "splitLimitExceeded": "Maximal {{max}} Aufteilungen pro Transaktion erlaubt",
@@ -355,6 +355,14 @@
       "invalidApiKey": "Ungültiger LunchFlow API-Schlüssel. Bitte überprüfe deine Zugangsdaten.",
       "accountNoExternalId": "Konto hat keine externe ID für die LunchFlow-Synchronisierung.",
       "accountNotFound": "LunchFlow-Konto nicht gefunden."
+    },
+    "akahu": {
+      "invalidCredentialsFormat": "Ungültiges Format der Akahu-Anmeldedaten. Ein User Access Token und ein App ID Token sind erforderlich.",
+      "invalidTokens": "Ungültige Akahu-Token. Überprüfe den User Access Token und den App ID Token auf deiner Akahu-App-Seite.",
+      "accountNoExternalId": "Konto hat keine externe ID für die Akahu-Synchronisierung.",
+      "accountNotFound": "Akahu-Konto nicht gefunden.",
+      "rateLimited": "Akahu limitiert derzeit die Anfragen. Bitte versuche es in Kürze noch einmal.",
+      "missingCurrency": "Akahu hat für dieses Konto keine Währung zurückgegeben."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Ungültiges Format der SimpleFIN-Zugangsdaten.",
@@ -858,5 +866,8 @@
       "title": "Ziel erreicht: {{name}}",
       "message": "Du hast {{amount}} {{currencyCode}} gespart."
     }
+  },
+  "backgroundJobs": {
+    "notFound": "Diese Aufgabe läuft nicht mehr – der Server wurde möglicherweise neu gestartet. Bitte versuche es erneut."
   }
 }

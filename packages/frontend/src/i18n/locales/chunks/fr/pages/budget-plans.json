@@ -106,6 +106,7 @@
       "goToAccounts": "Accéder aux comptes",
       "cadenceLabel": "Fréquence",
       "startsOnLabel": "Débute le",
+      "startsOnOutOfRange": "Pick a date from {from} to today.",
       "accountsLabel": "Comptes",
       "accountsPlaceholder": "Sélectionner des comptes",
       "rolloverLabel": "Report",

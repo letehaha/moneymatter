@@ -1,0 +1,31 @@
+{
+  "settings": {
+    "appearance": {
+      "title": "Aparência",
+      "description": "Personalize a aparência do app e as seções que aparecem na barra lateral.",
+      "theme": {
+        "title": "Tema",
+        "description": "Escolha a aparência do app. “Sistema” segue a configuração do seu dispositivo."
+      },
+      "sidebar": {
+        "title": "Seções da barra lateral",
+        "description": "Escolha quais seções aparecem na barra lateral.",
+        "alwaysVisibleTooltip": "Esta seção está sempre visível."
+      },
+      "sidebarNav": {
+        "title": "Navegação da barra lateral",
+        "description": "Escolha quais páginas aparecem em “Contas” na navegação da barra lateral."
+      },
+      "header": {
+        "title": "Cabeçalho",
+        "description": "Escolha quais ações do cabeçalho ficam visíveis.",
+        "supportButton": "Botão de suporte"
+      },
+      "currency": {
+        "title": "Símbolos de moeda",
+        "description": "Como os valores mostram a moeda. Símbolos curtos ficam como Rp, ₴ ou zł em vez de IDR, UAH ou PLN, mas moedas que compartilham um símbolo (USD, CAD, AUD, SGD) viram todas $.",
+        "narrowSymbol": "Usar símbolos de moeda curtos"
+      }
+    }
+  }
+}

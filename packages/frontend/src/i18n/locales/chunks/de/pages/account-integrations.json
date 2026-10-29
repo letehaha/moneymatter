@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Polnische Währungsumtausch-Plattform mit 23 Währungen"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Synchronisiere Transaktionen von neuseeländischen Banken kostenlos über eine persönliche Akahu-App"
         }
       },
       "monobank": {
@@ -293,6 +297,35 @@
           "closeButton": "Verstanden"
         }
       },
+      "akahu": {
+        "userTokenLabel": "Benutzer-Zugriffstoken",
+        "userTokenPlaceholder": "Gib dein Akahu-Benutzer-Zugriffstoken ein",
+        "userTokenHint": "Wird auf deiner persönlichen App-Seite unter my.akahu.nz angezeigt",
+        "appTokenLabel": "App-ID-Token",
+        "appTokenPlaceholder": "Gib dein Akahu-App-ID-Token ein",
+        "appTokenHint": "Wird ebenfalls auf derselben Seite angezeigt",
+        "help": {
+          "trigger": "Wo finde ich meine Akahu-Token?",
+          "title": "Hole dir deine persönlichen App-Token von Akahu",
+          "step1": "Öffne {link}, während du bei Akahu angemeldet bist.",
+          "step2": "Erstelle eine persönliche App (oder öffne eine bestehende) – verbinde zuerst deine Bankkonten in Akahu.",
+          "step3": "Kopiere das Benutzer-Zugriffstoken und das App-ID-Token und füge beide in die Felder oben ein."
+        },
+        "backButton": "Zurück",
+        "connectingButton": "Verbinden...",
+        "connectButton": "Verbinden",
+        "loadingAccounts": "Konten werden geladen...",
+        "accountsPreviewHint": "{count} Konto/Konten gefunden. Alle Konten werden importiert.",
+        "importingButton": "Importieren...",
+        "importButton": "{count} Konto/Konten importieren",
+        "importSuccess": "{count} Konto/Konten verbunden. Transaktionen werden im Hintergrund synchronisiert.",
+        "skipButton": "Überspringen",
+        "skipTooltip": "Überspringe den Import, um später nur bestimmte Konten zu verbinden oder bestehende Konten über deren Einstellungen neu zu verknüpfen.",
+        "errors": {
+          "connectFailed": "Verbindung zu Akahu fehlgeschlagen",
+          "importFailed": "Import der Konten fehlgeschlagen"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integration erfolgreich getrennt",
         "disconnectFailed": "Trennen der Integration fehlgeschlagen",
@@ -449,7 +482,8 @@
         "enableBanking": "Da eine reibungslose Integration mehrere Tausend Euro pro Monat kostet, ist eine Verbindung nur möglich, indem du ein eigenes Enable Banking-Entwicklerkonto erstellst, eine \"Test\"-Anwendung mit echtem Zugriff auf deine Konten einrichtest, Zertifikate/Schlüssel speicherst und hier hochlädst. Moderate technische Kenntnisse erforderlich",
         "lunchflow": "Verbinde einfach deine Banken bei LunchFlow, erstelle dann deinen LunchFlow API-Schlüssel und füge ihn hier ein",
         "simplefin": "SimpleFIN Bridge ist ein kostenpflichtiger Dienst. Erstelle ein Brückenkonto, verknüpfe deine Bank und füge ein Setup-Token ein — keine Entwicklereinrichtung erforderlich.",
-        "walutomat": "Erfordert die Generierung eines RSA-Schlüsselpaars und das Hochladen des öffentlichen Schlüssels im Walutomat-Dashboard"
+        "walutomat": "Erfordert die Generierung eines RSA-Schlüsselpaars und das Hochladen des öffentlichen Schlüssels im Walutomat-Dashboard",
+        "akahu": "Kostenlos für deine eigenen Konten: Erstelle eine persönliche Akahu-App auf my.akahu.nz, verbinde dort deine neuseeländischen Banken und füge dann die beiden Token ein"
       }
     },
     "connectionName": {

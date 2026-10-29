@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Выберите категорию счёта",
       "creditLimitLabel": "Кредитный лимит",
       "creditLimitPlaceholder": "Кредитный лимит",
+      "defaultPaymentTypeLabel": "Default payment type",
       "submitButton": "Создать",
       "submitButtonLoading": "Создание...",
       "notifications": {

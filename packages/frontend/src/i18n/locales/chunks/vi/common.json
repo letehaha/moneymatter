@@ -103,7 +103,8 @@
       "debitCard": "Debit card",
       "mobilePayment": "Mobile payment",
       "voucher": "Voucher",
-      "webPayment": "Web payment"
+      "webPayment": "Web payment",
+      "none": "None"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
       "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Remove & delete group",
+      "removeFromGroup": "Bỏ khỏi nhóm",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Quản lý",
+      "showMoreNote": "Show more",
+      "showLessNote": "Thu gọn",
       "summary": {
         "transactions": "Giao dịch",
         "net": "Thu chi ròng",

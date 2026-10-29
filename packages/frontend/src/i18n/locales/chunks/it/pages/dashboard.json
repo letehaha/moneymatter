@@ -428,13 +428,6 @@
       "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Include scheduled payments",
-          "on": "On",
-          "off": "Off"
-        }
-      },
       "settings": {
         "excludeTitle": "Exclude transactions",
         "excludeTransfersDescription": "Hide transfers between your own accounts",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Hide balance adjustment transactions",
         "plannedTitle": "Planned transactions",
         "excludePlannedDescription": "Hide pending planned transactions from the list",
+        "scheduledTitle": "Pagamenti programmati",
+        "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
+        "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Nothing excluded",
         "tagsStyleTitle": "Etichette",
         "tagsStyleNames": "Names",
@@ -504,7 +500,8 @@
         "title": "Plan your path to FIRE",
         "description": "Plus feature",
         "action": "Unlock"
-      }
+      },
+      "paceVs": "vs {month}"
     }
   }
 }

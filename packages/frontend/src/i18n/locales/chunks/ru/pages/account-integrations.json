@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Польская платформа обмена валют с поддержкой 23 валют"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
         }
       },
       "monobank": {
@@ -293,6 +297,35 @@
           "closeButton": "Понятно"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Enter your Akahu User Access Token",
+        "userTokenHint": "Shown on your personal app page at my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Enter your Akahu App ID Token",
+        "appTokenHint": "Also shown on the same page",
+        "help": {
+          "trigger": "Where do I find my Akahu tokens?",
+          "title": "Get your Akahu personal app tokens",
+          "step1": "Open your {link} while signed in to Akahu.",
+          "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
+          "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
+        },
+        "backButton": "Назад",
+        "connectingButton": "Подключение...",
+        "connectButton": "Подключить",
+        "loadingAccounts": "Загрузка счетов...",
+        "accountsPreviewHint": "Найдено счетов: {count}. Все счета будут импортированы.",
+        "importingButton": "Импорт...",
+        "importButton": "Импортировать счетов: {count}",
+        "importSuccess": "Успешно синхронизировано счетов: {count}",
+        "skipButton": "Пропустить",
+        "skipTooltip": "Пропустите импорт, чтобы позже подключить только нужные счета или повторно связать существующие счета в их настройках.",
+        "errors": {
+          "connectFailed": "Failed to connect to Akahu",
+          "importFailed": "Не удалось импортировать счета"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Интеграция успешно отключена",
         "disconnectFailed": "Не удалось отключить интеграцию",
@@ -449,7 +482,8 @@
         "enableBanking": "Поскольку полноценная интеграция стоит несколько тысяч долларов в месяц, подключение возможно только через собственный разработческий аккаунт Enable Banking и настройку «тестового» приложения с реальными банковскими подключениями, сертификатами и ключами. Требуются умеренные технические знания",
         "lunchflow": "Подключите банки на стороне LunchFlow, затем создайте и вставьте API-ключ LunchFlow",
         "simplefin": "SimpleFIN Bridge — платный сервис. Создайте аккаунт Bridge, свяжите банк и вставьте токен настройки — разработческая настройка не требуется.",
-        "walutomat": "Требуется создать пару RSA-ключей и загрузить открытый ключ в панель Walutomat"
+        "walutomat": "Требуется создать пару RSA-ключей и загрузить открытый ключ в панель Walutomat",
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
       }
     },
     "connectionName": {

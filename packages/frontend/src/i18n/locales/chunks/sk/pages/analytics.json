@@ -337,6 +337,45 @@
           "addBirthYear": "Pridať rok narodenia"
         }
       },
+      "pace": {
+        "row": "{status} oproti {anchor}",
+        "noHistory": "Nedostatočná história pred {month}",
+        "loadFailed": "Porovnanie sa nepodarilo načítať",
+        "compareWith": "Porovnať s {month}",
+        "picker": {
+          "title": "Porovnať s",
+          "rollingLabel": "{month} · pred 1 rokom",
+          "rolling": "pred 1 rokom",
+          "rollingHint": "Posuvné · aktuálne {month}",
+          "specific": "Konkrétny mesiac",
+          "specificHint": "Zostáva pevný",
+          "prevYear": "Predchádzajúci rok",
+          "nextYear": "Nasledujúci rok",
+          "earliest": "Najskorší je {month}. FIRE potrebuje pred ním 3 mesiace sledovaných výdavkov."
+        },
+        "details": {
+          "title": "Tempo od {month}",
+          "moved": "Váš dátum FIRE sa posunul z {from} na {to}.",
+          "withinBand": "Váš dátum FIRE je v rámci {tolerance} od predpovede z {month} ({date}).",
+          "backInReach": "Podľa čísel z {month} bol FIRE nedosiahnuteľný. Teraz je to {date}.",
+          "offTrack": "Predpoveď z {month} bola {date}. Podľa dnešných čísel je FIRE nedosiahnuteľný.",
+          "metric": "Metrika",
+          "today": "Dnes",
+          "change": "Zmeniť",
+          "fireDate": "Dátum FIRE",
+          "saved": "Usporené doteraz",
+          "spending": "Výdavky",
+          "saving": "Sporenie",
+          "expected": "očakávané {amount}",
+          "sooner": "o {duration} skôr",
+          "later": "o {duration} neskôr",
+          "sameMonth": "Rovnaký mesiac",
+          "outOfReach": "Nedosiahnuteľný",
+          "band": "Na dobrej ceste znamená v rámci {tolerance} (2 % zostávajúceho času do FIRE).",
+          "recorded": "Zostatok, cash flow a predpoklady k {date} sa prepočítavajú naživo z vašich dát.",
+          "notRecorded": "Zostatok a cash flow k {date} sa prepočítavajú naživo z vašich dát. Vaše vtedajšie predpoklady neboli zaznamenané, preto sa používajú dnešné."
+        }
+      },
       "chart": {
         "ariaLabel": "História čistej hodnoty majetku a predpokladaná cesta k vášmu cieľovému číslu FIRE",
         "actual": "Skutočnosť",
@@ -344,7 +383,10 @@
         "range": "±2 body výnosu",
         "today": "Dnes",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "Predpoveď na {month}",
+        "forecastLabel": "Predpoveď na {month} · {date}",
+        "actualSince": "Skutočnosť od {month}"
       },
       "milestones": {
         "reached": "Dosiahnuté",
@@ -439,6 +481,7 @@
     },
     "table": {
       "total": "Spolu",
+      "net": "Čistý zostatok",
       "collapseAll": "Zbaliť všetko",
       "expandAll": "Rozbaliť všetko",
       "expandRow": "Rozbaliť",

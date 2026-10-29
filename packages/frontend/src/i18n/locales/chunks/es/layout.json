@@ -13,7 +13,7 @@
     "automations": "Automatizaciones",
     "accountDetails": "Detalles de la cuenta",
     "helpAndDocs": "Ayuda & Documentación",
-    "community": "Community",
+    "community": "Comunidad",
     "logout": "Cerrar sesión",
     "appVersion": "Versión de app {version}",
     "updateAvailable": "Actualización disponible",
@@ -120,8 +120,8 @@
       "unavailable": "El envío no está disponible en este momento. Use el tablero de abajo en su lugar.",
       "or": "o",
       "reddit": {
-        "title": "Ask the community on Reddit",
-        "description": "Get help from other users, share how you set things up, and follow updates."
+        "title": "Preguntar a la comunidad en Reddit",
+        "description": "Obtén ayuda de otros usuarios, comparte cómo configuras las cosas y sigue las actualizaciones."
       },
       "board": {
         "title": "Publíquelo en el tablero público",

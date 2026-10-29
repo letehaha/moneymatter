@@ -1,0 +1,182 @@
+{
+  "payees": {
+    "title": "Favorecidos",
+    "subtitle": "Lista central dos favorecidos das suas transações",
+    "newPayeeButton": "Novo favorecido",
+    "searchPlaceholder": "Buscar favorecidos...",
+    "columns": {
+      "name": "Nome",
+      "transactionCount": "Nº de trans.",
+      "netFlow": "Fluxo líquido",
+      "category": "Categoria",
+      "categoryHint": "Categoria efetiva deste favorecido. Mostra a categoria padrão, se você tiver definido uma — se não, a categoria mais usada nas transações anteriores. É preenchida automaticamente quando você cria uma nova transação.",
+      "topCategory": "Categoria mais usada",
+      "defaultCategory": "Categoria padrão",
+      "defaultTags": "Tags padrão"
+    },
+    "sort": {
+      "label": "Ordenar por",
+      "transactionCount": "Nº de transações",
+      "netFlow": "Fluxo líquido",
+      "name": "Nome",
+      "lastSeen": "Atividade recente",
+      "defaultTags": "Tags padrão"
+    },
+    "actions": {
+      "menu": "Ações",
+      "rename": "Renomear",
+      "merge": "Mesclar com...",
+      "delete": "Excluir",
+      "deleteAndIgnore": "Excluir e ignorar"
+    },
+    "bulk": {
+      "select": "Selecionar",
+      "selectedCount": "Selecionados: {count}",
+      "clearSelection": "Limpar seleção",
+      "selectAll": "Selecionar todos os favorecidos carregados",
+      "selectRow": "Selecionar “{name}”",
+      "deleteTitle": "Excluir {count} favorecido? | Excluir {count} favorecidos?",
+      "deleteDescription": "As transações continuam, mas perdem o vínculo com o favorecido. Não é possível desfazer esta ação.",
+      "deleteAndIgnoreTitle": "Excluir e ignorar {count} favorecido? | Excluir e ignorar {count} favorecidos?",
+      "deleteAndIgnoreDescription": "Os nomes vão para a lista de ignorados, então importações e sincronizações bancárias não vão recriá-los. As transações continuam, mas perdem o vínculo com o favorecido."
+    },
+    "emptyState": {
+      "title": "Nenhum favorecido ainda",
+      "description": "Conecte um banco para detectar favorecidos automaticamente ou crie um manualmente."
+    },
+    "form": {
+      "namePlaceholder": "Digite o nome do favorecido",
+      "categoryPlaceholder": "Escolha uma categoria",
+      "categorizationMode": {
+        "label": "Categorização por IA",
+        "enforce": {
+          "label": "Sempre usar a categoria do favorecido",
+          "hint": "A categoria padrão do favorecido é sempre usada. A categorização por IA não é feita para este favorecido."
+        },
+        "hint": {
+          "label": "Usar como sugestão",
+          "hint": "Define a categoria padrão do favorecido, mas a IA ainda pode trocá-la com base nos detalhes da transação."
+        },
+        "off": {
+          "label": "Desativada",
+          "hint": "A categoria padrão do favorecido é ignorada. A categorização fica por conta da IA ou das suas outras regras."
+        }
+      }
+    },
+    "detail": {
+      "categorizationSection": "Categorização",
+      "aliasesHeading": "Nomes alternativos",
+      "aliasesEmpty": "Nenhum nome alternativo ainda. Novas variações aparecem aqui quando este favorecido corresponder a outro nome de estabelecimento.",
+      "cannotDeleteCanonicalAlias": "Não é possível excluir o nome alternativo igual ao nome do favorecido. Renomeie o favorecido.",
+      "deleteAliasConfirm": "Remover este nome alternativo?",
+      "addAlias": "Adicionar",
+      "addAliasTitle": "Adicionar nome alternativo",
+      "addAliasDescription": "As próximas transações cujo texto do estabelecimento, depois de normalizado, for igual a este nome alternativo serão vinculadas automaticamente a este favorecido. As transações anteriores não mudam.",
+      "addAliasInputLabel": "Nome do estabelecimento",
+      "addAliasPlaceholder": "ex.: LOJA ACME #1234",
+      "aliasDuplicate": "Este nome alternativo já está associado a este favorecido.",
+      "aliasUsedByOtherPayee": "Este nome alternativo já é usado por “{name}”.",
+      "deletePayeeTitle": "Excluir favorecido?",
+      "deletePayeeDescription": "As transações vinculadas mantêm a categoria, mas perdem o vínculo com o favorecido. Não é possível desfazer esta ação.",
+      "deleteAndIgnoreTitle": "Excluir este favorecido e ignorar correspondências futuras?",
+      "deleteAndIgnoreDescription": "Exclui este favorecido E adiciona os nomes dele (o principal e todos os alternativos) à lista de nomes ignorados. As próximas sincronizações não vão recriá-lo a partir do texto bruto do estabelecimento. As transações vinculadas continuam, mas perdem o vínculo com o favorecido.",
+      "mergeTitle": "Mesclar com outro favorecido",
+      "mergeDescription": "Escolha o favorecido de destino. Todas as transações e nomes alternativos vão para ele, e este favorecido é excluído.",
+      "confirmMerge": "Mesclar",
+      "topCategoryHint": "A categoria mais usada nas transações vinculadas a este favorecido. É usada como alternativa quando não há categoria padrão definida.",
+      "defaultCategoryPlaceholder": "Escolha uma categoria",
+      "defaultTagsLabel": "Aplicar tags automaticamente",
+      "defaultTagsPlaceholder": "Escolha as tags para aplicar automaticamente",
+      "defaultTagsHint": "Estas tags são adicionadas automaticamente às novas transações vinculadas a este favorecido (sincronizações bancárias e importações).",
+      "defaultLocationLabel": "Local padrão",
+      "defaultLocationEmpty": "Nenhum local definido",
+      "defaultLocationHint": "As transações vinculadas a este favorecido que não têm local próprio recebem este, tanto na criação quanto na sincronização bancária.",
+      "clearDefaultLocationTitle": "Remover local padrão?",
+      "clearDefaultLocationDescription": "As novas transações vinculadas a este favorecido não vão mais receber este local. As transações existentes mantêm o delas.",
+      "applyTagsToExisting": "Aplicar às transações existentes"
+    },
+    "logo": {
+      "change": "Trocar logo",
+      "dialogTitle": "Trocar logo",
+      "dialogDescription": "Busque o logo de uma marca para representar este favorecido.",
+      "resetToAuto": "Voltar para o automático",
+      "updatedToast": "Logo atualizado",
+      "resetToast": "Logo voltou para o automático",
+      "fieldLabel": "Logo",
+      "domainHint": "Para encontrar a marca exata, digite o domínio do site da empresa (ex.: amazon.com) — assim o logo certo sempre aparece."
+    },
+    "transactionsDialog": {
+      "title": "{name} — transações",
+      "empty": "Nenhuma transação vinculada a este favorecido.",
+      "unlink": "Desvincular do favorecido",
+      "unlinked": "Transação desvinculada do favorecido",
+      "unlinkConfirmTitle": "Desvincular transação?",
+      "unlinkConfirmDescription": "Esta transação não vai mais estar vinculada ao favorecido “{name}”. As próximas sincronizações bancárias não vão vinculá-la de novo automaticamente.",
+      "unlinkConfirmLabel": "Desvincular"
+    },
+    "toasts": {
+      "created": "Favorecido criado",
+      "updated": "Favorecido atualizado",
+      "deleted": "Favorecido excluído",
+      "merged": "Favorecidos mesclados",
+      "aliasDeleted": "Nome alternativo removido",
+      "aliasAdded": "Nome alternativo adicionado",
+      "deletedAndIgnored": "Favorecido excluído e adicionado à lista de nomes ignorados",
+      "tagsAppliedToExisting": "Tags aplicadas a transações: {count}",
+      "bulkDeleted": "{count} favorecido excluído | {count} favorecidos excluídos",
+      "bulkDeletedAndIgnored": "{count} favorecido excluído e ignorado | {count} favorecidos excluídos e ignorados"
+    },
+    "errors": {
+      "collision": "Já existe um favorecido com este nome. Mescle os dois.",
+      "generic": "Algo deu errado. Tente de novo."
+    },
+    "tabs": {
+      "manage": "Gerenciar",
+      "settings": "Configurações"
+    },
+    "settings": {
+      "title": "Configurações de detecção de favorecidos",
+      "description": "Controle como o app detecta automaticamente os favorecidos das suas transações sincronizadas.",
+      "howDetectionWorks": "Como a detecção funciona",
+      "payeeFromDescription": {
+        "label": "Detectar favorecidos pela descrição da transação",
+        "description": "Quando seu banco não envia um campo próprio de estabelecimento, usa a descrição da transação (observação) para detectar favorecidos automaticamente. Útil para conexões bancárias em que o campo de estabelecimento vem vazio ou nem existe. Pode gerar nomes de favorecidos menos limpos (ex.: prefixos de pagamento parcelado), que você pode renomear ou mesclar depois.",
+        "successNotification": "Preferência atualizada",
+        "errorNotification": "Não foi possível atualizar a preferência"
+      },
+      "promotionThreshold": {
+        "label": "Criar um favorecido depois de N ocorrências",
+        "description": "Quantas transações precisam ter o mesmo nome de estabelecimento para que um favorecido seja criado automaticamente. Use 1 para criar favorecidos já na primeira transação.",
+        "successNotification": "Limite para criar favorecidos atualizado",
+        "errorNotification": "Não foi possível atualizar o limite para criar favorecidos"
+      },
+      "bulkCategorizationMode": {
+        "label": "Aplicar o modo de categorização a todos os favorecidos",
+        "description": "Escolha como a categorização deve funcionar para todos os favorecidos existentes. Isso substitui a configuração individual de cada favorecido.",
+        "applyButton": "Aplicar a todos",
+        "confirmTitle": "Aplicar a todos os favorecidos?",
+        "confirmDescription": "Todos os favorecidos vão passar para {mode}. Você ainda pode alterar cada favorecido individualmente depois.",
+        "successNotification": "Favorecidos atualizados: {count}",
+        "errorNotification": "Não foi possível atualizar os favorecidos. Tente de novo."
+      }
+    },
+    "ignoredNames": {
+      "title": "Nomes de estabelecimento ignorados",
+      "description": "Textos brutos de estabelecimento que nunca devem criar um favorecido automaticamente. Úteis para ruídos como “Transferência com cartão”, “De: <nome>” ou prefixos de reembolso. Você ainda pode vincular esses nomes a um favorecido manualmente — só a correspondência automática fica bloqueada.",
+      "addPlaceholder": "ex.: Spotify",
+      "addButton": "Adicionar",
+      "addedToast": "Adicionado aos nomes ignorados",
+      "addError": "Não foi possível adicionar aos nomes ignorados",
+      "removeTooltip": "Remover da lista de ignorados",
+      "removedToast": "Removido dos nomes ignorados",
+      "removeError": "Não foi possível remover",
+      "empty": "Nenhum nome ignorado ainda.",
+      "normalizedLabel": "Normalizado",
+      "conflictTitle": "Um favorecido existente corresponde",
+      "conflictDescription": "Já existe um favorecido com o mesmo nome normalizado que “{name}”. Se continuar, esse favorecido será excluído (as transações continuam, mas perdem o vínculo).",
+      "forceConfirm": "Excluir favorecido e ignorar"
+    },
+    "loadingMore": "Carregando mais...",
+    "txCount": "Transações: {count}"
+  }
+}

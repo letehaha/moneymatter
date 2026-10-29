@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Wähle eine Kontokategorie",
       "creditLimitLabel": "Kreditrahmen",
       "creditLimitPlaceholder": "Kreditrahmen",
+      "defaultPaymentTypeLabel": "Standard-Zahlungsart",
       "submitButton": "Erstellen",
       "submitButtonLoading": "Wird erstellt...",
       "notifications": {

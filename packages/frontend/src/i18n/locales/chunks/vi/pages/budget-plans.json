@@ -106,6 +106,7 @@
       "goToAccounts": "Go to accounts",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
+      "startsOnOutOfRange": "Pick a date from {from} to today.",
       "accountsLabel": "Tài khoản",
       "accountsPlaceholder": "Select accounts",
       "rolloverLabel": "Rollover",

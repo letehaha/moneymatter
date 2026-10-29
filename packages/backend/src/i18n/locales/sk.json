@@ -356,6 +356,14 @@
       "accountNoExternalId": "Účet nemá externé ID pre synchronizáciu s LunchFlow.",
       "accountNotFound": "Účet LunchFlow sa nenašiel."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Nesprávny formát prihlasovacích údajov Akahu. Vyžaduje sa User Access Token a App ID Token.",
+      "invalidTokens": "Nesprávne tokeny Akahu. Skontrolujte User Access Token a App ID Token na stránke vašej aplikácie Akahu.",
+      "accountNoExternalId": "Účet nemá externé ID pre synchronizáciu s Akahu.",
+      "accountNotFound": "Akahu účet sa nenašiel.",
+      "rateLimited": "Akahu momentálne obmedzuje počet požiadaviek. Skúste to o chvíľu znova, prosím.",
+      "missingCurrency": "Akahu nevrátilo pre tento účet žiadnu menu."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Neplatný formát prístupových údajov pre SimpleFIN.",
       "invalidSetupToken": "Neplatný alebo už použitý setup token pre SimpleFIN. Vygenerujte nový v SimpleFIN Bridge a skúste to znova.",
@@ -858,5 +866,8 @@
       "title": "Cieľ dosiahnutý: {{name}}",
       "message": "Usporili ste {{amount}} {{currencyCode}}."
     }
+  },
+  "backgroundJobs": {
+    "notFound": "This task is no longer running – the server may have restarted. Please try again."
   }
 }

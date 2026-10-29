@@ -428,13 +428,6 @@
       "loadFailed": "Pravidelné platby sa nepodarilo načítať"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Zahrnúť naplánované platby",
-          "on": "Zap.",
-          "off": "Vyp."
-        }
-      },
       "settings": {
         "excludeTitle": "Vylúčiť transakcie",
         "excludeTransfersDescription": "Skryť prevody medzi vlastnými účtami",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Skryť transakcie na úpravu zostatku",
         "plannedTitle": "Plánované transakcie",
         "excludePlannedDescription": "Skryť čakajúce plánované transakcie zo zoznamu",
+        "scheduledTitle": "Pravidelné platby",
+        "excludeScheduledDescription": "Skryť zo zoznamu nadchádzajúce a po termíne splatnosti platby predplatného",
+        "scheduledSaveError": "Nastavenie plánovaných platieb sa nepodarilo aktualizovať",
         "nothingExcluded": "Nič nie je vylúčené",
         "tagsStyleTitle": "Značky",
         "tagsStyleNames": "Názvy",
@@ -504,7 +500,8 @@
         "title": "Naplánujte si cestu k FIRE",
         "description": "Funkcia Plus",
         "action": "Odomknúť"
-      }
+      },
+      "paceVs": "oproti {month}"
     }
   }
 }

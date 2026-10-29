@@ -160,7 +160,26 @@
         "noGroupsMessage": "Групп транзакций пока нет.",
         "emptyStateHint": "Выберите транзакции на странице «Транзакции» и нажмите «Создать группу».",
         "transactionCountLabel": "транзакций",
-        "deleteError": "Не удалось удалить группу. Попробуйте снова."
+        "deleteError": "Не удалось удалить группу. Попробуйте снова.",
+        "loadError": "Couldn't load transaction groups",
+        "description": "Bundle related transactions, like a trip or a transfer chain, and see them together.",
+        "noMatchTitle": "No groups match your search",
+        "moreActions": "More actions for {name}",
+        "columns": {
+          "name": "Название",
+          "transactions": "Транзакции",
+          "date": "Дата",
+          "net": "Итог"
+        },
+        "sort": {
+          "label": "Sort groups",
+          "dateDesc": "Newest first",
+          "dateAsc": "Oldest first",
+          "nameAsc": "Name A–Z",
+          "nameDesc": "Name Z–A",
+          "amountDesc": "Net: high to low",
+          "amountAsc": "Net: low to high"
+        }
       },
       "errors": {
         "nameRequired": "Требуется название группы",

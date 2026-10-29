@@ -160,7 +160,26 @@
         "noGroupsMessage": "Aún no hay grupos de transacciones.",
         "emptyStateHint": "Seleccione transacciones en la página de Transacciones y haga clic en \"Crear grupo\" para empezar.",
         "transactionCountLabel": "transacciones",
-        "deleteError": "Error al eliminar el grupo. Inténtelo de nuevo."
+        "deleteError": "Error al eliminar el grupo. Inténtelo de nuevo.",
+        "loadError": "No se han podido cargar las transacciones",
+        "description": "Agrupar transacciones relacionadas, como un viaje o una cadena de transferencia, y verlas juntos.",
+        "noMatchTitle": "Ningún grupo coincide con su búsqueda",
+        "moreActions": "Más acciones para {name}",
+        "columns": {
+          "name": "Nombre",
+          "transactions": "Transacciones",
+          "date": "Fecha",
+          "net": "Neto"
+        },
+        "sort": {
+          "label": "Ordenar grupos",
+          "dateDesc": "Más nuevos primero",
+          "dateAsc": "Más viejos primero",
+          "nameAsc": "Nombre A–Z",
+          "nameDesc": "Nombre Z–A",
+          "amountDesc": "Neto: de alto a bajo",
+          "amountAsc": "Neto: de bajo a alto"
+        }
       },
       "errors": {
         "nameRequired": "El nombre del grupo es obligatorio",

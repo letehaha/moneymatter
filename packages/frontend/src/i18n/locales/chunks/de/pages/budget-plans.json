@@ -106,6 +106,7 @@
       "goToAccounts": "Zu den Konten",
       "cadenceLabel": "Budgetzyklus",
       "startsOnLabel": "Beginnt am",
+      "startsOnOutOfRange": "Wähle ein Datum von {from} bis heute.",
       "accountsLabel": "Konten",
       "accountsPlaceholder": "Konten auswählen",
       "rolloverLabel": "Übertrag",

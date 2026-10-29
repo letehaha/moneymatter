@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Sélectionner une catégorie",
       "creditLimitLabel": "Plafond de crédit",
       "creditLimitPlaceholder": "Plafond de crédit",
+      "defaultPaymentTypeLabel": "Moyen de paiement par défaut",
       "submitButton": "Créer",
       "submitButtonLoading": "Création en cours...",
       "notifications": {

@@ -1,0 +1,17 @@
+{
+  "auth": {
+    "verifyEmail": {
+      "title": "Confira seu e-mail",
+      "description": "Enviamos um link de confirmação para",
+      "descriptionYourEmail": "seu e-mail",
+      "descriptionContinued": ". Clique no link para confirmar sua conta.",
+      "didntReceive": "Não recebeu o e-mail? Confira a pasta de spam ou",
+      "resend": "clique aqui para reenviar",
+      "sending": "Enviando...",
+      "resendIn": "Reenviar em {count}s",
+      "backToSignIn": "Voltar para o login",
+      "resendSuccess": "E-mail de confirmação enviado. Confira sua caixa de entrada.",
+      "resendError": "Não foi possível reenviar o e-mail de confirmação. Tente de novo."
+    }
+  }
+}

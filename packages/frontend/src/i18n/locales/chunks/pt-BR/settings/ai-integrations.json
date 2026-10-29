@@ -1,0 +1,64 @@
+{
+  "settings": {
+    "aiIntegrations": {
+      "mcpServer": {
+        "title": "Servidor MCP",
+        "description": "Use esta URL para conectar assistentes de IA à sua conta MoneyMatter. Seus dados são compartilhados somente para leitura.",
+        "copyTooltip": "Copiar URL",
+        "copiedNotification": "URL do servidor MCP copiada"
+      },
+      "quickConnect": {
+        "title": "Conexão rápida",
+        "description": "Escolha um assistente de IA abaixo. Clique no botão para abrir as configurações dele e siga os passos.",
+        "openSettings": "Abrir configurações",
+        "claude": {
+          "steps": {
+            "createConnector": "Clique no ícone {icon} ao lado de “Connectors” para criar um novo conector",
+            "selectCustom": "Escolha {action}",
+            "enterName": "Em “Name”, digite {value}",
+            "pasteUrl": "Em “Remote MCP server URL”, cole {value}",
+            "finish": "Deixe “Advanced settings” em branco e clique em {action}",
+            "authorize": "Você será levado ao MoneyMatter para autorizar o acesso"
+          }
+        },
+        "chatgpt": {
+          "steps": {
+            "addConnector": "Clique em {action}",
+            "pasteUrl": "Em “URL”, cole {value}",
+            "clickAdd": "Clique em {action}",
+            "authorize": "Você será levado ao MoneyMatter para autorizar o acesso"
+          }
+        }
+      },
+      "actions": {
+        "addCustomConnector": "“Add custom connector”",
+        "addConnector": "“Add connector”",
+        "add": "“Add”"
+      },
+      "connectedApps": {
+        "title": "Conectores ativos",
+        "description": "Apps com acesso aos seus dados financeiros. Você pode revogar o acesso a qualquer momento.",
+        "emptyTitle": "Nenhum app conectado ainda.",
+        "emptyDescription": "Use os botões acima para conectar um assistente de IA.",
+        "connectedAt": "Conectado em: {date}",
+        "lastUsed": "Último uso: {time}",
+        "scope": "Escopo: {scopes}",
+        "revoke": "Revogar"
+      },
+      "revokeDialog": {
+        "title": "Revogar acesso?",
+        "description": "O app será desconectado na hora e todos os tokens dele deixarão de valer. Você pode reconectar depois.",
+        "confirm": "Revogar acesso",
+        "successNotification": "Acesso do app revogado",
+        "errorNotification": "Não foi possível revogar o acesso do app"
+      },
+      "scopes": {
+        "financeRead": "Ler dados financeiros",
+        "financeWrite": "Editar dados financeiros",
+        "financeDelete": "Excluir dados financeiros",
+        "profileRead": "Ler perfil",
+        "offlineAccess": "Acesso offline"
+      }
+    }
+  }
+}

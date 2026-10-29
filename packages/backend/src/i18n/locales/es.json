@@ -91,15 +91,15 @@
     "plannedUnflipOnConnectedAccount": "Esta planificación está en una cuenta conectada al banco, por lo que su banco la confirma automáticamente. Elimínela si ya no la espera.",
     "plannedCannotConfirmPayment": "Una transacción planificada no puede confirmar un pago. Espere a que se confirme y luego vincúlela.",
     "plannedCannotBeRefundLinked": "Una transacción planificada no puede formar parte de una vinculación de reembolso.",
-    "paymentLegsNotAllowed": "Only a regular income or expense on your own account can be split across several accounts. Transfers, refunds, planned and category-split transactions can't.",
-    "inPaymentNotAllowed": "This transaction is part of a payment from several accounts. Remove it from the payment first.",
-    "paymentLegInvalidAccount": "Each new part must be on one of your other manual accounts.",
-    "paymentLegDuplicateAccount": "Each new part must be on a different account.",
-    "paymentLegEditThroughMain": "This is part of a payment from several accounts. Edit the main transaction instead.",
-    "paymentAmountRequired": "Enter the amount in the main transaction's currency for every part in a different currency.",
-    "paymentLinkNotAllowed": "This transaction can't be linked to the payment. Only your own income or expense of the same type can be linked – not a transfer, refund, split, pending transaction or part of another payment.",
-    "paymentLinkedAmountFixed": "The amount of a linked transaction can't be changed.",
-    "paymentLinkedTypeMismatch": "Linked transactions must have the same type as the payment. Unlink them first.",
+    "paymentLegsNotAllowed": "Solo un ingreso o gasto regulares en su propia cuenta puede ser dividido en varias cuentas. Las transacciones, reembolsos y transacciones planificadas y divididas por categorías no pueden ser transferidas.",
+    "inPaymentNotAllowed": "Esta transacción es parte de un pago de varias cuentas. Elimínala del pago primero.",
+    "paymentLegInvalidAccount": "Cada nueva parte debe estar en una de sus otras cuentas manuales.",
+    "paymentLegDuplicateAccount": "Cada una de las nuevas partes debe estar en otra cuenta.",
+    "paymentLegEditThroughMain": "Esto es parte de un pago de varias cuentas. Editar la transacción principal en su lugar.",
+    "paymentAmountRequired": "Introduzca la cantidad en la moneda principal de la transacción para cada parte en una moneda diferente.",
+    "paymentLinkNotAllowed": "Esta transacción no puede ser vinculada al pago. Sólo sus propios ingresos o gastos del mismo tipo pueden ser vinculados – no una transferencia, reembolso, dividir, transacción pendiente o parte de otro pago.",
+    "paymentLinkedAmountFixed": "La cantidad de una transacción vinculada no se puede cambiar.",
+    "paymentLinkedTypeMismatch": "Las transacciones vinculadas deben tener el mismo tipo que el pago. Desvincularlas primero.",
     "splits": {
       "splitsOnTransfer": "No se pueden agregar divisiones a transacciones de transferencia",
       "splitLimitExceeded": "Se permiten como máximo {{max}} divisiones por transacción",
@@ -356,6 +356,14 @@
       "accountNoExternalId": "La cuenta no tiene ID externo para la sincronización con LunchFlow.",
       "accountNotFound": "Cuenta de LunchFlow no encontrada."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Formato de credenciales de Akahu inválido. Se requiere User Access Token y App ID Token.",
+      "invalidTokens": "Tokens Akahu no válidos. Comprueba User Access Token and App ID Token de la web de Akahu.",
+      "accountNoExternalId": "La cuenta no tiene ID externa para la sincronización de Akahu.",
+      "accountNotFound": "Cuenta Akahu no encontrada.",
+      "rateLimited": "Akahu está limitando las solicitudes en este momento. Por favor, inténtalo de nuevo en breve.",
+      "missingCurrency": "Akahu no devolvió una moneda para esta cuenta."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Formato de credenciales de SimpleFIN no válido.",
       "invalidSetupToken": "Token de configuración de SimpleFIN no válido o ya utilizado. Genere uno nuevo desde SimpleFIN Bridge e inténtelo de nuevo.",
@@ -579,7 +587,7 @@
     "currencyCodeNotExist": "La moneda con el código proporcionado no existe.",
     "currencyNotExist": "La moneda con código \"{{currencyCode}}\" no existe.",
     "cannotDeleteDefaultCurrency": "No está permitido eliminar la moneda predeterminada. Primero quítela como predeterminada.",
-    "currencyInUse": "{{currencyCode}} can't be deleted because it's still in use."
+    "currencyInUse": "No se puede eliminar {{currencyCode}} porque todavía está en uso."
   },
   "ai": {
     "connectionNotFound": "Modelo de IA no encontrado.",
@@ -858,5 +866,8 @@
       "title": "Objetivo alcanzado: {{name}}",
       "message": "Has guardado {{amount}} {{currencyCode}}."
     }
+  },
+  "backgroundJobs": {
+    "notFound": "This task is no longer running – the server may have restarted. Please try again."
   }
 }

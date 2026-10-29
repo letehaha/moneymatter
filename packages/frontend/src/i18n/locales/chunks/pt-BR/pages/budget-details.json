@@ -1,0 +1,143 @@
+{
+  "pages": {
+    "budgets": {
+      "transactionsList": {
+        "loadError": "Não foi possível carregar as transações.",
+        "selectionModeWarning": "Modo de seleção — escolha as transações para desvincular",
+        "selectAll": "Selecionar tudo",
+        "selected": "Selecionadas: {count}",
+        "unlink": "Desvincular",
+        "cancel": "Cancelar",
+        "unlinkSelected": "Desvincular selecionadas",
+        "noMatchingTransactions": "Nenhuma transação encontrada",
+        "noTransactionsLinked": "Nenhuma transação vinculada",
+        "filterAdjustmentHint": "Tente ajustar os filtros para ver mais transações.",
+        "addTransactionsHint": "Adicione transações a este acompanhamento para começar a acompanhar seus gastos.",
+        "resetFilters": "Limpar filtros",
+        "addTransactions": "Adicionar transações",
+        "add": "Adicionar",
+        "loadingMore": "Carregando mais...",
+        "unlinkError": "Não foi possível desvincular as transações",
+        "addError": "Não foi possível adicionar as transações"
+      }
+    },
+    "budgetDetails": {
+      "notSet": "Não definido",
+      "saving": "Salvando...",
+      "saveChanges": "Salvar alterações",
+      "loading": "Carregando...",
+      "uncategorized": "Sem categoria",
+      "stats": {
+        "income": "Receitas",
+        "expenses": "Despesas",
+        "netBalance": "Saldo líquido"
+      },
+      "utilization": {
+        "title": "Uso do acompanhamento",
+        "summary": "{spent} de {limit} do limite",
+        "na": "N/D"
+      },
+      "noTransactionsYet": "Nenhuma transação ainda",
+      "transactions": "Transações",
+      "transactionsLinked": "{count} transação vinculada a este acompanhamento | {count} transações vinculadas a este acompanhamento",
+      "tabs": {
+        "statistics": "Estatísticas",
+        "transactions": "Transações",
+        "sharing": "Compartilhamento"
+      },
+      "statistics": {
+        "tabs": {
+          "categories": "Categorias",
+          "timeline": "Linha do tempo"
+        },
+        "errorTitle": "Não foi possível carregar as estatísticas",
+        "errorDescription": "Algo deu errado ao carregar os dados. Tente de novo mais tarde.",
+        "noDataTitle": "Nenhum dado de gastos",
+        "noDataDescription": "Ainda não há dados de gastos para este acompanhamento.",
+        "noCategoryData": "Nenhum dado de gastos por categoria.",
+        "noTimelineData": "Nenhum dado na linha do tempo.",
+        "total": "Total",
+        "income": "Receitas",
+        "expenses": "Despesas",
+        "incomeLabel": "Receitas:",
+        "expensesLabel": "Despesas:",
+        "kpi": {
+          "dailyPace": "Ritmo diário",
+          "perDay": "/dia",
+          "allowedPerDay": "permitido {amount}/dia · {elapsed} de {total} dias",
+          "neededPerDay": "necessário {amount}/dia · {elapsed} de {total} dias",
+          "daysElapsed": "{elapsed} de {total} dias",
+          "projectedTotal": "Total projetado",
+          "projectedLimit": "neste ritmo · limite de {amount}",
+          "averagePerDay": "Média por dia",
+          "firstTransaction": "Primeira transação",
+          "lastTransaction": "Última transação",
+          "transactions": "Transações",
+          "avgAmount": "média de {amount}",
+          "biggestDay": "Dia com mais gastos",
+          "shareOfTotal": "{percent}% do total"
+        },
+        "byCategory": "Por categoria",
+        "categoriesCount": "{count} categoria | {count} categorias",
+        "byCurrency": "Por moeda",
+        "asPaid": "como pago",
+        "timeline": "Linha do tempo",
+        "todayMarker": "hoje, {date}",
+        "timelineAria": "Gastos acumulados ao longo do tempo, com barras por período",
+        "limitLabel": "Limite de {amount}",
+        "cumulativeLabel": "Acumulado",
+        "legend": {
+          "cumulative": "Gasto acumulado",
+          "earnedCumulative": "Recebido acumulado",
+          "evenPace": "Ritmo constante até o limite",
+          "projection": "Projeção",
+          "daily": "Por dia",
+          "weekly": "Por semana",
+          "monthly": "Por mês"
+        },
+        "topPayees": "Principais favorecidos",
+        "bySpend": "por gasto",
+        "noPayee": "Sem favorecido",
+        "txCount": "Transações: {count}"
+      },
+      "sharing": {
+        "inviteAnother": "Convidar alguém",
+        "membersHeading": "Membros",
+        "pendingHeading": "Convites pendentes",
+        "loadError": "Não foi possível carregar os membros.",
+        "permissions": {
+          "read": "Só visualizar",
+          "write": "Anexar transações próprias",
+          "manage": "Gerenciar"
+        },
+        "member": {
+          "you": "você",
+          "roleOwner": "Dono",
+          "roleRecipient": "Membro",
+          "ownerHint": "Controle total deste acompanhamento",
+          "updateSuccess": "Permissão atualizada",
+          "updateError": "Não foi possível atualizar a permissão.",
+          "revoke": "Revogar acesso",
+          "revokeConfirm": "Revogar",
+          "revokeTitle": "Revogar acesso?",
+          "revokeDescription": "{user} vai perder o acesso a “{budget}”.",
+          "revokeSuccess": "Acesso revogado",
+          "revokeError": "Não foi possível revogar o acesso."
+        },
+        "pending": {
+          "empty": "Nenhum convite pendente.",
+          "resend": "Reenviar",
+          "resendSuccess": "Convite reenviado",
+          "resendError": "Não foi possível reenviar o convite.",
+          "resendDeliveryFailed": "Convite reenviado, mas não foi possível entregar o e-mail.",
+          "cancel": "Cancelar",
+          "cancelConfirm": "Cancelar convite",
+          "cancelTitle": "Cancelar convite?",
+          "cancelDescription": "O convite para {email} será cancelado.",
+          "cancelSuccess": "Convite cancelado",
+          "cancelError": "Não foi possível cancelar o convite."
+        }
+      }
+    }
+  }
+}

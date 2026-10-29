@@ -1,0 +1,122 @@
+{
+  "settings": {
+    "general": {
+      "title": "Geral",
+      "description": "Controle como seus dados financeiros são calculados e exibidos no app.",
+      "creditLimit": {
+        "label": "Incluir limites de crédito no saldo",
+        "description": "Quando ativado, os limites de crédito são descontados dos saldos das contas nas estatísticas e no gráfico de evolução do saldo. Assim, você vê sua posição financeira real em vez do crédito disponível.",
+        "successNotification": "Configuração atualizada",
+        "errorNotification": "Não foi possível atualizar a configuração"
+      },
+      "payday": {
+        "label": "O ciclo de pagamento começa no dia",
+        "description": "Dia do mês em que seu ciclo de pagamento começa. O período padrão do painel vai deste dia até a véspera dele no mês seguinte.",
+        "placeholder": "Escolha o dia",
+        "successNotification": "Início do ciclo de pagamento atualizado"
+      },
+      "manualTransferMatching": {
+        "label": "Associar transferências com contas manuais",
+        "description": "Permite que transferências detectadas automaticamente vinculem uma transação bancária sincronizada a uma que você criou manualmente.",
+        "successNotification": "Configuração de associação de transferências atualizada",
+        "errorNotification": "Não foi possível atualizar a configuração de associação de transferências"
+      },
+      "pendingBankTransactions": {
+        "label": "Importar transações bancárias pendentes",
+        "description": "Importe transações que o banco informa antes de contabilizá-las. Elas ficam marcadas como pendentes, não alteram o saldo da conta e podem vir sem o nome do estabelecimento e sem os detalhes finais. Quando o banco contabiliza ou cancela essas transações, elas são atualizadas ou removidas.",
+        "descriptionSelfHost": "Guarde transações do Enable Banking antes de o banco contabilizá-las. Elas ficam marcadas como pendentes, nunca alteram o saldo da conta e muitas vezes vêm sem os detalhes do estabelecimento até serem contabilizadas. Os outros provedores não são afetados: SimpleFIN e Lunch Flow sempre importam só transações contabilizadas, e o Monobank importa todas as transações como normais.",
+        "successNotification": "Configuração de transações pendentes atualizada",
+        "errorNotification": "Não foi possível atualizar a configuração de transações pendentes"
+      },
+      "bankSyncSchedule": {
+        "label": "Horários da sincronização bancária",
+        "description": "As contas bancárias conectadas sincronizam automaticamente nestes horários, mostrados no seu fuso horário. Escolha o mesmo horário duas vezes para sincronizar uma vez por dia.",
+        "placeholder": "Escolha o horário",
+        "successNotification": "Horários da sincronização bancária atualizados",
+        "errorNotification": "Não foi possível atualizar os horários da sincronização bancária"
+      },
+      "quickStart": {
+        "label": "Guia de primeiros passos",
+        "description": "Mostra a lista de primeiros passos no painel. Desative para esconder o guia; ative de novo para trazê-lo de volta quando quiser."
+      },
+      "savingsCategories": {
+        "label": "Contar categorias como economia",
+        "description": "Os gastos nestas categorias (e nas subcategorias delas) ficam fora das despesas nas análises de fluxo de caixa, então contam para a economia mensal e a taxa de economia.",
+        "successNotification": "Categorias de economia atualizadas",
+        "errorNotification": "Não foi possível atualizar as categorias de economia"
+      },
+      "taxCategories": {
+        "label": "Categorias de impostos",
+        "description": "Os gastos nestas categorias aparecem como impostos no gráfico de fluxo do dinheiro, em vez de despesa. As subcategorias estão incluídas.",
+        "successNotification": "Categorias de impostos atualizadas",
+        "errorNotification": "Não foi possível atualizar as categorias de impostos"
+      },
+      "filterCategoriesByType": {
+        "label": "Combinar categorias com o tipo de transação",
+        "description": "O formulário de transação lista só categorias de receita para receitas e todas as outras categorias para despesas. A busca continua encontrando qualquer categoria.",
+        "successNotification": "Configuração da lista de categorias atualizada",
+        "errorNotification": "Não foi possível atualizar a configuração da lista de categorias"
+      },
+      "incomeCategories": {
+        "label": "Categorias de receita",
+        "description": "Categorias que contam como receita. As subcategorias estão incluídas.",
+        "successNotification": "Categorias de receita atualizadas",
+        "errorNotification": "Não foi possível atualizar as categorias de receita"
+      },
+      "accountDropdowns": {
+        "defaultAccount": {
+          "label": "Conta padrão",
+          "description": "Já vem escolhida quando você cria uma transação.",
+          "placeholder": "Sem padrão — primeira conta"
+        },
+        "showArchived": {
+          "label": "Mostrar contas arquivadas",
+          "description": "Quando desativado, as contas arquivadas ficam ocultas nos seletores de conta."
+        },
+        "successNotification": "Configurações da lista de contas atualizadas",
+        "errorNotification": "Não foi possível atualizar as configurações da lista de contas"
+      },
+      "showUpcomingTransactions": {
+        "label": "Mostrar próximas transações",
+        "description": "Fixa no topo da lista de transações uma seção com pagamentos recorrentes atrasados e os que vencem nos próximos 3 dias.",
+        "successNotification": "Configuração de próximas transações atualizada",
+        "errorNotification": "Não foi possível atualizar a configuração de próximas transações"
+      },
+      "transactionFields": {
+        "label": "Campos opcionais da transação",
+        "description": "Mostra um botão de adição rápida para estes campos no formulário de transação. Um campo que já tem valor sempre aparece.",
+        "successNotification": "Campos da transação atualizados",
+        "errorNotification": "Ocorreu um erro inesperado. A configuração não foi salva",
+        "fields": {
+          "externalUrl": {
+            "label": "URL externa",
+            "description": "Vincule a transação a uma página de pedido, confirmação de reserva ou recibo."
+          },
+          "externalReference": {
+            "label": "Referência externa",
+            "description": "Guarde com a transação um número de pedido, de nota fiscal ou de reserva."
+          },
+          "originalAmount": {
+            "label": "Valor original",
+            "description": "O valor realmente cobrado em outra moeda, quando ela é diferente da moeda da conta."
+          },
+          "location": {
+            "label": "Localização",
+            "description": "Coordenadas GPS de onde a compra aconteceu. Preencha com a localização do seu dispositivo ou digite"
+          }
+        },
+        "mapPicker": {
+          "label": "Seletor no mapa",
+          "description": "Escolha a localização das transações em um mapa e pesquise endereços. Os mapas e a busca vêm do OpenStreetMap, que recebe seu endereço IP quando o mapa abre."
+        }
+      },
+      "defaultPaymentType": {
+        "label": "Forma de pagamento padrão",
+        "description": "Já vem escolhida quando você adiciona uma nova transação.",
+        "placeholder": "Escolha uma forma de pagamento",
+        "successNotification": "Forma de pagamento padrão atualizada",
+        "errorNotification": "Não foi possível atualizar a forma de pagamento padrão"
+      }
+    }
+  }
+}

@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Platform penukaran mata uang Polandia dengan 23 mata uang"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sync transactions from New Zealand banks for free via an Akahu personal app"
         }
       },
       "monobank": {
@@ -293,6 +297,35 @@
           "closeButton": "Mengerti"
         }
       },
+      "akahu": {
+        "userTokenLabel": "User Access Token",
+        "userTokenPlaceholder": "Enter your Akahu User Access Token",
+        "userTokenHint": "Shown on your personal app page at my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Enter your Akahu App ID Token",
+        "appTokenHint": "Also shown on the same page",
+        "help": {
+          "trigger": "Where do I find my Akahu tokens?",
+          "title": "Get your Akahu personal app tokens",
+          "step1": "Open your {link} while signed in to Akahu.",
+          "step2": "Create a personal app (or open an existing one) — connect your bank accounts in Akahu first.",
+          "step3": "Copy the User Access Token and the App ID Token and paste both into the fields above."
+        },
+        "backButton": "Kembali",
+        "connectingButton": "Menghubungkan...",
+        "connectButton": "Hubungkan",
+        "loadingAccounts": "Memuat akun...",
+        "accountsPreviewHint": "Ditemukan {count} akun. Semua akun akan diimpor.",
+        "importingButton": "Mengimpor...",
+        "importButton": "Impor {count} akun",
+        "importSuccess": "Berhasil menyinkronkan {count} akun",
+        "skipButton": "Lewati",
+        "skipTooltip": "Lewati impor untuk menghubungkan akun tertentu nanti, atau untuk menautkan ulang akun yang ada dari pengaturannya.",
+        "errors": {
+          "connectFailed": "Failed to connect to Akahu",
+          "importFailed": "Gagal mengimpor akun"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integrasi berhasil diputuskan",
         "disconnectFailed": "Gagal memutuskan integrasi",
@@ -449,7 +482,8 @@
         "enableBanking": "<<ccr:08d9ab98e4ce,string,310B>>",
         "lunchflow": "Hubungkan bank Anda di sisi LunchFlow, lalu buat dan tempel kunci API LunchFlow Anda",
         "simplefin": "SimpleFIN Bridge adalah layanan berbayar. Buat akun bridge, hubungkan bank, dan tempel token pengaturan — tidak diperlukan pengaturan pengembang.",
-        "walutomat": "Memerlukan pembuatan pasangan kunci RSA dan upload kunci publik ke dashboard Walutomat"
+        "walutomat": "Memerlukan pembuatan pasangan kunci RSA dan upload kunci publik ke dashboard Walutomat",
+        "akahu": "Free for your own accounts: create an Akahu personal app at my.akahu.nz, connect your NZ banks there, then paste the two tokens"
       }
     },
     "connectionName": {

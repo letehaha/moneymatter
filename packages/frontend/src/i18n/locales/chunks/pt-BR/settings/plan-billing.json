@@ -1,0 +1,140 @@
+{
+  "settings": {
+    "planBilling": {
+      "title": "Plano e cobrança",
+      "description": "Escolha um plano e gerencie sua cobrança.",
+      "checkoutSuccess": "Seu plano está ativo.",
+      "checkoutFailed": "Não foi possível abrir o pagamento. Tente de novo.",
+      "currentPlanEyebrow": "Plano atual",
+      "updatePaymentMethod": "Atualizar forma de pagamento",
+      "manageBilling": "Gerenciar cobrança",
+      "manageInAppStore": "Gerenciar na App Store",
+      "currentPlan": "Plano atual",
+      "recommended": "Recomendado",
+      "previousPlan": "Plano anterior",
+      "yourPlan": "Seu plano",
+      "planned": "Em planejamento",
+      "voteOnRoadmap": "Votar no roadmap",
+      "roadmapNote": "Sem custo. Vote e avisaremos você quando for lançado.",
+      "saveUpTo": "Economize até {percent}%",
+      "portalFailed": "Não foi possível abrir o portal de cobrança. Tente de novo.",
+      "pastDueNote": "Seu último pagamento falhou. O Stripe vai tentar cobrar seu cartão de novo automaticamente nos próximos dias. Atualize sua forma de pagamento em “Gerenciar cobrança” para manter o acesso depois de {date}.",
+      "priceNote": "Preços em USD, sem impostos. Sua moeda local e os impostos aplicáveis aparecem no pagamento.",
+      "cycleHint": {
+        "year": "O anual custa o mesmo que 6 meses do mensal. Cobrado uma vez por ano.",
+        "month": "Cancele em qualquer mês. O anual custa metade."
+      },
+      "price": {
+        "yearFootnote": "{amount} / mês · {struck} · {save}",
+        "monthFootnote": "ou {amount} / ano · {save}",
+        "save": "economize {amount}"
+      },
+      "current": {
+        "lifetime": "{plan} · vitalício",
+        "lifetimeMeta": "Tudo do Plus. Sem renovação e sem cartão cadastrado.",
+        "earlyAdopterNote": "Obrigado por chegar cedo. Tudo o que o Plus oferece hoje é seu para sempre. Os recursos que adicionarmos daqui em diante, e tudo o que tem custo por usuário para nós, fazem parte dos planos pagos. Quer esses recursos? Você tem 50% de desconto em qualquer plano, para sempre, aplicado automaticamente no pagamento.",
+        "seats": "{count} vaga na família | {count} vagas na família",
+        "subscription": "{tier} · {cycle}",
+        "trial": "{count} dia restante no seu período de teste | {count} dias restantes no seu período de teste",
+        "trialProgress": "Dia {used} de {total}",
+        "trialEnded": "Período de teste encerrado",
+        "trialEndedMeta": "Seu período de teste de {days} dias acabou. Escolha um plano para continuar adicionando dados.",
+        "trialEndsOn": "Termina em {date}",
+        "trialExcluded": "A restauração de backup não está disponível durante o período de teste",
+        "subscriptionEnded": "Assinatura encerrada",
+        "endedMeta": "Seus dados estão seguros. Escolha um plano para continuar adicionando dados.",
+        "renewsOn": "Renova em {date}",
+        "activating": "Ativando seu plano",
+        "activatingNote": "Pagamento recebido. O Stripe costuma confirmar em poucos segundos.",
+        "activationTimedOut": "Seu pagamento foi aprovado, mas o plano ainda está sendo configurado. Atualize a página em um minuto; se nada mudar, fale com o suporte.",
+        "activationUnreachable": "Não foi possível acessar o servidor para confirmar seu pagamento. Recarregue a página; se o plano ainda não aparecer, fale com o suporte.",
+        "accessContinuesUntil": "O acesso continua até {date}",
+        "billedByAppStore": "Cobrado pela App Store",
+        "accessUntil": "Acesso até {date}, depois somente leitura",
+        "resumesOn": "Volta automaticamente em {date}",
+        "pausedNote": "Enquanto estiver pausada, a conta fica somente para leitura.",
+        "noFurtherCharges": "Sem novas cobranças",
+        "cancelNote": "Mudou de ideia? Renove no portal de cobrança e sua data de renovação continua a mesma.",
+        "monthlyHint": "Mude para o anual e economize {amount} por ano.",
+        "noCard": "Nenhum cartão cadastrado",
+        "readOnlyHelp": "O que significa somente leitura?"
+      },
+      "status": {
+        "pastDue": "Pagamento falhou",
+        "active": "Ativa",
+        "paused": "Pausada",
+        "readOnly": "Somente leitura",
+        "trial": "Recursos do Plus",
+        "processing": "Processando",
+        "earlyAdopter": "Early Adopter",
+        "endsOn": "Termina em {date}"
+      },
+      "cta": {
+        "activating": "Ativando...",
+        "switchTo": "Mudar para o {tier}",
+        "switchToCycle": "Mudar para cobrança {cycle}",
+        "subscribeAgain": "Assinar de novo",
+        "getTier": "Assinar o {tier}"
+      },
+      "ctaNote": {
+        "keepIt": "Atualize sua forma de pagamento para manter o plano.",
+        "viaPortal": "Alterado no portal de cobrança.",
+        "viaAppStore": "As mudanças de plano são feitas na App Store",
+        "billedToday": "Cobrado hoje. Cancele quando quiser.",
+        "earlyAdopter": "50% de desconto para sempre, aplicado no pagamento"
+      },
+      "plans": {
+        "essential": "Essential",
+        "plus": "Plus",
+        "premium": "Premium",
+        "early_adopter": "Early Adopter"
+      },
+      "cycle": {
+        "month": "Mensal",
+        "year": "Anual"
+      },
+      "perCycle": {
+        "month": "/mês",
+        "year": "/ano"
+      },
+      "tiers": {
+        "essential": {
+          "name": "Essential",
+          "tagline": "Lançamento manual e tudo o que é cálculo local.",
+          "features": {
+            "imports": "Importação de CSV, OFX, YNAB, Wallet e MS Money",
+            "investments": "Investimentos, empréstimos e veículos",
+            "ownAiKey": "Recursos de IA com sua própria chave de API",
+            "backup": "Exportação e restauração de backup",
+            "mcp": "Acesso ao servidor MCP",
+            "seats": "2 vagas na família"
+          }
+        },
+        "plus": {
+          "name": "Plus",
+          "tagline": "Tudo o que envolve conexões bancárias com suas próprias credenciais.",
+          "features": {
+            "everythingInEssential": "Tudo do Essential",
+            "bankProviders": "Conexões bancárias (Monobank, Enable Banking, SimpleFIN, Lunch Flow, Walutomat)",
+            "ourAiKey": "Recursos de IA com a nossa chave, com limite de uso justo",
+            "firePlanner": "Planejador FIRE",
+            "seats": "5 vagas na família"
+          }
+        },
+        "premium": {
+          "name": "Premium",
+          "tagline": "Sincronização bancária feita por nós. Em planejamento — ajude a gente a priorizar.",
+          "priceTba": "Preço a definir",
+          "priceNote": "O preço será definido quando soubermos o custo da sincronização bancária.",
+          "features": {
+            "everythingInPlus": "Tudo do Plus",
+            "builtInBankSync": "Sincronização bancária integrada ao app — sem conta de terceiros para configurar",
+            "realtimePrices": "Cotações de ativos em tempo real",
+            "higherAiCap": "Recursos de IA com a nossa chave, com limite maior",
+            "seats": "10 vagas na família"
+          }
+        }
+      }
+    }
+  }
+}

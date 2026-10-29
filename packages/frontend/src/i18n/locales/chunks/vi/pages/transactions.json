@@ -160,7 +160,26 @@
         "noGroupsMessage": "No transaction groups yet.",
         "emptyStateHint": "Select transactions on the Transactions page and click \"Create Group\" to get started.",
         "transactionCountLabel": "transactions",
-        "deleteError": "Failed to delete the group. Please try again."
+        "deleteError": "Failed to delete the group. Please try again.",
+        "loadError": "Couldn't load transaction groups",
+        "description": "Bundle related transactions, like a trip or a transfer chain, and see them together.",
+        "noMatchTitle": "No groups match your search",
+        "moreActions": "More actions for {name}",
+        "columns": {
+          "name": "Tên",
+          "transactions": "Giao dịch",
+          "date": "Ngày",
+          "net": "Thu chi ròng"
+        },
+        "sort": {
+          "label": "Sort groups",
+          "dateDesc": "Newest first",
+          "dateAsc": "Oldest first",
+          "nameAsc": "Name A–Z",
+          "nameDesc": "Name Z–A",
+          "amountDesc": "Net: high to low",
+          "amountAsc": "Net: low to high"
+        }
       },
       "errors": {
         "nameRequired": "Group name is required",

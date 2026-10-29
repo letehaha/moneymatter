@@ -103,7 +103,8 @@
       "debitCard": "Tarjeta de débito",
       "mobilePayment": "Pago móvil",
       "voucher": "Vale",
-      "webPayment": "Pago web"
+      "webPayment": "Pago web",
+      "none": "Ninguna"
     },
     "vehicleClasses": {
       "sedan": "Sedán",
@@ -171,11 +172,11 @@
           "sharedAccount": "No se puede seleccionar: esta transacción pertenece a una cuenta compartida contigo, y solo su propietario puede editarla."
         },
         "payment": {
-          "paidFrom": "Paid from {count} accounts",
-          "receivedInto": "Received into {count} accounts",
-          "partOf": "Part of a {total} payment",
-          "thisAccount": "(this account)",
-          "loadError": "Couldn't open this transaction. Try again."
+          "paidFrom": "Pagado desde {count} cuentas",
+          "receivedInto": "Recibido en {count} cuentas",
+          "partOf": "Parte de un pago de {total}",
+          "thisAccount": "(esta cuenta)",
+          "loadError": "No se pudo agregar las transacciones de vuelta. Inténtelo de nuevo."
         }
       }
     },
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} adelante",
+        "behind": "{duration} por detrás",
+        "onPace": "En ritmo",
+        "backInReach": "Volver a su alcance",
+        "offTrack": "Fuera de lo previsto"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "¿Está seguro de que desea quitar esta transacción del grupo?",
       "removeButtonText": "Quitar",
       "removeAndDeleteButtonText": "Quitar y eliminar el grupo",
+      "removeFromGroup": "Quitar del grupo",
+      "saveError": "No se pudo guardar el grupo",
+      "removeError": "No se pudo eliminar la transacción del grupo",
+      "manageTransactions": "Gestión",
+      "showMoreNote": "Mostrar más",
+      "showLessNote": "Mostrar menos",
       "summary": {
         "transactions": "Transacciones",
         "net": "Neto",

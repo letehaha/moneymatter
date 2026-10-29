@@ -27,6 +27,10 @@
         "walutomat": {
           "name": "Walutomat",
           "description": "Plataforma polaca de cambio de divisas con 23 monedas"
+        },
+        "akahu": {
+          "name": "Akahu",
+          "description": "Sincronizar transacciones desde bancos neozelandeses de forma gratuita a través de una aplicación personal de Akahu"
         }
       },
       "monobank": {
@@ -293,6 +297,35 @@
           "closeButton": "Entendido"
         }
       },
+      "akahu": {
+        "userTokenLabel": "Token de acceso de usuario",
+        "userTokenPlaceholder": "Introduzca su token de acceso de usuario de Akahu",
+        "userTokenHint": "Mostrar en tu página de aplicación personal en my.akahu.nz",
+        "appTokenLabel": "App ID Token",
+        "appTokenPlaceholder": "Introduce tu token de identificación de Akahu",
+        "appTokenHint": "También se muestra en la misma página",
+        "help": {
+          "trigger": "¿Dónde puedo encontrar mis tokens Akahu?",
+          "title": "Obtén tus tokens de aplicaciones personales Akahu",
+          "step1": "Abre tu {link} mientras inicias sesión en Akahu.",
+          "step2": "Crea una aplicación personal (o abre una existente) — conecta tus cuentas bancarias en Akahu primero.",
+          "step3": "Copie el token de acceso de usuario y el token de ID de la aplicación y pegue ambos en los campos anteriores."
+        },
+        "backButton": "Atrás",
+        "connectingButton": "Conectando...",
+        "connectButton": "Conectar",
+        "loadingAccounts": "Cargando cuentas...",
+        "accountsPreviewHint": "Se encontraron {count} cuenta(s). Se importarán todas las cuentas.",
+        "importingButton": "Importando...",
+        "importButton": "Importar {count} cuenta(s)",
+        "importSuccess": "{count} cuenta(s) sincronizada(s) correctamente",
+        "skipButton": "Omitir",
+        "skipTooltip": "Omita la importación para conectar solo cuentas específicas más tarde, o para volver a vincular cuentas existentes desde su configuración.",
+        "errors": {
+          "connectFailed": "Error al conectar con Akahu",
+          "importFailed": "Error al importar las cuentas"
+        }
+      },
       "notifications": {
         "disconnectSuccess": "Integración desconectada correctamente",
         "disconnectFailed": "Error al desconectar la integración",
@@ -449,7 +482,8 @@
         "enableBanking": "Dado que una integración fluida requiere el pago de varios miles de dólares al mes, solo es posible conectarse creando su propia cuenta de desarrollador de EnableBanking y configurando una aplicación de \"prueba\" con conexión real a sus propios bancos, almacenando certificados y claves y subiéndolos aquí. Se requieren conocimientos técnicos moderados.",
         "lunchflow": "Simplemente conecte sus bancos en el lado de LunchFlow, luego cree y pegue su clave de API de LunchFlow",
         "simplefin": "SimpleFIN Bridge es un servicio de pago. Cree una cuenta puente, vincule su banco y pegue un token de configuración — no se requiere configuración de desarrollador.",
-        "walutomat": "Requiere generar un par de claves RSA y subir la clave pública al panel de Walutomat"
+        "walutomat": "Requiere generar un par de claves RSA y subir la clave pública al panel de Walutomat",
+        "akahu": "Gratis para tus propias cuentas: crea una aplicación personal Akahu en my.akahu.nz, conecta tus bancos NZ allí, luego pega los dos tokens"
       }
     },
     "connectionName": {

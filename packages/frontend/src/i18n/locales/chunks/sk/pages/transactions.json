@@ -160,7 +160,26 @@
         "noGroupsMessage": "Zatiaľ neexistujú žiadne skupiny transakcií.",
         "emptyStateHint": "Na stránke „Transakcie“ vyberte transakcie a kliknite na „Vytvoriť skupinu“, aby ste mohli začať.",
         "transactionCountLabel": "transakcie",
-        "deleteError": "Vymazanie skupiny zlyhalo. Skúste to znovu, prosím."
+        "deleteError": "Vymazanie skupiny zlyhalo. Skúste to znovu, prosím.",
+        "loadError": "Skupiny transakcií sa nepodarilo načítať",
+        "description": "Zoskupte súvisiace transakcie, napríklad výlet alebo sled prevodov, a zobrazte si ich spolu.",
+        "noMatchTitle": "Vášmu hľadaniu nezodpovedajú žiadne skupiny",
+        "moreActions": "Ďalšie možnosti pre {name}",
+        "columns": {
+          "name": "Názov",
+          "transactions": "Transakcie",
+          "date": "Dátum",
+          "net": "Čistý zostatok"
+        },
+        "sort": {
+          "label": "Zoradiť skupiny",
+          "dateDesc": "Najnovšie prvé",
+          "dateAsc": "Najstaršie prvé",
+          "nameAsc": "Názov A–Z",
+          "nameDesc": "Názov Z–A",
+          "amountDesc": "Čisté: od najvyššieho",
+          "amountAsc": "Čisté: od najnižšieho"
+        }
       },
       "errors": {
         "nameRequired": "Názov skupiny je povinný",
