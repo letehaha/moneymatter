@@ -353,7 +353,10 @@ describe('MCP serializers', () => {
           isLinked: true,
         },
       ];
-      const slim = slimTransactionsForMcp([{ ...fullTransaction, paymentParts, paymentTotal: 20.5 }])[0]!;
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, paymentParts, paymentTotal: 20.5 }],
+        payeeNames: new Map(),
+      })[0]!;
       expect(slim.paymentParts).toEqual(paymentParts);
       expect(slim.paymentTotal).toBe(20.5);
     });

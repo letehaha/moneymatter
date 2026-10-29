@@ -44,6 +44,7 @@ export function slimAccountDetailForMcp(account: AccountApiResponse) {
   const [slim] = slimAccountsForMcp([account]);
   return {
     ...slim,
+    defaultPaymentType: account.defaultPaymentType,
     initialBalance: account.initialBalance,
     refInitialBalance: account.refInitialBalance,
     bankDataProviderConnectionId: account.bankDataProviderConnectionId,

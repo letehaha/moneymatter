@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals';
 import { NotFoundError, ValidationError } from '@js/errors';
 import { getTransactionPortfolioLink } from '@services/investments/portfolios/transfers';
 import { getPayeeNames } from '@services/payees/get-payee-names';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { getTransactionGroups } from '@services/transaction-groups';
 import { bulkDelete } from '@services/transactions/bulk-delete';
 import { getTransactionById } from '@services/transactions/get-by-id';
@@ -12,6 +13,7 @@ import { getTransactionsByTransferId } from '@services/transactions/get-by-trans
 import { getPlannedSummary } from '@services/transactions/get-planned-summary';
 import { getTransactions } from '@services/transactions/get-transactions';
 import { getTransactionsSummary, resolveBulkTargetIds } from '@services/transactions/matching-transactions';
+import { attachPaymentParts } from '@services/transactions/payment-legs';
 import { updateTransaction } from '@services/transactions/update-transaction';
 import { getTransactionVentureLink } from '@services/venture/linking/get-transaction-venture-link.service';
 import { captureTools, makeExtra, parseToolResult } from '@tests/helpers/mcp-tools';
@@ -21,6 +23,10 @@ import { z } from 'zod';
 // Redis connections in a unit test. The serializers pass the already API-shaped fakes through.
 jest.mock('@services/transactions/get-transactions', () => ({ getTransactions: jest.fn() }));
 jest.mock('@services/transactions/get-by-ids', () => ({ getTransactionsByIds: jest.fn() }));
+jest.mock('@services/sharing/auth/get-accessible-account-ids.service', () => ({
+  getAccessibleAccountIdsForUser: jest.fn(async () => ['acc-1']),
+}));
+jest.mock('@services/transactions/payment-legs', () => ({ attachPaymentParts: jest.fn(async () => []) }));
 jest.mock('@services/transactions/get-by-id', () => ({ getTransactionById: jest.fn() }));
 jest.mock('@services/transactions/get-by-transfer-id', () => ({ getTransactionsByTransferId: jest.fn() }));
 jest.mock('@services/transactions/get-planned-summary', () => ({ getPlannedSummary: jest.fn() }));
@@ -284,6 +290,20 @@ describe('get_transactions', () => {
     expect(byIds).not.toHaveBeenCalled();
     expect(data.transactions.map((tx) => tx.id)).toEqual([ID_1]);
     expect(data.transactions[0]!.splits).toEqual([{ categoryId: 'c1', amount: 5, note: null }]);
+  });
+
+  it('attaches the payment parts to a transaction it reads by id, as the REST detail read does', async () => {
+    const tx = makeTx({ id: ID_1 });
+    byId.mockResolvedValue({ tx, access: {} } as never);
+    jest.mocked(getAccessibleAccountIdsForUser).mockResolvedValue(['acc-1']);
+
+    await call({ tool, args: { ids: [ID_1], includeSplits: true } });
+
+    expect(attachPaymentParts).toHaveBeenCalledWith({
+      transactions: [tx],
+      collapsed: false,
+      accessibleAccountIds: ['acc-1'],
+    });
   });
 
   it.each([
