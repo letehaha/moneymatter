@@ -8,7 +8,7 @@
  * fields an assistant reasons about. The shared serializers stay untouched.
  */
 import { goalDisplayStatus, toGoalCurrency } from '@bt/shared/goals/goal-math';
-import type { GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
+import type { AccountGroupApiResponse, GoalInsights, GoalModel, RecordId } from '@bt/shared/types';
 import { INVESTMENT_DECIMAL_SCALE } from '@common/types/money';
 import type Accounts from '@models/accounts.model';
 import type Categories from '@models/categories.model';
@@ -33,6 +33,97 @@ export function slimAccountsForMcp(accounts: AccountApiResponse[]) {
     refCreditLimit: a.refCreditLimit,
     status: a.status,
     excludeFromStats: a.excludeFromStats,
+  }));
+}
+
+/**
+ * The detail view of one account: the list fields plus what a single-account read, a write
+ * result or a bank unlink needs (opening balance, bank link, logo, currency precision, share).
+ */
+export function slimAccountDetailForMcp(account: AccountApiResponse) {
+  const [slim] = slimAccountsForMcp([account]);
+  return {
+    ...slim,
+    defaultPaymentType: account.defaultPaymentType,
+    initialBalance: account.initialBalance,
+    refInitialBalance: account.refInitialBalance,
+    bankDataProviderConnectionId: account.bankDataProviderConnectionId,
+    bankProviderType: account.bankProviderType,
+    needsRelink: account.needsRelink,
+    logoDomain: account.logoDomain,
+    logoInitials: account.logoInitials,
+    logoColor: account.logoColor,
+    share: account.share,
+  };
+}
+
+/** One account group without its accounts, children or path: what a write result needs. */
+export function slimAccountGroupForMcp(group: AccountGroupApiResponse) {
+  return {
+    id: group.id,
+    name: group.name,
+    parentGroupId: group.parentGroupId,
+    bankDataProviderConnectionId: group.bankDataProviderConnectionId,
+    logoDomain: group.logoDomain,
+    logoInitials: group.logoInitials,
+    logoColor: group.logoColor,
+  };
+}
+
+/** The few fields that identify an account inside a group; `get_accounts` has the rest. `status` tells archived from active. */
+function summarizeGroupAccountsForMcp(accounts: AccountApiResponse[]) {
+  return accounts.map((a) => ({
+    id: a.id,
+    name: a.name,
+    type: a.type,
+    accountCategory: a.accountCategory,
+    currencyCode: a.currencyCode,
+    currentBalance: a.currentBalance,
+    status: a.status,
+  }));
+}
+
+const GROUP_PATH_SEPARATOR = ' > ';
+const GROUP_PATH_TRUNCATED = '…';
+
+/**
+ * The groups come as a flat list in which a child also appears nested one level inside its
+ * parent. Each entry keeps `parentGroupId` and gets a `path` of group names from the top,
+ * built from the list itself. An ancestor missing from the list (an account filter drops
+ * groups with no matching account) starts the path with "…" instead of passing for the top.
+ * The embedded accounts are a short summary unless `includeAccountDetails` asks for the list-sized shape.
+ */
+export function slimAccountGroupsForMcp(
+  groups: AccountGroupApiResponse[],
+  { includeAccountDetails = false }: { includeAccountDetails?: boolean } = {},
+) {
+  const byId = new Map(groups.map((group) => [group.id, group]));
+
+  const pathOf = (group: AccountGroupApiResponse): string => {
+    const names = [group.name];
+    const seen = new Set([group.id]);
+    let parentId = group.parentGroupId;
+    let truncated = false;
+
+    while (parentId) {
+      const parent = byId.get(parentId);
+      if (!parent || seen.has(parent.id)) {
+        truncated = true;
+        break;
+      }
+      seen.add(parent.id);
+      names.unshift(parent.name);
+      parentId = parent.parentGroupId;
+    }
+
+    return (truncated ? [GROUP_PATH_TRUNCATED, ...names] : names).join(GROUP_PATH_SEPARATOR);
+  };
+
+  return groups.map((group) => ({
+    ...slimAccountGroupForMcp(group),
+    path: pathOf(group),
+    childGroups: group.childGroups.map((child) => ({ id: child.id, name: child.name })),
+    accounts: includeAccountDetails ? slimAccountsForMcp(group.accounts) : summarizeGroupAccountsForMcp(group.accounts),
   }));
 }
 
@@ -64,27 +155,48 @@ export function slimPortfolioTransferForMcp(transfer: PortfolioTransfers) {
   };
 }
 
-export function slimTransactionsForMcp(txs: TransactionApiResponse[]) {
-  return txs.map((tx) => ({
-    id: tx.id,
-    time: tx.time,
-    amount: tx.amount,
-    refAmount: tx.refAmount,
-    currencyCode: tx.currencyCode,
-    note: tx.note,
-    transactionType: tx.transactionType,
-    transferNature: tx.transferNature,
-    accountId: tx.accountId,
-    categoryId: tx.categoryId,
-    isPlanned: tx.isPlanned,
-    ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
-    ...(tx.splits && {
-      splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
-    }),
-    ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
-    ...(tx.paymentParts && { paymentParts: tx.paymentParts }),
-    ...(tx.paymentTotal !== undefined && { paymentTotal: tx.paymentTotal }),
-  }));
+/**
+ * A transaction as an assistant reads it. `payeeNames` maps the caller's payee ids to names
+ * (`getPayeeNames`); a transaction with no payee, or one whose payee is not the caller's, gets
+ * `payee: null`. It is required so no tool serializes a transaction without its payee.
+ *
+ * `transferId` is shared by the two legs of a linked transfer, so an assistant can see which rows
+ * are paired and read both legs with `get_transactions`.
+ */
+export function slimTransactionsForMcp({
+  transactions,
+  payeeNames,
+}: {
+  transactions: TransactionApiResponse[];
+  payeeNames: ReadonlyMap<string, string>;
+}) {
+  return transactions.map((tx) => {
+    const payeeName = tx.payeeId ? payeeNames.get(tx.payeeId) : undefined;
+
+    return {
+      id: tx.id,
+      time: tx.time,
+      amount: tx.amount,
+      refAmount: tx.refAmount,
+      currencyCode: tx.currencyCode,
+      note: tx.note,
+      transactionType: tx.transactionType,
+      transferNature: tx.transferNature,
+      transferId: tx.transferId,
+      accountId: tx.accountId,
+      categoryId: tx.categoryId,
+      isPlanned: tx.isPlanned,
+      payeeId: tx.payeeId,
+      payee: tx.payeeId && payeeName !== undefined ? { id: tx.payeeId, name: payeeName } : null,
+      ...(tx.tags && { tags: tx.tags.map((t) => ({ id: t.id, name: t.name })) }),
+      ...(tx.splits && {
+        splits: tx.splits.map((s) => ({ categoryId: s.categoryId, amount: s.amount, note: s.note })),
+      }),
+      ...(tx.transactionGroups && { transactionGroups: tx.transactionGroups }),
+      ...(tx.paymentParts && { paymentParts: tx.paymentParts }),
+      ...(tx.paymentTotal !== undefined && { paymentTotal: tx.paymentTotal }),
+    };
+  });
 }
 
 /**

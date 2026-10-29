@@ -3,7 +3,7 @@ import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { resolveTrackerSuggestions } from '@services/trackers/smart-tracking/resolve-suggestions';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   trackerId: recordId().describe('ID of a tracker the user owns'),
@@ -21,6 +21,7 @@ export function registerAcceptTrackerSuggestions(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'accept_tracker_suggestions', clientId: extra.authInfo?.clientId });
 
       const result = await resolveTrackerSuggestions({

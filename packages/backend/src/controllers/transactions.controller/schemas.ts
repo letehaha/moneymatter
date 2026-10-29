@@ -24,6 +24,9 @@ export const transactionTimeSchema = () =>
       message: 'Transaction time cannot be before 2000-01-01',
     });
 
+// A Payee link on a write: explicit `null` clears it, `undefined` leaves it untouched.
+export const payeeIdSchema = () => recordId().nullable().optional();
+
 export const splitSchema = z.object({
   categoryId: recordId(),
   amount: positiveAmountSchema(),

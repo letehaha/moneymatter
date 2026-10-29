@@ -1,14 +1,12 @@
-import { recordId, uniqueRecordIds } from '@common/lib/zod/custom-types';
+import { recordId } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import { setLayout } from '@services/budget-plans/line-groups';
+import { setLayoutBodySchema } from '@services/budget-plans/zod-schemas';
 import { z } from 'zod';
 
 const schema = z.object({
   params: z.object({ planId: recordId() }),
-  body: z.strictObject({
-    groups: z.array(z.strictObject({ id: recordId(), lineIds: uniqueRecordIds() })),
-    ungroupedLineIds: uniqueRecordIds(),
-  }),
+  body: setLayoutBodySchema,
 });
 
 export default createController(schema, async ({ user, params, body }) => {

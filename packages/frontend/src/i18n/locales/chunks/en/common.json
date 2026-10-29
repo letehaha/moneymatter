@@ -497,6 +497,11 @@
     "estimatedCost": {
       "yourApiKey": "(your API key)",
       "setByEndpoint": "Priced by your provider"
+    },
+    "connectionModel": {
+      "label": "Model from this connection",
+      "placeholder": "Choose a model",
+      "defaultTag": "Default"
     }
   },
   "aiUsage": {

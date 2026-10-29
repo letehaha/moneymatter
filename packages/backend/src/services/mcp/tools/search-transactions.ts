@@ -4,18 +4,27 @@ import { Money } from '@common/types/money';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTransactions } from '@root/serializers/transactions.serializer';
-import { slimTransactionsForMcp } from '@services/mcp/serializers';
 import { getTransactions } from '@services/transactions/get-transactions';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
+import { presentTransactions } from './transaction-output';
 
 const inputSchema = {
   startDate: z.string().optional().describe('Start date (ISO 8601). Default: 30 days ago'),
-  endDate: z.string().optional().describe('End date (ISO 8601). Default: today'),
+  endDate: z
+    .string()
+    .optional()
+    .describe(
+      'End date (ISO 8601). Default: now, which hides planned (future-dated) transactions. Set it to a future date to see upcoming plans',
+    ),
   accountIds: z.array(recordId()).optional().describe('Filter by account IDs'),
   categoryIds: z.array(recordId()).optional().describe('Filter by category IDs'),
   tagIds: z.array(recordId()).optional().describe('Filter by tag IDs'),
+  payeeIds: z
+    .array(recordId())
+    .optional()
+    .describe('Filter by payee (merchant) IDs. Use get_payees to resolve a merchant name to its id'),
   transactionType: z
     .enum([TRANSACTION_TYPES.income, TRANSACTION_TYPES.expense])
     .optional()
@@ -28,6 +37,12 @@ const inputSchema = {
   order: z.enum(['asc', 'desc']).optional().describe('Sort order by date (default: desc)'),
   excludeTransfers: z.boolean().optional().describe('Exclude transfer transactions'),
   excludeRefunds: z.boolean().optional().describe('Exclude refund transactions'),
+  isPlanned: z
+    .boolean()
+    .optional()
+    .describe(
+      'true: only your planned transactions (upcoming, not yet confirmed); false: only real ones. Omit for real ones plus your plans. Plans are dated in the future, so also set endDate beyond them',
+    ),
 };
 
 export function registerSearchTransactions(server: McpServer) {
@@ -35,7 +50,7 @@ export function registerSearchTransactions(server: McpServer) {
     'search_transactions',
     {
       description:
-        'Search and filter transactions. Returns transaction amount (original + base currency), category, account, note, date, type, and tags. Use date filters to limit results. Default: last 30 days, 50 items.',
+        'Search and filter transactions. Returns transaction amount (original + base currency), category, account, payee (payeeId and payee { id, name }), note, date, type, and tags. Filter by payee with payeeIds (get_payees resolves a name to an id) and by planned state with isPlanned. Use date filters to limit results. Default: last 30 days, 50 items; future plans need a later endDate.',
       inputSchema,
     },
     async (args, extra) => {
@@ -56,6 +71,8 @@ export function registerSearchTransactions(server: McpServer) {
         accountIds: args.accountIds,
         categoryIds: args.categoryIds,
         tagIds: args.tagIds,
+        payeeIds: args.payeeIds,
+        isPlanned: args.isPlanned,
         transactionType: args.transactionType as TRANSACTION_TYPES | undefined,
         amountGte: args.amountMin !== undefined ? Money.fromDecimal(args.amountMin) : undefined,
         amountLte: args.amountMax !== undefined ? Money.fromDecimal(args.amountMax) : undefined,
@@ -70,7 +87,7 @@ export function registerSearchTransactions(server: McpServer) {
 
       const transactions = await getTransactions(filterParams);
 
-      const serialized = slimTransactionsForMcp(serializeTransactions(transactions));
+      const serialized = await presentTransactions({ userId, transactions: serializeTransactions(transactions) });
 
       return jsonContent({
         data: {

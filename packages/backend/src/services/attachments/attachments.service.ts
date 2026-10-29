@@ -37,7 +37,7 @@ export const detectMimeType = ({ bytes }: { bytes: Buffer }): AttachmentMimeType
   return null;
 };
 
-const sanitizeFilename = ({ filename }: { filename: string }): string => {
+export const sanitizeFilename = ({ filename }: { filename: string }): string => {
   const cleaned = filename
     .replace(/[/\\]/g, '_')
     // eslint-disable-next-line no-control-regex

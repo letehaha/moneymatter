@@ -1,18 +1,20 @@
-import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
+import { createPortfolioBodyShape } from '@controllers/investments/portfolios/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createPortfolio } from '@services/investments/portfolios/create.service';
-import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
-  name: z.string().describe('Portfolio name (must be unique for this user)'),
-  portfolioType: z
-    .enum([PORTFOLIO_TYPE.investment, PORTFOLIO_TYPE.retirement, PORTFOLIO_TYPE.savings, PORTFOLIO_TYPE.other])
-    .describe('Type of portfolio: investment, retirement, savings, or other'),
-  description: z.string().optional().describe('Optional description of the portfolio'),
-  isEnabled: z.boolean().optional().describe('Whether the portfolio is active (default: true)'),
+  name: createPortfolioBodyShape.name.describe('Portfolio name (must be unique for this user), max 100 characters'),
+  portfolioType: createPortfolioBodyShape.portfolioType.describe(
+    'Type of portfolio: investment (default), retirement, savings, or other',
+  ),
+  description: createPortfolioBodyShape.description.describe('Optional description, max 500 characters'),
+  isEnabled: createPortfolioBodyShape.isEnabled.describe('Whether the portfolio is active (default: true)'),
+  displayCurrencyCode: createPortfolioBodyShape.displayCurrencyCode.describe(
+    'Display currency (ISO code) for summary/holdings; must be one of the user currencies. Omit/null = base currency',
+  ),
 };
 
 export function registerCreatePortfolio(server: McpServer) {
@@ -26,13 +28,15 @@ export function registerCreatePortfolio(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_portfolio', clientId: extra.authInfo?.clientId });
 
       const portfolio = await createPortfolio({
         userId,
         name: args.name,
-        portfolioType: args.portfolioType as PORTFOLIO_TYPE,
+        portfolioType: args.portfolioType,
         description: args.description ?? null,
+        displayCurrencyCode: args.displayCurrencyCode,
         isEnabled: args.isEnabled,
       });
 

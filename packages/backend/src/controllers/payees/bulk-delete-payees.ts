@@ -1,15 +1,11 @@
-import { uniqueRecordIds } from '@common/lib/zod/custom-types';
 import { createController } from '@controllers/helpers/controller-factory';
 import * as payeesService from '@services/payees';
 import { z } from 'zod';
 
-const MAX_BULK_DELETE_IDS = 2000;
+import { bulkDeletePayeesBodySchema } from './shared-schemas';
 
 const schema = z.object({
-  body: z.object({
-    ids: uniqueRecordIds({ min: 1, max: MAX_BULK_DELETE_IDS }),
-    ignoreFuture: z.boolean().optional().default(false),
-  }),
+  body: bulkDeletePayeesBodySchema,
 });
 
 export default createController(schema, async ({ user, body }) => {

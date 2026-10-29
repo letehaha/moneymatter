@@ -1,9 +1,11 @@
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { findStoredSecurityIds } from '@services/investments/securities/find-stored.service';
 import { searchSecurities } from '@services/investments/securities/search.service';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
+import { presentSecuritySearchResult } from './holding-output';
 
 const inputSchema = {
   query: z.string().describe('Ticker symbol or company name to search for (e.g. "AAPL", "Apple")'),
@@ -20,7 +22,7 @@ export function registerSearchSecurities(server: McpServer) {
     'search_securities',
     {
       description:
-        'Search for securities (stocks, ETFs, crypto, etc.) by ticker symbol or company name. Call this before create_investment_transaction to resolve a human-readable ticker (e.g. "AAPL") into a securityId. If portfolioId is provided, each result includes isInPortfolio to indicate whether the security is already tracked in that portfolio.',
+        "Search for securities (stocks, ETFs, crypto, etc.) by ticker symbol or company name. Each result carries everything create_holding needs: pass a result unchanged as create_holding's searchResult to add the security to a portfolio, then read the securityId from the create_holding result (or from get_portfolio_holdings) before create_investment_transaction. A result whose security is already stored carries its securityId, which get_security_prices takes to read the stored prices. If portfolioId is provided, each result includes isInPortfolio to indicate whether the security is already tracked in that portfolio.",
       inputSchema,
     },
     async (args, extra) => {
@@ -34,20 +36,11 @@ export function registerSearchSecurities(server: McpServer) {
         user: { id: userId } as any,
       });
 
-      // Drop provider routing keys (providerName/providerSymbol — not accepted by
-      // any MCP tool), regulatory ids (cusip/isin, usually null), and UI-only hints
-      // (logoUrl, matchType, exchange MIC/acronym).
-      const slimmed = results.map((r) => ({
-        symbol: r.symbol,
-        name: r.name,
-        assetClass: r.assetClass,
-        currencyCode: r.currencyCode,
-        exchangeName: r.exchangeName,
-        marketCapRank: r.marketCapRank,
-        isInPortfolio: r.isInPortfolio,
-      }));
+      const storedIds = await findStoredSecurityIds({ results });
 
-      return jsonContent({ data: slimmed });
+      return jsonContent({
+        data: results.map((result, index) => presentSecuritySearchResult({ result, securityId: storedIds[index] })),
+      });
     },
   );
 }

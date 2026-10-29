@@ -4,7 +4,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createAutomation } from '@services/transaction-automations/create-automation';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 import { automationActionsInput, automationConditionsInput } from './transaction-automation-inputs';
 
 const inputSchema = {
@@ -30,6 +30,7 @@ export function registerCreateTransactionAutomation(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_transaction_automation', clientId: extra.authInfo?.clientId });
 
       const result = await createAutomation({

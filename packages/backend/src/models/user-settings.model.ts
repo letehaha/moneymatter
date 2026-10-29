@@ -5,7 +5,9 @@ import {
   AI_FEATURE,
   AI_PROVIDER,
   CATEGORY_ORDER_ROOT_KEY,
+  CHAT_RETENTION_OPTIONS,
   CURRENCY_DISPLAY_PREFERENCES,
+  type ChatRetentionDays,
   type CategoryMappingPreset,
   type Equals,
   type Expect,
@@ -52,6 +54,8 @@ import Users from './users.model';
 const ZodAiFeatureConfigSchema = z.object({
   feature: z.nativeEnum(AI_FEATURE),
   connectionId: z.string().nullable(),
+  /** A model of the connection's provider; never set with a null `connectionId`. */
+  modelId: modelField.optional(),
 });
 
 // Field constraints are shared with the create/update routes so a restored row can't be
@@ -88,6 +92,20 @@ const ZodAiSettingsSchema = z.object({
   customInstructions: z.string().max(AI_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
   /** List order is priority: the first dialable connection answers unconfigured features. */
   connections: z.array(ZodAiConnectionSchema).max(MAX_AI_CONNECTIONS).optional(),
+  /**
+   * Written only by `PUT /chat/settings`, which recomputes every thread's expiry in the same
+   * transaction. No `.default()`: a missing value reads as `CHAT_DEFAULT_RETENTION_DAYS`.
+   */
+  chat: z
+    .object({
+      /** `null` keeps unpinned threads until the user deletes them */
+      retentionDays: z
+        .number()
+        .refine((days): days is ChatRetentionDays => CHAT_RETENTION_OPTIONS.some((option) => option === days))
+        .nullable()
+        .optional(),
+    })
+    .optional(),
 });
 
 const ZodNotificationPreferencesSchema = z.object({
@@ -516,7 +534,7 @@ type DeepPartial<T> = {
 };
 
 type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai' | 'fireHistory'> & {
-  ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs'>;
+  ai?: Omit<NonNullable<SettingsSchema['ai']>, 'connections' | 'featureConfigs' | 'chat'>;
 };
 
 /**
