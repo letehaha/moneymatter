@@ -1,8 +1,9 @@
-import type { Cents, RecordId } from '@bt/shared/types';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   ACCOUNT_TYPES,
   BANK_PROVIDER_TYPE,
+  type Cents,
+  type RecordId,
   TRANSACTION_TRANSFER_NATURE,
   TRANSACTION_TYPES,
   asCents,
@@ -33,14 +34,7 @@ import { encryptCredentials } from '../utils/credential-encryption';
 import { notifyPlannedConfirmations } from '../utils/notify-planned-confirmations';
 import { writeBankBalanceWithHistory } from '../utils/write-bank-balance-with-history';
 import { AkahuApiClient } from './api-client';
-import type {
-  AkahuApiAccount,
-  AkahuApiAccountsResponse,
-  AkahuApiMe,
-  AkahuApiTransaction,
-  AkahuCredentials,
-  AkahuMetadata,
-} from './types';
+import type { AkahuApiAccount, AkahuApiTransaction, AkahuCredentials, AkahuMetadata } from './types';
 
 /**
  * Personal-app data is refreshed by Akahu on a daily schedule. Only ask for an
@@ -51,27 +45,12 @@ import type {
 const STALE_DATA_THRESHOLD_MS = 20 * 60 * 60 * 1000;
 
 /**
- * The incremental fetch window overlaps the newest stored transaction by this
- * much. Akahu transaction dates are typically day-precise (`T00:00:00Z`), and
- * `start` is exclusive on that instant — without the overlap, transactions
- * posted later the same day as the newest stored row would be skipped forever.
- * Dedup by `originalId` absorbs the refetched rows.
+ * NZ banks settle rows days late under earlier dates, so the incremental window
+ * reaches this far behind the newest imported row. `originalId` dedup absorbs the refetch.
  */
-const INCREMENTAL_OVERLAP_MS = 24 * 60 * 60 * 1000;
+const INCREMENTAL_OVERLAP_MS = 14 * 24 * 60 * 60 * 1000;
 
-interface PersisterCounters {
-  createdTransactionIds: string[];
-  mergedIntoPlannedCount: number;
-  skippedPreLinkCount: number;
-}
-
-/**
- * Akahu provider implementation
- * Syncs NZ bank accounts connected through an Akahu personal app
- * (free, single-user, two static tokens — no OAuth dance).
- *
- * Docs: https://developers.akahu.nz/docs/personal-apps
- */
+/** Docs: https://developers.akahu.nz/docs/personal-apps */
 export class AkahuProvider extends BaseBankDataProvider {
   readonly metadata: ProviderMetadata = {
     type: BANK_PROVIDER_TYPE.AKAHU,
@@ -89,32 +68,17 @@ export class AkahuProvider extends BaseBankDataProvider {
     },
   };
 
-  // ============================================================================
-  // Connection Management
-  // ============================================================================
-
   async connect(userId: number, credentials: unknown): Promise<string> {
     if (!this.isValidCredentials(credentials)) {
       throw new ValidationError({ message: t({ key: 'bankDataProviders.akahu.invalidCredentialsFormat' }) });
     }
 
-    const apiClient = new AkahuApiClient(credentials);
-
-    // Validate via /me and capture the consent date: Akahu only serves
-    // transactions from `access_granted_at` back 730 days for personal apps.
-    // Network/5xx errors propagate so callers can distinguish "bad tokens"
-    // from "Akahu is down".
-    let me: AkahuApiMe;
-    try {
-      me = await apiClient.getMe();
-    } catch (error) {
-      if (error instanceof ForbiddenError) {
-        throw new ForbiddenError({ message: t({ key: 'bankDataProviders.akahu.invalidTokens' }) });
-      }
-      throw error;
+    const isValid = await this.validateCredentials(credentials);
+    if (!isValid) {
+      throw new ForbiddenError({ message: t({ key: 'bankDataProviders.akahu.invalidTokens' }) });
     }
 
-    const accountsResponse: AkahuApiAccountsResponse = await apiClient.getAccounts();
+    const accountsResponse = await new AkahuApiClient(credentials).getAccounts();
 
     const existingConnections = await BankDataProviderConnections.count({
       where: { userId, providerType: this.metadata.type },
@@ -129,10 +93,9 @@ export class AkahuProvider extends BaseBankDataProvider {
       credentials: encryptCredentials({ userToken: credentials.userToken, appToken: credentials.appToken }),
       metadata: {
         accountCount: accountsResponse.items.length,
-        accessGrantedAt: me.item.access_granted_at ?? null,
         consecutiveAuthFailures: 0,
         deactivationReason: null,
-      } as AkahuMetadata,
+      } satisfies AkahuMetadata,
     } as any);
 
     return connection.id;
@@ -164,8 +127,7 @@ export class AkahuProvider extends BaseBankDataProvider {
     const connection = await this.getConnection(connectionId);
     this.validateProviderType(connection);
 
-    const apiClient = new AkahuApiClient(newCredentials);
-    const isValid = await apiClient.testConnection();
+    const isValid = await this.validateCredentials(newCredentials);
     if (!isValid) {
       throw new ForbiddenError({ message: t({ key: 'bankDataProviders.akahu.invalidTokens' }) });
     }
@@ -176,40 +138,30 @@ export class AkahuProvider extends BaseBankDataProvider {
     });
 
     // New object reference: mutating metadata in place leaves the JSONB column clean and the reset is never saved.
-    const metadata: AkahuMetadata = { ...(connection.metadata as AkahuMetadata) };
-    metadata.consecutiveAuthFailures = 0;
-    metadata.deactivationReason = null;
-    connection.metadata = metadata;
+    connection.metadata = {
+      ...(connection.metadata as AkahuMetadata),
+      consecutiveAuthFailures: 0,
+      deactivationReason: null,
+    } satisfies AkahuMetadata;
     connection.isActive = true;
 
     await connection.save();
   }
 
-  // ============================================================================
-  // Account Operations
-  // ============================================================================
-
   async fetchAccounts(connectionId: string): Promise<ProviderAccount[]> {
     const credentials = await this.getValidatedCredentials(connectionId);
     const apiClient = new AkahuApiClient(credentials);
 
-    let accountsResponse: AkahuApiAccountsResponse;
-    try {
-      accountsResponse = await apiClient.getAccounts();
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const accountsResponse = await this.withAuthTracking({ connectionId, request: () => apiClient.getAccounts() });
 
     return accountsResponse.items
-      .filter((account) => account.status === 'ACTIVE' && (account.attributes || []).includes('TRANSACTIONS'))
+      .filter((account) => account.status === 'ACTIVE')
       .map((account) => this.toProviderAccount(account))
       .filter((account): account is ProviderAccount => account !== null);
   }
 
   private toProviderAccount(account: AkahuApiAccount): ProviderAccount | null {
-    const currency = (account.balance?.currency || '').toUpperCase();
+    const currency = account.balance.currency?.toUpperCase();
     if (!currency) {
       logger.error({
         message: `[Akahu] Skipping account ${account._id} (${account.name}): no currency in balance payload`,
@@ -217,14 +169,11 @@ export class AkahuProvider extends BaseBankDataProvider {
       return null;
     }
 
-    const balance: Cents =
-      account.balance?.current == null ? asCents(0) : Money.fromDecimal(account.balance.current).toCents();
-
     return {
       externalId: account._id,
       name: account.name,
       type: 'bank' as const,
-      balance,
+      balance: this.balanceCents(account),
       currency,
       metadata: {
         institutionName: account.connection?.name ?? null,
@@ -233,13 +182,10 @@ export class AkahuProvider extends BaseBankDataProvider {
         accountNumber: account.formatted_account ?? null,
         holder: account.meta?.holder ?? null,
         status: account.status,
+        creditLimit: account.balance.limit ? Money.fromDecimal(Math.abs(account.balance.limit)).toCents() : 0,
       },
     };
   }
-
-  // ============================================================================
-  // Transaction Operations
-  // ============================================================================
 
   async fetchTransactions(
     connectionId: string,
@@ -250,21 +196,18 @@ export class AkahuProvider extends BaseBankDataProvider {
     const apiClient = new AkahuApiClient(credentials);
 
     // Transactions carry no currency field; the account's balance currency is authoritative.
-    let account: AkahuApiAccount;
-    let transactions: AkahuApiTransaction[];
-    try {
-      ({ item: account } = await apiClient.getAccount({ accountId: accountExternalId }));
-      transactions = await apiClient.getTransactions({
-        accountId: accountExternalId,
-        start: dateRange?.from,
-        end: dateRange?.to,
-      });
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
-    const currency = (account.balance?.currency || '').toUpperCase();
+    const { account, transactions } = await this.withAuthTracking({
+      connectionId,
+      request: async () => ({
+        account: (await apiClient.getAccount({ accountId: accountExternalId })).item,
+        transactions: await apiClient.getTransactions({
+          accountId: accountExternalId,
+          start: dateRange?.from,
+          end: dateRange?.to,
+        }),
+      }),
+    });
+    const currency = this.currencyOf(account);
 
     return transactions.map((tx) => ({
       externalId: tx._id,
@@ -303,48 +246,47 @@ export class AkahuProvider extends BaseBankDataProvider {
         const credentials = await this.getValidatedCredentials(connectionId);
         const apiClient = new AkahuApiClient(credentials);
 
-        // Returns the (possibly just-refresh-requested) account payload.
-        const freshAccount = await this.refreshIfStale({
-          connectionId,
-          apiClient,
-          accountExternalId: account.externalId,
-        });
-
         // An account with nothing stored yet is a backfill: fetch everything
-        // Akahu serves for a personal app (730 days). Otherwise fetch since the
-        // newest stored transaction, with a same-day overlap because `start` is
-        // exclusive on a typically day-precise date.
+        // Akahu serves for a personal app (730 days) and don't consume plans.
         const anyStoredTransaction = await findOneTransaction({
           planned: 'exclude',
           access: 'unscoped-internal',
           balanceAdjustments: 'include',
           where: { accountId: account.id, time: { [Op.lte]: new Date() } },
         });
-        const start = anyStoredTransaction
-          ? new Date(new Date(anyStoredTransaction.time).getTime() - INCREMENTAL_OVERLAP_MS)
+        const newestImported =
+          anyStoredTransaction &&
+          (await findOneTransaction({
+            planned: 'exclude',
+            access: 'unscoped-internal',
+            balanceAdjustments: 'include',
+            where: { accountId: account.id, originalId: { [Op.ne]: null }, time: { [Op.lte]: new Date() } },
+            order: [['time', 'DESC']],
+          }));
+        const start = newestImported
+          ? new Date(new Date(newestImported.time).getTime() - INCREMENTAL_OVERLAP_MS)
           : undefined;
 
+        const externalId = account.externalId;
+        // One tracked block: a reset after the account read would hide a rejected transactions read.
+        const { akahuAccount, fetched } = await this.withAuthTracking({
+          connectionId,
+          request: async () => ({
+            akahuAccount: (await apiClient.getAccount({ accountId: externalId })).item,
+            fetched: await apiClient.getTransactions({ accountId: externalId, start }),
+          }),
+        });
+        await this.requestRefreshIfStale({ apiClient, account: akahuAccount });
+
         const matchPlanned = Boolean(anyStoredTransaction) && (await accountHasPlannedRows({ accountId: account.id }));
-        const createFromDate = anyStoredTransaction
-          ? clampSyncStartToLink({ account, from: new Date(0) })
-          : new Date(0);
+        const counters = await this.persistTransactions({
+          connection,
+          account,
+          transactions: fetched,
+          matchPlanned,
+          createFromDate: anyStoredTransaction ? clampSyncStartToLink({ account, from: new Date(0) }) : new Date(0),
+        });
 
-        const persister = await this.createPersister({ connection, account, matchPlanned, createFromDate });
-
-        let fetched: AkahuApiTransaction[];
-        try {
-          fetched = await apiClient.getTransactions({
-            accountId: account.externalId,
-            start,
-            onBatch: persister.persist,
-          });
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
-
-        const counters = persister.counters();
         if (
           counters.createdTransactionIds.length > 0 ||
           counters.mergedIntoPlannedCount > 0 ||
@@ -360,9 +302,8 @@ export class AkahuProvider extends BaseBankDataProvider {
           });
         }
 
-        // Update account balance — reuse the account payload we already fetched.
-        if (freshAccount.balance?.current != null) {
-          await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(freshAccount.balance.current) });
+        if (akahuAccount.balance.current != null) {
+          await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(akahuAccount.balance.current) });
         }
 
         return { transactionIds: counters.createdTransactionIds, fetchedCount: fetched.length };
@@ -400,39 +341,31 @@ export class AkahuProvider extends BaseBankDataProvider {
         const credentials = await this.getValidatedCredentials(connectionId);
         const apiClient = new AkahuApiClient(credentials);
 
-        let akahuAccount: AkahuApiAccount;
-        try {
-          ({ item: akahuAccount } = await apiClient.getAccount({ accountId: account.externalId }));
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
+        const externalId = account.externalId;
+        const { akahuAccount, fetched } = await this.withAuthTracking({
+          connectionId,
+          request: async () => ({
+            akahuAccount: (await apiClient.getAccount({ accountId: externalId })).item,
+            // `start` is exclusive and dates are day-precise, so step back 1ms to keep rows dated exactly `from`.
+            fetched: await apiClient.getTransactions({
+              accountId: externalId,
+              start: new Date(from.getTime() - 1),
+              end: to,
+            }),
+          }),
+        });
 
         // No `matchPlanned`: a charge from an arbitrary past window must not
         // consume a plan the user made for something else.
-        const persister = await this.createPersister({
+        const counters = await this.persistTransactions({
           connection,
           account,
+          transactions: fetched,
           matchPlanned: false,
           createFromDate: clampSyncStartToLink({ account, from }),
         });
 
-        let fetched: AkahuApiTransaction[];
-        try {
-          fetched = await apiClient.getTransactions({
-            accountId: account.externalId,
-            start: from,
-            end: to,
-            onBatch: persister.persist,
-          });
-          await this.resetAuthFailures(connectionId);
-        } catch (error) {
-          await this.handleAuthError({ connectionId, error });
-          throw error;
-        }
-        const counters = persister.counters();
-
-        if (counters.createdTransactionIds.length > 0 && akahuAccount.balance?.current != null) {
+        if (counters.createdTransactionIds.length > 0 && akahuAccount.balance.current != null) {
           await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(akahuAccount.balance.current) });
         }
 
@@ -449,25 +382,17 @@ export class AkahuProvider extends BaseBankDataProvider {
     };
   }
 
-  // ============================================================================
-  // Balance Operations
-  // ============================================================================
-
   async fetchBalance(connectionId: string, accountExternalId: string): Promise<ProviderBalance> {
     const credentials = await this.getValidatedCredentials(connectionId);
     const apiClient = new AkahuApiClient(credentials);
-    let account: AkahuApiAccount;
-    try {
-      ({ item: account } = await apiClient.getAccount({ accountId: accountExternalId }));
-      await this.resetAuthFailures(connectionId);
-    } catch (error) {
-      await this.handleAuthError({ connectionId, error });
-      throw error;
-    }
+    const { item: account } = await this.withAuthTracking({
+      connectionId,
+      request: () => apiClient.getAccount({ accountId: accountExternalId }),
+    });
 
     return {
-      amount: account.balance?.current == null ? asCents(0) : Money.fromDecimal(account.balance.current).toCents(),
-      currency: (account.balance?.currency || '').toUpperCase(),
+      amount: this.balanceCents(account),
+      currency: this.currencyOf(account),
       asOf: account.refreshed?.balance ? new Date(account.refreshed.balance) : new Date(),
     };
   }
@@ -479,113 +404,113 @@ export class AkahuProvider extends BaseBankDataProvider {
       throw new BadRequestError({ message: t({ key: 'bankDataProviders.akahu.accountNoExternalId' }) });
     }
 
-    const balance = await this.fetchBalance(connectionId, account.externalId);
-    await writeBankBalanceWithHistory({ account, balance: Money.fromCents(balance.amount) });
+    const credentials = await this.getValidatedCredentials(connectionId);
+    const apiClient = new AkahuApiClient(credentials);
+    const externalId = account.externalId;
+    const { item } = await this.withAuthTracking({
+      connectionId,
+      request: () => apiClient.getAccount({ accountId: externalId }),
+    });
+
+    if (item.balance.current == null) {
+      logger.info(`[Akahu] Account ${item._id} has no current balance, balance left unchanged`);
+      return;
+    }
+
+    await writeBankBalanceWithHistory({ account, balance: Money.fromDecimal(item.balance.current) });
   }
 
-  // ============================================================================
-  // Helper Methods
-  // ============================================================================
-
   /**
-   * Shared row-persistence loop for sync and period load. Dedup mirrors the
-   * two-tier scheme used by LunchFlow/Walutomat/SimpleFIN: primary by
-   * `originalId`, secondary by `externalData.originalSource.originalId`
-   * (covers unlink→relink, restoring `originalId` on a hit).
+   * Dedup is two-tier: primary by `originalId`, secondary by
+   * `externalData.originalSource.originalId` (covers unlink→relink, restoring `originalId` on a hit).
    */
-  private async createPersister({
+  private async persistTransactions({
     connection,
     account,
+    transactions,
     matchPlanned,
     createFromDate,
   }: {
     connection: BankDataProviderConnections;
     account: Accounts;
+    transactions: AkahuApiTransaction[];
     matchPlanned: boolean;
     createFromDate: Date;
-  }): Promise<{ persist: (transactions: AkahuApiTransaction[]) => Promise<void>; counters: () => PersisterCounters }> {
+  }) {
     const defaultCategoryId = await getUserDefaultCategory({ id: connection.userId });
     const createdTransactionIds: string[] = [];
     let mergedIntoPlannedCount = 0;
     let skippedPreLinkCount = 0;
     const checkpoint = this.createBaseCurrencyLockCheckpoint({ userId: connection.userId });
 
-    const persist = async (transactions: AkahuApiTransaction[]): Promise<void> => {
-      // Persist in ledger order so planned-merge sees transactions ascending.
-      const ascending = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    // Persist in ledger order so planned-merge sees transactions ascending.
+    const ascending = [...transactions].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      for (const tx of ascending) {
-        await checkpoint();
+    for (const tx of ascending) {
+      await checkpoint();
 
-        const existingTx = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: { accountId: account.id, originalId: tx._id },
-          paranoid: false,
-        });
+      const existingTx = await findOneTransaction({
+        planned: 'exclude',
+        access: 'unscoped-internal',
+        balanceAdjustments: 'include',
+        where: { accountId: account.id, originalId: tx._id },
+        paranoid: false,
+      });
 
-        if (existingTx) {
-          continue;
-        }
-
-        const existingByOriginalSource = await findOneTransaction({
-          planned: 'exclude',
-          access: 'unscoped-internal',
-          balanceAdjustments: 'include',
-          where: Sequelize.and(
-            { accountId: account.id, originalId: null },
-            Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx._id),
-          ),
-          paranoid: false,
-        });
-
-        if (existingByOriginalSource) {
-          // Restore the originalId so future syncs use the fast primary path
-          await existingByOriginalSource.update({ originalId: tx._id });
-          continue;
-        }
-
-        // Never create rows before the link date: that history is already absorbed into the opening balance.
-        if (new Date(tx.date) < createFromDate) {
-          skippedPreLinkCount += 1;
-          continue;
-        }
-
-        const isExpense = tx.amount < 0;
-
-        const createResult = await createTransaction({
-          originalId: tx._id,
-          note: tx.description || tx.merchant?.name || '',
-          amount: Money.fromDecimal(Math.abs(tx.amount)),
-          time: new Date(tx.date),
-          externalData: this.transactionMetadata(tx),
-          commissionRate: Money.fromCents(0),
-          cashbackAmount: Money.fromCents(0),
-          accountId: account.id,
-          userId: connection.userId,
-          transactionType: isExpense ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
-          categoryId: defaultCategoryId,
-          transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
-          accountType: ACCOUNT_TYPES.akahu,
-          rawMerchantName: tx.merchant?.name?.trim() || null,
-          matchPlanned,
-        });
-
-        // A merged row is not a new row: it keeps the user's category and payee, which the
-        // post-sync listeners on the emitted ids would overwrite.
-        if (createResult.mergedIntoPlanned) {
-          mergedIntoPlannedCount += 1;
-        } else {
-          createdTransactionIds.push(createResult[0].id);
-        }
+      if (existingTx) {
+        continue;
       }
-    };
 
-    return {
-      persist,
-      counters: () => ({ createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount }),
-    };
+      const existingByOriginalSource = await findOneTransaction({
+        planned: 'exclude',
+        access: 'unscoped-internal',
+        balanceAdjustments: 'include',
+        where: Sequelize.and(
+          { accountId: account.id, originalId: null },
+          Sequelize.where(Sequelize.literal(`"externalData"#>>'{originalSource,originalId}'`), tx._id),
+        ),
+        paranoid: false,
+      });
+
+      if (existingByOriginalSource) {
+        await existingByOriginalSource.update({ originalId: tx._id });
+        continue;
+      }
+
+      // Never create rows before the link date: that history is already absorbed into the opening balance.
+      if (new Date(tx.date) < createFromDate) {
+        skippedPreLinkCount += 1;
+        continue;
+      }
+
+      const createResult = await createTransaction({
+        originalId: tx._id,
+        note: tx.description || tx.merchant?.name || '',
+        amount: Money.fromDecimal(Math.abs(tx.amount)),
+        time: new Date(tx.date),
+        externalData: this.transactionMetadata(tx),
+        commissionRate: Money.fromCents(0),
+        cashbackAmount: Money.fromCents(0),
+        accountId: account.id,
+        userId: connection.userId,
+        transactionType: tx.amount < 0 ? TRANSACTION_TYPES.expense : TRANSACTION_TYPES.income,
+        categoryId: defaultCategoryId,
+        transferNature: TRANSACTION_TRANSFER_NATURE.not_transfer,
+        accountType: ACCOUNT_TYPES.akahu,
+        rawMerchantName: tx.merchant?.name?.trim() || null,
+        matchPlanned,
+      });
+
+      // A merged row is not a new row: it keeps the user's category and payee, which the
+      // post-sync listeners on the emitted ids would overwrite.
+      if (createResult.mergedIntoPlanned) {
+        mergedIntoPlannedCount += 1;
+      } else {
+        createdTransactionIds.push(createResult[0].id);
+      }
+    }
+
+    return { createdTransactionIds, mergedIntoPlannedCount, skippedPreLinkCount };
   }
 
   private transactionMetadata(tx: AkahuApiTransaction): Record<string, unknown> {
@@ -602,37 +527,52 @@ export class AkahuProvider extends BaseBankDataProvider {
     };
   }
 
-  /**
-   * Ask Akahu for fresh bank data when its cached view is stale, so a sync
-   * started right after a purchase eventually sees it. Refreshes run
-   * asynchronously upstream: this call improves the NEXT sync's freshness,
-   * never the current one's. All refresh failures are swallowed inside
-   * requestRefresh; only the account read can throw (auth → tracked).
-   */
-  private async refreshIfStale({
+  private currencyOf(account: AkahuApiAccount): string {
+    if (!account.balance.currency) {
+      throw new ValidationError({ message: t({ key: 'bankDataProviders.akahu.missingCurrency' }) });
+    }
+    return account.balance.currency.toUpperCase();
+  }
+
+  private balanceCents(account: AkahuApiAccount): Cents {
+    if (account.balance.current == null) {
+      logger.info(`[Akahu] Account ${account._id} has no current balance, defaulting to 0`);
+      return asCents(0);
+    }
+    return Money.fromDecimal(account.balance.current).toCents();
+  }
+
+  private async withAuthTracking<T>({
     connectionId,
-    apiClient,
-    accountExternalId,
+    request,
   }: {
     connectionId: string;
-    apiClient: AkahuApiClient;
-    accountExternalId: string;
-  }): Promise<AkahuApiAccount> {
+    request: () => Promise<T>;
+  }): Promise<T> {
     try {
-      const { item: account } = await apiClient.getAccount({ accountId: accountExternalId });
+      const result = await request();
       await this.resetAuthFailures(connectionId);
-      const lastRefresh = account.refreshed?.transactions ? new Date(account.refreshed.transactions).getTime() : 0;
-
-      if (Date.now() - lastRefresh > STALE_DATA_THRESHOLD_MS) {
-        await apiClient.requestRefresh();
-        // Re-read so the caller can reuse the payload.
-        return (await apiClient.getAccount({ accountId: accountExternalId })).item;
-      }
-
-      return account;
+      return result;
     } catch (error) {
       await this.handleAuthError({ connectionId, error });
       throw error;
+    }
+  }
+
+  /**
+   * Refreshes run asynchronously upstream, so this only improves the NEXT
+   * sync's freshness; the current sync reads the cached account as returned.
+   */
+  private async requestRefreshIfStale({
+    apiClient,
+    account,
+  }: {
+    apiClient: AkahuApiClient;
+    account: AkahuApiAccount;
+  }): Promise<void> {
+    const lastRefresh = account.refreshed?.transactions ? new Date(account.refreshed.transactions).getTime() : 0;
+    if (Date.now() - lastRefresh > STALE_DATA_THRESHOLD_MS) {
+      await apiClient.requestRefresh({ accountId: account._id });
     }
   }
 

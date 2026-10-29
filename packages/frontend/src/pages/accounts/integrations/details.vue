@@ -554,12 +554,12 @@ const { mutate: updateCredentialsMutation, isPending: isUpdatingCredentials } = 
 });
 
 const canUpdateCredentials = computed(() => {
-  if (!newApiKey.value) return false;
+  if (!newApiKey.value.trim()) return false;
   if (
     connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.WALUTOMAT ||
     connectionDetails.value?.providerType === BANK_PROVIDER_TYPE.AKAHU
   ) {
-    return !!newPrivateKey.value;
+    return !!newPrivateKey.value.trim();
   }
   return true;
 });
@@ -569,8 +569,8 @@ const handleUpdateCredentials = () => {
 
   const credentials = buildProviderCredentials({
     providerType: connectionDetails.value?.providerType,
-    apiKey: newApiKey.value,
-    privateKey: newPrivateKey.value,
+    apiKey: newApiKey.value.trim(),
+    privateKey: newPrivateKey.value.trim(),
   });
   updateCredentialsMutation(credentials);
 };

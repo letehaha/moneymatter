@@ -31,7 +31,7 @@ export const getMockedAkahuAccounts = (): AkahuApiAccountsResponse => ({
     accountBase({
       _id: AKAHU_ACCOUNT_1_ID,
       name: 'Everyday Account',
-      type: 'CHECKER',
+      type: 'CHECKING',
       formatted_account: '01-1234-1234567-00',
       meta: { holder: 'Test User' },
       balance: { available: asDecimal(1523.45), current: asDecimal(1523.45), currency: 'NZD', overdrawn: false },
@@ -41,14 +41,12 @@ export const getMockedAkahuAccounts = (): AkahuApiAccountsResponse => ({
       name: 'Savings Account',
       balance: { available: asDecimal(8500), current: asDecimal(8500), currency: 'NZD', overdrawn: false },
     }),
-    // No TRANSACTIONS attribute → must be filtered out by fetchAccounts
     accountBase({
       _id: AKAHU_ACCOUNT_NO_TX_ID,
       name: 'Term Deposit',
-      type: 'TERM_DEPOSIT',
-      attributes: ['BALANCE'],
+      type: 'TERMDEPOSIT',
+      attributes: [],
     }),
-    // INACTIVE → must be filtered out by fetchAccounts
     accountBase({
       _id: AKAHU_ACCOUNT_INACTIVE_ID,
       name: 'Closed Account',
@@ -72,17 +70,16 @@ export const getMockedAkahuAccount = ({ accountId }: { accountId: string }): Aka
 export const getMockedAkahuMe = (): AkahuApiMe => ({
   success: true,
   item: {
-    _id: 'usr_test',
-    name: 'Test User',
+    _id: 'user_test',
     email: 'test@example.com',
     access_granted_at: subDays(new Date(), 30).toISOString(),
   },
 });
 
-export const getMockedAkahuTransactions = (
+export const getMockedAkahuTransactions = ({
   amount = 5,
   accountId = AKAHU_ACCOUNT_1_ID,
-): AkahuApiTransactionsResponse => {
+}: { amount?: number; accountId?: string } = {}): AkahuApiTransactionsResponse => {
   const currentDate = new Date();
 
   const transactions: AkahuApiTransaction[] = Array.from({ length: amount }, (_, index) => {
@@ -110,7 +107,6 @@ export const getMockedAkahuTransactions = (
     };
   });
 
-  // Akahu returns newest first.
   return {
     success: true,
     items: transactions,

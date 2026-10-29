@@ -358,6 +358,14 @@
       "accountNoExternalId": "Рахунок не має зовнішнього ID для синхронізації Lunch Flow.",
       "accountNotFound": "Рахунок Lunch Flow не знайдено."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Недійсний формат облікових даних Akahu. Потрібні User Access Token і App ID Token.",
+      "invalidTokens": "Недійсні токени Akahu. Перевірте User Access Token і App ID Token на сторінці вашого застосунку Akahu.",
+      "accountNoExternalId": "Рахунок не має зовнішнього ID для синхронізації Akahu.",
+      "accountNotFound": "Рахунок Akahu не знайдено.",
+      "rateLimited": "Akahu зараз обмежує кількість запитів. Будь ласка, спробуйте ще раз трохи згодом.",
+      "missingCurrency": "Akahu не повернув валюту для цього рахунку."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Недійсний формат облікових даних SimpleFIN.",
       "invalidSetupToken": "Недійсний або вже використаний токен налаштування SimpleFIN. Згенеруйте новий у SimpleFIN Bridge і спробуйте знову.",

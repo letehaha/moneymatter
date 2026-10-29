@@ -361,7 +361,8 @@
       "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
       "accountNoExternalId": "Account has no external ID for Akahu sync.",
       "accountNotFound": "Akahu account not found.",
-      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly."
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
+      "missingCurrency": "Akahu did not return a currency for this account."
     },
     "simplefin": {
       "invalidCredentialsFormat": "Invalid SimpleFIN credentials format.",

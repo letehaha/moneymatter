@@ -21,18 +21,32 @@ export interface AkahuCredentials {
  */
 export interface AkahuMetadata {
   accountCount?: number;
-  /** ISO timestamp of when the user granted the app access (from /me). Bounds how far back history can be fetched. */
-  accessGrantedAt?: string | null;
   consecutiveAuthFailures?: number;
   deactivationReason?: DeactivationReason | null;
 }
 
-export type AkahuAccountStatus = 'ACTIVE' | 'INACTIVE' | (string & {});
+export type AkahuAccountStatus = 'ACTIVE' | 'INACTIVE';
+
+export type AkahuAccountType =
+  | 'CHECKING'
+  | 'SAVINGS'
+  | 'CREDITCARD'
+  | 'LOAN'
+  | 'KIWISAVER'
+  | 'INVESTMENT'
+  | 'TERMDEPOSIT'
+  | 'FOREIGN'
+  | 'TAX'
+  | 'REWARDS'
+  | 'WALLET';
+
+export type AkahuAccountAttribute = 'TRANSACTIONS' | 'TRANSFER_TO' | 'TRANSFER_FROM' | 'PAYMENT_TO' | 'PAYMENT_FROM';
 
 export interface AkahuApiBalance {
   available: Decimal | null;
   current: Decimal | null;
   currency: string;
+  limit?: Decimal | null;
   overdrawn?: boolean;
 }
 
@@ -45,10 +59,10 @@ export interface AkahuApiConnection {
 export interface AkahuApiAccount {
   _id: string;
   name: string;
-  type: string;
+  type: AkahuAccountType;
   status: AkahuAccountStatus;
   balance: AkahuApiBalance;
-  attributes?: string[];
+  attributes?: AkahuAccountAttribute[];
   connection?: AkahuApiConnection | null;
   formatted_account?: string | null;
   meta?: { holder?: string | null } | null;
@@ -118,13 +132,7 @@ export interface AkahuApiMe {
   success: boolean;
   item: {
     _id: string;
-    name?: string;
     email?: string;
     access_granted_at?: string | null;
   };
-}
-
-export interface AkahuApiSimpleResponse {
-  success: boolean;
-  message?: string;
 }

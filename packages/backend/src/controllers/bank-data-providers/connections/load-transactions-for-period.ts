@@ -96,7 +96,7 @@ export default createController(
 
     // Dispatch to the provider. Only providers that support date-range
     // historical loads implement loadTransactionsForPeriod — Monobank via a
-    // job queue, SimpleFIN inline. Providers without it reject the request.
+    // job queue, SimpleFIN and Akahu inline. Providers without it reject the request.
     const provider = bankProviderRegistry.get(connection.providerType);
     const loadTransactionsForPeriod = provider.loadTransactionsForPeriod?.bind(provider);
 

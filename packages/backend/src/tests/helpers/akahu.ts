@@ -1,21 +1,18 @@
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import Accounts from '@models/accounts.model';
 import Transactions from '@models/transactions.model';
+import type { AkahuApiTransactionsResponse } from '@services/bank-data-providers/akahu/types';
 import * as helpers from '@tests/helpers';
-import { getMockedAkahuTransactions } from '@tests/mocks/akahu/data';
 import { VALID_AKAHU_APP_TOKEN, VALID_AKAHU_USER_TOKEN, getAkahuTransactionsMock } from '@tests/mocks/akahu/mock-api';
 
 /**
  * Creates an Akahu connection WITHOUT connecting accounts or triggering sync.
  * This allows tests to set up mocks before any sync happens.
  */
-const pairAkahuUser = async ({
-  userToken = VALID_AKAHU_USER_TOKEN,
-  appToken = VALID_AKAHU_APP_TOKEN,
-}: { userToken?: string; appToken?: string } = {}) => {
+const pairAkahuUser = async () => {
   const { connectionId } = await helpers.bankDataProviders.connectProvider({
     providerType: BANK_PROVIDER_TYPE.AKAHU,
-    credentials: { userToken, appToken },
+    credentials: { userToken: VALID_AKAHU_USER_TOKEN, appToken: VALID_AKAHU_APP_TOKEN },
     raw: true,
   });
 
@@ -31,16 +28,13 @@ const getTransactions = async () => {
   );
 };
 
-/**
- * Set up mocks, connect external accounts, and return the first created account with transactions.
- */
 async function connectAccountsAndSync({
   connectionId,
   mockedTransactions,
   accountId,
 }: {
   connectionId: string;
-  mockedTransactions: ReturnType<typeof getMockedAkahuTransactions>;
+  mockedTransactions: AkahuApiTransactionsResponse;
   accountId: string;
 }): Promise<{ account: Accounts; transactions: Transactions[] }> {
   global.mswMockServer.use(getAkahuTransactionsMock({ response: mockedTransactions, accountId }));

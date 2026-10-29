@@ -75,7 +75,7 @@
               </div>
               <div class="text-right">
                 <div class="text-sm font-medium">
-                  {{ formatBalance(account.balance, account.currency) }}
+                  {{ formatUIAmount(account.balance, { currency: account.currency }) }}
                 </div>
                 <div class="text-muted-foreground text-xs">{{ account.currency }}</div>
               </div>
@@ -93,7 +93,7 @@
                   <Tooltip.TooltipTrigger as-child>
                     <UiButton variant="ghost" size="sm" :disabled="isLoading" @click="handleSkipImport">
                       {{ t('pages.integrations.akahu.skipButton') }}
-                      <InfoIcon class="text-muted-foreground ml-1 size-3.5" />
+                      <InfoIcon class="text-muted-foreground size-3.5" />
                     </UiButton>
                   </Tooltip.TooltipTrigger>
                   <Tooltip.TooltipContent class="max-w-60 p-3">
@@ -161,6 +161,7 @@ import UiButton from '@/components/lib/ui/button/Button.vue';
 import * as Tooltip from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
 import { useSyncStatus } from '@/composable/use-sync-status';
+import { formatUIAmount } from '@/js/helpers';
 import { useAccountsStore, useOnboardingStore, useUserStore } from '@/stores';
 import { BANK_PROVIDER_TYPE } from '@bt/shared/types';
 import { BuildingIcon, ExternalLinkIcon, InfoIcon } from '@lucide/vue';
@@ -203,16 +204,19 @@ const canConnect = computed(() => userToken.value.trim().length > 0 && appToken.
 const availableAccounts = ref<AvailableAccount[]>([]);
 
 const handleConnectProvider = async () => {
-  const token = userToken.value.trim();
-  const id = appToken.value.trim();
-  if (!token || !id || isLoading.value || isDemo.value) return;
+  const userTokenValue = userToken.value.trim();
+  const appTokenValue = appToken.value.trim();
+  if (!userTokenValue || !appTokenValue || isLoading.value || isDemo.value) return;
 
   try {
     isLoading.value = true;
 
-    if (!claimed.value || claimed.value.userToken !== token || claimed.value.appToken !== id) {
-      const response = await connectProvider(BANK_PROVIDER_TYPE.AKAHU, { userToken: token, appToken: id });
-      claimed.value = { userToken: token, appToken: id, connectionId: response.connectionId };
+    if (!claimed.value || claimed.value.userToken !== userTokenValue || claimed.value.appToken !== appTokenValue) {
+      const response = await connectProvider(BANK_PROVIDER_TYPE.AKAHU, {
+        userToken: userTokenValue,
+        appToken: appTokenValue,
+      });
+      claimed.value = { userToken: userTokenValue, appToken: appTokenValue, connectionId: response.connectionId };
     }
 
     availableAccounts.value = await getAvailableAccounts(claimed.value.connectionId);
@@ -264,12 +268,5 @@ const getErrorMessage = (error: unknown): string | undefined => {
   if (apiMessage) return apiMessage;
   if (error instanceof Error && error.message) return error.message;
   return undefined;
-};
-
-const formatBalance = (balance: number, currency: string) => {
-  return new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency,
-  }).format(balance);
 };
 </script>
