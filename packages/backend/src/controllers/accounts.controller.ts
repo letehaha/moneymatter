@@ -1,16 +1,15 @@
-import { ACCOUNT_CATEGORIES, ACCOUNT_STATUSES, ACCOUNT_TYPES, PAYMENT_TYPES } from '@bt/shared/types';
-import { booleanQuery, currencyCode, recordId } from '@common/lib/zod/custom-types';
+import { ACCOUNT_TYPES } from '@bt/shared/types';
+import { booleanQuery, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
-import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
-import { logoFieldsShape, refineLogoFields, refineLogoFieldsOnCreate } from '@controllers/common/logo-fields.schema';
-import { Unauthorized, ValidationError } from '@js/errors';
+import { Unauthorized } from '@js/errors';
 import { removeUndefinedKeys } from '@js/helpers';
-import Accounts from '@models/accounts.model';
 import { serializeAccount, serializeAccounts } from '@root/serializers';
 import * as accountsService from '@services/accounts.service';
+import { assertAccountUpdateAllowed } from '@services/accounts/assert-account-update-allowed';
 import { refreshStaleVehicleValuesForUser } from '@services/vehicles/refresh-vehicle-value.service';
 import { z } from 'zod';
 
+import { createAccountBodySchema, updateAccountBodySchema } from './accounts/account-body.schema';
 import { createController } from './helpers/controller-factory';
 
 export const getAccounts = createController(z.object({}), async ({ user }) => {
@@ -42,20 +41,7 @@ export const getAccountById = createController(
 
 export const createAccount = createController(
   z.object({
-    body: z
-      .object({
-        accountCategory: z.nativeEnum(ACCOUNT_CATEGORIES).default(ACCOUNT_CATEGORIES.general),
-        defaultPaymentType: z.nativeEnum(PAYMENT_TYPES).nullable().optional(),
-        currencyCode: currencyCode(),
-        name: z.string().trim().min(1),
-        type: z.nativeEnum(ACCOUNT_TYPES).default(ACCOUNT_TYPES.system),
-        // Amount fields now accept decimals - conversion to cents happens below
-        initialBalance: z.number().optional().default(0),
-        creditLimit: z.number().min(0).optional().default(0),
-        // Absent key → column stays null; domain, initials and icon evict each other.
-        ...logoFieldsShape,
-      })
-      .superRefine((data, ctx) => refineLogoFieldsOnCreate({ data, ctx })),
+    body: createAccountBodySchema,
   }),
   async ({ user, body }) => {
     const {
@@ -105,22 +91,7 @@ export const updateAccount = createController(
     params: z.object({
       id: recordId(),
     }),
-    body: z
-      .object({
-        accountCategory: z.nativeEnum(ACCOUNT_CATEGORIES).optional(),
-        defaultPaymentType: z.nativeEnum(PAYMENT_TYPES).nullable().optional(),
-        name: z.string().trim().min(1).optional(),
-        // Amount fields now accept decimals - conversion to cents happens below
-        creditLimit: z.number().min(0).optional(),
-        status: z.nativeEnum(ACCOUNT_STATUSES).optional(),
-        excludeFromStats: z.boolean().optional(),
-        currentBalance: z.number().optional(),
-        initialBalance: z.number().optional(),
-        // Absent key → no change; a present key is written as given (null clears
-        // it), and domain, initials and icon evict each other.
-        ...logoFieldsShape,
-      })
-      .superRefine((data, ctx) => refineLogoFields({ data, ctx })),
+    body: updateAccountBodySchema,
   }),
   async ({ user, params, body }) => {
     const { id } = params;
@@ -140,31 +111,7 @@ export const updateAccount = createController(
       logoIcon,
     } = body;
 
-    const account = await findOrThrowNotFound({
-      query: Accounts.findOne({ where: { id, userId } }),
-      message: `Account with id "${id}" doesn't exist.`,
-    });
-
-    if (account.type !== ACCOUNT_TYPES.system && currentBalance !== undefined) {
-      throw new ValidationError({
-        message: `'currentBalance' is only allowed to be changed for "${ACCOUNT_TYPES.system}" account type`,
-      });
-    }
-
-    // Flipping accountCategory into or out of 'vehicle' breaks the 1:1 Vehicles
-    // sidecar invariant — the row would either point to a missing Vehicles
-    // record or strand an existing one. Vehicle accounts are created/destroyed
-    // via the /vehicles endpoints which create/cascade the sidecar; the generic
-    // updateAccount must not move accounts between categories that own sidecars.
-    if (accountCategory !== undefined && accountCategory !== account.accountCategory) {
-      const involvesVehicle =
-        accountCategory === ACCOUNT_CATEGORIES.vehicle || account.accountCategory === ACCOUNT_CATEGORIES.vehicle;
-      if (involvesVehicle) {
-        throw new ValidationError({
-          message: `Changing accountCategory into or out of '${ACCOUNT_CATEGORIES.vehicle}' is not supported. Delete and recreate via /vehicles.`,
-        });
-      }
-    }
+    await assertAccountUpdateAllowed({ userId, id, accountCategory, currentBalance });
 
     // NOTE: the "currentBalance can't be set directly on a vehicle account"
     // guard lives in `accountsService.updateAccount` (not here) so every caller

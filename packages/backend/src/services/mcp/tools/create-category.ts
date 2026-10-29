@@ -5,7 +5,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createCategory } from '@services/categories/create-category';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Category name.'),
@@ -16,6 +16,15 @@ const inputSchema = {
     .enum([CATEGORY_TYPES.custom, CATEGORY_TYPES.internal])
     .optional()
     .describe('Category type: "custom" (default, user-editable) or "internal" (system-managed).'),
+  defaultTagIds: z
+    .array(recordId())
+    .max(20)
+    .optional()
+    .describe('Tag IDs (from get_tags) that new transactions in this category get by default. Max 20'),
+  applyDefaultTagsOnAiCategorization: z
+    .boolean()
+    .optional()
+    .describe('true also applies defaultTagIds when AI categorization picks this category'),
 };
 
 export function registerCreateCategory(server: McpServer) {
@@ -29,6 +38,7 @@ export function registerCreateCategory(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_category', clientId: extra.authInfo?.clientId });
 
       const category = await createCategory({ userId, ...args });
