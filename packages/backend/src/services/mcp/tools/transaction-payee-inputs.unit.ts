@@ -133,25 +133,19 @@ describe('bulk_update_transactions payee input', () => {
 });
 
 describe('MCP transaction tools forward paymentLegs', () => {
-  beforeEach(() => {
-    jest.mocked(createTransaction).mockRejectedValue(new Error('stop'));
-    jest.mocked(updateTransaction).mockRejectedValue(new Error('stop'));
-  });
-
   it.each([
     ['omitted', undefined, undefined],
     ['null', null, null],
     ['empty', [], []],
     ['a new part', [{ accountId: PAYEE_ID, amount: 5 }], [{ accountId: PAYEE_ID, amount: Money.fromDecimal(5) }]],
   ])('update_transaction forwards %s paymentLegs', async (_label, paymentLegs, expected) => {
-    await callTool({ register: registerUpdateTransaction, args: { id: ID, paymentLegs } });
+    await update.handler({ id: ID, paymentLegs }, WRITE);
     expect(updateTransaction).toHaveBeenLastCalledWith(expect.objectContaining({ paymentLegs: expected }));
   });
 
   it('create_transaction forwards paymentLegs', async () => {
-    await callTool({
-      register: registerCreateTransaction,
-      args: {
+    await create.handler(
+      {
         accountId: ID,
         amount: 10,
         transactionType: 'expense',
@@ -159,7 +153,8 @@ describe('MCP transaction tools forward paymentLegs', () => {
         transferNature: 'not_transfer',
         paymentLegs: [{ transactionId: PAYEE_ID }],
       },
-    });
+      WRITE,
+    );
     expect(createTransaction).toHaveBeenLastCalledWith(
       expect.objectContaining({ paymentLegs: [{ transactionId: PAYEE_ID }] }),
     );

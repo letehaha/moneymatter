@@ -20,7 +20,7 @@ export function registerUpdateAccount(server: McpServer) {
     'update_account',
     {
       description:
-        'Update an account: name, accountCategory, creditLimit, excludeFromStats, logo, and balances. currentBalance is allowed only on manual (system) accounts and moves the opening balance by the difference; initialBalance and currentBalance cannot be sent together. An account cannot be moved into or out of the vehicle category, or into loan. Amounts are decimals. Archiving is not done here: use archive_account.',
+        'Update an account: name, accountCategory, defaultPaymentType (null clears it), creditLimit, excludeFromStats, logo, and balances. currentBalance is allowed only on manual (system) accounts and moves the opening balance by the difference; initialBalance and currentBalance cannot be sent together. An account cannot be moved into or out of the vehicle category, or into loan. Amounts are decimals. Archiving is not done here: use archive_account.',
       inputSchema,
     },
     async (args, extra) => {
@@ -30,8 +30,16 @@ export function registerUpdateAccount(server: McpServer) {
       trackMcpToolUsed({ userId, tool: 'update_account', clientId: extra.authInfo?.clientId });
 
       const { accountId, ...body } = args;
-      const { accountCategory, name, creditLimit, excludeFromStats, currentBalance, initialBalance, ...logo } =
-        updateAccountBodySchema.parse(body);
+      const {
+        accountCategory,
+        defaultPaymentType,
+        name,
+        creditLimit,
+        excludeFromStats,
+        currentBalance,
+        initialBalance,
+        ...logo
+      } = updateAccountBodySchema.parse(body);
 
       await assertAccountUpdateAllowed({ userId, id: accountId, accountCategory, currentBalance });
 
@@ -43,6 +51,7 @@ export function registerUpdateAccount(server: McpServer) {
         ...removeUndefinedKeys({
           excludeFromStats,
           accountCategory,
+          defaultPaymentType,
           currentBalance: currentBalance !== undefined ? Money.fromDecimal(currentBalance) : undefined,
           initialBalance: initialBalance !== undefined ? Money.fromDecimal(initialBalance) : undefined,
           name,

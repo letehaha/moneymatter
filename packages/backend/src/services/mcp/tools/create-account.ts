@@ -14,7 +14,7 @@ export function registerCreateAccount(server: McpServer) {
   server.registerTool(
     'create_account',
     {
-      description: `Create a manual account. currencyCode is an ISO currency code. accountCategory defaults to "general"; "${ACCOUNT_CATEGORIES.loan}" and "${ACCOUNT_CATEGORIES.vehicle}" are refused here (they have their own flows). initialBalance and creditLimit are decimals in the account currency. Give a logo as either logoDomain or logoInitials (+ logoColor), not both.`,
+      description: `Create a manual account. currencyCode is an ISO currency code. accountCategory defaults to "general"; defaultPaymentType (optional) is the payment type new transactions on the account start with; "${ACCOUNT_CATEGORIES.loan}" and "${ACCOUNT_CATEGORIES.vehicle}" are refused here (they have their own flows). initialBalance and creditLimit are decimals in the account currency. Give a logo as either logoDomain or logoInitials (+ logoColor), not both.`,
       inputSchema,
     },
     async (args, extra) => {
@@ -23,12 +23,13 @@ export function registerCreateAccount(server: McpServer) {
       await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_account', clientId: extra.authInfo?.clientId });
 
-      const { accountCategory, currencyCode, name, type, initialBalance, creditLimit, ...logo } =
+      const { accountCategory, defaultPaymentType, currencyCode, name, type, initialBalance, creditLimit, ...logo } =
         createAccountBodySchema.parse(args);
 
       const account = await createAccount({
         userId,
         accountCategory,
+        defaultPaymentType,
         currencyCode,
         name,
         type,

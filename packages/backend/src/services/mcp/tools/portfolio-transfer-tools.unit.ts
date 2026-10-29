@@ -160,9 +160,9 @@ describe('get_portfolio', () => {
 describe('get_portfolios_overview', () => {
   const tool = captureTools({ register: registerGetPortfoliosOverview })[0]!;
 
-  it('registers under its name with no input', () => {
+  it('registers under its name with an optional asOf day', () => {
     expect(tool.name).toBe('get_portfolios_overview');
-    expect(tool.config.inputSchema).toBeUndefined();
+    expect(Object.keys(tool.config.inputSchema ?? {})).toEqual(['asOf']);
     expect(tool.config.description).toMatch(/summar/i);
     expect(tool.config.description).toMatch(/annualized/i);
   });
@@ -173,25 +173,34 @@ describe('get_portfolios_overview', () => {
     summaries.mockResolvedValue([summary] as never);
     annualizedReturns.mockResolvedValue([annualized] as never);
 
-    const data = await call({ tool, extra: READ_ONLY });
+    const data = await call({ tool, args: {}, extra: READ_ONLY });
 
     expect(summaries).toHaveBeenCalledWith({ userId: 42 });
-    expect(annualizedReturns).toHaveBeenCalledWith({ userId: 42 });
+    expect(annualizedReturns).toHaveBeenCalledWith({ userId: 42, asOf: undefined });
     expect(data).toEqual({ summaries: [summary], annualizedReturns: [annualized] });
+  });
+
+  it('measures the annualized returns at the asOf day', async () => {
+    summaries.mockResolvedValue([]);
+    annualizedReturns.mockResolvedValue([]);
+
+    await call({ tool, args: { asOf: '2026-09-30' } });
+
+    expect(annualizedReturns).toHaveBeenCalledWith({ userId: 42, asOf: '2026-09-30' });
   });
 
   it('returns two empty lists for a user without portfolios', async () => {
     summaries.mockResolvedValue([]);
     annualizedReturns.mockResolvedValue([]);
 
-    expect(await call({ tool })).toEqual({ summaries: [], annualizedReturns: [] });
+    expect(await call({ tool, args: {} })).toEqual({ summaries: [], annualizedReturns: [] });
   });
 
   it('fails when either report fails, rather than returning half an overview', async () => {
     summaries.mockResolvedValue([]);
     annualizedReturns.mockRejectedValue(new Error('boom'));
 
-    await expect(call({ tool })).rejects.toThrow('boom');
+    await expect(call({ tool, args: {} })).rejects.toThrow('boom');
   });
 });
 

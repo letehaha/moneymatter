@@ -2,9 +2,11 @@ import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { serializeTransaction, serializeTransactions } from '@root/serializers/transactions.serializer';
+import { getAccessibleAccountIdsForUser } from '@services/sharing/auth/get-accessible-account-ids.service';
 import { getTransactionById } from '@services/transactions/get-by-id';
 import { getTransactionsByIds } from '@services/transactions/get-by-ids';
 import { getTransactionsByTransferId } from '@services/transactions/get-by-transfer-id';
+import { attachPaymentParts } from '@services/transactions/payment-legs';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -35,7 +37,7 @@ export function registerGetTransactions(server: McpServer) {
     'get_transactions',
     {
       description:
-        'Read transactions by id (up to 50) or both legs of a transfer by transferId. Returns the same fields as search_transactions: amount (original + base currency), category, account, payee, note, date, type and planned state. Set includeSplits to also get splits and tags. An id the caller cannot see is left out.',
+        'Read transactions by id (up to 50) or both legs of a transfer by transferId. Returns the same fields as search_transactions: amount (original + base currency), category, account, payee, note, date, type and planned state. Set includeSplits to also get splits, tags and, for a payment made from several accounts, its paymentParts. An id the caller cannot see is left out.',
       inputSchema,
     },
     async (args, extra) => {
@@ -48,15 +50,21 @@ export function registerGetTransactions(server: McpServer) {
 
       // The list reads carry no splits or tags; the by-id read does, so a caller that wants them
       // reads each transaction through it. An id the caller cannot see comes back as `null`.
-      const readWithSplits = async ({ ids }: { ids: string[] }) =>
-        (
+      const readWithSplits = async ({ ids }: { ids: string[] }) => {
+        const accessibleAccountIds = await getAccessibleAccountIdsForUser({ userId });
+
+        return (
           await Promise.all(
             ids.map(async (id) => {
               const fetched = await getTransactionById({ id, userId, includeSplits: true, includeTags: true });
-              return fetched ? serializeTransaction(fetched.tx) : null;
+              if (!fetched) return null;
+              // As the REST detail read does: the other accounts a multi-account payment is paid from.
+              await attachPaymentParts({ transactions: [fetched.tx], collapsed: false, accessibleAccountIds });
+              return serializeTransaction(fetched.tx);
             }),
           )
         ).filter((tx) => tx !== null);
+      };
 
       let transactions;
       if (args.ids) {
