@@ -455,6 +455,27 @@ describe('Investment holdings', () => {
       expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
     });
 
+    it('rejects a body that carries both securityId and searchResult', async () => {
+      const response = await makeRequest({
+        method: 'post',
+        url: '/investments/holding',
+        payload: {
+          portfolioId: investmentPortfolio.id,
+          securityId: vooSecurity.id,
+          searchResult: {
+            symbol: 'VOO',
+            providerSymbol: 'VOO',
+            name: 'Vanguard S&P 500 ETF',
+            assetClass: ASSET_CLASS.stocks,
+            providerName: SECURITY_PROVIDER.fmp,
+            currencyCode: 'USD',
+          },
+        },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+
     it('background sync is not called on duplicate', async () => {
       await helpers.createHolding({
         payload: {

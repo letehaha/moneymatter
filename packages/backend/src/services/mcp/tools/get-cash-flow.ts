@@ -1,8 +1,7 @@
 import { recordId } from '@common/lib/zod/custom-types';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { serializeCashFlow } from '@root/serializers/stats.serializer';
-import { getCashFlow } from '@services/stats/get-cash-flow';
+import { getCashFlowReport } from '@services/stats/reports/cash-flow.report';
 import { z } from 'zod';
 
 import { getUserId, jsonContent } from './helpers';
@@ -13,6 +12,10 @@ const inputSchema = {
   granularity: z.enum(['monthly', 'biweekly', 'weekly']).optional().describe('Time granularity. Default: monthly'),
   accountId: recordId().optional().describe('Filter by specific account ID'),
   categoryIds: z.array(recordId()).optional().describe('Filter by category IDs'),
+  alignToPayday: z
+    .boolean()
+    .optional()
+    .describe('Cut periods at the configured payday instead of calendar months. Default: false'),
 };
 
 export function registerGetCashFlow(server: McpServer) {
@@ -27,16 +30,17 @@ export function registerGetCashFlow(server: McpServer) {
       const userId = getUserId({ extra });
       trackMcpToolUsed({ userId, tool: 'get_cash_flow', clientId: extra.authInfo?.clientId });
 
-      const cashFlow = await getCashFlow({
+      const cashFlow = await getCashFlowReport({
         userId,
         from: args.startDate,
         to: args.endDate,
         granularity: args.granularity ?? 'monthly',
         accountId: args.accountId,
         categoryIds: args.categoryIds,
+        alignToPayday: args.alignToPayday,
       });
 
-      return jsonContent({ data: serializeCashFlow(cashFlow) });
+      return jsonContent({ data: cashFlow });
     },
   );
 }

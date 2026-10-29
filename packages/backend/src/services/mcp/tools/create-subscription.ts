@@ -5,7 +5,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createSubscription } from '@services/subscriptions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { subscriptionExtraInputs, subscriptionMatchingRulesInput } from './subscription-inputs';
 
 const inputSchema = {
   name: z.string().describe('Display name of the subscription (e.g. "Netflix", "Electricity")'),
@@ -54,6 +55,8 @@ const inputSchema = {
   accountId: recordId().nullable().optional().describe('Account ID to associate with this subscription'),
   categoryId: recordId().nullable().optional().describe('Category ID to associate with this subscription'),
   notes: z.string().nullable().optional().describe('Additional notes about the subscription'),
+  matchingRules: subscriptionMatchingRulesInput,
+  ...subscriptionExtraInputs,
 };
 
 export function registerCreateSubscription(server: McpServer) {
@@ -67,6 +70,7 @@ export function registerCreateSubscription(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_subscription', clientId: extra.authInfo?.clientId });
 
       const result = await createSubscription({
@@ -84,6 +88,12 @@ export function registerCreateSubscription(server: McpServer) {
         accountId: args.accountId,
         categoryId: args.categoryId,
         notes: args.notes,
+        payeeId: args.payeeId,
+        tagIds: args.tagIds,
+        matchingRules: args.matchingRules,
+        remindBefore: args.remindBefore,
+        notifyEmail: args.notifyEmail,
+        autoRecord: args.autoRecord,
       });
 
       return jsonContent({ data: result });

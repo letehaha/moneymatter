@@ -1,5 +1,8 @@
 import { type Feature, type GoalModel, TRANSACTION_TRANSFER_NATURE, USER_ROLES } from '@bt/shared/types';
+import { t } from '@i18n/index';
+import { logger } from '@js/utils/logger';
 import Accounts from '@models/accounts.model';
+import { isBaseCurrencyChangeLocked } from '@services/currencies/base-currency-lock';
 import { FEATURE_NOT_IN_PLAN_MESSAGE, hasFeature } from '@services/entitlements/feature-trial.service';
 import { getEntitlementsByUserId } from '@services/entitlements/resolve-entitlements.service';
 
@@ -21,26 +24,43 @@ export function getUserId({ extra }: { extra: { authInfo?: { extra?: { userId?: 
 }
 
 /**
+ * Refuses a demo user, as the `blockDemoUsers` middleware does on the REST routes that carry it.
+ * `requireScope` calls it for every write; a read tool whose REST route carries `blockDemoUsers`
+ * (`GET /bank-data-providers/sync/status`) calls it directly.
+ */
+export function assertNotDemoUser({ extra }: { extra: { authInfo?: { extra?: { role?: string } } } }): void {
+  if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
+    throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
+  }
+}
+
+/**
  * Assert the caller's access token was granted a specific scope.
  * Write and delete MCP tools call this after getUserId to enforce scope gating.
  * Demo and read-only users are rejected here regardless of granted scopes: read tools
  * never call this helper, so those accounts keep read access but cannot mutate via MCP.
+ *
+ * `allowReadOnly` is for the few tools on REST routes in `READ_ONLY_ROUTES`
+ * (`middlewares/entitlements.ts`), which a read-only user may call, and which carry no
+ * `blockDemoUsers`. It skips both rejections and still checks the scope.
  */
 export function requireScope({
   extra,
   scope,
+  allowReadOnly = false,
 }: {
   extra: { authInfo?: { scopes?: string[]; extra?: { role?: string; readOnly?: boolean } } };
   scope: string;
+  allowReadOnly?: boolean;
 }): void {
-  if (extra?.authInfo?.extra?.role === USER_ROLES.demo) {
-    throw new Error('This action is not available in demo mode. Sign up for a free account to unlock all features.');
-  }
+  if (!allowReadOnly) {
+    assertNotDemoUser({ extra });
 
-  // Missing entitlement info is treated as read-only: a write must never pass on an
-  // auth payload that failed to carry it.
-  if (extra?.authInfo?.extra?.readOnly !== false) {
-    throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
+    // Missing entitlement info is treated as read-only: a write must never pass on an
+    // auth payload that failed to carry it.
+    if (extra?.authInfo?.extra?.readOnly !== false) {
+      throw new Error('Your plan no longer includes editing. Subscribe to keep editing your data.');
+    }
   }
 
   const scopes = extra?.authInfo?.scopes ?? [];
@@ -63,6 +83,28 @@ export const goalsForMcp = async ({ userId, goals }: { userId: number; goals: Go
     : [];
   return slimGoalsForMcp({ goals, accountNames: new Map(accounts.map(({ id, name }) => [id, name])) });
 };
+
+/**
+ * Refuses a write while a base-currency change is recalculating the user's amounts, as the
+ * `checkBaseCurrencyLock` middleware does on the REST routes. Fails closed when Redis is
+ * unreachable, since a write that slips past the lock would be rewritten by the recalculation.
+ */
+export async function assertBaseCurrencyUnlocked({ userId }: { userId: number }): Promise<void> {
+  let locked: boolean;
+  try {
+    locked = await isBaseCurrencyChangeLocked({ userId });
+  } catch (error) {
+    logger.error({
+      message: 'Base currency lock check failed',
+      error: error instanceof Error ? error : new Error(String(error)),
+    });
+    throw new Error(t({ key: 'common.serviceTemporarilyUnavailable' }), { cause: error });
+  }
+
+  if (locked) {
+    throw new Error(t({ key: 'currencies.baseCurrencyChangeInProgress' }));
+  }
+}
 
 /**
  * Mirrors the REST transaction schemas: the original-currency pair is set (or cleared)

@@ -1,5 +1,6 @@
 import {
   ACCOUNT_STATUSES,
+  type AccountGroupApiResponse,
   type GoalInsights,
   type GoalModel,
   type RecordId,
@@ -12,6 +13,9 @@ import type { TransactionApiResponse } from '@root/serializers/transactions.seri
 
 import {
   type SubscriptionDetailForMcp,
+  slimAccountDetailForMcp,
+  slimAccountGroupForMcp,
+  slimAccountGroupsForMcp,
   slimAccountsForMcp,
   slimGoalsForMcp,
   slimSubscriptionDetailForMcp,
@@ -125,9 +129,140 @@ describe('MCP serializers', () => {
     });
   });
 
+  describe('slimAccountDetailForMcp', () => {
+    it('adds the opening balance, bank link and logo to the list fields', () => {
+      const slim = slimAccountDetailForMcp(fullAccount);
+      expect(slim).toMatchObject({
+        id: 'acc-1',
+        currentBalance: 250.5,
+        initialBalance: 100,
+        refInitialBalance: 100,
+        bankDataProviderConnectionId: 'conn-1',
+        needsRelink: true,
+        logoDomain: null,
+      });
+    });
+
+    it('drops the owner id and the external id', () => {
+      const slim = slimAccountDetailForMcp(fullAccount) as unknown as Record<string, unknown>;
+      for (const dropped of ['userId', 'externalId']) {
+        expect(slim).not.toHaveProperty(dropped);
+      }
+    });
+  });
+
+  describe('slimAccountGroupsForMcp', () => {
+    const makeGroup = (patch: Partial<AccountGroupApiResponse>): AccountGroupApiResponse => ({
+      id: 'g-root',
+      name: 'Savings',
+      userId: 42,
+      parentGroupId: null,
+      bankDataProviderConnectionId: null,
+      logoDomain: null,
+      logoInitials: 'SV',
+      logoColor: '#ff0000',
+      logoIcon: null,
+      logoImageId: null,
+      accounts: [fullAccount],
+      childGroups: [],
+      ...patch,
+    });
+
+    it('keeps the group fields, shrinks the accounts to a short summary and the child stubs, and drops the owner id', () => {
+      const root = makeGroup({
+        childGroups: [makeGroup({ id: 'g-child', name: 'Emergency', parentGroupId: 'g-root', accounts: [] })],
+      });
+
+      const [slim] = slimAccountGroupsForMcp([root]) as unknown as Record<string, unknown>[];
+
+      expect(slim).toMatchObject({
+        id: 'g-root',
+        name: 'Savings',
+        parentGroupId: null,
+        path: 'Savings',
+        logoInitials: 'SV',
+        logoColor: '#ff0000',
+        childGroups: [{ id: 'g-child', name: 'Emergency' }],
+      });
+      expect(slim).not.toHaveProperty('userId');
+      expect((slim!.accounts as Record<string, unknown>[])[0]).toEqual({
+        id: fullAccount.id,
+        name: fullAccount.name,
+        type: fullAccount.type,
+        accountCategory: fullAccount.accountCategory,
+        currencyCode: fullAccount.currencyCode,
+        currentBalance: fullAccount.currentBalance,
+        status: fullAccount.status,
+      });
+    });
+
+    it('keeps the list-sized account fields with includeAccountDetails', () => {
+      const [slim] = slimAccountGroupsForMcp([makeGroup({})], { includeAccountDetails: true });
+
+      expect(slim!.accounts[0]).toEqual(slimAccountsForMcp([fullAccount])[0]);
+    });
+
+    it('builds the path through every ancestor present in the list', () => {
+      const groups = [
+        makeGroup({ id: 'c', name: 'C', parentGroupId: 'b' }),
+        makeGroup({ id: 'a', name: 'A' }),
+        makeGroup({ id: 'b', name: 'B', parentGroupId: 'a' }),
+      ];
+
+      expect(slimAccountGroupsForMcp(groups).map((g) => g.path)).toEqual(['A > B > C', 'A', 'A > B']);
+    });
+
+    it('marks a path whose parent is not in the list (an account filter hides it)', () => {
+      const [slim] = slimAccountGroupsForMcp([makeGroup({ id: 'c', name: 'C', parentGroupId: 'missing' })]);
+
+      expect(slim!.path).toBe('… > C');
+      expect(slim!.parentGroupId).toBe('missing');
+    });
+
+    it('survives a parent cycle', () => {
+      const groups = [
+        makeGroup({ id: 'a', name: 'A', parentGroupId: 'b' }),
+        makeGroup({ id: 'b', name: 'B', parentGroupId: 'a' }),
+      ];
+
+      expect(slimAccountGroupsForMcp(groups).map((g) => g.path)).toEqual(['… > B > A', '… > A > B']);
+    });
+  });
+
+  describe('slimAccountGroupForMcp', () => {
+    it('keeps the group fields without accounts, children or a path', () => {
+      const slim = slimAccountGroupForMcp({
+        id: 'g-1',
+        name: 'Savings',
+        userId: 42,
+        parentGroupId: 'g-0',
+        bankDataProviderConnectionId: null,
+        logoDomain: 'example.com',
+        logoInitials: null,
+        logoColor: null,
+        logoIcon: null,
+        logoImageId: null,
+        accounts: [],
+        childGroups: [],
+      });
+
+      expect(slim).toEqual({
+        id: 'g-1',
+        name: 'Savings',
+        parentGroupId: 'g-0',
+        bankDataProviderConnectionId: null,
+        logoDomain: 'example.com',
+        logoInitials: null,
+        logoColor: null,
+      });
+    });
+  });
+
   describe('slimTransactionsForMcp', () => {
+    const noPayees = new Map<string, string>();
+
     it('keeps only AI-relevant transaction fields', () => {
-      const slim = slimTransactionsForMcp([fullTransaction])[0]!;
+      const slim = slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees })[0]!;
       expect(Object.keys(slim).toSorted()).toEqual(
         [
           'accountId',
@@ -137,25 +272,32 @@ describe('MCP serializers', () => {
           'id',
           'isPlanned',
           'note',
+          'payee',
+          'payeeId',
           'refAmount',
           'splits',
           'tags',
           'time',
           'transactionGroups',
           'transactionType',
+          'transferId',
           'transferNature',
         ].toSorted(),
       );
     });
 
     it('drops fee, internal, audit and bank-blob fields', () => {
-      const slim = (slimTransactionsForMcp([fullTransaction]) as unknown as Record<string, unknown>[])[0]!;
+      const slim = (
+        slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees }) as unknown as Record<
+          string,
+          unknown
+        >[]
+      )[0]!;
       for (const dropped of [
         'userId',
         'paymentType',
         'accountType',
         'refCurrencyCode',
-        'transferId',
         'originalId',
         'commissionRate',
         'refCommissionRate',
@@ -169,7 +311,7 @@ describe('MCP serializers', () => {
     });
 
     it('slims embedded tags to id+name and splits to category/amount/note', () => {
-      const slim = slimTransactionsForMcp([fullTransaction])[0]!;
+      const slim = slimTransactionsForMcp({ transactions: [fullTransaction], payeeNames: noPayees })[0]!;
       expect(slim.tags).toEqual([{ id: 'tag-1', name: 'food' }]);
       expect(slim.splits).toEqual([{ categoryId: 'cat-2', amount: 12.34, note: 'half' }]);
     });
@@ -179,7 +321,12 @@ describe('MCP serializers', () => {
       void tags;
       void splits;
       void transactionGroups;
-      const slim = (slimTransactionsForMcp([noCollections]) as unknown as Record<string, unknown>[])[0]!;
+      const slim = (
+        slimTransactionsForMcp({ transactions: [noCollections], payeeNames: noPayees }) as unknown as Record<
+          string,
+          unknown
+        >[]
+      )[0]!;
       expect(slim).not.toHaveProperty('tags');
       expect(slim).not.toHaveProperty('splits');
       expect(slim).not.toHaveProperty('transactionGroups');
@@ -206,9 +353,42 @@ describe('MCP serializers', () => {
           isLinked: true,
         },
       ];
-      const slim = slimTransactionsForMcp([{ ...fullTransaction, paymentParts, paymentTotal: 20.5 }])[0]!;
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, paymentParts, paymentTotal: 20.5 }],
+        payeeNames: new Map(),
+      })[0]!;
       expect(slim.paymentParts).toEqual(paymentParts);
       expect(slim.paymentTotal).toBe(20.5);
+    });
+
+    it('carries the payee id and name when the payee is known', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: 'payee-1' }],
+        payeeNames: new Map([['payee-1', 'Starbucks']]),
+      })[0]!;
+
+      expect(slim.payeeId).toBe('payee-1');
+      expect(slim.payee).toEqual({ id: 'payee-1', name: 'Starbucks' });
+    });
+
+    it('has a null payee when the transaction has none', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: null }],
+        payeeNames: new Map([['payee-1', 'Starbucks']]),
+      })[0]!;
+
+      expect(slim.payeeId).toBeNull();
+      expect(slim.payee).toBeNull();
+    });
+
+    it('has a null payee, with the id kept, when the payee is not among the caller own', () => {
+      const slim = slimTransactionsForMcp({
+        transactions: [{ ...fullTransaction, payeeId: 'payee-other' }],
+        payeeNames: noPayees,
+      })[0]!;
+
+      expect(slim.payeeId).toBe('payee-other');
+      expect(slim.payee).toBeNull();
     });
   });
 

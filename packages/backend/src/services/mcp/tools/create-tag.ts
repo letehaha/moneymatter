@@ -3,7 +3,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { createTag } from '@services/tags/create-tag';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
 
 const inputSchema = {
   name: z.string().describe('Tag name (must be unique for this user).'),
@@ -23,6 +23,7 @@ export function registerCreateTag(server: McpServer) {
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'create_tag', clientId: extra.authInfo?.clientId });
 
       const tag = await createTag({ userId, ...args });

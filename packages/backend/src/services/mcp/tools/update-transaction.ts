@@ -3,8 +3,10 @@ import { currencyCode, recordId } from '@common/lib/zod/custom-types';
 import { Money } from '@common/types/money';
 import {
   nonNegativeAmountSchema,
+  payeeIdSchema,
   paymentLegsSchema,
   positiveAmountSchema,
+  transactionDetailFieldsSchema,
 } from '@controllers/transactions.controller/schemas';
 import { trackMcpToolUsed } from '@js/utils/posthog';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -12,7 +14,13 @@ import { deserializePaymentLegs, serializeTransactionTuple } from '@root/seriali
 import { updateTransaction } from '@services/transactions/update-transaction';
 import { z } from 'zod';
 
-import { assertOriginalCurrencyArgs, getUserId, jsonContent, requireScope } from './helpers';
+import {
+  assertBaseCurrencyUnlocked,
+  assertOriginalCurrencyArgs,
+  getUserId,
+  jsonContent,
+  requireScope,
+} from './helpers';
 
 const inputSchema = {
   id: recordId().describe('ID of the transaction to update'),
@@ -47,7 +55,6 @@ const inputSchema = {
   categoryId: recordId().optional().describe('New category ID'),
   time: z.string().optional().describe('New date/time as ISO 8601 string'),
   note: z.string().max(1000).optional().nullable().describe('New note. Pass null to clear'),
-  payeeId: recordId().nullable().optional().describe('Payee ID to assign. Pass null to clear'),
   destinationAccountId: recordId().optional().describe('For transfers: new destination account ID'),
   destinationAmount: positiveAmountSchema()
     .optional()
@@ -73,6 +80,7 @@ const inputSchema = {
     .nullable()
     .optional()
     .describe('Replace tags. Pass null or empty array to clear all tags'),
+  payeeId: payeeIdSchema().describe('ID of an existing payee to link (from get_payees). Pass null to clear the payee'),
   originalAmount: z
     .number()
     .nonnegative()
@@ -94,6 +102,18 @@ const inputSchema = {
     .describe(
       "Replace the payment's other accounts (same item shape as create_transaction). Keep a current part by passing its transactionId (see paymentParts in search_transactions), optionally with a new amount unless it is a linked part; an omitted created part is deleted, an omitted linked part becomes a standalone transaction again. Pass null or [] to make it a single-account transaction. Omit to leave the parts unchanged",
     ),
+  externalUrl: transactionDetailFieldsSchema.externalUrl.describe(
+    'http(s) link to the source document (max 2048 characters). Pass null to clear',
+  ),
+  externalReference: transactionDetailFieldsSchema.externalReference.describe(
+    'External reference such as an invoice number (max 255 characters). Pass null to clear',
+  ),
+  location: transactionDetailFieldsSchema.location.describe('{ latitude, longitude } in degrees. Pass null to clear'),
+  payeeLocked: z.boolean().optional().describe('true pins the payee so automations and bank sync never change it'),
+  isPlanned: z
+    .boolean()
+    .optional()
+    .describe('true marks it planned, false marks it as happened (see also confirm_planned_transaction)'),
 };
 
 export function registerUpdateTransaction(server: McpServer) {
@@ -101,12 +121,13 @@ export function registerUpdateTransaction(server: McpServer) {
     'update_transaction',
     {
       description:
-        'Update an existing transaction by ID. All fields except id are optional — only provide what you want to change. Pass tagIds: null to clear all tags, or tagIds: [] to do the same. Pass splits: null to clear all splits. Pass payeeId: null to clear the payee. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to change which accounts a multi-account payment is paid from.',
+        'Update an existing transaction by ID. All fields except id are optional — only provide what you want to change. Pass tagIds: null to clear all tags, or tagIds: [] to do the same. Pass splits: null to clear all splits. Use payeeId to link an existing payee, or payeeId: null to clear it. Use originalAmount + originalCurrencyCode to record what the purchase cost in its invoice currency when that differs from the account currency. Use paymentLegs to change which accounts a multi-account payment is paid from.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_transaction', clientId: extra.authInfo?.clientId });
 
       assertOriginalCurrencyArgs({ args });
@@ -122,7 +143,6 @@ export function registerUpdateTransaction(server: McpServer) {
         categoryId: args.categoryId,
         time: args.time ? new Date(args.time) : undefined,
         note: args.note,
-        payeeId: args.payeeId,
         destinationAccountId: args.destinationAccountId,
         destinationAmount: args.destinationAmount !== undefined ? Money.fromDecimal(args.destinationAmount) : undefined,
         destinationTransactionId: args.destinationTransactionId,
@@ -138,6 +158,13 @@ export function registerUpdateTransaction(server: McpServer) {
         originalAmount: args.originalAmount != null ? Money.fromDecimal(args.originalAmount) : args.originalAmount,
         originalCurrencyCode: args.originalCurrencyCode,
         paymentLegs: args.paymentLegs && deserializePaymentLegs({ legs: args.paymentLegs }),
+        externalUrl: args.externalUrl,
+        externalReference: args.externalReference,
+        location: args.location,
+        payeeLocked: args.payeeLocked,
+        isPlanned: args.isPlanned,
+        // null clears the link, so only an omitted payeeId is left out
+        ...(args.payeeId !== undefined ? { payeeId: args.payeeId } : {}),
       });
 
       return jsonContent({ data: serializeTransactionTuple(result) });

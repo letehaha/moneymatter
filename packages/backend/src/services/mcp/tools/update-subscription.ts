@@ -5,7 +5,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { updateSubscription } from '@services/subscriptions';
 import { z } from 'zod';
 
-import { getUserId, jsonContent, requireScope } from './helpers';
+import { assertBaseCurrencyUnlocked, getUserId, jsonContent, requireScope } from './helpers';
+import { subscriptionExtraInputs, subscriptionMatchingRulesUpdateInput } from './subscription-inputs';
 
 const inputSchema = {
   id: z.string().describe('UUID of the subscription to update'),
@@ -46,6 +47,8 @@ const inputSchema = {
   accountId: recordId().nullable().optional().describe('New account ID, or null to clear'),
   categoryId: recordId().nullable().optional().describe('New category ID, or null to clear'),
   notes: z.string().nullable().optional().describe('New notes, or null to clear'),
+  matchingRules: subscriptionMatchingRulesUpdateInput,
+  ...subscriptionExtraInputs,
   isActive: z.boolean().optional().describe('Active state (prefer toggle_subscription_active instead)'),
 };
 
@@ -54,12 +57,13 @@ export function registerUpdateSubscription(server: McpServer) {
     'update_subscription',
     {
       description:
-        'Update fields on an existing subscription or bill. Only provided fields are changed. To toggle active state use toggle_subscription_active instead. Requires finance:write scope.',
+        'Update fields on an existing subscription or bill. Only provided fields are changed; matchingRules, tagIds and remindBefore replace the stored list. To toggle active state use toggle_subscription_active instead. Requires finance:write scope.',
       inputSchema,
     },
     async (args, extra) => {
       const userId = getUserId({ extra });
       requireScope({ extra, scope: 'finance:write' });
+      await assertBaseCurrencyUnlocked({ userId });
       trackMcpToolUsed({ userId, tool: 'update_subscription', clientId: extra.authInfo?.clientId });
 
       const { id, ...fields } = args;
