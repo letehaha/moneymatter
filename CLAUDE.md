@@ -134,3 +134,6 @@ Other instructions:
 15. **Dev server ports live in `.env.development.local`**
     - If the project root contains a `.env.development.local` file, the frontend and backend ports for the running dev servers are defined there (e.g. `VITE_PORT`, `APPLICATION_PORT`). Use those values when constructing URLs or hitting local endpoints.
     - Worktrees may use different ports than the main checkout – always read the worktree's own `.env.development.local`, do not assume the defaults from memory or other checkouts.
+16. **Formatter is oxfmt – NEVER run Prettier**
+    - Format with `npx oxfmt <files>`, check with `npx oxfmt --check <files>` (config: `.oxfmtrc.json`). Edits via Edit/Write are already auto-formatted by a hook.
+    - Never run `prettier`/`npx prettier` in any form: it isn't installed, ignores `.oxfmtrc.json`, and rewrites whole files in a different style.
