@@ -303,7 +303,7 @@
         "userTokenHint": "Shown on your personal app page at my.akahu.nz",
         "appTokenLabel": "App ID Token",
         "appTokenPlaceholder": "Enter your Akahu App ID Token",
-        "appTokenHint": "Also shown on the same page (sent as the X-Akahu-Id header)",
+        "appTokenHint": "Also shown on the same page",
         "help": {
           "trigger": "Where do I find my Akahu tokens?",
           "title": "Get your Akahu personal app tokens",

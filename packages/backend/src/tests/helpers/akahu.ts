@@ -45,13 +45,9 @@ async function connectAccountsAndSync({
 }): Promise<{ account: Accounts; transactions: Transactions[] }> {
   global.mswMockServer.use(getAkahuTransactionsMock({ response: mockedTransactions, accountId }));
 
-  const { accounts: externalAccounts } = await helpers.bankDataProviders.listExternalAccounts({
-    connectionId,
-    raw: true,
-  });
   const { syncedAccounts } = await helpers.bankDataProviders.connectSelectedAccounts({
     connectionId,
-    accountExternalIds: externalAccounts.map((acc) => acc.externalId),
+    accountExternalIds: [accountId],
     raw: true,
   });
 

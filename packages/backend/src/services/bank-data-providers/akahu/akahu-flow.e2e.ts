@@ -1,7 +1,6 @@
 import { BANK_PROVIDER_TYPE, TRANSACTION_TYPES, asDecimal } from '@bt/shared/types';
 import { describe, expect, it } from '@jest/globals';
 import { ERROR_CODES } from '@js/errors';
-import Accounts from '@models/accounts.model';
 import Transactions from '@models/transactions.model';
 import type { AkahuApiTransactionsResponse } from '@services/bank-data-providers/akahu/types';
 import * as helpers from '@tests/helpers';
@@ -31,10 +30,12 @@ describe('Akahu Data Provider E2E', () => {
       const { providers } = await helpers.bankDataProviders.getSupportedBankProviders({ raw: true });
 
       const akahuProvider = providers.find((p: { type: string }) => p.type === BANK_PROVIDER_TYPE.AKAHU);
-      expect(akahuProvider).toBeDefined();
-      expect(akahuProvider.name).toBe('Akahu');
-      expect(akahuProvider.features.supportsAutoSync).toBe(true);
-      expect(akahuProvider.features.supportsWebhooks).toBe(false);
+      expect(akahuProvider).toEqual(
+        expect.objectContaining({
+          name: 'Akahu',
+          features: expect.objectContaining({ supportsAutoSync: true, supportsWebhooks: false }),
+        }),
+      );
     });
 
     it('connects with a valid token pair', async () => {
@@ -93,9 +94,13 @@ describe('Akahu Data Provider E2E', () => {
       expect(ids).not.toContain(AKAHU_ACCOUNT_INACTIVE_ID);
 
       const first = accounts.find((a: { externalId: string }) => a.externalId === AKAHU_ACCOUNT_1_ID);
-      expect(first.balance).toBeCloseTo(1523.45);
-      expect(first.currency).toBe('NZD');
-      expect(first.metadata.institutionName).toBe('Test Bank NZ');
+      expect(first).toEqual(
+        expect.objectContaining({
+          balance: expect.closeTo(1523.45),
+          currency: 'NZD',
+          metadata: expect.objectContaining({ institutionName: 'Test Bank NZ' }),
+        }),
+      );
     });
   });
 
@@ -246,13 +251,16 @@ describe('Akahu Data Provider E2E', () => {
 
       const before = await Transactions.count({ where: { accountId: account.id } });
 
-      // The handler must receive explicit ISO bounds for the requested window.
+      // Same id as the imported row, plus two older ones the incremental sync
+      // never fetched. The handler must also receive the requested window.
+      const feed = getMockedAkahuTransactions(3, AKAHU_ACCOUNT_1_ID);
+      feed.items[0]!._id = 'trans_0_11111111';
       let sawWindow = false;
       global.mswMockServer.use(
         http.get(new RegExp(`${AKAHU_BASE_URL}/accounts/acc_[a-z0-9]+/transactions`), ({ request }) => {
           const url = new URL(request.url);
           sawWindow = Boolean(url.searchParams.get('start') && url.searchParams.get('end'));
-          return HttpResponse.json(getMockedAkahuTransactions(3, AKAHU_ACCOUNT_1_ID));
+          return HttpResponse.json(feed);
         }),
       );
 
@@ -270,7 +278,8 @@ describe('Akahu Data Provider E2E', () => {
       expect(sawWindow).toBe(true);
       expect(result.jobGroupId).toBeNull();
       const after = await Transactions.count({ where: { accountId: account.id } });
-      expect(after).toBe(before);
+      // The overlapping id is skipped; the two older ids are new history.
+      expect(after).toBe(before + 2);
     });
   });
 
@@ -320,7 +329,7 @@ describe('Akahu Data Provider E2E', () => {
   });
 
   describe('Unlink → relink dedup', () => {
-    it('re-anchors originalId via externalData.originalSource instead of duplicating', async () => {
+    it('does not duplicate transactions when the account is unlinked and relinked', async () => {
       const MOCK_AMOUNT = 3;
       const { connectionId, account } = await (async () => {
         const conn = await helpers.akahu.pairAkahuUser();
@@ -352,9 +361,10 @@ describe('Akahu Data Provider E2E', () => {
       });
 
       const rows = await Transactions.findAll({ where: { accountId: account.id }, raw: true });
+      // No duplicates. Relink clamps the fetch to linkedAt, which is after every
+      // stored row, so the pre-link history is not re-processed and originalId stays cleared.
       expect(rows.length).toBe(MOCK_AMOUNT);
-      // Secondary dedup restored the anchors, so the fast primary path works from here on.
-      expect(rows.filter((r) => r.originalId).length).toBe(MOCK_AMOUNT);
+      expect(rows.every((r) => r.originalId === null)).toBe(true);
     });
   });
 });

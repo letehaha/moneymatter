@@ -1,5 +1,4 @@
 import { asDecimal } from '@bt/shared/types';
-import { faker } from '@faker-js/faker';
 import type {
   AkahuApiAccount,
   AkahuApiAccountsResponse,
@@ -87,7 +86,9 @@ export const getMockedAkahuTransactions = (
   const currentDate = new Date();
 
   const transactions: AkahuApiTransaction[] = Array.from({ length: amount }, (_, index) => {
-    const txAmount = faker.number.float({ min: 5, max: 500, fractionDigits: 2 });
+    // Fixed amounts, not faker: the default handler and a test override can
+    // both answer one sync, and a random id on each call would import twice.
+    const txAmount = 10 + index;
     // Akahu signs amounts: negative = money out (debit), positive = money in (credit).
     const signedAmount = index % 3 === 0 ? txAmount : -txAmount;
 
@@ -97,13 +98,13 @@ export const getMockedAkahuTransactions = (
       _connection: 'conn_test',
       created_at: subDays(currentDate, index).toISOString(),
       date: subDays(currentDate, index).toISOString(),
-      description: `Payment at ${faker.company.name()}`,
+      description: `Payment ${index}`,
       amount: asDecimal(signedAmount),
       balance: asDecimal(1000 + index),
       type: signedAmount < 0 ? 'EFTPOS' : 'DIRECT CREDIT',
       merchant:
         signedAmount < 0
-          ? { _id: faker.string.uuid(), name: faker.company.name(), website: 'https://example.com' }
+          ? { _id: `merchant_${index}`, name: `Merchant ${index}`, website: 'https://example.com' }
           : null,
       category: signedAmount < 0 ? { _id: 'nzfcc_test', name: 'Cafes & Restaurants' } : null,
     };
