@@ -160,6 +160,43 @@ describe('Transaction Groups API', () => {
       expect(new Date(groupB!.dateFrom!).getTime()).toBeLessThanOrEqual(new Date(groupB!.dateTo!).getTime());
     });
 
+    it('returns net amount in base currency as income minus expenses', async () => {
+      const account = await helpers.createAccount({ raw: true });
+      const createTx = async ({ amount, transactionType }: { amount: number; transactionType: TRANSACTION_TYPES }) => {
+        const [tx] = await helpers.createTransaction({
+          payload: helpers.buildTransactionPayload({ accountId: account.id, amount, transactionType }),
+          raw: true,
+        });
+        return tx!;
+      };
+
+      const income = await createTx({ amount: 250.5, transactionType: TRANSACTION_TYPES.income });
+      const expenseA = await createTx({ amount: 100.25, transactionType: TRANSACTION_TYPES.expense });
+      const expenseB = await createTx({ amount: 40, transactionType: TRANSACTION_TYPES.expense });
+      const expenseC = await createTx({ amount: 75.1, transactionType: TRANSACTION_TYPES.expense });
+      const expenseD = await createTx({ amount: 20, transactionType: TRANSACTION_TYPES.expense });
+
+      await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Positive',
+          transactionIds: [income.id, expenseA.id, expenseB.id],
+        }),
+        raw: true,
+      });
+      await helpers.createTransactionGroup({
+        payload: helpers.buildTransactionGroupPayload({
+          name: 'Negative',
+          transactionIds: [expenseC.id, expenseD.id],
+        }),
+        raw: true,
+      });
+
+      const groups = await helpers.getTransactionGroups({ raw: true });
+
+      expect(groups.find((g) => g.name === 'Positive')!.netRefAmount).toBe(110.25);
+      expect(groups.find((g) => g.name === 'Negative')!.netRefAmount).toBe(-95.1);
+    });
+
     it('includeGroups reports the full group size even when only a slice of members is fetched', async () => {
       const account = await helpers.createAccount({ raw: true });
       const txs = await createTransactions({ accountId: account.id, count: 5 });
@@ -500,6 +537,7 @@ describe('Transaction Groups API', () => {
       const [income] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountA.id,
+          amount: 100,
           transactionType: TRANSACTION_TYPES.income,
         }),
         raw: true,
@@ -507,6 +545,7 @@ describe('Transaction Groups API', () => {
       const [expense] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountB.id,
+          amount: 100,
           transactionType: TRANSACTION_TYPES.expense,
         }),
         raw: true,
@@ -521,6 +560,7 @@ describe('Transaction Groups API', () => {
       const [standalone] = await helpers.createTransaction({
         payload: helpers.buildTransactionPayload({
           accountId: accountA.id,
+          amount: 30,
           transactionType: TRANSACTION_TYPES.expense,
         }),
         raw: true,
@@ -540,6 +580,10 @@ describe('Transaction Groups API', () => {
       expect(txIds).toContain(income.id);
       expect(txIds).toContain(expense.id);
       expect(txIds).toContain(standalone.id);
+
+      // Both transfer legs are in the group, so they cancel out in the net amount.
+      const groups = await helpers.getTransactionGroups({ raw: true });
+      expect(groups.find((g) => g.id === group.id)!.netRefAmount).toBe(-30);
     });
 
     it('auto-includes opposite transfer when adding to an existing group', async () => {

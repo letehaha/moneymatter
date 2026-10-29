@@ -4,9 +4,10 @@
       'group/row hover:bg-muted/50 grid w-full cursor-pointer rounded-md px-2 py-1 transition-colors [content-visibility:auto]',
       showCheckbox
         ? 'grid-cols-[auto_minmax(0,1fr)_max-content] items-center gap-2'
-        : shouldShowGroupedTransfer || isLoadingGroupedTransfer
+        : (shouldShowGroupedTransfer && !compact) || isLoadingGroupedTransfer
           ? 'grid-cols-[minmax(0,1fr)_max-content] items-end gap-3'
           : 'grid-cols-[minmax(0,1fr)_max-content] items-center gap-2',
+      shouldShowGroupedTransfer && compact && '@container/tx-record',
     ]"
     aria-haspopup="true"
     @click="transactionEmit"
@@ -73,6 +74,22 @@
             <div v-else class="h-4 w-16 animate-pulse rounded bg-white/10"></div>
           </div>
         </template>
+        <div v-else-if="shouldShowGroupedTransfer && compact" class="min-w-0">
+          <div class="flex min-w-0 items-center gap-1.5 text-sm tracking-wider">
+            <AccountLogo v-if="transferFromAccount" :account="transferFromAccount" class="size-5 shrink-0" />
+            <span class="truncate">{{ transferFromAccount?.name }}</span>
+            <ArrowRight :size="14" class="shrink-0 opacity-60" />
+            <HandCoinsIcon v-if="isLoanDestination" :size="14" class="text-app-transfer-color shrink-0" />
+            <AccountLogo v-if="transferToAccount" :account="transferToAccount" class="size-5 shrink-0" />
+            <span class="truncate">{{ transferToAccount?.name }}</span>
+          </div>
+          <!-- Too narrow for one line: amounts drop under the accounts. -->
+          <div class="mt-1 flex items-center gap-3 text-sm @lg/tx-record:hidden">
+            <span class="text-amount text-muted-foreground whitespace-nowrap">{{ formattedExpenseAmount }}</span>
+            <ArrowRight :size="12" class="shrink-0 opacity-40" />
+            <span class="text-amount whitespace-nowrap">{{ formattedIncomeAmount }}</span>
+          </div>
+        </div>
         <template v-else-if="shouldShowGroupedTransfer">
           <!-- Grouped transfer: show account movement on top with better styling -->
           <div class="mb-1 flex items-center gap-1.5">
@@ -219,13 +236,26 @@
         </span>
       </div>
     </div>
-    <div v-if="shouldShowGroupedTransfer || isLoadingGroupedTransfer" class="flex items-start pt-0.5">
-      <div class="text-muted-foreground text-right text-xs whitespace-nowrap tabular-nums">
+    <div
+      v-if="shouldShowGroupedTransfer && compact"
+      class="flex items-center justify-end gap-2 self-end @lg/tx-record:self-center"
+    >
+      <div v-if="!hideDate" class="text-muted-foreground text-xs whitespace-nowrap">
+        {{ formateDate(transaction.time) }}
+      </div>
+      <div class="hidden items-center gap-1.5 text-sm whitespace-nowrap @lg/tx-record:flex">
+        <span class="text-amount text-muted-foreground">{{ formattedExpenseAmount }}</span>
+        <ArrowRight :size="12" class="shrink-0 opacity-40" />
+        <span class="text-amount">{{ formattedIncomeAmount }}</span>
+      </div>
+    </div>
+    <div v-else-if="shouldShowGroupedTransfer || isLoadingGroupedTransfer" class="flex items-start pt-0.5">
+      <div v-if="!hideDate" class="text-muted-foreground text-right text-xs whitespace-nowrap tabular-nums">
         {{ formateDate(transaction.time) }}
       </div>
     </div>
     <div v-else-if="compact" class="flex items-baseline justify-end gap-2">
-      <div class="text-muted-foreground text-xs whitespace-nowrap">
+      <div v-if="!hideDate" class="text-muted-foreground text-xs whitespace-nowrap">
         {{ formateDate(transaction.time) }}
       </div>
       <div
@@ -251,7 +281,7 @@
       <div v-if="formattedPaymentShare" class="text-muted-foreground text-amount text-right text-xs">
         ≈ {{ formattedPaymentShare }}
       </div>
-      <div class="text-muted-foreground text-right text-xs">
+      <div v-if="!hideDate" class="text-muted-foreground text-right text-xs">
         {{ formateDate(transaction.time) }}
       </div>
     </div>
@@ -328,6 +358,8 @@ const props = withDefaults(
     index?: number;
     /** Single-line row: the note renders inline, amount and date share one line. */
     compact?: boolean;
+    /** Set where a parent already shows the date, e.g. a single-day group. */
+    hideDate?: boolean;
     /** Set where planned rows already sit under their own collapsible header. */
     hidePlannedMarker?: boolean;
     hideRefundMarker?: boolean;
@@ -417,10 +449,7 @@ const isLoadingGroupedTransfer = computed(() => {
   return isTransferTransaction.value && isTwoLegTransfer(transaction.value.transferNature) && isLoadingOpposite.value;
 });
 
-// Grouped transfers are intrinsically two-line, so they keep the stacked layout even in compact mode.
-const isCompactInline = computed(
-  () => props.compact && !shouldShowGroupedTransfer.value && !isLoadingGroupedTransfer.value,
-);
+const isCompactInline = computed(() => props.compact && !isLoadingGroupedTransfer.value);
 
 const category = computed(() => categoriesMap.value[transaction.value.categoryId]);
 const externalLinkHref = computed(() =>

@@ -10,6 +10,7 @@ export interface TransactionGroupResponse {
   transactionCount?: number;
   dateFrom?: string | null;
   dateTo?: string | null;
+  netRefAmount?: number;
   transactions?: TransactionModel[];
 }
 

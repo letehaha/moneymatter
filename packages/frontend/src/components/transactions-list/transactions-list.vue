@@ -49,6 +49,7 @@ const props = withDefaults(
     /** Totals and filters of the whole result set; enables "select all" beyond the loaded rows. */
     matching?: MatchingTransactions;
     compact?: boolean;
+    hideDate?: boolean;
     hidePlannedMarker?: boolean;
     tagsVariant?: TagsIndicatorVariant;
     showAccount?: boolean;
@@ -226,6 +227,7 @@ watchEffect(() => {
             :tx="item as TransactionModel"
             :show-checkbox="enableBulkEdit"
             :compact="compact"
+            :hide-date="hideDate"
             :tags-variant="tagsVariant"
             :show-account="showAccount"
             :hide-planned-marker="hidePlannedMarker || !rawList"
