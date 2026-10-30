@@ -1,0 +1,294 @@
+{
+  "settings": {
+    "security": {
+      "title": "Configurações de segurança",
+      "description": "Gerencie suas formas de login, sessões ativas e senha",
+      "tabs": {
+        "loginMethods": "Formas de login",
+        "activeSessions": "Sessões ativas",
+        "password": "Senha",
+        "backup": "Backup e restauração",
+        "dangerZone": "Zona de perigo"
+      },
+      "loginMethods": {
+        "title": "Formas de login",
+        "description": "Gerencie como você entra na sua conta",
+        "oauth": {
+          "connectedAs": "Conectado como {email}",
+          "accountName": "Conta {provider}",
+          "notConnected": "Não conectado",
+          "disconnect": "Desconectar",
+          "connect": "Conectar"
+        },
+        "password": {
+          "title": "Senha",
+          "passwordSet": "Senha definida",
+          "noPassword": "Nenhuma senha definida",
+          "manageInTab": "Gerenciar na aba Senha",
+          "setupInTab": "Configurar na aba Senha"
+        },
+        "passkeys": {
+          "title": "Chaves de acesso",
+          "noPasskeys": "Nenhuma chave de acesso cadastrada",
+          "passkeyCount": "Chaves de acesso cadastradas: {count}",
+          "addButton": "Adicionar chave de acesso",
+          "passkeyName": "Chave de acesso",
+          "added": "Adicionada em {date}",
+          "rename": "Renomear",
+          "renamePlaceholder": "Digite o nome da chave de acesso",
+          "deleteConfirmTitle": "Remover chave de acesso?",
+          "deleteConfirmDescription": "A chave de acesso “{name}” não poderá mais ser usada para entrar na sua conta. Não é possível desfazer esta ação."
+        },
+        "warningOneMethod": "Adicione outra forma de login antes de desconectar sua conta OAuth.",
+        "notifications": {
+          "oauthConnectFailed": "Não foi possível conectar a conta {provider}",
+          "oauthDisconnectSuccess": "Conta {provider} desconectada",
+          "oauthDisconnectFailed": "Não foi possível desconectar a conta {provider}",
+          "passkeyAddSuccess": "Chave de acesso adicionada",
+          "passkeyAddFailed": "Não foi possível adicionar a chave de acesso. Confira se o seu dispositivo é compatível com chaves de acesso.",
+          "passkeyRemoveSuccess": "Chave de acesso removida",
+          "passkeyRemoveFailed": "Não foi possível remover a chave de acesso",
+          "passkeyRenameFailed": "Não foi possível renomear a chave de acesso"
+        }
+      },
+      "activeSessions": {
+        "title": "Sessões ativas",
+        "description": "Gerencie os dispositivos em que você está conectado agora",
+        "currentBadge": "Atual",
+        "unknownLocation": "Local desconhecido",
+        "lastActive": "Última atividade: {date}",
+        "noSessions": "Nenhuma sessão ativa encontrada",
+        "loadError": "Não foi possível carregar suas sessões ativas.",
+        "revokeAllButton": "Sair de todas as outras sessões",
+        "deviceTypes": {
+          "unknownDevice": "Dispositivo desconhecido",
+          "unknownBrowser": "Navegador desconhecido"
+        },
+        "timeAgo": {
+          "justNow": "Agora mesmo",
+          "minutesAgo": "há {count} minuto | há {count} minutos",
+          "hoursAgo": "há {count} hora | há {count} horas",
+          "daysAgo": "há {count} dia | há {count} dias"
+        },
+        "notifications": {
+          "revokeSuccess": "Sessão encerrada",
+          "revokeFailed": "Não foi possível encerrar a sessão",
+          "revokeAllSuccess": "Todas as outras sessões foram encerradas",
+          "revokeAllFailed": "Não foi possível encerrar as sessões"
+        }
+      },
+      "passwordSection": {
+        "title": "Senha",
+        "descriptionChange": "Altere sua senha",
+        "descriptionSet": "Crie uma senha para sua conta",
+        "labels": {
+          "currentPassword": "Senha atual",
+          "newPassword": "Nova senha",
+          "password": "Senha",
+          "confirmPassword": "Confirme a senha"
+        },
+        "placeholders": {
+          "currentPassword": "Digite a senha atual",
+          "newPassword": "Digite a nova senha",
+          "confirmPassword": "Confirme a nova senha"
+        },
+        "buttons": {
+          "change": "Alterar senha",
+          "set": "Definir senha"
+        },
+        "strength": {
+          "veryWeak": "Muito fraca",
+          "weak": "Fraca",
+          "fair": "Razoável",
+          "strong": "Forte",
+          "veryStrong": "Muito forte"
+        },
+        "requirements": {
+          "title": "Requisitos da senha",
+          "minLength": "Mínimo de 8 caracteres",
+          "mixedCase": "Recomendamos misturar letras maiúsculas e minúsculas",
+          "specialChars": "Inclua números e caracteres especiais para uma senha mais segura"
+        },
+        "validation": {
+          "minLength": "A senha precisa ter pelo menos 8 caracteres",
+          "passwordsNoMatch": "As senhas não coincidem"
+        },
+        "notifications": {
+          "changeSuccess": "Senha alterada",
+          "changeFailed": "Não foi possível alterar a senha",
+          "setSuccess": "Senha definida",
+          "setFailed": "Não foi possível definir a senha",
+          "unexpectedError": "Ocorreu um erro inesperado",
+          "updateFailed": "Não foi possível atualizar a senha"
+        },
+        "errors": {
+          "incorrectCurrentPassword": "A senha atual está incorreta.",
+          "passwordAlreadySet": "Sua conta já tem uma senha. Use o formulário para alterá-la."
+        }
+      },
+      "dangerZone": "Zona de perigo",
+      "wipeData": {
+        "title": "Apagar todos os dados",
+        "warningFull": "{strong} Esta ação remove tudo do seu espaço de trabalho. Seu login continua, para você recomeçar do zero.",
+        "warningStrong": "Atenção:",
+        "button": "Apagar dados",
+        "dialog": {
+          "title": "Apagar todos os seus dados?",
+          "description": "Isto exclui de forma permanente tudo do seu espaço de trabalho, incluindo:",
+          "list": {
+            "accounts": "Contas e saldos",
+            "transactions": "Transações, reembolsos e transferências",
+            "budgets": "Orçamentos, acompanhamentos, tags e categorias",
+            "portfolios": "Investimentos, carteiras e posições",
+            "settings": "Configurações do usuário, chaves de IA e progresso da configuração inicial",
+            "baseCurrency": "Moeda base e taxas de câmbio"
+          },
+          "kept": "Seu login e seu perfil continuam. Você vai recomeçar pela configuração inicial.",
+          "typeConfirm": "Para confirmar, digite {phrase} abaixo:",
+          "confirmLabel": "Apagar dados",
+          "confirmLoading": "Apagando..."
+        },
+        "sharingDialog": {
+          "title": "Você compartilha dados com outros usuários",
+          "warning": "As outras pessoas vão perder o acesso na hora",
+          "description": "Apagar seus dados remove o acesso aos seguintes recursos compartilhados:",
+          "householdsCount": "E {count} membro da família vai perder o acesso. | E {count} membros da família vão perder o acesso.",
+          "confirmLabel": "Apagar mesmo assim"
+        },
+        "notifications": {
+          "success": "Todos os dados foram apagados. Comece do zero.",
+          "failed": "Não foi possível apagar os dados. Tente de novo."
+        }
+      },
+      "deleteAccount": {
+        "title": "Excluir sua conta",
+        "warningFull": "Depois que você excluir sua conta, não tem volta. {strong} Tenha certeza antes de continuar.",
+        "warningStrong": "Todos os seus dados serão apagados de forma permanente.",
+        "button": "Excluir minha conta",
+        "dialog": {
+          "title": "Tem certeza absoluta?",
+          "description": "Não é possível desfazer esta ação. Sua conta será excluída de forma permanente e todos os seus dados serão removidos, incluindo:",
+          "dataList": {
+            "accounts": "Todas as contas e transações",
+            "categories": "Todas as categorias, orçamentos e acompanhamentos",
+            "portfolios": "Todas as carteiras de investimento",
+            "settings": "Todas as configurações e preferências"
+          },
+          "confirmFull": "Digite {email} para confirmar",
+          "placeholder": "Digite seu e-mail",
+          "acceptButton": "Excluir minha conta",
+          "acceptButtonLoading": "Excluindo...",
+          "appStoreWarning": "Excluir sua conta não cancela sua assinatura na App Store, e a Apple vai continuar cobrando você. Cancele primeiro em {link}.",
+          "appStoreWarningLink": "Assinaturas da App Store"
+        },
+        "notifications": {
+          "success": "Sua conta foi excluída",
+          "failed": "Ocorreu um erro ao tentar excluir sua conta"
+        }
+      },
+      "backup": {
+        "download": {
+          "title": "Baixar backup",
+          "description": "Salve uma cópia completa e restaurável de todos os seus dados em um arquivo zip.",
+          "button": "Baixar",
+          "loading": "Preparando...",
+          "success": "Backup baixado",
+          "failed": "Não foi possível criar o backup. Tente de novo.",
+          "downloadBlocked": "O backup foi criado, mas seu navegador bloqueou o download. Confira as configurações de download e tente de novo.",
+          "limitations": {
+            "trigger": "Tem limitações",
+            "title": "O que fica fora do backup",
+            "intro": "Seu backup inclui todos os seus dados. Por segurança, alguns itens criptografados não vão junto e precisam ser configurados de novo depois da restauração:",
+            "items": {
+              "bankConnectionsTerm": "Conexões bancárias",
+              "bankConnections": "{term} — os tokens de acesso são criptografados e vinculados a este servidor, então você vai reconectar cada banco depois de restaurar.",
+              "aiKeysTerm": "Chaves de API de IA",
+              "aiKeys": "{term} — ficam guardadas criptografadas, então você vai digitá-las de novo depois de restaurar."
+            },
+            "included": "Todo o resto — contas, transações, categorias, orçamentos, acompanhamentos, investimentos, empréstimos, tags, favorecidos e pagamentos recorrentes — está incluído."
+          }
+        },
+        "restore": {
+          "title": "Restaurar backup",
+          "description": "Substitua todos os dados atuais pelo conteúdo de um arquivo zip de backup.",
+          "button": "Escolher arquivo de backup",
+          "reading": "Lendo o arquivo...",
+          "failedGeneric": "Não foi possível restaurar o backup",
+          "invalidFileType": "Escolha um arquivo de backup .zip.",
+          "fileTooLarge": "Este backup é grande demais para restaurar (máx. {max}).",
+          "readFailed": "Não foi possível ler este arquivo. Tente de novo.",
+          "confirm": {
+            "title": "Restaurar backup?",
+            "warning": "Isto substitui TODOS os seus dados atuais",
+            "description": "Tudo o que está na sua conta agora será excluído de forma permanente e substituído pelo conteúdo deste backup. Não é possível desfazer esta ação.",
+            "selectedFile": "Arquivo escolhido: {name}",
+            "confirmLabel": "Restaurar",
+            "reconnectTitle": "Depois de restaurar, configure de novo",
+            "reconnectBankConnections": "Reconecte suas conexões bancárias",
+            "reconnectAiKeys": "Digite de novo suas chaves de API de IA (se você usar alguma)"
+          },
+          "acknowledge": {
+            "title": "Recursos compartilhados vão perder o acesso",
+            "description": "Você é dono de recursos que outras pessoas acessam hoje. A restauração vai remover esse acesso.",
+            "householdsCount": "{count} família compartilhada | {count} famílias compartilhadas",
+            "checkbox": "Entendo que esses recursos compartilhados vão perder o acesso.",
+            "confirmLabel": "Restaurar mesmo assim"
+          },
+          "progress": {
+            "title": "Restaurando seus dados",
+            "description": "Isso pode levar um tempinho. Mantenha esta janela aberta.",
+            "inserted": "Registros restaurados: {count}",
+            "phases": {
+              "validating": "Validando o backup...",
+              "preparingSecurities": "Preparando os ativos...",
+              "wiping": "Limpando os dados atuais...",
+              "restoring": "Restaurando os registros...",
+              "finalizing": "Finalizando..."
+            }
+          },
+          "summary": {
+            "title": "Restauração concluída",
+            "description": "Seus dados foram restaurados a partir do backup.",
+            "recordsHeading": "Registros restaurados",
+            "warningsHeading": "Avisos",
+            "noRecords": "Nenhum registro foi restaurado.",
+            "doneButton": "Concluir"
+          },
+          "warnings": {
+            "sharesSkipped": "{count} linha de “{table}” ignorada: os recursos compartilhados fazem referência a usuários que não existem nesta instância. | {count} linhas de “{table}” ignoradas: os recursos compartilhados fazem referência a usuários que não existem nesta instância.",
+            "currencyMissing": "{count} moeda ignorada porque não está disponível nesta instância. | {count} moedas ignoradas porque não estão disponíveis nesta instância.",
+            "unknownTableIgnored": "O backup contém uma tabela desconhecida, “{table}”, que foi ignorada.",
+            "unknownColumnDropped": "Uma coluna desconhecida foi descartada em “{table}”: {columns}. | Colunas desconhecidas foram descartadas em “{table}”: {columns}.",
+            "tableMissingTreatedEmpty": "O backup não tem um arquivo para “{table}”; a tabela foi tratada como vazia.",
+            "settingsReset": "As configurações salvas não estavam no formato atual e voltaram ao padrão.",
+            "fireSettingsReset": "As configurações de FIRE salvas não estavam no formato atual e voltaram ao padrão.",
+            "noSettings": "O backup não tinha configurações salvas; o padrão foi aplicado.",
+            "foreignReferenceDropped": "{count} linha de “{table}” foi descartada porque “{column}” fazia referência a dados fora deste backup. | {count} linhas de “{table}” foram descartadas porque “{column}” fazia referência a dados fora deste backup.",
+            "invalidRowDropped": "{count} linha de “{table}” foi descartada por não passar na validação. | {count} linhas de “{table}” foram descartadas por não passarem na validação.",
+            "foreignReferenceNulled": "“{column}” foi limpo em {count} linha de “{table}” que fazia referência a dados fora deste backup. | “{column}” foi limpo em {count} linhas de “{table}” que faziam referência a dados fora deste backup.",
+            "unknown": "Alguns dados do backup foram ignorados ou ajustados durante a restauração."
+          },
+          "failed": {
+            "title": "Não foi possível restaurar",
+            "genericError": "Algo deu errado ao restaurar seu backup.",
+            "unconfirmed": "Não foi possível confirmar o status da restauração. Recarregue a página e confira seus dados.",
+            "closeButton": "Fechar",
+            "technicalDetails": "Detalhes técnicos"
+          },
+          "overlay": {
+            "title": "Restaurando seus dados",
+            "description": "Mantenha esta aba aberta. Estamos substituindo seus dados pelo backup — isso pode levar um momento.",
+            "preparing": "Preparando...",
+            "finishing": "Finalizando",
+            "takingLong": "Está demorando mais que o normal. Seus dados ainda estão sendo restaurados — mantenha esta aba aberta.",
+            "unreachableTitle": "Não foi possível acessar o servidor",
+            "unreachableDescription": "Perdemos o contato enquanto a restauração estava em andamento. Ela ainda pode estar terminando. Você pode fechar este aviso e recarregar a página para conferir.",
+            "failedTitle": "Não foi possível restaurar",
+            "dismiss": "Fechar"
+          }
+        },
+        "attachmentsNotIncluded": "Os anexos das transações (recibos, notas fiscais e outros arquivos) não entram nos backups e não são restaurados."
+      }
+    }
+  }
+}

@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Seleccionar categoría de cuenta",
       "creditLimitLabel": "Límite de crédito",
       "creditLimitPlaceholder": "Límite de crédito",
+      "defaultPaymentTypeLabel": "Tipo de pago por defecto",
       "submitButton": "Crear",
       "submitButtonLoading": "Creando...",
       "notifications": {

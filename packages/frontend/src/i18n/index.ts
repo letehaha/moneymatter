@@ -1,5 +1,11 @@
 import { captureException } from '@/lib/sentry';
-import { DEFAULT_LOCALE, SUPPORTED_LOCALES as LOCALES, type SupportedLocale } from '@bt/shared/i18n/locales';
+import {
+  DEFAULT_LOCALE,
+  SUPPORTED_LOCALES as LOCALES,
+  type SupportedLocale,
+  isSupportedLocale,
+  resolveLocale,
+} from '@bt/shared/i18n/locales';
 import { compile } from '@intlify/core-base';
 import { type I18n, type MessageCompiler, type MessageFunction, createI18n } from 'vue-i18n';
 import type { RouteLocationNormalized } from 'vue-router';
@@ -256,12 +262,7 @@ export async function setLocale(locale: string): Promise<void> {
  */
 export function initializeLocale(): string {
   const storedLocale = localStorage.getItem('preferred-locale');
-  const browserLocale = navigator.language.split('-')[0];
+  if (storedLocale && isSupportedLocale(storedLocale)) return storedLocale;
 
-  const locale =
-    (storedLocale && SUPPORTED_LOCALES.includes(storedLocale as SupportedLocale) ? storedLocale : null) ||
-    (SUPPORTED_LOCALES.includes(browserLocale as SupportedLocale) ? browserLocale : null) ||
-    DEFAULT_LOCALE;
-
-  return locale;
+  return resolveLocale({ tag: navigator.languages.join(',') || navigator.language });
 }

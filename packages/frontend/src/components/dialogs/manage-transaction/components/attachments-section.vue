@@ -274,6 +274,7 @@ const confirmDeletion = async () => {
           :idle-text="$t('dialogs.manageTransaction.form.attachments.dropzone.idle')"
           :drag-text="$t('dialogs.manageTransaction.form.attachments.dropzone.drag')"
           @update:model-value="uploadFiles"
+          @error="(message: string) => message && addErrorNotification(message)"
         >
           <template #hint>
             {{

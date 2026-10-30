@@ -103,7 +103,8 @@
       "debitCard": "Kartu Debit",
       "mobilePayment": "Pembayaran Seluler",
       "voucher": "Voucher",
-      "webPayment": "Pembayaran Web"
+      "webPayment": "Pembayaran Web",
+      "none": "Tidak ada"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Apakah Anda yakin ingin mengeluarkan transaksi ini dari grup?",
       "removeButtonText": "Keluarkan",
       "removeAndDeleteButtonText": "Keluarkan & Hapus Grup",
+      "removeFromGroup": "Hapus dari grup",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Kelola",
+      "showMoreNote": "Show more",
+      "showLessNote": "Tampilkan lebih sedikit",
       "summary": {
         "transactions": "Transaksi",
         "net": "Bersih",

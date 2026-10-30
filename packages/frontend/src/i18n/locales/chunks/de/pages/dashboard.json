@@ -428,13 +428,6 @@
       "loadFailed": "Wiederkehrende Zahlungen konnten nicht geladen werden"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Geplante Zahlungen einbeziehen",
-          "on": "Ein",
-          "off": "Aus"
-        }
-      },
       "settings": {
         "excludeTitle": "Transaktionen ausschließen",
         "excludeTransfersDescription": "Umbuchungen zwischen eigenen Konten ausblenden",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Saldokorrektur-Transaktionen ausblenden",
         "plannedTitle": "Geplante Transaktionen",
         "excludePlannedDescription": "Ausstehende geplante Transaktionen aus der Liste ausblenden",
+        "scheduledTitle": "Geplante Zahlungen",
+        "excludeScheduledDescription": "Kommende und überfällige Abo-Zahlungen aus der Liste ausblenden",
+        "scheduledSaveError": "Einstellung für geplante Zahlungen konnte nicht aktualisiert werden",
         "nothingExcluded": "Nichts ausgeschlossen",
         "tagsStyleTitle": "Tags",
         "tagsStyleNames": "Namen",
@@ -504,7 +500,8 @@
         "title": "Plane deinen Weg zu FIRE",
         "description": "Plus-Funktion",
         "action": "Freischalten"
-      }
+      },
+      "paceVs": "vs. {month}"
     }
   }
 }

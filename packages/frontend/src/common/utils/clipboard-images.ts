@@ -6,6 +6,17 @@ const EXTENSION_BY_TYPE: Record<string, string> = {
 
 const isImageType = ({ type }: { type: string }): boolean => type.startsWith('image/');
 
+export function acceptListsImages({ accept }: { accept?: string }): boolean {
+  return (accept ?? '').split(',').some((type) => isImageType({ type: type.trim() }));
+}
+
+export function isEditableTarget({ target }: { target: EventTarget | null }): boolean {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+  );
+}
+
 export function extensionForImageType({ type }: { type: string }): string {
   return EXTENSION_BY_TYPE[type] ?? type.slice('image/'.length);
 }

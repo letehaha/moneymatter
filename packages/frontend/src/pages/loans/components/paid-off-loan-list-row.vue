@@ -9,12 +9,7 @@
     "
   >
     <div class="flex min-w-0 flex-1 basis-full items-center gap-3 @[40rem]/paid-off-list:basis-auto">
-      <div
-        :class="cn('flex size-8 shrink-0 items-center justify-center rounded-lg', loanTypeTintedChipClass)"
-        aria-hidden="true"
-      >
-        <component :is="loanTypeIconComponent" class="size-4" stroke-width="2" />
-      </div>
+      <LoanLogo :loan="loan" class="size-8" />
       <div class="min-w-0">
         <div class="flex min-w-0 items-center gap-2">
           <span class="truncate text-sm font-semibold">{{ loan.name }}</span>
@@ -84,6 +79,7 @@
 
 <script setup lang="ts">
 import type { LoanApi } from '@/api/loans';
+import LoanLogo from '@/components/common/loan-logo.vue';
 import { useFormatCurrency } from '@/composable/formatters';
 import { useDateLocale } from '@/composable/use-date-locale';
 import { cn } from '@/lib/utils';
@@ -93,8 +89,6 @@ import { parseISO } from 'date-fns';
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { RouterLink } from 'vue-router';
-
-import { getLoanTypeIcon, getLoanTypeTintedChipClass } from '../loan-type-presentation';
 
 const props = defineProps<{ loan: LoanApi }>();
 
@@ -134,10 +128,4 @@ const subLine = computed(() => {
   const lender = props.loan.loanDetails.lenderName;
   return lender ? `${typeLabel} · ${lender}` : `${typeLabel} · ${props.loan.currencyCode}`;
 });
-
-const loanTypeTintedChipClass = computed(() =>
-  getLoanTypeTintedChipClass({ loanType: props.loan.loanDetails.loanType }),
-);
-
-const loanTypeIconComponent = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetails.loanType }));
 </script>

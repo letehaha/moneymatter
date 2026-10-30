@@ -26,6 +26,36 @@ describe('Transaction ↔ Portfolio link (/transactions/:transactionId/*-portfol
     currencyCode = account.currencyCode;
   });
 
+  describe('Logo', () => {
+    it("returns the linked portfolio's logo", async () => {
+      await helpers.updatePortfolio({ portfolioId: portfolio.id, payload: { logoDomain: 'vanguard.com' } });
+
+      const [expenseTx] = await helpers.createTransaction({
+        payload: helpers.buildTransactionPayload({
+          accountId: account.id,
+          amount: 500,
+          transactionType: TRANSACTION_TYPES.expense,
+        }),
+        raw: true,
+      });
+      await helpers.linkTransactionToPortfolio({
+        transactionId: expenseTx!.id,
+        payload: { portfolioId: portfolio.id },
+        raw: true,
+      });
+
+      const link = await helpers.getTransactionPortfolioLink({ transactionId: expenseTx!.id, raw: true });
+
+      expect(link.logoDomain).toBe('vanguard.com');
+
+      await helpers.deletePortfolio({ portfolioId: portfolio.id });
+
+      const linkAfterDelete = await helpers.getTransactionPortfolioLink({ transactionId: expenseTx!.id, raw: true });
+
+      expect(linkAfterDelete).toMatchObject({ isPortfolioDeleted: true, logoDomain: 'vanguard.com' });
+    });
+  });
+
   describe('Link', () => {
     it('should link an expense transaction to a portfolio (account → portfolio deposit) and list the transfer', async () => {
       const [expenseTx] = await helpers.createTransaction({

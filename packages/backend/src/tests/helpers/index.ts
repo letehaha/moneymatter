@@ -52,5 +52,6 @@ export * from './ai-categorization';
 export * from './billing';
 export * from './attachments';
 export * from './invoice-matching';
+export * from './background-jobs';
 export * from './landing-faq';
 export * from './reconciliation';

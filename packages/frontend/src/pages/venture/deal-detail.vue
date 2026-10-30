@@ -2,18 +2,21 @@
 import { formatShortDate } from '@/common/utils/date';
 import { getErrorMessage } from '@/common/utils/error-message';
 import { formatFractionAsPercent } from '@/common/utils/percentage';
+import EditableEntityLogo from '@/components/common/editable-entity-logo.vue';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
+import VentureDealLogo from '@/components/common/venture-deal-logo.vue';
 import VentureDealForm from '@/components/forms/venture-deal-form.vue';
 import VentureEventForm from '@/components/forms/venture-event-form.vue';
 import UiButton from '@/components/lib/ui/button/Button.vue';
 import { NotificationType, useNotificationCenter } from '@/components/notification-center';
 import { useFormatCurrency } from '@/composable/formatters';
-import { useDeleteVentureDeal, useVentureDeal } from '@/composable/data-queries/venture/deals';
+import { useDeleteVentureDeal, useUpdateVentureDeal, useVentureDeal } from '@/composable/data-queries/venture/deals';
 import DealStatusPill from '@/pages/venture/components/deal-status-pill.vue';
 import EventsTimeline from '@/pages/venture/components/events-timeline.vue';
 import MetricsSummary from '@/pages/venture/components/metrics-summary.vue';
 import { ROUTES_NAMES } from '@/routes';
+import type { NonImageLogoPayload } from '@bt/shared/types';
 import { ArrowLeftIcon, PencilIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -33,6 +36,10 @@ const deleteOpen = ref(false);
 const createEventOpen = ref(false);
 
 const deleteMutation = useDeleteVentureDeal();
+const updateMutation = useUpdateVentureDeal();
+
+const saveLogo = ({ payload }: { payload: NonImageLogoPayload }) =>
+  updateMutation.mutateAsync({ dealId: dealId.value, payload });
 
 const onEditSaved = () => {
   editOpen.value = false;
@@ -73,19 +80,24 @@ const onDelete = async () => {
 
     <div v-else-if="deal" class="grid gap-8">
       <header class="border-border/60 flex flex-wrap items-start justify-between gap-4 border-b pb-6">
-        <div class="min-w-0">
-          <div class="flex items-center gap-2">
-            <DealStatusPill :status="deal.status" show-dot />
-            <span v-if="deal.platform" class="text-muted-foreground text-xs">
-              {{ deal.platform.name }}
-            </span>
+        <div class="flex min-w-0 items-start gap-4">
+          <EditableEntityLogo :entity="deal" flow="ventureDealLogo" :save="saveLogo" class="size-12">
+            <VentureDealLogo :deal="deal" class="size-full" />
+          </EditableEntityLogo>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <DealStatusPill :status="deal.status" show-dot />
+              <span v-if="deal.platform" class="text-muted-foreground text-xs">
+                {{ deal.platform.name }}
+              </span>
+            </div>
+            <h1 class="mt-2 text-3xl leading-tight font-medium @md/venture-deal:text-4xl">
+              {{ deal.name }}
+            </h1>
+            <p v-if="deal.targetCompany" class="text-muted-foreground mt-1 text-sm">
+              {{ deal.targetCompany }}
+            </p>
           </div>
-          <h1 class="mt-2 text-3xl leading-tight font-medium @md/venture-deal:text-4xl">
-            {{ deal.name }}
-          </h1>
-          <p v-if="deal.targetCompany" class="text-muted-foreground mt-1 text-sm">
-            {{ deal.targetCompany }}
-          </p>
         </div>
         <div class="flex gap-2">
           <UiButton variant="secondary" @click="editOpen = true">

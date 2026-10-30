@@ -189,7 +189,11 @@ const PANEL_TRANSITION_DURATION = 320;
 
 const { t } = useI18n({ useScope: 'global' });
 const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
-const { data: userSettingsData, mutateAsync: saveUserSettings, isUpdating } = useUserSettings();
+const { isUpdating } = useUserSettings();
+const saveWidgetConfig =
+  inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
+    'dashboard-save-widget-config',
+  );
 
 const isOpen = ref(false);
 type View = 'main' | 'exclusions';
@@ -248,19 +252,8 @@ function goTo(target: View) {
 }
 
 async function persistConfig(patch: Record<string, unknown>) {
-  const settings = userSettingsData.value;
-  if (!settings || !widgetConfigRef?.value) return;
-
-  const widgets = [...(settings.dashboard?.widgets ?? [])];
-  const idx = widgets.findIndex((w) => w.widgetId === widgetConfigRef.value!.widgetId);
-  if (idx === -1) return;
-
-  widgets[idx] = {
-    ...widgets[idx]!,
-    config: { ...widgets[idx]!.config, ...patch },
-  };
-
-  await saveUserSettings({ ...settings, dashboard: { widgets } });
+  if (!saveWidgetConfig || !widgetConfigRef?.value) return;
+  await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config: patch });
 }
 
 async function onTagsVariantChange(value: string) {

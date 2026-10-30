@@ -91,6 +91,7 @@ const isPaywalled = computed(() => isAttachmentsGated.value || (isTrialSpent.val
 const ACCEPT_ATTRIBUTE = ATTACHMENT_MIME_TYPES.join(',');
 
 const file = ref<File | null>(null);
+const isCompressing = ref(false);
 const transactionType = ref(TRANSACTION_TYPES.expense);
 const result = ref<InvoiceMatchResult | null>(null);
 const selectedId = ref<RecordId | null>(null);
@@ -183,6 +184,7 @@ const analyze = async ({ selected }: { selected: File | null }) => {
 
   removeNotification(MATCH_ERROR_TOAST_ID);
 
+  isCompressing.value = true;
   // A failed compression still sends the original.
   const [prepared = selected] = await compressImages({
     files: [selected],
@@ -190,6 +192,7 @@ const analyze = async ({ selected }: { selected: File | null }) => {
     captureException({ error, context: { scope: 'attach-invoice:compress' } });
     return [selected];
   });
+  isCompressing.value = false;
   // Closing the dialog resets the state, so a late result must not repopulate it.
   if (!open.value) return;
   file.value = prepared;
@@ -213,7 +216,7 @@ const analyze = async ({ selected }: { selected: File | null }) => {
 };
 
 const progressText = computed(() => {
-  if (matchMutation.isPending.value) return t('dialogs.attachInvoice.analyzing');
+  if (isCompressing.value || matchMutation.isPending.value) return t('dialogs.attachInvoice.analyzing');
   if (linkMutation.isPending.value) return t('dialogs.attachInvoice.attaching');
   return '';
 });
@@ -403,7 +406,7 @@ const closeTransactionModal = () => {
       <div class="grid gap-4">
         <div
           v-if="progressText"
-          class="text-muted-foreground flex min-h-[180px] flex-col items-center justify-center gap-3 text-center text-sm"
+          class="text-muted-foreground flex min-h-45 flex-col items-center justify-center gap-3 text-center text-sm"
           aria-live="polite"
         >
           <LoaderCircleIcon class="text-primary-text size-8 animate-spin" />

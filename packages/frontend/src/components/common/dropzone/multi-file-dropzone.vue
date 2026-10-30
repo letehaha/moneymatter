@@ -17,7 +17,7 @@ const props = withDefaults(
     maxSize?: number;
     /** Per-file validator. Return an error string to reject a file, or null to accept. */
     validator?: (file: File) => string | null;
-    /** Disables click + drop + remove. */
+    /** Disables click + drop + paste + remove. */
     disabled?: boolean;
     /** Tailwind height class for the dropzone. */
     height?: string;
@@ -97,10 +97,12 @@ function addFiles(incoming: File[]) {
 function removeAt(index: number) {
   const next = [...files.value];
   next.splice(index, 1);
+  emit('error', '');
   files.value = next;
 }
 
 function clearAll() {
+  emit('error', '');
   files.value = [];
 }
 </script>
@@ -115,6 +117,7 @@ function clearAll() {
       :idle-text="idleText ?? t('fileDropzone.clickOrDragMultiple')"
       :drag-text="dragText ?? t('fileDropzone.dropHereMultiple')"
       @files="addFiles"
+      @error="emit('error', $event)"
     >
       <template v-if="$slots.hint" #hint>
         <slot name="hint" />

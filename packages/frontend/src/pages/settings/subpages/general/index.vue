@@ -20,6 +20,8 @@
         <QuickStartRow />
         <Separator />
         <TransactionRows />
+        <Separator />
+        <UnrealizedLossAlertRows />
       </CardContent>
     </Card>
   </div>
@@ -36,4 +38,5 @@ import CreditLimitRow from './rows/credit-limit-row.vue';
 import PaydayRow from './rows/payday-row.vue';
 import QuickStartRow from './rows/quick-start-row.vue';
 import TransactionRows from './rows/transaction-rows.vue';
+import UnrealizedLossAlertRows from './rows/unrealized-loss-alert-rows.vue';
 </script>

@@ -265,7 +265,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/lib/ui/pop
 import { Switch } from '@/components/lib/ui/switch';
 import { readIncludePlanned, useIncludePlannedSaveError } from '@/components/widgets/use-include-planned-config';
 import { SPIKE_DEFAULTS } from '@/composable/charts/use-spike-detection';
-import { useUserSettings } from '@/composable/data-queries/user-settings';
 import { useFormValidation } from '@/composable/form-validator';
 import { useFormatCurrency } from '@/composable/formatters';
 import { between, integer, required } from '@/js/helpers/validators';
@@ -282,7 +281,10 @@ const props = defineProps<{
 const { t } = useI18n({ useScope: 'global' });
 const { getCurrencySymbol } = useFormatCurrency();
 const widgetConfigRef = inject<Ref<DashboardWidgetConfig> | null>('dashboard-widget-config', null);
-const { data: userSettingsData, mutateAsync: saveUserSettings } = useUserSettings();
+const saveWidgetConfig =
+  inject<(params: { widgetId: string; config: Record<string, unknown> }) => Promise<void>>(
+    'dashboard-save-widget-config',
+  );
 const notifyIncludePlannedSaveError = useIncludePlannedSaveError();
 
 const FIT_TO_LATEST_DATA_DEFAULT = true;
@@ -389,19 +391,8 @@ function goTo(target: View) {
 }
 
 async function persistConfig(patch: Record<string, unknown>) {
-  const settings = userSettingsData.value;
-  if (!settings || !widgetConfigRef?.value) return;
-
-  const widgets = [...(settings.dashboard?.widgets ?? [])];
-  const idx = widgets.findIndex((w) => w.widgetId === widgetConfigRef.value!.widgetId);
-  if (idx === -1) return;
-
-  widgets[idx] = {
-    ...widgets[idx]!,
-    config: { ...widgets[idx]!.config, ...patch },
-  };
-
-  await saveUserSettings({ ...settings, dashboard: { widgets } });
+  if (!saveWidgetConfig || !widgetConfigRef?.value) return;
+  await saveWidgetConfig({ widgetId: widgetConfigRef.value.widgetId, config: patch });
 }
 
 function resetSpikeDefaults() {

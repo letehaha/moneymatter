@@ -337,6 +337,45 @@
           "addBirthYear": "Add birth year"
         }
       },
+      "pace": {
+        "row": "{status} vs {anchor}",
+        "noHistory": "Not enough history before {month}",
+        "loadFailed": "Couldn't load the comparison",
+        "compareWith": "Compare with {month}",
+        "picker": {
+          "title": "Compare with",
+          "rollingLabel": "{month} · 1 year ago",
+          "rolling": "1 year ago",
+          "rollingHint": "Rolling · currently {month}",
+          "specific": "Specific month",
+          "specificHint": "Stays fixed",
+          "prevYear": "Previous year",
+          "nextYear": "Next year",
+          "earliest": "Earliest is {month}. FIRE needs 3 months of tracked spending before it."
+        },
+        "details": {
+          "title": "Pace since {month}",
+          "moved": "Your FIRE date moved from {from} to {to}.",
+          "withinBand": "Your FIRE date is within {tolerance} of the {month} forecast ({date}).",
+          "backInReach": "On {month}'s numbers FIRE was out of reach. Now it's {date}.",
+          "offTrack": "The {month} forecast was {date}. On today's numbers FIRE is out of reach.",
+          "metric": "Metric",
+          "today": "Today",
+          "change": "Change",
+          "fireDate": "FIRE date",
+          "saved": "Saved by now",
+          "spending": "Spending",
+          "saving": "Saving",
+          "expected": "{amount} expected",
+          "sooner": "{duration} sooner",
+          "later": "{duration} later",
+          "sameMonth": "Same month",
+          "outOfReach": "Out of reach",
+          "band": "On pace means within {tolerance} (2% of the time left to FIRE).",
+          "recorded": "Balance, cash flow and assumptions as of {date} are recomputed live from your data.",
+          "notRecorded": "Balance and cash flow as of {date} are recomputed live from your data. Your assumptions from then weren't recorded, so today's are used."
+        }
+      },
       "chart": {
         "ariaLabel": "Net worth history and projected path to your FIRE number",
         "actual": "Actual",
@@ -344,7 +383,10 @@
         "range": "±2 pts return",
         "today": "Today",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "{month} forecast",
+        "forecastLabel": "{month} forecast · {date}",
+        "actualSince": "Actual since {month}"
       },
       "milestones": {
         "reached": "Reached",
@@ -439,6 +481,7 @@
     },
     "table": {
       "total": "Total",
+      "net": "Net",
       "collapseAll": "Collapse all",
       "expandAll": "Expand all",
       "expandRow": "Expand",

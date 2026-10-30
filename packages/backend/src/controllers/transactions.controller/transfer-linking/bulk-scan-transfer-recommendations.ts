@@ -104,165 +104,169 @@ const schema = z.object({
   ),
 });
 
-export default createController(schema, async ({ user, body }) => {
-  const { id: userId } = user;
-  const { from, to, limit, offset, includeOutOfWallet, aiReview } = body;
+export default createController(
+  schema,
+  async ({ user, body }) => {
+    const { id: userId } = user;
+    const { from, to, limit, offset, includeOutOfWallet, aiReview } = body;
 
-  const dateFromParsed = startOfDay(new Date(from));
-  const dateToParsed = endOfDay(new Date(to));
+    const dateFromParsed = startOfDay(new Date(from));
+    const dateToParsed = endOfDay(new Date(to));
 
-  // Transfer natures to include in the scan
-  const allowedTransferNatures = [TRANSACTION_TRANSFER_NATURE.not_transfer];
-  if (includeOutOfWallet) {
-    allowedTransferNatures.push(TRANSACTION_TRANSFER_NATURE.transfer_out_wallet);
-  }
-
-  // 1. Fetch all expense transactions in the date range that are NOT linked transfers/refunds
-  // When includeOutOfWallet, we can't use excludeTransfer (it excludes everything except not_transfer),
-  // so we skip the filter and post-filter by allowed natures instead.
-  const expenses = (await transactionsService.getTransactions({
-    userId,
-    from: 0,
-    limit: Infinity, // fetch all in range — Infinity bypasses the default limit of 20
-    transactionType: TRANSACTION_TYPES.expense,
-    excludeTransfer: !includeOutOfWallet,
-    excludeRefunds: true,
-    isPlanned: false,
-    includeSplits: true,
-    startDate: dateFromParsed.toISOString(),
-    endDate: dateToParsed.toISOString(),
-    order: SORT_DIRECTIONS.desc,
-  })) as Transactions[];
-
-  if (expenses.length === 0) {
-    return { data: emptyResponse() };
-  }
-
-  // Filter out parent transactions with splits and non-allowed transfer natures
-  const eligibleExpenses = expenses.filter((tx) => isEligibleCandidate({ tx, allowedTransferNatures }));
-
-  if (eligibleExpenses.length === 0) {
-    return { data: emptyResponse() };
-  }
-
-  // 2. Fetch all income candidates in expanded date range
-  // Expand by ±14 days to catch matches for expenses near the boundaries
-  const incomeStartDate = subDays(dateFromParsed, RECOMMENDATION_DAYS_RANGE);
-  const incomeEndDate = addDays(dateToParsed, RECOMMENDATION_DAYS_RANGE);
-
-  const incomes = (await transactionsService.getTransactions({
-    userId,
-    from: 0,
-    limit: Infinity,
-    transactionType: TRANSACTION_TYPES.income,
-    excludeTransfer: !includeOutOfWallet,
-    excludeRefunds: true,
-    isPlanned: false,
-    includeSplits: true,
-    startDate: incomeStartDate.toISOString(),
-    endDate: incomeEndDate.toISOString(),
-    order: SORT_DIRECTIONS.desc,
-  })) as Transactions[];
-
-  // Filter out parent transactions with splits and non-allowed transfer natures
-  const eligibleIncomes = incomes.filter((tx) => isEligibleCandidate({ tx, allowedTransferNatures }));
-
-  // 3. Load dismissed pairs to filter them out (scoped to relevant expenses)
-  const eligibleExpenseIds = eligibleExpenses.map((e) => e.id);
-  const dismissals = await getDismissalsForUser({ userId, expenseTransactionIds: eligibleExpenseIds });
-  const dismissedPairsSet = new Set(dismissals.map((d) => `${d.expenseTransactionId}:${d.incomeTransactionId}`));
-
-  // 4. Match expenses to incomes in-memory
-  let results: Array<{
-    expense: Transactions;
-    matches: Array<{ transaction: Transactions; confidence: number; ai?: TransferPairReview }>;
-  }> = [];
-
-  for (const expense of eligibleExpenses) {
-    const expenseRefCents = expense.refAmount.toCents();
-    const lowerBound = Math.max(0, Math.floor(expenseRefCents * (1 - RECOMMENDATION_PERCENT_RANGE)));
-    const upperBound = Math.ceil(expenseRefCents * (1 + RECOMMENDATION_PERCENT_RANGE));
-    const expenseTime = new Date(expense.time);
-
-    const matchCandidates: Array<{ transaction: Transactions; confidence: number }> = [];
-
-    for (const income of eligibleIncomes) {
-      // Skip dismissed pairs
-      if (dismissedPairsSet.has(`${expense.id}:${income.id}`)) continue;
-
-      // Different account
-      if (income.accountId === expense.accountId) continue;
-
-      // Amount within ±10%
-      const incomeRefCents = income.refAmount.toCents();
-      if (incomeRefCents < lowerBound || incomeRefCents > upperBound) continue;
-
-      // Date within ±14 days
-      const incomeTime = new Date(income.time);
-      const daysDiff = Math.abs(expenseTime.getTime() - incomeTime.getTime()) / MS_PER_DAY;
-      if (daysDiff > RECOMMENDATION_DAYS_RANGE) continue;
-
-      const confidence = calculateConfidence({
-        expenseRefAmountCents: expenseRefCents,
-        matchRefAmountCents: incomeRefCents,
-        expenseTime,
-        matchTime: incomeTime,
-        expenseCurrency: expense.currencyCode,
-        matchCurrency: income.currencyCode,
-      });
-      if (confidence < MIN_CONFIDENCE) continue;
-
-      matchCandidates.push({ transaction: income, confidence });
+    // Transfer natures to include in the scan
+    const allowedTransferNatures = [TRANSACTION_TRANSFER_NATURE.not_transfer];
+    if (includeOutOfWallet) {
+      allowedTransferNatures.push(TRANSACTION_TRANSFER_NATURE.transfer_out_wallet);
     }
 
-    if (matchCandidates.length > 0) {
-      // Sort by confidence descending
-      matchCandidates.sort((a, b) => b.confidence - a.confidence);
-      results.push({
-        expense,
-        matches: matchCandidates.slice(0, MAX_MATCHES_PER_EXPENSE),
-      });
-    }
-  }
-
-  // 5. Sort results by expense date descending (newest first)
-  results.sort((a, b) => new Date(b.expense.time).getTime() - new Date(a.expense.time).getTime());
-
-  if (aiReview) {
-    const reviews = await aiReviewTransferMatches({
+    // 1. Fetch all expense transactions in the date range that are NOT linked transfers/refunds
+    // When includeOutOfWallet, we can't use excludeTransfer (it excludes everything except not_transfer),
+    // so we skip the filter and post-filter by allowed natures instead.
+    const expenses = (await transactionsService.getTransactions({
       userId,
-      pairs: results.flatMap(({ expense, matches }) =>
-        matches.map(({ transaction }) => ({ expenseId: expense.id, incomeId: transaction.id })),
-      ),
-    });
-    results = results
-      .map(({ expense, matches }) => ({
-        expense,
-        matches: matches
-          .map((match) => ({
-            ...match,
-            ai: reviews.get(transferPairKey({ expenseId: expense.id, incomeId: match.transaction.id })),
-          }))
-          .filter((match) => match.ai?.verdict !== 'unlikely')
-          .toSorted((a, b) => verdictRank(a) - verdictRank(b) || b.confidence - a.confidence),
-      }))
-      .filter(({ matches }) => matches.length > 0);
-  }
+      from: 0,
+      limit: Infinity, // fetch all in range — Infinity bypasses the default limit of 20
+      transactionType: TRANSACTION_TYPES.expense,
+      excludeTransfer: !includeOutOfWallet,
+      excludeRefunds: true,
+      isPlanned: false,
+      includeSplits: true,
+      startDate: dateFromParsed.toISOString(),
+      endDate: dateToParsed.toISOString(),
+      order: SORT_DIRECTIONS.desc,
+    })) as Transactions[];
 
-  const total = results.length;
+    if (expenses.length === 0) {
+      return { data: emptyResponse() };
+    }
 
-  // 6. Apply pagination. A reviewed scan answers in one page, so paging never re-runs the AI.
-  const paginatedResults = aiReview ? results : results.slice(offset, offset + limit);
+    // Filter out parent transactions with splits and non-allowed transfer natures
+    const eligibleExpenses = expenses.filter((tx) => isEligibleCandidate({ tx, allowedTransferNatures }));
 
-  // 7. Serialize
-  const items: BulkScanItem[] = paginatedResults.map((result) => ({
-    expense: serializeTransaction(result.expense),
-    matches: result.matches.map((match) => ({
-      transaction: serializeTransaction(match.transaction),
-      confidence: match.confidence,
-      ...(match.ai && { ai: match.ai as BulkScanMatch['ai'] }),
-    })),
-  }));
+    if (eligibleExpenses.length === 0) {
+      return { data: emptyResponse() };
+    }
 
-  return { data: { total, items } satisfies BulkScanResponse };
-});
+    // 2. Fetch all income candidates in expanded date range
+    // Expand by ±14 days to catch matches for expenses near the boundaries
+    const incomeStartDate = subDays(dateFromParsed, RECOMMENDATION_DAYS_RANGE);
+    const incomeEndDate = addDays(dateToParsed, RECOMMENDATION_DAYS_RANGE);
+
+    const incomes = (await transactionsService.getTransactions({
+      userId,
+      from: 0,
+      limit: Infinity,
+      transactionType: TRANSACTION_TYPES.income,
+      excludeTransfer: !includeOutOfWallet,
+      excludeRefunds: true,
+      isPlanned: false,
+      includeSplits: true,
+      startDate: incomeStartDate.toISOString(),
+      endDate: incomeEndDate.toISOString(),
+      order: SORT_DIRECTIONS.desc,
+    })) as Transactions[];
+
+    // Filter out parent transactions with splits and non-allowed transfer natures
+    const eligibleIncomes = incomes.filter((tx) => isEligibleCandidate({ tx, allowedTransferNatures }));
+
+    // 3. Load dismissed pairs to filter them out (scoped to relevant expenses)
+    const eligibleExpenseIds = eligibleExpenses.map((e) => e.id);
+    const dismissals = await getDismissalsForUser({ userId, expenseTransactionIds: eligibleExpenseIds });
+    const dismissedPairsSet = new Set(dismissals.map((d) => `${d.expenseTransactionId}:${d.incomeTransactionId}`));
+
+    // 4. Match expenses to incomes in-memory
+    let results: Array<{
+      expense: Transactions;
+      matches: Array<{ transaction: Transactions; confidence: number; ai?: TransferPairReview }>;
+    }> = [];
+
+    for (const expense of eligibleExpenses) {
+      const expenseRefCents = expense.refAmount.toCents();
+      const lowerBound = Math.max(0, Math.floor(expenseRefCents * (1 - RECOMMENDATION_PERCENT_RANGE)));
+      const upperBound = Math.ceil(expenseRefCents * (1 + RECOMMENDATION_PERCENT_RANGE));
+      const expenseTime = new Date(expense.time);
+
+      const matchCandidates: Array<{ transaction: Transactions; confidence: number }> = [];
+
+      for (const income of eligibleIncomes) {
+        // Skip dismissed pairs
+        if (dismissedPairsSet.has(`${expense.id}:${income.id}`)) continue;
+
+        // Different account
+        if (income.accountId === expense.accountId) continue;
+
+        // Amount within ±10%
+        const incomeRefCents = income.refAmount.toCents();
+        if (incomeRefCents < lowerBound || incomeRefCents > upperBound) continue;
+
+        // Date within ±14 days
+        const incomeTime = new Date(income.time);
+        const daysDiff = Math.abs(expenseTime.getTime() - incomeTime.getTime()) / MS_PER_DAY;
+        if (daysDiff > RECOMMENDATION_DAYS_RANGE) continue;
+
+        const confidence = calculateConfidence({
+          expenseRefAmountCents: expenseRefCents,
+          matchRefAmountCents: incomeRefCents,
+          expenseTime,
+          matchTime: incomeTime,
+          expenseCurrency: expense.currencyCode,
+          matchCurrency: income.currencyCode,
+        });
+        if (confidence < MIN_CONFIDENCE) continue;
+
+        matchCandidates.push({ transaction: income, confidence });
+      }
+
+      if (matchCandidates.length > 0) {
+        // Sort by confidence descending
+        matchCandidates.sort((a, b) => b.confidence - a.confidence);
+        results.push({
+          expense,
+          matches: matchCandidates.slice(0, MAX_MATCHES_PER_EXPENSE),
+        });
+      }
+    }
+
+    // 5. Sort results by expense date descending (newest first)
+    results.sort((a, b) => new Date(b.expense.time).getTime() - new Date(a.expense.time).getTime());
+
+    if (aiReview) {
+      const reviews = await aiReviewTransferMatches({
+        userId,
+        pairs: results.flatMap(({ expense, matches }) =>
+          matches.map(({ transaction }) => ({ expenseId: expense.id, incomeId: transaction.id })),
+        ),
+      });
+      results = results
+        .map(({ expense, matches }) => ({
+          expense,
+          matches: matches
+            .map((match) => ({
+              ...match,
+              ai: reviews.get(transferPairKey({ expenseId: expense.id, incomeId: match.transaction.id })),
+            }))
+            .filter((match) => match.ai?.verdict !== 'unlikely')
+            .toSorted((a, b) => verdictRank(a) - verdictRank(b) || b.confidence - a.confidence),
+        }))
+        .filter(({ matches }) => matches.length > 0);
+    }
+
+    const total = results.length;
+
+    // 6. Apply pagination. A reviewed scan answers in one page, so paging never re-runs the AI.
+    const paginatedResults = aiReview ? results : results.slice(offset, offset + limit);
+
+    // 7. Serialize
+    const items: BulkScanItem[] = paginatedResults.map((result) => ({
+      expense: serializeTransaction(result.expense),
+      matches: result.matches.map((match) => ({
+        transaction: serializeTransaction(match.transaction),
+        confidence: match.confidence,
+        ...(match.ai && { ai: match.ai as BulkScanMatch['ai'] }),
+      })),
+    }));
+
+    return { data: { total, items } satisfies BulkScanResponse };
+  },
+  { inBackground: ({ body }) => body.aiReview },
+);

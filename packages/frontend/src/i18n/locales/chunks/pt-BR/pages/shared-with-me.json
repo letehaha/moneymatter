@@ -1,0 +1,35 @@
+{
+  "pages": {
+    "sharedWithMe": {
+      "title": "Compartilhado comigo",
+      "loadError": "Não foi possível carregar os itens compartilhados.",
+      "empty": {
+        "title": "Nada foi compartilhado com você ainda",
+        "description": "Quando alguém compartilhar uma conta com você, ela vai aparecer aqui."
+      },
+      "sections": {
+        "account": "Contas",
+        "household": "Famílias",
+        "budget": "Acompanhamentos compartilhados com você"
+      },
+      "sharedBy": "Compartilhado por {handle}",
+      "viaHousehold": "Pela família de {handle}",
+      "unnamedResource": "Sem título",
+      "permissions": {
+        "read": "Visualizar",
+        "write": "Editar",
+        "manage": "Gerenciar"
+      },
+      "leave": "Sair",
+      "leaveTitle": "Sair do compartilhamento?",
+      "leaveDescription": "Você vai perder o acesso a “{resource}”, de {owner}. O dono não será avisado.",
+      "leaveConfirm": "Sair",
+      "leaveSuccess": "Você saiu do compartilhamento.",
+      "leaveError": "Não foi possível sair do compartilhamento.",
+      "pending": {
+        "heading": "Convites pendentes",
+        "review": "Revisar"
+      }
+    }
+  }
+}

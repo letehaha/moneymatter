@@ -226,6 +226,73 @@ describe('Venture Deals E2E', () => {
     });
   });
 
+  describe('deal logo', () => {
+    it('sets, swaps and clears the logo', async () => {
+      const deal = await helpers.createVentureDeal({ payload: helpers.buildVentureDealPayload(), raw: true });
+      expect(deal.logoDomain).toBeNull();
+
+      const withBrand = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { logoDomain: 'stripe.com' },
+        raw: true,
+      });
+      expect(withBrand.logoDomain).toBe('stripe.com');
+
+      const withMonogram = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { logoInitials: 'ST', logoColor: '#7355be' },
+        raw: true,
+      });
+      expect(withMonogram).toMatchObject({ logoDomain: null, logoInitials: 'ST', logoColor: '#7355be' });
+
+      const cleared = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { logoDomain: null, logoInitials: null, logoIcon: null },
+        raw: true,
+      });
+      expect(cleared).toMatchObject({ logoDomain: null, logoInitials: null, logoColor: null, logoIcon: null });
+    });
+
+    it('recolors a stored monogram and rejects a color with nothing to paint', async () => {
+      const created = await helpers.createVentureDeal({ payload: helpers.buildVentureDealPayload(), raw: true });
+
+      const noMonogram = await helpers.updateVentureDeal({
+        dealId: created.id,
+        payload: { logoColor: '#7355be' },
+      });
+      expect(noMonogram.statusCode).toBe(ERROR_CODES.ValidationError);
+
+      await helpers.updateVentureDeal({ dealId: created.id, payload: { logoInitials: 'ST' }, raw: true });
+      const recolored = await helpers.updateVentureDeal({
+        dealId: created.id,
+        payload: { logoColor: '#16a34a' },
+        raw: true,
+      });
+      expect(recolored).toMatchObject({ logoInitials: 'ST', logoColor: '#16a34a' });
+    });
+
+    it('keeps the logo on a non-logo update', async () => {
+      const created = await helpers.createVentureDeal({ payload: helpers.buildVentureDealPayload(), raw: true });
+
+      await helpers.updateVentureDeal({ dealId: created.id, payload: { logoDomain: 'example.com' }, raw: true });
+
+      const renamed = await helpers.updateVentureDeal({ dealId: created.id, payload: { name: 'Renamed' }, raw: true });
+
+      expect(renamed).toMatchObject({ name: 'Renamed', logoDomain: 'example.com' });
+    });
+
+    it('rejects two logo types in one request', async () => {
+      const deal = await helpers.createVentureDeal({ payload: helpers.buildVentureDealPayload(), raw: true });
+
+      const response = await helpers.updateVentureDeal({
+        dealId: deal.id,
+        payload: { logoDomain: 'stripe.com', logoInitials: 'ST' },
+      });
+
+      expect(response.statusCode).toBe(ERROR_CODES.ValidationError);
+    });
+  });
+
   describe('DELETE /venture/deals/:id', () => {
     it('soft-deletes a deal', async () => {
       const created = await helpers.createVentureDeal({ payload: { name: 'Trash' }, raw: true });

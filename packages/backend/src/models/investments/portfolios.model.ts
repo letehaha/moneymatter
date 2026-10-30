@@ -46,6 +46,21 @@ export default class Portfolios extends Model {
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: true })
   isEnabled!: boolean;
 
+  @Column({ type: DataType.STRING(253), allowNull: true })
+  logoDomain!: string | null;
+
+  @Column({ type: DataType.STRING(16), allowNull: true })
+  logoInitials!: string | null;
+
+  @Column({ type: DataType.STRING(7), allowNull: true })
+  logoColor!: string | null;
+
+  @Column({ type: DataType.STRING(64), allowNull: true })
+  logoIcon!: string | null;
+
+  @Column({ type: DataType.UUID, allowNull: true })
+  logoImageId!: string | null;
+
   @Column({ type: DataType.DATE, allowNull: false })
   declare createdAt: Date;
 

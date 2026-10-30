@@ -1,3 +1,4 @@
+import type { NonImageLogoPayload } from '@bt/shared/types';
 import { VENTURE_DEAL_STATUS } from '@bt/shared/types/venture';
 import { removeUndefinedKeys } from '@js/helpers';
 import { createVentureDeal as _createVentureDeal } from '@services/venture/deals/create.service';
@@ -89,9 +90,10 @@ export async function updateVentureDeal<R extends boolean | undefined = false>({
   raw,
 }: {
   dealId: string;
-  payload: Partial<ReturnType<typeof buildVentureDealPayload>> & {
-    status?: VENTURE_DEAL_STATUS;
-  };
+  payload: Partial<ReturnType<typeof buildVentureDealPayload>> &
+    NonImageLogoPayload & {
+      status?: VENTURE_DEAL_STATUS;
+    };
   raw?: R;
 }) {
   return makeRequest<Awaited<ReturnType<typeof _updateVentureDeal>>, R>({

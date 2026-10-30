@@ -1,4 +1,4 @@
-import { RecordId } from '@bt/shared/types';
+import { type NonImageLogoPayload, RecordId } from '@bt/shared/types';
 import { VENTURE_DEAL_STATUS, VENTURE_SPV_SUBTYPE } from '@bt/shared/types/venture';
 import { Money } from '@common/types/money';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
@@ -7,12 +7,13 @@ import Currencies from '@models/currencies.model';
 import VentureDeals from '@models/venture/venture-deals.model';
 import VentureEvents from '@models/venture/venture-events.model';
 import VenturePlatforms from '@models/venture/venture-platforms.model';
+import { applyManualLogoPatch } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
 import Big from 'big.js';
 
 import { findVentureDealOrThrow } from '../helpers';
 
-interface UpdateVentureDealParams {
+interface UpdateVentureDealParams extends NonImageLogoPayload {
   userId: number;
   dealId: string;
   name?: string;
@@ -97,7 +98,17 @@ const updateVentureDealImpl = async (params: UpdateVentureDealParams) => {
   if (params.expectedExitDate !== undefined) updates.expectedExitDate = params.expectedExitDate;
   if (params.notes !== undefined) updates.notes = params.notes;
 
-  await deal.update(updates);
+  const logoPatch = applyManualLogoPatch({
+    patch: {
+      logoDomain: params.logoDomain,
+      logoInitials: params.logoInitials,
+      logoColor: params.logoColor,
+      logoIcon: params.logoIcon,
+    },
+    stored: deal,
+  });
+
+  await deal.update({ ...updates, ...logoPatch });
 
   return deal.reload({
     include: [

@@ -8,6 +8,7 @@ import {
   type ShareInvitationSendFailedPayload,
   type ShareLifecycleNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
+  type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 
 /**
@@ -139,6 +140,16 @@ export const buildNotificationRoute = (notification: NotificationStruct): Notifi
         kind: 'spa',
         to: { name: ROUTES_NAMES.goalDetails, params: { goalId: payload.goalId } },
       };
+    }
+
+    case NOTIFICATION_TYPES.unrealizedLossAlert: {
+      const holdings = (notification.payload as UnrealizedLossAlertNotificationPayload | undefined)?.holdings ?? [];
+      const portfolioIds = [...new Set(holdings.map((h) => h.portfolioId))];
+      const [portfolioId] = portfolioIds;
+      if (portfolioId && portfolioIds.length === 1) {
+        return { kind: 'spa', to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId } } };
+      }
+      return { kind: 'spa', to: { name: ROUTES_NAMES.investments } };
     }
 
     case NOTIFICATION_TYPES.plannedConfirmed: {

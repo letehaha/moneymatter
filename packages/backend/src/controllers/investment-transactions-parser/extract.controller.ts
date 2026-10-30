@@ -94,6 +94,7 @@ export const extractController = createController(
       throw new UnexpectedError({ message: t({ key: 'investments.import.extractFailed' }) });
     }
   },
+  { inBackground: ({ body }) => body.source === 'ai' },
 );
 
 type ExtractBody = z.infer<typeof extractBodySchema>;

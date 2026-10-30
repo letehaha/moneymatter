@@ -1,5 +1,6 @@
 import type { AccountModel } from '../accounts';
 import type { CurrencyModel } from '../currencies';
+import type { EntityLogoFields } from '../entity-logo';
 import type { UserModel } from '../users';
 import { PORTFOLIO_TYPE } from './enums';
 import { HoldingModel } from './holding.model';
@@ -27,7 +28,7 @@ export interface PortfolioBalanceModel {
   currency?: CurrencyModel;
 }
 
-export interface PortfolioModel {
+export interface PortfolioModel extends EntityLogoFields {
   id: string;
   name: string;
   userId: number;

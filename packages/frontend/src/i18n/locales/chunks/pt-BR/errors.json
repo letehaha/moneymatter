@@ -1,0 +1,28 @@
+{
+  "errors": {
+    "api": {
+      "failedToFetch": "Não foi possível carregar os dados do servidor.",
+      "failedToFetchSelfHost": "Não foi possível acessar o servidor. O backend ainda pode estar iniciando (~30s após a inicialização) ou a variável de ambiente ALLOWED_ORIGINS não inclui esta URL.",
+      "unexpectedError": "Erro inesperado.",
+      "sessionExpired": "Sua sessão expirou. Entre de novo.",
+      "payloadTooLarge": "A solicitação é grande demais. Tente importar menos itens de cada vez.",
+      "tooManyRequests": "Muitas tentativas. Aguarde um momento e tente de novo."
+    },
+    "auth": {
+      "reauthenticationRequired": "Para sua segurança, entre de novo para fazer esta alteração.",
+      "passwordTooShort": "A senha é curta demais.",
+      "passwordTooLong": "A senha é longa demais.",
+      "providerNotConfigured": "Este método de login não está configurado neste servidor.",
+      "accountAlreadyLinked": "Esta conta já está vinculada a outro usuário.",
+      "cannotUnlinkLastAccount": "Não é possível remover seu único método de login.",
+      "passkeyAlreadyRegistered": "Esta chave de acesso já está registrada."
+    },
+    "notFound": {
+      "title": "Esta página não consta no extrato",
+      "description": "Não encontramos o que você procurava. O link pode estar quebrado ou a página pode ter mudado de lugar.",
+      "attemptedLabel": "Você tentou acessar: ",
+      "goBack": "Voltar",
+      "goHome": "Ir para o início"
+    }
+  }
+}

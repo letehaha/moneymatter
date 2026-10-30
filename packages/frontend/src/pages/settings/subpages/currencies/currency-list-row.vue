@@ -75,25 +75,19 @@
           </div>
         </div>
 
-        <div class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
-          <template v-if="isBase">
+        <div v-if="!isBase" class="pl-12 @[30rem]/currencies:pl-0 @[30rem]/currencies:text-right">
+          <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
             <div class="text-sm font-semibold tabular-nums">
-              1
-              <span class="text-muted-foreground text-xs font-normal">{{ code }} / {{ code }}</span>
+              <span class="text-muted-foreground text-xs font-normal">1 {{ code }} =</span>
+              {{ rateDisplay }}
+              <span class="text-muted-foreground text-xs font-normal">{{ baseCode }}</span>
             </div>
-          </template>
-          <template v-else>
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-0.5 @[30rem]/currencies:block">
-              <div class="text-sm font-semibold tabular-nums">
-                {{ rateDisplay }}
-                <span class="text-muted-foreground text-xs font-normal">{{ code }} / {{ baseCode }}</span>
-              </div>
-              <div class="text-sm font-semibold tabular-nums">
-                {{ quoteRateDisplay }}
-                <span class="text-muted-foreground text-xs font-normal"> {{ baseCode }} / {{ code }}</span>
-              </div>
+            <div class="text-sm font-semibold tabular-nums">
+              <span class="text-muted-foreground text-xs font-normal">1 {{ baseCode }} =</span>
+              {{ quoteRateDisplay }}
+              <span class="text-muted-foreground text-xs font-normal">{{ code }}</span>
             </div>
-          </template>
+          </div>
         </div>
       </div>
 
@@ -141,6 +135,7 @@
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import { useCurrencyName } from '@/composable';
 import { getCurrencyIcon } from '@/js/helpers/currencyImage';
+import { toLocalNumber } from '@/js/helpers/formatters';
 import { Collapsible, CollapsibleContent } from '@/components/lib/ui/collapsible';
 import { cn } from '@/lib/utils';
 import { useCurrenciesStore } from '@/stores';
@@ -185,7 +180,8 @@ const currencyName = computed(() =>
 
 const flagUrl = computed(() => (code.value ? getCurrencyIcon(code.value) : ''));
 
-const formatRate = (value: number) => (Number.isFinite(value) ? value.toLocaleString() : '—');
+const formatRate = (value: number) =>
+  Number.isFinite(value) ? toLocalNumber(value, { minimumFractionDigits: 0, maximumFractionDigits: 6 }) : '—';
 const rateDisplay = computed(() => formatRate(props.currency.rate));
 const quoteRateDisplay = computed(() => formatRate(props.currency.quoteRate));
 

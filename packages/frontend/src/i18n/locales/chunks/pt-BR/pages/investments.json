@@ -1,0 +1,41 @@
+{
+  "investments": {
+    "title": "Investimentos",
+    "createButton": "Criar carteira",
+    "loadError": "Não foi possível carregar as carteiras",
+    "tryAgain": "Tentar de novo",
+    "menu": {
+      "view": "Ver",
+      "delete": "Excluir"
+    },
+    "card": {
+      "hidden": "Oculta",
+      "portfolioType": "Carteira: {type}",
+      "costBasis": "Custo de aquisição"
+    },
+    "empty": {
+      "title": "Nenhuma carteira ainda",
+      "description": "Crie sua primeira carteira de investimentos para começar a acompanhar suas posições, transações e desempenho.",
+      "createFirstButton": "Criar a primeira carteira"
+    },
+    "trash": {
+      "title": "Lixeira",
+      "retentionHint": "Os itens daqui são excluídos permanentemente depois de {days} dias",
+      "loadError": "Não foi possível carregar as carteiras da lixeira.",
+      "deletedAgo": "Excluída {time}",
+      "restoreButton": "Restaurar",
+      "restoringButton": "Restaurando...",
+      "purgeButton": "Excluir agora",
+      "purgingButton": "Excluindo...",
+      "confirmPurgeTitle": "Excluir carteira permanentemente?",
+      "confirmPurge": "Excluir permanentemente “{name}”? Não é possível desfazer esta ação.",
+      "tryAgain": "Tentar de novo",
+      "notifications": {
+        "restored": "Carteira restaurada",
+        "restoreError": "Não foi possível restaurar a carteira",
+        "purged": "Carteira excluída permanentemente",
+        "purgeError": "Não foi possível excluir a carteira"
+      }
+    }
+  }
+}

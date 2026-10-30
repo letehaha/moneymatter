@@ -1,0 +1,53 @@
+{
+  "settings": {
+    "categories": {
+      "title": "Categorias",
+      "description": "Organize suas transações em categorias e subcategorias. Arraste uma categoria para colocá-la dentro de outra categoria principal ou no nível principal.",
+      "addButton": "Adicionar categoria",
+      "organizeButton": "Organizar",
+      "empty": "Nenhuma categoria ainda. Crie sua primeira categoria para começar.",
+      "categoriesCount": "{n} categoria | {n} categorias",
+      "organizeHint": "Solte sobre uma categoria para colocá-la dentro dela, ou entre categorias para mudar a ordem",
+      "dropToTopLevel": "Solte aqui para tornar “{name}” uma categoria principal",
+      "movesQueued": "{n} movimentação na fila | {n} movimentações na fila",
+      "unqueueMove": "Remover esta movimentação",
+      "topLevel": "Nível principal",
+      "saveChanges": "Salvar alterações",
+      "parentField": {
+        "label": "Categoria principal",
+        "placeholder": "Escolha uma categoria principal",
+        "hiddenHint": "As categorias que não podem ser usadas como categoria principal não aparecem na lista."
+      },
+      "moveDialog": {
+        "title": "Mover “{name}”",
+        "description": "Escolha uma nova categoria principal.",
+        "moveButton": "Mover"
+      },
+      "delete": {
+        "title": "Excluir categoria?",
+        "description": "Isso vai excluir “{name}” permanentemente. Não é possível desfazer esta ação.",
+        "deleteButton": "Excluir",
+        "cancelButton": "Cancelar"
+      },
+      "errors": {
+        "cannotLoad": "Não foi possível carregar as categorias"
+      },
+      "notifications": {
+        "deleteSuccess": "Categoria excluída",
+        "deleteFailed": "Não foi possível excluir a categoria",
+        "checkFailed": "Não foi possível verificar a categoria",
+        "moveFailed": "Não foi possível mover a categoria.",
+        "saveSuccess": "Alterações salvas",
+        "staleMovesRemoved": "{n} movimentação na fila não se aplicava mais e foi removida | {n} movimentações na fila não se aplicavam mais e foram removidas"
+      },
+      "dropErrors": {
+        "currentParent": "Já está dentro desta categoria",
+        "insideItself": "Uma categoria não pode ser movida para dentro de uma subcategoria dela mesma",
+        "internalTarget": "Categorias do sistema não podem conter outras categorias",
+        "tooDeep": "As categorias podem ter no máximo {max} níveis",
+        "childrenTooDeep": "As subcategorias dela passariam de {max} níveis",
+        "alreadyTopLevel": "Já é uma categoria principal"
+      }
+    }
+  }
+}

@@ -11,7 +11,7 @@
         </template>
       </Button>
     </Popover.PopoverTrigger>
-    <Popover.PopoverContent class="w-44" align="end">
+    <Popover.PopoverContent class="w-56" align="end">
       <div class="space-y-1">
         <div v-if="showHeader" class="mb-2 text-sm font-medium">
           {{ $t('header.language') }}
@@ -78,6 +78,7 @@ const FLAG_SRCS: Record<SupportedLocale, string> = {
   [SUPPORTED_LOCALES.SLOVAK]: '/img/flags/sk.svg',
   [SUPPORTED_LOCALES.GERMAN]: '/img/flags/de.svg',
   [SUPPORTED_LOCALES.FRENCH]: '/img/flags/fr.svg',
+  [SUPPORTED_LOCALES.BRAZILIAN_PORTUGUESE]: '/img/flags/br.svg',
 };
 
 const currentFlagSrc = computed(() => FLAG_SRCS[currentLocale.value]);

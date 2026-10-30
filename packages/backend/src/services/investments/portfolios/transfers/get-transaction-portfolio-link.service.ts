@@ -3,6 +3,7 @@ import { t } from '@i18n/index';
 import Currencies from '@models/currencies.model';
 import PortfolioTransfers from '@models/investments/portfolio-transfers.model';
 import Portfolios from '@models/investments/portfolios.model';
+import { EMPTY_LOGO_FIELDS, serializeLogoFields } from '@root/serializers/logo-fields.serializer';
 
 interface GetTransactionPortfolioLinkParams {
   userId: number;
@@ -41,6 +42,7 @@ export const getTransactionPortfolioLink = async ({ userId, transactionId }: Get
     portfolioId,
     portfolioName: portfolio?.name ?? '',
     isPortfolioDeleted,
+    ...serializeLogoFields({ entity: portfolio ?? EMPTY_LOGO_FIELDS }),
     transferType: isDeposit ? ('deposit' as const) : ('withdrawal' as const),
     amount: transfer.amount.toJSON(),
     currencyCode: transfer.currencyCode,

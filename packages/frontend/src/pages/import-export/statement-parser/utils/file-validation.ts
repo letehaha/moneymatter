@@ -78,7 +78,6 @@ function isImageHeader({ header }: { header: Uint8Array }): boolean {
 
 /**
  * Check if file appears to be valid text content (for CSV/TXT)
- * Reads a sample and checks if majority are printable characters
  */
 async function isValidTextContent({ file }: { file: File }): Promise<boolean> {
   const sampleSize = Math.min(file.size, 1000);
@@ -86,16 +85,15 @@ async function isValidTextContent({ file }: { file: File }): Promise<boolean> {
   const buffer = await slice.arrayBuffer();
   const bytes = new Uint8Array(buffer);
 
-  let printableCount = 0;
+  // Bytes >= 0x80 count as text so non-ASCII UTF-8 passes; binary is full of control bytes
+  let textCount = 0;
   for (const byte of bytes) {
-    // Printable ASCII (32-126), tab (9), newline (10), carriage return (13)
-    if ((byte >= 32 && byte <= 126) || byte === 9 || byte === 10 || byte === 13) {
-      printableCount++;
+    if (byte >= 32 || byte === 9 || byte === 10 || byte === 13) {
+      textCount++;
     }
   }
 
-  // If >90% printable, treat as valid text
-  return printableCount / bytes.length > 0.9;
+  return textCount / bytes.length > 0.99;
 }
 
 /**

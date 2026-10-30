@@ -1,0 +1,38 @@
+{
+  "auth": {
+    "login": {
+      "title": "Entre na sua conta",
+      "divider": "Ou continue com e-mail",
+      "submitButton": "Entrar",
+      "noAccount": "Não tem uma conta?",
+      "signupsDisabledTooltip": "Novos cadastros foram desativados pelo administrador desta instância",
+      "forgotPassword": "Esqueceu a senha?",
+      "errors": {
+        "incorrectEmailOrPassword": "E-mail ou senha incorretos.",
+        "incorrectPassword": "Senha incorreta.",
+        "userNotFound": "Usuário não encontrado.",
+        "emailNotVerified": "Confirme seu e-mail antes de entrar.",
+        "sessionExpired": "Sua sessão expirou. Entre de novo.",
+        "noPasswordSet": "Esta conta não tem senha. Tente entrar com o Google.",
+        "passwordInvalid": "Senha inválida.",
+        "genericError": "Ocorreu um erro.",
+        "genericErrorRetry": "Ocorreu um erro. Tente de novo.",
+        "oauthFailed": "Não foi possível entrar com {provider}. Tente de novo.",
+        "oauthNotConfigured": "O login com {provider} não está configurado neste servidor.",
+        "passkeyFailed": "Não foi possível entrar com a chave de acesso. Tente de novo."
+      }
+    },
+    "shared": {
+      "divider": "Ou continue com",
+      "passkeyButton": {
+        "signIn": "Entrar com chave de acesso",
+        "register": "Adicionar chave de acesso"
+      },
+      "oauthButton": {
+        "signIn": "Entrar com {provider}",
+        "signUp": "Cadastrar com {provider}"
+      },
+      "lastUsed": "Usado por último"
+    }
+  }
+}

@@ -15,17 +15,16 @@ files:
   - source: /packages/frontend/src/i18n/locales/chunks/en/**/*.json
     translation: /packages/frontend/src/i18n/locales/chunks/%two_letters_code%/**/%original_file_name%
     update_option: update_as_unapproved
-    # `%two_letters_code%` is `zh` for both Chinese variants: without this mapping
-    # Simplified and Traditional overwrite each other in one `zh` directory.
-    languages_mapping:
+    # `%two_letters_code%` drops the region (`zh`, `pt`), so every regional locale
+    # needs an entry here, or variants like Simplified and Traditional Chinese
+    # overwrite each other in one `zh` directory.
+    languages_mapping: &languages_mapping
       two_letters_code:
         zh-CN: zh-CN
         zh-TW: zh-TW
+        pt-BR: pt-BR
 
   - source: /packages/backend/src/i18n/locales/en.json
     translation: /packages/backend/src/i18n/locales/%two_letters_code%.json
     update_option: update_as_unapproved
-    languages_mapping:
-      two_letters_code:
-        zh-CN: zh-CN
-        zh-TW: zh-TW
+    languages_mapping: *languages_mapping

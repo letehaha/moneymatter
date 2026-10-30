@@ -103,7 +103,8 @@
       "debitCard": "Дебетовая карта",
       "mobilePayment": "Мобильный платёж",
       "voucher": "Ваучер",
-      "webPayment": "Онлайн-платёж"
+      "webPayment": "Онлайн-платёж",
+      "none": "Нет"
     },
     "vehicleClasses": {
       "sedan": "Седан",
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "{duration} ahead",
+        "behind": "{duration} behind",
+        "onPace": "On pace",
+        "backInReach": "Back within reach",
+        "offTrack": "Off track"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Вы уверены, что хотите удалить эту транзакцию из группы?",
       "removeButtonText": "Удалить",
       "removeAndDeleteButtonText": "Удалить и удалить группу",
+      "removeFromGroup": "Удалить из группы",
+      "saveError": "Couldn't save the group",
+      "removeError": "Couldn't remove the transaction from the group",
+      "manageTransactions": "Управление",
+      "showMoreNote": "Show more",
+      "showLessNote": "Показать меньше",
       "summary": {
         "transactions": "Транзакции",
         "net": "Итог",

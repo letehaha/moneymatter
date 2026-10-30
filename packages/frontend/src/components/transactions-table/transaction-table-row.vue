@@ -63,33 +63,42 @@
       <template v-else-if="column.id === TABLE_COLUMN.account">
         <div class="flex items-center gap-1.5">
           <AccountLogo v-if="accountFrom" :account="accountFrom" class="size-5 shrink-0" />
-          <span class="max-w-36 truncate">{{ accountFrom?.name }}</span>
+          <span class="truncate">{{ accountFrom?.name }}</span>
           <PaymentIndicator :transaction="tx" />
           <template v-if="isTwoLegTransferRow">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <AccountLogo
               v-if="transferDestinationAccount"
               :account="transferDestinationAccount"
               class="size-5 shrink-0"
             />
-            <span class="max-w-36 truncate">{{ transferDestinationName }}</span>
+            <span class="truncate">{{ transferDestinationName }}</span>
           </template>
           <template v-else-if="isOutOfWalletTransfer">
-            <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
             <span class="text-muted-foreground">{{ $t('transactions.table.outOfWallet') }}</span>
           </template>
           <template v-else-if="isPortfolioLinked">
             <ArrowRightIcon :size="13" class="shrink-0 opacity-60" />
-            <BriefcaseIcon :size="13" class="text-app-transfer-color shrink-0" />
-            <span class="max-w-36 truncate">{{ portfolioName }}</span>
+            <BrandLogo
+              v-if="portfolioLogoSelection"
+              v-bind="toLogoDisplayProps({ selection: portfolioLogoSelection })"
+              :name="portfolioName"
+              class="size-5 shrink-0"
+            />
+            <BriefcaseIcon v-else :size="13" class="text-app-transfer-color shrink-0" />
+            <span class="truncate">{{ portfolioName }}</span>
           </template>
           <template v-else-if="ventureLinkData">
-            <ArrowRightIcon
-              :size="13"
-              :class="['shrink-0 opacity-60', tx.transactionType === TRANSACTION_TYPES.income && 'rotate-180']"
+            <ArrowRightIcon :size="13" :class="['shrink-0 opacity-60', ownLegIsIncome && 'rotate-180']" />
+            <BrandLogo
+              v-if="ventureLogoSelection"
+              v-bind="toLogoDisplayProps({ selection: ventureLogoSelection })"
+              :name="ventureLinkData.dealName"
+              class="size-5 shrink-0"
             />
-            <RocketIcon :size="13" class="text-app-transfer-color shrink-0" />
-            <span :class="['max-w-36 truncate', ventureLinkData.isDealDeleted && 'text-muted-foreground line-through']">
+            <RocketIcon v-else :size="13" class="text-app-transfer-color shrink-0" />
+            <span :class="['truncate', ventureLinkData.isDealDeleted && 'text-muted-foreground line-through']">
               {{ ventureLinkData.dealName }}
             </span>
           </template>
@@ -101,7 +110,7 @@
         <div class="flex items-center gap-2">
           <template v-if="!isTransferRow && category">
             <CategoryCircle :category="category" />
-            <span class="max-w-32 truncate">{{ category.name }}</span>
+            <span class="truncate">{{ category.name }}</span>
           </template>
           <span v-else class="text-muted-foreground">—</span>
           <AttachmentIndicator :transaction="tx" />
@@ -113,7 +122,7 @@
         <div v-if="payee" class="flex items-center gap-2">
           <BrandLogo v-bind="toEntityLogoDisplayProps(payee)" :name="payee.name" class="size-5 shrink-0" />
           <DesktopOnlyTooltip :content="payee.name" only-when-truncated>
-            <span class="max-w-32 truncate">{{ payee.name }}</span>
+            <span class="truncate">{{ payee.name }}</span>
           </DesktopOnlyTooltip>
         </div>
         <span v-else class="text-muted-foreground">—</span>
@@ -139,7 +148,7 @@
       <!-- Note -->
       <template v-else-if="column.id === TABLE_COLUMN.note">
         <DesktopOnlyTooltip v-if="tx.note" :content="tx.note">
-          <span class="text-muted-foreground block max-w-40 truncate">{{ tx.note }}</span>
+          <span class="text-muted-foreground block truncate">{{ tx.note }}</span>
         </DesktopOnlyTooltip>
       </template>
 
@@ -148,7 +157,7 @@
         <DesktopOnlyTooltip v-if="txTags.length" :disabled="txTags.length <= 1">
           <div class="flex items-center gap-1">
             <span
-              class="inline-block max-w-37.5 truncate rounded-full px-2 py-0.5 text-xs font-medium text-white/90"
+              class="inline-block truncate rounded-full px-2 py-0.5 text-xs font-medium text-white/90"
               :style="{ backgroundColor: txTags[0]!.color }"
             >
               {{ txTags[0]!.name }}
@@ -181,7 +190,7 @@
 
       <!-- Group -->
       <template v-else-if="column.id === TABLE_COLUMN.group">
-        <span v-if="groupName" class="max-w-32 truncate">{{ groupName }}</span>
+        <span v-if="groupName" class="block truncate">{{ groupName }}</span>
       </template>
 
       <!-- Refund indicator -->
@@ -232,7 +241,7 @@
 <script lang="ts" setup>
 import AccountLogo from '@/components/common/account-logo.vue';
 import BrandLogo from '@/components/common/brand-logo.vue';
-import { toEntityLogoDisplayProps } from '@/components/common/logo-selection';
+import { toEntityLogoDisplayProps, toLogoDisplayProps, toLogoSelection } from '@/components/common/logo-selection';
 import CategoryCircle from '@/components/common/category-circle.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { Button } from '@/components/lib/ui/button';
@@ -352,6 +361,7 @@ const { accountsRecord } = storeToRefs(useAccountsStore());
 const { formatBaseCurrency } = useFormatCurrency();
 const { user } = storeToRefs(useUserStore());
 
+const ownLegIsIncome = computed(() => props.tx.transactionType === TRANSACTION_TYPES.income);
 const isTwoLegTransferRow = computed(() => isTwoLegTransfer(props.tx.transferNature));
 const isOutOfWalletTransfer = computed(
   () => props.tx.transferNature === TRANSACTION_TRANSFER_NATURE.transfer_out_wallet,
@@ -369,6 +379,8 @@ const portfolioLinkId = computed(() => (isPortfolioLinked.value ? props.tx.id : 
 const { data: portfolioLinkData } = useTransactionPortfolioLink(portfolioLinkId);
 const portfolioName = computed(() => portfolioLinkData.value?.portfolioName ?? '');
 const { data: ventureLinkData } = useTransactionVentureLink(() => props.tx);
+const portfolioLogoSelection = computed(() => toLogoSelection(portfolioLinkData.value ?? {}));
+const ventureLogoSelection = computed(() => toLogoSelection(ventureLinkData.value ?? {}));
 
 const category = computed(() => categoriesMap.value[props.tx.categoryId]);
 const accountFrom = computed(() => accountsRecord.value[props.tx.accountId]);

@@ -134,7 +134,6 @@ import { useUserStore } from '@/stores';
 import { useElementSize, useLocalStorage } from '@vueuse/core';
 import {
   BookOpenIcon,
-  CalendarClockIcon,
   ChevronRightIcon,
   CircleDollarSignIcon,
   CreditCardIcon,
@@ -269,12 +268,6 @@ const workspaceTabs = computed<Tab[]>(() => {
       label: t('settings.navigation.payees'),
       to: { name: ROUTES_NAMES.settingsPayees },
       icon: StoreIcon,
-    },
-    {
-      name: 'subscriptions',
-      label: t('settings.navigation.subscriptions'),
-      to: { name: ROUTES_NAMES.settingsSubscriptions },
-      icon: CalendarClockIcon,
     },
     {
       name: 'accounts',

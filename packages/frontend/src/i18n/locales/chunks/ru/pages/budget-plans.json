@@ -106,6 +106,7 @@
       "goToAccounts": "Перейти к счетам",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
+      "startsOnOutOfRange": "Pick a date from {from} to today.",
       "accountsLabel": "Счета",
       "accountsPlaceholder": "Выбрать счета",
       "rolloverLabel": "Rollover",

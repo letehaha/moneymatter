@@ -11,6 +11,7 @@ import type {
   SavedPivotView,
   SavedTransactionView,
   CurrencyDisplayPreference,
+  UnrealizedLossAlertsSettings,
 } from '@bt/shared/types';
 
 export interface DashboardWidgetConfig {
@@ -82,12 +83,6 @@ export interface UiSettings {
   investmentTransactionsTable?: InvestmentTransactionsTableSettings;
 }
 
-export interface SubscriptionsSettings {
-  /** Seeds the auto-record toggle on the create-subscription form; the form
-   *  still lets the user override it per subscription. */
-  defaultAutoRecord?: boolean;
-}
-
 export interface UserSettingsSchema {
   locale?: SupportedLocale;
   dashboard?: {
@@ -124,8 +119,8 @@ export interface UserSettingsSchema {
   payeePromotionThreshold?: 1 | 2 | 3;
   /** Day of month (1-28) a pay period starts on. Calendar month when unset. */
   payday?: number;
+  unrealizedLossAlerts?: UnrealizedLossAlertsSettings;
   ui?: UiSettings;
-  subscriptions?: SubscriptionsSettings;
   savedPivotViews?: SavedPivotView[];
   savedTransactionViews?: SavedTransactionView[];
   /** Header "Support" (donation) button visibility. Defaults to visible when unset. */

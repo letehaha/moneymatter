@@ -13,6 +13,7 @@ import {
   type ShareLifecycleNotificationPayload,
   TagReminderNotificationPayload,
   type TrackerAiMatchesNotificationPayload,
+  type UnrealizedLossAlertNotificationPayload,
 } from '@bt/shared/types';
 import {
   AlertTriangleIcon,
@@ -32,6 +33,7 @@ import {
   SparklesIcon,
   TagIcon,
   Trash2Icon,
+  TrendingDownIcon,
   UserXIcon,
   WalletIcon,
   XIcon,
@@ -73,7 +75,7 @@ const emit = defineEmits<{
   dismiss: [id: string];
 }>();
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const { formatDistanceToNow } = useDateLocale();
 const { formatAmountByCurrencyCode } = useFormatCurrency();
 
@@ -96,6 +98,8 @@ const getIcon = (type: NotificationType) => {
       return HourglassIcon;
     case NOTIFICATION_TYPES.goalReached:
       return FlagIcon;
+    case NOTIFICATION_TYPES.unrealizedLossAlert:
+      return TrendingDownIcon;
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return MailIcon;
@@ -149,6 +153,8 @@ const getIconBg = (type: NotificationType) => {
       return 'bg-yellow-500';
     case NOTIFICATION_TYPES.goalReached:
       return 'bg-success';
+    case NOTIFICATION_TYPES.unrealizedLossAlert:
+      return 'bg-destructive';
     case NOTIFICATION_TYPES.shareInvitationReceived:
     case NOTIFICATION_TYPES.householdInvitationReceived:
       return 'bg-violet-500';
@@ -205,6 +211,10 @@ const getTitle = (notification: NotificationStruct): string => {
     const payload = notification.payload as Partial<GoalReachedNotificationPayload> | undefined;
     if (payload?.goalName) return t('notifications.goalReached.title', { name: payload.goalName });
   }
+  if (notification.type === NOTIFICATION_TYPES.unrealizedLossAlert) {
+    const count = (notification.payload as Partial<UnrealizedLossAlertNotificationPayload>)?.holdings?.length;
+    if (count) return t('notifications.unrealizedLossAlert.title', { count }, count);
+  }
   return notification.title || '';
 };
 
@@ -215,6 +225,22 @@ const getMessage = (notification: NotificationStruct): string | null => {
       return t('notifications.goalReached.message', {
         amount: formatAmountByCurrencyCode(payload.achievedAmount, payload.currencyCode),
       });
+    }
+  }
+  if (notification.type === NOTIFICATION_TYPES.unrealizedLossAlert) {
+    const payload = notification.payload as Partial<UnrealizedLossAlertNotificationPayload> | undefined;
+    const currencyCode = payload?.currencyCode;
+    if (payload?.holdings?.length && currencyCode) {
+      return payload.holdings
+        .map(({ symbol, lossPercent, lossAmount }) => {
+          const amount = lossAmount === null ? '' : ` · ${formatAmountByCurrencyCode(-lossAmount, currencyCode)}`;
+          const percent = lossPercent.toLocaleString(locale.value, {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1,
+          });
+          return `${symbol} −${percent}%${amount}`;
+        })
+        .join(', ');
     }
   }
   return notification.message;

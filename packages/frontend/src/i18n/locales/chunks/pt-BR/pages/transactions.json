@@ -1,0 +1,315 @@
+{
+  "transactions": {
+    "filters": {
+      "filtersLabel": "Filtros",
+      "selectFilters": "Escolher filtros",
+      "reset": "Redefinir",
+      "apply": "Aplicar",
+      "dateRange": {
+        "placeholder": "Data ou período",
+        "presets": {
+          "thisMonth": "Este mês",
+          "last3Months": "Últimos 3 meses",
+          "last6Months": "Últimos 6 meses",
+          "last12Months": "Últimos 12 meses"
+        }
+      },
+      "transactionType": {
+        "label": "Tipo de transação",
+        "income": "Receita",
+        "expense": "Despesa",
+        "allTypes": "Todos os tipos"
+      },
+      "amountRange": {
+        "from": "Valor a partir de (gte)",
+        "to": "Até (lte)",
+        "placeholderFrom": ">= que",
+        "placeholderTo": "<= que",
+        "compactFrom": "Valor mín.",
+        "compactTo": "Valor máx."
+      },
+      "refundsFilter": {
+        "label": "Reembolsos"
+      },
+      "transferFilter": {
+        "label": "Transferências"
+      },
+      "plannedFilter": {
+        "label": "Agendadas"
+      },
+      "attachments": {
+        "label": "Anexos"
+      },
+      "filterOperation": {
+        "all": "Todas",
+        "exclude": "Excluir",
+        "only": "Somente"
+      },
+      "noteIncludes": {
+        "label": "Observação contém (separado por vírgulas)",
+        "placeholder": "Amazon,nike",
+        "compactPlaceholder": "Buscar nas observações"
+      },
+      "tags": {
+        "allTags": "Todas as tags",
+        "tagSingular": "tag",
+        "tagPlural": "tags",
+        "selected": "selecionadas",
+        "searchPlaceholder": "Buscar tags…",
+        "blankOption": "Sem tags"
+      },
+      "payees": {
+        "label": "Favorecidos",
+        "selectedOne": "1 favorecido selecionado",
+        "selectedMany": "{n} favorecidos selecionados"
+      },
+      "removeFilter": "Remover filtro",
+      "menu": {
+        "type": "Tipo",
+        "tags": "Tags",
+        "budgets": "Acompanhamentos",
+        "amount": "Faixa de valor",
+        "note": "Observações"
+      },
+      "transferNature": {
+        "label": "Tipos de transferência",
+        "disabledTooltip": "As transferências estão excluídas pelo filtro acima, então os tipos de transferência não têm efeito.",
+        "commonTransfer": "Entre contas",
+        "outOfWallet": "Fora da carteira",
+        "toPortfolio": "Para carteira de investimentos",
+        "toVenture": "Para participação",
+        "selectedCount": "Selecionados: {n}"
+      }
+    },
+    "list": {
+      "noMoreData": "Não há mais transações",
+      "loadingMore": "Carregando mais…",
+      "detailsTitle": "Detalhes da transação",
+      "detailsDescription": "Ver e editar a transação"
+    },
+    "bulkEdit": {
+      "selectAll": "Selecionar tudo",
+      "selectAllShort": "Tudo",
+      "cancelSelection": "Cancelar seleção",
+      "editButton": "Editar",
+      "selectedCount": "Selecionadas: {count}",
+      "matchingCount": "Total: {count}",
+      "dialogTitle": "Editar transações ({count})",
+      "dialogDescription": "As alterações serão aplicadas a todas as transações selecionadas. Só os campos preenchidos serão atualizados.",
+      "categoryLabel": "Categoria",
+      "categoryPlaceholder": "Escolha uma categoria",
+      "payeeLabel": "Favorecido",
+      "payeePlaceholder": "Escolha um favorecido",
+      "tagsLabel": "Tags",
+      "tagsPlaceholder": "Escolha as tags",
+      "noteLabel": "Observação",
+      "notePlaceholder": "Digite uma observação",
+      "applyButton": "Aplicar alterações",
+      "applyingButton": "Aplicando…",
+      "confirmTitle": "Confirmar alterações",
+      "confirmDescription": "Você vai atualizar estas transações ({count}):",
+      "confirmCategoryLabel": "Categoria",
+      "confirmPayeeLabel": "Favorecido",
+      "confirmTagsLabel": "Tags",
+      "confirmNoteLabel": "Observação",
+      "cancelButton": "Cancelar",
+      "confirmApplyButton": "Aplicar",
+      "successMessage": "Transações atualizadas: {count}",
+      "unexpectedError": "Ocorreu um erro inesperado",
+      "tagModeLabel": "Ação nas tags",
+      "tagModeAdd": "Adicionar às tags existentes",
+      "tagModeReplace": "Substituir todas as tags",
+      "tagModeRemove": "Remover estas tags",
+      "totals": {
+        "income": "Receitas",
+        "expense": "Despesas",
+        "net": "Líquido",
+        "transfers": "Transferências"
+      }
+    },
+    "transactionGroups": {
+      "bulkActions": {
+        "createNewGroup": "Criar novo grupo",
+        "addToExistingGroup": "Adicionar a um grupo existente",
+        "groupButton": "Agrupar"
+      },
+      "addToGroupDialog": {
+        "title": "Adicionar a um grupo existente",
+        "searchPlaceholder": "Buscar grupos…",
+        "noGroupsMessage": "Nenhum grupo ainda. Crie um primeiro.",
+        "noSearchResultsMessage": "Nenhum grupo corresponde à sua busca.",
+        "addingText": "Adicionando…",
+        "buttonLabel": "Adicionar ao grupo",
+        "cancelButton": "Cancelar",
+        "transactionCountLabel": "transações"
+      },
+      "createGroupDialog": {
+        "title": "Criar grupo de transações",
+        "descriptionPrefix": "Agrupar",
+        "groupNameLabel": "Nome",
+        "groupNamePlaceholder": "ex.: Transferência do salário de maio",
+        "noteLabel": "Observação (opcional)",
+        "notePlaceholder": "Descrição opcional…",
+        "creatingText": "Criando…",
+        "buttonLabel": "Criar grupo",
+        "cancelButton": "Cancelar"
+      },
+      "groupsPage": {
+        "title": "Grupos de transações",
+        "searchPlaceholder": "Buscar grupos…",
+        "noGroupsMessage": "Nenhum grupo de transações ainda.",
+        "emptyStateHint": "Selecione transações na página “Transações” e clique em “Criar grupo” para começar.",
+        "transactionCountLabel": "transações",
+        "deleteError": "Não foi possível excluir o grupo. Tente de novo.",
+        "loadError": "Não foi possível carregar os grupos de transações",
+        "description": "Reúna transações relacionadas, como uma viagem ou uma cadeia de transferências, e veja tudo junto.",
+        "noMatchTitle": "Nenhum grupo corresponde à sua busca",
+        "moreActions": "Mais ações para {name}",
+        "columns": {
+          "name": "Nome",
+          "transactions": "Transações",
+          "date": "Data",
+          "net": "Líquido"
+        },
+        "sort": {
+          "label": "Ordenar grupos",
+          "dateDesc": "Mais recentes primeiro",
+          "dateAsc": "Mais antigos primeiro",
+          "nameAsc": "Nome A–Z",
+          "nameDesc": "Nome Z–A",
+          "amountDesc": "Líquido: do maior para o menor",
+          "amountAsc": "Líquido: do menor para o maior"
+        }
+      },
+      "errors": {
+        "nameRequired": "Digite um nome para o grupo.",
+        "minTransactions": "Escolha pelo menos {min} transações",
+        "alreadyInGroup": "Algumas transações selecionadas já pertencem a um grupo",
+        "createFailed": "Não foi possível criar o grupo",
+        "addFailed": "Não foi possível adicionar as transações ao grupo"
+      }
+    },
+    "planned": {
+      "label": "Agendada",
+      "confirmedLabel": "Confirmada",
+      "plannedTooltip": "Transação agendada",
+      "expiredTooltip": "Dias desde a data prevista: {days}. Nenhuma transação bancária correspondente",
+      "mergedTooltip": "Confirmada a partir do lançamento agendado de {date}"
+    },
+    "pending": {
+      "label": "Pendente",
+      "tooltip": "O banco ainda não lançou esta transação. Ela não afeta o saldo da conta."
+    },
+    "table": {
+      "columns": {
+        "date": "Data",
+        "account": "Conta",
+        "category": "Categoria",
+        "payee": "Favorecido",
+        "amount": "Valor",
+        "refAmount": "Valor na moeda base",
+        "originalAmount": "Valor original",
+        "note": "Observação",
+        "tags": "Tags",
+        "categorizationSource": "Categorizada por",
+        "group": "Grupo",
+        "refund": "Reembolso",
+        "split": "Divisão"
+      },
+      "outOfWallet": "Fora da carteira",
+      "hint": "Clique em uma célula para editá-la, ou em ↗ para abrir a transação completa. Selecione linhas para editar em massa.",
+      "plannedRows": "Transações agendadas: {count}",
+      "emptyTitle": "Nenhuma transação corresponde a estes filtros",
+      "emptyDescription": "Tente ajustar ou redefinir os filtros.",
+      "columnConfig": {
+        "title": "Configurações da tabela",
+        "columns": "Colunas",
+        "visibleCount": "Visíveis: {count}",
+        "resetDefaults": "Restaurar padrões",
+        "alwaysShowLockedCells": {
+          "label": "Sempre destacar células bloqueadas",
+          "description": "Sombrear as células que não podem ser editadas aqui em todas as linhas, não só ao passar o mouse."
+        }
+      },
+      "categorizationSourceValues": {
+        "manual": "Manual",
+        "ai": "IA",
+        "user_rule": "Regra do usuário",
+        "subscription_rule": "Regra de assinatura",
+        "payee_rule": "Regra de favorecido"
+      },
+      "viewToggle": {
+        "list": "Visualização em lista",
+        "table": "Visualização em tabela"
+      },
+      "fullscreen": {
+        "enter": "Modo foco",
+        "exit": "Sair do modo foco"
+      }
+    },
+    "bulkDelete": {
+      "button": "Excluir",
+      "externalTooltip": "A seleção tem transações sincronizadas com o banco, que não podem ser excluídas.",
+      "confirmButton": "Excluir",
+      "confirmTitle": "Excluir as transações selecionadas ({count})?",
+      "confirmDescription": "Não é possível desfazer esta ação. Nas transferências, os dois lados serão removidos.",
+      "successMessage": "Transações excluídas: {count}",
+      "unexpectedError": "Não foi possível excluir as transações. Tente de novo."
+    },
+    "inlineEdit": {
+      "saveFailed": "Não foi possível salvar o campo {field}. Tente de novo.",
+      "bankTitle": "Definido pelo seu banco",
+      "bankDescription": "Data, conta e valor são sincronizados pela sua conexão bancária. Todo o resto desta transação você pode alterar.",
+      "managedTitle": "Gerenciada em outro lugar",
+      "managedDescription": "Esta transação pertence a uma carteira, investimento, veículo ou empréstimo. Altere-a na página correspondente para manter os saldos corretos.",
+      "gotIt": "Entendi",
+      "openDetails": "Abrir detalhes",
+      "tooManyTags": "No máximo {max} tags por transação"
+    },
+    "savedViews": {
+      "trigger": "Visualizações",
+      "empty": "Nenhuma visualização salva ainda. Configure os filtros e salve-os como uma visualização.",
+      "modified": "Filtros alterados",
+      "update": "Atualizar “{name}” com os filtros atuais",
+      "updateShort": "Atualizar visualização",
+      "revert": "Reverter",
+      "saveNew": "Salvar como nova visualização",
+      "actions": "Ações da visualização",
+      "rename": "Renomear",
+      "moveUp": "Mover para cima",
+      "moveDown": "Mover para baixo",
+      "saveTitle": "Salvar visualização",
+      "renameTitle": "Renomear visualização",
+      "dialogDescription": "Uma visualização guarda os filtros e a ordenação atuais para você aplicá-los de novo com um clique.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "ex.: Mercado, últimos 3 meses",
+      "savedToast": "Visualização salva",
+      "updatedToast": "Visualização atualizada",
+      "deletedToast": "Visualização excluída",
+      "saveError": "Não foi possível salvar suas visualizações. Tente de novo.",
+      "deleteTitle": "Excluir a visualização “{name}”?",
+      "deleteDescription": "Suas transações não são afetadas. Não é possível desfazer esta ação.",
+      "filtersCount": "{count} filtro | {count} filtros"
+    }
+  },
+  "records": {
+    "upcomingSection": {
+      "title": "Próximos",
+      "overdueBadge": "Vencido",
+      "scheduledBadge": "Agendado",
+      "payAction": "Marcar como pago",
+      "hideToggle": "Ocultar próximos pagamentos",
+      "expectedBadge": "Previsto",
+      "unconfirmedBadge": "Não confirmado",
+      "morePlans": "Agendados: +{count}",
+      "morePlansAtLeast": "Agendados: +{count}+",
+      "deletePlanTitle": "Excluir transação agendada?",
+      "deletePlanDescription": "Não é possível desfazer esta ação.",
+      "plansLoadFailed": "Não foi possível carregar as transações agendadas",
+      "confirmAction": "Confirmar",
+      "confirmTooltip": "O dinheiro já foi movimentado — registre a transação e atualize o saldo",
+      "confirmPlanSuccess": "Lançamento registrado — saldo atualizado",
+      "confirmPlanError": "Não foi possível registrar o lançamento"
+    }
+  }
+}

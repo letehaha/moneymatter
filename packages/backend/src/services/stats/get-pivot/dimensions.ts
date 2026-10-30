@@ -1,4 +1,4 @@
-import type { PivotMeasure, PivotRowDimension } from '@bt/shared/types';
+import type { PivotRowDimension, TRANSACTION_TYPES } from '@bt/shared/types';
 import Payees from '@models/payees.model';
 import Tags from '@models/tags.model';
 import Transactions from '@models/transactions.model';
@@ -28,7 +28,8 @@ interface PivotAggregateContext {
   bucketIndexForTime: (time: Date) => number;
   categoryMap: Map<string, AccessibleCategoryInfo>;
   getRootCategoryId: (categoryId: string) => string;
-  measure: PivotMeasure;
+  /** The transaction type the report measures; refunds net against their leg on this side. */
+  side: TRANSACTION_TYPES;
   cellData: Map<string, Map<string, number>>;
   addCell: (args: { rowKey: string; columnKey: string; cents: number }) => void;
 }
@@ -40,7 +41,7 @@ interface PivotAssembleContext {
 }
 
 /**
- * A pivot row dimension. `aggregate` fills `cellData` (base spend, then any refund netting);
+ * A pivot row dimension. `aggregate` fills `cellData` (base amounts, then refund netting);
  * `assembleRows` turns those cells into rows; `hydrate` optionally patches rows post-assembly
  * (payee names/logos). `buildInclude` adds any dimension-specific eager loads to the tx query.
  */
@@ -52,7 +53,7 @@ interface PivotDimensionStrategy {
 }
 
 /**
- * Category / subcategory: split-aware, refund-netting spend routed through the shared
+ * Category / subcategory: split-aware, refund-netting amounts routed through the shared
  * category-allocation engine. `category` rolls each leg up to its root; `subcategory` keeps the
  * exact category and builds a 2-level parent/child tree at assembly time.
  */
@@ -70,7 +71,8 @@ const createCategoryStrategy = ({
 
     const allocations = await computeCategoryAllocations({
       transactions: ctx.transactions,
-      applyRefunds: ctx.measure === 'expense',
+      applyRefunds: true,
+      refundSide: ctx.side,
     });
 
     for (const leg of allocations.base) {
@@ -79,8 +81,8 @@ const createCategoryStrategy = ({
       ctx.addCell({ rowKey: resolveRowKey(leg.categoryId), columnKey: ctx.columnKeys[bucketIndex]!, cents: leg.cents });
     }
 
-    // Refunds net only where the (grouped) category already received spend in range, so a refund
-    // whose original expense fell outside the window/filter never spawns a phantom negative row.
+    // Refunds net only where the (grouped) category already received an amount in range, so a refund
+    // whose counterpart fell outside the window/filter never spawns a phantom negative row.
     for (const leg of allocations.refunds) {
       const rowKey = resolveRowKey(leg.categoryId);
       if (!ctx.cellData.has(rowKey)) continue;
@@ -105,8 +107,9 @@ const createCategoryStrategy = ({
 });
 
 /**
- * Payee: one row per payee (null payee → Unassigned). Refunds net against the original expense's
- * payee. Names/logos are hydrated in bulk after assembly (they live on the Payees table).
+ * Payee: one row per payee (null payee → Unassigned). Refunds net against the payee of the pair's
+ * leg on the measured side. Names/logos are hydrated in bulk after assembly (they live on the
+ * Payees table).
  */
 const createPayeeStrategy = (): PivotDimensionStrategy => ({
   buildInclude: () => [],
@@ -118,8 +121,11 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
       ctx.addCell({ rowKey, columnKey: ctx.columnKeys[bucketIndex]!, cents: tx.refAmount.toCents() });
     }
 
-    if (ctx.measure !== 'expense') return;
-    const refunds = await resolveWholeTxRefunds({ transactions: ctx.transactions, needTags: false });
+    const refunds = await resolveWholeTxRefunds({
+      transactions: ctx.transactions,
+      needTags: false,
+      side: ctx.side,
+    });
     for (const refund of refunds) {
       const rowKey = refund.payeeId ?? UNASSIGNED_ID;
       if (!ctx.cellData.has(rowKey)) continue;
@@ -163,7 +169,7 @@ const createPayeeStrategy = (): PivotDimensionStrategy => ({
 /**
  * Tag: a transaction fans out into every one of its tags (double counting across tags is
  * expected); tagless transactions land in the Untagged bucket. Refunds fan the reduction out
- * across the original expense's tags the same way.
+ * across the tags of the pair's leg on the measured side the same way.
  */
 const createTagStrategy = (): PivotDimensionStrategy => {
   // Name/color travel on the tag include; captured here for assembly.
@@ -189,8 +195,11 @@ const createTagStrategy = (): PivotDimensionStrategy => {
         }
       }
 
-      if (ctx.measure !== 'expense') return;
-      const refunds = await resolveWholeTxRefunds({ transactions: ctx.transactions, needTags: true });
+      const refunds = await resolveWholeTxRefunds({
+        transactions: ctx.transactions,
+        needTags: true,
+        side: ctx.side,
+      });
       for (const refund of refunds) {
         const refundBucket = ctx.bucketIndexForTime(refund.refundTime);
         if (refundBucket === -1) continue;

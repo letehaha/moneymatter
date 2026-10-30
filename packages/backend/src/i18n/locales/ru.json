@@ -356,6 +356,14 @@
       "accountNoExternalId": "У счёта нет внешнего ID для синхронизации LunchFlow.",
       "accountNotFound": "Счёт LunchFlow не найден."
     },
+    "akahu": {
+      "invalidCredentialsFormat": "Invalid Akahu credentials format. User Access Token and App ID Token are required.",
+      "invalidTokens": "Invalid Akahu tokens. Check the User Access Token and App ID Token from your Akahu app page.",
+      "accountNoExternalId": "Account has no external ID for Akahu sync.",
+      "accountNotFound": "Akahu account not found.",
+      "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
+      "missingCurrency": "Akahu did not return a currency for this account."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Некорректный формат учётных данных SimpleFIN.",
       "invalidSetupToken": "Некорректный или уже использованный токен настройки SimpleFIN. Создайте новый в SimpleFIN Bridge и попробуйте снова.",
@@ -858,5 +866,8 @@
       "title": "Goal reached: {{name}}",
       "message": "You've saved {{amount}} {{currencyCode}}."
     }
+  },
+  "backgroundJobs": {
+    "notFound": "This task is no longer running – the server may have restarted. Please try again."
   }
 }

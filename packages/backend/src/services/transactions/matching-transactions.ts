@@ -9,6 +9,7 @@ import {
 import { centsToApiDecimal } from '@common/types/money';
 import { ValidationError } from '@js/errors';
 import Accounts from '@models/accounts.model';
+import { allocateTransaction, loadSplitsByTxId } from '@services/stats/category-allocation';
 
 import { getTransactions } from './get-transactions';
 
@@ -32,6 +33,7 @@ interface MatchingRow {
   transactionType: TRANSACTION_TYPES;
   transferNature: TRANSACTION_TRANSFER_NATURE;
   transferId: string | null;
+  categoryId: string | null;
   /** Base-currency cents: the read is raw, so the `Money` getter never runs. */
   refAmount: number;
 }
@@ -45,16 +47,48 @@ const findMatchingRows = async (filters: ListFilters): Promise<MatchingRow[]> =>
   const rows = (await getTransactions({
     ...filters,
     limit: Infinity,
-    attributes: ['id', 'userId', 'accountId', 'transactionType', 'transferNature', 'transferId', 'refAmount'],
+    attributes: [
+      'id',
+      'userId',
+      'accountId',
+      'transactionType',
+      'transferNature',
+      'transferId',
+      'categoryId',
+      'refAmount',
+    ],
   })) as unknown as MatchingRow[];
 
   // The tag filter joins TransactionTags, which repeats a row per matching tag.
   return [...new Map(rows.map((row) => [row.id, row])).values()];
 };
 
+/** Under a category filter a split row counts only the share booked to those categories. */
+const scopeToCategories = async ({
+  rows,
+  categoryIds,
+}: {
+  rows: MatchingRow[];
+  categoryIds?: string[];
+}): Promise<MatchingRow[]> => {
+  if (!categoryIds?.length) return rows;
+
+  const splitsByTxId = await loadSplitsByTxId({ transactionIds: rows.map((row) => row.id) });
+  const wanted = new Set(categoryIds);
+
+  return rows.map((row) => {
+    const splits = splitsByTxId.get(row.id);
+    if (!splits) return row;
+    const refAmount = allocateTransaction({ cents: row.refAmount, categoryId: row.categoryId, splits })
+      .filter((leg) => leg.categoryId !== null && wanted.has(leg.categoryId))
+      .reduce((sum, leg) => sum + leg.cents, 0);
+    return { ...row, refAmount };
+  });
+};
+
 export const getTransactionsSummary = async (filters: ListFilters): Promise<TransactionsSummaryResponse> => {
   const rows = dedupeTransferLegs(await findMatchingRows(filters));
-  const totals = sumTransactionTotals(rows);
+  const totals = sumTransactionTotals(await scopeToCategories({ rows, categoryIds: filters.categoryIds }));
 
   return {
     count: rows.length,

@@ -1,0 +1,630 @@
+{
+  "budgetPlans": {
+    "title": "Orçamento",
+    "loadError": "Não foi possível carregar seu orçamento.",
+    "defaultName": "Orçamento",
+    "settings": {
+      "title": "Configurações do orçamento",
+      "description": "As alterações são salvas e aplicadas na hora.",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Dê um nome a este orçamento",
+      "periodLabel": "Período",
+      "startsOn": "Começa em {date}",
+      "cadenceLocked": "Ainda não é possível mudar a frequência.",
+      "accountsLabel": "Contas no orçamento",
+      "accountsPlaceholder": "Escolha as contas",
+      "accountsRequired": "Mantenha pelo menos uma conta",
+      "autoAttachLabel": "Adicionar novas contas automaticamente",
+      "rolloverLabel": "Repasse padrão",
+      "rolloverNote": "Cada linha pode ter uma regra própria.",
+      "carryDescription": {
+        "floor": "O dinheiro que sobra em uma linha passa para o próximo período. O gasto acima do previsto, não.",
+        "signed": "Tanto as sobras quanto os gastos acima do previsto passam para o próximo período.",
+        "none": "Toda linha começa do zero, não importa o que aconteceu antes."
+      },
+      "deleteTitle": "Excluir este orçamento",
+      "delete": "Mover para a lixeira",
+      "deleteCaption": "Fica guardado por 30 dias e depois é excluído.",
+      "deleteConfirmTitle": "Mover este orçamento para a lixeira?",
+      "deleteConfirmDescription": "Ele fica guardado por 30 dias e depois é excluído. Até lá, você pode restaurá-lo.",
+      "saved": "Configurações do orçamento salvas",
+      "error": "Não foi possível salvar as configurações do orçamento",
+      "deleted": "Orçamento movido para a lixeira",
+      "deleteError": "Não foi possível mover o orçamento para a lixeira"
+    },
+    "lineCount": "{count} linha | {count} linhas",
+    "trialNotice": {
+      "active": "Teste Early Adopter: falta {count} dia de orçamento | Teste Early Adopter: faltam {count} dias de orçamento",
+      "ended": "Seu período de teste do orçamento terminou, então seu orçamento agora é somente leitura.",
+      "offer": "Early adopters ganham o plano Essential com 50% de desconto."
+    },
+    "empty": {
+      "title": "Dê um destino ao seu dinheiro",
+      "description": "Uns dois minutos para configurar e poucos minutos por semana para manter.",
+      "action": "Começar a orçar",
+      "exampleBadge": "Orçamento de exemplo",
+      "steps": {
+        "accounts": {
+          "title": "Escolha as contas de onde sai seu dinheiro",
+          "description": "Conta corrente, dinheiro, cartões de crédito. A poupança pode ficar de fora."
+        },
+        "suggested": {
+          "title": "Comece pelas linhas que sugerimos",
+          "description": "Suas principais categorias dos últimos 3 meses, com a média já preenchida."
+        },
+        "available": {
+          "title": "Acompanhe o que sobra",
+          "description": "Cada compra é descontada da linha dela, então você vê o que está disponível em vez de chutar."
+        }
+      },
+      "example": {
+        "groups": {
+          "bills": "Contas a pagar",
+          "everyday": "Dia a dia",
+          "life": "Vida"
+        },
+        "lines": {
+          "rent": "Aluguel",
+          "utilities": "Água, luz e gás",
+          "subscriptions": "Assinaturas",
+          "groceries": "Mercado",
+          "eatingOut": "Comer fora",
+          "transport": "Transporte",
+          "funMoney": "Lazer",
+          "savings": "Meta de poupança"
+        }
+      }
+    },
+    "trashed": {
+      "open": "Excluídos",
+      "title": "Orçamentos excluídos recentemente",
+      "description": "Ficam guardados por {days} dias e depois são removidos de vez.",
+      "deletedOn": "Excluído em {date}",
+      "daysLeft": "Falta {n} dia | Faltam {n} dias",
+      "restore": "Restaurar",
+      "restorePlan": "Restaurar “{name}”",
+      "restored": "Orçamento restaurado",
+      "restoreError": "Não foi possível restaurar o orçamento",
+      "currencyMismatch": "Orçado em {planCurrency}. Sua moeda base agora é {baseCurrency}, então não é possível restaurá-lo.",
+      "purge": "Excluir de vez",
+      "purgePlan": "Excluir “{name}” de vez",
+      "purgeTitle": "Excluir “{name}” de vez?",
+      "purgeDescription": "Linhas, metas e valores atribuídos dele são removidos de vez. Suas transações não são alteradas.",
+      "purged": "Orçamento excluído de vez",
+      "purgeError": "Não foi possível excluir o orçamento",
+      "settingsRow": "Excluídos recentemente",
+      "settingsRowHint": "{count} orçamento, guardado por {days} dias | {count} orçamentos, guardados por {days} dias",
+      "replaceTitle": "Substituir seu orçamento atual?",
+      "replaceDescription": "Você pode ter um orçamento por vez. O orçamento “{restored}” passa a ser o seu, e “{current}” vai para “Excluídos recentemente” por 30 dias.",
+      "replaceConfirm": "Substituir"
+    },
+    "create": {
+      "title": "Começar a orçar",
+      "description": "Escolha a cada quanto tempo seu orçamento recomeça e quais contas ele acompanha.",
+      "noAccountsTitle": "Ainda não há contas para orçar",
+      "noAccountsDescription": "Um orçamento precisa de pelo menos uma conta corrente, poupança, dinheiro ou cartão de crédito que seja sua. Adicione uma na página “Contas” e depois volte aqui.",
+      "goToAccounts": "Ir para contas",
+      "cadenceLabel": "Recomeça",
+      "startsOnLabel": "Começa em",
+      "startsOnOutOfRange": "Escolha uma data de {from} até hoje.",
+      "accountsLabel": "Contas",
+      "accountsPlaceholder": "Escolha as contas",
+      "rolloverLabel": "Repasse",
+      "rolloverPlaceholder": "Escolha uma regra de repasse",
+      "submit": "Criar orçamento",
+      "creating": "Criando…",
+      "success": "Orçamento criado",
+      "suggestedLinesFailed": "Não foi possível adicionar as linhas sugeridas. Você pode adicioná-las pelo orçamento.",
+      "error": "Não foi possível criar o orçamento",
+      "suggestedLinesLabel": "Preenchimento inteligente",
+      "suggestedLinesHint": "Transforma seus gastos dos últimos 3 meses em grupos e linhas com nome, usando a média como valor de cada uma. Sem histórico, adiciona um conjunto inicial. Leva alguns segundos. Depois você pode alterar ou remover qualquer uma delas.",
+      "askQuestionsLabel": "Fazer algumas perguntas antes",
+      "askQuestionsHint": "Alguns passos rápidos para um resultado mais certeiro.",
+      "askQuestionsNeedsAi": "Precisa de IA. As linhas sugeridas usam o modelo padrão.",
+      "customEveryLabel": "A cada",
+      "customEveryPlaceholder": "ex.: 10",
+      "customUnitLabel": "Unidade",
+      "customUnitPlaceholder": "Escolha uma unidade",
+      "customUnits": {
+        "days": "Dias",
+        "months": "Meses"
+      },
+      "customEveryError": "Digite um número inteiro de 1 a {max}.",
+      "recommended": "Recomendado"
+    },
+    "suggest": {
+      "title": "Monte suas linhas",
+      "descriptionHistory": "Combinamos suas respostas com seus gastos dos últimos três meses.",
+      "descriptionNoHistory": "Ainda não há gastos, então suas linhas vêm destas respostas.",
+      "steps": {
+        "home": "Moradia",
+        "life": "Estilo de vida",
+        "focus": "Foco",
+        "detail": "Detalhamento"
+      },
+      "back": "Voltar",
+      "next": "Avançar",
+      "useDefaults": "Usar padrão",
+      "defaultsConfirm": {
+        "title": "Usar as linhas padrão?",
+        "description": "Suas escolhas serão ignoradas e as linhas padrão serão criadas.",
+        "cancel": "Continuar respondendo"
+      },
+      "housing": {
+        "question": "Qual é sua situação de moradia?",
+        "mortgage": "Pago financiamento imobiliário",
+        "rent": "Moro de aluguel",
+        "family": "Moro com a família",
+        "owned": "Tenho casa própria quitada"
+      },
+      "transport": {
+        "question": "Como você costuma se locomover?",
+        "car": "Tenho carro",
+        "transit": "Transporte público",
+        "bikeWalk": "Bicicleta ou a pé",
+        "multiple": "Mais de um destes"
+      },
+      "pets": {
+        "question": "Você tem pets?",
+        "kindQuestion": "De que tipo? (opcional)",
+        "dog": "Cachorro",
+        "cat": "Gato",
+        "other": "Outro"
+      },
+      "eatsOut": {
+        "question": "Com que frequência você come fora ou pede comida?",
+        "often": "Com frequência",
+        "sometimes": "Às vezes",
+        "rarely": "Raramente"
+      },
+      "subscriptions": {
+        "question": "Assinaturas pagas?",
+        "many": "Muitas",
+        "few": "Algumas",
+        "none": "Nenhuma"
+      },
+      "focus": {
+        "questionHistory": "O que você quer acompanhar de perto?",
+        "hintHistory": "Marque tudo o que se aplica. Cada item ganha linhas mais detalhadas.",
+        "questionNoHistory": "Com o que mais você gasta?",
+        "hintNoHistory": "Marque tudo o que se aplica. Cada item ganha uma linha própria.",
+        "perMonth": "{amount}/mês"
+      },
+      "detail": {
+        "question": "Quão detalhado seu orçamento deve ser?",
+        "compact": "Compacto",
+        "compactHint": "6–8 linhas",
+        "balanced": "Equilibrado",
+        "balancedHint": "10–12 linhas",
+        "detailed": "Detalhado",
+        "detailedHint": "Até 20 linhas"
+      },
+      "contextError": "Não foi possível carregar seus gastos. Tente de novo.",
+      "retry": "Tentar de novo",
+      "answersIgnored": "As sugestões inteligentes não estavam disponíveis, então suas respostas não foram usadas. Você recebeu as linhas padrão."
+    },
+    "cadence": {
+      "monthly": "Mensal",
+      "semiMonthly": "Quinzenal (2x por mês)",
+      "biweekly": "A cada duas semanas",
+      "weekly": "Semanal",
+      "everyNDays": "A cada {n} dias",
+      "everyNMonths": "A cada {n} meses",
+      "custom": "Personalizado"
+    },
+    "carryPolicy": {
+      "floor": "Repassar sobra",
+      "signed": "Repassar sobra e déficit",
+      "none": "Começar do zero a cada período"
+    },
+    "period": {
+      "previous": "Período anterior",
+      "next": "Próximo período",
+      "current": "Atual",
+      "pickerTitle": "Escolha o período",
+      "dayOf": "Dia {day} de {totalDays}"
+    },
+    "tiles": {
+      "assigned": "Atribuído",
+      "spent": "Gasto",
+      "available": "Disponível",
+      "overspent": "Excedido",
+      "overspentLines": "{count} linha | {count} linhas"
+    },
+    "grid": {
+      "assigned": "Atribuído",
+      "activity": "Movimentação",
+      "available": "Disponível",
+      "overrideBadge": "personalizado",
+      "carryBadge": {
+        "floor": "repassa sobra",
+        "signed": "repassa sobra e déficit",
+        "none": "começa do zero"
+      },
+      "lineActions": "Ações da linha",
+      "editLine": "Editar linha",
+      "archiveLine": "Arquivar linha",
+      "archiveSelected": "Arquivar",
+      "archiveTitle": "Arquivar “{name}”?",
+      "archiveDescription": "Ela deixa de contar a partir deste período. Os períodos anteriores mantêm seus números. Você pode restaurá-la depois em “Arquivadas”.",
+      "selectLine": "Selecionar “{name}”",
+      "selectAll": "Selecionar todas as linhas",
+      "selectMode": "Selecionar linhas",
+      "selectionAvailable": "Disponível na seleção",
+      "clearSelection": "Limpar seleção",
+      "selectedCount": "{count} linha selecionada | {count} linhas selecionadas",
+      "archiveManyTitle": "Arquivar {count} linha? | Arquivar {count} linhas?",
+      "archiveManyDescription": "Elas deixam de contar a partir deste período. Os períodos anteriores mantêm seus números. Você pode restaurá-las depois em “Arquivadas”.",
+      "deleteLine": "Excluir linha",
+      "deleteTitle": "Excluir “{name}”?",
+      "deleteDescription": "Os valores atribuídos a ela são excluídos e os gastos dela vão aparecer como fora das suas linhas. Não é possível desfazer esta ação.",
+      "deleteHistoryDescription": "Ela é removida de todos os períodos, inclusive dos anteriores, e os valores atribuídos a ela são excluídos. Os gastos dela vão aparecer como fora das suas linhas. Não é possível desfazer esta ação.",
+      "deletePermanently": "Excluir permanentemente",
+      "deleteArchiveHint": "Recomendamos arquivá-la para manter o histórico. Você pode restaurá-la depois em “Arquivadas”.",
+      "addLine": "Adicionar linha",
+      "noLines": "Nenhuma linha ainda",
+      "noLinesDescription": "Adicione uma linha para definir um limite de gastos para um grupo de categorias.",
+      "addSuggested": "Adicionar linhas sugeridas",
+      "suggestedAdded": "{count} linha adicionada | {count} linhas adicionadas",
+      "noSuggestions": "Nada para sugerir: as categorias sugeridas já têm linhas.",
+      "totalWithLines": "Total · {count} linha | Total · {count} linhas",
+      "assignAmountFor": "Atribuído a “{name}”: {amount}. Alterar",
+      "archivedBadge": "arquivada",
+      "spentAmount": "{amount} gasto",
+      "percentUsed": "{percent}% usado",
+      "overBy": "{amount} acima",
+      "notFunded": "Sem valor atribuído"
+    },
+    "archivedLines": {
+      "trigger": "Arquivadas: {count}",
+      "title": "Linhas arquivadas",
+      "description": "Uma linha restaurada volta a contar a partir do período atual. Os períodos anteriores ficam como estão.",
+      "archivedFrom": "Arquivada desde {date}",
+      "restore": "Restaurar",
+      "restoreLine": "Restaurar “{name}”",
+      "deleteLine": "Excluir “{name}”",
+      "restored": "Linha restaurada",
+      "restoreError": "Não foi possível restaurar a linha"
+    },
+    "line": {
+      "createTitle": "Nova linha",
+      "editTitle": "Editar linha",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Mercado",
+      "categoriesLabel": "Categorias",
+      "categoriesPlaceholder": "Escolha as categorias",
+      "created": "Linha adicionada",
+      "updated": "Linha atualizada",
+      "error": "Não foi possível salvar a linha",
+      "archived": "Linha arquivada",
+      "archiveError": "Não foi possível arquivar a linha",
+      "archivedMany": "{count} linha arquivada | {count} linhas arquivadas",
+      "deleted": "Linha excluída",
+      "deleteError": "Não foi possível excluir a linha"
+    },
+    "assign": {
+      "amountLabel": "Atribuído",
+      "amountPlaceholder": "0",
+      "scopeLabel": "O valor vale para",
+      "scopeThisPeriod": "Só este período",
+      "scopeFromNow": "Daqui em diante",
+      "rolloverLabel": "Repasse",
+      "rolloverPlaceholder": "Escolha uma regra de repasse",
+      "rolloverHint": "Vale a partir deste período",
+      "enterHint": "Enter para salvar",
+      "useBaseline": "Usar valor de referência",
+      "saved": "Atribuição salva",
+      "error": "Não foi possível salvar a atribuição"
+    },
+    "unbudgeted": {
+      "summary": "Gastos fora das suas linhas: {amount} em {count} categoria | Gastos fora das suas linhas: {amount} em {count} categorias"
+    },
+    "pool": {
+      "readyToAssign": "A atribuir",
+      "assign": "Atribuir",
+      "assignTitle": "Atribuir do fundo comum",
+      "toLabel": "Para",
+      "toPlaceholder": "Escolha uma linha",
+      "amountLabel": "Valor",
+      "assignSubmit": "Atribuir {amount}",
+      "calc": {
+        "title": "Cálculo do orçamento",
+        "cash": "Dinheiro orçável",
+        "inLines": "Dinheiro nas linhas",
+        "committedLater": "Comprometido com períodos futuros",
+        "drift": "Câmbio / não conciliado",
+        "changedSince": "O que mudou desde {period}",
+        "changedThisPeriod": "O que mudou neste período",
+        "startingBalance": "Saldo inicial",
+        "income": "Receita",
+        "outsideSpending": "Gastos fora das suas linhas",
+        "fromLines": "Das linhas (sobra devolvida / gasto excedente coberto)",
+        "assigned": "Atribuído neste período",
+        "cashHint": "Dinheiro nas contas do orçamento, menos os limites de crédito.",
+        "inLinesHint": "Tudo o que está nas suas linhas agora.",
+        "driftHint": "Variações de câmbio e saldos que as transações não explicam.",
+        "committedLaterHint": "Já atribuído em um período futuro.",
+        "leftOverFrom": "Sobra de {period}"
+      },
+      "settingLabel": "Usar um fundo comum",
+      "settingHint": "A receita vai para um fundo comum “A atribuir”, que você distribui entre as linhas.",
+      "createHint": "A receita vai para um fundo comum “A atribuir”, que você distribui entre as linhas. Você pode mudar isso depois nas configurações.",
+      "enableConfirm": "Ativar",
+      "enableConfirmTitle": "Usar um fundo comum neste orçamento?",
+      "enableConfirmDescription": "O fundo comum começa no período atual. Os períodos anteriores não vão mostrar o valor a atribuir.",
+      "zeroSumLabel": "Manter “A atribuir” em 0",
+      "zeroSumHint": "O cabeçalho pede que você atribua o que sobrar até “A atribuir” chegar a 0.",
+      "assignAmount": "Atribuir {amount}",
+      "zeroSumNag": "Atribua o restante para manter “A atribuir” em 0",
+      "allAssigned": "Todo o dinheiro atribuído",
+      "overAssigned": "Atribuído a mais: {amount}",
+      "fix": "Corrigir",
+      "fixTitle": "Reduzir o excesso atribuído",
+      "fromLabel": "Tirar de",
+      "fromPlaceholder": "Escolha uma linha",
+      "fixSubmit": "Retirar {amount}",
+      "fixNoLines": "Não há nada para retirar neste período."
+    },
+    "panel": {
+      "summary": "Resumo",
+      "overview": "Visão geral do período",
+      "closeLine": "Fechar detalhes",
+      "resize": "Redimensionar painel lateral",
+      "open": "Abrir painel lateral",
+      "collapse": "Recolher painel lateral",
+      "breakdown": "Detalhamento",
+      "carriedOver": "Repassado",
+      "pace": "Ritmo de gastos",
+      "spent": "Gasto",
+      "elapsed": "Período decorrido",
+      "spentOfTotal": "{spent} de {total}",
+      "daysLeft": "faltam {n} d",
+      "scheduled": "Agendado",
+      "nextOn": "Próximo em {date}",
+      "scheduledCount": "Agendados: {count}",
+      "outflows": "Saídas",
+      "inflows": "Entradas",
+      "transactionCount": "{count} transação | {count} transações",
+      "nothingScheduled": "Nada agendado",
+      "trend": {
+        "title": "Atribuído x gasto",
+        "assigned": "Atribuído",
+        "spent": "Gasto",
+        "over": "Excedido",
+        "spentOfAssigned": "{spent} de {assigned}",
+        "averageUsed": "média de {percent}% usado"
+      },
+      "nextPeriodCoverage": "Cobertura do próximo período",
+      "goals": "Metas",
+      "goal": "Meta"
+    },
+    "groups": {
+      "headerLabel": "Grupo de linhas",
+      "add": "Adicionar grupo",
+      "collapseAll": "Recolher todos os grupos",
+      "expandAll": "Expandir todos os grupos",
+      "collapse": "Recolher “{name}”",
+      "expand": "Expandir “{name}”",
+      "addLine": "Adicionar linha a “{name}”",
+      "selectLines": "Selecionar todas as linhas de “{name}”",
+      "actions": "Ações do grupo",
+      "edit": "Editar grupo",
+      "delete": "Excluir grupo",
+      "deleteBlocked": "Mova ou arquive as linhas dele antes",
+      "deleteTitle": "Excluir “{name}”?",
+      "deleteDescription": "As linhas arquivadas dele ficam sem grupo. Não é possível desfazer esta ação.",
+      "deleted": "Grupo excluído",
+      "deleteError": "Não foi possível excluir o grupo",
+      "createTitle": "Novo grupo",
+      "editTitle": "Editar grupo",
+      "nameLabel": "Nome do grupo",
+      "namePlaceholder": "ex.: Contas a pagar",
+      "created": "Grupo criado",
+      "updated": "Grupo atualizado",
+      "error": "Não foi possível salvar o grupo",
+      "lineGroupLabel": "Grupo",
+      "lineGroupPlaceholder": "Escolha um grupo",
+      "noGroup": "Sem grupo",
+      "layoutTitle": "Organizar layout",
+      "layoutDescription": "Arraste as linhas dentro dos grupos e entre eles, e arraste os grupos para reordená-los.",
+      "ungrouped": "Sem grupo",
+      "layoutSaved": "Layout salvo",
+      "layoutError": "Não foi possível salvar o layout"
+    },
+    "options": {
+      "title": "Opções",
+      "manageLayout": "Organizar layout",
+      "rowBars": "Barras das linhas",
+      "rowBarSpending": "Barra de gastos",
+      "rowBarGoal": "Barra da meta",
+      "rowBarCombined": "Barra combinada",
+      "rowBarSplit": "Barras separadas",
+      "rowBarNone": "Sem barra"
+    },
+    "goals": {
+      "askHint": "Atribua este valor aqui para manter o ritmo.",
+      "progressFraction": "{progress} / {target} ({percent}%)",
+      "status": {
+        "underfunded": "Abaixo do necessário",
+        "funded": "Coberta",
+        "achieved": "Alcançada",
+        "snoozed": "Adiada",
+        "progress": "Em andamento"
+      },
+      "noGoal": "Nenhuma meta definida",
+      "create": "Criar meta",
+      "title": {
+        "budget_another": "Orçar {amount}",
+        "refill_up_to": "Completar até {amount}",
+        "reach_balance": "Chegar a {amount}"
+      },
+      "dueBy": "Até {date}",
+      "progressOf": "{progress} de {target} ({percent}%)",
+      "toGo": "Faltam {amount}",
+      "assignAsk": "Orçar {amount}",
+      "unsnooze": "Retomar",
+      "edit": "Editar meta",
+      "delete": "Excluir meta",
+      "deleteTitle": "Excluir meta",
+      "deleteDescription": "A meta será removida da linha “{line}”. Seus valores atribuídos não serão afetados.",
+      "deleted": "Meta excluída",
+      "deleteError": "Não foi possível excluir a meta",
+      "snoozeError": "Não foi possível adiar a meta",
+      "frequencyLabel": "Frequência",
+      "frequency": {
+        "weekly": "Semanal",
+        "biweekly": "A cada duas semanas",
+        "yearly": "Anual",
+        "by_date": "Até uma data",
+        "open_ended": "Sem prazo"
+      },
+      "behaviorLabel": "Como funciona",
+      "behavior": {
+        "budget_another": "Orçar mais",
+        "refill_up_to": "Completar até",
+        "reach_balance": "Chegar a um saldo"
+      },
+      "behaviorDescription": {
+        "budget_another": "Orça o valor do zero a cada período. Gastar ao longo do caminho é esperado e nunca muda o valor pedido.",
+        "refill_up_to": "Completa a linha até o valor-alvo a cada período. O que sobrou conta, então você atribui só a diferença.",
+        "reach_balance": "Acompanha o próprio saldo. Os gastos fazem o progresso recuar e aumentam o valor pedido na hora."
+      },
+      "refillUpToLabel": "Completar a linha até",
+      "refillUpToHint": "O saldo a recompor a cada período.",
+      "totalToBudgetLabel": "Total a orçar",
+      "totalToBudgetHint": "Dividido entre os períodos até a data.",
+      "openEndedHint": "Sem prazo. O progresso acompanha o saldo da linha.",
+      "targetBalanceLabel": "Saldo-alvo",
+      "amountPlaceholder": "0.00",
+      "amountEachWeek": "Valor por semana",
+      "amountEachTwoWeeks": "Valor a cada duas semanas",
+      "amountEachYear": "Valor por ano",
+      "repeatsOnLabel": "Repete em",
+      "weekdayPlaceholder": "Escolha um dia da semana",
+      "dueDateLabel": "Data-limite",
+      "firstPaymentDateLabel": "Data do primeiro pagamento",
+      "firstDueDateLabel": "Primeira data-limite",
+      "firstDueDateHint": "Repete todo ano nesta data. O valor é distribuído entre os períodos anteriores a ela.",
+      "repeatLabel": "Repetir",
+      "repeatHint": "Começar um novo ciclo depois do período da data-limite.",
+      "repeatEveryLabel": "A cada",
+      "repeatEveryPlaceholder": "1",
+      "repeatUnitLabel": "Unidade",
+      "repeatUnitPlaceholder": "Escolha uma unidade",
+      "repeatUnits": {
+        "months": "Meses",
+        "years": "Anos"
+      },
+      "stopAtBalanceLabel": "Parar em um saldo",
+      "stopAtBalanceHint": "Para de pedir valor quando o saldo guardado (repasse mais atribuído) chegar a este teto.",
+      "startedLabel": "Início",
+      "summary": {
+        "budget_another": "Orça {amount} {when}",
+        "refill_up_to": "Completa até {amount} {when}",
+        "by_date": "Chega a {amount} até {date}",
+        "open_ended": "Chega a {amount}, sem prazo"
+      },
+      "errors": {
+        "amount": "Digite um valor maior que 0",
+        "dateRequired": "Escolha uma data",
+        "dueDateFuture": "A data-limite precisa ser depois de hoje",
+        "repeatEvery": "Digite um número inteiro de 1 a {max}"
+      },
+      "saved": "Meta salva",
+      "saveError": "Não foi possível salvar a meta",
+      "details": "Detalhes da meta",
+      "stats": {
+        "saved": "Guardado",
+        "target": "Alvo",
+        "leftToSave": "Falta guardar",
+        "balance": "Saldo",
+        "refillTo": "Completar até"
+      },
+      "percentOf": "{percent}% de {target}",
+      "needBy": "Precisa de {amount} até o dia {date}",
+      "fundedThrough": "Coberta até o dia {date}",
+      "fundingPlan": "Plano de aportes",
+      "leftAfter": "Sobram {amount} depois",
+      "subtitle": {
+        "weeklyOn": "Semanal, {weekday}",
+        "biweekly": "A cada duas semanas",
+        "yearlyDue": "Anual · até {date}",
+        "noDeadline": "Sem prazo"
+      },
+      "when": {
+        "eachWeekOn": "toda semana, {weekday}",
+        "everyTwoWeeks": "a cada duas semanas",
+        "eachYear": "todo ano",
+        "byDate": "até {date}",
+        "byDateRepeating": {
+          "months": "até {date}, repetindo a cada {count} mês | até {date}, repetindo a cada {count} meses",
+          "years": "até {date}, repetindo a cada {count} ano | até {date}, repetindo a cada {count} anos"
+        }
+      },
+      "weekdays": {
+        "0": "aos domingos",
+        "1": "às segundas-feiras",
+        "2": "às terças-feiras",
+        "3": "às quartas-feiras",
+        "4": "às quintas-feiras",
+        "5": "às sextas-feiras",
+        "6": "aos sábados"
+      },
+      "unit": {
+        "month": {
+          "frequency": "Mensal",
+          "each": "todo mês",
+          "need": "Precisa de {amount} neste mês",
+          "needLabel": "Necessário neste mês",
+          "budgeted": "Orçado neste mês",
+          "target": "Alvo deste mês",
+          "snooze": "Adiar neste mês",
+          "amountEach": "Valor por mês",
+          "fundingCap": "Teto de aporte mensal",
+          "current": "Este mês",
+          "yearlyHint": "Distribuído entre os meses de cada ciclo anual."
+        },
+        "period": {
+          "frequency": "Todo período",
+          "each": "a cada período",
+          "need": "Precisa de {amount} neste período",
+          "needLabel": "Necessário neste período",
+          "budgeted": "Orçado neste período",
+          "target": "Alvo deste período",
+          "snooze": "Adiar neste período",
+          "amountEach": "Valor por período",
+          "fundingCap": "Teto de aporte por período",
+          "current": "Este período",
+          "yearlyHint": "Distribuído entre os períodos de cada ciclo anual."
+        }
+      },
+      "periodGoals": "Metas do período",
+      "periodGoalsHint": "Valores-alvo das metas neste período",
+      "toFund": "A cobrir: {n}",
+      "allFunded": "Tudo coberto",
+      "periodTargets": "Alvos do período",
+      "stillNeeded": "Ainda falta",
+      "stillNeededTotal": "{amount} no total",
+      "addExpectedIncome": "Adicionar receita prevista",
+      "expectedIncome": "Receita prevista",
+      "expectedIncomePlaceholder": "Digite a receita prevista",
+      "leftAfterTargets": "Sobra depois dos alvos",
+      "expectedIncomeSaved": "Receita prevista salva",
+      "expectedIncomeError": "Não foi possível salvar a receita prevista",
+      "coverage": {
+        "subtitle": "Valores-alvo das metas",
+        "prepared": "preparado",
+        "linedUpOf": "{linedUp} de {target}",
+        "state": {
+          "left_to_cover": "Faltam {amount} para cobrir {period}.",
+          "prepared": "Tudo pronto para {period}.",
+          "over_committed": "Comprometido além da conta: {period} já está negativo.",
+          "nothing_tracked": "Nada acompanhado para {period} ainda."
+        }
+      }
+    },
+    "docs": {
+      "howItWorks": "Como funciona o orçamento"
+    }
+  }
+}

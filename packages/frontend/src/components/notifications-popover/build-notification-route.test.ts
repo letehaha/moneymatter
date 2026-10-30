@@ -316,4 +316,38 @@ describe('buildNotificationRoute', () => {
       expect(route).toBeNull();
     });
   });
+
+  describe('unrealized_loss_alert', () => {
+    const holding = ({ portfolioId }: { portfolioId: string }) => ({
+      portfolioId,
+      portfolioName: 'Growth',
+      securityId: 'sec-1',
+      symbol: 'AAPL',
+      lossPercent: 12,
+      lossAmount: 300,
+    });
+    const route = (holdings: ReturnType<typeof holding>[]) =>
+      buildNotificationRoute(
+        baseNotification({
+          type: NOTIFICATION_TYPES.unrealizedLossAlert,
+          payload: { currencyCode: 'USD', holdings },
+        }),
+      );
+
+    it('opens the portfolio when every holding is in one portfolio', () => {
+      expect(route([holding({ portfolioId: 'p1' }), holding({ portfolioId: 'p1' })])).toEqual({
+        kind: 'spa',
+        to: { name: ROUTES_NAMES.portfolioDetail, params: { portfolioId: 'p1' } },
+      });
+    });
+
+    it('opens investments when holdings span portfolios or are missing', () => {
+      const investments = { kind: 'spa', to: { name: ROUTES_NAMES.investments } };
+      expect(route([holding({ portfolioId: 'p1' }), holding({ portfolioId: 'p2' })])).toEqual(investments);
+      expect(route([])).toEqual(investments);
+      expect(
+        buildNotificationRoute(baseNotification({ type: NOTIFICATION_TYPES.unrealizedLossAlert, payload: {} })),
+      ).toEqual(investments);
+    });
+  });
 });

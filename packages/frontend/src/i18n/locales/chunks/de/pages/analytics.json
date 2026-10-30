@@ -50,7 +50,7 @@
         "thisYear": "Dieses Jahr",
         "previousYear": "Vorheriges Jahr",
         "allTime": "Gesamter Zeitraum",
-        "currentPayPeriod": "Current pay period"
+        "currentPayPeriod": "Aktueller Abrechnungszeitraum"
       },
       "composition": {
         "detail": "Detail",
@@ -337,6 +337,45 @@
           "addBirthYear": "Geburtsjahr hinzufügen"
         }
       },
+      "pace": {
+        "row": "{status} vs. {anchor}",
+        "noHistory": "Nicht genug Historie vor {month}",
+        "loadFailed": "Vergleich konnte nicht geladen werden",
+        "compareWith": "Vergleiche mit {month}",
+        "picker": {
+          "title": "Vergleichen mit",
+          "rollingLabel": "{month} · Vor 1 Jahr",
+          "rolling": "Vor 1 Jahr",
+          "rollingHint": "Fortlaufend · derzeit {month}",
+          "specific": "Bestimmter Monat",
+          "specificHint": "Bleibt unverändert",
+          "prevYear": "Vorheriges Jahr",
+          "nextYear": "Nächstes Jahr",
+          "earliest": "Der früheste ist {month}. FIRE benötigt davor 3 Monate erfasste Ausgaben."
+        },
+        "details": {
+          "title": "Tempo seit {month}",
+          "moved": "Dein FIRE-Datum hat sich von {from} auf {to} verschoben.",
+          "withinBand": "Dein FIRE-Datum liegt innerhalb von {tolerance} der Prognose für {month} ({date}).",
+          "backInReach": "Nach den Zahlen für {month} war FIRE außer Reichweite. Jetzt ist es {date}.",
+          "offTrack": "Die Prognose für {month} war {date}. Nach den heutigen Zahlen ist FIRE außer Reichweite.",
+          "metric": "Metrik",
+          "today": "Heute",
+          "change": "Ändern",
+          "fireDate": "FIRE-Datum",
+          "saved": "Bisher gespart",
+          "spending": "Ausgaben",
+          "saving": "Ansparen",
+          "expected": "{amount} erwartet",
+          "sooner": "{duration} früher",
+          "later": "{duration} später",
+          "sameMonth": "Gleicher Monat",
+          "outOfReach": "Außer Reichweite",
+          "band": "\"Im Tempo\" bedeutet innerhalb von {tolerance} (2% der verbleibenden Zeit bis FIRE).",
+          "recorded": "Saldo, Cashflow und Annahmen zum Stand {date} werden live aus deinen Daten neu berechnet.",
+          "notRecorded": "Saldo und Cashflow zum Stand {date} werden live aus deinen Daten neu berechnet. Deine damaligen Annahmen wurden nicht erfasst, daher werden die heutigen verwendet."
+        }
+      },
       "chart": {
         "ariaLabel": "Nettovermögensverlauf und projizierter Pfad zu deiner FIRE-Zahl",
         "actual": "Tatsächlich",
@@ -344,7 +383,10 @@
         "range": "±2 Pkt. Rendite",
         "today": "Heute",
         "typeTarget": "{type} · {amount}",
-        "typeLabel": "{type} · {date}"
+        "typeLabel": "{type} · {date}",
+        "forecast": "Prognose für {month}",
+        "forecastLabel": "Prognose für {month} · {date}",
+        "actualSince": "Ist-Wert seit {month}"
       },
       "milestones": {
         "reached": "Erreicht",
@@ -439,6 +481,7 @@
     },
     "table": {
       "total": "Gesamt",
+      "net": "Netto",
       "collapseAll": "Alle einklappen",
       "expandAll": "Alle ausklappen",
       "expandRow": "Ausklappen",

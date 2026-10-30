@@ -178,8 +178,8 @@
           "placeholder": "Introduzca su correo electrónico",
           "acceptButton": "Eliminar mi cuenta",
           "acceptButtonLoading": "Eliminando...",
-          "appStoreWarning": "Deleting your account doesn't cancel your App Store subscription, and Apple will keep charging you. Cancel it in your {link} first.",
-          "appStoreWarningLink": "App Store subscriptions"
+          "appStoreWarning": "Eliminar tu cuenta no cancela la suscripción en la App Store y Apple seguirá efectuando el pago. Cancela primero en {link}.",
+          "appStoreWarningLink": "Suscripción desde la App Store"
         },
         "notifications": {
           "success": "Su cuenta ha sido eliminada correctamente",

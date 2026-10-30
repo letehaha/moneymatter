@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import PortfolioLogo from '@/components/common/portfolio-logo.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { usePortfolioSummaries } from '@/composable/data-queries/portfolio-summary';
 import { useFormatCurrency } from '@/composable/formatters';
 import { ROUTES_NAMES } from '@/routes/constants';
-import { PORTFOLIO_TYPE, PortfolioModel } from '@bt/shared/types/investments';
-import { Building2Icon, EyeOffIcon, LandmarkIcon, PiggyBankIcon, TrendingUpIcon } from '@lucide/vue';
+import { PortfolioModel } from '@bt/shared/types/investments';
+import { EyeOffIcon } from '@lucide/vue';
 import { computed } from 'vue';
 
 const props = defineProps<{
@@ -18,19 +19,6 @@ const { formatCompactAmount, formatAmountByCurrencyCode } = useFormatCurrency();
 
 const totalValue = computed(() => (summary.value ? Number(summary.value.totalPortfolioValue) : null));
 const currencyCode = computed(() => summary.value?.currencyCode ?? 'USD');
-
-const portfolioIcon = computed(() => {
-  switch (props.portfolio.portfolioType) {
-    case PORTFOLIO_TYPE.investment:
-      return Building2Icon;
-    case PORTFOLIO_TYPE.retirement:
-      return LandmarkIcon;
-    case PORTFOLIO_TYPE.savings:
-      return PiggyBankIcon;
-    default:
-      return TrendingUpIcon;
-  }
-});
 </script>
 
 <template>
@@ -48,7 +36,7 @@ const portfolioIcon = computed(() => {
     >
       <div class="flex w-full items-center justify-between gap-x-2">
         <div class="flex min-w-0 items-center gap-1.5">
-          <component :is="portfolioIcon" class="text-muted-foreground size-3.5 shrink-0" />
+          <PortfolioLogo :portfolio="portfolio" class="size-5" />
           <span class="truncate text-sm">{{ portfolio.name }}</span>
           <EyeOffIcon v-if="!portfolio.isEnabled" class="text-muted-foreground size-3 shrink-0" />
         </div>

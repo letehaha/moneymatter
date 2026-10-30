@@ -106,6 +106,7 @@
       "goToAccounts": "Prejsť na účty",
       "cadenceLabel": "Obnovuje sa",
       "startsOnLabel": "Začína",
+      "startsOnOutOfRange": "Vyberte dátum od {from} po dnešný deň.",
       "accountsLabel": "Účty",
       "accountsPlaceholder": "Vyberte účty",
       "rolloverLabel": "Prenos",

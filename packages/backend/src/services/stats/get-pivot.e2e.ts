@@ -1139,6 +1139,61 @@ describe('GET /stats/pivot', () => {
     expect(result.grandTotal).toBe(100);
   });
 
+  it('income measure: a refund of an expense is not income, so expense minus income nets it once', async () => {
+    const account = await helpers.createAccount({ raw: true });
+    // Each leg gets its own category/payee/tag, so netting against the wrong leg leaves a row behind.
+    const createLeg = async ({
+      amount,
+      transactionType,
+      time,
+    }: {
+      amount: number;
+      transactionType: TRANSACTION_TYPES;
+      time: string;
+    }) => {
+      const category = await helpers.addCustomCategory({ name: uniqueName('Leg'), color: '#445566', raw: true });
+      const payee = await helpers.createPayee({ payload: { name: uniqueName('Leg') }, raw: true });
+      const tag = await helpers.createTag({ payload: { name: uniqueName('Leg'), color: '#abcdef' }, raw: true });
+      const [tx] = await helpers.createTransaction({
+        payload: {
+          ...helpers.buildTransactionPayload({
+            accountId: account.id,
+            amount,
+            transactionType,
+            categoryId: category.id,
+            payeeId: payee.id,
+          }),
+          time,
+        },
+        raw: true,
+      });
+      await helpers.addTransactionsToTag({ tagId: tag.id, transactionIds: [tx.id] });
+      return tx;
+    };
+
+    const expenseTx = await createLeg({
+      amount: 10,
+      transactionType: TRANSACTION_TYPES.expense,
+      time: '2025-05-10T12:00:00.000Z',
+    });
+    const refundTx = await createLeg({
+      amount: 1,
+      transactionType: TRANSACTION_TYPES.income,
+      time: '2025-05-20T12:00:00.000Z',
+    });
+    await helpers.createSingleRefund({ originalTxId: expenseTx.id, refundTxId: refundTx.id });
+
+    for (const rowDimension of ['category', 'payee', 'tag'] as const) {
+      const params = { from: '2025-05-01', to: '2025-05-31', granularity: 'monthly', rowDimension, raw: true } as const;
+      const expense = await helpers.getPivotReport({ ...params, measure: 'expense' });
+      const income = await helpers.getPivotReport({ ...params, measure: 'income' });
+
+      expect(expense.grandTotal).toBe(9);
+      expect(income.grandTotal).toBe(0);
+      expect(income.rows).toEqual([]);
+    }
+  });
+
   it('income measure: planned income never contributes to a cell', async () => {
     const account = await helpers.createAccount({ raw: true });
     const category = await helpers.addCustomCategory({ name: uniqueName('Freelance'), color: '#33bb77', raw: true });

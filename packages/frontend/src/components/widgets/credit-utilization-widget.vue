@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { computeCreditUsed } from '@/common/utils/account-balance';
+import AccountLogo from '@/components/common/account-logo.vue';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { ScrollArea } from '@/components/lib/ui/scroll-area';
@@ -51,6 +52,7 @@ const creditAccounts = computed(() => {
 
       return {
         id: a.id,
+        account: a,
         name: a.name,
         currencyCode: a.currencyCode,
         used,
@@ -157,7 +159,10 @@ const getUtilizationColors = ({ utilization }: { utilization: number }) => {
               class="hover:bg-muted/50 flex flex-col gap-1.5 rounded-md px-3 py-2 transition-colors"
             >
               <div class="flex items-center justify-between gap-2">
-                <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                <span class="flex min-w-0 items-center gap-2">
+                  <AccountLogo :account="account.account" class="size-5 shrink-0" />
+                  <span class="truncate text-sm font-medium">{{ account.name }}</span>
+                </span>
                 <div class="flex shrink-0 items-center gap-2">
                   <DesktopOnlyTooltip
                     :content="`${formatAmountByCurrencyCode(account.used, account.currencyCode)} / ${formatAmountByCurrencyCode(account.limit, account.currencyCode)}`"

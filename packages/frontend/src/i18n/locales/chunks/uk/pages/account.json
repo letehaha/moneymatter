@@ -245,6 +245,7 @@
       },
       "rightPanel": {
         "transactions": "Транзакції",
+        "viewAll": "Переглянути всі",
         "analyticsSoon": "Аналітика (незабаром)"
       },
       "integrations": {

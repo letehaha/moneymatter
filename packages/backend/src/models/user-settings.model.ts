@@ -35,6 +35,8 @@ import {
   TRANSACTION_DATE_PRESETS,
   TRANSACTION_OPTIONAL_FIELDS,
   TRANSACTION_SORT_FIELD,
+  UNREALIZED_LOSS_ALERT_LIMITS,
+  type UnrealizedLossAlertsSettings,
 } from '@bt/shared/types';
 import { dateRange, withDateOrder } from '@common/lib/zod/custom-types';
 import { IdColumn } from '@common/types/id-column';
@@ -225,12 +227,6 @@ const ZodUiSettingsSchema = z.object({
   investmentTransactionsTable: ZodInvestmentTransactionsTableSettingsSchema.optional(),
 });
 
-// Subscription-related defaults. `defaultAutoRecord` only seeds the auto-record toggle on
-// the create-subscription form; the user can still override it per subscription.
-const ZodSubscriptionsSettingsSchema = z.object({
-  defaultAutoRecord: z.boolean().optional(),
-});
-
 // A category mapping remembered from a finished import, keyed by a fingerprint of the source
 // layout. Untrusted client input, so the per-value union is validated in full.
 const ZodCategoryMappingPresetSchema = z.object({
@@ -335,6 +331,21 @@ const ZodFireSettingsSnapshotSchema = z.object({
 // Day of month a pay period starts on; 1 (calendar month) when unset. Capped at 28 so every month has it.
 const ZodPaydaySchema = z.number().int().min(1).max(28);
 
+// Opt-in. Unset thresholds fall back to `UNREALIZED_LOSS_ALERT_DEFAULTS`; no `.default()` so the PATCH merge keeps stored values.
+const ZodUnrealizedLossAlertsSchema = z.object({
+  enabled: z.boolean().optional(),
+  percentThreshold: z
+    .number()
+    .min(UNREALIZED_LOSS_ALERT_LIMITS.percentThreshold.min)
+    .max(UNREALIZED_LOSS_ALERT_LIMITS.percentThreshold.max)
+    .optional(),
+  amountThreshold: z
+    .number()
+    .min(UNREALIZED_LOSS_ALERT_LIMITS.amountThreshold.min)
+    .max(UNREALIZED_LOSS_ALERT_LIMITS.amountThreshold.max)
+    .optional(),
+});
+
 export const ZodSettingsSchema = z.object({
   locale: z.enum(SUPPORTED_LOCALES).default(SUPPORTED_LOCALES.ENGLISH),
   ai: ZodAiSettingsSchema.optional(),
@@ -345,7 +356,6 @@ export const ZodSettingsSchema = z.object({
   sidebarSections: ZodSidebarSectionsSchema.optional(),
   sidebarNav: ZodSidebarNavSchema.optional(),
   ui: ZodUiSettingsSchema.optional(),
-  subscriptions: ZodSubscriptionsSettingsSchema.optional(),
   import: ZodImportSettingsSchema.optional(),
   accounts: ZodAccountsSettingsSchema.optional(),
   savedPivotViews: z.array(ZodSavedPivotViewSchema).optional(),
@@ -392,6 +402,7 @@ export const ZodSettingsSchema = z.object({
   // Server-owned, oldest first: written by the PATCH that changes `fire`.
   fireHistory: z.array(ZodFireSettingsSnapshotSchema).max(FIRE_HISTORY_MAX_ENTRIES).optional(),
   payday: ZodPaydaySchema.optional(),
+  unrealizedLossAlerts: ZodUnrealizedLossAlertsSchema.optional(),
 });
 
 export type SettingsSchema = z.infer<typeof ZodSettingsSchema>;
@@ -471,11 +482,6 @@ export const ZodSettingsPatchSchema = z.object({
         .optional(),
     })
     .optional(),
-  subscriptions: z
-    .object({
-      defaultAutoRecord: z.boolean().optional(),
-    })
-    .optional(),
   import: z
     .object({
       recalculateAccountBalance: z.boolean().optional(),
@@ -502,6 +508,7 @@ export const ZodSettingsPatchSchema = z.object({
   currencyDisplay: z.enum(CURRENCY_DISPLAY_PREFERENCES).optional(),
   fire: ZodFireSettingsSchema.optional(),
   payday: ZodPaydaySchema.optional(),
+  unrealizedLossAlerts: ZodUnrealizedLossAlertsSchema.optional(),
 });
 
 export type SettingsPatchSchema = z.infer<typeof ZodSettingsPatchSchema>;
@@ -526,6 +533,11 @@ type PatchableSettings = Omit<SettingsSchema, 'onboarding' | 'ai' | 'fireHistory
  * @public exported only so the assertion isn't flagged as unused.
  */
 export type SettingsPatchSchemaIsInSync = Expect<Equals<SettingsPatchSchema, DeepPartial<PatchableSettings>>>;
+
+/** @public exported only so the assertion isn't flagged as unused. */
+export type UnrealizedLossAlertsSchemaIsInSync = Expect<
+  Equals<z.infer<typeof ZodUnrealizedLossAlertsSchema>, UnrealizedLossAlertsSettings>
+>;
 
 /** @public exported only so the assertion isn't flagged as unused. */
 export type FireSettingsSchemaIsInSync = Expect<Equals<z.infer<typeof ZodFireSettingsSchema>, FireSettings>>;

@@ -136,6 +136,7 @@
       "accountCategoryPlaceholder": "Select account category",
       "creditLimitLabel": "Credit limit",
       "creditLimitPlaceholder": "Credit limit",
+      "defaultPaymentTypeLabel": "Loại thanh toán mặc định",
       "submitButton": "Create",
       "submitButtonLoading": "Creating...",
       "notifications": {

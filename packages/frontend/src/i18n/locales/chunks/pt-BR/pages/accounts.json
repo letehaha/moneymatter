@@ -1,0 +1,48 @@
+{
+  "accounts": {
+    "title": "Contas",
+    "createAccount": "Criar conta",
+    "createVehicle": "Adicionar veículo",
+    "actionsMenu": "Ações da conta",
+    "sections": {
+      "archived": "Arquivadas",
+      "manual": "Contas manuais",
+      "sharedWithMe": "Compartilhadas comigo",
+      "vehicles": "Veículos",
+      "bankConnections": "Conexões bancárias"
+    },
+    "empty": {
+      "title": "Nenhuma conta ainda",
+      "description": "Conecte seu banco ou crie uma conta manual para começar a acompanhar suas finanças, saldos e transações.",
+      "connectBank": "Conectar conta bancária",
+      "createManual": "Criar conta manual"
+    },
+    "overview": {
+      "totalBalance": "Saldo total",
+      "assets": "Bens",
+      "liabilities": "Dívidas",
+      "vehicles": "Veículos",
+      "projected": "Projeção: {amount} · {count} lançamento agendado até {date} | Projeção: {amount} · {count} lançamentos agendados até {date}"
+    },
+    "sharedBy": "Compartilhada por {handle}",
+    "viaHousehold": "Compartilhada pela família de {handle}",
+    "connect": "Conectar",
+    "connectBank": "Conectar banco",
+    "noBanksConnected": "Nenhum banco conectado ainda — conecte um para sincronizar os saldos automaticamente.",
+    "reconnect": "Reconectar",
+    "manageConnection": "Gerenciar conexão",
+    "accountsCount": "{count} conta | {count} contas",
+    "inGroupSubtitle": "em “{name}”",
+    "sort": {
+      "auto": "Automática",
+      "name": "Nome",
+      "balance": "Saldo",
+      "ariaLabel": "Ordenar contas"
+    },
+    "status": {
+      "active": "Ativa",
+      "expiringSoon": "Expira em breve",
+      "expired": "Expirada"
+    }
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "pages": {
+    "statementParser": {
+      "pageTitle": "Leitor de extratos",
+      "pageDescription": "Envie um extrato bancário (PDF, CSV ou TXT), a foto de um recibo ou um print do app do banco para extrair as transações com IA. Adicione seu próprio modelo de IA nas configurações para ter acesso ilimitado.",
+      "stepper": {
+        "steps": {
+          "upload": "Envio",
+          "account": "Conta",
+          "review": "Revisão",
+          "results": "Importação"
+        }
+      },
+      "steps": {
+        "accountTitle": "Escolher conta",
+        "accountDescription": "Escolha ou crie uma conta para as transações"
+      },
+      "selectCurrency": "Escolha uma moeda",
+      "selectExistingAccount": "Escolha uma conta existente",
+      "accountNamePlaceholder": "Ex.: Conta principal",
+      "selectAccount": "Escolha uma conta",
+      "searchAccounts": "Buscar contas…",
+      "uploadExtract": {
+        "supportedFormats": "Formatos aceitos: PDF, CSV, TXT, JPG, PNG, WebP (máx. 10 MB)",
+        "clickOrDragStatements": "Clique ou arraste os arquivos de extrato para cá",
+        "filesLabel": "Arquivos",
+        "analyzingFiles": "Analisando os arquivos…",
+        "totalForFiles": "no total (arquivos: {count})",
+        "estimateFailedSome": "Não foi possível analisar {count} de {total} arquivos:",
+        "extractionFailedSome": "Não foi possível ler {count} de {total} arquivos. Os demais estão prontos para importar.",
+        "retryFailed": "Tentar de novo os arquivos com falha",
+        "progressFile": "Lendo {name} ({current} de {total})",
+        "acrossFiles": "(arquivos: {count})",
+        "currencyConflict": "Os extratos escolhidos têm moedas diferentes ({currencies}). Todos serão importados para uma só conta, na moeda dessa conta.",
+        "unsupportedFileNamed": "{name} não é um arquivo PDF, CSV, TXT, JPG, PNG ou WebP",
+        "unreadableImageNamed": "Não foi possível ler {name} como imagem",
+        "invalidPdfNamed": "{name} não parece ser um PDF válido. O arquivo pode estar corrompido ou ter sido renomeado.",
+        "invalidImageNamed": "{name} não parece ser uma imagem JPG, PNG ou WebP válida. O arquivo pode estar corrompido ou ter sido renomeado.",
+        "invalidTextNamed": "{name} não parece ser um arquivo {ext} válido. O arquivo pode ser binário ou ter sido renomeado.",
+        "pasteImageButton": "Colar imagem",
+        "pasteShortcutHint": "ou pressione {shortcut}",
+        "clipboardNoImage": "Nenhuma imagem encontrada na área de transferência.",
+        "clipboardReadFailed": "Não foi possível ler a área de transferência. Permita o acesso a ela ou cole com o atalho de teclado.",
+        "unreadableFiles": "Não foi possível ler: {files}",
+        "fileStatus": {
+          "pending": "Não analisado",
+          "estimating": "Analisando…",
+          "estimated": "Pronto",
+          "estimateFailed": "Não foi possível analisar",
+          "extracting": "Lendo…",
+          "extracted": "{count} transação | {count} transações",
+          "failed": "Falhou"
+        },
+        "analyzeButton": "Analisar arquivo | Analisar {count} arquivos",
+        "tryAgain": "Tentar de novo",
+        "modelLabel": "Modelo",
+        "estimatedCostLabel": "Custo estimado",
+        "estimatedTokensLabel": "Tokens estimados",
+        "extractButton": "Extrair transações",
+        "progressMessage": "Isso pode levar de 30 a 60 segundos, dependendo do tamanho do documento",
+        "foundLabel": "Encontradas:",
+        "transactions": "transações",
+        "fromLabel": "de",
+        "inLabel": "em",
+        "continueMessage": "Continue para escolher uma conta para estas transações.",
+        "continueButton": "Continuar para a conta",
+        "tokenWarning": {
+          "medium": {
+            "title": "Arquivo grande detectado",
+            "description": "O processamento pode levar de 1 a 2 minutos. Aguarde um pouco."
+          },
+          "high": {
+            "title": "Arquivo muito grande detectado",
+            "description": "O processamento pode levar vários minutos por causa do tamanho do arquivo."
+          },
+          "extreme": {
+            "title": "Arquivo grande demais",
+            "description": "O processamento pode levar mais de 5 minutos. Para agilizar, divida o arquivo em partes menores."
+          }
+        },
+        "status": {
+          "sendingFile": "Enviando o arquivo para a IA…",
+          "readingDocument": "A IA está lendo o documento…",
+          "analyzingStructure": "Analisando a estrutura do extrato…",
+          "extractingData": "Extraindo os dados das transações…",
+          "processingTransactions": "Processando as transações…",
+          "finalizing": "Finalizando a extração…",
+          "almostDone": "Quase pronto…"
+        },
+        "tokenFormat": "{inputTokens}K de entrada, ~{outputTokens}K de saída",
+        "pdfPasswordLabel": "Senha do PDF",
+        "pdfPasswordPlaceholder": "Digite a senha do documento",
+        "pdfPasswordSubmit": "Desbloquear e analisar"
+      },
+      "accountSelect": {
+        "newlyCreated": "(recém-criada)",
+        "differentCurrency": "Moeda diferente",
+        "linkedToBanks": "Conectadas a bancos",
+        "linkedToBanksTooltip": "Por enquanto, a importação de extratos só funciona com contas manuais.",
+        "noAccountsFound": "Nenhuma conta encontrada",
+        "currencyAccounts": "Contas em {currency}"
+      },
+      "accountSelection": {
+        "transactions": "Transações:",
+        "files": "Extratos:",
+        "filesList": "De: {files}",
+        "currencyConflict": "Os extratos têm moedas diferentes ({currencies}). Escolha a moeda que a conta vai usar:",
+        "bank": "Banco:",
+        "currency": "Moeda:",
+        "currencyNotDetected": "Não foi possível identificar a moeda do extrato. Escolha a moeda manualmente:",
+        "currencyMismatch": "A moeda do extrato ({statementCurrency}) é diferente da moeda da conta ({accountCurrency}). As transações serão importadas na moeda da conta.",
+        "yourCurrenciesGroup": "Suas moedas",
+        "allCurrenciesGroup": "Todas as moedas",
+        "createNew": "Criar nova",
+        "back": "Voltar",
+        "importTransactions": "Importar transações",
+        "checkForDuplicates": "Procurar duplicatas"
+      },
+      "createAccountDialog": {
+        "title": "Criar conta para a importação",
+        "description": "Crie uma conta nova para importar as transações do seu extrato.",
+        "accountNameLabel": "Nome da conta",
+        "currencyLabel": "Moeda",
+        "fromStatement": "(do extrato)",
+        "currencyLocked": "A moeda está fixada para coincidir com a do extrato ({currency}).",
+        "currencyWillBeAdded": "Observação: {currency} será adicionada às suas moedas.",
+        "cancel": "Cancelar",
+        "creating": "Criando…",
+        "createAccount": "Criar conta",
+        "validation": {
+          "nameRequired": "Digite um nome para a conta.",
+          "currencyRequired": "Escolha uma moeda."
+        },
+        "success": "Conta criada",
+        "error": "Não foi possível criar a conta"
+      },
+      "transactionReview": {
+        "checkingDuplicates": "Procurando duplicatas…",
+        "extractedLabel": "Extraídas:",
+        "fromFiles": "(extratos: {count})",
+        "duplicatesLabel": "Possíveis duplicatas:",
+        "willImportLabel": "Serão importadas:",
+        "alreadyInAccountLabel": "Já na conta:",
+        "timelineTitle": "Linha do tempo das transações",
+        "legendNew": "Nova",
+        "legendDuplicate": "Duplicata",
+        "legendExisting": "Já na conta",
+        "statusDup": "Duplicata",
+        "statusImport": "Importar",
+        "statusExists": "Na conta",
+        "duplicateInfoSkipped": "Transações que serão ignoradas por serem duplicatas: {count}.",
+        "duplicateInfoOverridden": "Duplicatas que serão importadas mesmo assim: {count}.",
+        "toggleInfo": "As linhas marcadas serão importadas. As duplicatas começam desmarcadas — marque uma para importá-la mesmo assim.",
+        "backButton": "Voltar",
+        "continueButton": "Continuar para a importação",
+        "transactionCount": "(transações: {count})",
+        "duplicateCheckFailed": "Não foi possível comparar este extrato com as suas transações existentes, então a contagem de duplicatas abaixo não está disponível. Revise a lista antes de importar.",
+        "noDescription": "Sem descrição"
+      },
+      "droppedRowsWarning": "{count} linha da resposta da IA não pôde ser lida e foi ignorada. A contagem de importadas abaixo pode ser menor do que o que está no seu arquivo. | {count} linhas da resposta da IA não puderam ser lidas e foram ignoradas. A contagem de importadas abaixo pode ser menor do que o que está no seu arquivo.",
+      "errors": {
+        "estimateFailed": "Não foi possível analisar o arquivo",
+        "extractFailed": "Não foi possível extrair as transações",
+        "importFailed": "Não foi possível iniciar a importação"
+      },
+      "importResults": {
+        "readyTitle": "Pronto para importar",
+        "readyDescription": "Revise o resumo abaixo e clique em “Importar transações” para continuar.",
+        "accountLabel": "Conta:",
+        "statementsLabel": "Extratos:",
+        "toImportLabel": "Transações a importar:",
+        "toSkipLabel": "Transações a ignorar:",
+        "backButton": "Voltar",
+        "importButton": "Importar transações ({count})",
+        "importingTitle": "Importando as transações",
+        "importingDescription": "Aguarde enquanto importamos suas transações…",
+        "failedTitle": "A importação falhou",
+        "failedDescription": "Nada foi importado. Os detalhes abaixo vêm do servidor.",
+        "jobFailedDescription": "A importação parou antes de terminar. Algumas transações podem já ter sido criadas. Confira suas transações antes de importar este extrato de novo.",
+        "tryAgainButton": "Tentar de novo",
+        "completeTitle": "Importação concluída",
+        "completeWithIssuesTitle": "Importação concluída com problemas",
+        "successDescription": "Suas transações foram importadas.",
+        "partialDescription": "Algumas transações não puderam ser importadas.",
+        "importedLabel": "Importadas:",
+        "skippedLabel": "Ignoradas:",
+        "errorsTitle": "Erros da importação",
+        "transactionNumberHeader": "Nº da transação",
+        "errorHeader": "Erro",
+        "batchIdNote": "ID do lote de importação: {batchId}. Use este ID para encontrar e gerenciar todas as transações importadas.",
+        "viewTransactionsButton": "Ver transações",
+        "startNewImportButton": "Fazer nova importação",
+        "rowErrors": {
+          "invalidDate": "Data “{date}” não reconhecida",
+          "futureDate": "A data {date} está no futuro",
+          "amountNotPositive": "O valor precisa ser maior que zero (recebido: {amount})",
+          "amountTooLarge": "O valor {amount} passa do máximo de {max}",
+          "rowFailed": "Não foi possível importar esta transação"
+        }
+      }
+    }
+  }
+}

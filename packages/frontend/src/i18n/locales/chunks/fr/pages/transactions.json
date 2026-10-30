@@ -160,7 +160,26 @@
         "noGroupsMessage": "Aucun groupe d'opérations pour le moment.",
         "emptyStateHint": "Sélectionnez des opérations sur la page Opérations et cliquez sur « Créer un groupe » pour commencer.",
         "transactionCountLabel": "opérations",
-        "deleteError": "Échec de la suppression du groupe. Veuillez réessayer."
+        "deleteError": "Échec de la suppression du groupe. Veuillez réessayer.",
+        "loadError": "Couldn't load transaction groups",
+        "description": "Bundle related transactions, like a trip or a transfer chain, and see them together.",
+        "noMatchTitle": "No groups match your search",
+        "moreActions": "Autres actions pour {name}",
+        "columns": {
+          "name": "Nom",
+          "transactions": "Opérations",
+          "date": "Date",
+          "net": "Net"
+        },
+        "sort": {
+          "label": "Sort groups",
+          "dateDesc": "Newest first",
+          "dateAsc": "Oldest first",
+          "nameAsc": "Name A–Z",
+          "nameDesc": "Name Z–A",
+          "amountDesc": "Net: high to low",
+          "amountAsc": "Net: low to high"
+        }
       },
       "errors": {
         "nameRequired": "Le nom du groupe est obligatoire",

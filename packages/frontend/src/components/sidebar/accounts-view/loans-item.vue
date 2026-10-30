@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { LoanApi } from '@/api/loans';
+import LoanLogo from '@/components/common/loan-logo.vue';
 import Button from '@/components/lib/ui/button/Button.vue';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useFormatCurrency } from '@/composable/formatters';
-import { getLoanTypeIcon } from '@/pages/loans/loan-type-presentation';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { computed } from 'vue';
 
@@ -17,7 +17,6 @@ const { formatCompactAmount, formatAmountByCurrencyCode } = useFormatCurrency();
 // the signed balance renders as a red negative — matching how liability accounts
 // read in the Bank Accounts list rather than looking like a positive asset.
 const balance = computed(() => props.loan.currentBalance);
-const loanIcon = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetails.loanType }));
 </script>
 
 <template>
@@ -29,7 +28,7 @@ const loanIcon = computed(() => getLoanTypeIcon({ loanType: props.loan.loanDetai
     <Button :variant="isActive ? 'secondary' : 'ghost'" as="div" size="default" class="h-auto w-full px-2">
       <div class="flex w-full items-center justify-between gap-x-2">
         <div class="flex min-w-0 items-center gap-1.5">
-          <component :is="loanIcon" class="text-muted-foreground size-3.5 shrink-0" />
+          <LoanLogo :loan="loan" class="size-5" />
           <span class="truncate text-sm">{{ loan.name }}</span>
         </div>
         <DesktopOnlyTooltip :content="formatAmountByCurrencyCode(balance, loan.currencyCode)">

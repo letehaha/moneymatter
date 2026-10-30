@@ -103,7 +103,8 @@
       "debitCard": "Debetná karta",
       "mobilePayment": "Mobilná platba",
       "voucher": "Poukaz",
-      "webPayment": "Platba cez web"
+      "webPayment": "Platba cez web",
+      "none": "Žiadne"
     },
     "vehicleClasses": {
       "sedan": "Sedan",
@@ -290,6 +291,13 @@
         "lean": "Lean FIRE",
         "regular": "FIRE",
         "fat": "Fat FIRE"
+      },
+      "pace": {
+        "ahead": "o {duration} skôr",
+        "behind": "o {duration} neskôr",
+        "onPace": "Na dobrej ceste",
+        "backInReach": "Znova dosiahnuteľný",
+        "offTrack": "Na zlej ceste"
       }
     }
   },
@@ -543,6 +551,12 @@
       "removeTransactionDescriptionNormal": "Naozaj chcete odstrániť túto transakciu zo skupiny?",
       "removeButtonText": "Odstrániť",
       "removeAndDeleteButtonText": "Odstrániť a zmazať skupinu",
+      "removeFromGroup": "Odstrániť zo skupiny",
+      "saveError": "Skupinu sa nepodarilo uložiť",
+      "removeError": "Transakciu sa nepodarilo odstrániť zo skupiny",
+      "manageTransactions": "Spravovať",
+      "showMoreNote": "Zobraziť viac",
+      "showLessNote": "Zobraziť menej",
       "summary": {
         "transactions": "Transakcie",
         "net": "Čistý zostatok",

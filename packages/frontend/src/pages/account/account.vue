@@ -76,12 +76,20 @@
       <Card.Card class="w-full max-w-150 pt-6">
         <Card.CardContent>
           <Tabs.Tabs default-value="records">
-            <Tabs.TabsList class="w-full justify-start">
-              <Tabs.TabsTrigger value="records">{{ t('pages.account.rightPanel.transactions') }}</Tabs.TabsTrigger>
-              <Tabs.TabsTrigger disabled value="analytics">{{
-                t('pages.account.rightPanel.analyticsSoon')
-              }}</Tabs.TabsTrigger>
-            </Tabs.TabsList>
+            <div class="@container/account-tx flex items-center gap-2">
+              <Tabs.TabsList class="min-w-0 flex-1 justify-start">
+                <Tabs.TabsTrigger value="records">{{ t('pages.account.rightPanel.transactions') }}</Tabs.TabsTrigger>
+                <Tabs.TabsTrigger disabled value="analytics">{{
+                  t('pages.account.rightPanel.analyticsSoon')
+                }}</Tabs.TabsTrigger>
+              </Tabs.TabsList>
+              <Button as-child variant="outline" size="sm" :aria-label="t('pages.account.rightPanel.viewAll')">
+                <router-link :to="{ name: ROUTES_NAMES.transactions, query: { accountIds: account.id } }">
+                  <TableIcon class="size-4" />
+                  <span class="hidden @md/account-tx:inline">{{ t('pages.account.rightPanel.viewAll') }}</span>
+                </router-link>
+              </Button>
+            </div>
             <Tabs.TabsContent value="records">
               <template v-if="isFetched">
                 <ScrollArea :scroll-area-id="SCROLL_AREA_IDS.accountTransactions" class="h-screen max-h-150">
@@ -107,6 +115,7 @@ import { loadTransactions } from '@/api';
 import { getVehicles } from '@/api/vehicles';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import ResourceNotFound from '@/components/common/resource-not-found.vue';
+import { Button } from '@/components/lib/ui/button';
 import { captureException } from '@/lib/sentry';
 import * as Card from '@/components/lib/ui/card';
 import { Callout } from '@/components/lib/ui/callout';
@@ -118,6 +127,7 @@ import TransactionsList from '@/components/transactions-list/transactions-list.v
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAccountsStore } from '@/stores';
 import { ACCOUNT_CATEGORIES } from '@bt/shared/types';
+import { TableIcon } from '@lucide/vue';
 import { useInfiniteQuery, useQuery } from '@tanstack/vue-query';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';

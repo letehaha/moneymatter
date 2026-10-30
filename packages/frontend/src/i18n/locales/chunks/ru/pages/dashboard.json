@@ -428,13 +428,6 @@
       "loadFailed": "Couldn't load recurring payments"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Учитывать запланированные платежи",
-          "on": "Вкл.",
-          "off": "Выкл."
-        }
-      },
       "settings": {
         "excludeTitle": "Исключить транзакции",
         "excludeTransfersDescription": "Скрывать переводы между собственными счетами",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Скрывать транзакции корректировки баланса",
         "plannedTitle": "Запланированные транзакции",
         "excludePlannedDescription": "Скрывать ожидающие запланированные транзакции из списка",
+        "scheduledTitle": "Запланированные платежи",
+        "excludeScheduledDescription": "Hide upcoming and overdue subscription payments from the list",
+        "scheduledSaveError": "Failed to update scheduled payments setting",
         "nothingExcluded": "Ничего не исключено",
         "tagsStyleTitle": "Теги",
         "tagsStyleNames": "Names",
@@ -504,7 +500,8 @@
         "title": "Plan your path to FIRE",
         "description": "Plus feature",
         "action": "Unlock"
-      }
+      },
+      "paceVs": "vs {month}"
     }
   }
 }

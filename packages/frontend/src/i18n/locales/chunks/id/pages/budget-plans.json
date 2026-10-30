@@ -106,6 +106,7 @@
       "goToAccounts": "Pergi ke Akun",
       "cadenceLabel": "Resets",
       "startsOnLabel": "Starts on",
+      "startsOnOutOfRange": "Pick a date from {from} to today.",
       "accountsLabel": "Akun",
       "accountsPlaceholder": "Pilih Akun",
       "rolloverLabel": "Rollover",

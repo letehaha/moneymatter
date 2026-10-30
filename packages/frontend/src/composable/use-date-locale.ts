@@ -15,7 +15,7 @@ import {
   formatDistanceToNow as dateFnsFormatDistanceToNow,
   formatRelative as dateFnsFormatRelative,
 } from 'date-fns';
-import { de, enUS, es, fr, id, ru, sk, uk } from 'date-fns/locale';
+import { de, enUS, es, fr, id, ptBR, ru, sk, uk } from 'date-fns/locale';
 import { computed } from 'vue';
 
 // date-fns locale type
@@ -31,6 +31,7 @@ const localeMap: Record<SupportedLocale, DateFnsLocale> = {
   sk,
   id,
   ru,
+  'pt-BR': ptBR,
 };
 
 /**

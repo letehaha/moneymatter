@@ -199,6 +199,41 @@ export const resolveRefundPairs = async ({
   return pairs;
 };
 
+export const loadSplitsByTxId = async ({
+  transactionIds,
+}: {
+  transactionIds: string[];
+}): Promise<Map<string, TransactionSplits[]>> => {
+  const splits = await TransactionSplits.findAll({
+    where: { transactionId: { [Op.in]: transactionIds } },
+    attributes: ['id', 'transactionId', 'categoryId', 'refAmount'],
+  });
+  const splitsByTxId = new Map<string, TransactionSplits[]>();
+  for (const split of splits) {
+    const existing = splitsByTxId.get(split.transactionId) ?? [];
+    existing.push(split);
+    splitsByTxId.set(split.transactionId, existing);
+  }
+  return splitsByTxId;
+};
+
+/** The primary category keeps `cents − Σ splits` (only when positive), each split its own amount. */
+export const allocateTransaction = ({
+  cents,
+  categoryId,
+  splits = [],
+}: {
+  cents: number;
+  categoryId: string | null;
+  splits?: Pick<TransactionSplits, 'categoryId' | 'refAmount'>[];
+}): { categoryId: string | null; cents: number }[] => {
+  if (splits.length === 0) return [{ categoryId, cents }];
+
+  const splitLegs = splits.map((split) => ({ categoryId: split.categoryId, cents: split.refAmount.toCents() }));
+  const primaryCents = cents - splitLegs.reduce((sum, leg) => sum + leg.cents, 0);
+  return primaryCents > 0 ? [{ categoryId, cents: primaryCents }, ...splitLegs] : splitLegs;
+};
+
 export const computeCategoryAllocations = async ({
   transactions,
   applyRefunds,
@@ -211,38 +246,20 @@ export const computeCategoryAllocations = async ({
 }): Promise<CategoryAllocations> => {
   if (transactions.length === 0) return { base: [], refunds: [] };
 
-  const txIds = transactions.map((tx) => tx.id);
-
-  const [splits, refundPairs] = await Promise.all([
-    TransactionSplits.findAll({
-      where: { transactionId: { [Op.in]: txIds } },
-      attributes: ['id', 'transactionId', 'categoryId', 'refAmount'],
-    }),
+  const [splitsByTxId, refundPairs] = await Promise.all([
+    loadSplitsByTxId({ transactionIds: transactions.map((tx) => tx.id) }),
     applyRefunds ? resolveRefundPairs({ transactions }) : Promise.resolve<CategoryRefundPair[]>([]),
   ]);
-
-  const splitsByTxId = new Map<string, TransactionSplits[]>();
-  for (const split of splits) {
-    const existing = splitsByTxId.get(split.transactionId) ?? [];
-    existing.push(split);
-    splitsByTxId.set(split.transactionId, existing);
-  }
 
   const base: CategoryAllocationLeg[] = [];
   for (const tx of transactions) {
     const time = new Date(tx.time);
-    const transactionType = tx.transactionType;
-    const txSplits = splitsByTxId.get(tx.id);
-    if (txSplits && txSplits.length > 0) {
-      const splitsTotal = txSplits.reduce((sum, split) => sum + split.refAmount.toCents(), 0);
-      const primaryAmount = tx.refAmount.toCents() - splitsTotal;
-      if (primaryAmount > 0) base.push({ categoryId: tx.categoryId, cents: primaryAmount, time, transactionType });
-      for (const split of txSplits) {
-        base.push({ categoryId: split.categoryId, cents: split.refAmount.toCents(), time, transactionType });
-      }
-    } else {
-      base.push({ categoryId: tx.categoryId, cents: tx.refAmount.toCents(), time, transactionType });
-    }
+    const legs = allocateTransaction({
+      cents: tx.refAmount.toCents(),
+      categoryId: tx.categoryId,
+      splits: splitsByTxId.get(tx.id),
+    });
+    for (const leg of legs) base.push({ ...leg, time, transactionType: tx.transactionType });
   }
 
   const refundLegs: CategoryAllocationLeg[] = refundPairs.map((pair) => ({

@@ -1,0 +1,156 @@
+{
+  "portfolioDetail": {
+    "loading": "Carregando...",
+    "loadingDetails": "Carregando os detalhes da carteira...",
+    "loadError": "Não foi possível carregar os detalhes da carteira.",
+    "tryAgain": "Tentar de novo",
+    "notFoundTitle": "Carteira não encontrada",
+    "notFoundDescription": "Não encontramos esta carteira. Ela pode ter sido excluída ou você pode não ter acesso a ela.",
+    "backToInvestments": "Voltar para investimentos",
+    "subtitle": "Visão geral da carteira",
+    "actions": {
+      "transfer": "Transferir",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "exchangeCurrency": "Trocar moeda"
+    },
+    "balance": {
+      "totalValue": "Valor total",
+      "baseCurrencyEquivalent": "≈ {value} em {code}",
+      "loadError": "Não foi possível carregar o resumo da carteira.",
+      "metrics": {
+        "costBasis": "Custo de aquisição",
+        "unrealized": "Não realizado",
+        "realized": "Realizado",
+        "totalReturn": "Rentabilidade total"
+      }
+    },
+    "cashBalances": {
+      "title": "Saldos em dinheiro",
+      "emptyState": "Nenhum saldo em dinheiro",
+      "tabs": {
+        "balances": "Saldos",
+        "cashTransactions": "Transações",
+        "buysSells": "Compras e vendas"
+      },
+      "cashTransactions": {
+        "addButton": "Adicionar transação em dinheiro",
+        "emptyState": "Nenhuma transação em dinheiro ainda",
+        "deposit": "Depósito",
+        "withdrawal": "Saque",
+        "transferIn": "Transferência recebida",
+        "transferOut": "Transferência enviada",
+        "exchange": "Câmbio",
+        "deleteConfirm": "Excluir esta transação em dinheiro?",
+        "linkedTransactionNote": "Esta transferência tem uma transação de conta vinculada. O que você quer fazer com ela?",
+        "keepLinkedTransaction": "Manter a transação da conta. Os detalhes originais da transação serão restaurados.",
+        "deleteLinkedTransaction": "Excluir também a transação de conta vinculada",
+        "adjustmentBadge": "Ajuste",
+        "noCashBadge": "Sem impacto no dinheiro",
+        "markedAsAdjustment": "Marcada como correção de saldo",
+        "markedAsContribution": "Marcada como aporte real",
+        "adjustmentError": "Não foi possível atualizar esta transferência",
+        "rowActions": "Ações da transação",
+        "emptyStateDescription": "Os depósitos, saques e transferências desta carteira vão aparecer aqui.",
+        "edit": "Editar",
+        "editDialog": {
+          "title": "Editar transação em dinheiro",
+          "description": "Altere como esta transação é tratada nos relatórios.",
+          "save": "Salvar alterações"
+        }
+      },
+      "buysSells": {
+        "emptyState": "Nenhuma transação de compra ou venda",
+        "shares": "unidades"
+      }
+    },
+    "holdings": {
+      "title": "Posições",
+      "subtitle": "Tickers: {count}",
+      "filterPlaceholder": "Filtrar por ticker ou nome...",
+      "addButton": "Adicionar ticker",
+      "importButton": "Importar transações",
+      "importButtonShort": "Importar"
+    },
+    "holdingsTable": {
+      "loadError": "Não foi possível carregar as posições",
+      "empty": "Nenhuma posição ainda",
+      "noFilterResults": "Nenhuma posição encontrada",
+      "noFilterResultsDescription": "Nenhuma posição corresponde à sua busca. Tente outro ticker ou nome.",
+      "clearFilterButton": "Limpar busca",
+      "headers": {
+        "symbol": "Ticker",
+        "name": "Nome",
+        "shares": "Quantidade",
+        "price": "Preço",
+        "avgCostPerShare": "Preço médio",
+        "totalCost": "Custo total",
+        "marketValue": "Valor de mercado",
+        "unrealizedGain": "Ganho não realizado",
+        "realizedGain": "Ganho realizado"
+      },
+      "transactions": {
+        "loading": "Carregando transações...",
+        "empty": "Nenhuma transação encontrada.",
+        "addFirstButton": "Adicionar a primeira transação"
+      },
+      "closedPositions": "Posições encerradas ({count})",
+      "stalePrice": "Último preço disponível. O valor de mercado e os ganhos podem estar desatualizados.",
+      "deleteHolding": {
+        "ariaLabel": "Excluir posição",
+        "title": "Excluir posição",
+        "description": "A posição em {symbol} e todas as transações dela serão excluídas permanentemente. Não é possível desfazer esta ação.",
+        "confirmLabel": "Excluir posição",
+        "success": "Posição excluída",
+        "error": "Não foi possível excluir a posição."
+      },
+      "addTransactionDialog": {
+        "title": "Adicionar transação",
+        "description": "Adicione uma nova transação à sua carteira."
+      },
+      "tryAgainLater": "Tente de novo mais tarde",
+      "emptyDescription": "Adicione sua primeira transação para começar a acompanhar seus investimentos",
+      "addFirstHolding": "Adicionar a primeira posição",
+      "importTransactions": "Ou importar de um arquivo"
+    },
+    "transactionsList": {
+      "title": "Transações",
+      "addButton": "Adicionar transação",
+      "loadingMore": "Carregando mais transações...",
+      "headers": {
+        "date": "Data",
+        "type": "Tipo",
+        "note": "Observação",
+        "quantity": "Quantidade",
+        "price": "Preço",
+        "fees": "Taxas",
+        "amount": "Valor",
+        "refAmount": "Valor na moeda base",
+        "refFees": "Taxas na moeda base",
+        "settlementAmount": "Dinheiro",
+        "settlementCurrency": "Moeda de liquidação",
+        "settlementFees": "Taxas em dinheiro",
+        "settlementRate": "Câmbio",
+        "createdAt": "Adicionada em"
+      },
+      "categories": {
+        "buy": "Compra",
+        "sell": "Venda",
+        "dividend": "Dividendo",
+        "transfer": "Transferência",
+        "tax": "Imposto",
+        "fee": "Taxa",
+        "cancel": "Cancelamento",
+        "other": "Outro"
+      },
+      "headerTooltips": {
+        "amount": "Total da transação na moeda de negociação do ativo.",
+        "refAmount": "Total da transação convertido para a sua moeda base.",
+        "settlementAmount": "Dinheiro efetivamente pago ou recebido na sua conta, na moeda de liquidação."
+      },
+      "deleteTransaction": {
+        "tooltip": "Excluir transação"
+      }
+    }
+  }
+}

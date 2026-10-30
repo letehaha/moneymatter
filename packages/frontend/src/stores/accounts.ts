@@ -117,6 +117,8 @@ export const useAccountsStore = defineStore('accounts', () => {
     queryClient.invalidateQueries({
       queryKey: VUE_QUERY_CACHE_KEYS.accountGroups,
     });
+    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.loansList });
+    queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.vehiclesList });
 
     if (BALANCE_AFFECTING_FIELDS.some((field) => field in data)) {
       queryClient.invalidateQueries({

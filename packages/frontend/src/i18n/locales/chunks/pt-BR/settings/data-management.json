@@ -1,0 +1,105 @@
+{
+  "settings": {
+    "dataManagement": {
+      "title": "Importar dados",
+      "description": "Importe seus dados financeiros de várias fontes",
+      "tabs": {
+        "import": "Importar",
+        "export": "Exportar"
+      },
+      "textSource": {
+        "title": "Importar de qualquer texto",
+        "aiBadge": "Com IA",
+        "listDescription": "Extratos bancários, recibos, prints ou qualquer texto"
+      },
+      "csv": {
+        "title": "Importar CSV",
+        "description": "Importe transações de um arquivo CSV. Você pode mapear colunas, tratar duplicadas e criar novas contas ou categorias conforme precisar.",
+        "button": "Importar arquivo CSV",
+        "cta": "Importar arquivo CSV",
+        "listDescription": "Mapeie colunas e trate duplicadas"
+      },
+      "ofx": {
+        "title": "Extrato OFX ou QFX",
+        "listDescription": "Importe transações bancárias e de cartão de crédito"
+      },
+      "ynab": {
+        "title": "Importar do YNAB",
+        "listDescription": "Contas, transações, categorias e favorecidos"
+      },
+      "budget-bakers-wallet": {
+        "title": "Wallet (BudgetBakers)",
+        "listDescription": "Várias moedas, com pareamento automático de transferências"
+      },
+      "ms-money": {
+        "title": "Microsoft Money",
+        "listDescription": "Importe um arquivo .mny do Microsoft Money"
+      },
+      "importHistory": {
+        "title": "Histórico de importações",
+        "listDescription": "Veja importações anteriores e o que elas criaram"
+      },
+      "import": {
+        "back": "Voltar para a importação",
+        "whichImporterHint": "Não sabe qual usar?",
+        "groups": {
+          "filesAndText": "Arquivos e texto",
+          "fromOtherApps": "De outros apps",
+          "history": "Histórico"
+        },
+        "requestMore": {
+          "title": "Quer mais opções? Peça aqui"
+        }
+      },
+      "export": {
+        "cardTitle": "Exportar seus dados",
+        "backupOrExportHint": "Não sabe se precisa de exportação ou de backup?",
+        "form": {
+          "title": "Exportar seus dados",
+          "description": "Escolha um formato e as partes dos seus dados que você quer. O download começa assim que você confirmar.",
+          "confirmLabel": "Baixar",
+          "confirmLoading": "Preparando...",
+          "back": "Voltar para a exportação"
+        },
+        "format": {
+          "label": "Formato",
+          "json": "JSON",
+          "csv": "CSV",
+          "xlsx": "Excel"
+        },
+        "groups": {
+          "label": "O que incluir",
+          "selectAll": "Selecionar tudo",
+          "deselectAll": "Desmarcar tudo",
+          "transactions": "Transações e contas",
+          "transactionsDescription": "Transações, contas, histórico de saldos, categorias, tags e veículos",
+          "budgets": "Acompanhamentos",
+          "budgetsDescription": "Acompanhamentos personalizados com categorias vinculadas e totais de gastos",
+          "subscriptions": "Pagamentos recorrentes e lembretes",
+          "subscriptionsDescription": "Assinaturas recorrentes e lembretes de contas a pagar",
+          "investments": "Investimentos",
+          "investmentsDescription": "Carteiras, posições, transações de investimento e transferências"
+        },
+        "notifications": {
+          "success": "Exportação pronta — o download deve começar em instantes.",
+          "successWithCount": "Exportação pronta — linhas exportadas: {count}.",
+          "failed": "Não foi possível exportar seus dados. Tente de novo.",
+          "downloadBlocked": "Exportação pronta, mas seu navegador bloqueou o download. Confira se há um aviso de download na barra de endereço.",
+          "tooLarge": "Seus dados são grandes demais para uma única exportação. Fale com o suporte."
+        },
+        "dateRange": {
+          "label": "Período (opcional)",
+          "helper": "Só as tabelas de eventos (transações, histórico de saldos, movimentações de investimento) são filtradas. Contas, categorias e outras tabelas de referência continuam completas.",
+          "placeholder": "Todo o período",
+          "clear": "Limpar período"
+        },
+        "accounts": {
+          "label": "Contas",
+          "helper": "Exporte só as contas escolhidas, com as transações e o histórico de saldos delas. Deixe em branco para exportar todas as contas.",
+          "placeholder": "Todas as contas"
+        },
+        "listDescription": "Baixe um zip para planilhas, impostos ou migração"
+      }
+    }
+  }
+}

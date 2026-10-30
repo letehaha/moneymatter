@@ -92,10 +92,9 @@ export function useDashboardLayout() {
     widgetId: string;
     config: Record<string, unknown>;
   }) => {
-    const currentSettings = settings.value;
-    if (!currentSettings) return;
+    if (!settings.value) return;
 
-    const widgets = cloneDeep(currentSettings.dashboard?.widgets ?? activeWidgets.value);
+    const widgets = cloneDeep(activeWidgets.value);
     const widget = widgets.find((w) => w.widgetId === widgetId);
     if (widget) {
       widget.config = { ...widget.config, ...config };

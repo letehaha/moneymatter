@@ -1,12 +1,14 @@
+import type { NonImageLogoPayload } from '@bt/shared/types';
 import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
 import { findOrThrowNotFound } from '@common/utils/find-or-throw-not-found';
 import { t } from '@i18n/index';
 import { ValidationError } from '@js/errors';
 import Portfolios from '@models/investments/portfolios.model';
 import * as UsersCurrencies from '@models/users-currencies.model';
+import { applyManualLogoPatch } from '@services/brand-logos';
 import { withTransaction } from '@services/common/with-transaction';
 
-interface UpdatePortfolioParams {
+interface UpdatePortfolioParams extends NonImageLogoPayload {
   userId: number;
   portfolioId: string;
   name?: string;
@@ -24,6 +26,10 @@ const updatePortfolioImpl = async ({
   description,
   displayCurrencyCode,
   isEnabled,
+  logoDomain,
+  logoInitials,
+  logoColor,
+  logoIcon,
 }: UpdatePortfolioParams) => {
   // Find the portfolio and verify ownership
   const portfolio = await findOrThrowNotFound({
@@ -53,7 +59,12 @@ const updatePortfolioImpl = async ({
   if (displayCurrencyCode !== undefined) updateData.displayCurrencyCode = displayCurrencyCode;
   if (isEnabled !== undefined) updateData.isEnabled = isEnabled;
 
-  await portfolio.update(updateData);
+  const logoPatch = applyManualLogoPatch({
+    patch: { logoDomain, logoInitials, logoColor, logoIcon },
+    stored: portfolio,
+  });
+
+  await portfolio.update({ ...updateData, ...logoPatch });
 
   return portfolio.reload();
 };

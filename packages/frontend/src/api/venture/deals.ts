@@ -1,5 +1,6 @@
 import { api } from '@/api/_api';
 import type {
+  NonImageLogoPayload,
   VENTURE_DEAL_STATUS,
   VENTURE_SPV_SUBTYPE,
   VENTURE_VEHICLE_TYPE,
@@ -24,9 +25,10 @@ interface CreateVentureDealPayload {
   notes?: string | null;
 }
 
-type UpdateVentureDealPayload = Partial<CreateVentureDealPayload> & {
-  status?: VENTURE_DEAL_STATUS;
-};
+type UpdateVentureDealPayload = Partial<CreateVentureDealPayload> &
+  NonImageLogoPayload & {
+    status?: VENTURE_DEAL_STATUS;
+  };
 
 interface VentureDealsListResponse {
   data: VentureDealModel[];

@@ -10,10 +10,10 @@
         "errorNotification": "Error al actualizar el ajuste"
       },
       "payday": {
-        "label": "Pay cycle starts on",
-        "description": "Day of the month your pay cycle starts. The dashboard's default period runs from this day to the day before it next month.",
+        "label": "El ciclo de pago comienza el",
+        "description": "Día del mes que comienza tu ciclo de pago. El período predeterminado del tablero de control se extiende de este día al día anterior al mes próximo.",
         "placeholder": "Seleccionar día",
-        "successNotification": "Pay cycle start updated"
+        "successNotification": "Inicio del ciclo de pago actualizado"
       },
       "manualTransferMatching": {
         "label": "Asociar transferencias con cuentas manuales",

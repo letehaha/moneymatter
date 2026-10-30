@@ -75,6 +75,7 @@ const t = (key: string, fallback: string): string => {
 };
 
 const PLAN_REQUIRED_NOTIFICATION_ID = 'plan-required-error';
+const BACKGROUND_JOB_POLL_MS = 2000;
 
 /** Persistent toast for a 402: the user cannot retry the action without picking a plan. */
 export const notifyPlanRequired = ({ message }: { message: string }) => {
@@ -216,7 +217,7 @@ class ApiCaller {
    *
    * @private
    */
-  async _call(opts: ApiCall) {
+  async _call(opts: ApiCall): Promise<ApiValidResponse> {
     // TypeScript is dump and things that URLSearchParams only records with string-only
     // values, but it's not
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -337,6 +338,15 @@ class ApiCaller {
     const { status, response } = parsed;
 
     if (status === API_RESPONSE_STATUS.success) {
+      // Long AI calls run as server-side jobs, so a browser or proxy timeout cannot cut them off.
+      if (result.status === 202 && response?.backgroundJobId) {
+        await new Promise((resolve) => setTimeout(resolve, BACKGROUND_JOB_POLL_MS));
+        return this._call({
+          method: 'GET',
+          endpoint: `/background-jobs/${response.backgroundJobId}`,
+          options: opts.options,
+        });
+      }
       return response;
     }
 

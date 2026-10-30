@@ -3,7 +3,7 @@ import { API_PREFIX } from '@root/config';
 import type { matchInvoice as apiMatchInvoice } from '@services/invoice-matching/match-invoice.service';
 import request from 'supertest';
 
-import { makeRequest } from './common';
+import { followBackgroundJob, makeRequest } from './common';
 
 type MatchInvoiceResponse = Awaited<ReturnType<typeof apiMatchInvoice>>;
 
@@ -29,7 +29,7 @@ export async function matchInvoice({
     .set('Content-Type', contentType);
   if (global.APP_AUTH_COOKIES) base.set('Cookie', global.APP_AUTH_COOKIES);
 
-  const result = await base.send(file);
+  const result = await followBackgroundJob({ response: await base.send(file) });
   const body = result.body as { response?: MatchInvoiceResponse & { message?: string } };
 
   return {

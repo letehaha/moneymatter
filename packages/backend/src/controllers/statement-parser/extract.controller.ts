@@ -61,4 +61,5 @@ export const extractController = createController(
       data: extractionResult.result,
     };
   },
+  { inBackground: true },
 );

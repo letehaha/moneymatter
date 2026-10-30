@@ -15,7 +15,7 @@ const props = withDefaults(
     maxSize?: number;
     /** Custom validator. Return an error string to reject the file, or null to accept. */
     validator?: (file: File) => string | null;
-    /** Disables click + drop + remove. */
+    /** Disables click + drop + paste + remove. */
     disabled?: boolean;
     /** Tailwind height class for the dropzone. Default `h-48`. */
     height?: string;
@@ -82,6 +82,7 @@ function clear() {
       :idle-text="t('fileDropzone.clickOrDrag')"
       :drag-text="t('fileDropzone.dropHere')"
       @files="onFiles"
+      @error="emit('error', $event)"
     >
       <template v-if="$slots.empty" #empty="{ isDragging }">
         <slot name="empty" :is-dragging="isDragging" />

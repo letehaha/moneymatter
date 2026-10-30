@@ -1,0 +1,162 @@
+{
+  "investmentsImport": {
+    "title": "Importar transações",
+    "description": "Envie um CSV de uma corretora de cripto, um PDF da sua corretora ou cole seu histórico de transações. A IA extrai as compras e vendas, e você revisa tudo antes de qualquer importação.",
+    "backToPortfolio": "Voltar para a carteira",
+    "upload": {
+      "fileTab": "Arquivo",
+      "pasteTab": "Colar texto",
+      "fileHintFormats": "CSV, TXT ou PDF",
+      "pastePlaceholder": "Cole aqui sua lista de transações…",
+      "estimatedCost": "Custo estimado",
+      "model": "Modelo",
+      "estimateButton": "Estimar custo",
+      "extractButton": "Extrair",
+      "extracting": "Extraindo…",
+      "modeAi": "Importação com IA",
+      "modeCsv": "Importação de CSV",
+      "modeAiHint": "Envie qualquer arquivo — a IA extrai suas transações automaticamente. Consome tokens.",
+      "modeCsvHint": "Envie um CSV da sua corretora e mapeie as colunas manualmente. Sem uso de IA.",
+      "csvHintFormats": "Somente arquivos CSV.",
+      "parsingCsv": "Lendo o arquivo…",
+      "continueToMapping": "Continuar para o mapeamento"
+    },
+    "review": {
+      "warningsTitle": "Avisos",
+      "empty": "A IA não encontrou nenhuma transação neste arquivo.",
+      "pickSecurity": "Escolha um ativo",
+      "pickCurrency": "Moeda",
+      "searchPlaceholder": "Busque pelo ticker…",
+      "searching": "Buscando…",
+      "parsedSymbolHint": "Não conseguimos associar {symbol} automaticamente — escolha o ativo certo abaixo.",
+      "startTyping": "Comece a digitar para buscar",
+      "noResults": "Nenhum resultado",
+      "alreadyPicked": "já escolhido",
+      "duplicateSecurity": "Este ativo já foi escolhido em outra linha",
+      "willMerge": "Será mesclado com a posição existente",
+      "txns": "{count} transação | {count} transações",
+      "expand": "Expandir",
+      "collapse": "Recolher",
+      "deleteHolding": "Excluir posição",
+      "deleteTransaction": "Excluir transação",
+      "buy": "Compra",
+      "sell": "Venda",
+      "possibleDup": "Possível duplicata",
+      "skipping": "Ignorada",
+      "duplicateBadgeTooltip": "Esta transação parece uma possível duplicata de uma transação existente. Clique para ignorá-la — caso contrário, uma nova transação será criada ao lado da existente (sem mesclar nem substituir).",
+      "back": "Voltar",
+      "commit": "Importar",
+      "cols": {
+        "date": "Data",
+        "side": "Tipo",
+        "qty": "Quantidade",
+        "price": "Preço",
+        "fees": "Taxas",
+        "amount": "Valor",
+        "security": "Ativo",
+        "currency": "Moeda",
+        "txCount": "Transações"
+      },
+      "tooltips": {
+        "security": "Escolhemos um ativo automaticamente com base no ticker extraído pela IA. Clique no campo para trocar, se estiver errado.",
+        "currency": "Moeda em que foi liquidado o lado em dinheiro da operação (ex.: USD, EUR). Ela não muda como a posição é armazenada — os valores são convertidos para a sua moeda base usando as taxas de câmbio históricas da data da operação.",
+        "parentRowDuplicates": "{count} possível duplicata nesta posição será importada como uma nova transação, a não ser que você a ignore. | {count} possíveis duplicatas nesta posição serão importadas como novas transações, a não ser que você as ignore."
+      }
+    },
+    "done": {
+      "transactions": "Transações adicionadas"
+    },
+    "notifications": {
+      "imported": "Transações importadas: {count}",
+      "extractFailed": "Não foi possível extrair as transações do arquivo.",
+      "importFailed": "Não foi possível importar as transações.",
+      "skippedHoldings": "Posições ignoradas: {count}",
+      "failedTransactions": "Transações com falha: {count}",
+      "estimateFailed": "Não foi possível estimar o custo da importação",
+      "csvParseFailed": "Não foi possível ler o CSV. Confira o formato do arquivo e tente de novo."
+    },
+    "errors": {
+      "csv": {
+        "empty": "O arquivo CSV está vazio.",
+        "noHeaders": "O arquivo CSV não tem linha de cabeçalho.",
+        "forbiddenHeader": "O cabeçalho do CSV usa um nome reservado (ex.: __proto__).",
+        "tooManyRows": "O CSV passa do limite de {max} linhas.",
+        "parseError": "Não foi possível ler o arquivo CSV. Confira se é um CSV válido."
+      }
+    },
+    "warnings": {
+      "csvRowMissingSymbol": "Linha {row}: ticker ausente",
+      "csvRowInvalidDate": "Linha {row}: data “{value}” não reconhecida",
+      "csvRowUnmappedSide": "Linha {row}: valor de operação “{value}” não mapeado",
+      "csvRowInvalidQuantity": "Linha {row}: quantidade “{value}” inválida",
+      "csvRowInvalidPrice": "Linha {row}: preço “{value}” inválido",
+      "csvRowInvalidFees": "Linha {row}: taxas “{value}” inválidas",
+      "aiRowsDropped": "A IA retornou {count} linha que não pôde ser lida (data, operação ou números inválidos), então ela foi ignorada. | A IA retornou {count} linhas que não puderam ser lidas (data, operação ou números inválidos), então elas foram ignoradas.",
+      "csvRowsInvalid": "{count} de {total} linhas do CSV foi ignorada: | {count} de {total} linhas do CSV foram ignoradas:",
+      "csvRowsSkipped": "{count} linha foi ignorada porque o valor da operação está mapeado para “Ignorar”. | {count} linhas foram ignoradas porque o valor da operação está mapeado para “Ignorar”.",
+      "unsupportedQuoteCurrency": "{symbol}: {count} linha tem uma moeda de cotação não suportada. | {symbol}: {count} linhas têm uma moeda de cotação não suportada.",
+      "duplicateCheckFailed": "Não foi possível procurar possíveis duplicatas. Revise manualmente suas transações existentes.",
+      "providerLookupFailed": "Não foi possível buscar “{symbol}” no provedor de dados de mercado. Tente de novo mais tarde.",
+      "noResolvedSecurity": "“{symbol}” ignorado: nenhum ativo escolhido.",
+      "noCurrency": "“{symbol}” ignorado: nenhuma moeda escolhida.",
+      "portfolioNotFound": "“{symbol}” ignorado: a carteira de destino não foi encontrada.",
+      "holdingSetupFailed": "“{symbol}” ignorado: não foi possível configurar a posição.",
+      "holdingSetupFailedWithReason": "“{symbol}” ignorado: {reason}",
+      "unsupportedCategory": "Ignoramos uma operação ({side}) de “{symbol}” em {date}: esta categoria ainda não é suportada.",
+      "transactionFailed": "Não foi possível importar uma operação ({side}) de “{symbol}” em {date}.",
+      "transactionFailedWithReason": "Não foi possível importar uma operação ({side}) de “{symbol}” em {date}: {reason}",
+      "unknown": "Algumas linhas podem não ter sido importadas como esperado."
+    },
+    "columnMapping": {
+      "rowsAndDelimiter": "Linhas: {rows} · delimitador “{delimiter}”",
+      "backToUpload": "Voltar",
+      "previewTitle": "Prévia",
+      "requiredTitle": "Colunas obrigatórias",
+      "optionalTitle": "Colunas opcionais",
+      "defaultsTitle": "Padrões",
+      "sideValueMappingTitle": "Mapeamento dos valores de operação",
+      "sideValueMappingHint": "Diga o que cada valor da coluna de operação significa.",
+      "sideValueMappingEmpty": "Nenhum valor encontrado nesta coluna ainda.",
+      "selectColumn": "Escolha uma coluna…",
+      "notMapped": "Não mapeada",
+      "pickCategory": "Escolha uma categoria…",
+      "cashMovementsNote": "Depósitos e saques em dinheiro ainda não são suportados. Escolha “Ignorar estas linhas” para esses valores de operação e deixe-os fora da importação.",
+      "extractButton": "Continuar para a revisão",
+      "extracting": "Extraindo…",
+      "fields": {
+        "symbol": "Ticker",
+        "date": "Data",
+        "side": "Operação",
+        "quantity": "Quantidade",
+        "price": "Preço",
+        "fees": "Taxas",
+        "currency": "Moeda",
+        "name": "Nome",
+        "defaultCurrency": "Moeda padrão",
+        "defaultAssetClass": "Classe de ativo padrão"
+      },
+      "tooltips": {
+        "fees": "Coluna com a corretagem/taxas de cada transação. Se não for mapeada, as taxas ficam em 0.",
+        "currency": "Coluna da moeda de cotação (ex.: USD, EUR, USDT). Define o lado em dinheiro de cada operação. Quando está vazia ou não mapeada, usa a moeda padrão abaixo.",
+        "name": "Nome de exibição do ativo, opcional (ex.: “Apple Inc.”). Só é usado na etapa de revisão — o ticker continua sendo o identificador oficial.",
+        "defaultCurrency": "Usada quando a coluna de moeda acima está vazia ou não mapeada.",
+        "defaultAssetClass": "Ajuda a associar seus tickers aos ativos. Escolha a classe da maioria das linhas do seu arquivo — você pode trocar para cada ativo na etapa de revisão."
+      }
+    },
+    "categories": {
+      "buy": "Compra",
+      "sell": "Venda",
+      "dividend": "Dividendo",
+      "transfer": "Transferência",
+      "tax": "Imposto",
+      "fee": "Taxa",
+      "cancel": "Cancelamento",
+      "other": "Outro",
+      "skip": "Ignorar estas linhas"
+    },
+    "assetClasses": {
+      "stocks": "Ações",
+      "crypto": "Cripto"
+    }
+  }
+}

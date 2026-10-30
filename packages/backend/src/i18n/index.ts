@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import Backend from 'i18next-fs-backend';
 import path from 'path';
 
-export const SUPPORTED_LOCALES: string[] = Object.values(LOCALES);
+const SUPPORTED_LOCALES: string[] = Object.values(LOCALES);
 const DEFAULT_LOCALE = 'en';
 
 // Initialize i18next - store the promise to allow awaiting initialization

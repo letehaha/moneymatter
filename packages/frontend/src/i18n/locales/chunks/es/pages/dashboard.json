@@ -428,13 +428,6 @@
       "loadFailed": "No se pudo cargar los pagos recurrentes"
     },
     "latestRecords": {
-      "config": {
-        "includeScheduled": {
-          "label": "Incluir pagos programados",
-          "on": "Activado",
-          "off": "Desactivado"
-        }
-      },
       "settings": {
         "excludeTitle": "Excluir transacciones",
         "excludeTransfersDescription": "Ocultar transferencias entre sus propias cuentas",
@@ -443,6 +436,9 @@
         "excludeBalanceAdjustmentsDescription": "Ocultar transacciones de ajuste de saldo",
         "plannedTitle": "Transacciones planificadas",
         "excludePlannedDescription": "Ocultar de la lista las transacciones planificadas pendientes",
+        "scheduledTitle": "Pagos programados",
+        "excludeScheduledDescription": "Ocultar pagos de suscripción próximos y vencidos de la lista",
+        "scheduledSaveError": "No se pudo actualizar la configuración de los pagos programados",
         "nothingExcluded": "Nada excluido",
         "tagsStyleTitle": "Etiquetas",
         "tagsStyleNames": "Nombres",
@@ -504,7 +500,8 @@
         "title": "Planifica tu camino a FIRE",
         "description": "Característica Plus",
         "action": "Desbloquear"
-      }
+      },
+      "paceVs": "vs. {month}"
     }
   }
 }

@@ -3,6 +3,8 @@
     <div class="flex flex-col gap-3 @[26rem]/currencies:flex-row @[26rem]/currencies:items-end">
       <input-field
         v-model="form.baseRate"
+        type="number"
+        only-positive
         class="min-w-0 @[26rem]/currencies:flex-1"
         :label="`1 ${currency.currency?.code} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
@@ -11,6 +13,8 @@
       />
       <input-field
         v-model="form.quoteRate"
+        type="number"
+        only-positive
         class="min-w-0 @[26rem]/currencies:flex-1"
         :label="`1 ${currency.quoteCode} =`"
         :placeholder="$t('settings.currencies.exchangeRate.ratePlaceholder')"
@@ -115,7 +119,9 @@ const shouldShowSaveButton = computed(() => {
 });
 
 // Live off: only actionable once the rate actually changed. Live on: Save drops the custom rate.
-const canSubmit = computed(() => (isLiveRateEnabled.value ? true : isRateChanged.value));
+const canSubmit = computed(() =>
+  isLiveRateEnabled.value ? true : isRateChanged.value && form.baseRate > 0 && form.quoteRate > 0,
+);
 
 const onBaseFocus = () => {
   isBaseEditing.value = true;

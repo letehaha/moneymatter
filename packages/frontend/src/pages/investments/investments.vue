@@ -132,15 +132,7 @@
             >
               <CardHeader class="p-4 pb-2">
                 <div class="flex items-start gap-3">
-                  <!-- Portfolio type icon -->
-                  <div
-                    :class="[
-                      'flex size-10 shrink-0 items-center justify-center rounded-lg',
-                      getPortfolioTypeColor(portfolio.portfolioType),
-                    ]"
-                  >
-                    <component :is="getPortfolioTypeIcon(portfolio.portfolioType)" class="size-5" />
-                  </div>
+                  <PortfolioLogo :portfolio="portfolio" class="size-10" />
                   <div class="min-w-0 flex-1">
                     <h3 class="truncate text-base leading-tight font-semibold tracking-tight">
                       {{ portfolio.name }}
@@ -205,6 +197,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/common/dropdown-menu';
 import PageWrapper from '@/components/common/page-wrapper.vue';
+import PortfolioLogo from '@/components/common/portfolio-logo.vue';
 import { DemoRestricted } from '@/components/demo';
 import CreatePortfolioDialog from '@/components/dialogs/create-portfolio-dialog.vue';
 import DeletePortfolioDialog from '@/components/dialogs/delete-portfolio-dialog.vue';
@@ -216,20 +209,8 @@ import PortfolioCardBalance from '@/pages/investments/components/portfolio-card-
 import PortfoliosTrash from '@/pages/investments/components/portfolios-trash.vue';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useCurrenciesStore, useUserStore } from '@/stores';
-import { PORTFOLIO_TYPE } from '@bt/shared/types/investments';
-import {
-  BriefcaseIcon,
-  Building2Icon,
-  EyeIcon,
-  EyeOffIcon,
-  LandmarkIcon,
-  MoreVerticalIcon,
-  PiggyBankIcon,
-  PlusIcon,
-  Trash2Icon,
-} from '@lucide/vue';
+import { BriefcaseIcon, EyeIcon, EyeOffIcon, MoreVerticalIcon, PlusIcon, Trash2Icon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
-import type { FunctionalComponent } from 'vue';
 import { computed } from 'vue';
 
 const userStore = useUserStore();
@@ -240,28 +221,6 @@ const portfoliosQuery = usePortfolios();
 
 // Copy before sorting: sort() mutates in place, and the source array is the query cache.
 const portfolios = computed(() => [...(portfoliosQuery.data.value ?? [])].sort((a, b) => +b.isEnabled - +a.isEnabled));
-
-// Portfolio type icon mapping
-const getPortfolioTypeIcon = (type: PORTFOLIO_TYPE): FunctionalComponent => {
-  const iconMap: Record<PORTFOLIO_TYPE, FunctionalComponent> = {
-    [PORTFOLIO_TYPE.investment]: Building2Icon,
-    [PORTFOLIO_TYPE.retirement]: LandmarkIcon,
-    [PORTFOLIO_TYPE.savings]: PiggyBankIcon,
-    [PORTFOLIO_TYPE.other]: BriefcaseIcon,
-  };
-  return iconMap[type] || BriefcaseIcon;
-};
-
-// Portfolio type color mapping
-const getPortfolioTypeColor = (type: PORTFOLIO_TYPE): string => {
-  const colorMap: Record<PORTFOLIO_TYPE, string> = {
-    [PORTFOLIO_TYPE.investment]: 'bg-blue-500/10 text-blue-600',
-    [PORTFOLIO_TYPE.retirement]: 'bg-emerald-500/10 text-emerald-600',
-    [PORTFOLIO_TYPE.savings]: 'bg-amber-500/10 text-amber-600',
-    [PORTFOLIO_TYPE.other]: 'bg-slate-500/10 text-slate-600',
-  };
-  return colorMap[type] || 'bg-slate-500/10 text-slate-600';
-};
 
 // Format portfolio type for display (capitalize and replace underscores)
 const formatPortfolioType = (type: string): string => {

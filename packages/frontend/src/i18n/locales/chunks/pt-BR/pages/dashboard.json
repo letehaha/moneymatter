@@ -1,0 +1,507 @@
+{
+  "dashboard": {
+    "editMode": {
+      "customize": "Personalizar",
+      "addWidgets": "Adicionar widgets",
+      "emptyState": "Clique em “Personalizar” para adicionar widgets",
+      "removeWidget": "Remover widget"
+    },
+    "widgets": {
+      "common": {
+        "includePlanned": "Incluir transações agendadas",
+        "includePlannedTooltip": "Considerar as transações agendadas pendentes nos números deste widget.",
+        "includePlannedSaveError": "Não foi possível salvar a configuração de transações agendadas. Tente de novo."
+      },
+      "balanceTrend": {
+        "title": "Evolução do saldo",
+        "balanceTypes": {
+          "total": "Total",
+          "accounts": "Contas",
+          "portfolios": "Carteiras",
+          "ventures": "Participações",
+          "vehicles": "Veículos",
+          "loans": "Empréstimos"
+        },
+        "tooltip": {
+          "accounts": "Contas:",
+          "portfolios": "Carteiras:",
+          "total": "Total:",
+          "ventures": "Participações:",
+          "vehicles": "Veículos:",
+          "loans": "Empréstimos:"
+        },
+        "today": "Hoje",
+        "vsPreviousPeriod": "vs. período anterior",
+        "spikePanel": {
+          "accounts": "Contas",
+          "portfolios": "Carteiras",
+          "priceDrivenChange": "Variação causada por preços — detalhes das transações em breve",
+          "noSignificantTransactions": "Nenhuma transação relevante nesta data.",
+          "seeAllTransactions": "Ver todas as transações"
+        },
+        "spikeSettings": {
+          "showMarkers": "Mostrar marcadores de pico",
+          "showMarkersTooltip": "Mostra ou oculta no gráfico os marcadores coloridos que destacam variações relevantes do saldo.",
+          "percentThreshold": "Variação mín. %",
+          "percentThresholdTooltip": "Variação percentual mínima do saldo entre dois dias seguidos para marcar um pico. É preciso passar deste limite ou do limite absoluto. Valores baixos mostram mais marcadores.",
+          "absoluteThreshold": "Variação mín. {symbol}",
+          "absoluteThresholdTooltip": "Variação absoluta mínima do saldo (na sua moeda base) para contar como pico. É preciso passar deste limite ou do limite em %.",
+          "maxMarkers": "Máx. de marcadores",
+          "maxMarkersTooltip": "Número máximo de marcadores de pico mostrados no gráfico. Quando houver mais picos que esse limite, só os mais relevantes aparecem.",
+          "resetDefaults": "Restaurar padrões",
+          "accept": "Aceitar",
+          "validation": {
+            "outOfRange": "O valor está fora do intervalo permitido",
+            "integer": "Digite um número inteiro"
+          }
+        },
+        "settings": {
+          "title": "Configurações",
+          "spikeMarkers": "Marcadores de pico",
+          "fitToLatestData": "Ajustar aos dados mais recentes",
+          "fitToLatestDataTooltip": "Quando ativado, o gráfico vai só até o seu dado mais recente. Quando desativado, o eixo x cobre todo o período escolhido, deixando espaço vazio para as datas futuras.",
+          "fitToLatestDataLockedTooltip": "Desative as transações agendadas para alterar isto — a projeção delas sempre estende o gráfico até o fim do período.",
+          "on": "Ativado",
+          "off": "Desativado",
+          "includeInTotal": "Incluir no total",
+          "includePlannedTooltip": "Mostrar uma projeção tracejada das transações agendadas pendentes sobre a evolução."
+        },
+        "componentsSettings": {
+          "description": "Escolha quais componentes entram na linha do saldo total.",
+          "vehicles": "Veículos",
+          "ventures": "Participações",
+          "loans": "Empréstimos",
+          "loansTooltip": "Quando ativado, os saldos devedores dos seus empréstimos são subtraídos do total (patrimônio líquido real). Quando desativado, os empréstimos são ignorados e o total mostra só os bens.",
+          "allIncluded": "Todos os componentes",
+          "excluding": "Exceto {items}"
+        },
+        "projection": {
+          "summary": "{amount} projetado · {count} lançamento agendado até {date} | {amount} projetado · {count} lançamentos agendados até {date}"
+        }
+      },
+      "expensesStructure": {
+        "title": "Estrutura de despesas",
+        "today": "Hoje",
+        "vsPreviousPeriod": "vs. período anterior",
+        "viewButton": "Ver"
+      },
+      "latestTransactions": {
+        "title": "Últimas transações",
+        "showAll": "Ver todas"
+      },
+      "subscriptions": {
+        "title": "Assinaturas e contas a pagar",
+        "titleSubscriptions": "Assinaturas",
+        "titleBills": "Contas a pagar",
+        "titleAll": "Pagamentos recorrentes",
+        "titleInstallments": "Parcelamentos",
+        "configTypeAll": "Todos",
+        "configTypeSubscriptions": "Assinaturas",
+        "configTypeBills": "Contas a pagar",
+        "configTypeInstallments": "Parcelamentos",
+        "activeSummary": "Ativos: {count}",
+        "perYear": " por ano",
+        "incomeSummary": "Ativos: {count} · receita de {amount}/mês",
+        "percentOfIncome": "{percent}% da receita média",
+        "settings": {
+          "title": "Configurações",
+          "show": "Mostrar",
+          "incomeWindow": "Período da receita",
+          "incomeWindowTooltip": "Calculamos a média das suas entradas neste período para saber que % da receita vai para pagamentos recorrentes.",
+          "lookbackOption": {
+            "1": "Último mês",
+            "3": "Últimos 3 meses",
+            "6": "Últimos 6 meses",
+            "12": "Últimos 12 meses"
+          },
+          "showStrip": "Mostrar gráfico de 30 dias"
+        }
+      },
+      "categoryTracker": {
+        "title": "Categorias em observação",
+        "addCategory": "Adicionar categoria",
+        "selectCategories": "Escolher categorias",
+        "showTrend": "Mostrar evolução de 6 meses",
+        "sort": {
+          "title": "Ordenar por",
+          "custom": "Ordem personalizada",
+          "spendDesc": "Maiores gastos primeiro",
+          "spendAsc": "Menores gastos primeiro"
+        }
+      },
+      "cashFlow": {
+        "title": "Fluxo de caixa",
+        "description": "Mostra quanto você poupou: receitas menos despesas no período escolhido, com a evolução dos períodos anteriores",
+        "vsPrevious": "vs. anterior",
+        "notAvailable": "N/D",
+        "income": "Receitas",
+        "expenses": "Despesas",
+        "saved": "Poupado",
+        "previousPeriodsTrend": "Evolução dos períodos anteriores",
+        "viewDetails": "Ver detalhes",
+        "savingsRateLine": "Mostrar linha da taxa de poupança",
+        "savingsRate": "Taxa de poupança",
+        "noIncome": "sem receita"
+      },
+      "netWorth": {
+        "title": "Patrimônio líquido",
+        "description": "Como seu patrimônio líquido mudou no período escolhido. Considera toda variação de saldo: contas, investimentos, empréstimos e valor dos bens.",
+        "vsPrevious": "vs. anterior",
+        "start": "Início",
+        "end": "Fim",
+        "growth": "Crescimento",
+        "changeInPeriod": "Variação em {period}",
+        "previousPeriodsTrend": "Evolução dos períodos anteriores",
+        "excludedTooltip": "Fora do patrimônio líquido: {components}",
+        "viewHistory": "Ver histórico",
+        "loadFailed": "Não foi possível carregar os dados do patrimônio líquido.",
+        "components": {
+          "ventures": "Participações",
+          "vehicles": "Veículos",
+          "loans": "Empréstimos"
+        },
+        "settings": {
+          "title": "Incluir no patrimônio líquido",
+          "loans": "Empréstimos",
+          "vehicles": "Veículos",
+          "ventures": "Participações"
+        },
+        "trendTooltip": {
+          "change": "Variação",
+          "netWorth": "Patrimônio líquido",
+          "noData": "Sem dados para este período"
+        }
+      },
+      "creditUtilization": {
+        "title": "Uso do limite de crédito",
+        "description": "Mostra quanto dos seus limites de crédito está em uso em todas as contas",
+        "utilized": "em uso",
+        "noAccounts": "Nenhuma conta com limite de crédito"
+      },
+      "cashAccounts": {
+        "vsLastMonth": "vs. mês passado",
+        "runwayUnit": "meses",
+        "runwayLabel": "de despesas",
+        "loadFailed": "Não foi possível carregar suas contas",
+        "runwayHint": {
+          "description": "O recomendado é ter uma reserva de emergência que cubra de 3 a 6 meses das suas despesas.",
+          "critical": "Menos de 1 mês: pouquíssima margem",
+          "low": "1–3 meses: abaixo do recomendado",
+          "good": "3+ meses: faixa recomendada"
+        }
+      },
+      "assetsLiabilities": {
+        "netWorth": "Patrimônio líquido",
+        "owesShare": "Você deve {percent} do que tem",
+        "noDebt": "Sem dívidas",
+        "assets": "Bens",
+        "liabilities": "Dívidas",
+        "loadFailed": "Não foi possível carregar seus bens e dívidas",
+        "buckets": {
+          "cash": "Dinheiro",
+          "investments": "Investimentos",
+          "ventures": "Participações",
+          "vehicles": "Veículos",
+          "loans": "Empréstimos",
+          "creditAndOverdrafts": "Crédito e cheque especial"
+        }
+      },
+      "spendingPace": {
+        "tabs": {
+          "lastMonth": "vs. mês passado",
+          "average": "vs. média de 3 meses"
+        },
+        "spentIn": "Gasto em {month}",
+        "onTrackFor": "No ritmo para {amount}",
+        "vsComparison": "{percent} vs. {name}",
+        "comparison": {
+          "average": "média de {n} meses"
+        },
+        "stats": {
+          "byToday": "{name} até hoje",
+          "total": "{name} no total",
+          "daysLeft": "Dias restantes"
+        },
+        "chart": {
+          "today": "Hoje",
+          "ariaLabel": "Gastos deste mês"
+        },
+        "tooltip": {
+          "spent": "Gasto",
+          "forecast": "Previsão",
+          "spikeFrom": "Gasto em {date}"
+        },
+        "legend": {
+          "thisMonth": "Este mês",
+          "forecast": "Previsão",
+          "averageMonth": "Mês médio"
+        },
+        "hints": {
+          "noHistory": "A comparação aparece depois do seu primeiro mês completo.",
+          "fewMonths": "Média do {n} mês completo que você tem até agora. | Média dos {n} meses completos que você tem até agora."
+        },
+        "loadFailed": "Não foi possível carregar seus gastos.",
+        "settings": {
+          "spikes": {
+            "title": "Marcas de pico",
+            "summary": "Dias com ≥{percent}% dos gastos do mês",
+            "inputLabel": "Marcar um dia quando ele chegar a",
+            "hint": "Percentual do total de gastos do mês passado, 1–100%. As marcas aparecem no modo “vs. mês passado”."
+          },
+          "saved": "Configuração atualizada"
+        }
+      },
+      "plannedOverview": {
+        "title": "Agendados",
+        "projectedBy": "Projeção até {date}",
+        "upcoming": "Próximos · {count}",
+        "loadFailed": "Não foi possível carregar as transações agendadas"
+      },
+      "taxes": {
+        "title": "Alíquota média de impostos",
+        "description": "Gastos nas suas categorias de impostos como parte da receita, na média do período escolhido nas configurações do widget. As barras mostram os últimos 12 meses.",
+        "ofIncome": "da receita",
+        "vsTrailingRate": "{delta} p.p. vs. taxa de 12 meses ({rate})",
+        "average": "média de {amount}",
+        "amount": "Impostos",
+        "shareOfIncome": "Parte da receita",
+        "shareOfTaxes": "Parte dos impostos",
+        "other": "Outros",
+        "moreCategories": "Mais {count}",
+        "viewDetails": "Ver fluxo de caixa",
+        "loadFailed": "Não foi possível carregar os dados de impostos.",
+        "noCategories": {
+          "title": "Nenhuma categoria de impostos ainda",
+          "description": "Escolha quais categorias contam como impostos para ver sua alíquota.",
+          "action": "Escolher categorias"
+        },
+        "config": {
+          "months": {
+            "label": "Período da média",
+            "saveError": "Não foi possível salvar o período da média. Tente de novo.",
+            "m3": "3 meses",
+            "m6": "6 meses",
+            "m12": "12 meses"
+          }
+        },
+        "lastMonths": {
+          "m3": "Últimos 3 meses",
+          "m6": "Últimos 6 meses",
+          "m12": "Últimos 12 meses"
+        }
+      },
+      "budget": {
+        "spent": "gasto",
+        "ringLabel": "{percent}% do orçamento foi gasto",
+        "leftOf": "restante de {total}",
+        "overOf": "acima do orçamento de {total}",
+        "headerLeft": "Restam {amount}",
+        "headerOver": "{amount} acima",
+        "daysLeft": "Falta {count} dia | Faltam {count} dias",
+        "lastDay": "Último dia do período",
+        "empty": "Nenhum orçamento ainda",
+        "create": "Criar um orçamento",
+        "sort": {
+          "overspent": "Mais estourados primeiro"
+        }
+      },
+      "trackers": {
+        "spentOfLimit": "{spent} de {limit}",
+        "inOut": "{income} de entrada, {expense} de saída",
+        "net": "Líquido",
+        "noLimit": "Sem limite",
+        "empty": "Nenhum acompanhamento ainda",
+        "ended": "Encerrado",
+        "create": "Criar um acompanhamento"
+      },
+      "emptyState": "Não há dados no período escolhido.",
+      "registry": {
+        "balanceTrend": {
+          "name": "Evolução do saldo",
+          "description": "Acompanhe seu saldo ao longo do tempo"
+        },
+        "categoryTracker": {
+          "name": "Categorias em observação",
+          "description": "Acompanhe gastos e receitas das categorias escolhidas"
+        },
+        "spendingCategories": {
+          "name": "Gastos por categoria",
+          "description": "Veja para onde vai seu dinheiro"
+        },
+        "latestRecords": {
+          "name": "Últimas transações",
+          "description": "Suas transações mais recentes"
+        },
+        "subscriptions": {
+          "name": "Assinaturas e contas a pagar",
+          "description": "Visão geral dos pagamentos recorrentes"
+        },
+        "cashFlow": {
+          "name": "Fluxo de caixa",
+          "description": "Receitas vs. despesas com taxa de poupança"
+        },
+        "netWorth": {
+          "name": "Patrimônio líquido",
+          "description": "Como seu patrimônio líquido total muda ao longo do tempo, incluindo investimentos, empréstimos e bens."
+        },
+        "creditUtilization": {
+          "name": "Uso do limite de crédito",
+          "description": "Uso do limite de crédito nas suas contas"
+        },
+        "cashAccounts": {
+          "name": "Dinheiro e contas",
+          "description": "Total em dinheiro nas suas contas, a variação desde o mês passado e quantos meses de despesas ele cobre"
+        },
+        "assetsLiabilities": {
+          "name": "Bens e dívidas",
+          "description": "O que você tem, o que você deve e o patrimônio líquido entre os dois"
+        },
+        "spendingPace": {
+          "name": "Ritmo de gastos",
+          "description": "Gastos do mês até agora com uma previsão para o resto do mês, comparados com o mês passado ou com sua média de 3 meses."
+        },
+        "plannedOverview": {
+          "name": "Visão geral dos agendados",
+          "description": "Transações agendadas pendentes e seu saldo projetado"
+        },
+        "fireProgress": {
+          "name": "Progresso FIRE",
+          "description": "Quanto falta para sua independência financeira"
+        },
+        "taxes": {
+          "name": "Alíquota média de impostos",
+          "description": "Parte da receita paga em impostos, com a evolução de 12 meses"
+        },
+        "budget": {
+          "name": "Orçamento",
+          "description": "O que resta no período atual do orçamento, linha por linha"
+        },
+        "trackers": {
+          "name": "Acompanhamentos",
+          "description": "Cada acompanhamento ativo com quanto do limite já foi usado e o saldo líquido"
+        },
+        "goals": {
+          "name": "Metas",
+          "description": "Progresso das suas metas de economia",
+          "savedOfTarget": "{saved} de {target}",
+          "empty": {
+            "title": "Nenhuma meta ativa",
+            "description": "Defina uma meta e veja quanto falta para chegar lá.",
+            "action": "Criar uma meta"
+          },
+          "locked": {
+            "title": "Metas bloqueadas",
+            "description": "Junte dinheiro para o que importa e veja se você está no ritmo certo. Disponível nos planos pagos.",
+            "action": "Saiba mais"
+          },
+          "settings": {
+            "showReached": "Mostrar metas alcançadas"
+          },
+          "reachedSection": "Alcançadas"
+        }
+      }
+    },
+    "periodSelector": {
+      "presets": {
+        "currentMonth": "Mês atual",
+        "last3Months": "Últimos 3 meses",
+        "last6Months": "Últimos 6 meses",
+        "lastYear": "Últimos 12 meses",
+        "thisYear": "Este ano",
+        "previousYear": "Ano passado"
+      }
+    }
+  },
+  "widgets": {
+    "subscriptionsOverview": {
+      "payAction": "Marcar como pago",
+      "listTitle": "Próximos",
+      "dueCount": "A vencer: {count}",
+      "nothingDue": "Nada vence nos próximos 3 dias",
+      "overdueHint": "Vencido desde {date}",
+      "dueSoonHint": "Vence nos próximos 3 dias",
+      "strip": {
+        "title": "Próximos 30 dias",
+        "goingOut": "{amount} em saídas",
+        "today": "Hoje"
+      },
+      "loadFailed": "Não foi possível carregar os pagamentos recorrentes"
+    },
+    "latestRecords": {
+      "settings": {
+        "excludeTitle": "Excluir transações",
+        "excludeTransfersDescription": "Ocultar transferências entre suas próprias contas",
+        "excludeOutOfWalletDescription": "Ocultar transferências de e para contas que você não acompanha",
+        "balanceAdjustmentsTitle": "Ajustes de saldo",
+        "excludeBalanceAdjustmentsDescription": "Ocultar transações de ajuste de saldo",
+        "plannedTitle": "Transações agendadas",
+        "excludePlannedDescription": "Ocultar da lista as transações agendadas pendentes",
+        "scheduledTitle": "Pagamentos agendados",
+        "excludeScheduledDescription": "Ocultar da lista os pagamentos recorrentes próximos e em atraso",
+        "scheduledSaveError": "Não foi possível atualizar a configuração de pagamentos agendados",
+        "nothingExcluded": "Nada excluído",
+        "tagsStyleTitle": "Tags",
+        "tagsStyleNames": "Nomes",
+        "tagsStyleBars": "Barras",
+        "tagsStyleSaveError": "Não foi possível salvar o estilo das tags. Tente de novo.",
+        "showAccountTitle": "Conta",
+        "showAccountDescription": "Mostrar o logo da conta em cada transação",
+        "showAccountSaveError": "Não foi possível salvar a configuração da conta. Tente de novo."
+      },
+      "overdueBadge": "Vencido",
+      "scheduledBadge": "Agendado",
+      "payAction": "Marcar como pago"
+    },
+    "fireProgress": {
+      "title": "Progresso FIRE",
+      "config": {
+        "style": {
+          "label": "Estilo",
+          "ring": "Anel",
+          "numbers": "Números"
+        }
+      },
+      "openPlan": "Abrir plano FIRE",
+      "loadFailed": "Não foi possível carregar o progresso FIRE.",
+      "toType": "até {type}",
+      "ringLabelFor": "{pct}% da meta {type} alcançados, faltam {duration}",
+      "ringLabelReachedFor": "Meta {type} alcançada",
+      "ringLabelUnreachableFor": "{pct}% da meta {type} alcançados, inalcançável no seu ritmo atual",
+      "timeTo": "Tempo até {type}",
+      "unitYears": "{n} anos | {n} ano | {n} anos",
+      "unitMonths": "{n} meses | {n} mês | {n} meses",
+      "atAge": "aos {age} anos",
+      "nextMilestone": "Próximo marco",
+      "saved": "Poupado",
+      "progress": "Progresso",
+      "coastFire": "Coast FIRE",
+      "reached": "Alcançado",
+      "milestoneIn": "{pct}% em {duration}",
+      "typeNumber": "Número {type}",
+      "atRate": "a {rate}%",
+      "milestonesReached": "{n} de {total} marcos",
+      "balanceOfTarget": "{balance} de {target}",
+      "reachedType": "{type} alcançado",
+      "supports": "Cobre {amount}/mês",
+      "pctOfSpending": "{pct}% dos gastos",
+      "unreachable": "Inalcançável com a poupança atual",
+      "needs": "Precisa de cerca de {amount}/mês para chegar lá em {duration}",
+      "chart": {
+        "today": "Hoje",
+        "typeTarget": "{type} · {amount}",
+        "ariaLabel": "Trajetória do patrimônio líquido: histórico real até hoje, com projeção até seu número FIRE"
+      },
+      "setup": {
+        "title": "Planeje seu caminho até o FIRE",
+        "description": "Usa suas contas e seus gastos. Se você ainda não tem dados, bastam dois números.",
+        "action": "Configurar"
+      },
+      "locked": {
+        "title": "Planeje seu caminho até o FIRE",
+        "description": "Recurso do plano Plus",
+        "action": "Desbloquear"
+      },
+      "paceVs": "vs {month}"
+    }
+  }
+}

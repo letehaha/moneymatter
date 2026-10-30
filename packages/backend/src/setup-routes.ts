@@ -1,3 +1,4 @@
+import { resolveLocale } from '@bt/shared/i18n/locales';
 import { requestContext } from '@common/request-context';
 import { logger } from '@js/utils/logger';
 import { Sentry } from '@js/utils/sentry';
@@ -7,11 +8,11 @@ import http from 'node:http';
 
 import { API_PREFIX } from './config';
 import { auth, authPool } from './config/auth';
-import { SUPPORTED_LOCALES } from './i18n';
 import accountGroupsRoutes from './routes/account-groups';
 import accountsRoutes from './routes/accounts.route';
 import adminRoutes from './routes/admin.route';
 import attachmentsRoutes from './routes/attachments.route';
+import backgroundJobsRoutes from './routes/background-jobs.route';
 import bankDataProvidersRoutes from './routes/bank-data-providers.route';
 import betterAuthExtensionsRoutes from './routes/better-auth-extensions.route';
 import billingRoutes from './routes/billing.route';
@@ -164,10 +165,7 @@ export function setupRoutes(app: Express) {
   });
 
   app.all(`${API_PREFIX}/auth/*`, (req: Request, res: Response) => {
-    // Extract locale from Accept-Language header (same logic as detectLanguage middleware)
-    const supportedLocales = SUPPORTED_LOCALES;
-    const headerLang = req.headers['accept-language']?.split(',')[0]?.split('-')[0];
-    const locale = headerLang && supportedLocales.includes(headerLang) ? headerLang : 'en';
+    const locale = resolveLocale({ tag: req.headers['accept-language'] });
 
     // Wrap the handler in AsyncLocalStorage context to ensure locale is available in hooks
     requestContext.run({ locale }, () => {
@@ -179,6 +177,7 @@ export function setupRoutes(app: Express) {
   app.use(`${API_PREFIX}/accounts`, accountsRoutes);
   app.use(`${API_PREFIX}/transactions`, transactionsRoutes);
   app.use(`${API_PREFIX}/attachments`, attachmentsRoutes);
+  app.use(`${API_PREFIX}/background-jobs`, backgroundJobsRoutes);
   app.use(`${API_PREFIX}/logo-images`, logoImagesRoutes);
   app.use(`${API_PREFIX}/categories`, categoriesRoutes);
   app.use(`${API_PREFIX}/models/currencies`, modelsCurrenciesRoutes);

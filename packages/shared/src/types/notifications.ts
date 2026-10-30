@@ -19,6 +19,7 @@ export const NOTIFICATION_TYPES = {
   /** A smart tracking scan linked or suggested transactions for a tracker. */
   trackerAiMatches: 'tracker_ai_matches',
   goalReached: 'goal_reached',
+  unrealizedLossAlert: 'unrealized_loss_alert',
   shareInvitationReceived: 'share_invitation_received',
   shareInvitationSendFailed: 'share_invitation_send_failed',
   shareAccepted: 'share_accepted',
@@ -133,6 +134,39 @@ export interface GoalReachedNotificationPayload {
   currencyCode: string;
 }
 
+export const UNREALIZED_LOSS_ALERT_DEFAULTS = {
+  percentThreshold: 10,
+  amountThreshold: 500,
+} as const;
+
+export const UNREALIZED_LOSS_ALERT_LIMITS = {
+  percentThreshold: { min: 1, max: 100 },
+  amountThreshold: { min: 1, max: 1_000_000_000 },
+} as const;
+
+/** Off when unset; unset thresholds fall back to `UNREALIZED_LOSS_ALERT_DEFAULTS`. */
+export interface UnrealizedLossAlertsSettings {
+  enabled?: boolean;
+  percentThreshold?: number;
+  /** Base currency. */
+  amountThreshold?: number;
+}
+
+export interface UnrealizedLossAlertNotificationPayload {
+  /** Base currency of `lossAmount`. */
+  currencyCode: string;
+  holdings: Array<{
+    portfolioId: RecordId;
+    portfolioName: string;
+    securityId: RecordId;
+    symbol: string;
+    /** Positive percent below cost basis. */
+    lossPercent: number;
+    /** Positive decimal, base currency; null when the holding's rate to base is unavailable. */
+    lossAmount: number | null;
+  }>;
+}
+
 export interface StuckPendingNotificationPayload {
   transactionIds: RecordId[];
 }
@@ -208,6 +242,7 @@ export type NotificationPayload =
   | StuckPendingNotificationPayload
   | TrackerAiMatchesNotificationPayload
   | GoalReachedNotificationPayload
+  | UnrealizedLossAlertNotificationPayload
   | ShareInvitationNotificationPayload
   | ShareLifecycleNotificationPayload
   | ShareInvitationSendFailedPayload

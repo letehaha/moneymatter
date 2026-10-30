@@ -2,6 +2,7 @@
  * Mock implementation of better-auth for Jest tests.
  * Re-exports from the actual package where possible, mocks ESM-only parts.
  */
+import { resolveLocale } from '@bt/shared/i18n/locales';
 import { requestContext } from '@common/request-context';
 import { connection } from '@models/index';
 import { isIP } from 'node:net';
@@ -167,7 +168,7 @@ export function betterAuth(config: BetterAuthConfig): AuthInstance {
         // Extract locale from Accept-Language header for locale-aware signup
         // Note: supertest sends headers in lowercase
         const acceptLanguage = request.headers.get('Accept-Language') || request.headers.get('accept-language');
-        const locale = acceptLanguage?.split(',')[0]?.split('-')[0] || 'en';
+        const locale = resolveLocale({ tag: acceptLanguage });
 
         const newUser = {
           id: `test-user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,

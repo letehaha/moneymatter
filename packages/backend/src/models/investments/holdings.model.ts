@@ -106,6 +106,10 @@ export default class Holdings extends Model {
   @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
   excluded!: boolean;
 
+  /** Set when the holding's loss crossed the user's unrealized loss alert; cleared once it recovers, re-arming the alert. */
+  @Column({ type: DataType.DATE, allowNull: true })
+  declare lossAlertedAt: Date | null;
+
   @Column({ type: DataType.DATE, allowNull: false })
   declare createdAt: Date;
 

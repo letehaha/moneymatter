@@ -1,0 +1,145 @@
+{
+  "pages": {
+    "importExport": {
+      "msMoneyImport": {
+        "pageTitle": "Importar do Microsoft Money",
+        "pageDescription": "Traga suas contas, categorias e transações de um arquivo .mny do Microsoft Money.",
+        "stepper": {
+          "steps": {
+            "upload": "Envio",
+            "resolve": "Mapear dados",
+            "review": "Revisão",
+            "execute": "Importação",
+            "done": "Concluído"
+          }
+        },
+        "fileUpload": {
+          "stepTitle": "Envie seu arquivo do Money",
+          "description": "Escolha o arquivo .mny que o Microsoft Money salvou no seu computador.",
+          "maxSize": "Arquivo .mny, até 50 MB",
+          "passwordLabel": "Senha do arquivo (opcional)",
+          "passwordPlaceholder": "Digite a senha do arquivo",
+          "passwordHint": "Deixe em branco, a não ser que você tenha definido uma senha no Microsoft Money.",
+          "parsing": "Lendo o arquivo…",
+          "continue": "Continuar",
+          "errors": {
+            "invalidFormatNamed": "“{name}” não é um arquivo .mny.",
+            "passwordUnsupportedChars": "Esta senha tem caracteres que não conseguimos enviar. Tente uma senha sem emoji nem letras fora do alfabeto latino."
+          }
+        },
+        "errors": {
+          "uploadUnavailable": "O arquivo enviado não está mais disponível. Envie seu arquivo do Money de novo."
+        },
+        "resolve": {
+          "prepareFailed": "Não foi possível preparar o mapeamento de contas e categorias. Recarregue a página e tente de novo.",
+          "accounts": {
+            "sectionTitle": "Contas",
+            "currentBalanceLabel": "Saldo atual",
+            "currentBalancePlaceholder": "Deixe em branco para usar o total importado",
+            "willCreateHint": "Será criada na moeda {currency}.",
+            "currencyNotInFile": "Não consta no arquivo",
+            "skippedNote": "Contas que serão ignoradas: {count}. As transações delas — e as transferências de ou para elas — não serão importadas."
+          },
+          "categories": {
+            "sectionTitle": "Categorias"
+          },
+          "quickActions": {
+            "mapExactMatches": "Mapear correspondências exatas",
+            "createNewForUnmatched": "Criar novas para as sem correspondência",
+            "reset": "Redefinir",
+            "tooltips": {
+              "mapExactMatchesAccounts": "Vincula cada conta cujo nome é exatamente igual ao de uma conta que você já tem.",
+              "mapExactMatchesCategories": "Vincula cada categoria cujo nome é exatamente igual ao de uma categoria que você já tem.",
+              "createNewForUnmatched": "Define “criar nova” em todas as linhas ainda sem escolha.",
+              "reset": "Limpa todas as escolhas e refaz a correspondência."
+            }
+          },
+          "footer": {
+            "back": "Voltar",
+            "continue": "Continuar"
+          }
+        },
+        "review": {
+          "transactions": "Transações",
+          "transfersDetected": "Transferências",
+          "outOfWallet": "Fora da carteira",
+          "duplicatesSkipped": "Duplicatas ignoradas",
+          "willImport": "Serão importadas",
+          "dateRange": "Período: {from} — {to}",
+          "warningsTitle": "Alguns itens ficaram de fora",
+          "warningsHint": "Estas linhas não fazem parte da importação.",
+          "warnings": {
+            "accountTypeUnsupported": "Contas ignoradas: {count}",
+            "orphanRowSkipped": "Transações ignoradas: {count}",
+            "transferCounterpartNotImported": "Lados de transferência importados como fora da carteira: {count}",
+            "rowLimitReached": "Transações descartadas por passarem do limite: {count}",
+            "accountCurrencyMissing": "Contas sem moeda no arquivo: {count}. Usamos sua moeda base — troque na etapa de contas se estiver errado",
+            "rowMissingDate": "Transações ignoradas por não terem data legível: {count}",
+            "accountNameMissing": "Contas sem nome: {count}",
+            "accountNameDuplicated": "Contas com nome repetido: {count}",
+            "rowAmountUnreadable": "Transações ignoradas por não terem valor legível: {count}",
+            "fileSchemaUnexpected": "Problemas inesperados na estrutura do arquivo: {count}"
+          },
+          "includeVoided": {
+            "label": "Importar transações anuladas ({count})",
+            "hint": "O Microsoft Money mantém os lançamentos anulados no registro, mas nunca os aplica ao saldo. Por isso, eles são importados com valor zero e a tag “Void” — mantendo data, favorecido, categoria, observação e número do cheque."
+          },
+          "duplicatesTitle": "Possíveis duplicatas: {count}",
+          "duplicatesHint": "Estas transações parecem com transações que você já tem. Marque uma linha para importá-la mesmo assim; as duplicatas não marcadas são ignoradas.",
+          "back": "Voltar",
+          "importing": "Iniciando a importação…",
+          "importButton": "Importar transações ({count})"
+        },
+        "execute": {
+          "starting": "Iniciando a importação…",
+          "progressCount": "{processed} de {total}",
+          "failed": "A importação falhou.",
+          "partialImportNote": "Algumas transações talvez já tenham sido importadas.",
+          "statusQueued": "Na fila",
+          "statusRunning": "Importando",
+          "statusCompleted": "Concluída",
+          "statusFailed": "Falhou"
+        },
+        "done": {
+          "successTitle": "Importação concluída",
+          "successDescription": "Tudo do seu arquivo do Money já está na sua conta.",
+          "partialTitle": "Importação com problemas: {count}",
+          "partialDescription": "A maioria das linhas foi importada. A lista abaixo mostra o que não foi.",
+          "emptyTitle": "Nada novo para importar",
+          "emptyDescription": "Todas as linhas foram ignoradas ou já estavam nos seus lançamentos, então nenhuma transação foi criada.",
+          "allFailedTitle": "Nada foi importado",
+          "allFailedDescription": "Nenhuma transação pôde ser criada. Confira os erros abaixo.",
+          "accountsCreated": "Contas criadas",
+          "accountsLinked": "Contas vinculadas",
+          "accountsSkipped": "Contas ignoradas",
+          "categoriesCreated": "Categorias criadas",
+          "payeesCreated": "Favorecidos criados",
+          "transactionsImported": "Transações importadas",
+          "transfersImported": "Transferências importadas",
+          "outOfWalletImported": "Transferências fora da carteira",
+          "duplicatesSkipped": "Duplicatas ignoradas",
+          "voidedImported": "Anuladas importadas",
+          "mergedIntoPlanned": "Mescladas com agendadas",
+          "balanceWarningTitle": "Alguns saldos podem estar incorretos",
+          "balanceWarningBody": "Não foi possível definir o saldo final de todas as contas. Confira essas contas e ajuste os saldos, se necessário.",
+          "errorsTitle": "Linhas que não puderam ser importadas: {count}",
+          "errorsOverflow": "…e mais {count}",
+          "rowPrefix": "Linha {rowIndex}:",
+          "errors": {
+            "rowsSuppressed": "Mais {count} linha não foi importada a partir desta. Só os primeiros {listed} erros aparecem na lista. | Mais {count} linhas não foram importadas a partir desta. Só os primeiros {listed} erros aparecem na lista.",
+            "accountBalanceDesync": "Não foi possível atualizar o saldo de uma conta depois da importação. Confira e corrija manualmente.",
+            "rowImportFailed": "Não foi possível importar esta linha."
+          },
+          "viewTransactions": "Ver transações",
+          "importAnother": "Importar outro arquivo"
+        },
+        "leaseExpired": {
+          "title": "Seu arquivo enviado não está mais disponível",
+          "description": "A cópia processada do seu arquivo do Money foi descartada após um período de inatividade. Não foi possível manter suas escolhas de mapeamento, então a importação precisa recomeçar da etapa de envio.",
+          "action": "Começar de novo"
+        },
+        "leaseResourceLabel": "Seu arquivo enviado"
+      }
+    }
+  }
+}

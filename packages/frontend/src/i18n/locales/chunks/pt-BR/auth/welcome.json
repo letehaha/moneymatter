@@ -1,0 +1,48 @@
+{
+  "auth": {
+    "welcome": {
+      "title": "Escolha a moeda base",
+      "description": "O ideal é que sua moeda base seja a que você mais usa. Todas as transações em outras moedas serão convertidas para ela.",
+      "submitButton": "Confirmar moeda",
+      "trialStarted": "Seu teste grátis começou: tudo está liberado por {count} dia. {link} | Seu teste grátis começou: tudo está liberado por {count} dias. {link}",
+      "logout": "Sair",
+      "labels": {
+        "baseCurrency": "Moeda base"
+      },
+      "placeholders": {
+        "loading": "Carregando..."
+      },
+      "errors": {
+        "unableToLoadCurrencies": "Não foi possível carregar a lista de moedas. Tente de novo mais tarde.",
+        "unableToSetCurrency": "Erro inesperado. Não foi possível definir a moeda base. Tente de novo mais tarde ou fale com o suporte."
+      }
+    },
+    "oauthCallback": {
+      "completingSignIn": "Concluindo o login...",
+      "errors": {
+        "accessDenied": {
+          "signIn": "O login foi cancelado ou o acesso foi negado",
+          "signUp": "O cadastro foi cancelado ou o acesso foi negado",
+          "link": "A vinculação foi cancelada ou o acesso foi negado"
+        },
+        "userAlreadyExists": {
+          "signIn": "Já existe uma conta com este e-mail",
+          "signUp": "Já existe uma conta com este e-mail",
+          "link": "Esta conta já está vinculada a outro usuário"
+        },
+        "accountNotLinked": {
+          "signIn": "Nenhuma conta encontrada com este e-mail. Cadastre-se primeiro.",
+          "signUp": "Não foi possível criar a conta. Tente de novo.",
+          "link": "Não foi possível vincular a conta. Tente de novo."
+        },
+        "genericError": {
+          "signIn": "Não foi possível entrar. Tente de novo.",
+          "signUp": "Não foi possível fazer o cadastro. Tente de novo.",
+          "link": "Não foi possível vincular a conta. Tente de novo."
+        },
+        "unauthorizedClient": "Este aplicativo não tem autorização para usar este método de autenticação",
+        "temporarilyUnavailable": "O serviço de autenticação está temporariamente indisponível. Tente de novo mais tarde."
+      }
+    }
+  }
+}
