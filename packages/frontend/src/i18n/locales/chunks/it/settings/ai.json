@@ -2,12 +2,12 @@
   "settings": {
     "ai": {
       "title": "Impostazione IA",
-      "description": "Scegli quale modello IA alimenta ciascuna funzionalità, aggiungi i tuoi modelli personalizzati e connetti applicazioni come Claude e ChatGPT.",
+      "description": "Scegliere quale modello IA alimenta ciascuna funzionalità, aggiungere modelli personalizzati e connettere applicazioni come Claude e ChatGPT.",
       "tabs": {
         "features": "Funzionalità IA",
         "models": "Modelli IA",
         "connectedApps": "Connettori (MCP)",
-        "invalidConnectionsTooltip": "Uno dei vostri modelli IA ha bisogno di attenzione"
+        "invalidConnectionsTooltip": "Uno dei modelli IA richiede attenzione"
       },
       "credentialStatus": {
         "validated": "Validato {timeAgo}",
@@ -16,25 +16,25 @@
       },
       "features": {
         "title": "Funzionalità IA",
-        "description": "Configura quale modello usare per ogni funzionalità connessa con la IA",
-        "howItWorks": "Come funziona?",
+        "description": "Configurare quale modello usare per ogni funzionalità basata sull'IA",
+        "howItWorks": "Come funziona",
         "loadError": "Impossibile caricare le funzionalità IA."
       },
       "categorization": {
         "howItWorks": {
           "points": {
-            "autoSync": "Quando le transazioni vengono sincronizzate dalla tua banca, le transazioni non categorizzate vengono automaticamente inviate all'IA per la categorizzazione.",
+            "autoSync": "Quando le transazioni vengono sincronizzate dalla banca, quelle non classificate vengono inviate automaticamente all'IA per la classificazione.",
             "analysis": "L'IA analizza la descrizione delle transazioni e i nomi degli esercenti per suggerire categorie appropriate da quelle esistenti.",
-            "override": "Puoi sempre sovrascrivere manualmente le categorie suggerite dall'IA."
+            "override": "È sempre possibile modificare manualmente le categorie suggerite dall'IA."
           }
         }
       },
       "statementParsing": {
         "howItWorks": {
           "points": {
-            "upload": "Carica un estratto conto (PDF, CSV o TXT), una foto di ricevuta o uno screenshot di un'app bancaria e l'IA estrarrà automaticamente tutte le transazioni.",
+            "upload": "Caricare un estratto conto (PDF, CSV o TXT), la foto di una ricevuta o uno screenshot di un'app bancaria: l'IA estrarrà automaticamente tutte le transazioni.",
             "analysis": "L'IA analizza la struttura del documento per identificare date, descrizioni, importi e tipo di transazione.",
-            "review": "È possibile rivedere e correggere tutti i dati estratti prima di eseguire l'importazione nel proprio account.",
+            "review": "È possibile rivedere e correggere tutti i dati estratti prima di importarli nel conto.",
             "cost": "Il costo della lavorazione è una stima approssimativa."
           }
         }
@@ -47,33 +47,33 @@
         "connectionOption": "{name} · {model}",
         "connectionOptionNeedsAttention": "{name} · {model} (richiede attenzione)",
         "badges": {
-          "yourKey": "La tua chiave",
-          "yourKeyTooltip": "Funziona con uno dei tuoi modelli d'intelligenza artificiale, che si occupa anche della fatturazione. MoneyMatter non limita l'utilizzo.",
+          "yourKey": "Chiave personale",
+          "yourKeyTooltip": "Funziona con uno dei modelli di intelligenza artificiale configurati, che si occupa anche della fatturazione. MoneyMatter non limita l'utilizzo.",
           "server": "Server",
-          "serverTooltip": "Funziona con MoneyMatter AI, incluso nel tuo piano. Si applicano limiti di utilizzo."
+          "serverTooltip": "Funziona con MoneyMatter AI, incluso nel piano. Si applicano limiti di utilizzo."
         },
         "modelLabel": "Modello",
         "modelInfo": {
           "estimatedCost": "Costo stimato:",
-          "per100Transactions": "Per 100 transazioni",
-          "per100Pairs": "Per 100 coppie"
+          "per100Transactions": "per 100 transazioni",
+          "per100Pairs": "per 100 coppie"
         },
         "notifications": {
-          "updateSuccess": "Modello aggiornato con successo.",
+          "updateSuccess": "Modello aggiornato con successo",
           "updateFailed": "Impossibile aggiornare il modello",
           "resetSuccess": "Ripristina il modello predefinito",
           "resetFailed": "Impossibile ripristinare il modello"
         },
         "empty": {
           "title": "Ancora nessun modello IA",
-          "description": "Aggiungi il tuo modello IA per usare questa funzionalità."
+          "description": "Aggiungere un modello IA per usare questa funzionalità."
         },
-        "allConnectionsDown": "All your AI models need attention, so this feature is paused. Fix one in {link}.",
+        "allConnectionsDown": "Tutti i tuoi modelli ia hanno bisogno di attenzione, quindi questa funzione è in pausa. Correggi in {link}.",
         "allConnectionsDownLink": "Modelli IA"
       },
       "modelGuide": {
-        "trigger": "Which model fits?",
-        "tierHeading": "{tier} model is enough",
+        "trigger": "Quale modello è adatto?",
+        "tierHeading": "Il modello {tier} è sufficiente",
         "tiers": {
           "light": "Chiaro",
           "balanced": "Balanced",
@@ -92,8 +92,8 @@
         },
         "why": {
           "categorization": "A short, repetitive job. A small model handles it well and keeps the cost down.",
-          "statementParsing": "Reads the whole statement and writes back every row, so it needs a model that stays accurate over long text.",
-          "investmentTransactionsParsing": "Turns broker exports into buy and sell rows. Long exports need a model that can write long answers.",
+          "statementParsing": "Legge l'intera dichiarazione e ne trascrive ogni riga, quindi ha bisogno di un modello adatto per elaborare lunghi testi.",
+          "investmentTransactionsParsing": "Trasforma le esportazioni dei broker in righe di acquisto e vendita. Esportazioni prolungate hanno bisogno di un modello che può sostenerle.",
           "receiptParsing": "The model looks at the invoice file itself, so it has to read images and PDFs.",
           "trackerMatching": "A short, repetitive job that runs every day. A small model handles it well and keeps the cost down.",
           "transferMatching": "Reads short pairs of transactions and answers with a one-word verdict, so a light, cheap model is enough."
@@ -134,8 +134,8 @@
           },
           "longAnswers": {
             "label": "Long answers",
-            "ok": "Writes up to {tokens} tokens.",
-            "fail": "Writes up to {tokens} tokens, so long files get cut off."
+            "ok": "Utilizzati {tokens} token.",
+            "fail": "Utilizzati {tokens} token, i file complessi non sono stati elaborati."
           },
           "structuredAnswers": {
             "label": "Structured answers",
@@ -219,8 +219,8 @@
           "apiKeyLabel": "API key",
           "apiKeyPlaceholder": "Paste your API key",
           "apiKeyGetHint": "Get a key at {link}.",
-          "apiKeyOptionalHint": "Optional. Leave blank if your server doesn't need a key.",
-          "apiKeySavedHint": "Leave blank to keep the saved key.",
+          "apiKeyOptionalHint": "Opzionale. Lasciare vuoto se il tuo server non necessità di una chiave API.",
+          "apiKeySavedHint": "Lasciare vuoto per mantenere l'attuale Chiave API.",
           "apiKeyBorrowedHint": "Uses the key from \"{name}\". Type a new key to use a different one.",
           "removeApiKeyButton": "Remove API key",
           "modelLabel": "Modello",

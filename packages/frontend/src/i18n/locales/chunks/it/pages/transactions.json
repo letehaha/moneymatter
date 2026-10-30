@@ -35,7 +35,7 @@
         "label": "Transfers"
       },
       "plannedFilter": {
-        "label": "Transazioni PianIficate"
+        "label": "Transazioni pianificate"
       },
       "attachments": {
         "label": "Attachments"
@@ -112,7 +112,7 @@
       "confirmPayeeLabel": "Payee",
       "confirmTagsLabel": "Etichette",
       "confirmNoteLabel": "Note",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "confirmApplyButton": "Apply",
       "successMessage": "Successfully updated {count} transactions",
       "unexpectedError": "An unexpected error occurred",
@@ -140,7 +140,7 @@
         "noSearchResultsMessage": "No groups match your search.",
         "addingText": "Aggiunta in corso...",
         "buttonLabel": "Add to group",
-        "cancelButton": "Cancella",
+        "cancelButton": "Annulla",
         "transactionCountLabel": "transactions"
       },
       "createGroupDialog": {
@@ -152,7 +152,7 @@
         "notePlaceholder": "Optional description...",
         "creatingText": "Creating...",
         "buttonLabel": "Create group",
-        "cancelButton": "Cancella"
+        "cancelButton": "Annulla"
       },
       "groupsPage": {
         "title": "Transaction groups",
@@ -190,7 +190,7 @@
       }
     },
     "planned": {
-      "label": "Transazioni PianIficate",
+      "label": "Transazioni pianificate",
       "confirmedLabel": "Confirmed",
       "plannedTooltip": "Planned transaction",
       "expiredTooltip": "Expected {days} days ago, no matching bank transaction",

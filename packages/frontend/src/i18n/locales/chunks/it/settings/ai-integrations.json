@@ -17,7 +17,7 @@
             "selectCustom": "Select {action}",
             "enterName": "For \"Name\" enter {value}",
             "pasteUrl": "For \"Remote MCP server URL\" paste {value}",
-            "finish": "Leave Advanced settings empty and click {action}",
+            "finish": "Lasciare le impostazioni avanzate vuote e clicca su {action}",
             "authorize": "You will be redirected to MoneyMatter to authorize access"
           }
         },
@@ -33,7 +33,7 @@
       "actions": {
         "addCustomConnector": "Add custom connector",
         "addConnector": "Add connector",
-        "add": "Aggiungere"
+        "add": "Aggiungi"
       },
       "connectedApps": {
         "title": "Active connectors",

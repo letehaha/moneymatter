@@ -15,6 +15,15 @@
         "placeholder": "Chọn ngày",
         "successNotification": "Pay cycle start updated"
       },
+      "unrealizedLossAlert": {
+        "label": "Unrealized loss alerts",
+        "description": "Get one notification when a holding's loss crosses either threshold. Checked daily after market prices update; it won't repeat until the holding recovers.",
+        "percentLabel": "Loss percentage",
+        "percentDescription": "Alert when a holding is down at least this much from its cost.",
+        "amountLabel": "Loss amount",
+        "amountDescription": "Or when the loss reaches this amount in your base currency, whatever the percentage.",
+        "successNotification": "Loss alert settings saved"
+      },
       "manualTransferMatching": {
         "label": "Tự động đối chiếu giao dịch chuyển khoản với tài khoản thủ công",
         "description": "Cho phép các giao dịch chuyển khoản được phát hiện tự động liên kết các giao dịch ngân hàng đã đồng bộ với các giao dịch bạn tạo thủ công.",

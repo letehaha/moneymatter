@@ -255,6 +255,10 @@
       "tokenLimitExceededSuggestion": "Scindez l'importation en fichiers plus petits ou utilisez un modèle avec une fenêtre de contexte plus large.",
       "extractFailed": "Impossible d'extraire les opérations d'investissement de ce fichier. Veuillez réessayer.",
       "csvColumnNotFound": "La colonne « {{column}} » est introuvable dans les en-têtes du CSV."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {

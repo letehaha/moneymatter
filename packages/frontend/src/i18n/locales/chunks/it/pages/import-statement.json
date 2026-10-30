@@ -1,7 +1,7 @@
 {
   "pages": {
     "statementParser": {
-      "pageTitle": "Statement parser",
+      "pageTitle": "Lettura estratti conto",
       "pageDescription": "Upload a bank statement (PDF, CSV or TXT), a receipt photo or a banking app screenshot to extract transactions using AI. Add your own AI model in settings for unlimited access.",
       "stepper": {
         "steps": {
@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} doesn't appear to be a valid PDF. The file may be corrupted or renamed.",
         "invalidImageNamed": "{name} doesn't appear to be a valid JPG, PNG or WebP image. The file may be corrupted or renamed.",
         "invalidTextNamed": "{name} doesn't appear to be a valid {ext} file. The file may be binary or renamed.",
-        "pasteImageButton": "Paste image",
-        "pasteShortcutHint": "or press {shortcut}",
-        "clipboardNoImage": "No image found in the clipboard.",
-        "clipboardReadFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut.",
         "unreadableFiles": "Could not read: {files}",
         "fileStatus": {
           "pending": "Not analyzed",
@@ -124,7 +120,7 @@
         "fromStatement": "(from statement)",
         "currencyLocked": "Currency is locked to match the statement ({currency}).",
         "currencyWillBeAdded": "Note: {currency} will be added to your currencies.",
-        "cancel": "Cancella",
+        "cancel": "Annulla",
         "creating": "Creating...",
         "createAccount": "Create account",
         "validation": {

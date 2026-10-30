@@ -255,6 +255,10 @@
       "tokenLimitExceededSuggestion": "Rozdeľte nahrávaný súbor na menšie časti, alebo použite model s väčším kontextovým oknom.",
       "extractFailed": "Investičné transakcie z tohto súboru sa nepodarilo vyťažiť. Skúste to znova, prosím.",
       "csvColumnNotFound": "Stĺpec „{{column}}” sa v hlavičkách CSV nenašiel."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {

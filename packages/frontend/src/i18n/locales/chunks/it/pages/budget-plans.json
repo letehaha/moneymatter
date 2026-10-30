@@ -478,7 +478,7 @@
         "by_date": "By date",
         "open_ended": "Open-ended"
       },
-      "behaviorLabel": "Come funziona?",
+      "behaviorLabel": "Come funziona",
       "behavior": {
         "budget_another": "Budget another",
         "refill_up_to": "Refill up to",

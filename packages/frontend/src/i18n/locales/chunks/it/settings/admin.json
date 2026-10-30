@@ -31,7 +31,7 @@
         "dateRangeInfo": {
           "loading": "Loading date range information...",
           "title": "Available exchange rates date range ({currency}):",
-          "tooltipText": "Puoi caricare i valori dei titoli solo per le date per le quali ci sono tassi di cambio disponibili. Impostare prima i tassi di cambio per dati più vecchi. In caso contrario, non sarà possibile convertire il prezzo della sicurezza in altre valute. A seconda di quale opzione sarà scelta, nei prossimi passi i record saranno o auto-filtrati o il caricamento non funzionerà."
+          "tooltipText": "È possibile caricare i prezzi dei titoli solo per le date in cui sono disponibili i tassi di cambio, altrimenti non sarà possibile convertirli in altre valute. Per dati più vecchi, caricare prima i tassi di cambio. In caso contrario, a seconda dell'opzione scelta nei passaggi successivi, i record verranno filtrati automaticamente (omessi) oppure il caricamento non andrà a buon fine."
         },
         "fileUpload": {
           "title": "Upload file",

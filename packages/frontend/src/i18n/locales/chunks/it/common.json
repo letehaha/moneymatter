@@ -6,7 +6,7 @@
       "loading": "Caricamento in corso...",
       "signUp": "Registrati",
       "save": "Salva",
-      "cancel": "Cancella",
+      "cancel": "Annulla",
       "back": "Indietro",
       "accept": "Accetta",
       "delete": "Elimina",
@@ -58,12 +58,12 @@
       "settingsSaveFailed": "Couldn't save your settings. Please try again."
     },
     "notifications": {
-      "subscriptionCurrencyNotConnected": "Il riepilogo abbonamenti non può convertire {currencies} nella tua valuta base. Collega la valuta in Impostazioni → Valute.",
-      "backgroundJobFailed": "Un processo in background ha fallito mentre eri via: {error}",
+      "subscriptionCurrencyNotConnected": "Il riepilogo abbonamenti non può convertire {currencies} nella valuta di base. Collegare la valuta in Impostazioni → Valute.",
+      "backgroundJobFailed": "Un processo in background non è riuscito durante l'assenza: {error}",
       "inviteLinkCopied": "Link d'invito copiato negli appunti"
     },
     "sharing": {
-      "emailNotSent": "Invio email non configurato — condividi manualmente il link di invito"
+      "emailNotSent": "Invio email non configurato: condividere manualmente il link di invito"
     },
     "labels": {
       "email": "Email",
@@ -74,17 +74,17 @@
     },
     "placeholders": {
       "email": "your{'@'}email.com",
-      "password": "La tua password"
+      "password": "Password"
     },
     "dialogs": {
-      "createAccount": "Crea un account",
+      "createAccount": "Crea un profilo",
       "createVehicle": "Aggiungi veicolo",
       "editVehicle": "Modifica veicolo"
     },
     "accountCategories": {
       "general": "Generale",
       "cash": "Contanti",
-      "currentAccount": "Conto attuale",
+      "currentAccount": "Conto corrente",
       "creditCard": "Carta di credito",
       "saving": "Conto di risparmio",
       "bonus": "Bonus",
@@ -107,9 +107,9 @@
       "none": "None"
     },
     "vehicleClasses": {
-      "sedan": "Sedan",
+      "sedan": "Berlina",
       "suv": "SUV",
-      "truck": "Truck",
+      "truck": "Pick-up",
       "luxury": "Lusso",
       "ev": "Veicolo elettrico",
       "motorcycle": "Motociclo",
@@ -128,8 +128,8 @@
         "description": "Classifica automaticamente le transazioni in base alle descrizioni e al negozio"
       },
       "statementParsing": {
-        "name": "Statement parser",
-        "description": "Estrai le transazioni dagli estratti conto bancari (PDF, CSV, TXT) utilizzando AI"
+        "name": "Lettura estratti conto",
+        "description": "Estrae le transazioni dagli estratti conto bancari (PDF, CSV, TXT) tramite l'IA"
       },
       "investmentTransactionsParsing": {
         "name": "Importa i movimenti degli investimenti",
@@ -253,6 +253,10 @@
       "dialogTitle": "Change logo",
       "resetToAuto": "Reset to automatic",
       "remove": "Remove logo",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo removed",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Letters (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Color",
@@ -267,8 +271,8 @@
       "imageUnreadable": "That file couldn't be read as an image."
     },
     "iconPicker": {
-      "searchPlaceholder": "Cerca icona...",
-      "clear": "Cancella icona"
+      "searchPlaceholder": "Cercare un'icona...",
+      "clear": "Rimuovi icona"
     },
     "importBatchDeleteOverlay": {
       "title": "Deleting imported transactions",
@@ -299,6 +303,12 @@
         "backInReach": "Back within reach",
         "offTrack": "Off track"
       }
+    },
+    "pasteImage": {
+      "button": "Paste image",
+      "shortcutHint": "or press {shortcut}",
+      "noImage": "No image found in the clipboard.",
+      "readFailed": "Couldn't read the clipboard. Allow clipboard access or paste with the keyboard shortcut."
     }
   },
   "accountGroups": {
@@ -358,6 +368,9 @@
     "goalReached": {
       "title": "Goal reached: {name}",
       "message": "You've saved {amount}."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {
@@ -540,14 +553,14 @@
       "notePlaceholder": "Optional note...",
       "loadingText": "Caricamento in corso...",
       "savingAction": "Save",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "editAction": "Edit",
       "deleteAction": "Delete group",
       "transactionsLabel": "Transactions",
       "deleteGroupTitle": "Delete group",
       "deleteGroupDescription": "Are you sure you want to delete \"{groupName}\"? The transactions will not be deleted.",
       "removeTransactionTitle": "Remove transaction from group",
-      "removeTransactionDescription": "This will leave fewer than 2 transactions in the group, so the group will be deleted. Continue?",
+      "removeTransactionDescription": "Questo lascerà meno di due transazioni nel gruppo, quindi il gruppo verrà eliminato. Continuare?",
       "removeTransactionDescriptionNormal": "Are you sure you want to remove this transaction from the group?",
       "removeButtonText": "Remove",
       "removeAndDeleteButtonText": "Remove & delete group",

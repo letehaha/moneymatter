@@ -41,7 +41,7 @@
         "carryLabel": "Default carry %",
         "hurdleLabel": "Default hurdle %",
         "percentInvalid": "Must be between 0 and 100",
-        "cancel": "Cancella",
+        "cancel": "Annulla",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"
@@ -78,7 +78,7 @@
         "distribution": "Distribution",
         "nav_update": "NAV update",
         "exit": "Exit",
-        "writedown": "Writedown",
+        "writedown": "Svalutazione",
         "fee_payment": "Fee payment"
       },
       "cashFlowModes": {
@@ -107,7 +107,7 @@
         "pickAnotherTransaction": "Add another transaction",
         "removeLinkedTransaction": "Remove linked transaction",
         "linkedSummary": "Linked {total} across {count} transaction(s)",
-        "cancel": "Cancella",
+        "cancel": "Annulla",
         "create": "Create",
         "saving": "Saving…"
       },
@@ -187,7 +187,7 @@
         "percentInvalid": "Must be between 0 and 100",
         "notesLabel": "Notes",
         "notesPlaceholder": "Optional notes about this deal",
-        "cancel": "Cancella",
+        "cancel": "Annulla",
         "save": "Save",
         "create": "Create",
         "saving": "Saving…"

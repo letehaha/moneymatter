@@ -37,10 +37,6 @@
         "invalidPdfNamed": "{name} ne semble pas être un PDF valide. Le fichier est peut-être corrompu ou renommé.",
         "invalidImageNamed": "{name} ne semble pas être une image JPG, PNG ou WebP valide. Le fichier est peut-être corrompu ou renommé.",
         "invalidTextNamed": "{name} ne semble pas être un fichier {ext} valide. Le fichier est peut-être binaire ou renommé.",
-        "pasteImageButton": "Coller l'image",
-        "pasteShortcutHint": "ou appuyez sur {shortcut}",
-        "clipboardNoImage": "Aucune image trouvée dans le presse-papiers.",
-        "clipboardReadFailed": "Impossible de lire le presse-papiers. Autorisez l'accès au presse-papiers ou collez à l'aide du raccourci clavier.",
         "unreadableFiles": "Impossible de lire : {files}",
         "fileStatus": {
           "pending": "Non analysé",

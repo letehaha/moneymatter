@@ -66,9 +66,9 @@
         },
         "timeAgo": {
           "justNow": "Adesso",
-          "minutesAgo": "{count} minuti fa | {count} minuti fa",
-          "hoursAgo": "{count} ore fa | {count} ore fa",
-          "daysAgo": "{count} giorni fa | {count} giorni fa"
+          "minutesAgo": "{count} minuto fa | {count} minuti fa",
+          "hoursAgo": "{count} ora fa | {count} ore fa",
+          "daysAgo": "{count} giorno fa | {count} giorni fa"
         },
         "notifications": {
           "revokeSuccess": "Session revoked",
@@ -197,7 +197,7 @@
           "downloadBlocked": "Backup was created but your browser blocked the download. Check your download settings and try again.",
           "limitations": {
             "trigger": "Has limitations",
-            "title": "What a backup leaves out",
+            "title": "Che cosa non include un backup",
             "intro": "Your backup includes all your data. For security, a couple of encrypted items can't travel with it and need setting up again after you restore:",
             "items": {
               "bankConnectionsTerm": "Connessioni bancarie",

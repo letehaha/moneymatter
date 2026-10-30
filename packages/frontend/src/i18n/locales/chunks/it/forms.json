@@ -21,7 +21,7 @@
       "dateLabel": "Transaction date",
       "noteLabel": "Note",
       "notePlaceholder": "Optional. Add a note about this transaction",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "submitButton": "Create transaction",
       "submitButtonLoading": "Creating...",
       "notifications": {
@@ -66,7 +66,7 @@
       "displayCurrencyPlaceholder": "Select display currency",
       "displayCurrencyBaseOption": "Base currency ({code})",
       "displayCurrencyDescription": "Portfolio value and stats are converted to this currency at the current exchange rate.",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "submitButton": "Salva modifiche",
       "submitButtonLoading": "Saving...",
       "notifications": {
@@ -98,7 +98,7 @@
       "dateLabel": "Date",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this transfer...",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "submitButton": "Transfer",
       "submitButtonLoading": "Processing...",
       "confirmDialog": {
@@ -107,7 +107,7 @@
         "actionTransfer": "transfer",
         "actionWithdrawal": "withdrawal",
         "actionDeposit": "deposit",
-        "cancelButton": "Cancella",
+        "cancelButton": "Annulla",
         "confirmButton": "Confirm transfer"
       },
       "validation": {
@@ -168,13 +168,13 @@
       "adjustmentLabel": "This is a balance correction",
       "adjustmentHint": "The cash balance still changes, but this won't count as money you contributed in the investment contributions report.",
       "descriptionPlaceholder": "Optional description",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "submitButton": "Submit",
       "submitButtonLoading": "Submitting...",
       "confirmDialog": {
         "title": "Confirm transfer",
         "description": "A {amount} {action} will be created from {from} to {to}",
-        "cancelButton": "Cancella",
+        "cancelButton": "Annulla",
         "confirmButton": "Confirm",
         "actionDeposit": "deposit",
         "actionWithdrawal": "withdrawal"
@@ -203,7 +203,7 @@
       "dateLabel": "Exchange date",
       "descriptionLabel": "Description (optional)",
       "descriptionPlaceholder": "Add a note about this exchange...",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "submitButton": "Exchange",
       "submitButtonLoading": "Processing...",
       "validation": {
@@ -287,7 +287,7 @@
       "saveButton": "Salva modifiche",
       "submitButton": "Create loan",
       "submitButtonLoading": "Creating…",
-      "cancelButton": "Cancella",
+      "cancelButton": "Annulla",
       "notifications": {
         "success": "Loan created.",
         "error": "Failed to create the loan. Please try again.",

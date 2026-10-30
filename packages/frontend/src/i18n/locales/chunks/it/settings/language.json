@@ -2,15 +2,15 @@
   "settings": {
     "language": {
       "title": "Lingua",
-      "description": "Visualizza la lingua dell'interfaccia.",
+      "description": "Lingua di visualizzazione dell'interfaccia.",
       "community": {
         "title": "Traduzioni della Community",
         "hint": "Tradotto da volontari su Crowdin. Tutto ciò che non è stato ancora tradotto è mostrato in inglese."
       },
       "contribute": {
         "title": "Traduzioni mancanti o errate?",
-        "description": "Le lingue della Comunità sono tradotte su Crowdin. È possibile richiedere una nuova lingua, suggerire correzioni, o tradurre le stringhe da soli – nessun codice richiesto.",
-        "requestNote": "Preferisci non usare Crowdin? Richiedi una lingua su {boardLink}.",
+        "description": "Le lingue della Community sono tradotte su Crowdin. È possibile richiedere una nuova lingua, suggerire correzioni o tradurre direttamente le stringhe, senza scrivere codice.",
+        "requestNote": "In alternativa a Crowdin, è possibile richiedere una lingua su {boardLink}.",
         "requestNoteLink": "FeatureBase",
         "action": "Contribuisci su Crowdin"
       }

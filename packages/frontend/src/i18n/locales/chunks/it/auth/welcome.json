@@ -1,10 +1,10 @@
 {
   "auth": {
     "welcome": {
-      "title": "Seleziona la valuta di base",
-      "description": "La tua valuta base dovrebbe essere quella che usi più spesso. Tutte le transazioni con altre valute saranno calcolate in base a questa.",
-      "submitButton": "Conferma Valuta",
-      "trialStarted": "La tua prova gratuita è cominciata, tutte le funzionalità sono sbloccate per {count} giorno. {link} | La tua prova gratuita è cominciata, tutte le funzionalità sono sbloccate per {count} giorni. {link}",
+      "title": "Selezionare la valuta di base",
+      "description": "La valuta di base dovrebbe essere quella usata più spesso. Tutte le transazioni in altre valute verranno convertite in base a questa.",
+      "submitButton": "Conferma valuta",
+      "trialStarted": "Prova gratuita attivata: tutte le funzionalità sono sbloccate per {count} giorno. {link} | Prova gratuita attivata: tutte le funzionalità sono sbloccate per {count} giorni. {link}",
       "logout": "Esci",
       "labels": {
         "baseCurrency": "Valuta base"
@@ -13,8 +13,8 @@
         "loading": "Caricamento in corso..."
       },
       "errors": {
-        "unableToLoadCurrencies": "Impossibile caricare l'elenco valute. Riprova più tardi",
-        "unableToSetCurrency": "Errore inatteso. Impossibile impostare la valuta di base. Riprova più tardi o contatta il supporto."
+        "unableToLoadCurrencies": "Impossibile caricare l'elenco valute. Riprovare più tardi.",
+        "unableToSetCurrency": "Errore inatteso. Impossibile impostare la valuta di base. Riprovare più tardi o contattare il supporto."
       }
     },
     "oauthCallback": {
@@ -26,22 +26,22 @@
           "link": "Il collegamento è stato annullato o l'accesso è stato negato"
         },
         "userAlreadyExists": {
-          "signIn": "Esiste già un account con questa mail",
-          "signUp": "Esiste già un account con questa mail",
+          "signIn": "Esiste già un profilo con questa email",
+          "signUp": "Esiste già un profilo con questa email",
           "link": "Questo account è già collegato a un altro utente"
         },
         "accountNotLinked": {
-          "signIn": "Nessun account trovato con questa email. Registrarsi.",
-          "signUp": "Impossibile creare l'account. Riprova.",
-          "link": "Impossibile collegare l'account. Riprova."
+          "signIn": "Nessun profilo trovato con questa email. Effettuare prima la registrazione.",
+          "signUp": "Impossibile creare il profilo. Riprovare.",
+          "link": "Impossibile collegare l'account. Riprovare."
         },
         "genericError": {
-          "signIn": "Accesso fallito. Riprova.",
-          "signUp": "Impossibile registrarsi. Riprova.",
-          "link": "Impossibile collegare l'account. Riprova."
+          "signIn": "Accesso non riuscito. Riprovare.",
+          "signUp": "Impossibile registrarsi. Riprovare.",
+          "link": "Impossibile collegare l'account. Riprovare."
         },
         "unauthorizedClient": "Questa applicazione non è autorizzata ad usare questo metodo di autenticazione",
-        "temporarilyUnavailable": "Il servizio di autenticazione è temporaneamente non disponibile. Riprova più tardi."
+        "temporarilyUnavailable": "Il servizio di autenticazione è temporaneamente non disponibile. Riprovare più tardi."
       }
     }
   }

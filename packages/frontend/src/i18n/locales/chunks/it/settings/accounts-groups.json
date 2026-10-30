@@ -30,7 +30,7 @@
       "accounts": {
         "unlinkTooltip": "Remove from group",
         "removeConfirmTitle": "Remove \"{name}\" from this group?",
-        "removeConfirmDescription": "The account isn't deleted — it only leaves this group.",
+        "removeConfirmDescription": "L'account non è stato cancellato — lascia solo questo gruppo.",
         "removeConfirmAction": "Remove"
       },
       "delete": {

@@ -634,7 +634,7 @@
       "noLiabilities": "You had no liabilities during the selected period."
     },
     "chart": {
-      "assets": "Beni",
+      "assets": "Asset",
       "liabilities": "Passività",
       "netWorth": "Net worth",
       "averageLiabilities": "Avg. liabilities",

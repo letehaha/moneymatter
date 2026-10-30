@@ -129,8 +129,8 @@
       },
       "archivePrompt": {
         "title": "Archive \"{name}\"?",
-        "endedDaysAgo": "{count} giorni fa | {count} giorni fa",
-        "endedMonthsAgo": "{count} mesi fa | {count} mesi fa",
+        "endedDaysAgo": "{count} giorno fa | {count} giorni fa",
+        "endedMonthsAgo": "{count} mese fa | {count} mesi fa",
         "description": "It ended {ago}. Archived trackers move to the Archived group and keep their transactions and statistics. You can unarchive any time.",
         "dontAsk": "Don't ask for this tracker",
         "notNow": "Not now",
@@ -147,7 +147,7 @@
       "notSet": "Non impostato"
     },
     "addTransactionsDialog": {
-      "title": "Aggiungere Transazioni al Budget",
+      "title": "Aggiungi transazioni al budget",
       "addSelected": "Add selected",
       "clearSelection": "Pulisci la selezione"
     },
@@ -250,7 +250,7 @@
         "categoriesRequired": "Pick at least one category",
         "limitLabel": "Limit (optional)",
         "limitPlaceholder": "No limit",
-        "limitHint": "Leave empty to group spending without a limit."
+        "limitHint": "Lasciare vuoto per non impostare un limite."
       },
       "notifications": {
         "limitsRemoved": "Limits removed",
@@ -367,7 +367,7 @@
           "likely": "Likely",
           "possible": "Possible"
         },
-        "add": "Aggiungere",
+        "add": "Aggiungi",
         "skip": "Skip",
         "addAria": "Add {name} to {tracker}",
         "skipAria": "Skip {name}",

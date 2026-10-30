@@ -2,12 +2,12 @@
   "settings": {
     "categories": {
       "title": "Categorie",
-      "description": "Organizza le tue transazioni in categorie principali e sottocategorie. Selezionando Organizza puoi gestire le tue categorie trascinandole.",
-      "addButton": "Aggiungere Categoria",
+      "description": "Organizzare le transazioni in categorie principali e sottocategorie. Selezionando Organizza è possibile gestire le categorie trascinandole.",
+      "addButton": "Aggiungi categoria",
       "organizeButton": "Organizza",
-      "empty": "Ancora nessuna categoria. Crea la tua prima categoria per iniziare.",
+      "empty": "Ancora nessuna categoria. Creare la prima categoria per iniziare.",
       "categoriesCount": "{n} categoria | {n} categorie",
-      "organizeHint": "Trascina qui la categoria per renderla principale, oppure trascinala sotto un'altra per renderla sotto categoria",
+      "organizeHint": "Trascinare qui la categoria per renderla principale, oppure sotto un'altra per renderla sottocategoria",
       "dropToTopLevel": "Trascina qui per rendere «{name}» una categoria principale",
       "movesQueued": "{n} spostamento in coda | {n} spostamenti in coda",
       "unqueueMove": "Rimuovi questo spostamento",
@@ -15,7 +15,7 @@
       "saveChanges": "Salva",
       "parentField": {
         "label": "Categoria",
-        "placeholder": "Seleziona una categoria principale",
+        "placeholder": "Selezionare una categoria principale",
         "hiddenHint": "Le categorie che non possono essere usate come principali sono nascoste dalla lista."
       },
       "moveDialog": {
@@ -27,7 +27,7 @@
         "title": "Elimina categoria?",
         "description": "Questo eliminerà definitivamente \"{name}\". Questa azione non può essere annullata.",
         "deleteButton": "Elimina",
-        "cancelButton": "Cancella"
+        "cancelButton": "Annulla"
       },
       "errors": {
         "cannotLoad": "Impossibile caricare le categorie"

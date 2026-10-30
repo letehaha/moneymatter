@@ -255,6 +255,10 @@
       "tokenLimitExceededSuggestion": "Teile den Upload in kleinere Dateien auf oder verwende ein Modell mit einem größeren Kontextfenster.",
       "extractFailed": "Transaktionen für Geldanlagen konnten nicht aus dieser Datei extrahiert werden. Bitte versuche es erneut.",
       "csvColumnNotFound": "Spalte \"{{column}}\" wurde in den CSV-Kopfzeilen nicht gefunden."
+    },
+    "unrealizedLossAlert": {
+      "title_one": "{{count}} holding crossed your loss alert",
+      "title_other": "{{count}} holdings crossed your loss alert"
     }
   },
   "landingFaq": {

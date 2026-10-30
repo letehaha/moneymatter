@@ -31,7 +31,7 @@
             "nameLabel": "Nome del conto",
             "namePlaceholder": "Enter an account name",
             "currentBalanceLabel": "Current balance",
-            "currentBalancePlaceholder": "Leave blank to use the sum of imported transactions",
+            "currentBalancePlaceholder": "Lascia vuoto per iniziare dalla somma delle transazioni importate",
             "ledgerBalanceHint": "Statement balance: {balance} on {date}",
             "transactionCount": "{count} transaction | {count} transactions",
             "skippedNote": "{count} account(s) will be skipped. Its transactions will not be imported. | {count} accounts will be skipped. Their transactions will not be imported.",

@@ -253,6 +253,10 @@
       "dialogTitle": "Logo ändern",
       "resetToAuto": "Auf automatisch zurücksetzen",
       "remove": "Logo entfernen",
+      "pickerDescription": "Pick a brand logo or use letters instead.",
+      "updatedToast": "Logo updated",
+      "resetToast": "Logo entfernt",
+      "updateError": "Couldn't update the logo. Try again.",
       "lettersLabel": "Buchstaben (1–2)",
       "lettersPlaceholder": "AB",
       "colorLabel": "Farbe",
@@ -299,6 +303,12 @@
         "backInReach": "Wieder in Reichweite",
         "offTrack": "Vom Kurs abgekommen"
       }
+    },
+    "pasteImage": {
+      "button": "Bild einfügen",
+      "shortcutHint": "oder drücke {shortcut}",
+      "noImage": "Kein Bild in der Zwischenablage gefunden.",
+      "readFailed": "Die Zwischenablage konnte nicht gelesen werden. Erlaube den Zugriff auf die Zwischenablage oder füge es mit der Tastenkombination ein."
     }
   },
   "accountGroups": {
@@ -358,6 +368,9 @@
     "goalReached": {
       "title": "Ziel erreicht: {name}",
       "message": "Du hast {amount} gespart."
+    },
+    "unrealizedLossAlert": {
+      "title": "{count} holding crossed your loss alert | {count} holdings crossed your loss alert"
     }
   },
   "currencyNames": {
