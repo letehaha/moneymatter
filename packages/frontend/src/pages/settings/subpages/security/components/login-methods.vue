@@ -204,14 +204,14 @@
 </template>
 
 <script setup lang="ts">
-import { GithubIcon, GoogleIcon, getOAuthProviderName } from '@/components/auth';
+import { GithubIcon, GoogleIcon } from '@/components/auth';
 import ResponsiveAlertDialog from '@/components/common/responsive-alert-dialog.vue';
 import DemoRestricted from '@/components/demo/demo-restricted.vue';
 import InputField from '@/components/fields/input-field.vue';
 import { Button } from '@/components/lib/ui/button';
 import { DesktopOnlyTooltip } from '@/components/lib/ui/tooltip';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useAuthFeatures } from '@/composable/use-auth-features';
+import { useAuthFeatures } from '@/composable';
 import { UnexpectedError, getAuthErrorMessage } from '@/js/errors';
 import { authClient } from '@/lib/auth-client';
 import { useAuthStore, useUserStore } from '@/stores';
@@ -225,6 +225,7 @@ import {
   LockIcon,
   PencilIcon,
   PlusIcon,
+  ShieldUserIcon,
   TrashIcon,
   XIcon,
 } from '@lucide/vue';
@@ -237,7 +238,7 @@ import { useRoute, useRouter } from 'vue-router';
 const providerIcons: Record<OAUTH_PROVIDER, Component> = {
   [OAUTH_PROVIDER.google]: GoogleIcon,
   [OAUTH_PROVIDER.github]: GithubIcon,
-  [OAUTH_PROVIDER.oidc]: KeyRoundIcon,
+  [OAUTH_PROVIDER.oidc]: ShieldUserIcon,
 };
 
 interface Passkey {
@@ -277,10 +278,7 @@ const hasPassword = ref(false);
 
 const getAccountByProvider = (provider: OAUTH_PROVIDER) => accounts.value.find((a) => a.providerId === provider);
 
-const { oidcProvider } = useAuthFeatures();
-
-const getProviderName = ({ provider }: { provider: OAUTH_PROVIDER }) =>
-  getOAuthProviderName({ provider, oidcName: oidcProvider.value?.name });
+const { oidcProvider, getProviderName } = useAuthFeatures();
 
 // The OIDC row only makes sense on servers that configure it, or to let a user unlink a stale account.
 const visibleProviders = computed(() =>

@@ -16,7 +16,7 @@
             @click="handleOAuthLogin({ provider: OAUTH_PROVIDER.oidc })"
           >
             <template #icon>
-              <KeyRoundIcon class="size-5" />
+              <ShieldUserIcon class="size-5" />
             </template>
           </OAuthButton>
           <OAuthButton
@@ -118,30 +118,21 @@ import { getOAuthAuthorizeUrl } from '@/api/mcp';
 import { DEMO_SESSION_EXPIRED_REASON } from '@/common/const';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
-import {
-  AuthDivider,
-  GithubIcon,
-  GoogleIcon,
-  LastUsedBadge,
-  OAuthButton,
-  PasskeyButton,
-  getOAuthProviderName,
-} from '@/components/auth';
+import { AuthDivider, GithubIcon, GoogleIcon, LastUsedBadge, OAuthButton, PasskeyButton } from '@/components/auth';
 import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Callout } from '@/components/lib/ui/callout';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useNotificationCenter } from '@/components/notification-center';
-import { useFormValidation } from '@/composable';
-import { useAuthFeatures } from '@/composable/use-auth-features';
+import { useAuthFeatures, useFormValidation } from '@/composable';
 import { OAuthProviderNotConfiguredError, getAuthErrorMessage } from '@/js/errors';
 import { email, required } from '@/js/helpers/validators';
 import { getLastLoginMethod } from '@/lib/last-login-method';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAuthStore } from '@/stores';
 import { OAUTH_PROVIDER } from '@bt/shared/types';
-import { KeyRoundIcon } from '@lucide/vue';
+import { ShieldUserIcon } from '@lucide/vue';
 import { useQuery } from '@tanstack/vue-query';
 import { Ref, computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -180,9 +171,7 @@ const { data: signupsStatus } = useQuery({
 });
 const signupsOpen = computed(() => signupsStatus.value?.signupsOpen ?? true);
 
-const { isEmailEnabled, oidcProvider } = useAuthFeatures();
-const getProviderName = ({ provider }: { provider: OAUTH_PROVIDER }) =>
-  getOAuthProviderName({ provider, oidcName: oidcProvider.value?.name });
+const { isEmailEnabled, oidcProvider, getProviderName } = useAuthFeatures();
 
 // Check for OAuth error from callback redirect
 const oauthError = route.query.oauth_error as string | undefined;

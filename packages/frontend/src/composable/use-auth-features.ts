@@ -1,5 +1,7 @@
 import { getAuthFeatures } from '@/api/auth';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
+import { getOAuthProviderName } from '@/components/auth/oauth-providers';
+import { OAUTH_PROVIDER } from '@bt/shared/types';
 import { useQuery } from '@tanstack/vue-query';
 import { computed } from 'vue';
 
@@ -14,5 +16,8 @@ export const useAuthFeatures = () => {
   // null until loaded and when the server has no OIDC provider configured
   const oidcProvider = computed(() => authFeatures.value?.oidc ?? null);
 
-  return { authFeatures, isEmailEnabled, oidcProvider };
+  const getProviderName = ({ provider }: { provider: OAUTH_PROVIDER }) =>
+    getOAuthProviderName({ provider, oidcName: oidcProvider.value?.name });
+
+  return { authFeatures, isEmailEnabled, oidcProvider, getProviderName };
 };

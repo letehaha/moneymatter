@@ -16,7 +16,7 @@
             @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.oidc })"
           >
             <template #icon>
-              <KeyRoundIcon class="size-5" />
+              <ShieldUserIcon class="size-5" />
             </template>
           </OAuthButton>
           <OAuthButton
@@ -97,20 +97,19 @@
 </template>
 
 <script lang="ts" setup>
-import { AuthDivider, GithubIcon, GoogleIcon, OAuthButton, getOAuthProviderName } from '@/components/auth';
+import { AuthDivider, GithubIcon, GoogleIcon, OAuthButton } from '@/components/auth';
 import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
-import { useFormValidation } from '@/composable';
-import { useAuthFeatures } from '@/composable/use-auth-features';
+import { useAuthFeatures, useFormValidation } from '@/composable';
 import { OAuthProviderNotConfiguredError, getAuthErrorMessage } from '@/js/errors';
 import { email, minLength, required, sameAs } from '@/js/helpers/validators';
 import { PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAuthStore } from '@/stores';
 import { OAUTH_PROVIDER } from '@bt/shared/types';
-import { KeyRoundIcon } from '@lucide/vue';
+import { ShieldUserIcon } from '@lucide/vue';
 import { useMutation } from '@tanstack/vue-query';
 import { Ref, computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -120,9 +119,7 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const isOAuthLoading = ref(false);
-const { oidcProvider } = useAuthFeatures();
-const getProviderName = ({ provider }: { provider: OAUTH_PROVIDER }) =>
-  getOAuthProviderName({ provider, oidcName: oidcProvider.value?.name });
+const { oidcProvider, getProviderName } = useAuthFeatures();
 const formError: Ref<string | null> = ref(null);
 const { t } = useI18n();
 

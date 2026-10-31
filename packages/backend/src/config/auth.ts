@@ -126,9 +126,8 @@ export const auth = betterAuth({
     // with a verified email, they're the legitimate owner of that email
     accountLinking: {
       enabled: true,
-      // The generic OIDC provider is deliberately not trusted: a self-hosted IdP may let users
-      // set any email, so auto-linking for it relies on its `email_verified` claim instead.
-      // Users can still link it explicitly from Settings while signed in.
+      // `oidc` is left out because a self-hosted IdP may let users set any email. It can only
+      // link accounts when OIDC_TRUST_EMAIL is on and the IdP reports the email as verified.
       trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github],
     },
   },
@@ -260,8 +259,6 @@ export const auth = betterAuth({
 
   // Plugins
   plugins: [
-    // Generic OIDC registers as a social provider, so `signIn.social` / `linkSocial` and the
-    // `/callback/oidc` route work for it the same way as for Google and GitHub.
     ...(oidcConfig
       ? [
           genericOAuth({
@@ -273,6 +270,12 @@ export const auth = betterAuth({
                 clientSecret: oidcConfig.clientSecret,
                 scopes: ['openid', 'email', 'profile'],
                 pkce: true,
+                requireEmailVerification: isEmailEnabled,
+                requireIdTokenVerification: true,
+                // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
+                mapProfileToUser: (profile) => ({
+                  emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,
+                }),
               },
             ],
           }),

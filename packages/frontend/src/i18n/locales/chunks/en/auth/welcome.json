@@ -41,7 +41,10 @@
           "link": "Failed to link account. Please try again."
         },
         "unauthorizedClient": "This application is not authorized to use this authentication method",
-        "temporarilyUnavailable": "The authentication service is temporarily unavailable. Please try again later."
+        "temporarilyUnavailable": "The authentication service is temporarily unavailable. Please try again later.",
+        "unableToLinkAccount": "We couldn't link this account because this server doesn't treat the provider's email as verified. Contact your administrator.",
+        "emailDoesNotMatch": "The email on this provider account doesn't match your account email. Use a provider account with the same email.",
+        "emailNotVerified": "Check your email to verify your address, then sign in again."
       }
     }
   }
