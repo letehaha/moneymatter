@@ -5,8 +5,8 @@ import { ApiErrorResponseError } from '@/js/errors';
 import { type Ref, computed, inject } from 'vue';
 
 /**
- * A widget counts pending planned transactions unless its config opts out, so every reader
- * treats a missing key as `true`.
+ * For widgets that count pending planned transactions unless their config opts out: a missing
+ * key reads as `true`.
  */
 export const readIncludePlanned = ({ config }: { config: Record<string, unknown> | undefined }): boolean =>
   config?.includePlanned !== false;
@@ -87,10 +87,11 @@ export const useWidgetConfigFlag = ({
   return { widgetConfigRef, isOn, setFlag };
 };
 
-export const useIncludePlannedConfig = () => {
+export const useIncludePlannedConfig = ({ defaultValue = true }: { defaultValue?: boolean } = {}) => {
   const { widgetConfigRef, isOn, setFlag } = useWidgetConfigFlag({
     key: 'includePlanned',
     saveErrorKey: 'dashboard.widgets.common.includePlannedSaveError',
+    defaultValue,
   });
 
   return { widgetConfigRef, includePlanned: isOn, setIncludePlanned: setFlag };
