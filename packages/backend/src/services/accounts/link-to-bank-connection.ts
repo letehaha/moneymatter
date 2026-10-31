@@ -176,8 +176,6 @@ export const linkAccountToBankConnection = withTransaction(
       providerType: bankConnection.providerType as BANK_PROVIDER_TYPE,
     });
 
-    await bankConnection.update({ lastSyncAt: new Date() });
-
     const connectionGroup = await AccountGroup.findOne({
       where: { bankDataProviderConnectionId: connectionId, userId },
     });
@@ -197,6 +195,7 @@ export const linkAccountToBankConnection = withTransaction(
       // or the account keeps the stale pre-link figure while the queue drains,
       // forever when the sync window returns nothing.
       await writeBankBalanceWithHistory({ account, balance: Money.fromCents(externalBalance) });
+      await bankConnection.update({ lastSyncAt: new Date() });
 
       // Enqueue only after this transaction commits: the first queue batch
       // runs immediately, and a worker racing an uncommitted link would read
@@ -237,6 +236,10 @@ export const linkAccountToBankConnection = withTransaction(
       userId,
       accountId,
     });
+
+    // Only after the sync: this row lock would block a provider's credential writes, which commit on their own
+    // connection while this transaction waits for them.
+    await bankConnection.update({ lastSyncAt: new Date() });
 
     const residualOutcome = await absorbLinkResidual({ accountId, userId });
 

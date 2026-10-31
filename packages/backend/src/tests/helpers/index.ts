@@ -4,9 +4,10 @@ import enablebanking from './enablebanking';
 import lunchflow from './lunchflow';
 import monobank from './monobank';
 import walutomat from './walutomat';
+import yaxi from './yaxi';
 
 export * from './common';
-export { akahu, bankDataProviders, enablebanking, lunchflow, monobank, walutomat };
+export { akahu, bankDataProviders, enablebanking, lunchflow, monobank, walutomat, yaxi };
 export * from './account';
 export * from './refunds';
 export * from './transfers';

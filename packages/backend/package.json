@@ -71,6 +71,7 @@
     "pg": "8.11.5",
     "posthog-node": "^5.20.0",
     "resend": "^6.6.0",
+    "routex-refresh-client": "^0.2.0",
     "sequelize": "6.37.8",
     "sequelize-cli": "6.6.2",
     "sequelize-typescript": "2.1.6",

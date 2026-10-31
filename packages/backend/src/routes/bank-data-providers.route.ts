@@ -20,6 +20,8 @@ import * as providersController from '@controllers/bank-data-providers/providers
 import checkSync from '@controllers/bank-data-providers/sync/check-sync';
 import getSyncStatus from '@controllers/bank-data-providers/sync/get-sync-status';
 import triggerSync from '@controllers/bank-data-providers/sync/trigger-sync';
+import completeYaxiConnection from '@controllers/bank-data-providers/yaxi/complete-connection';
+import issueYaxiTicket from '@controllers/bank-data-providers/yaxi/issue-ticket';
 import { attachPsuContext } from '@middlewares/attach-psu-context';
 import { authenticateSession } from '@middlewares/better-auth';
 import { blockDemoUsers } from '@middlewares/block-demo-users';
@@ -155,6 +157,23 @@ router.post(
   checkBaseCurrencyLock,
   attachPsuContext,
   oauthCallback,
+);
+
+// YAXI specific endpoints
+router.post(
+  '/connections/:connectionId/yaxi/ticket',
+  requireFeature(FEATURES.bank_providers),
+  blockDemoUsers,
+  checkBaseCurrencyLock,
+  issueYaxiTicket,
+);
+router.post(
+  '/connections/:connectionId/yaxi/complete',
+  requireFeature(FEATURES.bank_providers),
+  blockDemoUsers,
+  checkBaseCurrencyLock,
+  attachPsuContext,
+  completeYaxiConnection,
 );
 
 export default router;

@@ -368,6 +368,19 @@
       "rateLimited": "Akahu is rate-limiting requests right now. Please try again shortly.",
       "missingCurrency": "Akahu did not return a currency for this account."
     },
+    "yaxi": {
+      "invalidCredentialsFormat": "Invalid YAXI key format. A key ID and a base64 secret are required.",
+      "invalidKey": "YAXI rejected this key. Check the key ID and secret in your YAXI account.",
+      "reauthRequired": "Log in to your bank again to keep this connection working.",
+      "accessExceeded": "Your bank's limit for background refreshes is used up for today. Try again tomorrow, or sync while logged in to MoneyMatter.",
+      "unavailable": "YAXI can't be reached right now. Please try again shortly.",
+      "accountNoExternalId": "Account has no external ID for YAXI sync.",
+      "accountNotFound": "YAXI could not find this account at the bank.",
+      "invalidResult": "The bank login result could not be verified. Please start the connection again.",
+      "invalidConnectionData": "The bank connection could not be confirmed. Please start the connection again.",
+      "differentBankLogin": "This login can't see the accounts linked to this connection. Log in to the same bank and user you connected before.",
+      "serviceBlocked": "Your bank is blocking access until you take action. Log in to your online banking, follow any prompts there, then sync again."
+    },
     "simplefin": {
       "invalidCredentialsFormat": "Invalid SimpleFIN credentials format.",
       "invalidSetupToken": "Invalid or already-used SimpleFIN setup token. Generate a new one from the SimpleFIN Bridge and try again.",

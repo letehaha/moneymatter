@@ -128,6 +128,12 @@
           @connected="handleProviderConnected"
           @cancel="handleCancel"
         />
+        <YaxiConnector
+          v-else-if="selectedProviderType === BANK_PROVIDER_TYPE.YAXI"
+          @login-saved="handleYaxiLoginSaved"
+          @connected="handleProviderConnected"
+          @cancel="handleCancel"
+        />
       </template>
     </PlanRestricted>
   </ResponsiveDialog>
@@ -144,6 +150,7 @@ import {
   REGION_FILTER_GROUPS,
   providerMatchesRegionFilter,
 } from '@/common/const/bank-providers';
+import { VUE_QUERY_CACHE_KEYS } from '@/common/const';
 import PlanRestricted from '@/components/billing/plan-restricted.vue';
 import BankProviderLogo from '@/components/common/bank-providers/bank-provider-logo.vue';
 import ResponsiveDialog from '@/components/common/responsive-dialog.vue';
@@ -153,6 +160,7 @@ import { trackAnalyticsEvent } from '@/lib/posthog';
 import { cn } from '@/lib/utils';
 import { BANK_PROVIDER_TYPE, FEATURES } from '@bt/shared/types';
 import { ChevronRightIcon, InfoIcon } from '@lucide/vue';
+import { useQueryClient } from '@tanstack/vue-query';
 import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
@@ -162,8 +170,10 @@ import LunchFlowConnector from './lunchflow-connector.vue';
 import MonobankConnector from './monobank-connector.vue';
 import SimplefinConnector from './simplefin-connector.vue';
 import WalutomatConnector from './walutomat-connector.vue';
+import YaxiConnector from './yaxi-connector.vue';
 
 const { t } = useI18n();
+const queryClient = useQueryClient();
 
 interface Props {
   open: boolean;
@@ -248,6 +258,10 @@ const handleSelectProvider = (providerType: string) => {
 const handleProviderConnected = () => {
   emit('integration-added');
   resetDialog();
+};
+
+const handleYaxiLoginSaved = () => {
+  queryClient.invalidateQueries({ queryKey: VUE_QUERY_CACHE_KEYS.bankConnections });
 };
 
 const handleCancel = () => {

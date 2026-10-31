@@ -50,6 +50,8 @@ export default {
     '^@modelcontextprotocol/sdk/server/mcp\\.js$': '<rootDir>/src/tests/mocks/mcp-sdk/server-mcp.ts',
     '^@modelcontextprotocol/sdk/server/streamableHttp\\.js$':
       '<rootDir>/src/tests/mocks/mcp-sdk/server-streamable-http.ts',
+    // routex-refresh-client is ESM-only and its traffic is attested and encrypted, so MSW can't intercept it
+    '^routex-refresh-client$': '<rootDir>/src/tests/mocks/routex-refresh-client/index.ts',
     '@bt/shared/(.*)': '<rootDir>/../shared/src/$1',
     '@routes/(.*)': '<rootDir>/src/routes/$1',
     '@middlewares/(.*)': '<rootDir>/src/middlewares/$1',

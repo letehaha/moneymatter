@@ -28,6 +28,8 @@ export type DemoBlockedFeature =
   | 'bank_connect_walutomat_import_accounts'
   | 'bank_connect_akahu'
   | 'bank_connect_akahu_import_accounts'
+  | 'bank_connect_yaxi'
+  | 'bank_connect_yaxi_import_accounts'
   | 'change_password'
   | 'connect_oauth_provider'
   | 'create_portfolio_empty_state'
