@@ -2,9 +2,10 @@ import { expo } from '@better-auth/expo';
 import { oauthProvider } from '@better-auth/oauth-provider';
 import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
-import { OAUTH_PROVIDERS_LIST } from '@bt/shared/types';
+import { OAUTH_PROVIDER } from '@bt/shared/types';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
+import { oidcConfig } from '@config/oidc';
 import { shouldUseSecureCookies } from '@config/should-use-secure-cookies';
 import { isAuthApiError } from '@controllers/helpers/error-handler';
 import { t } from '@i18n/index';
@@ -20,7 +21,7 @@ import { sendPasswordResetEmail } from '@services/user/send-password-reset-email
 import { areSignupsOpen } from '@services/user/signups-open.service';
 import bcrypt from 'bcryptjs';
 import { APIError, betterAuth } from 'better-auth';
-import { jwt } from 'better-auth/plugins';
+import { genericOAuth, jwt } from 'better-auth/plugins';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 
@@ -125,7 +126,9 @@ export const auth = betterAuth({
     // with a verified email, they're the legitimate owner of that email
     accountLinking: {
       enabled: true,
-      trustedProviders: [...OAUTH_PROVIDERS_LIST],
+      // `oidc` is left out because a self-hosted IdP may let users set any email. It can only
+      // link accounts when OIDC_TRUST_EMAIL is on and the IdP reports the email as verified.
+      trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github],
     },
   },
   verification: {
@@ -256,6 +259,28 @@ export const auth = betterAuth({
 
   // Plugins
   plugins: [
+    ...(oidcConfig
+      ? [
+          genericOAuth({
+            config: [
+              {
+                providerId: OAUTH_PROVIDER.oidc,
+                discoveryUrl: oidcConfig.discoveryUrl,
+                clientId: oidcConfig.clientId,
+                clientSecret: oidcConfig.clientSecret,
+                scopes: ['openid', 'email', 'profile'],
+                pkce: true,
+                requireEmailVerification: isEmailEnabled,
+                requireIdTokenVerification: true,
+                // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
+                mapProfileToUser: (profile) => ({
+                  emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,
+                }),
+              },
+            ],
+          }),
+        ]
+      : []),
     // jwt() must be loaded because @better-auth/oauth-provider references it
     // internally even when disableJwtPlugin is true (unguarded getJwtPlugin calls).
     jwt({

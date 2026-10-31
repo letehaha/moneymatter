@@ -12,3 +12,10 @@ export function jwt() {
     init: () => ({}),
   };
 }
+
+export function genericOAuth() {
+  return {
+    id: 'generic-oauth',
+    init: () => ({}),
+  };
+}

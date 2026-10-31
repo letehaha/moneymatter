@@ -45,6 +45,8 @@ const ACTION_ERROR_KEYS: Record<OAuthAction, Record<string, string>> = {
     access_denied: 'auth.oauthCallback.errors.accessDenied.link',
     user_already_exists: 'auth.oauthCallback.errors.userAlreadyExists.link',
     account_not_linked: 'auth.oauthCallback.errors.accountNotLinked.link',
+    unable_to_link_account: 'auth.oauthCallback.errors.unableToLinkAccount',
+    email_does_not_match: 'auth.oauthCallback.errors.emailDoesNotMatch',
   },
 };
 
@@ -57,6 +59,7 @@ const GENERIC_ERROR_KEYS: Record<OAuthAction, string> = {
 const SHARED_ERROR_KEYS: Record<string, string> = {
   unauthorized_client: 'auth.oauthCallback.errors.unauthorizedClient',
   temporarily_unavailable: 'auth.oauthCallback.errors.temporarilyUnavailable',
+  email_not_verified: 'auth.oauthCallback.errors.emailNotVerified',
 };
 
 const getErrorMessage = ({ error, action }: { error: string; action: OAuthAction }): string =>
