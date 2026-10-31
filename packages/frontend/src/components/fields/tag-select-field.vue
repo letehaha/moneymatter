@@ -1,6 +1,9 @@
 <template>
   <div class="w-full">
     <FieldLabel :label="label" only-template>
+      <template v-if="$slots['label-right']" #label-right>
+        <slot name="label-right" />
+      </template>
       <Popover :open="isOpen" @update:open="(open: boolean) => (isOpen = open)">
         <PopoverAnchor as-child>
           <div
