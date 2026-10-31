@@ -4,4 +4,4 @@ export { default as GoogleIcon } from './google-icon.vue';
 export { default as LastUsedBadge } from './last-used-badge.vue';
 export { default as OAuthButton } from './oauth-button.vue';
 export { default as PasskeyButton } from './passkey-button.vue';
-export { OAUTH_PROVIDER_NAMES } from './oauth-providers';
+export { getOAuthProviderName } from './oauth-providers';

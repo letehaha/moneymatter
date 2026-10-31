@@ -17,6 +17,8 @@ import { useI18n } from 'vue-i18n';
 
 interface Props {
   provider: OAUTH_PROVIDER;
+  /** Overrides the built-in name, e.g. the server-configured OIDC provider name. */
+  providerName?: string;
   mode?: 'signin' | 'signup';
   isLoading?: boolean;
   isLastUsed?: boolean;
@@ -36,12 +38,13 @@ const { t } = useI18n();
 const providerConfig: Record<OAUTH_PROVIDER, { name: string; icon: null }> = {
   [OAUTH_PROVIDER.google]: { name: 'Google', icon: null },
   [OAUTH_PROVIDER.github]: { name: 'GitHub', icon: null },
+  [OAUTH_PROVIDER.oidc]: { name: 'SSO', icon: null },
 };
 
 const providerIcon = computed(() => providerConfig[props.provider]?.icon);
 
 const buttonText = computed(() => {
-  const providerName = providerConfig[props.provider]?.name || props.provider;
+  const providerName = props.providerName || providerConfig[props.provider]?.name || props.provider;
   return props.mode === 'signup'
     ? t('auth.shared.oauthButton.signUp', { provider: providerName })
     : t('auth.shared.oauthButton.signIn', { provider: providerName });

@@ -8,6 +8,18 @@
         <!-- OAuth buttons -->
         <div class="grid gap-3">
           <OAuthButton
+            v-if="oidcProvider"
+            :provider="OAUTH_PROVIDER.oidc"
+            :provider-name="oidcProvider.name"
+            mode="signup"
+            :is-loading="isOAuthLoading"
+            @click="handleOAuthSignup({ provider: OAUTH_PROVIDER.oidc })"
+          >
+            <template #icon>
+              <KeyRoundIcon class="size-5" />
+            </template>
+          </OAuthButton>
+          <OAuthButton
             :provider="OAUTH_PROVIDER.google"
             mode="signup"
             :is-loading="isOAuthLoading"
@@ -85,18 +97,20 @@
 </template>
 
 <script lang="ts" setup>
-import { AuthDivider, GithubIcon, GoogleIcon, OAUTH_PROVIDER_NAMES, OAuthButton } from '@/components/auth';
+import { AuthDivider, GithubIcon, GoogleIcon, OAuthButton, getOAuthProviderName } from '@/components/auth';
 import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/lib/ui/card';
 import { useFormValidation } from '@/composable';
+import { useAuthFeatures } from '@/composable/use-auth-features';
 import { OAuthProviderNotConfiguredError, getAuthErrorMessage } from '@/js/errors';
 import { email, minLength, required, sameAs } from '@/js/helpers/validators';
 import { PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
 import { ROUTES_NAMES } from '@/routes/constants';
 import { useAuthStore } from '@/stores';
 import { OAUTH_PROVIDER } from '@bt/shared/types';
+import { KeyRoundIcon } from '@lucide/vue';
 import { useMutation } from '@tanstack/vue-query';
 import { Ref, computed, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -106,6 +120,9 @@ const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
 const isOAuthLoading = ref(false);
+const { oidcProvider } = useAuthFeatures();
+const getProviderName = ({ provider }: { provider: OAUTH_PROVIDER }) =>
+  getOAuthProviderName({ provider, oidcName: oidcProvider.value?.name });
 const formError: Ref<string | null> = ref(null);
 const { t } = useI18n();
 
@@ -191,11 +208,11 @@ const handleOAuthSignup = async ({ provider }: { provider: OAUTH_PROVIDER }) => 
   } catch (error) {
     formError.value =
       error instanceof OAuthProviderNotConfiguredError
-        ? t('auth.signup.errors.oauthNotConfigured', { provider: OAUTH_PROVIDER_NAMES[provider] })
+        ? t('auth.signup.errors.oauthNotConfigured', { provider: getProviderName({ provider }) })
         : await getAuthErrorMessage({
             error,
             fallbackKey: 'auth.signup.errors.oauthFailed',
-            params: { provider: OAUTH_PROVIDER_NAMES[provider] },
+            params: { provider: getProviderName({ provider }) },
           });
   } finally {
     isOAuthLoading.value = false;

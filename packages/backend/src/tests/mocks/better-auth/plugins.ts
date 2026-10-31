@@ -12,3 +12,13 @@ export function jwt() {
     init: () => ({}),
   };
 }
+
+/**
+ * Generic OAuth/OIDC plugin. OIDC is not configured in tests, so only the shape is needed.
+ */
+export function genericOAuth() {
+  return {
+    id: 'generic-oauth',
+    init: () => ({}),
+  };
+}
