@@ -133,6 +133,8 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: [...OAUTH_PROVIDERS_LIST],
+      // Apple's Hide My Email relay addresses never match the user's own email.
+      allowDifferentEmails: true,
     },
   },
   verification: {
