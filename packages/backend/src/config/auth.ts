@@ -291,7 +291,8 @@ export const auth = betterAuth({
                 pkce: true,
                 requireEmailVerification: isEmailEnabled,
                 requireIdTokenVerification: true,
-                disableProviderLogout: true,
+                // Off by default: sign-out ends only the MoneyMatter session and keeps the IdP session.
+                disableProviderLogout: !oidcConfig.providerLogout,
                 // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
                 mapProfileToUser: (profile) => ({
                   emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,

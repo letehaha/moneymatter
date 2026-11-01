@@ -12,6 +12,7 @@ interface OidcConfig {
   clientSecret: string;
   displayName: string;
   trustEmail: boolean;
+  providerLogout: boolean;
 }
 
 const isValidIssuer = ({ issuer }: { issuer: string }): boolean => {
@@ -46,6 +47,7 @@ export const getOidcConfig = ({ env }: { env: Partial<NodeJS.ProcessEnv> }): Oid
     clientSecret: env.OIDC_CLIENT_SECRET!,
     displayName: env.OIDC_PROVIDER_NAME?.trim() || DEFAULT_OIDC_PROVIDER_NAME,
     trustEmail: env.OIDC_TRUST_EMAIL === 'true',
+    providerLogout: env.OIDC_PROVIDER_LOGOUT === 'true',
   };
 };
 
