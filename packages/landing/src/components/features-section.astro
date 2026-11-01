@@ -1,9 +1,11 @@
 ---
+import LucideIcon from '@/components/lucide-icon.astro';
 import Screenshot from '@/components/screenshot.astro';
 
 const SHOWCASES = [
   {
     title: 'Full Net Worth',
+    href: '/features/net-worth-tracker',
     text: 'Everything you own and owe in one picture.',
     bullets: [
       'Cash, investments, vehicles, venture deals, and loans on one chart',
@@ -17,6 +19,7 @@ const SHOWCASES = [
   },
   {
     title: 'Investments',
+    href: '/features/investment-tracking',
     text: 'Track portfolios next to your everyday accounts.',
     bullets: [
       'Stocks, ETFs, and crypto with automatic prices',
@@ -30,6 +33,7 @@ const SHOWCASES = [
   },
   {
     title: 'Budgeting',
+    href: '/features/budgeting',
     text: 'A plan for every category that carries on from one month to the next.',
     bullets: [
       'A line per category with what is assigned, spent, and left',
@@ -43,6 +47,7 @@ const SHOWCASES = [
   },
   {
     title: 'FIRE Planner',
+    href: '/features/fire-planner',
     text: 'When you could stop working, based on what you actually spend and save.',
     bullets: [
       'Spending and savings rate taken from your own history',
@@ -51,11 +56,12 @@ const SHOWCASES = [
     ],
     iconClass: 'from-orange-500/10 to-orange-600/10 text-orange-500',
     icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>`,
-    image: { name: 'fire', width: 1504, height: 980 },
-    alt: 'FIRE planner with time to FIRE, progress toward the target, Lean to Coast targets, and the projection chart',
+    image: { name: 'fire', width: 984, height: 908 },
+    alt: 'FIRE planner with a time to FIRE of 20 years 4 months, 13.2% progress toward the target, Lean to Coast targets, and the projection chart',
   },
   {
     title: 'Reports & Insights',
+    href: '/features/analytics-and-reports',
     text: 'Answers to "where did the money go?" without a spreadsheet.',
     bullets: [
       'Cash flow: income against expenses, month by month',
@@ -69,6 +75,7 @@ const SHOWCASES = [
   },
   {
     title: 'Switch in One Click',
+    href: '/features/import-transactions',
     text: 'Bring your history with you, whatever you used before.',
     bullets: [
       'Direct importers for YNAB, Wallet by BudgetBakers, and Microsoft Money',
@@ -80,6 +87,66 @@ const SHOWCASES = [
     image: { name: 'import-sources', width: 1344, height: 1082 },
     alt: 'Import options: any text source, CSV, OFX, YNAB, Wallet, and Microsoft Money',
   },
+];
+
+const CARDS = [
+  {
+    title: 'Bank Connections',
+    href: '/features/bank-sync',
+    text: 'Auto-sync through LunchFlow, SimpleFIN, Monobank, and Akahu, covering thousands of banks across the US, Canada, Europe, and New Zealand. More providers coming.',
+    iconClass: 'from-blue-500/10 to-blue-600/10 text-blue-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
+  },
+  {
+    title: 'AI That Works for You',
+    href: '/features/ai-categorization',
+    text: 'Auto-categorization that learns your patterns. Use our AI or bring your own endpoint. Any OpenAI-compatible API works, including a local model.',
+    iconClass: 'from-purple-500/10 to-pink-500/10 text-purple-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>`,
+  },
+  {
+    title: 'Trackers',
+    href: '/features/spending-trackers',
+    text: 'One spending limit for a trip, a renovation, or any project. Pick a date range and the categories, or attach the transactions yourself.',
+    iconClass: 'from-orange-500/10 to-orange-600/10 text-orange-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>`,
+  },
+  {
+    title: 'Recurring & Scheduled',
+    href: '/features/subscription-tracker',
+    isNew: true,
+    text: 'Plan recurring charges and income. See upcoming payments before they hit your balance.',
+    iconClass: 'from-amber-500/10 to-amber-600/10 text-amber-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>`,
+  },
+  {
+    title: 'Family Sharing',
+    href: '/features/family-sharing',
+    text: 'Share one account with a parent or accountant, or give a partner full visibility. Pick read-only or write access, scoped per recipient.',
+    iconClass: 'from-rose-500/10 to-pink-500/10 text-rose-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`,
+  },
+  {
+    title: 'Multi-Currency',
+    href: '/features/multi-currency',
+    text: 'Any currency, automatic exchange rates. Useful when your salary and your rent are in different currencies.',
+    iconClass: 'from-indigo-500/10 to-indigo-600/10 text-indigo-500',
+    icon: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>`,
+  },
+];
+
+const PILLS: { label: string; href?: string }[] = [
+  { label: 'Payees with logos & aliases', href: '/features/payees' },
+  { label: 'Tags & notes', href: '/features/categories-and-tags' },
+  { label: 'Custom categories', href: '/features/categories-and-tags' },
+  { label: 'Split transactions', href: '/features/transaction-management' },
+  { label: 'Transfers & refunds', href: '/features/transfers-and-refunds' },
+  { label: 'Automation rules', href: '/features/automation-rules' },
+  { label: 'Data export', href: '/features/export-and-backup' },
+  { label: 'Backup & restore', href: '/features/export-and-backup' },
+  { label: 'Dark mode' },
+  { label: 'Mobile-friendly' },
+  { label: 'Multiple languages' },
 ];
 ---
 
@@ -104,7 +171,9 @@ const SHOWCASES = [
                 ]}
                 set:html={item.icon}
               />
-              <h3 class="text-2xl font-bold tracking-tight">{item.title}</h3>
+              <h3 class="text-2xl font-bold tracking-tight">
+                <a href={item.href} class="hover:text-primary-text transition-colors">{item.title}</a>
+              </h3>
               <p class="text-muted-foreground mt-3 text-lg">{item.text}</p>
               <ul class="mx-auto mt-6 w-fit space-y-3 text-left lg:mx-0">
                 {item.bullets.map((bullet) => (
@@ -114,6 +183,13 @@ const SHOWCASES = [
                   </li>
                 ))}
               </ul>
+              <a
+                href={item.href}
+                class="group text-primary-text focus-visible:outline-primary mt-6 inline-flex items-center gap-1.5 rounded-sm text-sm font-medium hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                Learn more<span class="sr-only"> about {item.title}</span>
+                <LucideIcon name="arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
             </div>
             <div class:list={[index % 2 === 0 && 'lg:order-first']}>
               <div class="border-border/50 bg-background overflow-hidden rounded-2xl border p-3 sm:p-4">
@@ -127,152 +203,58 @@ const SHOWCASES = [
 
     <!-- Features grid -->
     <div class="mt-16 sm:mt-24 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-      <!-- Bank Connections -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-blue-500/10 to-blue-600/10 text-blue-500"
-        >
-          <!-- Building2 -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">Bank Connections</h3>
-        <p class="text-muted-foreground text-sm">
-          Auto-sync through LunchFlow, SimpleFIN, Monobank, and Akahu, covering thousands of banks across the US, Canada,
-          Europe, and New Zealand. More providers coming.
-        </p>
-      </div>
-
-      <!-- AI That Works for You -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-purple-500/10 to-pink-500/10 text-purple-500"
-        >
-          <!-- Bot -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">AI That Works for You</h3>
-        <p class="text-muted-foreground text-sm">
-          Auto-categorization that learns your patterns. Use our AI or bring your own endpoint. Any OpenAI-compatible
-          API works, including a local model.
-        </p>
-      </div>
-
-      <!-- Trackers -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-orange-500/10 to-orange-600/10 text-orange-500"
-        >
-          <!-- BarChart3 -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">Trackers</h3>
-        <p class="text-muted-foreground text-sm">
-          One spending limit for a trip, a renovation, or any project. Pick a date range and the categories, or
-          attach the transactions yourself.
-        </p>
-      </div>
-
-      <!-- Recurring & Scheduled -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-amber-500/10 to-amber-600/10 text-amber-500"
-        >
-          <!-- CalendarClock -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">
-          Recurring & Scheduled
-          <span
-            class="ml-1 rounded bg-purple-500/20 px-1.5 py-0.5 align-middle text-xs font-medium text-purple-400"
-          >
-            New
-          </span>
-        </h3>
-        <p class="text-muted-foreground text-sm">
-          Plan recurring charges and income. See upcoming payments before they hit your balance.
-        </p>
-      </div>
-
-      <!-- Family Sharing -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-rose-500/10 to-pink-500/10 text-rose-500"
-        >
-          <!-- Users -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">Family Sharing</h3>
-        <p class="text-muted-foreground text-sm">
-          Share one account with a parent or accountant, or give a partner full visibility. Pick read-only or write
-          access, scoped per recipient.
-        </p>
-      </div>
-
-      <!-- Multi-Currency -->
-      <div
-        class="group border-border/50 bg-card hover:border-primary/50 relative overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg"
-      >
-        <div
-          class="mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500/10 to-indigo-600/10 text-indigo-500"
-        >
-          <!-- Globe -->
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-6"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-        </div>
-        <h3 class="mb-2 text-lg font-semibold">Multi-Currency</h3>
-        <p class="text-muted-foreground text-sm">
-          Any currency, automatic exchange rates. Useful when your salary and your rent are in different currencies.
-        </p>
-      </div>
+      {
+        CARDS.map((card) => (
+          <div class="group border-border/50 bg-card hover:border-primary/50 has-focus-visible:outline-primary relative flex flex-col overflow-hidden rounded-2xl border p-6 transition-all hover:shadow-lg has-focus-visible:outline-2 has-focus-visible:outline-offset-2">
+            <div
+              class:list={['mb-4 flex size-12 items-center justify-center rounded-xl bg-linear-to-br', card.iconClass]}
+              set:html={card.icon}
+            />
+            <h3 class="group-hover:text-primary-text mb-2 text-lg font-semibold transition-colors">
+              {card.title}
+              {card.isNew && (
+                <span class="ml-1 rounded bg-purple-500/20 px-1.5 py-0.5 align-middle text-xs font-medium text-purple-400">
+                  New
+                </span>
+              )}
+            </h3>
+            <p class="text-muted-foreground text-sm">{card.text}</p>
+            <a
+              href={card.href}
+              class="text-primary-text mt-auto inline-flex items-center gap-1.5 self-start pt-4 text-sm font-medium outline-hidden group-hover:underline after:absolute after:inset-0"
+            >
+              Learn more<span class="sr-only"> about {card.title}</span>
+              <LucideIcon name="arrow-right" class="size-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          </div>
+        ))
+      }
     </div>
 
     <!-- Also in the box -->
     <div class="mt-12 text-center">
       <p class="text-muted-foreground text-xs font-medium tracking-wider uppercase">Also in the box</p>
       <div class="mt-4 flex flex-wrap justify-center gap-2">
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Payees with logos & aliases
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Tags & notes
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Custom categories
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Split transactions
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Transfers & refunds
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Automation rules
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Data export
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Backup & restore
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Dark mode
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Mobile-friendly
-        </span>
-        <span class="border-border/50 bg-card text-muted-foreground rounded-full border px-3 py-1.5 text-xs">
-          <span class="text-primary">+</span> Multiple languages
-        </span>
+        {
+          PILLS.map(({ label, href }) => {
+            const Tag = href ? 'a' : 'span';
+            return (
+              <Tag
+                href={href}
+                class:list={[
+                  'bg-card rounded-full border px-3 py-1.5 text-xs',
+                  href
+                    ? 'border-border text-foreground hover:border-primary/50 hover:text-primary-text active:bg-primary/10 focus-visible:outline-primary transition-colors focus-visible:outline-2 focus-visible:outline-offset-2'
+                    : 'border-border/50 text-muted-foreground',
+                ]}
+              >
+                <span class="text-primary">+</span> {label}
+              </Tag>
+            );
+          })
+        }
       </div>
+      <a href="/features" class="text-primary-text mt-8 inline-block text-sm font-medium hover:underline">Browse all features</a>
     </div>
   </div>
 </section>

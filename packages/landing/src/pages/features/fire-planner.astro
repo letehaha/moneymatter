@@ -1,0 +1,130 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Your early retirement date, from your real spending and savings',
+    text: 'A FIRE date depends on the spending you feed it, and a guess can move it by years. This planner averages your spending and savings from your transactions, over up to your last 12 full months. It then shows how long until you reach your target, the month, and your age if you add your birth year. In this example, about $60,700 a year in spending and $2,400 a month in savings, on top of $201K already saved, gives 20 years and 4 months.',
+    bullets: [
+      'Import your past transactions to get a date on day one. Automatic figures need 3 full months of history, and until then you type your yearly spending',
+      'Leave out categories that end at retirement, such as childcare or commuting',
+      'Type your own figures when the automatic ones are off, for example when money goes straight into a portfolio',
+      'Add the FIRE progress widget to keep your time to FIRE and next milestone on the dashboard',
+    ],
+    screenshot: {
+      name: 'features/stats/fire-planner-overview',
+      alt: 'The FIRE planner on a wide screen: Time to FIRE of 20 years 4 months, a 1 yr 4 mos ahead verdict against Mar 2026, the Progress to FIRE bar at 13.2%, the Lean, Regular, Fat, Barista and Coast FIRE cards, the net worth chart with its forecast line, and the Assumptions panel on the right',
+      width: 1393,
+      height: 1170,
+    },
+  },
+  {
+    heading: 'How your FIRE number and retirement date are calculated',
+    text: 'Your FIRE number is yearly spending divided by your withdrawal rate. With $60,000 a year and a 4% rate, that is $1,500,000. The planner then projects your net worth month by month, using your expected return and monthly contribution, until it reaches that number.',
+    bullets: [
+      'Withdrawal rate: 4% by default, or anything from 1% to 10%',
+      "Expected return: a market preset such as the S&P 500 or world stocks, your own portfolio's actual yearly return, or a custom figure",
+    ],
+  },
+  {
+    heading: 'Lean, Regular, Fat, Barista and Coast FIRE compared',
+    text: 'Each type gets a card with a target and a time estimate, so you can see what a leaner or more generous retirement would cost you in years. Lean, Regular or Fat can be your target, and the whole page follows it. Barista and Coast are there for comparison. Lean and Fat default to 70% and 150% of your FIRE number, and you can change both. With the same numbers as above:',
+    bullets: [
+      'Lean FIRE: $1.06M in 15 years 3 months',
+      'Regular FIRE: $1.52M in 20 years 4 months',
+      'Fat FIRE: $2.28M in 26 years 9 months',
+      'Barista FIRE: $1.22M with $1,000 a month of part-time income, in 17 years 2 months',
+      'Coast FIRE: $355K today would grow to your target by age 65 with no more saving. At your current pace, you could stop saving in 6 years 2 months',
+    ],
+  },
+  {
+    heading: 'Your FIRE date range if returns run higher or lower',
+    text: 'A single date looks more certain than it is. The planner also gives a range for returns 2 percentage points higher or lower each year: in this example, October 2043 to September 2052. The chart shades that range and dates your 25%, 50% and 75% milestones. If your target is out of reach within 50 years, the page says why and shows the monthly contribution that would get you there in 20 years.',
+    screenshot: {
+      name: 'features/stats/fire-planner-chart',
+      alt: 'The FIRE chart: a solid net worth line up to Today, a dashed projection with a shaded range crossing a green $1.5M FIRE target line in March 2047, a dotted Mar 2026 forecast just beside it, markers at 25%, 50% and 75%, and the milestone list below',
+      width: 984,
+      height: 420,
+    },
+  },
+  {
+    heading: 'Check if you are on track for FIRE against your past forecast',
+    text: 'Your FIRE date moves as you save and spend. The planner compares today with the date it would have given you in an earlier month, a year ago by default or any month you pick, and says whether you are ahead, on pace or behind. In this example, the date moved from July 2048 to March 2047, so you are 1 year 4 months ahead.',
+    bullets: [
+      'Open the verdict to see your FIRE date, savings, spending and saving then and now, with the change in each. The Saved by now row compares your balance with what the earlier forecast expected by today',
+      'The chart draws your actual net worth since that month over the forecast from back then, so you can see where you drifted',
+      'The earlier month is rebuilt from your own transactions and balances, so there is nothing to set up. It needs 3 months of tracked spending before the month you compare with',
+    ],
+    screenshot: {
+      name: 'features/stats/fire-planner-pace',
+      alt: 'The pace comparison open under the Time to FIRE of 20 years 4 months: Pace since Mar 2026, a 1 yr 4 mos ahead verdict, your FIRE date moving from Jul 2048 to Mar 2047, and a table of FIRE date, Saved by now, Spending and Saving then and today with the change in each',
+      width: 648,
+      height: 524,
+    },
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'On the Essential plan, opening the planner starts a one-time 14-day trial. After that, the planner and its widget are locked until you move to Plus.',
+  'The projection uses one fixed return for every year. There is no Monte Carlo simulation or sequence-of-returns modeling, so the 2-point range is your only view of market risk.',
+  'Taxes, fees, pensions and changes in your spending are not modeled. If you expect to spend more or less once retired, type that figure in place of the automatic one.',
+];
+
+const FAQ = [
+  {
+    question: 'What is a FIRE number?',
+    answer:
+      'A FIRE number is the amount you need to live off your savings for good: yearly spending divided by your withdrawal rate. At 4%, that is 25 times your yearly spending, so $40,000 a year needs $1,000,000. The 4% rule comes from US data for 30-year retirements, so a lower rate is more cautious if you plan to retire early.',
+  },
+  {
+    question: 'How do I know if I am on track for FIRE?',
+    answer:
+      'Compare your FIRE date with an earlier month. MoneyMatter rebuilds the plan from your balance and cash flow as of that month, a year ago by default, then shows whether your date moved sooner or later and compares your balance with what that plan expected by today.',
+  },
+  {
+    question: 'Is the FIRE calculator free?',
+    answer:
+      "MoneyMatter's FIRE calculator is free for 40 days, with no card, as part of the trial for new accounts. After that it needs the Plus plan, at $8 a month or $55 a year before tax. If you self-host MoneyMatter, the planner is free along with every other feature.",
+  },
+  {
+    question: 'What is the difference between Coast FIRE and Barista FIRE?',
+    answer:
+      'Coast FIRE is the amount you need today so that growth alone reaches your target by a chosen age, 65 by default. You can stop saving, but you still work to cover your spending until then. Barista FIRE is the smaller target you need if part-time income covers some of your spending from the day you stop full-time work.',
+  },
+  {
+    question: 'Does my house or car count toward FIRE?',
+    answer:
+      'A car counts if you switch it on, and a house only if you add it yourself. Vehicles, venture deals and loans are off by default, and each has a switch. MoneyMatter has no property account type, so a house has to be a manual account you keep updated, and it then sits with your cash. Cash, bank accounts and investment portfolios always count.',
+  },
+  {
+    question: 'Does the FIRE calculator account for inflation?',
+    answer:
+      "Yes. It works with returns after inflation, so every target and projection is in today's buying power, and past net worth on the chart is converted the same way. Market presets build in 3% US inflation.",
+  },
+  {
+    question: 'Can I use the FIRE calculator outside the US?',
+    answer:
+      "Yes. The plan runs in your base currency. Market presets use US and global returns with US inflation, so for another country, use your portfolio's return or a custom one and set your own inflation rate.",
+  },
+];
+
+const GUIDES = [
+  { label: 'FIRE planner', href: 'https://docs.moneymatter.app/stats/fire-planner/' },
+  { label: 'Plans and billing', href: 'https://docs.moneymatter.app/settings/plans-and-billing/' },
+  { label: 'How stats are calculated', href: 'https://docs.moneymatter.app/stats/how-stats-are-calculated/' },
+];
+
+const RELATED = ['/features/investment-tracking', '/features/net-worth-tracker', '/features/savings-goals'];
+---
+
+<FeatureLayout
+  title="FIRE Calculator and Early Retirement Planner | MoneyMatter"
+  description="A FIRE calculator that shows when you could retire early, from your real spending and savings. Compare Lean, Fat, Barista and Coast FIRE. On the Plus plan."
+  heading="A FIRE calculator built on what you actually spend"
+  intro="This FIRE calculator estimates when you could reach financial independence and retire early, using your own transactions in place of guesses. It is part of the Plus plan and the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

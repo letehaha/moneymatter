@@ -1,0 +1,112 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Track your assets and debts on one net worth chart',
+    text: 'Net Worth History draws your assets, your liabilities and the difference between them over time, by week, month, quarter or year. Assets are split into cash and accounts, investments, vehicles and ventures. Liabilities are split into credit cards, loans and overdrafts. Hover a point to see every part of that total for that date, added up in your base currency.',
+    screenshot: {
+      name: 'net-worth',
+      alt: 'The Net Worth History report with current net worth, period change and average liabilities cards above monthly bars stacked by cash and accounts, investments, vehicles and ventures, and a tooltip breaking down May 2026',
+      width: 752,
+      height: 488,
+    },
+  },
+  {
+    heading: 'Net worth updates from your records, with no monthly spreadsheet',
+    text: 'You do not retype a total at the end of each month. Each part of your net worth updates in its own way, and the only regular work is the records you enter by hand.',
+    bullets: [
+      'Accounts follow your transactions, entered by hand, imported or from a bank connection',
+      'Portfolios follow market prices: stocks and ETFs daily, crypto at least once an hour',
+      'A vehicle loses value as it ages, and you can replace the estimate with a real valuation',
+      'A venture deal moves when you record a new valuation',
+      'A loan goes down as you record payments',
+    ],
+  },
+  {
+    heading: 'Net worth history from before you signed up',
+    text: 'The chart is built from your records, so it can reach back further than your first login. Import old transactions from a CSV, OFX or QFX file and they fill in the balance history of each account. Add past trades to a portfolio and it is valued at the market price on each past date. A vehicle joins the chart from its purchase date. A year of statements gives you a year of net worth history on your first day.',
+  },
+  {
+    heading: 'Track a pension or managed fund by its statement',
+    text: 'Some money has no ticker to follow, such as a pension or an investment account your bank runs. Add it as an account, and when a statement arrives, set the balance to the closing value. If your account shows 10,215 EUR and the statement says 10,480, the 265 EUR difference raises your net worth without counting as income, so your spending and income reports stay clean.',
+  },
+  {
+    heading: 'Measure net worth growth over years',
+    text: 'Period change shows how far your net worth moved between the first and last points on the chart, as an amount and a percentage. Pick a range of more than a year, such as All time, and you also get a yearly growth rate, such as about 8% a year, as long as your net worth was positive at both ends.',
+    bullets: [
+      'If you hold portfolios, the Net Worth Drivers report separates what you saved from what your investments grew by',
+    ],
+  },
+  {
+    heading: 'See liquid net worth, or leave out the car',
+    text: 'In Net Worth History, filter to any mix of asset and liability types, and the totals recalculate. Keep cash and investments alone for a rough liquid net worth. The Net Worth widget on your dashboard has its own gear menu to leave out loans, vehicles or ventures.',
+    screenshot: {
+      name: 'features/stats/net-worth-widget-settings',
+      alt: 'The Net Worth widget with the Include in net worth menu open, showing Loans, Vehicles and Ventures switches',
+      width: 369,
+      height: 400,
+    },
+  },
+];
+
+const GOOD_TO_KNOW = [
+  'Portfolios cannot connect to a broker or crypto exchange. You enter holdings by hand or import them from a file. Bonds, options and mutual funds are not supported as holdings, so track those as a manual account.',
+  'Automatic account balances need bank sync, which is on the Plus plan and in the trial, and included when you self-host. LunchFlow and SimpleFIN also charge their own subscription. On Essential you enter or import transactions yourself.',
+  'Net worth is personal. An account someone shares with you does not count toward your figure, and there is no combined household total.',
+];
+
+const FAQ = [
+  {
+    question: 'How do I calculate my net worth?',
+    answer:
+      'Net worth is assets minus liabilities. If you have 30,000 in savings, 20,000 in investments, a 15,000 car and a 10,000 loan, your net worth is 55,000. MoneyMatter does this sum for you from what you track, for every point in your history.',
+  },
+  {
+    question: 'What counts toward my net worth in MoneyMatter?',
+    answer:
+      'Everything you track counts: accounts, portfolios, vehicles and venture deals, minus credit card debt, loans and overdrafts. An overdrawn account counts as debt. To leave out an account, such as one you track for someone else, turn on Exclude from statistics.',
+  },
+  {
+    question: 'Can I include my house in my net worth?',
+    answer:
+      'Yes, as a manual account whose balance you update yourself. MoneyMatter has no property type or automatic home valuation, and the account shows under cash and accounts. A mortgage added as a loan counts as debt.',
+  },
+  {
+    question: 'Why did my net worth change when I added no transactions?',
+    answer:
+      'Exchange rates move foreign-currency balances, market prices move portfolios, and vehicles lose value as they age. If you hold 1,000 USD and your base currency is EUR, a stronger dollar raises your net worth that day. None of these count as income or spending.',
+  },
+  {
+    question: 'Can I track net worth across several currencies?',
+    answer:
+      'Yes. Each account keeps its own currency, and the total is shown in your base currency. MoneyMatter supports more than 150 currencies, with exchange rates that update daily.',
+  },
+  {
+    question: 'Is MoneyMatter a free net worth tracker?',
+    answer:
+      'Only if you self-host, which is free with every feature. The cloud version has a 40-day free trial with no card needed, and no free plan after that. Before tax, Essential costs $5 a month or $30 a year, and Plus, which adds bank sync, costs $8 a month or $55 a year.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Net Worth History report', href: 'https://docs.moneymatter.app/stats/analytics-reports/' },
+  { label: 'How stats are calculated', href: 'https://docs.moneymatter.app/stats/how-stats-are-calculated/' },
+  { label: 'Dashboard', href: 'https://docs.moneymatter.app/stats/dashboard/' },
+  { label: 'Vehicles', href: 'https://docs.moneymatter.app/accounts/vehicles/' },
+];
+
+const RELATED = ['/features/investment-tracking', '/features/loan-tracking', '/features/vehicles-and-ventures'];
+---
+
+<FeatureLayout
+  title="Net Worth Tracker App for Assets and Debts | MoneyMatter"
+  description="A net worth tracker for your accounts, investments, vehicles, venture deals and debts. Import old statements to see past net worth from day one."
+  heading="Net worth tracker for your accounts, investments, car and debts"
+  intro="MoneyMatter is a net worth tracker that puts everything you own and owe on one chart, from cash and portfolios to a car, a venture deal or a mortgage. Pick any period to see how far your net worth moved, and import old statements to see the years before you signed up."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

@@ -6,6 +6,7 @@ import CtaSection from '@/components/cta-section.astro';
 import LandingFooter from '@/components/landing-footer.astro';
 import Screenshot from '@/components/screenshot.astro';
 import FaqAsk from '@/components/faq-ask.vue';
+import FaqDetails from '@/components/faq-details.astro';
 import TryDemoButton from '@/components/try-demo-button.vue';
 import CheckIcon from '@/components/icons/check-icon.astro';
 import { ALTERNATIVE_PAGES } from '@/lib/alternatives';
@@ -270,17 +271,7 @@ const ROADMAP_URL = 'https://moneymatter.featurebase.app/dashboard/roadmap';
       <section class="mx-auto mt-20 max-w-3xl">
         <h2 class="text-2xl font-bold tracking-tight sm:text-3xl">Questions about switching</h2>
         <div class="mt-6 space-y-3">
-          {
-            faq.map((item) => (
-              <details class="group border-border/50 bg-card rounded-xl border px-5 py-4">
-                <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
-                  {item.question}
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-muted-foreground size-4 shrink-0 transition-transform group-open:rotate-180"><path d="m6 9 6 6 6-6"/></svg>
-                </summary>
-                <p class="text-muted-foreground mt-3 text-sm leading-relaxed">{item.answer}</p>
-              </details>
-            ))
-          }
+          <FaqDetails items={faq} />
           <FaqAsk client:visible />
         </div>
 

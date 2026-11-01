@@ -1,0 +1,173 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '@/layouts/base-layout.astro';
+import BackgroundOrbs from '@/components/background-orbs.astro';
+import LandingHeader from '@/components/landing-header.astro';
+import CtaSection from '@/components/cta-section.astro';
+import LandingFooter from '@/components/landing-footer.astro';
+import FeatureCard from '@/components/feature-card.astro';
+import { FEATURE_PAGES } from '@/lib/features';
+
+export async function getStaticPaths() {
+  const guides = await getCollection('guides');
+  return guides.map((guide) => ({ params: { slug: guide.id }, props: { guide } }));
+}
+
+const { guide } = Astro.props;
+const { title, description, published, updated, related, docs } = guide.data;
+const { Content } = await render(guide);
+
+const relatedPages = related.map((href) => {
+  const page = FEATURE_PAGES.find((item) => item.href === href);
+  if (!page) throw new Error(`Guide ${guide.id} links to unknown feature: ${href}`);
+  return page;
+});
+
+const lastChange = updated ?? published;
+const pageUrl = new URL(`/guides/${guide.id}`, Astro.site).href;
+
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Article',
+      headline: title,
+      description,
+      url: pageUrl,
+      datePublished: published.toISOString(),
+      dateModified: lastChange.toISOString(),
+      author: { '@type': 'Person', name: 'letehaha', url: 'https://github.com/letehaha' },
+    },
+    {
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Guides', item: new URL('/guides', Astro.site).href },
+        { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+      ],
+    },
+  ],
+};
+---
+
+<BaseLayout title={`${title} | MoneyMatter`} description={description}>
+  <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+  <div class="bg-background text-foreground landing-page min-h-screen">
+    <BackgroundOrbs />
+    <LandingHeader />
+
+    <main class="relative z-10 mx-auto max-w-3xl px-4 pt-28 pb-16 sm:px-6 sm:pt-36 lg:px-8">
+      <nav aria-label="Breadcrumb" class="text-muted-foreground text-sm">
+        <a href="/guides" class="hover:text-foreground transition-colors">Guides</a>
+      </nav>
+      <h1 class="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">{title}</h1>
+      <p class="text-muted-foreground mt-4 text-sm">
+        {updated ? 'Updated' : 'Published'}
+        <time datetime={lastChange.toISOString()}>
+          {lastChange.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' })}
+        </time>
+      </p>
+
+      <article class="guide-body mt-10">
+        <Content />
+      </article>
+
+      <p class="text-muted-foreground mt-12 text-sm">
+        Step-by-step docs:{' '}
+        {
+          docs.map((doc, index) => (
+            <>
+              {index > 0 && ', '}
+              <a href={doc.href} class="text-primary-text hover:underline">
+                {doc.label}
+              </a>
+            </>
+          ))
+        }.
+      </p>
+
+      <section class="mt-16">
+        <h2 class="text-2xl font-bold tracking-tight">Features used in this guide</h2>
+        <ul class="mt-6 grid gap-4 sm:grid-cols-2">
+          {
+            relatedPages.map((page) => (
+              <li>
+                <FeatureCard page={page} />
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </main>
+
+    <CtaSection />
+    <LandingFooter />
+  </div>
+</BaseLayout>
+
+<style>
+  .landing-page {
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-y: auto;
+  }
+
+  .guide-body {
+    color: var(--muted-foreground);
+    line-height: 1.75;
+  }
+
+  .guide-body :global(h2) {
+    margin-top: 3rem;
+    color: var(--foreground);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.3;
+  }
+
+  .guide-body :global(h3) {
+    margin-top: 2rem;
+    color: var(--foreground);
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .guide-body :global(p),
+  .guide-body :global(ul),
+  .guide-body :global(ol) {
+    margin-top: 1rem;
+  }
+
+  .guide-body :global(ul) {
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .guide-body :global(ol) {
+    padding-left: 1.25rem;
+    list-style: decimal;
+  }
+
+  .guide-body :global(li) {
+    margin-top: 0.5rem;
+  }
+
+  .guide-body :global(strong) {
+    color: var(--foreground);
+    font-weight: 600;
+  }
+
+  .guide-body :global(a) {
+    color: var(--primary-text);
+  }
+
+  .guide-body :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .guide-body :global(img) {
+    margin-top: 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+  }
+</style>

@@ -1,0 +1,95 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Loan payoff date, months left and interest still to pay',
+    text: "Add a mortgage, auto, student or personal loan with the amount you borrowed, what you owe today, the interest rate and your planned monthly payment. MoneyMatter projects the payoff date, the months left and the total interest still to pay, and splits next month's payment into interest and principal. On a 300,000 mortgage at 6% with a payment of 1,800, you see that 1,500 goes to interest and only 300 reduces the debt.",
+    bullets: ['Each loan keeps its own currency, so a mortgage abroad stays in that currency'],
+  },
+  {
+    heading: 'Extra payment calculator: what paying more saves on your mortgage',
+    text: 'Type any monthly amount into the payoff chart to compare it with your planned and minimum payments. On that same mortgage, paying 2,000 instead of 1,800 cuts the payoff from 30 years to about 23 and saves about 90,000 in interest. The new payoff date and the change in interest update as you type, and your plan stays as it is until you apply the new amount.',
+  },
+  {
+    heading: 'Total debt, monthly payments and a debt-free date in one view',
+    text: 'The Loans page adds up what you owe in your base currency and shows how much of it each loan makes up. Next to that are your total monthly payment, average APR, projected interest and the date you would be debt free.',
+  },
+  {
+    heading: 'Record loan payments, or link them from bank sync',
+    text: 'Record a payment from one of your accounts, or select expenses you already have, such as ones from a bank sync or an import, and link them to the loan. The balance goes down with each one.',
+    bullets: [
+      'Pay from an account in another currency, with the amount set on each side',
+      'Link older payments for your records without lowering a balance you already entered',
+    ],
+  },
+  {
+    heading: 'Update the rate, term or balance when your lender changes them',
+    text: 'When your fixed rate ends or you refinance, change the rate, term or planned payment and the projection updates from there. When your statement arrives, correct the balance and set the date it applies from. The loan timeline logs each change and the date the loan was paid off.',
+  },
+  {
+    heading: 'What a paid-off loan cost you in principal and interest',
+    text: 'Paid-off loans move to their own list. Each one shows when it opened and closed and how much you repaid. If you entered a term, you also see how many months early you finished, the total cost split into principal and interest estimated from the original schedule, and a chart of your actual balance against that schedule.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  "MoneyMatter does not add interest to the balance or split recorded payments into principal and interest, and there is no amortization table. A payment lowers the balance by its full amount, so the balance falls faster than your lender's. Correct it from your statement from time to time.",
+  'Payments do not record themselves. The planned payment and payment day do not create transactions or send reminders, and an expense from a bank sync stays an expense until you link it.',
+  'The payoff date, debt-free date and interest figures need a planned payment. They assume the current rate stays the same and do not include fees.',
+  'Credit lines you borrow from repeatedly, such as HELOCs, are not supported, and there is no snowball or avalanche planner across several debts.',
+];
+
+const FAQ = [
+  {
+    question: 'How do I calculate when my loan will be paid off?',
+    answer:
+      'Enter what you owe, the interest rate and your planned monthly payment, and MoneyMatter calculates the payoff date. It adds a month of interest to the balance, subtracts your payment and repeats until the balance reaches zero, which also gives you the total interest left.',
+  },
+  {
+    question: 'Can I see how much an extra payment saves on my mortgage?',
+    answer:
+      'Yes, for a higher monthly payment. The payoff chart compares it with your current plan and shows the new payoff date and the change in interest. The chart does not model a one-time lump sum, but you can record one as a payment and the projection updates from the lower balance.',
+  },
+  {
+    question: 'Do loan payments count as spending?',
+    answer:
+      'Yes. Money paid into a loan you track counts as an expense, even though other transfers between your own accounts do not. The whole payment counts, principal and interest alike, because MoneyMatter does not split it.',
+  },
+  {
+    question: 'Is my mortgage included in my net worth?',
+    answer:
+      'Yes. What you still owe on a loan counts as a liability and is subtracted from your net worth. You can hide all loans in the Net Worth widget, or use Exclude from statistics to leave one loan out of net worth and balance charts.',
+  },
+  {
+    question: 'Does MoneyMatter connect to my mortgage lender?',
+    answer:
+      'No, there is no direct loan connection. You add each loan by hand, and bank sync does not create loans or update their balances. A loan balance changes only through the payments you record or link and the corrections you enter.',
+  },
+  {
+    question: 'How much does loan tracking cost?',
+    answer:
+      'Loan tracking is included in every cloud plan, starting with Essential at $5 a month or $30 a year before tax, and in the 40-day trial and the free self-hosted version. Bringing in payments through bank sync needs the Plus plan on the cloud version.',
+  },
+];
+
+const GUIDES = [
+  { label: 'How stats are calculated', href: 'https://docs.moneymatter.app/stats/how-stats-are-calculated/' },
+  { label: 'How transfers work', href: 'https://docs.moneymatter.app/transfers-and-refunds/how-transfers-work/' },
+  { label: 'Analytics reports', href: 'https://docs.moneymatter.app/stats/analytics-reports/' },
+];
+
+const RELATED = ['/features/net-worth-tracker', '/features/transfers-and-refunds', '/features/fire-planner'];
+---
+
+<FeatureLayout
+  title="Loan Payoff Tracker: Mortgage, Auto, Student | MoneyMatter"
+  description="Loan payoff tracker for mortgage, auto, student and personal loans. See your payoff date, the interest left and what a higher monthly payment would save."
+  heading="Loan payoff tracker for your mortgage, car and student loans"
+  intro="MoneyMatter's loan payoff tracker shows when each mortgage, auto, student or personal loan ends and how much interest is left. Type a higher monthly payment into the chart to find out what it would save before you commit to it. Loan tracking is part of every plan and the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

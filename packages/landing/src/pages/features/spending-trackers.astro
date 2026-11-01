@@ -1,0 +1,127 @@
+---
+import FeatureLayout from '@/layouts/feature-layout.astro';
+
+const SECTIONS = [
+  {
+    heading: 'Track the full cost of a trip or renovation in one list',
+    text: 'A kitchen renovation can run across materials, tools, delivery and contractors over four months, so no single category or monthly report shows the full cost. A tracker pulls those transactions into one list with one total. Give it a name, then add a limit and dates if the project has them. Create as many trackers as you need, and put one transaction in several. A tracked purchase still counts in your balances and reports as usual.',
+    bullets: [
+      'The Trackers dashboard widget shows how much of each limit is used',
+      "Duplicate a tracker for next year's trip: the limit, lines and rules carry over, and the dates and transactions start empty",
+    ],
+    screenshot: {
+      name: 'features/trackers/trackers-list',
+      alt: "The Trackers page listing a trip, a renovation, a dining budget and a side-project income target, each with progress, days left and total",
+      width: 1063,
+      height: 464,
+    },
+  },
+  {
+    heading: 'See your daily spending pace and projected total against the limit',
+    text: 'Set both dates and a limit, and the tracker compares what you spend per day with what the limit allows, then projects your final total at that pace. On a two-week, $2,000 trip, spending $800 in the first 4 days shows a pace of $200 a day against about $143 allowed, and a projected total of $2,800. You still have 10 days to adjust.',
+    bullets: [
+      'A chart of the running total, with the limit and the projection',
+      'Spending by category, top payees and your biggest spending day',
+      'Totals in your base currency, plus what you paid in each currency on a trip abroad',
+      'Refunds linked to a tracked purchase come off the total',
+    ],
+  },
+  {
+    heading: 'Add expenses by hand, by category or by tag',
+    text: 'Pick transactions from a filterable list when you want full control. Or turn on rules and choose categories, tags or both, and matching transactions within the dates are added for you, including imported and bank-synced ones. Tagging each purchase "kitchen" is enough to fill a renovation tracker. Leave the dates empty for an ongoing cost, such as a car or a pet.',
+    bullets: ['A transaction you remove stays out, and you can restore it later'],
+  },
+  {
+    heading: 'Let AI find trip expenses from a description',
+    text: 'With Smart tracking on, you describe what belongs in the tracker, such as "Two weeks in Greece: flights, ferries, rental car, island hotels". AI checks right away, then every night for new and edited transactions. Sure matches are added and you get a notification. The rest wait for your review, each with a short reason, and what you reject guides later checks. The tracker needs a start date. You can look back up to 6 months before it to catch flights and hotels booked in advance, and checks continue for 14 days after the end date, for card charges that post late.',
+    screenshot: {
+      name: 'features/ai/smart-tracking-fields',
+      alt: 'The Smart tracking section of the tracker form, with Find matching transactions for me switched on, a description of ten days in Lisbon filled in, and Also look before the start date set to 1 month',
+      width: 482,
+      height: 355,
+    },
+  },
+  {
+    heading: 'Split a travel budget into flights, hotels and food',
+    text: 'Add lines such as Flights, Hotels and Food, each covering one or more categories with its own optional limit. Spending that fits no line appears under Other, so you can see what the plan missed.',
+    screenshot: {
+      name: 'features/trackers/tracker-details',
+      alt: "A Lisbon trip tracker with its limit, spent and left amounts, and limit lines for flights, hotels, food and activities",
+      width: 1063,
+      height: 673,
+    },
+  },
+  {
+    heading: 'Share a trip budget with your partner',
+    text: 'On a joint trip, you might pay the hotels while your partner pays for dinners from their own accounts. Invite them to the tracker with write access and they can attach their own transactions, which count toward one shared total. Read-only access lets someone follow along.',
+  },
+  {
+    heading: 'Track side-project income against a target or a cap',
+    text: 'A limit can also be an income goal to reach, such as $5,000 from a side project this year, or an income ceiling to stay under. Pace and projection then follow net income, so you can see early whether you are on course.',
+  },
+];
+
+const GOOD_TO_KNOW = [
+  "Rules and Smart tracking only look at the tracker owner's transactions. Anyone you share with attaches theirs by hand.",
+  'You can share a tracker with 2 people on Essential and 5 on Plus. Everyone must use the same base currency, and each person needs their own trial or plan to add transactions.',
+  'A shared tracker does not work out who owes whom.',
+];
+
+const FAQ = [
+  {
+    question: 'How do I track expenses for a trip or a renovation?',
+    answer:
+      'Create a tracker in MoneyMatter under Planning, then Trackers, with a name, an optional limit and optional dates. Then pick its transactions by hand, or let rules add everything with certain categories or tags.',
+  },
+  {
+    question: 'How is a spending tracker different from a budget?',
+    answer:
+      'A budget resets every period and sets an amount per category line. A tracker follows one project across any category, with its own optional dates and limit. You have one budget at a time, and a purchase in a tracker still counts in it.',
+  },
+  {
+    question: 'How much do spending trackers cost?',
+    answer:
+      'Trackers and rules come with every plan, from Essential at $5 a month or $30 a year before tax, and with the 40-day trial. Smart tracking comes with Plus, at $8 a month or $55 a year before tax, and uses the included AI and its monthly allowance. On Essential, turning it on starts a 14-day trial, once per account, and after that it needs your own AI model, billed by your provider. On a self-hosted server, every feature is on and you supply the AI keys.',
+  },
+  {
+    question: 'Can I track expenses by tag instead of category?',
+    answer:
+      "Yes. Turn on a tracker's rules and pick tags, categories or both. A transaction needs only one of them to match, and it must fall within the tracker's dates if you set any.",
+  },
+  {
+    question: 'Can I share a spending tracker without sharing my accounts?',
+    answer:
+      "Yes. You invite a person to that one tracker and choose read-only, write or manage access. Manage also lets them edit the tracker and change or remove other people's access. Household sharing does not include trackers, so even household members need their own invitation to each tracker.",
+  },
+  {
+    question: 'Do trackers send my transactions to an AI model?',
+    answer:
+      "Only with Smart tracking on, which is off by default. It sends the transactions being checked and a sample of ones already linked or rejected, each with its amount, currency, account name, date, payee, note and category, plus the tracker's name, description and dates. Transfers are left out. When it runs on your own AI model, this data goes only to that provider.",
+  },
+  {
+    question: 'What happens to a tracker when the trip or project is over?',
+    answer:
+      'Archive it. Its transactions and totals stay available, rules and Smart tracking stop running, and it leaves the dashboard widget. You can restore it later.',
+  },
+];
+
+const GUIDES = [
+  { label: 'Smart tracking and AI features', href: 'https://docs.moneymatter.app/ai/ai-features/' },
+  { label: 'The Trackers dashboard widget', href: 'https://docs.moneymatter.app/stats/dashboard/' },
+  { label: 'Plans and billing', href: 'https://docs.moneymatter.app/settings/plans-and-billing/' },
+];
+
+const RELATED = ['/features/budgeting', '/features/categories-and-tags', '/features/family-sharing'];
+---
+
+<FeatureLayout
+  title="Trip and Project Expense Tracker | MoneyMatter"
+  description="A trip and project expense tracker. See one total against a limit, and add transactions by hand, by category or tag, or with AI."
+  heading="Trip and project expense tracker, with one total across every category"
+  intro="MoneyMatter's trip and project expense tracker puts every transaction from one project in one list, whatever its category or month. Set a limit and see how much is left and where your pace is taking you. Trackers are on every plan and in the 40-day free trial."
+  sections={SECTIONS}
+  goodToKnow={GOOD_TO_KNOW}
+  faq={FAQ}
+  guides={GUIDES}
+  related={RELATED}
+/>

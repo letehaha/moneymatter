@@ -48,6 +48,7 @@ Works with Claude, ChatGPT, OpenClaw, and any MCP-compatible client. Access can 
 ## Links
 
 - [Sign up / Get started](https://moneymatter.app/sign-up)
+- [All features](https://moneymatter.app/features)
 - [GitHub repository](https://github.com/letehaha/moneymatter)
 - [API catalog](https://moneymatter.app/.well-known/api-catalog)
 - [Privacy policy](https://moneymatter.app/privacy-policy)
