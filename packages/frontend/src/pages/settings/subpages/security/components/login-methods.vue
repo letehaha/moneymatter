@@ -41,7 +41,7 @@
             variant="outline"
             size="sm"
             :disabled="!canDisconnect || isDisconnecting"
-            @click="handleDisconnectOAuth({ provider })"
+            @click="providerToDisconnect = provider"
           >
             <Loader2Icon v-if="isDisconnecting" class="mr-2 size-4 animate-spin" />
             {{ $t('settings.security.loginMethods.oauth.disconnect') }}
@@ -177,6 +177,30 @@
       </div>
 
       <ResponsiveAlertDialog
+        :open="!!providerToDisconnect"
+        :confirm-label="$t('settings.security.loginMethods.oauth.disconnect')"
+        confirm-variant="destructive"
+        :confirm-disabled="isDisconnecting"
+        @update:open="(open) => !open && (providerToDisconnect = null)"
+        @confirm="handleDisconnectOAuth"
+      >
+        <template #title>
+          {{
+            $t('settings.security.loginMethods.oauth.disconnectConfirmTitle', {
+              provider: providerToDisconnect ? providerConfig[providerToDisconnect].name : '',
+            })
+          }}
+        </template>
+        <template #description>
+          {{
+            $t('settings.security.loginMethods.oauth.disconnectConfirmDescription', {
+              provider: providerToDisconnect ? providerConfig[providerToDisconnect].name : '',
+            })
+          }}
+        </template>
+      </ResponsiveAlertDialog>
+
+      <ResponsiveAlertDialog
         :open="!!passkeyToDelete"
         :confirm-label="$t('common.actions.delete')"
         confirm-variant="destructive"
@@ -263,6 +287,7 @@ const { addErrorNotification, addSuccessNotification } = useNotificationCenter()
 const isLoading = ref(true);
 const isConnecting = ref(false);
 const isDisconnecting = ref(false);
+const providerToDisconnect = ref<OAUTH_PROVIDER | null>(null);
 const isAddingPasskey = ref(false);
 const isDeletingPasskey = ref<string | null>(null);
 const passkeyToDelete = ref<Passkey | null>(null);
@@ -337,7 +362,10 @@ const handleConnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) =>
   }
 };
 
-const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER }) => {
+const handleDisconnectOAuth = async () => {
+  const provider = providerToDisconnect.value;
+  if (!provider) return;
+
   const account = getAccountByProvider(provider);
   const providerName = providerConfig[provider].name;
 
@@ -350,6 +378,7 @@ const handleDisconnectOAuth = async ({ provider }: { provider: OAUTH_PROVIDER })
     addSuccessNotification(
       t('settings.security.loginMethods.notifications.oauthDisconnectSuccess', { provider: providerName }),
     );
+    providerToDisconnect.value = null;
     await loadAccounts();
   } catch (error) {
     addErrorNotification(
