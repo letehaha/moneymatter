@@ -16,6 +16,7 @@ import { setLastLoginMethod, setPendingLoginMethod } from '@/lib/last-login-meth
 import { identifyUser, resetUser, startSessionRecording, trackAnalyticsEvent } from '@/lib/posthog';
 import { collectPersistedQueryGarbage, resetQueryCaches } from '@/lib/query-persister';
 import { captureException, clearSentryUser, setSentryUser } from '@/lib/sentry';
+import { ROUTES_NAMES, router } from '@/routes';
 import { useCategoriesStore, useCurrenciesStore, useUserStore } from '@/stores';
 import { OAUTH_PROVIDER, USER_ROLES, UserInfoResponse } from '@bt/shared/types';
 import { useQueryClient } from '@tanstack/vue-query';
@@ -277,8 +278,17 @@ export const useAuthStore = defineStore('auth', () => {
   const logout = async ({ demoEndReason = 'logout' }: { demoEndReason?: DemoEndReason } = {}) => {
     const wasDemo = userStore.isDemo;
 
+    // Set only when the server ends the IdP session too (OIDC_PROVIDER_LOGOUT=true).
+    let providerLogoutUrl: string | undefined;
+
     try {
-      await signOut();
+      // disableRedirect: the client would otherwise navigate to the IdP right here,
+      // before the local cleanup below has wiped caches and the persisted store.
+      const { data } = await signOut({
+        disableRedirect: true,
+        callbackURL: `${window.location.origin}${router.resolve({ name: ROUTES_NAMES.signIn }).href}`,
+      });
+      providerLogoutUrl = data?.url;
     } catch (error) {
       // Local state clears either way; a session the server never dropped deserves visibility.
       captureException({ error, context: { scope: 'auth:logout-signout' } });
@@ -302,6 +312,11 @@ export const useAuthStore = defineStore('auth', () => {
     // persisted store so no financial data survives logout on a shared device.
     await resetQueryCaches(queryClient);
     resetAllDefinedStores();
+
+    // The IdP ends its session and sends the user back to the sign-in page.
+    if (providerLogoutUrl) {
+      window.location.assign(providerLogoutUrl);
+    }
   };
 
   watch(isLoggedIn, (newValue) => {

@@ -60,6 +60,17 @@ describe('getOidcConfig', () => {
     expect(getOidcConfig({ env: { ...env, OIDC_TRUST_EMAIL: 'true' } })?.trustEmail).toBe(true);
   });
 
+  it.each([undefined, '', '1', 'TRUE', 'yes', ' true'])(
+    'keeps the IdP session on sign-out when OIDC_PROVIDER_LOGOUT is %p',
+    (OIDC_PROVIDER_LOGOUT) => {
+      expect(getOidcConfig({ env: { ...env, OIDC_PROVIDER_LOGOUT } })?.providerLogout).toBe(false);
+    },
+  );
+
+  it('ends the IdP session on sign-out only when OIDC_PROVIDER_LOGOUT is exactly true', () => {
+    expect(getOidcConfig({ env: { ...env, OIDC_PROVIDER_LOGOUT: 'true' } })?.providerLogout).toBe(true);
+  });
+
   it('defaults a blank provider name to SSO', () => {
     expect(getOidcConfig({ env: { ...env, OIDC_PROVIDER_NAME: '   ' } })?.displayName).toBe('SSO');
     expect(getOidcConfig({ env: { ...env, OIDC_PROVIDER_NAME: 'Pocket ID' } })?.displayName).toBe('Pocket ID');
