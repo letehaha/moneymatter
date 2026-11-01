@@ -272,6 +272,7 @@ export const auth = betterAuth({
                 pkce: true,
                 requireEmailVerification: isEmailEnabled,
                 requireIdTokenVerification: true,
+                disableProviderLogout: true,
                 // better-auth passes the raw claim through and checks truthiness, so "false" would pass.
                 mapProfileToUser: (profile) => ({
                   emailVerified: oidcConfig?.trustEmail === true && profile.email_verified === true,
