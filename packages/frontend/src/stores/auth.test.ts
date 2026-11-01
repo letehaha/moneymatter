@@ -1,12 +1,20 @@
 import { loadUserData } from '@/api';
+import { signOut } from '@/lib/auth-client';
+import { resetUser } from '@/lib/posthog';
 import { resetQueryCaches } from '@/lib/query-persister';
 import { USER } from '@tests/mocks';
 import { createPinia, setActivePinia } from 'pinia';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useAuthStore } from './auth';
+import { resetAllDefinedStores } from './setup';
 import { useUserStore } from './user';
 
+vi.mock('./setup', () => ({ resetAllDefinedStores: vi.fn() }));
+vi.mock('@/routes', () => ({
+  ROUTES_NAMES: { signIn: 'auth.sign-in' },
+  router: { resolve: () => ({ href: '/sign-in' }) },
+}));
 vi.mock('@/api', () => ({ loadUserData: vi.fn(), startFeatureTrial: vi.fn() }));
 vi.mock('@/lib/auth-client', () => ({
   authClient: {},
@@ -58,5 +66,61 @@ describe('useAuthStore login', () => {
 
     expect(userAtWipe).toBeNull();
     expect(userStore.user).toEqual(USER);
+  });
+});
+
+describe('useAuthStore logout', () => {
+  const assign = vi.fn();
+
+  beforeEach(() => {
+    setActivePinia(createPinia());
+    vi.clearAllMocks();
+    vi.stubGlobal('location', { ...window.location, origin: 'http://localhost:8100', assign });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('asks for the provider logout URL without letting the client redirect', async () => {
+    vi.mocked(signOut).mockResolvedValue({ data: { success: true }, error: null });
+
+    await useAuthStore().logout();
+
+    expect(signOut).toHaveBeenCalledWith({
+      disableRedirect: true,
+      callbackURL: 'http://localhost:8100/sign-in',
+    });
+  });
+
+  it('stays on the app when the server returns no provider logout URL', async () => {
+    vi.mocked(signOut).mockResolvedValue({ data: { success: true }, error: null });
+
+    await useAuthStore().logout();
+
+    expect(resetQueryCaches).toHaveBeenCalled();
+    expect(assign).not.toHaveBeenCalled();
+  });
+
+  it('wipes local state before navigating to the provider logout URL', async () => {
+    const url = 'https://id.example.com/api/oidc/end-session?client_id=x';
+    vi.mocked(signOut).mockResolvedValue({ data: { success: true, url, redirect: false }, error: null });
+
+    await useAuthStore().logout();
+
+    expect(assign).toHaveBeenCalledWith(url);
+    const assignedAt = assign.mock.invocationCallOrder[0]!;
+    for (const cleanup of [resetUser, resetQueryCaches, resetAllDefinedStores]) {
+      expect(vi.mocked(cleanup).mock.invocationCallOrder[0]).toBeLessThan(assignedAt);
+    }
+  });
+
+  it('still clears local state when sign-out throws', async () => {
+    vi.mocked(signOut).mockRejectedValue(new Error('network'));
+
+    await useAuthStore().logout();
+
+    expect(resetQueryCaches).toHaveBeenCalled();
+    expect(assign).not.toHaveBeenCalled();
   });
 });
