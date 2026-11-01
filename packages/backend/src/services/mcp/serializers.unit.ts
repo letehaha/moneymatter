@@ -299,6 +299,7 @@ describe('MCP serializers', () => {
       etaMonths: 20,
       neededMonthly: 1000,
       daysLeft: 240,
+      monthsLeft: 8,
       input: {
         today: '2026-10-20',
         months: [],

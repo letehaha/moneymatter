@@ -74,7 +74,7 @@ const formatAmount = (amount: number) =>
               :class="
                 cn(
                   'shrink-0 rounded-full px-2 py-0.5 text-xs font-medium',
-                  GOAL_DISPLAY_TONES[item.daysLeft < 0 ? 'overdue' : 'behind'].pillClass,
+                  GOAL_DISPLAY_TONES[item.goal.insights.status].pillClass,
                 )
               "
             >

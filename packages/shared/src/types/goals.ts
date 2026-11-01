@@ -133,6 +133,8 @@ export interface GoalProgress {
   /** Under one month left (or overdue) it is the whole `remaining`. */
   neededMonthly: number | null;
   daysLeft: number | null;
+  /** Whole calendar months to the target date, the unit `etaMonths` is compared in. */
+  monthsLeft: number | null;
 }
 
 /**

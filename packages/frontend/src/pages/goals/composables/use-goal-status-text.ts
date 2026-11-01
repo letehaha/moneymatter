@@ -8,7 +8,7 @@ import { getGoalStatusLabel } from '../helpers';
 
 type StatusSource =
   | { goal: Pick<GoalModel, 'status' | 'achievedAt' | 'reachedHoldDays' | 'insights'> }
-  | { progress: Pick<GoalProgress, 'status' | 'etaMonths' | 'daysLeft'>; today: string };
+  | { progress: Pick<GoalProgress, 'status' | 'etaMonths' | 'monthsLeft'>; today: string };
 
 export const useGoalStatusText = () => {
   const { t } = useI18n();
