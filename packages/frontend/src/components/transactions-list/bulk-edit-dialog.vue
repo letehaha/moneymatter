@@ -10,8 +10,7 @@ import TextareaField from '@/components/fields/textarea-field.vue';
 import { usePayeeLookup } from '@/composable/data-queries/payees';
 import { useAutoTagApply } from '@/composable/use-auto-tag-apply';
 import { Button } from '@/components/lib/ui/button';
-import { Label } from '@/components/lib/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/lib/ui/radio-group';
+import { PillTabs } from '@/components/lib/ui/pill-tabs';
 import { useCategoriesStore, useTagsStore } from '@/stores';
 import { TagModel, type RecordId, type BulkUpdateTagMode } from '@bt/shared/types';
 import { storeToRefs } from 'pinia';
@@ -88,6 +87,10 @@ watch(isOpen, (open) => {
 
 const hasCategory = computed(() => form.category !== null);
 const hasTags = computed(() => form.tagIds.length > 0);
+// A payee can refill the tags later, and they must not inherit a Replace or Remove chosen for earlier tags.
+watch(hasTags, (value) => {
+  if (!value) form.tagMode = 'add';
+});
 const hasNote = computed(() => form.note.trim().length > 0);
 const hasPayee = computed(() => form.payeeId !== null);
 
@@ -129,6 +132,24 @@ const tagModeLabel = computed(() => {
     remove: t('transactions.bulkEdit.tagModeRemove'),
   };
   return labels[form.tagMode];
+});
+
+const tagModeItems = computed(
+  () =>
+    [
+      { value: 'add', label: t('transactions.bulkEdit.tagModeAddShort') },
+      { value: 'replace', label: t('transactions.bulkEdit.tagModeReplaceShort') },
+      { value: 'remove', label: t('transactions.bulkEdit.tagModeRemoveShort') },
+    ] satisfies { value: TagMode; label: string }[],
+);
+
+const tagModeHint = computed(() => {
+  const hints: Record<TagMode, string> = {
+    add: t('transactions.bulkEdit.tagModeAddHint'),
+    replace: t('transactions.bulkEdit.tagModeReplaceHint'),
+    remove: t('transactions.bulkEdit.tagModeRemoveHint'),
+  };
+  return hints[form.tagMode];
 });
 
 const handleConfirmedApply = () => {
@@ -178,35 +199,28 @@ const handleConfirmedApply = () => {
         @payee-selected="handlePayeeSelected"
       />
 
-      <TagSelectField
-        v-model="form.tagIds"
-        :label="t('transactions.bulkEdit.tagsLabel')"
-        :placeholder="t('transactions.bulkEdit.tagsPlaceholder')"
-      />
+      <div class="grid gap-1.5">
+        <TagSelectField
+          v-model="form.tagIds"
+          :label="t('transactions.bulkEdit.tagsLabel')"
+          :placeholder="t('transactions.bulkEdit.tagsPlaceholder')"
+        >
+          <template #label-right>
+            <PillTabs
+              role="group"
+              :aria-label="t('transactions.bulkEdit.tagModeLabel')"
+              :model-value="form.tagMode"
+              :items="tagModeItems"
+              :disabled="!hasTags"
+              size="sm"
+              @update:model-value="(value) => (form.tagMode = value as TagMode)"
+            />
+          </template>
+        </TagSelectField>
 
-      <!-- Tag mode selector - shown when tags are selected -->
-      <div v-if="hasTags" class="space-y-2">
-        <Label class="text-sm font-medium">{{ t('transactions.bulkEdit.tagModeLabel') }}</Label>
-        <RadioGroup v-model="form.tagMode" class="flex flex-col gap-2">
-          <div class="flex items-center gap-2">
-            <RadioGroupItem id="tag-mode-add" value="add" />
-            <Label for="tag-mode-add" class="cursor-pointer font-normal">
-              {{ t('transactions.bulkEdit.tagModeAdd') }}
-            </Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <RadioGroupItem id="tag-mode-replace" value="replace" />
-            <Label for="tag-mode-replace" class="cursor-pointer font-normal">
-              {{ t('transactions.bulkEdit.tagModeReplace') }}
-            </Label>
-          </div>
-          <div class="flex items-center gap-2">
-            <RadioGroupItem id="tag-mode-remove" value="remove" />
-            <Label for="tag-mode-remove" class="cursor-pointer font-normal">
-              {{ t('transactions.bulkEdit.tagModeRemove') }}
-            </Label>
-          </div>
-        </RadioGroup>
+        <p v-if="hasTags" class="text-muted-foreground text-sm">
+          {{ tagModeHint }}
+        </p>
       </div>
 
       <TextareaField

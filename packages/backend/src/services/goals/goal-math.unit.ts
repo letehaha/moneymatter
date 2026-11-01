@@ -87,6 +87,7 @@ describe('computeGoalProgress', () => {
       etaMonths: 12,
       neededMonthly: null,
       daysLeft: null,
+      monthsLeft: null,
     });
   });
 
@@ -107,6 +108,7 @@ describe('computeGoalProgress', () => {
     expect(progress({ targetDate: inDays(-1) })).toMatchObject({
       status: 'overdue',
       daysLeft: -1,
+      monthsLeft: -1,
       neededMonthly: 1200,
     });
   });
@@ -115,6 +117,7 @@ describe('computeGoalProgress', () => {
     expect(progress({ targetDate: TODAY })).toMatchObject({
       status: 'behind',
       daysLeft: 0,
+      monthsLeft: 0,
       neededMonthly: 1200,
     });
   });
@@ -124,7 +127,7 @@ describe('computeGoalProgress', () => {
   });
 
   it('reports on_track when the target lands within the last month before the date', () => {
-    // 380 days = 12.48 months; 12 months to go at the pace.
+    // 380 days is 12 whole months; 12 months to go at the pace.
     expect(progress({ targetDate: inDays(380) }).status).toBe('on_track');
   });
 
@@ -133,11 +136,44 @@ describe('computeGoalProgress', () => {
   });
 
   it('judges the status by the displayed whole-month ETA', () => {
-    // 11.5 months to go shows as 12; 359 days is 11.79 months.
+    // 11.5 months to go shows as 12; 359 days is 11 whole months.
     expect(progress({ targetAmount: 2350, targetDate: inDays(359) })).toMatchObject({
       status: 'behind',
       etaMonths: 12,
     });
+  });
+
+  it('counts calendar months, not average-length ones, when judging the offset', () => {
+    // 608 days is 19.97 average months, but 2026-11-01 to 2028-07-01 is exactly 20 calendar months.
+    const result = progress({ today: '2026-11-01', targetDate: '2028-07-01', targetAmount: 3400, plannedMonthly: 100 });
+
+    expect(result).toMatchObject({ status: 'behind', daysLeft: 608, monthsLeft: 20, etaMonths: 22 });
+    expect(scheduleOffset({ etaMonths: result.etaMonths!, monthsLeft: result.monthsLeft! })).toEqual({
+      kind: 'late',
+      months: 2,
+    });
+  });
+
+  it('steps monthsLeft like etaDate, including the end-of-month clamp', () => {
+    expect(progress({ today: '2026-01-31', targetDate: '2026-02-28' }).monthsLeft).toBe(1);
+    expect(progress({ today: '2026-01-31', targetDate: '2026-02-27' }).monthsLeft).toBe(0);
+    expect(progress({ today: '2027-01-31', targetDate: '2028-02-29' }).monthsLeft).toBe(13);
+    expect(progress({ today: '2027-01-31', targetDate: '2028-02-28' }).monthsLeft).toBe(12);
+    expect(progress({ today: '2028-02-29', targetDate: '2029-02-28' }).monthsLeft).toBe(12);
+    expect(progress({ today: '2028-02-29', targetDate: '2029-02-27' }).monthsLeft).toBe(11);
+  });
+
+  it('is overdue with negative monthsLeft across a year boundary', () => {
+    expect(progress({ today: '2026-01-10', targetDate: '2025-12-05' })).toMatchObject({
+      status: 'overdue',
+      monthsLeft: -2,
+    });
+  });
+
+  it('flips the status on the exact calendar day', () => {
+    expect(progress({ targetAmount: 2300, plannedMonthly: 100, targetDate: '2027-10-20' }).status).toBe('ahead');
+    expect(progress({ targetAmount: 2400, plannedMonthly: 100, targetDate: '2027-10-20' }).status).toBe('on_track');
+    expect(progress({ targetAmount: 2400, plannedMonthly: 100, targetDate: '2027-10-19' }).status).toBe('behind');
   });
 
   it('reports behind when the balance is not growing', () => {
@@ -299,10 +335,11 @@ describe('accountGoalValue', () => {
 
 describe('scheduleOffset', () => {
   it('agrees with the progress status on whole months', () => {
-    expect(scheduleOffset({ etaMonths: 10, daysLeft: 380 })).toEqual({ kind: 'early', months: 2 });
-    expect(scheduleOffset({ etaMonths: 12, daysLeft: 380 })).toEqual({ kind: 'onTime', months: 0 });
-    expect(scheduleOffset({ etaMonths: 12, daysLeft: 180 })).toEqual({ kind: 'late', months: 7 });
-    expect(scheduleOffset({ etaMonths: 6, daysLeft: 180 })).toEqual({ kind: 'late', months: 1 });
+    expect(scheduleOffset({ etaMonths: 10, monthsLeft: 12 })).toEqual({ kind: 'early', months: 2 });
+    expect(scheduleOffset({ etaMonths: 11, monthsLeft: 12 })).toEqual({ kind: 'early', months: 1 });
+    expect(scheduleOffset({ etaMonths: 12, monthsLeft: 12 })).toEqual({ kind: 'onTime', months: 0 });
+    expect(scheduleOffset({ etaMonths: 12, monthsLeft: 5 })).toEqual({ kind: 'late', months: 7 });
+    expect(scheduleOffset({ etaMonths: 6, monthsLeft: 5 })).toEqual({ kind: 'late', months: 1 });
 
     expect(progress({ targetDate: inDays(380) }).status).toBe('on_track');
     expect(progress({ targetDate: inDays(180) }).status).toBe('behind');

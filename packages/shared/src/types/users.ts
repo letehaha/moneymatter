@@ -21,6 +21,7 @@ export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export enum OAUTH_PROVIDER {
   google = 'google',
   github = 'github',
+  apple = 'apple',
   // Generic OpenID Connect provider configured by a self-hoster (Pocket ID, Authelia, Keycloak, ...)
   oidc = 'oidc',
 }

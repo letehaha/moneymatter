@@ -46,6 +46,7 @@ const buildInsights = (overrides: Partial<GoalInsights> = {}): GoalInsights => (
   etaMonths: null,
   neededMonthly: null,
   daysLeft: null,
+  monthsLeft: null,
   input: { today: '2026-10-20', months: [], accounts: [], targetAmount: 0, targetDate: null, plannedMonthly: null },
   rateToBase: 1,
   baseCurrencyCode: 'USD',
@@ -274,16 +275,24 @@ describe('getGoalNeed', () => {
 
 describe('getPaceValueClass', () => {
   it('reds a negative pace, even with no need', () => {
-    expect(getPaceValueClass({ pace: -778, need: null })).toBe('text-destructive-text');
+    expect(getPaceValueClass({ pace: -778, need: null, status: 'behind' })).toBe('text-destructive-text');
   });
 
-  it('warns when a positive pace is below the monthly need', () => {
-    expect(getPaceValueClass({ pace: 100, need: { kind: 'monthly', amount: 500 } })).toBe('text-warning-text');
+  it('warns when a behind goal has a positive pace below the monthly need', () => {
+    expect(getPaceValueClass({ pace: 100, need: { kind: 'monthly', amount: 500 }, status: 'behind' })).toBe(
+      'text-warning-text',
+    );
   });
 
   it('stays neutral when the pace covers the need or is missing', () => {
-    expect(getPaceValueClass({ pace: 600, need: { kind: 'monthly', amount: 500 } })).toBeUndefined();
-    expect(getPaceValueClass({ pace: null, need: { kind: 'monthly', amount: 500 } })).toBeUndefined();
+    expect(getPaceValueClass({ pace: 600, need: { kind: 'monthly', amount: 500 }, status: 'behind' })).toBeUndefined();
+    expect(getPaceValueClass({ pace: null, need: { kind: 'monthly', amount: 500 }, status: 'behind' })).toBeUndefined();
+  });
+
+  it('stays neutral for an on-track goal whose day-precise need edges above its pace', () => {
+    expect(
+      getPaceValueClass({ pace: 1000, need: { kind: 'monthly', amount: 1031.86 }, status: 'on_track' }),
+    ).toBeUndefined();
   });
 });
 

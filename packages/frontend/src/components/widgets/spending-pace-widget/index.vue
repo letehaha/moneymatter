@@ -33,8 +33,10 @@ import EmptyState from '../components/empty-state.vue';
 import ErrorState from '../components/error-state.vue';
 import LoadingState from '../components/loading-state.vue';
 import WidgetWrapper from '../components/widget-wrapper.vue';
+import { useIncludePlannedConfig } from '../use-include-planned-config';
 import {
   COMPARISON_MONTHS,
+  INCLUDE_PLANNED_DEFAULT,
   type CompareMode,
   getPayMonth,
   parseCompareMode,
@@ -45,6 +47,7 @@ import {
   spikeContributorsCount,
   spikeDays,
   splitDailyExpenses,
+  upcomingPlannedExpenses,
 } from './helpers';
 import SpendingPaceSettingsPopover from './spending-pace-settings-popover.vue';
 
@@ -133,32 +136,67 @@ const setSpikePercent = async ({ value }: { value: number }) => {
   }
 };
 
+const { includePlanned } = useIncludePlannedConfig({ defaultValue: INCLUDE_PLANNED_DEFAULT });
+
+// Both cash-flow queries share this range: refunds net only when both halves are in range, so a
+// narrower planned window would make the per-day difference read refunds as plans.
+const cashFlowRange = computed(() => ({
+  from: subMonths(payMonth.value.start, COMPARISON_MONTHS),
+  to: payMonth.value.end,
+  granularity: 'daily' as const,
+}));
+
 const { data, isFetching, isError, error, refetch } = useQuery({
   queryKey: computed(() => [...VUE_QUERY_CACHE_KEYS.widgetSpendingPace, format(payMonth.value.start, 'yyyy-MM-dd')]),
-  queryFn: () =>
-    getCashFlow({
-      from: subMonths(payMonth.value.start, COMPARISON_MONTHS),
-      to: payMonth.value.end,
-      granularity: 'daily',
-      excludePlanned: true,
-    }),
+  queryFn: () => getCashFlow({ ...cashFlowRange.value, excludePlanned: true }),
   staleTime: Infinity,
   enabled: isReady,
+});
+
+const {
+  data: withPlanned,
+  isFetching: isPlannedFetching,
+  error: plannedError,
+} = useQuery({
+  queryKey: computed(() => [
+    ...VUE_QUERY_CACHE_KEYS.widgetSpendingPace,
+    'planned',
+    format(payMonth.value.start, 'yyyy-MM-dd'),
+  ]),
+  queryFn: () => getCashFlow(cashFlowRange.value),
+  staleTime: Infinity,
+  enabled: computed(() => isReady.value && includePlanned.value),
 });
 
 watch(error, (value) => {
   if (value) captureException({ error: value, context: { scope: `${SENTRY_SCOPE}:load` } });
 });
 
+watch(plannedError, (value) => {
+  if (value) captureException({ error: value, context: { scope: `${SENTRY_SCOPE}:load-planned` } });
+});
+
 const split = computed(() => splitDailyExpenses({ periods: data.value?.periods ?? [], now, payday: payday.value }));
 const fullMonthsCount = computed(() => split.value.fullMonths.length);
 const hasHistory = computed(() => fullMonthsCount.value > 0);
+
+const plannedExpenses = computed(() =>
+  includePlanned.value && data.value && withPlanned.value
+    ? upcomingPlannedExpenses({
+        actualPeriods: data.value.periods,
+        withPlannedPeriods: withPlanned.value.periods,
+        now,
+        payday: payday.value,
+      })
+    : [],
+);
 
 const pace = computed(() =>
   computeSpendingPace({
     currentMonth: split.value.currentMonth,
     comparisonMonths: compareMode.value === 'last' ? split.value.fullMonths.slice(-1) : split.value.fullMonths,
     daysInMonth: payMonth.value.daysInMonth,
+    plannedExpenses: plannedExpenses.value,
   }),
 );
 const comparison = computed(() => pace.value.comparison);
@@ -206,6 +244,7 @@ const stats = computed(() => {
 });
 
 const footHint = computed(() => {
+  if (includePlanned.value && plannedError.value) return t('dashboard.widgets.spendingPace.hints.plannedFailed');
   if (!hasHistory.value) return t('dashboard.widgets.spendingPace.hints.noHistory');
   if (compareMode.value === 'avg' && fullMonthsCount.value < COMPARISON_MONTHS) {
     return t('dashboard.widgets.spendingPace.hints.fewMonths', fullMonthsCount.value);
@@ -359,7 +398,7 @@ const isEmpty = computed(() => !hasHistory.value && pace.value.spent === 0);
 </script>
 
 <template>
-  <WidgetWrapper class="@container" :is-fetching="isFetching">
+  <WidgetWrapper class="@container" :is-fetching="isFetching || isPlannedFetching">
     <template #title>{{ $t('dashboard.widgets.registry.spendingPace.name') }}</template>
 
     <template v-if="!isInitialLoading && !isError && !isEmpty" #action>

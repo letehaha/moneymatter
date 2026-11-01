@@ -10,6 +10,7 @@ import { ROUTES_NAMES } from '@/routes';
 import { useAuthStore, useUserStore } from '@/stores';
 import { EXTERNAL_URLS } from '@bt/shared/const/external-urls';
 import { BILLING_PROVIDERS, isEntitledSubscription } from '@bt/shared/types';
+import { Loader2Icon } from '@lucide/vue';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -68,8 +69,13 @@ const handleOpenChange = (open: boolean) => {
       </i18n-t>
     </div>
 
-    <Button variant="destructive" class="shrink-0" @click="isDialogOpen = true">
-      {{ $t('settings.security.deleteAccount.button') }}
+    <Button variant="destructive" class="shrink-0" :disabled="isDeleting" @click="isDialogOpen = true">
+      <Loader2Icon v-if="isDeleting" class="size-4 animate-spin" />
+      {{
+        isDeleting
+          ? $t('settings.security.deleteAccount.dialog.acceptButtonLoading')
+          : $t('settings.security.deleteAccount.button')
+      }}
     </Button>
 
     <ResponsiveAlertDialog

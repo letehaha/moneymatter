@@ -4,6 +4,7 @@ import { passkey } from '@better-auth/passkey';
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH } from '@bt/shared/const/auth';
 import { OAUTH_PROVIDER } from '@bt/shared/types';
 import { EnvVar, isEnvConfigured } from '@common/utils/env';
+import { getAppleClientSecretFromEnv } from '@config/apple-client-secret';
 import { createSessionHooks } from '@config/auth-hooks/session-hooks';
 import { oidcConfig } from '@config/oidc';
 import { shouldUseSecureCookies } from '@config/should-use-secure-cookies';
@@ -76,6 +77,10 @@ const DEV_TRUSTED_ORIGINS =
     ? ['http://localhost:8100', 'https://localhost:8100', 'http://127.0.0.1:8100', 'https://127.0.0.1:8100']
     : [];
 
+// ponytail: signed once at boot and valid for 6 months; a process running longer breaks web Apple sign-in.
+// Re-sign on a timer if deploys ever get that rare.
+const appleClientSecret = getAppleClientSecretFromEnv();
+
 export const auth = betterAuth({
   database: pool,
   basePath: '/api/v1/auth',
@@ -90,6 +95,8 @@ export const auth = betterAuth({
     // Native iOS app: callback scheme, and the `expo-origin` value its cookie-bearing requests must send.
     // Kept out of ALLOWED_ORIGINS, which also feeds browser CORS.
     'moneymatter://',
+    // Apple posts the OAuth callback (response_mode=form_post) from its own origin.
+    ...(appleClientSecret ? ['https://appleid.apple.com'] : []),
   ],
 
   // Custom table names with ba_ prefix to avoid conflicts
@@ -128,7 +135,9 @@ export const auth = betterAuth({
       enabled: true,
       // `oidc` is left out because a self-hosted IdP may let users set any email. It can only
       // link accounts when OIDC_TRUST_EMAIL is on and the IdP reports the email as verified.
-      trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github],
+      trustedProviders: [OAUTH_PROVIDER.google, OAUTH_PROVIDER.github, OAUTH_PROVIDER.apple],
+      // Apple's Hide My Email relay addresses never match the user's own email.
+      allowDifferentEmails: true,
     },
   },
   verification: {
@@ -254,6 +263,16 @@ export const auth = betterAuth({
       enabled:
         isEnvConfigured(EnvVar.GITHUB_CLIENT_ID, process.env.GITHUB_CLIENT_ID) &&
         isEnvConfigured(EnvVar.GITHUB_CLIENT_SECRET, process.env.GITHUB_CLIENT_SECRET),
+    },
+    apple: {
+      clientId: process.env.APPLE_CLIENT_ID || '',
+      clientSecret: appleClientSecret ?? '',
+      // Web ID tokens are issued to the Services ID, native iOS ones to the app bundle ID.
+      audience: [EnvVar.APPLE_CLIENT_ID, EnvVar.APPLE_APP_BUNDLE_IDENTIFIER].flatMap((name) => {
+        const value = process.env[name];
+        return isEnvConfigured(name, value) ? [value!] : [];
+      }),
+      enabled: Boolean(appleClientSecret),
     },
   },
 

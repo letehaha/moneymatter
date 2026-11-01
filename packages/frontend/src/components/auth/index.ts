@@ -1,3 +1,4 @@
+export { default as AppleIcon } from './apple-icon.vue';
 export { default as AuthDivider } from './auth-divider.vue';
 export { default as GithubIcon } from './github-icon.vue';
 export { default as GoogleIcon } from './google-icon.vue';

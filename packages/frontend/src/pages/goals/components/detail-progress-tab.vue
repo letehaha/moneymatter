@@ -87,7 +87,7 @@ const kpis = computed<KpiCell[]>(() => {
       value: pace === null ? '—' : formatAmount(pace),
       suffix: pace === null ? undefined : t('goals.details.perMonth'),
       sub: needText({ need }),
-      valueClass: getPaceValueClass({ pace, need }),
+      valueClass: getPaceValueClass({ pace, need, status: insights.status }),
     },
     {
       key: 'finish',

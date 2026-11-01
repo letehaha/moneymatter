@@ -18,6 +18,7 @@ const buildInsights = (overrides: Partial<GoalInsights> = {}) =>
     status: 'on_track',
     etaMonths: null,
     daysLeft: null,
+    monthsLeft: null,
     input: { today: '2026-10-20' },
     ...overrides,
   }) as GoalInsights;
@@ -30,7 +31,7 @@ describe('useGoalStatusText', () => {
       status: 'active' as const,
       achievedAt: null,
       reachedHoldDays: 30,
-      insights: buildInsights({ status: 'behind', etaMonths: 30, daysLeft: 305 }),
+      insights: buildInsights({ status: 'behind', etaMonths: 30, monthsLeft: 10 }),
     };
     expect(statusText({ goal })).toEqual({ key: 'goals.status.behindBy', count: 20, date: '', plural: 20 });
   });
@@ -46,7 +47,7 @@ describe('useGoalStatusText', () => {
   });
 
   it('formats the projected month from a bare progress', () => {
-    const progress = { status: 'no_date' as const, etaMonths: 10, daysLeft: null };
+    const progress = { status: 'no_date' as const, etaMonths: 10, monthsLeft: null };
     expect(statusText({ progress, today: '2026-10-20' })).toMatchObject({
       key: 'goals.status.around',
       date: 'Aug 2027',

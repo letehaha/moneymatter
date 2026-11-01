@@ -41,6 +41,17 @@
               <GithubIcon />
             </template>
           </OAuthButton>
+          <OAuthButton
+            :provider="OAUTH_PROVIDER.apple"
+            mode="signin"
+            :is-loading="isOAuthLoading"
+            :is-last-used="lastLoginMethod === OAUTH_PROVIDER.apple"
+            @click="handleOAuthLogin({ provider: OAUTH_PROVIDER.apple })"
+          >
+            <template #icon>
+              <AppleIcon />
+            </template>
+          </OAuthButton>
           <PasskeyButton
             mode="signin"
             :is-loading="isPasskeyLoading"
@@ -118,7 +129,15 @@ import { getOAuthAuthorizeUrl } from '@/api/mcp';
 import { DEMO_SESSION_EXPIRED_REASON } from '@/common/const';
 import { VUE_QUERY_CACHE_KEYS } from '@/common/const/vue-query';
 import ResponsiveTooltip from '@/components/common/responsive-tooltip.vue';
-import { AuthDivider, GithubIcon, GoogleIcon, LastUsedBadge, OAuthButton, PasskeyButton } from '@/components/auth';
+import {
+  AppleIcon,
+  AuthDivider,
+  GithubIcon,
+  GoogleIcon,
+  LastUsedBadge,
+  OAuthButton,
+  PasskeyButton,
+} from '@/components/auth';
 import InputField from '@/components/fields/input-field.vue';
 import FormWrapper from '@/components/fields/form-wrapper.vue';
 import { Button } from '@/components/lib/ui/button';
