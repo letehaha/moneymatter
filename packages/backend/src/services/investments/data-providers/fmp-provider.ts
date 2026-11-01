@@ -88,14 +88,14 @@ export class FmpDataProvider extends BaseSecurityDataProvider {
       }
 
       const quote = quotes[0]!;
-      const priceClose = quote.previousClose;
+      const priceClose = quote.price;
       const latestTradingDay = new Date(quote.timestamp * 1000);
 
       const result: PriceData = {
         providerSymbol: toProviderSymbol(quote.symbol),
         date: latestTradingDay,
         priceClose,
-        priceAsOf: latestTradingDay, // Price is as of the previous close date
+        priceAsOf: latestTradingDay,
         providerName: SECURITY_PROVIDER.fmp,
       };
 
